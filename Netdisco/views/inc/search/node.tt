@@ -1,0 +1,36 @@
+        <div id="node_search" class="tab-pane [% 'active' IF params.tab == 'node' %]">
+          <form id="node_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>
+            <p><em>Node Search Options</em></p>
+            <input name="tab" value="node" type="hidden"/>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="stamps" name="stamps"[% ' checked="checked"' IF params.stamps %]/>
+              </label>
+              <label for="stamps">
+                <span class="nd_searchcheckbox uneditable-input">Time Stamps</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="vendor" name="vendor"[% ' checked="checked"' IF params.vendor %]/>
+              </label>
+              <label for="vendor">
+                <span class="nd_searchcheckbox uneditable-input">Vendor</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="archived" name="archived"[% ' checked="checked"' IF params.archived %]/>
+              </label>
+              <label for="archived">
+                <span class="nd_searchcheckbox uneditable-input">Archived Data</span>
+              </label>
+            </div>
+            <div class="clearfix">
+              <button id="node_submit" type="submit" class="btn info">Search Again</button>
+            </div>
+          </form>
+        </div> <!-- /tab-pane -->
