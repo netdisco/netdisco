@@ -1,8 +1,8 @@
-package Netdisco;
+package Netdisco::Web;
 
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
-use Dancer::Plugin::Database;
+use Dancer::Plugin::DBIC;
 use Digest::MD5 ();
 
 hook 'before' => sub {
@@ -57,13 +57,11 @@ get '/search' => sub {
 
 post '/login' => sub {
     if (param('username') and param('password')) {
-        my $user = database->quick_select('users',
-           { username => param('username') }
-        );
+        my $user = schema('netdisco')->resultset('User')->find(param('username'));
         if ($user) {
             my $sum = Digest::MD5::md5_hex(param('password'));
-            if ($sum and $sum eq $user->{password}) {
-                session(user => $user->{username});
+            if ($sum and $sum eq $user->password) {
+                session(user => $user->username);
                 redirect param('path') || '/';
                 return;
             }

@@ -1,4 +1,4 @@
 #!/usr/bin/env perl
 use Dancer;
-use Netdisco;
+use Netdisco::Web;
 dance;

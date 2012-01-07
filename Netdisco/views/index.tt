@@ -2,19 +2,19 @@
   <div class="row nd_herorow">
     <div class="span10 offset3">
       [% IF params.failed %]
-      <div class="nd_loginalert alert-message error" data-alert="on">
+      <div class="nd_loginalert alert-message error fade in" data-alert="on">
         <a class="close" href="#">×</a>
         <p>Incorrect username or password, please try again.</p>
       </div>
       [% END %]
       [% IF params.logout %]
-      <div class="nd_loginalert alert-message notice" data-alert="on">
+      <div class="nd_loginalert alert-message notice fade in" data-alert="on">
         <a class="close" href="#">×</a>
         <p>You are now logged out.</p>
       </div>
       [% END %]
       [% IF vars.notfound %]
-      <div class="nd_loginalert alert-message notice" data-alert="on">
+      <div class="nd_loginalert alert-message notice fade in" data-alert="on">
         <a class="close" href="#">×</a>
         <p>Sorry, page not found.
           <a href="http://sourceforge.net/tracker/?group_id=80033&atid=558508" target="_blank">Report a Bug?</a></p>
