@@ -12,8 +12,15 @@
 
   <script type="text/javascript" src="/javascripts/jquery-latest.min.js"></script>
   <script type="text/javascript" src="/javascripts/bootstrap-alerts.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap-twipsy.js"></script>
   <script type="text/javascript" src="/javascripts/bootstrap-dropdown.js"></script>
   <script type="text/javascript" src="/javascripts/bootstrap-tabs.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("a[rel=twipsy]").twipsy({live: true});
+    });
+  </script>
 
   <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/style.css">

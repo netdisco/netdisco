@@ -12,7 +12,10 @@
             <input name="tab" value="[% tab.id %]" type="hidden"/>
             <div class="nd_search clearfix">
               <button id="[% tab.id %]_submit" type="submit" class="btn info">Search Again</button>
-              <a id="[% tab.id %]_bookmark" href="#"><img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png"></a>
+              <a id="[% tab.id %]_bookmark" href="#"
+                rel="twipsy" data-placement="right" data-offset="5" title="Bookmark this Search">
+                <img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png">
+              </a>
             </div>
           </form>
         </div> <!-- /tab-pane -->
