@@ -35,11 +35,15 @@ ajax '/ajax/content/search/vlan' => sub {
       results => $set,
       columns => [
         { key => 'dns', label => 'Device' },
-        { key => [qw/vlan description/], label => 'Description' },
+        { key => 'vlan.description', label => 'Description' },
         { key => 'model', label => 'Model' },
         { key => 'os', label => 'OS' },
         { key => 'vendor', label => 'Vendor' },
       ],
+      hyperlink => sub {
+          my $row = shift;
+          return '/device?q=' . $row->ip;
+      },
     }, { layout => undef };
 };
 

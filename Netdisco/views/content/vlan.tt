@@ -11,10 +11,10 @@
     <tr>
       [% FOREACH col IN columns %]
         [% SET val = row %]
-        [% FOREACH method IN col.key %]
+        [% FOREACH method IN col.key.split('\.') %]
           [% SET val = val.$method %]
         [% END %]
-        <td>[% val %]</td>
+        <td><a class="nd_linkcell" href="[% hyperlink(row) %]">[% val %]</a></td>
       [% END %]
     </tr>
     [% END %]

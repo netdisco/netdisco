@@ -32,3 +32,11 @@
 .nd_search {
   margin-top: 15px;
 }
+
+.nd_linkcell {
+  text-decoration: none !important;
+  color: #404040;
+  display: block;
+  padding: 0px;
+  height: 100%;
+}
