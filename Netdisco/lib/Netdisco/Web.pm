@@ -24,10 +24,10 @@ ajax '/ajax/content/search/:thing' => sub {
 
 # devices carrying vlan xxx
 ajax '/ajax/content/search/vlan' => sub {
-    my $q = param('q');
-    return unless $q and $q =~ m/^\d+$/;
+    my $vlan = param('q');
+    return unless $vlan and $vlan =~ m/^\d+$/;
 
-    my $set = schema('netdisco')->resultset('Device')->carrying_vlan($q);
+    my $set = schema('netdisco')->resultset('Device')->carrying_vlan($vlan);
     return unless $set->count;
 
     content_type('text/html');
@@ -42,7 +42,7 @@ ajax '/ajax/content/search/vlan' => sub {
       ],
       hyperlink => sub {
           my $row = shift;
-          return '/device?q=' . $row->ip;
+          return '/device?q='. $row->ip .'&vlan='. $vlan;
       },
     }, { layout => undef };
 };

@@ -1,3 +1,8 @@
+/* for the fixed navbar */
+body {
+  padding-top: 50px;
+}
+
 .nd_loginalert {
   margin-top: -40px;
 }

@@ -2,8 +2,9 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
-<title>Netdisco</title>
+  <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
+  <link rel="shortcut icon" href="#" />
+  <title>Netdisco</title>
 
   <!-- HTML5 shim, for IE6-8 support of HTML elements -->
   <!--[if lt IE 9]>
@@ -24,14 +25,6 @@
 
   <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/style.css">
-
-  <!-- for the fixed navbar -->
-  <style type="text/css">
-    body {
-      padding-top: 50px;
-    }
-  </style>
-
 </head>
 
 <body>
