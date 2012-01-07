@@ -1,18 +1,49 @@
 package Netdisco;
 
 use Dancer ':syntax';
+use Dancer::Plugin::Ajax;
 use Dancer::Plugin::Database;
 use Digest::MD5 ();
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
-        var(requested_path => request->path);
-        request->path_info('/');
+        session(user => 'oliver'); # XXX
+        #var(requested_path => request->path);
+        #request->path_info('/');
     }
 };
 
 get '/' => sub {
     template 'index';
+};
+
+ajax '/ajax/content/search/:thing' => sub {
+    return '';
+};
+
+post '/search' => sub {
+    my $q = param('q');
+    if ($q and not param('tab')) {
+        # pick most likely tab for initial results
+        if ($q =~ m/^\d+$/) {
+            params->{'tab'} = 'vlan';
+        }
+        else {
+            params->{'tab'} = 'device';
+        }
+    }
+    elsif (not $q) {
+        redirect '/';
+        return;
+    }
+
+    # set up default search options for each type
+    if (param('tab') and param('tab') ne 'node') {
+        params->{'stamps'} = 'checked';
+        params->{'vendor'} = 'checked';
+    }
+
+    template 'search';
 };
 
 post '/login' => sub {
@@ -38,7 +69,9 @@ get '/logout' => sub {
 };
 
 any qr{.*} => sub {
-    redirect '/?notfound=1';
+    var('notfound' => true);
+    status 'not_found';
+    template 'index';
 };
 
 true;

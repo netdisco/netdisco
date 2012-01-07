@@ -1,0 +1,151 @@
+<div class="container-fluid">
+  <div class="sidebar">
+    <div class="well">
+      <div class="tab-content">
+        <div id="nd_device_search" class="tab-pane [% 'active' IF params.tab == 'device' %]">
+          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>
+            <p><em>Device Search Options</em></p>
+            <input name="tab" value="device" type="hidden"/>
+            <div class="clearfix">
+              <button type="submit" class="btn info">Search Again</button>
+            </div>
+          </form>
+        </div> <!-- /tab-pane -->
+        <div id="nd_node_search" class="tab-pane [% 'active' IF params.tab == 'node' %]">
+          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>
+            <p><em>Node Search Options</em></p>
+            <input name="tab" value="node" type="hidden"/>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="stamps" name="stamps" [% 'checked="checked"' IF params.stamps %]/>
+              </label>
+              <label for="stamps">
+                <span class="nd_searchcheckbox uneditable-input">Time Stamps</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="vendor" name="vendor" [% 'checked="checked"' IF params.vendor %]/>
+              </label>
+              <label for="vendor">
+                <span class="nd_searchcheckbox uneditable-input">Vendor</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="archived" name="archived" [% 'checked="checked"' IF params.archived %]/>
+              </label>
+              <label for="archived">
+                <span class="nd_searchcheckbox uneditable-input">Archived Data</span>
+              </label>
+            </div>
+            <div class="clearfix">
+              <button type="submit" class="btn info">Search Again</button>
+            </div>
+          </form>
+        </div> <!-- /tab-pane -->
+        <div id="nd_vlan_search" class="tab-pane [% 'active' IF params.tab == 'vlan' %]">
+          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>
+            <input name="tab" value="vlan" type="hidden"/>
+            <div class="clearfix">
+              <button type="submit" class="btn info">Search Again</button>
+            </div>
+          </form>
+        </div> <!-- /tab-pane -->
+        <div id="nd_port_search" class="tab-pane [% 'active' IF params.tab == 'port' %]">
+          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>
+            <input name="tab" value="vlan" type="hidden"/>
+            <div class="clearfix">
+              <button type="submit" class="btn info">Search Again</button>
+            </div>
+          </form>
+        </div> <!-- /tab-pane -->
+      </div> <!-- /tab-content -->
+    </div>
+  </div>
+
+  <div class="content">
+    <ul id="search_results" class="tabs" data-tabs="on">
+      <li [% 'class="active"' IF params.tab == 'device' %]><a href="#device_results">Device</a></li>
+      <li [% 'class="active"' IF params.tab == 'node' %]><a href="#node_results">Node</a></li>
+      <li [% 'class="active"' IF params.tab == 'vlan' %]><a href="#vlan_results">VLAN</a></li>
+      <li [% 'class="active"' IF params.tab == 'port' %]><a href="#port_results">Port</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane [% 'active' IF params.tab == 'device' %]" id="device_results">
+        <div class="span3 alert-message notice"><p>Waiting for results...</p></div>
+      </div>
+      <div class="tab-pane [% 'active' IF params.tab == 'node' %]" id="node_results">
+        <div class="span3 alert-message notice"><p>Waiting for results...</p></div>
+      </div>
+      <div class="tab-pane [% 'active' IF params.tab == 'vlan' %]" id="vlan_results">
+        <div class="span3 alert-message notice"><p>Waiting for results...</p></div>
+      </div>
+      <div class="tab-pane [% 'active' IF params.tab == 'port' %]" id="port_results">
+        <div class="span3 alert-message notice"><p>Waiting for results...</p></div>
+      </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    [% IF params.tab %]
+    $('#[% params.tab %]_results').load('/ajax/content/search/[% params.tab %]', function(response, status, xhr) {
+      if (status =="error") {
+        $('#[% params.tab %]_results').html(
+          '<div class="span3 alert-message error"><p>Search failed!</p></div>'
+        );
+        return;
+      }
+      if (response === "") {
+        $('#[% params.tab %]_results').html(
+          '<div class="span3 alert-message info"><p>No matching records.</p></div>'
+        );
+        return;
+      }
+    });
+    [% END %]
+
+    $('#search_results').bind('change', function(e) {
+      var from = $(e.target).attr('href').replace(/^#/,"").replace(/_results$/,"");
+      var to = $(e.relatedTarget).attr('href').replace(/^#/,"").replace(/_results$/,"");
+      $('#nd_' + from + '_search').toggleClass('active');
+      $('#nd_' + to + '_search').toggleClass('active');
+
+      var from_pane = '#' + from + '_results';
+      $(from_pane).load('/ajax/content/search/' + from, function(response, status, xhr) {
+        if (status =="error") {
+          $(from_pane).html(
+            '<div class="span3 alert-message error"><p>Search failed!</p></div>'
+          );
+          return;
+        }
+        if (response === "") {
+          $(from_pane).html(
+            '<div class="span3 alert-message info"><p>No matching records.</p></div>'
+          );
+          return;
+        }
+      });
+    });
+
+    <!-- fix green background on search checkboxes -->
+    <!-- https://github.com/twitter/bootstrap/issues/742 -->
+    syncCheckBox = function() {
+      $(this).parents('.add-on').toggleClass('active', $(this).is(':checked'));
+    };
+    $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
+  });
+</script>

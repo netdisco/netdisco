@@ -10,12 +10,12 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
 
-  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
-  <script type="text/javascript" src="http://twitter.github.com/bootstrap/1.4.0/bootstrap-alerts.js"></script>
-  <script type="text/javascript" src="http://twitter.github.com/bootstrap/1.4.0/bootstrap-dropdown.js"></script>
-  <script type="text/javascript" src="http://twitter.github.com/bootstrap/1.4.0/bootstrap-tabs.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap-alerts.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap-dropdown.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap-tabs.js"></script>
 
-  <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/style.css">
 
   <!-- for the fixed navbar -->
@@ -28,6 +28,55 @@
 </head>
 
 <body>
+[%
+  more_dd = { "Reports" = "/reports" }
+  user_dd = [
+    { "title" = "Settings", "link" = "/settings" },
+    { "title" = "Help", "link" = "/help" },
+    { "title" = "Log Out", "link" = "/logout" }
+  ]
+%]
+
+<div class="topbar" data-dropdown="dropdown">
+  <div class="topbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="/">Netdisco</a>
+      [% IF session.user %]
+      <ul class="nav">
+        <li><a href="/">Home</a></li>
+        [% IF more_dd.size %]
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle">More</a>
+          <ul class="dropdown-menu">
+            [% FOREACH title IN more_dd.keys.sort %]
+            <li><a href="[% more_dd.$title %]">[% title %]</a></li>
+            [% END %]
+          </ul>
+        </li> <!-- /dropdown -->
+        [% END %]
+      </ul>
+      <form method="post" action="/search">
+        <input name="from_navbar" value="1" type="hidden"/>
+        <input placeholder="Search" class="span5" name="q" type="text"/>
+      </form>
+      <ul class="nav secondary-nav">
+        <li class="menu">
+          <p>Logged in as &nbsp;</p>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle">[% session.user %]</a>
+          <ul class="dropdown-menu">
+            [% FOREACH item IN user_dd %]
+            <li><a href="[% item.link %]">[% item.title %]</a></li>
+            [% END %]
+          </ul>
+        </li> <!-- /dropdown -->
+      </ul>
+      [% END %]
+    </div>
+  </div>
+</div>
+
 [% content %]
 </body>
 </html>

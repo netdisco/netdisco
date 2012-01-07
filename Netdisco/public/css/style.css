@@ -13,3 +13,13 @@
 .nd_loginform {
   margin-top: 30px;
 }
+
+.nd_sidesearchform {
+  padding-left: 0px;
+}
+
+.nd_searchcheckbox {
+  width: 120px;
+  padding-left: 35px;
+  cursor: default;
+}
