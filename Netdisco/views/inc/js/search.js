@@ -4,6 +4,7 @@
     function do_search (event, tab) {
       var form = '#' + tab + '_form';
       var target = '#' + tab + '_pane';
+      var mark = '#' + tab + '_bookmark';
 
       // stop form from submitting normally
       event.preventDefault();
@@ -32,6 +33,8 @@
             );
             return;
           }
+          // looks good, update the bookmark for this search
+          $(mark).attr('href', '/search?' + query);
         }
       );
     }

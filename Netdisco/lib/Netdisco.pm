@@ -18,7 +18,8 @@ get '/' => sub {
 };
 
 ajax '/ajax/content/search/:thing' => sub {
-    return '<p>Hello World.</p>';
+    content_type('text/html');
+    return '<p>Hello '. param('thing') .'.</p>';
 };
 
 get '/search' => sub {

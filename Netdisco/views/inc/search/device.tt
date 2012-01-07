@@ -1,12 +1,8 @@
         <div id="device_search" class="tab-pane [% 'active' IF params.tab == 'device' %]">
           <form id="device_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
-            <div class="clearfix">
-              <input class="span3" name="q" value="[% params.q %]" type="text"/>
-            </div>
+            [%+ INCLUDE inc/search/box.tt %]
             <p><em>Device Search Options</em></p>
             <input name="tab" value="device" type="hidden"/>
-            <div class="clearfix">
-              <button id="device_submit" type="submit" class="btn info">Search Again</button>
-            </div>
+            [%+ INCLUDE inc/search/submit.tt %]
           </form>
         </div> <!-- /tab-pane -->

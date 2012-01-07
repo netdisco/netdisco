@@ -1,0 +1,3 @@
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>

@@ -23,3 +23,11 @@
   padding-left: 35px;
   cursor: default;
 }
+
+.nd_bookmark {
+  vertical-align: top;
+}
+
+.nd_search {
+  margin-top: 15px;
+}
