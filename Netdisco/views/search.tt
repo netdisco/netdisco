@@ -3,19 +3,19 @@
     <div class="well">
       <div class="tab-content">
         <div id="nd_device_search" class="tab-pane [% 'active' IF params.tab == 'device' %]">
-          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+          <form id="device_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
             <div class="clearfix">
               <input class="span3" name="q" value="[% params.q %]" type="text"/>
             </div>
             <p><em>Device Search Options</em></p>
             <input name="tab" value="device" type="hidden"/>
             <div class="clearfix">
-              <button type="submit" class="btn info">Search Again</button>
+              <button id="device_submit" type="submit" class="btn info">Search Again</button>
             </div>
           </form>
         </div> <!-- /tab-pane -->
         <div id="nd_node_search" class="tab-pane [% 'active' IF params.tab == 'node' %]">
-          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+          <form id="node_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
             <div class="clearfix">
               <input class="span3" name="q" value="[% params.q %]" type="text"/>
             </div>
@@ -46,29 +46,29 @@
               </label>
             </div>
             <div class="clearfix">
-              <button type="submit" class="btn info">Search Again</button>
+              <button id="node_submit" type="submit" class="btn info">Search Again</button>
             </div>
           </form>
         </div> <!-- /tab-pane -->
         <div id="nd_vlan_search" class="tab-pane [% 'active' IF params.tab == 'vlan' %]">
-          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+          <form id="vlan_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
             <div class="clearfix">
               <input class="span3" name="q" value="[% params.q %]" type="text"/>
             </div>
             <input name="tab" value="vlan" type="hidden"/>
             <div class="clearfix">
-              <button type="submit" class="btn info">Search Again</button>
+              <button id="vlan_submit" type="submit" class="btn info">Search Again</button>
             </div>
           </form>
         </div> <!-- /tab-pane -->
         <div id="nd_port_search" class="tab-pane [% 'active' IF params.tab == 'port' %]">
-          <form class="nd_sidesearchform form-stacked" method="post" action="/search">
+          <form id="port_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
             <div class="clearfix">
               <input class="span3" name="q" value="[% params.q %]" type="text"/>
             </div>
             <input name="tab" value="vlan" type="hidden"/>
             <div class="clearfix">
-              <button type="submit" class="btn info">Search Again</button>
+              <button id="port_submit" type="submit" class="btn info">Search Again</button>
             </div>
           </form>
         </div> <!-- /tab-pane -->
@@ -101,44 +101,50 @@
 
 <script>
   $(document).ready(function() {
+    function do_search (event, tab) {
+      var form = '#' + tab + '_form';
+      var target = '#' + tab + '_results';
+      /* stop form from submitting normally */
+      event.preventDefault();
+      /* get the form params */
+      var query = $(form).serialize();
+      /* submit the query and put results into the tab pane */
+      $(target).load( '/ajax/content/search/' + tab + '?' + query,
+        function(response, status, xhr) {
+          if (status == "error") {
+            $(target).html(
+              '<div class="span3 alert-message error"><p>Search failed!</p></div>'
+            );
+            return;
+          }
+          if (response === "") {
+            $(target).html(
+              '<div class="span3 alert-message info"><p>No matching records.</p></div>'
+            );
+            return;
+          }
+        }
+      );
+    }
+
+    [% FOREACH tab IN ['device', 'node', 'vlan', 'port'] %]
+    $('[% "#${tab}_form" %]').submit(function(event){ do_search(event, '[% tab %]'); });
+    [% END %]
+
     [% IF params.tab %]
-    $('#[% params.tab %]_results').load('/ajax/content/search/[% params.tab %]', function(response, status, xhr) {
-      if (status =="error") {
-        $('#[% params.tab %]_results').html(
-          '<div class="span3 alert-message error"><p>Search failed!</p></div>'
-        );
-        return;
-      }
-      if (response === "") {
-        $('#[% params.tab %]_results').html(
-          '<div class="span3 alert-message info"><p>No matching records.</p></div>'
-        );
-        return;
-      }
-    });
+    $('#[% params.tab %]_form').trigger("submit");
     [% END %]
 
     $('#search_results').bind('change', function(e) {
-      var from = $(e.target).attr('href').replace(/^#/,"").replace(/_results$/,"");
-      var to = $(e.relatedTarget).attr('href').replace(/^#/,"").replace(/_results$/,"");
+      var to = $(e.target).attr('href').replace(/^#/,"").replace(/_results$/,"");
+      var from = $(e.relatedTarget).attr('href').replace(/^#/,"").replace(/_results$/,"");
       $('#nd_' + from + '_search').toggleClass('active');
       $('#nd_' + to + '_search').toggleClass('active');
 
-      var from_pane = '#' + from + '_results';
-      $(from_pane).load('/ajax/content/search/' + from, function(response, status, xhr) {
-        if (status =="error") {
-          $(from_pane).html(
-            '<div class="span3 alert-message error"><p>Search failed!</p></div>'
-          );
-          return;
-        }
-        if (response === "") {
-          $(from_pane).html(
-            '<div class="span3 alert-message info"><p>No matching records.</p></div>'
-          );
-          return;
-        }
-      });
+      $('#nd_' + to + '_results').html(
+        '<div class="span3 alert-message notice"><p>Waiting for results...</p></div>'
+      );
+      $('#' + to + '_form').trigger("submit");
     });
 
     <!-- fix green background on search checkboxes -->

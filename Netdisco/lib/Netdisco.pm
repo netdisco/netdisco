@@ -18,10 +18,10 @@ get '/' => sub {
 };
 
 ajax '/ajax/content/search/:thing' => sub {
-    return '';
+    return '<p>Hello World.</p>';
 };
 
-post '/search' => sub {
+get '/search' => sub {
     my $q = param('q');
     if ($q and not param('tab')) {
         # pick most likely tab for initial results

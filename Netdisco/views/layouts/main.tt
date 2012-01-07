@@ -55,8 +55,7 @@
         </li> <!-- /dropdown -->
         [% END %]
       </ul>
-      <form method="post" action="/search">
-        <input name="from_navbar" value="1" type="hidden"/>
+      <form method="get" action="/search">
         <input placeholder="Search" class="span5" name="q" type="text"/>
       </form>
       <ul class="nav secondary-nav">
