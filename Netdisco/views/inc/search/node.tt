@@ -1,6 +1,4 @@
-        <div id="node_search" class="tab-pane [% 'active' IF params.tab == 'node' %]">
-          <form id="node_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
-            [%+ INCLUDE inc/search/box.tt %]
+
             <p><em>Node Search Options</em></p>
             <input name="tab" value="node" type="hidden"/>
             <div class="clearfix input-prepend">
@@ -27,6 +25,3 @@
                 <span class="nd_searchcheckbox uneditable-input">Archived Data</span>
               </label>
             </div>
-            [%+ INCLUDE inc/search/submit.tt %]
-          </form>
-        </div> <!-- /tab-pane -->

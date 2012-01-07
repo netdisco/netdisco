@@ -3,8 +3,19 @@
     <div class="well">
       <div class="tab-content">
         [% FOREACH tab IN vars.tabs %]
-
-          [% INCLUDE "inc/search/${tab.id}.tt" %]
+        <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">
+          <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
+            <div class="clearfix">
+              <input class="span3" name="q" value="[% params.q %]" type="text"/>
+            </div>
+            [%+ TRY %][% INCLUDE "inc/search/${tab.id}.tt" %][% CATCH %]<!-- no "[% tab.id %]" search options -->[% END %]
+            <input name="tab" value="[% tab.id %]" type="hidden"/>
+            <div class="nd_search clearfix">
+              <button id="[% tab.id %]_submit" type="submit" class="btn info">Search Again</button>
+              <a id="[% tab.id %]_bookmark" href="#"><img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png"></a>
+            </div>
+          </form>
+        </div> <!-- /tab-pane -->
         [% END %]
       </div> <!-- /tab-content -->
     </div>

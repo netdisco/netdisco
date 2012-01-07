@@ -50,6 +50,7 @@ get '/search' => sub {
         { id => 'node',   label => 'Node'   },
         { id => 'vlan',   label => 'VLAN'   },
         { id => 'port',   label => 'Port'   },
+        { id => 'quux',   label => 'Frobnitz'   },
     ]);
 
     template 'search';
