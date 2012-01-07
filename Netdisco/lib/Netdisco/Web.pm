@@ -22,6 +22,27 @@ ajax '/ajax/content/search/:thing' => sub {
     return '<p>Hello '. param('thing') .'.</p>';
 };
 
+# devices carrying vlan xxx
+ajax '/ajax/content/search/vlan' => sub {
+    my $q = param('q');
+    return unless $q and $q =~ m/^\d+$/;
+
+    my $set = schema('netdisco')->resultset('Device')->carrying_vlan($q);
+    return unless $set->count;
+
+    content_type('text/html');
+    template 'content/vlan.tt', {
+      results => $set,
+      columns => [
+        { key => 'dns', label => 'Device' },
+        { key => [qw/vlan description/], label => 'Description' },
+        { key => 'model', label => 'Model' },
+        { key => 'os', label => 'OS' },
+        { key => 'vendor', label => 'Vendor' },
+      ],
+    }, { layout => undef };
+};
+
 get '/search' => sub {
     my $q = param('q');
     if ($q and not param('tab')) {

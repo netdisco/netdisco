@@ -1,0 +1,22 @@
+<table class="bordered-table condensed-table zebra-striped">
+  <thead>
+    <tr>
+      [% FOREACH col IN columns %]
+      <th>[% col.label %]</th>
+      [% END %]
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      [% FOREACH col IN columns %]
+        [% SET val = row %]
+        [% FOREACH method IN col.key %]
+          [% SET val = val.$method %]
+        [% END %]
+        <td>[% val %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+  </tbody>
+</table>
