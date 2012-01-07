@@ -39,6 +39,12 @@ __PACKAGE__->set_primary_key("ip", "port", "vlan");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/3KLjJ3D18pGaPEaw9EU5w
 
+__PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
+__PACKAGE__->belongs_to( port => 'Netdisco::DB::Result::DevicePort', {
+    'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
+});
+__PACKAGE__->belongs_to( vlan => 'Netdisco::DB::Result::DeviceVlan', {
+    'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan',
+});
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

@@ -37,6 +37,28 @@ __PACKAGE__->set_primary_key("ip", "vlan");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hBJRcdzOic4d3u4pD1m8iA
 
+__PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
+__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
+    sub {
+        my $args = shift;
+        return {
+            "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
+            "$args->{foreign_alias}.vlan" => { -ident => "$args->{self_alias}.vlan" },
+            -not_bool => "$args->{foreign_alias}.native",
+        };
+    }
+);
+__PACKAGE__->has_many( port_vlans_native => 'Netdisco::DB::Result::DevicePortVlan',
+    sub {
+        my $args = shift;
+        return {
+            "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
+            "$args->{foreign_alias}.vlan" => { -ident => "$args->{self_alias}.vlan" },
+            -bool => "$args->{foreign_alias}.native",
+        };
+    }
+);
+__PACKAGE__->many_to_many( tagging_ports => 'port_vlans_tagged', 'port' );
+__PACKAGE__->many_to_many( native_ports  => 'port_vlans_native', 'port' );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
