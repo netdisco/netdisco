@@ -1,24 +1,46 @@
 package Netdisco::DB::ResultSet::NodeIp;
 use base 'DBIx::Class::ResultSet';
 
+my $search_attr = {
+    order_by => {'-desc' => 'time_last'},
+    columns => [qw/ mac ip dns active oui.company /],
+    '+select' => [
+      \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
+      \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+    ],
+    '+as' => [qw/ time_first time_last /],
+    join => 'oui'
+};
+
 sub by_ip {
-    my ($set, $ip, $archive) = @_;
+    my ($set, $archive, $ip) = @_;
     return $set unless $ip;
+
+    my $op = '=';
+    if ('NetAddr::IP::Lite' eq ref $ip) {
+        $op = '<<=' if $ip->num > 1;
+        $ip = $ip->cidr;
+    }
 
     return $set->search(
       {
-        ip => $ip,
+        ip => { $op => $ip },
         ($archive ? () : (active => 1)),
       },
+      $search_attr,
+    );
+}
+
+sub by_name {
+    my ($set, $archive, $name) = @_;
+    return $set unless $name;
+
+    return $set->search(
       {
-        order_by => {'-desc' => 'time_last'},
-        columns => [qw/ mac ip dns active /],
-        '+select' => [
-          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
-        ],
-        '+as' => [qw/ time_first time_last /],
+        dns => { '-ilike' => $name },
+        ($archive ? () : (active => 1)),
       },
+      $search_attr,
     );
 }
 

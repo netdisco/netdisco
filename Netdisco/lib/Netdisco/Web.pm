@@ -3,7 +3,11 @@ package Netdisco::Web;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+
 use Digest::MD5 ();
+use Socket6 ();
+use NetAddr::IP::Lite ':lower';
+use Regexp::Common 'net';
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
@@ -11,6 +15,16 @@ hook 'before' => sub {
         #var(requested_path => request->path);
         #request->path_info('/');
     }
+
+    # set up default search options for each type
+    if (not param('tab') or param('tab') ne 'node') {
+        params->{'stamps'} = 'checked';
+    }
+
+    # set up query string defaults for templates
+    var('query_defaults' => { map { ($_ => "tab=$_") } qw/node/ });
+    var('query_defaults')->{node} .= "\&$_=". (param($_) || '')
+      for qw/stamps vendor archived partial/;
 };
 
 get '/' => sub {
@@ -26,15 +40,35 @@ ajax '/ajax/content/search/:thing' => sub {
 ajax '/ajax/content/search/node' => sub {
     my $node = param('q');
     return unless $node;
+    my $set;
 
-    my $set = schema('netdisco')->resultset('NodeIp')
-      ->by_ip($node, param('archived'));
-    return unless $set->count;
+    # if mac
+      # search on mac
+    # try to make ip
+      # search on ip
+    # text search for node dns
 
-    content_type('text/html');
-    template 'ajax/node.tt', {
-      results => $set,
-    }, { layout => undef };
+    if ($node =~ m/^$RE{net}{MAC}$/) {
+    }
+    else {
+        if (my $ip = NetAddr::IP::Lite->new($node)) {
+            # by_ip() will extract cidr notation if necessary
+            $set = schema('netdisco')->resultset('NodeIp')
+              ->by_ip(param('archived'), $ip);
+            return unless $set->count;
+        }
+        else {
+            $node = "\%$node\%" if param('partial');
+            $set = schema('netdisco')->resultset('NodeIp')
+              ->by_name(param('archived'), $node);
+            return unless $set->count;
+        }
+
+        content_type('text/html');
+        template 'ajax/node.tt', {
+          results => $set,
+        }, { layout => undef };
+    }
 };
 
 # devices carrying vlan xxx
@@ -48,27 +82,10 @@ ajax '/ajax/content/search/vlan' => sub {
     content_type('text/html');
     template 'ajax/vlan.tt', {
       results => $set,
-      columns => [
-        { key => 'dns', label => 'Device' },
-        { key => 'vlan.description', label => 'Description' },
-        { key => 'model', label => 'Model' },
-        { key => 'os', label => 'OS' },
-        { key => 'vendor', label => 'Vendor' },
-      ],
-      hyperlink => sub {
-          my $row = shift;
-          return '/device?q='. $row->ip .'&vlan='. $vlan;
-      },
     }, { layout => undef };
 };
 
 get '/search' => sub {
-    # set up default search options for each type
-    if (not param('tab') or param('tab') ne 'node') {
-        params->{'stamps'} = 'checked';
-        params->{'vendor'} = 'checked';
-    }
-
     my $q = param('q');
     if ($q and not param('tab')) {
         # pick most likely tab for initial results

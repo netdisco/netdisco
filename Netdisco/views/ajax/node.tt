@@ -2,6 +2,9 @@
   <thead>
     <tr>
       <th>MAC</th>
+      [% IF params.vendor %]
+      <th>Vendor</th>
+      [% END %]
       <th>Match</th>
       <th>Device or Node</th>
       [% IF params.stamps %]
@@ -13,10 +16,14 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td><a class="nd_linkcell" href="/search?tab=node&stamps=on&vendor=on&q=[% row.mac | uri %]">[% row.mac %]</a></td>
+      <td><a class="nd_linkcell"
+        href="/search?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a></td>
+      [% IF params.vendor %]
+      <td>[% row.oui.company %]</td>
+      [% END %]
       <td>IP &rarr; MAC</td>
-      <td><a href="/search?tab=node&stamps=on&vendor=on&q=[% row.ip | uri %]">[% row.ip %]</a>
-        [% ' (' _ row.dns _ ')' IF row.dns %]
+      <td><a href="/search?[% vars.query_defaults.node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
+        [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
         [% ' <span class="label warning">a</span>' IF NOT row.active %]
       </td>
       [% IF params.stamps %]
@@ -24,12 +31,15 @@
       <td>[% row.time_last %]</td>
       [% END %]
     </tr>
-    [% FOREACH node IN row.tidy_nodes(params.archived) %]
+    [% FOREACH node IN row.node_sightings(params.archived) %]
     <tr>
       <td>&nbsp;</td>
+      [% IF params.vendor %]
+      <td>&nbsp;</td>
+      [% END %]
       <td>Switch Port</td>
       <td><a href="/device?q=[% node.switch | url %]&port=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
-        [% ' (' _ node.device.dns _ ')' IF node.device.dns %]
+        [% ' (' _ node.device.dns.remove(settings.domain_suffix) _ ')' IF node.device.dns %]
         [% ' <span class="label warning">a</span>' IF NOT node.active %]
       </td>
       [% IF params.stamps %]
@@ -38,12 +48,15 @@
       [% END %]
     </tr>
     [% END %]
-    [% FOREACH nodeip IN row.tidy_nodeips(params.archived) %]
+    [% FOREACH nodeip IN row.ip_aliases(params.archived) %]
     <tr>
       <td>&nbsp;</td>
+      [% IF params.vendor %]
+      <td>&nbsp;</td>
+      [% END %]
       <td>MAC &rarr; IP</td>
-      <td><a href="/search?tab=node&stamps=on&vendor=on&q=[% nodeip.ip | uri %]">[% nodeip.ip %]</a>
-        [% ' (' _ nodeip.dns _ ')' IF nodeip.dns %]
+      <td><a href="/search?[% vars.query_defaults.node %]&q=[% nodeip.ip | uri %]">[% nodeip.ip %]</a>
+        [% ' (' _ nodeip.dns.remove(settings.domain_suffix) _ ')' IF nodeip.dns %]
         [% ' <span class="label warning">a</span>' IF NOT nodeip.active %]
       </td>
       [% IF params.stamps %]

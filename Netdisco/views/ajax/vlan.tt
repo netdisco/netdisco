@@ -1,21 +1,26 @@
 <table class="bordered-table condensed-table zebra-striped">
   <thead>
     <tr>
-      [% FOREACH col IN columns %]
-      <th>[% col.label %]</th>
-      [% END %]
+      <th>Device</th>
+      <th>Description</th>
+      <th>Model</th>
+      <th>OS</th>
+      <th>Vendor</th>
     </tr>
   </thead>
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      [% FOREACH col IN columns %]
-        [% SET val = row %]
-        [% FOREACH method IN col.key.split('\.') %]
-          [% SET val = val.$method %]
-        [% END %]
-        <td><a class="nd_linkcell nd_stealthlink" href="[% hyperlink(row) %]">[% val %]</a></td>
-      [% END %]
+      <td><a class="nd_linkcell"
+        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.dns %]</a></td>
+      <td><a class="nd_linkcell nd_stealthlink"
+        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.vlan.description %]</a></td>
+      <td><a class="nd_linkcell nd_stealthlink"
+        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.model %]</a></td>
+      <td><a class="nd_linkcell nd_stealthlink"
+        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.os %]</a></td>
+      <td><a class="nd_linkcell nd_stealthlink"
+        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.vendor %]</a></td>
     </tr>
     [% END %]
   </tbody>

@@ -39,15 +39,25 @@ __PACKAGE__->set_primary_key("mac", "ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9+CuvuVWH88WxAf6IBij8g
 
-__PACKAGE__->has_many( nodeips => 'Netdisco::DB::Result::NodeIp',
+__PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui',
+    sub {
+        my $args = shift;
+        return {
+            "$args->{foreign_alias}.oui" =>
+              { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
+        };
+    }
+);
+
+__PACKAGE__->has_many( node_ips => 'Netdisco::DB::Result::NodeIp',
   { 'foreign.mac' => 'self.mac' } );
 __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
   { 'foreign.mac' => 'self.mac' } );
 
-sub tidy_nodeips {
+sub ip_aliases {
     my ($row, $archive) = @_;
 
-    return $row->nodeips(
+    return $row->node_ips(
       {
         ip  => { '!=' => $row->ip },
         ($archive ? () : (active => 1)),
@@ -64,7 +74,7 @@ sub tidy_nodeips {
     );
 }
 
-sub tidy_nodes {
+sub node_sightings {
     my ($row, $archive) = @_;
 
     return $row->nodes(
