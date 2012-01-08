@@ -3,7 +3,6 @@ package Netdisco::Web;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
-use Dancer::Exception ':all';
 
 use Digest::MD5 ();
 use Socket6 (); # to ensure dependency is met
@@ -43,8 +42,9 @@ ajax '/ajax/content/search/node' => sub {
     return unless $node;
     content_type('text/html');
 
-    try {
-        my $mac = Net::MAC->new(mac => $node);
+    my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+    if (eval { $mac->as_IEEE }) {
+
         my $ips = schema('netdisco')->resultset('NodeIp')
           ->by_mac(param('archived'), $mac->as_IEEE);
         return unless $ips->count;
@@ -61,7 +61,7 @@ ajax '/ajax/content/search/node' => sub {
           ports => $ports,
         }, { layout => undef };
     }
-    catch {
+    else {
         my $set;
 
         if (my $ip = NetAddr::IP::Lite->new($node)) {
@@ -80,7 +80,7 @@ ajax '/ajax/content/search/node' => sub {
         template 'ajax/node_by_ip.tt', {
           results => $set,
         }, { layout => undef };
-    };
+    }
 };
 
 # devices carrying vlan xxx
@@ -93,6 +93,20 @@ ajax '/ajax/content/search/vlan' => sub {
 
     content_type('text/html');
     template 'ajax/vlan.tt', {
+      results => $set,
+    }, { layout => undef };
+};
+
+# device ports with a description (er, name) matching
+ajax '/ajax/content/search/port' => sub {
+    my $name = param('q');
+    return unless $name;
+
+    my $set = schema('netdisco')->resultset('DevicePort')->by_name($name);
+    return unless $set->count;
+
+    content_type('text/html');
+    template 'ajax/port.tt', {
       results => $set,
     }, { layout => undef };
 };

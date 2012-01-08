@@ -1,0 +1,22 @@
+<table class="bordered-table condensed-table zebra-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Vlan</th>
+      <th>Port</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td>[% row.name %]</td>
+      <td>[% row.descr %]</td>
+      <td>[% row.vlan %]</td>
+      <td><a href="/device?q=[% row.ip %]&port=[% row.port %]">[% row.ip %] [ [% row.port %] ]</a>
+        [% ' (' _ row.device.dns.remove(settings.domain_suffix) _ ')' IF row.device.dns %]
+        </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>

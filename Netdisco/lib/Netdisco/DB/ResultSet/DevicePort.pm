@@ -21,5 +21,23 @@ sub by_mac {
     );
 }
 
+# confusingly the "name" field is set using IOS "descrption"
+# command but should not be confused with the "descr" field
+sub by_name {
+    my ($set, $name) = @_;
+    return $set unless $name;
+
+    return $set->search(
+      {
+        'me.name' => { '-ilike' => $name },
+      },
+      {
+        order_by => [qw/ me.ip me.port /],
+        columns => [qw/ ip port descr name vlan device.dns /],
+        join => 'device',
+      },
+    );
+}
+
 1;
 
