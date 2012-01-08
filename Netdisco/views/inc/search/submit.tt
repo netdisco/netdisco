@@ -1,4 +1,0 @@
-            <div class="nd_search clearfix">
-              <button id="vlan_submit" type="submit" class="btn info">Search Again</button>
-              <a id="[% tab.id %]_bookmark" href="#"><img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png"></a>
-            </div>

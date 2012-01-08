@@ -31,7 +31,6 @@
             $(target).html(
               '<div class="span3 alert-message info"><p>No matching records.</p></div>'
             );
-            return;
           }
           // looks good, update the bookmark for this search
           $(mark).attr('href', '/search?' + query);
@@ -58,7 +57,13 @@
       $('#' + from + '_search').toggleClass('active');
       $('#' + to + '_search').toggleClass('active');
 
-      $('#' + to + '_form').trigger("submit");
+      var to_form = '#' + to + '_form';
+      var from_form = '#' + from + '_form';
+      // copy current search string to new form's input box
+      $(to_form).find("input[name=q]").val(
+        $(from_form).find("input[name=q]").val()
+      );
+      $(to_form).trigger("submit");
     });
 
     // fix green background on search checkboxes
