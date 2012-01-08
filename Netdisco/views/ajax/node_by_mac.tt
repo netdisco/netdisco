@@ -46,7 +46,7 @@
     </tr>
     [% SET first_row = 0 %]
     [% END %]
-    [% WHILE (node = ports.next) %]
+    [% WHILE (node = sightings.next) %]
     <tr>
       <td>&nbsp;</td>
       [% IF params.vendor %]
@@ -60,6 +60,22 @@
       [% IF params.stamps %]
       <td>[% node.time_first %]</td>
       <td>[% node.time_last %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+    [% WHILE (port = ports.next) %]
+    <tr>
+      <td>&nbsp;</td>
+      [% IF params.vendor %]
+      <td>&nbsp;</td>
+      [% END %]
+      <td>Switch Port</td>
+      <td><a href="/device?q=[% port.ip | url %]&port=[% port.port | url %]">[% port.ip %] [ [% port.port %] ]</a>
+        [% ' (' _ port.device.dns.remove(settings.domain_suffix) _ ')' IF port.device.dns %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% port.creation %]</td>
+      <td>[% port.creation %]</td>
       [% END %]
     </tr>
     [% END %]

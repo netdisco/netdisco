@@ -49,9 +49,9 @@ __PACKAGE__->set_primary_key("mac", "switch", "port");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sGGyKEfUkoIFVtmj1wnH7A
 
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device',
-  { 'foreign.ip' => 'self.switch' } );
+  { 'foreign.ip' => 'self.switch' }, { join_type => 'LEFT' } );
 __PACKAGE__->belongs_to( device_port => 'Netdisco::DB::Result::DevicePort',
-  { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' } );
+  { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' }, { join_type => 'LEFT' } );
 __PACKAGE__->has_many( ips => 'Netdisco::DB::Result::NodeIp',
   { 'foreign.mac' => 'self.mac' } );
 

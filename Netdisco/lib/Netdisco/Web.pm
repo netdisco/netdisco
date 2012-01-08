@@ -49,11 +49,15 @@ ajax '/ajax/content/search/node' => sub {
           ->by_mac(param('archived'), $mac->as_IEEE);
         return unless $ips->count;
 
-        my $ports = schema('netdisco')->resultset('Node')
+        my $sightings = schema('netdisco')->resultset('Node')
           ->by_mac(param('archived'), $mac->as_IEEE);
+
+        my $ports = schema('netdisco')->resultset('DevicePort')
+          ->by_mac($mac->as_IEEE);
 
         template 'ajax/node_by_mac.tt', {
           ips => $ips,
+          sightings => $sightings,
           ports => $ports,
         }, { layout => undef };
     }
