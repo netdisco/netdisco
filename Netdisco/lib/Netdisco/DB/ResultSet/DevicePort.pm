@@ -26,6 +26,7 @@ sub by_mac {
 sub by_name {
     my ($set, $name) = @_;
     return $set unless $name;
+    $name = "\%$name\%" if $name !~ m/\%/;
 
     return $set->search(
       {

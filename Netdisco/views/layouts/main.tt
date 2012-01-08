@@ -19,7 +19,7 @@
 
   <script type="text/javascript">
     $(document).ready(function() {
-      $("a[rel=twipsy]").twipsy({live: true});
+      $("[rel=twipsy]").twipsy({live: true});
     });
   </script>
 

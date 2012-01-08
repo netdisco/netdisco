@@ -82,6 +82,7 @@ __PACKAGE__->set_primary_key("ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:671/XuuvsO2aMB1+IRWFjg
 
+__PACKAGE__->has_many( device_ips => 'Netdisco::DB::Result::DeviceIp', 'ip' );
 __PACKAGE__->has_many( vlans => 'Netdisco::DB::Result::DeviceVlan', 'ip' );
 __PACKAGE__->has_many( ports => 'Netdisco::DB::Result::DevicePort', 'ip' );
 __PACKAGE__->has_many(

@@ -1,0 +1,29 @@
+<table class="bordered-table condensed-table zebra-striped">
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th>Contact</th>
+      <th>Location</th>
+      <th>System Name</th>
+      <th>Model</th>
+      <th>OS Version</th>
+      <th>Management IP</th>
+      <th>Serial</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td><a href="/device?q=[% row.ip %]">[% row.dns.remove(settings.domain_suffix) %]</a></td>
+      <td>[% row.contact %]</td>
+      <td>[% row.location %]</td>
+      <td>[% row.name %]</td>
+      <!-- <td>[% row.description.substr(0, 100) %][% ' &hellip;' IF row.description.length > 100 %]</td> -->
+      <td>[% row.model %]</td>
+      <td>[% row.os_ver %]</td>
+      <td>[% row.ip %]</td>
+      <td>[% row.serial %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>

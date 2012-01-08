@@ -1,0 +1,62 @@
+
+            <p><em>Device Search Options</em></p>
+            <div class="clearfix">
+              <input class="span3" placeholder="System Name"
+                type="text" id="name" name="name"
+                rel="twipsy" data-placement="right" data-offset="5" title="System Name"/>
+            </div>
+            <div class="clearfix">
+              <input class="span3" placeholder="Location"
+                type="text" id="location" name="location"
+                rel="twipsy" data-placement="right" data-offset="5" title="Location"/>
+            </div>
+            <div class="clearfix">
+              <input class="span3" placeholder="DNS"
+                type="text" id="dns" name="dns"
+                rel="twipsy" data-placement="right" data-offset="5" title="DNS"/>
+            </div>
+            <div class="clearfix">
+              <input class="span3" placeholder="IP Address"
+                type="text" id="ip" name="ip"
+                rel="twipsy" data-placement="right" data-offset="5" title="IP Address"/>
+            </div>
+            <div class="clearfix">
+              <input class="span3" placeholder="Description"
+                type="text" id="description" name="description"
+                rel="twipsy" data-placement="right" data-offset="5" title="Description"/>
+            </div>
+            <div class="clearfix">
+              <select class="span3" size="[% vars.model_list.size > 5 ? 5 : vars.model_list.size %]"
+                multiple="on" id="model" name="model"
+                rel="twipsy" data-placement="right" data-offset="5" title="Model"/>
+                [% FOREACH opt IN vars.model_list %]
+                <option>[% opt %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
+              <select class="span3" size="[% vars.os_ver_list.size > 5 ? 5 : vars.os_ver_list.size %]"
+                multiple="on" id="os_ver" name="os_ver"
+                rel="twipsy" data-placement="right" data-offset="5" title="OS Release"/>
+                [% FOREACH opt IN vars.os_ver_list %]
+                <option>[% opt %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
+              <select class="span3" size="[% vars.vendor_list.size > 5 ? 5 : vars.vendor_list.size %]"
+                multiple="on" id="vendor" name="vendor"
+                rel="twipsy" data-placement="right" data-offset="5" title="Vendor"/>
+                [% FOREACH opt IN vars.vendor_list %]
+                <option>[% opt %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="matchall" name="matchall"[% ' checked="checked"' IF params.matchall %]/>
+              </label>
+              <label for="matchall">
+                <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
+              </label>
+            </div>

@@ -8,6 +8,7 @@ use Digest::MD5 ();
 use Socket6 (); # to ensure dependency is met
 use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
+use List::MoreUtils ();
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
@@ -20,20 +21,50 @@ hook 'before' => sub {
     if (not param('tab') or param('tab') ne 'node') {
         params->{'stamps'} = 'checked';
     }
+    if (not param('tab') or param('tab') ne 'device') {
+        params->{'matchall'} = 'matchall';
+    }
 
-    # set up query string defaults for templates
+    # set up query string defaults,
+    # only for templates which link to themselves (node)
     var('query_defaults' => { map { ($_ => "tab=$_") } qw/node/ });
     var('query_defaults')->{node} .= "\&$_=". (param($_) || '')
       for qw/stamps vendor archived partial/;
+
+    # set up property lists for device search
+    var('model_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('model')
+    ]);
+    var('os_ver_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('os_ver')
+    ]);
+    var('vendor_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('vendor')
+    ]);
 };
 
-get '/' => sub {
-    template 'index';
-};
+# device with various properties or a default match-all
+ajax '/ajax/content/search/device' => sub {
+    my $has_opt = List::MoreUtils::any {param($_)}
+      qw/name location dns ip description model os_ver vendor/;
+    my $set;
 
-ajax '/ajax/content/search/:thing' => sub {
+    if ($has_opt) {
+      $set = schema('netdisco')->resultset('Device')->by_field(scalar params);
+      return unless $set->count;
+    }
+    else {
+      my $q = param('q');
+      return unless $q;
+
+      $set = schema('netdisco')->resultset('Device')->by_any($q);
+      return unless $set->count;
+    }
+
     content_type('text/html');
-    return '<p>Hello '. param('thing') .'.</p>';
+    template 'ajax/device.tt', {
+      results => $set,
+    }, { layout => undef };
 };
 
 # nodes matching the param as an IP or DNS hostname or MAC
@@ -109,6 +140,10 @@ ajax '/ajax/content/search/port' => sub {
     template 'ajax/port.tt', {
       results => $set,
     }, { layout => undef };
+};
+
+get '/' => sub {
+    template 'index';
 };
 
 get '/search' => sub {
