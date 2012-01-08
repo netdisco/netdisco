@@ -39,6 +39,49 @@ __PACKAGE__->set_primary_key("mac", "ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9+CuvuVWH88WxAf6IBij8g
 
+__PACKAGE__->has_many( nodeips => 'Netdisco::DB::Result::NodeIp',
+  { 'foreign.mac' => 'self.mac' } );
+__PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
+  { 'foreign.mac' => 'self.mac' } );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub tidy_nodeips {
+    my ($row, $archive) = @_;
+
+    return $row->nodeips(
+      {
+        ip  => { '!=' => $row->ip },
+        ($archive ? () : (active => 1)),
+      },
+      {
+        order_by => {'-desc' => 'time_last'},
+        columns => [qw/ mac ip dns active /],
+        '+select' => [
+          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
+          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+        ],
+        '+as' => [qw/ time_first time_last /],
+      },
+    );
+}
+
+sub tidy_nodes {
+    my ($row, $archive) = @_;
+
+    return $row->nodes(
+      {
+        ($archive ? () : (active => 1)),
+      },
+      {
+        order_by => {'-desc' => 'time_last'},
+        columns => [qw/ mac switch port oui active device.dns /],
+        '+select' => [
+          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
+          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+        ],
+        '+as' => [qw/ time_first time_last /],
+        join => 'device',
+      },
+    );
+}
+
 1;

@@ -1,0 +1,57 @@
+<table class="bordered-table condensed-table zebra-striped">
+  <thead>
+    <tr>
+      <th>MAC</th>
+      <th>Match</th>
+      <th>Device or Node</th>
+      [% IF params.stamps %]
+      <th>First Seen</th>
+      <th>Last Seen</th>
+      [% END %]
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td><a class="nd_linkcell" href="/search?tab=node&stamps=on&vendor=on&q=[% row.mac | uri %]">[% row.mac %]</a></td>
+      <td>IP &rarr; MAC</td>
+      <td><a href="/search?tab=node&stamps=on&vendor=on&q=[% row.ip | uri %]">[% row.ip %]</a>
+        [% ' (' _ row.dns _ ')' IF row.dns %]
+        [% ' <span class="label warning">a</span>' IF NOT row.active %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% row.time_first %]</td>
+      <td>[% row.time_last %]</td>
+      [% END %]
+    </tr>
+    [% FOREACH node IN row.tidy_nodes(params.archived) %]
+    <tr>
+      <td>&nbsp;</td>
+      <td>Switch Port</td>
+      <td><a href="/device?q=[% node.switch | url %]&port=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
+        [% ' (' _ node.device.dns _ ')' IF node.device.dns %]
+        [% ' <span class="label warning">a</span>' IF NOT node.active %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% node.time_first %]</td>
+      <td>[% node.time_last %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+    [% FOREACH nodeip IN row.tidy_nodeips(params.archived) %]
+    <tr>
+      <td>&nbsp;</td>
+      <td>MAC &rarr; IP</td>
+      <td><a href="/search?tab=node&stamps=on&vendor=on&q=[% nodeip.ip | uri %]">[% nodeip.ip %]</a>
+        [% ' (' _ nodeip.dns _ ')' IF nodeip.dns %]
+        [% ' <span class="label warning">a</span>' IF NOT nodeip.active %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% nodeip.time_first %]</td>
+      <td>[% nodeip.time_last %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+    [% END %]
+  </tbody>
+</table>

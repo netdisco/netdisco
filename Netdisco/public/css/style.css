@@ -3,6 +3,14 @@ body {
   padding-top: 50px;
 }
 
+.well {
+  margin-right: 15px;
+}
+
+.nd_content {
+  margin-left: 225px !important;
+}
+
 .nd_loginalert {
   margin-top: -40px;
 }
@@ -34,13 +42,23 @@ body {
   vertical-align: top;
 }
 
+.nd_legendlabel {
+  float: right;
+  line-height: 1.2;
+  margin-top: 2px;
+  margin-right: 3px;
+}
+
 .nd_search {
   margin-top: 15px;
 }
 
-.nd_linkcell {
+.nd_stealthlink {
   text-decoration: none !important;
   color: #404040;
+}
+
+.nd_linkcell {
   display: block;
   padding: 0px;
   height: 100%;

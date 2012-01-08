@@ -11,10 +11,10 @@ sub carrying_vlan {
         'port_vlans.vlan' => $vlan,
       },
       {
-        join => [qw/ port_vlans vlans /],
-        prefetch => 'vlans',
         order_by => [qw/ me.dns me.ip /],
         columns => [qw/ me.ip me.dns me.model me.os me.vendor /],
+        join => 'port_vlans',
+        prefetch => 'vlans',
       },
     );
 }

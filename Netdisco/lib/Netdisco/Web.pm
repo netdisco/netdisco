@@ -22,6 +22,21 @@ ajax '/ajax/content/search/:thing' => sub {
     return '<p>Hello '. param('thing') .'.</p>';
 };
 
+# nodes matching the param as an IP or DNS hostname or MAC
+ajax '/ajax/content/search/node' => sub {
+    my $node = param('q');
+    return unless $node;
+
+    my $set = schema('netdisco')->resultset('NodeIp')
+      ->by_ip($node, param('archived'));
+    return unless $set->count;
+
+    content_type('text/html');
+    template 'content/node.tt', {
+      results => $set,
+    }, { layout => undef };
+};
+
 # devices carrying vlan xxx
 ajax '/ajax/content/search/vlan' => sub {
     my $vlan = param('q');
@@ -48,6 +63,12 @@ ajax '/ajax/content/search/vlan' => sub {
 };
 
 get '/search' => sub {
+    # set up default search options for each type
+    if (not param('tab') or param('tab') ne 'node') {
+        params->{'stamps'} = 'checked';
+        params->{'vendor'} = 'checked';
+    }
+
     my $q = param('q');
     if ($q and not param('tab')) {
         # pick most likely tab for initial results
@@ -55,18 +76,40 @@ get '/search' => sub {
             params->{'tab'} = 'vlan';
         }
         else {
-            params->{'tab'} = 'device';
+            my $s = schema('netdisco');
+            if ($q =~ m/^[a-f0-9.:]+$/i) {
+                if ($s->resultset('Device')->find($q)) {
+                    params->{'tab'} = 'device';
+                }
+                else {
+                    # this will match for MAC addresses
+                    # and partial IPs (subnets?)
+                    params->{'tab'} = 'node';
+                }
+            }
+            else {
+                if ($s->resultset('Device')->search({
+                  dns => { '-ilike' => "\%$q\%" },
+                })->count) {
+                    params->{'tab'} = 'device';
+                }
+                elsif ($s->resultset('NodeIp')->search({
+                  dns => { '-ilike' => "\%$q\%" },
+                })->count) {
+                    params->{'tab'} = 'node';
+                }
+                elsif ($s->resultset('DevicePort')->search({
+                  name => { '-ilike' => "\%$q\%" },
+                })->count) {
+                    params->{'tab'} = 'port';
+                }
+            }
+            params->{'tab'} ||= 'device';
         }
     }
     elsif (not $q) {
         redirect '/';
         return;
-    }
-
-    # set up default search options for each type
-    if (param('tab') and param('tab') ne 'node') {
-        params->{'stamps'} = 'checked';
-        params->{'vendor'} = 'checked';
     }
 
     # list of tabs

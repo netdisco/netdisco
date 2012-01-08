@@ -1,6 +1,5 @@
 
             <p><em>Node Search Options</em></p>
-            <input name="tab" value="node" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="stamps" name="stamps"[% ' checked="checked"' IF params.stamps %]/>
@@ -22,6 +21,6 @@
                 <input type="checkbox" id="archived" name="archived"[% ' checked="checked"' IF params.archived %]/>
               </label>
               <label for="archived">
-                <span class="nd_searchcheckbox uneditable-input">Archived Data</span>
+                <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel label warning">a</span></span>
               </label>
             </div>

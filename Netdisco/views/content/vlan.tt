@@ -14,7 +14,7 @@
         [% FOREACH method IN col.key.split('\.') %]
           [% SET val = val.$method %]
         [% END %]
-        <td><a class="nd_linkcell" href="[% hyperlink(row) %]">[% val %]</a></td>
+        <td><a class="nd_linkcell nd_stealthlink" href="[% hyperlink(row) %]">[% val %]</a></td>
       [% END %]
     </tr>
     [% END %]
