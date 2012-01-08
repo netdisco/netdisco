@@ -30,17 +30,6 @@ hook 'before' => sub {
     var('query_defaults' => { map { ($_ => "tab=$_") } qw/node/ });
     var('query_defaults')->{node} .= "\&$_=". (param($_) || '')
       for qw/stamps vendor archived partial/;
-
-    # set up property lists for device search
-    var('model_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('model')
-    ]);
-    var('os_ver_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('os_ver')
-    ]);
-    var('vendor_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('vendor')
-    ]);
 };
 
 # device with various properties or a default match-all
@@ -50,16 +39,15 @@ ajax '/ajax/content/search/device' => sub {
     my $set;
 
     if ($has_opt) {
-      $set = schema('netdisco')->resultset('Device')->by_field(scalar params);
-      return unless $set->count;
+        $set = schema('netdisco')->resultset('Device')->by_field(scalar params);
     }
     else {
-      my $q = param('q');
-      return unless $q;
+        my $q = param('q');
+        return unless $q;
 
-      $set = schema('netdisco')->resultset('Device')->by_any($q);
-      return unless $set->count;
+        $set = schema('netdisco')->resultset('Device')->by_any($q);
     }
+    return unless $set->count;
 
     content_type('text/html');
     template 'ajax/device.tt', {
@@ -99,14 +87,13 @@ ajax '/ajax/content/search/node' => sub {
             # by_ip() will extract cidr notation if necessary
             $set = schema('netdisco')->resultset('NodeIp')
               ->by_ip(param('archived'), $ip);
-            return unless $set->count;
         }
         else {
             $node = "\%$node\%" if param('partial');
             $set = schema('netdisco')->resultset('NodeIp')
               ->by_name(param('archived'), $node);
-            return unless $set->count;
         }
+        return unless $set->count;
 
         template 'ajax/node_by_ip.tt', {
           results => $set,
@@ -117,9 +104,15 @@ ajax '/ajax/content/search/node' => sub {
 # devices carrying vlan xxx
 ajax '/ajax/content/search/vlan' => sub {
     my $vlan = param('q');
-    return unless $vlan and $vlan =~ m/^\d+$/;
+    return unless $vlan;
+    my $set;
 
-    my $set = schema('netdisco')->resultset('Device')->carrying_vlan($vlan);
+    if ($vlan =~ m/^\d+$/) {
+        $set = schema('netdisco')->resultset('Device')->carrying_vlan($vlan);
+    }
+    else {
+        $set = schema('netdisco')->resultset('Device')->carrying_vlan_name($vlan);
+    }
     return unless $set->count;
 
     content_type('text/html');
@@ -147,6 +140,17 @@ get '/' => sub {
 };
 
 get '/search' => sub {
+    # set up property lists for device search
+    var('model_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('model')
+    ]);
+    var('os_ver_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('os_ver')
+    ]);
+    var('vendor_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('vendor')
+    ]);
+
     my $q = param('q');
     if ($q and not param('tab')) {
         # pick most likely tab for initial results

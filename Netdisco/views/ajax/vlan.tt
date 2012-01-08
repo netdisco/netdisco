@@ -1,6 +1,7 @@
 <table class="bordered-table condensed-table zebra-striped">
   <thead>
     <tr>
+      <th>Vlan</th>
       <th>Device</th>
       <th>Description</th>
       <th>Model</th>
@@ -11,16 +12,18 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
+      <td><a class="nd_linkcell nd_stealthlink"
+        href="/device?ip=[% row.ip %]&vlan=[% row.vlan.vlan %]">[% row.vlan.vlan %]</a></td>
       <td><a class="nd_linkcell"
-        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.dns %]</a></td>
+        href="/device?ip=[% row.ip %]&vlan=[% row.vlan.vlan %]">[% row.dns %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.vlan.description %]</a></td>
+        href="/device?ip=[% row.ip %]&vlan=[% row.vlan.vlan %]">[% row.vlan.description %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.model %]</a></td>
+        href="/device?ip=[% row.ip %]&vlan=[% row.vlan.vlan %]">[% row.model %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.os %]</a></td>
+        href="/device?ip=[% row.ip %]&vlan=[% row.vlan.vlan %]">[% row.os %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?q=[% row.ip %]&vlan=[% params.q %]">[% row.vendor %]</a></td>
+        href="/device?ip=[% row.ip %]&vlan=[% row.vlan.vlan %]">[% row.vendor %]</a></td>
     </tr>
     [% END %]
   </tbody>

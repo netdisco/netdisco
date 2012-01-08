@@ -110,4 +110,21 @@ sub carrying_vlan {
     );
 }
 
+sub carrying_vlan_name {
+    my ($set, $name) = @_;
+    return $set unless $name;
+    $name = "\%$name\%" if $name !~ m/\%/;
+
+    return $set->search(
+      {
+        'vlans.description' => { '-ilike' => $name },
+      },
+      {
+        order_by => [qw/ me.dns me.ip /],
+        columns => [qw/ me.ip me.dns me.model me.os me.vendor /],
+        prefetch => 'vlans',
+      },
+    );
+}
+
 1;

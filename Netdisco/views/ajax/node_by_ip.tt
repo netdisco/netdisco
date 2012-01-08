@@ -38,7 +38,7 @@
       <td>&nbsp;</td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="/device?q=[% node.switch | url %]&port=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
+      <td><a href="/device?ip=[% node.switch | url %]&port=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
         [% ' (' _ node.device.dns.remove(settings.domain_suffix) _ ')' IF node.device.dns %]
         [% ' <span class="label warning">a</span>' IF NOT node.active %]
       </td>
