@@ -30,14 +30,34 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     original      => { default_value => \"now()" },
   },
-  "dns",
-  { data_type => "text", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("mac", "ip");
 
 
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9+CuvuVWH88WxAf6IBij8g
+
+# some customize their node_ip table to have a dns column which
+# is the cached record at the time of discovery
+
+__PACKAGE__->add_column("dns" =>
+  { data_type => "text", is_nullable => 1, accessor => undef });
+
+sub dns {
+  my $row = shift;
+  return $row->get_column('dns')
+    if $row->result_source->has_column('dns');
+
+  use Net::DNS;
+  my $q = Net::DNS::Resolver->new->query($row->ip);
+  if ($q) {
+    foreach my $rr ($q->answer) {
+      next unless $rr->type eq 'PTR';
+      return $rr->ptrdname;
+    }
+  }
+  return undef;
+}
 
 __PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui',
     sub {
@@ -64,7 +84,8 @@ sub ip_aliases {
       },
       {
         order_by => {'-desc' => 'time_last'},
-        columns => [qw/ mac ip dns active /],
+        columns => [qw/ mac ip active /],
+        ( $row->result_source->has_column('dns') ? ('+columns' => 'dns') : () ),
         '+select' => [
           \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
           \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
