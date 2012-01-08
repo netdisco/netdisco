@@ -1,9 +1,9 @@
 <table class="bordered-table condensed-table zebra-striped">
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Port</th>
       <th>Description</th>
+      <th>Port</th>
+      <th>Name</th>
       <th>Vlan</th>
     </tr>
   </thead>
