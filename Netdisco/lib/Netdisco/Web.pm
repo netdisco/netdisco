@@ -3,11 +3,12 @@ package Netdisco::Web;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Exception ':all';
 
 use Digest::MD5 ();
-use Socket6 ();
+use Socket6 (); # to ensure dependency is met
 use NetAddr::IP::Lite ':lower';
-use Regexp::Common 'net';
+use Net::MAC ();
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
@@ -40,17 +41,25 @@ ajax '/ajax/content/search/:thing' => sub {
 ajax '/ajax/content/search/node' => sub {
     my $node = param('q');
     return unless $node;
-    my $set;
+    content_type('text/html');
 
-    # if mac
-      # search on mac
-    # try to make ip
-      # search on ip
-    # text search for node dns
+    try {
+        my $mac = Net::MAC->new(mac => $node);
+        my $ips = schema('netdisco')->resultset('NodeIp')
+          ->by_mac(param('archived'), $mac->as_IEEE);
+        return unless $ips->count;
 
-    if ($node =~ m/^$RE{net}{MAC}$/) {
+        my $ports = schema('netdisco')->resultset('Node')
+          ->by_mac(param('archived'), $mac->as_IEEE);
+
+        template 'ajax/node_by_mac.tt', {
+          ips => $ips,
+          ports => $ports,
+        }, { layout => undef };
     }
-    else {
+    catch {
+        my $set;
+
         if (my $ip = NetAddr::IP::Lite->new($node)) {
             # by_ip() will extract cidr notation if necessary
             $set = schema('netdisco')->resultset('NodeIp')
@@ -64,11 +73,10 @@ ajax '/ajax/content/search/node' => sub {
             return unless $set->count;
         }
 
-        content_type('text/html');
-        template 'ajax/node.tt', {
+        template 'ajax/node_by_ip.tt', {
           results => $set,
         }, { layout => undef };
-    }
+    };
 };
 
 # devices carrying vlan xxx

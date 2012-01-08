@@ -57,4 +57,20 @@ sub by_name {
     );
 }
 
+sub by_mac {
+    my ($set, $archive, $mac) = @_;
+    return $set unless $mac;
+
+    return $set->search(
+      {
+        mac => $mac,
+        ($archive ? () : (active => 1)),
+      },
+      {
+        %$search_attr,
+        ( $set->has_dns_col ? ('+columns' => 'dns') : () ),
+      }
+    );
+}
+
 1;

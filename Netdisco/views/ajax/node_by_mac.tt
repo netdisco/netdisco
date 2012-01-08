@@ -1,0 +1,67 @@
+<table class="bordered-table condensed-table zebra-striped">
+  <thead>
+    <tr>
+      <th>MAC</th>
+      [% IF params.vendor %]
+      <th>Vendor</th>
+      [% END %]
+      <th>Match</th>
+      <th>Device or Node</th>
+      [% IF params.stamps %]
+      <th>First Seen</th>
+      <th>Last Seen</th>
+      [% END %]
+    </tr>
+  </thead>
+  </tbody>
+    [% SET first_row = 1 %]
+    [% WHILE (row = ips.next) %]
+    <tr>
+      <td>
+        [% IF first_row %]
+        <a class="nd_linkcell"
+          href="/search?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a>
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </a>
+      [% IF params.vendor %]
+      <td>
+        [% IF first_row %]
+        [% row.oui.company %]
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </td>
+      [% END %]
+      <td>MAC &rarr; IP</td>
+      <td><a href="/search?[% vars.query_defaults.node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
+        [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
+        [% ' <span class="label warning">a</span>' IF NOT row.active %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% row.time_first %]</td>
+      <td>[% row.time_last %]</td>
+      [% END %]
+    </tr>
+    [% SET first_row = 0 %]
+    [% END %]
+    [% WHILE (node = ports.next) %]
+    <tr>
+      <td>&nbsp;</td>
+      [% IF params.vendor %]
+      <td>&nbsp;</td>
+      [% END %]
+      <td>Switch Port</td>
+      <td><a href="/device?q=[% node.switch | url %]&port=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
+        [% ' (' _ node.device.dns.remove(settings.domain_suffix) _ ')' IF node.device.dns %]
+        [% ' <span class="label warning">a</span>' IF NOT node.active %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% node.time_first %]</td>
+      <td>[% node.time_last %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+  </tbody>
+</table>
