@@ -32,7 +32,7 @@ ajax '/ajax/content/search/node' => sub {
     return unless $set->count;
 
     content_type('text/html');
-    template 'content/node.tt', {
+    template 'ajax/node.tt', {
       results => $set,
     }, { layout => undef };
 };
@@ -46,7 +46,7 @@ ajax '/ajax/content/search/vlan' => sub {
     return unless $set->count;
 
     content_type('text/html');
-    template 'content/vlan.tt', {
+    template 'ajax/vlan.tt', {
       results => $set,
       columns => [
         { key => 'dns', label => 'Device' },
