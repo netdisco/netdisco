@@ -7,10 +7,12 @@ use NetAddr::IP::Lite ':lower';
 
 # override the built-in so we can munge some columns
 sub find {
-  my ($set, $ip) = @_;
+  my ($set, $ip, $attr) = @_;
+  $attr ||= {};
 
   return $set->SUPER::find($ip,
     {
+      %$attr,
       '+select' => [
         \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')",
         \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
@@ -75,6 +77,7 @@ sub by_field {
         ],
       },
       {
+        order_by => [qw/ me.dns me.ip /],
         join => 'device_ips',
         group_by => 'me.ip',
       }
@@ -105,6 +108,7 @@ sub by_any {
         ],
       },
       {
+        order_by => [qw/ me.dns me.ip /],
         join => 'device_ips',
         group_by => 'me.ip',
       }
