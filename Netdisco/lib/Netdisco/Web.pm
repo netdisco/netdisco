@@ -215,7 +215,7 @@ get '/search' => sub {
         }
         else {
             my $s = schema('netdisco');
-            if ($q =~ m/^[a-f0-9.:]+$/i) {
+            if ($q =~ m{^[a-f0-9.:/]+$}i) {
                 if ($s->resultset('Device')->find($q)) {
                     params->{'tab'} = 'device';
                 }
