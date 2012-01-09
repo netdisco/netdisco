@@ -13,9 +13,13 @@ use List::MoreUtils ();
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
-        session(user => 'oliver'); # XXX
-        #var(requested_path => request->path);
-        #request->path_info('/');
+        if (setting('environment') eq 'development') {
+            session(user => 'developer');
+        }
+        else {
+            var(requested_path => request->path);
+            request->path_info('/');
+        }
     }
 
     # make hash lookups of query lists
