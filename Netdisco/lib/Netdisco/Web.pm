@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 
 use Digest::MD5 ();
 use Socket6 (); # to ensure dependency is met
+use HTML::Entities (); # to ensure dependency is met
 use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
 use List::MoreUtils ();
@@ -32,6 +33,49 @@ hook 'before' => sub {
       for qw/stamps vendor archived partial/;
 };
 
+ajax '/ajax/content/device/:thing' => sub {
+    return "<p>Hello ". param('thing') ."</p>";
+};
+
+# device ports with a description (er, name) matching
+ajax '/ajax/content/device/details' => sub {
+    my $ip = param('ip');
+    return unless $ip;
+
+    my $device = schema('netdisco')->resultset('Device')->find($ip);
+    return unless $device;
+
+    content_type('text/html');
+    template 'ajax/device/details.tt', {
+      d => $device,
+    }, { layout => undef };
+};
+
+get '/device' => sub {
+    my $ip = NetAddr::IP::Lite->new(param('ip'));
+    if (! $ip) {
+        redirect '/?nosuchdevice=1';
+        return;
+    }
+
+    my $device = schema('netdisco')->resultset('Device')->find($ip->addr);
+    if (! $device) {
+        redirect '/?nosuchdevice=1';
+        return;
+    }
+
+    # list of tabs
+    var('tabs' => [
+        { id => 'details',   label => 'Details'   },
+        { id => 'ports',     label => 'Ports'     },
+        { id => 'modules',   label => 'Modules'   },
+        { id => 'addresses', label => 'Addresses' },
+    ]);
+
+    params->{'tab'} ||= 'details';
+    template 'device', { d => $device };
+};
+
 # device with various properties or a default match-all
 ajax '/ajax/content/search/device' => sub {
     my $has_opt = List::MoreUtils::any {param($_)}
@@ -50,7 +94,7 @@ ajax '/ajax/content/search/device' => sub {
     return unless $set->count;
 
     content_type('text/html');
-    template 'ajax/device.tt', {
+    template 'ajax/search/device.tt', {
       results => $set,
     }, { layout => undef };
 };
@@ -74,7 +118,7 @@ ajax '/ajax/content/search/node' => sub {
         my $ports = schema('netdisco')->resultset('DevicePort')
           ->by_mac($mac->as_IEEE);
 
-        template 'ajax/node_by_mac.tt', {
+        template 'ajax/search/node_by_mac.tt', {
           ips => $ips,
           sightings => $sightings,
           ports => $ports,
@@ -95,7 +139,7 @@ ajax '/ajax/content/search/node' => sub {
         }
         return unless $set->count;
 
-        template 'ajax/node_by_ip.tt', {
+        template 'ajax/search/node_by_ip.tt', {
           results => $set,
         }, { layout => undef };
     }
@@ -116,7 +160,7 @@ ajax '/ajax/content/search/vlan' => sub {
     return unless $set->count;
 
     content_type('text/html');
-    template 'ajax/vlan.tt', {
+    template 'ajax/search/vlan.tt', {
       results => $set,
     }, { layout => undef };
 };
@@ -130,7 +174,7 @@ ajax '/ajax/content/search/port' => sub {
     return unless $set->count;
 
     content_type('text/html');
-    template 'ajax/port.tt', {
+    template 'ajax/search/port.tt', {
       results => $set,
     }, { layout => undef };
 };

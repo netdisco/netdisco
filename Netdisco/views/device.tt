@@ -1,0 +1,32 @@
+<div class="container-fluid">
+  <div class="sidebar">
+    <div class="well">
+      <div class="tab-content">
+        [% FOREACH tab IN vars.tabs %]
+        <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">
+          <div class="clearfix">
+            <h3>[% d.ip %]</h3><p>[% d.dns.remove(settings.domain_suffix) %]</p>
+          </div>
+          [%+ TRY %][% INCLUDE "inc/device/${tab.id}.tt" %][% CATCH %]<!-- no "[% tab.id %]" search options -->[% END %]
+        </div> <!-- /tab-pane -->
+        [% END %]
+      </div> <!-- /tab-content -->
+    </div>
+  </div>
+
+  <div class="nd_content content">
+    <ul id="search_results" class="tabs" data-tabs="on">
+      [% FOREACH tab IN vars.tabs %]
+      <li[% ' class="active"' IF params.tab == tab.id %]><a href="#[% tab.id %]_pane">[% tab.label %]</a></li>
+      [% END %]
+    </ul>
+    <div class="tab-content">
+      [% FOREACH tab IN vars.tabs %]
+      <div class="tab-pane[% ' active' IF params.tab == tab.id %]" id="[% tab.id %]_pane"></div>
+      [% END %]
+  </div>
+</div>
+
+<script type="text/javascript">
+[%+ INCLUDE 'inc/js/device.js' -%]
+</script>

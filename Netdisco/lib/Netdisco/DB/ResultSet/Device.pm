@@ -3,6 +3,23 @@ use base 'DBIx::Class::ResultSet';
 
 use NetAddr::IP::Lite ':lower';
 
+# override the built-in so we can munge some columns
+sub find {
+  my ($set, $ip) = @_;
+
+  return $set->SUPER::find($ip,
+    {
+      '+select' => [
+        \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', timestamp '1970-01-01 00:00:00-00')::text, 'mons', 'months')",
+        \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
+        \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
+        \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
+      ],
+      '+as' => [qw/ uptime last_discover last_macsuck last_arpnip /],
+    }
+  );
+}
+
 # finds distinct values of a col for use in form selections
 sub get_distinct {
   my ($set, $col) = @_;

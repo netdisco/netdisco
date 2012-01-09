@@ -13,6 +13,12 @@
         <p>You are now logged out.</p>
       </div>
       [% END %]
+      [% IF params.nosuchdevice %]
+      <div class="nd_loginalert alert-message notice fade in" data-alert="on">
+        <a class="close" href="#">×</a>
+        <p>Sorry, no such device is known.</p>
+      </div>
+      [% END %]
       [% IF vars.notfound %]
       <div class="nd_loginalert alert-message notice fade in" data-alert="on">
         <a class="close" href="#">×</a>

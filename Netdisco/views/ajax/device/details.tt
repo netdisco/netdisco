@@ -1,0 +1,69 @@
+<table class="condensed-table zebra-striped">
+  </tbody>
+    <tr>
+      <td>System Name</td>
+      <td>[% d.name %]</td>
+    </tr>
+    <tr>
+      <td>Location</td>
+      <td>
+        <a rel="twipsy" data-placement="above" data-offset="5" title="Find Similar Devices"
+        href="/search?tab=device&q=[% d.dns | uri %]&location=[% d.location | uri %]">[% d.location %]</a></td>
+    </tr>
+    <tr>
+      <td>Contact</td>
+      <td>[% d.contact %]</td>
+    </tr>
+    <tr>
+      <td>Model</td>
+      <td>
+        <a rel="twipsy" data-placement="above" data-offset="5" title="Find Similar Devices"
+        href="/search?tab=device&q=[% d.dns | uri %]&model=[% d.model | uri %]">[% d.model %]</a></td>
+    </tr>
+    <tr>
+      <td>OS / Version</td>
+      <td>[% d.os %] /
+        <a rel="twipsy" data-placement="above" data-offset="5"
+        title="Find Similar Devices" href="/search?tab=device&q=[% d.dns | uri %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver %]</a>
+      </td>
+    </tr>
+    <tr>
+      <td>Serial Number</td>
+      <td>[% d.serial %]</td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>[% d.description.replace(', ',",<br/>") %]</td>
+    </tr>
+    <tr>
+      <td>Uptime</td>
+      <td>[% d.uptime %]</td>
+    </tr>
+    <tr>
+      <td>Last Discover</td>
+      <td>[% d.last_discover %]</td>
+    </tr>
+    <tr>
+      <td>Last Arpnip</td>
+      <td>[% d.last_arpnip %]</td>
+    </tr>
+    <tr>
+      <td>Last Macsuck</td>
+      <td>[% d.last_macsuck %]</td>
+    </tr>
+    <tr>
+      <td>Hardware Status</td>
+      <td>Fan: [% d.fan %]
+        <br/>PS1 [[% d.ps1_type %]]: [% d.ps1_status %]
+        <br/>PS2 [[% d.ps2_type %]]: [% d.ps2_status %]</td>
+    </tr>
+    <tr>
+      <td>MAC Address</td>
+      <td>[% d.mac %]</td>
+    </tr>
+    <tr>
+      <td>VTP Domain</td>
+      <td>[% d.vtp_domain %]</td>
+    </tr>
+  </tbody>
+</table>
