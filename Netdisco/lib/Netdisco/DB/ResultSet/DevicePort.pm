@@ -1,6 +1,9 @@
 package Netdisco::DB::ResultSet::DevicePort;
 use base 'DBIx::Class::ResultSet';
 
+use strict;
+use warnings FATAL => 'all';
+
 sub by_mac {
     my ($set, $mac) = @_;
     return $set unless $mac;

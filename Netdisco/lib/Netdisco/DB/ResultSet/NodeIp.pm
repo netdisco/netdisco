@@ -1,6 +1,9 @@
 package Netdisco::DB::ResultSet::NodeIp;
 use base 'DBIx::Class::ResultSet';
 
+use strict;
+use warnings FATAL => 'all';
+
 # some customize their node_ip table to have a dns column which
 # is the cached record at the time of discovery
 sub has_dns_col {

@@ -37,12 +37,14 @@ __PACKAGE__->set_primary_key("mac", "ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9+CuvuVWH88WxAf6IBij8g
 
-# some customize their node_ip table to have a dns column which
-# is the cached record at the time of discovery
-
+# XXX uncomment the following two lines if you have a "dns" column XXX
+# XXX in your node_ip table which caches the host's name           XXX
 __PACKAGE__->add_column("dns" =>
   { data_type => "text", is_nullable => 1, accessor => undef });
+# XXX ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ XXX
 
+# some customize their node_ip table to have a dns column which
+# is the cached record at the time of discovery
 sub dns {
   my $row = shift;
   return $row->get_column('dns')

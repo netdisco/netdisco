@@ -1,6 +1,9 @@
 package Netdisco::DB::ResultSet::Node;
 use base 'DBIx::Class::ResultSet';
 
+use strict;
+use warnings FATAL => 'all';
+
 sub by_mac {
     my ($set, $archive, $mac) = @_;
     return $set unless $mac;

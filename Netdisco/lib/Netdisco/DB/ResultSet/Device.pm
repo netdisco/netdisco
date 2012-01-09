@@ -1,6 +1,8 @@
 package Netdisco::DB::ResultSet::Device;
 use base 'DBIx::Class::ResultSet';
 
+use strict;
+use warnings FATAL => 'all';
 use NetAddr::IP::Lite ':lower';
 
 # override the built-in so we can munge some columns
@@ -10,7 +12,7 @@ sub find {
   return $set->SUPER::find($ip,
     {
       '+select' => [
-        \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', timestamp '1970-01-01 00:00:00-00')::text, 'mons', 'months')",
+        \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')",
         \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
         \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
         \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
