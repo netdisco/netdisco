@@ -18,19 +18,27 @@ hook 'before' => sub {
         #request->path_info('/');
     }
 
+    # make hash lookups of query lists
+    foreach my $opt (qw/model vendor os_ver/) {
+        my $p = (ref '' eq ref param($opt) ? [param($opt)] : param($opt));
+        var("${opt}_lkp" => { map { $_ => 1 } @$p });
+    }
+
     # set up default search options for each type
     if (not param('tab') or param('tab') ne 'node') {
         params->{'stamps'} = 'checked';
     }
     if (not param('tab') or param('tab') ne 'device') {
-        params->{'matchall'} = 'matchall';
+        params->{'matchall'} = 'checked';
     }
 
-    # set up query string defaults,
-    # only for templates which link to themselves (node)
-    var('query_defaults' => { map { ($_ => "tab=$_") } qw/node/ });
+    # set up query string defaults for hyperlinks to templates with forms
+    var('query_defaults' => { map { ($_ => "tab=$_") } qw/node device/ });
+
     var('query_defaults')->{node} .= "\&$_=". (param($_) || '')
       for qw/stamps vendor archived partial/;
+    var('query_defaults')->{device} .= "\&$_=". (param($_) || '')
+      for qw/matchall/;
 };
 
 ajax '/ajax/content/device/:thing' => sub {

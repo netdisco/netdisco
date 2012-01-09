@@ -30,7 +30,7 @@
                 multiple="on" id="model" name="model"
                 rel="twipsy" data-placement="right" data-offset="5" title="Model"/>
                 [% FOREACH opt IN vars.model_list %]
-                <option>[% opt %]</option>
+                <option[% ' selected="selected"' IF vars.model_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
               </select>
             </div>
@@ -39,7 +39,7 @@
                 multiple="on" id="os_ver" name="os_ver"
                 rel="twipsy" data-placement="right" data-offset="5" title="OS Release"/>
                 [% FOREACH opt IN vars.os_ver_list %]
-                <option>[% opt %]</option>
+                <option[% ' selected="selected"' IF vars.os_ver_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
               </select>
             </div>
@@ -48,7 +48,7 @@
                 multiple="on" id="vendor" name="vendor"
                 rel="twipsy" data-placement="right" data-offset="5" title="Vendor"/>
                 [% FOREACH opt IN vars.vendor_list %]
-                <option>[% opt %]</option>
+                <option[% ' selected="selected"' IF vars.vendor_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
               </select>
             </div>
