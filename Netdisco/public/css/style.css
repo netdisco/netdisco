@@ -3,6 +3,15 @@ body {
   padding-top: 50px;
 }
 
+/* the bootstrap style is only set for input */
+/* also make the green a little more bold */
+form .clearfix.success select {
+  border-color: green;
+}
+form .clearfix.success input {
+  border-color: green;
+}
+
 .well {
   margin-right: 15px;
 }
