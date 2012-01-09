@@ -1,4 +1,20 @@
   $(document).ready(function() {
+    $('.nd_collapse_columns').collapser({
+      target: 'next',
+      effect: 'slide',
+      changeText: true,
+      expandHtml: '<label class="nd_collapser">Display Columns<div class="arrow-down"></div></label>',
+      collapseHtml: '<label class="nd_collapser">Display Columns<div class="arrow-up"></div></label>',
+    });
+
+    $('.nd_collapse_nodeprop').collapser({
+      target: 'next',
+      effect: 'slide',
+      changeText: true,
+      expandHtml: '<label class="nd_collapser">Node Properties<div class="arrow-down"></div></label>',
+      collapseHtml: '<label class="nd_collapser">Node Properties<div class="arrow-up"></div></label>',
+    });
+
     // parameterised for the active tab - submits search form and injects
     // HTML response into the tab pane, or an error/empty-results message
     function do_search (event, tab) {

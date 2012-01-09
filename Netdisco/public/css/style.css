@@ -32,9 +32,21 @@ form .clearfix.success input {
   padding: 30px 60px 40px 90px;
 }
 
+.inputs-list:first-child {
+  padding-top: 2px !important;
+}
+
+.device_label {
+  color: #0069D6;
+}
+
 .nd_loginform {
   margin-top: 30px;
   margin-bottom: 0px;
+}
+
+.nd_days_select {
+  width: 56px;
 }
 
 .nd_sidesearchform {
@@ -71,4 +83,34 @@ form .clearfix.success input {
   display: block;
   padding: 0px;
   height: 100%;
+}
+
+.nd_collapser {
+  cursor: pointer;
+}
+
+.nd_collapse_pre_hidden {
+  display: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+.arrow-up {
+  float: right;
+  margin-top: 6px;
+  margin-right: 11px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 8px solid #F89406;
+}
+
+.arrow-down {
+  float: right;
+  margin-top: 6px;
+  margin-right: 11px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #F89406;
 }

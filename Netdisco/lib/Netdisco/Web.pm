@@ -46,7 +46,7 @@ hook 'before' => sub {
 };
 
 ajax '/ajax/content/device/:thing' => sub {
-    return "<p>Hello ". param('thing') ."</p>";
+    return "<p>Hello, this is where the ". param('thing') ." content goes.</p>";
 };
 
 # device ports with a description (er, name) matching
@@ -75,6 +75,30 @@ get '/device' => sub {
         redirect '/?nosuchdevice=1';
         return;
     }
+
+    # list of columns
+    var('port_columns' => [
+        { name => 'port',        label => 'Port' },
+        { name => 'description', label => 'Description' },
+        { name => 'type',        label => 'Type' },
+        { name => 'duplex',      label => 'Duplex' },
+        { name => 'lastchange',  label => 'Last Change' },
+        { name => 'name',        label => 'Name' },
+        { name => 'speed',       label => 'Speed' },
+        { name => 'mac',         label => 'Port Mac' },
+        { name => 'mtu',         label => 'MTU' },
+        { name => 'native',      label => 'Native VLAN' },
+        { name => 'vlan',        label => 'VLAN Membership' },
+        { name => 'connected',   label => 'Connected Devices' },
+        { name => 'stp',         label => 'Spanning Tree' },
+        { name => 'status',      label => 'Status' },
+    ]);
+
+    # details for connected devices
+    var('connected_properties' => [
+        { name => 'age',        label => 'Age Stamp' },
+        { name => 'ip',         label => 'IP Address' },
+    ]);
 
     # list of tabs
     var('tabs' => [

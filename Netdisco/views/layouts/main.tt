@@ -12,6 +12,7 @@
   <![endif]-->
 
   <script type="text/javascript" src="/javascripts/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery-collapser.min.js"></script>
   <script type="text/javascript" src="/javascripts/bootstrap-alerts.js"></script>
   <script type="text/javascript" src="/javascripts/bootstrap-twipsy.js"></script>
   <script type="text/javascript" src="/javascripts/bootstrap-dropdown.js"></script>

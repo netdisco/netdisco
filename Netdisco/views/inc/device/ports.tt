@@ -3,11 +3,67 @@
             <input name="tab" value="[% tab.id %]" type="hidden"/>
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <input name="port" value="[% params.port %]" type="hidden"/>
+            <div class="clearfix">
+              <a href="#" class="nd_collapse_columns"><label>Display Columns</label></a>
+              <div class="input nd_collapse_pre_hidden">
+                <ul class="inputs-list">
+                  [% FOREACH item IN vars.port_columns %]
+                  <li>
+                    <label>
+                      <input type="checkbox" name="[% item.name %]" value="[% item.name %]"/>
+                      <span>[% item.label %]</span>
+                    </label>
+                  </li>
+                  [% END %]
+                </ul>
+              </div>
+            </div>
+            <div class="clearfix">
+              <a href="#" class="nd_collapse_nodeprop"><label>Node Properties</label></a>
+              <div class="input nd_collapse_pre_hidden">
+                <ul class="inputs-list">
+                  [% FOREACH item IN vars.connected_properties %]
+                  <li>
+                    <label>
+                      <input type="checkbox" name="[% item.name %]" value="[% item.name %]"/>
+                      <span>[% item.label %]</span>
+                    </label>
+                  </li>
+                  [% END %]
+                </ul>
+              </div>
+            </div>
+            <div class="clearfix">
+              <label>Ports become &quot;Free&quot; after</label>
+              <span rel="twipsy" data-placement="right" data-offset="5" title="Time since Port went Down">
+              <select class="nd_days_select" name="age_num"/>
+                [% SET count = 1 %]
+                [% WHILE count < 32 %]
+                <option>[% count %]</option>
+                [% SET count = count + 1 %]
+                [% END %]
+              </select>
+              <select class="span2" name="age_unit"/>
+                <option>days</option>
+                <option>weeks</option>
+                <option>months</option>
+                <option>years</option>
+              </select>
+              </span>
+            </div>
+            <div class="clearfix"></div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="archived" name="archived"[% ' checked="checked"' IF params.archived %]/>
+              </label>
+              <label for="archived">
+                <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel label warning">a</span></span>
+              </label>
+            </div>
             <div class="nd_search clearfix">
               <button id="[% tab.id %]_submit" type="submit" class="btn info">Update View</button>
               <a id="[% tab.id %]_bookmark" href="#"
                 rel="twipsy" data-placement="right" data-offset="5" title="Bookmark these Settings">
-                <img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png">
-              </a>
+                <img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png"></a>
             </div>
           </form>
