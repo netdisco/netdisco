@@ -24,16 +24,54 @@ hook 'before' => sub {
 
     # make hash lookups of query lists
     foreach my $opt (qw/model vendor os_ver/) {
-        my $p = (ref '' eq ref param($opt) ? [param($opt)] : param($opt));
+        my $p = (ref [] eq ref param($opt) ? param($opt) : (param($opt) ? param($opt) : []));
         var("${opt}_lkp" => { map { $_ => 1 } @$p });
     }
 
+    # list of port detail columns
+    var('port_columns' => [
+        { name => 'c_port',        label => 'Port',              default => 'on' },
+        { name => 'c_descr',       label => 'Description',       default => ''   },
+        { name => 'c_type',        label => 'Type',              default => ''   },
+        { name => 'c_duplex',      label => 'Duplex',            default => 'on' },
+        { name => 'c_lastchange',  label => 'Last Change',       default => ''   },
+        { name => 'c_name',        label => 'Name',              default => 'on' },
+        { name => 'c_speed',       label => 'Speed',             default => 'on' },
+        { name => 'c_mac',         label => 'Port MAC',          default => ''   },
+        { name => 'c_mtu',         label => 'MTU',               default => ''   },
+        { name => 'c_vlan',        label => 'Native VLAN',       default => 'on' },
+        { name => 'c_vmember',     label => 'VLAN Membership',   default => 'on' },
+        { name => 'c_connected',   label => 'Connected Devices', default => ''   },
+        { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
+        { name => 'c_up',          label => 'Status',            default => ''   },
+    ]);
+
+    # view settings for port connected devices
+    var('connected_properties' => [
+        { name => 'n_age',      label => 'Age Stamp',     default => ''   },
+        { name => 'n_ip',       label => 'IP Address',    default => 'on' },
+        { name => 'n_archived', label => 'Archived Data', default => ''   },
+    ]);
+
     # set up default search options for each type
-    if (not param('tab') or param('tab') ne 'node') {
-        params->{'stamps'} = 'checked';
-    }
-    if (not param('tab') or param('tab') ne 'device') {
-        params->{'matchall'} = 'checked';
+    if (request->path =~ m{^/device}) {
+        if (not param('tab') or param('tab') ne 'ports' or scalar keys %{params()} < 4) {
+            foreach my $col (@{ var('port_columns') }) {
+                params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
+            }
+            foreach my $col (@{ var('connected_properties') }) {
+                params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
+            }
+            params->{'age_num'} = 3;
+            params->{'age_unit'} = 'months';
+        }
+    } elsif (request->path =~ m{^/search}) {
+        if (not param('tab') or param('tab') ne 'node') {
+            params->{'stamps'} = 'checked';
+        }
+        if (not param('tab') or param('tab') ne 'device') {
+            params->{'matchall'} = 'checked';
+        }
     }
 
     # set up query string defaults for hyperlinks to templates with forms
@@ -75,30 +113,6 @@ get '/device' => sub {
         redirect '/?nosuchdevice=1';
         return;
     }
-
-    # list of columns
-    var('port_columns' => [
-        { name => 'port',        label => 'Port' },
-        { name => 'description', label => 'Description' },
-        { name => 'type',        label => 'Type' },
-        { name => 'duplex',      label => 'Duplex' },
-        { name => 'lastchange',  label => 'Last Change' },
-        { name => 'name',        label => 'Name' },
-        { name => 'speed',       label => 'Speed' },
-        { name => 'mac',         label => 'Port Mac' },
-        { name => 'mtu',         label => 'MTU' },
-        { name => 'native',      label => 'Native VLAN' },
-        { name => 'vlan',        label => 'VLAN Membership' },
-        { name => 'connected',   label => 'Connected Devices' },
-        { name => 'stp',         label => 'Spanning Tree' },
-        { name => 'status',      label => 'Status' },
-    ]);
-
-    # details for connected devices
-    var('connected_properties' => [
-        { name => 'age',        label => 'Age Stamp' },
-        { name => 'ip',         label => 'IP Address' },
-    ]);
 
     # list of tabs
     var('tabs' => [

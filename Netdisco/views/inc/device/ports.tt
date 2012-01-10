@@ -2,7 +2,37 @@
           <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="/device">
             <input name="tab" value="[% tab.id %]" type="hidden"/>
             <input name="ip" value="[% params.ip %]" type="hidden"/>
-            <input name="port" value="[% params.port %]" type="hidden"/>
+            <div class="clearfix">
+              <input class="nd_port_query span3" placeholder="Port Name or VLAN"
+                name="q" value="[% params.port || params.vlan %]" type="text"
+                rel="twipsy" data-placement="right" data-offset="5" title="Filter by Port Name or VLAN"/>
+            </div>
+            <div class="clearfix">
+              <a href="#" class="nd_collapse_legend"><label>Legend</label></a>
+                <ul class="inputs-list unstyled">
+                  <li>
+                    <span class="label warning">d</span>&nbsp; Admin Disabled
+                  </li>
+                  <li>
+                    <span class="label">l</span>&nbsp; Link Down
+                  </li>
+                  <li>
+                    <span class="label">f</span>&nbsp; Port Free (Down)
+                  </li>
+                  <li>
+                    <span class="label notice">b</span>&nbsp; Blocking
+                  </li>
+                  <li>
+                    <span class="label success">p</span>&nbsp; IP Phone
+                  </li>
+                  <li>
+                    <span class="label important">n</span>&nbsp; Neighbor Inacessible
+                  </li>
+                  <li>
+                    <span class="label warning">a</span>&nbsp; Archived Data
+                  </li>
+                </ul>
+            </div>
             <div class="clearfix">
               <a href="#" class="nd_collapse_columns"><label>Display Columns</label></a>
               <div class="input nd_collapse_pre_hidden">
@@ -10,11 +40,41 @@
                   [% FOREACH item IN vars.port_columns %]
                   <li>
                     <label>
-                      <input type="checkbox" name="[% item.name %]" value="[% item.name %]"/>
+                      <input type="checkbox" id="[% item.name %]" name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
                       <span>[% item.label %]</span>
                     </label>
                   </li>
                   [% END %]
+                </ul>
+              </div>
+            </div>
+            <div class="clearfix">
+              <a href="#" class="nd_collapse_portprop"><label>Port Properties</label></a>
+              <div class="input nd_collapse_pre_hidden">
+                <ul class="inputs-list">
+                  <li>
+                    <label>
+                      <input type="checkbox" id="free" name="free"[% ' checked="checked"' IF params.free %]/>
+                      <span>Only Show Free Ports</span>
+                    </label>
+                  </li>
+                  <p></p>
+                  <li>
+                    <span rel="twipsy" data-placement="right" data-offset="5" title="Free if Down for this period of time">
+                    <select class="nd_days_select" name="age_num"/>
+                      [% SET count = 1 %]
+                      [% WHILE count < 32 %]
+                      <option[% ' selected="selected"' IF params.age_num == count %]>[% count %]</option>
+                      [% SET count = count + 1 %]
+                      [% END %]
+                    </select>
+                    <select class="span2" name="age_unit"/>
+                      [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
+                      <option[% ' selected="selected"' IF params.age_unit == unit %]>[% unit %]</option>
+                      [% END %]
+                    </select>
+                    </span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -25,40 +85,13 @@
                   [% FOREACH item IN vars.connected_properties %]
                   <li>
                     <label>
-                      <input type="checkbox" name="[% item.name %]" value="[% item.name %]"/>
+                      <input type="checkbox" id="[% item.name %]" name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
                       <span>[% item.label %]</span>
                     </label>
                   </li>
                   [% END %]
                 </ul>
               </div>
-            </div>
-            <div class="clearfix">
-              <label>Ports become &quot;Free&quot; after</label>
-              <span rel="twipsy" data-placement="right" data-offset="5" title="Time since Port went Down">
-              <select class="nd_days_select" name="age_num"/>
-                [% SET count = 1 %]
-                [% WHILE count < 32 %]
-                <option>[% count %]</option>
-                [% SET count = count + 1 %]
-                [% END %]
-              </select>
-              <select class="span2" name="age_unit"/>
-                <option>days</option>
-                <option>weeks</option>
-                <option>months</option>
-                <option>years</option>
-              </select>
-              </span>
-            </div>
-            <div class="clearfix"></div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
-                <input type="checkbox" id="archived" name="archived"[% ' checked="checked"' IF params.archived %]/>
-              </label>
-              <label for="archived">
-                <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel label warning">a</span></span>
-              </label>
             </div>
             <div class="nd_search clearfix">
               <button id="[% tab.id %]_submit" type="submit" class="btn info">Update View</button>

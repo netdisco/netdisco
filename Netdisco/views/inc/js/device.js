@@ -3,16 +3,32 @@
       target: 'next',
       effect: 'slide',
       changeText: true,
-      expandHtml: '<label class="nd_collapser">Display Columns<div class="arrow-down"></div></label>',
-      collapseHtml: '<label class="nd_collapser">Display Columns<div class="arrow-up"></div></label>',
+      expandHtml: '<label class="nd_collapser">Display Columns<div class="arrow-up"></div></label>',
+      collapseHtml: '<label class="nd_collapser">Display Columns<div class="arrow-down"></div></label>',
+    });
+
+    $('.nd_collapse_portprop').collapser({
+      target: 'next',
+      effect: 'slide',
+      changeText: true,
+      expandHtml: '<label class="nd_collapser">Port Properties<div class="arrow-up"></div></label>',
+      collapseHtml: '<label class="nd_collapser">Port Properties<div class="arrow-down"></div></label>',
     });
 
     $('.nd_collapse_nodeprop').collapser({
       target: 'next',
       effect: 'slide',
       changeText: true,
-      expandHtml: '<label class="nd_collapser">Node Properties<div class="arrow-down"></div></label>',
-      collapseHtml: '<label class="nd_collapser">Node Properties<div class="arrow-up"></div></label>',
+      expandHtml: '<label class="nd_collapser">Node Properties<div class="arrow-up"></div></label>',
+      collapseHtml: '<label class="nd_collapser">Node Properties<div class="arrow-down"></div></label>',
+    });
+
+    $('.nd_collapse_legend').collapser({
+      target: 'next',
+      effect: 'slide',
+      changeText: true,
+      expandHtml: '<label class="nd_collapser">Legend<div class="arrow-up"></div></label>',
+      collapseHtml: '<label class="nd_collapser">Legend<div class="arrow-down"></div></label>',
     });
 
     // parameterised for the active tab - submits search form and injects

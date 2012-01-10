@@ -132,3 +132,8 @@ form .clearfix.success input {
   border-right: 7px solid transparent;
   border-top: 8px solid #F89406;
 }
+
+/* nudge the port name/vlan filter over a little */
+.nd_port_query {
+  margin-left: -2px !important;
+}
