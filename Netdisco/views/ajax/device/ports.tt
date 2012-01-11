@@ -37,7 +37,7 @@
       [% IF params.c_duplex %]
       <td class="center_cell">
         [% IF row.up == 'up' AND row.duplex %]
-        [% row.duplex | html_entity %] / [% row.duplex_admin | html_entity %]
+        [% row.duplex_admin | html_entity %] / [% row.duplex | html_entity %]
         [% END %]
       </td>
       [% END %]
@@ -83,7 +83,9 @@
       <td class="center_cell">[% row.stp | html_entity %]</td>
       [% END %]
       [% IF params.c_up %]
-      <td class="center_cell">[% row.up | html_entity %]</td>
+      <td class="center_cell">
+        [% row.up_admin | html_entity %] / [% row.up | html_entity %]
+      </td>
       [% END %]
     </tr>
     [% END %]
