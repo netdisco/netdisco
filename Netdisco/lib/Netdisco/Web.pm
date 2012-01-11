@@ -10,6 +10,7 @@ use HTML::Entities (); # to ensure dependency is met
 use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
 use List::MoreUtils ();
+use netdisco (); # for sort_port
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
@@ -33,15 +34,15 @@ hook 'before' => sub {
         { name => 'c_port',        label => 'Port',              default => 'on' },
         { name => 'c_descr',       label => 'Description',       default => ''   },
         { name => 'c_type',        label => 'Type',              default => ''   },
-        { name => 'c_duplex',      label => 'Duplex',            default => 'on' },
+        { name => 'c_duplex',      label => 'Duplex',            default => ''   },
         { name => 'c_lastchange',  label => 'Last Change',       default => ''   },
         { name => 'c_name',        label => 'Name',              default => 'on' },
-        { name => 'c_speed',       label => 'Speed',             default => 'on' },
+        { name => 'c_speed',       label => 'Speed',             default => ''   },
         { name => 'c_mac',         label => 'Port MAC',          default => ''   },
         { name => 'c_mtu',         label => 'MTU',               default => ''   },
         { name => 'c_vlan',        label => 'Native VLAN',       default => 'on' },
         { name => 'c_vmember',     label => 'VLAN Membership',   default => 'on' },
-        { name => 'c_connected',   label => 'Connected Devices', default => ''   },
+        { name => 'c_connected',   label => 'Connected Devices', default => 'on' },
         { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
         { name => 'c_up',          label => 'Status',            default => ''   },
     ]);
@@ -88,6 +89,22 @@ ajax '/ajax/content/device/:thing' => sub {
 };
 
 # device ports with a description (er, name) matching
+ajax '/ajax/content/device/ports' => sub {
+    my $ip = param('ip');
+    return unless $ip;
+
+    my $set = schema('netdisco')->resultset('DevicePort')->by_ip($ip);
+    return unless $set->count;
+
+    my $results = [ sort { &netdisco::sort_port($a->port, $b->port) } $set->all ];
+
+    content_type('text/html');
+    template 'ajax/device/ports.tt', {
+      results => $results,
+    }, { layout => undef };
+};
+
+# device details table
 ajax '/ajax/content/device/details' => sub {
     my $ip = param('ip');
     return unless $ip;

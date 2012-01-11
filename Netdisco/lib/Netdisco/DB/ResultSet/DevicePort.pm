@@ -4,6 +4,24 @@ use base 'DBIx::Class::ResultSet';
 use strict;
 use warnings FATAL => 'all';
 
+sub by_ip {
+    my ($set, $ip) = @_;
+    return $set unless $ip;
+
+    return $set->search(
+      {
+        'me.ip' => $ip,
+      },
+      {
+        '+select' => [
+          \"to_char(last_discover - (uptime - lastchange) / 100 * interval '1 second', 'YYYY-MM-DD HH24:MI:SS')",
+        ],
+        '+as' => [qw/ lastchange_stamp /],
+        join => 'device',
+      }
+    );
+}
+
 sub by_mac {
     my ($set, $mac) = @_;
     return $set unless $mac;

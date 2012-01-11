@@ -3,27 +3,27 @@
             <input name="tab" value="[% tab.id %]" type="hidden"/>
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <div class="clearfix">
-              <input class="nd_port_query span3" placeholder="Port Name or VLAN"
+              <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
                 name="q" value="[% params.port || params.vlan %]" type="text"
-                rel="twipsy" data-placement="right" data-offset="5" title="Filter by Port Name or VLAN"/>
+                rel="twipsy" data-placement="right" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
               <a href="#" class="nd_collapse_legend"><label>Legend</label></a>
                 <ul class="inputs-list unstyled">
                   <li>
-                    <span class="label warning">d</span>&nbsp; Admin Disabled
+                    <span class="label">s</span>&nbsp; Admin Disabled
                   </li>
                   <li>
-                    <span class="label">l</span>&nbsp; Link Down
+                    <span class="label warning">d</span>&nbsp; Link Down
                   </li>
                   <li>
-                    <span class="label">f</span>&nbsp; Port Free (Down)
+                    <span class="label success">f</span>&nbsp; Port Free (Down)
                   </li>
                   <li>
                     <span class="label notice">b</span>&nbsp; Blocking
                   </li>
                   <li>
-                    <span class="label success">p</span>&nbsp; IP Phone
+                    <span class="label">p</span>&nbsp; IP Phone
                   </li>
                   <li>
                     <span class="label important">n</span>&nbsp; Neighbor Inacessible

@@ -78,6 +78,7 @@ form .clearfix.success input {
 /* somewhere between span1 and span2 is desirable */
 .nd_days_select {
   width: 56px;
+  margin-left: -2px !important;
 }
 
 /* search/filter button placement */
@@ -136,4 +137,8 @@ form .clearfix.success input {
 /* nudge the port name/vlan filter over a little */
 .nd_port_query {
   margin-left: -2px !important;
+}
+
+.center_cell {
+  text-align: center;
 }

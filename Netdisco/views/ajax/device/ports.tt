@@ -1,0 +1,91 @@
+<table class="bordered-table condensed-table zebra-striped">
+  <thead>
+    <tr>
+      <th></th>
+      [% FOREACH item IN vars.port_columns %]
+      [% NEXT UNLESS params.${item.name} %]
+      <th[% ' class="center_cell"' IF NOT loop.first %]>[% item.label %]</th>
+      [% END %]
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row in results %]
+    [% NEXT IF params.free AND NOT row.is_free(params.age_num, params.age_unit) %]
+    <tr>
+      <td>
+        [% IF row.up_admin == 'down' %]
+        <span class="nd_legendlabel label">s</span>
+        [% ELSIF row.stp == 'blocking' %]
+        <span class="nd_legendlabel label notice">b</span>
+        [% ELSIF row.is_free(params.age_num, params.age_unit) %]
+        <span class="nd_legendlabel label success">f</span>
+        [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
+        <span class="nd_legendlabel label warning">d</span>
+        [% END %]
+      </td>
+      [% IF params.c_port %]
+      <td>
+        [% row.port | html_entity %]
+      </td>
+      [% END %]
+      [% IF params.c_descr %]
+      <td class="center_cell">[% row.descr | html_entity %]</td>
+      [% END %]
+      [% IF params.c_type %]
+      <td class="center_cell">[% row.type | html_entity %]</td>
+      [% END %]
+      [% IF params.c_duplex %]
+      <td class="center_cell">
+        [% IF row.up == 'up' AND row.duplex %]
+        [% row.duplex | html_entity %] / [% row.duplex_admin | html_entity %]
+        [% END %]
+      </td>
+      [% END %]
+      [% IF params.c_lastchange %]
+      <td class="center_cell">[% row.get_column('lastchange_stamp') | html_entity %]</td>
+      [% END %]
+      [% IF params.c_name %]
+      <td class="center_cell">[% row.name | html_entity %]</td>
+      [% END %]
+      [% IF params.c_speed %]
+      <td class="center_cell">[% row.speed | html_entity %]</td>
+      [% END %]
+      [% IF params.c_mac %]
+      <td class="center_cell">[% row.mac | html_entity %]</td>
+      [% END %]
+      [% IF params.c_mtu %]
+      <td class="center_cell">[% row.mtu | html_entity %]</td>
+      [% END %]
+      [% IF params.c_vlan %]
+      <td class="center_cell">
+        <a class="nd_linkcell" href="/search?tab=vlan&q=[% row.vlan | uri %]">[% row.vlan | html_entity %]</a>
+      </td>
+      [% END %]
+      [% IF params.c_vmember %]
+      <td>
+        [% SET count = 1 %]
+        [% FOREACH vlan IN row.tagged_vlans %]
+          <a href="/search?tab=vlan&q=[% vlan.vlan | uri %]">[% vlan.vlan | html_entity %]</a>
+          [% SET count = count + 1 %]
+          [% IF count > 25 %]
+            (more...)
+            [% LAST %]
+          [% ELSE %]
+            [% ', ' IF NOT loop.last %]
+          [% END %]
+        [% END %]
+      </td>
+      [% END %]
+      [% IF params.c_connected %]
+      <td>[% row.connected | html_entity %]</td>
+      [% END %]
+      [% IF params.c_stp %]
+      <td class="center_cell">[% row.stp | html_entity %]</td>
+      [% END %]
+      [% IF params.c_up %]
+      <td class="center_cell">[% row.up | html_entity %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+  </tbody>
+</table>
