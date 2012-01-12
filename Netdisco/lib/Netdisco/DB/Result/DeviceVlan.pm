@@ -39,23 +39,21 @@ __PACKAGE__->set_primary_key("ip", "vlan");
 
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
 __PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
-    sub {
-        my $args = shift;
-        return {
-            "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
-            "$args->{foreign_alias}.vlan" => { -ident => "$args->{self_alias}.vlan" },
-            -not_bool => "$args->{foreign_alias}.native",
-        };
+    {
+        'foreign.ip' => 'self.ip',
+        'foreign.vlan' => 'self.vlan',
+    },
+    {
+        where => { -not_bool => 'me.native' },
     }
 );
 __PACKAGE__->has_many( port_vlans_native => 'Netdisco::DB::Result::DevicePortVlan',
-    sub {
-        my $args = shift;
-        return {
-            "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
-            "$args->{foreign_alias}.vlan" => { -ident => "$args->{self_alias}.vlan" },
-            -bool => "$args->{foreign_alias}.native",
-        };
+    {
+        'foreign.ip' => 'self.ip',
+        'foreign.vlan' => 'self.vlan',
+    },
+    {
+        where => { -bool => 'me.native' },
     }
 );
 __PACKAGE__->many_to_many( tagging_ports => 'port_vlans_tagged', 'port' );

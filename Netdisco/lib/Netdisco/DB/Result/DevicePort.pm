@@ -76,24 +76,27 @@ __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip',
   },
 );
 __PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
-    sub {
-        my $args = shift;
-        return {
-            "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
-            "$args->{foreign_alias}.port" => { -ident => "$args->{self_alias}.port" },
-            -not_bool => "$args->{foreign_alias}.native",
-        };
+    {
+        'foreign.ip' => 'self.ip',
+        'foreign.port' => 'self.port',
+    },
+    {
+        where => { -not_bool => 'me.native' },
     }
 );
 __PACKAGE__->many_to_many( tagged_vlans => 'port_vlans_tagged', 'vlan' );
+# weirdly I could not get row.tagged.vlans.count to work in TT
+# so gave up and wrote this instead.
+sub tagged_vlans_count {
+  return (shift)->tagged_vlans->count;
+}
 __PACKAGE__->might_have( native_port_vlan => 'Netdisco::DB::Result::DevicePortVlan',
-    sub {
-        my $args = shift;
-        return {
-            "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
-            "$args->{foreign_alias}.port" => { -ident => "$args->{self_alias}.port" },
-            -bool => "$args->{foreign_alias}.native",
-        };
+    {
+        'foreign.ip' => 'self.ip',
+        'foreign.port' => 'self.port',
+    },
+    {
+        where => { -bool => 'me.native' },
     }
 );
 sub native_vlan {
