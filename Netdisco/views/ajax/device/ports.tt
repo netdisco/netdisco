@@ -9,8 +9,10 @@
     </tr>
   </thead>
   </tbody>
+    [% SET rownum = 0 %]
     [% FOREACH row in results %]
     [% NEXT IF params.free AND NOT row.is_free(params.age_num, params.age_unit) %]
+    [% SET rownum = rownum + 1 %]
     <tr>
       <td>
         [% IF row.up_admin == 'down' %]
@@ -58,22 +60,28 @@
       [% END %]
       [% IF params.c_vlan %]
       <td class="center_cell">
-        <a class="nd_linkcell" href="/search?tab=vlan&q=[% row.vlan | uri %]">[% row.vlan | html_entity %]</a>
+        <a class="nd_linkcell"
+          href="/search?tab=vlan&q=[% row.vlan | uri %]">[% row.vlan | html_entity %]</a>
       </td>
       [% END %]
       [% IF params.c_vmember %]
       <td>
-        [% SET count = 1 %]
+        [%# this is really ugly because for some reason
+            I could not get size/max to work on row.tagged_vlans.all %]
+        [% SET output = '' %]
+        [% SET count  = 0  %]
         [% FOREACH vlan IN row.tagged_vlans %]
-          <a href="/search?tab=vlan&q=[% vlan.vlan | uri %]">[% vlan.vlan | html_entity %]</a>
+          [% SET output = output _
+            '<a href="/search?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
+          [% SET output = output _ ', ' IF NOT loop.last %]
           [% SET count = count + 1 %]
-          [% IF count > 25 %]
-            (more...)
-            [% LAST %]
-          [% ELSE %]
-            [% ', ' IF NOT loop.last %]
-          [% END %]
         [% END %]
+        [% IF count > 10 %]
+        [% SET output = '<a href="#" class="nd_linkcell nd_collapse_vlans">'
+          _ 'Show VLANs</a><div class="nd_collapse_pre_hidden">' _ output %]
+        [% SET output = output _ '</div>' %]
+        [% END %]
+        [% output %]
       </td>
       [% END %]
       [% IF params.c_connected %]

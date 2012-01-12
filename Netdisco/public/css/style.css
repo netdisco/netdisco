@@ -134,11 +134,32 @@ form .clearfix.success input {
   border-top: 8px solid #F89406;
 }
 
+/* draw little up arrow to the right of a label for collapsed list */
+.cell-arrow-up {
+  float: left;
+  margin-top: 4px;
+  margin-right: 6px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 8px solid #F89406;
+}
+
+/* draw little down arrow to the right of a label for collapsed list */
+.cell-arrow-down {
+  float: left;
+  margin-top: 4px;
+  margin-right: 6px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #F89406;
+}
+
 /* nudge the port name/vlan filter over a little */
 .nd_port_query {
   margin-left: -2px !important;
 }
 
+/* for ports table to center cell content */
 .center_cell {
   text-align: center;
 }

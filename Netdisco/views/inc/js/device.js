@@ -66,6 +66,15 @@
           }
           // looks good, update the bookmark for this search
           $(mark).attr('href', '/device?' + query);
+
+          // enable collapser on any large vlan lists
+          $('.nd_collapse_vlans').collapser({
+            target: 'siblings',
+            effect: 'slide',
+            changeText: true,
+            expandHtml: '<div class="nd_collapser">Show VLANs<div class="cell-arrow-up"></div></div>',
+            collapseHtml: '<div class="nd_collapser">Hide VLANs<div class="cell-arrow-down"></div></div>',
+          });
         }
       );
     }
