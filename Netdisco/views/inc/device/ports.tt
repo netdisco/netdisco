@@ -4,7 +4,7 @@
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <div class="clearfix">
               <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
-                name="q" value="[% params.port || params.vlan %]" type="text"
+                name="q" value="[% params.q %]" type="text"
                 rel="twipsy" data-placement="right" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">

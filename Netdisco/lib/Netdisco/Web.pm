@@ -94,9 +94,32 @@ ajax '/ajax/content/device/ports' => sub {
     return unless $ip;
 
     my $set = schema('netdisco')->resultset('DevicePort')->by_ip($ip);
+
+    # refine by ports if requested
+    my $q = param('q');
+    if ($q) {
+        if ($q =~ m/^\d+$/) {
+            $set = $set->by_vlan($q);
+        }
+        else {
+            my $c = schema('netdisco')->resultset('DevicePort')->by_ip($ip)->by_port($q);
+            if ($c->count) {
+                $set = $set->by_port($q);
+            }
+            else {
+                $set = $set->by_name($q);
+            }
+        }
+    }
     return unless $set->count;
 
-    my $results = [ sort { &netdisco::sort_port($a->port, $b->port) } $set->all ];
+    # sort, and filter by free ports
+    # the filter could be in the template but here allows a 'no records' msg
+    my $results = [ sort { &netdisco::sort_port($a->port, $b->port) }
+                    grep { not param('free')
+                           or $_->is_free(param('age_num'), param('age_unit')) } $set->all ];
+
+    return unless scalar @$results;
 
     content_type('text/html');
     template 'ajax/device/ports.tt', {

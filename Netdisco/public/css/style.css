@@ -163,3 +163,8 @@ form .clearfix.success input {
 .center_cell {
   text-align: center;
 }
+
+/* for the tagged vlans total when hiding the full list */
+.vlan_total {
+  float: right;
+}
