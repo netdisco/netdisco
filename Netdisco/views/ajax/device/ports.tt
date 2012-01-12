@@ -77,7 +77,7 @@
           [% SET count = count + 1 %]
         [% END %]
         [% IF count > 10 %]
-        [% SET output = '<a href="#" class="nd_linkcell nd_collapse_vlans">'
+        [% SET output = '<div style="float: right">(' _ count _ ')</div><a href="#" class="nd_linkcell nd_collapse_vlans">'
           _ 'Show VLANs</a><div class="nd_collapse_pre_hidden">' _ output %]
         [% SET output = output _ '</div>' %]
         [% END %]

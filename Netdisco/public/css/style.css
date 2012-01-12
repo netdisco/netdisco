@@ -137,7 +137,7 @@ form .clearfix.success input {
 /* draw little up arrow to the right of a label for collapsed list */
 .cell-arrow-up {
   float: left;
-  margin-top: 4px;
+  margin-top: 5px;
   margin-right: 6px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
@@ -147,7 +147,7 @@ form .clearfix.success input {
 /* draw little down arrow to the right of a label for collapsed list */
 .cell-arrow-down {
   float: left;
-  margin-top: 4px;
+  margin-top: 5px;
   margin-right: 6px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
