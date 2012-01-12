@@ -234,10 +234,16 @@ ajax '/ajax/content/search/vlan' => sub {
 
 # device ports with a description (er, name) matching
 ajax '/ajax/content/search/port' => sub {
-    my $name = param('q');
-    return unless $name;
+    my $q = param('q');
+    return unless $q;
+    my $set;
 
-    my $set = schema('netdisco')->resultset('DevicePort')->by_name($name);
+    if ($q =~ m/^\d+$/) {
+        $set = schema('netdisco')->resultset('DevicePort')->by_vlan($q);
+    }
+    else {
+        $set = schema('netdisco')->resultset('DevicePort')->by_name($q);
+    }
     return unless $set->count;
 
     content_type('text/html');

@@ -14,13 +14,13 @@
     <tr>
       <td>
         [% IF row.up_admin == 'down' %]
-        <span class="nd_legendlabel label">s</span>
+        <span class="label">s</span>
         [% ELSIF row.stp == 'blocking' %]
-        <span class="nd_legendlabel label notice">b</span>
+        <span class="label notice">b</span>
         [% ELSIF row.is_free(params.age_num, params.age_unit) %]
-        <span class="nd_legendlabel label success">f</span>
+        <span class="label success">f</span>
         [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
-        <span class="nd_legendlabel label warning">d</span>
+        <span class="label warning">d</span>
         [% END %]
       </td>
       [% IF params.c_port %]

@@ -61,5 +61,22 @@ sub by_name {
     );
 }
 
+# should match edge ports only
+sub by_vlan {
+    my ($set, $vlan) = @_;
+    return $set unless $vlan and $vlan =~ m/^\d+$/;;
+
+    return $set->search(
+      {
+        'me.vlan' => $vlan,
+      },
+      {
+        order_by => [qw/ me.ip me.port /],
+        columns => [qw/ ip port descr name vlan device.dns /],
+        join => 'device',
+      },
+    );
+}
+
 1;
 
