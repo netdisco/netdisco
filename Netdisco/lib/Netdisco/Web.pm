@@ -25,7 +25,7 @@ hook 'before' => sub {
 
     # make hash lookups of query lists
     foreach my $opt (qw/model vendor os_ver/) {
-        my $p = (ref [] eq ref param($opt) ? param($opt) : (param($opt) ? param($opt) : []));
+        my $p = (ref [] eq ref param($opt) ? param($opt) : (param($opt) ? [param($opt)] : []));
         var("${opt}_lkp" => { map { $_ => 1 } @$p });
     }
 
@@ -198,15 +198,18 @@ ajax '/ajax/content/search/node' => sub {
     my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
     if (eval { $mac->as_IEEE }) {
 
-        my $ips = schema('netdisco')->resultset('NodeIp')
-          ->by_mac(param('archived'), $mac->as_IEEE);
-        return unless $ips->count;
-
         my $sightings = schema('netdisco')->resultset('Node')
+          ->by_mac(param('archived'), $mac->as_IEEE);
+
+        my $ips = schema('netdisco')->resultset('NodeIp')
           ->by_mac(param('archived'), $mac->as_IEEE);
 
         my $ports = schema('netdisco')->resultset('DevicePort')
           ->by_mac($mac->as_IEEE);
+
+        return unless $sightings->count
+            or $ips->count
+            or $ports->count;
 
         template 'ajax/search/node_by_mac.tt', {
           ips => $ips,
@@ -300,7 +303,8 @@ get '/search' => sub {
         else {
             my $s = schema('netdisco');
             if ($q =~ m{^[a-f0-9.:/]+$}i) {
-                if ($s->resultset('Device')->find($q)) {
+                if (NetAddr::IP::Lite->new($q) and
+                    $s->resultset('Device')->find($q)) {
                     params->{'tab'} = 'device';
                 }
                 else {

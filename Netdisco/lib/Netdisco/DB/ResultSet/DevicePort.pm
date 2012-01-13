@@ -32,7 +32,6 @@ sub by_mac {
       },
       {
         order_by => {'-desc' => 'me.creation'},
-        columns => [qw/ ip port device.dns /],
         '+select' => [
           \"to_char(me.creation, 'YYYY-MM-DD HH24:MI')",
         ],

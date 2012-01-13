@@ -139,6 +139,16 @@ sub native_vlan {
     return eval { $row->native_port_vlan->vlan || undef };
 };
 
+__PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui',
+    sub {
+        my $args = shift;
+        return {
+            "$args->{foreign_alias}.oui" =>
+              { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
+        };
+    }
+);
+
 sub is_free {
   my ($row, $num, $unit) = @_;
   return unless $num =~ m/^\d+$/

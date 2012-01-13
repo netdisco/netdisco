@@ -41,16 +41,29 @@
       </td>
       [% IF params.stamps %]
       <td>[% row.time_first %]</td>
-      <td>[% row.time_last %]</td>
+      <td>[% rw.time_last %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]
     [% END %]
     [% WHILE (node = sightings.next) %]
     <tr>
-      <td>&nbsp;</td>
+      <td>
+        [% IF first_row %]
+        <a class="nd_linkcell"
+          href="/search?[% vars.query_defaults.node %]&q=[% node.mac | uri %]">[% node.mac %]</a>
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </td>
       [% IF params.vendor %]
-      <td>&nbsp;</td>
+      <td>
+        [% IF first_row %]
+        [% node.oui.company %]
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </td>
       [% END %]
       <td>Switch Port</td>
       <td><a href="/device?tab=ports&ip=[% node.switch | url %]&q=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
@@ -62,12 +75,26 @@
       <td>[% node.time_last %]</td>
       [% END %]
     </tr>
+    [% SET first_row = 0 %]
     [% END %]
     [% WHILE (port = ports.next) %]
     <tr>
-      <td>&nbsp;</td>
+      <td>
+        [% IF first_row %]
+        <a class="nd_linkcell"
+          href="/search?[% vars.query_defaults.node %]&q=[% port.mac | uri %]">[% port.mac %]</a>
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </td>
       [% IF params.vendor %]
-      <td>&nbsp;</td>
+      <td>
+        [% IF first_row %]
+        [% port.oui.company %]
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </td>
       [% END %]
       <td>Switch Port</td>
       <td><a href="/device?tab=ports&ip=[% port.ip | url %]&q=[% port.port | url %]">[% port.ip %] [ [% port.port %] ]</a>
@@ -78,6 +105,7 @@
       <td>[% port.creation %]</td>
       [% END %]
     </tr>
+    [% SET first_row = 0 %]
     [% END %]
   </tbody>
 </table>
