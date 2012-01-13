@@ -1,11 +1,13 @@
 package Netdisco::Web::AuthN;
 
 use Dancer ':syntax';
+use Dancer::Plugin::DBIC;
+
 use Digest::MD5 ();
 
 hook 'before' => sub {
     if (! session('user') && request->path !~ m{^/login}) {
-        if (setting('environment') eq 'development') {
+        if (setting('environment') eq 'development' and setting('no_auth')) {
             session(user => 'developer');
         }
         else {
