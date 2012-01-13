@@ -64,16 +64,48 @@ __PACKAGE__->set_primary_key("port", "ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lcbweb0loNwHoWUuxTN/hA
 
+__PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
+    {
+      'foreign.switch' => 'self.ip',
+      'foreign.port' => 'self.port',
+    },
+    {
+      prefetch => 'ips',
+      order_by => 'me.mac',
+      '+select' => [
+        \"replace(age(me.time_last, me.time_recent)::text, 'mon', 'month')",
+      ],
+      '+as' => [
+        'me.time_last',
+      ],
+    },
+);
+
+sub get_nodes {
+    my ($row, $archive) = @_;
+    return $row->nodes({ ($archive ? () : ('me.active' => 1, 'ips.active' => 1)) });
+}
+
+__PACKAGE__->belongs_to( neighbor_alias => 'Netdisco::DB::Result::DeviceIp',
+    {
+      'foreign.alias' => 'self.remote_ip',
+    },
+    {
+      join_type => 'left',
+    },
+);
+# FIXME make this more efficient by specifying the full join to DBIC
+sub neighbor { return eval { (shift)->neighbor_alias->device } }
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip',
-  {
-    '+select' => [
-      \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')",
-      \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
-      \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
-      \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
-    ],
-    '+as' => [qw/ uptime last_discover last_macsuck last_arpnip /],
-  },
+    {
+      '+select' => [
+        \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')",
+        \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
+        \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
+        \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
+      ],
+      '+as' => [qw/ uptime last_discover last_macsuck last_arpnip /],
+    },
 );
 __PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
     {
