@@ -9,7 +9,7 @@
     </tr>
   </thead>
   </tbody>
-    [% FOREACH row in results %]
+    [% FOREACH row IN results %]
     <tr>
       <td>
         [% IF row.up_admin == 'down' %]
@@ -101,7 +101,7 @@
           [% ' (' _ node.time_last _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
-            <br/>&nbsp; [% '<span class="label warning">a</span> &nbsp;' IF NOT node.active %]
+            <br/>&nbsp; [% '<span class="label warning">a</span> &nbsp;' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
               <a href="/search?tab=node&q=[% ip.ip | uri %]">[% ip.dns %] ([% ip.ip %])</a>

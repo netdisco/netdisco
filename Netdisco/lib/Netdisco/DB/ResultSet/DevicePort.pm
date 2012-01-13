@@ -55,7 +55,6 @@ sub by_name {
       },
       {
         order_by => [qw/ me.ip me.port /],
-        columns => [qw/ ip port descr name vlan device.dns /],
         join => 'device',
       },
     );
@@ -72,7 +71,6 @@ sub by_vlan {
       },
       {
         order_by => [qw/ me.ip me.port /],
-        columns => [qw/ ip port descr name vlan device.dns /],
         join => 'device',
       },
     );
@@ -88,7 +86,6 @@ sub by_port {
       },
       {
         order_by => [qw/ me.ip me.port /],
-        columns => [qw/ ip port descr name vlan device.dns /],
         join => 'device',
       },
     );

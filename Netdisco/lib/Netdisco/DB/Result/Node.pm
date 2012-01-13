@@ -53,6 +53,6 @@ __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device',
 __PACKAGE__->belongs_to( device_port => 'Netdisco::DB::Result::DevicePort',
   { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' }, { join_type => 'LEFT' } );
 __PACKAGE__->has_many( ips => 'Netdisco::DB::Result::NodeIp',
-  { 'foreign.mac' => 'self.mac' } );
+  { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
 
 1;

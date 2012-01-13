@@ -73,7 +73,7 @@ __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
       prefetch => 'ips',
       order_by => 'me.mac',
       '+select' => [
-        \"replace(age(me.time_last, me.time_recent)::text, 'mon', 'month')",
+        \"replace(age(me.time_last)::text, 'mon', 'month')",
       ],
       '+as' => [
         'me.time_last',
@@ -83,7 +83,10 @@ __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
 
 sub get_nodes {
     my ($row, $archive) = @_;
-    return $row->nodes({ ($archive ? () : ('me.active' => 1, 'ips.active' => 1)) });
+    return $row->nodes({
+      ($archive ? (-or => [{'me.active' => 1}, {'me.active' => 0}])
+                : ('me.active' => 1))
+    });
 }
 
 __PACKAGE__->belongs_to( neighbor_alias => 'Netdisco::DB::Result::DeviceIp',
