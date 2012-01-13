@@ -88,6 +88,20 @@ ajax '/ajax/content/device/:thing' => sub {
     return "<p>Hello, this is where the ". param('thing') ." content goes.</p>";
 };
 
+# device interface addresses
+ajax '/ajax/content/device/addresses' => sub {
+    my $ip = param('ip');
+    return unless $ip;
+
+    my $set = schema('netdisco')->resultset('DeviceIp')->search({ip => $ip}, { order_by => 'alias' });
+    return unless $set->count;
+
+    content_type('text/html');
+    template 'ajax/device/addresses.tt', {
+      results => $set,
+    }, { layout => undef };
+};
+
 # device ports with a description (er, name) matching
 ajax '/ajax/content/device/ports' => sub {
     my $ip = param('ip');

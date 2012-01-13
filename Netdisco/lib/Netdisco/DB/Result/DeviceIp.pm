@@ -35,5 +35,7 @@ __PACKAGE__->set_primary_key("ip", "alias");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/ugGtBSGyrJ7s6yqJ9bclQ
 
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
+__PACKAGE__->belongs_to( device_port => 'Netdisco::DB::Result::DevicePort',
+  { 'foreign.port' => 'self.port', 'foreign.ip' => 'self.ip' } );
 
 1;
