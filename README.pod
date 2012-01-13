@@ -9,10 +9,10 @@ face, please contact C<oliver> in the C<#netdisco> IRC channel (on freenode).
 
 =head1 INSTALLATION
 
-Download the tarball from
-L<GitHub|https://github.com/ollyg/netdisco-frontend-sandpit/tarball/master>
-and extract it on your system. Make sure the system has access to your
-Netdisco database.
+Download the tarball from GitHub and extract it on your system. Make sure the
+system has access to your Netdisco database.
+
+ https://github.com/ollyg/netdisco-frontend-sandpit/tarball/master
 
 Edit the C<Netdisco/environments/development.yml> file to have the correct
 credentials and settings (host name) for your own Netdisco database.
@@ -29,16 +29,15 @@ C<netdisco.conf>).
 You will need to have Netdisco itself installed on the system as this module
 will try to load the C<netdisco.pm> library.
 
-Below is a complete list of the Perl library dependencies, but to avoid
-muddying your system, use the following shell script to download and install
-them into a custom library path:
+To avoid muddying your system, use the following shell script to download and
+install Perl dependencies into a custom library path:
 
- mkdir -p ~/perl-profiles/netdisco-web
- curl -L http://cpanmin.us/ | perl - --notest --quiet --local-lib-contained "~/perl-profiles/netdisco-web" \
+ curl -L http://cpanmin.us/ | perl - --notest --quiet --local-lib-contained "${HOME}/perl-profiles/netdisco-web" \
      App::cpanminus \
      App::local::lib::helper \
      Dancer \
      DBIx::Class \
+     DBD::Pg \
      Dancer::Plugin::DBIC \
      NetAddr::IP \
      Net::MAC \
@@ -46,20 +45,29 @@ them into a custom library path:
      Net::DNS \
      Socket6 \
      HTML::Entities \
-     Template::Toolkit
+     Template::Toolkit \
+     YAML
 
-Then initialiaze an environment with access to these modules (for the lifetime
-of the shell):
+In case you were wondering, the vast majority of dependencies come from
+L<DBIx::Class>.
 
- ~/perl-profiles/netdisco-web/bin/localenv
+B<Note> that to install L<DBD::Pg> you need the PostgreSQL development libraries
+also installed. Best advice is to omit that item from the above script and try
+to install a prebuilt DBD::Pg package for your OS. The following command will
+test for the existence of DBD::Pg on your system:
+
+ perl -MDBD::Pg\ 999
 
 =head1 STARTUP
 
-There's a simple standalone web server built-in. This is sufficient for
-simple, single-user operation and development, but does not have performance
-for a production environment.
+There's a simple web server built-in. This is sufficient for
+standalone, single-user operation and development, but does not have
+performance for a production environment.
 
- Netdisco/bin/netdisco-web.pl
+The following command initializes an environment which can access the installed
+Perl modules, then starts this small web server:
+
+ ~/perl-profiles/netdisco-web/bin/localenv Netdisco/bin/netdisco-web.pl
 
 Speak to C<oliver> on IRC if you want advice on firing up the application
 under Apache, FastCGI, or other environments.
@@ -78,14 +86,11 @@ configuration file, as explained above.
 
 =head1 RATIONALE
 
-The interface is written using Twitter's Bootstrap CSS library. This makes it
-very easy to achieve a decent look and feel. Additional functionality is
-provided by a few JQuery plugins.
-
 The intention is to support "plugins" for additonal features, most notably
 columns in the Device Port listing, but also new menu items and tabs. The
 design of this is sketched out but not implemented. The goal is to avoid
-patching core code to add localizations or less widely used features.
+patching core code to add localizations or less widely used features. One
+could imagine a C<Netdisco::Web::Plugin::> namespace for these.
 
 Bundled with this app is a L<DBIx::Class> layer for the Netdisco database.
 This could be a starting point for an "official" DBIC layer, but be warned
@@ -98,6 +103,11 @@ style or consistency or performance. That will come later.
 Some sections are not yet implemented, e.g. the Device Module tab.
 
 Menu items on the main black navigation bar go nowhere, except Home.
+
+None of the Reports yet exist (e.g. searching for wireless devices, or duplex
+mismatches). These might be implemented as a plugin bundle.
+
+The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 
 =head1 COPYRIGHT AND LICENCE
 
