@@ -39,8 +39,8 @@ __PACKAGE__->set_primary_key("mac", "ip");
 
 # XXX uncomment the following two lines if you have a "dns" column XXX
 # XXX in your node_ip table which caches the host's name           XXX
-__PACKAGE__->add_column("dns" =>
-  { data_type => "text", is_nullable => 1, accessor => undef });
+#__PACKAGE__->add_column("dns" =>
+#  { data_type => "text", is_nullable => 1, accessor => undef });
 # XXX ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ XXX
 
 # some customize their node_ip table to have a dns column which
