@@ -18,7 +18,7 @@
       );
 
       // submit the query and put results into the tab pane
-      $(target).load( '/ajax/content/search/' + tab + '?' + query,
+      $(target).load( '[% uri_base %]/ajax/content/search/' + tab + '?' + query,
         function(response, status, xhr) {
           if (status !== "success") {
             $(target).html(
@@ -33,7 +33,7 @@
             );
           }
           // looks good, update the bookmark for this search
-          $(mark).attr('href', '/search?' + query);
+          $(mark).attr('href', '[% uri_base %]/search?' + query);
         }
       );
     }

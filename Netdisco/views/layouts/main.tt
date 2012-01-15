@@ -11,12 +11,12 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
 
-  <script type="text/javascript" src="/javascripts/jquery-latest.min.js"></script>
-  <script type="text/javascript" src="/javascripts/jquery-collapser.min.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-alerts.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-twipsy.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-dropdown.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-tabs.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-collapser.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-alerts.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-twipsy.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-dropdown.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-tabs.js"></script>
 
   <script type="text/javascript">
     $(document).ready(function() {
@@ -24,8 +24,8 @@
     });
   </script>
 
-  <link rel="stylesheet" href="/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css">
+  <link rel="stylesheet" href="[% uri_base %]/css/style.css">
 </head>
 
 <body>
@@ -41,22 +41,22 @@
 <div class="topbar" data-dropdown="dropdown">
   <div class="topbar-inner">
     <div class="container-fluid">
-      <a class="brand" href="/">Netdisco</a>
+      <a class="brand" href="[% uri_base %]/">Netdisco</a>
       [% IF session.user %]
       <ul class="nav">
-        <li><a href="/">Home</a></li>
+        <li><a href="[% uri_base %]/">Home</a></li>
         [% IF more_dd.size %]
         <li class="dropdown">
           <a href="#" class="dropdown-toggle">More</a>
           <ul class="dropdown-menu">
             [% FOREACH title IN more_dd.keys.sort %]
-            <li><a href="[% more_dd.$title %]">[% title %]</a></li>
+            <li><a href="[% uri_base %][% more_dd.$title %]">[% title %]</a></li>
             [% END %]
           </ul>
         </li> <!-- /dropdown -->
         [% END %]
       </ul>
-      <form method="get" action="/search">
+      <form method="get" action="[% uri_base %]/search">
         <input placeholder="Search" class="span5" name="q" type="text"/>
       </form>
       <ul class="nav secondary-nav">
@@ -67,7 +67,7 @@
           <a href="#" class="dropdown-toggle">[% session.user %]</a>
           <ul class="dropdown-menu">
             [% FOREACH item IN user_dd %]
-            <li><a href="[% item.link %]">[% item.title %]</a></li>
+            <li><a href="[% uri_base %][% item.link %]">[% item.title %]</a></li>
             [% END %]
           </ul>
         </li> <!-- /dropdown -->
