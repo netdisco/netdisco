@@ -183,18 +183,13 @@ get '/search' => sub {
                 })->count) {
                     params->{'tab'} = 'device';
                 }
-                elsif ($s->resultset('NodeIp')->search({
-                  dns => { '-ilike' => "\%$q\%" },
-                })->count) {
-                    params->{'tab'} = 'node';
-                }
                 elsif ($s->resultset('DevicePort')->search({
                   name => { '-ilike' => "\%$q\%" },
                 })->count) {
                     params->{'tab'} = 'port';
                 }
             }
-            params->{'tab'} ||= 'device';
+            params->{'tab'} ||= 'node';
         }
     }
     elsif (not $q) {
