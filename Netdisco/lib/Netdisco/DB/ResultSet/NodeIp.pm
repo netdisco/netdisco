@@ -47,6 +47,8 @@ sub by_ip {
 sub by_name {
     my ($set, $archive, $name) = @_;
     return $set unless $name;
+    die "do not call by_name unless you have a dns col on the node_ip table."
+      if not $set->has_dns_col;
 
     return $set->search(
       {
@@ -55,7 +57,7 @@ sub by_name {
       },
       {
         %$search_attr,
-        ( $set->has_dns_col ? ('+columns' => 'dns') : () ),
+        '+columns' => 'dns',
       }
     );
 }

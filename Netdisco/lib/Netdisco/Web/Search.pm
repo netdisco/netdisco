@@ -7,6 +7,7 @@ use Dancer::Plugin::DBIC;
 use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
 use List::MoreUtils ();
+use Net::DNS ();
 
 hook 'before' => sub {
     # make hash lookups of query lists
@@ -94,9 +95,33 @@ ajax '/ajax/content/search/node' => sub {
               ->by_ip(param('archived'), $ip);
         }
         else {
-            $node = "\%$node\%" if param('partial');
-            $set = schema('netdisco')->resultset('NodeIp')
-              ->by_name(param('archived'), $node);
+            if (schema('netdisco')->resultset('NodeIp')->has_dns_col) {
+                if (param('partial')) {
+                    $node = "\%$node\%";
+                }
+                elsif (setting('domain_suffix')) {
+                    $node .= setting('domain_suffix')
+                        if index($node, setting('domain_suffix')) == -1;
+                }
+                $set = schema('netdisco')->resultset('NodeIp')
+                  ->by_name(param('archived'), $node);
+            }
+            elsif (setting('domain_suffix')) {
+                $node .= setting('domain_suffix')
+                    if index($node, setting('domain_suffix')) == -1;
+                my $q = Net::DNS::Resolver->new->query($node);
+                if ($q) {
+                    foreach my $rr ($q->answer) {
+                        next unless $rr->type eq 'A';
+                        $node = $rr->address;
+                    }
+                }
+                else {
+                    return;
+                }
+                $set = schema('netdisco')->resultset('NodeIp')
+                  ->by_ip(param('archived'), $node);
+            }
         }
         return unless $set->count;
 
@@ -204,6 +229,9 @@ get '/search' => sub {
         { id => 'vlan',   label => 'VLAN'   },
         { id => 'port',   label => 'Port'   },
     ]);
+
+    var('node_ip_has_dns_col' =>
+      schema('netdisco')->resultset('NodeIp')->has_dns_col);
 
     template 'search';
 };

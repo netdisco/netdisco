@@ -24,6 +24,7 @@
                 <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel label warning">a</span></span>
               </label>
             </div>
+            [% IF vars.node_ip_has_dns_col %]
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="partial" name="partial"[% ' checked="checked"' IF params.partial %]/>
@@ -32,3 +33,4 @@
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
             </div>
+            [% END %]

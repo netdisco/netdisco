@@ -50,7 +50,7 @@ sub dns {
   return $row->get_column('dns')
     if $row->result_source->has_column('dns');
 
-  use Net::DNS;
+  use Net::DNS ();
   my $q = Net::DNS::Resolver->new->query($row->ip);
   if ($q) {
     foreach my $rr ($q->answer) {
