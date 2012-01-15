@@ -91,7 +91,7 @@
           [% ELSE %]
           <span class="label important">n</span>
           <a href="/search?tab=node&q=[% row.remote_ip | uri %]">[% row.remote_ip %] ([% row.remote_port %])
-            <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %]</a>
+            <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %])</a>
           [% END %]
         [% END %]
         [% FOREACH node IN row.get_nodes(params.n_archived) %]
