@@ -24,7 +24,8 @@ post '/login' => sub {
             my $sum = Digest::MD5::md5_hex(param('password'));
             if ($sum and $sum eq $user->password) {
                 session(user => $user->username);
-                redirect param('path') || '/';
+                # redirect param('path') || '/'; FIXME requested_path?
+                redirect uri_for('/');
                 return;
             }
         }
@@ -34,7 +35,7 @@ post '/login' => sub {
 
 get '/logout' => sub {
     session->destroy;
-    redirect '/?logout=1';
+    redirect uri_for('/', {logout => 1});
 };
 
 true;

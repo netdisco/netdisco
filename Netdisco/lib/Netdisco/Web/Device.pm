@@ -122,13 +122,13 @@ ajax '/ajax/content/device/details' => sub {
 get '/device' => sub {
     my $ip = NetAddr::IP::Lite->new(param('ip'));
     if (! $ip) {
-        redirect '/?nosuchdevice=1';
+        redirect uri_for('/', {nosuchdevice => 1});
         return;
     }
 
     my $device = schema('netdisco')->resultset('Device')->find($ip->addr);
     if (! $device) {
-        redirect '/?nosuchdevice=1';
+        redirect uri_for('/', {nosuchdevice => 1});
         return;
     }
 
