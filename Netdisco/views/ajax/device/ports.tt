@@ -69,7 +69,7 @@
         [% SET count  = 0  %]
         [% FOREACH vlan IN row.tagged_vlans %]
           [% SET output = output _
-            '<a href="[% uri_for('/search') %]?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
+            '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
           [% SET output = output _ ', ' IF NOT loop.last %]
           [% SET count = count + 1 %]
         [% END %]
