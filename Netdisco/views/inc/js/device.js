@@ -50,7 +50,7 @@
       );
 
       // submit the query and put results into the tab pane
-      $(target).load( '[% uri_base %]/ajax/content/device/' + tab + '?' + query,
+      $(target).load( '/ajax/content/device/' + tab + '?' + query,
         function(response, status, xhr) {
           if (status !== "success") {
             $(target).html(
@@ -65,7 +65,7 @@
             );
           }
           // looks good, update the bookmark for this search
-          $(mark).attr('href', '[% uri_base %]/device?' + query);
+          $(mark).attr('href', '/device?' + query);
 
           // enable collapser on any large vlan lists
           $('.nd_collapse_vlans').collapser({

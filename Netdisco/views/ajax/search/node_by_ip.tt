@@ -17,12 +17,12 @@
     [% WHILE (row = results.next) %]
     <tr>
       <td><a class="nd_linkcell"
-        href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a></td>
+        href="/search?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a></td>
       [% IF params.vendor %]
       <td>[% row.oui.company %]</td>
       [% END %]
       <td>IP &rarr; MAC</td>
-      <td><a href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
+      <td><a href="/search?[% vars.query_defaults.node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
         [% ' <span class="label warning">a</span>' IF NOT row.active %]
       </td>
@@ -38,7 +38,7 @@
       <td>&nbsp;</td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% uri_base %]/device?tab=ports&ip=[% node.switch | url %]&q=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
+      <td><a href="/device?tab=ports&ip=[% node.switch | url %]&q=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
         [% ' (' _ node.device.dns.remove(settings.domain_suffix) _ ')' IF node.device.dns %]
         [% ' <span class="label warning">a</span>' IF NOT node.active %]
       </td>
@@ -55,7 +55,7 @@
       <td>&nbsp;</td>
       [% END %]
       <td>MAC &rarr; IP</td>
-      <td><a href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% nodeip.ip | uri %]">[% nodeip.ip %]</a>
+      <td><a href="/search?[% vars.query_defaults.node %]&q=[% nodeip.ip | uri %]">[% nodeip.ip %]</a>
         [% ' (' _ nodeip.dns.remove(settings.domain_suffix) _ ')' IF nodeip.dns %]
         [% ' <span class="label warning">a</span>' IF NOT nodeip.active %]
       </td>

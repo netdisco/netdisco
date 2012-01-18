@@ -11,11 +11,6 @@ use Netdisco::Web::AuthN;
 use Netdisco::Web::Search;
 use Netdisco::Web::Device;
 
-hook 'before_template' => sub {
-    my $tokens = shift;
-    $tokens->{uri_base} = request->base->path;
-};
-
 get '/' => sub {
     template 'index';
 };

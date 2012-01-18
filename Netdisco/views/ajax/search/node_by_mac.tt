@@ -20,7 +20,7 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a>
+          href="/search?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -35,7 +35,7 @@
       </td>
       [% END %]
       <td>MAC &rarr; IP</td>
-      <td><a href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
+      <td><a href="/search?[% vars.query_defaults.node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
         [% ' <span class="label warning">a</span>' IF NOT row.active %]
       </td>
@@ -51,7 +51,7 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% node.mac | uri %]">[% node.mac %]</a>
+          href="/search?[% vars.query_defaults.node %]&q=[% node.mac | uri %]">[% node.mac %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -66,7 +66,7 @@
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% uri_base %]/device?tab=ports&ip=[% node.switch | url %]&q=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
+      <td><a href="/device?tab=ports&ip=[% node.switch | url %]&q=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
         [% ' (' _ node.device.dns.remove(settings.domain_suffix) _ ')' IF node.device.dns %]
         [% ' <span class="label warning">a</span>' IF NOT node.active %]
       </td>
@@ -82,7 +82,7 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% uri_base %]/search?[% vars.query_defaults.node %]&q=[% port.mac | uri %]">[% port.mac %]</a>
+          href="/search?[% vars.query_defaults.node %]&q=[% port.mac | uri %]">[% port.mac %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -97,7 +97,7 @@
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% uri_base %]/device?tab=ports&ip=[% port.ip | url %]&q=[% port.port | url %]">[% port.ip %] [ [% port.port %] ]</a>
+      <td><a href="/device?tab=ports&ip=[% port.ip | url %]&q=[% port.port | url %]">[% port.ip %] [ [% port.port %] ]</a>
         [% ' (' _ port.device.dns.remove(settings.domain_suffix) _ ')' IF port.device.dns %]
       </td>
       [% IF params.stamps %]

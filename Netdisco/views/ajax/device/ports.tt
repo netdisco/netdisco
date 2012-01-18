@@ -58,7 +58,7 @@
       [% IF params.c_vlan %]
       <td class="center_cell">
         <a class="nd_linkcell"
-          href="[% uri_base %]/search?tab=vlan&q=[% row.vlan | uri %]">[% row.vlan | html_entity %]</a>
+          href="/search?tab=vlan&q=[% row.vlan | uri %]">[% row.vlan | html_entity %]</a>
       </td>
       [% END %]
       [% IF params.c_vmember %]
@@ -69,7 +69,7 @@
         [% SET count  = 0  %]
         [% FOREACH vlan IN row.tagged_vlans %]
           [% SET output = output _
-            '<a href="[% uri_base %]/search?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
+            '<a href="/search?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
           [% SET output = output _ ', ' IF NOT loop.last %]
           [% SET count = count + 1 %]
         [% END %]
@@ -85,28 +85,28 @@
       <td>
         [% IF row.remote_ip %]
           [% IF row.neighbor %]
-          <a href="[% uri_base %]/device?tab=ports&ip=[% row.neighbor.ip | uri %]&q=[% row.remote_port | uri %]">
+          <a href="/device?tab=ports&ip=[% row.neighbor.ip | uri %]&q=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip %]
             ([% row.remote_port | html_entity %])</a>
           [% ELSE %]
           <span class="label important">n</span>
-          <a href="[% uri_base %]/search?tab=node&q=[% row.remote_ip | uri %]">[% row.remote_ip %] ([% row.remote_port %])
+          <a href="/search?tab=node&q=[% row.remote_ip | uri %]">[% row.remote_ip %] ([% row.remote_port %])
             <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %])</a>
           [% END %]
         [% END %]
         [% FOREACH node IN row.get_nodes(params.n_archived) %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
           [% '<span class="label warning">a</span> &nbsp;' IF NOT node.active %]
-          <a href="[% uri_base %]/search?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>
+          <a href="/search?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>
           [% ' (' _ node.time_last _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
             <br/>&nbsp; [% '<span class="label warning">a</span> &nbsp;' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
-              <a href="[% uri_base %]/search?tab=node&q=[% ip.ip | uri %]">[% ip.dns %] ([% ip.ip %])</a>
+              <a href="/search?tab=node&q=[% ip.ip | uri %]">[% ip.dns %] ([% ip.ip %])</a>
               [% ELSE %]
-              <a href="[% uri_base %]/search?tab=node&q=[% ip.ip | uri %]">[% ip.ip %]</a>
+              <a href="/search?tab=node&q=[% ip.ip | uri %]">[% ip.ip %]</a>
               [% END %]
             [% END %]
           [% END %]
