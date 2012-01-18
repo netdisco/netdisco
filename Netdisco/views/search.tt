@@ -4,7 +4,7 @@
       <div class="tab-content">
         [% FOREACH tab IN vars.tabs %]
         <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">
-          <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="/search">
+          <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/search') %]">
             <div class="clearfix">
               <input class="span3" name="q" value="[% params.q %]" type="text"/>
             </div>
