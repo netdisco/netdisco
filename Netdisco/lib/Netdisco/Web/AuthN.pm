@@ -15,6 +15,8 @@ hook 'before' => sub {
             request->path_info('/');
         }
     }
+    # use Data::Dumper;
+    # Dancer::Logger:core( Dumper request );
 };
 
 post '/login' => sub {
@@ -24,6 +26,7 @@ post '/login' => sub {
             my $sum = Digest::MD5::md5_hex(param('password'));
             if ($sum and $sum eq $user->password) {
                 session(user => $user->username);
+                # session(host => request->header('x-forwarded-for'));
                 # redirect param('path') || '/'; FIXME requested_path?
                 redirect uri_for('/');
                 return;
