@@ -11,12 +11,12 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
 
-  <script type="text/javascript" src="/javascripts/jquery-latest.min.js"></script>
-  <script type="text/javascript" src="/javascripts/jquery-collapser.min.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-alerts.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-twipsy.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-dropdown.js"></script>
-  <script type="text/javascript" src="/javascripts/bootstrap-tabs.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-collapser.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-alerts.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-twipsy.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-dropdown.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-tabs.js"></script>
 
   <script type="text/javascript">
     $(document).ready(function() {
@@ -24,8 +24,8 @@
     });
   </script>
 
-  <link rel="stylesheet" href="/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css">
+  <link rel="stylesheet" href="[% uri_base %]/css/style.css">
 </head>
 
 <body>

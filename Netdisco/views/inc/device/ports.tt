@@ -97,6 +97,6 @@
               <button id="[% tab.id %]_submit" type="submit" class="btn info">Update View</button>
               <a id="[% tab.id %]_bookmark" href="#"
                 rel="twipsy" data-placement="right" data-offset="5" title="Bookmark these Settings">
-                <img class="nd_bookmark" src="/images/glyphicons_072_bookmark.png"></a>
+                <img class="nd_bookmark" src="[% uri_base %]/images/glyphicons_072_bookmark.png"></a>
             </div>
           </form>
