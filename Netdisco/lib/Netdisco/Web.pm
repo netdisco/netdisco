@@ -13,8 +13,13 @@ use Netdisco::Web::Device;
 
 before_template sub {
     my $tokens = shift;
+
+    # allow portable static content
     $tokens->{uri_base} = request->base->path
         if request->base->path ne '/';
+
+    # allow portable dynamic content
+    $tokens->{uri_for} = \&uri_for;
 };
 
 get '/' => sub {

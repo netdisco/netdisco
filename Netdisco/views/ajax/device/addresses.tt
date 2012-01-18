@@ -14,10 +14,10 @@
       <td>[% row.alias %]</a>
       <td>[% row.dns.remove(settings.domain_suffix) %]</a>
       <td class="center_cell"><a class="nd_linkcell"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.port %]">[% row.port %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.port %]">[% row.port %]</a></td>
       <td>[% row.device_port.name %]</td>
       <td><a class="nd_linkcell"
-        href="/search?tab=node&q=[% row.subnet %]">[% row.subnet %]</a></td>
+        href="[% uri_for('/search') %]?tab=node&q=[% row.subnet %]">[% row.subnet %]</a></td>
     </tr>
     [% END %]
   </tbody>

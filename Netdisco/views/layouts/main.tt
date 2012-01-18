@@ -41,16 +41,16 @@
 <div class="topbar" data-dropdown="dropdown">
   <div class="topbar-inner">
     <div class="container-fluid">
-      <a class="brand" href="/">Netdisco</a>
+      <a class="brand" href="[% uri_for('/') %]">Netdisco</a>
       [% IF session.user %]
       <ul class="nav">
-        <li><a href="/">Home</a></li>
+        <li><a href="[% uri_for('/') %]">Home</a></li>
         [% IF more_dd.size %]
         <li class="dropdown">
           <a href="#" class="dropdown-toggle">More</a>
           <ul class="dropdown-menu">
             [% FOREACH title IN more_dd.keys.sort %]
-            <li><a href="[% more_dd.$title %]">[% title %]</a></li>
+            <li><a href="[% uri_for(more_dd.$title) %]">[% title %]</a></li>
             [% END %]
           </ul>
         </li> <!-- /dropdown -->
@@ -67,7 +67,7 @@
           <a href="#" class="dropdown-toggle">[% session.user %]</a>
           <ul class="dropdown-menu">
             [% FOREACH item IN user_dd %]
-            <li><a href="[% item.link %]">[% item.title %]</a></li>
+            <li><a href="[% uri_for(item.link) %]">[% item.title %]</a></li>
             [% END %]
           </ul>
         </li> <!-- /dropdown -->

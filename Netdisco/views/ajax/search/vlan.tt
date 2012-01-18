@@ -13,17 +13,17 @@
     [% WHILE (row = results.next) %]
     <tr>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.vlan.vlan %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.vlan.vlan %]</a></td>
       <td><a class="nd_linkcell"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.dns %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.dns %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.vlan.description %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.vlan.description %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.model %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.model %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.os %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.os %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
-        href="/device?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.vendor %]</a></td>
+        href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.vlan.vlan %]">[% row.vendor %]</a></td>
     </tr>
     [% END %]
   </tbody>
