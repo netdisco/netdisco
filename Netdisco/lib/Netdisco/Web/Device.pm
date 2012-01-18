@@ -34,7 +34,7 @@ hook 'before' => sub {
     ]);
 
     # set up default search options for each type
-    if (request->path =~ m{^/device}) {
+    if (request->path =~ m{/device$}) {
         if (not param('tab') or param('tab') ne 'ports' or scalar keys %{params()} < 4) {
             foreach my $col (@{ var('port_columns') }) {
                 params->{$col->{name}} = 'checked' if $col->{default} eq 'on';

@@ -17,7 +17,7 @@ hook 'before' => sub {
     }
 
     # set up default search options for each type
-    if (request->path =~ m{^/search}) {
+    if (request->path =~ m{/search$}) {
         if (not param('tab') or param('tab') ne 'node') {
             params->{'stamps'} = 'checked';
         }
