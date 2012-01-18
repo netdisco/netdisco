@@ -123,7 +123,7 @@ ajax '/ajax/content/search/node' => sub {
                   ->by_ip(param('archived'), $node);
             }
         }
-        return unless $set->count;
+        return unless $set and $set->count;
 
         template 'ajax/search/node_by_ip.tt', {
           results => $set,

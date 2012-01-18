@@ -84,7 +84,12 @@ called C<dns> then uncomment the two indicated lines in C<NodeIP.pm>.
 Remember you can disable authentication by changing a setting in the
 configuration file, as explained above.
 
-=head1 RATIONALE
+=head1 FUTURE WORK
+
+At the moment the ability to just hit Enter in the title-bar Search is a
+I<hack> because there's no other way to list all Inventory. When the Reports
+code is added, the Inventory will be a part of that. It's understood that
+simply hitting enter should return no results, not all results.
 
 The intention is to support "plugins" for additonal features, most notably
 columns in the Device Port listing, but also new menu items and tabs. The
@@ -108,6 +113,10 @@ None of the Reports yet exist (e.g. searching for wireless devices, or duplex
 mismatches). These might be implemented as a plugin bundle.
 
 The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
+
+When running the standalone built-in web server, it will occasionally
+start to die on you. This usually manifests as returning page content
+but no stylesheet. Restarting the server is the best solution.
 
 =head1 COPYRIGHT AND LICENCE
 
