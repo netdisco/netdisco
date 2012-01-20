@@ -168,3 +168,20 @@ form .clearfix.success input {
 .vlan_total {
   float: right;
 }
+
+/* for placing the sidebar toggle icons */
+#sidebar_toggle_img_in {
+  position: fixed;
+  top: 55px;
+  left: 25px;
+}
+
+/* for placing the sidebar toggle icons */
+#sidebar_toggle_img_out {
+  position: fixed;
+  top: 60px;
+  left: 4px;
+  z-index: 1;
+  display: none;
+}
+
