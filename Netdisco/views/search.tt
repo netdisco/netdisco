@@ -8,7 +8,7 @@
             <div class="clearfix">
               <input class="span3" name="q" value="[% params.q %]" type="text"/>
             </div>
-            [%+ TRY %][% INCLUDE "inc/search/${tab.id}.tt" %][% CATCH %]<!-- no "[% tab.id %]" search options -->[% END %]
+            [%+ TRY %][% INCLUDE "sidebar/search/${tab.id}.tt" %][% CATCH %]<!-- no "[% tab.id %]" search options -->[% END %]
             <input name="tab" value="[% tab.id %]" type="hidden"/>
             <div class="nd_search clearfix">
               <button id="[% tab.id %]_submit" type="submit" class="btn info">Search Again</button>
@@ -38,5 +38,5 @@
 </div>
 
 <script type="text/javascript">
-[%+ INCLUDE 'inc/js/search.js' -%]
+[%+ INCLUDE 'js/search.js' -%]
 </script>

@@ -11,7 +11,7 @@ use Netdisco::Web::AuthN;
 use Netdisco::Web::Search;
 use Netdisco::Web::Device;
 
-before_template sub {
+hook 'before_template' => sub {
     my $tokens = shift;
 
     # allow portable static content

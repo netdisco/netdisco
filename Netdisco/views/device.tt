@@ -8,7 +8,7 @@
             <h3 class="device_label">[% d.ip %]</h3>
             <p class="device_label">[% d.dns.remove(settings.domain_suffix) %]</p>
           </div>
-          [%+ TRY %][% INCLUDE "inc/device/${tab.id}.tt" %][% CATCH %]<!-- no "[% tab.id %]" search options -->[% END %]
+          [%+ TRY %][% INCLUDE "sidebar/device/${tab.id}.tt" %][% CATCH %]<!-- no "[% tab.id %]" search options -->[% END %]
         </div> <!-- /tab-pane -->
         [% END %]
       </div> <!-- /tab-content -->
@@ -29,5 +29,5 @@
 </div>
 
 <script type="text/javascript">
-[%+ INCLUDE 'inc/js/device.js' -%]
+[%+ INCLUDE 'js/device.js' -%]
 </script>
