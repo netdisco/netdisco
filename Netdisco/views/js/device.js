@@ -1,5 +1,5 @@
   $(document).ready(function() {
-    $('.nd_collapse_columns').collapser({
+    $('#nd_collapse_columns').collapser({
       target: 'next',
       effect: 'slide',
       changeText: true,
@@ -7,7 +7,7 @@
       collapseHtml: '<label class="nd_collapser">Display Columns<div class="arrow-down"></div></label>',
     });
 
-    $('.nd_collapse_portprop').collapser({
+    $('#nd_collapse_portprop').collapser({
       target: 'next',
       effect: 'slide',
       changeText: true,
@@ -15,7 +15,7 @@
       collapseHtml: '<label class="nd_collapser">Port Properties<div class="arrow-down"></div></label>',
     });
 
-    $('.nd_collapse_nodeprop').collapser({
+    $('#nd_collapse_nodeprop').collapser({
       target: 'next',
       effect: 'slide',
       changeText: true,
@@ -23,7 +23,7 @@
       collapseHtml: '<label class="nd_collapser">Node Properties<div class="arrow-down"></div></label>',
     });
 
-    $('.nd_collapse_legend').collapser({
+    $('#nd_collapse_legend').collapser({
       target: 'next',
       effect: 'slide',
       changeText: true,
@@ -88,6 +88,9 @@
     [% IF params.tab %]
     $('#[% params.tab %]_form').trigger("submit");
     [% END %]
+
+    // everything starts hidden and then we show defaults
+    $('#nd_collapse_legend').click();
 
     // on tab change, hide previous tab's search form and show new tab's
     // search form. also trigger to load the content for the newly active tab.

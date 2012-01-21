@@ -8,8 +8,8 @@
                 rel="twipsy" data-placement="right" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
-              <a href="#" class="nd_collapse_legend"><label>Legend</label></a>
-                <ul class="inputs-list unstyled">
+              <a href="#" id="nd_collapse_legend"><label>Legend</label></a>
+                <ul class="inputs-list unstyled nd_collapse_pre_hidden">
                   <li>
                     <span class="label">s</span>&nbsp; Admin Disabled
                   </li>
@@ -34,7 +34,7 @@
                 </ul>
             </div>
             <div class="clearfix">
-              <a href="#" class="nd_collapse_columns"><label>Display Columns</label></a>
+              <a href="#" id="nd_collapse_columns"><label>Display Columns</label></a>
               <div class="input nd_collapse_pre_hidden">
                 <ul class="inputs-list">
                   [% FOREACH item IN vars.port_columns %]
@@ -49,7 +49,7 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" class="nd_collapse_portprop"><label>Port Properties</label></a>
+              <a href="#" id="nd_collapse_portprop"><label>Port Properties</label></a>
               <div class="input nd_collapse_pre_hidden">
                 <ul class="inputs-list">
                   <li>
@@ -79,7 +79,7 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" class="nd_collapse_nodeprop"><label>Node Properties</label></a>
+              <a href="#" id="nd_collapse_nodeprop"><label>Node Properties</label></a>
               <div class="input nd_collapse_pre_hidden">
                 <ul class="inputs-list">
                   [% FOREACH item IN vars.connected_properties %]
