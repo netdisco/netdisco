@@ -1,6 +1,5 @@
 <img class="sidebar_toggle" id="sidebar_toggle_img_out"
-  src="[% uri_base %]/images/application_side_expand.png"
-  rel="twipsy" data-placement="right" data-offset="5" title="Show Sidebar"/>
+  src="[% uri_base %]/images/application_side_expand.png"/>
 <div class="container-fluid">
   <div class="sidebar">
     <div class="well">
