@@ -73,7 +73,7 @@ __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
       prefetch => 'ips',
       order_by => 'me.mac',
       '+select' => [
-        \"replace(age(me.time_last)::text, 'mon', 'month')",
+        \"replace(age(date_trunc('minute', me.time_last + interval '30 second'))::text, 'mon', 'month')",
       ],
       '+as' => [
         'me.time_last',
