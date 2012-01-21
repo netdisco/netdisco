@@ -69,6 +69,7 @@ __PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui',
               { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
         };
     }
+    , { join_type => 'LEFT' }
 );
 
 __PACKAGE__->has_many( node_ips => 'Netdisco::DB::Result::NodeIp',

@@ -57,7 +57,7 @@
         [% END %]
       </ul>
       <form method="get" action="[% uri_for('/search') %]">
-        <input placeholder="Search" class="span5" name="q" type="text"/>
+        <input placeholder="Device, Node or VLAN Search" class="span5" name="q" type="text"/>
       </form>
       <ul class="nav secondary-nav">
         <li class="menu">

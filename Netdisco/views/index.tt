@@ -34,7 +34,7 @@
       [% ELSE %]
       <div class="alert-message success fade in" data-alert="on">
         <a class="close" href="#">×</a>
-        <p>Hit <strong>Enter</strong> in the Search box to view the current Inventory.</p>
+        <p>Hit <strong>Enter</strong> in the Search box to view the current Inventory (<em>temporary feature</em>).</p>
       </div>
       [% END %]
       <div class="hero-unit">
