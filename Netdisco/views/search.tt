@@ -1,6 +1,12 @@
+<img class="sidebar_toggle" id="sidebar_toggle_img_out"
+  src="[% uri_base %]/images/application_side_expand.png"
+  rel="twipsy" data-placement="right" data-offset="5" title="Show Sidebar"/>
 <div class="container-fluid">
   <div class="sidebar">
     <div class="well">
+      <img class="sidebar_toggle" id="sidebar_toggle_img_in"
+        src="[% uri_base %]/images/application_side_contract.png"
+        rel="twipsy" data-placement="below" data-offset="5" title="Hide Sidebar"/>
       <div class="tab-content">
         [% FOREACH tab IN vars.tabs %]
         <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">

@@ -6,7 +6,7 @@
     <div class="well">
       <img class="sidebar_toggle" id="sidebar_toggle_img_in"
         src="[% uri_base %]/images/application_side_contract.png"
-        rel="twipsy" data-placement="right" data-offset="5" title="Hide Sidebar"/>
+        rel="twipsy" data-placement="below" data-offset="5" title="Hide Sidebar"/>
       <h3 class="device_label">[% d.ip %]</h3>
       <p class="device_label">[% d.dns.remove(settings.domain_suffix) %]</p>
       <div class="tab-content">

@@ -104,4 +104,6 @@
         $(this).parent(".clearfix").addClass('success');
       }
     });
+
+[%+ INCLUDE 'js/sidebar.js' -%]
   });
