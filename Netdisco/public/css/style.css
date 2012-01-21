@@ -195,3 +195,11 @@ h3.device_label {
   position: fixed !important;
   margin-top: 50px;
 }
+
+/* little sweep brush inside of port filter input field */
+.field_clear_icon {
+  position: absolute;
+  margin-left: 137px;
+  margin-top: 6px;
+  z-index: 1;
+}

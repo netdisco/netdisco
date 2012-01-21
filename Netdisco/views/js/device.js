@@ -79,19 +79,6 @@
       );
     }
 
-    // search hook for each tab
-    [% FOREACH tab IN vars.tabs %]
-    $('[% "#${tab.id}_form" %]').submit(function(event){ do_search(event, '[% tab.id %]'); });
-    [% END %]
-
-    // on page load, load the content for the active tab
-    [% IF params.tab %]
-    $('#[% params.tab %]_form').trigger("submit");
-    [% END %]
-
-    // everything starts hidden and then we show defaults
-    $('#nd_collapse_legend').click();
-
     // on tab change, hide previous tab's search form and show new tab's
     // search form. also trigger to load the content for the newly active tab.
     $('#search_results').bind('change', function(e) {
@@ -116,6 +103,25 @@
       $(this).parents('.add-on').toggleClass('active', $(this).is(':checked'));
     };
     $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
+
+    // handler for sweeping brush icon in port filter box
+    $('.field_clear_icon').click(function() {
+      $('#ports_form').find("input[name=q]").val('');
+      $('#ports_form').trigger('submit');
+    });
+
+    // search hook for each tab
+    [% FOREACH tab IN vars.tabs %]
+    $('[% "#${tab.id}_form" %]').submit(function(event){ do_search(event, '[% tab.id %]'); });
+    [% END %]
+
+    // on page load, load the content for the active tab
+    [% IF params.tab %]
+    $('#[% params.tab %]_form').trigger("submit");
+    [% END %]
+
+    // everything starts hidden and then we show defaults
+    $('#nd_collapse_legend').click();
 
 [%+ INCLUDE 'js/sidebar.js' -%]
   });
