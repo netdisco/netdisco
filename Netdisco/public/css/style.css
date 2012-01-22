@@ -199,7 +199,12 @@ h3.device_label {
 /* little sweep brush inside of port filter input field */
 .field_clear_icon {
   position: absolute;
-  margin-left: 137px;
-  margin-top: 6px;
+  margin-left: 132px;
   z-index: 1;
+}
+
+/* make the sweep icon fill the height of the input field
+so that its tooltip takes prescedence over the field tooltip */
+.field_clear_icon > img {
+  padding: 6px;
 }
