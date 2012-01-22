@@ -17,7 +17,7 @@
         href="[% uri_for('/device') %]?tab=ports&ip=[% row.ip %]&q=[% row.port %]">[% row.port %]</a></td>
       <td>[% row.device_port.name %]</td>
       <td><a class="nd_linkcell"
-        href="[% uri_for('/search') %]?tab=node&q=[% row.subnet %]">[% row.subnet %]</a></td>
+        href="[% uri_for('/search') %]?tab=device&ip=[% row.subnet %]">[% row.subnet %]</a></td>
     </tr>
     [% END %]
   </tbody>
