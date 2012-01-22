@@ -43,7 +43,7 @@ sub by_field {
     return $set unless ref {} eq ref $p;
     my $op = $p->{matchall} ? '-and' : '-or';
 
-    # this is a bit of a dreadful hack to catch junk entry
+    # this is a bit of an ungraceful backflip to catch junk entry
     # whilst avoiding returning all devices in the DB
     my $ip = ($p->{ip} ?
       (NetAddr::IP::Lite->new($p->{ip}) || NetAddr::IP::Lite->new('255.255.255.255'))
@@ -89,6 +89,21 @@ sub by_any {
     return $set unless $q;
     $q = "\%$q\%" if $q !~ m/\%/;
 
+    # basic IP check is a string match
+    my $ip_clause = [
+        'me.ip::text'  => { '-ilike' => $q },
+        'device_ips.alias::text' => { '-ilike' => $q },
+    ];
+
+    # but also allow prefix search
+    (my $qc = $q) =~ s/\%//g;
+    if (my $ip = NetAddr::IP::Lite->new($qc)) {
+        $ip_clause = [
+            'me.ip'  => { '<<=' => $ip->cidr },
+            'device_ips.alias' => { '<<=' => $ip->cidr },
+        ];
+    }
+
     return $set->search(
       {
         -or => [
@@ -101,10 +116,7 @@ sub by_any {
             'me.dns'      => { '-ilike' => $q },
             'device_ips.dns' => { '-ilike' => $q },
           ],
-          -or => [
-            'me.ip::text'  => { '-ilike' => $q },
-            'device_ips.alias::text' => { '-ilike' => $q },
-          ],
+          -or => $ip_clause,
         ],
       },
       {
