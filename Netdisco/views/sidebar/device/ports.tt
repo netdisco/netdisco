@@ -4,7 +4,7 @@
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
-                rel="twipsy" data-placement="right" data-offset="5" title="Show all Ports">
+                rel="twipsy" data-placement="right" data-offset="3" title="Show all Ports">
                 <img src="[% uri_base %]/images/sweep.png"/></a>
               <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
                 name="q" value="[% params.q %]" type="text"
