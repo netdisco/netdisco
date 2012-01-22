@@ -104,9 +104,27 @@
     };
     $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
 
+    // show or hide sweeping brush icon when field has content
+    var sweep = $('#ports_form').find("input[name=q]");
+
+    if (sweep.val() === "") {
+      $('.field_clear_icon').hide();
+    } else {
+      $('.field_clear_icon').show();
+    }
+
+    sweep.change(function() {
+      if ($(this).val() === "") {
+        $('.field_clear_icon').hide();
+      } else {
+        $('.field_clear_icon').show();
+      }
+    });
+
     // handler for sweeping brush icon in port filter box
     $('.field_clear_icon').click(function() {
-      $('#ports_form').find("input[name=q]").val('');
+      sweep.val('');
+      $('.field_clear_icon').hide();
       $('#ports_form').trigger('submit');
     });
 
