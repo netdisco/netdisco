@@ -1,0 +1,24 @@
+0.2  2011-01-22
+
+  [NEW FEATURES]
+
+  * "Show All Ports" in Device Ports view:
+    A little sweeping brush icon appears when the ports view is filtered.
+    Clicking the icon will clear the filter and resubmit the form.
+
+  * Sidebar can be hidden and unhidden to assist viewing of wide tables.
+
+  [ENHANCEMENTS]
+
+  * Added this Changes file.
+  * Reorganised TT template file names and locations.
+  * Connected device Age is now rounded to the minute.
+
+  [BUG FIXES]
+
+  * Join type to OUI table is now "LEFT" to allow empty OUI table.
+  * Device Ports Legend show/hide arrow was pointing the wrong way.
+
+0.1  2011-01-18
+
+  * Initial release on an unsuspecting world.
