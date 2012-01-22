@@ -45,9 +45,21 @@ form .clearfix.success input {
   padding-top: 4px !important;
 }
 
-/* icolour for device name and ip in sidebar */
+/* colour for device name and ip in sidebar */
 .device_label {
   color: #660033;
+}
+
+/* right hand side device label */
+.device_label_right {
+  float: right !important;
+  margin-top: -3px !important;
+  display: none;
+}
+
+/* take a block element and force it inline */
+.inline {
+  display: inline !important;
 }
 
 /* nudge content in the sidebar closer to the left */
@@ -208,3 +220,4 @@ so that its tooltip takes prescedence over the field tooltip */
 .field_clear_icon > img {
   padding: 6px;
 }
+
