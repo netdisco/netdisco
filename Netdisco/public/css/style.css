@@ -53,7 +53,7 @@ form .clearfix.success input {
 /* right hand side device label */
 .device_label_right {
   float: right !important;
-  margin-top: -3px !important;
+  margin-bottom: -7px !important;
   display: none;
 }
 
@@ -65,6 +65,8 @@ form .clearfix.success input {
 /* nudge content in the sidebar closer to the left */
 .nd_sidesearchform {
   padding-left: 0px;
+  margin-bottom: 0px;
+  /* margin-top: 8px; */
 }
 
 /* fixups for prepended checkbox in sidebar */
@@ -185,6 +187,7 @@ form .clearfix.success input {
 #sidebar_toggle_img_in {
   margin-top: -10px;
   margin-left: 164px;
+  cursor: pointer;
 }
 
 /* for placing the sidebar toggle icons */
@@ -193,6 +196,7 @@ form .clearfix.success input {
   top: 60px;
   left: 4px;
   z-index: 1;
+  cursor: pointer;
   display: none;
 }
 
@@ -220,4 +224,3 @@ so that its tooltip takes prescedence over the field tooltip */
 .field_clear_icon > img {
   padding: 6px;
 }
-

@@ -1,10 +1,10 @@
 <img class="sidebar_toggle" id="sidebar_toggle_img_out"
-  src="[% uri_base %]/images/application_side_expand.png"/>
+  src="[% uri_base %]/images/splashyfish_right.png"/>
 <div class="container-fluid">
   <div class="sidebar">
     <div class="well">
       <img class="sidebar_toggle" id="sidebar_toggle_img_in"
-        src="[% uri_base %]/images/application_side_contract.png"
+        src="[% uri_base %]/images/splashyfish_left.png"
         rel="twipsy" data-placement="below" data-offset="5" title="Hide Sidebar"/>
       <h3 class="device_label">[% d.ip %]</h3>
       [% IF d.dns %]
