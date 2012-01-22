@@ -20,6 +20,9 @@ hook 'before_template' => sub {
 
     # allow portable dynamic content
     $tokens->{uri_for} = \&uri_for;
+
+    # allow very long lists of ports
+    $Template::Directive::WHILE_MAX = 10_000;
 };
 
 get '/' => sub {
