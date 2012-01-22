@@ -26,6 +26,7 @@
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css">
   <link rel="stylesheet" href="[% uri_base %]/css/style.css">
+  <link rel="stylesheet" href="[% uri_base %]/css/print.css" media="print">
 </head>
 
 <body>

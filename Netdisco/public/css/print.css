@@ -1,0 +1,16 @@
+.topbar, .sidebar {
+  display: none !important;
+}
+
+#search_results > :not(.active) {
+  display: none;
+}
+
+.nd_content {
+  margin-left: 5px !important;
+}
+
+.device_label_right {
+  display: inline !important;
+  float: left !important;
+}
