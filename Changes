@@ -8,6 +8,8 @@
 
   * Sidebar can be hidden and unhidden to assist viewing of wide tables.
 
+  * Added Print Stylesheet (hides navbar and sidebar).
+
   [ENHANCEMENTS]
 
   * Added this Changes file.
@@ -18,6 +20,7 @@
 
   * Join type to OUI table is now "LEFT" to allow empty OUI table.
   * Device Ports Legend show/hide arrow was pointing the wrong way.
+  * Increase TT WHILE_MAX to allow very long lists of ports.
 
 0.1  2011-01-18
 
