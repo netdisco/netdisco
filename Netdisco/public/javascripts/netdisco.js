@@ -16,7 +16,7 @@ function do_search (event, tab) {
   // get the form params
   var query = $(form).serialize();
 
-  if (window.History.enabled) {
+  if (window.History && window.History.enabled) {
     is_from_history_plugin = 1;
     window.History.replaceState(
       {name: tab, fields: $(form).serializeArray()},
@@ -71,7 +71,7 @@ function update_content(from, to) {
   var to_form = '#' + to + '_form';
   var from_form = '#' + from + '_form';
 
-  if (window.History.enabled && is_from_state_event == 0) {
+  if (window.History && window.History.enabled && is_from_state_event == 0) {
     is_from_history_plugin = 1;
     window.History.pushState(
       {name: to, fields: $(to_form).serializeArray()},
@@ -85,7 +85,7 @@ function update_content(from, to) {
 }
 
 // handler for ajax navigation
-if (window.History.enabled) { 
+if (window.History && window.History.enabled) {
   var History = window.History;
   History.Adapter.bind(window, "statechange", function() {
     if (is_from_history_plugin == 0) {
@@ -146,6 +146,10 @@ $(document).ready(function() {
 
     var from = from_li.find('a').attr('href');
     var to = $(this).attr('href');
+
+    if (from == to) {
+      return;
+    }
 
     $(from).toggleClass('active');
     $(to).toggleClass('active');
