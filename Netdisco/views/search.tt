@@ -32,7 +32,7 @@
   <div class="nd_content content">
     <ul id="search_results" class="tabs" data-tabs="on">
       [% FOREACH tab IN vars.tabs %]
-      <li[% ' class="active"' IF params.tab == tab.id %]><a href="#[% tab.id %]_pane">[% tab.label %]</a></li>
+      <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
       [% END %]
     </ul>
     <div class="tab-content">

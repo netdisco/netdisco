@@ -1,5 +1,6 @@
 
           <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/device') %]">
+            <input name="tab" value="[% tab.id %]" type="hidden"/>
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <input name="q" value="[% params.q %]" type="hidden"/>
           </form>
