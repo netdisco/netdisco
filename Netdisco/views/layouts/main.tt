@@ -20,10 +20,9 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-dropdown.js"></script>
 
   <script type="text/javascript">
-    $(document).ready(function() {
-      $("[rel=twipsy]").twipsy({live: true});
-    });
+    var uri_base = '[% uri_base %]';
   </script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco.js"></script>
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css">
   <link rel="stylesheet" href="[% uri_base %]/css/style.css">
@@ -80,5 +79,10 @@
 </div>
 
 [% content %]
+
+<script type="text/javascript">
+[%+ INCLUDE 'js/common.js' -%]
+</script>
+
 </body>
 </html>

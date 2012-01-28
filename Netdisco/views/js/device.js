@@ -1,3 +1,18 @@
+  function inner_view_processing() {
+    // enable collapser on any large vlan lists
+    $('.nd_collapse_vlans').collapser({
+      target: 'next',
+      effect: 'slide',
+      changeText: true,
+      expandHtml: '<div class="cell-arrow-up"></div><div class="nd_collapser">Show VLANs</div>',
+      collapseHtml: '<div class="cell-arrow-down"></div><div class="nd_collapser">Hide VLANs</div>',
+    });
+  }
+
+  // used by the tabbing interface to make sure the correct
+  // ajax content is loaded
+  var path = 'device';
+
   $(document).ready(function() {
     $('#nd_collapse_columns').collapser({
       target: 'next',
@@ -57,19 +72,4 @@
 
     // everything starts hidden and then we show defaults
     $('#nd_collapse_legend').click();
-
-    function inner_view_processing() {
-      // enable collapser on any large vlan lists
-      $('.nd_collapse_vlans').collapser({
-        target: 'next',
-        effect: 'slide',
-        changeText: true,
-        expandHtml: '<div class="cell-arrow-up"></div><div class="nd_collapser">Show VLANs</div>',
-        collapseHtml: '<div class="cell-arrow-down"></div><div class="nd_collapser">Hide VLANs</div>',
-      });
-    }
-
-[%+ INCLUDE 'js/tabs.js' path="device" -%]
-[%+ INCLUDE 'js/sidebar.js' -%]
-[%+ INCLUDE 'js/fixes.js' -%]
   });

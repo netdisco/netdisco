@@ -1,11 +1,11 @@
-  $(document).ready(function() {
-    // fix green background on search checkboxes
-    // https://github.com/twitter/bootstrap/issues/742
-    syncCheckBox = function() {
-      $(this).parents('.add-on').toggleClass('active', $(this).is(':checked'));
-    };
-    $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
+  // this is called by do_search to support local code
+  function inner_view_processing() {}
 
+  // used by the tabbing interface to make sure the correct
+  // ajax content is loaded
+  var path = 'search';
+
+  $(document).ready(function() {
     // highlight active search filters in green
     // there must be a way to factor this out to a func but my JS is weak :-/
 
@@ -38,9 +38,4 @@
       }
     });
 
-    function inner_view_processing() {} // noop
-
-[%+ INCLUDE 'js/tabs.js' path="search" -%]
-[%+ INCLUDE 'js/sidebar.js' -%]
-[%+ INCLUDE 'js/fixes.js' -%]
   });
