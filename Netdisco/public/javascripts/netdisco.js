@@ -20,7 +20,9 @@ function do_search (event, tab) {
     is_from_history_plugin = 1;
     window.History.replaceState(
       {name: tab, fields: $(form).serializeArray()},
-      'Netdisco - '+ tab.charAt(0).toUpperCase() + tab.slice(1),
+      'Netdisco '
+        + path.charAt(0).toUpperCase() + path.slice(1) + ' - '
+        + tab.charAt(0).toUpperCase() + tab.slice(1),
       uri_base + '/' + path + '?' + query
     );
     is_from_history_plugin = 0;
@@ -75,7 +77,9 @@ function update_content(from, to) {
     is_from_history_plugin = 1;
     window.History.pushState(
       {name: to, fields: $(to_form).serializeArray()},
-      'Netdisco '+ $(to_form).find("input[name=ip]").val()  +' '+ to.charAt(0).toUpperCase() + to.slice(1),
+      'Netdisco '
+        + path.charAt(0).toUpperCase() + path.slice(1) + ' - '
+        + to.charAt(0).toUpperCase() + to.slice(1),
       uri_base + '/' + path + '?' + $(to_form).serialize()
     );
     is_from_history_plugin = 0;
