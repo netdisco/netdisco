@@ -1,11 +1,12 @@
 <img class="sidebar_toggle" id="sidebar_toggle_img_out"
-  src="[% uri_base %]/images/splashyfish_right.png"/>
+  src="[% uri_base %]/images/dusseldorf_settings.png"
+  rel="twipsy" data-placement="left" data-offset="5" title="Show Options"/>
 <div class="container-fluid">
   <div class="sidebar">
     <div class="well">
       <img class="sidebar_toggle" id="sidebar_toggle_img_in"
-        src="[% uri_base %]/images/splashyfish_left.png"
-        rel="twipsy" data-placement="below" data-offset="5" title="Hide Sidebar"/>
+        src="[% uri_base %]/images/splashyfish_right.png"
+        rel="twipsy" data-placement="left" data-offset="5" title="Hide"/>
       <h3 class="device_label">[% d.ip %]</h3>
       [% IF d.dns %]
       <p class="device_label">[% d.dns.remove(settings.domain_suffix) %]</p>
@@ -20,7 +21,7 @@
     </div>
   </div>
 
-  <div class="nd_content content">
+  <div class="content">
     <ul id="search_results" class="tabs" data-tabs="on">
       [% FOREACH tab IN vars.tabs %]
       <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>

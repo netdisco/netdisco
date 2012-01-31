@@ -4,11 +4,11 @@
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
-                rel="twipsy" data-placement="right" data-offset="3" title="Show all Ports">
+                rel="twipsy" data-placement="left" data-offset="3" title="Show all Ports">
                 <img src="[% uri_base %]/images/tango_sweep.png"/></a>
               <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
                 name="q" value="[% params.q %]" type="text"
-                rel="twipsy" data-placement="right" data-offset="5" title="Filter by Port, Name or VLAN"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
               <a href="#" id="nd_collapse_legend"><label>Legend</label></a>
@@ -63,7 +63,7 @@
                   </li>
                   <p></p>
                   <li>
-                    <span rel="twipsy" data-placement="right" data-offset="5" title="Free if Down for this period of time">
+                    <span rel="twipsy" data-placement="left" data-offset="5" title="Free if Down for this period of time">
                     <select class="nd_days_select" name="age_num"/>
                       [% SET count = 1 %]
                       [% WHILE count < 32 %]
@@ -99,7 +99,7 @@
             <div class="nd_search clearfix">
               <button id="[% tab.id %]_submit" type="submit" class="btn info">Update View</button>
               <a id="[% tab.id %]_bookmark" href="#"
-                rel="twipsy" data-placement="right" data-offset="5" title="Bookmark these Settings">
+                rel="twipsy" data-placement="left" data-offset="5" title="Bookmark these Settings">
                 <img class="nd_bookmark" src="[% uri_base %]/images/glyphicons_072_bookmark.png"></a>
             </div>
           </form>

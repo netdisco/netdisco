@@ -3,32 +3,32 @@
             <div class="clearfix">
               <input class="span3" placeholder="System Name"
                 type="text" name="name" value="[% params.name %]"
-                rel="twipsy" data-placement="right" data-offset="5" title="System Name"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="System Name"/>
             </div>
             <div class="clearfix">
               <input class="span3" placeholder="Location"
                 type="text" name="location" value="[% params.location %]"
-                rel="twipsy" data-placement="right" data-offset="5" title="Location"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="Location"/>
             </div>
             <div class="clearfix">
               <input class="span3" placeholder="DNS"
                 type="text" name="dns" value="[% params.dns %]"
-                rel="twipsy" data-placement="right" data-offset="5" title="DNS"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="DNS"/>
             </div>
             <div class="clearfix">
               <input class="span3" placeholder="IP Address"
                 type="text" name="ip" value="[% params.ip %]"
-                rel="twipsy" data-placement="right" data-offset="5" title="IP Address"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="IP Address"/>
             </div>
             <div class="clearfix">
               <input class="span3" placeholder="Description"
                 type="text" name="description" value="[% params.description %]"
-                rel="twipsy" data-placement="right" data-offset="5" title="Description"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="Description"/>
             </div>
             <div class="clearfix">
               <select class="span3" size="[% vars.model_list.size > 5 ? 5 : vars.model_list.size %]"
                 multiple="on" name="model"
-                rel="twipsy" data-placement="right" data-offset="5" title="Model"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="Model"/>
                 [% FOREACH opt IN vars.model_list %]
                 <option[% ' selected="selected"' IF vars.model_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
@@ -37,7 +37,7 @@
             <div class="clearfix">
               <select class="span3" size="[% vars.os_ver_list.size > 5 ? 5 : vars.os_ver_list.size %]"
                 multiple="on" name="os_ver"
-                rel="twipsy" data-placement="right" data-offset="5" title="OS Release"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="OS Release"/>
                 [% FOREACH opt IN vars.os_ver_list %]
                 <option[% ' selected="selected"' IF vars.os_ver_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
@@ -46,7 +46,7 @@
             <div class="clearfix">
               <select class="span3" size="[% vars.vendor_list.size > 5 ? 5 : vars.vendor_list.size %]"
                 multiple="on" name="vendor"
-                rel="twipsy" data-placement="right" data-offset="5" title="Vendor"/>
+                rel="twipsy" data-placement="left" data-offset="5" title="Vendor"/>
                 [% FOREACH opt IN vars.vendor_list %]
                 <option[% ' selected="selected"' IF vars.vendor_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]

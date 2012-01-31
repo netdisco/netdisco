@@ -36,20 +36,6 @@ form .clearfix.success input {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* right hand side device label */
-
-.device_label_right {
-  float: right !important;
-  margin-bottom: -7px !important;
-  display: none;
-}
-
-/* take a block element and force it inline */
-.inline {
-  display: inline !important;
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* results table links */
 
 .nd_stealthlink {
@@ -201,12 +187,27 @@ h3.device_label {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* right hand side device label */
+
+.device_label_right {
+  float: right !important;
+  margin-bottom: -7px !important;
+  display: none;
+}
+
+/* take a block element and force it inline */
+.inline {
+  display: inline !important;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* sidebar collapser */
 
 /* for placing the sidebar toggle icons */
 #sidebar_toggle_img_in {
-  margin-top: -10px;
-  margin-left: 164px;
+  float: right;
+  margin-top: -7px;
+  margin-right: -16px;
   cursor: pointer;
 }
 
@@ -214,7 +215,7 @@ h3.device_label {
 #sidebar_toggle_img_out {
   position: fixed;
   top: 60px;
-  left: 4px;
+  right: 7px;
   z-index: 1;
   cursor: pointer;
   display: none;
@@ -224,30 +225,30 @@ h3.device_label {
 /* sidebar placement and sizing */
 
 /* make the sidebar fixed on the screen */
-.sidebar {
-  position: fixed !important;
+.container-fluid > .sidebar {
+  position: fixed;
   margin-top: 50px;
-}
-
-/* make the sidebar less wide */
-.well {
-  margin-right: 15px;
+  right: 20px;
+  width: 200px;
+  left: auto;
 }
 
 /* make the content start more to the left now the sidebar is narrower */
-.nd_content {
-  margin-left: 225px !important;
-}
-
-/* nudge content closer to the header labels in the sidebar */
-.inputs-list:first-child {
-  padding-top: 4px !important;
+.container-fluid > .content {
+  margin-right: 220px;
+  margin-left: 0px;
 }
 
 /* nudge content in the sidebar closer to the left */
 .nd_sidesearchform {
   padding-left: 0px;
+  margin-top: -7px;
   margin-bottom: 0px;
+}
+
+/* nudge content closer to the header labels in the sidebar */
+.inputs-list:first-child {
+  padding-top: 4px !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
