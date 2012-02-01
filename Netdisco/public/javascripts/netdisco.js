@@ -3,7 +3,6 @@
 function do_search (event, tab) {
   var form = '#' + tab + '_form';
   var target = '#' + tab + '_pane';
-  var mark = '#' + tab + '_bookmark';
 
   // stop form from submitting normally
   event.preventDefault();
@@ -48,8 +47,6 @@ function do_search (event, tab) {
           '<div class="span3 alert-message info"><p>No matching records.</p></div>'
         );
       }
-      // looks good, update the bookmark for this search
-      $(mark).attr('href', uri_base + '/' + path + '?' + query);
 
       inner_view_processing();
     }
@@ -146,22 +143,22 @@ $(document).ready(function() {
     var from_li = $('.tabs').find('> .active').first();
     var to_li = $(this).parent('li')
 
-    from_li.removeClass('active');
-    to_li.addClass('active');
+    from_li.toggleClass('active');
+    to_li.toggleClass('active');
 
-    var from = from_li.find('a').attr('href');
-    var to = $(this).attr('href');
+    var from_id = from_li.find('a').attr('href');
+    var to_id = $(this).attr('href');
 
-    if (from == to) {
+    if (from_id == to_id) {
       return;
     }
 
-    $(from).toggleClass('active');
-    $(to).toggleClass('active');
+    $(from_id).toggleClass('active');
+    $(to_id).toggleClass('active');
 
     update_content(
-      from.replace(/^#/,"").replace(/_pane$/,""),
-      to.replace(/^#/,"").replace(/_pane$/,"")
+      from_id.replace(/^#/,"").replace(/_pane$/,""),
+      to_id.replace(/^#/,"").replace(/_pane$/,"")
     );
   });
 });

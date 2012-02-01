@@ -26,16 +26,6 @@ body {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* change highlighting for form fields which are being used in a search */
-
-form .clearfix.success select {
-  background-color: #A9DBA9;
-}
-form .clearfix.success input {
-  background-color: #A9DBA9;
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* results table links */
 
 .nd_stealthlink {
@@ -121,6 +111,25 @@ form .clearfix.success input {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* tabs */
+
+#search_results {
+    margin-bottom: 10px;
+}
+
+/* right hand side device label */
+.device_label_right {
+  float: right !important;
+  margin-bottom: -7px !important;
+  display: none;
+}
+
+/* take a block element and force it inline */
+.inline {
+  display: inline !important;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
 /* fixups for prepended checkbox in sidebar */
@@ -144,16 +153,6 @@ form .clearfix.success input {
   margin-left: -2px !important;
 }
 
-/* search/filter button placement */
-.nd_search {
-  margin-top: 15px;
-}
-
-/* placement of the search/filter bookmark link icon */
-.nd_bookmark {
-  vertical-align: top;
-}
-
 /* nudge the port name/vlan filter over a little */
 .nd_port_query {
   margin-left: -2px !important;
@@ -172,6 +171,14 @@ so that its tooltip takes prescedence over the field tooltip */
   padding: 6px;
 }
 
+/* change highlighting for form fields which are being used in a search */
+form .clearfix.success select {
+  background-color: #A9DBA9;
+}
+form .clearfix.success input {
+  background-color: #A9DBA9;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* device and ip label in sidebar */
 
@@ -187,26 +194,12 @@ h3.device_label {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* right hand side device label */
-
-.device_label_right {
-  float: right !important;
-  margin-bottom: -7px !important;
-  display: none;
-}
-
-/* take a block element and force it inline */
-.inline {
-  display: inline !important;
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* sidebar collapser */
 
 /* for placing the sidebar toggle icons */
 #sidebar_toggle_img_in {
   float: left;
-  margin-top: -6px;
+  margin-top: -9px;
   margin-left: -18px;
   cursor: pointer;
 }
@@ -241,7 +234,7 @@ h3.device_label {
 /* nudge content in the sidebar closer to the left */
 .nd_sidesearchform {
   padding-left: 0px;
-  margin-top: -7px;
+  margin-top: -9px;
   margin-bottom: 0px;
 }
 
