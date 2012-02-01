@@ -16,8 +16,10 @@
             [% TRY %]
             [% INCLUDE "sidebar/search/${tab.id}.tt" %]
             <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Search Again</button>
+            <script type="text/javascript">has_sidebar["[% tab.id %]"] = 1;</script>
             [% CATCH %]
             <!-- no "[% tab.id %]" search options -->
+            <script type="text/javascript">has_sidebar["[% tab.id %]"] = 0;</script>
             [% END %]
           </form>
         </div> <!-- /tab-pane -->

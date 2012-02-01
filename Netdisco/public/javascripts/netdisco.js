@@ -12,6 +12,22 @@ function do_search (event, tab) {
     $(this).val( $(form).find("input[name=q]").val() );
   });
 
+  // hide or show sidebars depending on previous state,
+  // and whether the sidebar contains any content (detected by TT)
+  if (has_sidebar[tab] == 0) {
+    $('.sidebar, #sidebar_toggle_img_out').hide();
+    $('.content').css('margin-right', '10px !important');
+  }
+  else {
+    if (sidebar_hidden) {
+      $('#sidebar_toggle_img_out').show();
+    }
+    else {
+      $('.content').css('margin-right', '220px !important');
+      $('.sidebar').show();
+    }
+  }
+
   // get the form params
   var query = $(form).serialize();
 
@@ -52,6 +68,10 @@ function do_search (event, tab) {
     }
   );
 }
+
+// keep track of which tabs have a sidebar, for when switching tab
+var has_sidebar = {};
+var sidebar_hidden = 0;
 
 // the history.js plugin is great, but fires statechange at pushState
 // so we have these semaphpores to help avoid messing the History.
@@ -121,6 +141,7 @@ $(document).ready(function() {
           $('.device_label_right').toggle();
         }
       );
+      sidebar_hidden = 1;
     }
   );
   $('#sidebar_toggle_img_out').click(
@@ -133,6 +154,7 @@ $(document).ready(function() {
           $(window).scrollTop(0);
         }
       );
+      sidebar_hidden = 0;
     }
   );
 
