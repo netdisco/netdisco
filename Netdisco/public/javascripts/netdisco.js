@@ -120,7 +120,7 @@ $(document).ready(function() {
       $('.sidebar').toggle(
         function() {
           $('#sidebar_toggle_img_out').toggle();
-          $('.content').animate({'margin-right': '10px !important'}, 100);
+          $('.content').animate({'margin-right': '10px !important'}, 50);
           $('.device_label_right').toggle();
         }
       );
@@ -129,10 +129,11 @@ $(document).ready(function() {
   $('#sidebar_toggle_img_out').click(
     function() {
       $('#sidebar_toggle_img_out').toggle();
-      $('.content').animate({'margin-right': '220px !important'}, 200,
+      $('.content').animate({'margin-right': '220px !important'}, 100,
         function() {
           $('.device_label_right').toggle();
           $('.sidebar').toggle(200);
+          $(window).scrollTop(0);
         }
       );
     }

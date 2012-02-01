@@ -205,9 +205,9 @@ h3.device_label {
 
 /* for placing the sidebar toggle icons */
 #sidebar_toggle_img_in {
-  float: right;
-  margin-top: -7px;
-  margin-right: -16px;
+  float: left;
+  margin-top: -6px;
+  margin-left: -18px;
   cursor: pointer;
 }
 
@@ -226,8 +226,7 @@ h3.device_label {
 
 /* make the sidebar fixed on the screen */
 .container-fluid > .sidebar {
-  position: fixed;
-  margin-top: 50px;
+  position: absolute;
   right: 20px;
   width: 200px;
   left: auto;
