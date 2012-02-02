@@ -7,20 +7,21 @@
       <img class="sidebar_toggle" id="sidebar_toggle_img_in"
         src="[% uri_base %]/images/splashyfish_right.png"
         rel="twipsy" data-placement="left" data-offset="5" title="Hide Sidebar"/>
-      <h3 class="device_label">[% d.ip %]</h3>
-      [% IF d.dns %]
-      <p class="device_label">[% d.dns.remove(settings.domain_suffix) %]</p>
-      [% END %]
       <div class="tab-content">
         [% FOREACH tab IN vars.tabs %]
         <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">
-          [% TRY %]
-          [% INCLUDE "sidebar/device/${tab.id}.tt" %]
-          <script type="text/javascript">has_sidebar["[% tab.id %]"] = 1;</script>
-          [% CATCH %]
-          <!-- no "[% tab.id %]" search options -->
-          <script type="text/javascript">has_sidebar["[% tab.id %]"] = 0;</script>
-          [% END %]
+          <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/device') %]">
+            <input name="tab" value="[% tab.id %]" type="hidden"/>
+            [% TRY %]
+            [% INCLUDE "sidebar/device/${tab.id}.tt" %]
+            <script type="text/javascript">has_sidebar["[% tab.id %]"] = 1;</script>
+            [% CATCH %]
+            <!-- no "[% tab.id %]" search options -->
+            <input name="ip" value="[% params.ip %]" type="hidden"/>
+            <input name="q" value="[% params.q %]" type="hidden"/>
+            <script type="text/javascript">has_sidebar["[% tab.id %]"] = 0;</script>
+            [% END %]
+          </form>
         </div> <!-- /tab-pane -->
         [% END %]
       </div> <!-- /tab-content -->

@@ -1,5 +1,6 @@
 
             <p><em>Device Search Options</em></p>
+            <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix">
               <input class="span3" placeholder="System Name"
                 type="text" name="name" value="[% params.name %]"
@@ -60,3 +61,4 @@
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
               </label>
             </div>
+            <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Search Again</button>

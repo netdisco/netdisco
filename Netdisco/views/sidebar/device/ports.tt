@@ -1,10 +1,9 @@
 
-          <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/device') %]">
-            <input name="tab" value="[% tab.id %]" type="hidden"/>
+            <p><em>Port Filter Options</em></p>
             <input name="ip" value="[% params.ip %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
-                rel="twipsy" data-placement="left" data-offset="3" title="Show all Ports">
+                rel="twipsy" data-placement="above" data-offset="3" title="Show all Ports">
                 <img src="[% uri_base %]/images/tango_sweep.png"/></a>
               <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
                 name="q" value="[% params.q %]" type="text"
@@ -96,10 +95,4 @@
                 </ul>
               </div>
             </div>
-            <div class="nd_search clearfix">
-              <button id="[% tab.id %]_submit" type="submit" class="btn info">Update View</button>
-              <a id="[% tab.id %]_bookmark" href="#"
-                rel="twipsy" data-placement="left" data-offset="5" title="Bookmark these Settings">
-                <img class="nd_bookmark" src="[% uri_base %]/images/glyphicons_072_bookmark.png"></a>
-            </div>
-          </form>
+            <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Update View</button>
