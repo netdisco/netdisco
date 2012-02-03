@@ -1,3 +1,20 @@
+0.3  2011-02-03
+
+  [NEW FEATURES]
+
+  * Browser History is updated with each tab change (HTML5 State). Also
+    the browser url is updated, meaning the Bookmark icon is no longer
+    necessary.
+
+  * Sidebar is now on the right hand side of the window, and is only
+    displayed when there are options for the current tab.
+
+  [ENHANCEMENTS]
+
+  * Refactor Javascript to place most in a static file, speed templating.
+  * Refactor Stylsheets to better organise and comment the settings.
+  * When Device Search sidebar is in use, strikethrough the navbar search.
+
 0.2  2011-01-22
 
   [NEW FEATURES]
