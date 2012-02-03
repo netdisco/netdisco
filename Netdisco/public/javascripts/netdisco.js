@@ -136,30 +136,33 @@ $(document).ready(function() {
   };
   $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
 
+  // sidebar toggle - pinning
+  $('#sidebar_pin_box').click(function() {
+    $(this).toggleClass('sidebar_pin_box_pressed');
+    $('.sidebar').toggleClass('sidebar_pinned');
+  });
   // sidebar toggle - trigger in/out on image click()
-  $('#sidebar_toggle_img_in').click(
-    function() {
-      $('.sidebar').toggle(
-        function() {
-          $('#sidebar_toggle_img_out').toggle();
-          $('.content').animate({'margin-right': '10px !important'}, 50);
+  $('#sidebar_toggle_img_in').click(function() {
+    $('.sidebar').toggle(
+      function() {
+        $('#sidebar_toggle_img_out').toggle();
+        $('.content').animate({'margin-right': '10px !important'}, 50);
+      }
+    );
+    sidebar_hidden = 1;
+  });
+  $('#sidebar_toggle_img_out').click(function() {
+    $('#sidebar_toggle_img_out').toggle();
+    $('.content').animate({'margin-right': '220px !important'}, 100,
+      function() {
+        $('.sidebar').toggle(200);
+        if (! $('.sidebar').hasClass('sidebar_pinned')) {
+            $(window).scrollTop(0);
         }
-      );
-      sidebar_hidden = 1;
-    }
-  );
-  $('#sidebar_toggle_img_out').click(
-    function() {
-      $('#sidebar_toggle_img_out').toggle();
-      $('.content').animate({'margin-right': '220px !important'}, 100,
-        function() {
-          $('.sidebar').toggle(200);
-          $(window).scrollTop(0);
-        }
-      );
-      sidebar_hidden = 0;
-    }
-  );
+      }
+    );
+    sidebar_hidden = 0;
+  });
 
   // could not get twitter bootstrap tabs to behave, so implemented this
   // but warning! will probably not work for dropdowns in tabs

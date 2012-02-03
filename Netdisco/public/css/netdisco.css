@@ -175,6 +175,31 @@ form .clearfix.success input {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* sidebar collapser */
 
+/* for placing the sidebar pin icon */
+#sidebar_pin_box {
+  float: right;
+  margin: 0px;
+  margin-top: -12px;
+  margin-right: -12px;
+  padding: 0px;
+  cursor: pointer;
+}
+
+.sidebar_pin_box_pressed {
+  background-color: #DCDCDC;
+}
+
+.sidebar_pinned {
+  position: fixed !important;
+  margin-top: 50px;
+}
+
+#sidebar_pin {
+  padding-top: 2px;
+  padding-left: 1px;
+  padding-right: 2px;
+}
+
 /* for placing the sidebar toggle icons */
 #sidebar_toggle_img_in {
   float: left;
