@@ -1,12 +1,12 @@
 
             <p><em>Port Filter Options</em></p>
-            <input name="ip" value="[% params.ip %]" type="hidden"/>
+            <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
                 rel="twipsy" data-placement="above" data-offset="3" title="Show all Ports">
                 <img src="[% uri_base %]/images/tango_sweep.png"/></a>
               <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
-                name="q" value="[% params.q %]" type="text"
+                name="f" value="[% params.f %]" type="text"
                 rel="twipsy" data-placement="left" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">

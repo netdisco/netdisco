@@ -47,7 +47,7 @@
     });
 
     // show or hide sweeping brush icon when field has content
-    var sweep = $('#ports_form').find("input[name=q]");
+    var sweep = $('#ports_form').find("input[name=f]");
 
     if (sweep.val() === "") {
       $('.field_clear_icon').hide();

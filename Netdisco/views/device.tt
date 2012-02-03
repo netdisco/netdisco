@@ -17,8 +17,8 @@
             <script type="text/javascript">has_sidebar["[% tab.id %]"] = 1;</script>
             [% CATCH %]
             <!-- no "[% tab.id %]" search options -->
-            <input name="ip" value="[% params.ip %]" type="hidden"/>
             <input name="q" value="[% params.q %]" type="hidden"/>
+            <input name="f" value="[% params.f %]" type="hidden"/>
             <script type="text/javascript">has_sidebar["[% tab.id %]"] = 0;</script>
             [% END %]
           </form>
