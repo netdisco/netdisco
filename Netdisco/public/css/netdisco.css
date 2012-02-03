@@ -117,18 +117,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* right hand side device label */
-.device_label_right {
-  float: right !important;
-  margin-bottom: -7px !important;
-  display: none;
-}
-
-/* take a block element and force it inline */
-.inline {
-  display: inline !important;
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
@@ -177,20 +165,6 @@ form .clearfix.success select {
 }
 form .clearfix.success input {
   background-color: #A9DBA9;
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* device and ip label in sidebar */
-
-/* pull the device label closer to the top of the sidebar
-to reduce the useless gap */
-h3.device_label {
-  margin-top: -12px;
-}
-
-/* colour for device name and ip in sidebar */
-.device_label {
-  color: #660033;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

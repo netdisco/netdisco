@@ -33,12 +33,6 @@
       [% FOREACH tab IN vars.tabs %]
       <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
       [% END %]
-      <li class="device_label_right">
-        <h3 class="inline device_label">[% d.ip %]</h3>
-        [% IF d.dns %]
-        <h5 class="inline device_label">([% d.dns.remove(settings.domain_suffix) %])</h5>
-        [% END %]
-      </li>
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN vars.tabs %]
