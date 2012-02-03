@@ -54,7 +54,7 @@ ajax '/ajax/content/device/:thing' => sub {
 
 # device interface addresses
 ajax '/ajax/content/device/addresses' => sub {
-    my $ip = param('ip');
+    my $ip = param('q');
     return unless $ip;
 
     my $set = schema('netdisco')->resultset('DeviceIp')->search({ip => $ip}, { order_by => 'alias' });
@@ -68,13 +68,13 @@ ajax '/ajax/content/device/addresses' => sub {
 
 # device ports with a description (er, name) matching
 ajax '/ajax/content/device/ports' => sub {
-    my $ip = param('ip');
+    my $ip = param('q');
     return unless $ip;
 
     my $set = schema('netdisco')->resultset('DevicePort')->by_ip($ip);
 
     # refine by ports if requested
-    my $q = param('q');
+    my $q = param('f');
     if ($q) {
         if ($q =~ m/^\d+$/) {
             $set = $set->by_vlan($q);
@@ -107,7 +107,7 @@ ajax '/ajax/content/device/ports' => sub {
 
 # device details table
 ajax '/ajax/content/device/details' => sub {
-    my $ip = param('ip');
+    my $ip = param('q');
     return unless $ip;
 
     my $device = schema('netdisco')->resultset('Device')->find($ip);
@@ -120,7 +120,7 @@ ajax '/ajax/content/device/details' => sub {
 };
 
 get '/device' => sub {
-    my $ip = NetAddr::IP::Lite->new(param('ip'));
+    my $ip = NetAddr::IP::Lite->new(param('q'));
     if (! $ip) {
         redirect uri_for('/', {nosuchdevice => 1});
         return;

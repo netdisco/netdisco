@@ -1,0 +1,225 @@
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* for the fixed navbar make sure content stops short of page top*/
+
+body {
+  padding-top: 50px;
+}
+
+.navbar_icon {
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* various styles to adjust the hero box used for homepage + login */
+
+.nd_loginalert {
+  margin-top: -40px;
+}
+
+.nd_herorow {
+  margin-top: 50px;
+}
+
+.hero-unit {
+  padding: 30px 60px 40px 90px;
+}
+
+.nd_loginform {
+  margin-top: 30px;
+  margin-bottom: 0px;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* results table links */
+
+.nd_stealthlink {
+  text-decoration: none !important;
+  color: #404040;
+}
+
+/* make the whole cell become a hyperlink in results table */
+.nd_linkcell {
+  display: block;
+  padding: 0px;
+  height: 100%;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* many styles for the collapsing lists */
+
+/* mouse-over should be pointer to show JS collapser is clickable */
+.nd_collapser {
+  cursor: pointer;
+}
+
+/* collapser label should not have any decoration even though it's clickable */
+.clearfix > a {
+  text-decoration: none !important;
+}
+
+/* class to control default state of collapsible lists on page load */
+.nd_collapse_pre_hidden {
+  display: none;
+}
+
+/* draw little up arrow to the right of a label for collapsed list */
+.arrow-up {
+  float: right;
+  margin-top: 6px;
+  margin-right: 11px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 8px solid #F89406;
+}
+
+/* draw little down arrow to the right of a label for collapsed list */
+.arrow-down {
+  float: right;
+  margin-top: 6px;
+  margin-right: 11px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #F89406;
+}
+
+/* for the tagged vlans total when hiding the full list */
+.vlan_total {
+  float: right;
+}
+
+/* draw little up arrow to the right of a label for collapsed list */
+.cell-arrow-up {
+  float: left;
+  margin-top: 5px;
+  margin-right: 6px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 8px solid #F89406;
+}
+
+/* draw little down arrow to the right of a label for collapsed list */
+.cell-arrow-down {
+  float: left;
+  margin-top: 5px;
+  margin-right: 6px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #F89406;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* for table to center cell content */
+
+.center_cell {
+  text-align: center;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* tabs */
+
+#search_results {
+    margin-bottom: 10px;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* style customization for many items which appear in the sidebar */
+
+/* fixups for prepended checkbox in sidebar */
+.nd_searchcheckbox {
+  width: 120px;
+  padding-left: 35px;
+  cursor: pointer;
+}
+
+/* fixups for placing the Archived "A" inside the prepended checkbox */
+.nd_legendlabel {
+  float: right;
+  line-height: 1.2;
+  margin-top: 2px;
+  margin-right: 3px;
+}
+
+/* somewhere between span1 and span2 is desirable */
+.nd_days_select {
+  width: 56px;
+  margin-left: -2px !important;
+}
+
+/* nudge the port name/vlan filter over a little */
+.nd_port_query {
+  margin-left: -2px !important;
+}
+
+/* little sweep brush inside of port filter input field */
+.field_clear_icon {
+  position: absolute;
+  margin-left: 132px;
+  z-index: 1;
+}
+
+/* make the sweep icon fill the height of the input field
+so that its tooltip takes prescedence over the field tooltip */
+.field_clear_icon > img {
+  padding: 6px;
+}
+
+/* change highlighting for form fields which are being used in a search */
+form .clearfix.success select {
+  background-color: #A9DBA9;
+}
+form .clearfix.success input {
+  background-color: #A9DBA9;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* sidebar collapser */
+
+/* for placing the sidebar toggle icons */
+#sidebar_toggle_img_in {
+  float: left;
+  margin-top: -9px;
+  margin-left: -18px;
+  cursor: pointer;
+}
+
+/* for placing the sidebar toggle icons */
+#sidebar_toggle_img_out {
+  position: fixed;
+  top: 60px;
+  right: 7px;
+  z-index: 1;
+  cursor: pointer;
+  display: none;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* sidebar placement and sizing */
+
+/* make the sidebar fixed on the screen */
+.container-fluid > .sidebar {
+  position: absolute;
+  right: 20px;
+  width: 200px;
+  left: auto;
+}
+
+/* make the content start more to the left now the sidebar is narrower */
+.container-fluid > .content {
+  margin-right: 220px;
+  margin-left: 0px;
+}
+
+/* nudge content in the sidebar closer to the left */
+.nd_sidesearchform {
+  padding-left: 0px;
+  margin-top: -9px;
+  margin-bottom: 0px;
+}
+
+/* nudge content closer to the header labels in the sidebar */
+.inputs-list:first-child {
+  padding-top: 4px !important;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

@@ -25,8 +25,8 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco.js"></script>
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css">
-  <link rel="stylesheet" href="[% uri_base %]/css/style.css">
-  <link rel="stylesheet" href="[% uri_base %]/css/print.css" media="print">
+  <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css">
+  <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print">
 </head>
 
 <body>
@@ -58,7 +58,8 @@
         [% END %]
       </ul>
       <form method="get" action="[% uri_for('/search') %]">
-        <input placeholder="Device, Node or VLAN Search" class="span5" name="q" type="text"/>
+        <input placeholder="Find Anything" class="span5" id="nq" name="q" type="text"/>
+        <img id="navsearchgo" class="navbar_icon" src="[% uri_base %]/images/crystalclear_mag.png"/>
       </form>
       <ul class="nav secondary-nav">
         <li class="menu">

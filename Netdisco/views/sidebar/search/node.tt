@@ -1,5 +1,6 @@
 
             <p><em>Node Search Options</em></p>
+            <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="stamps" name="stamps"[% ' checked="checked"' IF params.stamps %]/>
@@ -34,3 +35,4 @@
               </label>
             </div>
             [% END %]
+            <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Search Again</button>

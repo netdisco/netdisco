@@ -3,7 +3,6 @@
 function do_search (event, tab) {
   var form = '#' + tab + '_form';
   var target = '#' + tab + '_pane';
-  var mark = '#' + tab + '_bookmark';
 
   // stop form from submitting normally
   event.preventDefault();
@@ -12,6 +11,22 @@ function do_search (event, tab) {
   $('form').find("input[name=q]").each( function() {
     $(this).val( $(form).find("input[name=q]").val() );
   });
+
+  // hide or show sidebars depending on previous state,
+  // and whether the sidebar contains any content (detected by TT)
+  if (has_sidebar[tab] == 0) {
+    $('.sidebar, #sidebar_toggle_img_out').hide();
+    $('.content').css('margin-right', '10px !important');
+  }
+  else {
+    if (sidebar_hidden) {
+      $('#sidebar_toggle_img_out').show();
+    }
+    else {
+      $('.content').css('margin-right', '220px !important');
+      $('.sidebar').show();
+    }
+  }
 
   // get the form params
   var query = $(form).serialize();
@@ -48,13 +63,15 @@ function do_search (event, tab) {
           '<div class="span3 alert-message info"><p>No matching records.</p></div>'
         );
       }
-      // looks good, update the bookmark for this search
-      $(mark).attr('href', uri_base + '/' + path + '?' + query);
 
       inner_view_processing();
     }
   );
 }
+
+// keep track of which tabs have a sidebar, for when switching tab
+var has_sidebar = {};
+var sidebar_hidden = 0;
 
 // the history.js plugin is great, but fires statechange at pushState
 // so we have these semaphpores to help avoid messing the History.
@@ -107,6 +124,11 @@ $(document).ready(function() {
   // activate tooltips
   $("[rel=twipsy]").twipsy({live: true});
 
+  // bind submission to the navbar go icon
+  $('#navsearchgo').click(function() {
+    $('#navsearchgo').parent('form').submit();
+  });
+
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742
   syncCheckBox = function() {
@@ -120,21 +142,22 @@ $(document).ready(function() {
       $('.sidebar').toggle(
         function() {
           $('#sidebar_toggle_img_out').toggle();
-          $('.nd_content').animate({'margin-left': '5px !important'}, 100);
-          $('.device_label_right').toggle();
+          $('.content').animate({'margin-right': '10px !important'}, 50);
         }
       );
+      sidebar_hidden = 1;
     }
   );
   $('#sidebar_toggle_img_out').click(
     function() {
       $('#sidebar_toggle_img_out').toggle();
-      $('.nd_content').animate({'margin-left': '225px !important'}, 200,
+      $('.content').animate({'margin-right': '220px !important'}, 100,
         function() {
-          $('.device_label_right').toggle();
           $('.sidebar').toggle(200);
+          $(window).scrollTop(0);
         }
       );
+      sidebar_hidden = 0;
     }
   );
 
@@ -145,22 +168,22 @@ $(document).ready(function() {
     var from_li = $('.tabs').find('> .active').first();
     var to_li = $(this).parent('li')
 
-    from_li.removeClass('active');
-    to_li.addClass('active');
+    from_li.toggleClass('active');
+    to_li.toggleClass('active');
 
-    var from = from_li.find('a').attr('href');
-    var to = $(this).attr('href');
+    var from_id = from_li.find('a').attr('href');
+    var to_id = $(this).attr('href');
 
-    if (from == to) {
+    if (from_id == to_id) {
       return;
     }
 
-    $(from).toggleClass('active');
-    $(to).toggleClass('active');
+    $(from_id).toggleClass('active');
+    $(to_id).toggleClass('active');
 
     update_content(
-      from.replace(/^#/,"").replace(/_pane$/,""),
-      to.replace(/^#/,"").replace(/_pane$/,"")
+      from_id.replace(/^#/,"").replace(/_pane$/,""),
+      to_id.replace(/^#/,"").replace(/_pane$/,"")
     );
   });
 });

@@ -85,7 +85,7 @@
       <td>
         [% IF row.remote_ip %]
           [% IF row.neighbor %]
-          <a href="[% uri_for('/device') %]?tab=ports&ip=[% row.neighbor.ip | uri %]&q=[% row.remote_port | uri %]">
+          <a href="[% uri_for('/device') %]?tab=ports&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip %]
             ([% row.remote_port | html_entity %])</a>
           [% ELSE %]
