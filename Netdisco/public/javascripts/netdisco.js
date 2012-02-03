@@ -124,6 +124,11 @@ $(document).ready(function() {
   // activate tooltips
   $("[rel=twipsy]").twipsy({live: true});
 
+  // bind submission to the navbar go icon
+  $('#navsearchgo').click(function() {
+    $('#navsearchgo').parent('form').submit();
+  });
+
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742
   syncCheckBox = function() {

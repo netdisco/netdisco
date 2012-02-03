@@ -5,6 +5,11 @@ body {
   padding-top: 50px;
 }
 
+.navbar_icon {
+  vertical-align: middle;
+  cursor: pointer;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
 
