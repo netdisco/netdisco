@@ -6,36 +6,25 @@
   var path = 'search';
 
   $(document).ready(function() {
-    // highlight active search filters in green
-    // there must be a way to factor this out to a func but my JS is weak :-/
+    // highlight active search filters in green.
+    // strikethrough the navbar search if using device_form instead.
 
-    $("form .clearfix input").not("[name=q]").each(function() {
-      if ($(this).val() === "") {
-        $(this).parent(".clearfix").removeClass('success');
-      } else {
-        $(this).parent(".clearfix").addClass('success');
-      }
-    });
-    $("form .clearfix input").not("[name=q]").change(function() {
-      if ($(this).val() === "") {
-        $(this).parent(".clearfix").removeClass('success');
-      } else {
-        $(this).parent(".clearfix").addClass('success');
-      }
-    });
-    $("form .clearfix select").each(function() {
-      if ($(this).find(":selected").length === 0) {
-        $(this).parent(".clearfix").removeClass('success');
-      } else {
-        $(this).parent(".clearfix").addClass('success');
-      }
-    });
-    $("form .clearfix select").change(function() {
-      if ($(this).find(":selected").length === 0) {
-        $(this).parent(".clearfix").removeClass('success');
-      } else {
-        $(this).parent(".clearfix").addClass('success');
-      }
-    });
+    var d_inputs = $("#device_form .clearfix input").not('[type="checkbox"]')
+        .add("#device_form .clearfix select");
 
+    function device_form_state(e) {
+      if (e.is('[value!=""]')) {
+        e.parent(".clearfix").addClass('success');
+        $('#nq').css('text-decoration', 'line-through');
+      }
+      else {
+        e.parent(".clearfix").removeClass('success');
+        if (! d_inputs.is('[value!=""]') ) {
+          $('#nq').css('text-decoration', 'none');
+        }
+      }
+    }
+
+    d_inputs.each(function() {device_form_state($(this))});
+    d_inputs.change(function() {device_form_state($(this))});
   });
