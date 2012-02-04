@@ -65,13 +65,15 @@ ajax '/ajax/content/search/node' => sub {
     content_type('text/html');
 
     my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+    my @active = (param('archived') ? () : (active => 1));
+
     if (eval { $mac->as_IEEE }) {
 
         my $sightings = schema('netdisco')->resultset('Node')
-          ->by_mac(param('archived'), $mac->as_IEEE);
+          ->search_by_mac({mac => $mac->as_IEEE, @active});
 
         my $ips = schema('netdisco')->resultset('NodeIp')
-          ->by_mac(param('archived'), $mac->as_IEEE);
+          ->search_by_mac({mac => $mac->as_IEEE, @active});
 
         my $ports = schema('netdisco')->resultset('DevicePort')
           ->by_mac($mac->as_IEEE);
@@ -90,9 +92,9 @@ ajax '/ajax/content/search/node' => sub {
         my $set;
 
         if (my $ip = NetAddr::IP::Lite->new($node)) {
-            # by_ip() will extract cidr notation if necessary
+            # search_by_ip() will extract cidr notation if necessary
             $set = schema('netdisco')->resultset('NodeIp')
-              ->by_ip(param('archived'), $ip);
+              ->search_by_ip({ip => $ip, @active});
         }
         else {
             if (schema('netdisco')->resultset('NodeIp')->has_dns_col) {
@@ -104,7 +106,7 @@ ajax '/ajax/content/search/node' => sub {
                         if index($node, setting('domain_suffix')) == -1;
                 }
                 $set = schema('netdisco')->resultset('NodeIp')
-                  ->by_name(param('archived'), $node);
+                  ->search_by_dns({dns => $node, @active});
             }
             elsif (setting('domain_suffix')) {
                 $node .= setting('domain_suffix')
@@ -120,13 +122,16 @@ ajax '/ajax/content/search/node' => sub {
                     return;
                 }
                 $set = schema('netdisco')->resultset('NodeIp')
-                  ->by_ip(param('archived'), $node);
+                  ->search_by_ip({ip => $node, @active});
             }
         }
         return unless $set and $set->count;
 
         template 'ajax/search/node_by_ip.tt', {
-          results => $set,
+          macs => $set,
+          # a callback for the templates, which
+          # allows modification of the DB query before execution
+          archive_filter => sub { (shift)->search({@active}) },
         }, { layout => undef };
     }
 };

@@ -50,10 +50,20 @@ __PACKAGE__->set_primary_key("mac", "switch", "port");
 
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device',
   { 'foreign.ip' => 'self.switch' }, { join_type => 'LEFT' } );
+
+# device port may have been deleted (reconfigured modules?) but node remains
 __PACKAGE__->belongs_to( device_port => 'Netdisco::DB::Result::DevicePort',
-  { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' }, { join_type => 'LEFT' } );
+  { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' },
+  { join_type => 'LEFT' }
+);
+
 __PACKAGE__->has_many( ips => 'Netdisco::DB::Result::NodeIp',
   { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
+
 __PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui', 'oui' );
+
+# accessors for custom formatted columns
+sub time_first_stamp { return (shift)->get_column('time_first_stamp') }
+sub time_last_stamp  { return (shift)->get_column('time_last_stamp')  }
 
 1;

@@ -14,7 +14,7 @@
     </tr>
   </thead>
   </tbody>
-    [% WHILE (row = results.next) %]
+    [% WHILE (row = macs.next) %]
     <tr>
       <td><a class="nd_linkcell"
         href="[% uri_for('/search') %]?[% vars.query_defaults.node %]&q=[% row.mac | uri %]">[% row.mac %]</a></td>
@@ -27,11 +27,11 @@
         [% ' <span class="label warning">a</span>' IF NOT row.active %]
       </td>
       [% IF params.stamps %]
-      <td>[% row.time_first %]</td>
-      <td>[% row.time_last %]</td>
+      <td>[% row.time_first_stamp %]</td>
+      <td>[% row.time_last_stamp %]</td>
       [% END %]
     </tr>
-    [% FOREACH node IN row.node_sightings(params.archived) %]
+    [% FOREACH node IN archive_filter(row.node_sightings) %]
     <tr>
       <td>&nbsp;</td>
       [% IF params.vendor %]
@@ -43,12 +43,12 @@
         [% ' <span class="label warning">a</span>' IF NOT node.active %]
       </td>
       [% IF params.stamps %]
-      <td>[% node.time_first %]</td>
-      <td>[% node.time_last %]</td>
+      <td>[% node.time_first_stamp %]</td>
+      <td>[% node.time_last_stamp %]</td>
       [% END %]
     </tr>
     [% END %]
-    [% FOREACH nodeip IN row.ip_aliases(params.archived) %]
+    [% FOREACH nodeip IN archive_filter(row.ip_aliases) %]
     <tr>
       <td>&nbsp;</td>
       [% IF params.vendor %]
@@ -60,8 +60,8 @@
         [% ' <span class="label warning">a</span>' IF NOT nodeip.active %]
       </td>
       [% IF params.stamps %]
-      <td>[% nodeip.time_first %]</td>
-      <td>[% nodeip.time_last %]</td>
+      <td>[% nodeip.time_first_stamp %]</td>
+      <td>[% nodeip.time_last_stamp %]</td>
       [% END %]
     </tr>
     [% END %]
