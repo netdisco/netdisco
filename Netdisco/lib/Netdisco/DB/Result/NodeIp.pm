@@ -77,45 +77,38 @@ __PACKAGE__->has_many( node_ips => 'Netdisco::DB::Result::NodeIp',
 __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
   { 'foreign.mac' => 'self.mac' } );
 
-sub ip_aliases {
-    my ($row, $archive) = @_;
+my $search_attr = {
+    order_by => {'-desc' => 'time_last'},
+    '+select' => [
+      \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
+      \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+    ],
+    '+as' => [qw/ time_first_stamp time_last_stamp /],
+};
 
-    return $row->node_ips(
-      {
-        ip  => { '!=' => $row->ip },
-        ($archive ? () : (active => 1)),
-      },
-      {
-        order_by => {'-desc' => 'time_last'},
-        columns => [qw/ mac ip active /],
-        ( $row->result_source->has_column('dns') ? ('+columns' => 'dns') : () ),
-        '+select' => [
-          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
-        ],
-        '+as' => [qw/ time_first time_last /],
-      },
-    );
+sub ip_aliases {
+    my ($row, $cond) = @_;
+    my $rs = $row->node_ips({ip  => { '!=' => $row->ip }});
+
+    $rs = $rs->search_rs({}, {'+columns' => 'dns'})
+      if $rs->has_dns_col;
+
+    return $rs->search($cond, $search_attr);
 }
 
 sub node_sightings {
-    my ($row, $archive) = @_;
+    my ($row, $cond) = @_;
 
-    return $row->nodes(
-      {
-        ($archive ? () : (active => 1)),
-      },
-      {
-        order_by => {'-desc' => 'time_last'},
-        columns => [qw/ mac switch port oui active device.dns /],
-        '+select' => [
-          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
-        ],
-        '+as' => [qw/ time_first time_last /],
+    return $row
+      ->nodes({}, $search_attr)
+      ->search($cond, {
+        '+columns' => [qw/ device.dns /],
         join => 'device',
-      },
-    );
+    });
 }
+
+# accessors for custom formatted columns
+sub time_first_stamp { return (shift)->get_column('time_first_stamp') }
+sub time_last_stamp  { return (shift)->get_column('time_last_stamp')  }
 
 1;

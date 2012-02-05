@@ -31,7 +31,7 @@
       <td>[% row.time_last_stamp %]</td>
       [% END %]
     </tr>
-    [% FOREACH node IN archive_filter(row.node_sightings) %]
+    [% FOREACH node IN row.node_sightings(archive_filter) %]
     <tr>
       <td>&nbsp;</td>
       [% IF params.vendor %]
@@ -48,7 +48,7 @@
       [% END %]
     </tr>
     [% END %]
-    [% FOREACH nodeip IN archive_filter(row.ip_aliases) %]
+    [% FOREACH nodeip IN row.ip_aliases(archive_filter) %]
     <tr>
       <td>&nbsp;</td>
       [% IF params.vendor %]

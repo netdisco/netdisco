@@ -129,9 +129,7 @@ ajax '/ajax/content/search/node' => sub {
 
         template 'ajax/search/node_by_ip.tt', {
           macs => $set,
-          # a callback for the templates, which
-          # allows modification of the DB query before execution
-          archive_filter => sub { (shift)->search({@active}) },
+          archive_filter => {@active},
         }, { layout => undef };
     }
 };
