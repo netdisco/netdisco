@@ -76,7 +76,7 @@ ajax '/ajax/content/search/node' => sub {
           ->search_by_mac({mac => $mac->as_IEEE, @active});
 
         my $ports = schema('netdisco')->resultset('DevicePort')
-          ->by_mac($mac->as_IEEE);
+          ->search_by_mac({mac => $mac->as_IEEE});
 
         return unless $sightings->count
             or $ips->count
@@ -161,10 +161,10 @@ ajax '/ajax/content/search/port' => sub {
     my $set;
 
     if ($q =~ m/^\d+$/) {
-        $set = schema('netdisco')->resultset('DevicePort')->by_vlan($q);
+        $set = schema('netdisco')->resultset('DevicePort')->search_by_vlan({vlan => $q});
     }
     else {
-        $set = schema('netdisco')->resultset('DevicePort')->by_name($q);
+        $set = schema('netdisco')->resultset('DevicePort')->search_by_name({name => $q});
     }
     return unless $set->count;
 
@@ -213,9 +213,8 @@ get '/search' => sub {
                 })->count) {
                     params->{'tab'} = 'device';
                 }
-                elsif ($s->resultset('DevicePort')->search({
-                  name => { '-ilike' => "\%$q\%" },
-                })->count) {
+                elsif ($s->resultset('DevicePort')
+                         ->search_by_name({name => "\%$q\%"})->count) {
                     params->{'tab'} = 'port';
                 }
             }

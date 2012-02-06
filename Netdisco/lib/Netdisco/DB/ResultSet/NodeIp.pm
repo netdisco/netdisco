@@ -24,7 +24,7 @@ my $search_attr = {
 
 =head1 search_by_ip( \%cond, \%attrs? )
 
- my $set = $rs->search_by_ip({ip => '123.123.123.123', active => 1});
+ my $set = $rs->search_by_ip({ip => '192.0.2.1', active => 1});
 
 Like C<search()>, this returns a C<$resultset> of matching rows from the
 NodeIp table.
@@ -77,8 +77,8 @@ sub search_by_ip {
       if $rs->has_dns_col;
 
     return $rs
-      ->search_rs($cond, %$attrs)
-      ->search({}, $search_attr);
+      ->search_rs({}, $search_attr)
+      ->search($cond, $attrs);
 }
 
 =head1 search_by_name( \%cond, \%attrs? )
@@ -132,9 +132,9 @@ sub search_by_dns {
     $attrs ||= {};
 
     return $rs
-      ->search_rs($cond, %$attrs)
       ->search_rs({}, {'+columns' => 'dns'})
-      ->search({}, $search_attr);
+      ->search_rs({}, $search_attr)
+      ->search($cond, $attrs);
 }
 
 =head1 search_by_mac( \%cond, \%attrs? )
@@ -181,8 +181,8 @@ sub search_by_mac {
       if $rs->has_dns_col;
 
     return $rs
-      ->search_rs($cond, %$attrs)
-      ->search({}, $search_attr);
+      ->search_rs({}, $search_attr)
+      ->search($cond, $attrs);
 }
 
 1;

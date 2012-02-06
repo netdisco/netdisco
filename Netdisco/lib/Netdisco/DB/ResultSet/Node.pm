@@ -48,19 +48,17 @@ sub search_by_mac {
     $attrs ||= {};
 
     return $rs
-      ->search_rs($cond, %$attrs)
-      ->search({},
-        {
-          order_by => {'-desc' => 'time_last'},
-          '+columns' => [qw/ device.dns /],
-          '+select' => [
-            \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-            \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
-          ],
-          '+as' => [qw/ time_first_stamp time_last_stamp /],
-          join => 'device',
-        },
-    );
+      ->search_rs({}, {
+        order_by => {'-desc' => 'time_last'},
+        '+columns' => [qw/ device.dns /],
+        '+select' => [
+          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
+          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+        ],
+        '+as' => [qw/ time_first_stamp time_last_stamp /],
+        join => 'device',
+      })
+      ->search($cond, $attrs);
 }
 
 1;

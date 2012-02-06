@@ -68,8 +68,8 @@ __PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui',
             "$args->{foreign_alias}.oui" =>
               { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
         };
-    }
-    , { join_type => 'LEFT' }
+    },
+    { join_type => 'LEFT' }
 );
 
 __PACKAGE__->has_many( node_ips => 'Netdisco::DB::Result::NodeIp',
@@ -87,24 +87,31 @@ my $search_attr = {
 };
 
 sub ip_aliases {
-    my ($row, $cond) = @_;
-    my $rs = $row->node_ips({ip  => { '!=' => $row->ip }});
+    my ($row, $cond, $attrs) = @_;
+    $cond ||= {};
+    $attrs ||= {};
 
+    my $rs = $row->node_ips({ip  => { '!=' => $row->ip }});
     $rs = $rs->search_rs({}, {'+columns' => 'dns'})
       if $rs->has_dns_col;
 
-    return $rs->search($cond, $search_attr);
+    return $rs
+      ->search_rs({}, $search_attr)
+      ->search($cond, $attrs);
 }
 
 sub node_sightings {
-    my ($row, $cond) = @_;
+    my ($row, $cond, $attrs) = @_;
+    $cond ||= {};
+    $attrs ||= {};
 
     return $row
-      ->nodes({}, $search_attr)
-      ->search($cond, {
+      ->nodes({}, {
         '+columns' => [qw/ device.dns /],
         join => 'device',
-    });
+      })
+      ->search_rs({}, $search_attr)
+      ->search($cond, $attrs);
 }
 
 # accessors for custom formatted columns
