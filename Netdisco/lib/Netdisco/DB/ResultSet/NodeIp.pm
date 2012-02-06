@@ -6,6 +6,17 @@ use warnings FATAL => 'all';
 
 # some customize their node_ip table to have a dns column which
 # is the cached record at the time of discovery
+
+=head1 has_dns_col
+
+Some sites customize their C<node_ip> table to include a C<dns> field which is
+the cached record at the time of node discovery.
+
+This method returns True if the C<node_ip> table is configured with a C<dns>
+column.
+
+=cut
+
 sub has_dns_col {
     my $set = shift;
     return $set->result_source->has_column('dns');
