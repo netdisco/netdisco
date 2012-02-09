@@ -71,7 +71,7 @@ ajax '/ajax/content/device/ports' => sub {
     my $ip = param('q');
     return unless $ip;
 
-    my $set = schema('netdisco')->resultset('DevicePort')->by_ip($ip);
+    my $set = schema('netdisco')->resultset('DevicePort')->search_by_ip({ip => $ip});
 
     # refine by ports if requested
     my $q = param('f');
@@ -80,12 +80,13 @@ ajax '/ajax/content/device/ports' => sub {
             $set = $set->by_vlan($q);
         }
         else {
-            my $c = schema('netdisco')->resultset('DevicePort')->by_ip($ip)->by_port($q);
+            my $c = schema('netdisco')->resultset('DevicePort')
+              ->search_by_ip({ip => $ip})->search_by_port({port => $q});
             if ($c->count) {
-                $set = $set->by_port($q);
+                $set = $set->search_by_port({port => $q});
             }
             else {
-                $set = $set->by_name($q);
+                $set = $set->search_by_name({name => $q});
             }
         }
     }
