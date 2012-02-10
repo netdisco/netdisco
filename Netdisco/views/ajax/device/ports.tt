@@ -94,11 +94,11 @@
             <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %])</a>
           [% END %]
         [% END %]
-        [% FOREACH node IN row.get_nodes(params.n_archived) %]
+        [% FOREACH node IN row.nodes(archive_filter) %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
           [% '<span class="label warning">a</span> &nbsp;' IF NOT node.active %]
           <a href="[% uri_for('/search') %]?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>
-          [% ' (' _ node.time_last _ ')' IF params.n_age %]
+          [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
             <br/>&nbsp; [% '<span class="label warning">a</span> &nbsp;' IF NOT ip.active %]

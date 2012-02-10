@@ -43,19 +43,19 @@
     </tr>
     <tr>
       <td>Uptime</td>
-      <td>[% d.uptime %]</td>
+      <td>[% d.uptime_age %]</td>
     </tr>
     <tr>
       <td>Last Discover</td>
-      <td>[% d.last_discover %]</td>
+      <td>[% d.last_discover_stamp %]</td>
     </tr>
     <tr>
       <td>Last Arpnip</td>
-      <td>[% d.last_arpnip %]</td>
+      <td>[% d.last_arpnip_stamp %]</td>
     </tr>
     <tr>
       <td>Last Macsuck</td>
-      <td>[% d.last_macsuck %]</td>
+      <td>[% d.last_macsuck_stamp %]</td>
     </tr>
     <tr>
       <td>Hardware Status</td>

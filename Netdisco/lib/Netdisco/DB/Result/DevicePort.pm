@@ -66,10 +66,22 @@ __PACKAGE__->set_primary_key("port", "ip");
 
 =head1 RELATIONSHIPS
 
+=head2 device
+
+Returns the Device table entry to which the given Port is related.
+
+=cut
+
+__PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip');
+
 =head2 nodes
 
 Returns the set of Nodes whose MAC addresses are associated with this Device
 Port.
+
+Remember you can pass a filter to this method to find only active or inactive
+nodes, but do take into account that both the C<node> and C<node_ip> tables
+include independent C<active> fields.
 
 =over 4
 
@@ -84,36 +96,28 @@ will also be retrieved.
 
 =item *
 
-The additional column C<time_last_age> is a preformatted value for the
-C<time_last> field, which reads as "X days/weeks/months/years" ago.
+The additional column C<time_last_age> is a preformatted value for the Node's
+C<time_last> field, which reads as "X days/weeks/months/years".
 
 =back
 
 =cut
 
 __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
-    {
-      'foreign.switch' => 'self.ip',
-      'foreign.port' => 'self.port',
-    },
-    {
-      prefetch => 'ips',
-      order_by => 'me.mac',
-      '+select' => [
-        \"replace(age(date_trunc('minute',
-                  me.time_last + interval '30 second'))::text, 'mon', 'month')",
-      ],
-      '+as' => [ 'me.time_last_age' ],
-    },
+  {
+    'foreign.switch' => 'self.ip',
+    'foreign.port' => 'self.port',
+  },
+  {
+    prefetch => 'ips',
+    order_by => 'me.mac',
+    '+select' => [
+      \"replace(age(date_trunc('minute',
+                me.time_last + interval '30 second'))::text, 'mon', 'month')",
+    ],
+    '+as' => [ 'me.time_last_age' ],
+  },
 );
-
-sub get_nodes {
-    my ($row, $archive) = @_;
-    return $row->nodes({
-      ($archive ? (-or => [{'me.active' => 1}, {'me.active' => 0}])
-                : ('me.active' => 1))
-    });
-}
 
 =head2 neighbor_alias
 
@@ -128,49 +132,8 @@ database.
 =cut
 
 __PACKAGE__->belongs_to( neighbor_alias => 'Netdisco::DB::Result::DeviceIp',
-    {
-      'foreign.alias' => 'self.remote_ip',
-    },
-    { join_type => 'LEFT' },
-);
-
-=head2 device
-
-Returns the Device table entry to which the given Port is related.
-
-=over 4
-
-=item *
-
-Additional columns C<last_discover_stamp>, C<last_macsuck_stamp>,
-C<last_arpnip_stamp> provide preformatted timestamps of the C<last_discover>,
-C<last_macsuck> and C<last_arpnip> fields.
-
-=item *
-
-The additional column C<uptime_age> provides a performatted value for the
-device uptime which reads as "X days/weeks/months/years" ago.
-
-=back
-
-=cut
-
-__PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip',
-    {
-      '+select' => [
-        \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second',
-                      timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')",
-        \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
-        \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
-        \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
-      ],
-      '+as' => [qw/
-        uptime_age
-        last_discover_stamp
-        last_macsuck_stamp
-        last_arpnip_stamp
-      /],
-    },
+  { 'foreign.alias' => 'self.remote_ip' },
+  { join_type => 'LEFT' },
 );
 
 =head2 port_vlans_tagged
@@ -182,13 +145,13 @@ relationship.
 =cut
 
 __PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
-    {
-        'foreign.ip' => 'self.ip',
-        'foreign.port' => 'self.port',
-    },
-    {
-        where => { -not_bool => 'me.native' },
-    }
+  {
+    'foreign.ip' => 'self.ip',
+    'foreign.port' => 'self.port',
+  },
+  {
+    where => { -not_bool => 'me.native' },
+  }
 );
 
 =head2 tagged_vlans
@@ -214,13 +177,13 @@ See also the C<native_vlan> helper method.
 =cut
 
 __PACKAGE__->might_have( native_port_vlan => 'Netdisco::DB::Result::DevicePortVlan',
-    {
-        'foreign.ip' => 'self.ip',
-        'foreign.port' => 'self.port',
-    },
-    {
-        where => { -bool => 'me.native' },
-    }
+  {
+    'foreign.ip' => 'self.ip',
+    'foreign.port' => 'self.port',
+  },
+  {
+    where => { -bool => 'me.native' },
+  }
 );
 
 =head2 oui
@@ -233,14 +196,14 @@ The JOIN is of type LEFT, in case the OUI table has not been populated.
 =cut
 
 __PACKAGE__->belongs_to( oui => 'Netdisco::DB::Result::Oui',
-    sub {
-        my $args = shift;
-        return {
-            "$args->{foreign_alias}.oui" =>
-              { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
-        };
-    },
-    { join_type => 'LEFT' }
+  sub {
+      my $args = shift;
+      return {
+          "$args->{foreign_alias}.oui" =>
+            { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
+      };
+  },
+  { join_type => 'LEFT' }
 );
 
 =head1 ADDITIONAL METHODS
@@ -255,8 +218,11 @@ the database.
 
 =cut
 
-# FIXME make this more efficient by specifying the full join to DBIC
-sub neighbor { return eval { (shift)->neighbor_alias->device } }
+# make this more efficient by specifying the full join to DBIC?
+sub neighbor {
+    my $row = shift;
+    return eval { $row->neighbor_alias->device || undef };
+}
 
 =head2 native_vlan
 
@@ -281,7 +247,7 @@ Returns the number of tagged VLANs active on this device port.
 =cut
 
 sub tagged_vlans_count {
-  return (shift)->tagged_vlans->count;
+    return (shift)->tagged_vlans->count;
 }
 
 =head2 is_free( $quantity, $unit )

@@ -99,10 +99,14 @@ ajax '/ajax/content/device/ports' => sub {
                            or $_->is_free(param('age_num'), param('age_unit')) } $set->all ];
 
     return unless scalar @$results;
+    my @active = (param('n_archived')
+      ? (-or => [{'me.active' => 1}, {'me.active' => 0}])
+      : ('me.active' => 1));
 
     content_type('text/html');
     template 'ajax/device/ports.tt', {
       results => $results,
+      archive_filter => {@active},
     }, { layout => undef };
 };
 

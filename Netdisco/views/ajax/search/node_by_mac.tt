@@ -41,7 +41,7 @@
       </td>
       [% IF params.stamps %]
       <td>[% row.time_first_stamp %]</td>
-      <td>[% rw.time_last_stamp %]</td>
+      <td>[% row.time_last_stamp %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]
