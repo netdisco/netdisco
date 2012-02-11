@@ -18,8 +18,8 @@ column.
 =cut
 
 sub has_dns_col {
-    my $set = shift;
-    return $set->result_source->has_column('dns');
+    my $rs = shift;
+    return $rs->result_source->has_column('dns');
 }
 
 my $search_attr = {
@@ -37,7 +37,7 @@ my $search_attr = {
 
  my $set = $rs->search_by_ip({ip => '192.0.2.1', active => 1});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 NodeIp table.
 
 =over 4
@@ -96,7 +96,7 @@ sub search_by_ip {
 
  my $set = $rs->search_by_name({dns => 'foo.example.com', active => 1});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 NodeIp table.
 
 =over 4
@@ -152,7 +152,7 @@ sub search_by_dns {
 
  my $set = $rs->search_by_mac({mac => '00:11:22:33:44:55', active => 1});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 NodeIp table.
 
 =over 4

@@ -34,7 +34,23 @@ __PACKAGE__->set_primary_key("ip", "alias");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/ugGtBSGyrJ7s6yqJ9bclQ
 
+=head1 RELATIONSHIPS
+
+=head2 device
+
+Returns the entry from the C<device> table to which this IP alias relates.
+
+=cut
+
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
+
+=head2 device_port
+
+Returns the Port on which this IP address is configured (typically a loopback,
+routed port or virtual interface).
+
+=cut
+
 __PACKAGE__->belongs_to( device_port => 'Netdisco::DB::Result::DevicePort',
   { 'foreign.port' => 'self.port', 'foreign.ip' => 'self.ip' } );
 

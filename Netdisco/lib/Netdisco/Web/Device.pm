@@ -57,7 +57,8 @@ ajax '/ajax/content/device/addresses' => sub {
     my $ip = param('q');
     return unless $ip;
 
-    my $set = schema('netdisco')->resultset('DeviceIp')->search({ip => $ip}, { order_by => 'alias' });
+    my $set = schema('netdisco')->resultset('DeviceIp')
+                ->search({ip => $ip}, { order_by => 'alias' });
     return unless $set->count;
 
     content_type('text/html');
@@ -71,17 +72,19 @@ ajax '/ajax/content/device/ports' => sub {
     my $ip = param('q');
     return unless $ip;
 
-    my $set = schema('netdisco')->resultset('DevicePort')->search_by_ip({ip => $ip});
+    my $set = schema('netdisco')->resultset('DevicePort')
+                ->search_by_ip({ip => $ip});
 
     # refine by ports if requested
     my $q = param('f');
     if ($q) {
         if ($q =~ m/^\d+$/) {
-            $set = $set->by_vlan($q);
+            $set = $set->search_by_vlan({vlan => $q});
         }
         else {
             my $c = schema('netdisco')->resultset('DevicePort')
-              ->search_by_ip({ip => $ip})->search_by_port({port => $q});
+                      ->search_by_ip({ip => $ip})
+                      ->search_by_port({port => $q});
             if ($c->count) {
                 $set = $set->search_by_port({port => $q});
             }
@@ -115,7 +118,8 @@ ajax '/ajax/content/device/details' => sub {
     my $ip = param('q');
     return unless $ip;
 
-    my $device = schema('netdisco')->resultset('Device')->find($ip);
+    my $device = schema('netdisco')->resultset('Device')
+                   ->with_times()->find($ip);
     return unless $device;
 
     content_type('text/html');

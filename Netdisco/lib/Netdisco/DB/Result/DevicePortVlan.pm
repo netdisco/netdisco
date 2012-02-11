@@ -39,10 +39,34 @@ __PACKAGE__->set_primary_key("ip", "port", "vlan");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/3KLjJ3D18pGaPEaw9EU5w
 
+=head1 RELATIONSHIPS
+
+=head2 device
+
+Returns the entry from the C<device> table which hosts the Port on which this
+VLAN is configured.
+
+=cut
+
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
+
+=head2 port
+
+Returns the entry from the C<port> table on which this VLAN is configured.
+
+=cut
+
 __PACKAGE__->belongs_to( port => 'Netdisco::DB::Result::DevicePort', {
     'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
+
+=head2 vlan
+
+Returns the entry from the C<device_vlan> table describing this VLAN in
+detail, typically in order that the C<name> can be retrieved.
+
+=cut
+
 __PACKAGE__->belongs_to( vlan => 'Netdisco::DB::Result::DeviceVlan', {
     'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan',
 });

@@ -8,7 +8,7 @@ use warnings FATAL => 'all';
 
  my $set = $rs->search_by_mac({mac => '00:11:22:33:44:55'});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 DevicePort table.
 
 =over 4
@@ -55,7 +55,7 @@ sub search_by_mac {
 
  my $set = $rs->search_by_ip({ip => '192.0.2.1'});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 DevicePort table.
 
 =over 4
@@ -103,7 +103,7 @@ sub search_by_ip {
 
  my $set = $rs->search_by_name({name => 'sniffer'});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 DevicePort table.
 
 =over 4
@@ -141,7 +141,7 @@ sub search_by_name {
 
  my $set = $rs->search_by_vlan({vlan => 123});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 DevicePort table.
 
 =over 4
@@ -179,7 +179,7 @@ sub search_by_vlan {
 
  my $set = $rs->search_by_port({port => 'FastEthernet0/23'});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the
+Like C<search()>, this returns a ResultSet of matching rows from the
 DevicePort table.
 
 =over 4

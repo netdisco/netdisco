@@ -42,13 +42,13 @@ ajax '/ajax/content/search/device' => sub {
     my $set;
 
     if ($has_opt) {
-        $set = schema('netdisco')->resultset('Device')->by_field(scalar params);
+        $set = schema('netdisco')->resultset('Device')->search_by_field(scalar params);
     }
     else {
         my $q = param('q');
         return unless $q;
 
-        $set = schema('netdisco')->resultset('Device')->by_any($q);
+        $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
     }
     return unless $set->count;
 
@@ -136,15 +136,15 @@ ajax '/ajax/content/search/node' => sub {
 
 # devices carrying vlan xxx
 ajax '/ajax/content/search/vlan' => sub {
-    my $vlan = param('q');
-    return unless $vlan;
+    my $q = param('q');
+    return unless $q;
     my $set;
 
-    if ($vlan =~ m/^\d+$/) {
-        $set = schema('netdisco')->resultset('Device')->carrying_vlan($vlan);
+    if ($q =~ m/^\d+$/) {
+        $set = schema('netdisco')->resultset('Device')->carrying_vlan({vlan => $q});
     }
     else {
-        $set = schema('netdisco')->resultset('Device')->carrying_vlan_name($vlan);
+        $set = schema('netdisco')->resultset('Device')->carrying_vlan_name({name => $q});
     }
     return unless $set->count;
 
@@ -208,9 +208,8 @@ get '/search' => sub {
                 }
             }
             else {
-                if ($s->resultset('Device')->search({
-                  dns => { '-ilike' => "\%$q\%" },
-                })->count) {
+                if ($s->resultset('Device')
+                      ->search({dns => { '-ilike' => "\%$q\%" }})->count) {
                     params->{'tab'} = 'device';
                 }
                 elsif ($s->resultset('DevicePort')

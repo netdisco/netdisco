@@ -8,7 +8,7 @@ use warnings FATAL => 'all';
 
  my $set = $rs->search_by_mac({mac => '00:11:22:33:44:55', active => 1});
 
-Like C<search()>, this returns a C<$resultset> of matching rows from the Node
+Like C<search()>, this returns a ResultSet of matching rows from the Node
 table.
 
 =over 4

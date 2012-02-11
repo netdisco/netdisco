@@ -37,7 +37,22 @@ __PACKAGE__->set_primary_key("ip", "vlan");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hBJRcdzOic4d3u4pD1m8iA
 
+=head1 RELATIONSHIPS
+
+=head2 device
+
+Returns the entry from the C<device> table on which this VLAN entry was discovered.
+
+=cut
+
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip' );
+
+=head2 port_vlans_tagged
+
+Link relationship for C<tagging_ports>, see below.
+
+=cut
+
 __PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
     {
         'foreign.ip' => 'self.ip',
@@ -47,6 +62,13 @@ __PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVla
         where => { -not_bool => 'me.native' },
     }
 );
+
+=head2 port_vlans_native
+
+Link relationship to support C<native_ports>, see below.
+
+=cut
+
 __PACKAGE__->has_many( port_vlans_native => 'Netdisco::DB::Result::DevicePortVlan',
     {
         'foreign.ip' => 'self.ip',
@@ -56,7 +78,22 @@ __PACKAGE__->has_many( port_vlans_native => 'Netdisco::DB::Result::DevicePortVla
         where => { -bool => 'me.native' },
     }
 );
+
+=head2 tagging_ports
+
+Returns the set of Device Ports on which this VLAN is configured to be tagged.
+
+=cut
+
 __PACKAGE__->many_to_many( tagging_ports => 'port_vlans_tagged', 'port' );
+
+=head2 native_ports
+
+Returns the set of Device Ports on which this VLAN is the native VLAN (that
+is, untagged).
+
+=cut
+
 __PACKAGE__->many_to_many( native_ports  => 'port_vlans_native', 'port' );
 
 1;

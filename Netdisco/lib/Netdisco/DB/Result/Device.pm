@@ -82,9 +82,44 @@ __PACKAGE__->set_primary_key("ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:671/XuuvsO2aMB1+IRWFjg
 
+=head1 RELATIONSHIPS
+
+=head2 device_ips
+
+Returns rows from the C<device_ip> table which relate to this Device. That is,
+all the interface IP aliases configured on the Device.
+
+=cut
+
 __PACKAGE__->has_many( device_ips => 'Netdisco::DB::Result::DeviceIp', 'ip' );
+
+=head2 vlans
+
+Returns the C<device_vlan> entries for this Device. That is, the list of VLANs
+configured on or known by this Device.
+
+=cut
+
 __PACKAGE__->has_many( vlans => 'Netdisco::DB::Result::DeviceVlan', 'ip' );
+
+=head2 ports
+
+Returns the set of ports on this Device.
+
+=cut
+
 __PACKAGE__->has_many( ports => 'Netdisco::DB::Result::DevicePort', 'ip' );
+
+=head2 port_vlans
+
+Returns the set of VLANs known to be configured on Ports on this Device,
+either tagged or untagged.
+
+The JOIN is of type "RIGHT" meaning that the results are constrained to VLANs
+only on Ports on this Device.
+
+=cut
+
 __PACKAGE__->has_many(
     port_vlans => 'Netdisco::DB::Result::DevicePortVlan',
     'ip', { join_type => 'RIGHT' }
@@ -92,5 +127,58 @@ __PACKAGE__->has_many(
 
 # helper which assumes we've just RIGHT JOINed to Vlans table
 sub vlan { return (shift)->vlans->first }
+
+=head1 ADDITIONAL COLUMNS
+
+=head2 uptime_age
+
+Formatted version of the C<uptime> field.
+
+The format is in "X days/months/years" style, similar to:
+
+ 1 year 4 months 05:46:00
+
+=cut
+
+sub uptime_age  { return (shift)->get_column('uptime_age')  }
+
+=head2 last_discover_stamp
+
+Formatted version of the C<last_discover> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub last_discover_stamp  { return (shift)->get_column('last_discover_stamp')  }
+
+=head2 last_macsuck_stamp
+
+Formatted version of the C<last_macsuck> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub last_macsuck_stamp  { return (shift)->get_column('last_macsuck_stamp')  }
+
+=head2 last_arpnip_stamp
+
+Formatted version of the C<last_arpnip> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub last_arpnip_stamp  { return (shift)->get_column('last_arpnip_stamp')  }
 
 1;
