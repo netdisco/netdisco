@@ -288,4 +288,19 @@ sub is_free {
     return ($diff_sec >= $total ? 1 : 0);
 }
 
+=head1 ADDITIONAL COLUMNS
+
+=head2 lastchange_stamp
+
+Formatted version of the C<lastchange> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub lastchange_stamp { return (shift)->get_column('lastchange_stamp') }
+
 1;

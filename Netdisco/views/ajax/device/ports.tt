@@ -41,7 +41,7 @@
       </td>
       [% END %]
       [% IF params.c_lastchange %]
-      <td class="center_cell">[% row.get_column('lastchange_stamp') | html_entity %]</td>
+      <td class="center_cell">[% row.lastchange_stamp | html_entity %]</td>
       [% END %]
       [% IF params.c_name %]
       <td class="center_cell">[% row.name | html_entity %]</td>

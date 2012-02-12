@@ -197,7 +197,7 @@ The following fields are inspected for a match:
 sub search_fuzzy {
     my ($rs, $q) = @_;
 
-    die "missing param to search_by_field\n"
+    die "missing param to search_fuzzy\n"
       unless $q;
     $q = "\%$q\%" if $q !~ m/\%/;
 
