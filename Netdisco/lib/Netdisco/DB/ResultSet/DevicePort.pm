@@ -4,7 +4,40 @@ use base 'DBIx::Class::ResultSet';
 use strict;
 use warnings FATAL => 'all';
 
-=head1 search_by_mac( \%cond, \%attrs? )
+=head1 ADDITIONAL METHODS
+
+=head2 with_times
+
+This is a modifier for any C<search()> (including the helpers below) which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item lastchange_stamp
+
+=back
+
+=cut
+
+sub with_times {
+  my ($rs, $cond, $attrs) = @_;
+  $cond  ||= {};
+  $attrs ||= {};
+
+  return $rs
+    ->search_rs($cond, $attrs)
+    ->search({},
+      {
+        '+select' => [
+          \"to_char(last_discover - (uptime - lastchange) / 100 * interval '1 second',
+                      'YYYY-MM-DD HH24:MI:SS')",
+        ],
+        '+as' => [qw/ lastchange_stamp /],
+        join => 'device',
+      });
+}
+
+=head2 search_by_mac( \%cond, \%attrs? )
 
  my $set = $rs->search_by_mac({mac => '00:11:22:33:44:55'});
 
@@ -20,12 +53,7 @@ the value to search for.
 
 =item *
 
-Results are ordered by the creation timestamp.
-
-=item *
-
-The additional column C<creation_stamp> provides a preformatted timestamp of
-the C<creation> field.
+Results are ordered by the port's Device IP and Port fields.
 
 =back
 
@@ -42,16 +70,13 @@ sub search_by_mac {
 
     return $rs
       ->search_rs({}, {
-        order_by => {'-desc' => 'me.creation'},
-        '+select' => [
-          \"to_char(me.creation, 'YYYY-MM-DD HH24:MI')",
-        ],
-        '+as' => [qw/ creation_stamp /],
+        # order_by => {'-desc' => 'me.creation'},
+        order_by => [qw/ me.ip me.port /],
       })
       ->search($cond, $attrs);
 }
 
-=head1 search_by_ip( \%cond, \%attrs? )
+=head2 search_by_ip( \%cond, \%attrs? )
 
  my $set = $rs->search_by_ip({ip => '192.0.2.1'});
 
@@ -64,16 +89,6 @@ DevicePort table.
 
 The C<cond> parameter must be a hashref containing a key C<IP> with the IPv4
 or IPv6 value to search for in plain string form.
-
-=item *
-
-The additional column C<lastchange_stamp> provides a preformatted timestamp of
-the C<lastchange> field in the C<device_port> table.
-
-=item *
-
-A JOIN is performed on the C<device> table in order to retrieve data required
-for the C<lastchange_stamp> calculation.
 
 =back
 
@@ -88,18 +103,10 @@ sub search_by_ip {
     $cond->{'me.ip'} = delete $cond->{ip};
     $attrs ||= {};
 
-    return $rs
-      ->search_rs({}, {
-        '+select' => [
-          \"to_char(last_discover - (uptime - lastchange) / 100 * interval '1 second', 'YYYY-MM-DD HH24:MI:SS')",
-        ],
-        '+as' => [qw/ lastchange_stamp /],
-        join => 'device',
-      })
-      ->search($cond, $attrs);
+    return $rs->search($cond, $attrs);
 }
 
-=head1 search_by_name( \%cond, \%attrs? )
+=head2 search_by_name( \%cond, \%attrs? )
 
  my $set = $rs->search_by_name({name => 'sniffer'});
 
@@ -137,7 +144,7 @@ sub search_by_name {
       ->search($cond, $attrs);
 }
 
-=head1 search_by_vlan( \%cond, \%attrs? )
+=head2 search_by_vlan( \%cond, \%attrs? )
 
  my $set = $rs->search_by_vlan({vlan => 123});
 
@@ -175,7 +182,7 @@ sub search_by_vlan {
       ->search($cond, $attrs);
 }
 
-=head1 search_by_port( \%cond, \%attrs? )
+=head2 search_by_port( \%cond, \%attrs? )
 
  my $set = $rs->search_by_port({port => 'FastEthernet0/23'});
 

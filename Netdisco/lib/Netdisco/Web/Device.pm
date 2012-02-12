@@ -75,6 +75,9 @@ ajax '/ajax/content/device/ports' => sub {
     my $set = schema('netdisco')->resultset('DevicePort')
                 ->search_by_ip({ip => $ip});
 
+    # make sure query asks for formatted timestamps when needed
+    $set = $set->with_times if param('c_lastchange');
+
     # refine by ports if requested
     my $q = param('f');
     if ($q) {
