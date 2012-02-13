@@ -83,20 +83,18 @@ ajax '/ajax/content/device/ports' => sub {
     if ($q) {
         if ($q =~ m/^\d+$/) {
             $set = $set->search_by_vlan({vlan => $q});
+            return unless $set->count;
         }
         else {
-            my $c = schema('netdisco')->resultset('DevicePort')
-                      ->search_by_ip({ip => $ip})
-                      ->search_by_port({port => $q});
-            if ($c->count) {
+            if ($set->search_by_port({port => $q})->count) {
                 $set = $set->search_by_port({port => $q});
             }
             else {
                 $set = $set->search_by_name({name => $q});
+                return unless $set->count;
             }
         }
     }
-    return unless $set->count;
 
     # retrieve related data for additonal table columns, if asked for
     $set = $set->search_rs({}, {prefetch => {nodes => 'ips'}})
@@ -106,10 +104,12 @@ ajax '/ajax/content/device/ports' => sub {
 
     # if active or not, control the join to Node table
     if (param('n_archived')) {
-      $set = $set->search_rs({-or => [{'nodes.active' => 1}, {'nodes.active' => 0}]});
+        $set = $set->search_rs({
+          -or => [{-bool => 'nodes.active'}, {-not_bool => 'nodes.active'}]
+        });
     }
     else {
-      $set = $set->search_rs({'nodes.active' => 1});
+        $set = $set->search_rs({-bool => 'nodes.active'});
     }
 
     # sort, and filter by free ports
