@@ -94,7 +94,7 @@
             <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %])</a>
           [% END %]
         [% END %]
-        [% FOREACH node IN row.nodes(archive_filter) %]
+        [% FOREACH node IN row.nodes %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
           [% '<span class="label warning">a</span> &nbsp;' IF NOT node.active %]
           <a href="[% uri_for('/search') %]?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>

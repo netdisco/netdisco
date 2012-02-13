@@ -98,6 +98,20 @@ ajax '/ajax/content/device/ports' => sub {
     }
     return unless $set->count;
 
+    # retrieve related data for additonal table columns, if asked for
+    $set = $set->search_rs({}, {prefetch => {nodes => 'ips'}})
+      if param('c_connected');
+    $set = $set->search_rs({}, {prefetch => {port_vlans_tagged => 'vlan'}})
+      if param('c_vmember');
+
+    # if active or not, control the join to Node table
+    if (param('n_archived')) {
+      $set = $set->search_rs({-or => [{'nodes.active' => 1}, {'nodes.active' => 0}]});
+    }
+    else {
+      $set = $set->search_rs({'nodes.active' => 1});
+    }
+
     # sort, and filter by free ports
     # the filter could be in the template but here allows a 'no records' msg
     my $results = [ sort { &netdisco::sort_port($a->port, $b->port) }
@@ -105,14 +119,10 @@ ajax '/ajax/content/device/ports' => sub {
                            or $_->is_free(param('age_num'), param('age_unit')) } $set->all ];
 
     return unless scalar @$results;
-    my @active = (param('n_archived')
-      ? (-or => [{'me.active' => 1}, {'me.active' => 0}])
-      : ('me.active' => 1));
 
     content_type('text/html');
     template 'ajax/device/ports.tt', {
       results => $results,
-      archive_filter => {@active},
     }, { layout => undef };
 };
 
