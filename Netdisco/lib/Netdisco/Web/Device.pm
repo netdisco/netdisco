@@ -75,9 +75,6 @@ ajax '/ajax/content/device/ports' => sub {
     my $set = schema('netdisco')->resultset('DevicePort')
                 ->search_by_ip({ip => $ip});
 
-    # make sure query asks for formatted timestamps when needed
-    $set = $set->with_times if param('c_lastchange');
-
     # refine by ports if requested
     my $q = param('f');
     if ($q) {
@@ -96,21 +93,21 @@ ajax '/ajax/content/device/ports' => sub {
         }
     }
 
-    # retrieve related data for additonal table columns, if asked for
-    $set = $set->search_rs({}, {prefetch => {nodes => 'ips'}})
-      if param('c_connected');
-    $set = $set->search_rs({}, {prefetch => {port_vlans_tagged => 'vlan'}})
-      if param('c_vmember');
+    # make sure query asks for formatted timestamps when needed
+    $set = $set->with_times if param('c_lastchange');
 
-    # if active or not, control the join to Node table
-    if (param('n_archived')) {
-        $set = $set->search_rs({
-          -or => [{-bool => 'nodes.active'}, {-not_bool => 'nodes.active'}]
-        });
-    }
-    else {
-        $set = $set->search_rs({-bool => 'nodes.active'});
-    }
+    # get number of vlans on the port to control whether to list them or not
+    $set = $set->with_vlan_count if param('c_vmember');
+
+    # retrieve active/all connected nodes, and device, if asked for
+    my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
+    $set = $set->search_rs({}, {
+      prefetch => [{$nodes_name => 'ips'}, {neighbor_alias => 'device'}],
+    }) if param('c_connected');
+
+    # add constructed node age col if requested (and showing connected)
+    $set = $set->with_node_age($nodes_name)
+      if param('c_connected') and param('n_age');
 
     # sort, and filter by free ports
     # the filter could be in the template but here allows a 'no records' msg
@@ -123,6 +120,7 @@ ajax '/ajax/content/device/ports' => sub {
     content_type('text/html');
     template 'ajax/device/ports.tt', {
       results => $results,
+      nodes => $nodes_name,
     }, { layout => undef };
 };
 

@@ -63,22 +63,21 @@
       [% END %]
       [% IF params.c_vmember %]
       <td>
-        [%# this is really ugly because for some reason
-            I could not get size/max to work on row.tagged_vlans.all %]
+        [% IF row.tagged_vlans_count %]
         [% SET output = '' %]
-        [% SET count  = 0  %]
         [% FOREACH vlan IN row.tagged_vlans %]
           [% SET output = output _
             '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
           [% SET output = output _ ', ' IF NOT loop.last %]
-          [% SET count = count + 1 %]
         [% END %]
-        [% IF count > 10 %]
-          [% SET output = '<div class="vlan_total">(' _ count _ ')</div><a href="#" class="nd_linkcell nd_collapse_vlans">'
+        [% IF row.tagged_vlans_count > 10 %]
+          [% SET output = '<div class="vlan_total">(' _ row.tagged_vlans_count
+            _ ')</div><a href="#" class="nd_linkcell nd_collapse_vlans">'
             _ 'Show VLANs</a><div class="nd_collapse_pre_hidden">' _ output %]
           [% SET output = output _ '</div>' %]
         [% END %]
         [% output %]
+        [% END %]
       </td>
       [% END %]
       [% IF params.c_connected %]
@@ -94,7 +93,7 @@
             <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %])</a>
           [% END %]
         [% END %]
-        [% FOREACH node IN row.nodes %]
+        [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
           [% '<span class="label warning">a</span> &nbsp;' IF NOT node.active %]
           <a href="[% uri_for('/search') %]?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>

@@ -29,11 +29,69 @@ sub with_times {
     ->search({},
       {
         '+select' => [
-          \"to_char(last_discover - (uptime - lastchange) / 100 * interval '1 second',
+          \"to_char(device.last_discover - (device.uptime - lastchange) / 100 * interval '1 second',
                       'YYYY-MM-DD HH24:MI:SS')",
         ],
         '+as' => [qw/ lastchange_stamp /],
         join => 'device',
+      });
+}
+
+=head2 with_node_age
+
+This is a modifier for any C<search()> (including the helpers below) which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item $nodes.time_last_age
+
+=back
+
+You can pass in the table alias for the Nodes relation, which defaults to
+C<nodes>.
+
+=cut
+
+sub with_node_age {
+  my ($rs, $alias) = @_;
+  $alias ||= 'nodes';
+
+  return $rs
+    ->search_rs({},
+      {
+        '+select' =>
+          [\"replace(age(date_trunc('minute', $alias.time_last + interval '30 second'))::text, 'mon', 'month')"],
+        '+as' => [ "$alias.time_last_age" ],
+      });
+}
+
+=head2 with_vlan_count
+
+This is a modifier for any C<search()> (including the helpers below) which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item tagged_vlans_count
+
+=back
+
+=cut
+
+sub with_vlan_count {
+  my ($rs, $cond, $attrs) = @_;
+  $cond  ||= {};
+  $attrs ||= {};
+
+  return $rs
+    ->search_rs($cond, $attrs)
+    ->search({},
+      {
+        '+select' => [ { count => 'port_vlans_tagged.vlan' } ],
+        '+as' => [qw/ tagged_vlans_count /],
+        join => 'port_vlans_tagged',
+        distinct => 1,
       });
 }
 

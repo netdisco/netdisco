@@ -77,22 +77,13 @@ __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip');
 =head2 nodes
 
 Returns the set of Nodes whose MAC addresses are associated with this Device
-Port.
-
-Remember you can pass a filter to this method to find only active or inactive
-nodes, but do take into account that both the C<node> and C<node_ip> tables
-include independent C<active> fields.
+Port. See C<active_nodes()> to find only the active Nodes, instead.
 
 =over 4
 
 =item *
 
 Rows returned are sorted by the Node MAC address.
-
-=item *
-
-The Node's related IP addresses (that is, entries from the C<node_ip> table)
-will also be retrieved.
 
 =item *
 
@@ -108,15 +99,35 @@ __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
   },
+  { join_type => 'LEFT' },
+);
+
+=head2 active_nodes
+
+Returns the set of I<active> Nodes whose MAC addresses are associated with
+this Device Port. See C<nodes()> to find all Nodes (active and inactive).
+
+=over 4
+
+=item *
+
+Rows returned are sorted by the Node MAC address.
+
+=item *
+
+The additional column C<time_last_age> is a preformatted value for the Node's
+C<time_last> field, which reads as "X days/weeks/months/years".
+
+=back
+
+=cut
+
+__PACKAGE__->has_many( active_nodes => 'Netdisco::DB::Result::ActiveNode',
   {
-    prefetch => 'ips',
-    order_by => 'me.mac',
-    '+select' => [
-      \"replace(age(date_trunc('minute',
-                me.time_last + interval '30 second'))::text, 'mon', 'month')",
-    ],
-    '+as' => [ 'me.time_last_age' ],
+    'foreign.switch' => 'self.ip',
+    'foreign.port' => 'self.port',
   },
+  { join_type => 'LEFT' },
 );
 
 =head2 neighbor_alias
@@ -139,19 +150,16 @@ __PACKAGE__->belongs_to( neighbor_alias => 'Netdisco::DB::Result::DeviceIp',
 =head2 port_vlans_tagged
 
 Returns a set of rows from the C<device_port_vlan> table relating to this
-port, where the VLANs are all tagged. See also the C<native_port_vlan>
-relationship.
+port, where the VLANs are all tagged.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlan',
+__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlanTagged',
   {
     'foreign.ip' => 'self.ip',
     'foreign.port' => 'self.port',
   },
-  {
-    where => { -not_bool => 'me.native' },
-  }
+  { join_type => 'LEFT' },
 );
 
 =head2 tagged_vlans
@@ -166,25 +174,6 @@ See also C<tagged_vlans_count>.
 
 __PACKAGE__->many_to_many( tagged_vlans => 'port_vlans_tagged', 'vlan' );
 
-
-=head2 native_port_vlan
-
-Returns an entry from the C<device_port_vlan> table relating to this port,
-where the VLAN is not tagged.
-
-See also the C<native_vlan> helper method.
-
-=cut
-
-__PACKAGE__->might_have( native_port_vlan => 'Netdisco::DB::Result::DevicePortVlan',
-  {
-    'foreign.ip' => 'self.ip',
-    'foreign.port' => 'self.port',
-  },
-  {
-    where => { -bool => 'me.native' },
-  }
-);
 
 =head2 oui
 
@@ -222,32 +211,6 @@ the database.
 sub neighbor {
     my $row = shift;
     return eval { $row->neighbor_alias->device || undef };
-}
-
-=head2 native_vlan
-
-This is a convenience method to be used instead of the C<native_port_vlan>
-relationship described above.
-
-Whereas the C<native_port_vlan> relation returns the entire row from the
-C<device_port_vlan> table, this helper returns the VLAN number itself from
-that row - probably the thing you actually want in the end.
-
-=cut
-
-sub native_vlan {
-    my $row = shift;
-    return eval { $row->native_port_vlan->vlan || undef };
-};
-
-=head2 tagged_vlans_count
-
-Returns the number of tagged VLANs active on this device port.
-
-=cut
-
-sub tagged_vlans_count {
-    return (shift)->tagged_vlans->count;
 }
 
 =head2 is_free( $quantity, $unit )
@@ -290,9 +253,19 @@ sub is_free {
 
 =head1 ADDITIONAL COLUMNS
 
+=head2 tagged_vlans_count
+
+Returns the number of tagged VLANs active on this device port. Enable this
+column by applying the C<with_vlan_count()> modifier to C<search()>.
+
+=cut
+
+sub tagged_vlans_count { return (shift)->get_column('tagged_vlans_count') }
+
 =head2 lastchange_stamp
 
-Formatted version of the C<lastchange> field, accurate to the minute.
+Formatted version of the C<lastchange> field, accurate to the minute. Enable
+this column by applying the C<with_vlan_count()> modifier to C<search()>.
 
 The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
 between the date stamp and time stamp. That is:
