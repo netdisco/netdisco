@@ -99,15 +99,14 @@ ajax '/ajax/content/device/ports' => sub {
     # get number of vlans on the port to control whether to list them or not
     $set = $set->with_vlan_count if param('c_vmember');
 
-    # retrieve active/all connected nodes, and device, if asked for
+    # what kind of nodes are we interested in?
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
+    $nodes_name .= '_with_age' if param('c_connected') and param('n_age');
+
+    # retrieve active/all connected nodes, and device, if asked for
     $set = $set->search_rs({}, {
       prefetch => [{$nodes_name => 'ips'}, {neighbor_alias => 'device'}],
     }) if param('c_connected');
-
-    # add constructed node age col if requested (and showing connected)
-    $set = $set->with_node_age($nodes_name)
-      if param('c_connected') and param('n_age');
 
     # sort, and filter by free ports
     # the filter could be in the template but here allows a 'no records' msg

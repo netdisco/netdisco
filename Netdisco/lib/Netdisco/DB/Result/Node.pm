@@ -132,16 +132,4 @@ between the date stamp and time stamp. That is:
 
 sub time_last_stamp  { return (shift)->get_column('time_last_stamp')  }
 
-=head2 time_last_age
-
-Formatted version of the C<time_last> field, accurate to the minute.
-
-The format is in "X days/months/years" style, similar to:
-
- 1 year 4 months 05:46:00
-
-=cut
-
-sub time_last_age  { return (shift)->get_column('time_last_age')  }
-
 1;

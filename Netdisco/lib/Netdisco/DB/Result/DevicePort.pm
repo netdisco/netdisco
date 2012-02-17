@@ -74,21 +74,23 @@ Returns the Device table entry to which the given Port is related.
 
 __PACKAGE__->belongs_to( device => 'Netdisco::DB::Result::Device', 'ip');
 
-=head2 nodes
+=head2 nodes / active_nodes / nodes_with_age / active_nodes_with_age
 
 Returns the set of Nodes whose MAC addresses are associated with this Device
-Port. See C<active_nodes()> to find only the active Nodes, instead.
+Port.
+
+The C<active> variants return only the subset of nodes currently in the switch
+MAC address table, that is the active ones.
+
+The C<with_age> variants add an additional column C<time_last_age>, a
+preformatted value for the Node's C<time_last> field, which reads as "X
+days/weeks/months/years".
 
 =over 4
 
 =item *
 
 Rows returned are sorted by the Node MAC address.
-
-=item *
-
-The additional column C<time_last_age> is a preformatted value for the Node's
-C<time_last> field, which reads as "X days/weeks/months/years".
 
 =back
 
@@ -102,27 +104,23 @@ __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
   { join_type => 'LEFT' },
 );
 
-=head2 active_nodes
-
-Returns the set of I<active> Nodes whose MAC addresses are associated with
-this Device Port. See C<nodes()> to find all Nodes (active and inactive).
-
-=over 4
-
-=item *
-
-Rows returned are sorted by the Node MAC address.
-
-=item *
-
-The additional column C<time_last_age> is a preformatted value for the Node's
-C<time_last> field, which reads as "X days/weeks/months/years".
-
-=back
-
-=cut
+__PACKAGE__->has_many( nodes_with_age => 'Netdisco::DB::Result::NodeWithAge',
+  {
+    'foreign.switch' => 'self.ip',
+    'foreign.port' => 'self.port',
+  },
+  { join_type => 'LEFT' },
+);
 
 __PACKAGE__->has_many( active_nodes => 'Netdisco::DB::Result::ActiveNode',
+  {
+    'foreign.switch' => 'self.ip',
+    'foreign.port' => 'self.port',
+  },
+  { join_type => 'LEFT' },
+);
+
+__PACKAGE__->has_many( active_nodes_with_age => 'Netdisco::DB::Result::ActiveNodeWithAge',
   {
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',

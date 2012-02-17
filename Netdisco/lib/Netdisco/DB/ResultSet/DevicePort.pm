@@ -37,35 +37,6 @@ sub with_times {
       });
 }
 
-=head2 with_node_age
-
-This is a modifier for any C<search()> (including the helpers below) which
-will add the following additional synthesized columns to the result set:
-
-=over 4
-
-=item $nodes.time_last_age
-
-=back
-
-You can pass in the table alias for the Nodes relation, which defaults to
-C<nodes>.
-
-=cut
-
-sub with_node_age {
-  my ($rs, $alias) = @_;
-  $alias ||= 'nodes';
-
-  return $rs
-    ->search_rs({},
-      {
-        '+select' =>
-          [\"replace(age(date_trunc('minute', $alias.time_last + interval '30 second'))::text, 'mon', 'month')"],
-        '+as' => [ "$alias.time_last_age" ],
-      });
-}
-
 =head2 with_vlan_count
 
 This is a modifier for any C<search()> (including the helpers below) which
