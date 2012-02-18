@@ -65,7 +65,7 @@ ajax '/ajax/content/search/node' => sub {
     content_type('text/html');
 
     my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
-    my @active = (param('archived') ? () : (active => 1));
+    my @active = (param('archived') ? () : (-bool => 'active'));
 
     if (eval { $mac->as_IEEE }) {
 
