@@ -58,7 +58,7 @@ ajax '/ajax/content/device/addresses' => sub {
     return unless $ip;
 
     my $set = schema('netdisco')->resultset('DeviceIp')
-                ->search({ip => $ip}, { order_by => 'alias' });
+                ->search({ip => $ip}, {order_by => 'alias'});
     return unless $set->count;
 
     content_type('text/html');
@@ -73,21 +73,21 @@ ajax '/ajax/content/device/ports' => sub {
     return unless $ip;
 
     my $set = schema('netdisco')->resultset('DevicePort')
-                ->search_by_ip({ip => $ip});
+                ->search({'me.ip' => $ip});
 
     # refine by ports if requested
     my $q = param('f');
     if ($q) {
         if ($q =~ m/^\d+$/) {
-            $set = $set->search_by_vlan({vlan => $q});
+            $set = $set->search({'me.vlan' => $q});
             return unless $set->count;
         }
         else {
-            if ($set->search_by_port({port => $q})->count) {
-                $set = $set->search_by_port({port => $q});
+            if ($set->search({'me.port' => $q})->count) {
+                $set = $set->search({'me.port' => $q});
             }
             else {
-                $set = $set->search_by_name({name => $q});
+                $set = $set->search({'me.name' => $q});
                 return unless $set->count;
             }
         }
