@@ -86,14 +86,6 @@ The C<with_age> variants add an additional column C<time_last_age>, a
 preformatted value for the Node's C<time_last> field, which reads as "X
 days/weeks/months/years".
 
-=over 4
-
-=item *
-
-Rows returned are sorted by the Node MAC address.
-
-=back
-
 =cut
 
 __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
@@ -205,7 +197,6 @@ the database.
 
 =cut
 
-# make this more efficient by specifying the full join to DBIC?
 sub neighbor {
     my $row = shift;
     return eval { $row->neighbor_alias->device || undef };
