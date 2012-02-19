@@ -37,6 +37,7 @@ install Perl dependencies into a custom library path:
      App::local::lib::helper \
      Dancer \
      DBIx::Class \
+     DBIx::Class::Helper::Row::SubClass \
      DBD::Pg \
      Dancer::Plugin::DBIC \
      NetAddr::IP \
