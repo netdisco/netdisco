@@ -64,7 +64,7 @@ function do_search (event, tab) {
         );
       }
 
-      inner_view_processing();
+      inner_view_processing(tab);
     }
   );
 }
