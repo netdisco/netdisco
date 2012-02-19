@@ -123,7 +123,7 @@ sub search_by_field {
 
     # this is a bit of an inelegant trick to catch junk data entry,
     # whilst avoiding returning *all* entries in the table
-    if (exists $p->{ip} and defined $p->{ip} and 'NetAddr::IP::Lite' ne ref $p->{ip}) {
+    if (length $p->{ip} and 'NetAddr::IP::Lite' ne ref $p->{ip}) {
       $p->{ip} = ( NetAddr::IP::Lite->new($p->{ip})
         || NetAddr::IP::Lite->new('255.255.255.255') );
     }
@@ -161,8 +161,7 @@ sub search_by_field {
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        join => 'device_ips',
-        distinct => 1,
+        (($p->{dns} or $p->{ip}) ? (join => 'device_ips') : ()),
       }
     );
 }
@@ -234,7 +233,6 @@ sub search_fuzzy {
       {
         order_by => [qw/ me.dns me.ip /],
         join => 'device_ips',
-        distinct => 1,
       }
     );
 }
