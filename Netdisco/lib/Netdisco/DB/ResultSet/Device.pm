@@ -161,7 +161,10 @@ sub search_by_field {
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        (($p->{dns} or $p->{ip}) ? (join => 'device_ips') : ()),
+        (($p->{dns} or $p->{ip}) ? (
+          join => 'device_ips',
+          distinct => 1,
+        ) : ()),
       }
     );
 }
@@ -233,6 +236,7 @@ sub search_fuzzy {
       {
         order_by => [qw/ me.dns me.ip /],
         join => 'device_ips',
+        distinct => 1,
       }
     );
 }
