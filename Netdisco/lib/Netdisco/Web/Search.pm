@@ -197,8 +197,8 @@ get '/search' => sub {
         else {
             my $s = schema('netdisco');
             if ($q =~ m{^[a-f0-9.:/]+$}i) {
-                if (NetAddr::IP::Lite->new($q) and
-                    $s->resultset('Device')->find($q)) {
+                my $ip = NetAddr::IP::Lite->new($q);
+                if ($ip and $s->resultset('Device')->search_by_field({ip => $q})->count) {
                     params->{'tab'} = 'device';
                 }
                 else {
