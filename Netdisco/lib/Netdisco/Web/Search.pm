@@ -67,8 +67,7 @@ ajax '/ajax/content/search/node' => sub {
     my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
     my @active = (param('archived') ? () : (-bool => 'active'));
 
-    if (eval { $mac->as_IEEE }) {
-
+    if (! $mac->get_error) {
         my $sightings = schema('netdisco')->resultset('Node')
           ->search_by_mac({mac => $mac->as_IEEE, @active});
 
