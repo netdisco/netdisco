@@ -59,10 +59,16 @@ sub with_vlan_count {
     ->search_rs($cond, $attrs)
     ->search({},
       {
-        '+select' => [ { count => 'port_vlans_tagged.vlan' } ],
-        '+as' => [qw/ tagged_vlans_count /],
-        join => 'port_vlans_tagged',
-        distinct => 1,
+        '+columns' => { tagged_vlans_count =>
+          $rs->result_source->schema->resultset('DevicePortVlanTagged')
+            ->search(
+              {
+                'dpvt.ip' => { -ident => 'me.ip' },
+                'dpvt.port' => { -ident => 'me.port' },
+              },
+              { alias => 'dpvt' }
+            )->count_rs->as_query
+        },
       });
 }
 
