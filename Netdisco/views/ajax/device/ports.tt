@@ -89,8 +89,9 @@
             ([% row.remote_port | html_entity %])</a>
           [% ELSE %]
           <span class="label important">n</span>
-          <a href="[% uri_for('/search') %]?tab=node&q=[% row.remote_ip | uri %]">[% row.remote_ip %] ([% row.remote_port %])
-            <br/>&nbsp; ([% row.remote_type %]) / ([% row.remote_id %])</a>
+          <a href="[% uri_for('/search') %]?tab=node&q=[% row.remote_ip | uri %]">
+            [% row.remote_ip %] (port: [% row.remote_port %]
+            id: [% (row.remote_type _ ' / ') IF row.remote_type %][% row.remote_id %])</a>
           [% END %]
         [% END %]
         [% FOREACH node IN row.$nodes %]
