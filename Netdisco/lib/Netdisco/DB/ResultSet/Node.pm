@@ -45,7 +45,6 @@ sub search_by_mac {
       if ref {} ne ref $cond or !exists $cond->{mac};
 
     $cond->{'me.mac'} = delete $cond->{mac};
-    $attrs ||= {};
 
     return $rs
       ->search_rs({}, {

@@ -28,8 +28,6 @@ will add the following additional synthesized columns to the result set:
 
 sub with_times {
   my ($rs, $cond, $attrs) = @_;
-  $cond  ||= {};
-  $attrs ||= {};
 
   return $rs
     ->search_rs($cond, $attrs)
@@ -117,7 +115,6 @@ sub search_by_field {
 
     die "condition parameter to search_by_field must be hashref\n"
       if ref {} ne ref $p or 0 == scalar keys %$p;
-    $attrs ||= {};
 
     my $op = $p->{matchall} ? '-and' : '-or';
 
@@ -278,7 +275,6 @@ sub carrying_vlan {
 
     $cond->{'vlans.vlan'} = $cond->{vlan};
     $cond->{'port_vlans.vlan'} = delete $cond->{vlan};
-    $attrs ||= {};
 
     return $rs
       ->search_rs($cond,
@@ -328,7 +324,6 @@ sub carrying_vlan_name {
       if ref {} ne ref $cond or !exists $cond->{name};
 
     $cond->{'vlans.description'} = { '-ilike' => $cond->{name} };
-    $attrs ||= {};
 
     return $rs
       ->search_rs({}, {

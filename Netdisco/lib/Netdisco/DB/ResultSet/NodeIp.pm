@@ -73,7 +73,6 @@ sub search_by_ip {
 
     die "ip address required for search_by_ip\n"
       if ref {} ne ref $cond or !exists $cond->{ip};
-    $attrs ||= {};
 
     # handle either plain text IP or NetAddr::IP (/32 or CIDR)
     my ($op, $ip) = ('=', delete $cond->{ip});
@@ -140,7 +139,6 @@ sub search_by_dns {
       if ref {} ne ref $cond or !exists $cond->{dns};
 
     $cond->{dns} = { '-ilike' => delete $cond->{dns} };
-    $attrs ||= {};
 
     return $rs
       ->search_rs({}, {'+columns' => 'dns'})
@@ -186,7 +184,6 @@ sub search_by_mac {
 
     die "mac address required for search_by_mac\n"
       if ref {} ne ref $cond or !exists $cond->{mac};
-    $attrs ||= {};
 
     $rs = $rs->search_rs({}, {'+columns' => 'dns'})
       if $rs->has_dns_col;

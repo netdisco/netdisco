@@ -165,8 +165,6 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 sub ip_aliases {
     my ($row, $cond, $attrs) = @_;
-    $cond ||= {};
-    $attrs ||= {};
 
     my $rs = $row->node_ips({ip  => { '!=' => $row->ip }});
     $rs = $rs->search_rs({}, {'+columns' => 'dns'})
@@ -207,8 +205,6 @@ A JOIN is performed on the Device table and the Device DNS column prefetched.
 
 sub node_sightings {
     my ($row, $cond, $attrs) = @_;
-    $cond ||= {};
-    $attrs ||= {};
 
     return $row
       ->nodes({}, {

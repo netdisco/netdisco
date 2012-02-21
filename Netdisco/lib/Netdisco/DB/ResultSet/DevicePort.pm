@@ -21,8 +21,6 @@ will add the following additional synthesized columns to the result set:
 
 sub with_times {
   my ($rs, $cond, $attrs) = @_;
-  $cond  ||= {};
-  $attrs ||= {};
 
   return $rs
     ->search_rs($cond, $attrs)
@@ -52,8 +50,6 @@ will add the following additional synthesized columns to the result set:
 
 sub with_vlan_count {
   my ($rs, $cond, $attrs) = @_;
-  $cond  ||= {};
-  $attrs ||= {};
 
   return $rs
     ->search_rs($cond, $attrs)
