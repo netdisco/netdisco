@@ -23,9 +23,7 @@
         [% END %]
       </td>
       [% IF params.c_port %]
-      <td>
-        [% row.port | html_entity %]
-      </td>
+      <td><a class="this_port_only" href="#">[% row.port | html_entity %]</a></td>
       [% END %]
       [% IF params.c_descr %]
       <td class="center_cell">[% row.descr | html_entity %]</td>

@@ -70,6 +70,14 @@
       $('#ports_form').trigger('submit');
     });
 
+    // make all port names clickable to restrict results to that port only
+    $('body').delegate('.this_port_only', 'click', function() {
+      var port = $(this).text();
+      sweep.val(port);
+      $('.field_clear_icon').show();
+      $('#ports_form').trigger('submit');
+    });
+
     // everything starts hidden and then we show defaults
     $('#nd_collapse_legend').click();
   });
