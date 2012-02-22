@@ -49,12 +49,11 @@ sub search_by_mac {
     return $rs
       ->search_rs({}, {
         order_by => {'-desc' => 'time_last'},
-        '+columns' => [qw/ device.dns /],
-        '+select' => [
-          \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-          \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+        '+columns' => [
+          'device.dns',
+          { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
+          { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
         ],
-        '+as' => [qw/ time_first_stamp time_last_stamp /],
         join => 'device',
       })
       ->search($cond, $attrs);

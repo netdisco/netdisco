@@ -24,12 +24,11 @@ sub has_dns_col {
 
 my $search_attr = {
     order_by => {'-desc' => 'time_last'},
-    '+columns' => [qw/ oui.company /],
-    '+select' => [
-      \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-      \"to_char(time_last, 'YYYY-MM-DD HH24:MI')",
+    '+columns' => [
+      'oui.company',
+      { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
+      { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
     ],
-    '+as' => [qw/ time_first_stamp time_last_stamp /],
     join => 'oui'
 };
 

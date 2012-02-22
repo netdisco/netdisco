@@ -26,11 +26,9 @@ sub with_times {
     ->search_rs($cond, $attrs)
     ->search({},
       {
-        '+select' => [
-          \"to_char(device.last_discover - (device.uptime - lastchange) / 100 * interval '1 second',
-                      'YYYY-MM-DD HH24:MI:SS')",
-        ],
-        '+as' => [qw/ lastchange_stamp /],
+        '+columns' => { lastchange_stamp =>
+          \("to_char(device.last_discover - (device.uptime - lastchange) / 100 * interval '1 second', "
+            ."'YYYY-MM-DD HH24:MI:SS')") },
         join => 'device',
       });
 }
@@ -61,14 +59,12 @@ sub with_is_free {
     ->search_rs($cond, $attrs)
     ->search({},
       {
-        '+select' => [
+        '+columns' => { is_free =>
           \["up != 'up' and "
               ."age(to_timestamp(extract(epoch from device.last_discover) "
                 ."- (device.uptime - lastchange)/100)) "
               ."> ?::interval",
-            [{} => $interval]],
-        ],
-        '+as' => [qw/ is_free /],
+            [{} => $interval]] },
         join => 'device',
       });
 }

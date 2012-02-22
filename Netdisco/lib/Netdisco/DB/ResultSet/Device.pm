@@ -33,19 +33,13 @@ sub with_times {
     ->search_rs($cond, $attrs)
     ->search({},
       {
-        '+select' => [
-          \"replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second',
-                        timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')",
-          \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
-          \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
-          \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
-        ],
-        '+as' => [qw/
-          uptime_age
-          last_discover_stamp
-          last_macsuck_stamp
-          last_arpnip_stamp
-        /],
+        '+columns' => {
+          uptime_age => \("replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second' "
+            ."timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')"),
+          last_discover_stamp => \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
+          last_macsuck_stamp => \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
+          last_arpnip_stamp => \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
+        },
       });
 }
 
