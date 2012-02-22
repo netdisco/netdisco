@@ -164,6 +164,11 @@ so that its tooltip takes prescedence over the field tooltip */
   padding: 6px;
 }
 
+/* link port name to restricted search */
+.this_port_only {
+  cursor: pointer;
+}
+
 /* change highlighting for form fields which are being used in a search */
 form .clearfix.success select {
   background-color: #A9DBA9;
