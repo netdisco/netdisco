@@ -34,7 +34,7 @@ sub with_times {
     ->search({},
       {
         '+columns' => {
-          uptime_age => \("replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second' "
+          uptime_age => \("replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', "
             ."timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')"),
           last_discover_stamp => \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
           last_macsuck_stamp => \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
