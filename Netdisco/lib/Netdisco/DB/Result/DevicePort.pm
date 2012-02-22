@@ -202,44 +202,6 @@ sub neighbor {
     return eval { $row->neighbor_alias->device || undef };
 }
 
-=head2 is_free( $quantity, $unit )
-
-This method can be used to evaluate whether a device port could be considered
-unused, based on the last time it changed from the "up" state to a "down"
-state.
-
-Pass in two parameters, first the C<$quantity> which must be an integer, and
-second the C<$unit> which must be a string of either C<days>, C<weeks>,
-C<months> or C<years>.
-
-A True value is returned if the port is in a "down" state but administratively
-"up", yet last changed state at or further back than the parameters' time
-window. If the port is not in the correct state, or last changed state more
-recently, then a False value is returned.
-
-=cut
-
-sub is_free {
-    my ($row, $num, $unit) = @_;
-    return unless $num =~ m/^\d+$/
-              and $unit =~ m/(?:days|weeks|months|years)/;
-
-    return 0 unless
-      ($row->up_admin and $row->up_admin eq 'up')
-      and ($row->up and $row->up eq 'down');
-
-    my $quan = {
-      days   => (60 * 60 * 24),
-      weeks  => (60 * 60 * 24 * 7),
-      months => (60 * 60 * 24 * 31),
-      years  => (60 * 60 * 24 * 365),
-    };
-    my $total = $num * $quan->{$unit};
-
-    my $diff_sec = $row->lastchange / 100;
-    return ($diff_sec >= $total ? 1 : 0);
-}
-
 =head1 ADDITIONAL COLUMNS
 
 =head2 tagged_vlans_count
@@ -264,5 +226,17 @@ between the date stamp and time stamp. That is:
 =cut
 
 sub lastchange_stamp { return (shift)->get_column('lastchange_stamp') }
+
+=head2 is_free
+
+This method can be used to evaluate whether a device port could be considered
+unused, based on the last time it changed from the "up" state to a "down"
+state.
+
+See the C<with_is_free> and C<only_free_ports> modifiers to C<search()>.
+
+=cut
+
+sub is_free { return (shift)->get_column('is_free') }
 
 1;

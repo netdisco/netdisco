@@ -93,6 +93,13 @@ ajax '/ajax/content/device/ports' => sub {
         }
     }
 
+    # filter for free ports if asked
+    my $free_filter = (param('free') ? 'only_free_ports' : 'with_is_free');
+    $set = $set->$free_filter({
+      age_num => (param('age_num') || 3),
+      age_unit => (param('age_unit') || 'months')
+    });
+
     # make sure query asks for formatted timestamps when needed
     $set = $set->with_times if param('c_lastchange');
 
@@ -108,12 +115,8 @@ ajax '/ajax/content/device/ports' => sub {
       prefetch => [{$nodes_name => 'ips'}, {neighbor_alias => 'device'}],
     }) if param('c_connected');
 
-    # sort, and filter by free ports
-    # the filter could be in the template but here allows a 'no records' msg
-    my $results = [ sort { &netdisco::sort_port($a->port, $b->port) }
-                    grep { not param('free')
-                           or $_->is_free(param('age_num'), param('age_unit')) } $set->all ];
-
+    # sort ports (empty set would be a 'no records' msg)
+    my $results = [ sort { &netdisco::sort_port($a->port, $b->port) } $set->all ];
     return unless scalar @$results;
 
     content_type('text/html');

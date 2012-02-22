@@ -16,7 +16,7 @@
         <span class="label">s</span>
         [% ELSIF row.stp == 'blocking' %]
         <span class="label notice">b</span>
-        [% ELSIF row.is_free(params.age_num, params.age_unit) %]
+        [% ELSIF params.free OR row.is_free %]
         <span class="label success">f</span>
         [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
         <span class="label warning">d</span>
