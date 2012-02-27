@@ -55,11 +55,11 @@
         </li> <!-- /dropdown -->
         [% END %]
       </ul>
-      <form method="get" action="[% uri_for('/search') %]">
+      <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
         <input placeholder="Find Anything" class="span5" id="nq" name="q" type="text"/>
         <img id="navsearchgo" class="navbar_icon" src="[% uri_base %]/images/crystalclear_mag.png"/>
       </form>
-      <ul class="nav secondary-nav">
+      <ul class="nav pull-right">
         <li class="menu">
           <p>Logged in as &nbsp;</p>
         </li>
