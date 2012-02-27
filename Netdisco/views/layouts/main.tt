@@ -37,8 +37,8 @@
   ]
 %]
 
-<div class="topbar" data-dropdown="dropdown">
-  <div class="topbar-inner">
+<div class="navbar" data-dropdown="dropdown">
+  <div class="navbar-inner">
     <div class="container-fluid">
       <a class="brand" href="[% uri_for('/') %]">Netdisco</a>
       [% IF session.user %]
