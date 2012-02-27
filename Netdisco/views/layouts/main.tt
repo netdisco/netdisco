@@ -15,9 +15,7 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-collapser.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-history.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-alerts.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-twipsy.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-dropdown.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';
