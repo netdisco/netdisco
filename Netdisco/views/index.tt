@@ -1,40 +1,40 @@
 <div class="container">
   <div class="row nd_herorow">
-    <div class="span10 offset3">
+    <div class="span8 offset2">
       [% IF params.failed %]
-      <div class="alert-message error fade in" data-alert="on">
-        <a class="close" href="#">×</a>
-        <p>Incorrect username or password, please try again.</p>
+      <div class="alert alert-error fade in">
+        <a class="close" data-dismiss="alert">×</a>
+        Incorrect username or password, please try again.
       </div>
       [% END %]
       [% IF params.logout %]
-      <div class="alert-message notice fade in" data-alert="on">
-        <a class="close" href="#">×</a>
-        <p>You are now logged out.</p>
+      <div class="alert fade in">
+        <a class="close" data-dismiss="alert">×</a>
+        You are now logged out.
       </div>
       [% END %]
       [% IF params.nosuchdevice %]
-      <div class="alert-message notice fade in" data-alert="on">
-        <a class="close" href="#">×</a>
-        <p>Sorry, no such device is known.</p>
+      <div class="alert fade in">
+        <a class="close" data-dismiss="alert">×</a>
+        Sorry, no such device is known.
       </div>
       [% END %]
       [% IF vars.notfound %]
-      <div class="alert-message notice fade in" data-alert="on">
-        <a class="close" href="#">×</a>
-        <p>Sorry, page not found.
-          <a href="http://sourceforge.net/tracker/?group_id=80033&atid=558508" target="_blank">Report a Bug?</a></p>
+      <div class="alert fade in">
+        <a class="close" data-dismiss="alert">×</a>
+        Sorry, page not found.
+          <a href="http://sourceforge.net/tracker/?group_id=80033&atid=558508" target="_blank">Report a Bug?</a>
       </div>
       [% END %]
       [% IF NOT session.user %]
-      <div class="alert-message success fade in" data-alert="on">
-        <a class="close" href="#">×</a>
-        <p>Log in to the Demo with username &quot;demo&quot; and password &quot;demo&quot;.</p>
+      <div class="alert alert-success fade in">
+        <a class="close" data-dismiss="alert">×</a>
+        Log in to the Demo with username &quot;demo&quot; and password &quot;demo&quot;.
       </div>
       [% ELSE %]
-      <div class="alert-message success fade in" data-alert="on">
-        <a class="close" href="#">×</a>
-        <p>Hit <strong>Enter</strong> in the Search box to view the current Inventory (<em>temporary feature</em>).</p>
+      <div class="alert alert-success fade in">
+        <a class="close" data-dismiss="alert">×</a>
+        Hit <strong>Enter</strong> in the Search box to view the current Inventory (<em>temporary feature</em>).
       </div>
       [% END %]
       <div class="hero-unit">
