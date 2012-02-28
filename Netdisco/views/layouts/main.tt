@@ -37,42 +37,49 @@
   ]
 %]
 
-<div class="navbar" data-dropdown="dropdown">
+<div class="navbar navbar-fixed-top">
   <div class="navbar-inner">
-    <div class="container-fluid">
+    <div class="container" style="width: auto;">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
       <a class="brand" href="[% uri_for('/') %]">Netdisco</a>
       [% IF session.user %]
-      <ul class="nav">
-        <li><a href="[% uri_for('/') %]">Home</a></li>
-        [% IF more_dd.size %]
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle">More</a>
-          <ul class="dropdown-menu">
-            [% FOREACH title IN more_dd.keys.sort %]
-            <li><a href="[% uri_for(more_dd.$title) %]">[% title %]</a></li>
-            [% END %]
-          </ul>
-        </li> <!-- /dropdown -->
+      <div class="nav-collapse">
+        <ul class="nav">
+          <li class="active"><a href="[% uri_for('/') %]">Home</a></li>
+          [% IF more_dd.size %]
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              [% FOREACH title IN more_dd.keys.sort %]
+              <li><a href="[% uri_for(more_dd.$title) %]">[% title %]</a></li>
+              [% END %]
+            </ul>
+          </li> <!-- /dropdown -->
+          [% END %]
+        </ul>
+        <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
+          <input placeholder="Find Anything" class="search-query span3" id="nq" name="q" type="text"/>
+          <img id="navsearchgo" class="navbar_icon" src="[% uri_base %]/images/crystalclear_mag.png"/>
+        </form>
+        <ul class="nav pull-right">
+          <li class="menu">
+            <p>Logged in as &nbsp;</p>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">[% session.user %]<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              [% FOREACH item IN user_dd %]
+              <li><a href="[% uri_for(item.link) %]">[% item.title %]</a></li>
+              [% END %]
+            </ul>
+          </li> <!-- /dropdown -->
+        </ul>
         [% END %]
-      </ul>
-      <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
-        <input placeholder="Find Anything" class="span5" id="nq" name="q" type="text"/>
-        <img id="navsearchgo" class="navbar_icon" src="[% uri_base %]/images/crystalclear_mag.png"/>
-      </form>
-      <ul class="nav pull-right">
-        <li class="menu">
-          <p>Logged in as &nbsp;</p>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle">[% session.user %]</a>
-          <ul class="dropdown-menu">
-            [% FOREACH item IN user_dd %]
-            <li><a href="[% uri_for(item.link) %]">[% item.title %]</a></li>
-            [% END %]
-          </ul>
-        </li> <!-- /dropdown -->
-      </ul>
-      [% END %]
+      </div>
     </div>
   </div>
 </div>
