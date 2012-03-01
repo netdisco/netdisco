@@ -1,4 +1,4 @@
-<table class="bordered-table condensed-table zebra-striped">
+<table class="table-bordered table-condensed table-striped">
   <thead>
     <tr>
       <th>Address</th>
