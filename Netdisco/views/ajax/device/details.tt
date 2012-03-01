@@ -7,7 +7,7 @@
     <tr>
       <td>Location</td>
       <td>
-        <a rel="twipsy" data-placement="above" data-offset="5" title="Find Similar Devices"
+        <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
         href="[% uri_for('/search') %]?[% vars.query_defaults.device %]&q=[% d.dns | uri %]&location=[% d.location | uri %]">[% d.location %]</a>
       </td>
     </tr>
@@ -18,17 +18,17 @@
     <tr>
       <td>Vendor / Model</td>
       <td>
-        <a rel="twipsy" data-placement="above" data-offset="5" title="Find Similar Devices"
+        <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
         href="[% uri_for('/search') %]?[% vars.query_defaults.device %]&q=[% d.dns | uri %]&vendor=[% d.vendor | uri %]">[% d.vendor %]</a>
         /
-        <a rel="twipsy" data-placement="above" data-offset="5" title="Find Similar Devices"
+        <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
         href="[% uri_for('/search') %]?[% vars.query_defaults.device %]&q=[% d.dns | uri %]&model=[% d.model | uri %]">[% d.model %]</a>
       </td>
     </tr>
     <tr>
       <td>OS / Version</td>
       <td>[% d.os %] /
-        <a rel="twipsy" data-placement="above" data-offset="5"
+        <a rel="tooltip" data-placement="top" data-offset="5"
         title="Find Similar Devices"
           href="[% uri_for('/search') %]?[% vars.query_defaults.device %]&q=[% d.dns | uri %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver %]</a>
       </td>

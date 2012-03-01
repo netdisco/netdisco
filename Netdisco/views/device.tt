@@ -1,12 +1,12 @@
 <img class="sidebar_toggle" id="sidebar_toggle_img_out"
   src="[% uri_base %]/images/diagona_settings.png"
-  rel="twipsy" data-placement="left" data-offset="5" title="Show Options"/>
+  rel="tooltip" data-placement="left" data-offset="5" title="Show Options"/>
 <div class="container-fluid">
   <div class="sidebar">
     <div class="well">
       <img class="sidebar_toggle" id="sidebar_toggle_img_in"
         src="[% uri_base %]/images/splashyfish_right.png"
-        rel="twipsy" data-placement="left" data-offset="5" title="Hide Sidebar"/>
+        rel="tooltip" data-placement="left" data-offset="5" title="Hide Sidebar"/>
       <div id="sidebar_pin_box" class="well">
         <img id="sidebar_pin" src="[% uri_base %]/images/matte_basic_pin.png"/>
       </div>
@@ -32,7 +32,7 @@
   </div>
 
   <div class="content">
-    <ul id="search_results" class="tabs" data-tabs="on">
+    <ul id="search_results" class="nav nav-tabs">
       [% FOREACH tab IN vars.tabs %]
       <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
       [% END %]

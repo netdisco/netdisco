@@ -122,7 +122,7 @@ if (window.History && window.History.enabled) {
 
 $(document).ready(function() {
   // activate tooltips
-  $("[rel=twipsy]").twipsy({live: true});
+  $("[rel=tooltip]").tooltip({live: true});
 
   // bind submission to the navbar go icon
   $('#navsearchgo').click(function() {
@@ -168,7 +168,7 @@ $(document).ready(function() {
   // but warning! will probably not work for dropdowns in tabs
   $('#search_results li').delegate('a', 'click', function(event) {
     event.preventDefault();
-    var from_li = $('.tabs').find('> .active').first();
+    var from_li = $('.nav-tabs').find('> .active').first();
     var to_li = $(this).parent('li')
 
     from_li.toggleClass('active');
