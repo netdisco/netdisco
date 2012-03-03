@@ -48,6 +48,11 @@ body {
   height: 100%;
 }
 
+/* link port name to restricted search */
+.this_port_only {
+  cursor: pointer;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* many styles for the collapsing lists */
 
@@ -143,15 +148,29 @@ body {
   margin-right: 3px;
 }
 
-/* somewhere between span1 and span2 is desirable */
-.nd_days_select {
-  width: 56px;
+/* nudge the port name/vlan filter over a little */
+#nd_port_query {
   margin-left: -2px !important;
+  width: 152px;
 }
 
-/* nudge the port name/vlan filter over a little */
-.nd_port_query {
-  width: 141px; /* FIXME width and placing */
+/* somewhere between span1 and span2 is desirable */
+#nd_days_select {
+  margin-left: -2px !important;
+  margin-top: 4px;
+  width: 56px;
+}
+
+/* set the day/mon/year drop-down width */
+#nd_age_select {
+  margin-top: 4px;
+  width: 95px;
+}
+
+/* sidebar submit button width and spacing from Node Props */
+#ports_submit {
+  margin-top: 3px;
+  width: 152px;
 }
 
 /* little sweep brush inside of port filter input field */
@@ -167,17 +186,27 @@ so that its tooltip takes prescedence over the field tooltip */
   padding: 6px;
 }
 
-/* link port name to restricted search */
-.this_port_only {
-  cursor: pointer;
-}
-
 /* change highlighting for form fields which are being used in a search */
 form .clearfix.success select {
   background-color: #A9DBA9;
 }
 form .clearfix.success input {
   background-color: #A9DBA9;
+}
+
+/* a little whitespace between legend items */
+.nd_legend li {
+  line-height: 19px;
+}
+
+/* bring sidebar items closer together */
+.inputs-list label {
+  margin-bottom: 1px;
+}
+
+/* nudge content closer to the header labels in the sidebar */
+.inputs-list li:first-child {
+  padding-top: 3px !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -250,14 +279,8 @@ form .clearfix.success input {
   margin-bottom: 0px;
 }
 
-/* nudge content closer to the header labels in the sidebar */
-.inputs-list:first-child {
-  padding-top: 4px !important;
-}
-
-/* a little whitespace between legend items */
-.nd_legend > li {
-  line-height: 19px;
+.sidebar .tab-content {
+  overflow: visible;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
