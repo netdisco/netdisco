@@ -17,6 +17,11 @@ body {
   padding-top: 11px;
 }
 
+/* on both main content and sidebar, hidden overflow is weird and wrong?! */
+.tab-content {
+  overflow: visible;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
 
@@ -118,10 +123,6 @@ body {
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* for table and to position cell content */
-
-table {
-  width: 100%;
-}
 
 td {
   vertical-align: baseline;
@@ -297,10 +298,6 @@ form .clearfix.success input {
   padding-left: 0px;
   margin-top: -9px;
   margin-bottom: 0px;
-}
-
-.sidebar .tab-content {
-  overflow: visible;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
