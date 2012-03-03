@@ -144,8 +144,18 @@ body {
 .nd_legendlabel {
   float: right;
   line-height: 1.2;
-  margin-top: 2px;
-  margin-right: 3px;
+}
+
+.nd_side_input {
+  width: 152px;
+}
+
+.nd_side_select {
+  width: 162px;
+}
+
+.sidebar .input-prepend {
+  margin-bottom: 0px;
 }
 
 /* nudge the port name/vlan filter over a little */
@@ -156,7 +166,6 @@ body {
 
 /* somewhere between span1 and span2 is desirable */
 #nd_days_select {
-  margin-left: -2px !important;
   margin-top: 4px;
   width: 56px;
 }
@@ -168,7 +177,11 @@ body {
 }
 
 /* sidebar submit button width and spacing from Node Props */
-#ports_submit {
+.sidebar button {
+  margin-top: 3px;
+  width: 160px;
+}
+.sidebar #ports_submit {
   margin-top: 3px;
   width: 152px;
 }

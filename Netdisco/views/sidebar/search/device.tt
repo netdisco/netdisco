@@ -2,32 +2,32 @@
             <p><em>Device Search Options</em></p>
             <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix">
-              <input class="span3" placeholder="System Name"
+              <input class="nd_side_input" placeholder="System Name"
                 type="text" name="name" value="[% params.name %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="System Name"/>
             </div>
             <div class="clearfix">
-              <input class="span3" placeholder="Location"
+              <input class="nd_side_input" placeholder="Location"
                 type="text" name="location" value="[% params.location %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="Location"/>
             </div>
             <div class="clearfix">
-              <input class="span3" placeholder="DNS"
+              <input class="nd_side_input" placeholder="DNS"
                 type="text" name="dns" value="[% params.dns %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="DNS"/>
             </div>
             <div class="clearfix">
-              <input class="span3" placeholder="IP Address"
+              <input class="nd_side_input" placeholder="IP Address"
                 type="text" name="ip" value="[% params.ip %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="IP Address"/>
             </div>
             <div class="clearfix">
-              <input class="span3" placeholder="Description"
+              <input class="nd_side_input" placeholder="Description"
                 type="text" name="description" value="[% params.description %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="Description"/>
             </div>
             <div class="clearfix">
-              <select class="span3" size="[% vars.model_list.size > 5 ? 5 : vars.model_list.size %]"
+              <select class="nd_side_select" size="[% vars.model_list.size > 5 ? 5 : vars.model_list.size %]"
                 multiple="on" name="model"
                 rel="tooltip" data-placement="left" data-offset="5" title="Model"/>
                 [% FOREACH opt IN vars.model_list %]
@@ -36,7 +36,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="span3" size="[% vars.os_ver_list.size > 5 ? 5 : vars.os_ver_list.size %]"
+              <select class="nd_side_select" size="[% vars.os_ver_list.size > 5 ? 5 : vars.os_ver_list.size %]"
                 multiple="on" name="os_ver"
                 rel="tooltip" data-placement="left" data-offset="5" title="OS Release"/>
                 [% FOREACH opt IN vars.os_ver_list %]
@@ -45,7 +45,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="span3" size="[% vars.vendor_list.size > 5 ? 5 : vars.vendor_list.size %]"
+              <select class="nd_side_select" size="[% vars.vendor_list.size > 5 ? 5 : vars.vendor_list.size %]"
                 multiple="on" name="vendor"
                 rel="tooltip" data-placement="left" data-offset="5" title="Vendor"/>
                 [% FOREACH opt IN vars.vendor_list %]
@@ -55,10 +55,11 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="matchall" name="matchall"[% ' checked="checked"' IF params.matchall %]/>
+                <input type="checkbox" id="matchall"
+                  name="matchall"[% ' checked="checked"' IF params.matchall %]/>
               </label>
               <label for="matchall">
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
               </label>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info span3">Search Again</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Search Again</button>

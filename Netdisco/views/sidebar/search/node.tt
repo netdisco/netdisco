@@ -3,7 +3,8 @@
             <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="stamps" name="stamps"[% ' checked="checked"' IF params.stamps %]/>
+                <input type="checkbox" id="stamps"
+                  name="stamps"[% ' checked="checked"' IF params.stamps %]/>
               </label>
               <label for="stamps">
                 <span class="nd_searchcheckbox uneditable-input">Time Stamps</span>
@@ -11,7 +12,8 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="vendor" name="vendor"[% ' checked="checked"' IF params.vendor %]/>
+                <input type="checkbox" id="vendor"
+                  name="vendor"[% ' checked="checked"' IF params.vendor %]/>
               </label>
               <label for="vendor">
                 <span class="nd_searchcheckbox uneditable-input">Vendor</span>
@@ -19,21 +21,23 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="archived" name="archived"[% ' checked="checked"' IF params.archived %]/>
+                <input type="checkbox" id="archived"
+                  name="archived"[% ' checked="checked"' IF params.archived %]/>
               </label>
               <label for="archived">
-                <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel
-                  label label-warning">A</span></span>
+                <span class="nd_searchcheckbox uneditable-input">
+                  Archived Data <span class="nd_legendlabel label label-warning">A</span></span>
               </label>
             </div>
             [% IF vars.node_ip_has_dns_col %]
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="partial" name="partial"[% ' checked="checked"' IF params.partial %]/>
+                <input type="checkbox" id="partial"
+                  name="partial"[% ' checked="checked"' IF params.partial %]/>
               </label>
               <label for="partial">
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
             </div>
             [% END %]
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info span3">Search Again</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Search Again</button>
