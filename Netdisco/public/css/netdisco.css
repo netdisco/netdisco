@@ -117,7 +117,15 @@ body {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* for table to center cell content */
+/* for table and to position cell content */
+
+table {
+  width: 100%;
+}
+
+td {
+  vertical-align: baseline;
+}
 
 .center_cell {
   text-align: center;
@@ -241,7 +249,6 @@ form .clearfix.success input {
 
 .sidebar_pinned {
   position: fixed !important;
-  margin-top: 50px;
 }
 
 #sidebar_pin {
