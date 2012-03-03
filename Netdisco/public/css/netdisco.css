@@ -11,6 +11,12 @@ body {
   cursor: pointer;
 }
 
+/* for the "logged in as..." text */
+.nd_navbartext {
+  color: #666;
+  padding-top: 11px;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
 
