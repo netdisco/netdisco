@@ -61,4 +61,4 @@
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
               </label>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Search Again</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info span3">Search Again</button>

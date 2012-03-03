@@ -91,7 +91,7 @@ body {
   float: right;
 }
 
-/* draw little up arrow to the right of a label for collapsed list */
+/* draw little up arrow to the left of a label for collapsed list */
 .cell-arrow-up {
   float: left;
   margin-top: 5px;
@@ -101,7 +101,7 @@ body {
   border-bottom: 8px solid #F89406;
 }
 
-/* draw little down arrow to the right of a label for collapsed list */
+/* draw little down arrow to the left of a label for collapsed list */
 .cell-arrow-down {
   float: left;
   margin-top: 5px;
@@ -151,7 +151,7 @@ body {
 
 /* nudge the port name/vlan filter over a little */
 .nd_port_query {
-  margin-left: -2px !important;
+  width: 141px; /* FIXME width and placing */
 }
 
 /* little sweep brush inside of port filter input field */
@@ -253,6 +253,11 @@ form .clearfix.success input {
 /* nudge content closer to the header labels in the sidebar */
 .inputs-list:first-child {
   padding-top: 4px !important;
+}
+
+/* a little whitespace between legend items */
+.nd_legend > li {
+  line-height: 19px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

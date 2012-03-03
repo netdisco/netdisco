@@ -5,45 +5,46 @@
               <a class="field_clear_icon" href="#"
                 rel="tooltip" data-placement="top" data-offset="3" title="Show all Ports">
                 <img src="[% uri_base %]/images/tango_sweep.png"/></a>
-              <input class="nd_port_query span3" placeholder="Port, Name or VLAN"
+              <input class="nd_port_query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
               <a href="#" id="nd_collapse_legend"><label>Legend</label></a>
-                <ul class="inputs-list unstyled nd_collapse_pre_hidden">
+                <ul class="inputs-list unstyled nd_legend nd_collapse_pre_hidden">
                   <li>
-                    <span class="label">s</span>&nbsp; Admin Disabled
+                    <span class="label">S</span>&nbsp; Admin Disabled
                   </li>
                   <li>
-                    <span class="label warning">d</span>&nbsp; Link Down
+                    <span class="label label-warning">D</span>&nbsp; Link Down
                   </li>
                   <li>
-                    <span class="label success">f</span>&nbsp; Port Free (Down)
+                    <span class="label label-success">F</span>&nbsp; Port Free (Down)
                   </li>
                   <li>
-                    <span class="label notice">b</span>&nbsp; Blocking
+                    <span class="label label-info">B</span>&nbsp; Blocking
                   </li>
                   <li>
-                    <span class="label">p</span>&nbsp; IP Phone
+                    <span class="label">P</span>&nbsp; IP Phone
                   </li>
                   <li>
-                    <span class="label important">n</span>&nbsp; Neighbor Inacessible
+                    <span class="label label-important">N</span>&nbsp; Neighbor Inacessible
                   </li>
                   <li>
-                    <span class="label warning">a</span>&nbsp; Archived Data
+                    <span class="label label-warning">A</span>&nbsp; Archived Data
                   </li>
                 </ul>
             </div>
             <div class="clearfix">
               <a href="#" id="nd_collapse_columns"><label>Display Columns</label></a>
-              <div class="input nd_collapse_pre_hidden">
-                <ul class="inputs-list">
+              <div class="nd_collapse_pre_hidden">
+                <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
                   <li>
-                    <label>
-                      <input type="checkbox" id="[% item.name %]" name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
-                      <span>[% item.label %]</span>
+                    <label class="checkbox">
+                      <input type="checkbox" id="[% item.name %]"
+                        name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
+                      [% item.label %]
                     </label>
                   </li>
                   [% END %]
@@ -52,17 +53,19 @@
             </div>
             <div class="clearfix">
               <a href="#" id="nd_collapse_portprop"><label>Port Properties</label></a>
-              <div class="input nd_collapse_pre_hidden">
-                <ul class="inputs-list">
+              <div class="nd_collapse_pre_hidden">
+                <ul class="inputs-list unstyled">
                   <li>
-                    <label>
-                      <input type="checkbox" id="free" name="free"[% ' checked="checked"' IF params.free %]/>
-                      <span>Only Show Free Ports</span>
+                    <label class="checkbox">
+                      <input type="checkbox" id="free"
+                        name="free"[% ' checked="checked"' IF params.free %]/>
+                      Only Show Free Ports
                     </label>
                   </li>
                   <p></p>
                   <li>
-                    <span rel="tooltip" data-placement="left" data-offset="5" title="Free if Down for this period of time">
+                    <span rel="tooltip" data-placement="left"
+                      data-offset="5" title="Free if Down for this period of time">
                     <select class="nd_days_select" name="age_num"/>
                       [% SET count = 1 %]
                       [% WHILE count < 32 %]
@@ -82,17 +85,18 @@
             </div>
             <div class="clearfix">
               <a href="#" id="nd_collapse_nodeprop"><label>Node Properties</label></a>
-              <div class="input nd_collapse_pre_hidden">
-                <ul class="inputs-list">
+              <div class="nd_collapse_pre_hidden">
+                <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.connected_properties %]
                   <li>
-                    <label>
-                      <input type="checkbox" id="[% item.name %]" name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
-                      <span>[% item.label %]</span>
+                    <label class="checkbox">
+                      <input type="checkbox" id="[% item.name %]"
+                        name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
+                      [% item.label %]
                     </label>
                   </li>
                   [% END %]
                 </ul>
               </div>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Update View</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Update View</button>

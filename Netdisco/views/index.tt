@@ -45,7 +45,7 @@
           <div class="form-horizontal">
             <input placeholder="Username" class="span2" name="username" type="text"/>
             <input placeholder="Password" class="span2" name="password" type="password"/>
-            <button type="submit" class="btn info">Log In</button>
+            <button type="submit" class="btn btn-info">Log In</button>
           </div>
           [% IF vars.requested_path %]
           <input type="hidden" name="path" value="[% vars.requested_path %]"/>

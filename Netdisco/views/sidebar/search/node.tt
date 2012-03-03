@@ -22,7 +22,8 @@
                 <input type="checkbox" id="archived" name="archived"[% ' checked="checked"' IF params.archived %]/>
               </label>
               <label for="archived">
-                <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel label warning">a</span></span>
+                <span class="nd_searchcheckbox uneditable-input">Archived Data <span class="nd_legendlabel
+                  label label-warning">A</span></span>
               </label>
             </div>
             [% IF vars.node_ip_has_dns_col %]
@@ -35,4 +36,4 @@
               </label>
             </div>
             [% END %]
-            <button id="[% tab.id %]_submit" type="submit" class="btn info span3">Search Again</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info span3">Search Again</button>

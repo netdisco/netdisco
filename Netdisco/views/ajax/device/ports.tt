@@ -13,13 +13,13 @@
     <tr>
       <td>
         [% IF row.up_admin == 'down' %]
-        <span class="label">s</span>
+        <span class="label">S</span>
         [% ELSIF row.stp == 'blocking' %]
-        <span class="label notice">b</span>
+        <span class="label label-info">B</span>
         [% ELSIF params.free OR row.is_free %]
-        <span class="label success">f</span>
+        <span class="label label-success">F</span>
         [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
-        <span class="label warning">d</span>
+        <span class="label label-warning">D</span>
         [% END %]
       </td>
       [% IF params.c_port %]
@@ -86,7 +86,7 @@
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip %]
             ([% row.remote_port | html_entity %])</a>
           [% ELSE %]
-          <span class="label important">n</span>
+          <span class="label label-important">N</span>
           <a href="[% uri_for('/search') %]?tab=node&q=[% row.remote_ip | uri %]">
             [% row.remote_ip %] (port: [% row.remote_port %]
             id: [% (row.remote_type _ ' / ') IF row.remote_type %][% row.remote_id %])</a>
@@ -94,12 +94,12 @@
         [% END %]
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
-          [% '<span class="label warning">a</span> &nbsp;' IF NOT node.active %]
+          [% '<span class="label label-warning">A</span> &nbsp;' IF NOT node.active %]
           <a href="[% uri_for('/search') %]?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
-            <br/>&nbsp; [% '<span class="label warning">a</span> &nbsp;' IF NOT ip.active %]
+            <br/>&nbsp; [% '<span class="label label-warning">A</span> &nbsp;' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
               <a href="[% uri_for('/search') %]?tab=node&q=[% ip.ip | uri %]">[% dns %] ([% ip.ip %])</a>
