@@ -42,7 +42,7 @@
         <small>Netdisco is an Open Source web-based network management tool.</small>
         [% IF NOT session.user %]
         <form class="nd_loginform" method="post" action="[% uri_for('/login') %]">
-          <div class="inline-inputs">
+          <div class="form-horizontal">
             <input placeholder="Username" class="span2" name="username" type="text"/>
             <input placeholder="Password" class="span2" name="password" type="password"/>
             <button type="submit" class="btn info">Log In</button>

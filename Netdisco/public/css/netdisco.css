@@ -5,6 +5,7 @@ body {
   padding-top: 50px;
 }
 
+/* magnifying glass icon for search box */
 .navbar_icon {
   vertical-align: middle;
   cursor: pointer;
@@ -12,10 +13,6 @@ body {
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
-
-.nd_loginalert {
-  margin-top: -40px;
-}
 
 .nd_herorow {
   margin-top: 50px;
@@ -26,7 +23,7 @@ body {
 }
 
 .nd_loginform {
-  margin-top: 30px;
+  margin-top: 15px;
   margin-bottom: 0px;
 }
 
