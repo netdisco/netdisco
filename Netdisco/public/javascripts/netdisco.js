@@ -45,7 +45,7 @@ function do_search (event, tab) {
 
   // in case of slow data load, let the user know
   $(target).html(
-    '<div class="span3 alert"><p>Waiting for results...</p></div>'
+    '<div class="span2 alert">Waiting for results...</div>'
   );
 
   // submit the query and put results into the tab pane
@@ -53,14 +53,14 @@ function do_search (event, tab) {
     function(response, status, xhr) {
       if (status !== "success") {
         $(target).html(
-          '<div class="span6 alert alert-error">' +
-          '<p>Search failed! Please contact your site administrator.</p></div>'
+          '<div class="span5 alert alert-error">' +
+          'Search failed! Please contact your site administrator.</div>'
         );
         return;
       }
       if (response === "") {
         $(target).html(
-          '<div class="span3 alert alert-info"><p>No matching records.</p></div>'
+          '<div class="span2 alert alert-info">No matching records.</div>'
         );
       }
 
