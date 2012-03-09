@@ -1,3 +1,23 @@
+0.5
+
+  [NEW FEATURES]
+
+  * Inventory page
+  * Migrate to Twtitter Bootstrap v2.x (thanks Eric Miller!)
+
+  [ENHANCEMENTS]
+
+  * Device Ports table port name is clickable to limit to that port only
+  * Tidy up display of Device Port Neighbors
+  * Refactor all SQL/DBIC to be smarter and more efficient
+
+  [BUG FIXES]
+
+  * Fix Net::MAC explosion (#8)
+  * Fix partial IP Addr explosion (#7)
+  * Set distinct on device search (#12)
+  * Fix strikethrough on tab change (#9)
+
 0.4
 
   [NEW FEATURES]
