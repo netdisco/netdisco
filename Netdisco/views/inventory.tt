@@ -1,0 +1,62 @@
+<div class="container">
+  [% IF models.count %]
+  <div class="row">
+    <div class="span6">
+      <h3 class="nd_inv_tbl_head">By Platform</h3>
+      <table class="table table-condensed">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Model</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          [% FOREACH platform IN models.all %]
+          <tr>
+            <th>
+              <a class="nd_stealthlink"
+                href="[% uri_for('/search') %]?tab=device&matchall=on&vendor=[% platform.vendor %]">
+                  [% platform.vendor %]</a>
+            </th>
+            <th>
+              <a class="nd_linkcell"
+                href="[% uri_for('/search') %]?tab=device&matchall=on&model=[% platform.model %]">
+                  [% platform.model %]</a>
+            </th>
+            <th>[% platform.get_column('count') %]</th>
+          </tr>
+          [% END %]
+        </tbody>
+      </table>
+    </div>
+    <div class="span6">
+      <h3 class="nd_inv_tbl_head">By Software Release</h3>
+      <table class="table table-condensed">
+        <thead>
+          <tr>
+            <th>OS</th>
+            <th>Version</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          [% FOREACH release IN releases.all %]
+          <tr>
+            <th>[% release.os %]</th>
+            <th>
+              <a class="nd_linkcell"
+                href="[% uri_for('/search') %]?tab=device&matchall=on&os_ver=[% release.os_ver %]">
+                  [% release.os_ver %]</a>
+            </th>
+            <th>[% release.get_column('count') %]</th>
+          </tr>
+          [% END %]
+        </tbody>
+      </table>
+    </div>
+  </div>
+  [% ELSE %]
+  <div class="span4 alert alert-info">No devices found. Do you need to run a Discover?</div>
+  [% END %]
+</div>

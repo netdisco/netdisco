@@ -185,10 +185,12 @@ get '/search' => sub {
       schema('netdisco')->resultset('Device')->get_distinct('vendor')
     ]);
 
-    params->{'q'} ||= '_'; # FIXME a cheat Inventory, for now
-
     my $q = param('q');
-    if ($q and not param('tab')) {
+    if (not param('tab')) {
+        if (not $q) {
+            redirect uri_for('/');
+        }
+
         # pick most likely tab for initial results
         if ($q =~ m/^\d+$/) {
             params->{'tab'} = 'vlan';

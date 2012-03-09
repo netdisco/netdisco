@@ -31,11 +31,6 @@
         <a class="close" data-dismiss="alert">×</a>
         Log in to the Demo with username &quot;demo&quot; and password &quot;demo&quot;.
       </div>
-      [% ELSE %]
-      <div class="alert alert-success fade in">
-        <a class="close" data-dismiss="alert">×</a>
-        Hit <strong>Enter</strong> in the Search box to view the current Inventory (<em>temporary feature</em>).
-      </div>
       [% END %]
       <div class="hero-unit">
         <h2>Welcome to Netdisco</h2>

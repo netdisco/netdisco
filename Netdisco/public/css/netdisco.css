@@ -17,9 +17,14 @@ body {
   padding-top: 11px;
 }
 
-/* on both main content and sidebar, hidden overflow is weird and wrong?! */
+/* on both main content and sidebar, default is hidden */
 .tab-content {
   overflow: visible;
+}
+
+/* ajax results should fill all available */
+.tab-content table {
+  width: 100%;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -36,6 +41,35 @@ body {
 .nd_loginform {
   margin-top: 15px;
   margin-bottom: 0px;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* styles for Reports */
+
+/* from Bootstrap doc style sheet */
+.nd_show-grid [class*="span"] {
+  background-color: cornsilk;
+  text-align: center;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  min-height: 30px;
+  line-height: 30px;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* styles for Inventory */
+
+#nd_dev_age_form {
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.nd_inv_tbl_head {
+  text-align: center;
+  color: lightSlateGray;
+  margin-top: 6px;
+  margin-bottom: 3px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

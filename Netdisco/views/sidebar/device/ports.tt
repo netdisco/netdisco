@@ -65,14 +65,12 @@
                   <li>
                     <span rel="tooltip" data-placement="left"
                       data-offset="5" title="Free if Down for this period of time">
-                    <select id="nd_days_select" name="age_num"/>
-                      [% SET count = 1 %]
-                      [% WHILE count < 32 %]
+                    <select id="nd_days_select" name="age_num">
+                      [% FOREACH count IN [1..32] %]
                       <option[% ' selected="selected"' IF params.age_num == count %]>[% count %]</option>
-                      [% SET count = count + 1 %]
                       [% END %]
                     </select>
-                    <select id="nd_age_select" name="age_unit"/>
+                    <select id="nd_age_select" name="age_unit">
                       [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
                       <option[% ' selected="selected"' IF params.age_unit == unit %]>[% unit %]</option>
                       [% END %]

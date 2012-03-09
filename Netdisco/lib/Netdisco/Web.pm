@@ -10,6 +10,7 @@ use HTML::Entities (); # to ensure dependency is met
 use Netdisco::Web::AuthN;
 use Netdisco::Web::Search;
 use Netdisco::Web::Device;
+use Netdisco::Web::Inventory;
 
 hook 'before_template' => sub {
     my $tokens = shift;

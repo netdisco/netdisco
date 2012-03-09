@@ -1,0 +1,31 @@
+<div class="container">
+  <div class="row nd_show-grid">
+    <div class="span10 offset1">
+      <form id="nd_dev_age_form" class="form-inline">
+        Find Devices
+        <select name="age_type" class="span2">
+          <option value="first">First Discovered</option>
+          <option value="last" selected="selected">Last Updated</option>
+        </select>
+        <select name="age_bool" class="span2">
+          <option value="in">less than</option>
+          <option value="not_in" selected="selected">more than</option>
+        </select>
+        <select name="age_num" class="span1">
+          [% FOREACH count IN [1..32] %]
+          <option[% ' selected="selected"' IF count == 3 %]>[% count %]</option>
+          [% END %]
+        </select>
+        <select name="age_unit" class="span2">
+          <option>days</option>
+          <option>weeks</option>
+          <option selected="selected">months</option>
+          <option>years</option>
+        </select>
+        ago.
+        <button type="submit" class="btn btn-primary">
+          <i class="icon-search icon-white"></i></button>
+      </form>
+    </div>
+  </div>
+</div>

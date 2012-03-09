@@ -33,7 +33,7 @@ post '/login' => sub {
             }
         }
     }
-    redirect '/?failed=1';
+    redirect uri_for('/', {failed => 1});
 };
 
 get '/logout' => sub {
