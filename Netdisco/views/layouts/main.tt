@@ -43,7 +43,7 @@
       <a class="brand" href="[% uri_for('/') %]">Netdisco</a>
       [% IF session.user %]
       <ul class="nav">
-        <li[% ' class="active"' IF vars('nav') == 'inventory' %]>
+        <li[% ' class="active"' IF vars.nav == 'inventory' %]>
           <a href="[% uri_for('/inventory') %]">Inventory</a>
         </li>
         [% IF more_dd.size %]

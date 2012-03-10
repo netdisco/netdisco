@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
 get '/inventory' => sub {
+    var(nav => 'inventory');
     template 'inventory', {
       models => scalar schema('netdisco')->resultset('Device')->search({},{
         select => [ 'vendor', 'model', { count => 'ip' } ],
