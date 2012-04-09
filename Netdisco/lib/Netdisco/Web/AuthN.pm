@@ -11,7 +11,6 @@ hook 'before' => sub {
             session(user => 'developer');
         }
         else {
-            var(requested_path => request->path);
             request->path_info('/');
         }
     }
@@ -24,7 +23,6 @@ post '/login' => sub {
             my $sum = Digest::MD5::md5_hex(param('password'));
             if ($sum and $sum eq $user->password) {
                 session(user => $user->username);
-                # redirect param('path') || '/'; FIXME requested_path?
                 redirect uri_for('/inventory');
                 return;
             }
