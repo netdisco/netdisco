@@ -33,9 +33,9 @@ hook 'before' => sub {
         { name => 'n_archived', label => 'Archived Data', default => ''   },
     ]);
 
-    # set up default search options for each type
-    if (request->path =~ m{/device$}) {
-        if (not param('tab') or param('tab') ne 'ports' or scalar keys %{params()} < 4) {
+    if (request->path eq uri_for('/device')->path) {
+        # new searches will have these defaults in the ports sidebar
+        if (not param('tab') or param('tab') ne 'ports') {
             foreach my $col (@{ var('port_columns') }) {
                 params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
             }

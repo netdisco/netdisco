@@ -10,29 +10,33 @@ use List::MoreUtils ();
 use Net::DNS ();
 
 hook 'before' => sub {
-    # make hash lookups of query lists
-    foreach my $opt (qw/model vendor os_ver/) {
-        my $p = (ref [] eq ref param($opt) ? param($opt) : (param($opt) ? [param($opt)] : []));
-        var("${opt}_lkp" => { map { $_ => 1 } @$p });
-    }
-
-    # set up default search options for each type
-    if (request->path =~ m{/search$}) {
+    if (request->path eq uri_for('/search')->path) {
+        # new searches have these defaults in their sidebars
         if (not param('tab') or param('tab') ne 'node') {
             params->{'stamps'} = 'checked';
         }
         if (not param('tab') or param('tab') ne 'device') {
             params->{'matchall'} = 'checked';
         }
+
+        # used in the device search sidebar to populate select inputs
+        var('model_list' => [
+          schema('netdisco')->resultset('Device')->get_distinct('model')
+        ]);
+        var('os_ver_list' => [
+          schema('netdisco')->resultset('Device')->get_distinct('os_ver')
+        ]);
+        var('vendor_list' => [
+          schema('netdisco')->resultset('Device')->get_distinct('vendor')
+        ]);
+
+        # used in the device search sidebar template to set selected items
+        foreach my $opt (qw/model vendor os_ver/) {
+            my $p = (ref [] eq ref param($opt) ? param($opt)
+                                               : (param($opt) ? [param($opt)] : []));
+            var("${opt}_lkp" => { map { $_ => 1 } @$p });
+        }
     }
-
-    # set up query string defaults for hyperlinks to templates with forms
-    var('query_defaults' => { map { ($_ => "tab=$_") } qw/node device/ });
-
-    var('query_defaults')->{node} .= "\&$_=". (param($_) || '')
-      for qw/stamps vendor archived partial/;
-    var('query_defaults')->{device} .= "\&$_=". (param($_) || '')
-      for qw/matchall/;
 };
 
 # device with various properties or a default match-all
@@ -174,17 +178,6 @@ ajax '/ajax/content/search/port' => sub {
 };
 
 get '/search' => sub {
-    # set up property lists for device search
-    var('model_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('model')
-    ]);
-    var('os_ver_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('os_ver')
-    ]);
-    var('vendor_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('vendor')
-    ]);
-
     my $q = param('q');
     if (not param('tab')) {
         if (not $q) {

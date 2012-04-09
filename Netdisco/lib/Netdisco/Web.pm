@@ -26,6 +26,17 @@ hook 'before_template' => sub {
     $Template::Directive::WHILE_MAX = 10_000;
 };
 
+# set up query strings which describe default search options.
+# these are used in both Device and Search templates
+hook 'before_template' => sub {
+    var('query_defaults' => { map { ($_ => "tab=$_") } qw/node device/ });
+
+    var('query_defaults')->{node} .= "\&$_=". (param($_) || '')
+      for qw/stamps vendor archived partial/;
+    var('query_defaults')->{device} .= "\&$_=". (param($_) || '')
+      for qw/matchall/;
+};
+
 get '/' => sub {
     template 'index';
 };

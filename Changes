@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Native copy of the Netdisco sort_port routine (#17)
+  * Refactor begin hooks (closes #16)
 
   [BUG FIXES]
 
