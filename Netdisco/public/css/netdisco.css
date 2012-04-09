@@ -87,11 +87,6 @@ body {
   height: 100%;
 }
 
-/* link port name to restricted search */
-.this_port_only {
-  cursor: pointer;
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* many styles for the collapsing lists */
 

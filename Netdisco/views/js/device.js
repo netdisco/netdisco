@@ -70,10 +70,14 @@
       $('#ports_form').trigger('submit');
     });
 
-    // make all port names clickable to restrict results to that port only
+    // clickable device port names can simply resubmit AJAX rather than
+    // fetch the whole page again.
     $('body').delegate('.this_port_only', 'click', function() {
+      event.preventDefault(); // link is real so prevent page submit
+
       var port = $(this).text();
       sweep.val(port);
+
       $('.field_clear_icon').show();
       $('#ports_form').trigger('submit');
     });

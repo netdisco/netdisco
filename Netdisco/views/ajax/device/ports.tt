@@ -23,7 +23,10 @@
         [% END %]
       </td>
       [% IF params.c_port %]
-      <td><a class="nd_linkcell this_port_only">[% row.port | html_entity %]</a></td>
+      <td><a class="nd_linkcell" href="[% uri_for('/device',
+              vars.self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
+        [% row.port | html_entity %]
+      </a></td>
       [% END %]
       [% IF params.c_descr %]
       <td class="center_cell">[% row.descr | html_entity %]</td>
@@ -82,12 +85,13 @@
       <td>
         [% IF row.remote_ip %]
           [% IF row.neighbor %]
-          <a href="[% uri_for('/device') %]?tab=ports&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
+          <a href="[% uri_for('/device',
+                vars.self_options) %]&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip %]
             ([% row.remote_port | html_entity %])</a>
           [% ELSE %]
           <span class="label label-important">N</span>
-          <a href="[% uri_for('/search') %]?tab=node&q=[% row.remote_ip | uri %]">
+          <a href="[% vars.search_node %]&q=[% row.remote_ip | uri %]">
             [% row.remote_ip %] (port: [% row.remote_port %]
             id: [% (row.remote_type _ ' / ') IF row.remote_type %][% row.remote_id %])</a>
           [% END %]
@@ -95,16 +99,16 @@
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
           [% '<span class="label label-warning">A</span> &nbsp;' IF NOT node.active %]
-          <a href="[% uri_for('/search') %]?tab=node&q=[% node.mac | uri %]">[% node.mac %]</a>
+          <a href="[% vars.search_node %]&q=[% node.mac | uri %]">[% node.mac %]</a>
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
             <br/>&nbsp; [% '<span class="label label-warning">A</span> &nbsp;' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
-              <a href="[% uri_for('/search') %]?tab=node&q=[% ip.ip | uri %]">[% dns %] ([% ip.ip %])</a>
+              <a href="[% vars.search_node %]&q=[% ip.ip | uri %]">[% dns %] ([% ip.ip %])</a>
               [% ELSE %]
-              <a href="[% uri_for('/search') %]?tab=node&q=[% ip.ip | uri %]">[% ip.ip %]</a>
+              <a href="[% vars.search_node %]&q=[% ip.ip | uri %]">[% ip.ip %]</a>
               [% END %]
             [% END %]
           [% END %]

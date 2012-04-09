@@ -1,10 +1,15 @@
 0.x
 
+  [NEW FEATURES]
+
+  * Icon to copy Navbar search text to Device Search Options field (closes #11)
+
   [ENHANCEMENTS]
 
   * Native copy of the Netdisco sort_port routine (#17)
   * Refactor begin hooks (closes #16)
-  * Icon to copy Navbar search text to Device Search Options field (closes #11)
+  * Re-engineer link generation to ensure sane defaults and remembered options.
+    This came as a side-effect of removing JS-only links (closes #21)
 
   [BUG FIXES]
 

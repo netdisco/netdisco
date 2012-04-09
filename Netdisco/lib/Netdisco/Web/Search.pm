@@ -10,25 +10,43 @@ use List::MoreUtils ();
 use Net::DNS ();
 
 hook 'before' => sub {
-    if (request->path eq uri_for('/search')->path) {
-        # new searches have these defaults in their sidebars
-        if (not param('tab') or param('tab') ne 'node') {
-            params->{'stamps'} = 'checked';
-        }
-        if (not param('tab') or param('tab') ne 'device') {
-            params->{'matchall'} = 'checked';
+    # view settings for node options
+    var('node_options' => [
+      { name => 'stamps', label => 'Time Stamps', default => 'on' },
+    ]);
+    # view settings for device options
+    var('device_options' => [
+      { name => 'matchall', label => 'Match All Options', default => 'on' },
+    ]);
+
+    # new searches will use these defaults in their sidebars
+    var('search_node'   => uri_for('/search', {tab => 'node'}));
+    var('search_device' => uri_for('/search', {tab => 'device'}));
+
+    foreach my $col (@{ var('node_options') }) {
+        next unless $col->{default} eq 'on';
+        var('search_node')->query_param($col->{name}, 'checked');
+    }
+
+    foreach my $col (@{ var('device_options') }) {
+        next unless $col->{default} eq 'on';
+        var('search_device')->query_param($col->{name}, 'checked');
+    }
+
+    if (request->path eq uri_for('/search')->path
+        or index(request->path, uri_for('/ajax/content/search')->path) == 0) {
+
+        foreach my $col (@{ var('node_options') }) {
+            next unless $col->{default} eq 'on';
+            params->{$col->{name}} = 'checked'
+              if not param('tab') or param('tab') ne 'node';
         }
 
-        # used in the device search sidebar to populate select inputs
-        var('model_list' => [
-          schema('netdisco')->resultset('Device')->get_distinct('model')
-        ]);
-        var('os_ver_list' => [
-          schema('netdisco')->resultset('Device')->get_distinct('os_ver')
-        ]);
-        var('vendor_list' => [
-          schema('netdisco')->resultset('Device')->get_distinct('vendor')
-        ]);
+        foreach my $col (@{ var('device_options') }) {
+            next unless $col->{default} eq 'on';
+            params->{$col->{name}} = 'checked'
+              if not param('tab') or param('tab') ne 'device';
+        }
 
         # used in the device search sidebar template to set selected items
         foreach my $opt (qw/model vendor os_ver/) {
@@ -214,6 +232,17 @@ get '/search' => sub {
             params->{'tab'} ||= 'node';
         }
     }
+
+    # used in the device search sidebar to populate select inputs
+    var('model_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('model')
+    ]);
+    var('os_ver_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('os_ver')
+    ]);
+    var('vendor_list' => [
+      schema('netdisco')->resultset('Device')->get_distinct('vendor')
+    ]);
 
     # list of tabs
     var('tabs' => [

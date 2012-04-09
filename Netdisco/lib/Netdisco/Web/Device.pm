@@ -33,18 +33,48 @@ hook 'before' => sub {
         { name => 'n_archived', label => 'Archived Data', default => ''   },
     ]);
 
-    if (request->path eq uri_for('/device')->path) {
-        # new searches will have these defaults in the ports sidebar
+    # new searches will use these defaults in their sidebars
+    var('device_ports' => uri_for('/device', {
+      tab => 'ports',
+      age_num => 3,
+      age_unit => 'months',
+    }));
+
+    foreach my $col (@{ var('port_columns') }) {
+        next unless $col->{default} eq 'on';
+        var('device_ports')->query_param($col->{name}, 'checked');
+    }
+
+    foreach my $col (@{ var('connected_properties') }) {
+        next unless $col->{default} eq 'on';
+        var('device_ports')->query_param($col->{name}, 'checked');
+    }
+
+    if (request->path eq uri_for('/device')->path
+        or index(request->path, uri_for('/ajax/content/device')->path) == 0) {
+
+        foreach my $col (@{ var('port_columns') }) {
+            next unless $col->{default} eq 'on';
+            params->{$col->{name}} = 'checked'
+              if not param('tab') or param('tab') ne 'ports';
+        }
+
+        foreach my $col (@{ var('connected_properties') }) {
+            next unless $col->{default} eq 'on';
+            params->{$col->{name}} = 'checked'
+              if not param('tab') or param('tab') ne 'ports';
+        }
+
         if (not param('tab') or param('tab') ne 'ports') {
-            foreach my $col (@{ var('port_columns') }) {
-                params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
-            }
-            foreach my $col (@{ var('connected_properties') }) {
-                params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
-            }
             params->{'age_num'} = 3;
             params->{'age_unit'} = 'months';
         }
+
+        # for templates to link to same page with modified query but same options
+        my $self_uri = uri_for(request->path, scalar params);
+        $self_uri->query_param_delete('q');
+        $self_uri->query_param_delete('f');
+        var('self_options' => $self_uri->query_form_hash);
     }
 };
 
