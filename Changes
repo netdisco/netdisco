@@ -4,6 +4,7 @@
 
   * Native copy of the Netdisco sort_port routine (#17)
   * Refactor begin hooks (closes #16)
+  * Icon to copy Navbar search text to Device Search Options field (closes #11)
 
   [BUG FIXES]
 

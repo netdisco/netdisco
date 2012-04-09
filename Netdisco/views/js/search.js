@@ -10,13 +10,22 @@
   // and strikethrough the navbar search
   function device_form_state(e) {
     if (e.is('[value!=""]')) {
+      $('.field_copy_icon').hide();
+
       e.parent(".clearfix").addClass('success');
       $('#nq').css('text-decoration', 'line-through');
+
+      var id = '#' + e.attr('name') + '_clear_btn';
+      $(id).show();
     }
     else {
       e.parent(".clearfix").removeClass('success');
+      var id = '#' + e.attr('name') + '_clear_btn';
+      $(id).hide();
+
       if (! d_inputs.is('[value!=""]') ) {
         $('#nq').css('text-decoration', 'none');
+        $('.field_copy_icon').show();
       }
     }
   }
@@ -35,6 +44,25 @@
   // on load, check initial Device Search Options form state,
   // and on each change to the form fields
   $(document).ready(function() {
+    $('.field_copy_icon').hide();
+    $('.field_clear_icon').hide();
+
     d_inputs.each(function() {device_form_state($(this))});
     d_inputs.change(function() {device_form_state($(this))});
+
+    // handler for copy icon in search option
+    $('.field_copy_icon').click(function() {
+      var name = $(this).data('btn-for');
+      var input = $('#device_form [name=' + name + ']');
+      input.val( $('#nq').val() );
+      device_form_state(input); // will hide copy icons
+    });
+
+    // handler for bin icon in search option
+    $('.field_clear_icon').click(function() {
+      var name = $(this).data('btn-for');
+      var input = $('#device_form [name=' + name + ']');
+      input.val('');
+      device_form_state(input);
+    });
   });

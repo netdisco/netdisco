@@ -2,26 +2,46 @@
             <p><em>Device Search Options</em></p>
             <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix">
-              <input class="nd_side_input" placeholder="System Name"
-                type="text" name="name" value="[% params.name %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="System Name"/>
-            </div>
-            <div class="clearfix">
-              <input class="nd_side_input" placeholder="Location"
-                type="text" name="location" value="[% params.location %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="Location"/>
-            </div>
-            <div class="clearfix">
+              <a data-btn-for="dns" class="field_copy_icon" href="#">
+                <img src="[% uri_base %]/images/vaga_copy.png"/></a>
+              <a id="dns_clear_btn" data-btn-for="dns" class="field_clear_icon" href="#">
+                <i class="icon-trash"></i></a>
               <input class="nd_side_input" placeholder="DNS"
                 type="text" name="dns" value="[% params.dns %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="DNS"/>
             </div>
             <div class="clearfix">
+              <a data-btn-for="ip" class="field_copy_icon" href="#">
+                <img src="[% uri_base %]/images/vaga_copy.png"/></a>
+              <a id="ip_clear_btn" data-btn-for="ip" class="field_clear_icon" href="#">
+                <i class="icon-trash"></i></a>
               <input class="nd_side_input" placeholder="IP Address"
                 type="text" name="ip" value="[% params.ip %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="IP Address"/>
             </div>
             <div class="clearfix">
+              <a data-btn-for="name" class="field_copy_icon" href="#">
+                <img src="[% uri_base %]/images/vaga_copy.png"/></a>
+              <a id="name_clear_btn" data-btn-for="name" class="field_clear_icon" href="#">
+                <i class="icon-trash"></i></a>
+              <input class="nd_side_input" placeholder="System Name"
+                type="text" name="name" value="[% params.name %]"
+                rel="tooltip" data-placement="left" data-offset="5" title="System Name"/>
+            </div>
+            <div class="clearfix">
+              <a data-btn-for="location" class="field_copy_icon" href="#">
+                <img src="[% uri_base %]/images/vaga_copy.png"/></a>
+              <a id="location_clear_btn" data-btn-for="location" class="field_clear_icon" href="#">
+                <i class="icon-trash"></i></a>
+              <input class="nd_side_input" placeholder="Location"
+                type="text" name="location" value="[% params.location %]"
+                rel="tooltip" data-placement="left" data-offset="5" title="Location"/>
+            </div>
+            <div class="clearfix">
+              <a data-btn-for="description" class="field_copy_icon" href="#">
+                <img src="[% uri_base %]/images/vaga_copy.png"/></a>
+              <a id="description_clear_btn" data-btn-for="description" class="field_clear_icon" href="#">
+                <i class="icon-trash"></i></a>
               <input class="nd_side_input" placeholder="Description"
                 type="text" name="description" value="[% params.description %]"
                 rel="tooltip" data-placement="left" data-offset="5" title="Description"/>

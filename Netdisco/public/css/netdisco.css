@@ -229,17 +229,18 @@ td {
   width: 152px;
 }
 
-/* little sweep brush inside of port filter input field */
-.field_clear_icon {
+/* little icon inside of search input fields */
+.field_clear_icon, .field_copy_icon {
   position: absolute;
   margin-left: 132px;
   z-index: 1;
+  padding: 6px;
 }
 
-/* make the sweep icon fill the height of the input field
-so that its tooltip takes prescedence over the field tooltip */
-.field_clear_icon > img {
-  padding: 6px;
+/* nudge when icon inside the search field is a bootstrap glyph */
+.field_clear_icon > i {
+  margin-top: 1px;
+  margin-left: 4px;
 }
 
 /* change highlighting for form fields which are being used in a search */
