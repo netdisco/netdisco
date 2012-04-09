@@ -1,4 +1,10 @@
-0.5
+0.x
+
+  [BUG FIXES]
+
+  * Fix sidebar hiding not making main content reflow to full window width (#15)
+
+0.5 2012-03-09
 
   [NEW FEATURES]
 
@@ -18,7 +24,7 @@
   * Set distinct on device search (#12)
   * Fix strikethrough on tab change (#9)
 
-0.4
+0.4 2012-02-19
 
   [NEW FEATURES]
 

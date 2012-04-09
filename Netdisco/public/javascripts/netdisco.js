@@ -16,14 +16,14 @@ function do_search (event, tab) {
   // and whether the sidebar contains any content (detected by TT)
   if (has_sidebar[tab] == 0) {
     $('.sidebar, #sidebar_toggle_img_out').hide();
-    $('.content').css('margin-right', '10px !important');
+    $('.content').css('margin-right', '10px');
   }
   else {
     if (sidebar_hidden) {
       $('#sidebar_toggle_img_out').show();
     }
     else {
-      $('.content').css('margin-right', '220px !important');
+      $('.content').css('margin-right', '215px');
       $('.sidebar').show();
     }
   }
@@ -143,24 +143,18 @@ $(document).ready(function() {
   });
   // sidebar toggle - trigger in/out on image click()
   $('#sidebar_toggle_img_in').click(function() {
-    $('.sidebar').toggle(
-      function() {
-        $('#sidebar_toggle_img_out').toggle();
-        $('.content').animate({'margin-right': '10px !important'}, 50);
-      }
-    );
+    $('.sidebar').toggle(250);
+    $('#sidebar_toggle_img_out').toggle();
+    $('.content').css('margin-right', '10px');
     sidebar_hidden = 1;
   });
   $('#sidebar_toggle_img_out').click(function() {
     $('#sidebar_toggle_img_out').toggle();
-    $('.content').animate({'margin-right': '220px !important'}, 100,
-      function() {
-        $('.sidebar').toggle(200);
-        if (! $('.sidebar').hasClass('sidebar_pinned')) {
-            $(window).scrollTop(0);
-        }
-      }
-    );
+    $('.content').css('margin-right', '215px');
+    $('.sidebar').toggle(250);
+    if (! $('.sidebar').hasClass('sidebar_pinned')) {
+        $(window).scrollTop(0);
+    }
     sidebar_hidden = 0;
   });
 

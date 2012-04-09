@@ -323,7 +323,7 @@ form .clearfix.success input {
 
 /* make the content start more to the left now the sidebar is narrower */
 .container-fluid > .content {
-  margin-right: 220px;
+  margin-right: 215px;
   margin-left: 0px;
 }
 
