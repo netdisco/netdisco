@@ -1,5 +1,9 @@
 0.x
 
+  [ENHANCEMENTS]
+
+  * Native copy of the Netdisco sort_port routine (#17)
+
   [BUG FIXES]
 
   * Fix sidebar hiding not making main content reflow to full window width (#15)
