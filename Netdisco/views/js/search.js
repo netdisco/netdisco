@@ -10,7 +10,9 @@
   // and strikethrough the navbar search
   function device_form_state(e) {
     if (e.is('[value!=""]')) {
-      $('.field_copy_icon').hide();
+      if (e.attr('type') == 'text') {
+        $('.field_copy_icon').hide();
+      }
 
       e.parent(".clearfix").addClass('success');
       $('#nq').css('text-decoration', 'line-through');
