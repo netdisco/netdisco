@@ -121,6 +121,15 @@ if (window.History && window.History.enabled) {
 }
 
 $(document).ready(function() {
+  // activate typeahead on the main search box, for device names only
+  $('#nq').typeahead({
+    source: function (query, process) {
+      return $.get('/ajax/data/device/typeahead', { query: query }, function (data) {
+        return process(data);
+      });
+    }
+  });
+
   // activate tooltips
   $("[rel=tooltip]").tooltip({live: true});
 

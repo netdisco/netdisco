@@ -46,6 +46,8 @@
           <input type="hidden" name="path" value="[% vars.requested_path %]"/>
           [% END %]
         </form>
+        [% ELSE %]
+        <script type="text/javascript"> $('#nq').focus(); // set focus to navbar search </script>
         [% END %]
       </div>
     </div>
