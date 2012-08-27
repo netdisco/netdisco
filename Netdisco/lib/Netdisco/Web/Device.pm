@@ -113,6 +113,10 @@ ajax '/ajax/content/device/ports' => sub {
             return unless $set->count;
         }
         else {
+            $q =~ s/\*/%/g if index($q, '*') >= 0;
+            $q =~ s/\?/_/g if index($q, '?') >= 0;
+            $q = { '-ilike' => $q };
+
             if ($set->search({'me.port' => $q})->count) {
                 $set = $set->search({'me.port' => $q});
             }

@@ -6,6 +6,7 @@
   * Typeahead on the main navbar search (for devices only)
   * Support for have_nodeip_dns_col setting (closes #14)
   * Set focus to navbar search on initial login or when changing to home (closes #24)
+  * Port filter supports basic */?/%/_ wildcards (closes #25)
 
   [ENHANCEMENTS]
 
