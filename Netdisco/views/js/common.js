@@ -8,4 +8,13 @@
     [% IF params.tab %]
     $('#[% params.tab %]_form').trigger("submit");
     [% END %]
+
+    // enable typeahead on the main search box, for device names only
+    $('#nq').typeahead({
+      source: function (query, process) {
+        return $.get('/ajax/data/device/typeahead', { query: query }, function (data) {
+          return process(data);
+        });
+      }
+    });
   });

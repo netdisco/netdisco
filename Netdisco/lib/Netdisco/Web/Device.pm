@@ -171,6 +171,15 @@ ajax '/ajax/content/device/details' => sub {
     }, { layout => undef };
 };
 
+# support typeahead with simple AJAX query for device names
+ajax '/ajax/data/device/typeahead' => sub {
+    my $q = param('query');
+    my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
+
+    content_type 'application/json';
+    return to_json [map {$_->dns || $_->name || $_->ip} $set->all];
+};
+
 get '/device' => sub {
     my $ip = NetAddr::IP::Lite->new(param('q'));
     if (! $ip) {

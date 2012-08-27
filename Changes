@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * Icon to copy Navbar search text to Device Search Options field (closes #11)
+  * Typeahead on the main navbar search (for devices only)
 
   [ENHANCEMENTS]
 
