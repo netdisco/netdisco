@@ -16,6 +16,7 @@
     This came as a side-effect of removing JS-only links (closes #21)
   * Replace jquery-collapser with Bootstrap's collapser
   * Upgraded to Twitter Bootstrap 2.1.0 - customized for 13px font 18px line
+  * Factor out inventory queries to the Device ResultSet (closes #20)
 
   [BUG FIXES]
 

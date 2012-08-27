@@ -328,6 +328,66 @@ sub carrying_vlan_name {
       ->search($cond, $attrs);
 }
 
+=head2 get_models
+
+Returns a sorted list of Device models with the following columns only:
+
+=over 4
+
+=item vendor
+
+=item model
+
+=item count
+
+=back
+
+Where C<count> is the number of instances of that Vendor's Model in the
+Netdisco database.
+
+=cut
+
+sub get_models {
+  my $rs = shift;
+  return $rs->search({}, {
+    select => [ 'vendor', 'model', { count => 'ip' } ],
+    as => [qw/vendor model count/],
+    group_by => [qw/vendor model/],
+    order_by => [{-asc => 'vendor'}, {-desc => 'count'}, {-asc => 'model'}],
+  })
+
+}
+
+=head2 get_releases
+
+Returns a sorted list of Device OS releases with the following columns only:
+
+=over 4
+
+=item os
+
+=item os_ver
+
+=item count
+
+=back
+
+Where C<count> is the number of devices running that OS release in the
+Netdisco database.
+
+=cut
+
+sub get_releases {
+  my $rs = shift;
+  return $rs->search({}, {
+    select => [ 'os', 'os_ver', { count => 'ip' } ],
+    as => [qw/os os_ver count/],
+    group_by => [qw/os os_ver/],
+    order_by => [{-asc => 'os'}, {-desc => 'count'}, {-asc => 'os_ver'}],
+  })
+
+}
+
 =head2 get_distinct( $column )
 
 Returns an asciibetical sorted list of the distinct values in the given column
