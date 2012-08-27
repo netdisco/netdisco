@@ -235,13 +235,13 @@ get '/search' => sub {
 
     # used in the device search sidebar to populate select inputs
     var('model_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('model')
+      schema('netdisco')->resultset('Device')->get_distinct_col('model')
     ]);
     var('os_ver_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('os_ver')
+      schema('netdisco')->resultset('Device')->get_distinct_col('os_ver')
     ]);
     var('vendor_list' => [
-      schema('netdisco')->resultset('Device')->get_distinct('vendor')
+      schema('netdisco')->resultset('Device')->get_distinct_col('vendor')
     ]);
 
     # list of tabs

@@ -388,7 +388,7 @@ sub get_releases {
 
 }
 
-=head2 get_distinct( $column )
+=head2 get_distinct_col( $column )
 
 Returns an asciibetical sorted list of the distinct values in the given column
 of the Device table. This is useful for web forms when you want to provide a
@@ -396,7 +396,7 @@ drop-down list of possible options.
 
 =cut
 
-sub get_distinct {
+sub get_distinct_col {
   my ($rs, $col) = @_;
   return $rs unless $col;
 
