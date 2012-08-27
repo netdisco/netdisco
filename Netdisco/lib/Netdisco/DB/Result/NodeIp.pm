@@ -47,13 +47,16 @@ Calling the C<dns()> accessor will either return the content of that field if
 the field is configured and installed, or else perform a live DNS lookup on
 the IP field within the record (returning the first PTR, or undef).
 
+To enable this feature, set the C<HAVE_NODEIP_DNS_COL> environment variable to
+a true value. In the Netdisco web app you can activate the column using the
+C<have_nodeip_dns_col> application setting, instead.
+
 =cut
 
-# XXX uncomment the following two lines if you have a "dns" column XXX
-# XXX in your node_ip table which caches the host's name           XXX
-#__PACKAGE__->add_column("dns" =>
-#  { data_type => "text", is_nullable => 1, accessor => undef });
-# XXX ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ XXX
+if ($ENV{HAVE_NODEIP_DNS_COL}) {
+  __PACKAGE__->add_column("dns" =>
+    { data_type => "text", is_nullable => 1, accessor => undef });
+}
 
 # some customize their node_ip table to have a dns column which
 # is the cached record at the time of discovery

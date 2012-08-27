@@ -2,7 +2,13 @@ package Netdisco::Web;
 
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
-use Dancer::Plugin::DBIC;
+
+BEGIN {
+  if (setting('have_nodeip_dns_col')) {
+      $ENV{HAVE_NODEIP_DNS_COL} = 1;
+  }
+  use Dancer::Plugin::DBIC;
+}
 
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
