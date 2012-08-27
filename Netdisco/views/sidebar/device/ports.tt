@@ -10,8 +10,10 @@
                 rel="tooltip" data-placement="left" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
-              <a href="#" id="nd_collapse_legend"><label>Legend</label></a>
-                <ul class="inputs-list unstyled nd_legend nd_collapse_pre_hidden">
+              <a href="#" data-toggle="collapse" data-target="#nd_legend">
+                <label class="nd_collapser">Legend<div class="arrow-down"></div></label></a>
+              <div id="nd_legend" class="collapse in">
+                <ul class="inputs-list unstyled">
                   <li>
                     <span class="label">S</span>&nbsp; Admin Disabled
                   </li>
@@ -34,10 +36,12 @@
                     <span class="label label-warning">A</span>&nbsp; Archived Data
                   </li>
                 </ul>
+              </div>
             </div>
             <div class="clearfix">
-              <a href="#" id="nd_collapse_columns"><label>Display Columns</label></a>
-              <div class="nd_collapse_pre_hidden">
+              <a href="#" data-toggle="collapse" data-target="#nd_columns">
+                <label class="nd_collapser">Display Columns<div class="arrow-up"></div></label></a>
+              <div id="nd_columns" class="collapse">
                 <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
                   <li>
@@ -52,8 +56,9 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" id="nd_collapse_portprop"><label>Port Properties</label></a>
-              <div class="nd_collapse_pre_hidden">
+              <a href="#" data-toggle="collapse" data-target="#nd_portprops">
+                <label class="nd_collapser">Port Properties<div class="arrow-up"></div></label></a>
+              <div id="nd_portprops" class="collapse">
                 <ul class="inputs-list unstyled">
                   <li>
                     <label class="checkbox">
@@ -81,8 +86,9 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" id="nd_collapse_nodeprop"><label>Node Properties</label></a>
-              <div class="nd_collapse_pre_hidden">
+              <a href="#" data-toggle="collapse" data-target="#nd_nodeprops">
+                <label class="nd_collapser">Node Properties<div class="arrow-up"></div></label></a>
+              <div id="nd_nodeprops" class="collapse">
                 <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.connected_properties %]
                   <li>

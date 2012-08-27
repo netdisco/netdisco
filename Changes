@@ -10,6 +10,7 @@
   * Refactor begin hooks (closes #16)
   * Re-engineer link generation to ensure sane defaults and remembered options.
     This came as a side-effect of removing JS-only links (closes #21)
+  * Replace jquery-collapser with Bootstrap's collapser
 
   [BUG FIXES]
 

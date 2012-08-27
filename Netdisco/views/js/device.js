@@ -1,49 +1,31 @@
-  function inner_view_processing() {
-    // enable collapser on any large vlan lists
-    $('.nd_collapse_vlans').collapser({
-      target: 'next',
-      effect: 'slide',
-      changeText: true,
-      expandHtml: '<div class="cell-arrow-up"></div><div class="nd_collapser">Show VLANs</div>',
-      collapseHtml: '<div class="cell-arrow-down"></div><div class="nd_collapser">Hide VLANs</div>',
-    });
-  }
-
   // used by the tabbing interface to make sure the correct
   // ajax content is loaded
   var path = 'device';
 
+  function inner_view_processing() {
+    // VLANs column list collapser trigger
+    // it's a bit of a faff because we can't easily use Bootstrap's collapser
+    $('.nd_collapse_vlans').toggle(function() {
+        event.preventDefault(); // prevent jump to top of page
+        $(this).siblings('.nd_collapsing').toggle('fast');
+        $(this).siblings('.cell-arrow-up').toggleClass('cell-arrow-down cell-arrow-up');
+        $(this).text('Hide VLANs');
+      }, function() {
+        event.preventDefault(); // prevent jump to top of page
+        $(this).siblings('.nd_collapsing').toggle('fast');
+        $(this).siblings('.cell-arrow-down').toggleClass('cell-arrow-down cell-arrow-up');
+        $(this).text('Show VLANs');
+    });
+  }
+
   $(document).ready(function() {
-    $('#nd_collapse_columns').collapser({
-      target: 'next',
-      effect: 'slide',
-      changeText: true,
-      expandHtml: '<label class="nd_collapser">Display Columns<div class="arrow-up"></div></label>',
-      collapseHtml: '<label class="nd_collapser">Display Columns<div class="arrow-down"></div></label>',
+    // sidebar collapser events trigger change of up/down arrow
+    $('.collapse').on('show', function() {
+      $(this).siblings().find('.arrow-up').toggleClass('arrow-down arrow-up');
     });
 
-    $('#nd_collapse_portprop').collapser({
-      target: 'next',
-      effect: 'slide',
-      changeText: true,
-      expandHtml: '<label class="nd_collapser">Port Properties<div class="arrow-up"></div></label>',
-      collapseHtml: '<label class="nd_collapser">Port Properties<div class="arrow-down"></div></label>',
-    });
-
-    $('#nd_collapse_nodeprop').collapser({
-      target: 'next',
-      effect: 'slide',
-      changeText: true,
-      expandHtml: '<label class="nd_collapser">Node Properties<div class="arrow-up"></div></label>',
-      collapseHtml: '<label class="nd_collapser">Node Properties<div class="arrow-down"></div></label>',
-    });
-
-    $('#nd_collapse_legend').collapser({
-      target: 'next',
-      effect: 'slide',
-      changeText: true,
-      expandHtml: '<label class="nd_collapser">Legend<div class="arrow-up"></div></label>',
-      collapseHtml: '<label class="nd_collapser">Legend<div class="arrow-down"></div></label>',
+    $('.collapse').on('hide', function() {
+      $(this).siblings().find('.arrow-down').toggleClass('arrow-down arrow-up');
     });
 
     // show or hide sweeping brush icon when field has content
@@ -71,8 +53,8 @@
     });
 
     // clickable device port names can simply resubmit AJAX rather than
-    // fetch the whole page again.
-    $('body').delegate('.this_port_only', 'click', function() {
+    // fetch the whole page again. FIXME unused?
+    $('.this_port_only').on('click', function() {
       event.preventDefault(); // link is real so prevent page submit
 
       var port = $(this).text();
@@ -81,7 +63,4 @@
       $('.field_clear_icon').show();
       $('#ports_form').trigger('submit');
     });
-
-    // everything starts hidden and then we show defaults
-    $('#nd_collapse_legend').click();
   });

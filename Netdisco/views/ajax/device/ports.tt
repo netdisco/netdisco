@@ -71,10 +71,10 @@
             '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
           [% SET output = output _ ', ' IF NOT loop.last %]
         [% END %]
-        [% IF row.tagged_vlans_count > 10 %]
+        [% IF row.tagged_vlans_count > 10 %] [%# FIXME make this a settable variable %]
           [% SET output = '<div class="vlan_total">(' _ row.tagged_vlans_count
-            _ ')</div><a href="#" class="nd_linkcell nd_collapse_vlans">'
-            _ 'Show VLANs</a><div class="nd_collapse_pre_hidden">' _ output %]
+            _ ')</div><div class="cell-arrow-up"></div><a href="#" class="nd_linkcell nd_collapse_vlans">'
+            _ 'Show VLANs</a><div class="nd_collapsing nd_collapse_pre_hidden">' _ output %]
           [% SET output = output _ '</div>' %]
         [% END %]
         [% output %]
