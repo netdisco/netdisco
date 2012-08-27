@@ -73,7 +73,7 @@
         [% END %]
         [% IF row.tagged_vlans_count > 10 %] [%# FIXME make this a settable variable %]
           [% SET output = '<div class="vlan_total">(' _ row.tagged_vlans_count
-            _ ')</div><div class="cell-arrow-up"></div><a href="#" class="nd_linkcell nd_collapse_vlans">'
+            _ ')</div><a href="#" class="nd_linkcell nd_collapse_vlans"><div class="cell-arrow-up"></div>'
             _ 'Show VLANs</a><div class="nd_collapsing nd_collapse_pre_hidden">' _ output %]
           [% SET output = output _ '</div>' %]
         [% END %]

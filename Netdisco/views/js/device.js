@@ -9,12 +9,12 @@
         event.preventDefault(); // prevent jump to top of page
         $(this).siblings('.nd_collapsing').toggle('fast');
         $(this).siblings('.cell-arrow-up').toggleClass('cell-arrow-down cell-arrow-up');
-        $(this).text('Hide VLANs');
+        $(this).html('<div class="cell-arrow-down"></div>Hide VLANs');
       }, function() {
         event.preventDefault(); // prevent jump to top of page
         $(this).siblings('.nd_collapsing').toggle('fast');
         $(this).siblings('.cell-arrow-down').toggleClass('cell-arrow-down cell-arrow-up');
-        $(this).text('Show VLANs');
+        $(this).html('<div class="cell-arrow-up"></div>Show VLANs');
     });
   }
 
