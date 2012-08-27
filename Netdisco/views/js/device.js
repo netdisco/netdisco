@@ -53,11 +53,12 @@
     });
 
     // clickable device port names can simply resubmit AJAX rather than
-    // fetch the whole page again. FIXME unused?
-    $('.this_port_only').on('click', function() {
+    // fetch the whole page again.
+    $('body').on('click', '.nd_this_port_only', function() {
       event.preventDefault(); // link is real so prevent page submit
 
       var port = $(this).text();
+      port = $.trim(port);
       sweep.val(port);
 
       $('.field_clear_icon').show();

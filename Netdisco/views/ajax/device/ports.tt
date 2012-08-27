@@ -23,7 +23,7 @@
         [% END %]
       </td>
       [% IF params.c_port %]
-      <td><a class="nd_linkcell" href="[% uri_for('/device',
+      <td><a class="nd_linkcell nd_this_port_only" href="[% uri_for('/device',
               vars.self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
         [% row.port | html_entity %]
       </a></td>
