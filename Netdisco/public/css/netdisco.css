@@ -119,7 +119,7 @@ body {
 .arrow-up {
   float: right;
   margin-top: 6px;
-  margin-right: 11px;
+  margin-right: 1px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
   border-bottom: 8px solid #F89406;
@@ -129,7 +129,7 @@ body {
 .arrow-down {
   float: right;
   margin-top: 6px;
-  margin-right: 11px;
+  margin-right: 1px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
   border-top: 8px solid #F89406;
@@ -178,9 +178,14 @@ td {
 
 /* fixups for prepended checkbox in sidebar */
 .nd_searchcheckbox {
-  width: 120px;
-  padding-left: 35px;
+  width: 123px;
+  padding-left: 8px;
   cursor: pointer;
+}
+
+/* for some reason bootstrap 2.1.0 displays add-on as block - no check supprt? */
+.nd_checkboxlabel {
+  display: inline;
 }
 
 /* fixups for placing the Archived "A" inside the prepended checkbox */
@@ -190,14 +195,17 @@ td {
 }
 
 .nd_side_input {
+  margin-left: -3px;
   width: 152px;
 }
 
 .nd_side_select {
-  width: 162px;
+  margin-left: -3px;
+  width: 165px;
 }
 
 .sidebar .input-prepend {
+  margin-left: -2px;
   margin-bottom: 0px;
 }
 
@@ -221,12 +229,13 @@ td {
 
 /* sidebar submit button width and spacing from Node Props */
 .sidebar button {
-  margin-top: 3px;
-  width: 160px;
+  margin-top: 9px;
+  margin-left: -3px;
+  width: 165px;
 }
 .sidebar #ports_submit {
-  margin-top: 3px;
-  width: 152px;
+  margin-top: 9px;
+  width: 165px;
 }
 
 /* little icon inside of search input fields */
@@ -320,6 +329,11 @@ form .clearfix.success input {
   right: 20px;
   width: 200px;
   left: auto;
+}
+
+/* smaller padding below form button in sidebar well */
+.container-fluid > .sidebar > .well {
+  padding-bottom: 15px;
 }
 
 /* make the content start more to the left now the sidebar is narrower */

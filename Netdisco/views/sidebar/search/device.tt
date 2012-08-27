@@ -78,7 +78,7 @@
                 <input type="checkbox" id="matchall"
                   name="matchall"[% ' checked="checked"' IF params.matchall %]/>
               </label>
-              <label for="matchall">
+              <label class="nd_checkboxlabel" for="matchall">
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
               </label>
             </div>
