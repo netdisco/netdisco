@@ -1,3 +1,9 @@
+0.7 -
+
+  [ENHANCEMENTS]
+
+  * Move DBIC virtual tables into Virtual:: namespace.
+
 0.6 2012-08-28
 
   [NEW FEATURES]

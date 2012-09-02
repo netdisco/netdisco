@@ -53,7 +53,7 @@ Link relationship for C<tagging_ports>, see below.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlanTagged',
+__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::Virtual::DevicePortVlanTagged',
     { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
 );
 
@@ -63,7 +63,7 @@ Link relationship to support C<native_ports>, see below.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_native => 'Netdisco::DB::Result::DevicePortVlanNative',
+__PACKAGE__->has_many( port_vlans_native => 'Netdisco::DB::Result::Virtual::DevicePortVlanNative',
     { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
 );
 

@@ -96,7 +96,7 @@ __PACKAGE__->has_many( nodes => 'Netdisco::DB::Result::Node',
   { join_type => 'LEFT' },
 );
 
-__PACKAGE__->has_many( nodes_with_age => 'Netdisco::DB::Result::NodeWithAge',
+__PACKAGE__->has_many( nodes_with_age => 'Netdisco::DB::Result::Virtual::NodeWithAge',
   {
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
@@ -104,7 +104,7 @@ __PACKAGE__->has_many( nodes_with_age => 'Netdisco::DB::Result::NodeWithAge',
   { join_type => 'LEFT' },
 );
 
-__PACKAGE__->has_many( active_nodes => 'Netdisco::DB::Result::ActiveNode',
+__PACKAGE__->has_many( active_nodes => 'Netdisco::DB::Result::Virtual::ActiveNode',
   {
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
@@ -112,7 +112,7 @@ __PACKAGE__->has_many( active_nodes => 'Netdisco::DB::Result::ActiveNode',
   { join_type => 'LEFT' },
 );
 
-__PACKAGE__->has_many( active_nodes_with_age => 'Netdisco::DB::Result::ActiveNodeWithAge',
+__PACKAGE__->has_many( active_nodes_with_age => 'Netdisco::DB::Result::Virtual::ActiveNodeWithAge',
   {
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
@@ -144,7 +144,7 @@ port, where the VLANs are all tagged.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::DevicePortVlanTagged',
+__PACKAGE__->has_many( port_vlans_tagged => 'Netdisco::DB::Result::Virtual::DevicePortVlanTagged',
   {
     'foreign.ip' => 'self.ip',
     'foreign.port' => 'self.port',

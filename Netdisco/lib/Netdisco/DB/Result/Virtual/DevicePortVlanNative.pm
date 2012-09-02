@@ -1,5 +1,5 @@
 use utf8;
-package Netdisco::DB::Result::DevicePortVlanNative;
+package Netdisco::DB::Result::Virtual::DevicePortVlanNative;
 
 use strict;
 use warnings;
