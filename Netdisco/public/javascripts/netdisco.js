@@ -7,7 +7,8 @@ function do_search (event, tab) {
   // stop form from submitting normally
   event.preventDefault();
 
-  // copy current search string to other forms' input box
+  // each sidebar search form has a hidden copy of the main navbar search
+  // query. on tab activation, copy this to all hidden sidebars.
   $('form').find("input[name=q]").each( function() {
     $(this).val( $(form).find("input[name=q]").val() );
   });
@@ -31,6 +32,8 @@ function do_search (event, tab) {
   // get the form params
   var query = $(form).serialize();
 
+  // update browser search history with the new query.
+  // however if it's the same tab, this is a *replace* of the query url.
   if (window.History && window.History.enabled) {
     is_from_history_plugin = 1;
     window.History.replaceState(
@@ -64,6 +67,7 @@ function do_search (event, tab) {
         );
       }
 
+      // delegate to any [device|search] specific JS code
       inner_view_processing(tab);
     }
   );
