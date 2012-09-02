@@ -21,7 +21,7 @@ hook 'before' => sub {
         { name => 'c_mtu',         label => 'MTU',               default => ''   },
         { name => 'c_vlan',        label => 'Native VLAN',       default => 'on' },
         { name => 'c_vmember',     label => 'VLAN Membership',   default => 'on' },
-        { name => 'c_connected',   label => 'Connected Devices', default => 'on' },
+        { name => 'c_connected',   label => 'Connected Devices', default => ''   },
         { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
         { name => 'c_up',          label => 'Status',            default => ''   },
     ]);

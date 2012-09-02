@@ -40,8 +40,8 @@
             </div>
             <div class="clearfix">
               <a href="#" data-toggle="collapse" data-target="#nd_columns">
-                <label class="nd_collapser">Display Columns<div class="arrow-up"></div></label></a>
-              <div id="nd_columns" class="collapse">
+                <label class="nd_collapser">Display Columns<div class="arrow-down"></div></label></a>
+              <div id="nd_columns" class="collapse in">
                 <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
                   <li>
