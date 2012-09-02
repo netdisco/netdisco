@@ -210,7 +210,13 @@ get '/search' => sub {
             my $s = schema('netdisco');
             if ($q =~ m{^[a-f0-9.:/]+$}i) {
                 my $ip = NetAddr::IP::Lite->new($q);
-                if ($ip and $s->resultset('Device')->search_by_field({ip => $q})->count) {
+                my $nd = $s->resultset('Device')->search_by_field({ip => $q});
+                if ($ip and $nd->count) {
+                    if ($nd->count == 1) {
+                        # redirect to device details for the one device
+                        redirect uri_for('/device',
+                          {tab => 'details', q => $q, f => ''});
+                    }
                     params->{'tab'} = 'device';
                 }
                 else {
@@ -220,8 +226,13 @@ get '/search' => sub {
                 }
             }
             else {
-                if ($s->resultset('Device')
-                      ->search({dns => { '-ilike' => "\%$q\%" }})->count) {
+                my $nd = $s->resultset('Device')->search({dns => { '-ilike' => "\%$q\%" }});
+                if ($nd->count) {
+                    if ($nd->count == 1) {
+                        # redirect to device details for the one device
+                        redirect uri_for('/device',
+                          {tab => 'details', q => $nd->first->ip, f => ''});
+                    }
                     params->{'tab'} = 'device';
                 }
                 elsif ($s->resultset('DevicePort')

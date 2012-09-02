@@ -2,7 +2,9 @@
 
   [ENHANCEMENTS]
 
-  * Move DBIC virtual tables into Virtual:: namespace.
+  * Move DBIC virtual tables into Virtual:: namespace (closes #19)
+  * Maintain node search options when changing navbar query (closes #27)
+  * Navbar query for device with single hit redirects to Device details page
 
 0.6 2012-08-28
 
