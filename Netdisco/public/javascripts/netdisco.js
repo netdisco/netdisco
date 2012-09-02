@@ -8,7 +8,11 @@ function do_search (event, tab) {
   event.preventDefault();
 
   // each sidebar search form has a hidden copy of the main navbar search
-  // query. on tab activation, copy this to all hidden sidebars.
+  // query. when the tab query takes place, copy the navbar locally, then
+  // replicate to all other tabs.
+  if ($('#nq').val()) {
+    $(form).find("input[name=q]").val( $('#nq').val() );
+  }
   $('form').find("input[name=q]").each( function() {
     $(this).val( $(form).find("input[name=q]").val() );
   });
@@ -132,6 +136,7 @@ $(document).ready(function() {
         return process(data);
       });
     }
+    ,minLength: 3
   });
 
   // activate tooltips
