@@ -51,6 +51,8 @@ routed port or virtual interface).
 
 =cut
 
+__PACKAGE__->add_unique_constraint(['alias']);
+
 __PACKAGE__->belongs_to( device_port => 'Netdisco::DB::Result::DevicePort',
   { 'foreign.port' => 'self.port', 'foreign.ip' => 'self.ip' } );
 

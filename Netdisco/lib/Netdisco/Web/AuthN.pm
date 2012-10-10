@@ -7,12 +7,17 @@ use Digest::MD5 ();
 
 hook 'before' => sub {
     if (! session('user') && request->path ne uri_for('/login')->path) {
-        if (setting('environment') eq 'development' and setting('no_auth')) {
+        if (setting('no_auth')) {
             session(user => 'developer');
         }
         else {
             request->path_info('/');
         }
+    }
+
+    if (session('user') && session->id) {
+        var(user => schema('netdisco')->resultset('User')
+                                      ->find(session('user')));
     }
 };
 

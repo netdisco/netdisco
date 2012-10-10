@@ -1,4 +1,4 @@
-Netdisco/environments/development.yml
+Netdisco/environments/*
 Netdisco/logs/development.log
 *.swp
 test.pl

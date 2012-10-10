@@ -53,10 +53,8 @@ C<have_nodeip_dns_col> application setting, instead.
 
 =cut
 
-if ($ENV{HAVE_NODEIP_DNS_COL}) {
-  __PACKAGE__->add_column("dns" =>
-    { data_type => "text", is_nullable => 1, accessor => undef });
-}
+__PACKAGE__->add_column("dns" =>
+  { data_type => "text", is_nullable => 1, accessor => undef });
 
 # some customize their node_ip table to have a dns column which
 # is the cached record at the time of discovery

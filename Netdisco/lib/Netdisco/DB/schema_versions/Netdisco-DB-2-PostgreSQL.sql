@@ -1,9 +1,9 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Tue Oct  9 21:53:39 2012
+-- Created on Wed Oct 10 14:26:06 2012
 -- 
 --
--- Table: admin
+-- Table: admin.
 --
 DROP TABLE "admin" CASCADE;
 CREATE TABLE "admin" (
@@ -23,7 +23,7 @@ CREATE TABLE "admin" (
 );
 
 --
--- Table: device
+-- Table: device.
 --
 DROP TABLE "device" CASCADE;
 CREATE TABLE "device" (
@@ -61,7 +61,7 @@ CREATE TABLE "device" (
 );
 
 --
--- Table: device_module
+-- Table: device_module.
 --
 DROP TABLE "device_module" CASCADE;
 CREATE TABLE "device_module" (
@@ -85,7 +85,7 @@ CREATE TABLE "device_module" (
 );
 
 --
--- Table: device_port_log
+-- Table: device_port_log.
 --
 DROP TABLE "device_port_log" CASCADE;
 CREATE TABLE "device_port_log" (
@@ -101,7 +101,7 @@ CREATE TABLE "device_port_log" (
 );
 
 --
--- Table: device_port_power
+-- Table: device_port_power.
 --
 DROP TABLE "device_port_power" CASCADE;
 CREATE TABLE "device_port_power" (
@@ -116,7 +116,7 @@ CREATE TABLE "device_port_power" (
 );
 
 --
--- Table: device_port_ssid
+-- Table: device_port_ssid.
 --
 DROP TABLE "device_port_ssid" CASCADE;
 CREATE TABLE "device_port_ssid" (
@@ -127,7 +127,7 @@ CREATE TABLE "device_port_ssid" (
 );
 
 --
--- Table: device_port_wireless
+-- Table: device_port_wireless.
 --
 DROP TABLE "device_port_wireless" CASCADE;
 CREATE TABLE "device_port_wireless" (
@@ -138,7 +138,7 @@ CREATE TABLE "device_port_wireless" (
 );
 
 --
--- Table: device_power
+-- Table: device_power.
 --
 DROP TABLE "device_power" CASCADE;
 CREATE TABLE "device_power" (
@@ -150,7 +150,7 @@ CREATE TABLE "device_power" (
 );
 
 --
--- Table: device_route
+-- Table: device_route.
 --
 DROP TABLE "device_route" CASCADE;
 CREATE TABLE "device_route" (
@@ -163,7 +163,7 @@ CREATE TABLE "device_route" (
 );
 
 --
--- Table: log
+-- Table: log.
 --
 DROP TABLE "log" CASCADE;
 CREATE TABLE "log" (
@@ -175,7 +175,7 @@ CREATE TABLE "log" (
 );
 
 --
--- Table: node_ip
+-- Table: node_ip.
 --
 DROP TABLE "node_ip" CASCADE;
 CREATE TABLE "node_ip" (
@@ -189,7 +189,7 @@ CREATE TABLE "node_ip" (
 );
 
 --
--- Table: node_monitor
+-- Table: node_monitor.
 --
 DROP TABLE "node_monitor" CASCADE;
 CREATE TABLE "node_monitor" (
@@ -202,7 +202,7 @@ CREATE TABLE "node_monitor" (
 );
 
 --
--- Table: node_nbt
+-- Table: node_nbt.
 --
 DROP TABLE "node_nbt" CASCADE;
 CREATE TABLE "node_nbt" (
@@ -219,7 +219,7 @@ CREATE TABLE "node_nbt" (
 );
 
 --
--- Table: node_wireless
+-- Table: node_wireless.
 --
 DROP TABLE "node_wireless" CASCADE;
 CREATE TABLE "node_wireless" (
@@ -238,7 +238,7 @@ CREATE TABLE "node_wireless" (
 );
 
 --
--- Table: oui
+-- Table: oui.
 --
 DROP TABLE "oui" CASCADE;
 CREATE TABLE "oui" (
@@ -248,7 +248,7 @@ CREATE TABLE "oui" (
 );
 
 --
--- Table: process
+-- Table: process.
 --
 DROP TABLE "process" CASCADE;
 CREATE TABLE "process" (
@@ -261,7 +261,7 @@ CREATE TABLE "process" (
 );
 
 --
--- Table: sessions
+-- Table: sessions.
 --
 DROP TABLE "sessions" CASCADE;
 CREATE TABLE "sessions" (
@@ -272,7 +272,7 @@ CREATE TABLE "sessions" (
 );
 
 --
--- Table: subnets
+-- Table: subnets.
 --
 DROP TABLE "subnets" CASCADE;
 CREATE TABLE "subnets" (
@@ -283,7 +283,7 @@ CREATE TABLE "subnets" (
 );
 
 --
--- Table: user_log
+-- Table: user_log.
 --
 DROP TABLE "user_log" CASCADE;
 CREATE TABLE "user_log" (
@@ -296,7 +296,7 @@ CREATE TABLE "user_log" (
 );
 
 --
--- Table: users
+-- Table: users.
 --
 DROP TABLE "users" CASCADE;
 CREATE TABLE "users" (
@@ -313,7 +313,7 @@ CREATE TABLE "users" (
 );
 
 --
--- Table: device_vlan
+-- Table: device_vlan.
 --
 DROP TABLE "device_vlan" CASCADE;
 CREATE TABLE "device_vlan" (
@@ -327,7 +327,7 @@ CREATE TABLE "device_vlan" (
 CREATE INDEX "device_vlan_idx_ip" on "device_vlan" ("ip");
 
 --
--- Table: device_ip
+-- Table: device_ip.
 --
 DROP TABLE "device_ip" CASCADE;
 CREATE TABLE "device_ip" (
@@ -337,13 +337,14 @@ CREATE TABLE "device_ip" (
   "port" text,
   "dns" text,
   "creation" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("ip", "alias")
+  PRIMARY KEY ("ip", "alias"),
+  CONSTRAINT "device_ip_alias" UNIQUE ("alias")
 );
 CREATE INDEX "device_ip_idx_ip" on "device_ip" ("ip");
 CREATE INDEX "device_ip_idx_ip_port" on "device_ip" ("ip", "port");
 
 --
--- Table: device_port
+-- Table: device_port.
 --
 DROP TABLE "device_port" CASCADE;
 CREATE TABLE "device_port" (
@@ -374,7 +375,7 @@ CREATE INDEX "device_port_idx_ip" on "device_port" ("ip");
 CREATE INDEX "device_port_idx_remote_ip" on "device_port" ("remote_ip");
 
 --
--- Table: device_port_vlan
+-- Table: device_port_vlan.
 --
 DROP TABLE "device_port_vlan" CASCADE;
 CREATE TABLE "device_port_vlan" (
@@ -391,7 +392,7 @@ CREATE INDEX "device_port_vlan_idx_ip_port" on "device_port_vlan" ("ip", "port")
 CREATE INDEX "device_port_vlan_idx_ip_vlan" on "device_port_vlan" ("ip", "vlan");
 
 --
--- Table: node
+-- Table: node.
 --
 DROP TABLE "node" CASCADE;
 CREATE TABLE "node" (
@@ -413,36 +414,36 @@ CREATE INDEX "node_idx_oui" on "node" ("oui");
 -- Foreign Key Definitions
 --
 
-ALTER TABLE "device_vlan" ADD FOREIGN KEY ("ip")
+ALTER TABLE "device_vlan" ADD CONSTRAINT "device_vlan_fk_ip" FOREIGN KEY ("ip")
   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
-ALTER TABLE "device_ip" ADD FOREIGN KEY ("ip")
+ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip" FOREIGN KEY ("ip")
   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
-ALTER TABLE "device_ip" ADD FOREIGN KEY ("ip", "port")
+ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip_port" FOREIGN KEY ("ip", "port")
   REFERENCES "device_port" ("ip", "port") DEFERRABLE;
 
-ALTER TABLE "device_port" ADD FOREIGN KEY ("ip")
+ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_ip" FOREIGN KEY ("ip")
   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
-ALTER TABLE "device_port" ADD FOREIGN KEY ("remote_ip")
+ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_remote_ip" FOREIGN KEY ("remote_ip")
   REFERENCES "device_ip" ("alias") DEFERRABLE;
 
-ALTER TABLE "device_port_vlan" ADD FOREIGN KEY ("ip")
+ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip" FOREIGN KEY ("ip")
   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
-ALTER TABLE "device_port_vlan" ADD FOREIGN KEY ("ip", "port")
+ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_port" FOREIGN KEY ("ip", "port")
   REFERENCES "device_port" ("ip", "port") DEFERRABLE;
 
-ALTER TABLE "device_port_vlan" ADD FOREIGN KEY ("ip", "vlan")
+ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_vlan" FOREIGN KEY ("ip", "vlan")
   REFERENCES "device_vlan" ("ip", "vlan") DEFERRABLE;
 
-ALTER TABLE "node" ADD FOREIGN KEY ("switch")
+ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch" FOREIGN KEY ("switch")
   REFERENCES "device" ("ip") DEFERRABLE;
 
-ALTER TABLE "node" ADD FOREIGN KEY ("switch", "port")
+ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch_port" FOREIGN KEY ("switch", "port")
   REFERENCES "device_port" ("ip", "port") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
-ALTER TABLE "node" ADD FOREIGN KEY ("oui")
+ALTER TABLE "node" ADD CONSTRAINT "node_fk_oui" FOREIGN KEY ("oui")
   REFERENCES "oui" ("oui") DEFERRABLE;
 
