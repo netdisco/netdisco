@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Oct 10 14:26:06 2012
+-- Created on Wed Oct 10 15:38:36 2012
 -- 
 --
 -- Table: admin.
@@ -123,7 +123,8 @@ CREATE TABLE "device_port_ssid" (
   "ip" inet,
   "port" text,
   "ssid" text,
-  "broadcast" boolean
+  "broadcast" boolean,
+  "bssid" macaddr
 );
 
 --
@@ -283,6 +284,17 @@ CREATE TABLE "subnets" (
 );
 
 --
+-- Table: topology.
+--
+DROP TABLE "topology" CASCADE;
+CREATE TABLE "topology" (
+  "dev1" inet NOT NULL,
+  "port1" text NOT NULL,
+  "dev2" inet NOT NULL,
+  "port2" text NOT NULL
+);
+
+--
 -- Table: user_log.
 --
 DROP TABLE "user_log" CASCADE;
@@ -385,6 +397,7 @@ CREATE TABLE "device_port_vlan" (
   "native" boolean DEFAULT false NOT NULL,
   "creation" timestamp DEFAULT current_timestamp,
   "last_discover" timestamp DEFAULT current_timestamp,
+  "vlantype" text,
   PRIMARY KEY ("ip", "port", "vlan")
 );
 CREATE INDEX "device_port_vlan_idx_ip" on "device_port_vlan" ("ip");

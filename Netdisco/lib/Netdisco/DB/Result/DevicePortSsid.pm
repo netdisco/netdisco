@@ -18,6 +18,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "broadcast",
   { data_type => "boolean", is_nullable => 1 },
+  "bssid",
+  { data_type => "macaddr", is_nullable => 1 },
 );
 
 
