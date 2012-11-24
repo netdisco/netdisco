@@ -1,4 +1,4 @@
 Netdisco/environments/*
-Netdisco/logs/development.log
+Netdisco/logs/*
 *.swp
 test.pl
