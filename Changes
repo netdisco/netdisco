@@ -6,6 +6,7 @@
   * Navbar query for device with single hit redirects to Device details page
   * Show device name on device details views (closes #30)
   * Migrated to Font Awesome for a wider range of icon fonts
+  * Simple network map showing *some* links between devices
 
   [ENHANCEMENTS]
 
