@@ -20,11 +20,21 @@
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';
   </script>
+
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco.js"></script>
 
-  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css">
-  <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css">
-  <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print">
+  [% IF vars.user.port_control %]
+  <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco_portcontrol.js"></script>
+
+  <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/toastr-responsive.css"/>
+  [% END %]
+
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
 </head>
 
 <body>
@@ -60,12 +70,19 @@
       </ul>
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
         <input placeholder="Find Anything" class="search-query span3" id="nq" name="q" type="text"/>
-        <i id="navsearchgo" class="icon-search icon-white navbar_icon"></i>
+        <span style="font-size: 24px;">
+        <i id="navsearchgo" class="icon-search navbar_icon"></i>
+        </span>
       </form>
       <ul class="nav pull-right">
         <li class="nd_navbartext">Logged in as &nbsp;</li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          [% IF vars.user.port_control %]
+            <i class="icon-user-md"></i>
+          [% ELSE %]
+            <i class="icon-user"></i>
+          [% END %]
             [% session.user %] <b class="caret"></b></a>
           <ul class="dropdown-menu">
             [% FOREACH item IN user_dd %]

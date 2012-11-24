@@ -1,5 +1,5 @@
 
-            <p><em>Node Search Options</em></p>
+            <p class="nd_sidebar_title"><em>Node Search Options</em></p>
             <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">

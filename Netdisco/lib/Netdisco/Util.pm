@@ -8,25 +8,28 @@ Sort port names with the following formatting types:
     5
     FastEthernet0/1
     FastEthernet0/1-atm
+    Slot: 0 Port: 15 Gigabit
     5.5
     Port:3
 
 Interface is as Perl's own C<sort> - two input args and an integer return
-value.
-
-Code taken from netdisco.pm. Thanks to Bradley Baetz (bbaetz) for improvements
-in this sub.
+value. Code taken from netdisco.pm.
 
 =cut
 
 sub sort_port {
     my ($aval, $bval) = @_;
 
+    # hack for foundry "10GigabitEthernet" -> cisco-like "TenGigabitEthernet"
+    $aval = "Ten$1" if $aval =~ qr/^10(GigabitEthernet.+)$/;
+    $bval = "Ten$1" if $bval =~ qr/^10(GigabitEthernet.+)$/;
+
     my $numbers        = qr{^(\d+)$};
     my $numeric        = qr{^([\d\.]+)$};
     my $dotted_numeric = qr{^(\d+)\.(\d+)$};
     my $letter_number  = qr{^([a-zA-Z]+)(\d+)$};
     my $wordcharword   = qr{^([^:\/.]+)[\ :\/\.]+([^:\/.]+)(\d+)?$}; #port-channel45
+    my $netgear        = qr{^Slot: (\d+) Port: (\d+) }; # "Slot: 0 Port: 15 Gigabit - Level"
     my $ciscofast      = qr{^
                             # Word Number slash (Gigabit0/)
                             (\D+)(\d+)[\/:]
@@ -42,10 +45,12 @@ sub sort_port {
         @a = ($1,$2);
     } elsif ($aval =~ $letter_number) {
         @a = ($1,$2);
+    } elsif ($aval =~ $netgear) {
+        @a = ($1,$2);
     } elsif ($aval =~ $numbers) {
         @a = ($1);
     } elsif ($aval =~ $ciscofast) {
-        @a = ($1,$2);
+        @a = ($2,$1);
         push @a, split(/[:\/]/,$3), $4;
     } elsif ($aval =~ $wordcharword) {
         @a = ($1,$2,$3);
@@ -57,10 +62,12 @@ sub sort_port {
         @b = ($1,$2);
     } elsif ($bval =~ $letter_number) {
         @b = ($1,$2);
+    } elsif ($bval =~ $netgear) {
+        @b = ($1,$2);
     } elsif ($bval =~ $numbers) {
         @b = ($1);
     } elsif ($bval =~ $ciscofast) {
-        @b = ($1,$2);
+        @b = ($2,$1);
         push @b, split(/[:\/]/,$3),$4;
     } elsif ($bval =~ $wordcharword) {
         @b = ($1,$2,$3);

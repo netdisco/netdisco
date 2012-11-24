@@ -5,9 +5,15 @@ body {
   padding-top: 50px;
 }
 
+/* TODO
+::selection {
+  background: transparent;
+}
+*/
+
 /* magnifying glass icon for search box */
 .navbar_icon {
-  vertical-align: middle;
+  vertical-align: sub;
   cursor: pointer;
 }
 
@@ -87,12 +93,51 @@ body {
   height: 100%;
 }
 
+/* special placing for edit icon in details tab */
+.nd_device_details_edit {
+  margin-left: -18px;
+  font-size: 14px;
+}
+
+/* port admin up/down control */
+.nd_edit_icon, .nd_hand_icon {
+  cursor: pointer;
+  float: left;
+  display: none;
+}
+
+/* port admin VLAN control */
+.nd_thumb_icon {
+  cursor: pointer;
+  float: right;
+  display: none;
+}
+
+/* placement of port link when port admin hint is enabled */
+.nd_editable_cell > .nd_this_port_only {
+  margin-left: 18px;
+}
+.nd_editable_cell > .nd_editable_cell_content {
+  margin-left: 18px;
+}
+
+/* placement of thumb for editable submit */
+.center_cell > .nd_thumb_icon {
+  margin-left: -18px;
+}
+
+/* style of editable content in table */
+[contenteditable]:focus {
+  background: #FFFFD3 !important;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* many styles for the collapsing lists */
 
 /* mouse-over should be pointer to show JS collapser is clickable */
 .nd_collapser {
   cursor: pointer;
+  color: #0088CC;
 }
 
 /* collapser label should not have any decoration even though it's clickable */
@@ -103,6 +148,8 @@ body {
 /* collapser label should not have any decoration even though it's clickable */
 .nd_collapse_vlans {
   text-decoration: none !important;
+  cursor: pointer;
+  color: #0088CC;
 }
 
 /* class to control default state of collapsible lists on page load */
@@ -115,44 +162,19 @@ body {
   float: right;
 }
 
-/* draw little up arrow to the right of a label for collapsed list */
-.arrow-up {
+/* little up/down chevron to the right of some collapser link */
+.arrow-up-down {
   float: right;
-  margin-top: 6px;
+  margin-top: 1px;
   margin-right: 1px;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 8px solid #F89406;
-}
-
-/* draw little down arrow to the right of a label for collapsed list */
-.arrow-down {
-  float: right;
-  margin-top: 6px;
-  margin-right: 1px;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 8px solid #F89406;
+  color: #555;
 }
 
 /* draw little up arrow to the left of a label for collapsed list */
-.cell-arrow-up {
+.cell-arrow-up-down {
   float: left;
-  margin-top: 5px;
   margin-right: 6px;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 8px solid #F89406;
-}
-
-/* draw little down arrow to the left of a label for collapsed list */
-.cell-arrow-down {
-  float: left;
-  margin-top: 5px;
-  margin-right: 6px;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 8px solid #F89406;
+  color: #555;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -170,7 +192,15 @@ td {
 /* tabs */
 
 #search_results {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.nd_device_name {
+  float: right;
+  margin-bottom: 0px;
+  margin-top: 9px;
+  font-weight: bold;
+  color: #6D5720;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -211,7 +241,7 @@ td {
 
 /* nudge the port name/vlan filter over a little */
 #nd_port_query {
-  margin-left: -2px !important;
+  margin-left: 5px !important;
   width: 152px;
 }
 
@@ -243,13 +273,9 @@ td {
   position: absolute;
   margin-left: 132px;
   z-index: 1;
-  padding: 6px;
-}
-
-/* nudge when icon inside the search field is a bootstrap glyph */
-.field_clear_icon > i {
-  margin-top: 1px;
-  margin-left: 4px;
+  padding: 7px;
+  cursor: pointer;
+  color: #999;
 }
 
 /* change highlighting for form fields which are being used in a search */
@@ -278,35 +304,37 @@ form .clearfix.success input {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* sidebar collapser */
 
-/* for placing the sidebar pin icon */
-#sidebar_pin_box {
-  float: right;
-  margin: 0px;
-  margin-top: -12px;
-  margin-right: -12px;
-  padding: 0px;
-  cursor: pointer;
-}
-
-.sidebar_pin_box_pressed {
-  background-color: #DCDCDC;
+.nd_sidebar_title {
+  margin-left: 10px;
+  margin-top: 6px;
+  margin-bottom: 12px;
 }
 
 .sidebar_pinned {
   position: fixed !important;
 }
 
-#sidebar_pin {
-  padding-top: 2px;
-  padding-left: 1px;
-  padding-right: 2px;
+.sidebar_pin_clicked {
+  color: rgba(255,0,0,0.8) !important;
+}
+
+/* for placing the sidebar pin icons */
+.sidebar_pin {
+  float: left;
+  margin-top: 6px;
+  margin-left: -16px;
+  font-size: 15px;
+  color: #555;
+  cursor: pointer;
 }
 
 /* for placing the sidebar toggle icons */
 #sidebar_toggle_img_in {
   float: left;
   margin-top: -9px;
-  margin-left: -18px;
+  margin-left: -16px;
+  font-size: 15px;
+  color: #555;
   cursor: pointer;
 }
 
@@ -316,6 +344,7 @@ form .clearfix.success input {
   top: 60px;
   right: 7px;
   z-index: 1;
+  color: #555;
   cursor: pointer;
   display: none;
 }

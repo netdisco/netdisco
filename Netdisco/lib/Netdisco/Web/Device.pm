@@ -10,6 +10,7 @@ use Netdisco::Util (); # for sort_port
 hook 'before' => sub {
     # list of port detail columns
     var('port_columns' => [
+        { name => 'c_admin',       label => 'Port Control',      default => ''   },
         { name => 'c_port',        label => 'Port',              default => 'on' },
         { name => 'c_descr',       label => 'Description',       default => ''   },
         { name => 'c_type',        label => 'Type',              default => ''   },
@@ -220,6 +221,7 @@ ajax '/ajax/content/device/ports' => sub {
     template 'ajax/device/ports.tt', {
       results => $results,
       nodes => $nodes_name,
+      device => $ip,
     }, { layout => undef };
 };
 

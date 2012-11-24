@@ -6,14 +6,36 @@
     </tr>
     <tr>
       <td>Location</td>
+      [% IF vars.user.port_control %]
+      <td class="nd_editable_cell" contenteditable="true"
+        data-field="location" data-for-device="[% d.ip %]">
+          <i class="icon-edit nd_edit_icon nd_device_details_edit"></i>
+          [% d.location %]
+          <i class="icon-thumbs-up nd_thumb_icon"
+            rel="tooltip" data-placement="left" data-offset="3"
+            data-animation="" title="Click to Apply"></i>
+      </td>
+      [% ELSE %]
       <td>
         <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
         href="[% vars.search_device %]&location=[% d.location | uri %]">[% d.location %]</a>
       </td>
+      [% END %]
     </tr>
     <tr>
       <td>Contact</td>
+      [% IF vars.user.port_control %]
+      <td class="nd_editable_cell" contenteditable="true"
+        data-field="contact" data-for-device="[% d.ip %]">
+          <i class="icon-edit nd_edit_icon nd_device_details_edit"></i>
+          [% d.contact %]
+          <i class="icon-thumbs-up nd_thumb_icon"
+            rel="tooltip" data-placement="left" data-offset="3"
+            data-animation="" title="Click to Apply"></i>
+      </td>
+      [% ELSE %]
       <td>[% d.contact %]</td>
+      [% END %]
     </tr>
     <tr>
       <td>Vendor / Model</td>

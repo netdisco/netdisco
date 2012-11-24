@@ -3,6 +3,7 @@
     <tr>
       <th></th>
       [% FOREACH item IN vars.port_columns %]
+      [% NEXT IF item.name == 'c_admin' %]
         [% NEXT UNLESS params.${item.name} %]
         <th[% ' class="center_cell"' IF NOT loop.first %]>[% item.label %]</th>
       [% END %]
@@ -22,18 +23,39 @@
         <span class="label label-warning">D</span>
         [% END %]
       </td>
+
       [% IF params.c_port %]
-      <td><a class="nd_linkcell nd_this_port_only" href="[% uri_for('/device',
-              vars.self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
+      [% IF vars.user.port_control AND params.c_admin %]
+      [% IF row.up_admin == 'up' %]
+      <td class="nd_editable_cell" data-action="down"
+        data-field="c_port" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
+        <i class="icon-hand-down nd_hand_icon"
+          rel="tooltip" data-placement="top" data-offset="3"
+          data-animation="" title="Click to Disable"></i>
+      [% ELSE %]
+      <td class="nd_editable_cell" data-action="up"
+        data-field="c_port" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
+        <i class="icon-hand-up nd_hand_icon"
+          rel="tooltip" data-placement="top" data-offset="3"
+          data-animation="" title="Click to Enable"></i>
+      [% END %]
+      [% ELSE %]
+      <td>
+      [% END %]
+        <a class="nd_linkcell nd_this_port_only" href="[% uri_for('/device',
+            vars.self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
         [% row.port | html_entity %]
       </a></td>
       [% END %]
+
       [% IF params.c_descr %]
       <td class="center_cell">[% row.descr | html_entity %]</td>
       [% END %]
+
       [% IF params.c_type %]
       <td class="center_cell">[% row.type | html_entity %]</td>
       [% END %]
+
       [% IF params.c_duplex %]
       <td class="center_cell">
         [% IF row.up == 'up' AND row.duplex %]
@@ -41,27 +63,63 @@
         [% END %]
       </td>
       [% END %]
+
       [% IF params.c_lastchange %]
       <td class="center_cell">[% row.lastchange_stamp | html_entity %]</td>
       [% END %]
+
       [% IF params.c_name %]
-      <td class="center_cell">[% row.name | html_entity %]</td>
+      [% IF vars.user.port_control AND params.c_admin %]
+      <td class="center_cell nd_editable_cell" contenteditable="true"
+          data-field="c_name" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
+      <i class="icon-edit nd_edit_icon"></i>
+      [% ELSE %]
+      <td class="center_cell">
       [% END %]
+      <div class="nd_editable_cell_content">
+        [% row.name | html_entity %]
+        [% IF vars.user.port_control AND params.c_admin %]
+        <i class="icon-thumbs-up nd_thumb_icon"
+          rel="tooltip" data-placement="top" data-offset="3"
+          data-animation="" title="Click to Apply"></i>
+        [% END %]
+      </div>
+      </td>
+      [% END %]
+
       [% IF params.c_speed %]
       <td class="center_cell">[% row.speed | html_entity %]</td>
       [% END %]
+
       [% IF params.c_mac %]
       <td class="center_cell">[% row.mac | html_entity %]</td>
       [% END %]
+
       [% IF params.c_mtu %]
       <td class="center_cell">[% row.mtu | html_entity %]</td>
       [% END %]
+
       [% IF params.c_vlan %]
+      [% IF vars.user.port_control AND params.c_admin %]
+      <td class="center_cell nd_editable_cell" contenteditable="true"
+        data-field="c_vlan" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
+      <i class="icon-edit nd_edit_icon"></i>
+      <div class="nd_editable_cell_content">
+        [% IF row.vlan %][% row.vlan | html_entity %][% ELSE %]&nbsp;[% END %]
+        <i class="icon-thumbs-up nd_thumb_icon"
+          rel="tooltip" data-placement="top" data-offset="3"
+          data-animation="" title="Click to Apply"></i>
+      </div>
+      </td>
+      [% ELSE %]
       <td class="center_cell">
         <a class="nd_linkcell"
-          href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">[% row.vlan | html_entity %]</a>
+          href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
+            [% row.vlan | html_entity %]</a>
       </td>
       [% END %]
+      [% END %]
+
       [% IF params.c_vmember %]
       <td>
         [% IF row.tagged_vlans_count %]
@@ -73,14 +131,17 @@
         [% END %]
         [% IF row.tagged_vlans_count > 10 %] [%# FIXME make this a settable variable %]
           [% SET output = '<div class="vlan_total">(' _ row.tagged_vlans_count
-            _ ')</div><a href="#" class="nd_linkcell nd_collapse_vlans"><div class="cell-arrow-up"></div>'
-            _ 'Show VLANs</a><div class="nd_collapsing nd_collapse_pre_hidden">' _ output %]
+            _ ')</div><span class="nd_linkcell nd_collapse_vlans">
+              <i class="cell-arrow-up-down icon-chevron-up icon-large">
+              </i>Show VLANs</span>
+              <div class="nd_collapsing nd_collapse_pre_hidden">' _ output %]
           [% SET output = output _ '</div>' %]
         [% END %]
         [% output %]
         [% END %]
       </td>
       [% END %]
+
       [% IF params.c_connected %]
       <td>
         [% IF row.remote_ip %]
@@ -115,9 +176,11 @@
         [% END %]
       </td>
       [% END %]
+
       [% IF params.c_stp %]
       <td class="center_cell">[% row.stp | html_entity %]</td>
       [% END %]
+
       [% IF params.c_up %]
       <td class="center_cell">
         [% row.up_admin | html_entity %] / [% row.up | html_entity %]

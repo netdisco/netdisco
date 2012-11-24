@@ -66,7 +66,7 @@
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% vars.device_ports %]&q=[% node.switch | url %]&f=[% node.port | url %]">[% node.switch %] [ [% node.port %] ]</a>
+      <td><a href="[% vars.device_ports %]&q=[% node.switch | url %]&f=[% node.port | url %]&c_connected=on">[% node.switch %] [ [% node.port %] ]</a>
         [% ' (' _ node.device.dns.remove(settings.domain_suffix) _ ')' IF node.device.dns %]
         [% ' <span class="label label-warning">A</span>' IF NOT node.active %]
       </td>
@@ -97,7 +97,7 @@
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% vars.device_ports %]&q=[% port.ip | url %]&f=[% port.port | url %]">[% port.ip %] [ [% port.port %] ]</a>
+      <td><a href="[% vars.device_ports %]&q=[% port.ip | url %]&f=[% port.port | url %]&c_connected=on">[% port.ip %] [ [% port.port %] ]</a>
         [% ' (' _ port.device.dns.remove(settings.domain_suffix) _ ')' IF port.device.dns %]
       </td>
       [% IF params.stamps %]

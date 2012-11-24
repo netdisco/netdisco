@@ -144,7 +144,7 @@ $(document).ready(function() {
 
   // bind submission to the navbar go icon
   $('#navsearchgo').click(function() {
-    $('#navsearchgo').parent('form').submit();
+    $('#navsearchgo').parents('form').submit();
   });
 
   // fix green background on search checkboxes
@@ -155,9 +155,9 @@ $(document).ready(function() {
   $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
 
   // sidebar toggle - pinning
-  $('#sidebar_pin_box').click(function() {
-    $(this).toggleClass('sidebar_pin_box_pressed');
+  $('.sidebar_pin').click(function() {
     $('.sidebar').toggleClass('sidebar_pinned');
+    $('.sidebar_pin').toggleClass('sidebar_pin_clicked');
   });
   // sidebar toggle - trigger in/out on image click()
   $('#sidebar_toggle_img_in').click(function() {

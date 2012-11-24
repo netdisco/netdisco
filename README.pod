@@ -24,6 +24,10 @@ Optionally, in the same file uncomment and edit the C<domain_suffix> setting
 to be appropriate for your local site (same as the C<domain> setting in
 C<netdisco.conf>).
 
+If you have a C<dns> column in your C<node_ip> table then set the 
+C<have_nodeip_dns_col> option also. Note that this can also enable a "live"
+DNS lookup but you probably don't want the performance hit.
+
 =head2 Dependencies
 
 You will need to have Netdisco itself installed on the system as this module
@@ -78,9 +82,6 @@ under Apache, FastCGI, or other environments.
 The main black navigation bar has a search box which is smart enough to work
 out what you're looking for in most cases. For example device names, node IP
 or MAC addreses, VLAN numbers, and so on.
-
-If you've patched your C<node_ip> table to have a cached DNS entry column
-called C<dns> then uncomment the two indicated lines in C<NodeIP.pm>.
 
 Remember you can disable authentication by changing a setting in the
 configuration file, as explained above.

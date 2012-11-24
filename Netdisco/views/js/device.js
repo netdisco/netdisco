@@ -6,26 +6,76 @@
     // VLANs column list collapser trigger
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('.nd_collapse_vlans').toggle(function() {
-        event.preventDefault(); // prevent jump to top of page
-        $(this).siblings('.nd_collapsing').toggle('fast');
-        $(this).siblings('.cell-arrow-up').toggleClass('cell-arrow-down cell-arrow-up');
-        $(this).html('<div class="cell-arrow-down"></div>Hide VLANs');
+        $(this).siblings('.nd_collapsing').toggle();
+        $(this).siblings('.cell-arrow-up-down')
+          .toggleClass('icon-chevron-up icon-chevron-down');
+        $(this).html('<div class="cell-arrow-up-down icon-chevron-down icon-large"></div>Hide VLANs');
       }, function() {
-        event.preventDefault(); // prevent jump to top of page
-        $(this).siblings('.nd_collapsing').toggle('fast');
-        $(this).siblings('.cell-arrow-down').toggleClass('cell-arrow-down cell-arrow-up');
-        $(this).html('<div class="cell-arrow-up"></div>Show VLANs');
+        $(this).siblings('.nd_collapsing').toggle();
+        $(this).siblings('.cell-arrow-up-down')
+          .toggleClass('icon-chevron-up icon-chevron-down');
+        $(this).html('<div class="cell-arrow-up-down icon-chevron-up icon-large"></div>Show VLANs');
     });
+
+    // toggle visibility of port up/down and edit controls
+    $('.nd_editable_cell').hover(function() {
+      $(this).children('.nd_hand_icon').toggle();
+      $(this).children('.nd_edit_icon').toggle();
+    });
+
+    // toggle visibility of VLAN edit control when clicked
+    $('[contenteditable=true]').focus(function() {
+      $(this).find('.nd_thumb_icon').toggle();
+    });
+    $('[contenteditable=true]').blur(function() {
+      $(this).find('.nd_thumb_icon').toggle();
+      // can undo but CSS doesn't shift, so just do nothing for now.
+    });
+
+    // activity for port up/down control
+    $('.icon-hand-up').click(function() {
+      port_control(this); // save
+    });
+    $('.icon-hand-down').click(function() {
+      port_control(this); // save
+    });
+
+    // activity for contenteditable control
+    $('.nd_thumb_icon').click(function() {
+      $(this).closest('[contenteditable=true]').blur();
+      port_control(this); // save
+    });
+
+    // activity for contenteditable control
+    $('[contenteditable=true]').keydown(function() {
+      var esc = event.which == 27,
+          nl  = event.which == 13;
+
+      if (esc) {
+        document.execCommand('undo');
+        $(this).blur();
+      }
+      else if (nl) {
+        $(this).blur();
+        event.preventDefault();
+        port_control(this); // save
+      }
+    });
+
+    // activate tooltips
+    $("[rel=tooltip]").tooltip({live: true});
   }
 
   $(document).ready(function() {
     // sidebar collapser events trigger change of up/down arrow
     $('.collapse').on('show', function() {
-      $(this).siblings().find('.arrow-up').toggleClass('arrow-down arrow-up');
+      $(this).siblings().find('.arrow-up-down')
+        .toggleClass('icon-chevron-up icon-chevron-down');
     });
 
     $('.collapse').on('hide', function() {
-      $(this).siblings().find('.arrow-down').toggleClass('arrow-down arrow-up');
+      $(this).siblings().find('.arrow-up-down')
+        .toggleClass('icon-chevron-up icon-chevron-down');
     });
 
     // show or hide sweeping brush icon when field has content

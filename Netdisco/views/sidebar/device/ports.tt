@@ -1,5 +1,4 @@
 
-            <p><em>Port Filter Options</em></p>
             <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
@@ -10,9 +9,11 @@
                 rel="tooltip" data-placement="left" data-offset="5" title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
-              <a href="#" data-toggle="collapse" data-target="#nd_legend">
-                <label class="nd_collapser">Legend<div class="arrow-down"></div></label></a>
-              <div id="nd_legend" class="collapse in">
+              <span data-toggle="collapse" data-target="#nd_legend">
+                <label class="nd_collapser">Legend
+                <i class="arrow-up-down icon-chevron-up icon-large"></i>
+                </label></span>
+              <div id="nd_legend" class="collapse">
                 <ul class="inputs-list unstyled">
                   <li>
                     <span class="label">S</span>&nbsp; Admin Disabled
@@ -39,16 +40,23 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" data-toggle="collapse" data-target="#nd_columns">
-                <label class="nd_collapser">Display Columns<div class="arrow-down"></div></label></a>
+              <span data-toggle="collapse" data-target="#nd_columns">
+                <label class="nd_collapser">Display Columns
+                <i class="arrow-up-down icon-chevron-down icon-large"></i>
+                </label></span>
               <div id="nd_columns" class="collapse in">
                 <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
+                  [% NEXT IF item.name == 'c_admin' AND NOT vars.user.port_control %]
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name %]"
                         name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
-                      [% item.label %]
+                      [% IF item.name == 'c_admin' %]
+                        <span class="label label-inverse">[% item.label %]</span>
+                      [% ELSE %]
+                        [% item.label %]
+                      [% END %]
                     </label>
                   </li>
                   [% END %]
@@ -56,8 +64,10 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" data-toggle="collapse" data-target="#nd_portprops">
-                <label class="nd_collapser">Port Properties<div class="arrow-up"></div></label></a>
+              <span data-toggle="collapse" data-target="#nd_portprops">
+                <label class="nd_collapser">Port Properties
+                <i class="arrow-up-down icon-chevron-up icon-large"></i>
+                </label></span>
               <div id="nd_portprops" class="collapse">
                 <ul class="inputs-list unstyled">
                   <li>
@@ -86,8 +96,10 @@
               </div>
             </div>
             <div class="clearfix">
-              <a href="#" data-toggle="collapse" data-target="#nd_nodeprops">
-                <label class="nd_collapser">Node Properties<div class="arrow-up"></div></label></a>
+              <span data-toggle="collapse" data-target="#nd_nodeprops">
+                <label class="nd_collapser">Node Properties
+                <i class="arrow-up-down icon-chevron-up icon-large"></i>
+                </label></span>
               <div id="nd_nodeprops" class="collapse">
                 <ul class="inputs-list unstyled">
                   [% FOREACH item IN vars.connected_properties %]
