@@ -7,6 +7,7 @@
   * Show device name on device details views (closes #30)
   * Migrated to Font Awesome for a wider range of icon fonts
   * Simple network map showing *some* links between devices
+  * Individual column selections for connected nodes and devices
 
   [ENHANCEMENTS]
 

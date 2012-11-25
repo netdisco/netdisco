@@ -22,7 +22,8 @@ hook 'before' => sub {
         { name => 'c_mtu',         label => 'MTU',               default => ''   },
         { name => 'c_vlan',        label => 'Native VLAN',       default => 'on' },
         { name => 'c_vmember',     label => 'VLAN Membership',   default => 'on' },
-        { name => 'c_connected',   label => 'Connected Devices', default => ''   },
+        { name => 'c_nodes',       label => 'Connected Nodes',   default => ''   },
+        { name => 'c_neighbors',   label => 'Connected Devices', default => 'on' },
         { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
         { name => 'c_up',          label => 'Status',            default => ''   },
     ]);
@@ -206,12 +207,15 @@ ajax '/ajax/content/device/ports' => sub {
 
     # what kind of nodes are we interested in?
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
-    $nodes_name .= '_with_age' if param('c_connected') and param('n_age');
+    $nodes_name .= '_with_age' if param('c_nodes') and param('n_age');
 
-    # retrieve active/all connected nodes, and device, if asked for
-    $set = $set->search_rs({}, {
-      prefetch => [{$nodes_name => 'ips'}, {neighbor_alias => 'device'}],
-    }) if param('c_connected');
+    # retrieve active/all connected nodes, if asked for
+    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'ips'}] })
+      if param('c_nodes');
+
+    # retrieve neighbor devices, if asked for
+    $set = $set->search_rs({}, { prefetch => [{neighbor_alias => 'device'}] })
+      if param('c_neighbors');
 
     # sort ports (empty set would be a 'no records' msg)
     my $results = [ sort { &Netdisco::Util::sort_port($a->port, $b->port) } $set->all ];
