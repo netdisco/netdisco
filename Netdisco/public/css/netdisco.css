@@ -95,7 +95,7 @@ body {
 
 /* special placing for edit icon in details tab */
 .nd_device_details_edit {
-  margin-left: -18px;
+  float: right !important;
   font-size: 14px;
 }
 
@@ -106,24 +106,12 @@ body {
   display: none;
 }
 
-/* port admin VLAN control */
-.nd_thumb_icon {
-  cursor: pointer;
-  float: right;
-  display: none;
-}
-
 /* placement of port link when port admin hint is enabled */
 .nd_editable_cell > .nd_this_port_only {
   margin-left: 18px;
 }
 .nd_editable_cell > .nd_editable_cell_content {
   margin-left: 18px;
-}
-
-/* placement of thumb for editable submit */
-.center_cell > .nd_thumb_icon {
-  margin-left: -18px;
 }
 
 /* style of editable content in table */
