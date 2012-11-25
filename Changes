@@ -1,3 +1,9 @@
+0.8 -
+
+  [BUG FIXES]
+
+  * port cotrol user log check now looks for all actions
+
 0.7 - 2012-11-25
 
   [NEW FEATURES]
