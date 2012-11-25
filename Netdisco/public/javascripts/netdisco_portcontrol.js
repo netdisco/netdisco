@@ -16,7 +16,9 @@ function port_control (e) {
       toastr.info('Submitted change request');
     }
     ,error: function() {
-      toastr.error('Failed to submit change request')
+      toastr.error('Failed to submit change request');
+      document.execCommand('undo');
+      $(e).blur();
     }
   });
 }
@@ -26,6 +28,22 @@ function port_control (e) {
   $.ajax({
     url: uri_base + '/ajax/userlog'
     ,success: function(data) {
+      // console.log(data);
+
+      if (data['error'] == 1 ) {
+        toastr.error('1 recent failed change request');
+      }
+      else if (data['error'] > 1) {
+        toastr.error(data['error'] + ' recent failed change requests');
+      }
+
+      if (data['done'] == 1 ) {
+        toastr.success('1 recent successful change request');
+      }
+      else if (data['done'] > 1) {
+        toastr.success(data['done'] + ' recent successful change requests');
+      }
+
       // Schedule next request when the current one's complete
       setTimeout(worker, 5000);
     }

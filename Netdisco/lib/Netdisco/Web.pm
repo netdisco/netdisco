@@ -12,6 +12,7 @@ use URI::QueryParam (); # part of URI, to add helper methods
 use Netdisco::Web::AuthN;
 use Netdisco::Web::Search;
 use Netdisco::Web::Device;
+use Netdisco::Web::PortControl;
 use Netdisco::Web::Inventory;
 
 hook 'before_template' => sub {

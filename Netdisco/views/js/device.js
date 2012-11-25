@@ -62,8 +62,8 @@
 
       }
       else if (nl) {
-        event.preventDefault();
         $(this).blur();
+        event.preventDefault();
         dirty = false;
         port_control(this); // save
       }
