@@ -18,21 +18,26 @@
     });
 
     // toggle visibility of port up/down and edit controls
-    $('.nd_editable_cell').hover(function() {
-      $(this).children('.nd_hand_icon').toggle();
-      if ($(this).is(':focus')) {
-        $(this).children('.nd_edit_icon').toggle(false); // ports
-        $(this).siblings('td').find('.nd_device_details_edit').toggle(false); // details
+
+    $('.nd_editable_cell').mouseenter(function() {
+      $(this).children('.nd_hand_icon').show();
+      if (! $(this).is(':focus')) {
+        $(this).children('.nd_edit_icon').show(); // ports
+        $(this).siblings('td').find('.nd_device_details_edit').show(); // details
       }
-      else {
-        $(this).children('.nd_edit_icon').toggle(); // ports
-        $(this).siblings('td').find('.nd_device_details_edit').toggle(); // details
+    });
+
+    $('.nd_editable_cell').mouseleave(function() {
+      $(this).children('.nd_hand_icon').hide();
+      if (! $(this).is(':focus')) {
+        $(this).children('.nd_edit_icon').hide(); // ports
+        $(this).siblings('td').find('.nd_device_details_edit').hide(); // details
       }
     });
 
     $('[contenteditable=true]').focus(function() {
-        $(this).children('.nd_edit_icon').toggle(false); // ports
-        $(this).siblings('td').find('.nd_device_details_edit').toggle(false); // details
+        $(this).children('.nd_edit_icon').hide(); // ports
+        $(this).siblings('td').find('.nd_device_details_edit').hide(); // details
     });
 
     // activity for port up/down control
@@ -43,19 +48,27 @@
       port_control(this); // save
     });
 
+    var dirty = false;
+
     // activity for contenteditable control
     $('[contenteditable=true]').keydown(function() {
       var esc = event.which == 27,
           nl  = event.which == 13;
 
       if (esc) {
-        document.execCommand('undo');
+        if (dirty) { document.execCommand('undo') }
         $(this).blur();
+        dirty = false;
+
       }
       else if (nl) {
-        $(this).blur();
         event.preventDefault();
+        $(this).blur();
+        dirty = false;
         port_control(this); // save
+      }
+      else {
+        dirty = true;
       }
     });
 
