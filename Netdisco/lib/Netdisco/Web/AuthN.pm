@@ -8,7 +8,7 @@ use Digest::MD5 ();
 hook 'before' => sub {
     if (! session('user') && request->path ne uri_for('/login')->path) {
         if (setting('no_auth')) {
-            session(user => 'anonymous');
+            session(user => 'guest');
         }
         else {
             request->path_info('/');
