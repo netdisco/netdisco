@@ -8,6 +8,7 @@
 
   * port cotrol user log check now looks for all actions
   * node search switchport link shows connected nodes again
+  * no longer deploy FK constraints with DB schema as they upset legacy netdisco.pm
 
 0.7 - 2012-11-25
 

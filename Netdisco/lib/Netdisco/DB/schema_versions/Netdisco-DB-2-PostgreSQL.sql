@@ -423,40 +423,42 @@ CREATE INDEX "node_idx_switch" on "node" ("switch");
 CREATE INDEX "node_idx_switch_port" on "node" ("switch", "port");
 CREATE INDEX "node_idx_oui" on "node" ("oui");
 
---
--- Foreign Key Definitions
---
-
-ALTER TABLE "device_vlan" ADD CONSTRAINT "device_vlan_fk_ip" FOREIGN KEY ("ip")
-  REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip" FOREIGN KEY ("ip")
-  REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip_port" FOREIGN KEY ("ip", "port")
-  REFERENCES "device_port" ("ip", "port") DEFERRABLE;
-
-ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_ip" FOREIGN KEY ("ip")
-  REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_remote_ip" FOREIGN KEY ("remote_ip")
-  REFERENCES "device_ip" ("alias") DEFERRABLE;
-
-ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip" FOREIGN KEY ("ip")
-  REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_port" FOREIGN KEY ("ip", "port")
-  REFERENCES "device_port" ("ip", "port") DEFERRABLE;
-
-ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_vlan" FOREIGN KEY ("ip", "vlan")
-  REFERENCES "device_vlan" ("ip", "vlan") DEFERRABLE;
-
-ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch" FOREIGN KEY ("switch")
-  REFERENCES "device" ("ip") DEFERRABLE;
-
-ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch_port" FOREIGN KEY ("switch", "port")
-  REFERENCES "device_port" ("ip", "port") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE "node" ADD CONSTRAINT "node_fk_oui" FOREIGN KEY ("oui")
-  REFERENCES "oui" ("oui") DEFERRABLE;
-
+-- Not used in Netdisco, because they upset the legacy netdisco.pm code
+-- 
+-- --
+-- -- Foreign Key Definitions
+-- --
+-- 
+-- ALTER TABLE "device_vlan" ADD CONSTRAINT "device_vlan_fk_ip" FOREIGN KEY ("ip")
+--   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+-- 
+-- ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip" FOREIGN KEY ("ip")
+--   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+-- 
+-- ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip_port" FOREIGN KEY ("ip", "port")
+--   REFERENCES "device_port" ("ip", "port") DEFERRABLE;
+-- 
+-- ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_ip" FOREIGN KEY ("ip")
+--   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+-- 
+-- ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_remote_ip" FOREIGN KEY ("remote_ip")
+--   REFERENCES "device_ip" ("alias") DEFERRABLE;
+-- 
+-- ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip" FOREIGN KEY ("ip")
+--   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+-- 
+-- ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_port" FOREIGN KEY ("ip", "port")
+--   REFERENCES "device_port" ("ip", "port") DEFERRABLE;
+-- 
+-- ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_vlan" FOREIGN KEY ("ip", "vlan")
+--   REFERENCES "device_vlan" ("ip", "vlan") DEFERRABLE;
+-- 
+-- ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch" FOREIGN KEY ("switch")
+--   REFERENCES "device" ("ip") DEFERRABLE;
+-- 
+-- ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch_port" FOREIGN KEY ("switch", "port")
+--   REFERENCES "device_port" ("ip", "port") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+-- 
+-- ALTER TABLE "node" ADD CONSTRAINT "node_fk_oui" FOREIGN KEY ("oui")
+--   REFERENCES "oui" ("oui") DEFERRABLE;
+-- 

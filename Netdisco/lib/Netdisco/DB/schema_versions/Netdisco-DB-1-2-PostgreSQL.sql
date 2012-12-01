@@ -15,6 +15,5 @@ ALTER TABLE device_port_vlan ADD COLUMN vlantype text;
 
 ALTER TABLE node_ip ADD COLUMN dns text;
 
-
 COMMIT;
 
