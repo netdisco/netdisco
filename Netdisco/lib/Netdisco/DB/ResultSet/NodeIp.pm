@@ -4,24 +4,6 @@ use base 'DBIx::Class::ResultSet';
 use strict;
 use warnings FATAL => 'all';
 
-# some customize their node_ip table to have a dns column which
-# is the cached record at the time of discovery
-
-=head1 has_dns_col
-
-Some sites customize their C<node_ip> table to include a C<dns> field which is
-the cached record at the time of node discovery.
-
-This method returns True if the C<node_ip> table is configured with a C<dns>
-column.
-
-=cut
-
-sub has_dns_col {
-    my $rs = shift;
-    return $rs->result_source->has_column('dns');
-}
-
 my $search_attr = {
     order_by => {'-desc' => 'time_last'},
     '+columns' => [
@@ -82,9 +64,6 @@ sub search_by_ip {
     }
     $cond->{ip} = { $op => $ip };
 
-    $rs = $rs->search_rs({}, {'+columns' => 'dns'})
-      if $rs->has_dns_col;
-
     return $rs
       ->search_rs({}, $search_attr)
       ->search($cond, $attrs);
@@ -131,16 +110,12 @@ To limit results only to active IPs, set C<< {active => 1} >> in C<cond>.
 sub search_by_dns {
     my ($rs, $cond, $attrs) = @_;
 
-    die "search_by_dns requires a dns col on the node_ip table.\n"
-      if not $rs->has_dns_col;
-
     die "dns field required for search_by_dns\n"
       if ref {} ne ref $cond or !exists $cond->{dns};
 
     $cond->{dns} = { '-ilike' => delete $cond->{dns} };
 
     return $rs
-      ->search_rs({}, {'+columns' => 'dns'})
       ->search_rs({}, $search_attr)
       ->search($cond, $attrs);
 }
@@ -183,9 +158,6 @@ sub search_by_mac {
 
     die "mac address required for search_by_mac\n"
       if ref {} ne ref $cond or !exists $cond->{mac};
-
-    $rs = $rs->search_rs({}, {'+columns' => 'dns'})
-      if $rs->has_dns_col;
 
     return $rs
       ->search_rs({}, $search_attr)

@@ -14,6 +14,8 @@ __PACKAGE__->add_columns(
   { data_type => "macaddr", is_nullable => 0 },
   "ip",
   { data_type => "inet", is_nullable => 0 },
+  "dns",
+  { data_type => "text", is_nullable => 1 },
   "active",
   { data_type => "boolean", is_nullable => 1 },
   "time_first",
@@ -36,43 +38,6 @@ __PACKAGE__->set_primary_key("mac", "ip");
 
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9+CuvuVWH88WxAf6IBij8g
-
-=head1 GENERAL NOTES
-
-This Result Class for the C<node_ip> table supports sites that have customized
-their table to include a C<dns> column, containing a cached DNS record for the
-Node at the time of discovery.
-
-Calling the C<dns()> accessor will either return the content of that field if
-the field is configured and installed, or else perform a live DNS lookup on
-the IP field within the record (returning the first PTR, or undef).
-
-To enable this feature, set the C<HAVE_NODEIP_DNS_COL> environment variable to
-a true value. In the Netdisco web app you can activate the column using the
-C<have_nodeip_dns_col> application setting, instead.
-
-=cut
-
-__PACKAGE__->add_column("dns" =>
-  { data_type => "text", is_nullable => 1, accessor => undef });
-
-# some customize their node_ip table to have a dns column which
-# is the cached record at the time of discovery
-sub dns {
-  my $row = shift;
-  return $row->get_column('dns')
-    if $row->result_source->has_column('dns');
-
-  use Net::DNS ();
-  my $q = Net::DNS::Resolver->new->query($row->ip);
-  if ($q) {
-    foreach my $rr ($q->answer) {
-      next unless $rr->type eq 'PTR';
-      return $rr->ptrdname;
-    }
-  }
-  return undef;
-}
 
 =head1 RELATIONSHIPS
 
@@ -167,8 +132,6 @@ sub ip_aliases {
     my ($row, $cond, $attrs) = @_;
 
     my $rs = $row->node_ips({ip  => { '!=' => $row->ip }});
-    $rs = $rs->search_rs({}, {'+columns' => 'dns'})
-      if $rs->has_dns_col;
 
     return $rs
       ->search_rs({}, $search_attr)

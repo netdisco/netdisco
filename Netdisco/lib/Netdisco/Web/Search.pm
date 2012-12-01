@@ -118,33 +118,15 @@ ajax '/ajax/content/search/node' => sub {
               ->search_by_ip({ip => $ip, @active});
         }
         else {
-            if (schema('netdisco')->resultset('NodeIp')->has_dns_col) {
-                if (param('partial')) {
-                    $node = "\%$node\%";
-                }
-                elsif (setting('domain_suffix')) {
-                    $node .= setting('domain_suffix')
-                        if index($node, setting('domain_suffix')) == -1;
-                }
-                $set = schema('netdisco')->resultset('NodeIp')
-                  ->search_by_dns({dns => $node, @active});
+            if (param('partial')) {
+                $node = "\%$node\%";
             }
             elsif (setting('domain_suffix')) {
                 $node .= setting('domain_suffix')
                     if index($node, setting('domain_suffix')) == -1;
-                my $q = Net::DNS::Resolver->new->query($node);
-                if ($q) {
-                    foreach my $rr ($q->answer) {
-                        next unless $rr->type eq 'A';
-                        $node = $rr->address;
-                    }
-                }
-                else {
-                    return;
-                }
-                $set = schema('netdisco')->resultset('NodeIp')
-                  ->search_by_ip({ip => $node, @active});
             }
+            $set = schema('netdisco')->resultset('NodeIp')
+              ->search_by_dns({dns => $node, @active});
         }
         return unless $set and $set->count;
 
@@ -262,9 +244,6 @@ get '/search' => sub {
         { id => 'vlan',   label => 'VLAN'   },
         { id => 'port',   label => 'Port'   },
     ]);
-
-    var('node_ip_has_dns_col' =>
-      schema('netdisco')->resultset('NodeIp')->has_dns_col);
 
     template 'search';
 };

@@ -4,6 +4,10 @@
 
   * Network Map now shows all device neighbors and allows click-through nav
 
+  [ENHANCEMENTS]
+
+  * eradicate checks for dns column in node_ip table - now assumed to be there
+
   [BUG FIXES]
 
   * port cotrol user log check now looks for all actions

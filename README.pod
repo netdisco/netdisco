@@ -17,21 +17,15 @@ system has access to your Netdisco database.
 Edit the C<Netdisco/environments/development.yml> file to have the correct
 credentials and settings (host name) for your own Netdisco database.
 
-In the same file, uncomment the C<no_auth> setting if you use Apache auth.
-Currently the frontend only works with the built-in Netdisco authentication.
+In the same file, uncomment the C<no_auth> setting if you use Apache auth, or
+simply want to use Netdisco without logging in. Currently the frontend only
+works with the built-in Netdisco authentication.
 
 Optionally, in the same file uncomment and edit the C<domain_suffix> setting
 to be appropriate for your local site (same as the C<domain> setting in
 C<netdisco.conf>).
 
-If you have a C<dns> column in your C<node_ip> table then set the 
-C<have_nodeip_dns_col> option also. Note that this can also enable a "live"
-DNS lookup but you probably don't want the performance hit.
-
 =head2 Dependencies
-
-You will need to have Netdisco itself installed on the system as this module
-will try to load the C<netdisco.pm> library.
 
 To avoid muddying your system, use the following shell script to download and
 install Perl dependencies into a custom library path:
@@ -42,7 +36,7 @@ install Perl dependencies into a custom library path:
      Dancer \
      DBIx::Class \
      DBIx::Class::Helper::Row::SubClass \
-     DBD::Pg \
+     SQL::Translator \
      Dancer::Plugin::DBIC \
      NetAddr::IP \
      Net::MAC \
@@ -53,15 +47,30 @@ install Perl dependencies into a custom library path:
      Template::Toolkit \
      YAML
 
-In case you were wondering, the vast majority of dependencies come from
+In case you were wondering, the majority of dependencies come from
 L<DBIx::Class>.
 
-B<Note> that to install L<DBD::Pg> you need the PostgreSQL development libraries
-also installed. Best advice is to omit that item from the above script and try
-to install a prebuilt DBD::Pg package for your OS. The following command will
-test for the existence of DBD::Pg on your system:
+B<Note> You also need to install L<DBD::Pg>. Best advice is to install a
+prebuilt DBD::Pg package for your OS. The following command will test for the
+existence of DBD::Pg on your system:
 
  perl -MDBD::Pg\ 999
+
+=head2 Database Update
+
+You will need the latest Netdisco DB schema in your PostgreSQL server. Most
+important is to have a C<dns> column in your C<node_ip> table. This
+distribution includes scripts which can upgrade the DB schema for you, but
+B<please> do take backups beforehand!
+
+Whether you have no existing DB schema, or an existing DB schema without the
+latest updates, simply run the following script in this distribution:
+
+ bin/upgrade_netdisco_schema_version.pl
+
+The script should detect what needs to be done in your database and apply the
+necessary changes. It will also add a table to keep track of what's changed,
+so that you can run the script again in the future and receive more updates.
 
 =head1 STARTUP
 
@@ -94,11 +103,6 @@ For SQL debugging, and better performance, try the following command:
 
 =head1 FUTURE WORK
 
-At the moment the ability to just hit Enter in the title-bar Search is a
-I<hack> because there's no other way to list all Inventory. When the Reports
-code is added, the Inventory will be a part of that. It's understood that
-simply hitting enter should return no results, not all results.
-
 The intention is to support "plugins" for additonal features, most notably
 columns in the Device Port listing, but also new menu items and tabs. The
 design of this is sketched out but not implemented. The goal is to avoid
@@ -106,10 +110,8 @@ patching core code to add localizations or less widely used features. One
 could imagine a C<Netdisco::Web::Plugin::> namespace for these.
 
 Bundled with this app is a L<DBIx::Class> layer for the Netdisco database.
-This could be a starting point for an "official" DBIC layer, but be warned
-that at the moment it's a bit messy. Helper functions and canned searches have
-been thrown together to support the web interface with little thought for
-style or consistency or performance. That will come later.
+This could be a starting point for an "official" DBIC layer. Helper functions
+and canned searches have been added to support the web interface.
 
 =head1 CAVEATS
 

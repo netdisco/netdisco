@@ -29,7 +29,6 @@
                   Archived Data <span class="nd_legendlabel label label-warning">A</span></span>
               </label>
             </div>
-            [% IF vars.node_ip_has_dns_col %]
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="partial"
@@ -39,5 +38,4 @@
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
             </div>
-            [% END %]
             <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Search Again</button>
