@@ -381,8 +381,15 @@ form .clearfix.success input {
 
 .link {
   fill: none;
-  stroke: #ccc;
+  stroke: #eee;
   stroke-width: 1.5px;
+}
+
+.neighbor {
+  fill: none;
+  stroke: #aaa;
+  stroke-width: 2px;
+  display: none;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

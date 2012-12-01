@@ -105,7 +105,7 @@ sub _add_children {
         next if exists var('seen')->{$c};
         var('seen')->{$c}++;
         push @legit, $c;
-        push @{$ptr}, { name => _get_name($c) };
+        push @{$ptr}, { name => _get_name($c), ip => $c };
     }
 
     for (my $i = 0; $i < @legit; $i++) {
@@ -136,12 +136,34 @@ get '/ajax/data/device/netmap' => sub {
     }
 
     my %tree = (
+        ip => $start,
         name => _get_name($start),
         children => [],
     );
 
-    var(seen => {});
+    var(seen => {$start => 1});
     _add_children($tree{children}, var('links')->{$start});
+
+    content_type('application/json');
+    return to_json(\%tree);
+};
+
+ajax '/ajax/data/device/alldevicelinks' => sub {
+    my @devices = schema->resultset('Device')->search({}, {
+      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+      columns => ['ip', 'dns'],
+    })->all;
+    var(devices => { map { $_->{ip} => $_->{dns} } @devices });
+
+    my $rs = schema->resultset('Virtual::DeviceLinks')->search({}, {
+      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+    });
+
+    my %tree = ();
+    while (my $l = $rs->next) {
+        push @{ $tree{ _get_name($l->{left_ip} )} },
+          _get_name($l->{right_ip});
+    }
 
     content_type('application/json');
     return to_json(\%tree);

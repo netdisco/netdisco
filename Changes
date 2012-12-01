@@ -1,5 +1,9 @@
 0.8 -
 
+  [NEW FEATURES]
+
+  * Network Map now shows all device neighbors and allows click-through nav
+
   [BUG FIXES]
 
   * port cotrol user log check now looks for all actions
