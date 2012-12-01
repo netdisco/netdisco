@@ -67,6 +67,7 @@ function circleClick(d) {
 function circleOver(d) {
     $('.link').hide();
     $('path.' + to_class(d.name)).show();
+    $(this).css('cursor', 'pointer');
 
     $.each(neighbors_data[d.name], function(idx, target) {
       if (! (target in loc)) { return true }
@@ -81,6 +82,7 @@ function circleOut(d) {
       $('circle.' + to_class(target)).css('fill', '#fff');
     });
 
+    $(this).css('cursor', 'auto');
     $('path.' + to_class(d.name)).hide();
     $('.link').show();
 }
