@@ -7,6 +7,7 @@
   [BUG FIXES]
 
   * port cotrol user log check now looks for all actions
+  * node search switchport link shows connected nodes again
 
 0.7 - 2012-11-25
 
