@@ -56,7 +56,7 @@ function recordLocation(d,i) {
 }
 
 // convert a device name to a valid CSS class name
-function to_class(name) { return name.replace(/\./g, "_") }
+function to_class(name) { return 'nd_' + name.replace(/\./g, "_") }
 
 // handler for clicking on a circle - redirect to that device's netmap
 function circleClick(d) {
