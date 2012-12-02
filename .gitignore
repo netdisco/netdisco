@@ -1,4 +1,5 @@
 Netdisco/environments/*
 Netdisco/logs/*
 *.swp
+*.pid
 test.pl
