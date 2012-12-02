@@ -7,6 +7,7 @@
   [ENHANCEMENTS]
 
   * eradicate checks for dns column in node_ip table - now assumed to be there
+  * remove .pl from script names
 
   [BUG FIXES]
 

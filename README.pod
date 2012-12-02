@@ -66,7 +66,7 @@ B<please> do take backups beforehand!
 Whether you have no existing DB schema, or an existing DB schema without the
 latest updates, simply run the following script in this distribution:
 
- bin/upgrade_netdisco_schema_version.pl
+ bin/upgrade_netdisco_schema_version
 
 The script should detect what needs to be done in your database and apply the
 necessary changes. It will also add a table to keep track of what's changed,
@@ -81,7 +81,7 @@ performance for a production environment.
 The following command initializes an environment which can access the installed
 Perl modules, then starts this small web server:
 
- ~/perl-profiles/netdisco-web/bin/localenv Netdisco/bin/netdisco-web.pl
+ ~/perl-profiles/netdisco-web/bin/localenv Netdisco/bin/netdisco-web
 
 Speak to C<oliver> on IRC if you want advice on firing up the application
 under Apache, FastCGI, or other environments.
@@ -99,7 +99,7 @@ For SQL debugging, and better performance, try the following command:
 
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
    plackup -R Netdisco/lib,Netdisco/public,Netdisco/views \
-   Netdisco/bin/netdisco-web.pl
+   Netdisco/bin/netdisco-web
 
 =head1 FUTURE WORK
 
