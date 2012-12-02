@@ -10,22 +10,21 @@ use Netdisco::DB;
 use Try::Tiny;
 use feature 'say';
 
-try {
-  my $count = schema->resultset('Device')->count();
-}
-catch {
-  # fresh install? deploy the Netdisco::DB schema
-  say 'Deploying Netdisco::DB schema...';
-  schema->txn_do(sub { schema->deploy() });
-  exec $0;
-};
-
 if (not schema->get_db_version()) {
-  # installs the dbix_class_schema_versions table with version "0"
+  # installs the dbix_class_schema_versions table with version "1"
+  # which corresponds to an empty schema
   say 'Installing DBIx::Class versioning to Netdisco::DB schema...';
   schema->txn_do(sub { schema->install("1") });
   exec $0;
 }
+
+try {
+    # if schema exists, assume it's current public Netdisco version
+  if (schema->get_db_version() == 1
+      and my $count = schema->resultset('Device')->count()) {
+    schema->txn_do(sub { schema->_set_db_version("2") });
+  }
+};
 
 # upgrades from whatever dbix_class_schema_versions says, to $VERSION
 say 'Upgrading Netdisco::DB schema...';

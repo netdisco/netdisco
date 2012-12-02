@@ -1,10 +1,11 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Oct 10 14:24:20 2012
+-- Created on Wed Oct 10 15:38:36 2012
 -- 
 --
 -- Table: admin.
 --
+DROP TABLE "admin" CASCADE;
 CREATE TABLE "admin" (
   "job" serial NOT NULL,
   "entered" timestamp DEFAULT current_timestamp,
@@ -24,6 +25,7 @@ CREATE TABLE "admin" (
 --
 -- Table: device.
 --
+DROP TABLE "device" CASCADE;
 CREATE TABLE "device" (
   "ip" inet NOT NULL,
   "creation" timestamp DEFAULT current_timestamp,
@@ -61,6 +63,7 @@ CREATE TABLE "device" (
 --
 -- Table: device_module.
 --
+DROP TABLE "device_module" CASCADE;
 CREATE TABLE "device_module" (
   "ip" inet NOT NULL,
   "index" integer NOT NULL,
@@ -84,6 +87,7 @@ CREATE TABLE "device_module" (
 --
 -- Table: device_port_log.
 --
+DROP TABLE "device_port_log" CASCADE;
 CREATE TABLE "device_port_log" (
   "id" serial NOT NULL,
   "ip" inet,
@@ -99,6 +103,7 @@ CREATE TABLE "device_port_log" (
 --
 -- Table: device_port_power.
 --
+DROP TABLE "device_port_power" CASCADE;
 CREATE TABLE "device_port_power" (
   "ip" inet NOT NULL,
   "port" text NOT NULL,
@@ -113,16 +118,19 @@ CREATE TABLE "device_port_power" (
 --
 -- Table: device_port_ssid.
 --
+DROP TABLE "device_port_ssid" CASCADE;
 CREATE TABLE "device_port_ssid" (
   "ip" inet,
   "port" text,
   "ssid" text,
-  "broadcast" boolean
+  "broadcast" boolean,
+  "bssid" macaddr
 );
 
 --
 -- Table: device_port_wireless.
 --
+DROP TABLE "device_port_wireless" CASCADE;
 CREATE TABLE "device_port_wireless" (
   "ip" inet,
   "port" text,
@@ -133,6 +141,7 @@ CREATE TABLE "device_port_wireless" (
 --
 -- Table: device_power.
 --
+DROP TABLE "device_power" CASCADE;
 CREATE TABLE "device_power" (
   "ip" inet NOT NULL,
   "module" integer NOT NULL,
@@ -144,6 +153,7 @@ CREATE TABLE "device_power" (
 --
 -- Table: device_route.
 --
+DROP TABLE "device_route" CASCADE;
 CREATE TABLE "device_route" (
   "ip" inet NOT NULL,
   "network" cidr NOT NULL,
@@ -156,6 +166,7 @@ CREATE TABLE "device_route" (
 --
 -- Table: log.
 --
+DROP TABLE "log" CASCADE;
 CREATE TABLE "log" (
   "id" serial NOT NULL,
   "creation" timestamp DEFAULT current_timestamp,
@@ -167,18 +178,21 @@ CREATE TABLE "log" (
 --
 -- Table: node_ip.
 --
+DROP TABLE "node_ip" CASCADE;
 CREATE TABLE "node_ip" (
   "mac" macaddr NOT NULL,
   "ip" inet NOT NULL,
   "active" boolean,
   "time_first" timestamp DEFAULT current_timestamp,
   "time_last" timestamp DEFAULT current_timestamp,
+  "dns" text,
   PRIMARY KEY ("mac", "ip")
 );
 
 --
 -- Table: node_monitor.
 --
+DROP TABLE "node_monitor" CASCADE;
 CREATE TABLE "node_monitor" (
   "mac" macaddr NOT NULL,
   "active" boolean,
@@ -191,6 +205,7 @@ CREATE TABLE "node_monitor" (
 --
 -- Table: node_nbt.
 --
+DROP TABLE "node_nbt" CASCADE;
 CREATE TABLE "node_nbt" (
   "mac" macaddr NOT NULL,
   "ip" inet,
@@ -207,6 +222,7 @@ CREATE TABLE "node_nbt" (
 --
 -- Table: node_wireless.
 --
+DROP TABLE "node_wireless" CASCADE;
 CREATE TABLE "node_wireless" (
   "mac" macaddr NOT NULL,
   "uptime" integer,
@@ -225,6 +241,7 @@ CREATE TABLE "node_wireless" (
 --
 -- Table: oui.
 --
+DROP TABLE "oui" CASCADE;
 CREATE TABLE "oui" (
   "oui" character varying(8) NOT NULL,
   "company" text,
@@ -234,6 +251,7 @@ CREATE TABLE "oui" (
 --
 -- Table: process.
 --
+DROP TABLE "process" CASCADE;
 CREATE TABLE "process" (
   "controller" integer NOT NULL,
   "device" inet NOT NULL,
@@ -246,6 +264,7 @@ CREATE TABLE "process" (
 --
 -- Table: sessions.
 --
+DROP TABLE "sessions" CASCADE;
 CREATE TABLE "sessions" (
   "id" character(32) NOT NULL,
   "creation" timestamp DEFAULT current_timestamp,
@@ -256,6 +275,7 @@ CREATE TABLE "sessions" (
 --
 -- Table: subnets.
 --
+DROP TABLE "subnets" CASCADE;
 CREATE TABLE "subnets" (
   "net" cidr NOT NULL,
   "creation" timestamp DEFAULT current_timestamp,
@@ -264,8 +284,20 @@ CREATE TABLE "subnets" (
 );
 
 --
+-- Table: topology.
+--
+DROP TABLE "topology" CASCADE;
+CREATE TABLE "topology" (
+  "dev1" inet NOT NULL,
+  "port1" text NOT NULL,
+  "dev2" inet NOT NULL,
+  "port2" text NOT NULL
+);
+
+--
 -- Table: user_log.
 --
+DROP TABLE "user_log" CASCADE;
 CREATE TABLE "user_log" (
   "entry" serial NOT NULL,
   "username" character varying(50),
@@ -278,6 +310,7 @@ CREATE TABLE "user_log" (
 --
 -- Table: users.
 --
+DROP TABLE "users" CASCADE;
 CREATE TABLE "users" (
   "username" character varying(50) NOT NULL,
   "password" text,
@@ -294,6 +327,7 @@ CREATE TABLE "users" (
 --
 -- Table: device_vlan.
 --
+DROP TABLE "device_vlan" CASCADE;
 CREATE TABLE "device_vlan" (
   "ip" inet NOT NULL,
   "vlan" integer NOT NULL,
@@ -307,6 +341,7 @@ CREATE INDEX "device_vlan_idx_ip" on "device_vlan" ("ip");
 --
 -- Table: device_ip.
 --
+DROP TABLE "device_ip" CASCADE;
 CREATE TABLE "device_ip" (
   "ip" inet NOT NULL,
   "alias" inet NOT NULL,
@@ -323,6 +358,7 @@ CREATE INDEX "device_ip_idx_ip_port" on "device_ip" ("ip", "port");
 --
 -- Table: device_port.
 --
+DROP TABLE "device_port" CASCADE;
 CREATE TABLE "device_port" (
   "ip" inet NOT NULL,
   "port" text NOT NULL,
@@ -353,6 +389,7 @@ CREATE INDEX "device_port_idx_remote_ip" on "device_port" ("remote_ip");
 --
 -- Table: device_port_vlan.
 --
+DROP TABLE "device_port_vlan" CASCADE;
 CREATE TABLE "device_port_vlan" (
   "ip" inet NOT NULL,
   "port" text NOT NULL,
@@ -360,6 +397,7 @@ CREATE TABLE "device_port_vlan" (
   "native" boolean DEFAULT false NOT NULL,
   "creation" timestamp DEFAULT current_timestamp,
   "last_discover" timestamp DEFAULT current_timestamp,
+  "vlantype" text,
   PRIMARY KEY ("ip", "port", "vlan")
 );
 CREATE INDEX "device_port_vlan_idx_ip" on "device_port_vlan" ("ip");
@@ -369,6 +407,7 @@ CREATE INDEX "device_port_vlan_idx_ip_vlan" on "device_port_vlan" ("ip", "vlan")
 --
 -- Table: node.
 --
+DROP TABLE "node" CASCADE;
 CREATE TABLE "node" (
   "mac" macaddr NOT NULL,
   "switch" inet NOT NULL,
