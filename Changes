@@ -3,17 +3,19 @@
   [NEW FEATURES]
 
   * Network Map now shows all device neighbors and allows click-through nav
+  * Add new netdisco-daemon to handle port_control actions
 
   [ENHANCEMENTS]
 
   * eradicate checks for dns column in node_ip table - now assumed to be there
   * remove .pl from script names
+  * no longer deploy FK constraints with DB schema as they upset legacy netdisco.pm
 
   [BUG FIXES]
 
   * port cotrol user log check now looks for all actions
   * node search switchport link shows connected nodes again
-  * no longer deploy FK constraints with DB schema as they upset legacy netdisco.pm
+  * show device IP in search results when DNS is not available
 
 0.7 - 2012-11-25
 
