@@ -38,6 +38,10 @@ install Perl dependencies into a custom library path:
      DBIx::Class::Helper::Row::SubClass \
      SQL::Translator \
      Dancer::Plugin::DBIC \
+     Daemon::Generic \
+     Config::Tiny \
+     File::Slurp \
+     SNMP::Info \
      NetAddr::IP \
      Net::MAC \
      List::MoreUtils \
