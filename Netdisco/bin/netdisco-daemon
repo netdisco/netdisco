@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use Dancer ':script';
+use Dancer ':syntax :script';
 use Dancer::Plugin::DBIC 'schema';
 
 # add dispatch methods for each port control action
@@ -28,9 +28,6 @@ sub gd_preconfig {
   $config->{loc} = {
     sleep_time => 5,
   };
-
-  # store for later access
-  var(nd_config => $config);
 
   return (); # important
 }

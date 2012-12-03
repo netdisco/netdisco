@@ -1,7 +1,7 @@
 package Netdisco::Util;
 
-use strict;
-use warnings FATAL => 'all';
+use Dancer qw/:syntax :script/;
+use Dancer::Plugin::DBIC 'schema';
 
 use SNMP::Info;
 use Config::Tiny;
@@ -26,6 +26,9 @@ sub load_nd_config {
       $config = Config::Tiny->new()->read_string($config_content);
       die (Config::Tiny->errstr ."\n") if !defined $config;
   }
+
+  # store for later access
+  var(nd_config => $config);
 
   return $config;
 }

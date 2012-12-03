@@ -1,8 +1,5 @@
 package Netdisco::PortControl;
 
-use strict;
-use warnings FATAL => 'all';
-
 use Netdisco::Util ':port_control';
 use Try::Tiny;
 
