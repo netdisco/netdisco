@@ -1,19 +1,99 @@
 package Netdisco::Util;
 
+use strict;
+use warnings FATAL => 'all';
+
+use SNMP::Info;
+use Config::Tiny;
+use File::Slurp;
+use Try::Tiny;
+
+use base 'Exporter';
+our @EXPORT = ();
+our @EXPORT_OK = qw/load_nd_config get_device snmp_connect sort_port/;
+our %EXPORT_TAGS = (port_control => [qw/get_device snmp_connect/]);
+
+sub load_nd_config {
+  my $file = shift or die "missing netdisco config file name.\n";
+  my $config = {};
+
+  if (-e $file) {
+      # read file and alter line continuations to be single lines
+      my $config_content = read_file($file);
+      $config_content =~ s/\\\n//sg;
+
+      # parse config naively as .ini
+      $config = Config::Tiny->new()->read_string($config_content);
+      die (Config::Tiny->errstr ."\n") if !defined $config;
+  }
+
+  return $config;
+}
+
+sub get_device {
+  my $ip = shift;
+
+  my $alias = schema('netdisco')->resultset('DeviceIp')
+    ->search({alias => $ip})->first;
+  return if not eval { $alias->ip };
+
+  return schema('netdisco')->resultset('Device')
+    ->find({ip => $alias->ip});
+}
+
+sub build_mibdirs {
+  my $nd_config = var('nd_config')
+    or die "Cannot call build_mibdirs without Dancer and nd_config.\n";
+
+  my $mibhome  = $nd_config->{_}->{mibhome};
+  (my $mibdirs = $nd_config->{_}->{mibdirs}) =~ s/\s+//g;
+
+  $mibdirs =~ s/\$mibhome/$mibhome/g;
+  return [ split /,/, $mibdirs ];
+}
+
+sub snmp_connect {
+  my $ip = shift;
+  my $nd_config = var('nd_config')
+    or die "Cannot call snmp_connect without Dancer and nd_config.\n";
+
+  # get device details from db
+  my $device = get_device($ip)
+    or return ();
+
+  # TODO: really only supporing v2c at the moment
+  my %snmp_args = (
+    DestHost => $device->ip,
+    Version => ($device->snmp_ver || $nd_config->{_}->{snmpver} || 2),
+    Retries => ($nd_config->{_}->{snmpretries} || 2),
+    Timeout => ($nd_config->{_}->{snmptimeout} || 1000000),
+    MibDirs => build_mibdirs(),
+    AutoSpecify => 1,
+    Debug => ($ENV{INFO_TRACE} || 0),
+  );
+
+  (my $comm = $nd_config->{_}->{community_rw}) =~ s/\s+//g;
+  my @communities = split /,/, $comm;
+
+  my $info = undef;
+  COMMUNITY: foreach my $c (@communities) {
+      try {
+          $info = SNMP::Info->new(%snmp_args, Community => $c);
+          last COMMUNITY if (
+            $info
+            and (not defined $info->error)
+            and length $info->uptime
+          );
+      };
+  }
+
+  return $info;
+}
+
 =head2 sort_port( $a, $b )
 
-Sort port names with the following formatting types:
-
-    A5
-    5
-    FastEthernet0/1
-    FastEthernet0/1-atm
-    Slot: 0 Port: 15 Gigabit
-    5.5
-    Port:3
-
-Interface is as Perl's own C<sort> - two input args and an integer return
-value. Code taken from netdisco.pm.
+Sort port names of various types used by device vendors. Interface is as
+Perl's own C<sort> - two input args and an integer return value.
 
 =cut
 

@@ -1,19 +1,14 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings FATAL => 'all';
-
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
-use Netdisco::DB;
-use SNMP::Info;
+# add dispatch methods for each port control action
+use base 'Netdisco::PortControl';
 
 use Daemon::Generic::While1;
-use Config::Tiny;
-use File::Slurp;
+use Netdisco::Util 'load_nd_config';
 use Try::Tiny;
-use feature 'say';
 
 newdaemon(
   progname => 'netdisco-daemon',
@@ -24,132 +19,24 @@ newdaemon(
 
 sub gd_preconfig {
   my $self = shift;
-  my $config = {};
+  my $config = load_nd_config($self->{configfile});
 
-  if (-e $self->{configfile}) {
-      # read file and alter line continuations to be single lines
-      my $config_content = read_file($self->{configfile});
-      $config_content =~ s/\\\n//sg;
-
-      # parse config naively as .ini
-      $config = Config::Tiny->new()->read_string($config_content);
-      $self->gd_error(Config::Tiny->errstr) unless defined $config;
-  }
-
-  $self->gd_error('No read-write community string has been set.')
+  $self->gd_error("No read-write community string has been set.")
     unless length $config->{_}->{community_rw};
-
-  # store for later access
-  var(nd_config => $config);
 
   # add local settings
   $config->{loc} = {
     sleep_time => 5,
   };
 
+  # store for later access
+  var(nd_config => $config);
+
   return (); # important
 }
 
-sub get_device {
-  my ($self, $device) = @_;
-
-  my $alias = schema('netdisco')->resultset('DeviceIp')
-    ->search({alias => $device})->first;
-  return if not eval { $alias->ip };
-
-  return schema('netdisco')->resultset('Device')
-    ->find({ip => $alias->ip});
-}
-
-sub build_mibdirs {
-  my $nd_config = var('nd_config');
-
-  my $mibhome  = $nd_config->{_}->{mibhome};
-  (my $mibdirs = $nd_config->{_}->{mibdirs}) =~ s/\s+//g;
-
-  $mibdirs =~ s/\$mibhome/$mibhome/g;
-  return [ split /,/, $mibdirs ];
-}
-
-sub snmp_connect {
-  my ($self, $device) = @_;
-  my $nd_config = var('nd_config');
-
-  # TODO: really only supporing v2c at the moment
-  my %snmp_args = (
-    DestHost => $device->ip,
-    Version => ($device->snmp_ver || $nd_config->{_}->{snmpver} || 2),
-    Retries => ($nd_config->{_}->{snmpretries} || 2),
-    Timeout => ($nd_config->{_}->{snmptimeout} || 1000000),
-    MibDirs => build_mibdirs(),
-    AutoSpecify => 1,
-    Debug => ($ENV{INFO_TRACE} || 0),
-  );
-
-  (my $comm = $nd_config->{_}->{community_rw}) =~ s/\s+//g;
-  my @communities = split /,/, $comm;
-
-  my $info = undef;
-  COMMUNITY: foreach my $c (@communities) {
-      try {
-          $info = SNMP::Info->new(%snmp_args, Community => $c);
-          last COMMUNITY if (
-            $info
-            and (not defined $info->error)
-            and length $info->uptime
-          );
-      };
-  }
-
-  return $info;
-}
-
-sub set_location {
-  my ($self, $job, $device, $info) = @_;
-  my $location = ($job->subaction || '');
-
-  try {
-      my $rv = $info->set_location($location);
-      if (!defined $rv) {
-          my $log = sprintf 'Failed to set location on [%s]: %s',
-            $job->device, ($info->error || '');
-          return ('error', $log);
-      }
-
-      # double check
-      $info->clear_cache;
-      my $new_location = ($info->location || '');
-      if ($new_location ne $location) {
-          my $log = sprintf 'Failed to update location on [%s] to [%s]',
-            $job->device, ($location);
-          return ('error', $log);
-      }
-
-      # update netdisco DB
-      $device->update({location => $location});
-
-      my $log = sprintf 'Updated location on [%s] to [%s]',
-        $job->device, $location;
-      return ('done', $log);
-  }
-  catch {
-      return( 'error',
-        (sprintf 'Failed to update location on [%s]: %s', $job->device, $_)
-      );
-  };
-}
-
-sub do_job {
+sub dispatch {
   my ($self, $job) = @_;
-  my $nd_config = var('nd_config');
-
-  # get device details from db
-  my $device = $self->get_device($job->device)
-    or return ();
-
-  # snmp connect using rw community
-  my $info = $self->snmp_connect($device)
-    or return ();
 
   # do update
   my %dispatch = (
@@ -160,7 +47,7 @@ sub do_job {
     or return ();
 
   # return results
-  return $self->$target($job, $device, $info);
+  return $self->$target($job);
 }
 
 sub gd_run_body {
@@ -216,7 +103,7 @@ sub gd_run_body {
       };
 
       # do job
-      my ($status, $log) = $self->do_job($job);
+      my ($status, $log) = $self->dispatch($job);
 
       # revert to queued status if we failed to connect to device
       if (not $status) {
