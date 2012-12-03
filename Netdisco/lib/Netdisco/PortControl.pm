@@ -20,7 +20,8 @@ sub _set_generic {
   try {
       # snmp connect using rw community
       my $info = snmp_connect($ip)
-        or return ();
+        or return ('error',
+          sprintf 'Failed to connect to device [%s] to update %s', $ip, $slot);
 
       my $method = 'set_'. $slot;
       my $rv = $info->$method($data);
@@ -42,7 +43,9 @@ sub _set_generic {
 
       # get device details from db
       my $device = get_device($ip)
-        or return ();
+        or return ('error',
+          sprintf 'Updated %s on [%s] to [%s] but failed to update database',
+            $slot, $ip, $data);
 
       # update netdisco DB
       $device->update({$slot => $data});
