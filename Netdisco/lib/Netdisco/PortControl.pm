@@ -31,11 +31,11 @@ sub _set_generic {
           return ('error', $log);
       }
 
-      # double check
+      # confirm the set happened
       $info->clear_cache;
       my $new_data = ($info->$slot || '');
       if ($new_data ne $data) {
-          my $log = sprintf 'Failed to update %s on [%s] to [%s]',
+          my $log = sprintf 'Verify of %s update failed on [%s]',
             $slot, $ip, $data;
           return ('error', $log);
       }
