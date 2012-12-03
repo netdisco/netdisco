@@ -12,11 +12,11 @@ ajax '/ajax/portcontrol' => sub {
           (param('action') || ''), (param('value') || '');
 
         my %action_map = (
-            'location' => 'location',
-            'contact'  => 'contact',
-            'c_port'   => 'portcontrol',
-            'c_name'   => 'portname',
-            'c_vlan'   => 'vlan',
+          'location' => 'location',
+          'contact'  => 'contact',
+          'c_port'   => 'portcontrol',
+          'c_name'   => 'portname',
+          'c_vlan'   => 'vlan',
         );
 
         my $action = $action_map{ param('field') };
@@ -25,14 +25,14 @@ ajax '/ajax/portcontrol' => sub {
           : param('value'));
 
         schema('netdisco')->resultset('Admin')->create({
-            device => param('device'),
-            port => param('port'),
-            action => $action,
-            subaction => $subaction,
-            status => 'queued',
-            username => session('user'),
-            userip => request->remote_address,
-            log => $log,
+          device => param('device'),
+          port => param('port'),
+          action => $action,
+          subaction => $subaction,
+          status => 'queued',
+          username => session('user'),
+          userip => request->remote_address,
+          log => $log,
         });
     }
     catch {
@@ -54,8 +54,14 @@ ajax '/ajax/userlog' => sub {
     });
 
     my %status = (
-        'done'  => $rs->search({status => 'done'})->count(),
-        'error' => $rs->search({status => 'error'})->count(),
+      'done'  => [
+        map {s/\[\]/&lt;empty&gt;/; $_}
+        $rs->search({status => 'done'})->get_column('log')->all
+      ],
+      'error' => [
+        map {s/\[\]/&lt;empty&gt;/; $_}
+        $rs->search({status => 'error'})->get_column('log')->all
+      ],
     );
 
     content_type('application/json');

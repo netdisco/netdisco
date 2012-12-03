@@ -30,18 +30,12 @@ function port_control (e) {
     ,success: function(data) {
       // console.log(data);
 
-      if (data['error'] == 1 ) {
-        toastr.error('1 recent failed change request');
-      }
-      else if (data['error'] > 1) {
-        toastr.error(data['error'] + ' recent failed change requests');
+      for (var i = 0; i < data['error'].length; i++) {
+        toastr.error(data['error'][i], 'Failed Change Request');
       }
 
-      if (data['done'] == 1 ) {
-        toastr.success('1 recent successful change request');
-      }
-      else if (data['done'] > 1) {
-        toastr.success(data['done'] + ' recent successful change requests');
+      for (var i = 0; i < data['done'].length; i++) {
+        toastr.success(data['done'][i], 'Successful Change Request');
       }
 
       // Schedule next request when the current one's complete
