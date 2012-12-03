@@ -3,6 +3,7 @@ package Netdisco::Util;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use NetAddr::IP::Lite;
 use SNMP::Info;
 use Config::Tiny;
 use File::Slurp;
@@ -10,8 +11,42 @@ use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/load_nd_config get_device snmp_connect sort_port/;
+our @EXPORT_OK = qw/
+  is_discoverable
+  load_nd_config
+  get_device
+  snmp_connect
+  sort_port
+/;
 our %EXPORT_TAGS = (port_control => [qw/get_device snmp_connect/]);
+
+sub is_discoverable {
+  my $ip = shift;
+
+  my $device = NetAddr::IP::Lite->new($ip) or return 0;
+  my $discover_no   = var('nd_config')->{_}->{discover_no};
+  my $discover_only = var('nd_config')->{_}->{discover_only};
+
+  if (length $discover_no) {
+      my @d_no = split /,\s*/, $discover_no;
+      foreach my $item (@d_no) {
+          my $ip = NetAddr::IP::Lite->new($item) or return 0;
+          return 0 if $ip->contains($device);
+      }
+  }
+
+  if (length $discover_only) {
+      my $okay = 0;
+      my @d_only = split /,\s*/, $discover_only;
+      foreach my $item (@d_only) {
+          my $ip = NetAddr::IP::Lite->new($item) or return 0;
+          ++$okay if $ip->contains($device);
+      }
+      return 0 if not $okay;
+  }
+
+  return 1;
+}
 
 sub load_nd_config {
   my $file = shift or die "missing netdisco config file name.\n";
@@ -45,11 +80,8 @@ sub get_device {
 }
 
 sub build_mibdirs {
-  my $nd_config = var('nd_config')
-    or die "Cannot call build_mibdirs without Dancer and nd_config.\n";
-
-  my $mibhome  = $nd_config->{_}->{mibhome};
-  (my $mibdirs = $nd_config->{_}->{mibdirs}) =~ s/\s+//g;
+  my $mibhome  = var('nd_config')->{_}->{mibhome};
+  (my $mibdirs = var('nd_config')->{_}->{mibdirs}) =~ s/\s+//g;
 
   $mibdirs =~ s/\$mibhome/$mibhome/g;
   return [ split /,/, $mibdirs ];
@@ -57,8 +89,7 @@ sub build_mibdirs {
 
 sub snmp_connect {
   my $ip = shift;
-  my $nd_config = var('nd_config')
-    or die "Cannot call snmp_connect without Dancer and nd_config.\n";
+  my $nd_config = var('nd_config')->{_};
 
   # get device details from db
   my $device = get_device($ip)
@@ -67,15 +98,15 @@ sub snmp_connect {
   # TODO: really only supporing v2c at the moment
   my %snmp_args = (
     DestHost => $device->ip,
-    Version => ($device->snmp_ver || $nd_config->{_}->{snmpver} || 2),
-    Retries => ($nd_config->{_}->{snmpretries} || 2),
-    Timeout => ($nd_config->{_}->{snmptimeout} || 1000000),
+    Version => ($device->snmp_ver || $nd_config->{snmpver} || 2),
+    Retries => ($nd_config->{snmpretries} || 2),
+    Timeout => ($nd_config->{snmptimeout} || 1000000),
     MibDirs => build_mibdirs(),
     AutoSpecify => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
   );
 
-  (my $comm = $nd_config->{_}->{community_rw}) =~ s/\s+//g;
+  (my $comm = $nd_config->{community_rw}) =~ s/\s+//g;
   my @communities = split /,/, $comm;
 
   my $info = undef;

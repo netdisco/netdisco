@@ -21,7 +21,7 @@
 
   [NEW FEATURES]
 
-  * Add Port Control (admin table) features
+  * Add Port Control (admin table) features to web
   * Implement DBIx::Class::Schema::Versioned support - DB schema is now versioned
   * Navbar query for device with single hit redirects to Device details page
   * Show device name on device details views (closes #30)

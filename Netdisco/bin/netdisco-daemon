@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 
-use Dancer ':syntax :script';
+use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
 # add dispatch methods for each port control action
 use base 'Netdisco::PortControl';
 
 use Daemon::Generic::While1;
-use Netdisco::Util 'load_nd_config';
+use Netdisco::Util qw/load_nd_config is_discoverable/;
 use Try::Tiny;
 
 newdaemon(
@@ -32,24 +32,8 @@ sub gd_preconfig {
   return (); # important
 }
 
-sub dispatch {
-  my ($self, $job) = @_;
-
-  # do update
-  my %dispatch = (
-    location => 'set_location',
-  );
-
-  my $target = $dispatch{$job->action}
-    or return ();
-
-  # return results
-  return $self->$target($job);
-}
-
 sub gd_run_body {
   my $self = shift;
-  my $nd_config = var('nd_config');
 
   # get all pending jobs
   my $rs = schema('netdisco')->resultset('Admin')->search({
@@ -57,71 +41,77 @@ sub gd_run_body {
     status => 'queued',
   });
 
-  JOB: while (my $job = $rs->next) {
+  while (my $job = $rs->next) {
+      my $target = 'set_'. $job->action;
+      next unless $self->can($target);
+
       # filter for discover_*
-      my $device = NetAddr::IP::Lite->new($job->device) or next JOB;
+      next unless is_discoverable($job->device);
 
-      if (length $nd_config->{_}->{discover_no}) {
-          my @d_no = split /,\s*/, $nd_config->{_}->{discover_no};
-          foreach my $item (@d_no) {
-              my $ip = NetAddr::IP::Lite->new($item) or next JOB;
-              next JOB if $ip->contains($device);
-          }
-      }
-
-      if (length $nd_config->{_}->{discover_only}) {
-          my $okay = 0;
-          my @d_only = split /,\s*/, $nd_config->{_}->{discover_only};
-          foreach my $item (@d_only) {
-              my $ip = NetAddr::IP::Lite->new($item) or next JOB;
-              ++$okay if $ip->contains($device);
-          }
-          next JOB if not $okay;
-      }
-
-      # lock db table, check job state is still queued, update to running
-      try {
-          my $status_updated = schema('netdisco')->txn_do(sub {
-              my $row = schema('netdisco')->resultset('Admin')->find(
-                {job => $job->job},
-                {for => 'update'}
-              );
-
-              return 0 if $row->status ne 'queued';
-              $row->update({status => 'running', started => \'now()'});
-              return 1;
-          });
-
-          next JOB if not $status_updated;
-      }
-      catch {
-          warn "error updating job status: $_\n";
-          next JOB;
-      };
+      # mark job as running
+      next unless $self->lock_job($job);
 
       # do job
-      my ($status, $log) = $self->dispatch($job);
+      my ($status, $log) = $self->$target($job);
 
-      # revert to queued status if we failed to connect to device
+      # revert to queued status if we failed to action the job
       if (not $status) {
-          try {
-              schema('netdisco')->resultset('Admin')
-                ->find($job->job)
-                ->update({status => 'queued', started => undef});
-          }
-          catch {  warn "error updating job: $_\n" };
+          $self->revert_job($job->job);
       }
       else {
           # update job state to done/error with log
-          try {
-              schema('netdisco')->resultset('Admin')
-                ->find($job->job)
-                ->update({status => $status, log => $log, finished => \'now()'});
-          }
-          catch {  warn "error updating job: $_\n" };
+          $self->close_job($job->job, $status, $log);
       }
   }
 
-  $self->gd_sleep( $nd_config->{loc}->{sleep_time} );
+  $self->gd_sleep( var('nd_config')->{loc}->{sleep_time} );
+}
+
+sub revert_job {
+  my ($self, $id) = @_;
+
+  try {
+      schema('netdisco')->resultset('Admin')
+        ->find($id)
+        ->update({status => 'queued', started => undef});
+  }
+  catch {  warn "error reverting job: $_\n" };
+}
+
+sub close_job {
+  my ($self, $id, $status, $log) = @_;
+
+  try {
+      schema('netdisco')->resultset('Admin')
+        ->find($id)
+        ->update({status => $status, log => $log, finished => \'now()'});
+  }
+  catch {  warn "error closing job: $_\n" };
+}
+
+sub lock_job {
+  my ($self, $job) = @_;
+
+  # lock db table, check job state is still queued, update to running
+  try {
+      my $status_updated = schema('netdisco')->txn_do(sub {
+          my $row = schema('netdisco')->resultset('Admin')->find(
+            {job => $job->job},
+            {for => 'update'}
+          );
+
+          return 0 if $row->status ne 'queued';
+          $row->update({status => 'running', started => \'now()'});
+          return 1;
+      });
+
+      return 0 if not $status_updated;
+  }
+  catch {
+      warn "error locking job: $_\n";
+      return 0;
+  };
+
+  return 1;
 }
 
