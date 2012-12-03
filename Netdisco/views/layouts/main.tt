@@ -28,7 +28,6 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco_portcontrol.js"></script>
 
   <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
-  <link rel="stylesheet" href="[% uri_base %]/css/toastr-responsive.css"/>
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
