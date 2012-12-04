@@ -20,45 +20,38 @@ sub _set_generic {
   try {
       # snmp connect using rw community
       my $info = snmp_connect($ip)
-        or return ('error',
-          sprintf 'Failed to connect to device [%s] to update %s', $ip, $slot);
+        or return _error("Failed to connect to device [$ip] to update $slot");
 
       my $method = 'set_'. $slot;
       my $rv = $info->$method($data);
 
       if (!defined $rv) {
-          my $log = sprintf 'Failed to set %s on [%s]: %s',
-            $slot, $ip, ($info->error || '');
-          return ('error', $log);
+          return _error(sprintf 'Failed to set %s on [%s]: %s',
+                        $slot, $ip, ($info->error || ''));
       }
 
       # confirm the set happened
       $info->clear_cache;
       my $new_data = ($info->$slot || '');
       if ($new_data ne $data) {
-          my $log = sprintf 'Verify of %s update failed on [%s]',
-            $slot, $ip, $data;
-          return ('error', $log);
+          return _error("Verify of $slot update failed on [$ip]");
       }
 
       # get device details from db
       my $device = get_device($ip)
-        or return ('error',
-          sprintf 'Updated %s on [%s] to [%s] but failed to update database',
-            $slot, $ip, $data);
+        or return _error("Updated $slot on [$ip] to [$data] but failed to update DB");
 
       # update netdisco DB
       $device->update({$slot => $data});
 
-      my $log = sprintf 'Updated %s on [%s] to [%s]',
-        $slot, $ip, $data;
-      return ('done', $log);
+      return _done("Updated $slot on [$ip] to [$data]");
   }
   catch {
-      return( 'error',
-        (sprintf 'Failed to update %s on [%s]: %s', $slot, $ip, $_)
-      );
+      return _error("Failed to update $slot on [$ip]: $_");
   };
 }
+
+sub _done  { return ('done',  shift) }
+sub _error { return ('error', shift) }
 
 1;
