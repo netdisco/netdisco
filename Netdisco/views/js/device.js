@@ -72,8 +72,9 @@
       }
     });
 
-    // activate tooltips
+    // activate tooltips and popovers
     $("[rel=tooltip]").tooltip({live: true});
+    $("[rel=popover]").popover({live: true});
   }
 
   $(document).ready(function() {

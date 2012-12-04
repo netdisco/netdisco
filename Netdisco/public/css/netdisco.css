@@ -5,12 +5,6 @@ body {
   padding-top: 50px;
 }
 
-/* TODO
-::selection {
-  background: transparent;
-}
-*/
-
 /* magnifying glass icon for search box */
 .navbar_icon {
   vertical-align: sub;
