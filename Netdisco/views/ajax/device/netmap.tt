@@ -1,4 +1,4 @@
-<div id="netmaphelp" style="text-align: center;">
+<div id="netmaphelp">
 <button
   class="btn btn-small btn-info" rel="popover"
   data-title="Neighbor Map Controls"
@@ -40,7 +40,7 @@ var neighbors_data = {};
 // main SVG background, with support for pan/zoom
 var svg = d3.select("#netmap_pane").insert("svg", "#netmaphelp")
     .attr("width", winWidth - 50)
-    .attr("height", winHeight - (110 + helpHeight))
+    .attr("height", winHeight - (100 + helpHeight))
     .attr("pointer-events", "all")
   .append('g')
     .call(d3.behavior.zoom().on("zoom", redraw))

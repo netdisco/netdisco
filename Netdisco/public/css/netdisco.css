@@ -27,6 +27,11 @@ body {
   width: 100%;
 }
 
+#netmaphelp {
+  text-align: center;
+  padding-top: 5px;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
 
