@@ -12,13 +12,18 @@ use Try::Tiny;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  is_discoverable
   load_nd_config
-  get_device
+  is_discoverable
+  is_vlan_interface port_has_phone
+  get_device get_port get_iid
+  vlan_reconfig_check port_reconfig_check
   snmp_connect
   sort_port
 /;
-our %EXPORT_TAGS = (port_control => [qw/get_device snmp_connect/]);
+our %EXPORT_TAGS = (port_control => [qw/
+  get_device get_port snmp_connect
+  port_reconfig_check
+/]);
 
 =head1 Netdisco::Util
 
@@ -126,12 +131,92 @@ sub get_device {
     ->find({ip => $alias->ip});
 }
 
-sub _build_mibdirs {
-  my $mibhome  = var('nd_config')->{_}->{mibhome};
-  (my $mibdirs = var('nd_config')->{_}->{mibdirs}) =~ s/\s+//g;
+sub get_port {
+  my ($device, $portname) = @_;
 
-  $mibdirs =~ s/\$mibhome/$mibhome/g;
-  return [ split /,/, $mibdirs ];
+  # accept either ip or dbic object
+  $device = get_device($device)
+    if not ref $device;
+
+  my $port = schema('Netdisco')->resultset('DevicePort')
+    ->find({ip => $device->ip, port => $portname});
+
+  return $port;
+}
+
+sub get_iid {
+  my ($info, $port) = @_;
+
+  # accept either port name or dbic object
+  $port = $port->port if ref $port;
+
+  my $interfaces = $info->interfaces;
+  my %rev_if     = reverse %$interfaces;
+  my $iid        = $rev_if{$port};
+
+  return $iid;
+}
+
+sub is_vlan_interface {
+  my $port = shift;
+
+  my $is_vlan  = (($port->type and
+    $port->type =~ /^(53|propVirtual|l2vlan|l3ipvlan|135|136|137)$/i)
+    or ($port->port and $port->port =~ /vlan/i)
+    or ($port->name and $port->name =~ /vlan/i)) ? 1 : 0;
+
+  return $is_vlan;
+}
+
+sub port_has_phone {
+  my $port = shift;
+
+  my $has_phone = ($port->remote_type
+    and $port->remote_type =~ /ip.phone/i) ? 1 : 0;
+
+  return $has_phone;
+}
+
+sub vlan_reconfig_check {
+  my $port = shift;
+  my $ip = $port->ip;
+  my $name = $port->port;
+  my $nd_config = var('nd_config')->{_};
+
+  my $is_vlan = is_vlan_interface($port);
+
+  # vlan (routed) interface check
+  return "forbidden: [$name] is a vlan interface on [$ip]"
+    if $is_vlan;
+
+  return "forbidden: not permitted to change native vlan"
+    if not $nd_config->{vlanctl};
+
+  return;
+}
+
+sub port_reconfig_check {
+  my $port = shift;
+  my $ip = $port->ip;
+  my $name = $port->port;
+  my $nd_config = var('nd_config')->{_};
+
+  my $has_phone = has_phone($port);
+  my $is_vlan   = is_vlan_interface($port);
+
+  # uplink check
+  return "forbidden: port [$name] on [$ip] is an uplink"
+    if $port->remote_type and not $has_phone and not $nd_config->{allow_uplinks};
+
+  # phone check
+  return "forbidden: port [$name] on [$ip] is a phone"
+    if $has_phone and $nd_config->{portctl_nophones};
+
+  # vlan (routed) interface check
+  return "forbidden: [$name] is a vlan interface on [$ip]"
+    if $is_vlan and not $nd_config->{portctl_vlans};
+
+  return;
 }
 
 =head2 snmp_connect( $ip )
@@ -183,6 +268,14 @@ sub snmp_connect {
   }
 
   return $info;
+}
+
+sub _build_mibdirs {
+  my $mibhome  = var('nd_config')->{_}->{mibhome};
+  (my $mibdirs = var('nd_config')->{_}->{mibdirs}) =~ s/\s+//g;
+
+  $mibdirs =~ s/\$mibhome/$mibhome/g;
+  return [ split /,/, $mibdirs ];
 }
 
 =head2 sort_port( $a, $b )
