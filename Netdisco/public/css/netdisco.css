@@ -27,11 +27,6 @@ body {
   width: 100%;
 }
 
-#netmaphelp {
-  text-align: center;
-  padding-top: 5px;
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
 
@@ -332,6 +327,18 @@ form .clearfix.success input {
   right: 7px;
   z-index: 1;
   color: #555;
+  cursor: pointer;
+  display: none;
+}
+
+/* question mark image with popover for netmap instructions */
+#netmap_help_img {
+  position: fixed;
+  top: 160px;
+  right: 7px;
+  z-index: 1;
+  color: #555;
+  font-size: 20px;
   cursor: pointer;
   display: none;
 }
