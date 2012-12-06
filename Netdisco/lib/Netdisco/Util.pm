@@ -20,6 +20,25 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = (port_control => [qw/get_device snmp_connect/]);
 
+=head1 Netdisco::Util
+
+A set of helper subroutines to support parts of the Netdisco application.
+
+There are no default exports, however the C<:port_control> tag will export the
+C<get_device> and C<snmp_connect> subroutines.
+
+=head2 is_discoverable( $ip )
+
+Given an IP address, returns C<true> if Netdisco on this host is permitted to
+discover its configuration by the local Netdisco configuration file.
+
+The configuration items C<discover_no> and C<discover_only> are checked
+against the given IP.
+
+Returns false if the host is not permitted to discover the target device.
+
+=cut
+
 sub is_discoverable {
   my $ip = shift;
 
@@ -48,6 +67,25 @@ sub is_discoverable {
   return 1;
 }
 
+=head2 load_nd_config( $filename )
+
+Given the absolute file name of the Netdisco configuration, loads the
+configuration from disk and returns it as a Hash reference.
+
+All entries in the configuration appear under the "underscore" Hash key:
+
+ my $config = load_nd_config('/etc/netdisco/netdisco.conf');
+ say $config->{_}->{snmptimeout};
+
+In addition, the configuration is saved into the Dancer I<vars> store under
+the C<nd_config> key:
+
+ say var('nd_config')->{_}->{snmptimeout};
+
+Dies if it cannot load the configuration file.
+
+=cut
+
 sub load_nd_config {
   my $file = shift or die "missing netdisco config file name.\n";
   my $config = {};
@@ -68,6 +106,15 @@ sub load_nd_config {
   return $config;
 }
 
+=head2 get_device( $ip )
+
+Given an IP address, returns a L<DBIx::Class::Row> object for the Device in
+the Netdisco database. The IP can be for any interface on the device.
+
+Returns C<undef> if the device or interface IP is not known to Netdisco.
+
+=cut
+
 sub get_device {
   my $ip = shift;
 
@@ -79,13 +126,27 @@ sub get_device {
     ->find({ip => $alias->ip});
 }
 
-sub build_mibdirs {
+sub _build_mibdirs {
   my $mibhome  = var('nd_config')->{_}->{mibhome};
   (my $mibdirs = var('nd_config')->{_}->{mibdirs}) =~ s/\s+//g;
 
   $mibdirs =~ s/\$mibhome/$mibhome/g;
   return [ split /,/, $mibdirs ];
 }
+
+=head2 snmp_connect( $ip )
+
+Given an IP address, returns an L<SNMP::Info> instance configured for and
+connected to that device. The IP can be any on the device, and the management
+interface will be connected to.
+
+The Netdisco configuration file must have first been loaded using
+C<load_nd_config> otherwise the connection will fail (it is required for SNMP
+settings).
+
+Returns C<undef> if the connection fails.
+
+=cut
 
 sub snmp_connect {
   my $ip = shift;
@@ -101,7 +162,7 @@ sub snmp_connect {
     Version => ($device->snmp_ver || $nd_config->{snmpver} || 2),
     Retries => ($nd_config->{snmpretries} || 2),
     Timeout => ($nd_config->{snmptimeout} || 1000000),
-    MibDirs => build_mibdirs(),
+    MibDirs => _build_mibdirs(),
     AutoSpecify => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
   );
