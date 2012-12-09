@@ -55,7 +55,7 @@ sub get_port {
   $device = get_device($device)
     if not ref $device;
 
-  my $port = schema('Netdisco')->resultset('DevicePort')
+  my $port = schema('netdisco')->resultset('DevicePort')
     ->find({ip => $device->ip, port => $portname});
 
   return $port;

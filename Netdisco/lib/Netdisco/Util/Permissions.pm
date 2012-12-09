@@ -53,7 +53,7 @@ sub port_reconfig_check {
   my $ip = $port->ip;
   my $name = $port->port;
 
-  my $has_phone = has_phone($port);
+  my $has_phone = port_has_phone($port);
   my $is_vlan   = is_vlan_interface($port);
 
   # uplink check

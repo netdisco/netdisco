@@ -7,7 +7,7 @@ use Netdisco::Daemon::Actions::Util ':all';
 use namespace::clean;
 use Moo::Role;
 
-sub portcontrol {
+sub set_portcontrol {
   my ($self, $job) = @_;
 
   my $ip = $job->device;
@@ -25,7 +25,7 @@ sub portcontrol {
   my $info = snmp_connect($ip)
     or return error("Failed to connect to device [$ip] to control port");
 
-  my $iid = get_iid($port)
+  my $iid = get_iid($info, $port)
     or return error("Failed to get port ID for [$pn] from [$ip]");
 
   my $rv = $info->set_i_up_admin(lc($dir), $iid);
@@ -36,14 +36,14 @@ sub portcontrol {
   # confirm the set happened
   $info->clear_cache;
   my $state = ($info->i_up_admin($iid) || '');
-  if ($state ne $dir) {
-      return error("Verify of [$pn] port status failed on [$ip]: $state");
+  if (ref {} ne ref $state or $state->{$iid} ne $dir) {
+      return error("Verify of [$pn] port status failed on [$ip]");
   }
 
   # update netdisco DB
-  $port->device->update({up_admin => $state});
+  $port->update({up_admin => $dir});
 
-  return done("Updated [$pn] port status on [$ip] to [$state]");
+  return done("Updated [$pn] port status on [$ip] to [$dir]");
 }
 
 1;
