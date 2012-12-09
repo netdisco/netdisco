@@ -28,7 +28,7 @@ subroutines.
 =head2 is_discoverable( $ip )
 
 Given an IP address, returns C<true> if Netdisco on this host is permitted to
-discover its configuration by the local Netdisco configuration file.
+discover its configuration by the local configuration.
 
 The configuration items C<discover_no> and C<discover_only> are checked
 against the given IP.
@@ -41,21 +41,19 @@ sub is_discoverable {
   my $ip = shift;
 
   my $device = NetAddr::IP::Lite->new($ip) or return 0;
-  my $discover_no   = var('nd_config')->{_}->{discover_no};
-  my $discover_only = var('nd_config')->{_}->{discover_only};
+  my $discover_no   = setting('discover_no') || [];
+  my $discover_only = setting('discover_only') || [];
 
-  if (length $discover_no) {
-      my @d_no = split /,\s*/, $discover_no;
-      foreach my $item (@d_no) {
+  if (scalar @$discover_no) {
+      foreach my $item (@$discover_no) {
           my $ip = NetAddr::IP::Lite->new($item) or return 0;
           return 0 if $ip->contains($device);
       }
   }
 
-  if (length $discover_only) {
+  if (scalar @$discover_only) {
       my $okay = 0;
-      my @d_only = split /,\s*/, $discover_only;
-      foreach my $item (@d_only) {
+      foreach my $item (@$discover_only) {
           my $ip = NetAddr::IP::Lite->new($item) or return 0;
           ++$okay if $ip->contains($device);
       }

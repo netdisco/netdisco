@@ -84,17 +84,12 @@ Given an IP address, returns an L<SNMP::Info> instance configured for and
 connected to that device. The IP can be any on the device, and the management
 interface will be connected to.
 
-The Netdisco configuration file must have first been loaded using
-C<load_nd_config> otherwise the connection will fail (it is required for SNMP
-settings).
-
 Returns C<undef> if the connection fails.
 
 =cut
 
 sub snmp_connect {
   my $ip = shift;
-  my $nd_config = var('nd_config')->{_};
 
   # get device details from db
   my $device = get_device($ip)
@@ -103,16 +98,16 @@ sub snmp_connect {
   # TODO: really only supporing v2c at the moment
   my %snmp_args = (
     DestHost => $device->ip,
-    Version => ($device->snmp_ver || $nd_config->{snmpver} || 2),
-    Retries => ($nd_config->{snmpretries} || 2),
-    Timeout => ($nd_config->{snmptimeout} || 1000000),
-    MibDirs => _build_mibdirs(),
+    Version => ($device->snmp_ver || setting('snmpver') || 2),
+    Retries => (setting('snmpretries') || 2),
+    Timeout => (setting('snmptimeout') || 1000000),
+    MibDirs => [ _build_mibdirs() ],
     AutoSpecify => 1,
     IgnoreNetSNMPConf => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
   );
 
-  (my $comm = $nd_config->{community_rw}) =~ s/\s+//g;
+  (my $comm = setting('community_rw')) =~ s/\s+//g;
   my @communities = split /,/, $comm;
 
   my $info = undef;
@@ -131,11 +126,9 @@ sub snmp_connect {
 }
 
 sub _build_mibdirs {
-  my $mibhome  = var('nd_config')->{_}->{mibhome};
-  (my $mibdirs = var('nd_config')->{_}->{mibdirs}) =~ s/\s+//g;
-
-  $mibdirs =~ s/\$mibhome/$mibhome/g;
-  return [ split /,/, $mibdirs ];
+  # FIXME: make this cross-platform (Path::Class?)
+  return map { setting('mibhome') .'/'. $_ }
+             @{ setting('mibdirs') || [] };
 }
 
 1;

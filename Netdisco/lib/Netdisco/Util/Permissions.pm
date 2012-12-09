@@ -31,7 +31,6 @@ sub vlan_reconfig_check {
   my $port = shift;
   my $ip = $port->ip;
   my $name = $port->port;
-  my $nd_config = var('nd_config')->{_};
 
   my $is_vlan = is_vlan_interface($port);
 
@@ -40,7 +39,7 @@ sub vlan_reconfig_check {
     if $is_vlan;
 
   return "forbidden: not permitted to change native vlan"
-    if not $nd_config->{vlanctl};
+    if not setting('vlanctl');
 
   return;
 }
@@ -53,22 +52,21 @@ sub port_reconfig_check {
   my $port = shift;
   my $ip = $port->ip;
   my $name = $port->port;
-  my $nd_config = var('nd_config')->{_};
 
   my $has_phone = has_phone($port);
   my $is_vlan   = is_vlan_interface($port);
 
   # uplink check
   return "forbidden: port [$name] on [$ip] is an uplink"
-    if $port->remote_type and not $has_phone and not $nd_config->{allow_uplinks};
+    if $port->remote_type and not $has_phone and not setting('allow_uplinks');
 
   # phone check
   return "forbidden: port [$name] on [$ip] is a phone"
-    if $has_phone and $nd_config->{portctl_nophones};
+    if $has_phone and setting('portctl_nophones');
 
   # vlan (routed) interface check
   return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan and not $nd_config->{portctl_vlans};
+    if $is_vlan and not setting('portctl_vlans');
 
   return;
 }

@@ -15,21 +15,15 @@ with "Netdisco::Daemon::Actions::$_"
 newdaemon(
   progname => 'netdisco-daemon',
   ($> != 0 ? (pidbase => './') : ()),
-  configfile => '/etc/netdisco/netdisco.conf',
   logpriority => 'daemon.info',
 );
 
 sub gd_preconfig {
   my $self = shift;
-  my $config = load_nd_config($self->{configfile});
 
+  # FIXME: only for Actions should this be checked
   $self->gd_error("No read-write community string has been set.")
-    unless length $config->{_}->{community_rw};
-
-  # add local settings
-  $config->{loc} = {
-    sleep_time => 5,
-  };
+    unless length setting('community_rw');
 
   return (); # important
 }
@@ -66,7 +60,7 @@ sub gd_run_body {
       }
   }
 
-  $self->gd_sleep( var('nd_config')->{loc}->{sleep_time} );
+  $self->gd_sleep( setting('daemon_sleep_time') || 5 );
 }
 
 sub revert_job {
