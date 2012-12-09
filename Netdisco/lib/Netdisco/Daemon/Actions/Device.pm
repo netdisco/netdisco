@@ -8,16 +8,16 @@ use Moo::Role;
 
 sub set_location {
   my ($self, $job) = @_;
-  return $self->_set_device_generic($job->device, 'location', $job->subaction);
+  return _set_device_generic($job->device, 'location', $job->subaction);
 }
 
 sub set_contact {
   my ($self, $job) = @_;
-  return $self->_set_device_generic($job->device, 'contact', $job->subaction);
+  return _set_device_generic($job->device, 'contact', $job->subaction);
 }
 
 sub _set_device_generic {
-  my ($self, $ip, $slot, $data) = @_;
+  my ($ip, $slot, $data) = @_;
   $data ||= '';
 
   # snmp connect using rw community
