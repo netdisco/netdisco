@@ -44,6 +44,8 @@ install Perl dependencies into a custom library path:
      SNMP::Info \
      NetAddr::IP \
      Net::MAC \
+     namespace::clean \
+     Moo \
      List::MoreUtils \
      Net::DNS \
      Socket6 \
