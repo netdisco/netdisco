@@ -108,6 +108,7 @@ sub snmp_connect {
     Timeout => ($nd_config->{snmptimeout} || 1000000),
     MibDirs => _build_mibdirs(),
     AutoSpecify => 1,
+    IgnoreNetSNMPConf => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
   );
 
