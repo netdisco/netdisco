@@ -39,11 +39,8 @@ sub _set_device_generic {
       return error("Verify of $slot update failed on [$ip]: $new_data");
   }
 
-  # get device details from db
-  my $device = get_device($ip)
-    or return error("Updated $slot on [$ip] to [$data] but failed to update DB");
-
   # update netdisco DB
+  my $device = get_device($ip);
   $device->update({$slot => $data});
 
   return done("Updated $slot on [$ip] to [$data]");

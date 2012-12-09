@@ -40,12 +40,8 @@ sub portcontrol {
       return error("Verify of [$pn] port status failed on [$ip]: $state");
   }
 
-  # get device details from db
-  my $device = $port->device
-    or return error("Updated [$pn] port status on [$ip] but failed to update DB");
-
   # update netdisco DB
-  $device->update({up_admin => $state});
+  $port->device->update({up_admin => $state});
 
   return done("Updated [$pn] port status on [$ip] to [$state]");
 }

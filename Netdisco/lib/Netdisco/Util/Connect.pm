@@ -107,11 +107,8 @@ sub snmp_connect {
     Debug => ($ENV{INFO_TRACE} || 0),
   );
 
-  (my $comm = setting('community_rw')) =~ s/\s+//g;
-  my @communities = split /,/, $comm;
-
   my $info = undef;
-  COMMUNITY: foreach my $c (@communities) {
+  COMMUNITY: foreach my $c (@{ setting('community_rw') || []}) {
       try {
           $info = SNMP::Info->new(%snmp_args, Community => $c);
           last COMMUNITY if (

@@ -18,15 +18,8 @@ newdaemon(
   logpriority => 'daemon.info',
 );
 
-sub gd_preconfig {
-  my $self = shift;
-
-  # FIXME: only for Actions should this be checked
-  $self->gd_error("No read-write community string has been set.")
-    unless length setting('community_rw');
-
-  return (); # important
-}
+# do not remove - must be redefined
+sub gd_preconfig { return () }
 
 sub gd_run_body {
   my $self = shift;
@@ -48,7 +41,11 @@ sub gd_run_body {
       next unless $self->lock_job($job);
 
       # do job
-      my ($status, $log) = $self->$target($job);
+      my ($status, $log);
+      try {
+          ($status, $log) = $self->$target($job);
+      }
+      catch {  warn "error running job: $_\n" };
 
       # revert to queued status if we failed to action the job
       if (not $status) {
