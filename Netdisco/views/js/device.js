@@ -2,7 +2,7 @@
   // ajax content is loaded
   var path = 'device';
 
-  function inner_view_processing() {
+  function inner_view_processing(tab) {
     // VLANs column list collapser trigger
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('.nd_collapse_vlans').toggle(function() {
@@ -71,6 +71,14 @@
         dirty = true;
       }
     });
+
+    // show or hide netmap help button
+    if (tab == 'netmap') {
+      $('#netmap_help_img').show();
+    }
+    else {
+      $('#netmap_help_img').hide();
+    }
 
     // activate tooltips and popovers
     $("[rel=tooltip]").tooltip({live: true});

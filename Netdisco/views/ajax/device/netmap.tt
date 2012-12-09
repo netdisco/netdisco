@@ -1,8 +1,5 @@
 <script>
 
-// show our help icon
-d3.select('#netmap_help_img').style('display', 'inline');
-
 var winHeight = window.innerHeight;
 var winWidth  = window.innerWidth;
 
