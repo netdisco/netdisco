@@ -2,11 +2,11 @@
             <input name="q" value="[% params.q %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
-                rel="tooltip" data-placement="top" data-offset="3" title="Show all Ports">
+                rel="tooltip" data-placement="top" data-offset="3" data-title="Show all Ports">
                 <img src="[% uri_base %]/images/tango_sweep.png"/></a>
               <input id="nd_port_query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f %]" type="text"
-                rel="tooltip" data-placement="left" data-offset="5" title="Filter by Port, Name or VLAN"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_legend">
@@ -35,6 +35,9 @@
                   </li>
                   <li>
                     <span class="label label-warning">A</span>&nbsp; Archived Data
+                  </li>
+                  <li>
+                    <span class="label"><i class="icon-refresh"></i></span>&nbsp; Click "Update View"
                   </li>
                 </ul>
               </div>
@@ -79,7 +82,7 @@
                   </li>
                   <li>
                     <span rel="tooltip" data-placement="left"
-                      data-offset="5" title="Free if Down for this period of time">
+                      data-offset="5" data-title="Free if Down for this period of time">
                     <select id="nd_days_select" name="age_num">
                       [% FOREACH count IN [1..32] %]
                       <option[% ' selected="selected"' IF params.age_num == count %]>[% count %]</option>

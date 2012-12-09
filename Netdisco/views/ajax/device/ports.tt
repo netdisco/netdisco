@@ -32,13 +32,13 @@
         data-field="c_port" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
         <i class="icon-hand-down nd_hand_icon"
           rel="tooltip" data-placement="top" data-offset="3"
-          data-animation="" title="Click to Disable"></i>
+          data-animation="" data-title="Click to Disable"></i>
       [% ELSE %]
       <td class="nd_editable_cell" data-action="up"
         data-field="c_port" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
         <i class="icon-hand-up nd_hand_icon"
           rel="tooltip" data-placement="top" data-offset="3"
-          data-animation="" title="Click to Enable"></i>
+          data-animation="" data-title="Click to Enable"></i>
       [% END %]
       [% ELSE %]
       <td>

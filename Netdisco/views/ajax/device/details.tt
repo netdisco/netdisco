@@ -17,7 +17,7 @@
       </td>
       [% ELSE %]
       <td>
-        <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
+        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
         href="[% vars.search_device %]&location=[% d.location | uri %]">[% d.location %]</a>
       </td>
       [% END %]
@@ -40,10 +40,10 @@
     <tr>
       <td>Vendor / Model</td>
       <td>
-        <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
+        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
         href="[% vars.search_device %]&vendor=[% d.vendor | uri %]">[% d.vendor %]</a>
         /
-        <a rel="tooltip" data-placement="top" data-offset="5" title="Find Similar Devices"
+        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
         href="[% vars.search_device %]&model=[% d.model | uri %]">[% d.model %]</a>
       </td>
     </tr>
@@ -51,7 +51,7 @@
       <td>OS / Version</td>
       <td>[% d.os %] /
         <a rel="tooltip" data-placement="top" data-offset="5"
-        title="Find Similar Devices"
+          data-title="Find Similar Devices"
           href="[% vars.search_device %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver %]</a>
       </td>
     </tr>

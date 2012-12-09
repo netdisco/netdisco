@@ -1,12 +1,12 @@
 <i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
-  rel="tooltip" data-placement="left" data-offset="5" title="Show Sidebar"></i>
+  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="sidebar">
     <div class="well">
       <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
-        rel="tooltip" data-placement="left" data-offset="5" title="Hide Sidebar"></i>
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
       <i class="sidebar_pin icon-pushpin"
-        rel="tooltip" data-placement="left" data-offset="5" title="Pin Sidebar"></i>
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Pin Sidebar"></i>
       <div class="tab-content">
         [% FOREACH tab IN vars.tabs %]
         <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">

@@ -158,7 +158,15 @@ $(document).ready(function() {
   $('.sidebar_pin').click(function() {
     $('.sidebar').toggleClass('sidebar_pinned');
     $('.sidebar_pin').toggleClass('sidebar_pin_clicked');
+    // update tooltip note for current state
+    if ($('.sidebar_pin').hasClass('sidebar_pin_clicked')) {
+      $('.sidebar_pin').first().data('tooltip').options.title = 'Unpin Sidebar';
+    }
+    else {
+      $('.sidebar_pin').first().data('tooltip').options.title = 'Pin Sidebar';
+    }
   });
+
   // sidebar toggle - trigger in/out on image click()
   $('#sidebar_toggle_img_in').click(function() {
     $('.sidebar').toggle(250);

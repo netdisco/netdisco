@@ -7,7 +7,7 @@
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="DNS"
                 type="text" name="dns" value="[% params.dns %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="DNS"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="DNS"/>
             </div>
             <div class="clearfix">
               <i data-btn-for="ip" class="field_copy_icon icon-copy icon-large"></i>
@@ -15,7 +15,7 @@
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="IP Address"
                 type="text" name="ip" value="[% params.ip %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="IP Address"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="IP Address"/>
             </div>
             <div class="clearfix">
               <i data-btn-for="name" class="field_copy_icon icon-copy icon-large"></i>
@@ -23,7 +23,7 @@
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="System Name"
                 type="text" name="name" value="[% params.name %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="System Name"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="System Name"/>
             </div>
             <div class="clearfix">
               <i data-btn-for="location" class="field_copy_icon icon-copy icon-large"></i>
@@ -31,7 +31,7 @@
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="Location"
                 type="text" name="location" value="[% params.location %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="Location"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Location"/>
             </div>
             <div class="clearfix">
               <i data-btn-for="description" class="field_copy_icon icon-copy icon-large"></i>
@@ -39,12 +39,12 @@
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="Description"
                 type="text" name="description" value="[% params.description %]"
-                rel="tooltip" data-placement="left" data-offset="5" title="Description"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Description"/>
             </div>
             <div class="clearfix">
               <select class="nd_side_select" size="[% vars.model_list.size > 5 ? 5 : vars.model_list.size %]"
                 multiple="on" name="model"
-                rel="tooltip" data-placement="left" data-offset="5" title="Model"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Model"/>
                 [% FOREACH opt IN vars.model_list %]
                 <option[% ' selected="selected"' IF vars.model_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
@@ -53,7 +53,7 @@
             <div class="clearfix">
               <select class="nd_side_select" size="[% vars.os_ver_list.size > 5 ? 5 : vars.os_ver_list.size %]"
                 multiple="on" name="os_ver"
-                rel="tooltip" data-placement="left" data-offset="5" title="OS Release"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release"/>
                 [% FOREACH opt IN vars.os_ver_list %]
                 <option[% ' selected="selected"' IF vars.os_ver_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
@@ -62,7 +62,7 @@
             <div class="clearfix">
               <select class="nd_side_select" size="[% vars.vendor_list.size > 5 ? 5 : vars.vendor_list.size %]"
                 multiple="on" name="vendor"
-                rel="tooltip" data-placement="left" data-offset="5" title="Vendor"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor"/>
                 [% FOREACH opt IN vars.vendor_list %]
                 <option[% ' selected="selected"' IF vars.vendor_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
