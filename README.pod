@@ -1,21 +1,21 @@
 =head1 INTRODUCTION
 
-The content of this distribution is a new, experimental web frontend for the
-Netdisco network management tool. See L<http://netdisco.org/> for further
-information on the project.
+The content of this distribution is a the next major version of the Netdisco
+network management tool. See L<http://netdisco.org/> for further information
+on the project.
 
 If you have any trouble getting the frontend running, or it blows up in your
 face, please contact C<oliver> in the C<#netdisco> IRC channel (on freenode).
 
 =head1 INSTALLATION
 
-Download the tarball from GitHub and extract it on your system. Make sure the
-system has access to your Netdisco database.
+Clone the git repository:
 
- https://github.com/ollyg/netdisco-frontend-sandpit/tarball/master
+ git clone git://netdisco.git.sourceforge.net/gitroot/netdisco/netdisco-2
 
-Edit the C<Netdisco/environments/development.yml> file to have the correct
-credentials and settings (host name) for your own Netdisco database.
+Make sure the system has access to your Netdisco database. Edit the
+C<Netdisco/environments/development.yml> file to have the correct credentials
+and settings (host name) for your own Netdisco database.
 
 In the same file, uncomment the C<no_auth> setting if you use Apache auth, or
 simply want to use Netdisco without logging in. Currently the frontend only
@@ -75,6 +75,11 @@ latest updates, simply run the following script in this distribution:
 The script should detect what needs to be done in your database and apply the
 necessary changes. It will also add a table to keep track of what's changed,
 so that you can run the script again in the future and receive more updates.
+
+You can even run this script on a virgin, empty database. Make sure there is a
+database created for Netdisco (C<createdb>) and a PostgreSQL user who has
+rights to create tables in the databse (C<createuser>). Configure the
+C<Netdisco/environments/development.yml> file then run this script.
 
 =head1 STARTUP
 
