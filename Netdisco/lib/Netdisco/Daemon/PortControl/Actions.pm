@@ -1,4 +1,4 @@
-package Netdisco::PortControl::Actions;
+package Netdisco::Daemon::PortControl::Actions;
 
 use Netdisco::Util ':port_control';
 use Try::Tiny;
