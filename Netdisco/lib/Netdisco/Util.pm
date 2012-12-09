@@ -19,10 +19,12 @@ our @EXPORT_OK = qw/
   vlan_reconfig_check port_reconfig_check
   snmp_connect
   sort_port
+  _done _error
 /;
 our %EXPORT_TAGS = (port_control => [qw/
   get_device get_port snmp_connect
   port_reconfig_check
+  _done _error
 /]);
 
 =head1 Netdisco::Util
@@ -31,6 +33,11 @@ A set of helper subroutines to support parts of the Netdisco application.
 
 There are no default exports, however the C<:port_control> tag will export the
 C<get_device> and C<snmp_connect> subroutines.
+
+=cut
+
+sub _done  { return ('done',  shift) }
+sub _error { return ('error', shift) }
 
 =head2 is_discoverable( $ip )
 
