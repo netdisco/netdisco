@@ -5,7 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 use NetAddr::IP::Lite ':lower';
-use Netdisco::Util (); # for sort_port
+use Netdisco::Util::Web (); # for sort_port
 
 hook 'before' => sub {
     # list of port detail columns
@@ -240,7 +240,7 @@ ajax '/ajax/content/device/ports' => sub {
       if param('c_neighbors');
 
     # sort ports (empty set would be a 'no records' msg)
-    my $results = [ sort { &Netdisco::Util::sort_port($a->port, $b->port) } $set->all ];
+    my $results = [ sort { &Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
     return unless scalar @$results;
 
     content_type('text/html');

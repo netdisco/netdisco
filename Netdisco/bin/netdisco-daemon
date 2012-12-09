@@ -1,15 +1,16 @@
 #!/usr/bin/env perl
 
-use Dancer ':script';
+use Dancer qw/:moose :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-# add dispatch methods for each port control action
-use base 'Netdisco::Daemon::Actions::Device';
-use base 'Netdisco::Daemon::Actions::Port';
-
 use Daemon::Generic::While1;
-use Netdisco::Util qw/load_nd_config is_discoverable/;
+use Netdisco::Util::DeviceProperties 'is_discoverable';
 use Try::Tiny;
+use Moo;
+
+# add dispatch methods for each port control action
+with "Netdisco::Daemon::Actions::$_"
+  for (qw/Device Port/);
 
 newdaemon(
   progname => 'netdisco-daemon',
