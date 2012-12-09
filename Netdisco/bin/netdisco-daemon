@@ -4,7 +4,8 @@ use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
 # add dispatch methods for each port control action
-use base 'Netdisco::PortControl::Actions';
+use base 'Netdisco::Daemon::Actions::Device';
+use base 'Netdisco::Daemon::Actions::Port';
 
 use Daemon::Generic::While1;
 use Netdisco::Util qw/load_nd_config is_discoverable/;
