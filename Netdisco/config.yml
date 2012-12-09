@@ -1,11 +1,12 @@
-# This is the main configuration file of your Dancer app
-# env-related settings should go to environments/$env.yml
+# This is the main configuration file for Netdisco web and daemon apps
 # all the settings in this file will be loaded at Dancer's startup.
+
+# Web app env-related settings should go to environments/$env.yml
 
 # Your application's name
 appname: "Netdisco"
 
-# The default layout to use for your application (located in
+# The default web layout to use for your application (located in
 # views/layouts/main.tt)
 layout: "main"
 
@@ -14,8 +15,10 @@ layout: "main"
 # about unicode within your app when this setting is set (recommended).
 charset: "UTF-8"
 
+# web sessions stored in memory
 session: Simple
 
+# web output template settings
 template: "template_toolkit"
 engines:
   template_toolkit:

@@ -6,7 +6,6 @@ use warnings FATAL => 'all';
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
-use Netdisco::DB;
 use Try::Tiny;
 use feature 'say';
 
@@ -29,3 +28,41 @@ try {
 # upgrades from whatever dbix_class_schema_versions says, to $VERSION
 say 'Upgrading Netdisco::DB schema...';
 schema->txn_do(sub { schema->upgrade() });
+
+=head1 upgrade_netdisco_schema_version
+
+This script upgrades or initialises a Netdisco database schema.
+
+Pre-existing requirements are that there be a database table created and a
+user with rights to create tables in that database. Both the table and user
+name must match those configured in your environment YAML file (default
+C<environments/development.yml>).
+
+Simply run this script, which connects to the database and runs without user
+interaction. If there's no Nedisco schema, it is deployed. If there's an
+unversioned schema then versioning is added, and updates applied.  Otherwise
+only necessary updates are applied to an already versioned schema.
+
+=head2 Versions
+
+=over 4
+
+=item *
+
+Version 1 is a completely empty database schema with no tables
+
+=item *
+
+Version 2 is the "classic" Netdisco database schema as of Netdisco 1.1
+
+=item *
+
+Version 3 adds patches for Netdisco 1.2
+
+=item *
+
+Version 4 (not yet created) B<will diverge from "classic" Netdisco 1.x>
+
+=back
+
+=cut
