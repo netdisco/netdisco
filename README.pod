@@ -47,7 +47,6 @@ install Perl dependencies into a custom library path:
      namespace::clean \
      Moo \
      List::MoreUtils \
-     Net::DNS \
      Socket6 \
      HTML::Entities \
      Template::Toolkit \

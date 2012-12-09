@@ -7,7 +7,6 @@ use Dancer::Plugin::DBIC;
 use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
 use List::MoreUtils ();
-use Net::DNS ();
 
 hook 'before' => sub {
     # view settings for node options
