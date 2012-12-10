@@ -26,7 +26,7 @@ sub gd_run_body {
 
   # get all pending jobs
   my $rs = schema('netdisco')->resultset('Admin')->search({
-    action => [qw/location contact portcontrol portname vlan/],
+    action => [qw/location contact portcontrol portname vlan power/],
     status => 'queued',
   });
 

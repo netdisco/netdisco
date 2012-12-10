@@ -50,7 +50,7 @@ ajax '/ajax/userlog' => sub {
 
     my $rs = schema('netdisco')->resultset('Admin')->search({
       username => $user,
-      action => [qw/location contact portcontrol portname vlan/],
+      action => [qw/location contact portcontrol portname vlan power/],
       finished => { '>' => \"(now() - interval '5 seconds')" },
     });
 

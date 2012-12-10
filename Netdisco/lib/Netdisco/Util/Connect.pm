@@ -9,11 +9,11 @@ use Try::Tiny;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  get_device get_port get_iid snmp_connect
+  get_device get_port get_iid get_powerid snmp_connect
 /;
 our %EXPORT_TAGS = (
   all => [qw/
-    get_device get_port get_iid snmp_connect
+    get_device get_port get_iid get_powerid snmp_connect
   /],
 );
 
@@ -76,6 +76,26 @@ sub get_iid {
   my $iid        = $rev_if{$port};
 
   return $iid;
+}
+
+=head2 get_powerid( $info, $port )
+
+=cut
+
+sub get_powerid {
+  my ($info, $port) = @_;
+
+  # accept either port name or dbic object
+  $port = $port->port if ref $port;
+
+  my $iid = get_iid($info, $port)
+    or return undef;
+
+  my $p_interfaces = $info->peth_port_ifindex;
+  my %rev_p_if     = reverse %$p_interfaces;
+  my $powerid      = $rev_p_if{$iid};
+
+  return $powerid;
 }
 
 =head2 snmp_connect( $ip )

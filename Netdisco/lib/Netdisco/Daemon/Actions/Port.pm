@@ -84,4 +84,53 @@ sub _set_port_generic {
   return done("Updated [$pn] $slot status on [$ip] to [$data]");
 }
 
+sub set_power {
+  my ($self, $job) = @_;
+
+  my $port = get_port($job->device, $job->port)
+    or return error(sprintf "Unknown port name [%s] on device [%s]",
+      $job->port, $job->device);
+
+  return error("No PoE service on port [%s] on device [%s]")
+    unless $port->power;
+
+  my $reconfig_check = port_reconfig_check($port);
+  return error("Cannot alter port: $reconfig_check")
+    if length $reconfig_check;
+
+
+  my $ip = $job->device;
+  my $pn = $job->port;
+  (my $data = $job->subaction) =~ s/-\w+//;
+
+  # snmp connect using rw community
+  my $info = snmp_connect($ip)
+    or return error("Failed to connect to device [$ip] to control port");
+
+  my $powerid = get_powerid($info, $port)
+    or return error("Failed to get power ID for [$pn] from [$ip]");
+
+  my $rv = $info->set_peth_port_admin($data, $powerid);
+
+  if (!defined $rv) {
+      return error(sprintf 'Failed to set [%s] power to [%s] on [%s]: %s',
+                    $pn, $data, $ip, ($info->error || ''));
+  }
+
+  # confirm the set happened
+  $info->clear_cache;
+  my $state = ($info->peth_port_admin($powerid) || '');
+  if (ref {} ne ref $state or $state->{$powerid} ne $data) {
+      return error("Verify of [$pn] power failed on [$ip]");
+  }
+
+  # update netdisco DB
+  $port->power->update({
+    admin => $data,
+    status => ($data eq 'false' ? 'disabled' : 'searching'),
+  });
+
+  return done("Updated [$pn] power status on [$ip] to [$data]");
+}
+
 1;

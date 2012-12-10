@@ -5,6 +5,7 @@
   * Refactor to make less webby and more suitable to be a complete Netdisco app
   * Network Map now shows all device neighbors and allows click-through nav
   * Add new netdisco-daemon to handle port_control actions
+  * Add PoE control to port_control (+ up/down,vlan,name,location,contact)
 
   [ENHANCEMENTS]
 
