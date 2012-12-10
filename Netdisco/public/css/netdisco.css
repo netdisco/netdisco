@@ -177,7 +177,7 @@ td {
   margin-bottom: 10px;
 }
 
-.nd_device_name {
+#nd_device_name {
   float: right;
   margin-bottom: 0px;
   margin-top: 9px;

@@ -7,6 +7,12 @@ function do_search (event, tab) {
   // stop form from submitting normally
   event.preventDefault();
 
+  // page title
+  var pgtitle = 'Netdisco';
+  if ($('#nd_device_name').text().length) {
+    var pgtitle = $('#nd_device_name').text() +' - '+ $('#'+ tab + '_link').text();
+  }
+
   // each sidebar search form has a hidden copy of the main navbar search
   // query. when the tab query takes place, copy the navbar locally, then
   // replicate to all other tabs.
@@ -42,10 +48,7 @@ function do_search (event, tab) {
     is_from_history_plugin = 1;
     window.History.replaceState(
       {name: tab, fields: $(form).serializeArray()},
-      'Netdisco '
-        + path.charAt(0).toUpperCase() + path.slice(1) + ' - '
-        + tab.charAt(0).toUpperCase() + tab.slice(1),
-      uri_base + '/' + path + '?' + query
+      pgtitle, uri_base + '/' + path + '?' + query
     );
     is_from_history_plugin = 0;
   }
@@ -98,14 +101,17 @@ function update_content(from, to) {
   var to_form = '#' + to + '_form';
   var from_form = '#' + from + '_form';
 
+  // page title
+  var pgtitle = 'Netdisco';
+  if ($('#nd_device_name').text().length) {
+    var pgtitle = $('#nd_device_name').text() +' - '+ $('#'+ to + '_link').text();
+  }
+
   if (window.History && window.History.enabled && is_from_state_event == 0) {
     is_from_history_plugin = 1;
     window.History.pushState(
       {name: to, fields: $(to_form).serializeArray()},
-      'Netdisco '
-        + path.charAt(0).toUpperCase() + path.slice(1) + ' - '
-        + to.charAt(0).toUpperCase() + to.slice(1),
-      uri_base + '/' + path + '?' + $(to_form).serialize()
+      pgtitle, uri_base + '/' + path + '?' + $(to_form).serialize()
     );
     is_from_history_plugin = 0;
   }

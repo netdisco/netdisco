@@ -3,6 +3,10 @@
   var path = 'device';
 
   function inner_view_processing(tab) {
+    // LT wanted the page title to reflect what's on the page :)
+    document.title = $('#nd_device_name').text()
+      +' - '+ $('#'+ tab + '_link').text();
+
     // VLANs column list collapser trigger
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('.nd_collapse_vlans').toggle(function() {

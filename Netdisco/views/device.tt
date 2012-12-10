@@ -45,7 +45,7 @@
       [% FOREACH tab IN vars.tabs %]
       <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
       [% END %]
-      <span class="nd_device_name">[% d.dns || d.name %]</span>
+      <span id="nd_device_name">[% d.dns || d.name %]</span>
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN vars.tabs %]
