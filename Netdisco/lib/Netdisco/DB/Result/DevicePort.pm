@@ -137,6 +137,17 @@ __PACKAGE__->belongs_to( neighbor_alias => 'Netdisco::DB::Result::DeviceIp',
   { join_type => 'LEFT' },
 );
 
+=head2 power
+
+Returns a row from the C<device_port_power> table if one refers to this
+device port.
+
+=cut
+
+__PACKAGE__->might_have( power => 'Netdisco::DB::Result::DevicePortPower', {
+  'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
+});
+
 =head2 port_vlans_tagged
 
 Returns a set of rows from the C<device_port_vlan> table relating to this

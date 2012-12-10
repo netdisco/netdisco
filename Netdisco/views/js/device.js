@@ -52,6 +52,11 @@
       port_control(this); // save
     });
 
+    // activity for power enable/disable control
+    $('.nd_power_icon').click(function() {
+      port_control(this); // save
+    });
+
     var dirty = false;
 
     // activity for contenteditable control

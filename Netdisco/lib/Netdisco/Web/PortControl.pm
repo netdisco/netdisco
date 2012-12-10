@@ -17,10 +17,11 @@ ajax '/ajax/portcontrol' => sub {
           'c_port'   => 'portcontrol',
           'c_name'   => 'portname',
           'c_vlan'   => 'vlan',
+          'c_power'  => 'power',
         );
 
         my $action = $action_map{ param('field') };
-        my $subaction = ($action eq 'portcontrol'
+        my $subaction = ($action =~ m/^(?:power|portcontrol)/
           ? (param('action') ."-other")
           : param('value'));
 

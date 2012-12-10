@@ -71,11 +71,11 @@
 
       [% IF params.c_name %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td class="center_cell nd_editable_cell" contenteditable="true"
+      <td nowrap class="center_cell nd_editable_cell" contenteditable="true"
           data-field="c_name" data-for-device="[% device %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit_icon"></i>
       [% ELSE %]
-      <td class="center_cell">
+      <td nowrap class="center_cell">
       [% END %]
       <div class="nd_editable_cell_content">
         [% row.name | html_entity %]
@@ -133,6 +133,48 @@
         [% output %]
         [% END %]
       </td>
+      [% END %]
+
+      [% IF params.c_power %]
+        [% IF row.power %]
+          [% IF row.power.admin == 'true' %]
+            [% IF vars.user.port_control AND params.c_admin %]
+              <td nowrap data-action="false"
+                data-field="c_power" data-for-device="[% device %]"
+                data-for-port="[% row.port | html_entity %]">
+
+                <i class="icon-off nd_power_icon nd_power_on"
+                  rel="tooltip" data-placement="top" data-offset="3"
+                  data-animation="" data-title="Click to Disable"></i>
+            [% ELSE %]
+              <td nowrap>
+                <i class="icon-off nd_power_on"></i>
+            [% END %]
+                <span>
+                [% IF row.power.power > 0 %]
+                  [% row.power.power %]&nbsp;mW
+                [% ELSE %]
+                  ([% row.power.status %])
+                [% END %]
+                </span>
+          [% ELSE %]
+            [% IF vars.user.port_control AND params.c_admin %]
+              <td nowrap data-action="true"
+                data-field="c_power" data-for-device="[% device %]"
+                data-for-port="[% row.port | html_entity %]">
+
+                <i class="icon-off nd_power_icon"
+                  rel="tooltip" data-placement="top" data-offset="3"
+                  data-animation="" data-title="Click to Enable"></i>
+            [% ELSE %]
+              <td>
+                <i class="icon-off"></i>
+            [% END %]
+          [% END %]
+              </td>
+        [% ELSE %]
+          <td></td>
+        [% END %]
       [% END %]
 
       [% IF params.c_nodes OR params.c_neighbors %]

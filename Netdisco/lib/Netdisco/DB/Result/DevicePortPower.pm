@@ -31,6 +31,16 @@ __PACKAGE__->set_primary_key("port", "ip");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sHcdItRUFUOAtIZQjdWbcg
 
+=head1 RELATIONSHIPS
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+=head2 port
+
+Returns the entry from the C<port> table for which this Power entry applies.
+
+=cut
+
+__PACKAGE__->belongs_to( port => 'Netdisco::DB::Result::DevicePort', {
+  'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
+});
+
 1;

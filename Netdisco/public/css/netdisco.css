@@ -100,6 +100,19 @@ body {
   display: none;
 }
 
+.nd_power_icon {
+  cursor: pointer;
+}
+
+.icon-off {
+  vertical-align: middle;
+  color: darkRed;
+}
+
+.nd_power_on {
+  color: darkGreen;
+}
+
 /* placement of port link when port admin hint is enabled */
 .nd_editable_cell > .nd_this_port_only {
   margin-left: 18px;

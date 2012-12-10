@@ -1,6 +1,6 @@
 // user clicked or asked for port changes to be submitted via ajax
 function port_control (e) {
-  var td = $(e).closest('.nd_editable_cell');
+  var td = $(e).closest('td');
 
   $.ajax({
     type: 'POST'
@@ -29,6 +29,17 @@ function port_control (e) {
         $(e).toggleClass('icon-hand-down');
         $(e).data('tooltip').options.title = 'Click to Disable';
         td.attr('data-action', 'down');
+      }
+      else if ($.trim(td.attr('data-action')) == 'false') {
+        $(e).next('span').text('');
+        $(e).toggleClass('nd_power_on');
+        $(e).data('tooltip').options.title = 'Click to Enable';
+        td.attr('data-action', 'true');
+      }
+      else if ($.trim(td.attr('data-action')) == 'true') {
+        $(e).toggleClass('nd_power_on');
+        $(e).data('tooltip').options.title = 'Click to Disable';
+        td.attr('data-action', 'false');
       }
     }
     ,error: function() {
