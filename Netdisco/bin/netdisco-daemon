@@ -4,13 +4,25 @@ use Dancer qw/:moose :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use Daemon::Generic::While1;
+use Parallel::Prefork;
 use Netdisco::Util::DeviceProperties 'is_discoverable';
 use Try::Tiny;
 use Moo;
+use MooX::Types::MooseLike::Base qw(InstanceOf);
 
 # add dispatch methods for each port control action
 with "Netdisco::Daemon::Actions::$_"
   for (qw/Device Port/);
+
+my $pp = Parallel::Prefork->new(
+  max_workers    => 2,
+  spawn_interval => 2,
+  trap_signals => {
+    TERM => 'TERM',
+    INT  => 'TERM',
+    HUP  =>  undef, # catch but don't relay to workers
+  },
+);
 
 newdaemon(
   progname => 'netdisco-daemon',
@@ -18,10 +30,49 @@ newdaemon(
   logpriority => 'daemon.info',
 );
 
-# do not remove - must be redefined
-sub gd_preconfig { return () }
+before 'gd_quit_event' => sub {
+  $pp->wait_all_children;
+};
 
+# main manager loop
 sub gd_run_body {
+  my $self = shift;
+
+  # time to die...
+  if ($pp->signal_received =~ m/^(?:TERM|INT)$/) {
+      $self->gd_quit_event;
+  }
+
+  # reload config and kill workers
+  if ($pp->signal_received eq 'HUP') {
+      # clear signal
+      $pp->signal_received('');
+
+      # reload dancer config
+      %Dancer::Config::_LOADED = ();
+      Dancer::Config::load();
+
+      # kill workers (they will be restarted)
+      $pp->signal_all_children('TERM');
+      $pp->wait_all_children();
+      $pp->{_no_adjust_until} = 0; # BUG in Prefork.pm
+  }
+
+  # check for new jobs
+    # take one if available
+
+  # don't block waiting for a needed worker
+  if ($pp->num_workers >= $pp->max_workers) {
+      $self->gd_sleep( setting('daemon_sleep_time') || 5 );
+      return;
+  }
+
+  $pp->start and return;
+  try { $self->worker_body } catch { print "$_\n" };
+  $pp->finish;
+}
+
+sub worker_body {
   my $self = shift;
 
   # get all pending jobs
@@ -30,56 +81,36 @@ sub gd_run_body {
     status => 'queued',
   });
 
-  while (my $job = $rs->next) {
-      my $target = 'set_'. $job->action;
-      next unless $self->can($target);
+  while (1) {
+      while (my $job = $rs->next) {
+          my $target = 'set_'. $job->action;
+          next unless $self->can($target);
 
-      # filter for discover_*
-      next unless is_discoverable($job->device);
+          # filter for discover_*
+          next unless is_discoverable($job->device);
 
-      # mark job as running
-      next unless $self->lock_job($job);
+          # mark job as running
+          next unless $self->lock_job($job);
 
-      # do job
-      my ($status, $log);
-      try {
-          ($status, $log) = $self->$target($job);
+          # do job
+          my ($status, $log);
+          try {
+              ($status, $log) = $self->$target($job);
+          }
+          catch {  warn "error running job: $_\n" };
+
+          # revert to queued status if we failed to action the job
+          if (not $status) {
+              $self->revert_job($job->job);
+          }
+          else {
+              # update job state to done/error with log
+              $self->close_job($job->job, $status, $log);
+          }
       }
-      catch {  warn "error running job: $_\n" };
-
-      # revert to queued status if we failed to action the job
-      if (not $status) {
-          $self->revert_job($job->job);
-      }
-      else {
-          # update job state to done/error with log
-          $self->close_job($job->job, $status, $log);
-      }
+      $rs->reset;
+      $self->gd_sleep( setting('daemon_sleep_time') || 5 );
   }
-
-  $self->gd_sleep( setting('daemon_sleep_time') || 5 );
-}
-
-sub revert_job {
-  my ($self, $id) = @_;
-
-  try {
-      schema('netdisco')->resultset('Admin')
-        ->find($id)
-        ->update({status => 'queued', started => undef});
-  }
-  catch {  warn "error reverting job: $_\n" };
-}
-
-sub close_job {
-  my ($self, $id, $status, $log) = @_;
-
-  try {
-      schema('netdisco')->resultset('Admin')
-        ->find($id)
-        ->update({status => $status, log => $log, finished => \'now()'});
-  }
-  catch {  warn "error closing job: $_\n" };
 }
 
 sub lock_job {
@@ -107,4 +138,32 @@ sub lock_job {
 
   return 1;
 }
+
+sub revert_job {
+  my ($self, $id) = @_;
+
+  try {
+      schema('netdisco')->resultset('Admin')
+        ->find($id)
+        ->update({status => 'queued', started => undef});
+  }
+  catch {  warn "error reverting job: $_\n" };
+}
+
+sub close_job {
+  my ($self, $id, $status, $log) = @_;
+
+  try {
+      schema('netdisco')->resultset('Admin')
+        ->find($id)
+        ->update({status => $status, log => $log, finished => \'now()'});
+  }
+  catch {  warn "error closing job: $_\n" };
+}
+
+# do not remove - must be redefined for Daemon::Generic
+sub gd_preconfig { return () }
+
+# nullify this so we allow Parallel::Prefork to register handlers instead
+sub gd_setup_signals {}
 

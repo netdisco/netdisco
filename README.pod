@@ -40,7 +40,6 @@ install Perl dependencies into a custom library path:
      Dancer::Plugin::DBIC \
      Daemon::Generic \
      Config::Tiny \
-     File::Slurp \
      SNMP::Info \
      NetAddr::IP \
      Net::MAC \
