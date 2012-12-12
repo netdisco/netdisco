@@ -1,10 +1,10 @@
-package Netdisco::Daemon::Actions::Device;
+package Netdisco::Daemon::Worker::Interactive::DeviceActions;
 
 use Netdisco::Util::Connect qw/snmp_connect get_device/;
-use Netdisco::Daemon::Actions::Util ':all';
+use Netdisco::Daemon::Worker::Interactive::Util ':all';
 
+use Role::Tiny;
 use namespace::clean;
-use Moo::Role;
 
 sub set_location {
   my ($self, $job) = @_;

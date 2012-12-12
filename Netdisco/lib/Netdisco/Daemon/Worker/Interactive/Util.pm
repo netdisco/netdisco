@@ -1,4 +1,4 @@
-package Netdisco::Daemon::Actions::Util;
+package Netdisco::Daemon::Worker::Interactive::Util;
 
 # support utilities for Daemon Actions
 

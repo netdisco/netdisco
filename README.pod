@@ -44,7 +44,7 @@ install Perl dependencies into a custom library path:
      NetAddr::IP \
      Net::MAC \
      namespace::clean \
-     Moo \
+     Role::Tiny \
      List::MoreUtils \
      Socket6 \
      HTML::Entities \

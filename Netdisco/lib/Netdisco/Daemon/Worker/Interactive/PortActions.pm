@@ -1,11 +1,11 @@
-package Netdisco::Daemon::Actions::Port;
+package Netdisco::Daemon::Worker::Interactive::PortActions;
 
 use Netdisco::Util::Connect ':all';
 use Netdisco::Util::Permissions ':all';
-use Netdisco::Daemon::Actions::Util ':all';
+use Netdisco::Daemon::Worker::Interactive::Util ':all';
 
+use Role::Tiny;
 use namespace::clean;
-use Moo::Role;
 
 sub set_portname {
   my ($self, $job) = @_;
