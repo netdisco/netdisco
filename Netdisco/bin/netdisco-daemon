@@ -1,15 +1,17 @@
 #!/usr/bin/env perl
 
 use Dancer qw/:moose :script/;
-use Dancer::Plugin::DBIC 'schema';
-
 use Daemon::Generic::While1;
 use Parallel::Prefork;
 use Role::Tiny;
 
+# with 'Netdisco::Daemon::Manager';
+
 my $pp = Parallel::Prefork->new(
-  max_workers    => 2,
+  max_workers => (setting('daemon_workers') || 2),
   spawn_interval => 2,
+  after_fork => \&register_worker,
+  on_child_reap => \&unregister_worker,
   trap_signals => {
     TERM => 'TERM',
     INT  => 'TERM',
@@ -17,56 +19,95 @@ my $pp = Parallel::Prefork->new(
   },
 );
 
+# tracks worker pids and their roles
+my %workers = ();
+my $next_role = undef;
+
+# must come after globals initialization
 newdaemon(
   progname => 'netdisco-daemon',
   ($> != 0 ? (pidbase => './') : ()),
   logpriority => 'daemon.info',
 );
 
-before 'gd_quit_event' => sub {
-  $pp->wait_all_children;
-};
-
 # main manager loop
 sub gd_run_body {
   my $self = shift;
 
-  # time to die...
-  if ($pp->signal_received =~ m/^(?:TERM|INT)$/) {
-      $self->gd_quit_event;
-  }
+  $self->handle_term
+    if $pp->signal_received =~ m/^(?:TERM|INT)$/;
 
-  # reload config and kill workers
-  if ($pp->signal_received eq 'HUP') {
-      # clear signal
-      $pp->signal_received('');
-
-      # reload dancer config
-      %Dancer::Config::_LOADED = ();
-      Dancer::Config::load();
-
-      # kill workers (they will be restarted)
-      $pp->signal_all_children('TERM');
-      $pp->wait_all_children();
-      $pp->{_no_adjust_until} = 0; # BUG in Prefork.pm
-  }
+  $self->handle_hup
+    if $pp->signal_received eq 'HUP';
 
   if ($pp->num_workers < $pp->max_workers) {
+      $next_role = $self->next_worker_role or return;
       $pp->start and return;
-      with 'Netdisco::Daemon::Worker::Interactive';
+      with "Netdisco::Daemon::Worker::$next_role";
       $self->worker_body;
       $pp->finish;
   }
 
   # check for new jobs, take one if available
-  $self->manager_body;
+  # $self->manager_body;
 
   $self->gd_sleep( setting('daemon_sleep_time') || 5 );
+}
+
+sub register_worker {
+  my (undef, $pid) = @_;
+  $workers{$pid} = $next_role;
+}
+
+sub unregister_worker {
+  my (undef, $pid, $status) = @_;
+  delete $workers{$pid};
+  # also check for bad exit status?
+}
+
+sub next_worker_role {
+  my $self = shift;
+
+  my @cur = values %workers;
+  my $poller = scalar grep {$_ eq 'Poller'} @cur;
+  my $inter  = scalar grep {$_ eq 'Interactive'} @cur;
+
+  my $need_poller = $poller < (setting('daemon_pollers') || 0);
+  my $need_inter  = $inter < (setting('daemon_interactive') || 2);
+
+  if ($need_poller and $need_inter) {
+      return (int(rand(2)) ? 'Interactive' : 'Poller');
+  }
+
+  return 'Interactive' if $need_inter;
+  return 'Poller' if $need_poller;
+  return undef;
+}
+
+sub handle_term {
+  my $self = shift;
+  $pp->wait_all_children;
+  $self->gd_quit_event
+}
+
+sub handle_hup {
+  my $self = shift;
+  # clear signal
+  $pp->signal_received('');
+
+  # reload dancer config
+  %Dancer::Config::_LOADED = ();
+  Dancer::Config::load();
+
+  # kill workers (they will be restarted)
+  $pp->signal_all_children('TERM');
+  $pp->wait_all_children;
+  $pp->{_no_adjust_until} = 0; # BUG in Prefork.pm
 }
 
 # do not remove - must be redefined for Daemon::Generic
 sub gd_preconfig { return () }
 
-# nullify this so we allow Parallel::Prefork to register handlers instead
+# nullify this to permit Parallel::Prefork to register handlers instead
 sub gd_setup_signals {}
 
