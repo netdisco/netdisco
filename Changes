@@ -1,4 +1,4 @@
-2.8 -
+2.00_008 -
 
   [NEW FEATURES]
 
@@ -19,7 +19,7 @@
   * node search switchport link shows connected nodes again
   * show device IP in search results when DNS is not available
 
-2.7 - 2012-11-25
+2.00_007 - 2012-11-25
 
   [NEW FEATURES]
 
@@ -45,7 +45,7 @@
   * Fix netgear port ordering (closes #26)
   * Fix Foundry 10GE port ordering
 
-2.6 2012-08-28
+2.00_006 2012-08-28
 
   [NEW FEATURES]
 
@@ -70,7 +70,7 @@
 
   * Fix sidebar hiding not making main content reflow to full window width (#15)
 
-2.5 2012-03-09
+2.00_005 2012-03-09
 
   [NEW FEATURES]
 
@@ -90,13 +90,13 @@
   * Set distinct on device search (#12)
   * Fix strikethrough on tab change (#9)
 
-2.4 2012-02-19
+2.00_004 2012-02-19
 
   [NEW FEATURES]
 
   * Sidebar can be pinned in place to keep it visible when scrolling.
 
-2.3  2011-02-03
+2.00_003  2011-02-03
 
   [NEW FEATURES]
 
@@ -113,7 +113,7 @@
   * Refactor Stylsheets to better organise and comment the settings.
   * When Device Search sidebar is in use, strikethrough the navbar search.
 
-2.2  2011-01-22
+2.00_002  2011-01-22
 
   [NEW FEATURES]
 
@@ -137,6 +137,6 @@
   * Device Ports Legend show/hide arrow was pointing the wrong way.
   * Increase TT WHILE_MAX to allow very long lists of ports.
 
-2.1  2011-01-18
+2.00_001  2011-01-18
 
   * Initial release on an unsuspecting world.
