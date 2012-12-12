@@ -1,0 +1,11 @@
+* bootstrap/setup script to install perl modules and db schema
+* OUI.txt added into db schema upgrade
+* frontend plugin design and support
+* document how the templates and JS fit together
+* improve daemon to added parallel function support
+* add poller to daemon (scheduling automatically?)
+* re-do print css
+
+* plugins for poller
+* GUID/UUID for devices
+* VRF support
