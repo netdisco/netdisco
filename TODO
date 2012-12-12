@@ -5,7 +5,10 @@
 * improve daemon to added parallel function support
 * add poller to daemon (scheduling automatically?)
 * re-do print css
+* UI for topo DB table editing
+* update inventory to use bootstrap accordion
 
 * plugins for poller
 * GUID/UUID for devices
 * VRF support
+* drop topo file support and use DB only
