@@ -1,16 +1,19 @@
 #!/usr/bin/env perl
 
 use Dancer qw/:moose :script/;
+use Dancer::Plugin::DBIC 'schema';
+
 use Daemon::Generic::While1;
 use Parallel::Prefork;
+use Sys::Hostname;
 use Role::Tiny;
-
-# with 'Netdisco::Daemon::Manager';
+use Try::Tiny;
 
 my $pp = Parallel::Prefork->new(
   max_workers => (setting('daemon_workers') || 2),
-  spawn_interval => 2,
-  after_fork => \&register_worker,
+  spawn_interval => 1,
+  before_fork => \&next_worker_role,
+  after_fork  => \&register_worker,
   on_child_reap => \&unregister_worker,
   trap_signals => {
     TERM => 'TERM',
@@ -30,7 +33,21 @@ newdaemon(
   logpriority => 'daemon.info',
 );
 
-# main manager loop
+# deploy the daemon's local DB schema
+sub gd_preconfig {
+  my $self = shift;
+
+  my $rs = schema('daemon')->resultset('Admin');
+  try { $rs->first }
+  catch { schema('daemon')->deploy };
+
+  $self->{nd_host} = hostname;
+
+  # do not remove this line - required by Daemon::Generic
+  return ();
+}
+
+# main loop
 sub gd_run_body {
   my $self = shift;
 
@@ -41,16 +58,15 @@ sub gd_run_body {
     if $pp->signal_received eq 'HUP';
 
   if ($pp->num_workers < $pp->max_workers) {
-      $next_role = $self->next_worker_role or return;
       $pp->start and return;
       with "Netdisco::Daemon::Worker::$next_role";
+      print STDERR ">>> I am a $next_role Worker\n";
       $self->worker_body;
       $pp->finish;
   }
 
-  # check for new jobs, take one if available
-  # $self->manager_body;
-
+  # I don't think Parallel::Prefork ever returns from start()
+  # until a child exits. Not sure this is ever reached.
   $self->gd_sleep( setting('daemon_sleep_time') || 5 );
 }
 
@@ -63,25 +79,44 @@ sub unregister_worker {
   my (undef, $pid, $status) = @_;
   delete $workers{$pid};
   # also check for bad exit status?
+
+  # revert any running jobs (will be such if child died)
+  try {
+      schema('daemon')->resultset('Admin')
+        ->search({status => "running-$pid"})
+        ->update({status => 'queued', started => undef});
+  }
+  catch { warn "error reverting jobs for pid $pid: $_\n" };
 }
 
 sub next_worker_role {
   my $self = shift;
 
   my @cur = values %workers;
-  my $poller = scalar grep {$_ eq 'Poller'} @cur;
-  my $inter  = scalar grep {$_ eq 'Interactive'} @cur;
+  my $manager = scalar grep {$_ eq 'Manager'} @cur;
+  my $poller  = scalar grep {$_ eq 'Poller'} @cur;
+  my $inter   = scalar grep {$_ eq 'Interactive'} @cur;
 
-  my $need_poller = $poller < (setting('daemon_pollers') || 0);
-  my $need_inter  = $inter < (setting('daemon_interactive') || 2);
-
-  if ($need_poller and $need_inter) {
-      return (int(rand(2)) ? 'Interactive' : 'Poller');
+  if ($manager < 1) {
+      $next_role = 'Manager';
+      return;
   }
 
-  return 'Interactive' if $need_inter;
-  return 'Poller' if $need_poller;
-  return undef;
+  my $need_poller  = $poller < (setting('daemon_pollers') || 0);
+  my $need_inter   = $inter < (setting('daemon_interactive') || 2);
+
+  if ($need_poller and $need_inter) {
+      $next_role = (int(rand(2)) ? 'Interactive' : 'Poller');
+      return;
+  }
+
+  $next_role = 'Interactive' if $need_inter;
+  $next_role = 'Poller' if $need_poller;
+}
+
+sub handle_hup {
+  my $self = shift;
+  print "HUP is not supported. Please <restart> instead.\n";
 }
 
 sub handle_term {
@@ -90,23 +125,11 @@ sub handle_term {
   $self->gd_quit_event
 }
 
-sub handle_hup {
-  my $self = shift;
-  # clear signal
-  $pp->signal_received('');
-
-  # reload dancer config
-  %Dancer::Config::_LOADED = ();
-  Dancer::Config::load();
-
-  # kill workers (they will be restarted)
+# in case we screw up and die ourselves
+END {
   $pp->signal_all_children('TERM');
   $pp->wait_all_children;
-  $pp->{_no_adjust_until} = 0; # BUG in Prefork.pm
 }
-
-# do not remove - must be redefined for Daemon::Generic
-sub gd_preconfig { return () }
 
 # nullify this to permit Parallel::Prefork to register handlers instead
 sub gd_setup_signals {}

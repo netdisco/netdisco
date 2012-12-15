@@ -2,8 +2,6 @@ package Netdisco::Daemon::Worker::Interactive;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-
-use Netdisco::Util::DeviceProperties 'is_discoverable';
 use Try::Tiny;
 
 use Role::Tiny;
@@ -17,7 +15,7 @@ sub worker_body {
   my $self = shift;
 
   # get all pending jobs
-  my $rs = schema('netdisco')->resultset('Admin')->search({
+  my $rs = schema('daemon')->resultset('Admin')->search({
     action => [qw/location contact portcontrol portname vlan power/],
     status => 'queued',
   });
@@ -26,9 +24,6 @@ sub worker_body {
       while (my $job = $rs->next) {
           my $target = 'set_'. $job->action;
           next unless $self->can($target);
-
-          # filter for discover_*
-          next unless is_discoverable($job->device);
 
           # mark job as running
           next unless $self->lock_job($job);
@@ -49,6 +44,8 @@ sub worker_body {
               $self->close_job($job->job, $status, $log);
           }
       }
+
+      # reset iterator so ->next() triggers another DB query
       $rs->reset;
       $self->gd_sleep( setting('daemon_sleep_time') || 5 );
   }
@@ -56,35 +53,35 @@ sub worker_body {
 
 sub lock_job {
   my ($self, $job) = @_;
+  my $happy = 1;
 
   # lock db table, check job state is still queued, update to running
   try {
-      my $status_updated = schema('netdisco')->txn_do(sub {
-          my $row = schema('netdisco')->resultset('Admin')->find(
+      my $status_updated = schema('daemon')->txn_do(sub {
+          my $row = schema('daemon')->resultset('Admin')->find(
             {job => $job->job},
             {for => 'update'}
           );
 
-          return 0 if $row->status ne 'queued';
-          $row->update({status => 'running', started => \'now()'});
-          return 1;
+          $happy = 0 if $row->status ne 'queued';
+          $row->update({status => "running-$$", started => \"datetime('now')" });
       });
 
-      return 0 if not $status_updated;
+      $happy = 0 if not $status_updated;
   }
   catch {
       warn "error locking job: $_\n";
-      return 0;
+      $happy = 0;
   };
 
-  return 1;
+  return $happy;
 }
 
 sub revert_job {
   my ($self, $id) = @_;
 
   try {
-      schema('netdisco')->resultset('Admin')
+      schema('daemon')->resultset('Admin')
         ->find($id)
         ->update({status => 'queued', started => undef});
   }
@@ -95,9 +92,18 @@ sub close_job {
   my ($self, $id, $status, $log) = @_;
 
   try {
+      my $local =  schema('daemon')->resultset('Admin')->find($id);
+
       schema('netdisco')->resultset('Admin')
         ->find($id)
-        ->update({status => $status, log => $log, finished => \'now()'});
+        ->update({
+          status => $status,
+          log => $log,
+          started => $local->started,
+          finished => \'now()',
+        });
+
+      $local->delete;
   }
   catch {  warn "error closing job: $_\n" };
 }
