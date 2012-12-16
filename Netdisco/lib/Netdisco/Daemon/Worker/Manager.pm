@@ -9,6 +9,37 @@ use Try::Tiny;
 use Role::Tiny;
 use namespace::clean;
 
+sub worker_begin {
+  my $self = shift;
+  my $daemon = schema('daemon');
+
+  # deploy local db if not already done
+  try {
+      $daemon->storage->dbh_do(sub {
+        my ($storage, $dbh) = @_;
+        $dbh->selectrow_arrayref("SELECT * FROM admin WHERE 0 = 1");
+      });
+  }
+  catch { $daemon->deploy };
+
+  $daemon->storage->disconnect;
+  if ($daemon->get_db_version < $daemon->schema_version) {
+      $daemon->upgrade;
+  }
+
+  # on start, any jobs previously grabbed by a daemon on this host
+  # will be reset to "queued", which is the simplest way to restart them.
+
+  my $rs = schema('netdisco')->resultset('Admin')->search({
+    status => "running-$self->{nd_host}"
+  });
+
+  if ($rs->count > 0) {
+      $daemon->resultset('Admin')->delete;
+      $rs->update({status => 'queued', started => undef});
+  }
+}
+
 sub worker_body {
   my $self = shift;
 
