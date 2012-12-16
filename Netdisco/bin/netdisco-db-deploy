@@ -6,9 +6,10 @@ use warnings FATAL => 'all';
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
+use HTTP::Tiny;
 use Try::Tiny;
 
-=head1 upgrade_netdisco_schema_version
+=head1 netdisco-db-deploy
 
 This script upgrades or initialises a Netdisco database schema.
 
@@ -21,6 +22,10 @@ Simply run this script, which connects to the database and runs without user
 interaction. If there's no Nedisco schema, it is deployed. If there's an
 unversioned schema then versioning is added, and updates applied.  Otherwise
 only necessary updates are applied to an already versioned schema.
+
+Additionally this script will download the latest MAC address vendor prefix
+data from the Internet, and update the OUI table in the database. Hence
+Internet access is required to run the script.
 
 =head2 Versions
 
@@ -69,5 +74,30 @@ try {
 
 # upgrade from whatever dbix_class_schema_versions says, to $VERSION
 $schema->txn_do(sub { $schema->upgrade });
+
+# now populate/update the OUI data
+
+my $url = 'http://standards.ieee.org/develop/regauth/oui/oui.txt';
+my $resp = HTTP::Tiny->new->get($url);
+my %data = ();
+
+if ($resp->{success}) {
+    foreach my $line (split /\n/, $resp->{content}) {
+        if ($line =~ m/^(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
+            my ($oui, $company) = ($1, $2);
+            $oui =~ s/-/:/g;
+            $data{lc($oui)} = $company;
+        }
+    }
+
+    if ((scalar keys %data) > 15_000) {
+        $schema->txn_do(sub{
+          $schema->resultset('Oui')->delete;
+          $schema->resultset('Oui')->populate([
+            map {{oui => $_, company => $data{$_}}} keys %data
+          ]);
+        });
+    }
+}
 
 exit 0;

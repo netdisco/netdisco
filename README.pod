@@ -47,6 +47,7 @@ install Perl dependencies into a custom library path:
      Role::Tiny \
      List::MoreUtils \
      Socket6 \
+     HTTP::Tiny \
      HTML::Entities \
      Template::Toolkit \
      YAML

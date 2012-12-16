@@ -1,5 +1,9 @@
 2.00_009 - 
 
+  [NEW FEATURES]
+
+  * Update OUI data when the DB schema is deployed/upgraded
+
 2.00_008 - 2012-12-16
 
   [NEW FEATURES]

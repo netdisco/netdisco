@@ -9,7 +9,7 @@ use Dancer::Plugin::DBIC 'schema';
 use Netdisco::DB;
 use Getopt::Long;
 
-=head1 create_netdisco_schema_version
+=head1 nd-dbic-versions
 
 This script creates SQL DDL files of the Netdisco database schema.
 
