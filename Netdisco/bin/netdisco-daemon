@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use Daemon::Generic::While1;
 use Parallel::Prefork;
-use Sys::Hostname;
+use Net::Domain 'hostfqdn';
 use Role::Tiny;
 use Try::Tiny;
 
@@ -33,15 +33,26 @@ newdaemon(
   logpriority => 'daemon.info',
 );
 
-# deploy the daemon's local DB schema
 sub gd_preconfig {
   my $self = shift;
+  my $daemon = schema('daemon');
 
-  my $rs = schema('daemon')->resultset('Admin');
-  try { $rs->first }
-  catch { schema('daemon')->deploy };
+  # deploy the daemon's local DB schema
+  try {
+      $daemon->storage->dbh_do(sub {
+        my ($storage, $dbh) = @_;
+        $dbh->selectrow_arrayref("SELECT * FROM admin WHERE 0 = 1");
+      });
+  }
+  catch { $daemon->deploy };
 
-  $self->{nd_host} = hostname;
+  $daemon->storage->disconnect;
+  if ($daemon->get_db_version < $daemon->schema_version) {
+      $daemon->upgrade;
+  }
+
+  # used for locking jobs in central Pg queue
+  $self->{nd_host} = hostfqdn;
 
   # do not remove this line - required by Daemon::Generic
   return ();
