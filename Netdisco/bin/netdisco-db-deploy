@@ -7,27 +7,6 @@ use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
 use Try::Tiny;
-use feature 'say';
-
-if (not schema->get_db_version()) {
-  # installs the dbix_class_schema_versions table with version "1"
-  # which corresponds to an empty schema
-  say 'Installing DBIx::Class versioning to Netdisco::DB schema...';
-  schema->txn_do(sub { schema->install("1") });
-  exec $0;
-}
-
-try {
-    # if schema exists, assume it's current public Netdisco version
-  if (schema->get_db_version() == 1
-      and my $count = schema->resultset('Device')->count()) {
-    schema->txn_do(sub { schema->_set_db_version("2") });
-  }
-};
-
-# upgrades from whatever dbix_class_schema_versions says, to $VERSION
-say 'Upgrading Netdisco::DB schema...';
-schema->txn_do(sub { schema->upgrade() });
 
 =head1 upgrade_netdisco_schema_version
 
@@ -66,3 +45,29 @@ Version 4 (not yet created) B<will diverge from "classic" Netdisco 1.x>
 =back
 
 =cut
+
+my $schema = schema('netdisco');
+
+# installs the dbix_class_schema_versions table with version "1"
+# which corresponds to an empty schema
+if (not $schema->get_db_version) {
+    $schema->txn_do(sub { $schema->install(1) });
+    $schema->storage->disconnect;
+}
+
+# test for existing schema at public release version, set v=2 if so
+try {
+    $schema->storage->dbh_do(sub {
+      my ($storage, $dbh) = @_;
+      $dbh->selectrow_arrayref("SELECT * FROM device WHERE 0 = 1");
+    });
+
+    $schema->_set_db_version(2)
+      if $schema->get_db_version == 1;
+    $schema->storage->disconnect;
+};
+
+# upgrade from whatever dbix_class_schema_versions says, to $VERSION
+$schema->txn_do(sub { $schema->upgrade });
+
+exit 0;
