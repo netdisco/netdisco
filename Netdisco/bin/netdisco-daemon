@@ -26,13 +26,17 @@ newdaemon(
 sub gd_preconfig {
   my $gd = shift;
 
-  # deploy the daemon's local DB schema
-  _deploy_daemon_db();
-
   # used for locking jobs in central Pg queue
   $gd->{nd_host} = hostfqdn;
 
-  _bootstrap_prefork();
+  # deploy the daemon's local DB schema
+  $gd->deploy_daemon_db;
+
+  # sync with netdisco Pg DB
+  $gd->netdisco_db_sync;
+
+  # init Parallel::Prefork
+  $gd->bootstrap_prefork;
 
   # do not remove this line - required by Daemon::Generic
   return ();
@@ -112,7 +116,8 @@ END {
   $pp->wait_all_children;
 }
 
-sub _deploy_daemon_db {
+sub deploy_daemon_db {
+  my $gd = shift;
   my $daemon = schema('daemon');
 
   try {
@@ -129,7 +134,27 @@ sub _deploy_daemon_db {
   }
 }
 
-sub _bootstrap_prefork {
+sub netdisco_db_sync {
+  my $gd = shift;
+  my $netdisco = schema('netdisco');
+  my $daemon = schema('daemon');
+
+  # on start, any jobs previously grabbed by a daemon on this host
+  # will be reset to "queued", which is the simplest way to restart them.
+
+  my $rs = $netdisco->resultset('Admin')->search({
+    status => "running-$gd->{nd_host}"
+  });
+
+  if ($rs->count > 0) {
+      $daemon->resultset('Admin')->delete;
+      $rs->update({status => 'queued', started => undef});
+  }
+}
+
+sub bootstrap_prefork {
+  my $gd = shift;
+
   # set defaults
   set(daemon_pollers => 2) if !defined setting('daemon_pollers');
   set(daemon_interactives => 2) if !defined setting('daemon_interactives');
