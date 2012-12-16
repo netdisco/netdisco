@@ -27,8 +27,3 @@ engines:
     end_tag:   '%]'
     PRE_CHOMP: 1
 
-# how many daemon processes
-# NB one worker will always be a Queue Manager
-daemon_workers: 2
-daemon_pollers: 0
-daemon_interactives: 2
