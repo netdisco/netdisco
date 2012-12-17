@@ -27,3 +27,35 @@ engines:
     end_tag:   '%]'
     PRE_CHOMP: 1
 
+# netdisco stuff (can be overidden in the environment .yml)
+
+discover_no: []
+discover_only: []
+
+snmpver: 2
+snmpretries: 2
+snmptimeout: 1000000
+
+mibhome: /usr/share/netdisco/mibs
+mibdirs:
+  - cisco
+  - rfc
+  - net-snmp
+
+community: ['public']
+community_rw: ['private']
+
+# rights control for Interactive jobs
+vlanctl: 1
+allow_uplinks: 0
+portctl_nophones: 1
+portctl_vlans: 1
+
+# sleep time between polls of the database job queue
+daemon_sleep_time: 5
+
+# how many daemon processes
+# NB one worker will always be a Queue Manager
+daemon_pollers: 0
+daemon_interactives: 2
+

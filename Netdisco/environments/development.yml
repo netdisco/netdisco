@@ -17,8 +17,10 @@ warnings: 1
 # should Dancer show a stacktrace when an error is caught?
 show_errors: 1
 
+# database connections
 plugins:
   DBIC:
+    # alter dsn/user/pass for your local Netdisco DB
     netdisco:
       schema_class: 'Netdisco::DB'
       dsn: 'dbi:Pg:dbname=netdisco;host=localhost'
@@ -27,11 +29,20 @@ plugins:
       options:
         RaiseError: 1
         AutoCommit: 1
+    # please do not change/remove this schema unless you
+    # know what you're doing!
+    daemon:
+      schema_class: 'Netdisco::Daemon::DB'
+      dsn: 'dbi:SQLite:dbname=/tmp/netdisco-daemon.db'
+      options:
+        RaiseError: 1
+        AutoCommit: 1
+        sqlite_use_immediate_transaction: 1
 
-# for dev env only, this will force login so that a restarting server
-# doesn't persist in requiring reauth.
-# no_auth: 1
+# uncomment and set to 1 to disable authentication/login
+no_auth: 1
 
 # will be stripped from fqdn when displayed in the web UI
 # don't forget the leading dot
 # domain_suffix: '.example.com'
+
