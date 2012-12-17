@@ -32,9 +32,6 @@ install_script 'bin/netdisco-daemon';
 install_script 'bin/netdisco-db-deploy';
 install_script 'bin/netdisco-web';
 
-no_index directory => 'logs';
-no_index directory => 'lib/auto';
-
 resources
   homepage => 'http://netdisco.org/',
   bugtracker => 'http://sourceforge.net/tracker/?group_id=80033&atid=558508',
