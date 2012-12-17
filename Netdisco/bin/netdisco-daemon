@@ -124,8 +124,10 @@ sub handle_term {
 
 # in case we screw up and die ourselves
 END {
-  $pp->signal_all_children('TERM');
-  $pp->wait_all_children;
+  if (defined $pp) {
+      $pp->signal_all_children('TERM');
+      $pp->wait_all_children;
+  }
 }
 
 # nullify this to permit Parallel::Prefork to register handlers instead
