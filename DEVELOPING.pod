@@ -1,0 +1,6 @@
+=head1 DEVELOPER NOTES
+
+This document will help developers understand the intent and design of the
+code within Netdisco.
+
+=cut
