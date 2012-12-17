@@ -1,8 +1,11 @@
-2.00_009 - 
+2.00_010 - 
+
+2.00_009 - 2012-12-17
 
   [NEW FEATURES]
 
   * Relocate into App::Netdisco namespace
+  * Make a proper CPAN-ready dist using Module::Install
   * Update OUI data when the DB schema is deployed/upgraded
 
 2.00_008 - 2012-12-16
