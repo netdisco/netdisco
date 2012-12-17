@@ -6,6 +6,10 @@ use warnings FATAL => 'all';
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
+use 5.10.0;
+use Term::UI;
+use Term::ReadLine;
+
 use HTTP::Tiny;
 use Try::Tiny;
 
@@ -18,14 +22,14 @@ user with rights to create tables in that database. Both the table and user
 name must match those configured in your environment YAML file (default
 C<environments/development.yml>).
 
+Additionally this script will download the latest MAC address vendor prefix
+data from the Internet, and update the OUI table in the database. Hence
+Internet access is required to run the script.
+
 Simply run this script, which connects to the database and runs without user
 interaction. If there's no Nedisco schema, it is deployed. If there's an
 unversioned schema then versioning is added, and updates applied.  Otherwise
 only necessary updates are applied to an already versioned schema.
-
-Additionally this script will download the latest MAC address vendor prefix
-data from the Internet, and update the OUI table in the database. Hence
-Internet access is required to run the script.
 
 =head2 Versions
 
@@ -50,6 +54,20 @@ Version 4 (not yet created) B<will diverge from "classic" Netdisco 1.x>
 =back
 
 =cut
+
+say 'The following must be in place:';
+say ' * Internet access';
+say ' * Database added to PostgreSQL for Netdisco';
+say ' * User added to PostgreSQL with rights to the Database';
+say ' * "environments/development.yml" file configured with Database dsn/user/pass';
+say '';
+
+my $term = Term::ReadLine->new('netdisco');
+my $bool = $term->ask_yn(
+  prompt => 'Ready to deploy?', default => 'n',
+);
+
+exit(0) unless $bool;
 
 my $schema = schema('netdisco');
 
