@@ -1,0 +1,51 @@
+---
+abstract: 'An open source web-based network management tool.'
+author:
+  - 'Oliver Gorwits <oliver@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.59
+configure_requires:
+  ExtUtils::MakeMaker: 6.59
+distribution_type: module
+dynamic_config: 1
+generated_by: 'Module::Install version 1.06'
+license: bsd
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: App-Netdisco
+no_index:
+  directory:
+    - inc
+    - share
+requires:
+  DBD::Pg: 0
+  DBD::SQLite: 0
+  DBIx::Class: 0
+  DBIx::Class::Helper::Row::SubClass: 0
+  Daemon::Generic: 0
+  Dancer: 0
+  Dancer::Plugin::DBIC: 0
+  File::ShareDir: 0
+  HTML::Entities: 0
+  HTTP::Tiny: 0
+  List::MoreUtils: 0
+  Net::MAC: 0
+  NetAddr::IP: 0
+  Path::Class: 0
+  Plack: 0
+  Role::Tiny: 0
+  SNMP::Info: 0
+  SQL::Translator: 0
+  Socket6: 0
+  Template: 0
+  YAML: 0
+  namespace::clean: 0
+  perl: 5.10.0
+resources:
+  MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
+  bugtracker: http://sourceforge.net/tracker/?group_id=80033&atid=558508
+  homepage: http://netdisco.org/
+  license: http://opensource.org/licenses/bsd-license.php
+  repository: git://netdisco.git.sourceforge.net/gitroot/netdisco/netdisco-ng
+version: 2.00_009

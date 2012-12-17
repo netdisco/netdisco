@@ -1,6 +1,7 @@
 use inc::Module::Install;
  
 name      'App-Netdisco';
+license   'bsd';
 all_from  'lib/App/Netdisco.pm';
  
 requires 'DBD::Pg' => 0;
@@ -17,6 +18,7 @@ requires 'List::MoreUtils' => 0;
 requires 'Net::MAC' => 0;
 requires 'NetAddr::IP' => 0;
 requires 'Path::Class' => 0;
+requires 'Plack' => 0;
 requires 'Role::Tiny' => 0;
 requires 'SNMP::Info' => 0;
 requires 'SQL::Translator' => 0;
