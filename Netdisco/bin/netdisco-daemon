@@ -1,5 +1,9 @@
 #!/usr/bin/env perl
 
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use App::Netdisco;
+
 use Dancer qw/:moose :script/;
 use Dancer::Plugin::DBIC 'schema';
 
@@ -61,7 +65,7 @@ sub gd_run_body {
 
   $pp->start(sub {
     print STDERR ">>> new $next_role worker starting...\n";
-    with "Netdisco::Daemon::Worker::$next_role";
+    with "App::Netdisco::Daemon::Worker::$next_role";
     $gd->worker_begin if $gd->can('worker_begin');
     $gd->worker_body;
     $gd->worker_end if $gd->can('worker_end');

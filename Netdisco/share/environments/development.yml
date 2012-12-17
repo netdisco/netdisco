@@ -1,0 +1,48 @@
+# configuration file for development environment
+
+# the logger engine to use
+# console: log messages to STDOUT (your console where you started the
+#          application server)
+# file:    log message to a file in log/
+logger: "console"
+
+# the log level for this environement
+# core is the lowest, it shows Dancer's core log messages as well as yours
+# (debug, warning and error)
+log: "core"
+
+# should Dancer consider warnings as critical errors?
+warnings: 1
+
+# should Dancer show a stacktrace when an error is caught?
+show_errors: 1
+
+# database connections
+plugins:
+  DBIC:
+    # alter dsn/user/pass for your local Netdisco DB
+    netdisco:
+      schema_class: 'App::Netdisco::DB'
+      dsn: 'dbi:Pg:dbname=netdisco;host=localhost'
+      user: 'netdisco'
+      pass: 'netdisco'
+      options:
+        RaiseError: 1
+        AutoCommit: 1
+    # please do not change/remove this schema unless you
+    # know what you're doing!
+    daemon:
+      schema_class: 'App::Netdisco::Daemon::DB'
+      dsn: 'dbi:SQLite:dbname=/tmp/netdisco-daemon.db'
+      options:
+        RaiseError: 1
+        AutoCommit: 1
+        sqlite_use_immediate_transaction: 1
+
+# uncomment and set to 1 to disable authentication/login
+no_auth: 1
+
+# will be stripped from fqdn when displayed in the web UI
+# don't forget the leading dot
+# domain_suffix: '.example.com'
+

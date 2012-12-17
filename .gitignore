@@ -1,4 +1,4 @@
-Netdisco/environments/*
+Netdisco/share/environments/*
 Netdisco/logs/*
 *.swp
 *.pid

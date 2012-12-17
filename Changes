@@ -2,6 +2,7 @@
 
   [NEW FEATURES]
 
+  * Relocate into App::Netdisco namespace
   * Update OUI data when the DB schema is deployed/upgraded
 
 2.00_008 - 2012-12-16

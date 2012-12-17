@@ -1,12 +1,13 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings FATAL => 'all';
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use App::Netdisco;
 
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
-use Netdisco::DB;
+use App::Netdisco::DB;
 use Getopt::Long;
 
 =head1 nd-dbic-versions
@@ -22,10 +23,7 @@ specification.
 
 =cut
 
-schema('netdisco')->create_ddl_dir(
-  'PostgreSQL', $version, $sql_dir, $preversion );
-
-my $sql_dir = $Netdisco::DB::schema_versions_dir;
+my $sql_dir = $App::Netdisco::DB::schema_versions_dir;
 my $version = schema('netdisco')->schema_version;
 
 my ( $preversion, $help );
@@ -49,3 +47,7 @@ $sql_dir
 ENDHELP
   exit(1);
 };
+
+schema('netdisco')->create_ddl_dir(
+  'PostgreSQL', $version, $sql_dir, $preversion );
+
