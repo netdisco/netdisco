@@ -4,7 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 use 5.10.0;
 
-use File::ShareDir 'module_dir';
+use File::ShareDir 'dist_dir';
 use Path::Class;
 
 our $VERSION = '2.00_009';
@@ -13,7 +13,7 @@ BEGIN {
   if (not length $ENV{DANCER_APPDIR}
       or not -f file($ENV{DANCER_APPDIR}, 'config.yml')) {
 
-      my $auto = dir(File::ShareDir::module_dir('App::Netdisco'))->absolute;
+      my $auto = dir(dist_dir('App-Netdisco'))->absolute;
 
       $ENV{DANCER_APPDIR}  ||= $auto->stringify;
       $ENV{DANCER_CONFDIR} ||= $auto->stringify;

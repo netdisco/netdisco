@@ -3,3 +3,5 @@ Netdisco/logs/*
 *.swp
 *.pid
 test.pl
+MYMETA.*
+*.tar.gz
