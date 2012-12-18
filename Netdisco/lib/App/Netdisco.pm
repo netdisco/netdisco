@@ -41,10 +41,11 @@ face, please speak to someone in the C<#netdisco> IRC channel (on freenode).
 
 Netdisco has several Perl library dependencies which will be automatically
 installed. However it's I<strongly> recommended that you first install
-L<DBD::Pg> using your operating system packages. The following command will
-test for the existence of DBD::Pg on your system:
+L<DBD::Pg> and L<SNMP> using your operating system packages. The following
+commands will test for the existence of them on your system:
 
  perl -MDBD::Pg\ 999
+ perl -MSNMP\ 999
 
 With that done, we can proceed...
 
@@ -52,7 +53,7 @@ To avoid muddying your system, use the following script to download and
 install Netdisco and its dependencies into your home area:
 
  curl -L http://cpanmin.us/ | perl - \
-     --notest --quiet --local-lib-contained "${HOME}/perl-profiles/netdisco" \
+     --notest --quiet --local-lib ${HOME}/perl-profiles/netdisco" \
      App::cpanminus \
      App::local::lib::helper \
      App::Netdisco
