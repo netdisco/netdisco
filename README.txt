@@ -10,7 +10,7 @@ Introduction
     your face, please speak to someone in the "#netdisco" IRC channel (on
     freenode).
 
-Installation
+Dependencies
     Netdisco has several Perl library dependencies which will be
     automatically installed. However it's *strongly* recommended that you
     first install DBD::Pg and SNMP using your operating system packages. The
@@ -19,49 +19,70 @@ Installation
      perl -MDBD::Pg\ 999
      perl -MSNMP\ 999
 
-    With that done, we can proceed...
+    With those two installed, we can proceed...
 
+    Create a user on your system called "netdisco" if one does not already
+    exist. We'll install Netdisco and its dependencies into this user's home
+    area, which will take about 200MB including MIB files.
+
+    Netdisco uses the PostgreSQL (Pg) database server. Install Pg and then
+    change to the PostgreSQL superuser (usually "postgres"). Create a new
+    database and Pg user for the Netdisco application:
+
+     postgres:~$ createuser -DRSP netdisco
+     Enter password for new role:
+     Enter it again:
+  
+     postgres:~$ createdb -O netdisco netdisco
+
+Installation
     To avoid muddying your system, use the following script to download and
-    install Netdisco and its dependencies into your home area:
+    install Netdisco and its dependencies into the "netdisco" user's home
+    area ("~netdisco/perl5").
 
-     curl -L http://cpanmin.us/ | perl - \
-         --notest --quiet --local-lib ${HOME}/perl-profiles/netdisco" \
+     su - netdisco
+     curl -L http://cpanmin.us/ | perl - --notest --quiet \
+         --local-lib ~/perl5 \
          App::cpanminus \
          App::local::lib::helper \
          App::Netdisco
 
+    Link some of the newly installed apps into the "netdisco" user's $PATH,
+    e.g. "~netdisco/bin":
+
+     ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
+
     Test the installation by running the following command, which should
     only produce some help text (and throw up no errors):
 
-     ~/perl-profiles/netdisco/bin/localenv netdisco-daemon --help
+     localenv netdisco-daemon
 
 Configuration
-    Netdisco uses a PostgreSQL (Pg) database. You can use this application
-    with an existing database, or set up a new one. At a minimum (if
-    starting from scratch) you should have created a Database in Pg, and
-    created a User in Pg with rights on the Database:
+    Make a directory for your local configuration and copy the configuration
+    template from this distribution:
 
-     postgres:~$ createuser -DRSP netdisco
-     postgres:~$ createdb -O netdisco netdisco
+     mkdir ~/environments
+     cp ~/perl5/lib/perl5/auto/share/dist/App-Netdisco/environments/development.yml ~/environments
+     chmod +w ~/environments/developemnt.yml
 
-    Make a directory for your local configuration, and copy the
-    "share/environments/development.yml" file from this distribution into
-    it. Edit the file and change the database connection parameters for your
-    local system (the "dsn", "user" and "pass").
+    Edit the file and change the database connection parameters to match
+    those for your local system (that is, the "dsn", "user" and "pass").
 
     Optionally, in the same file uncomment and edit the "domain_suffix"
-    setting to be appropriate for your local site (same as the "domain"
-    setting in "netdisco.conf").
+    setting to be appropriate for your local site.
 
-    Finally, run the following script to bring you up to date:
-
-     ~/perl-profiles/netdisco/bin/localenv netdisco-db-deploy
-
+Bootstrap
 Startup
-    Make a note of the directory containing "development.yml" and run the
-    following command to start the web server, substituting as appropriate:
+    Run the following command to start the web server:
 
-     DANCER_ENVIRONMENT=/change/me/dir ~/perl-profiles/netdisco/bin/localenv netdisco-web
+     DANCER_ENVDIR=~/environments localenv plackup ~/bin/netdisco-web
+
+    Other ways to run and host the web application can be found in the
+    Dancer::Deployment page. See also the plackup documentation.
+
+    Run the following command to start the daemon:
+
+     DANCER_ENVDIR=~/environments localenv netdisco-daemon start
 
 Tips and Tricks
     The main black navigation bar has a search box which is smart enough to
@@ -71,8 +92,7 @@ Tips and Tricks
     For SQL debugging try the following command:
 
      DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
-       DANCER_ENVIRONMENT=/change/me/dir \
-       ~/perl-profiles/netdisco/bin/localenv netdisco-web
+       DANCER_ENVDIR=~/environments plackup ~/bin/netdisco-web
 
 Future Work
     The intention is to support "plugins" for additonal features, most
@@ -96,8 +116,8 @@ Caveats
 
     The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 
-AUTHOR
-    Oliver Gorwits <oliver@cpan.org>
+AUTHORS
+    *   Oliver Gorwits <oliver@cpan.org>
 
 COPYRIGHT AND LICENSE
     This software is copyright (c) 2012 by The Netdisco Developer Team.

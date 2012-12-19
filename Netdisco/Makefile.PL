@@ -14,6 +14,7 @@ requires 'Dancer::Plugin::DBIC' => 0;
 requires 'File::ShareDir' => 0;
 requires 'HTML::Entities' => 0;
 requires 'HTTP::Tiny' => 0;
+requires 'JSON' => 0;
 requires 'List::MoreUtils' => 0;
 requires 'Net::MAC' => 0;
 requires 'NetAddr::IP' => 0;
