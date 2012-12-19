@@ -149,15 +149,9 @@ mismatches). These might be implemented as a plugin bundle.
 
 The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 
-=head1 AUTHORS
-
-=over 4
-
-=item *
+=head1 AUTHOR
 
 Oliver Gorwits <oliver@cpan.org>
-
-=back
 
 =head1 COPYRIGHT AND LICENSE
  

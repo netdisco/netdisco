@@ -29,13 +29,15 @@ requires:
   File::ShareDir: 0
   HTML::Entities: 0
   HTTP::Tiny: 0
+  JSON: 0
   List::MoreUtils: 0
   Net::MAC: 0
   NetAddr::IP: 0
+  Parallel::Prefork: 0
   Path::Class: 0
   Plack: 0
   Role::Tiny: 0
-  SNMP::Info: 0
+  SNMP::Info: 2.11
   SQL::Translator: 0
   Socket6: 0
   Template: 0
