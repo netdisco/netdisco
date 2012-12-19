@@ -1,0 +1,118 @@
+#!/usr/bin/env perl
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use App::Netdisco;
+
+use Dancer ':script';
+use Dancer::Plugin::DBIC 'schema';
+
+use 5.10.0;
+use Term::UI;
+use Term::ReadLine;
+
+use Archive::Extract;
+use HTTP::Tiny;
+use Try::Tiny;
+
+=head1 netdisco-deploy
+
+This script deploys the Netdisco database schema, OUI data, and MIBs. Each of
+these is an optional service which the user is asked to confirm.
+
+Pre-existing requirements are that there be a database table created and a
+user with rights to create tables in that database. Both the table and user
+name must match those configured in your environment YAML file (default
+C<environments/development.yml>).
+
+This script will download the latest MAC address vendor prefix data from the
+Internet, and update the OUI table in the database. Hence Internet access is
+required to run the script.
+
+Similarly the latest Netdisco MIB bundle is also downloaded, placed into the
+user's home directory, and Netdisco reconfigured for its use.
+
+=cut
+
+say 'This is the Netdisco II deployment script.';
+say '';
+say 'Before we continue, the following prerequisites must be in place:';
+say ' * Internet access';
+say ' * Database added to PostgreSQL for Netdisco';
+say ' * User added to PostgreSQL with rights to the Netdisco Database';
+say ' * "environments/development.yml" file configured with Database dsn/user/pass';
+say '';
+say 'You will be asked to confirm all changes to your system.';
+say '';
+
+my $term = Term::ReadLine->new('netdisco');
+my $bool = $term->ask_yn(
+  prompt => 'So, is all the above in place?', default => 'n',
+);
+
+exit(0) unless $bool;
+
+say '';
+$bool = $term->ask_yn(
+  prompt => 'Would you like to deploy or upgrade your database schema?', default => 'n',
+);
+deploy_db() if $bool;
+
+say '';
+$bool = $term->ask_yn(
+  prompt => 'Would you like to download and update vendor MAC prefixes (OUI data)?', default => 'n',
+);
+deploy_oui() if $bool;
+
+say '';
+$bool = $term->ask_yn(
+  prompt => 'Would you like to download and update MIB files?', default => 'n',
+);
+deploy_mibs() if $bool;
+
+sub deploy_db { system 'netdisco-db-deploy' }
+
+sub deploy_oui {
+  my $schema = schema('netdisco');
+  $schema->source->disconnect;
+
+  my $url = 'http://standards.ieee.org/develop/regauth/oui/oui.txt';
+  my $resp = HTTP::Tiny->new->get($url);
+  my %data = ();
+
+  if ($resp->{success}) {
+      foreach my $line (split /\n/, $resp->{content}) {
+          if ($line =~ m/^(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
+              my ($oui, $company) = ($1, $2);
+              $oui =~ s/-/:/g;
+              $data{lc($oui)} = $company;
+          }
+      }
+
+      if ((scalar keys %data) > 15_000) {
+          $schema->txn_do(sub{
+            $schema->resultset('Oui')->delete;
+            $schema->resultset('Oui')->populate([
+              map {{oui => $_, company => $data{$_}}} keys %data
+            ]);
+          });
+      }
+  }
+
+  say 'OUI update complete.';
+}
+
+sub deploy_mibs {
+  my $url = 'http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz';
+  my $file = "$ENV{HOME}/netdisco-mibs-snapshot.tar.gz";
+  my $resp = HTTP::Tiny->new->mirror($url, $file);
+
+  if ($resp->{success}) {
+      my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
+      $ae->extract(to => $ENV{HOME});
+  }
+
+  say 'MIBs update complete.';
+}
+
+exit 0;
