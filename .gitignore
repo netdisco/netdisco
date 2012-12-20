@@ -5,3 +5,4 @@ Netdisco/logs/*
 test.pl
 MYMETA.*
 *.tar.gz
+MANIFEST.*

@@ -1,6 +1,7 @@
 bin/nd-dbic-versions
 bin/netdisco-daemon
 bin/netdisco-db-deploy
+bin/netdisco-deploy
 bin/netdisco-web
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
