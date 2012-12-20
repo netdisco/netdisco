@@ -1,5 +1,11 @@
 #!/usr/bin/env perl
 
+# fix for older Perl which warns about a bug in File::Slurp
+BEGIN {
+  no warnings 'portable';
+  use File::Slurp;
+}
+
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use App::Netdisco;
