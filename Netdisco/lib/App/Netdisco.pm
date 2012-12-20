@@ -118,7 +118,7 @@ take care of all this for you:
 If you don't want that level of automation, check out the database schema diff
 from the current release of Netdisco, and apply it yourself:
 
- ~/perl5/lib/perl5/App/Netdisco/DB/schema_versions/Netdisco-DB-2-3-PostgreSQL.sql
+ ~/perl5/lib/perl5/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-3-PostgreSQL.sql
 
 =head1 Startup
 

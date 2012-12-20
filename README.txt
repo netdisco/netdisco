@@ -36,7 +36,7 @@ Dependencies
      postgres:~$ createuser -DRSP netdisco
      Enter password for new role:
      Enter it again:
-      
+  
      postgres:~$ createdb -O netdisco netdisco
 
 Installation
@@ -86,7 +86,7 @@ Bootstrap
     If you don't want that level of automation, check out the database
     schema diff from the current release of Netdisco, and apply it yourself:
 
-     ~/perl5/lib/perl5/App/Netdisco/DB/schema_versions/Netdisco-DB-2-3-PostgreSQL.sql
+     ~/perl5/lib/perl5/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-3-PostgreSQL.sql
 
 Startup
     Run the following command to start the web server:
@@ -148,8 +148,8 @@ COPYRIGHT AND LICENSE
          * Neither the name of the Netdisco Project nor the
            names of its contributors may be used to endorse or promote products
            derived from this software without specific prior written permission.
-     
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ 
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
      ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
      DISCLAIMED. IN NO EVENT SHALL THE NETDISCO DEVELOPER TEAM BE LIABLE FOR ANY
