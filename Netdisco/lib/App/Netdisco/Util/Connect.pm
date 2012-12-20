@@ -128,15 +128,17 @@ sub snmp_connect {
   );
 
   my $info = undef;
+  my $last_comm = 0;
   COMMUNITY: foreach my $c (@{ setting('community_rw') || []}) {
       try {
           $info = SNMP::Info->new(%snmp_args, Community => $c);
-          last COMMUNITY if (
+          ++$last_comm if (
             $info
             and (not defined $info->error)
             and length $info->uptime
           );
       };
+      last COMMUNITY if $last_comm;
   }
 
   return $info;
