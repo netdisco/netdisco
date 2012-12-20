@@ -6,7 +6,8 @@
 ^share/environments/(?!production|development)
 test.pl
 logs/.*
-lib/auto/App/Netdisco
+^lib/auto/App/Netdisco
+^App-Netdisco-
 
 ^MANIFEST\.
 

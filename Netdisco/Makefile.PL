@@ -34,6 +34,7 @@ install_share 'share';
 install_script 'bin/nd-dbic-versions';
 install_script 'bin/netdisco-daemon';
 install_script 'bin/netdisco-db-deploy';
+install_script 'bin/netdisco-deploy';
 install_script 'bin/netdisco-web';
 
 resources
