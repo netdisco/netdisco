@@ -63,12 +63,23 @@ try {
       $dbh->selectrow_arrayref("SELECT * FROM device WHERE 0 = 1");
     });
 
-    $schema->_set_db_version(2)
+    $schema->_set_db_version({version => 2})
       if $schema->get_db_version == 1;
     $schema->storage->disconnect;
 };
 
 # upgrade from whatever dbix_class_schema_versions says, to $VERSION
-$schema->txn_do(sub { $schema->upgrade });
+my $db_version = $schema->get_db_version;
+my $target_version = $schema->schema_version;
+
+# one step at a time, in case user has applied local changes already
+for (my $i = $db_version; $i < $target_version; $i++) {
+    try {
+        $schema->upgrade_single_step($i, $i + 1);
+    }
+    catch {
+        $schema->_set_db_version({version => $i + 1});
+    }
+}
 
 exit 0;
