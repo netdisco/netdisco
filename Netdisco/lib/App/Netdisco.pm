@@ -10,7 +10,7 @@ use Path::Class;
 our $VERSION = '2.00_009';
 
 BEGIN {
-  if (not length $ENV{DANCER_APPDIR}
+  if (not length ($ENV{DANCER_APPDIR} '')
       or not -f file($ENV{DANCER_APPDIR}, 'config.yml')) {
 
       my $auto = dir(dist_dir('App-Netdisco'))->absolute;
