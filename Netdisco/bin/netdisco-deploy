@@ -110,6 +110,7 @@ sub deploy_mibs {
   if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
       $ae->extract(to => $ENV{HOME});
+      unlink $file;
   }
 
   say 'MIBs update complete.';
