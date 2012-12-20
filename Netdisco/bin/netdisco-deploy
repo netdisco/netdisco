@@ -70,7 +70,10 @@ $bool = $term->ask_yn(
 );
 deploy_mibs() if $bool;
 
-sub deploy_db { system 'netdisco-db-deploy' }
+sub deploy_db {
+  system 'netdisco-db-deploy';
+  say 'DB schema update complete.';
+}
 
 sub deploy_oui {
   my $schema = schema('netdisco');
