@@ -74,7 +74,7 @@ sub deploy_db { system 'netdisco-db-deploy' }
 
 sub deploy_oui {
   my $schema = schema('netdisco');
-  $schema->source->disconnect;
+  $schema->storage->disconnect;
 
   my $url = 'http://standards.ieee.org/develop/regauth/oui/oui.txt';
   my $resp = HTTP::Tiny->new->get($url);
