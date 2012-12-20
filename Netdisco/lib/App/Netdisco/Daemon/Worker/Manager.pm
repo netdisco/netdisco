@@ -20,11 +20,16 @@ sub worker_begin {
         $dbh->selectrow_arrayref("SELECT * FROM admin WHERE 0 = 1");
       });
   }
-  catch { $daemon->txn_do( $daemon->deploy ) };
+  catch {
+      $daemon->txn_do(sub {
+        $daemon->storage->disconnect;
+        $daemon->deploy;
+      });
+  };
 
   $daemon->storage->disconnect;
   if ($daemon->get_db_version < $daemon->schema_version) {
-      $daemon->txn_do( $daemon->upgrade );
+      $daemon->txn_do(sub { $daemon->upgrade });
   }
 
   # on start, any jobs previously grabbed by a daemon on this host
