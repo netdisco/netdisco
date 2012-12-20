@@ -7,7 +7,7 @@ use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
-use 5.10.0;
+use 5.010_000;
 use Term::UI;
 use Term::ReadLine;
 

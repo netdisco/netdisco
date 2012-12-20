@@ -2,7 +2,7 @@ package App::Netdisco;
 
 use strict;
 use warnings FATAL => 'all';
-use 5.10.0;
+use 5.010_000;
 
 use File::ShareDir 'dist_dir';
 use Path::Class;
