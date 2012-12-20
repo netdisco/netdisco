@@ -98,7 +98,7 @@ template from this distribution:
 
  mkdir ~/environments
  cp ~/perl5/lib/perl5/auto/share/dist/App-Netdisco/environments/development.yml ~/environments
- chmod +w ~/environments/developemnt.yml
+ chmod +w ~/environments/development.yml
 
 Edit the file and change the database connection parameters to match those for
 your local system (that is, the C<dsn>, C<user> and C<pass>).

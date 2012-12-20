@@ -6,9 +6,13 @@ Introduction
     Netdisco network management tool. See <http://netdisco.org/> for further
     information on the project.
 
-    If you have any trouble getting the frontend running, or it blows up in
-    your face, please speak to someone in the "#netdisco" IRC channel (on
-    freenode).
+    So far App::Netdisco provides a web frontend and a backend daemon to
+    handle interactive requests such as changing port or device properties.
+    There is not yet a device poller, so please still use the old Netdisco's
+    discovery, arpnip, and macsuck.
+
+    If you have any trouble getting the frontend running, please speak to
+    someone in the "#netdisco" IRC channel (on freenode).
 
 Dependencies
     Netdisco has several Perl library dependencies which will be
@@ -32,7 +36,7 @@ Dependencies
      postgres:~$ createuser -DRSP netdisco
      Enter password for new role:
      Enter it again:
-  
+      
      postgres:~$ createdb -O netdisco netdisco
 
 Installation
@@ -63,7 +67,7 @@ Configuration
 
      mkdir ~/environments
      cp ~/perl5/lib/perl5/auto/share/dist/App-Netdisco/environments/development.yml ~/environments
-     chmod +w ~/environments/developemnt.yml
+     chmod +w ~/environments/development.yml
 
     Edit the file and change the database connection parameters to match
     those for your local system (that is, the "dsn", "user" and "pass").
@@ -72,6 +76,18 @@ Configuration
     setting to be appropriate for your local site.
 
 Bootstrap
+    The database either needs configuring if new, or updating from the
+    current release of Netdisco (1.x). You also need vendor MAC address
+    prefixes (OUI data) and some MIBs if you want to run the daemon. The
+    following script will take care of all this for you:
+
+     DANCER_ENVDIR=~/environments localenv netdisco-deploy
+
+    If you don't want that level of automation, check out the database
+    schema diff from the current release of Netdisco, and apply it yourself:
+
+     ~/perl5/lib/perl5/App/Netdisco/DB/schema_versions/Netdisco-DB-2-3-PostgreSQL.sql
+
 Startup
     Run the following command to start the web server:
 
@@ -116,8 +132,8 @@ Caveats
 
     The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 
-AUTHORS
-    *   Oliver Gorwits <oliver@cpan.org>
+AUTHOR
+    Oliver Gorwits <oliver@cpan.org>
 
 COPYRIGHT AND LICENSE
     This software is copyright (c) 2012 by The Netdisco Developer Team.
@@ -132,8 +148,8 @@ COPYRIGHT AND LICENSE
          * Neither the name of the Netdisco Project nor the
            names of its contributors may be used to endorse or promote products
            derived from this software without specific prior written permission.
- 
-     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+     
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
      ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
      DISCLAIMED. IN NO EVENT SHALL THE NETDISCO DEVELOPER TEAM BE LIABLE FOR ANY
