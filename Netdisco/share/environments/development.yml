@@ -46,3 +46,14 @@ no_auth: 1
 # don't forget the leading dot
 # domain_suffix: '.example.com'
 
+# local settings for Netdisco poller and port changes
+
+mibhome: '/home/netdisco/netdisco-mibs'
+mibdirs:
+  - cisco
+  - rfc
+  - net-snmp
+
+community: ['public']
+community_rw: ['private']
+
