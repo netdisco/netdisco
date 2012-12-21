@@ -1,3 +1,10 @@
+2.00_012 - 2012-12-21
+
+  [ENHANCEMENTS]
+
+  * Move Changes file to be in CPAN Dist
+  * Update install docs to use URL for package until we are CPAN-indexed
+
 2.00_011 - 2012-12-20
 
   [ENHANCEMENTS]

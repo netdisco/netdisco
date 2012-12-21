@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.00_011';
+our $VERSION = '2.00_012';
 
 BEGIN {
   if (not length ($ENV{DANCER_APPDIR} || '')
@@ -79,7 +79,7 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
      --local-lib ~/perl5 \
      App::cpanminus \
      App::local::lib::helper \
-     App::Netdisco
+     http://cpan.metacpan.org/authors/id/O/OL/OLIVER/App-Netdisco-2.00_012.tar.gz
 
 Link some of the newly installed apps into the C<netdisco> user's C<$PATH>,
 e.g. C<~netdisco/bin>:
