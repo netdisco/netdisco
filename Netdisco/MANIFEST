@@ -3,6 +3,7 @@ bin/netdisco-daemon
 bin/netdisco-db-deploy
 bin/netdisco-deploy
 bin/netdisco-web
+Changes
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
