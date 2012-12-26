@@ -1,5 +1,6 @@
 Netdisco/share/environments/*
 Netdisco/logs/*
+Netdisco/App-Netdisco-*
 *.swp
 *.pid
 test.pl
