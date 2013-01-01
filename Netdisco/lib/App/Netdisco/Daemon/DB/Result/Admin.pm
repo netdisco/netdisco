@@ -12,6 +12,13 @@ __PACKAGE__->add_columns(
     data_type         => "integer",
     is_nullable       => 0,
   },
+
+  "role", # Poller, Interactive, etc
+  { data_type => "text", is_nullable => 0 },
+
+  "wid", # worker ID, only assigned once taken
+  { data_type => "integer", is_nullable => 1 },
+
   "started",
   { data_type => "timestamp", is_nullable => 1 },
   "finished",

@@ -1,87 +1,75 @@
 #!/usr/bin/env perl
 
-# fix for older Perl which warns about a bug in File::Slurp
-BEGIN {
-  no warnings 'portable';
-  use File::Slurp;
-}
-
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use App::Netdisco;
 
+# for netdisco app config
 use Dancer qw/:moose :script/;
-use Dancer::Plugin::DBIC 'schema';
 
-use Daemon::Generic::While1;
-use Parallel::Prefork;
-use Net::Domain 'hostfqdn';
+# callbacks and local job queue management
+use App::Netdisco::Daemon::Queue ':all';
+
+use MCE;
 use Role::Tiny;
-use Try::Tiny;
+use Path::Class 'dir';
 
-# Parallel::Prefork instance
-my $pp = undef;
+my $mce = MCE->new(
+  tmp_dir => dir($ENV{HOME}, 'tmp'),
+  spawn_delay => 0.15,
+  job_delay   => 0.15,
+  user_func    => \&call_worker_body,
+  on_post_exit => \&restart_worker,
+  user_tasks   => build_tasks_list(),
+)->run();
 
-# track worker pids and their roles
-my %workers = ();
-my $next_role = undef;
+sub call_worker_body {
+  my ($self) = @_;
+  $self->worker_body if $self->can('worker_body');
+}
 
-# must come after globals initialization
-newdaemon(
-  progname => 'netdisco-daemon',
-  ($> != 0 ? (pidbase => './') : ()),
-  logpriority => 'daemon.info',
-);
+sub restart_worker {
+  my ($self, $e) = @_;
+  reset_jobs($e->{wid});
+  $self->restart_worker($e->{wid});
+}
 
-sub gd_preconfig {
-  my $gd = shift;
-
-  # used for locking jobs in central Pg queue
-  $gd->{nd_host} = hostfqdn;
+sub build_tasks_list {
+  my $tasks = [{
+    max_workers => 1,
+    user_begin => worker_factory('Manager'),
+  }];
 
   set(daemon_pollers => 2)
     if !defined setting('daemon_pollers');
   set(daemon_interactives => 2)
     if !defined setting('daemon_interactives');
 
-  # need to do this after setting defaults
-  $pp = Parallel::Prefork->new(
-    max_workers => (1 + setting('daemon_pollers')
-                      + setting('daemon_interactives')),
-    spawn_interval => 2,
-    before_fork => \&set_next_worker_role,
-    after_fork  => \&register_worker,
-    on_child_reap => \&unregister_worker,
-    trap_signals => {
-      TERM => 'TERM',
-      INT  => 'TERM',
-    },
-  );
+  # XXX MCE does not like max_workers => 0
 
-  # do not remove this line - required by Daemon::Generic
-  return ();
+  push @$tasks, {
+    max_workers => setting('daemon_pollers'),
+    user_begin => worker_factory('Poller'),
+  } if setting('daemon_pollers');
+
+  push @$tasks, {
+    max_workers => setting('daemon_interactives'),
+    user_begin => worker_factory('Interactive'),
+  } if setting('daemon_interactives');
+
+  return $tasks;
 }
 
-# main loop
-sub gd_run_body {
-  my $gd = shift;
-
-  $gd->handle_term
-    if $pp->signal_received =~ m/^(?:TERM|INT)$/;
-
-  $pp->start(sub {
-    print STDERR ">>> new $next_role worker starting...\n";
-    with "App::Netdisco::Daemon::Worker::$next_role";
-    $gd->worker_begin if $gd->can('worker_begin');
-    $gd->worker_body;
-    $gd->worker_end if $gd->can('worker_end');
-  });
-
-  # I don't think Parallel::Prefork ever returns from start()
-  # until a child exits. Not sure this is ever reached.
-  $gd->gd_sleep( setting('daemon_sleep_time') || 5 )
-    if not $pp->signal_received;
+sub worker_factory {
+  my $role = shift;
+  return sub {
+    my $self = shift;
+    # with "App::Netdisco::Daemon::Worker::$role";
+    $self->worker_begin if $self->can('worker_begin');
+  };
 }
+
+__END__
 
 sub register_worker {
   my (undef, $pid) = @_;
@@ -101,45 +89,4 @@ sub unregister_worker {
   }
   catch { warn "error reverting jobs for pid $pid: $_\n" };
 }
-
-sub set_next_worker_role {
-  my $pp = shift;
-  $next_role = _find_next_worker_role();
-}
-
-sub _find_next_worker_role {
-  my @cur = values %workers;
-  my $manager = scalar grep {$_ eq 'Manager'} @cur;
-  my $poller  = scalar grep {$_ eq 'Poller'} @cur;
-  my $inter   = scalar grep {$_ eq 'Interactive'} @cur;
-
-  return 'Manager' if $manager < 1;
-
-  my $need_poller = $poller < setting('daemon_pollers');
-  my $need_inter  = $inter < setting('daemon_interactives');
-
-  if ($need_poller and $need_inter) {
-      return (int(rand(2)) ? 'Interactive' : 'Poller');
-  }
-
-  return 'Interactive' if $need_inter;
-  return 'Poller' if $need_poller;
-}
-
-sub handle_term {
-  my $gd = shift;
-  $pp->wait_all_children;
-  $gd->gd_quit_event
-}
-
-# in case we screw up and die ourselves
-END {
-  if (defined $pp) {
-      $pp->signal_all_children('TERM');
-      $pp->wait_all_children;
-  }
-}
-
-# nullify this to permit Parallel::Prefork to register handlers instead
-sub gd_setup_signals {}
 
