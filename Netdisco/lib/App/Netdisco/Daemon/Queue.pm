@@ -9,6 +9,36 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/ add_jobs take_jobs reset_jobs /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+my $queue = schema('daemon')->resultset('Admin');
+
+sub add_jobs {
+  my ($jobs) = @_;
+  $queue->populate($jobs);
+}
+
+sub take_jobs {
+  my ($wid, $role, $max) = @_;
+  $max ||= 1;
+
+  # asking for more jobs means the current ones are done
+  $queue->search({wid => $wid})->delete;
+
+  my $rs = $queue->search(
+    {role => $role, wid => 0},
+    {rows => $max},
+  );
+
+  $rs->update({wid => $wid});
+  return [ map {$_->get_columns} $rs->all ];
+}
+
+sub reset_jobs {
+  my ($wid) = @_;
+  return unless $wid > 1;
+  $queue->search({wid => $wid})
+        ->update({wid => 0});
+}
+
 {
     my $daemon = schema('daemon');
 
@@ -33,50 +63,6 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
     # empty local db of any stale queued jobs
     $daemon->resultset('Admin')->delete;
-}
-
-sub add_jobs {
-  my ($jobs) = @_;
-  try { schema('daemon')->resultset('Admin')->populate($jobs) }
-  catch { warn "error adding jobs: $_\n" };
-}
-
-sub take_jobs {
-  my ($wid, $role, $max) = @_;
-  my $jobs = [];
-
-  my $rs = schema('daemon')->resultset('Admin')
-    ->search({role => $role, status => 'queued'});
-
-  while (my $job = $rs->next) {
-      last if scalar $jobs eq $max;
-
-      try {
-          schema('daemon')->txn_do(sub {
-              my $row = schema('daemon')->resultset('Admin')->find(
-                {job => $job->job},
-                {for => 'update'}
-              );
-
-              if ($row->status eq 'queued') {
-                  $row->update({status => 'taken', wid => $wid});
-                  push @$jobs, $row->get_columns;
-              }
-          });
-      };
-  }
-
-  return $jobs;
-}
-
-sub reset_jobs {
-  my ($wid) = @_;
-  try {
-      schema('daemon')->resultset('Admin')
-        ->search({wid => $wid})
-        ->update({wid => undef, status => 'queued', started => undef});
-  }
-  catch { warn "error resetting jobs for wid [$wid]: $_\n" };
 }
 
 1;

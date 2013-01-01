@@ -10,6 +10,9 @@ use Dancer qw/:moose :script/;
 # callbacks and local job queue management
 use App::Netdisco::Daemon::Queue ':all';
 
+# needed to quench AF_INET6 symbol errors
+use NetAddr::IP::Lite ':lower';
+
 use MCE;
 use Role::Tiny;
 use Path::Class 'dir';
@@ -64,29 +67,30 @@ sub worker_factory {
   my $role = shift;
   return sub {
     my $self = shift;
-    # with "App::Netdisco::Daemon::Worker::$role";
+    with "App::Netdisco::Daemon::Worker::$role";
     $self->worker_begin if $self->can('worker_begin');
   };
 }
 
-__END__
+sub interruptible_sleep {
+  my ($period) = @_;
+  my $hires = 0;
 
-sub register_worker {
-  my (undef, $pid) = @_;
-  $workers{$pid} = $next_role;
-}
-
-sub unregister_worker {
-  my (undef, $pid, $status) = @_;
-  delete $workers{$pid};
-  # also check for bad exit status?
-
-  # revert any running jobs (will be such if child died)
-  try {
-      schema('daemon')->resultset('Admin')
-        ->search({status => "running-$pid"})
-        ->update({status => 'queued', started => undef});
+  if ($period * 1000 != int($period * 1000)) {
+      $hires = 1;
+      require Time::HiRes;
+      import Time::HiRes qw(time sleep);
   }
-  catch { warn "error reverting jobs for pid $pid: $_\n" };
-}
 
+  my $t = time;
+  while (time - $t < $period) {
+      if ($hires) {
+          my $p = (time - $t < 1)
+              ? time - $t
+              : 1;
+          sleep($p);
+      } else {
+          sleep(1);
+      }
+  }
+}
