@@ -19,6 +19,8 @@ __PACKAGE__->add_columns(
   "wid", # worker ID, only != 0 once taken
   { data_type => "integer", is_nullable => 0, default_value => 0 },
 
+  "entered",
+  { data_type => "timestamp", is_nullable => 1 },
   "started",
   { data_type => "timestamp", is_nullable => 1 },
   "finished",
@@ -33,6 +35,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "status",
   { data_type => "text", is_nullable => 1 },
+  "username",
+  { data_type => "text", is_nullable => 1 },
+  "userip",
+  { data_type => "inet", is_nullable => 1 },
   "log",
   { data_type => "text", is_nullable => 1 },
   "debug",

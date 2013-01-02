@@ -52,8 +52,12 @@ sub take_jobs {
     {rows => $max},
   );
 
+  return [] if $rs->count == 0;
+
+  my @rows = $rs->all;
   $rs->update({wid => $wid});
-  return [ map {$_->get_columns} $rs->all ];
+
+  return [ map {{$_->get_columns}} @rows ];
 }
 
 sub reset_jobs {

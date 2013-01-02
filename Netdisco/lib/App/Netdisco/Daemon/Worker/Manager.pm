@@ -24,7 +24,7 @@ sub worker_begin {
   my $rs = schema('netdisco')->resultset('Admin')
     ->search({status => "queued-$fqdn"});
 
-  my @jobs = map {$_->get_columns} $rs->all;
+  my @jobs = map {{$_->get_columns}} $rs->all;
   map { $_->{role} = $role_map->{$_->{action}} } @jobs;
 
   $self->do('add_jobs', \@jobs);
@@ -48,7 +48,7 @@ sub worker_body {
           # mark job as running
           next unless $self->lock_job($job);
 
-          my $local_job = $job->get_columns;
+          my $local_job = { $job->get_columns };
           $local_job->{role} = $role_map->{$job->action};
 
           # copy job to local queue
