@@ -12,13 +12,9 @@ use namespace::clean;
 
 my $fqdn = hostfqdn || 'localhost';
 
-# forward and reverse mappings for worker role to Netdisco job type (action)
-# this needs updating when we invent new job types
-my $action_map = {
-  Interactive => [qw/location contact portcontrol portname vlan power/]
-};
 my $role_map = {
-  map {$_ => 'Interactive'} @{ $action_map->{Interactive} }
+  map {$_ => 'Interactive'}
+      qw/location contact portcontrol portname vlan power/
 };
 
 sub worker_begin {
@@ -47,7 +43,7 @@ sub worker_body {
           next unless is_discoverable($job->device);
 
           # check for available local capacity
-          next unless $self->capacity_for($job);
+          next unless $self->do('capacity_for', $job->action);
 
           # mark job as running
           next unless $self->lock_job($job);
@@ -66,23 +62,6 @@ sub worker_body {
 
       sleep( setting('daemon_sleep_time') || 5 );
   }
-}
-
-sub capacity_for {
-  my ($self, $job) = @_;
-
-  my $setting_map = {
-    Poller => 'daemon_pollers',
-    Interactive => 'daemon_interactives',
-  };
-
-  my $role = $role_map->{$job->action};
-  my $setting = $setting_map->{$role};
-
-  my $current = schema('daemon')->resultset('Admin')
-    ->search({role => $role})->count;
-
-  return ($current < setting($setting));
 }
 
 sub lock_job {
