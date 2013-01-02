@@ -2,7 +2,6 @@ package App::Netdisco::Daemon::Queue;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();

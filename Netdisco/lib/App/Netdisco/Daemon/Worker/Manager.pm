@@ -53,7 +53,7 @@ sub worker_body {
           next unless $self->lock_job($job);
 
           my $local_job = $job->get_columns;
-          $local_job->{role} = $role_map->{$local_job->{action}};
+          $local_job->{role} = $role_map->{$job->action};
 
           # copy job to local queue
           $self->do('add_jobs', [$local_job]);
@@ -79,8 +79,8 @@ sub capacity_for {
   my $role = $role_map->{$job->action};
   my $setting = $setting_map->{$role};
 
-  my $current = schema('netdisco')->resultset('Admin')
-    ->search({role => $role, status => "queued-$fqdn"})->count;
+  my $current = schema('daemon')->resultset('Admin')
+    ->search({role => $role})->count;
 
   return ($current < setting($setting));
 }

@@ -17,26 +17,17 @@ use MCE;
 use Role::Tiny;
 use Path::Class 'dir';
 
+my $tmp = dir($ENV{HOME}, 'tmp');
+mkdir $tmp if ! -d $tmp;
+
 my $mce = MCE->new(
-  tmp_dir => dir($ENV{HOME}, 'tmp'),
+  tmp_dir => $tmp,
   spawn_delay => 0.15,
   job_delay   => 0.15,
-  user_func    => \&call_worker_body,
+  user_func    => sub { $_[0]->worker_body },
   on_post_exit => \&restart_worker,
   user_tasks   => build_tasks_list(),
 )->run();
-
-
-sub call_worker_body {
-  my ($self) = @_;
-  $self->worker_body;
-}
-
-sub restart_worker {
-  my ($self, $e) = @_;
-  reset_jobs($e->{wid});
-  $self->restart_worker($e->{wid});
-}
 
 sub build_tasks_list {
   my $tasks = [{
@@ -72,4 +63,10 @@ sub worker_factory {
     $SIG{__DIE__} = sub { return @_ if $^S eq 1; $SIG{__DIE__}->(@_) };
     $self->worker_begin if $self->can('worker_begin');
   };
+}
+
+sub restart_worker {
+  my ($self, $e) = @_;
+  reset_jobs($e->{wid});
+  $self->restart_worker($e->{wid});
 }
