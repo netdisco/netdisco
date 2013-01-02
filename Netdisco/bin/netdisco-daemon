@@ -60,7 +60,10 @@ sub worker_factory {
   return sub {
     my $self = shift;
     Role::Tiny->apply_roles_to_object($self, "App::Netdisco::Daemon::Worker::$role");
-    $SIG{__DIE__} = sub { return @_ if $^S eq 1; $SIG{__DIE__}->(@_) };
+    # XXX temporary hack to work around MCE's use of __DIE__
+    my $mce_die = $SIG{__DIE__};
+    $SIG{__DIE__} = sub { return @_ if $^S and $^S eq 1; $mce_die->(@_) };
+    # XXX "there's nothing so permanent as temporary..." ~~ Milton Friedman
     $self->worker_begin if $self->can('worker_begin');
   };
 }
