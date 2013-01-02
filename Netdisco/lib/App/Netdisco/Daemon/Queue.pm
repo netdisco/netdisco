@@ -9,6 +9,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/ add_jobs take_jobs reset_jobs /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+schema('daemon')->deploy;
 my $queue = schema('daemon')->resultset('Admin');
 
 sub add_jobs {
@@ -37,32 +38,6 @@ sub reset_jobs {
   return unless $wid > 1;
   $queue->search({wid => $wid})
         ->update({wid => 0});
-}
-
-{
-    my $daemon = schema('daemon');
-
-    # deploy local db if not already done
-    try {
-        $daemon->storage->dbh_do(sub {
-          my ($storage, $dbh) = @_;
-          $dbh->selectrow_arrayref("SELECT * FROM admin WHERE 0 = 1");
-        });
-    }
-    catch {
-        $daemon->txn_do(sub {
-          $daemon->storage->disconnect;
-          $daemon->deploy;
-        });
-    };
-
-    $daemon->storage->disconnect;
-    if ($daemon->get_db_version < $daemon->schema_version) {
-        $daemon->txn_do(sub { $daemon->upgrade });
-    }
-
-    # empty local db of any stale queued jobs
-    $daemon->resultset('Admin')->delete;
 }
 
 1;
