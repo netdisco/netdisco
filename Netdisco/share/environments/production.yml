@@ -28,7 +28,7 @@ plugins:
         RaiseError: 1
         AutoCommit: 1
     # please do not change/remove this schema unless you
-    # know what you're doing!
+    # know what you are doing!
     daemon:
       schema_class: 'App::Netdisco::Daemon::DB'
       dsn: 'dbi:SQLite:dbname=/home/netdisco/netdisco-daemon.db'
@@ -41,6 +41,6 @@ plugins:
 # no_auth: 0
 
 # will be stripped from fqdn when displayed in the web UI
-# don't forget the leading dot
+# also, do not forget the leading dot
 # domain_suffix: '.example.com'
 
