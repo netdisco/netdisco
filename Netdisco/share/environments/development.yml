@@ -33,7 +33,7 @@ plugins:
     # know what you are doing!
     daemon:
       schema_class: 'App::Netdisco::Daemon::DB'
-      dsn: 'dbi:SQLite:dbname=/home/netdisco/netdisco-daemon.db'
+      dsn: 'dbi:SQLite:dbname=:memory:'
       options:
         RaiseError: 1
         AutoCommit: 1

@@ -14,7 +14,7 @@ use App::Netdisco::Daemon::Queue ':all';
 use NetAddr::IP::Lite ':lower';
 
 use MCE;
-use Role::Tiny;
+use Role::Tiny::With;
 use Path::Class 'dir';
 
 my $tmp = dir($ENV{HOME}, 'tmp');
