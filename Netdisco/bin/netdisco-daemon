@@ -26,6 +26,7 @@ my $mce = MCE->new(
   user_tasks   => build_tasks_list(),
 )->run();
 
+
 sub call_worker_body {
   my ($self) = @_;
   $self->worker_body;
@@ -68,6 +69,7 @@ sub worker_factory {
   return sub {
     my $self = shift;
     Role::Tiny->apply_roles_to_object($self, "App::Netdisco::Daemon::Worker::$role");
+    $SIG{__DIE__} = sub { return @_ if $^S eq 1; $SIG{__DIE__}->(@_) };
     $self->worker_begin if $self->can('worker_begin');
   };
 }
