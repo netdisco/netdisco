@@ -23,7 +23,7 @@ requires:
   DBD::SQLite: 0
   DBIx::Class: 0
   DBIx::Class::Helper::Row::SubClass: 0
-  Daemon::Generic: 0
+  Daemon::Control: 0
   Dancer: 0
   Dancer::Plugin::DBIC: 0
   File::ShareDir: 0
@@ -31,9 +31,9 @@ requires:
   HTTP::Tiny: 0
   JSON: 0
   List::MoreUtils: 0
+  MCE: 0
   Net::MAC: 0
   NetAddr::IP: 0
-  Parallel::Prefork: 0
   Path::Class: 0
   Plack: 0
   Role::Tiny: 0
@@ -44,6 +44,7 @@ requires:
   YAML: 0
   namespace::clean: 0
   perl: 5.10.0
+  version: 0
 resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: http://sourceforge.net/tracker/?group_id=80033&atid=558508

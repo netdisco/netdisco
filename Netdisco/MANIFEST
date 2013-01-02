@@ -1,5 +1,6 @@
 bin/nd-dbic-versions
 bin/netdisco-daemon
+bin/netdisco-daemon-fg
 bin/netdisco-db-deploy
 bin/netdisco-deploy
 bin/netdisco-web
@@ -17,6 +18,7 @@ inc/Module/Install/WriteAll.pm
 lib/App/Netdisco.pm
 lib/App/Netdisco/Daemon/DB.pm
 lib/App/Netdisco/Daemon/DB/Result/Admin.pm
+lib/App/Netdisco/Daemon/Queue.pm
 lib/App/Netdisco/Daemon/Worker/Interactive.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/DeviceActions.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm
@@ -75,6 +77,7 @@ lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/Inventory.pm
 lib/App/Netdisco/Web/PortControl.pm
 lib/App/Netdisco/Web/Search.pm
+LICENCE
 Makefile.PL
 MANIFEST			This list of files
 META.yml

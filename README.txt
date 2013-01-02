@@ -49,7 +49,7 @@ Installation
          --local-lib ~/perl5 \
          App::cpanminus \
          App::local::lib::helper \
-         App::Netdisco
+         http://cpan.metacpan.org/authors/id/O/OL/OLIVER/App-Netdisco-2.00_012.tar.gz
 
     Link some of the newly installed apps into the "netdisco" user's $PATH,
     e.g. "~netdisco/bin":
@@ -57,9 +57,9 @@ Installation
      ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
     Test the installation by running the following command, which should
-    only produce some help text (and throw up no errors):
+    only produce a status message (and throw up no errors):
 
-     localenv netdisco-daemon
+     localenv netdisco-daemon status
 
 Configuration
     Make a directory for your local configuration and copy the configuration
@@ -109,6 +109,9 @@ Tips and Tricks
 
      DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
        DANCER_ENVDIR=~/environments plackup ~/bin/netdisco-web
+
+    To run the job daemon in the foreground, start the "netdisco-daemon-fg"
+    program instead of "netdisco-daemon".
 
 Future Work
     The intention is to support "plugins" for additonal features, most

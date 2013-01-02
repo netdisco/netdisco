@@ -87,9 +87,9 @@ e.g. C<~netdisco/bin>:
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
 Test the installation by running the following command, which should only
-produce some help text (and throw up no errors):
+produce a status message (and throw up no errors):
 
- localenv netdisco-daemon
+ localenv netdisco-daemon status
 
 =head1 Configuration
 
@@ -143,6 +143,9 @@ For SQL debugging try the following command:
 
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
    DANCER_ENVDIR=~/environments plackup ~/bin/netdisco-web
+
+To run the job daemon in the foreground, start the C<netdisco-daemon-fg>
+program instead of C<netdisco-daemon>.
 
 =head1 Future Work
 
