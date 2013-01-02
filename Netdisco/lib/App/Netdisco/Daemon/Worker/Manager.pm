@@ -39,7 +39,7 @@ sub worker_body {
 
   # get all pending jobs
   my $rs = schema('netdisco')->resultset('Admin')
-    ->search({wid => 0});
+    ->search({status => 'queued'});
 
   while (1) {
       while (my $job = $rs->next) {
@@ -64,7 +64,7 @@ sub worker_body {
 
       # TODO also check for stale jobs in Netdisco DB
 
-      interruptible_sleep( setting('daemon_sleep_time') || 5 );
+      sleep( setting('daemon_sleep_time') || 5 );
   }
 }
 
