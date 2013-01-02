@@ -17,14 +17,20 @@ sub worker_body {
   while (1) {
       my $jobs = $self->do('take_jobs', $self->wid, 'Interactive');
 
-      foreach my $job (@$jobs) {
-          my $target = 'set_'. $job->{action};
+      foreach my $candidate (@$jobs) {
+          # create a row object so we can use column accessors
+          # use the local db schema in case it is accidentally 'stored'
+          # (will throw an exception)
+          my $job = schema('daemon')->resultset('Admin')
+                      ->new_result($candidate);
+
+          my $target = 'set_'. $job->action;
           next unless $self->can($target);
 
           # do job
           my ($status, $log);
           try {
-              $job->{started} = scalar localtime;
+              $job->started(scalar localtime);
               ($status, $log) = $self->$target($job);
           }
           catch {
@@ -45,11 +51,11 @@ sub close_job {
 
   try {
       schema('netdisco')->resultset('Admin')
-        ->find($job->{job})
+        ->find($job->job)
         ->update({
           status => $status,
           log => $log,
-          started => $job->{started},
+          started => $job->started,
           finished => \'now()',
         });
   }
