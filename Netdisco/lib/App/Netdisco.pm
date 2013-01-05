@@ -40,8 +40,8 @@ interactive requests such as changing port or device properties. There is not
 yet a device poller, so please still use the old Netdisco's discovery, arpnip,
 and macsuck.
 
-If you have any trouble getting the frontend running, please speak to someone
-in the C<#netdisco> IRC channel (on freenode).
+If you have any trouble getting the frontend running, speak to someone in the
+C<#netdisco> IRC channel (on freenode).
 
 =head1 Dependencies
 

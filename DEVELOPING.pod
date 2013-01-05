@@ -1,6 +1,245 @@
 =head1 DEVELOPER NOTES
 
-This document will help developers understand the intent and design of the
-code within Netdisco.
+This document aims to help developers understand the intent and design of the
+code within Netdisco. Patches and feedback are always welcome :-)
+
+=head1 Introduction
+
+This release of Netdisco is built as a L<Dancer> application, and uses many
+modern technologies and techniques. Hopefully this will make the code easier
+to manage and maintain in the long term.
+
+Although Dancer is a web application framework, it provides very useful tools
+for command line applications as well, namely configuration file management
+and database connection management. We make use of these features in the
+daemon and deployment scripts.
+
+Overall the application tries to be as self-contained as possible without also
+needing an excessive number of CPAN modules to be installed. However, Modern
+Perl techniques have made dependency management almost a non-issue, and
+Netdisco can be installed by and run completely within an unprivileged user's
+account, apart from the PostgreSQL database setup.
+
+Finally the other core component of Netdisco is now a L<DBIx::Class> layer for
+database access. This means there is no SQL anywhere in the code, but more
+important, we can re-use the same complex queries in different parts of
+Netdisco.
+
+The rest of this document discusses each "interesting" area of the Netdisco
+codebase, hopefully in enough detail that you can get hacking yourself :-)
+
+=head1 Versioning
+
+This is Netdisco major version 2. The minor version has six digits, which are
+split into two components of three digits each. It's unlikely that the major
+version number (2) will increment. Each "feature" release to CPAN will
+increment the first three digits of the minor version. Each "bug fix" release
+will increment the second three digits of the minor version.
+
+Stable releases will have an even "feature" number. Beta releases will have an
+odd "feature" number and also a suffix with an underscore, to prevent CPAN
+indexing the distribution. Some examples:
+
+ 2.002002     - "feature" release 2, "bug fix" release 2
+ 2.002003     - another bug was found and fixed, hence "bug fix" release 3
+ 2.003000_001 - first beta for the next "feature" release
+ 2.003000_002 - second beta
+ 2.004001     - the next "feature" release
+
+
+=head1 Global Configuration
+
+Dancer uses YAML as its standard configuration file format, which is flexible
+enough for our needs, yet still simple to edit for the user. We no longer need
+a parser as in the old version of Netdisco.
+
+At the top of scripts you'll usually see something like:
+
+ use App::Netdisco;
+ use Dancer ':script';
+
+First, this uses C<App::Netdisco>, which is almost nothing more than a
+placeholder module (contains no actual application code). What it does is set
+several environment variables in order to locate the configuration files.
+
+Then, when we call "C<use Dancer>" these environment variables are used to
+load two YAML files: C<config.yml> and C<< <environment>.yml >> where
+C<< <environment> >> is typically either C<production> or C<development>.
+
+The concept of "environments" allows us to have some shared "master" config
+between all instances of the application (C<config.yml>), and then settings
+for specific circumstances. Typically this might be logging levels, for
+example. The default file which C<App::Netdisco> loads is C<development.yml>
+but you can override it by setting the "C<DANCER_ENVIRONMENT>" environment
+variable.
+
+Dancer loads the config using YAML, merging data from the two files. Config is
+made available via Dancer's C<setting('foo')> subroutine, which is exported.
+So now the C<foo> setting in either config file is easily accessed.
+
+Another line commonly seen in scripts is this:
+
+ use Dancer::Plugin::DBIC 'schema';
+
+This plugin saves a lot of effort by taking some database connection
+parameters from the configuration file, and instantiating DBIx::Class database
+connections with them. The connections are managed transparently so all we
+need to do to access the Netdisco database, with no additional setup, is:
+
+ schema('netdisco')->resultset(...)->search({...});
+
+
+=head1 DBIx::Class Layer
+
+DBIx::Class, or DBIC for short, is an Object-Relational Mapper. This means it
+abstracts away the SQL of database calls, presenting a Perl object for each
+table, set of results from a query, table row, etc. The advantage is that it
+can generate really smart SQL queries, and these queries can be re-used
+throughout the application.
+
+The DBIC layer for Netdisco is based at L<App::Netdisco::DB>. This is the
+global schema class and below that, under L<App::Netdisco::DB::Result> is a
+class for each table in the database. These contain metadata on the columns
+but also several handy "helper" queries which can be called.  There are also
+C<ResultSet> classes which provide additional "pre-canned" queries.
+
+Netdisco's DBIx::Class layer has excellent documentation which you are
+encouraged to read, particularly if you find it difficult to sleep.
+
+=head2 Results and ResultSets
+
+In DBIC a C<Result> is a table and a C<ResultSet> is a set of rows retrieved
+from the table as a result of a query (which might be all the rows, of
+course). This is why we have two types of DBIC class.
+Items in the C<Result> generally relate to the single table
+directly, and simply. In the C<ResultSet> class are more complex search
+modifiers which might synthesize new "columns" of data (e.g. formatting a
+timestamp) or subroutines which accept parameters to customize the query.
+
+However, regardless of the actual class name, you access them in the same way.
+For example the C<device> table has an L<App::Netdisco::DB::Result::Device>
+class and also an L<App::Netdisco::DB::ResultSet::Device> class. DBIC merges
+the two:
+
+ schema('netdisco')->resultset('Device')->get_models;
+
+=head2 Virtual Tables (VIEWs)
+
+Where we want to simplify our application code even further we can either
+install a VIEW in PostgreSQL, or use DBIx::Class to synthesize the view
+on-the-fly. Put simply, it uses the VIEW definition as the basis of an SQL
+query, yet in the application we treat it as a real table like any other.
+
+Some good examples are a fake table of only the active Nodes (as opposed to
+all nodes), or the more complex list of all ports which are connected together
+(C<DeviceLink>).
+
+All these tables live under the
+L<App::Netdisco::DB::Result::Virtual> namespace, and so you
+access them like so (for the C<ActiveNode> example):
+
+ schema('netdisco')->resultset('Virtual::ActiveNode')->count;
+
+=head2 Versioning and Deployment
+
+To manage the Netdisco schema in PostgreSQL we use DBIx::Class's deployment
+feature. This attaches a version to the schema and provides all the code to
+check the current version and do whatever is necessary to upgrade.
+The schema version is stored in a new table called
+C<dbix_class_schema_versions>, although you should never touch it.
+
+The C<netdisco-db-deploy> script included in the distribution performs the
+following services:
+
+ * Installs the dbix_class_schema_versions table
+ * Upgrades the schema to the current distribtion's version
+
+This works both on an empty, new database, and a legacy database from the
+existing Netdisco release, in a non-destructive way. For further information
+see L<DBIx::Class::Schema::Versioned> and the C<netdisco-db-deploy> script.
+
+The files used for the upgrades are shipped with this distribution and stored
+in the C<.../App/Netdisco/DB/schema_versions> directory. They are generated
+using the C<nd-dbic-versions> script which also ships with the distribution.
+
+=head2 Foreign Key Constraints
+
+We have not yet deployed any FK constraints into the Netdisco schema. This is
+partly because the current poller inserts and deletes entries from the
+database in an order which would violate such constraints, but also because
+some of the archiving features of Netdisco might not be compatible anyway.
+
+Regardless, a lack of FK constraints doesn't upset DBIx::Class. The
+constraints can easily be deployed in a future release of Netdisco.
+
+
+=head1 Web Application
+
+The Netdisco web app is a "classic" Dancer app, using most of the bundled
+features which make development really easy. Dancer is based on Ruby's Sinatra
+framework. The theme is that many "helper" subroutines are exported into the
+application namespace, to do things such as access request parameters,
+navigate around your "handler" subroutines, manage response headers, and so
+on.
+
+Pretty much anything you want to do in a web application has been wrapped up
+into a neat helper routine that does the heavy lifting. This includes
+configuration and database connection management, as was discussed above.
+Also, templates can be executed and Netdisco uses the venerable
+L<Template::Toolkit> engine for this.
+
+Like most web frameworks Dancer has a concept of "handlers" which are
+subroutines to which a specific web request is routed. For example if Netdisco
+asks for "C</device>" with some parameters the request ends up at the
+L<App::Netdisco::Web::Device> package's "C<get '/device'>" handler. All this
+is done automatically by Dancer according to some simple rules. There are also
+"wrapper" subroutines which we use to do tasks such as setting up data lookup
+tables, and handling authentication.
+
+Dancer also supports AJAX very well, and it is used to retrieve most of the
+data in the Netdisco web application in a dynamic way, to respond to search
+queries and avoid lengthy page reloads. You will see the handlers for AJAX
+look similar to those for GET requests but do not use Template::Toolkit
+templates.
+
+=head2 Running the Web App
+
+=head2 Authentication
+
+=head2 Templates
+
+=head2 Javascript
+
+
+=head1 Job Daemon
+
+=head2 SNMP::Info
+
+=head2 DBIx::Class Layer
+
+=head2 Running the Job Daemon
 
 =cut
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
