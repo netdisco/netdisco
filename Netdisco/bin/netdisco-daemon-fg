@@ -13,15 +13,23 @@ use App::Netdisco::Daemon::Queue ':all';
 # needed to quench AF_INET6 symbol errors
 use NetAddr::IP::Lite ':lower';
 
+BEGIN {
+  # set temporary location in home directory
+  # this should probably be overridable
+  use Path::Class 'dir';
+  my $tmp_dir = dir($ENV{HOME}, 'tmp');
+  mkdir $tmp_dir if ! -d $tmp_dir;
+  $ENV{TEMP} = $tmp_dir;
+
+  # set a new process group using our own process ID
+  # (as this is what MCE uses to signal the children)
+  setpgrp($$, 0);
+}
+
 use MCE;
 use Role::Tiny::With;
-use Path::Class 'dir';
-
-my $tmp = dir($ENV{HOME}, 'tmp');
-mkdir $tmp if ! -d $tmp;
 
 my $mce = MCE->new(
-  tmp_dir => $tmp,
   spawn_delay => 0.15,
   job_delay   => 0.15,
   user_func    => sub { $_[0]->worker_body },
@@ -30,10 +38,12 @@ my $mce = MCE->new(
 )->run();
 
 sub build_tasks_list {
-  my $tasks = [{
+  my $tasks = [];
+
+  push @$tasks, {
     max_workers => 1,
     user_begin => worker_factory('Manager'),
-  }];
+  };
 
   set(daemon_pollers => 2)
     if !defined setting('daemon_pollers');
@@ -64,9 +74,9 @@ sub worker_factory {
     # $self->sendto('stderr', ">>> worker $wid starting with role $role\n");
     Role::Tiny->apply_roles_to_object($self, "App::Netdisco::Daemon::Worker::$role");
 
-    # XXX temporary hack to work around MCE's use of __DIE__
+    # XXX temporary work around for MCE's use of __DIE__
     my $mce_die = $SIG{__DIE__};
-    $SIG{__DIE__} = sub { return @_ if $^S and $^S eq 1; $mce_die->(@_) };
+    $SIG{__DIE__} = sub { CORE::die($@) if $^S; $mce_die->(@_) };
     # XXX "there's nothing so permanent as temporary..." ~~ Milton Friedman
 
     $self->worker_begin if $self->can('worker_begin');

@@ -9,7 +9,6 @@ my $program = "$ENV{HOME}/bin/netdisco-daemon-fg";
 
 Daemon::Control->new({
   name => 'Netdisco Daemon',
-  user => 'netdisco',
   program  => ($ENV{NETDISCO_DAEMON} || $program),
   pid_file => "$ENV{HOME}/netdisco-daemon.pid",
 })->run;
