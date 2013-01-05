@@ -6,6 +6,10 @@
     code and fewer deps)
   * Version bump so that we'll be releasing odd numbered beta dists
 
+  [BUG FIXES]
+
+  * Fix sloppy schema calls which broke netmap
+
 2.00_012 - 2012-12-21
 
   [ENHANCEMENTS]

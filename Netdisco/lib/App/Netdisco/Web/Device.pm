@@ -115,19 +115,19 @@ sub _add_children {
     }
 }
 
-# d3 seems not to use proper json semantics, so get instead of ajax
+# d3 seems not to use proper ajax semantics, so get instead of ajax
 get '/ajax/data/device/netmap' => sub {
     my $start = param('q');
     return unless $start;
 
-    my @devices = schema->resultset('Device')->search({}, {
+    my @devices = schmea('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
       columns => ['ip', 'dns'],
     })->all;
     var(devices => { map { $_->{ip} => $_->{dns} } @devices });
 
     var(links => {});
-    my $rs = schema->resultset('Virtual::DeviceLinks')->search({}, {
+    my $rs = schmea('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
@@ -150,13 +150,13 @@ get '/ajax/data/device/netmap' => sub {
 };
 
 ajax '/ajax/data/device/alldevicelinks' => sub {
-    my @devices = schema->resultset('Device')->search({}, {
+    my @devices = schmea('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
       columns => ['ip', 'dns'],
     })->all;
     var(devices => { map { $_->{ip} => $_->{dns} } @devices });
 
-    my $rs = schema->resultset('Virtual::DeviceLinks')->search({}, {
+    my $rs = schmea('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
