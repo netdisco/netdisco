@@ -28,7 +28,7 @@ requires 'Socket6' => 0;
 requires 'Template' => 0;
 requires 'YAML' => 0;
 requires 'namespace::clean' => 0;
-requires 'version' => 0;
+requires 'version' => 0.9901;
 
 install_share 'share';
 

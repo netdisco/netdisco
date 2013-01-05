@@ -30,11 +30,12 @@ App::Netdisco - An open source web-based network management tool.
 
 =head1 Introduction
 
-The contents of this distribution is the next major version of the Netdisco
-network management tool. See L<http://netdisco.org/> for further information
-on the project.
+The content of this distribution is the next major version of the Netdisco
+network management tool. Pieces are still missing however, so if you're a new
+user please see L<http://netdisco.org/> for further information on the project
+and how to download the current official release.
 
-So far L<App::Netdisco> provides a web frontend and a backend daemon to handle
+L<App::Netdisco> provides a web frontend and a backend daemon to handle
 interactive requests such as changing port or device properties. There is not
 yet a device poller, so please still use the old Netdisco's discovery, arpnip,
 and macsuck.
@@ -56,14 +57,16 @@ With those two installed, we can proceed...
 
 Create a user on your system called C<netdisco> if one does not already exist.
 We'll install Netdisco and its dependencies into this user's home area, which
-will take about 200MB including MIB files.
+will take about 250MB including MIB files.
 
- # useradd -m -p x -s /bin/bash nedisco
+ root:~# useradd -m -p x -s /bin/bash nedisco
 
 Netdisco uses the PostgreSQL database server. Install PostgreSQL and then change
 to the PostgreSQL superuser (usually C<postgres>). Create a new database and
 PostgreSQL user for the Netdisco application:
 
+ root:~# su - postgres
+  
  postgres:~$ createuser -DRSP netdisco
  Enter password for new role:
  Enter it again:
@@ -84,12 +87,13 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 Link some of the newly installed apps into the C<netdisco> user's C<$PATH>,
 e.g. C<~netdisco/bin>:
 
+ mkdir ~/bin
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
 Test the installation by running the following command, which should only
 produce a status message (and throw up no errors):
 
- localenv netdisco-daemon status
+ ~/bin/localenv netdisco-daemon status
 
 =head1 Configuration
 
@@ -113,7 +117,7 @@ release of Netdisco (1.x). You also need vendor MAC address prefixes (OUI
 data) and some MIBs if you want to run the daemon. The following script will
 take care of all this for you:
 
- DANCER_ENVDIR=~/environments localenv netdisco-deploy
+ DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
 
 If you don't want that level of automation, check out the database schema diff
 from the current release of Netdisco, and apply it yourself:
@@ -124,14 +128,14 @@ from the current release of Netdisco, and apply it yourself:
 
 Run the following command to start the web server:
 
- DANCER_ENVDIR=~/environments localenv plackup ~/bin/netdisco-web
+ DANCER_ENVDIR=~/environments ~/bin/localenv plackup ~/bin/netdisco-web
 
 Other ways to run and host the web application can be found in the
 L<Dancer::Deployment> page. See also the L<plackup> documentation.
 
 Run the following command to start the daemon:
 
- DANCER_ENVDIR=~/environments localenv netdisco-daemon start
+ DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-daemon start
 
 =head1 Tips and Tricks
 
@@ -145,7 +149,7 @@ For SQL debugging try the following command:
    DANCER_ENVDIR=~/environments plackup ~/bin/netdisco-web
 
 To run the job daemon in the foreground, start the C<netdisco-daemon-fg>
-program instead of C<netdisco-daemon>.
+program instead of C<plackup netdisco-daemon>.
 
 =head1 Future Work
 
