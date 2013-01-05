@@ -29,9 +29,11 @@ Dependencies
     exist. We'll install Netdisco and its dependencies into this user's home
     area, which will take about 200MB including MIB files.
 
-    Netdisco uses the PostgreSQL (Pg) database server. Install Pg and then
-    change to the PostgreSQL superuser (usually "postgres"). Create a new
-    database and Pg user for the Netdisco application:
+     # useradd -m -p x -s /bin/bash nedisco
+
+    Netdisco uses the PostgreSQL database server. Install PostgreSQL and
+    then change to the PostgreSQL superuser (usually "postgres"). Create a
+    new database and PostgreSQL user for the Netdisco application:
 
      postgres:~$ createuser -DRSP netdisco
      Enter password for new role:
@@ -47,9 +49,7 @@ Installation
      su - netdisco
      curl -L http://cpanmin.us/ | perl - --notest --quiet \
          --local-lib ~/perl5 \
-         App::cpanminus \
-         App::local::lib::helper \
-         http://cpan.metacpan.org/authors/id/O/OL/OLIVER/App-Netdisco-2.00_012.tar.gz
+         App::cpanminus App::local::lib::helper App::Netdisco
 
     Link some of the newly installed apps into the "netdisco" user's $PATH,
     e.g. "~netdisco/bin":

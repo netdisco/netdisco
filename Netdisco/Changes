@@ -1,3 +1,11 @@
+2.01_001 - 2013-01-05
+
+  [ENHANCEMENTS]
+
+  * Rewrite of the daemon to use Daemon::Control and MCE (cleaner netdisco
+    code and fewer deps)
+  * Version bump so that we'll be releasing odd numbered beta dists
+
 2.00_012 - 2012-12-21
 
   [ENHANCEMENTS]
