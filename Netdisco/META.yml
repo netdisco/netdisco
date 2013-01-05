@@ -31,7 +31,7 @@ requires:
   HTTP::Tiny: 0
   JSON: 0
   List::MoreUtils: 0
-  MCE: 0
+  MCE: 1.304
   Net::MAC: 0
   NetAddr::IP: 0
   Path::Class: 0
