@@ -1,9 +1,18 @@
 #!/usr/bin/env perl
 
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-use App::Netdisco;
+use strict;
+use warnings FATAL => 'all';
 
-use Dancer;
-use App::Netdisco::Web;
-dance;
+BEGIN {
+  eval "use Daemon::Control";
+  if ($@) {
+      exec("$ENV{HOME}/bin/localenv", $0, @ARGV);
+  }
+}
+
+Daemon::Control->new({
+  name => 'Netdisco Web',
+  program  => 'plackup',
+  program_args => ["$ENV{HOME}/bin/netdisco-web-fg"],
+  pid_file => "$ENV{HOME}/netdisco-web.pid",
+})->run;

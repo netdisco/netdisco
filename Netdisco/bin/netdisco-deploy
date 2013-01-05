@@ -41,6 +41,7 @@ say ' * Internet access';
 say ' * Database added to PostgreSQL for Netdisco';
 say ' * User added to PostgreSQL with rights to the Netdisco Database';
 say ' * "environments/development.yml" file configured with Database dsn/user/pass';
+say ' * A full backup of any existing Netdisco database data';
 say '';
 say 'You will be asked to confirm all changes to your system.';
 say '';

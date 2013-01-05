@@ -3,7 +3,12 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Daemon::Control;
+BEGIN {
+  eval "use Daemon::Control";
+  if ($@) {
+      exec("$ENV{HOME}/bin/localenv", $0, @ARGV);
+  }
+}
 
 my $program = "$ENV{HOME}/bin/netdisco-daemon-fg";
 

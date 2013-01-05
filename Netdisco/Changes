@@ -4,6 +4,7 @@
 
   * Rewrite of the daemon to use Daemon::Control and MCE (cleaner netdisco
     code and fewer deps)
+  * Added daemonized version of the web-app server also using Daemon::Control
   * Version bump so that we'll be releasing odd numbered beta dists
 
   [BUG FIXES]

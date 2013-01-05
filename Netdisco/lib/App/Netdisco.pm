@@ -93,7 +93,7 @@ e.g. C<~netdisco/bin>:
 Test the installation by running the following command, which should only
 produce a status message (and throw up no errors):
 
- ~/bin/localenv netdisco-daemon status
+ ~/bin/netdisco-daemon status
 
 =head1 Configuration
 
@@ -126,16 +126,13 @@ from the current release of Netdisco, and apply it yourself:
 
 =head1 Startup
 
-Run the following command to start the web server:
+Run the following command to start the web-app server as a daemon:
 
- DANCER_ENVDIR=~/environments ~/bin/localenv plackup ~/bin/netdisco-web
+ DANCER_ENVDIR=~/environments ~/bin/netdisco-web start
 
-Other ways to run and host the web application can be found in the
-L<Dancer::Deployment> page. See also the L<plackup> documentation.
+Run the following command to start the job control daemon (port control, etc):
 
-Run the following command to start the daemon:
-
- DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-daemon start
+ DANCER_ENVDIR=~/environments ~/bin/netdisco-daemon start
 
 =head1 Tips and Tricks
 
@@ -143,24 +140,34 @@ The main black navigation bar has a search box which is smart enough to work
 out what you're looking for in most cases. For example device names, node IP
 or MAC addreses, VLAN numbers, and so on.
 
-For SQL debugging try the following command:
+For SQL debugging try the following commands:
 
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
-   DANCER_ENVDIR=~/environments plackup ~/bin/netdisco-web
+   DANCER_ENVDIR=~/environments ~/bin/localenv plackup ~/bin/netdisco-web-fg
+  
+ DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
+   DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-daemon-fg
 
-To run the job daemon in the foreground, start the C<netdisco-daemon-fg>
-program instead of C<plackup netdisco-daemon>.
+Other ways to run and host the web application can be found in the
+L<Dancer::Deployment> page. See also the L<plackup> documentation.
+
+With the default configuration user authentication is disabled and the default
+"guest" user has no special privilege. To grant port and device control rights
+to this user, create a row in the C<users> table of the Netdisco database with
+a username of C<guest> and the C<port_control> flag set to true:
+
+ netdisco=> insert into users (username, port_control) values ('guest', true);
 
 =head1 Future Work
+
+Bundled with this app is a L<DBIx::Class> layer for the Netdisco database.
+This could be a starting point for an "official" DBIC layer. Helper functions
+and canned searches have been added to support the web interface.
 
 The intention is to support "plugins" for additonal features, most notably
 columns in the Device Port listing, but also new menu items and tabs. The
 design of this is sketched out but not implemented. The goal is to avoid
 patching core code to add localizations or less widely used features.
-
-Bundled with this app is a L<DBIx::Class> layer for the Netdisco database.
-This could be a starting point for an "official" DBIC layer. Helper functions
-and canned searches have been added to support the web interface.
 
 =head1 Caveats
 
