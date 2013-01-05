@@ -10,9 +10,15 @@ BEGIN {
   }
 }
 
+use Path::Class;
+my $log_dir = dir($ENV{HOME}, 'logs');
+mkdir $log_dir if ! -d $log_dir;
+
 Daemon::Control->new({
   name => 'Netdisco Web',
   program  => 'plackup',
   program_args => ["$ENV{HOME}/bin/netdisco-web-fg"],
   pid_file => "$ENV{HOME}/netdisco-web.pid",
+  stderr_file => file($log_dir, 'netdisco-web.log'),
+  stdout_file => file($log_dir, 'netdisco-web.log'),
 })->run;
