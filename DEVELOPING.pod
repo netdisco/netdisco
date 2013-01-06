@@ -177,20 +177,19 @@ constraints can easily be deployed in a future release of Netdisco.
 
 The Netdisco web app is a "classic" Dancer app, using most of the bundled
 features which make development really easy. Dancer is based on Ruby's Sinatra
-framework. The theme is that many "helper" subroutines are exported into the
+framework. Its style is for many "helper" subroutines to be exported into the
 application namespace, to do things such as access request parameters,
-navigate around your "handler" subroutines, manage response headers, and so
-on.
+navigate around the "handler" subroutines, manage response headers, and so on.
 
 Pretty much anything you want to do in a web application has been wrapped up
-into a neat helper routine that does the heavy lifting. This includes
-configuration and database connection management, as was discussed above.
-Also, templates can be executed and Netdisco uses the venerable
+by Dancer into a neat helper routine that does the heavy lifting. This
+includes configuration and database connection management, as was discussed
+above. Also, templates can be executed and Netdisco uses the venerable
 L<Template::Toolkit> engine for this.
 
 Like most web frameworks Dancer has a concept of "handlers" which are
-subroutines to which a specific web request is routed. For example if Netdisco
-asks for "C</device>" with some parameters the request ends up at the
+subroutines to which a specific web request is routed. For example if the user
+asks for "C</device>" with some parameters, the request ends up at the
 L<App::Netdisco::Web::Device> package's "C<get '/device'>" handler. All this
 is done automatically by Dancer according to some simple rules. There are also
 "wrapper" subroutines which we use to do tasks such as setting up data lookup
@@ -202,22 +201,229 @@ queries and avoid lengthy page reloads. You will see the handlers for AJAX
 look similar to those for GET requests but do not use Template::Toolkit
 templates.
 
+Compared to the current Netdisco, the handler routines are very small. This is
+because (a) they don't include any HTML - this is delegated to a template, and
+(b) they don't include an SQL - this is delegated to DBIx::Class. Small
+routines are more manageable, and easier to maintain. You'll also notice use
+of modules such as L<Net::MAC> and L<NetAddr::IP::Lite> to simplify and make
+more robust the handling of data.
+
 =head2 Running the Web App
+
+Dancer apps conform to the "PSGI" standard interface for web applications,
+which makes for easy deployment under many stacks such as Apache, FCGI, etc.
+See L<Dancer::Deployment> for more detail.
+
+At a minimum Netdisco can run from within its own user area as an unprivileged
+user, and ships with a simple web server engine (see the user docs for
+instructions). The C<netdisco-web> script uses L<Daemon::Control> to daemonize
+this simple web server so you can fire-and-forget the Netdisco web app without
+much trouble at all. This script in turn calls C<netdisco-web-fg> which is the
+real Dancer application, that runs in the foreground if called on its own.
+
+All web app code lives below L<App::Netdisco::Web>, but there are also some
+helper routines in L<App::Netdisco::Util::Web> (for example sorting device
+port names).
 
 =head2 Authentication
 
+Dancer includes (of course) good session management using cookies and a memory
+database. You should change this to a disk database if using a proper forking
+web server installation so that sessions are available to all instances.
+
+Session and authentication code lives in L<App::Netdisco::Web::AuthN>. It is
+fully backwards compatible with the existing Netdisco user management, making
+use of the database users and their MD5 passwords.
+
+There is also support for unauthenticated access to the web app (for instance
+if you have some kind of external authentication, or simply trust everyone).
+
 =head2 Templates
 
+In the C<share/views> folder of this distribution you'll find all the
+Template::Toolkit template files, with C<.tt> extensions. Dancer first loads
+C<share/views/layouts/main.tt> which is the main page wrapper, that has the HTML
+header and so on. It then loads other templates for sections of the page body.
+This is a typical Template::Toolkit "wrapper" configuration, as noted by the
+C<[% content %]> call within C<main.tt> that loads the template you actually
+specified in your Dancer handler.
+
+All templates (and Javascript and Stylesheets) are shipped in the Dancer
+distribution and located automatically by the application (using the
+environment variables which L<App::Netdisco> set up). The user doesn't have to
+copy or install any files.
+
+There's a template for the homepage called C<index.tt>, then separate
+templates for searching, displaying device details, and showing inventory.
+These are, pretty much, all that Netdisco ever does.
+
+Each of these pages is designed in a deliberately similar way, with re-used
+features. They each can have a "sidebar" with a search form (or additional
+search parameters). They also can have a tabbed interface for sub-topics.
+
+Here's where it gets interesting. Up till now the page content has been your
+typical synchronous page load (a single page comprised of many templates) in
+response to a GET request. However the content of the tabs is not within this.
+Each tab has its content dynamically retrieved via an AJAX request back to the
+web application. Javscript triggers this automatically on page load.
+
+This feature allows the user to search and search again, each time refreshing
+the data they see in the tab but without reloading the complete page with all
+its static furniture. AJAX can, of course, return any MIME type, not only JSON
+but also HTML content as in this case. The templates for the tabs are
+organised below C<share/views/ajax/...> in the distribution.
+
+=head2 Stylesheets
+
+The main style for Netdisco uses Twitter Bootstrap, which is a stylish modern
+library of styles and javascript used on many websites. It does a lot of heavy
+lifting, providing simple CSS classes for all of the standard web page
+furniture (forms, tables, etc). Check out the documetation at the Twitter
+Bootstrap web site for more information.
+
+These stylesheets are of course customised with our own C<netdisco.css>. We
+try to name all CSS classes with a prefix "C<nd_>" so as to be distinct from
+Twitter Bootstrap and any other active styles.
+
+All stylesheets are located in the C<share/public/css> folder of the
+distribution and, like the templates, are automatically located and served by
+the Netdisco application. You can also choose to serve this content statically
+via Apache/etc for high traffic sites.
+
+Although Twitter Bootstrap ships with its own set of icons, we use an
+alternative library called Fontawesome. This plugs in easily to Bootstrap and
+provides a wider range of scaleable vectored icons which are easy to use.
+
 =head2 Javascript
+
+Of course many parts of the Netdisco site use Javascript, beginning with
+retrieving the page tab content itself. The standard library in use is jQuery,
+and the latest version is shipped with this distribution.
+
+Many parts of the Netdisco site have small Javscript routines. The code for
+these, using jQuery as mentioned, lives in two places. The main C<netdisco.js>
+file is loaded once in the page HTML header, and lives in
+C<share/public/javascripts/netdisco.js>. There's also a
+C<netdisco_portcontrol.js> which is included only if the current user has Port
+Control rights.
+
+Netdisco also has Javascript routines specific to the device search or device
+details pages, and these files are located in C<share/views/js/...> because
+they're loaded within the page body by the templates. These files contain a
+function C<inner_view_processing> which is called each time AJAX delivers new
+content into a tab in the page (think of it like a callback, perhaps).
+
+Also in the C<share/public/javascripts/...> folder are the other public
+libraries loaded by the Netdisco application:
+
+The Toastr library is used for "Growl"-like notifications which appear in the
+corner of the web browser and then fade away. These notify the user of
+successful background job submission, and jos results.
+
+The d3 library is a graphics toolkit used to display the NetMap feature. This
+works differently from the old Netdisco in that everything is generated
+on-the-fly using SQL queries (C<DeviceLinks> resultset) and this d3 library
+for rendering.
+
+Finally Twitter Bootstrap also ships with a toolkit of helpful Javascript
+driven features such as the tooltips and collapsers.
 
 
 =head1 Job Daemon
 
+The old Netdisco has a job control daemon which processes "port control"
+actions and also manual requests for device polling. The new Netdisco also has
+a daemon, although it is a true separate process and set of libraries from the
+web application. However, it still makes use of the Dancer configuration and
+database connection management features mentioned above.
+
+The job daemon is backwards compatible with the old Netdisco database job
+requests table, although it doesn't yet log results in the same way. Most
+important, it cannot yet poll any devices for discovery or macsuck/arpnip,
+although that's next on the list!
+
+All code for the job daemon lives under the L<App::Netdisco::Daemon> namespace
+and like the rest of Netdisco is broken down into manageable chunks.
+
+=head2 Running the Job Daemon
+
+Like the web application, the job daemon is fully self contained and runs via
+two simple scripts shipped with the distribution - one for foreground and one
+for background execution (see the user docs for instructions).
+
+The C<netdisco-daemon> script uses L<Daemon::Control> to daemonize so you can
+fire-and-forget the Netdisco job daemon without much trouble at all. This
+script in turn calls C<netdisco-daemon-fg> which is the real application, that
+runs in the foreground if called on its own.
+
+=head2 Daemon Engineering
+
+The job daemon is based on the L<MCE> library, which handles the forking and
+management of child processes doing the actual work. This actually runs in the
+foreground unless wrapped with Daemon::Control, as mentioned above. MCE
+handles three flavours of "worker" for different tasks.
+
+One goal that we had designing the daemon was that sites should be able to run
+many instances on different servers, with different processing capacities.
+This is both to take advantage of more processor capability, but also to deal
+with security zones where you might only be able to manage a subset of devices
+from certain locations. Netdisco has always coped well with this via its
+C<discover_*> and similar configuration, and the separate poller process.
+
+So, the single Manager "worker" in the daemon is responsible for contacting
+the central Netdisco database and booking out jobs which it's able to service
+according to the local configuration settings. Jobs are "locked" in the
+central queue and then copied to a local job queue within the daemon.
+
+Along with the Manager we start zero or more of two other types of worker.
+Some jobs such as port control are "interactive" and the user typically wants
+quick feedback on the results. Others such as polling are background tasks
+which can take more time and are less schedule sensitive. So as not to starve
+the "interactive" jobs of workers we have two types of worker.
+
+The Interactive worker picks jobs from the local job queue relating to device
+and port reconfiguration only. It submits results directly back to the central
+Netdisco database.
+
+The Poller worker (is not yet written!) and similarly picks job from the local
+queue, this time relating to device discovery and polling.
+
+There is support in the daemon for the workers to pick more than one job at a
+time from the local queue, in case we decide this is worth doing. However the
+Manager won't ever book out more jobs from the central Netdisco job queue than
+it has workers available (so as not to hog jobs for itself against other
+daemons on other servers). The user is free to configure the number of
+Interactive and Poller workers in their C<config.yml> file (zero or more of
+each).
+
 =head2 SNMP::Info
+
+The daemon obviously needs to use L<SNMP::Info> for device control. All the
+code for this has been factored out into the L<App::Netdisco::Util> namespace.
+
+The L<App::Netdisco::Util::Connect> package provides for the creation of
+SNMP::Info objects along with connection tests. So far, SNMPv3 is not
+supported. To enable trace logging of the SNMP::Info object simply set the
+C<INFO_TRACE> environment variable to a true value.  The Connect library also
+provides routines to map interface and PoE IDs.
+
+Configuration for SNMP::Info comes from the YAML files, of course. This means
+that our C<mibhome> and C<mibdirs> settings are now in YAML format. In
+particular, the C<mibdirs> list is a real list within the configuration.
+
+Other libraries will be added to this namespace in due course, as we add more
+functionality to the Job Daemon.
 
 =head2 DBIx::Class Layer
 
-=head2 Running the Job Daemon
+The local job queue for each Job Daemon is actually an SQLite database running
+in memory. This makes the queue management code a little more elegant. The
+schema for this is of course DBIx::Class using Dancer connection management,
+and lives in L<App::Netdisco::Daemon::DB>.
+
+There is currently only one table, the port control job queue, in
+L<App::Netdisco::Daemon::DB::Result::Admin>. It's likely this name will change
+in the future.
 
 =cut
 
