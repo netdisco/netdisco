@@ -1,6 +1,4 @@
-* bootstrap/setup script to install perl modules and db schema
 * frontend plugin design and support
-* document how the templates and JS fit together
 * add poller to daemon (scheduling automatically?)
 * re-do print css
 * UI for topo DB table editing

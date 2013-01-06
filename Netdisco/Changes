@@ -1,16 +1,26 @@
+2.001000_001 - 2013-01-06
+
+  [NEW FEATURES]
+
+  * Added daemonized version of the web-app server also using Daemon::Control
+
+  [ENHANCEMENTS]
+
+  * Daemons now log to ~/logs/netdisco-{web,daemon}.log
+  * Finally wrote the DEVELOPING.pod documentation
+  * Removed the MCE workarounds as upstream merged fixes
+
+  [BUG FIXES]
+
+  * Fix sloppy schema calls which broke netmap
+
 2.01_001 - 2013-01-05
 
   [ENHANCEMENTS]
 
   * Rewrite of the daemon to use Daemon::Control and MCE (cleaner netdisco
     code and fewer deps)
-  * Added daemonized version of the web-app server also using Daemon::Control
-  * Daemons now log to ~/logs/netdisco-{web,daemon}.log
   * Version bump so that we'll be releasing odd numbered beta dists
-
-  [BUG FIXES]
-
-  * Fix sloppy schema calls which broke netmap
 
 2.00_012 - 2012-12-21
 
@@ -83,7 +93,7 @@
   * node search switchport link shows connected nodes again
   * show device IP in search results when DNS is not available
 
-2.00_007 - 2012-11-25
+0.7 - 2012-11-25
 
   [NEW FEATURES]
 
@@ -109,7 +119,7 @@
   * Fix netgear port ordering (closes #26)
   * Fix Foundry 10GE port ordering
 
-2.00_006 2012-08-28
+0.6 2012-08-28
 
   [NEW FEATURES]
 
@@ -134,7 +144,7 @@
 
   * Fix sidebar hiding not making main content reflow to full window width (#15)
 
-2.00_005 2012-03-09
+0.5 2012-03-09
 
   [NEW FEATURES]
 
@@ -154,13 +164,13 @@
   * Set distinct on device search (#12)
   * Fix strikethrough on tab change (#9)
 
-2.00_004 2012-02-19
+0.4 2012-02-19
 
   [NEW FEATURES]
 
   * Sidebar can be pinned in place to keep it visible when scrolling.
 
-2.00_003  2011-02-03
+0.3  2011-02-03
 
   [NEW FEATURES]
 
@@ -177,7 +187,7 @@
   * Refactor Stylsheets to better organise and comment the settings.
   * When Device Search sidebar is in use, strikethrough the navbar search.
 
-2.00_002  2011-01-22
+0.2  2011-01-22
 
   [NEW FEATURES]
 
@@ -201,6 +211,6 @@
   * Device Ports Legend show/hide arrow was pointing the wrong way.
   * Increase TT WHILE_MAX to allow very long lists of ports.
 
-2.00_001  2011-01-18
+0.1  2011-01-18
 
   * Initial release on an unsuspecting world.
