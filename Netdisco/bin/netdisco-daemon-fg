@@ -24,7 +24,7 @@ use Role::Tiny::With;
 my $mce = MCE->new(
   spawn_delay => 0.15,
   job_delay   => 0.15,
-  tmp_dir     => $tmp_dir;
+  tmp_dir     => $tmp_dir,
   user_func    => sub { $_[0]->worker_body },
   on_post_exit => \&restart_worker,
   user_tasks   => build_tasks_list(),
