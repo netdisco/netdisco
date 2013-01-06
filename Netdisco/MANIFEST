@@ -4,6 +4,7 @@ bin/netdisco-daemon-fg
 bin/netdisco-db-deploy
 bin/netdisco-deploy
 bin/netdisco-web
+bin/netdisco-web-fg
 Changes
 inc/Module/Install.pm
 inc/Module/Install/Base.pm

@@ -13,18 +13,10 @@ use App::Netdisco::Daemon::Queue ':all';
 # needed to quench AF_INET6 symbol errors
 use NetAddr::IP::Lite ':lower';
 
-BEGIN {
-  # set temporary location in home directory
-  # this should probably be overridable
-  use Path::Class 'dir';
-  my $tmp_dir = dir($ENV{HOME}, 'tmp');
-  mkdir $tmp_dir if ! -d $tmp_dir;
-  $ENV{TEMP} = $tmp_dir;
-
-  # set a new process group using our own process ID
-  # (as this is what MCE uses to signal the children)
-  setpgrp($$, 0);
-}
+# set temporary MCE files' location in home directory
+use Path::Class 'dir';
+my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($ENV{HOME}, 'tmp'));
+mkdir $tmp_dir if ! -d $tmp_dir;
 
 use MCE;
 use Role::Tiny::With;
@@ -32,18 +24,17 @@ use Role::Tiny::With;
 my $mce = MCE->new(
   spawn_delay => 0.15,
   job_delay   => 0.15,
+  tmp_dir     => $tmp_dir;
   user_func    => sub { $_[0]->worker_body },
   on_post_exit => \&restart_worker,
   user_tasks   => build_tasks_list(),
 )->run();
 
 sub build_tasks_list {
-  my $tasks = [];
-
-  push @$tasks, {
+  my $tasks = [{
     max_workers => 1,
     user_begin => worker_factory('Manager'),
-  };
+  }];
 
   set(daemon_pollers => 2)
     if !defined setting('daemon_pollers');
@@ -73,11 +64,6 @@ sub worker_factory {
     # my $wid = $self->wid;
     # $self->sendto('stderr', ">>> worker $wid starting with role $role\n");
     Role::Tiny->apply_roles_to_object($self, "App::Netdisco::Daemon::Worker::$role");
-
-    # XXX temporary work around for MCE's use of __DIE__
-    my $mce_die = $SIG{__DIE__};
-    $SIG{__DIE__} = sub { CORE::die($@) if $^S; $mce_die->(@_) };
-    # XXX "there's nothing so permanent as temporary..." ~~ Milton Friedman
 
     $self->worker_begin if $self->can('worker_begin');
   };
