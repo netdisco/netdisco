@@ -31,7 +31,7 @@ Dependencies
     exist. We'll install Netdisco and its dependencies into this user's home
     area, which will take about 250MB including MIB files.
 
-     root:~# useradd -m -p x -s /bin/bash nedisco
+     root:~# useradd -m -p x -s /bin/bash netdisco
 
     Netdisco uses the PostgreSQL database server. Install PostgreSQL and
     then change to the PostgreSQL superuser (usually "postgres"). Create a

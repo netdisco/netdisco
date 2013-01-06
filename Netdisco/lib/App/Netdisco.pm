@@ -59,7 +59,7 @@ Create a user on your system called C<netdisco> if one does not already exist.
 We'll install Netdisco and its dependencies into this user's home area, which
 will take about 250MB including MIB files.
 
- root:~# useradd -m -p x -s /bin/bash nedisco
+ root:~# useradd -m -p x -s /bin/bash netdisco
 
 Netdisco uses the PostgreSQL database server. Install PostgreSQL and then change
 to the PostgreSQL superuser (usually C<postgres>). Create a new database and
