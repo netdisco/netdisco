@@ -126,7 +126,7 @@ from the current release of Netdisco, and apply it yourself:
 
 =head1 Startup
 
-Run the following command to start the web-app server as a daemon:
+Run the following command to start the web-app server as a daemon (port 5000):
 
  DANCER_ENVDIR=~/environments ~/bin/netdisco-web start
 

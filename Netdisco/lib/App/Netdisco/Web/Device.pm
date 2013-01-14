@@ -120,14 +120,14 @@ get '/ajax/data/device/netmap' => sub {
     my $start = param('q');
     return unless $start;
 
-    my @devices = schmea('netdisco')->resultset('Device')->search({}, {
+    my @devices = schema('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
       columns => ['ip', 'dns'],
     })->all;
     var(devices => { map { $_->{ip} => $_->{dns} } @devices });
 
     var(links => {});
-    my $rs = schmea('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
+    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
@@ -150,13 +150,13 @@ get '/ajax/data/device/netmap' => sub {
 };
 
 ajax '/ajax/data/device/alldevicelinks' => sub {
-    my @devices = schmea('netdisco')->resultset('Device')->search({}, {
+    my @devices = schema('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
       columns => ['ip', 'dns'],
     })->all;
     var(devices => { map { $_->{ip} => $_->{dns} } @devices });
 
-    my $rs = schmea('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
+    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
