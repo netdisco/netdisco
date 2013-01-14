@@ -1,7 +1,8 @@
-2.003000_001 - 
+2.004000 - 2013-01-14
 
   [BUG FIXES]
 
+  * Very naughty typo in netmap code, which I forgot to merge a fix for.
   * Typo in installation docs (S. Gupta)
 
 2.002000 - 2013-01-06

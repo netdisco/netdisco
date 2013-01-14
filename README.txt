@@ -94,7 +94,8 @@ Bootstrap
      ~/perl5/lib/perl5/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-3-PostgreSQL.sql
 
 Startup
-    Run the following command to start the web-app server as a daemon:
+    Run the following command to start the web-app server as a daemon (port
+    5000):
 
      DANCER_ENVDIR=~/environments ~/bin/netdisco-web start
 
