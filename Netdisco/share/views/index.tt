@@ -26,12 +26,6 @@
           <a href="http://sourceforge.net/tracker/?group_id=80033&atid=558508" target="_blank">Report a Bug?</a>
       </div>
       [% END %]
-      [% IF NOT session.user %]
-      <div class="alert alert-success fade in">
-        <a class="close" data-dismiss="alert">×</a>
-        Log in to the Demo with username &quot;demo&quot; and password &quot;demo&quot;.
-      </div>
-      [% END %]
       <div class="hero-unit">
         <h2>Welcome to Netdisco</h2>
         <small>Netdisco is an Open Source web-based network management tool.</small>

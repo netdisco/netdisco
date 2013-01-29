@@ -1,3 +1,9 @@
+2.004001 - 2013-01-29
+
+  [BUG FIXES]
+
+  * No longer prompt for demo/demo credentials (closes #38)
+
 2.004000 - 2013-01-14
 
   [BUG FIXES]
