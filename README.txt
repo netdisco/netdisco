@@ -104,6 +104,9 @@ Startup
 
      DANCER_ENVDIR=~/environments ~/bin/netdisco-daemon start
 
+    You should (of course) avoid running this Netdisco daemon and the legacy
+    daemon at the same time.
+
 Tips and Tricks
     The main black navigation bar has a search box which is smart enough to
     work out what you're looking for in most cases. For example device
@@ -127,6 +130,12 @@ Tips and Tricks
     set to true:
 
      netdisco=> insert into users (username, port_control) values ('guest', true);
+
+Upgrading
+    Simply install this module again, then upgrade the database schema:
+
+     ~/bin/localenv cpanm --quiet --notest App::Netdisco
+     DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
 
 Future Work
     Bundled with this app is a DBIx::Class layer for the Netdisco database.

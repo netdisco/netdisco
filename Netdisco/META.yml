@@ -31,7 +31,7 @@ requires:
   HTTP::Tiny: 0
   JSON: 0
   List::MoreUtils: 0
-  MCE: 1.304
+  MCE: 1.305
   Net::MAC: 0
   NetAddr::IP: 0
   Path::Class: 0
@@ -44,11 +44,11 @@ requires:
   YAML: 0
   namespace::clean: 0
   perl: 5.10.0
-  version: 0
+  version: 0.9901
 resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: http://sourceforge.net/tracker/?group_id=80033&atid=558508
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://netdisco.git.sourceforge.net/gitroot/netdisco/netdisco-ng
-version: 2.00_012
+version: 2.004001

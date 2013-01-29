@@ -68,7 +68,9 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-1-3-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-1-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-3-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-PostgreSQL.sql
 lib/App/Netdisco/Util/Connect.pm
 lib/App/Netdisco/Util/DeviceProperties.pm
 lib/App/Netdisco/Util/Permissions.pm
