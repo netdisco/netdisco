@@ -134,6 +134,9 @@ Run the following command to start the job control daemon (port control, etc):
 
  DANCER_ENVDIR=~/environments ~/bin/netdisco-daemon start
 
+You should (of course) avoid running this Netdisco daemon and the legacy
+daemon at the same time.
+
 =head1 Tips and Tricks
 
 The main black navigation bar has a search box which is smart enough to work
