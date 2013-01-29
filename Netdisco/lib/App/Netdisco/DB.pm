@@ -15,7 +15,7 @@ __PACKAGE__->load_namespaces;
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:tQTf/oInVydRDsuIFLSU4A
 
-our $VERSION = 3; # schema version used for upgrades, keep as integer
+our $VERSION = 4; # schema version used for upgrades, keep as integer
 
 use Path::Class;
 use File::Basename;

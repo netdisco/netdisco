@@ -21,6 +21,24 @@ If called with the "-p <version>" option, upgrade SQL DDL command files
 are created between the specified version and the current DBIx::Class
 specification.
 
+=head2 New Version
+
+=over 4
+
+=item 1.
+
+Alter the DBIC DDL files as you wish.
+
+=item 2.
+
+Increment the Schema's C<$VERSION> number.
+
+=item 3.
+
+Run this script with "C<-p $current_db_version>".
+
+=back
+
 =cut
 
 my $sql_dir = $App::Netdisco::DB::schema_versions_dir;

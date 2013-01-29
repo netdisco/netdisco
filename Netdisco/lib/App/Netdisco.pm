@@ -161,6 +161,13 @@ a username of C<guest> and the C<port_control> flag set to true:
 
  netdisco=> insert into users (username, port_control) values ('guest', true);
 
+=head1 Upgrading
+
+Simply install this module again, then upgrade the database schema:
+
+ ~/bin/localenv cpanm --quiet --notest App::Netdisco
+ DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
+
 =head1 Future Work
 
 Bundled with this app is a L<DBIx::Class> layer for the Netdisco database.

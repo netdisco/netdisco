@@ -37,11 +37,7 @@ Version 2 is the "classic" Netdisco database schema as of Netdisco 1.1
 
 =item *
 
-Version 3 adds patches for Netdisco 1.2
-
-=item *
-
-Version 4 (not yet created) B<will diverge from "classic" Netdisco 1.x>
+Version 3 (and onwards) adds patches for Netdisco 1.2
 
 =back
 

@@ -37,8 +37,10 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     original      => { default_value => \"now()" },
   },
+  "ssid",
+  { data_type => "text", is_nullable => 1, default_value => '' },
 );
-__PACKAGE__->set_primary_key("mac");
+__PACKAGE__->set_primary_key("mac", "ssid");
 
 
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
