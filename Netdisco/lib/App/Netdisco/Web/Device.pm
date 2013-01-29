@@ -10,7 +10,7 @@ use App::Netdisco::Util::Web (); # for sort_port
 hook 'before' => sub {
     # list of port detail columns
     var('port_columns' => [
-        { name => 'c_admin',       label => 'Port Control',      default => ''   },
+        { name => 'c_admin',       label => 'Admin Controls',    default => ''   },
         { name => 'c_port',        label => 'Port',              default => 'on' },
         { name => 'c_descr',       label => 'Description',       default => ''   },
         { name => 'c_type',        label => 'Type',              default => ''   },

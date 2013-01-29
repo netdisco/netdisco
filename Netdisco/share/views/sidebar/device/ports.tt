@@ -56,7 +56,7 @@
                       <input type="checkbox" id="[% item.name %]"
                         name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
                       [% IF item.name == 'c_admin' %]
-                        <span class="label label-inverse">[% item.label %]</span>
+                        <span class="label label-info">[% item.label %]</span>
                       [% ELSE %]
                         [% item.label %]
                       [% END %]

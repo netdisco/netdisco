@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Device Port filter by vlan includes both tagging and untagged (closes #37)
+  * Change colour and name of Port Control toggle option in Device Port View
 
   [BUG FIXES]
 
