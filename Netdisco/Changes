@@ -1,5 +1,9 @@
 2.004001 - 2013-01-29
 
+  [ENHANCEMENTS]
+
+  * Device Port filter by vlan includes both tagging and untagged (closes #37)
+
   [BUG FIXES]
 
   * No longer prompt for demo/demo credentials (closes #38) (J. Binks)

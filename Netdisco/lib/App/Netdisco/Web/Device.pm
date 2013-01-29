@@ -197,7 +197,12 @@ ajax '/ajax/content/device/ports' => sub {
     my $q = param('f');
     if ($q) {
         if ($q =~ m/^\d+$/) {
-            $set = $set->search({'me.vlan' => $q});
+            $set = $set->search({
+              -or => {
+                'me.vlan' => $q,
+                'port_vlans_tagged.vlan' => $q,
+              },
+            }, { join => 'port_vlans_tagged' });
             return unless $set->count;
         }
         else {
