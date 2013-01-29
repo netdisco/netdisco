@@ -15,7 +15,7 @@
       <td><a class="nd_linkcell nd_stealthlink"
         href="[% vars.device_ports %]&q=[% row.ip %]&f=[% row.vlan.vlan %]">[% row.vlan.vlan %]</a></td>
       <td><a class="nd_linkcell"
-        href="[% vars.device_ports %]&q=[% row.ip %]&f=[% row.vlan.vlan %]">[% row.dns %]</a></td>
+        href="[% vars.device_ports %]&q=[% row.ip %]&f=[% row.vlan.vlan %]">[% row.dns.remove(settings.domain_suffix) || row.ip %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"
         href="[% vars.device_ports %]&q=[% row.ip %]&f=[% row.vlan.vlan %]">[% row.vlan.description %]</a></td>
       <td><a class="nd_linkcell nd_stealthlink"

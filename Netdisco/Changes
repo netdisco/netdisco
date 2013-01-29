@@ -2,7 +2,8 @@
 
   [BUG FIXES]
 
-  * No longer prompt for demo/demo credentials (closes #38)
+  * No longer prompt for demo/demo credentials (closes #38) (J. Binks)
+  * Display IP in Vlan search if device has no DNS (closes #36) (J. Binks)
 
 2.004000 - 2013-01-14
 
