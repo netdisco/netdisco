@@ -1,3 +1,9 @@
+2.004002 - 2013-01-30
+
+  [BUG FIXES]
+
+  * Typo in one of the schema migration files
+
 2.004001 - 2013-01-29
 
   [ENHANCEMENTS]
