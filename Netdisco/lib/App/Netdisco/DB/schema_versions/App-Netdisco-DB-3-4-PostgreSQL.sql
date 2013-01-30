@@ -14,7 +14,7 @@ CREATE INDEX device_port_power_idx_ip_port on device_port_power (ip, port);
 
 ALTER TABLE admin ADD PRIMARY KEY (job);
 
-ALTER TABLE node ADD PRIMARY KEY (mac, switch, port, vla);
+ALTER TABLE node ADD PRIMARY KEY (mac, switch, port, vlan);
 
 ALTER TABLE node_wireless ADD PRIMARY KEY (mac, ssid);
 
