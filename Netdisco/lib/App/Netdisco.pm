@@ -35,6 +35,14 @@ network management tool. Pieces are still missing however, so if you're a new
 user please see L<http://netdisco.org/> for further information on the project
 and how to download the current official release.
 
+=over 4
+
+=item *
+
+See the demo at: L<http://demo-ollyg.dotcloud.com/netdisco/>
+
+=back
+
 L<App::Netdisco> provides a web frontend and a backend daemon to handle
 interactive requests such as changing port or device properties. There is not
 yet a device poller, so please still use the old Netdisco's discovery, arpnip,

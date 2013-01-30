@@ -8,6 +8,8 @@ Introduction
     information on the project and how to download the current official
     release.
 
+    *   See the demo at: <http://demo-ollyg.dotcloud.com/netdisco/>
+
     App::Netdisco provides a web frontend and a backend daemon to handle
     interactive requests such as changing port or device properties. There
     is not yet a device poller, so please still use the old Netdisco's
@@ -38,12 +40,12 @@ Dependencies
     new database and PostgreSQL user for the Netdisco application:
 
      root:~# su - postgres
-  
-     postgres:~$ createuser -DRSP netdisco
+      
+ postgres:~$ createuser -DRSP netdisco
      Enter password for new role:
      Enter it again:
-  
-     postgres:~$ createdb -O netdisco netdisco
+      
+ postgres:~$ createdb -O netdisco netdisco
 
 Installation
     To avoid muddying your system, use the following script to download and
@@ -116,8 +118,8 @@ Tips and Tricks
 
      DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
        DANCER_ENVDIR=~/environments ~/bin/localenv plackup ~/bin/netdisco-web-fg
-  
-     DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
+      
+ DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
        DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-daemon-fg
 
     Other ways to run and host the web application can be found in the
@@ -175,8 +177,8 @@ COPYRIGHT AND LICENSE
          * Neither the name of the Netdisco Project nor the
            names of its contributors may be used to endorse or promote products
            derived from this software without specific prior written permission.
- 
-     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+     
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
      ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
      DISCLAIMED. IN NO EVENT SHALL THE NETDISCO DEVELOPER TEAM BE LIABLE FOR ANY
