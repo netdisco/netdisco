@@ -4,6 +4,7 @@
 
   * Do not include inventory items which don't have full OS details
   * Hide Legend item relating to port control if not an admin
+  * No-Wrap on port name column
 
 2.004002 - 2013-01-30
 
