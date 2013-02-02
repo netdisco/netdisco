@@ -13,9 +13,10 @@
         </thead>
         <tbody>
           [% FOREACH platform IN models.all %]
+          [% NEXT UNLESS platform.vendor AND platform.model %]
           <tr>
             <th>
-              <a class="nd_stealthlink"
+              <a class="nd_linkcell"
                 href="[% vars.search_device %]&vendor=[% platform.vendor %]">
                   [% platform.vendor %]</a>
             </th>
@@ -42,6 +43,7 @@
         </thead>
         <tbody>
           [% FOREACH release IN releases.all %]
+          [% NEXT UNLESS (release.os AND release.os_ver) %]
           <tr>
             <th>[% release.os %]</th>
             <th>

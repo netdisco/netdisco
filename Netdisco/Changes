@@ -1,3 +1,9 @@
+2.004004 -
+
+  [ENHANCEMENTS]
+
+  * Do not include inventory items which don't have full OS details
+
 2.004002 - 2013-01-30
 
   [BUG FIXES]
