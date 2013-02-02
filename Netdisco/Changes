@@ -6,6 +6,10 @@
   * Hide Legend item relating to port control if not an admin
   * No-Wrap on port name column
 
+  [BUG FIXES]
+
+  * Change port ordering for Arista and Foundry platforms
+
 2.004002 - 2013-01-30
 
   [BUG FIXES]
