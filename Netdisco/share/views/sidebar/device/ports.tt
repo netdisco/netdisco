@@ -36,9 +36,11 @@
                   <li>
                     <span class="label label-warning">A</span>&nbsp; Archived Data
                   </li>
+                  [% IF vars.user.port_control %]
                   <li>
                     <span class="label"><i class="icon-refresh"></i></span>&nbsp; Click "Update View"
                   </li>
+                  [% END %]
                 </ul>
               </div>
             </div>
