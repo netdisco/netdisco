@@ -12,6 +12,7 @@ use URI::QueryParam (); # part of URI, to add helper methods
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
+use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
 
 sub _load_web_plugins {

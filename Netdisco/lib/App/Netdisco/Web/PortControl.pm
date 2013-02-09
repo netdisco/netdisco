@@ -3,6 +3,7 @@ package App::Netdisco::Web::PortControl;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+
 use Try::Tiny;
 
 ajax '/ajax/portcontrol' => sub {
