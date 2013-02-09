@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.006000';
+our $VERSION = '2.005000_001';
 
 BEGIN {
   if (not length ($ENV{DANCER_APPDIR} || '')
@@ -145,11 +145,22 @@ Run the following command to start the job control daemon (port control, etc):
 You should (of course) avoid running this Netdisco daemon and the legacy
 daemon at the same time.
 
+=head1 Upgrading
+
+Simply install this module again, then upgrade the database schema:
+
+ ~/bin/localenv cpanm --quiet --notest App::Netdisco
+ DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
+
 =head1 Tips and Tricks
+
+=head2 Searching
 
 The main black navigation bar has a search box which is smart enough to work
 out what you're looking for in most cases. For example device names, node IP
 or MAC addreses, VLAN numbers, and so on.
+
+=head2 SQL and HTTP Trace
 
 For SQL debugging try the following commands:
 
@@ -159,8 +170,12 @@ For SQL debugging try the following commands:
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
    DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-daemon-fg
 
+=head2 Deployment
+
 Other ways to run and host the web application can be found in the
 L<Dancer::Deployment> page. See also the L<plackup> documentation.
+
+=head2 User Rights
 
 With the default configuration user authentication is disabled and the default
 "guest" user has no special privilege. To grant port and device control rights
@@ -169,32 +184,33 @@ a username of C<guest> and the C<port_control> flag set to true:
 
  netdisco=> insert into users (username, port_control) values ('guest', true);
 
-=head1 Upgrading
+=head2 Database API
 
-Simply install this module again, then upgrade the database schema:
+Bundled with this distribution is a L<DBIx::Class> layer for the Netdisco
+database. This abstracts away all the SQL into an elegant, re-usable OO
+interface. See the L<App::Netdisco::Developing> documentation for further
+information.
 
- ~/bin/localenv cpanm --quiet --notest App::Netdisco
- DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
+=head2 Plugins
 
-=head1 Future Work
+App::Netdisco includes a Plugin subsystem for building the web user interface.
+Items in the navigation bar and the tabs on pages are loaded as Plugins, and
+you have control over their appearance and ordering. See
+L<App::Netdisco::Web::Plugin> for further information.
 
-Bundled with this app is a L<DBIx::Class> layer for the Netdisco database.
-This could be a starting point for an "official" DBIC layer. Helper functions
-and canned searches have been added to support the web interface.
+=head2 Developing
 
-The intention is to support "plugins" for additonal features, most notably
-columns in the Device Port listing, but also new menu items and tabs. The
-design of this is sketched out but not implemented. The goal is to avoid
-patching core code to add localizations or less widely used features.
+Lots of information about the architecture of this application is contained
+within the L<App::Netdisco::Developing> documentation.
 
 =head1 Caveats
 
 Some sections are not yet implemented, e.g. the I<Device Module> tab.
 
-Menu items on the main black navigation bar go nowhere, except Home.
+Some menu items on the main black navigation bar go nowhere.
 
 None of the Reports yet exist (e.g. searching for wireless devices, or duplex
-mismatches). These might be implemented as a plugin bundle.
+mismatches). These will be implemented as a plugin bundle.
 
 The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 

@@ -248,10 +248,10 @@ This is a typical Template::Toolkit "wrapper" configuration, as noted by the
 C<[% content %]> call within C<main.tt> that loads the template you actually
 specified in your Dancer handler.
 
-All templates (and Javascript and Stylesheets) are shipped in the Dancer
-distribution and located automatically by the application (using the
-environment variables which L<App::Netdisco> set up). The user doesn't have to
-copy or install any files.
+All templates (and Javascript and Stylesheets) are shipped in the
+L<App::Netdisco> distribution and located automatically by the application
+(using the environment variables which App::Netdisco set up). The user doesn't
+have to copy or install any files.
 
 There's a template for the homepage called C<index.tt>, then separate
 templates for searching, displaying device details, and showing inventory.
@@ -275,11 +275,11 @@ organised below C<share/views/ajax/...> in the distribution.
 
 =head2 Stylesheets
 
-The main style for Netdisco uses Twitter Bootstrap, which is a stylish modern
-library of styles and javascript used on many websites. It does a lot of heavy
-lifting, providing simple CSS classes for all of the standard web page
-furniture (forms, tables, etc). Check out the documetation at the Twitter
-Bootstrap web site for more information.
+The main style for Netdisco uses Twitter Bootstrap, which is a modern library
+of CSS and javascript used on many websites. It does a lot of heavy lifting,
+providing simple CSS classes for all of the standard web page furniture
+(forms, tables, etc). Check out the documetation at the Twitter Bootstrap web
+site for more information.
 
 These stylesheets are of course customised with our own C<netdisco.css>. We
 try to name all CSS classes with a prefix "C<nd_>" so as to be distinct from

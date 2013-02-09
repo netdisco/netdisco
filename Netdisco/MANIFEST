@@ -6,7 +6,6 @@ bin/netdisco-deploy
 bin/netdisco-web
 bin/netdisco-web-fg
 Changes
-DEVELOPING.pod
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -71,6 +70,7 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-PostgreSQL.sql
+lib/App/Netdisco/Developing.pod
 lib/App/Netdisco/Util/Connect.pm
 lib/App/Netdisco/Util/DeviceProperties.pm
 lib/App/Netdisco/Util/Permissions.pm

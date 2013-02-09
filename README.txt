@@ -40,12 +40,12 @@ Dependencies
     new database and PostgreSQL user for the Netdisco application:
 
      root:~# su - postgres
-      
- postgres:~$ createuser -DRSP netdisco
+  
+     postgres:~$ createuser -DRSP netdisco
      Enter password for new role:
      Enter it again:
-      
- postgres:~$ createdb -O netdisco netdisco
+  
+     postgres:~$ createdb -O netdisco netdisco
 
 Installation
     To avoid muddying your system, use the following script to download and
@@ -109,22 +109,32 @@ Startup
     You should (of course) avoid running this Netdisco daemon and the legacy
     daemon at the same time.
 
+Upgrading
+    Simply install this module again, then upgrade the database schema:
+
+     ~/bin/localenv cpanm --quiet --notest App::Netdisco
+     DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
+
 Tips and Tricks
+  Searching
     The main black navigation bar has a search box which is smart enough to
     work out what you're looking for in most cases. For example device
     names, node IP or MAC addreses, VLAN numbers, and so on.
 
+  SQL and HTTP Trace
     For SQL debugging try the following commands:
 
      DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
        DANCER_ENVDIR=~/environments ~/bin/localenv plackup ~/bin/netdisco-web-fg
-      
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
+  
+     DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
        DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-daemon-fg
 
+  Deployment
     Other ways to run and host the web application can be found in the
     Dancer::Deployment page. See also the plackup documentation.
 
+  User Rights
     With the default configuration user authentication is disabled and the
     default "guest" user has no special privilege. To grant port and device
     control rights to this user, create a row in the "users" table of the
@@ -133,31 +143,29 @@ Tips and Tricks
 
      netdisco=> insert into users (username, port_control) values ('guest', true);
 
-Upgrading
-    Simply install this module again, then upgrade the database schema:
+  Database API
+    Bundled with this distribution is a DBIx::Class layer for the Netdisco
+    database. This abstracts away all the SQL into an elegant, re-usable OO
+    interface. See the App::Netdisco::Developing documentation for further
+    information.
 
-     ~/bin/localenv cpanm --quiet --notest App::Netdisco
-     DANCER_ENVDIR=~/environments ~/bin/localenv netdisco-deploy
+  Plugins
+    App::Netdisco includes a Plugin subsystem for building the web user
+    interface. Items in the navigation bar and the tabs on pages are loaded
+    as Plugins, and you have control over their appearance and ordering. See
+    App::Netdisco::Web::Plugin for further information.
 
-Future Work
-    Bundled with this app is a DBIx::Class layer for the Netdisco database.
-    This could be a starting point for an "official" DBIC layer. Helper
-    functions and canned searches have been added to support the web
-    interface.
-
-    The intention is to support "plugins" for additonal features, most
-    notably columns in the Device Port listing, but also new menu items and
-    tabs. The design of this is sketched out but not implemented. The goal
-    is to avoid patching core code to add localizations or less widely used
-    features.
+  Developing
+    Lots of information about the architecture of this application is
+    contained within the App::Netdisco::Developing documentation.
 
 Caveats
     Some sections are not yet implemented, e.g. the *Device Module* tab.
 
-    Menu items on the main black navigation bar go nowhere, except Home.
+    Some menu items on the main black navigation bar go nowhere.
 
     None of the Reports yet exist (e.g. searching for wireless devices, or
-    duplex mismatches). These might be implemented as a plugin bundle.
+    duplex mismatches). These will be implemented as a plugin bundle.
 
     The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 
@@ -177,8 +185,8 @@ COPYRIGHT AND LICENSE
          * Neither the name of the Netdisco Project nor the
            names of its contributors may be used to endorse or promote products
            derived from this software without specific prior written permission.
-     
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ 
+     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
      ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
      DISCLAIMED. IN NO EVENT SHALL THE NETDISCO DEVELOPER TEAM BE LIABLE FOR ANY
