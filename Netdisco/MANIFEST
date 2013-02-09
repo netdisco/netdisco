@@ -78,9 +78,20 @@ lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/Device.pm
-lib/App/Netdisco/Web/Inventory.pm
+lib/App/Netdisco/Web/Plugin.pm
+lib/App/Netdisco/Web/Plugin/Device/Addresses.pm
+lib/App/Netdisco/Web/Plugin/Device/Details.pm
+lib/App/Netdisco/Web/Plugin/Device/Modules.pm
+lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
+lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+lib/App/Netdisco/Web/Plugin/Inventory.pm
+lib/App/Netdisco/Web/Plugin/Search/Device.pm
+lib/App/Netdisco/Web/Plugin/Search/Node.pm
+lib/App/Netdisco/Web/Plugin/Search/Port.pm
+lib/App/Netdisco/Web/Plugin/Search/VLAN.pm
 lib/App/Netdisco/Web/PortControl.pm
 lib/App/Netdisco/Web/Search.pm
+lib/App/Netdisco/Web/TypeAhead.pm
 LICENCE
 Makefile.PL
 MANIFEST			This list of files

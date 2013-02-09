@@ -24,7 +24,7 @@ requires:
   DBIx::Class: 0
   DBIx::Class::Helper::Row::SubClass: 0
   Daemon::Control: 0
-  Dancer: 0
+  Dancer: 1.3098
   Dancer::Plugin::DBIC: 0
   File::ShareDir: 0
   HTML::Entities: 0
@@ -51,4 +51,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://netdisco.git.sourceforge.net/gitroot/netdisco/netdisco-ng
-version: 2.004002
+version: 2.006000
