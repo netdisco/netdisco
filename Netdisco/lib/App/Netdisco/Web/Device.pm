@@ -300,15 +300,6 @@ get '/device' => sub {
         return;
     }
 
-    # list of tabs
-    var('tabs' => [
-        { id => 'details',   label => 'Details'   },
-        { id => 'ports',     label => 'Ports'     },
-        { id => 'modules',   label => 'Modules'   },
-        { id => 'netmap',    label => 'Neighbors' },
-        { id => 'addresses', label => 'Addresses' },
-    ]);
-
     params->{'tab'} ||= 'details';
     template 'device', { d => $device };
 };

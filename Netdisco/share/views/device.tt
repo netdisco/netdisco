@@ -19,7 +19,7 @@
       <i class="sidebar_pin icon-pushpin sidebar_pin_clicked"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
       <div class="tab-content">
-        [% FOREACH tab IN vars.tabs %]
+        [% FOREACH tab IN settings.device_tabs %]
         <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">
           <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked"
               method="get" action="[% uri_for('/device') %]">
@@ -42,13 +42,13 @@
 
   <div class="content">
     <ul id="search_results" class="nav nav-tabs">
-      [% FOREACH tab IN vars.tabs %]
+      [% FOREACH tab IN settings.device_tabs %]
       <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
       [% END %]
       <span id="nd_device_name">[% d.dns || d.name %]</span>
     </ul>
     <div class="tab-content">
-      [% FOREACH tab IN vars.tabs %]
+      [% FOREACH tab IN settings.device_tabs %]
       <div class="tab-pane[% ' active' IF params.tab == tab.id %]" id="[% tab.id %]_pane"></div>
       [% END %]
   </div>

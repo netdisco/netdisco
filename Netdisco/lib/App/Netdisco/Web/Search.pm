@@ -237,14 +237,6 @@ get '/search' => sub {
     my $os_ver_list = [ schema('netdisco')->resultset('Device')->get_distinct_col('os_ver') ];
     my $vendor_list = [ schema('netdisco')->resultset('Device')->get_distinct_col('vendor') ];
 
-    # list of tabs
-    var('tabs' => [
-        { id => 'device', label => 'Device' },
-        { id => 'node',   label => 'Node'   },
-        { id => 'vlan',   label => 'VLAN'   },
-        { id => 'port',   label => 'Port'   },
-    ]);
-
     template 'search', {
       model_list  => $model_list,
       os_ver_list => $os_ver_list,

@@ -1,6 +1,9 @@
   $(document).ready(function() {
     // search hook for each tab
-    [% FOREACH tab IN vars.tabs %]
+    [% FOREACH tab IN settings.search_tabs %]
+    $('[% "#${tab.id}_form" %]').submit(function(event){ do_search(event, '[% tab.id %]'); });
+    [% END %]
+    [% FOREACH tab IN settings.device_tabs %]
     $('[% "#${tab.id}_form" %]').submit(function(event){ do_search(event, '[% tab.id %]'); });
     [% END %]
 
