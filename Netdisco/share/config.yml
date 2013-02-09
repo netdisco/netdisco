@@ -29,6 +29,19 @@ engines:
 
 # netdisco stuff (can be overidden in the environment .yml)
 
+web_plugins:
+  - Inventory
+#  - Report::WirelessDevices
+#  - Search::Device
+#  - Search::Node
+#  - Search::VLAN
+#  - Search::Port
+#  - Device::Details
+#  - Device::Ports
+#  - Device::Modules
+#  - Device::Neighbors
+#  - Device::Addresses
+
 discover_no: []
 discover_only: []
 

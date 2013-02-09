@@ -52,9 +52,11 @@
       <a class="brand" href="[% uri_for('/') %]">Netdisco</a>
       [% IF session.user %]
       <ul class="nav">
-        <li[% ' class="active"' IF vars.nav == 'inventory' %]>
-          <a href="[% uri_for('/inventory') %]">Inventory</a>
+        [% FOREACH ni IN settings.navbar_items %]
+        <li[% ' class="active"' IF vars.nav == ni.id %]>
+          <a href="[% uri_for(ni.path) %]">[% ni.label %]</a>
         </li>
+        [% END %]
         [% IF more_dd.size %]
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">

@@ -1,7 +1,15 @@
-package App::Netdisco::Web::Inventory;
+package App::Netdisco::Web::Plugin::Inventory;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
+
+use App::Netdisco::Web::Plugin;
+
+register_navbar_item({
+  id    => 'inventory',
+  path  => '/inventory',
+  label => 'Inventory',
+});
 
 get '/inventory' => sub {
     my $models = schema('netdisco')->resultset('Device')->get_models();

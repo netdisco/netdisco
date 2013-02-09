@@ -13,7 +13,26 @@ use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
 use App::Netdisco::Web::PortControl;
-use App::Netdisco::Web::Inventory;
+
+sub _load_web_plugins {
+  my $plugin_list = shift;
+
+  foreach my $plugin (@$plugin_list) {
+      $plugin = 'App::Netdisco::Web::Plugin::'. $plugin
+        unless $plugin =~ m/^\+/;
+      $plugin =~ s/^\+//;
+
+      eval "require $plugin";
+  }
+}
+
+if (setting('web_plugins') and ref [] eq ref setting('web_plugins')) {
+    _load_web_plugins( setting('web_plugins') );
+}
+
+if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins')) {
+    _load_web_plugins( setting('extra_web_plugins') );
+}
 
 hook 'before_template' => sub {
     my $tokens = shift;

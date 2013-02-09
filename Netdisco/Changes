@@ -1,5 +1,9 @@
 2.004004 -
 
+  [NEW FEATURES]
+
+  * Support for Web Plugins (see App::Netdisco::Web::Plugin)
+
   [ENHANCEMENTS]
 
   * Do not include inventory items which don't have full OS details
