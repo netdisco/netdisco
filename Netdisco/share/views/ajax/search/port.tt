@@ -11,7 +11,7 @@
     [% WHILE (row = results.next) %]
     <tr>
       <td>[% row.name %]</td>
-      <td><a href="[% vars.device_ports %]&q=[% row.ip %]&f=[% row.port %]">[% row.ip %] [ [% row.port %] ]</a>
+      <td><a href="[% device_ports %]&q=[% row.ip %]&f=[% row.port %]">[% row.ip %] [ [% row.port %] ]</a>
         [% ' (' _ row.device.dns.remove(settings.domain_suffix) _ ')' IF row.device.dns %]
       </td>
       <td>[% row.descr %]</td>

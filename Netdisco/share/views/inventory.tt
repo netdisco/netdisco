@@ -17,12 +17,12 @@
           <tr>
             <th>
               <a class="nd_linkcell"
-                href="[% vars.search_device %]&vendor=[% platform.vendor %]">
+                href="[% search_device %]&vendor=[% platform.vendor %]">
                   [% platform.vendor %]</a>
             </th>
             <th>
               <a class="nd_linkcell"
-                href="[% vars.search_device %]&model=[% platform.model %]">
+                href="[% search_device %]&model=[% platform.model %]">
                   [% platform.model %]</a>
             </th>
             <th>[% platform.get_column('count') %]</th>
@@ -48,7 +48,7 @@
             <th>[% release.os %]</th>
             <th>
               <a class="nd_linkcell"
-                href="[% vars.search_device %]&os_ver=[% release.os_ver %]">
+                href="[% search_device %]&os_ver=[% release.os_ver %]">
                   [% release.os_ver %]</a>
             </th>
             <th>[% release.get_column('count') %]</th>

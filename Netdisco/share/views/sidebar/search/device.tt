@@ -42,29 +42,29 @@
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Description"/>
             </div>
             <div class="clearfix">
-              <select class="nd_side_select" size="[% vars.model_list.size > 5 ? 5 : vars.model_list.size %]"
+              <select class="nd_side_select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
                 multiple="on" name="model"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Model"/>
-                [% FOREACH opt IN vars.model_list %]
-                <option[% ' selected="selected"' IF vars.model_lkp.exists(opt) %]>[% opt %]</option>
+                [% FOREACH opt IN model_list %]
+                <option[% ' selected="selected"' IF model_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side_select" size="[% vars.os_ver_list.size > 5 ? 5 : vars.os_ver_list.size %]"
+              <select class="nd_side_select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
                 multiple="on" name="os_ver"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release"/>
-                [% FOREACH opt IN vars.os_ver_list %]
-                <option[% ' selected="selected"' IF vars.os_ver_lkp.exists(opt) %]>[% opt %]</option>
+                [% FOREACH opt IN os_ver_list %]
+                <option[% ' selected="selected"' IF os_ver_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side_select" size="[% vars.vendor_list.size > 5 ? 5 : vars.vendor_list.size %]"
+              <select class="nd_side_select" size="[% vendor_list.size > 5 ? 5 : vendor_list.size %]"
                 multiple="on" name="vendor"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor"/>
-                [% FOREACH opt IN vars.vendor_list %]
-                <option[% ' selected="selected"' IF vars.vendor_lkp.exists(opt) %]>[% opt %]</option>
+                [% FOREACH opt IN vendor_list %]
+                <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt %]</option>
                 [% END %]
               </select>
             </div>
