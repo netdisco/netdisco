@@ -125,10 +125,10 @@ namespaces:
    - Device::Ports
    - +My::Other::Netdisco::Web::Component
 
-The order of the entries in C<web_plugins> is significant. Surprisingly
-enough, the modules are loaded in order. Therefore Navigation Bar items appear
-in the order listed, and Tabs appear on the Search and Device pages in the
-order listed.
+The order of the entries in C<web_plugins> is significant. Unsurprisingly, the
+modules are loaded in order. Therefore Navigation Bar items appear in the
+order listed, and Tabs appear on the Search and Device pages in the order
+listed.
 
 The consequence of this is that if you want to change the order (or add or
 remove entries) then simply edit the C<web_plugins> setting. In fact, we
@@ -196,11 +196,12 @@ want arbitrary links supported.
 =head2 Search and Device page Tabs
 
 These components appear as tabs in the interface when the user reaches the
-Search page or Device details page. If you add a new tab, remember that the
-C<package> name in the file should be C<...Plugin::Device::MyNewFeature> (i.e.
-within the Device namespace).
+Search page or Device details page. Note that Tab plugins usually live in
+the C<App::Netdisco::Web::Plugin::Device> or
+C<App::Netdisco::Web::Plugin::Search> namespace.
 
-To register an item for display as a Search page Tab, use the following code:
+To register a handler for display as a Search page Tab, use the following
+code:
 
  register_search_tab({id => 'newfeature', label => 'My New Feature'});
 
@@ -217,18 +218,30 @@ For example:
 
 Therefore your plugin module should look like the following:
 
+ package App::Netdisco::Web::Plugin::Search::MyNewFeature
+ 
+ use Dancer ':syntax';
+ use Dancer::Plugin::Ajax;
+ use Dancer::Plugin::DBIC;
+ 
+ use App::Netdisco::Web::Plugin;
+ 
+ register_search_tab({id => 'newfeature', label => 'My New Feature'});
+ 
  ajax '/ajax/content/search/newfeature' => sub {
    # ...lorem ipsum...
-
+ 
    content_type('text/html');
    # return some HTML content here, probably using a template
  };
+ 
+ true;
 
 If this all sounds a bit daunting, take a look at the
 L<App::Netdisco::Web::Plugin::Search::Port> module which is fairly
 straightforward.
 
-To register an item for display as a Device page Tab, the only difference is
+To register a handler for display as a Device page Tab, the only difference is
 the name of the registration helper sub:
 
  register_device_tab({id => 'newfeature', label => 'My New Feature'});
@@ -237,7 +250,7 @@ the name of the registration helper sub:
 
 All of Netdisco's web page templates are stashed away in its distribution,
 probably installed in your system's or user's Perl directory. It's not
-recommended that you mess about with these files.
+recommended that you mess about with those files.
 
 So in order to replace a template with your own version, or to reference a
 template file of your own in your plugin, you need a new path.
