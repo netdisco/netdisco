@@ -1,7 +1,6 @@
 FRONTEND
 ========
 
-* re-do print css
 * UI for topo DB table editing
   - drop topo file support and use DB only
 * update inventory to use bootstrap accordion
