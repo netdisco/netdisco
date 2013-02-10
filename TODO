@@ -1,8 +1,31 @@
-* add poller to daemon (scheduling automatically?)
+FRONTEND
+========
+
 * re-do print css
 * UI for topo DB table editing
+  - drop topo file support and use DB only
 * update inventory to use bootstrap accordion
+* UI plugins add template include path
+* logging from web app
+* reports plugin(s)
+* aliasing instead of DNS for device lookups
+* URI escape everything
 
-* plugins for poller
+DAEMON
+======
+
+* poller daemon (scheduling automatically?)
+  - plugins for poller
+* Daemon schema auto-set (not in config)
+* logging from daemon
+
+CORE
+====
+
+* pseudo-device support
 * VRF support
-* drop topo file support and use DB only
+* docs notes
+  - plackup -R option
+  - localenv
+  - Try::Tiny
+  - Role::Tiny
