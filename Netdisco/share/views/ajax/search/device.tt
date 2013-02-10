@@ -14,7 +14,7 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td><a href="[% uri_for('/device') %]?q=[% row.ip %]">[% row.dns.remove(settings.domain_suffix) || row.ip %]</a></td>
+      <td><a href="[% uri_for('/device') %]?q=[% row.dns || row.ip %]">[% row.dns || row.ip %]</a></td>
       <td>[% row.contact %]</td>
       <td>[% row.location %]</td>
       <td>[% row.name %]</td>

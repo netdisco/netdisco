@@ -97,7 +97,7 @@ get '/search' => sub {
                     if ($nd->count == 1) {
                         # redirect to device details for the one device
                         redirect uri_for('/device',
-                          {tab => 'details', q => $nd->first->ip, f => ''});
+                          {tab => 'details', q => $nd->first->dns, f => ''});
                     }
                     params->{'tab'} = 'device';
                 }

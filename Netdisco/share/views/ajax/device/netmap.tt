@@ -60,7 +60,7 @@ function to_class(name) { return 'nd_' + name.replace(/\./g, "_") }
 
 // handler for clicking on a circle - redirect to that device's netmap
 function circleClick(d) {
-    window.location = '[% uri_for('/device') %]?tab=netmap&q=' + d.ip;
+    window.location = '[% uri_for('/device') %]?tab=netmap&q=' + (d.name || d.ip);
 }
 
 // handler for mouseover on a circle - show that device's real neighbors

@@ -182,7 +182,7 @@
         [% IF params.c_neighbors AND row.remote_ip %]
           [% IF row.neighbor %]
           <a href="[% uri_for('/device',
-                self_options) %]&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
+                self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip %]
             ([% row.remote_port | html_entity %])</a>
           [% ELSE %]

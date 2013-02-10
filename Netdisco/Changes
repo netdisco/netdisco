@@ -1,5 +1,9 @@
 2.005000_002 -
 
+  [ENHANCEMENTS]
+
+  * When linking to devices, use the DNS name in preference to the IP
+
   [BUG FIXES]
 
   * Minor fixes to POD

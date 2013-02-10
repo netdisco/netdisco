@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
+use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::Web (); # for sort_port
 
 use App::Netdisco::Web::Plugin;
@@ -12,11 +13,11 @@ register_device_tab({ id => 'ports', label => 'Ports' });
 
 # device ports with a description (er, name) matching
 ajax '/ajax/content/device/ports' => sub {
-    my $ip = param('q');
+    my $ip = NetAddr::IP::Lite->new(param('q'));
     return unless $ip;
 
     my $set = schema('netdisco')->resultset('DevicePort')
-                ->search({'me.ip' => $ip});
+                ->search({'me.ip' => $ip->addr});
 
     # refine by ports if requested
     my $q = param('f');
@@ -78,7 +79,7 @@ ajax '/ajax/content/device/ports' => sub {
     template 'ajax/device/ports.tt', {
       results => $results,
       nodes => $nodes_name,
-      device => $ip,
+      device => $ip->addr,
     }, { layout => undef };
 };
 
