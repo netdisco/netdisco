@@ -3,6 +3,8 @@
   [ENHANCEMENTS]
 
   * When linking to devices, use the DNS name in preference to the IP
+    (makes for more attractive navigation search bar, but need to watch for aliases)
+  * In general, device names do not have domain_suffix trimmed, but nodes do
 
   [BUG FIXES]
 

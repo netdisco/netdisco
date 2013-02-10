@@ -12,7 +12,7 @@
     [% WHILE (row = results.next) %]
     <tr>
       <td>[% row.alias %]</a>
-      <td>[% row.dns.remove(settings.domain_suffix) %]</a>
+      <td>[% row.dns %]</a>
       <td class="center_cell"><a class="nd_linkcell"
         href="[% device_ports %]&q=[% params.q | uri %]&f=[% row.port | uri %]">[% row.port %]</a></td>
       <td>[% row.device_port.name %]</td>
