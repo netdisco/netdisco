@@ -87,20 +87,21 @@ hook 'before_template' => sub {
 };
 
 get '/device' => sub {
-    my $ip = NetAddr::IP::Lite->new(param('q'));
-    if (! $ip) {
-        redirect uri_for('/', {nosuchdevice => 1});
-        return;
-    }
+    my $q = param('q');
+    my $dev = schema('netdisco')->resultset('Device')->single({
+        -or => [
+            ip => $q,
+            dns => $q,
+        ],
+    });
 
-    my $device = schema('netdisco')->resultset('Device')->find($ip->addr);
-    if (! $device) {
+    if (! $dev) {
         redirect uri_for('/', {nosuchdevice => 1});
         return;
     }
 
     params->{'tab'} ||= 'details';
-    template 'device', { d => $device };
+    template 'device', { d => $dev };
 };
 
 true;

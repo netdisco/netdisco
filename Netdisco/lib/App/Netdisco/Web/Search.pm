@@ -66,7 +66,7 @@ get '/search' => sub {
     my $s = schema('netdisco');
 
     if (not param('tab')) {
-        if (not $q) { redirect uri_for('/') }
+        if (not $q) { return redirect uri_for('/') }
 
         # pick most likely tab for initial results
         if ($q =~ m/^\d+$/) {
@@ -78,7 +78,7 @@ get '/search' => sub {
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
                     # redirect to device details for the one device
-                    redirect uri_for('/device',
+                    return redirect uri_for('/device',
                         {tab => 'details', q => $q, f => ''});
                 }
 
