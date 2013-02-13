@@ -43,6 +43,54 @@ sub with_times {
       });
 }
 
+=head2 search_aliases( $name or $ip or $prefix )
+
+Tries to find devices in Netdisco which have an identity corresponding to
+C<$name>, C<$ip> or C<$prefix>. The name can be partial, in which case an
+automatic case-insensitive partial-match search is performed.
+
+The search is across all aliases of the device, as well as its "root IP"
+identity. Note that this search will try B<not> to use DNS, in case the current
+name for an IP does not correspond to the data within Netdisco.
+
+=cut
+
+sub search_aliases {
+    my ($rs, $q) = @_;
+    $q ||= '255.255.255.255'; # hack to return empty resultset on error
+
+    # rough approximation of IP addresses (v4 in v6 not supported).
+    # this helps us avoid triggering any DNS.
+    my $by_ip = ($q =~ m{^(?:[.0-9/]+|[:0-9a-f/]+)$}i) ? 1 : 0;
+
+    my $clause;
+    if ($by_ip) {
+        my $ip = NetAddr::IP::Lite->new($q);
+        $clause = [
+            'me.ip'  => { '<<=' => $ip->cidr },
+            'device_ips.alias' => { '<<=' => $ip->cidr },
+        ];
+    }
+    else {
+        $q = "\%$q\%" if $q !~ m/\%/;
+        $clause = [
+            'me.ip::text'  => { '-ilike' => $q },
+            'device_ips.alias::text' => { '-ilike' => $q },
+        ];
+    }
+
+    return $rs->search(
+      {
+        -or => $clause,
+      },
+      {
+        order_by => [qw/ me.dns me.ip /],
+        join => 'device_ips',
+        distinct => 1,
+      }
+    );
+}
+
 =head2 search_by_field( \%cond, \%attrs? )
 
 This variant of the standard C<search()> method returns a ResultSet of Device

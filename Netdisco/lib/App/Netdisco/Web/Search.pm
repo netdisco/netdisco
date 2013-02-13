@@ -63,57 +63,42 @@ hook 'before_template' => sub {
 
 get '/search' => sub {
     my $q = param('q');
+    my $s = schema('netdisco');
+
     if (not param('tab')) {
-        if (not $q) {
-            redirect uri_for('/');
-        }
+        if (not $q) { redirect uri_for('/') }
 
         # pick most likely tab for initial results
         if ($q =~ m/^\d+$/) {
             params->{'tab'} = 'vlan';
         }
         else {
-            my $s = schema('netdisco');
-            if ($q =~ m{^[a-f0-9.:/]+$}i) {
-                my $ip = NetAddr::IP::Lite->new($q);
-                my $nd = $s->resultset('Device')->search_by_field({ip => $q});
-                if ($ip and $nd->count) {
-                    if ($nd->count == 1) {
-                        # redirect to device details for the one device
-                        redirect uri_for('/device',
-                          {tab => 'details', q => $q, f => ''});
-                    }
-                    params->{'tab'} = 'device';
+            my $nd = $s->resultset('Device')->search_aliases($q);
+
+            if ($nd and $nd->count) {
+                if ($nd->count == 1) {
+                    # redirect to device details for the one device
+                    redirect uri_for('/device',
+                        {tab => 'details', q => $q, f => ''});
                 }
-                else {
-                    # this will match for MAC addresses
-                    # and partial IPs (subnets?)
-                    params->{'tab'} = 'node';
-                }
+
+                # multiple devices
+                params->{'tab'} = 'device';
             }
-            else {
-                my $nd = $s->resultset('Device')->search({dns => { '-ilike' => "\%$q\%" }});
-                if ($nd->count) {
-                    if ($nd->count == 1) {
-                        # redirect to device details for the one device
-                        redirect uri_for('/device',
-                          {tab => 'details', q => $nd->first->dns, f => ''});
-                    }
-                    params->{'tab'} = 'device';
-                }
-                elsif ($s->resultset('DevicePort')
-                         ->search({name => "\%$q\%"})->count) {
-                    params->{'tab'} = 'port';
-                }
+            elsif ($s->resultset('DevicePort')
+                     ->search({name => "\%$q\%"})->count) {
+                params->{'tab'} = 'port';
             }
-            params->{'tab'} ||= 'node';
         }
+
+        # if all else fails
+        params->{'tab'} ||= 'node';
     }
 
     # used in the device search sidebar to populate select inputs
-    my $model_list  = [ schema('netdisco')->resultset('Device')->get_distinct_col('model')  ];
-    my $os_ver_list = [ schema('netdisco')->resultset('Device')->get_distinct_col('os_ver') ];
-    my $vendor_list = [ schema('netdisco')->resultset('Device')->get_distinct_col('vendor') ];
+    my $model_list  = [ $s->resultset('Device')->get_distinct_col('model')  ];
+    my $os_ver_list = [ $s->resultset('Device')->get_distinct_col('os_ver') ];
+    my $vendor_list = [ $s->resultset('Device')->get_distinct_col('vendor') ];
 
     template 'search', {
       model_list  => $model_list,
