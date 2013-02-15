@@ -74,8 +74,8 @@ sub search_aliases {
     else {
         $q = "\%$q\%" if $q !~ m/\%/;
         $clause = [
-            'me.ip::text'  => { '-ilike' => $q },
-            'device_ips.alias::text' => { '-ilike' => $q },
+            'me.dns'  => { '-ilike' => $q },
+            'device_ips.dns' => { '-ilike' => $q },
         ];
     }
 

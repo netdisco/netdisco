@@ -90,14 +90,13 @@ get '/device' => sub {
     my $q = param('q');
     my $dev = schema('netdisco')->resultset('Device')->single({
         -or => [
-            ip => $q,
-            dns => $q,
+            'me.ip::text' => $q,
+            'me.dns' => $q,
         ],
     });
 
-    if (! $dev) {
-        redirect uri_for('/', {nosuchdevice => 1});
-        return;
+    if (!defined $dev) {
+        return redirect uri_for('/', {nosuchdevice => 1});
     }
 
     params->{'tab'} ||= 'details';
