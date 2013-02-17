@@ -1,3 +1,7 @@
+
+** in no particular order... **
+** names by tasks indicate who's "taken" them **
+
 FRONTEND
 ========
 
@@ -6,9 +10,12 @@ FRONTEND
 * update inventory to use bootstrap accordion
 * UI plugins add template include path
 * logging from web app
+* reports page
 * reports plugin(s)
 * aliasing instead of DNS for device lookups
-* URI escape everything
+* URI escape TT substitutions
+* (jeneric) device module tab
+
 
 DAEMON
 ======
@@ -28,3 +35,5 @@ CORE
   - localenv
   - Try::Tiny
   - Role::Tiny
+  - before and before_template hooks
+  - running from git clone of netdisco-ng
