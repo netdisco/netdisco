@@ -142,6 +142,7 @@ $(document).ready(function() {
         return process(data);
       });
     }
+    ,matcher: function () { return true; } // trust backend
     ,minLength: 3
   });
 

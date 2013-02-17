@@ -12,7 +12,6 @@ FRONTEND
 * logging from web app
 * reports page
 * reports plugin(s)
-* aliasing instead of DNS for device lookups
 * URI escape TT substitutions
 * (jeneric) device module tab
 

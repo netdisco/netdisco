@@ -70,7 +70,8 @@
         [% END %]
       </ul>
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
-        <input placeholder="Find Anything" class="search-query span3" id="nq" name="q" type="text"/>
+        <input placeholder="Find Anything" class="search-query span3"
+          id="nq" name="q" type="text" autocomplete="off"/>
         <span style="font-size: 24px;">
         <i id="navsearchgo" class="icon-search navbar_icon"></i>
         </span>
