@@ -90,7 +90,7 @@ get '/device' => sub {
     my $q = param('q');
     my $dev = schema('netdisco')->resultset('Device')->single({
         -or => [
-            'me.ip::text' => $q,
+            \[ 'host(me.ip) = ?' => [ bind_value => $q ] ],
             'me.dns' => $q,
         ],
     });

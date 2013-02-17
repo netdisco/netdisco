@@ -78,8 +78,11 @@ get '/search' => sub {
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
                     # redirect to device details for the one device
-                    return redirect uri_for('/device',
-                        {tab => 'details', q => $q, f => ''});
+                    return redirect uri_for('/device', {
+                      tab => 'details',
+                      q => ($nd->first->dns || $nd->first->ip),
+                      f => '',
+                    });
                 }
 
                 # multiple devices
