@@ -1,3 +1,9 @@
+2.005000_003 - 2013-02-24
+
+  [ENHANCEMENTS]
+
+  * random() and LIMIT the number of daemon jobs requested from Netdisco queue
+
 2.005000_002 - 2013-02-10
 
   [ENHANCEMENTS]

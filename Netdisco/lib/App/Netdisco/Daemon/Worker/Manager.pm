@@ -32,10 +32,14 @@ sub worker_begin {
 
 sub worker_body {
   my $self = shift;
+  my $num_slots = $self->do('num_workers') - 1;
 
-  # get all pending jobs
+  # get some pending jobs
   my $rs = schema('netdisco')->resultset('Admin')
-    ->search({status => 'queued'});
+    ->search(
+      {status => 'queued'},
+      {order_by => 'random()', rows => $num_slots},
+    );
 
   while (1) {
       while (my $job = $rs->next) {

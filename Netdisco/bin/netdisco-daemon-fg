@@ -56,6 +56,11 @@ sub build_tasks_list {
   return $tasks;
 }
 
+# includes the Manager worker
+sub num_workers {
+  return (setting('daemon_pollers') + setting('daemon_interactives'));
+}
+
 sub worker_factory {
   my $role = shift;
   return sub {
