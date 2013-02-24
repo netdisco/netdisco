@@ -15,7 +15,7 @@ layout: "main"
 # about unicode within your app when this setting is set (recommended).
 charset: "UTF-8"
 
-# web sessions stored in memory
+# web sessions stored on disk
 session: "YAML"
 
 # logging format

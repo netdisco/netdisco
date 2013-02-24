@@ -25,17 +25,17 @@ sub worker_body {
           # (will throw an exception)
           my $job = schema('daemon')->resultset('Admin')
                       ->new_result($candidate);
-          my $jid = $job->id;
+          my $jid = $job->job;
 
           my $target = 'set_'. $job->action;
           next unless $self->can($target);
-          info "int ($wid): can ${target}() for job $jid";
+          debug "int ($wid): can ${target}() for job $jid";
 
           # do job
           my ($status, $log);
           try {
               $job->started(scalar localtime);
-              debug sprintf "int (%s): starting job %s at %s", $wid, $jid, $job->started;
+              info sprintf "int (%s): starting job %s at %s", $wid, $jid, $job->started;
               ($status, $log) = $self->$target($job);
           }
           catch {
@@ -44,7 +44,6 @@ sub worker_body {
               $self->sendto('stderr', $log ."\n");
           };
 
-          info "int ($wid): wrapping up job $jid - status $status";
           $self->close_job($job, $status, $log);
       }
 
@@ -55,6 +54,9 @@ sub worker_body {
 
 sub close_job {
   my ($self, $job, $status, $log) = @_;
+  my $now = scalar localtime;
+  info sprintf "int (%s): wrapping up job %s - status %s at %s",
+    $self->wid, $job->job, $status, $now;
 
   try {
       schema('netdisco')->resultset('Admin')
@@ -63,7 +65,7 @@ sub close_job {
           status => $status,
           log => $log,
           started => $job->started,
-          finished => \'now()',
+          finished => $now,
         });
   }
   catch { $self->sendto('stderr', "error closing job: $_\n") };

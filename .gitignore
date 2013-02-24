@@ -1,4 +1,5 @@
 Netdisco/share/environments/*
+Netdisco/share/sessions
 Netdisco/logs/*
 Netdisco/App-Netdisco-*
 *.swp
