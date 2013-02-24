@@ -19,19 +19,27 @@ my $role_map = {
 
 sub worker_begin {
   my $self = shift;
+  my $wid = $self->wid;
+  debug "entering Manager ($wid) worker_begin()";
 
   # requeue jobs locally
+  debug "mgr ($wid): searching for jobs booked to this processing node";
   my $rs = schema('netdisco')->resultset('Admin')
     ->search({status => "queued-$fqdn"});
 
   my @jobs = map {{$_->get_columns}} $rs->all;
-  map { $_->{role} = $role_map->{$_->{action}} } @jobs;
 
-  $self->do('add_jobs', \@jobs);
+  if (scalar @jobs) {
+      info sprintf "mgr (%s): found %s jobs booked to this processing node", $wid, scalar @jobs;
+      map { $_->{role} = $role_map->{$_->{action}} } @jobs;
+
+      $self->do('add_jobs', \@jobs);
+  }
 }
 
 sub worker_body {
   my $self = shift;
+  my $wid = $self->wid;
   my $num_slots = $self->do('num_workers');
 
   # get some pending jobs
@@ -42,15 +50,23 @@ sub worker_body {
     );
 
   while (1) {
+      debug "mgr ($wid): getting potential jobs for $num_slots workers";
       while (my $job = $rs->next) {
+          my $jid = $job->job;
+
           # filter for discover_*
           next unless is_discoverable($job->device);
+          info sprintf "mgr (%s): job %s is discoverable", $wid, $jid;
 
           # check for available local capacity
           next unless $self->do('capacity_for', $job->action);
+          info sprintf "mgr (%s): processing node has capacity for job %s (%s)",
+            $wid, $jid, $job->action;
 
           # mark job as running
           next unless $self->lock_job($job);
+          info sprintf "mgr (%s): job %s booked out for this processing node",
+            $wid, $jid;
 
           my $local_job = { $job->get_columns };
           $local_job->{role} = $role_map->{$job->action};
@@ -64,6 +80,7 @@ sub worker_body {
 
       # TODO also check for stale jobs in Netdisco DB
 
+      debug "mgr ($wid): sleeping now...";
       sleep( setting('daemon_sleep_time') || 5 );
   }
 }

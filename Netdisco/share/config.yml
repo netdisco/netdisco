@@ -16,7 +16,10 @@ layout: "main"
 charset: "UTF-8"
 
 # web sessions stored in memory
-session: Simple
+session: "YAML"
+
+# logging format
+logger_format: '[%P] %L @%D> %m'
 
 # web output template settings
 template: "template_toolkit"

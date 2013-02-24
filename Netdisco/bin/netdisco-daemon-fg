@@ -21,6 +21,8 @@ mkdir $tmp_dir if ! -d $tmp_dir;
 use MCE;
 use Role::Tiny::With;
 
+info "App::Netdisco version $App::Netdisco::VERSION daemon loaded.";
+
 my $mce = MCE->new(
   spawn_delay => 0.15,
   job_delay   => 0.15,
@@ -53,6 +55,8 @@ sub build_tasks_list {
     user_begin => worker_factory('Interactive'),
   } if setting('daemon_interactives');
 
+  info sprintf "MCE will load %s tasks: 1 Manager, %s Poller, %s Interactive",
+    (1+ scalar @$tasks), (setting('daemon_pollers') || 0), (setting('daemon_interactives') || 0);
   return $tasks;
 }
 
@@ -64,8 +68,9 @@ sub worker_factory {
   my $role = shift;
   return sub {
     my $self = shift;
+    my $wid = $self->wid;
+    info "applying role $role to worker $wid";
 
-    # my $wid = $self->wid;
     # $self->sendto('stderr', ">>> worker $wid starting with role $role\n");
     Role::Tiny->apply_roles_to_object($self, "App::Netdisco::Daemon::Worker::$role");
 
@@ -76,5 +81,7 @@ sub worker_factory {
 sub restart_worker {
   my ($self, $e) = @_;
   reset_jobs($e->{wid});
+
+  debug "restarting worker $e->{wid}";
   $self->restart_worker($e->{wid});
 }

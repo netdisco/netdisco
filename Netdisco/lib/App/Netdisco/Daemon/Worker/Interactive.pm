@@ -13,8 +13,10 @@ with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions',
 
 sub worker_body {
   my $self = shift;
+  my $wid = $self->wid;
 
   while (1) {
+      debug "int ($wid): asking for a job";
       my $jobs = $self->do('take_jobs', $self->wid, 'Interactive');
 
       foreach my $candidate (@$jobs) {
@@ -23,14 +25,17 @@ sub worker_body {
           # (will throw an exception)
           my $job = schema('daemon')->resultset('Admin')
                       ->new_result($candidate);
+          my $jid = $job->id;
 
           my $target = 'set_'. $job->action;
           next unless $self->can($target);
+          info "int ($wid): can ${target}() for job $jid";
 
           # do job
           my ($status, $log);
           try {
               $job->started(scalar localtime);
+              debug sprintf "int (%s): starting job %s at %s", $wid, $jid, $job->started;
               ($status, $log) = $self->$target($job);
           }
           catch {
@@ -39,9 +44,11 @@ sub worker_body {
               $self->sendto('stderr', $log ."\n");
           };
 
+          info "int ($wid): wrapping up job $jid - status $status";
           $self->close_job($job, $status, $log);
       }
 
+      debug "int ($wid): sleeping now...";
       sleep( setting('daemon_sleep_time') || 5 );
   }
 }

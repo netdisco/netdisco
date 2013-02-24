@@ -21,7 +21,6 @@ DAEMON
 
 * poller daemon (scheduling automatically?)
   - plugins for poller
-* logging from daemon
 
 CORE
 ====

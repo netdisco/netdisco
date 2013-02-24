@@ -24,11 +24,13 @@ my $queue = schema('daemon')->resultset('Admin');
 
 sub add_jobs {
   my ($jobs) = @_;
+  info sprintf "adding %s jobs to local queue", scalar @$jobs;
   $queue->populate($jobs);
 }
 
 sub capacity_for {
   my ($action) = @_;
+  debug "checking local capacity for action $action";
 
   my $action_map = {
     Interactive => [qw/location contact portcontrol portname vlan power/]
@@ -56,8 +58,10 @@ sub take_jobs {
   $max ||= 1;
 
   # asking for more jobs means the current ones are done
+  debug "removing complete jobs for worker $wid from local queue";
   $queue->search({wid => $wid})->delete;
 
+  debug "searching for $max new jobs for worker $wid (role $role)";
   my $rs = $queue->search(
     {role => $role, wid => 0},
     {rows => $max},
@@ -66,6 +70,7 @@ sub take_jobs {
   return [] if $rs->count == 0;
 
   my @rows = $rs->all;
+  debug sprintf "booking out %s jobs to worker %s", scalar @rows, $wid;
   $rs->update({wid => $wid});
 
   return [ map {{$_->get_columns}} @rows ];
@@ -73,6 +78,7 @@ sub take_jobs {
 
 sub reset_jobs {
   my ($wid) = @_;
+  debug "resetting jobs owned by worked $wid to be available";
   return unless $wid > 1;
   $queue->search({wid => $wid})
         ->update({wid => 0});
