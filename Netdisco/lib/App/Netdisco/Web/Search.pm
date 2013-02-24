@@ -4,8 +4,6 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
-use NetAddr::IP::Lite ':lower';
-
 hook 'before' => sub {
   # view settings for node options
   var('node_options' => [

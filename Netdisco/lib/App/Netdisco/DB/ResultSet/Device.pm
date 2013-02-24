@@ -43,21 +43,26 @@ sub with_times {
       });
 }
 
-=head2 search_aliases( $name or $ip or $prefix )
+=head2 search_aliases( {$name or $ip or $prefix}, \%options? )
 
 Tries to find devices in Netdisco which have an identity corresponding to
-C<$name>, C<$ip> or C<$prefix>. The name can be partial, in which case an
-automatic case-insensitive partial-match search is performed.
+C<$name>, C<$ip> or C<$prefix>.
 
 The search is across all aliases of the device, as well as its "root IP"
 identity. Note that this search will try B<not> to use DNS, in case the current
 name for an IP does not correspond to the data within Netdisco.
 
+Passing a zero value to the C<partial> key of the C<options> hashref will
+prevent partial matching of a host name. Otherwise the default is to perform
+a partial, case-insensitive search on the host name fields.
+
 =cut
 
 sub search_aliases {
-    my ($rs, $q) = @_;
+    my ($rs, $q, $options) = @_;
     $q ||= '255.255.255.255'; # hack to return empty resultset on error
+    $options ||= {};
+    $options->{partial} = 1 if !defined $options->{partial};
 
     # rough approximation of IP addresses (v4 in v6 not supported).
     # this helps us avoid triggering any DNS.
@@ -72,8 +77,9 @@ sub search_aliases {
         ];
     }
     else {
-        $q = "\%$q\%" if $q !~ m/\%/;
+        $q = "\%$q\%" if ($options->{partial} and $q !~ m/\%/);
         $clause = [
+            'me.name' => { '-ilike' => $q },
             'me.dns'  => { '-ilike' => $q },
             'device_ips.dns' => { '-ilike' => $q },
         ];
@@ -89,6 +95,33 @@ sub search_aliases {
         distinct => 1,
       }
     );
+}
+
+=head2 search_for_device( $name or $ip or $prefix )
+
+This is a wrapper for C<search_aliases> which:
+
+=over 4
+
+=item *
+
+Disables partial matching on host names
+
+=item *
+
+Returns only the first result of any found devices
+
+=back
+
+If not matching devices are found, C<undef> is returned.
+
+=cut
+
+sub search_for_device {
+    my ($rs, $q, $options) = @_;
+    $options ||= {};
+    $options->{partial} = 0;
+    return $rs->search_aliases($q, $options)->first();
 }
 
 =head2 search_by_field( \%cond, \%attrs? )

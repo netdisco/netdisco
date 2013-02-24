@@ -4,43 +4,41 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
-use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::Web (); # for sort_port
-
 use App::Netdisco::Web::Plugin;
 
 register_device_tab({ id => 'ports', label => 'Ports' });
 
 # device ports with a description (er, name) matching
 ajax '/ajax/content/device/ports' => sub {
-    my $ip = NetAddr::IP::Lite->new(param('q'));
-    return unless $ip;
+    my $q = param('q');
 
-    my $set = schema('netdisco')->resultset('DevicePort')
-                ->search({'me.ip' => $ip->addr});
+    my $device = schema('netdisco')->resultset('Device')
+      ->search_for_device($q) or return;
+    my $set = $device->ports;
 
     # refine by ports if requested
-    my $q = param('f');
-    if ($q) {
-        if ($q =~ m/^\d+$/) {
+    my $f = param('f');
+    if ($f) {
+        if ($f =~ m/^\d+$/) {
             $set = $set->search({
               -or => {
-                'me.vlan' => $q,
-                'port_vlans_tagged.vlan' => $q,
+                'me.vlan' => $f,
+                'port_vlans_tagged.vlan' => $f,
               },
             }, { join => 'port_vlans_tagged' });
             return unless $set->count;
         }
         else {
-            $q =~ s/\*/%/g if index($q, '*') >= 0;
-            $q =~ s/\?/_/g if index($q, '?') >= 0;
-            $q = { '-ilike' => $q };
+            $f =~ s/\*/%/g if index($f, '*') >= 0;
+            $f =~ s/\?/_/g if index($f, '?') >= 0;
+            $f = { '-ilike' => $f };
 
-            if ($set->search({'me.port' => $q})->count) {
-                $set = $set->search({'me.port' => $q});
+            if ($set->search({'me.port' => $f})->count) {
+                $set = $set->search({'me.port' => $f});
             }
             else {
-                $set = $set->search({'me.name' => $q});
+                $set = $set->search({'me.name' => $f});
                 return unless $set->count;
             }
         }
@@ -79,7 +77,7 @@ ajax '/ajax/content/device/ports' => sub {
     template 'ajax/device/ports.tt', {
       results => $results,
       nodes => $nodes_name,
-      device => $ip->addr,
+      device => $device->ip,
     }, { layout => undef };
 };
 

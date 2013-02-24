@@ -3,7 +3,7 @@ package App::Netdisco::Util::DeviceProperties;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use NetAddr::IP::Lite;
+use NetAddr::IP::Lite ':lower';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -38,16 +38,19 @@ Returns false if the host is not permitted to discover the target device.
 =cut
 
 sub is_discoverable {
-  my $ip = shift;
+  my $q = shift;
 
-  my $device = NetAddr::IP::Lite->new($ip) or return 0;
+  my $device = schema('netdisco')->resultset('Device')
+    ->search_for_device($q) or return 0;
+  my $addr = NetAddr::IP::Lite->new($device->ip);
+
   my $discover_no   = setting('discover_no') || [];
   my $discover_only = setting('discover_only') || [];
 
   if (scalar @$discover_no) {
       foreach my $item (@$discover_no) {
           my $ip = NetAddr::IP::Lite->new($item) or return 0;
-          return 0 if $ip->contains($device);
+          return 0 if $ip->contains($addr);
       }
   }
 
@@ -55,7 +58,7 @@ sub is_discoverable {
       my $okay = 0;
       foreach my $item (@$discover_only) {
           my $ip = NetAddr::IP::Lite->new($item) or return 0;
-          ++$okay if $ip->contains($device);
+          ++$okay if $ip->contains($addr);
       }
       return 0 if not $okay;
   }

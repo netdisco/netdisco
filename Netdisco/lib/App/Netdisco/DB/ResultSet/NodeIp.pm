@@ -27,8 +27,8 @@ NodeIp table.
 
 The C<cond> parameter must be a hashref containing a key C<ip> with the value
 to search for. Value can either be a simple string of IPv4 or IPv6, or a
-NetAddr::IP object in which case all results within the CIDR/Prefix will be
-retrieved.
+L<NetAddr::IP::Lite> object in which case all results within the CIDR/Prefix
+will be retrieved.
 
 =item *
 

@@ -4,8 +4,6 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
-use NetAddr::IP::Lite ':lower';
-
 use App::Netdisco::Web::Plugin;
 
 register_device_tab({ id => 'netmap', label => 'Neighbors' });
@@ -42,9 +40,11 @@ sub _add_children {
 
 # d3 seems not to use proper ajax semantics, so get instead of ajax
 get '/ajax/data/device/netmap' => sub {
-    my $ip = NetAddr::IP::Lite->new(param('q'));
-    return unless $ip;
-    my $start = $ip->addr;
+    my $q = param('q');
+
+    my $device = schema('netdisco')->resultset('Device')
+      ->search_for_device($q) or return;
+    my $start = $device->ip;
 
     my @devices = schema('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',

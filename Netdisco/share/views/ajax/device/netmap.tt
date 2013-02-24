@@ -30,7 +30,7 @@ var svg = d3.select("#netmap_pane").append("svg")
     .attr("transform", "translate(" + winHeight / 2 + "," + winHeight / 2 + ")");
 
 // this is the image background
-// FIXME there must be a way to discover the radial tree's size?
+// XXX there must be a way to discover the radial tree's size?
 svg.append('rect')
     .attr("x", (0 - (winHeight * 2)))
     .attr('width', "400%")
