@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use SNMP::Info;
 use Try::Tiny;
+use Path::Class 'dir';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -145,8 +146,7 @@ sub snmp_connect {
 }
 
 sub _build_mibdirs {
-  # FIXME: make this cross-platform (Path::Class?)
-  return map { setting('mibhome') .'/'. $_ }
+  return map { dir(setting('mibhome'), $_) }
              @{ setting('mibdirs') || [] };
 }
 

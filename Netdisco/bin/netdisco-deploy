@@ -14,6 +14,7 @@ use Term::ReadLine;
 use Archive::Extract;
 use HTTP::Tiny;
 use Try::Tiny;
+use Path::Class 'file';
 
 =head1 netdisco-deploy
 
@@ -108,7 +109,7 @@ sub deploy_oui {
 
 sub deploy_mibs {
   my $url = 'http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz';
-  my $file = "$ENV{HOME}/netdisco-mibs-snapshot.tar.gz";
+  my $file = file($ENV{HOME}, 'netdisco-mibs-snapshot.tar.gz');
   my $resp = HTTP::Tiny->new->mirror($url, $file);
 
   if ($resp->{success}) {

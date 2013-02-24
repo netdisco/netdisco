@@ -2,23 +2,23 @@
 
 use strict;
 use warnings FATAL => 'all';
+use Path::Class;
 
 BEGIN {
   eval "use Daemon::Control";
   if ($@) {
-      exec("$ENV{HOME}/bin/localenv", $0, @ARGV);
+      exec(file($ENV{HOME}, 'bin', 'localenv'), $0, @ARGV);
   }
 }
 
-use Path::Class;
 my $log_dir = dir($ENV{HOME}, 'logs');
 mkdir $log_dir if ! -d $log_dir;
 
 Daemon::Control->new({
   name => 'Netdisco Web',
   program  => 'plackup',
-  program_args => ["$ENV{HOME}/bin/netdisco-web-fg"],
-  pid_file => "$ENV{HOME}/netdisco-web.pid",
+  program_args => [file($ENV{HOME}, 'bin', 'netdisco-web-fg')],
+  pid_file => file($ENV{HOME}, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
 })->run;

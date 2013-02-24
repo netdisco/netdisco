@@ -5,6 +5,7 @@
   * random() and LIMIT the number of daemon jobs requested from Netdisco queue
   * Remove Daemon's job queue DBIC schema from user config
   * Add log messages to the Daemon
+  * Use Path::Class for path and file name construction consistently
 
 2.005000_002 - 2013-02-10
 
