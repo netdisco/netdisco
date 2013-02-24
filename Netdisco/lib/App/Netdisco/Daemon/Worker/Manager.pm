@@ -32,7 +32,7 @@ sub worker_begin {
 
 sub worker_body {
   my $self = shift;
-  my $num_slots = $self->do('num_workers') - 1;
+  my $num_slots = $self->do('num_workers');
 
   # get some pending jobs
   my $rs = schema('netdisco')->resultset('Admin')
