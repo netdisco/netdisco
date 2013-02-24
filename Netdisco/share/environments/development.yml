@@ -29,15 +29,6 @@ plugins:
       options:
         RaiseError: 1
         AutoCommit: 1
-    # please do not change/remove this schema unless you
-    # know what you are doing!
-    daemon:
-      schema_class: 'App::Netdisco::Daemon::DB'
-      dsn: 'dbi:SQLite:dbname=:memory:'
-      options:
-        RaiseError: 1
-        AutoCommit: 1
-        sqlite_use_immediate_transaction: 1
 
 # uncomment and set to 1 to disable authentication/login
 no_auth: 1

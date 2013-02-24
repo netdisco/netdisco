@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * random() and LIMIT the number of daemon jobs requested from Netdisco queue
+  * Remove Daemon's job queue DBIC schema from user config
 
 2.005000_002 - 2013-02-10
 

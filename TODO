@@ -21,7 +21,6 @@ DAEMON
 
 * poller daemon (scheduling automatically?)
   - plugins for poller
-* Daemon schema auto-set (not in config)
 * logging from daemon
 
 CORE
