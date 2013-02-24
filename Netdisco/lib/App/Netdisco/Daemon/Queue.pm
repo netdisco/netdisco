@@ -67,9 +67,9 @@ sub take_jobs {
     {rows => $max},
   );
 
-  return [] if $rs->count == 0;
-
   my @rows = $rs->all;
+  return [] if scalar @rows == 0;
+
   debug sprintf "booking out %s jobs to worker %s", scalar @rows, $wid;
   $rs->update({wid => $wid});
 
