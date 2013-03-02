@@ -1,12 +1,12 @@
 
             <p class="nd_sidebar_title"><em>Device Search Options</em></p>
-            <input name="q" value="[% params.q %]" type="hidden"/>
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix">
               <i data-btn-for="dns" class="field_copy_icon icon-copy icon-large"></i>
               <i id="dns_clear_btn" data-btn-for="dns"
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="DNS"
-                type="text" name="dns" value="[% params.dns %]"
+                type="text" name="dns" value="[% params.dns | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="DNS"/>
             </div>
             <div class="clearfix">
@@ -14,7 +14,7 @@
               <i id="ip_clear_btn" data-btn-for="ip"
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="IP Address"
-                type="text" name="ip" value="[% params.ip %]"
+                type="text" name="ip" value="[% params.ip | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="IP Address"/>
             </div>
             <div class="clearfix">
@@ -22,7 +22,7 @@
               <i id="name_clear_btn" data-btn-for="name"
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="System Name"
-                type="text" name="name" value="[% params.name %]"
+                type="text" name="name" value="[% params.name | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="System Name"/>
             </div>
             <div class="clearfix">
@@ -30,7 +30,7 @@
               <i id="location_clear_btn" data-btn-for="location"
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="Location"
-                type="text" name="location" value="[% params.location %]"
+                type="text" name="location" value="[% params.location | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Location"/>
             </div>
             <div class="clearfix">
@@ -38,7 +38,7 @@
               <i id="description_clear_btn" data-btn-for="description"
                 class="field_clear_icon icon-trash icon-large"></i>
               <input class="nd_side_input" placeholder="Description"
-                type="text" name="description" value="[% params.description %]"
+                type="text" name="description" value="[% params.description | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Description"/>
             </div>
             <div class="clearfix">
@@ -46,7 +46,7 @@
                 multiple="on" name="model"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Model"/>
                 [% FOREACH opt IN model_list %]
-                <option[% ' selected="selected"' IF model_lkp.exists(opt) %]>[% opt %]</option>
+                <option[% ' selected="selected"' IF model_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
               </select>
             </div>
@@ -55,7 +55,7 @@
                 multiple="on" name="os_ver"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release"/>
                 [% FOREACH opt IN os_ver_list %]
-                <option[% ' selected="selected"' IF os_ver_lkp.exists(opt) %]>[% opt %]</option>
+                <option[% ' selected="selected"' IF os_ver_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
               </select>
             </div>
@@ -64,7 +64,7 @@
                 multiple="on" name="vendor"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor"/>
                 [% FOREACH opt IN vendor_list %]
-                <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt %]</option>
+                <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
               </select>
             </div>

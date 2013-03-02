@@ -20,7 +20,7 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% search_node %]&q=[% row.mac | uri %]">[% row.mac %]</a>
+          href="[% search_node %]&q=[% row.mac | uri %]">[% row.mac | html_entity %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -28,20 +28,20 @@
       [% IF params.vendor %]
       <td>
         [% IF first_row %]
-        [% row.oui.company %]
+        [% row.oui.company | html_entity %]
         [% ELSE %]
         &nbsp;
         [% END %]
       </td>
       [% END %]
       <td>MAC &rarr; IP</td>
-      <td><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
+      <td><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% ' <span class="label label-warning">A</span>' IF NOT row.active %]
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
       </td>
       [% IF params.stamps %]
-      <td>[% row.time_first_stamp %]</td>
-      <td>[% row.time_last_stamp %]</td>
+      <td>[% row.time_first_stamp | html_entity %]</td>
+      <td>[% row.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]
@@ -51,7 +51,7 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% search_node %]&q=[% node.mac | uri %]">[% node.mac %]</a>
+          href="[% search_node %]&q=[% node.mac | uri %]">[% node.mac | html_entity %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -59,7 +59,7 @@
       [% IF params.vendor %]
       <td>
         [% IF first_row %]
-        [% node.oui.company %]
+        [% node.oui.company | html_entity %]
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -67,16 +67,16 @@
       [% END %]
       <td>Switch Port</td>
       <td><a class="nd_linkcell"
-            href="[% device_ports %]&q=[% node.device.dns || node.switch %]&f=[% node.port %]&c_nodes=on&c_neighbors=on">
-            [% node.switch %] - [% node.port %]</a>
+            href="[% device_ports %]&q=[% node.device.dns || node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
+            [% node.switch | html_entity %] - [% node.port | html_entity %]</a>
         [% ' <span class="label label-warning">A</span>' IF NOT node.active %]
         [% IF node.device.dns AND node.device_port AND node.device_port.name %]
-          ([% node.device.dns %] - [% node.device_port.name %])
+          ([% node.device.dns | html_entity %] - [% node.device_port.name | html_entity %])
         [% END %]
       </td>
       [% IF params.stamps %]
-      <td>[% node.time_first_stamp %]</td>
-      <td>[% node.time_last_stamp %]</td>
+      <td>[% node.time_first_stamp | html_entity %]</td>
+      <td>[% node.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]
@@ -86,7 +86,7 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% search_node %]&q=[% port.mac | uri %]">[% port.mac %]</a>
+          href="[% search_node %]&q=[% port.mac | uri %]">[% port.mac | html_entity %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -94,7 +94,7 @@
       [% IF params.vendor %]
       <td>
         [% IF first_row %]
-        [% port.oui.company %]
+        [% port.oui.company | html_entity %]
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -102,15 +102,15 @@
       [% END %]
       <td>Switch Port</td>
       <td><a class="nd_linkcell"
-            href="[% device_ports %]&q=[% port.device.dns || port.ip %]&f=[% port.port %]&c_mac=on&c_nodes=on&c_neighbors=on">
-            [% port.ip %] - [% port.descr %]</a>
+            href="[% device_ports %]&q=[% port.device.dns || port.ip | uri %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
+            [% port.ip | html_entity %] - [% port.descr | html_entity %]</a>
         [% IF port.device.dns AND port.name %]
-          ([% port.device.dns %] - [% port.name %])
+          ([% port.device.dns | html_entity %] - [% port.name | html_entity %])
         [% END %]
       </td>
       [% IF params.stamps %]
-      <td>[% port.creation %]</td>
-      <td>[% port.creation %]</td>
+      <td>[% port.creation | html_entity %]</td>
+      <td>[% port.creation | html_entity %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]

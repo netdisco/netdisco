@@ -12,9 +12,10 @@
   * Use Path::Class for path and file name construction consistently
   * Avoid use of DNS when looking up devices in DB by IP
 
-  [BIG FIXES]
+  [BUG FIXES]
 
   * Search by device port MAC no longer fatal
+  * URI and HTML escape template variables
 
 2.005000_002 - 2013-02-10
 

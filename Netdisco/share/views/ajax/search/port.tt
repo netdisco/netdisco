@@ -10,12 +10,13 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td>[% row.name %]</td>
-      <td><a href="[% device_ports %]&q=[% row.device.dns || row.ip %]&f=[% row.port %]">[% row.ip %] [ [% row.port %] ]</a>
+      <td>[% row.name | html_entity %]</td>
+      <td><a href="[% device_ports %]&q=[% row.device.dns || row.ip | uri %]&f=[% row.port | uri %]">
+        [% row.ip | html_entity %] [ [% row.port | html_entity %] ]</a>
         [% ' (' _ row.device.dns _ ')' IF row.device.dns %]
       </td>
-      <td>[% row.descr %]</td>
-      <td>[% row.vlan %]</td>
+      <td>[% row.descr | html_entity %]</td>
+      <td>[% row.vlan | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>

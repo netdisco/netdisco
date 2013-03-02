@@ -37,7 +37,7 @@
             <button type="submit" class="btn btn-info">Log In</button>
           </div>
           [% IF vars.requested_path %]
-          <input type="hidden" name="path" value="[% vars.requested_path %]"/>
+          <input type="hidden" name="path" value="[% vars.requested_path | html_entity %]"/>
           [% END %]
         </form>
         [% ELSE %]

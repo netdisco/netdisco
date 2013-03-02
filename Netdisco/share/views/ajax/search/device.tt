@@ -14,15 +14,14 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td><a href="[% uri_for('/device') %]?q=[% row.dns || row.ip %]">[% row.dns || row.ip %]</a></td>
-      <td>[% row.contact %]</td>
-      <td>[% row.location %]</td>
-      <td>[% row.name %]</td>
-      <!-- <td>[% row.description.substr(0, 100) %][% ' &hellip;' IF row.description.length > 100 %]</td> -->
-      <td>[% row.model %]</td>
-      <td>[% row.os_ver %]</td>
-      <td>[% row.ip %]</td>
-      <td>[% row.serial %]</td>
+      <td><a href="[% uri_for('/device') %]?q=[% row.dns || row.ip | uri %]">[% row.dns || row.ip | html_entity %]</a></td>
+      <td>[% row.contact | html_entity %]</td>
+      <td>[% row.location | html_entity %]</td>
+      <td>[% row.name | html_entity %]</td>
+      <td>[% row.model | html_entity %]</td>
+      <td>[% row.os_ver | html_entity %]</td>
+      <td>[% row.ip | html_entity %]</td>
+      <td>[% row.serial | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>

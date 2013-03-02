@@ -1,11 +1,11 @@
 
-            <input name="q" value="[% params.q %]" type="hidden"/>
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix">
               <a class="field_clear_icon" href="#"
                 rel="tooltip" data-placement="top" data-offset="3" data-title="Show all Ports">
                 <img src="[% uri_base %]/images/tango_sweep.png"/></a>
               <input id="nd_port_query" placeholder="Port, Name or VLAN"
-                name="f" value="[% params.f %]" type="text"
+                name="f" value="[% params.f | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
@@ -55,12 +55,12 @@
                   [% NEXT IF item.name == 'c_admin' AND NOT vars.user.port_control %]
                   <li>
                     <label class="checkbox">
-                      <input type="checkbox" id="[% item.name %]"
-                        name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
+                      <input type="checkbox" id="[% item.name | html_entity %]"
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
                       [% IF item.name == 'c_admin' %]
-                        <span class="label label-info">[% item.label %]</span>
+                        <span class="label label-info">[% item.label | html_entity %]</span>
                       [% ELSE %]
-                        [% item.label %]
+                        [% item.label | html_entity %]
                       [% END %]
                     </label>
                   </li>
@@ -110,9 +110,9 @@
                   [% FOREACH item IN vars.connected_properties %]
                   <li>
                     <label class="checkbox">
-                      <input type="checkbox" id="[% item.name %]"
-                        name="[% item.name %]"[% ' checked="checked"' IF params.${item.name} %] />
-                      [% item.label %]
+                      <input type="checkbox" id="[% item.name | html_entity %]"
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
+                      [% item.label | html_entity %]
                     </label>
                   </li>
                   [% END %]

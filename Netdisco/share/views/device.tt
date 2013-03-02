@@ -29,8 +29,8 @@
             <script type="text/javascript">has_sidebar["[% tab.id %]"] = 1;</script>
             [% CATCH %]
             <!-- no "[% tab.id %]" search options -->
-            <input name="q" value="[% params.q %]" type="hidden"/>
-            <input name="f" value="[% params.f %]" type="hidden"/>
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+            <input name="f" value="[% params.f | html_entity %]" type="hidden"/>
             <script type="text/javascript">has_sidebar["[% tab.id %]"] = 0;</script>
             [% END %]
           </form>
@@ -45,7 +45,7 @@
       [% FOREACH tab IN settings.device_tabs %]
       <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
       [% END %]
-      <span id="nd_device_name">[% d.dns || d.name %]</span>
+      <span id="nd_device_name">[% d.dns || d.name | html_entity %]</span>
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN settings.device_tabs %]

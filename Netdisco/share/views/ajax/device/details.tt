@@ -13,12 +13,12 @@
       [% IF vars.user.port_control %]
       <td class="nd_editable_cell" contenteditable="true"
         data-field="location" data-for-device="[% d.ip %]">
-          [% d.location %]
+          [% d.location | html_entity %]
       </td>
       [% ELSE %]
       <td>
         <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
-        href="[% search_device %]&location=[% d.location | uri %]">[% d.location %]</a>
+        href="[% search_device %]&location=[% d.location | uri %]">[% d.location | html_entity %]</a>
       </td>
       [% END %]
     </tr>
@@ -30,68 +30,68 @@
       </td>
       [% IF vars.user.port_control %]
       <td class="nd_editable_cell" contenteditable="true"
-        data-field="contact" data-for-device="[% d.ip %]">
-          [% d.contact %]
+        data-field="contact" data-for-device="[% d.ip | html_entity %]">
+          [% d.contact | html_entity %]
       </td>
       [% ELSE %]
-      <td>[% d.contact %]</td>
+      <td>[% d.contact | html_entity %]</td>
       [% END %]
     </tr>
     <tr>
       <td>Vendor / Model</td>
       <td>
         <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
-        href="[% search_device %]&vendor=[% d.vendor | uri %]">[% d.vendor %]</a>
+        href="[% search_device %]&vendor=[% d.vendor | uri %]">[% d.vendor | html_entity %]</a>
         /
         <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
-        href="[% search_device %]&model=[% d.model | uri %]">[% d.model %]</a>
+        href="[% search_device %]&model=[% d.model | uri %]">[% d.model | html_entity %]</a>
       </td>
     </tr>
     <tr>
       <td>OS / Version</td>
-      <td>[% d.os %] /
+      <td>[% d.os | html_entity %] /
         <a rel="tooltip" data-placement="top" data-offset="5"
           data-title="Find Similar Devices"
-          href="[% search_device %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver %]</a>
+          href="[% search_device %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver | html_entity %]</a>
       </td>
     </tr>
     <tr>
       <td>Serial Number</td>
-      <td>[% d.serial %]</td>
+      <td>[% d.serial | html_entity %]</td>
     </tr>
     <tr>
       <td>Description</td>
-      <td>[% d.description.replace(', ',",<br/>") %]</td>
+      <td>[% d.description | html_entity | html_line_break %]</td>
     </tr>
     <tr>
       <td>Uptime</td>
-      <td>[% d.uptime_age %]</td>
+      <td>[% d.uptime_age | html_entity %]</td>
     </tr>
     <tr>
       <td>Last Discover</td>
-      <td>[% d.last_discover_stamp %]</td>
+      <td>[% d.last_discover_stamp | html_entity %]</td>
     </tr>
     <tr>
       <td>Last Arpnip</td>
-      <td>[% d.last_arpnip_stamp %]</td>
+      <td>[% d.last_arpnip_stamp | html_entity %]</td>
     </tr>
     <tr>
       <td>Last Macsuck</td>
-      <td>[% d.last_macsuck_stamp %]</td>
+      <td>[% d.last_macsuck_stamp | html_entity %]</td>
     </tr>
     <tr>
       <td>Hardware Status</td>
-      <td>Fan: [% d.fan %]
-        <br/>PS1 [[% d.ps1_type %]]: [% d.ps1_status %]
-        <br/>PS2 [[% d.ps2_type %]]: [% d.ps2_status %]</td>
+      <td>Fan: [% d.fan | html_entity %]
+        <br/>PS1 [[% d.ps1_type | html_entity %]]: [% d.ps1_status | html_entity %]
+        <br/>PS2 [[% d.ps2_type | html_entity %]]: [% d.ps2_status | html_entity %]</td>
     </tr>
     <tr>
       <td>MAC Address</td>
-      <td>[% d.mac %]</td>
+      <td>[% d.mac | html_entity %]</td>
     </tr>
     <tr>
       <td>VTP Domain</td>
-      <td>[% d.vtp_domain %]</td>
+      <td>[% d.vtp_domain | html_entity %]</td>
     </tr>
   </tbody>
 </table>

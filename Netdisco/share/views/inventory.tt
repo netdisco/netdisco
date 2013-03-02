@@ -17,15 +17,15 @@
           <tr>
             <th>
               <a class="nd_linkcell"
-                href="[% search_device %]&vendor=[% platform.vendor %]">
-                  [% platform.vendor %]</a>
+                href="[% search_device %]&vendor=[% platform.vendor | uri %]">
+                  [% platform.vendor | html_entity %]</a>
             </th>
             <th>
               <a class="nd_linkcell"
-                href="[% search_device %]&model=[% platform.model %]">
-                  [% platform.model %]</a>
+                href="[% search_device %]&model=[% platform.model | uri %]">
+                  [% platform.model | html_entity %]</a>
             </th>
-            <th>[% platform.get_column('count') %]</th>
+            <th>[% platform.get_column('count') | html_entity %]</th>
           </tr>
           [% END %]
         </tbody>
@@ -45,13 +45,13 @@
           [% FOREACH release IN releases.all %]
           [% NEXT UNLESS (release.os AND release.os_ver) %]
           <tr>
-            <th>[% release.os %]</th>
+            <th>[% release.os | html_entity %]</th>
             <th>
               <a class="nd_linkcell"
-                href="[% search_device %]&os_ver=[% release.os_ver %]">
-                  [% release.os_ver %]</a>
+                href="[% search_device %]&os_ver=[% release.os_ver | uri %]">
+                  [% release.os_ver | html_entity %]</a>
             </th>
-            <th>[% release.get_column('count') %]</th>
+            <th>[% release.get_column('count') | html_entity %]</th>
           </tr>
           [% END %]
         </tbody>

@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
+  <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
   <link rel="shortcut icon" href="#" />
   <title>Netdisco</title>
 
@@ -54,7 +54,7 @@
       <ul class="nav">
         [% FOREACH ni IN settings.navbar_items %]
         <li[% ' class="active"' IF vars.nav == ni.id %]>
-          <a href="[% uri_for(ni.path) %]">[% ni.label %]</a>
+          <a href="[% uri_for(ni.path) %]">[% ni.label | html_entity %]</a>
         </li>
         [% END %]
         [% IF more_dd.size %]
@@ -63,7 +63,7 @@
             More <b class="caret"></b></a>
           <ul class="dropdown-menu">
             [% FOREACH title IN more_dd.keys.sort %]
-            <li><a href="[% uri_for(more_dd.$title) %]">[% title %]</a></li>
+            <li><a href="[% uri_for(more_dd.$title) %]">[% title | html_entity %]</a></li>
             [% END %]
           </ul>
         </li> <!-- /dropdown -->
@@ -85,10 +85,10 @@
           [% ELSE %]
             <i class="icon-user"></i>
           [% END %]
-            [% session.user %] <b class="caret"></b></a>
+            [% session.user | html_entity %] <b class="caret"></b></a>
           <ul class="dropdown-menu">
             [% FOREACH item IN user_dd %]
-            <li><a href="[% uri_for(item.link) %]">[% item.title %]</a></li>
+            <li><a href="[% uri_for(item.link) %]">[% item.title | html_entity %]</a></li>
             [% END %]
           </ul>
         </li> <!-- /dropdown -->

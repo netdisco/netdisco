@@ -1,6 +1,6 @@
 
             <p class="nd_sidebar_title"><em>Node Search Options</em></p>
-            <input name="q" value="[% params.q %]" type="hidden"/>
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="stamps"
