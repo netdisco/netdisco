@@ -36,8 +36,8 @@
       [% END %]
       <td>MAC &rarr; IP</td>
       <td><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip %]</a>
-        [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
         [% ' <span class="label label-warning">A</span>' IF NOT row.active %]
+        [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
       </td>
       [% IF params.stamps %]
       <td>[% row.time_first_stamp %]</td>
@@ -66,9 +66,13 @@
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% device_ports %]&q=[% node.device.dns || node.switch %]&f=[% node.port %]&c_nodes=on&c_neighbors=on">[% node.switch %] [ [% node.port %] ]</a>
-        [% ' (' _ node.device.dns _ ')' IF node.device.dns %]
+      <td><a class="nd_linkcell"
+            href="[% device_ports %]&q=[% node.device.dns || node.switch %]&f=[% node.port %]&c_nodes=on&c_neighbors=on">
+            [% node.switch %] - [% node.port %]</a>
         [% ' <span class="label label-warning">A</span>' IF NOT node.active %]
+        [% IF node.device.dns AND node.device_port AND node.device_port.name %]
+          ([% node.device.dns %] - [% node.device_port.name %])
+        [% END %]
       </td>
       [% IF params.stamps %]
       <td>[% node.time_first_stamp %]</td>
@@ -97,8 +101,12 @@
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a href="[% device_ports %]&q=[% port.device.dns || port.ip %]&f=[% port.port %]&c_mac=on&c_nodes=on&c_neighbors=on">[% port.ip %] [ [% port.port %] ]</a>
-        [% ' (' _ port.device.dns _ ')' IF port.device.dns %]
+      <td><a class="nd_linkcell"
+            href="[% device_ports %]&q=[% port.device.dns || port.ip %]&f=[% port.port %]&c_mac=on&c_nodes=on&c_neighbors=on">
+            [% port.ip %] - [% port.descr %]</a>
+        [% IF port.device.dns AND port.name %]
+          ([% port.device.dns %] - [% port.name %])
+        [% END %]
       </td>
       [% IF params.stamps %]
       <td>[% port.creation %]</td>
