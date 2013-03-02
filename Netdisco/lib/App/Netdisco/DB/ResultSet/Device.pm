@@ -70,7 +70,8 @@ sub search_aliases {
 
     my $clause;
     if ($by_ip) {
-        my $ip = NetAddr::IP::Lite->new($q);
+        my $ip = NetAddr::IP::Lite->new($q)
+          or return undef; # could be a MAC address!
         $clause = [
             'me.ip'  => { '<<=' => $ip->cidr },
             'device_ips.alias' => { '<<=' => $ip->cidr },

@@ -12,6 +12,10 @@
   * Use Path::Class for path and file name construction consistently
   * Avoid use of DNS when looking up devices in DB by IP
 
+  [BIG FIXES]
+
+  * Search by device port MAC no longer fatal
+
 2.005000_002 - 2013-02-10
 
   [ENHANCEMENTS]
