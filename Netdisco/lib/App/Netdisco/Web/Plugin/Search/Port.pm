@@ -15,10 +15,17 @@ ajax '/ajax/content/search/port' => sub {
     my $set;
 
     if ($q =~ m/^\d+$/) {
-        $set = schema('netdisco')->resultset('DevicePort')->search({vlan => $q});
+        $set = schema('netdisco')->resultset('DevicePort')
+          ->search({vlan => $q});
     }
     else {
-        $set = schema('netdisco')->resultset('DevicePort')->search({name => $q});
+        my $query = $q;
+        if (param('partial')) {
+            $q = "\%$q\%" if $q !~ m/%/;
+            $query = { -ilike => $q };
+        }
+        $set = schema('netdisco')->resultset('DevicePort')
+          ->search({name => $query});
     }
     return unless $set->count;
 

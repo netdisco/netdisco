@@ -50,7 +50,7 @@ ajax '/ajax/content/search/node' => sub {
         }
         else {
             if (param('partial')) {
-                $node = "\%$node\%";
+                $node = "\%$node\%" if $node !~ m/%/;
             }
             elsif (setting('domain_suffix')) {
                 $node .= setting('domain_suffix')

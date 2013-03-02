@@ -1,0 +1,13 @@
+
+            <p class="nd_sidebar_title"><em>Port Search Options</em></p>
+            <input name="q" value="[% params.q %]" type="hidden"/>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="partial"
+                  name="partial"[% ' checked="checked"' IF params.partial %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="partial">
+                <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
+              </label>
+            </div>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Search Again</button>
