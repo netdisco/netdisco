@@ -2,23 +2,26 @@
 
 use strict;
 use warnings FATAL => 'all';
+
+use FindBin;
+FindBin::again();
+
 use Path::Class;
+use Daemon::Control;
 
-BEGIN {
-  eval "use Daemon::Control";
-  if ($@) {
-      exec(file($ENV{HOME}, 'bin', 'localenv'), $0, @ARGV);
-  }
-}
+my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+my $netdisco = file($FindBin::RealBin, 'netdisco-web-fg');
 
-my $log_dir = dir($ENV{HOME}, 'logs');
+my $log_dir = dir($home, 'logs');
 mkdir $log_dir if ! -d $log_dir;
+
+my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
 Daemon::Control->new({
   name => 'Netdisco Web',
   program  => 'plackup',
-  program_args => [file($ENV{HOME}, 'bin', 'netdisco-web-fg')],
-  pid_file => file($ENV{HOME}, 'netdisco-web.pid'),
+  program_args => [@args, $netdisco->stringify],
+  pid_file => file($home, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
 })->run;

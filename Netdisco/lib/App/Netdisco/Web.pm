@@ -15,11 +15,6 @@ use App::Netdisco::Web::Device;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
 
-# need to set at runtime the sessions dir in user home
-# because YAML config (session_dir) cannot interpolate $ENV{HOME}
-use Path::Class 'dir';
-set('session_dir', dir($ENV{HOME}, 'netdisco-web-sessions'));
-
 sub _load_web_plugins {
   my $plugin_list = shift;
 
