@@ -43,7 +43,7 @@ hook 'before_template' => sub {
         if request->base->path ne '/';
 
     # allow portable dynamic content
-    $tokens->{uri_for} = \&uri_for;
+    $tokens->{uri_for} = sub { uri_for(@_)->path_query() };
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

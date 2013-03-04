@@ -22,23 +22,26 @@ hook 'before' => sub {
 };
 
 post '/login' => sub {
+    status(302);
+
     if (param('username') and param('password')) {
         my $user = schema('netdisco')->resultset('User')->find(param('username'));
         if ($user) {
             my $sum = Digest::MD5::md5_hex(param('password'));
             if ($sum and $sum eq $user->password) {
                 session(user => $user->username);
-                redirect uri_for('/inventory');
+                header(Location => uri_for('/inventory')->path_query());
                 return;
             }
         }
     }
-    redirect uri_for('/', {failed => 1});
+    header(Location => uri_for('/', {failed => 1})->path_query());
 };
 
 get '/logout' => sub {
     session->destroy;
-    redirect uri_for('/', {logout => 1});
+    status(302);
+    header(Location => uri_for('/', {logout => 1})->path_query());
 };
 
 true;

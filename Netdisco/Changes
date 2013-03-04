@@ -13,10 +13,11 @@
   * Remove Daemon's job queue DBIC schema from user config
   * Add log messages to the Daemon
   * Use Path::Class for path and file name construction consistently
-  * Avoid use of DNS when looking up devices in DB by IP
+  * All links and redirects are now relative
 
   [BUG FIXES]
 
+  * Avoid use of DNS when looking up devices in DB by IP
   * Search by device port MAC no longer fatal
   * URI and HTML escape template variables
 

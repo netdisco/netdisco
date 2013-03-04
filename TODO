@@ -12,7 +12,6 @@ FRONTEND
 * reports page
 * reports plugin(s)
 * (jeneric) device module tab
-* remove host from uri_for includes
 * duplicate requests problem?
 
 DAEMON

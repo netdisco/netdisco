@@ -64,7 +64,11 @@ get '/search' => sub {
     my $s = schema('netdisco');
 
     if (not param('tab')) {
-        if (not $q) { return redirect uri_for('/') }
+        if (not $q) {
+            status(302);
+            header(Location => uri_for('/')->path_query());
+            return;
+        }
 
         # pick most likely tab for initial results
         if ($q =~ m/^\d+$/) {
@@ -76,11 +80,13 @@ get '/search' => sub {
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
                     # redirect to device details for the one device
-                    return redirect uri_for('/device', {
+                    status(302);
+                    header(Location => uri_for('/device', {
                       tab => 'details',
                       q => ($nd->first->dns || $nd->first->ip),
                       f => '',
-                    });
+                    })->path_query());
+                    return;
                 }
 
                 # multiple devices
