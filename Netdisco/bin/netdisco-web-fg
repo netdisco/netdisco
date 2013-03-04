@@ -21,5 +21,17 @@ debug sprintf "App::Netdisco %s", ($App::Netdisco::VERSION || 'HEAD');
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 set('session_dir', dir($home, 'netdisco-web-sessions'));
 
+set plack_middlewares => [
+  [ Expires => (
+      content_type => [qw{ application/javascript text/css }, qr{image}],
+      expires => 'access plus 1 day',
+  )],
+  [ Static => (
+      path => qr{^/(?:javascripts|css|font|images)/},
+      root => $ENV{DANCER_PUBLIC},
+      pass_through => 1,
+  )],
+];
+
 use App::Netdisco::Web;
 dance;

@@ -22,6 +22,7 @@ requires 'MCE' => 1.305;
 requires 'Net::MAC' => 0;
 requires 'NetAddr::IP' => 0;
 requires 'Path::Class' => 0;
+requires 'Plack::Middleware::Expires' => 0;
 requires 'Role::Tiny' => 0;
 requires 'Socket6' => 0;
 requires 'Starman' => 0;
