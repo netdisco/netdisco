@@ -3,13 +3,15 @@
 use strict;
 use warnings FATAL => 'all';
 
+use FindBin;
+FindBin::again();
+use Path::Class 'dir';
+
 BEGIN {
   # stuff useful locations into @INC
-  use Path::Class 'dir';
-
   unshift @INC,
-    dir($location)->parent->subdir('lib')->stringify,
-    dir($location, 'lib')->stringify;
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
 }
 
 use App::Netdisco;
