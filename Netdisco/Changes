@@ -1,8 +1,11 @@
-2.005000_003 - 2013-02-24
+2.005000_003 - 
 
   [NEW FEATURES]
 
   * Partial Match option when searching on device port name
+  * web,daemon,deploy scripts will try to find "localenv" automatically
+  * Scripts can be run from a git clone
+  * New NETDISCO_HOME env var to override Netdisco's HOME
 
   [ENHANCEMENTS]
 
