@@ -4,14 +4,9 @@ use strict;
 use warnings FATAL => 'all';
 
 BEGIN {
-  # stuff useful locations into @INC and $PATH
-  use Config;
-  use FindBin;
-  FindBin::again();
+  # stuff useful locations into @INC
   use Path::Class 'dir';
 
-  my $location = $FindBin::RealBin;
-  $ENV{PATH} = $location . $Config{path_sep} . $ENV{PATH};
   unshift @INC,
     dir($location)->parent->subdir('lib')->stringify,
     dir($location, 'lib')->stringify;
