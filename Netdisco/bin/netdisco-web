@@ -6,16 +6,30 @@ use warnings FATAL => 'all';
 use FindBin;
 FindBin::again();
 
-use Path::Class;
-use Daemon::Control;
+our $home;
 
-my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+# try really hard to find a localenv if one isn't already in place.
+BEGIN {
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+  eval "use Daemon::Control";
+
+  if ($@) {
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      die "Sorry, can't find libs required for App::Netdisco.\n";
+  }
+}
+
+use Path::Class;
+
 my $netdisco = file($FindBin::RealBin, 'netdisco-web-fg');
+my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
 my $log_dir = dir($home, 'logs');
 mkdir $log_dir if ! -d $log_dir;
-
-my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
 Daemon::Control->new({
   name => 'Netdisco Web',
