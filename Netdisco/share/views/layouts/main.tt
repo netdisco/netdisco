@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
-  <link rel="shortcut icon" href="#" />
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
   <title>Netdisco</title>
 
   <!-- HTML5 shim, for IE6-8 support of HTML elements -->

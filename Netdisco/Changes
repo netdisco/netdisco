@@ -20,6 +20,7 @@
   * Avoid use of DNS when looking up devices in DB by IP
   * Search by device port MAC no longer fatal
   * URI and HTML escape template variables
+  * Prevent duplicate requets caused by favicon.ico link
 
 2.005000_002 - 2013-02-10
 
