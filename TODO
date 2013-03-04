@@ -12,7 +12,8 @@ FRONTEND
 * reports page
 * reports plugin(s)
 * (jeneric) device module tab
-
+* remove host from uri_for includes
+* duplicate requests problem?
 
 DAEMON
 ======
@@ -23,6 +24,7 @@ DAEMON
 CORE
 ====
 
+* deploy with individual SQL statements
 * ditch ~/bin
 * pseudo-device support
 * VRF support
