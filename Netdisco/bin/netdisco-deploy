@@ -20,11 +20,16 @@ BEGIN {
 }
 
 BEGIN {
-  # stuff useful locations into @INC
+  # stuff useful locations into @INC and $PATH
+  my $location = $FindBin::RealBin;
+
   use Path::Class;
   unshift @INC,
-    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
-    dir($FindBin::RealBin, 'lib')->stringify;
+    dir($location)->parent->subdir('lib')->stringify,
+    dir($location, 'lib')->stringify;
+
+  use Config;
+  $ENV{PATH} = $location . $Config{path_sep} . $ENV{PATH};
 }
 
 use App::Netdisco;

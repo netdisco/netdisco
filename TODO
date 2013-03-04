@@ -22,7 +22,6 @@ DAEMON
 CORE
 ====
 
-* deploy with individual SQL statements
 * pseudo-device support
 * VRF support
 * docs notes
