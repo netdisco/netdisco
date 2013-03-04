@@ -2,25 +2,39 @@
 
 use strict;
 use warnings FATAL => 'all';
-use Path::Class 'file';
+
+use FindBin;
+FindBin::again();
+our $home;
 
 BEGIN {
+  # try really hard to find a localenv if one isn't already in place.
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
   eval "use Daemon::Control";
+
   if ($@) {
-      exec(file($ENV{HOME}, 'bin', 'localenv'), $0, @ARGV);
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      die "Sorry, can't find libs required for App::Netdisco.\n";
   }
 }
 
 use Path::Class;
-my $log_dir = dir($ENV{HOME}, 'logs');
-mkdir $log_dir if ! -d $log_dir;
 
-my $program = file($ENV{HOME}, 'bin', 'netdisco-daemon-fg');
+my $netdisco = file($FindBin::RealBin, 'netdisco-daemon-fg');
+my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
+
+my $log_dir = dir($home, 'logs');
+mkdir $log_dir if ! -d $log_dir;
 
 Daemon::Control->new({
   name => 'Netdisco Daemon',
-  program  => ($ENV{NETDISCO_DAEMON} || $program),
-  pid_file => file($ENV{HOME}, 'netdisco-daemon.pid'),
+  program  => $netdisco,
+  program_args => [@args],
+  pid_file => file($home, 'netdisco-daemon.pid'),
   stderr_file => file($log_dir, 'netdisco-daemon.log'),
   stdout_file => file($log_dir, 'netdisco-daemon.log'),
 })->run;

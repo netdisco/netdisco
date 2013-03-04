@@ -1,11 +1,36 @@
 #!/usr/bin/env perl
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
-use App::Netdisco;
+FindBin::again();
+our $home;
 
+BEGIN {
+  # try really hard to find a localenv if one isn't already in place.
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+  eval "use Daemon::Control";
+
+  if ($@) {
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      die "Sorry, can't find libs required for App::Netdisco.\n";
+  }
+}
+
+BEGIN {
+  # stuff useful locations into @INC
+  use Path::Class;
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
+
+use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
+info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
 use 5.010_000;
 use Term::UI;
@@ -14,7 +39,6 @@ use Term::ReadLine;
 use Archive::Extract;
 use HTTP::Tiny;
 use Try::Tiny;
-use Path::Class 'file';
 
 =head1 netdisco-deploy
 
@@ -31,7 +55,8 @@ Internet, and update the OUI table in the database. Hence Internet access is
 required to run the script.
 
 Similarly the latest Netdisco MIB bundle is also downloaded, placed into the
-user's home directory, and Netdisco reconfigured for its use.
+user's home directory (or C<$ENV{NETDISCO_HOME}>), and Netdisco reconfigured
+for its use.
 
 =cut
 
@@ -109,12 +134,12 @@ sub deploy_oui {
 
 sub deploy_mibs {
   my $url = 'http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz';
-  my $file = file($ENV{HOME}, 'netdisco-mibs-snapshot.tar.gz');
+  my $file = file($home, 'netdisco-mibs-snapshot.tar.gz');
   my $resp = HTTP::Tiny->new->mirror($url, $file);
 
   if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
-      $ae->extract(to => $ENV{HOME});
+      $ae->extract(to => $home);
       unlink $file;
   }
 

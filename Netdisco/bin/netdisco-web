@@ -2,23 +2,39 @@
 
 use strict;
 use warnings FATAL => 'all';
-use Path::Class;
+
+use FindBin;
+FindBin::again();
+our $home;
 
 BEGIN {
+  # try really hard to find a localenv if one isn't already in place.
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
   eval "use Daemon::Control";
+
   if ($@) {
-      exec(file($ENV{HOME}, 'bin', 'localenv'), $0, @ARGV);
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      die "Sorry, can't find libs required for App::Netdisco.\n";
   }
 }
 
-my $log_dir = dir($ENV{HOME}, 'logs');
+use Path::Class;
+
+my $netdisco = file($FindBin::RealBin, 'netdisco-web-fg');
+my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
+
+my $log_dir = dir($home, 'logs');
 mkdir $log_dir if ! -d $log_dir;
 
 Daemon::Control->new({
   name => 'Netdisco Web',
   program  => 'plackup',
-  program_args => [file($ENV{HOME}, 'bin', 'netdisco-web-fg')],
-  pid_file => file($ENV{HOME}, 'netdisco-web.pid'),
+  program_args => [@args, $netdisco->stringify],
+  pid_file => file($home, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
 })->run;

@@ -1,11 +1,20 @@
 #!/usr/bin/env perl
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
-use App::Netdisco;
+FindBin::again();
+use Path::Class 'dir';
+
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
 
 # for netdisco app config
+use App::Netdisco;
 use Dancer qw/:moose :script/;
+info "App::Netdisco version $App::Netdisco::VERSION daemon loaded.";
 
 # callbacks and local job queue management
 use App::Netdisco::Daemon::Queue ':all';
@@ -13,15 +22,13 @@ use App::Netdisco::Daemon::Queue ':all';
 # needed to quench AF_INET6 symbol errors
 use NetAddr::IP::Lite ':lower';
 
-# set temporary MCE files' location in home directory
-use Path::Class 'dir';
-my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($ENV{HOME}, 'tmp'));
-mkdir $tmp_dir if ! -d $tmp_dir;
-
 use MCE;
 use Role::Tiny::With;
 
-info "App::Netdisco version $App::Netdisco::VERSION daemon loaded.";
+# set temporary MCE files' location in home directory
+my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));
+mkdir $tmp_dir if ! -d $tmp_dir;
 
 my $mce = MCE->new(
   spawn_delay => 0.15,
