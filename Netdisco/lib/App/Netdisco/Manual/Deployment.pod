@@ -2,6 +2,18 @@
 
 App::Netdisco::Manual::Deployment - Tips and Tricks for Deployment
 
+=head1 Relocating the Installation
+
+The installation process installs Netdisco self-contained to your home
+directory. The target directory can easily be changed by setting the
+C<NETDISCO_HOME> environment variable, for example:
+
+ export NETDISCO_HOME=/opt/netdisco
+
+Obviously, you'll need to substitute this wherever you see "C<~>" in the
+installation instructions. The Netdisco application will use this setting
+itself to locate files and configuration.
+
 =head1 Non-root Hosting
 
 Netdisco will assume its web site is hosted at the apex of your server - that
@@ -33,14 +45,14 @@ referenced in the configuration like so (and use C<--path> option):
  ProxyPass /netdisco2 http://localhost:5000/
  ProxyPassReverse /netdisco2 http://localhost:5000/
 
-=head2 SQL and HTTP Trace
+=head1 SQL and HTTP Trace
 
 For SQL debugging try the following commands:
 
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-web-fg
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-daemon-fg
 
-=head2 Further Reading...
+=head1 Further Reading...
 
 Other ways to run and host the web application can be found in the
 L<Dancer::Deployment> page. See also the L<plackup> and L<starman>

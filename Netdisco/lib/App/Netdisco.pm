@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.005000_003';
+our $VERSION = '2.005000_004';
 
 BEGIN {
   if (not length ($ENV{DANCER_APPDIR} || '')
@@ -55,7 +55,8 @@ yet a device poller, so please still use the old Netdisco's discovery, arpnip,
 and macsuck.
 
 If you have any trouble getting the frontend running, speak to someone in the
-C<#netdisco> IRC channel (on freenode).
+C<#netdisco> IRC channel (on freenode). Before installing or upgrading please
+review the latest L<Release Notes|App::Netdisco::Manual::ReleaseNotes>.
 
 =head1 Dependencies
 
@@ -170,12 +171,18 @@ or MAC addreses, VLAN numbers, and so on.
 
 =head2 User Rights
 
-With the default configuration user authentication is disabled and the default
-"guest" user has no special privilege. To grant port and device control rights
-to this user, create a row in the C<users> table of the Netdisco database with
-a username of C<guest> and the C<port_control> flag set to true:
+When user authentication is disabled (C<no_auth>) the default username is
+"guest", which has no special privilege. To grant port and device control
+rights to this user, create a row in the C<users> table of the Netdisco
+database with a username of C<guest> and the C<port_control> flag set to true:
 
  netdisco=> insert into users (username, port_control) values ('guest', true);
+
+=head2 Deployment Scenarios
+
+More documentation on how to deploy the application in other scenarios, for
+example behind a web proxy, is in the
+L<Deployment|App::Netdisco::Manual::Deployment> documentation.
 
 =head2 Database API
 

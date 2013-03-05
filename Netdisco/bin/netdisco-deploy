@@ -45,7 +45,11 @@ use Archive::Extract;
 use HTTP::Tiny;
 use Try::Tiny;
 
-=head1 netdisco-deploy
+=head1 NAME
+
+netdisco-deploy - Database, OUI and MIB deployment for Netdisco
+
+=head2 USAGE
 
 This script deploys the Netdisco database schema, OUI data, and MIBs. Each of
 these is an optional service which the user is asked to confirm.

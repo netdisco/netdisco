@@ -10,7 +10,11 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::DB;
 use Getopt::Long;
 
-=head1 nd-dbic-versions
+=head1 NAME
+
+nd-dbic-versions - Create DB Schema Versions for Netdisco
+
+=head2 USAGE
 
 This script creates SQL DDL files of the Netdisco database schema.
 

@@ -9,7 +9,11 @@ use Dancer::Plugin::DBIC 'schema';
 
 use Try::Tiny;
 
-=head1 netdisco-db-deploy
+=head1 NAME
+
+netdisco-db-deploy - Database deployment for Netdisco
+
+=head2 USAGE
 
 This script upgrades or initialises a Netdisco database schema.
 
