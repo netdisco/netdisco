@@ -19,11 +19,11 @@ BEGIN {
       $ENV{DANCER_APPDIR}  ||= $auto->stringify;
       $ENV{DANCER_CONFDIR} ||= $auto->stringify;
 
-      my $test_envdir = dir($home, 'environments');
-      $ENV{DANCER_ENVDIR} ||= (-f $test_envdir
-        ? $test_envdir->stringify : $auto->subdir('environments')->stringify);
+      my $test_envdir = dir($home, 'environments')->stringify;
+      $ENV{DANCER_ENVDIR} ||= (-d $test_envdir
+        ? $test_envdir : $auto->subdir('environments')->stringify);
 
-      $ENV{PLACK_ENV} ||= 'deployment';
+      $ENV{DANCER_ENVIRONMENT} ||= 'deployment';
 
       $ENV{DANCER_PUBLIC} ||= $auto->subdir('public')->stringify;
       $ENV{DANCER_VIEWS}  ||= $auto->subdir('views')->stringify;
@@ -171,8 +171,8 @@ or MAC addreses, VLAN numbers, and so on.
 
 For SQL debugging try the following commands:
 
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/netdisco-web-fg
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/netdisco-daemon-fg
+ DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-web-fg
+ DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-daemon-fg
 
 =head2 Deployment
 

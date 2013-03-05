@@ -28,7 +28,7 @@ post '/login' => sub {
         my $user = schema('netdisco')->resultset('User')->find(param('username'));
         if ($user) {
             my $sum = Digest::MD5::md5_hex(param('password'));
-            if ($sum and $sum eq $user->password) {
+            if (($sum and $user->password) and ($sum eq $user->password)) {
                 session(user => $user->username);
                 header(Location => uri_for('/inventory')->path_query());
                 return;

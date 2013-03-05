@@ -22,8 +22,9 @@ use App::Netdisco::Daemon::Queue ':all';
 # needed to quench AF_INET6 symbol errors
 use NetAddr::IP::Lite ':lower';
 
-use MCE;
 use Role::Tiny::With;
+use MCE::Signal '-setpgrp';
+use MCE;
 
 # set temporary MCE files' location in home directory
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});

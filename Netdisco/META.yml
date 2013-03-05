@@ -19,6 +19,8 @@ no_index:
     - inc
     - share
 requires:
+  App::cpanminus: 0
+  App::local::lib::helper: 0
   DBD::Pg: 0
   DBD::SQLite: 0
   DBIx::Class: 0
@@ -31,15 +33,17 @@ requires:
   HTTP::Tiny: 0
   JSON: 0
   List::MoreUtils: 0
-  MCE: 1.305
+  MCE: 1.405
   Net::MAC: 0
   NetAddr::IP: 0
   Path::Class: 0
-  Plack: 0
+  Plack: 1.0006
+  Plack::Middleware::Expires: 0
   Role::Tiny: 0
   SNMP::Info: 2.11
   SQL::Translator: 0
   Socket6: 0
+  Starman: 0
   Template: 0
   YAML: 0
   namespace::clean: 0

@@ -3,7 +3,7 @@
 \.pid$
 \.swp$
 
-^share/environments/(?!production|development)
+^share/environments/(?!production|development|deployment)
 test.pl
 logs/.*
 ^lib/auto/App/Netdisco

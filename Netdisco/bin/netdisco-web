@@ -32,8 +32,8 @@ mkdir $log_dir if ! -d $log_dir;
 
 Daemon::Control->new({
   name => 'Netdisco Web',
-  program  => 'plackup',
-  program_args => [@args, $netdisco->stringify],
+  program  => 'starman',
+  program_args => ['--disable-keepalive', @args, $netdisco->stringify],
   pid_file => file($home, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),

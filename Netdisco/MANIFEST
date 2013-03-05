@@ -108,8 +108,8 @@ Makefile.PL
 MANIFEST			This list of files
 META.yml
 share/config.yml
+share/environments/deployment.yml
 share/environments/development.yml
-share/environments/production.yml
 share/public/500.html
 share/public/css/bootstrap.min.css
 share/public/css/font-awesome.css
