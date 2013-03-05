@@ -81,7 +81,9 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-8-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
-lib/App/Netdisco/Developing.pod
+lib/App/Netdisco/Manual/Deployment.pod
+lib/App/Netdisco/Manual/Developing.pod
+lib/App/Netdisco/Manual/ReleaseNotes.pod
 lib/App/Netdisco/Util/Connect.pm
 lib/App/Netdisco/Util/DeviceProperties.pm
 lib/App/Netdisco/Util/Permissions.pm
