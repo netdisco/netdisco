@@ -125,8 +125,9 @@ template from this distribution:
 Edit the file and change the database connection parameters to match those for
 your local system (that is, the C<dsn>, C<user> and C<pass>).
 
-Optionally, in the same file uncomment and edit the C<domain_suffix> setting
-to be appropriate for your local site.
+In the same file uncomment and edit the C<domain_suffix> setting to be
+appropriate for your local site. Optionally, set the C<no_auth> value to true
+if you wish to skip user authentication in the web interface.
 
 =head1 Bootstrap
 
@@ -166,18 +167,6 @@ Simply install this module again, then upgrade the database schema:
 The main black navigation bar has a search box which is smart enough to work
 out what you're looking for in most cases. For example device names, node IP
 or MAC addreses, VLAN numbers, and so on.
-
-=head2 SQL and HTTP Trace
-
-For SQL debugging try the following commands:
-
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-web-fg
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-daemon-fg
-
-=head2 Deployment
-
-Other ways to run and host the web application can be found in the
-L<Dancer::Deployment> page. See also the L<plackup> documentation.
 
 =head2 User Rights
 

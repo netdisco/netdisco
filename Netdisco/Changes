@@ -1,4 +1,4 @@
-2.005000_003 - 
+2.005000_003 - 2013-03-05
 
   [NEW FEATURES]
 
@@ -14,6 +14,7 @@
   * Add log messages to the Daemon
   * Use Path::Class for path and file name construction consistently
   * All links and redirects are now relative
+  * More documentation on developing and deployment
 
   [BUG FIXES]
 

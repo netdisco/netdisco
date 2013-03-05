@@ -38,3 +38,19 @@ Daemon::Control->new({
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
 })->run;
+
+=head1 NAME
+
+netdisco-web - Web Application Server for Netdisco
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<App::Netdisco>
+
+=back
+
+=cut

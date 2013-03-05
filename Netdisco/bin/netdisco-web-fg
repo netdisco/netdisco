@@ -35,3 +35,19 @@ set plack_middlewares => [
 
 use App::Netdisco::Web;
 dance;
+
+=head1 NAME
+
+netdisco-web-fg - Web Application for Netdisco
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<App::Netdisco>
+
+=back
+
+=cut

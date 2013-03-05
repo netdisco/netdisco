@@ -22,17 +22,5 @@ DAEMON
 CORE
 ====
 
-* ditch ~/bin ?
 * pseudo-device support
 * VRF support
-* docs notes
-  - start release notes page
-  - plackup -R option
-  - localenv
-  - Try::Tiny
-  - Role::Tiny
-  - before and before_template hooks
-  - running from git clone of netdisco-ng
-  - plackup --path for relocating
-  - NETDISCO_HOME
-  - development -> deployment

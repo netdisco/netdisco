@@ -1,0 +1,29 @@
+=head1 NAME
+
+App::Netdisco::Manual::ReleaseNotes - Release Notes
+
+=head1 Introduction
+
+This document will list only the most important changes with each release of
+Netdisco. You are B<STRONGLY> recommended to read this document each time you
+install and upgrade.
+
+=head1 2.005000_003
+
+=head2 Incompatible Changes
+
+The default environment configuration file C<develpment.yml> has been renamed
+to C<deployment.yml>. This better reflects that users are not developers, and
+also fits with the default for PSGI compatible cloud deployment services.
+
+Please B<rename or copy> your environment file:
+
+ mv ~/environments/development.yml ~/environments/deployment.yml
+
+=head2 Other Changes
+
+The installation is now relocateable outside of a user's home directory by
+setting the C<NETDISCO_HOME> environment variable. This defaults to your own
+home directory.
+
+=cut

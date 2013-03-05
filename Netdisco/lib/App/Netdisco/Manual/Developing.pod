@@ -1,3 +1,7 @@
+=head1 NAME
+
+App::Netdisco::Manual::Developing - Notes for contributors
+
 =head1 DEVELOPER NOTES
 
 This document aims to help developers understand the intent and design of the
@@ -64,13 +68,19 @@ several environment variables in order to locate the configuration files.
 
 Then, when we call "C<use Dancer>" these environment variables are used to
 load two YAML files: C<config.yml> and C<< <environment>.yml >> where
-C<< <environment> >> is typically either C<production> or C<development>.
+C<< <environment> >> is typically either C<deployment> or C<development>.
 
 The concept of "environments" allows us to have some shared "master" config
 between all instances of the application (C<config.yml>), and then settings
 for specific circumstances. Typically this might be logging levels, for
-example. The default file which C<App::Netdisco> loads is C<development.yml>
+example. The default file which C<App::Netdisco> loads is C<deployment.yml>
 but you can override it by setting the "C<DANCER_ENVIRONMENT>" environment
+variable.
+
+The file is located in an C<environments> folder which defaults to being in
+the user's home directory. The name (or full path) of the folder can be
+overriden using the "C<DANCER_ENVDIR>" environment variable. The location of
+the folder alone can be overridden using the "C<NETDISCO_HOME>" environment
 variable.
 
 Dancer loads the config using YAML, merging data from the two files. Config is
@@ -208,6 +218,10 @@ routines are more manageable, and easier to maintain. You'll also notice use
 of modules such as L<Net::MAC> and L<NetAddr::IP::Lite> to simplify and make
 more robust the handling of data.
 
+In fact, many sections of the web application have been factored out into
+separate Plugin modules. For more information see the
+L<App::Netdisco::Web::Plugin> manual page.
+
 =head2 Running the Web App
 
 Dancer apps conform to the "PSGI" standard interface for web applications,
@@ -215,15 +229,23 @@ which makes for easy deployment under many stacks such as Apache, FCGI, etc.
 See L<Dancer::Deployment> for more detail.
 
 At a minimum Netdisco can run from within its own user area as an unprivileged
-user, and ships with a simple web server engine (see the user docs for
-instructions). The C<netdisco-web> script uses L<Daemon::Control> to daemonize
-this simple web server so you can fire-and-forget the Netdisco web app without
-much trouble at all. This script in turn calls C<netdisco-web-fg> which is the
-real Dancer application, that runs in the foreground if called on its own.
+user, and actually ships with a fast, preforking web server engine. The
+C<netdisco-web> script uses L<Daemon::Control> to daemonize this simple web
+server so you can fire-and-forget the Netdisco web app without much trouble at
+all. This script in turn calls C<netdisco-web-fg> which is the real Dancer
+application, that runs in the foreground if called on its own.
 
 All web app code lives below L<App::Netdisco::Web>, but there are also some
 helper routines in L<App::Netdisco::Util::Web> (for example sorting device
 port names).
+
+If you're working on code in the web application, it's possible to have the
+app restart itself each time you save a file in your editor. The following
+command will watch the C<lib> and C<share> folder trees for changes, and you
+probably want to switch to the C<development.yml> dancer configuration for
+additional logging:
+
+ DANCER_ENVIRONMENT=development ~/bin/localenv plackup -R lib,share bin/netdisco-web-fg
 
 =head2 Authentication
 
@@ -425,27 +447,43 @@ There is currently only one table, the port control job queue, in
 L<App::Netdisco::Daemon::DB::Result::Admin>. It's likely this name will change
 in the future.
 
+=head1 Other Noteable Technology
+
+=head2 C<local::lib>
+
+This is the system used to install Netdisco and all its Perl dependencies into
+a folder independent of the system's Perl libraries. It means Netdisco can be
+self-contaned and at the same time relocated anywhere. The L<local::lib>
+module is responsible for re-setting Perl's environment to point at the new
+library.
+
+=head2 C<App::cpanminus>
+
+This is simply a sane replacement for the CPAN shell. Don't ever bother with
+the CPAN shell again, just use the L<cpanm> client which comes with this
+distribution. We install Netdisco using C<cpanm>.
+
+=head2 C<App::local::lib::helper>
+
+This is a companion to C<local::lib> which provides the C<localenv> script you
+see referenced in the documentation. It's run automatically by Netdisco to
+locate its C<local::lib> folder (that is, works around the bootstrapping
+problem where the shipped app doesn't know to where it is relocated). We can
+help things along by setting the C<NETDISCO_HOME> environment variable.
+
+=head2 C<Try::Tiny>
+
+A replacement for C<eval> which provides proper C<try/catch> semantics. You
+have to take a bit of care unfortunately over things like C<return> statements
+though. However it's a lot cleaner than C<eval> in many cases. See the
+L<documentation|Try::Tiny> for further details.
+
+=head2 C<Role::Tiny>
+
+Anyone familiar with the concept of an I<interface> from other programming
+languages might understand what a role is. It's class functionality, often
+also called a "trait", which is composed into a class at run-time. This module
+allows the Daemon workers to dynamically assume different roles according to
+configuration.
+
 =cut
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

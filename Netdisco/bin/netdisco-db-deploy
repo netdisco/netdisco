@@ -16,7 +16,7 @@ This script upgrades or initialises a Netdisco database schema.
 Pre-existing requirements are that there be a database table created and a
 user with rights to create tables in that database. Both the table and user
 name must match those configured in your environment YAML file (default
-C<environments/development.yml>).
+C<~/environments/deployment.yml>).
 
 Simply run this script, which connects to the database and runs without user
 interaction. If there's no Nedisco schema, it is deployed. If there's an
@@ -37,7 +37,7 @@ Version 2 is the "classic" Netdisco database schema as of Netdisco 1.1
 
 =item *
 
-Version 3 (and onwards) adds patches for Netdisco 1.2
+Version 5 (and onwards) adds patches for Netdisco 1.2
 
 =back
 

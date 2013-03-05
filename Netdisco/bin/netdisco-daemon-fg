@@ -93,3 +93,19 @@ sub restart_worker {
   debug "restarting worker $e->{wid}";
   $self->restart_worker($e->{wid});
 }
+
+=head1 NAME
+
+netdisco-daemon-fg - Job Control for Netdisco
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<App::Netdisco>
+
+=back
+
+=cut

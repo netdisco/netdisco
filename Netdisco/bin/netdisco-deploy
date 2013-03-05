@@ -53,7 +53,7 @@ these is an optional service which the user is asked to confirm.
 Pre-existing requirements are that there be a database table created and a
 user with rights to create tables in that database. Both the table and user
 name must match those configured in your environment YAML file (default
-C<environments/development.yml>).
+C<~/environments/deployment.yml>).
 
 This script will download the latest MAC address vendor prefix data from the
 Internet, and update the OUI table in the database. Hence Internet access is
@@ -71,7 +71,7 @@ say 'Before we continue, the following prerequisites must be in place:';
 say ' * Internet access';
 say ' * Database added to PostgreSQL for Netdisco';
 say ' * User added to PostgreSQL with rights to the Netdisco Database';
-say ' * "environments/development.yml" file configured with Database dsn/user/pass';
+say ' * "~/environments/deployment.yml" file configured with Database dsn/user/pass';
 say ' * A full backup of any existing Netdisco database data';
 say '';
 say 'You will be asked to confirm all changes to your system.';
