@@ -49,7 +49,7 @@ referenced in the configuration like so (and use C<--path> option):
 
 For SQL debugging try the following commands:
 
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-web-fg
+ DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv starman --workers=1 ~/bin/netdisco-web-fg
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-daemon-fg
 
 =head1 Further Reading...

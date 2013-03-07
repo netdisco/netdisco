@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.005000_004';
+our $VERSION = '2.006000';
 
 BEGIN {
   if (not length ($ENV{DANCER_APPDIR} || '')
@@ -155,11 +155,20 @@ the same time.
 
 =head1 Upgrading
 
-Simply install this module again, then upgrade the database schema:
+Before upgrading please review the latest L<Release
+Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
+ # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
+ 
+ # apply database schema updates (optionally, get latest OIDs/MIBs)
  ~/bin/netdisco-deploy
+ 
+ # restart web service
  ~/bin/netdisco-web restart
+ 
+ # optionally, restart job daemon if you use it
+ ~/bin/netdisco-daemon restart
 
 =head1 Tips and Tricks
 

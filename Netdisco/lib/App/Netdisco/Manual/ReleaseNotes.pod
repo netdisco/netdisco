@@ -8,7 +8,7 @@ This document will list only the most important changes with each release of
 Netdisco. You are B<STRONGLY> recommended to read this document each time you
 install and upgrade.
 
-=head1 2.005000_003
+=head1 2.006000
 
 =head2 Incompatible Changes
 
