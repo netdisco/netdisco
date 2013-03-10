@@ -9,6 +9,20 @@ set(
   'device_tabs'  => [],
 );
 
+# this is what Dancer::Template::TemplateToolkit does by default
+config->{engines}->{template_toolkit}->{INCLUDE_PATH} ||= [ setting('views') ];
+
+register 'register_template_path' => sub {
+  my ($self, $path) = plugin_args(@_);
+
+  die "bad template path to register_template_paths\n"
+    unless length $path;
+
+  unshift
+    @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
+    $path;
+};
+
 register 'register_navbar_item' => sub {
   my ($self, $config) = plugin_args(@_);
 
@@ -246,18 +260,26 @@ the name of the registration helper sub:
 
  register_device_tab({id => 'newfeature', label => 'My New Feature'});
 
-=head1 Templates
+=head2 Templates
 
 All of Netdisco's web page templates are stashed away in its distribution,
 probably installed in your system's or user's Perl directory. It's not
 recommended that you mess about with those files.
 
 So in order to replace a template with your own version, or to reference a
-template file of your own in your plugin, you need a new path.
+template file of your own in your plugin, you need a new path:
 
-TODO: this bit!
+ package App::Netdisco::Web::Plugin::Search::MyNewFeature
+  
+ use File::ShareDir 'dist_dir';
+ register_template_path(
+   dist_dir( 'App-Netdisco-Web-Plugin-Search-MyNewFeature' ));
 
-=head2 Template Variables
+The registered path will be searched before the built-in C<App::Netdisco>
+path. We recommend use of the L<File::ShareDir> module to package and ship
+templates along with your plugin, as shown.
+
+=head3 Template Variables
 
 Some useful variables are made available in your templates automatically by
 App::Netdisco:

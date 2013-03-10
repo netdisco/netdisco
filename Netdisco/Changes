@@ -1,12 +1,18 @@
+2.007000_001 - 
+
+  [NEW FEATURES]
+
+  * Plugins can now 'register_template_path' and supply their own HTML templates
+
 2.006000 - 2013-03-07
 
-  [ENHANCEMENTS]
+  [BUG FIXES]
 
   * Documentation fixups
 
 2.005000_004 - 2013-03-05
 
-  [ENHANCEMENTS]
+  [BUG FIXES]
 
   * Documentation fixups
 
