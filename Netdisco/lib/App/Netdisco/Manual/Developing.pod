@@ -48,7 +48,7 @@ indexing the distribution. Some examples:
  2.002003     - another bug was found and fixed, hence "bug fix" release 3
  2.003000_001 - first beta for the next "feature" release
  2.003000_002 - second beta
- 2.004001     - the next "feature" release
+ 2.004000     - the next "feature" release
 
 
 =head1 Global Configuration
