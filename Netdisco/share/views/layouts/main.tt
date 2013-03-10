@@ -52,7 +52,7 @@
       [% IF session.user %]
       <ul class="nav">
         [% FOREACH ni IN settings.navbar_items %]
-        <li[% ' class="active"' IF vars.nav == ni.id %]>
+        <li[% ' class="active"' IF vars.nav == ni.tag %]>
           <a href="[% uri_for(ni.path) %]">[% ni.label | html_entity %]</a>
         </li>
         [% END %]

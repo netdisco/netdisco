@@ -30,7 +30,7 @@ register 'register_template_path' => sub {
 register 'register_navbar_item' => sub {
   my ($self, $config) = plugin_args(@_);
 
-  if (!length $config->{id}
+  if (!length $config->{tag}
       or !length $config->{path}
       or !length $config->{label}) {
 
@@ -39,7 +39,7 @@ register 'register_navbar_item' => sub {
   }
 
   foreach my $item (@{ setting('navbar_items') }) {
-      if ($item->{id} eq $config->{id}) {
+      if ($item->{tag} eq $config->{tag}) {
           $item = $config;
           return;
       }
