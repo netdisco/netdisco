@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ id => 'port', label => 'Port' });
+register_search_tab({ tag => 'port', label => 'Port' });
 
 # device ports with a description (er, name) matching
 ajax '/ajax/content/search/port' => sub {

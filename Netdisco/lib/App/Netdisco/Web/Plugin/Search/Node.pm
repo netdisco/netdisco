@@ -9,7 +9,7 @@ use Net::MAC ();
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ id => 'node', label => 'Node' });
+register_search_tab({ tag => 'node', label => 'Node' });
 
 # nodes matching the param as an IP or DNS hostname or MAC
 ajax '/ajax/content/search/node' => sub {

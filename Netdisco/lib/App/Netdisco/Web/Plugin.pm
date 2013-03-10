@@ -52,7 +52,7 @@ sub _register_tab {
   my ($nav, $config) = @_;
   my $stash = setting("${nav}_tabs");
 
-  if (!length $config->{id}
+  if (!length $config->{tag}
       or !length $config->{label}) {
 
       error "bad config to register_${nav}_item";
@@ -60,7 +60,7 @@ sub _register_tab {
   }
 
   foreach my $item (@{ $stash }) {
-      if ($item->{id} eq $config->{id}) {
+      if ($item->{tag} eq $config->{tag}) {
           $item = $config;
           return;
       }

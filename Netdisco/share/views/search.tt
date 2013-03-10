@@ -9,16 +9,16 @@
         rel="tooltip" data-placement="left" data-offset="5" data-title="Pin Sidebar"></i>
       <div class="tab-content">
         [% FOREACH tab IN settings.search_tabs %]
-        <div id="[% tab.id %]_search" class="tab-pane [% 'active' IF params.tab == tab.id %]">
-          <form id="[% tab.id %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/search') %]">
-            <input name="tab" value="[% tab.id %]" type="hidden"/>
+        <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
+          <form id="[% tab.tag %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/search') %]">
+            <input name="tab" value="[% tab.tag %]" type="hidden"/>
             [% TRY %]
-            [% INCLUDE "sidebar/search/${tab.id}.tt" %]
-            <script type="text/javascript">has_sidebar["[% tab.id %]"] = 1;</script>
+            [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
+            <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 1;</script>
             [% CATCH %]
-            <!-- no "[% tab.id %]" search options -->
+            <!-- no "[% tab.tag %]" search options -->
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["[% tab.id %]"] = 0;</script>
+            <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 0;</script>
             [% END %]
           </form>
         </div> <!-- /tab-pane -->
@@ -30,12 +30,12 @@
   <div class="content">
     <ul id="search_results" class="nav nav-tabs">
       [% FOREACH tab IN settings.search_tabs %]
-      <li[% ' class="active"' IF params.tab == tab.id %]><a id="[% tab.id %]_link" href="#[% tab.id %]_pane">[% tab.label %]</a></li>
+      <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
       [% END %]
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN settings.search_tabs %]
-      <div class="tab-pane[% ' active' IF params.tab == tab.id %]" id="[% tab.id %]_pane"></div>
+      <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag %]_pane"></div>
       [% END %]
   </div>
 </div>

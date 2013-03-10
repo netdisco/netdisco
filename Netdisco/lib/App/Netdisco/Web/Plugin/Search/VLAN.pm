@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ id => 'vlan', label => 'VLAN' });
+register_search_tab({ tag => 'vlan', label => 'VLAN' });
 
 # devices carrying vlan xxx
 ajax '/ajax/content/search/vlan' => sub {
