@@ -60,12 +60,12 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
           <ul class="dropdown-menu">
           [% FOREACH category IN settings.report_order %]
-            [% IF vars.reports.$category.size %]
+            [% IF settings.reports_menu.$category.size %]
             <li class="dropdown-submenu">
             <a href="#">[% category | html_entity %]</a>
               <ul class="dropdown-menu">
-              [% FOREACH item IN settings.reports.$category %]
-                <li><a href="[% uri_for(item.path) %]">[% item.label | html_entity %]</a></li>
+              [% FOREACH item IN settings.reports_menu.$category %]
+                <li><a href="[% uri_for('/report/' _ item) %]">[% settings.reports.$item.label | html_entity %]</a></li>
               [% END %]
               </ul>
             </li>

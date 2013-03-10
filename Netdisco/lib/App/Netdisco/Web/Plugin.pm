@@ -7,6 +7,7 @@ set(
   'navbar_items' => [],
   'search_tabs'  => [],
   'device_tabs'  => [],
+  'reports_menu' => {},
   'reports' => {},
   'report_order' => [qw/Device Port Node VLAN Network Wireless/],
 );
@@ -92,14 +93,16 @@ register 'register_report' => sub {
       return;
   }
 
-  foreach my $item (@{setting('reports')->{ $config->{category} }}) {
-      if ($item->{tag} eq $config->{tag}) {
-          $item = $config;
+  foreach my $item (@{setting('reports_menu')->{ $config->{category} }}) {
+      if ($item eq $config->{tag}) {
+          $item = $config->{tag};
+          setting('reports')->{$config->{tag}} = $config;
           return;
       }
   }
 
-  push @{setting('reports')->{ $config->{category} }}, $config;
+  push @{setting('reports_menu')->{ $config->{category} }}, $config->{tag};
+  setting('reports')->{$config->{tag}} = $config;
 };
 
 register_plugin;
