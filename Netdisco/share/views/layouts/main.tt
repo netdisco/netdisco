@@ -31,7 +31,7 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
 </head>
