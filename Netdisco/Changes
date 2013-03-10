@@ -4,6 +4,10 @@
 
   * Plugins can now 'register_template_path' and supply their own HTML templates
 
+  [ENHANCEMENTS]
+
+  * Upgraded to Twitter Bootstrap 2.3.1 - customized for 13px font 18px line
+
   [BUG FIXES]
 
   * Convert useless die to error+return in Plugin.pm
