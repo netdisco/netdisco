@@ -7,6 +7,8 @@ set(
   'navbar_items' => [],
   'search_tabs'  => [],
   'device_tabs'  => [],
+  'reports' => {},
+  'report_order' => [qw/Device Port Node VLAN Network Wireless/],
 );
 
 # this is what Dancer::Template::TemplateToolkit does by default
@@ -75,6 +77,29 @@ register 'register_search_tab' => sub {
 register 'register_device_tab' => sub {
   my ($self, $config) = plugin_args(@_);
   _register_tab('device', $config);
+};
+
+register 'register_report' => sub {
+  my ($self, $config) = plugin_args(@_);
+  my @categories = @{ setting('report_order') };
+
+  if (!length $config->{category}
+      or !length $config->{path}
+      or !length $config->{label}
+      or 0 == scalar grep {$config->{category} eq $_} @categories) {
+
+      error "bad config to register_report";
+      return;
+  }
+
+  foreach my $item (@{setting('reports')->{ $config->{category} }}) {
+      if ($item->{label} eq $config->{label}) {
+          $item = $config;
+          return;
+      }
+  }
+
+  push @{setting('reports')->{ $config->{category} }}, $config;
 };
 
 register_plugin;
