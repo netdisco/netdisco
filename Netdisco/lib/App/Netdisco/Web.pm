@@ -23,6 +23,7 @@ sub _load_web_plugins {
         unless $plugin =~ m/^\+/;
       $plugin =~ s/^\+//;
 
+      debug "loading Netdisco plugin $plugin";
       eval "require $plugin";
   }
 }

@@ -6,6 +6,7 @@
 
   [BUG FIXES]
 
+  * Convert useless die to error+return in Plugin.pm
   * Documentation fixups
 
 2.006000 - 2013-03-07

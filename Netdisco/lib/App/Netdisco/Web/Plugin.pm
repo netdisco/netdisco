@@ -15,8 +15,10 @@ config->{engines}->{template_toolkit}->{INCLUDE_PATH} ||= [ setting('views') ];
 register 'register_template_path' => sub {
   my ($self, $path) = plugin_args(@_);
 
-  die "bad template path to register_template_paths\n"
-    unless length $path;
+  if (!length $path) {
+      error "bad template path to register_template_paths";
+      return;
+  }
 
   unshift
     @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
@@ -26,10 +28,13 @@ register 'register_template_path' => sub {
 register 'register_navbar_item' => sub {
   my ($self, $config) = plugin_args(@_);
 
-  die "bad config to register_navbar_item\n"
-    unless length $config->{id}
-       and length $config->{path}
-       and length $config->{label};
+  if (!length $config->{id}
+      or !length $config->{path}
+      or !length $config->{label}) {
+
+      error "bad config to register_navbar_item";
+      return;
+  }
 
   foreach my $item (@{ setting('navbar_items') }) {
       if ($item->{id} eq $config->{id}) {
@@ -45,9 +50,12 @@ sub _register_tab {
   my ($nav, $config) = @_;
   my $stash = setting("${nav}_tabs");
 
-  die "bad config to register_${nav}_tab\n"
-    unless length $config->{id}
-       and length $config->{label};
+  if (!length $config->{id}
+      or !length $config->{label}) {
+
+      error "bad config to register_${nav}_item";
+      return;
+  }
 
   foreach my $item (@{ $stash }) {
       if ($item->{id} eq $config->{id}) {
