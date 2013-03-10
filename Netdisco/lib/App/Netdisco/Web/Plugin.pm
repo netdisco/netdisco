@@ -84,7 +84,7 @@ register 'register_report' => sub {
   my @categories = @{ setting('report_order') };
 
   if (!length $config->{category}
-      or !length $config->{path}
+      or !length $config->{tag}
       or !length $config->{label}
       or 0 == scalar grep {$config->{category} eq $_} @categories) {
 
@@ -93,7 +93,7 @@ register 'register_report' => sub {
   }
 
   foreach my $item (@{setting('reports')->{ $config->{category} }}) {
-      if ($item->{label} eq $config->{label}) {
+      if ($item->{tag} eq $config->{tag}) {
           $item = $config;
           return;
       }

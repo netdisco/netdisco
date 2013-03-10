@@ -25,6 +25,7 @@ sub _load_web_plugins {
 
       debug "loading Netdisco plugin $plugin";
       eval "require $plugin";
+      error $@ if $@;
   }
 }
 
