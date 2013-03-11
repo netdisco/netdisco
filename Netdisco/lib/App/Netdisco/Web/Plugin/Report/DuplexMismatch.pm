@@ -13,13 +13,12 @@ register_report({
 });
 
 ajax '/ajax/content/report/duplexmismatch' => sub {
-#    my $q = param('q');
-#    my $device = schema('netdisco')->resultset('Device')
-#      ->with_times()->search_for_device($q) or return;
+    my $set = schema('netdisco')->resultset('Virtual::DuplexMismatch');
+    return unless $set->count;
 
     content_type('text/html');
     template 'ajax/report/duplexmismatch.tt', {
-#      d => $device,
+      results => $set,
     }, { layout => undef };
 };
 
