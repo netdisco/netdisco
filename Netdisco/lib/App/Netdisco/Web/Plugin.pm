@@ -95,7 +95,6 @@ register 'register_report' => sub {
 
   foreach my $item (@{setting('reports_menu')->{ $config->{category} }}) {
       if ($item eq $config->{tag}) {
-          $item = $config->{tag};
           setting('reports')->{$config->{tag}} = $config;
           return;
       }
