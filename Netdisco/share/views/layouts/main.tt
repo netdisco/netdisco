@@ -56,6 +56,7 @@
           <a href="[% uri_for(ni.path) %]">[% ni.label | html_entity %]</a>
         </li>
         [% END %]
+        [% IF settings.reports.size %]
         <li class="dropdown[% ' active' IF vars.nav == 'reports' %]">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
           <ul class="dropdown-menu">
@@ -73,6 +74,7 @@
           [% END %]
           </ul>
         </li> <!-- /dropdown -->
+        [% END %]
       </ul>
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
         <input placeholder="Find Anything" class="search-query span3"
