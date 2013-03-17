@@ -14,7 +14,9 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
         di.ip AS right_ip, d2.dns AS right_dns, dp.remote_port AS right_port, dp2.duplex AS right_duplex
    FROM ( SELECT device_port.ip, device_port.remote_ip, device_port.port, device_port.duplex, device_port.remote_port
            FROM device_port
-          WHERE device_port.remote_port IS NOT NULL
+          WHERE
+            device_port.remote_port IS NOT NULL
+            AND device_port.up NOT ILIKE '%down%'
           GROUP BY device_port.ip, device_port.remote_ip, device_port.port, device_port.duplex, device_port.remote_port
           ORDER BY device_port.ip) dp
    LEFT JOIN device_ip di ON dp.remote_ip = di.alias
@@ -24,6 +26,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   WHERE di.ip IS NOT NULL
    AND dp.duplex <> dp2.duplex
    AND dp.ip <= di.ip
+   AND dp2.up NOT ILIKE '%down%'
   ORDER BY dp.ip
 ENDSQL
 );
