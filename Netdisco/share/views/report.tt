@@ -1,31 +1,38 @@
-<div class="container">
-  <div class="row nd_show-grid">
-    <div class="span10 offset1">
-      <form id="nd_dev_age_form" class="form-inline">
-        Find Devices
-        <select name="age_type" class="span2">
-          <option value="first">First Discovered</option>
-          <option value="last" selected="selected">Last Updated</option>
-        </select>
-        <select name="age_bool" class="span2">
-          <option value="in">less than</option>
-          <option value="not_in" selected="selected">more than</option>
-        </select>
-        <select name="age_num" class="span1">
-          [% FOREACH count IN [1..32] %]
-          <option[% ' selected="selected"' IF count == 3 %]>[% count %]</option>
-          [% END %]
-        </select>
-        <select name="age_unit" class="span2">
-          <option>days</option>
-          <option>weeks</option>
-          <option selected="selected">months</option>
-          <option>years</option>
-        </select>
-        ago.
-        <button type="submit" class="btn btn-primary">
-          <i class="icon-search icon-white"></i></button>
-      </form>
+<i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
+  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+<div class="container-fluid">
+  <div class="sidebar sidebar_pinned">
+    <div class="well">
+      <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
+      <i class="sidebar_pin icon-pushpin sidebar_pin_clicked"
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
+
+      <div class="tab-content">
+        <div id="[% report.tag %]_search" class="tab-pane active">
+          <form id="[% report.tag %]_form" class="nd_sidesearchform form-stacked"
+              method="get" action="[% uri_for('/report') %]">
+            [% TRY %]
+            [% INCLUDE "sidebar/report/${report.tag}.tt" %]
+            <script type="text/javascript">has_sidebar["[% report.tag %]"] = 1;</script>
+            [% CATCH %]
+            <script type="text/javascript">has_sidebar["[% report.tag %]"] = 0;</script>
+            [% END %]
+          </form>
+        </div> <!-- /tab-pane -->
+      </div> <!-- /tab-content -->
     </div>
   </div>
+
+  <div class="content">
+    <ul id="search_results" class="nav nav-tabs">
+      <li class="active"><a id="[% report.tag %]_link" href="#[% report.tag %]_pane">[% report.label %]</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="[% report.tag %]_pane"></div>
+  </div>
 </div>
+
+<script type="text/javascript">
+[%+ INCLUDE 'js/report.js' -%]
+</script>

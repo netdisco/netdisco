@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 use App::Netdisco::Web::Plugin;
 
 register_navbar_item({
-  id    => 'inventory',
+  tag   => 'inventory',
   path  => '/inventory',
   label => 'Inventory',
 });

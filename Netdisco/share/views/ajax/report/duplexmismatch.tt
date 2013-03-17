@@ -1,0 +1,30 @@
+<table class="table-bordered table-condensed table-striped">
+  <thead>
+    <tr>
+      <th class="center_cell">Left Device</th>
+      <th class="center_cell">Interface</th>
+      <th class="center_cell">Duplex</th>
+      <th class="center_cell">Right Device</th>
+      <th class="center_cell">Interface</th>
+      <th class="center_cell">Duplex</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="center_cell">[% row.left_dns || row.left_ip | html_entity %]</a>
+      <td class="center_cell"><a class="nd_linkcell"
+        href="[% device_ports %]&q=[% row.left_dns || row.left_ip | uri %]&f=[% row.left_port | uri %]&c_duplex=on">
+          [% row.left_port | html_entity %]</a></td>
+      <td class="center_cell">[% row.left_duplex.ucfirst | html_entity %]</td>
+
+      <td class="center_cell">[% row.right_dns || row.right_ip | html_entity %]</a>
+      <td class="center_cell"><a class="nd_linkcell"
+        href="[% device_ports %]&q=[% row.right_dns || row.right_ip | uri %]&f=[% row.right_port | uri %]&c_duplex=on">
+          [% row.right_port | html_entity %]</a></td>
+      <td class="center_cell">[% row.right_duplex.ucfirst | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

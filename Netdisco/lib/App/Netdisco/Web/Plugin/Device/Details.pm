@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
 
-register_device_tab({ id => 'details', label => 'Details' });
+register_device_tab({ tag => 'details', label => 'Details' });
 
 # device details table
 ajax '/ajax/content/device/details' => sub {

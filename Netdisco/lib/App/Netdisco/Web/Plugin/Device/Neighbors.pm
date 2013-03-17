@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
 
-register_device_tab({ id => 'netmap', label => 'Neighbors' });
+register_device_tab({ tag => 'netmap', label => 'Neighbors' });
 
 ajax '/ajax/content/device/netmap' => sub {
     content_type('text/html');

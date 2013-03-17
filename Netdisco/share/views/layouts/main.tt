@@ -31,14 +31,13 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
 </head>
 
 <body>
 [%
-  more_dd = { "Reports" = "/reports" }
   user_dd = [
     { "title" = "Settings", "link" = "/settings" },
     { "title" = "Help", "link" = "/help" },
@@ -53,18 +52,26 @@
       [% IF session.user %]
       <ul class="nav">
         [% FOREACH ni IN settings.navbar_items %]
-        <li[% ' class="active"' IF vars.nav == ni.id %]>
+        <li[% ' class="active"' IF vars.nav == ni.tag %]>
           <a href="[% uri_for(ni.path) %]">[% ni.label | html_entity %]</a>
         </li>
         [% END %]
-        [% IF more_dd.size %]
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            More <b class="caret"></b></a>
+        [% IF settings.reports.size %]
+        <li class="dropdown[% ' active' IF vars.nav == 'reports' %]">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
           <ul class="dropdown-menu">
-            [% FOREACH title IN more_dd.keys.sort %]
-            <li><a href="[% uri_for(more_dd.$title) %]">[% title | html_entity %]</a></li>
+          [% FOREACH category IN settings.report_order %]
+            [% IF settings.reports_menu.$category.size %]
+            <li class="dropdown-submenu">
+            <a href="#">[% category | html_entity %]</a>
+              <ul class="dropdown-menu">
+              [% FOREACH item IN settings.reports_menu.$category %]
+                <li><a href="[% uri_for('/report/' _ item) %]">[% settings.reports.$item.label | html_entity %]</a></li>
+              [% END %]
+              </ul>
+            </li>
             [% END %]
+          [% END %]
           </ul>
         </li> <!-- /dropdown -->
         [% END %]

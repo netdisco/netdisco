@@ -7,7 +7,7 @@ use Dancer::Plugin::DBIC;
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
-register_device_tab({ id => 'ports', label => 'Ports' });
+register_device_tab({ tag => 'ports', label => 'Ports' });
 
 # device ports with a description (er, name) matching
 ajax '/ajax/content/device/ports' => sub {

@@ -8,7 +8,7 @@ use List::MoreUtils ();
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({id => 'device', label => 'Device'});
+register_search_tab({ tag => 'device', label => 'Device' });
 
 # device with various properties or a default match-all
 ajax '/ajax/content/search/device' => sub {

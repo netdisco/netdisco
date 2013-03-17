@@ -7,10 +7,8 @@ FRONTEND
 
 * UI for topo DB table editing
   - drop topo file support and use DB only
-* update inventory to use bootstrap accordion
-* reports page
-* reports plugin(s)
 * (jeneric) device module tab
+* Port/Name/VLAN box should be green when filled
 
 DAEMON
 ======
