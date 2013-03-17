@@ -57,6 +57,7 @@ lib/App/Netdisco/DB/Result/Virtual/ActiveNodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanNative.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
+lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
@@ -84,6 +85,7 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod
 lib/App/Netdisco/Manual/ReleaseNotes.pod
+lib/App/Netdisco/Manual/WritingPlugins.pm
 lib/App/Netdisco/Util/Connect.pm
 lib/App/Netdisco/Util/DeviceProperties.pm
 lib/App/Netdisco/Util/Permissions.pm
@@ -98,11 +100,13 @@ lib/App/Netdisco/Web/Plugin/Device/Modules.pm
 lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
+lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
 lib/App/Netdisco/Web/Plugin/Search/Device.pm
 lib/App/Netdisco/Web/Plugin/Search/Node.pm
 lib/App/Netdisco/Web/Plugin/Search/Port.pm
 lib/App/Netdisco/Web/Plugin/Search/VLAN.pm
 lib/App/Netdisco/Web/PortControl.pm
+lib/App/Netdisco/Web/Report.pm
 lib/App/Netdisco/Web/Search.pm
 lib/App/Netdisco/Web/TypeAhead.pm
 LICENCE
@@ -114,7 +118,7 @@ share/environments/deployment.yml
 share/environments/development.yml
 share/public/500.html
 share/public/css/bootstrap.min.css
-share/public/css/font-awesome.css
+share/public/css/font-awesome.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
 share/public/css/toastr.css
@@ -124,6 +128,7 @@ share/public/font/fontawesome-webfont.eot
 share/public/font/fontawesome-webfont.svg
 share/public/font/fontawesome-webfont.ttf
 share/public/font/fontawesome-webfont.woff
+share/public/font/FontAwesome.otf
 share/public/images/crystalclear_mag.png
 share/public/images/diagona_settings.png
 share/public/images/dusseldorf_settings.png
@@ -145,6 +150,7 @@ share/views/ajax/device/addresses.tt
 share/views/ajax/device/details.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
+share/views/ajax/report/duplexmismatch.tt
 share/views/ajax/search/device.tt
 share/views/ajax/search/node_by_ip.tt
 share/views/ajax/search/node_by_mac.tt
@@ -155,6 +161,7 @@ share/views/index.tt
 share/views/inventory.tt
 share/views/js/common.js
 share/views/js/device.js
+share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt
 share/views/report.tt
