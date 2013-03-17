@@ -43,7 +43,7 @@ Here's the boilerplate code for our example plugin module:
  
  true;
 
-=head2 Navigation Bar items
+=head1 Navigation Bar items
 
 These components appear in the black navigation bar at the top of each page,
 as individual items (i.e. not in a menu). The canonical example of this is the
@@ -52,7 +52,7 @@ Inventory link.
 To register an item for display in the navigation bar, use the following code:
 
  register_navbar_item({
-   id    => 'newfeature',
+   tag   => 'newfeature',
    path  => '/mynewfeature',
    label => 'My New Feature',
  });
@@ -63,7 +63,7 @@ Note that this won't work for any target link - the path must be an
 App::Netdisco Dancer route handler. Please bug the App::Netdisco devs if you
 want arbitrary links supported.
 
-=head2 Search and Device page Tabs
+=head1 Search and Device page Tabs
 
 These components appear as tabs in the interface when the user reaches the
 Search page or Device details page. Note that Tab plugins usually live in
@@ -73,14 +73,14 @@ C<App::Netdisco::Web::Plugin::Search> namespace.
 To register a handler for display as a Search page Tab, use the following
 code:
 
- register_search_tab({id => 'newfeature', label => 'My New Feature'});
+ register_search_tab({tag => 'newfeature', label => 'My New Feature'});
 
 This causes a tab to appear with the label "My New Feature". So how does
 App::Netdisco know what the link should be? Well, as the
 L<App::Netdisco::Developing> documentation says, tab content is retrieved by
 an AJAX call back to the web server. This uses a predictable URL path format:
 
- /ajax/content/<search or device>/<feature ID>
+ /ajax/content/<search or device>/<feature tag>
 
 For example:
 
@@ -96,7 +96,7 @@ Therefore your plugin module should look like the following:
  
  use App::Netdisco::Web::Plugin;
  
- register_search_tab({id => 'newfeature', label => 'My New Feature'});
+ register_search_tab({tag => 'newfeature', label => 'My New Feature'});
  
  ajax '/ajax/content/search/newfeature' => sub {
    # ...lorem ipsum...
@@ -114,9 +114,68 @@ straightforward.
 To register a handler for display as a Device page Tab, the only difference is
 the name of the registration helper sub:
 
- register_device_tab({id => 'newfeature', label => 'My New Feature'});
+ register_device_tab({tag => 'newfeature', label => 'My New Feature'});
 
-=head2 Templates
+=head1 Reports
+
+Report components contain pre-canned searches which the user community have
+found to be useful. The implementation is very similar to one of the Search
+and Device page Tabs, so please read that documentation above, first.
+
+Report plugins usually live in the C<App::Netdisco::Web::Plugin::Report>
+namespace. To register a handler for display as a Report, you need to pick the
+I<category> of the report. Here are the pre-defined categories:
+
+=over 4
+
+=item *
+
+Device
+
+=item *
+
+Port
+
+=item *
+
+Node
+
+=item *
+
+VLAN
+
+=item *
+
+Network
+
+=item *
+
+Wireless
+
+=back
+
+Once your category is selected, use the following registration code:
+
+ register_report({
+   category => 'Port', # pick one from the list
+   tag => 'newreport',
+   label => 'My New Report',
+ });
+
+You will note that like Device and Search page Tabs, there's no path
+specified in the registration. The reports engine will make an AJAX request to
+the following URL:
+
+ /ajax/content/report/<report tag>
+
+Therefore you should implement in your plugin an AJAX handler for this path.
+The handler must return the HTML content for the report. It can also process
+any query parameters which might customize the report search.
+
+See the L<App::Netdisco::Web::Plugin::Report::DuplexMismatch> module for a
+simple example of how to implement the handler.
+
+=head1 Templates
 
 All of Netdisco's web page templates are stashed away in its distribution,
 probably installed in your system's or user's Perl directory. It's not
