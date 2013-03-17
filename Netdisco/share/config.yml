@@ -34,7 +34,7 @@ engines:
 
 web_plugins:
   - Inventory
-#  - Report::WirelessDevices
+  - Report::DuplexMismatch
   - Search::Device
   - Search::Node
   - Search::VLAN
