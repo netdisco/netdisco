@@ -4,6 +4,7 @@ name     'App-Netdisco';
 license  'bsd';
 all_from 'lib/App/Netdisco.pm';
  
+requires 'Algorithm::Cron' => 0;
 requires 'App::cpanminus' => 0;
 requires 'App::local::lib::helper' => 0;
 requires 'DBD::Pg' => 0;
