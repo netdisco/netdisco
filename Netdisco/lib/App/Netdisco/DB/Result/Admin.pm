@@ -54,5 +54,9 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("job");
 
+__PACKAGE__->add_unique_constraint(
+  queued_job => [qw/ device action subaction /],
+);
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
