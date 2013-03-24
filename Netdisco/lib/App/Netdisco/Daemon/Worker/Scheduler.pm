@@ -26,9 +26,9 @@ sub worker_begin {
   debug "entering Scheduler ($wid) worker_begin()";
 
   foreach my $a (keys %$jobactions) {
-      next unless setting('job_schedule')
-        and exists setting('job_schedule')->{$a};
-      my $config = setting('job_schedule')->{$a};
+      next unless setting('housekeeping')
+        and exists setting('housekeeping')->{$a};
+      my $config = setting('housekeeping')->{$a};
 
       # accept either single crontab format, or individual time fields
       my $cron = Algorithm::Cron->new(@{
@@ -62,6 +62,8 @@ sub worker_body {
 
           if ($sched->{when}->next_time($win_start) < $win_end) {
               # queue it!
+              # due to a table constraint, this will fail if a similar job is
+              # already queued.
               try {
                   debug "scheduler ($wid): queueing $a job";
                   schema('netdisco')->resultset('Admin')->create({

@@ -72,7 +72,6 @@ daemon_sleep_time: 5
 
 # how many daemon processes
 # NB one worker will always be a Queue Manager
-daemon_schedulers: 1
 daemon_interactives: 2
 daemon_pollers: 0
 

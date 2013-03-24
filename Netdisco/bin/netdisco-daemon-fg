@@ -46,19 +46,18 @@ sub build_tasks_list {
     user_begin => worker_factory('Manager'),
   }];
 
-  set(daemon_schedulers => 1)
-    if !defined setting('daemon_schedulers');
+  $has_scheduler = (setting('housekeeping') ? 1 : 0);
+  push @$tasks, {
+    max_workers => 1,
+    user_begin => worker_factory('Scheduler'),
+  } if $has_scheduler;
+
   set(daemon_pollers => 2)
     if !defined setting('daemon_pollers');
   set(daemon_interactives => 2)
     if !defined setting('daemon_interactives');
 
   # XXX MCE does not like max_workers => 0
-
-  push @$tasks, {
-    max_workers => setting('daemon_schedulers'),
-    user_begin => worker_factory('Scheduler'),
-  } if setting('daemon_schedulers');
 
   push @$tasks, {
     max_workers => setting('daemon_pollers'),
@@ -71,8 +70,7 @@ sub build_tasks_list {
   } if setting('daemon_interactives');
 
   info sprintf "MCE will load %s tasks: 1 Manager, %s Scheduler, %s Poller, %s Interactive",
-    (1+ scalar @$tasks),
-    (setting('daemon_schedulers') || 0),
+    (1+ scalar @$tasks), $has_scheduler,
     (setting('daemon_pollers') || 0),
     (setting('daemon_interactives') || 0);
   return $tasks;
