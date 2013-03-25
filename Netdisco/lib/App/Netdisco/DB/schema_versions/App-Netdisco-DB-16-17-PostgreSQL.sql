@@ -1,8 +1,12 @@
--- Convert schema '/home/devver/netdisco-ng/Netdisco/bin/../lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-16-PostgreSQL.sql' to '/home/devver/netdisco-ng/Netdisco/bin/../lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-17-PostgreSQL.sql':;
 
 BEGIN;
 
-ALTER TABLE admin ADD CONSTRAINT queued_job UNIQUE (device, action, subaction);
+CREATE UNIQUE INDEX jobs_queued ON admin (
+  action,
+  coalesce(subaction, '_x_'),
+  coalesce(device, '255.255.255.255'),
+  coalesce(port, '_x_')
+) WHERE status = 'queued';
 
 COMMIT;
 

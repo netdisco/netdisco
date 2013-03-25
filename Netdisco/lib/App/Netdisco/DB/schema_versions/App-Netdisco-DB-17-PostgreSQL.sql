@@ -21,8 +21,14 @@ CREATE TABLE "admin" (
   "log" text,
   "debug" boolean,
   PRIMARY KEY ("job"),
-  CONSTRAINT "queued_job" UNIQUE ("device", "action", "subaction")
 );
+
+CREATE UNIQUE INDEX jobs_queued ON admin (
+  action,
+  coalesce(subaction, '_x_'),
+  coalesce(device, '255.255.255.255'),
+  coalesce(port, '_x_')
+) WHERE status = 'queued';
 
 --
 -- Table: device.
