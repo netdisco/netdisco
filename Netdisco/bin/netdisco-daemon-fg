@@ -46,7 +46,7 @@ sub build_tasks_list {
     user_begin => worker_factory('Manager'),
   }];
 
-  $has_scheduler = (setting('housekeeping') ? 1 : 0);
+  my $has_scheduler = (setting('housekeeping') ? 1 : 0);
   push @$tasks, {
     max_workers => 1,
     user_begin => worker_factory('Scheduler'),
@@ -70,7 +70,7 @@ sub build_tasks_list {
   } if setting('daemon_interactives');
 
   info sprintf "MCE will load %s tasks: 1 Manager, %s Scheduler, %s Poller, %s Interactive",
-    (1+ scalar @$tasks), $has_scheduler,
+    (scalar @$tasks), $has_scheduler,
     (setting('daemon_pollers') || 0),
     (setting('daemon_interactives') || 0);
   return $tasks;

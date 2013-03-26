@@ -42,7 +42,8 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
-  my $num_slots = $self->do('num_workers');
+  my $num_slots = $self->do('num_workers')
+    or return warning "mgr ($wid): this node has no workers... quitting manager";
 
   # get some pending jobs
   my $rs = schema('netdisco')->resultset('Admin')
