@@ -11,13 +11,13 @@ use namespace::clean;
 
 my $jobactions = {
   map {$_ => undef} qw/
-    discoverall
-    refresh
-    macwalk
-    arpwalk
-    nbtwalk
-    backup
   /
+#    discoverall
+#    refresh
+#    macwalk
+#    arpwalk
+#    nbtwalk
+#    backup
 };
 
 sub worker_begin {
@@ -60,20 +60,21 @@ sub worker_body {
           next unless defined $jobactions->{$a};
           my $sched = $jobactions->{$a};
 
-          if ($sched->{when}->next_time($win_start) < $win_end) {
-              # queue it!
-              # due to a table constraint, this will fail if a similar job is
-              # already queued.
-              try {
-                  debug "scheduler ($wid): queueing $a job";
-                  schema('netdisco')->resultset('Admin')->create({
-                    action => $a,
-                    device => ($sched->{device} || undef),
-                    subaction => ($sched->{extra} || undef),
-                    status => 'queued',
-                  });
-              };
-          }
+          # next occurence of job must be in this minute's window
+          next unless $sched->{when}->next_time($win_start) < $win_end;
+
+          # queue it!
+          # due to a table constraint, this will (intentionally) fail if a
+          # similar job is already queued.
+          try {
+              debug "scheduler ($wid): queueing $a job";
+              schema('netdisco')->resultset('Admin')->create({
+                action => $a,
+                device => ($sched->{device} || undef),
+                subaction => ($sched->{extra} || undef),
+                status => 'queued',
+              });
+          };
       }
   }
 }
