@@ -31,10 +31,10 @@ sub worker_begin {
       my $config = setting('housekeeping')->{$a};
 
       # accept either single crontab format, or individual time fields
-      my $cron = Algorithm::Cron->new(@{
-        ref [] eq ref $config->{when}
+      my $cron = Algorithm::Cron->new(%{
+        ref {} eq ref $config->{when}
           ? $config->{when}
-          : [crontab => $config->{when}];
+          : {crontab => $config->{when}}
       });
 
       $jobactions->{$a} = $config;
@@ -71,7 +71,7 @@ sub worker_body {
               schema('netdisco')->resultset('Admin')->create({
                 action => $a,
                 device => ($sched->{device} || undef),
-                subaction => ($sched->{extra} || undef),
+                subaction => ($sched->{param} || undef),
                 status => 'queued',
               });
           };

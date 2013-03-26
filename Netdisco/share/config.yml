@@ -70,8 +70,32 @@ portctl_vlans: 1
 # sleep time between polls of the database job queue
 daemon_sleep_time: 5
 
-# how many daemon processes
-# NB one worker will always be a Queue Manager
+# how many daemon processes for this node
 daemon_interactives: 2
-daemon_pollers: 0
+daemon_pollers: 2
 
+# what housekeeping tasks should this node *schedule*
+# (it only does them if daemon_pollers is non-zero)
+#housekeeping:
+#  discoverall:
+#    device: '192.0.2.0'
+#    when:
+#      wday: 'wed'
+#      hour: 14
+#  backup:
+#    when:
+#      hour: 1
+#  refresh:
+#    when: '0 9 * * *'
+#  arpwalk:
+#    when:
+#      min: 30
+#  macwalk:
+#    when:
+#      hour: '*/2'
+#  nbtwalk:
+#    when:
+#      hour: '8,13,21'
+#  saveconfigs:
+#    param: 61
+#    when: '0 * * * *'

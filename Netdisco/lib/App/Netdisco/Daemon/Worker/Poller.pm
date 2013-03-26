@@ -8,7 +8,7 @@ use Role::Tiny;
 use namespace::clean;
 
 # add dispatch methods for poller tasks
-with 'App::Netdisco::Daemon::Worker::Poller::Discover';
+# with 'App::Netdisco::Daemon::Worker::Poller::Discover';
 
 sub worker_body {
   my $self = shift;
