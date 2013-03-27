@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Rename plugins developer doc to .pod
+  * Update to latest Bootstrap and JQuery, and temp. fix #7326 in Bootstrap
 
 2.007000_001 - 2013-03-17
 
