@@ -19,6 +19,7 @@ no_index:
     - inc
     - share
 requires:
+  Algorithm::Cron: 0
   App::cpanminus: 0
   App::local::lib::helper: 0
   DBD::Pg: 0
