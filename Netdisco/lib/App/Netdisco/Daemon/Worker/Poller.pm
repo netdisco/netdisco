@@ -2,13 +2,14 @@ package App::Netdisco::Daemon::Worker::Poller;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
+
 use Try::Tiny;
 
 use Role::Tiny;
 use namespace::clean;
 
 # add dispatch methods for poller tasks
-# with 'App::Netdisco::Daemon::Worker::Poller::Discover';
+with 'App::Netdisco::Daemon::Worker::Poller::Discover';
 
 sub worker_body {
   my $self = shift;
@@ -26,7 +27,6 @@ sub worker_body {
                       ->new_result($candidate);
           my $jid = $job->job;
 
-          my $target = 'set_'. $job->action;
           next unless $self->can($target);
           debug "poll ($wid): can ${target}() for job $jid";
 
