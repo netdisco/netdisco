@@ -1,6 +1,7 @@
 package App::Netdisco::Daemon::Worker::Interactive::DeviceActions;
 
-use App::Netdisco::Util::Connect qw/snmp_connect get_device/;
+use App::Netdisco::Util::SNMP ':all';
+use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Daemon::Worker::Interactive::Util ':all';
 
 use Role::Tiny;

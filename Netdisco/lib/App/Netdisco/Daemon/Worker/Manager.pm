@@ -3,7 +3,7 @@ package App::Netdisco::Daemon::Worker::Manager;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::DeviceProperties 'is_discoverable';
+use App::Netdisco::Util::Device 'is_discoverable';
 use Net::Domain 'hostfqdn';
 use Try::Tiny;
 

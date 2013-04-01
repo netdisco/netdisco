@@ -1,7 +1,7 @@
 package App::Netdisco::Daemon::Worker::Interactive::PortActions;
 
-use App::Netdisco::Util::Connect ':all';
-use App::Netdisco::Util::Permissions ':all';
+use App::Netdisco::Util::SNMP ':all';
+use App::Netdisco::Util::Port ':all';
 use App::Netdisco::Daemon::Worker::Interactive::Util ':all';
 
 use Role::Tiny;
