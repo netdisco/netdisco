@@ -3,7 +3,7 @@ package App::Netdisco::Util::Port;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Connect 'get_device';
+use App::Netdisco::Util::Device 'get_device';
 
 use base 'Exporter';
 our @EXPORT = ();
