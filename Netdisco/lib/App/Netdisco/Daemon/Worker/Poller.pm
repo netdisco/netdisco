@@ -26,6 +26,7 @@ sub worker_body {
           my $job = schema('daemon')->resultset('Admin')
                       ->new_result($candidate);
           my $jid = $job->job;
+          my $target = $job->action;
 
           next unless $self->can($target);
           debug "poll ($wid): can ${target}() for job $jid";
