@@ -38,7 +38,7 @@ sub discover {
   my $snmp = snmp_connect($device);
 
   if (!defined $snmp) {
-      return job_error("Discover failed: could not SNMP connect to $host");
+      return job_error("discover failed: could not SNMP connect to $host");
   }
 
   store_device($device, $snmp);
@@ -48,7 +48,41 @@ sub discover {
   store_power($device, $snmp);
   store_modules($device, $snmp);
 
-  return job_done("Ended Discover for $host");
+  return job_done("Ended discover for $host");
+}
+
+# run find_neighbors on all known devices, and run discover on any
+# newly found devices.
+sub discoverall {
+  my ($self, $job) = @_;
+
+  my $devices = schema('netdisco')->resultset('Device')->get_column('ip');
+
+  schema('netdisco')->resultset('Admin')->populate([
+    map {{
+        device => $_,
+        action => 'discover_neighbors',
+        status => 'queued',
+    }} ($devices->all)
+  ]);
+
+  return job_done("Queued discover_neighbors job for all devices");
+}
+
+sub discover_neighbors {
+  my ($self, $job) = @_;
+
+  my $host = NetAddr::IP::Lite->new($job->device);
+  my $device = get_device($host->addr);
+  my $snmp = snmp_connect($device);
+
+  if (!defined $snmp) {
+      return job_error("discover_neighbors failed: could not SNMP connect to $host");
+  }
+
+  find_neighbors($device, $snmp);
+
+  return job_done("Ended find_neighbors for $host");
 }
 
 1;
