@@ -43,7 +43,7 @@ sub discover {
 
   store_device($device, $snmp);
   store_interfaces($device, $snmp);
-  #store_wireless($device, $snmp);
+  store_wireless($device, $snmp);
   #store_vlans($device, $snmp);
   #store_power($device, $snmp);
   #store_modules($device, $snmp);

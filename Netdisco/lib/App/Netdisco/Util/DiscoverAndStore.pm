@@ -9,7 +9,7 @@ use NetAddr::IP::Lite ':lower';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  store_device store_interfaces
+  store_device store_interfaces store_wireless
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -194,6 +194,74 @@ sub store_interfaces {
     $device->update_or_insert;
     $device->ports->populate(\@interfaces);
   });
+}
+
+=head2 store_wireless( $device, $snmp )
+
+Given a Device database object, and a working SNMP connection, discover and
+store the device's wireless interface information.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+=cut
+
+sub store_wireless {
+  my ($device, $snmp) = @_;
+
+  my $ssidlist = $snmp->i_ssidlist;
+  return unless scalar keys %$ssidlist;
+
+  my $interfaces = $snmp->interfaces;
+  my $ssidbcast  = $snmp->i_ssidbcast;
+  my $ssidmac    = $snmp->i_ssidmac;
+  my $channel    = $snmp->i_80211channel;
+  my $power      = $snmp->i_dot11_cur_tx_pwr_mw;
+
+  # build device ssid list suitable for DBIC
+  my @ssids;
+  foreach my $entry (keys %$ssidlist) {
+      $entry =~ s/\.\d+$//;
+      my $port = $interfaces->{$entry};
+
+      if (not length $port) {
+          # TODO log message
+          next;
+      }
+
+      push @ssids, {
+          port      => $port,
+          ssid      => $ssidlist->{$entry},
+          broadcast => $ssidbcast->{$entry},
+          bssid     => $ssidmac->{$entry},
+      };
+  }
+
+  # build device channel list suitable for DBIC
+  my @channels;
+  foreach my $entry (keys %$channel) {
+      $entry =~ s/\.\d+$//;
+      my $port = $interfaces->{$entry};
+
+      if (not length $port) {
+          # TODO log message
+          next;
+      }
+
+      push @channels, {
+          port    => $port,
+          channel => $channel->{$entry},
+          power   => $power->{$entry},
+      };
+  }
+
+  # FIXME not sure what relations need adding for wireless ports
+  # 
+  #schema('netdisco')->txn_do(sub {
+  #  $device->ports->delete;
+  #  $device->update_or_insert;
+  #  $device->ports->populate(\@interfaces);
+  #});
 }
 
 1;
