@@ -41,23 +41,23 @@ my $mce = MCE->new(
 )->run();
 
 sub build_tasks_list {
-  my $tasks = [{
-    max_workers => 1,
-    user_begin => worker_factory('Manager'),
-  }];
-
-  my $has_scheduler = (setting('housekeeping') ? 1 : 0);
-  push @$tasks, {
-    max_workers => 1,
-    user_begin => worker_factory('Scheduler'),
-  } if $has_scheduler;
+  # NB MCE does not like max_workers => 0
+  my $tasks = [];
 
   set(daemon_pollers => 2)
     if !defined setting('daemon_pollers');
   set(daemon_interactives => 2)
     if !defined setting('daemon_interactives');
 
-  # XXX MCE does not like max_workers => 0
+  push @$tasks, {
+    max_workers => 1,
+    user_begin => worker_factory('Manager'),
+  } if setting('daemon_pollers') or setting('daemon_interactives');
+
+  push @$tasks, {
+    max_workers => 1,
+    user_begin => worker_factory('Scheduler'),
+  } if setting('housekeeping');
 
   push @$tasks, {
     max_workers => setting('daemon_pollers'),
@@ -69,10 +69,13 @@ sub build_tasks_list {
     user_begin => worker_factory('Interactive'),
   } if setting('daemon_interactives');
 
-  info sprintf "MCE will load %s tasks: 1 Manager, %s Scheduler, %s Poller, %s Interactive",
-    (scalar @$tasks), $has_scheduler,
+  info sprintf "MCE will load %s tasks: %s Manager, %s Scheduler, %s Poller, %s Interactive",
+    (scalar @$tasks),
+    ((setting('daemon_pollers') or setting('daemon_interactives')) ? 1 : 0),
+    (setting('housekeeping') ? 1 : 0),
     (setting('daemon_pollers') || 0),
     (setting('daemon_interactives') || 0);
+
   return $tasks;
 }
 
