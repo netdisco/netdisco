@@ -27,7 +27,7 @@ sub refresh {
     }} ($devices->all)
   ]);
 
-  return done("Queued discover job for all devices");
+  return job_done("Queued discover job for all devices");
 }
 
 sub discover {
@@ -38,7 +38,7 @@ sub discover {
   my $snmp = snmp_connect($device);
 
   if (!defined $snmp) {
-      return error("Discover failed: could not SNMP connect to $host");
+      return job_error("Discover failed: could not SNMP connect to $host");
   }
 
   store_device($device, $snmp);
@@ -47,7 +47,7 @@ sub discover {
   #store_power($ip, $snmp);
   #store_modules($ip, $snmp);
 
-  return done("Ended Discover for $host");
+  return job_done("Ended Discover for $host");
 }
 
 1;
