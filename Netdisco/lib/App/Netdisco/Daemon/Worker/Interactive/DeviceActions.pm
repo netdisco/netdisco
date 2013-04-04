@@ -22,7 +22,7 @@ sub _set_device_generic {
   $data ||= '';
 
   # snmp connect using rw community
-  my $info = snmp_connect($ip)
+  my $info = snmp_connect_rw($ip)
     or return error("Failed to connect to device [$ip] to update $slot");
 
   my $method = 'set_'. $slot;

@@ -56,7 +56,7 @@ sub _set_port_generic {
     or return error("Unknown port name [$pn] on device [$ip]");
 
   # snmp connect using rw community
-  my $info = snmp_connect($ip)
+  my $info = snmp_connect_rw($ip)
     or return error("Failed to connect to device [$ip] to control port");
 
   my $iid = get_iid($info, $port)
@@ -104,7 +104,7 @@ sub set_power {
   (my $data = $job->subaction) =~ s/-\w+//;
 
   # snmp connect using rw community
-  my $info = snmp_connect($ip)
+  my $info = snmp_connect_rw($ip)
     or return error("Failed to connect to device [$ip] to control port");
 
   my $powerid = get_powerid($info, $port)

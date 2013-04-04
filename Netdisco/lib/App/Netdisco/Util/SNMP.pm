@@ -10,7 +10,7 @@ use Path::Class 'dir';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  snmp_connect
+  snmp_connect snmp_connect_rw
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -33,16 +33,39 @@ Given an IP address, returns an L<SNMP::Info> instance configured for and
 connected to that device. The IP can be any on the device, and the management
 interface will be connected to.
 
+If the device is known to Netdisco and there is a cached SNMP community
+string, this will be tried first, and then other community string(s) from the
+application configuration will be tried.
+
 Returns C<undef> if the connection fails.
 
 =cut
 
-sub snmp_connect {
+sub snmp_connect { _snmp_connect_generic(@_, 'community') }
+
+=head2 snmp_connect_rw( $ip )
+
+Same as C<snmp_connect> but uses the read-write community string(s) from the
+application configuration file.
+
+Returns C<undef> if the connection fails.
+
+=cut
+
+sub snmp_connect_rw { _snmp_connect_generic(@_, 'community_rw') }
+
+sub _snmp_connect_generic {
   my $ip = shift;
 
   # get device details from db
-  my $device = get_device($ip)
-    or return ();
+  my $device = get_device($ip);
+
+  # get the community string(s)
+  my $comm_type = pop;
+  my @communities = @{ setting($comm_type) || []};
+  unshift @communities, $device->snmp_comm
+    if length $device->snmp_comm
+       and length $comm_type and $comm_type eq 'community';
 
   # TODO: only supporing v2c at the moment
   my %snmp_args = (
@@ -58,7 +81,7 @@ sub snmp_connect {
 
   my $info = undef;
   my $last_comm = 0;
-  COMMUNITY: foreach my $c ($device->snmp_comm, @{ setting('community_rw') || []}) {
+  COMMUNITY: foreach my $c (@communities) {
       next unless defined $c and length $c;
       try {
           $info = SNMP::Info->new(%snmp_args, Community => $c);
