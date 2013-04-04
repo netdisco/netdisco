@@ -31,19 +31,27 @@ subroutines.
 Given an IP address, returns a L<DBIx::Class::Row> object for the Device in
 the Netdisco database. The IP can be for any interface on the device.
 
-Returns C<undef> if the device or interface IP is not known to Netdisco.
+If for any reason C<$ip> is already a C<DBIx::Class> Device object, then it is
+simply returned.
+
+If the device or interface IP is not known to Netdisco a new Device object is
+created for the IP, and returned. This object is in-memory only and not yet
+stored to the database.
 
 =cut
 
 sub get_device {
   my $ip = shift;
 
+  # naive check for existing DBIC object
+  return $ip if ref $ip;
+
   my $alias = schema('netdisco')->resultset('DeviceIp')
     ->search({alias => $ip})->first;
-  return if not eval { $alias->ip };
+  $ip = $alias->ip if defined $alias;
 
   return schema('netdisco')->resultset('Device')
-    ->find({ip => $alias->ip});
+    ->find_or_new({ip => $ip});
 }
 
 =head2 is_discoverable( $ip )

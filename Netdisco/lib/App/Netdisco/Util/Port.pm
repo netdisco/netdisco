@@ -125,8 +125,7 @@ sub get_port {
   my ($device, $portname) = @_;
 
   # accept either ip or dbic object
-  $device = get_device($device)
-    if not ref $device;
+  $device = get_device($device);
 
   my $port = schema('netdisco')->resultset('DevicePort')
     ->find({ip => $device->ip, port => $portname});
