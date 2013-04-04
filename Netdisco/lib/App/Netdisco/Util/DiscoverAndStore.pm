@@ -10,6 +10,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   store_device store_interfaces store_wireless
+  store_vlans
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -91,7 +92,7 @@ sub store_device {
   }
 
   $device->snmp_class( $snmp->class );
-  $device->last_discover(scalar localtime);
+  $device->last_discover(\'now()');
 
   schema('netdisco')->txn_do(sub {
     $device->device_ips->delete;
@@ -262,6 +263,83 @@ sub store_wireless {
   #  $device->update_or_insert;
   #  $device->ports->populate(\@interfaces);
   #});
+}
+
+=head2 store_vlans( $device, $snmp )
+
+Given a Device database object, and a working SNMP connection, discover and
+store the device's vlan information.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+=cut
+
+sub store_vlans {
+  my ($device, $snmp) = @_;
+
+  my $v_name  = $snmp->v_name;
+  my $v_index = $snmp->v_index;
+
+  # build device vlans suitable for DBIC
+  my %v_seen = ();
+  my @devicevlans;
+  foreach my $entry (keys %$v_name) {
+      my $vlan = $v_index->{$entry};
+      ++$v_seen{$vlan};
+
+      push @devicevlans, {
+          vlan => $vlan,
+          description => $v_name->{$entry},
+          last_discover => \'now()',
+      };
+  }
+
+  my $i_vlan            = $snmp->i_vlan;
+  my $i_vlan_membership = $snmp->i_vlan_membership;
+  my $i_vlan_type       = $snmp->i_vlan_type;
+  my $interfaces        = $snmp->interfaces;
+
+  # build device port vlans suitable for DBIC
+  my %portvlans;
+  foreach my $entry (keys %$i_vlan_membership) {
+      my $port = $interfaces->{$entry};
+      next unless defined $port;
+
+      my $type = $i_vlan_type->{$entry};
+      $portvlans{$port} = [];
+
+      foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
+          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
+          push @{$portvlans{$port}}, {
+              vlan => $vlan,
+              native => $native,
+              vlantype => $type,
+              last_discover => \'now()',
+          };
+
+          next if $v_seen{$vlan};
+
+          # also add an unnamed vlan to the device
+          push @devicevlans, {
+              vlan => $vlan,
+              description => (sprintf "VLAN %d", $vlan),
+              last_discover => \'now()',
+          };
+          ++$v_seen{$vlan};
+      }
+  }
+
+  schema('netdisco')->txn_do(sub {
+    $device->vlans->delete;
+    $device->vlans->populate(\@devicevlans);
+
+    foreach my $port (keys %portvlans) {
+        my $port = $device->ports->find({port => $port});
+        $port->vlans->delete;
+        $port->vlans->populate($portvlans{$port});
+    }
+  });
 }
 
 1;

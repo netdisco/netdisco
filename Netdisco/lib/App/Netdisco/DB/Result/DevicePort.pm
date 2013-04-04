@@ -72,7 +72,19 @@ Returns the Device table entry to which the given Port is related.
 
 =cut
 
-__PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip');
+__PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
+
+=head2 vlans
+
+Returns the set of C<device_port_vlan> entries associated with this Port.
+
+These will be both native and non-native (tagged). See also
+C<port_vlans_tagged> and C<tagged_vlans>.
+
+=cut
+
+__PACKAGE__->has_many( vlans => 'App::Netdisco::DB::Result::DevicePortVlan',
+  { 'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port' } );
 
 =head2 nodes / active_nodes / nodes_with_age / active_nodes_with_age
 
