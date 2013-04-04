@@ -10,7 +10,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   store_device store_interfaces store_wireless
-  store_vlans store_power
+  store_vlans store_power store_modules
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -408,6 +408,66 @@ sub store_power {
         $port->power->delete if $port->power;
         $port->create_related('power', $portpower{$port});
     }
+  });
+}
+
+=head2 store_modules( $device, $snmp )
+
+Given a Device database object, and a working SNMP connection, discover and
+store the device's module information.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+=cut
+
+sub store_modules {
+  my ($device, $snmp) = @_;
+
+  my $e_index  = $snmp->e_index;
+
+  if (!defined $e_index) {
+      # TODO log
+      return;
+  }
+
+  my $e_descr   = $snmp->e_descr;
+  my $e_type    = $snmp->e_type;
+  my $e_parent  = $snmp->e_parent;
+  my $e_name    = $snmp->e_name;
+  my $e_class   = $snmp->e_class;
+  my $e_pos     = $snmp->e_pos;
+  my $e_hwver   = $snmp->e_hwver;
+  my $e_fwver   = $snmp->e_fwver;
+  my $e_swver   = $snmp->e_swver;
+  my $e_model   = $snmp->e_model;
+  my $e_serial  = $snmp->e_serial;
+  my $e_fru     = $snmp->e_fru;
+
+  # build device modules list for DBIC
+  my @modules;
+  foreach my $entry (keys %$e_class) {
+      push @modules, {
+          index  => $e_index->{$entry},
+          type   => $e_type->{$entry},
+          parent => $e_parent->{$entry},
+          name   => $e_name->{$entry},
+          class  => $e_class->{$entry},
+          pos    => $e_pos->{$entry},
+          hw_ver => $e_hwver->{$entry},
+          fw_ver => $e_fwver->{$entry},
+          sw_ver => $e_swver->{$entry},
+          model  => $e_model->{$entry},
+          serial => $e_serial->{$entry},
+          fru    => $e_fru->{$entry},
+          description => $e_descr->{$entry},
+          last_discover => \'now()',
+      };
+  }
+
+  schema('netdisco')->txn_do(sub {
+    $device->modules->delete;
+    $device->modules->populate(\@modules);
   });
 }
 

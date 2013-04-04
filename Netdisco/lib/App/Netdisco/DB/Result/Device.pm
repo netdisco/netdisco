@@ -110,6 +110,14 @@ Returns the set of ports on this Device.
 
 __PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePort', 'ip' );
 
+=head2 modules
+
+Returns the set chassis modules on this Device.
+
+=cut
+
+__PACKAGE__->has_many( modules => 'App::Netdisco::DB::Result::DeviceModule', 'ip' );
+
 =head2 power_modules
 
 Returns the set of power modules on this Device.

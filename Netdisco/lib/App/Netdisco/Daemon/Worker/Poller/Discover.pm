@@ -46,7 +46,7 @@ sub discover {
   store_wireless($device, $snmp);
   store_vlans($device, $snmp);
   store_power($device, $snmp);
-  #store_modules($device, $snmp);
+  store_modules($device, $snmp);
 
   return job_done("Ended Discover for $host");
 }
