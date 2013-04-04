@@ -110,6 +110,14 @@ Returns the set of ports on this Device.
 
 __PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePort', 'ip' );
 
+=head2 power_modules
+
+Returns the set of power modules on this Device.
+
+=cut
+
+__PACKAGE__->has_many( power_modules => 'App::Netdisco::DB::Result::DevicePower', 'ip' );
+
 =head2 port_vlans
 
 Returns the set of VLANs known to be configured on Ports on this Device,

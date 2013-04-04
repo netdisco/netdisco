@@ -10,7 +10,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   store_device store_interfaces store_wireless
-  store_vlans
+  store_vlans store_power
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -338,6 +338,75 @@ sub store_vlans {
         my $port = $device->ports->find({port => $port});
         $port->vlans->delete;
         $port->vlans->populate($portvlans{$port});
+    }
+  });
+}
+
+=head2 store_power( $device, $snmp )
+
+Given a Device database object, and a working SNMP connection, discover and
+store the device's PoE information.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+=cut
+
+sub store_power {
+  my ($device, $snmp) = @_;
+
+  my $p_watts  = $snmp->peth_power_watts;
+  my $p_status = $snmp->peth_power_status;
+
+  if (!defined $p_watts) {
+      # TODO log
+      return;
+  }
+
+  # build device module power info suitable for DBIC
+  my @devicepower;
+  foreach my $entry (keys %$p_watts) {
+      push @devicepower, {
+          module => $entry,
+          power  => $p_watts->{$entry},
+          status => $p_status->{$entry},
+      };
+  }
+
+  my $interfaces = $snmp->interfaces;
+  my $p_ifindex  = $snmp->peth_port_ifindex;
+  my $p_admin    = $snmp->peth_port_admin;
+  my $p_pstatus  = $snmp->peth_port_status;
+  my $p_class    = $snmp->peth_port_class;
+  my $p_power    = $snmp->peth_port_power;
+
+  # build device port power info suitable for DBIC
+  my %portpower;
+  foreach my $entry (keys %$p_ifindex) {
+      my $port = $interfaces->{ $p_ifindex->{$entry} };
+      next unless $port;
+
+      my ($module) = split m/\./, $entry;
+      $portpower{$port} = [];
+
+      push @{$portpower{$port}}, {
+          module => $module,
+          admin  => $p_admin->{$entry},
+          status => $p_pstatus->{$entry},
+          class  => $p_class->{$entry},
+          power  => $p_power->{$entry},
+
+      };
+  }
+
+  schema('netdisco')->txn_do(sub {
+    $device->power_modules->delete;
+    $device->power_modules->populate(\@devicepower);
+
+    foreach my $port (keys %portpower) {
+        my $port = $device->ports->find({port => $port});
+        $port->power->delete if $port->power;
+        $port->create_related('power', $portpower{$port});
     }
   });
 }
