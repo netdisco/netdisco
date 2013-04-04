@@ -42,10 +42,11 @@ sub discover {
   }
 
   store_device($device, $snmp);
-  #store_interfaces($ip, $snmp);
-  #store_vlans($ip, $snmp);
-  #store_power($ip, $snmp);
-  #store_modules($ip, $snmp);
+  store_interfaces($device, $snmp);
+  #store_wireless($device, $snmp);
+  #store_vlans($device, $snmp);
+  #store_power($device, $snmp);
+  #store_modules($device, $snmp);
 
   return job_done("Ended Discover for $host");
 }
