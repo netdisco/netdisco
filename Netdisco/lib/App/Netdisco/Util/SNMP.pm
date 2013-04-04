@@ -25,7 +25,7 @@ A set of helper subroutines to support parts of the Netdisco application.
 There are no default exports, however the C<:all> tag will export all
 subroutines.
 
-=head1 FUNCTIONS
+=head1 EXPORT_OK
 
 =head2 snmp_connect( $ip )
 
