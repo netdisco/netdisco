@@ -26,6 +26,7 @@ lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/Util.pm
 lib/App/Netdisco/Daemon/Worker/Manager.pm
 lib/App/Netdisco/Daemon/Worker/Poller.pm
+lib/App/Netdisco/Daemon/Worker/Poller/Discover.pm
 lib/App/Netdisco/Daemon/Worker/Scheduler.pm
 lib/App/Netdisco/DB.pm
 lib/App/Netdisco/DB/Result/Admin.pm
@@ -91,6 +92,8 @@ lib/App/Netdisco/Manual/Developing.pod
 lib/App/Netdisco/Manual/ReleaseNotes.pod
 lib/App/Netdisco/Manual/WritingPlugins.pod
 lib/App/Netdisco/Util/Device.pm
+lib/App/Netdisco/Util/DiscoverAndStore.pm
+lib/App/Netdisco/Util/DNS.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Web.pm

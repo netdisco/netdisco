@@ -35,8 +35,9 @@ requires:
   JSON: 0
   List::MoreUtils: 0
   MCE: 1.405
+  Net::DNS: 0
   Net::MAC: 0
-  NetAddr::IP: 0
+  NetAddr::IP: 4.059
   Path::Class: 0
   Plack: 1.0006
   Plack::Middleware::Expires: 0
