@@ -240,6 +240,11 @@ sub store_wireless {
       };
   }
 
+  schema('netdisco')->txn_do(sub {
+    $device->ssids->delete;
+    $device->ssids->populate(\@ssids);
+  });
+
   # build device channel list suitable for DBIC
   my @channels;
   foreach my $entry (keys %$channel) {
@@ -258,13 +263,10 @@ sub store_wireless {
       };
   }
 
-  # FIXME not sure what relations need adding for wireless ports
-  # 
-  #schema('netdisco')->txn_do(sub {
-  #  $device->ports->delete;
-  #  $device->update_or_insert;
-  #  $device->ports->populate(\@interfaces);
-  #});
+  schema('netdisco')->txn_do(sub {
+    $device->wireless_ports->delete;
+    $device->wireless_ports->populate(\@channels);
+  });
 }
 
 =head2 store_vlans( $device, $snmp )

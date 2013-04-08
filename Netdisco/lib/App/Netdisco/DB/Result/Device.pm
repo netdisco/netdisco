@@ -144,6 +144,29 @@ __PACKAGE__->has_many(
 # helper which assumes we've just RIGHT JOINed to Vlans table
 sub vlan { return (shift)->vlans->first }
 
+=head2 wireless_ports
+
+Returns the set of wireless IDs known to be configured on Ports on this
+Device.
+
+=cut
+
+__PACKAGE__->has_many(
+    wireless_ports => 'App::Netdisco::DB::Result::DevicePortWireless',
+    'ip', { join_type => 'RIGHT' }
+);
+
+=head2 ssids
+
+Returns the set of SSIDs known to be configured on Ports on this Device.
+
+=cut
+
+__PACKAGE__->has_many(
+    ssids => 'App::Netdisco::DB::Result::DevicePortSsid',
+    'ip', { join_type => 'RIGHT' }
+);
+
 =head1 ADDITIONAL COLUMNS
 
 =head2 uptime_age
