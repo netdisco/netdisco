@@ -46,8 +46,8 @@ sub store_device {
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
-  # build device interfaces suitable for DBIC
-  my @interfaces;
+  # build device aliases suitable for DBIC
+  my @aliases;
   foreach my $entry (keys %$ip_index) {
       my $ip = NetAddr::IP::Lite->new($entry);
       my $addr = $ip->addr;
@@ -57,12 +57,13 @@ sub store_device {
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};
-      my $port = $interfaces->{$iid};
+      my $port = $aliases->{$iid};
       my $subnet = $ip_netmask->{$addr}
         ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
         : undef;
 
-      push @interfaces, {
+      debug sprintf ' [%s] store_device - aliased as %s', $device->ip, $addr;
+      push @aliases, {
           alias => $addr,
           port => $port,
           subnet => $subnet,
@@ -99,7 +100,7 @@ sub store_device {
   schema('netdisco')->txn_do(sub {
     $device->device_ips->delete;
     $device->update_or_insert;
-    $device->device_ips->populate(\@interfaces);
+    $device->device_ips->populate(\@aliases);
   });
 }
 
@@ -139,6 +140,8 @@ sub store_interfaces {
   my $dev_uptime = $snmp->uptime;
 
   if (scalar grep {$_ > $dev_uptime} values %$i_lastchange) {
+      info sprintf ' [%s] interfaces - device uptime has wrapped - correcting',
+        $device->ip;
       $device->uptime( $dev_uptime + 2**32 );
   }
 
@@ -148,12 +151,21 @@ sub store_interfaces {
       my $port = $interfaces->{$entry};
 
       if (not length $port) {
-          # TODO log message
+          debug sprintf ' [%s] interfaces - ignoring %s (no port mapping)',
+            $device->ip, $port;
           next;
       }
 
       if (scalar grep {$port =~ m/$_/} @{setting('ignore_interfaces') || []}) {
-          # TODO log message
+          debug sprintf
+            ' [%s] interfaces - ignoring %s (%s) (requested in config)',
+            $device->ip, $entry, $port;
+          next;
+      }
+
+      if (exists $i_ignore->{$entry}) {
+          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s)',
+            $device->ip, $entry, $port, $i_type->{$entry};
           next;
       }
 
@@ -168,8 +180,10 @@ sub store_interfaces {
               else {
                   # uptime wrap less than 5min ago or lastchange > 5min ago
                   # to be on safe side, assume lastchange after counter wrap
+                  debug sprintf
+                    ' [%s] interfaces - correcting LastChange for %s, assuming sysUptime wrap',
+                    $device->ip, $port;
                   $lc += 2**32;
-                  # TODO log message
               }
           }
       }
@@ -186,6 +200,7 @@ sub store_interfaces {
           duplex       => $i_duplex->{$entry},
           duplex_admin => $i_duplex_admin->{$entry},
           stp          => $i_stp_state->{$entry},
+          type         => $i_type->{$entry},
           vlan         => $i_vlan->{$entry},
           pvid         => $i_pvid->{$entry},
           lastchange   => $lc,
@@ -228,7 +243,8 @@ sub store_wireless {
       my $port = $interfaces->{$entry};
 
       if (not length $port) {
-          # TODO log message
+          debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
+            $device->ip, $port;
           next;
       }
 
@@ -252,7 +268,8 @@ sub store_wireless {
       my $port = $interfaces->{$entry};
 
       if (not length $port) {
-          # TODO log message
+          debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
+            $device->ip, $port;
           next;
       }
 

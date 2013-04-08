@@ -43,7 +43,7 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
   my $num_slots = $self->do('num_workers')
-    or return warning "mgr ($wid): this node has no workers... quitting manager";
+    or return debug "mgr ($wid): this node has no workers... quitting manager";
 
   # get some pending jobs
   my $rs = schema('netdisco')->resultset('Admin')
@@ -59,11 +59,11 @@ sub worker_body {
 
           # filter for discover_*
           next unless is_discoverable($job->device);
-          info sprintf "mgr (%s): job %s is discoverable", $wid, $jid;
+          debug sprintf "mgr (%s): job %s is discoverable", $wid, $jid;
 
           # check for available local capacity
           next unless $self->do('capacity_for', $job->action);
-          info sprintf "mgr (%s): processing node has capacity for job %s (%s)",
+          debug sprintf "mgr (%s): processing node has capacity for job %s (%s)",
             $wid, $jid, $job->action;
 
           # mark job as running
