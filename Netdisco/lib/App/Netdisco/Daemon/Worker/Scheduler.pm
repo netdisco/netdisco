@@ -78,7 +78,7 @@ sub worker_body {
               schema('netdisco')->resultset('Admin')->create({
                 action => $a,
                 device => ($sched->{device} || undef),
-                subaction => ($sched->{param} || undef),
+                subaction => ($sched->{extra} || undef),
                 status => 'queued',
               });
           }
