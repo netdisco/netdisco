@@ -158,7 +158,7 @@ sub store_interfaces {
 
       if (scalar grep {$port =~ m/$_/} @{setting('ignore_interfaces') || []}) {
           debug sprintf
-            ' [%s] interfaces - ignoring %s (%s) (requested in config)',
+            ' [%s] interfaces - ignoring %s (%s) (config:ignore_interfaces)',
             $device->ip, $entry, $port;
           next;
       }
@@ -380,7 +380,7 @@ sub store_power {
   my $p_status = $snmp->peth_power_status;
 
   if (!defined $p_watts) {
-      # TODO log
+      debug sprintf ' [%s] power - 0 power modules', $device->ip;
       return;
   }
 
@@ -448,7 +448,7 @@ sub store_modules {
   my $e_index  = $snmp->e_index;
 
   if (!defined $e_index) {
-      # TODO log
+      debug sprintf ' [%s] modules - 0 chassis components', $device->ip;
       return;
   }
 
@@ -510,7 +510,7 @@ sub find_neighbors {
 
   my $c_ip = $snmp->c_ip;
   unless ($snmp->hasCDP or scalar keys %$c_ip) {
-      # TODO log
+      debug sprintf ' [%s] neigh - CDP/LLDP not enabled!', $device->ip;
       return;
   }
 
@@ -523,7 +523,8 @@ sub find_neighbors {
   foreach my $entry (keys %$c_ip) {
       my $port = $interfaces->{ $c_ip->{$entry} };
       if (!defined $port) {
-          # TODO log
+          debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
+            $device->ip, $entry;
           next;
       }
 
@@ -544,7 +545,9 @@ sub find_neighbors {
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');
               my $neigh = $devices->single({name => $remote_id});
-              # TODO log
+              info sprintf
+                ' [%s] neigh - bad address %s on port %s, searching for %s instead',
+                $device->ip, $remote_ip, $port, $remote_id;
 
               if (!defined $neigh) {
                   (my $shortid = $remote_id) =~ s/\..*//;
@@ -553,26 +556,36 @@ sub find_neighbors {
 
               if ($neigh) {
                   $remote_ip = $neigh->ip;
-                  # TODO log
+                  info sprintf ' [%s] neigh - found %s with IP %s',
+                    $device->ip, $remote_id, $remote_ip;
               }
               else {
-                  # TODO log
+                  info sprintf ' [%s] neigh - could not find %s, skipping',
+                    $device->ip, $remote_id;
                   next;
               }
           }
           else {
-              # TODO log
+              info sprintf ' [%s] neigh - skipping unuseable address %s on port %s',
+                $device->ip, $remote_ip, $port;
               next;
           }
       }
 
       # hack for devices seeing multiple neighbors on the port
       if (ref [] eq ref $remote_ip) {
+          debug sprintf
+            ' [%s] neigh - port %s has multiple neighbors, setting remote as self',
+            $device->ip, $port;
+
           foreach my $n (@$remote_ip) {
-              # TODO log
+              debug sprintf
+                ' [%s] neigh - adding neighbor %s, type %s, on %s to discovery queue',
+                $device->ip, $n, $remote_type, $port;
               _enqueue_discover($n, $remote_type);
           }
-          # set loopback as remote IP to suppress any further work
+
+          # set self as remote IP to suppress any further work
           $remote_ip = $device->ip;
           $remote_port = $port;
       }
@@ -584,7 +597,8 @@ sub find_neighbors {
               $remote_port =~ s/[^\d\/\.,()\w:-]+//gi;
           }
           else {
-              # TODO log
+              info sprintf ' [%s] neigh - no remote port found for port %s at %s',
+                $device->ip, $port, $remote_ip;
           }
       }
 
@@ -598,7 +612,8 @@ sub find_neighbors {
           ->single({ip => $device->ip, port => $port});
 
       if (!defined $portrow) {
-          # TODO log
+          info sprintf ' [%s] neigh - local port %s not in database!',
+            $device->ip, $port;
           next;
       }
 
@@ -609,6 +624,9 @@ sub find_neighbors {
           remote_id   => $remote_id,
       });
 
+      debug sprintf
+        ' [%s] neigh - adding neighbor %s, type %s, on %s to discovery queue',
+        $device->ip, $remote_ip, $remote_type, $port;
       _enqueue_discover($remote_ip, $remote_type);
   }
 }
@@ -621,14 +639,11 @@ sub _enqueue_discover {
   my $device = get_device($ip);
   return if $device->in_storage;
 
-#  XXX should this be checked by process _taking_ the job?
-#        ok.. the job will sit queued, but nothing will ever action it.
-#        but that could still tie up workers :-(
-#
   my $remote_type_match = setting('discover_no_type');
   if ($remote_type and $remote_type_match
       and $remote_type =~ m/$remote_type_match/) {
-    # TODO log
+    debug sprintf '      queue - %s, type %s excluded by discover_no_type',
+      $ip, $remote_type;
     return;
   }
 
@@ -639,7 +654,6 @@ sub _enqueue_discover {
           action => 'discover',
           status => 'queued',
       });
-      # TODO log
   };
 }
 
