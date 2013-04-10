@@ -3,7 +3,7 @@ package App::Netdisco::Daemon::Worker::Manager;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::DeviceProperties 'is_discoverable';
+use App::Netdisco::Util::Device 'is_discoverable';
 use Net::Domain 'hostfqdn';
 use Try::Tiny;
 
@@ -13,8 +13,10 @@ use namespace::clean;
 my $fqdn = hostfqdn || 'localhost';
 
 my $role_map = {
-  map {$_ => 'Interactive'}
-      qw/location contact portcontrol portname vlan power/
+  (map {$_ => 'Poller'}
+      qw/refresh discover discoverall discover_neighbors/),
+  (map {$_ => 'Interactive'}
+      qw/location contact portcontrol portname vlan power/)
 };
 
 sub worker_begin {
@@ -40,7 +42,8 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
-  my $num_slots = $self->do('num_workers');
+  my $num_slots = $self->do('num_workers')
+    or return debug "mgr ($wid): this node has no workers... quitting manager";
 
   # get some pending jobs
   my $rs = schema('netdisco')->resultset('Admin')
@@ -56,11 +59,11 @@ sub worker_body {
 
           # filter for discover_*
           next unless is_discoverable($job->device);
-          info sprintf "mgr (%s): job %s is discoverable", $wid, $jid;
+          debug sprintf "mgr (%s): job %s is discoverable", $wid, $jid;
 
           # check for available local capacity
           next unless $self->do('capacity_for', $job->action);
-          info sprintf "mgr (%s): processing node has capacity for job %s (%s)",
+          debug sprintf "mgr (%s): processing node has capacity for job %s (%s)",
             $wid, $jid, $job->action;
 
           # mark job as running

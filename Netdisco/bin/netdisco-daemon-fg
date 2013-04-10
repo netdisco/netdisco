@@ -33,7 +33,7 @@ mkdir $tmp_dir if ! -d $tmp_dir;
 
 my $mce = MCE->new(
   spawn_delay => 0.15,
-  job_delay   => 0.15,
+  job_delay   => 1.15,
   tmp_dir     => $tmp_dir,
   user_func    => sub { $_[0]->worker_body },
   on_post_exit => \&restart_worker,
@@ -41,17 +41,23 @@ my $mce = MCE->new(
 )->run();
 
 sub build_tasks_list {
-  my $tasks = [{
-    max_workers => 1,
-    user_begin => worker_factory('Manager'),
-  }];
+  # NB MCE does not like max_workers => 0
+  my $tasks = [];
 
   set(daemon_pollers => 2)
     if !defined setting('daemon_pollers');
   set(daemon_interactives => 2)
     if !defined setting('daemon_interactives');
 
-  # XXX MCE does not like max_workers => 0
+  push @$tasks, {
+    max_workers => 1,
+    user_begin => worker_factory('Manager'),
+  } if setting('daemon_pollers') or setting('daemon_interactives');
+
+  push @$tasks, {
+    max_workers => 1,
+    user_begin => worker_factory('Scheduler'),
+  } if setting('housekeeping');
 
   push @$tasks, {
     max_workers => setting('daemon_pollers'),
@@ -63,8 +69,13 @@ sub build_tasks_list {
     user_begin => worker_factory('Interactive'),
   } if setting('daemon_interactives');
 
-  info sprintf "MCE will load %s tasks: 1 Manager, %s Poller, %s Interactive",
-    (1+ scalar @$tasks), (setting('daemon_pollers') || 0), (setting('daemon_interactives') || 0);
+  info sprintf "MCE will load %s tasks: %s Manager, %s Scheduler, %s Poller, %s Interactive",
+    (scalar @$tasks),
+    ((setting('daemon_pollers') or setting('daemon_interactives')) ? 1 : 0),
+    (setting('housekeeping') ? 1 : 0),
+    (setting('daemon_pollers') || 0),
+    (setting('daemon_interactives') || 0);
+
   return $tasks;
 }
 

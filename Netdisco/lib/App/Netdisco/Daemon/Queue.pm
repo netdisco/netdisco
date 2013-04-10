@@ -33,11 +33,13 @@ sub capacity_for {
   debug "checking local capacity for action $action";
 
   my $action_map = {
-    Interactive => [qw/location contact portcontrol portname vlan power/]
+    Poller => [qw/refresh discover discoverall discover_neighbors/],
+    Interactive => [qw/location contact portcontrol portname vlan power/],
   };
 
   my $role_map = {
-    map {$_ => 'Interactive'} @{ $action_map->{Interactive} }
+    (map {$_ => 'Poller'} @{ $action_map->{Poller} }),
+    (map {$_ => 'Interactive'} @{ $action_map->{Interactive} })
   };
 
   my $setting_map = {

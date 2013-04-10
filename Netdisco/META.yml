@@ -19,6 +19,7 @@ no_index:
     - inc
     - share
 requires:
+  Algorithm::Cron: 0
   App::cpanminus: 0
   App::local::lib::helper: 0
   DBD::Pg: 0
@@ -34,13 +35,15 @@ requires:
   JSON: 0
   List::MoreUtils: 0
   MCE: 1.405
+  Moo: 0
+  Net::DNS: 0
   Net::MAC: 0
-  NetAddr::IP: 0
+  NetAddr::IP: 4.059
   Path::Class: 0
   Plack: 1.0006
   Plack::Middleware::Expires: 0
   Role::Tiny: 0
-  SNMP::Info: 2.11
+  SNMP::Info: 3.00
   SQL::Translator: 0
   Socket6: 0
   Starman: 0

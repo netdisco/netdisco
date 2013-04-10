@@ -7,14 +7,14 @@ FRONTEND
 
 * UI for topo DB table editing
   - drop topo file support and use DB only
-* (jeneric) device module tab
 * Port/Name/VLAN box should be green when filled
+* Choice of MAC address formats
+* Empty inventory should trigger request to discover
+
+* (jeneric) device module tab
 
 DAEMON
 ======
-
-* poller daemon (scheduling automatically?)
-  - plugins for poller
 
 CORE
 ====

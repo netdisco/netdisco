@@ -1,23 +1,23 @@
-package App::Netdisco::Daemon::Worker::Interactive;
+package App::Netdisco::Daemon::Worker::Poller;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
+
 use Try::Tiny;
 
 use Role::Tiny;
 use namespace::clean;
 
-# add dispatch methods for interactive actions
-with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions',
-     'App::Netdisco::Daemon::Worker::Interactive::PortActions';
+# add dispatch methods for poller tasks
+with 'App::Netdisco::Daemon::Worker::Poller::Discover';
 
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
   while (1) {
-      debug "int ($wid): asking for a job";
-      my $jobs = $self->do('take_jobs', $self->wid, 'Interactive');
+      debug "poll ($wid): asking for a job";
+      my $jobs = $self->do('take_jobs', $self->wid, 'Poller');
 
       foreach my $candidate (@$jobs) {
           # create a row object so we can use column accessors
@@ -26,16 +26,16 @@ sub worker_body {
           my $job = schema('daemon')->resultset('Admin')
                       ->new_result($candidate);
           my $jid = $job->job;
+          my $target = $job->action;
 
-          my $target = 'set_'. $job->action;
           next unless $self->can($target);
-          debug "int ($wid): can ${target}() for job $jid";
+          debug "poll ($wid): can ${target}() for job $jid";
 
           # do job
           my ($status, $log);
           try {
               $job->started(scalar localtime);
-              info sprintf "int (%s): starting %s job(%s) at %s",
+              info sprintf "poll (%s): starting %s job(%s) at %s",
                 $wid, $target, $jid, $job->started;
               ($status, $log) = $self->$target($job);
           }
@@ -48,7 +48,7 @@ sub worker_body {
           $self->close_job($job, $status, $log);
       }
 
-      debug "int ($wid): sleeping now...";
+      debug "poll ($wid): sleeping now...";
       sleep( setting('daemon_sleep_time') || 5 );
   }
 }
@@ -56,7 +56,7 @@ sub worker_body {
 sub close_job {
   my ($self, $job, $status, $log) = @_;
   my $now = scalar localtime;
-  info sprintf "int (%s): wrapping up set_%s job(%s) - status %s at %s",
+  info sprintf "poll (%s): wrapping up %s job(%s) - status %s at %s",
     $self->wid, $job->action, $job->job, $status, $now;
 
   try {

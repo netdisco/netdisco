@@ -5,18 +5,20 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   sort_port
 /;
-our %EXPORT_TAGS = (
-  all => [qw/
-    sort_port
-  /],
-);
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
-=head1 App::Netdisco::Util::Web
+=head1 NAME
+
+App::Netdisco::Util::Web
+
+=head1 DESCRIPTION
 
 A set of helper subroutines to support parts of the Netdisco application.
 
 There are no default exports, however the C<:all> tag will export all
 subroutines.
+
+=head1 EXPORT_OK
 
 =head2 sort_port( $a, $b )
 

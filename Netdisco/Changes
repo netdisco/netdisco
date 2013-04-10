@@ -1,5 +1,13 @@
 2.007000_002 - 
 
+  * NOTE this version requires SNMP::Info 3.x
+
+  [NEW FEATURES]
+
+  * Finally we have a discover/refresh daemon job :)
+  * Also... a Scheduler which removes need for crontab installation
+  * The netdisco-do script can run a one-off discover for a device
+
   [BUG FIXES]
 
   * Rename plugins developer doc to .pod

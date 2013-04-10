@@ -3,6 +3,7 @@ bin/netdisco-daemon
 bin/netdisco-daemon-fg
 bin/netdisco-db-deploy
 bin/netdisco-deploy
+bin/netdisco-do
 bin/netdisco-web
 bin/netdisco-web-fg
 Changes
@@ -25,6 +26,9 @@ lib/App/Netdisco/Daemon/Worker/Interactive/DeviceActions.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/Util.pm
 lib/App/Netdisco/Daemon/Worker/Manager.pm
+lib/App/Netdisco/Daemon/Worker/Poller.pm
+lib/App/Netdisco/Daemon/Worker/Poller/Discover.pm
+lib/App/Netdisco/Daemon/Worker/Scheduler.pm
 lib/App/Netdisco/DB.pm
 lib/App/Netdisco/DB/Result/Admin.pm
 lib/App/Netdisco/DB/Result/Device.pm
@@ -71,7 +75,9 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-14-15-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-15-16-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-16-17-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-16-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-17-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-3-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
@@ -85,10 +91,12 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod
 lib/App/Netdisco/Manual/ReleaseNotes.pod
-lib/App/Netdisco/Manual/WritingPlugins.pm
-lib/App/Netdisco/Util/Connect.pm
-lib/App/Netdisco/Util/DeviceProperties.pm
-lib/App/Netdisco/Util/Permissions.pm
+lib/App/Netdisco/Manual/WritingPlugins.pod
+lib/App/Netdisco/Util/Device.pm
+lib/App/Netdisco/Util/DiscoverAndStore.pm
+lib/App/Netdisco/Util/DNS.pm
+lib/App/Netdisco/Util/Port.pm
+lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AuthN.pm

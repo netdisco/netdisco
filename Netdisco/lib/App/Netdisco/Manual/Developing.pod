@@ -424,7 +424,7 @@ each).
 The daemon obviously needs to use L<SNMP::Info> for device control. All the
 code for this has been factored out into the L<App::Netdisco::Util> namespace.
 
-The L<App::Netdisco::Util::Connect> package provides for the creation of
+The L<App::Netdisco::Util::SNMP> package provides for the creation of
 SNMP::Info objects along with connection tests. So far, SNMPv3 is not
 supported. To enable trace logging of the SNMP::Info object simply set the
 C<INFO_TRACE> environment variable to a true value.  The Connect library also
