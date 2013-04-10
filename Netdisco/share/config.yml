@@ -18,6 +18,9 @@ charset: "UTF-8"
 # web sessions stored on disk
 session: "YAML"
 
+# HTTP port to listen on
+port: 5000
+
 # logging format
 logger_format: '[%P] %L @%D> %m'
 
