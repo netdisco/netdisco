@@ -57,7 +57,7 @@ sub store_device {
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};
-      my $port = $aliases->{$iid};
+      my $port = $interfaces->{$iid};
       my $subnet = $ip_netmask->{$addr}
         ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
         : undef;
@@ -98,9 +98,13 @@ sub store_device {
   $device->last_discover(\'now()');
 
   schema('netdisco')->txn_do(sub {
-    $device->device_ips->delete;
+    my $gone = $device->device_ips->delete;
+    debug sprintf ' [%s] store_device - removed %s aliases',
+      $device->ip, $gone;
     $device->update_or_insert;
     $device->device_ips->populate(\@aliases);
+    debug sprintf ' [%s] store_device - added %d new aliases',
+      $device->ip, scalar @aliases;
   });
 }
 
@@ -134,10 +138,8 @@ sub store_interfaces {
   my $i_pvid         = $snmp->i_pvid;
   my $i_lastchange   = $snmp->i_lastchange;
 
-  # clear the cached uptime...
-  # I think I just threw up a little in my mouth.
-  delete $snmp->{_uptime};
-  my $dev_uptime = $snmp->uptime;
+  # clear the cached uptime and get a new one
+  my $dev_uptime = $snmp->load_uptime;
 
   if (scalar grep {$_ > $dev_uptime} values %$i_lastchange) {
       info sprintf ' [%s] interfaces - device uptime has wrapped - correcting',
@@ -208,9 +210,13 @@ sub store_interfaces {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->ports->delete;
+    my $gone = $device->ports->delete;
+    debug sprintf ' [%s] interfaces - removed %s interfaces',
+      $device->ip, $gone;
     $device->update_or_insert;
     $device->ports->populate(\@interfaces);
+    debug sprintf ' [%s] interfaces - added %d new interfaces',
+      $device->ip, scalar @interfaces;
   });
 }
 
@@ -257,8 +263,12 @@ sub store_wireless {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->ssids->delete;
+    my $gone = $device->ssids->delete;
+    debug sprintf ' [%s] wireless - removed %s SSIDs',
+      $device->ip, $gone;
     $device->ssids->populate(\@ssids);
+    debug sprintf ' [%s] wireless - added %d new SSIDs',
+      $device->ip, scalar @ssids;
   });
 
   # build device channel list suitable for DBIC
@@ -281,8 +291,12 @@ sub store_wireless {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->wireless_ports->delete;
+    my $gone = $device->wireless_ports->delete;
+    debug sprintf ' [%s] wireless - removed %s wireless channels',
+      $device->ip, $gone;
     $device->wireless_ports->populate(\@channels);
+    debug sprintf ' [%s] wireless - added %d new wireless channels',
+      $device->ip, scalar @channels;
   });
 }
 
@@ -322,17 +336,17 @@ sub store_vlans {
   my $interfaces        = $snmp->interfaces;
 
   # build device port vlans suitable for DBIC
-  my %portvlans;
+  my @portvlans;
   foreach my $entry (keys %$i_vlan_membership) {
       my $port = $interfaces->{$entry};
       next unless defined $port;
 
       my $type = $i_vlan_type->{$entry};
-      $portvlans{$port} = [];
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
           my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
-          push @{$portvlans{$port}}, {
+          push @portvlans, {
+              port => $port,
               vlan => $vlan,
               native => $native,
               vlantype => $type,
@@ -352,14 +366,21 @@ sub store_vlans {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->vlans->delete;
+    my $gone = $device->vlans->delete;
+    debug sprintf ' [%s] vlans - removed %s device VLANs',
+      $device->ip, $gone;
     $device->vlans->populate(\@devicevlans);
+    debug sprintf ' [%s] vlans - added %d new device VLANs',
+      $device->ip, scalar @devicevlans;
+  });
 
-    foreach my $port (keys %portvlans) {
-        my $port = $device->ports->find({port => $port});
-        $port->vlans->delete;
-        $port->vlans->populate($portvlans{$port});
-    }
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->port_vlans->delete;
+    debug sprintf ' [%s] vlans - removed %s port VLANs',
+      $device->ip, $gone;
+    $device->port_vlans->populate(\@portvlans);
+    debug sprintf ' [%s] vlans - added %d new port VLANs',
+      $device->ip, scalar @portvlans;
   });
 }
 
@@ -402,15 +423,15 @@ sub store_power {
   my $p_power    = $snmp->peth_port_power;
 
   # build device port power info suitable for DBIC
-  my %portpower;
+  my @portpower;
   foreach my $entry (keys %$p_ifindex) {
       my $port = $interfaces->{ $p_ifindex->{$entry} };
       next unless $port;
 
       my ($module) = split m/\./, $entry;
-      $portpower{$port} = [];
 
-      push @{$portpower{$port}}, {
+      push @portpower, {
+          port   => $port,
           module => $module,
           admin  => $p_admin->{$entry},
           status => $p_pstatus->{$entry},
@@ -421,14 +442,21 @@ sub store_power {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->power_modules->delete;
+    my $gone = $device->power_modules->delete;
+    debug sprintf ' [%s] power - removed %s power modules',
+      $device->ip, $gone;
     $device->power_modules->populate(\@devicepower);
+    debug sprintf ' [%s] power - added %d new power modules',
+      $device->ip, scalar @devicepower;
+  });
 
-    foreach my $port (keys %portpower) {
-        my $port = $device->ports->find({port => $port});
-        $port->power->delete if $port->power;
-        $port->create_related('power', $portpower{$port});
-    }
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->powered_ports->delete;
+    debug sprintf ' [%s] power - removed %s PoE capable ports',
+      $device->ip, $gone;
+    $device->powered_ports->populate(\@portpower);
+    debug sprintf ' [%s] power - added %d new PoE capable ports',
+      $device->ip, scalar @portpower;
   });
 }
 
@@ -487,8 +515,12 @@ sub store_modules {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->modules->delete;
+    my $gone = $device->modules->delete;
+    debug sprintf ' [%s] modules - removed %s chassis modules',
+      $device->ip, $gone;
     $device->modules->populate(\@modules);
+    debug sprintf ' [%s] modules - added %d new chassis modules',
+      $device->ip, scalar @modules;
   });
 }
 

@@ -167,6 +167,17 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 powered_ports
+
+Returns the set of ports known to have PoE capability
+
+=cut
+
+__PACKAGE__->has_many(
+    powered_ports => 'App::Netdisco::DB::Result::DevicePortPower',
+    'ip', { join_type => 'RIGHT' }
+);
+
 =head1 ADDITIONAL COLUMNS
 
 =head2 uptime_age
