@@ -3,6 +3,7 @@ package App::Netdisco::Util::DiscoverAndStore;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use NetAddr::IP::Lite ':lower';
 use Try::Tiny;
@@ -553,7 +554,7 @@ sub find_neighbors {
   my $c_platform = $snmp->c_platform;
 
   foreach my $entry (keys %$c_ip) {
-      my $port = $interfaces->{ $c_ip->{$entry} };
+      my $port = $interfaces->{ $c_if->{$entry} };
       if (!defined $port) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
@@ -612,7 +613,7 @@ sub find_neighbors {
 
           foreach my $n (@$remote_ip) {
               debug sprintf
-                ' [%s] neigh - adding neighbor %s, type %s, on %s to discovery queue',
+                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
                 $device->ip, $n, $remote_type, $port;
               _enqueue_discover($n, $remote_type);
           }
@@ -657,7 +658,7 @@ sub find_neighbors {
       });
 
       debug sprintf
-        ' [%s] neigh - adding neighbor %s, type %s, on %s to discovery queue',
+        ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
         $device->ip, $remote_ip, $remote_type, $port;
       _enqueue_discover($remote_ip, $remote_type);
   }
@@ -674,7 +675,7 @@ sub _enqueue_discover {
   my $remote_type_match = setting('discover_no_type');
   if ($remote_type and $remote_type_match
       and $remote_type =~ m/$remote_type_match/) {
-    debug sprintf '      queue - %s, type %s excluded by discover_no_type',
+    debug sprintf '      queue - %s, type [%s] excluded by discover_no_type',
       $ip, $remote_type;
     return;
   }
