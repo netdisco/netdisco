@@ -19,6 +19,7 @@ requires 'HTML::Entities' => 0;
 requires 'HTTP::Tiny' => 0;
 requires 'JSON' => 0;
 requires 'List::MoreUtils' => 0;
+requires 'Moo' => 0;
 requires 'MCE' => 1.405;
 requires 'Net::DNS' => 0;
 requires 'Net::MAC' => 0;

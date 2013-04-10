@@ -1,0 +1,108 @@
+#!/usr/bin/env perl
+
+use FindBin;
+FindBin::again();
+use Path::Class 'dir';
+
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
+
+# for netdisco app config
+use App::Netdisco;
+use Dancer qw/:moose :script/;
+use Dancer::Plugin::DBIC 'schema';
+
+info "App::Netdisco version $App::Netdisco::VERSION loaded.";
+
+use Try::Tiny;
+use Getopt::Long;
+Getopt::Long::Configure ("bundling");
+
+my ($device, $port, $extra, $debug);
+my $result = GetOptions(
+  'device|d=s' => \$device,
+  'port|p=s'   => \$port,
+  'extra|e=s'  => \$extra,
+  'debug|D'    => \$debug,
+) or exit(1);
+
+# reconfigure logging to use console
+my $CONFIG = config();
+$CONFIG->{logger} = 'console';
+$CONFIG->{log} = ($debug ? 'debug' : 'info');
+
+Dancer::Logger->init('console', $CONFIG);
+
+# check requested action
+my $action = shift @ARGV;
+my $PERMITTED_ACTIONS = qr/(?:discover|discover_neighbors)/;
+
+if (!length $action) {
+  error 'error: missing action!';
+  exit (1);
+}
+
+if ($action !~ m/^$PERMITTED_ACTIONS$/) {
+  error sprintf 'error: netdisco-do cannot [%s]', $action;
+  exit (1);
+}
+
+if (!length $device) {
+  error 'error: missing device!';
+  exit (1);
+}
+
+# create worker (placeholder object for the role methods)
+{
+  package MyWorker;
+  use Moo;
+  with 'App::Netdisco::Daemon::Worker::Poller::Discover';
+}
+my $worker = MyWorker->new();
+
+# static configuration for the in-memory local job queue
+setting('plugins')->{DBIC}->{daemon} = {
+    dsn => 'dbi:SQLite:dbname=:memory:',
+    options => {
+        AutoCommit => 1,
+        RaiseError => 1,
+        sqlite_use_immediate_transaction => 1,
+    },
+    schema_class => 'App::Netdisco::Daemon::DB',
+};
+schema('daemon')->deploy;
+
+# what job are we asked to do?
+my $job = schema('daemon')->resultset('Admin')->new_result({
+  job => 0,
+  action => $action,
+  device => $device,
+  port   => $port,
+  subaction => $extra,
+});
+
+# belt and braces check before we go ahead
+if (not $worker->can( $action )) {
+  error sprintf 'error: %s is not a valid action for netdisco-do', $action;
+  exit (1);
+}
+
+# do job
+my ($status, $log);
+try {
+    info sprintf '%s: started at %s', $action, scalar localtime;
+    ($status, $log) = $worker->$action($job);
+}
+catch {
+    $status = 'error';
+    $log = "error running job: $_";
+};
+
+info sprintf '%s: finished at %s', $action, scalar localtime;
+info sprintf '%s: status %s: %s', $action, $status, $log;
+
+exit ($status eq 'done' ? 0 : 1);
