@@ -63,7 +63,7 @@ sub store_device {
         ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
         : undef;
 
-      debug sprintf ' [%s] store_device - aliased as %s', $device->ip, $addr;
+      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
       push @aliases, {
           alias => $addr,
           port => $port,
@@ -100,11 +100,11 @@ sub store_device {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
-    debug sprintf ' [%s] store_device - removed %s aliases',
+    debug sprintf ' [%s] device - removed %s aliases',
       $device->ip, $gone;
     $device->update_or_insert;
     $device->device_ips->populate(\@aliases);
-    debug sprintf ' [%s] store_device - added %d new aliases',
+    debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
   });
 }
