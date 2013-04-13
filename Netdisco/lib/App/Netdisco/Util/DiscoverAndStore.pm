@@ -241,13 +241,13 @@ sub store_wireless {
   my $ssidbcast  = $snmp->i_ssidbcast;
   my $ssidmac    = $snmp->i_ssidmac;
   my $channel    = $snmp->i_80211channel;
-  my $power      = $snmp->i_dot11_cur_tx_pwr_mw;
+  my $power      = $snmp->dot11_cur_tx_pwr_mw;
 
   # build device ssid list suitable for DBIC
   my @ssids;
   foreach my $entry (keys %$ssidlist) {
-      $entry =~ s/\.\d+$//;
-      my $port = $interfaces->{$entry};
+      (my $iid = $entry) =~ s/\.\d+$//;
+      my $port = $interfaces->{$iid};
 
       if (not length $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
@@ -275,7 +275,6 @@ sub store_wireless {
   # build device channel list suitable for DBIC
   my @channels;
   foreach my $entry (keys %$channel) {
-      $entry =~ s/\.\d+$//;
       my $port = $interfaces->{$entry};
 
       if (not length $port) {
