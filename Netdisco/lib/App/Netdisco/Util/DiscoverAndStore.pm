@@ -95,7 +95,7 @@ sub store_device {
       $device->$property( $snmp->$property );
   }
 
-  $device->snmp_class( $snmp->class );
+  $device->snmp_class( $snmp->device_type );
   $device->last_discover(\'now()');
 
   schema('netdisco')->txn_do(sub {
