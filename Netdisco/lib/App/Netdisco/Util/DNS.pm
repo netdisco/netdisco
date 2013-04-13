@@ -8,7 +8,7 @@ use Net::DNS;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  hostname_from_ip
+  hostname_from_ip ipv4_from_hostname
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -35,6 +35,7 @@ Returns C<undef> if no PTR record exists for the IP.
 
 sub hostname_from_ip {
   my $ip = shift;
+  return unless $ip;
 
   my $res   = Net::DNS::Resolver->new;
   my $query = $res->search($ip);
@@ -43,6 +44,31 @@ sub hostname_from_ip {
       foreach my $rr ($query->answer) {
           next unless $rr->type eq "PTR";
           return $rr->ptrdname;
+      }
+  }
+
+  return undef;
+}
+
+=head2 ipv4_from_hostname( $name )
+
+Given a host name will return the first IPv4 address.
+
+Returns C<undef> if no A record exists for the name.
+
+=cut
+
+sub ipv4_from_hostname {
+  my $name = shift;
+  return unless $name;
+
+  my $res   = Net::DNS::Resolver->new;
+  my $query = $res->search($name);
+
+  if ($query) {
+      foreach my $rr ($query->answer) {
+          next unless $rr->type eq "A";
+          return $rr->address;
       }
   }
 
