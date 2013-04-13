@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Worker::Poller::Discover;
+package App::Netdisco::Daemon::Worker::Poller::Device;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';

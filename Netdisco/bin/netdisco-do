@@ -49,7 +49,7 @@ if (!length $action) {
 {
   package MyWorker;
   use Moo;
-  with 'App::Netdisco::Daemon::Worker::Poller::Discover';
+  with 'App::Netdisco::Daemon::Worker::Poller::Device';
 }
 my $worker = MyWorker->new();
 
