@@ -53,7 +53,7 @@ sub discover {
 
 # run find_neighbors on all known devices, and run discover on any
 # newly found devices.
-sub discoverall {
+sub discovernew {
   my ($self, $job) = @_;
 
   my $devices = schema('netdisco')->resultset('Device')->get_column('ip');

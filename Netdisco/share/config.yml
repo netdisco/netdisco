@@ -80,7 +80,7 @@ daemon_pollers: 2
 # what housekeeping tasks should this node *schedule*
 # (it only does them if daemon_pollers is non-zero)
 #housekeeping:
-#  discoverall:
+#  discovernew:
 #    device: '192.0.2.0'
 #    when:
 #      wday: 'wed'
