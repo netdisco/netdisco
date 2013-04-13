@@ -30,29 +30,18 @@ my $result = GetOptions(
   'debug|D'    => \$debug,
 ) or exit(1);
 
-# reconfigure logging to use console
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($debug ? 'debug' : 'info');
 
+# reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
 
-# check requested action
+# get requested action
 my $action = shift @ARGV;
-my $PERMITTED_ACTIONS = qr/(?:discover|discover_neighbors)/;
 
 if (!length $action) {
   error 'error: missing action!';
-  exit (1);
-}
-
-if ($action !~ m/^$PERMITTED_ACTIONS$/) {
-  error sprintf 'error: netdisco-do cannot [%s]', $action;
-  exit (1);
-}
-
-if (!length $device) {
-  error 'error: missing device!';
   exit (1);
 }
 
@@ -63,6 +52,12 @@ if (!length $device) {
   with 'App::Netdisco::Daemon::Worker::Poller::Discover';
 }
 my $worker = MyWorker->new();
+
+# belt and braces check before we go ahead
+if (not $worker->can( $action )) {
+  error sprintf 'error: %s is not a valid action', $action;
+  exit (1);
+}
 
 # static configuration for the in-memory local job queue
 setting('plugins')->{DBIC}->{daemon} = {
@@ -84,12 +79,6 @@ my $job = schema('daemon')->resultset('Admin')->new_result({
   port   => $port,
   subaction => $extra,
 });
-
-# belt and braces check before we go ahead
-if (not $worker->can( $action )) {
-  error sprintf 'error: %s is not a valid action for netdisco-do', $action;
-  exit (1);
-}
 
 # do job
 my ($status, $log);
