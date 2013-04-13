@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Worker::Interactive::Util;
+package App::Netdisco::Daemon::Util;
 
 # support utilities for Daemon Actions
 
