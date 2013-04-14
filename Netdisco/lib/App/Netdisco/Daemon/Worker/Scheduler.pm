@@ -11,10 +11,10 @@ use namespace::clean;
 
 my $jobactions = {
   map {$_ => undef} qw/
+      refresh
+      discovernew
   /
 #    saveconfigs
-#    discoverall
-#    refresh
 #    macwalk
 #    arpwalk
 #    nbtwalk

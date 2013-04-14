@@ -4,7 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Try::Tiny;
 
@@ -47,6 +47,12 @@ sub store_device {
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
+  # find root IP
+  _set_canonical_ip($device, $snmp);
+
+  my $hostname = hostname_from_ip($device->ip);
+  $device->dns($hostname) if length $hostname;
+
   # build device aliases suitable for DBIC
   my @aliases;
   foreach my $entry (keys %$ip_index) {
@@ -63,7 +69,7 @@ sub store_device {
         ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
         : undef;
 
-      debug sprintf ' [%s] store_device - aliased as %s', $device->ip, $addr;
+      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
       push @aliases, {
           alias => $addr,
           port => $port,
@@ -79,9 +85,6 @@ sub store_device {
       $device->vtp_domain( (values %$vtpdomains)[-1] );
   }
 
-  my $hostname = hostname_from_ip($device->ip);
-  $device->dns($hostname) if length $hostname;
-
   my @properties = qw/
     snmp_ver snmp_comm
     description uptime contact name location
@@ -95,18 +98,53 @@ sub store_device {
       $device->$property( $snmp->$property );
   }
 
-  $device->snmp_class( $snmp->class );
+  $device->snmp_class( $snmp->device_type );
   $device->last_discover(\'now()');
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
-    debug sprintf ' [%s] store_device - removed %s aliases',
+    debug sprintf ' [%s] device - removed %s aliases',
       $device->ip, $gone;
     $device->update_or_insert;
     $device->device_ips->populate(\@aliases);
-    debug sprintf ' [%s] store_device - added %d new aliases',
+    debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
   });
+}
+
+sub _set_canonical_ip {
+  my ($device, $snmp) = @_;
+
+  my $oldip = $device->ip;
+  my $newip = $snmp->root_ip;
+
+  if (length $newip) {
+      if ($oldip ne $newip) {
+          debug sprintf ' [%s] device - changing root IP to alt IP %s',
+            $oldip, $newip;
+
+          # remove old device and aliases
+          schema('netdisco')->txn_do(sub {
+            my $gone = $device->device_ips->delete;
+            debug sprintf ' [%s] device - removed %s aliases',
+              $oldip, $gone;
+            $device->delete;
+            debug sprintf ' [%s] device - deleted self', $oldip;
+          });
+
+          $device->ip($newip);
+      }
+
+      # either root_ip is changed or unchanged, but it exists
+      return;
+  }
+
+  my $revname = ipv4_from_hostname($snmp->name);
+  if (setting('reverse_sysname') and $revname) {
+      debug sprintf ' [%s] device - changing root IP to revname %s',
+        $oldip, $revname;
+      $device->ip($revname);
+  }
 }
 
 =head2 store_interfaces( $device, $snmp )
@@ -241,13 +279,13 @@ sub store_wireless {
   my $ssidbcast  = $snmp->i_ssidbcast;
   my $ssidmac    = $snmp->i_ssidmac;
   my $channel    = $snmp->i_80211channel;
-  my $power      = $snmp->i_dot11_cur_tx_pwr_mw;
+  my $power      = $snmp->dot11_cur_tx_pwr_mw;
 
   # build device ssid list suitable for DBIC
   my @ssids;
   foreach my $entry (keys %$ssidlist) {
-      $entry =~ s/\.\d+$//;
-      my $port = $interfaces->{$entry};
+      (my $iid = $entry) =~ s/\.\d+$//;
+      my $port = $interfaces->{$iid};
 
       if (not length $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
@@ -275,7 +313,6 @@ sub store_wireless {
   # build device channel list suitable for DBIC
   my @channels;
   foreach my $entry (keys %$channel) {
-      $entry =~ s/\.\d+$//;
       my $port = $interfaces->{$entry};
 
       if (not length $port) {

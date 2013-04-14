@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Worker::Poller::Discover;
+package App::Netdisco::Daemon::Worker::Poller::Device;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::SNMP 'snmp_connect';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DiscoverAndStore ':all';
-use App::Netdisco::Daemon::Worker::Interactive::Util ':all';
+use App::Netdisco::Daemon::Util ':all';
 
 use NetAddr::IP::Lite ':lower';
 
@@ -53,7 +53,7 @@ sub discover {
 
 # run find_neighbors on all known devices, and run discover on any
 # newly found devices.
-sub discoverall {
+sub discovernew {
   my ($self, $job) = @_;
 
   my $devices = schema('netdisco')->resultset('Device')->get_column('ip');

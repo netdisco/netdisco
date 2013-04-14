@@ -1,8 +1,8 @@
 package App::Netdisco::Daemon::Worker::Interactive::DeviceActions;
 
-use App::Netdisco::Util::SNMP ':all';
+use App::Netdisco::Util::SNMP 'snmp_connect_rw';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Daemon::Worker::Interactive::Util ':all';
+use App::Netdisco::Daemon::Util ':all';
 
 use Role::Tiny;
 use namespace::clean;
