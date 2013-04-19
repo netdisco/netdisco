@@ -96,15 +96,27 @@ deploy_db() if $bool;
 
 say '';
 $bool = $term->ask_yn(
-  prompt => 'Would you like to download and update vendor MAC prefixes (OUI data)?', default => 'n',
+  prompt => 'Download and update vendor MAC prefixes (OUI data)?', default => 'n',
 );
 deploy_oui() if $bool;
 
 say '';
-$bool = $term->ask_yn(
-  prompt => 'Would you like to download and update MIB files?', default => 'n',
-);
-deploy_mibs() if $bool;
+my $default_mibhome = dir($home, 'netdisco-mibs');
+if (setting('mibhome') and setting('mibhome') ne $default_mibhome) {
+  my $mibhome = $term->get_reply(
+    print_me => "MIB home options:",
+    prompt   => "Download and update MIB files to...?",
+    choices  => [setting('mibhome'), $default_mibhome, 'Skip this.'],
+    default  => 'Skip this.',
+  );
+  deploy_mibs($mibhome) if $mibhome and $mibhome ne 'Skip this.';
+}
+else {
+  $bool = $term->ask_yn(
+    prompt => "Download and update MIB files to $default_mibhome ?", default => 'n',
+  );
+  deploy_mibs($default_mibhome) if $bool;
+}
 
 sub deploy_db {
   system 'netdisco-db-deploy';
@@ -142,13 +154,15 @@ sub deploy_oui {
 }
 
 sub deploy_mibs {
+  my $mibhome = shift;
+
   my $url = 'http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz';
   my $file = file($home, 'netdisco-mibs-snapshot.tar.gz');
   my $resp = HTTP::Tiny->new->mirror($url, $file);
 
   if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
-      $ae->extract(to => $home);
+      $ae->extract(to => $mibhome);
       unlink $file;
   }
 

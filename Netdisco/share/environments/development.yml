@@ -39,7 +39,6 @@ no_auth: 1
 
 # local settings for Netdisco poller and port changes
 
-mibhome: '/home/netdisco/netdisco-mibs'
 mibdirs:
   - cisco
   - rfc
