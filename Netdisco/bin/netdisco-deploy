@@ -42,6 +42,7 @@ use Term::UI;
 use Term::ReadLine;
 
 use Archive::Extract;
+$Archive::Extract::PREFER_BIN = 1;
 use HTTP::Tiny;
 use Try::Tiny;
 
@@ -113,7 +114,7 @@ if (setting('mibhome') and setting('mibhome') ne $default_mibhome) {
 }
 else {
   $bool = $term->ask_yn(
-    prompt => "Download and update MIB files to $default_mibhome ?", default => 'n',
+    prompt => "Download and update MIB files?", default => 'n',
   );
   deploy_mibs($default_mibhome) if $bool;
 }
@@ -154,7 +155,7 @@ sub deploy_oui {
 }
 
 sub deploy_mibs {
-  my $mibhome = shift;
+  my $mibhome = dir(shift);
 
   my $url = 'http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz';
   my $file = file($home, 'netdisco-mibs-snapshot.tar.gz');
@@ -162,7 +163,7 @@ sub deploy_mibs {
 
   if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
-      $ae->extract(to => $mibhome);
+      $ae->extract(to => $mibhome->parent->stringify);
       unlink $file;
   }
 
