@@ -76,15 +76,7 @@
               <div id="nd_portprops" class="collapse">
                 <ul class="inputs-list unstyled">
                   <li>
-                    <label class="checkbox">
-                      <input type="checkbox" id="free"
-                        name="free"[% ' checked="checked"' IF params.free %]/>
-                      Only Show Free Ports
-                    </label>
-                  </li>
-                  <li>
-                    <span rel="tooltip" data-placement="left"
-                      data-offset="5" data-title="Free if Down for this period of time">
+                    Mark as Free if Down for:<br/>
                     <select id="nd_days_select" name="age_num">
                       [% FOREACH count IN [1..32] %]
                       <option[% ' selected="selected"' IF params.age_num == count %]>[% count %]</option>
@@ -95,7 +87,13 @@
                       <option[% ' selected="selected"' IF params.age_unit == unit %]>[% unit %]</option>
                       [% END %]
                     </select>
-                    </span>
+                  </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" id="free"
+                        name="free"[% ' checked="checked"' IF params.free %]/>
+                      Only Show Free Ports
+                    </label>
                   </li>
                 </ul>
               </div>
