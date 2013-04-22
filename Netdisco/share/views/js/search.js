@@ -9,7 +9,7 @@
   // if any field in Device Search Options has content, highlight in green
   // and strikethrough the navbar search
   function device_form_state(e) {
-    if (e.is('[value!=""]')) {
+    if (e.prop('value') != "") {
       if (e.attr('type') == 'text') {
         $('.field_copy_icon').hide();
       }
@@ -25,7 +25,7 @@
       var id = '#' + e.attr('name') + '_clear_btn';
       $(id).hide();
 
-      if (! d_inputs.is('[value!=""]') ) {
+      if (! d_inputs.val() ) {
         $('#nq').css('text-decoration', 'none');
         $('.field_copy_icon').show();
       }
