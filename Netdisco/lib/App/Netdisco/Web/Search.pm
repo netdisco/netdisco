@@ -75,7 +75,7 @@ get '/search' => sub {
             params->{'tab'} = 'vlan';
         }
         else {
-            my $nd = $s->resultset('Device')->search_aliases($q);
+            my $nd = $s->resultset('Device')->search_fuzzy($q);
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
