@@ -1,9 +1,9 @@
 
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <a class="field_clear_icon" href="#"
-                rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports">
-                <img src="[% uri_base %]/images/tango_sweep.png"/></a>
+              <i class="field_clear_icon icon-trash icon-large"
+                 rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports"
+                 id="f_clear_btn" data-btn-for="port"></i>
               <input id="nd_port_query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
@@ -92,7 +92,7 @@
                     <label class="checkbox">
                       <input type="checkbox" id="free"
                         name="free"[% ' checked="checked"' IF params.free %]/>
-                      Only Show Free Ports
+                      Only show Free Ports
                     </label>
                   </li>
                 </ul>

@@ -266,11 +266,26 @@ td {
 /* little icon inside of search input fields */
 .field_clear_icon, .field_copy_icon {
   position: absolute;
-  margin-left: 132px;
+  margin-left: 140px;
+  margin-top: 5px;
   z-index: 1;
-  padding: 7px;
+  padding: 0px;
   cursor: pointer;
+}
+
+.field_copy_icon {
   color: #999;
+}
+
+.field_clear_icon {
+  background-color: #A9DBA9;
+  color: #3A87AD;
+}
+
+ /* for the ports form, but the positioning is slightly different */
+#ports_form .field_clear_icon {
+  margin-left: 149px;
+  margin-top: 5px;
 }
 
 /* change highlighting for form fields which are being used in a search */
