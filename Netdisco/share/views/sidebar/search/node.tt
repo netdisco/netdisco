@@ -31,10 +31,10 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="partial"
+                <input type="checkbox" id="node_partial"
                   name="partial"[% ' checked="checked"' IF params.partial %]/>
               </label>
-              <label class="nd_checkboxlabel" for="partial">
+              <label class="nd_checkboxlabel" for="node_partial">
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
             </div>

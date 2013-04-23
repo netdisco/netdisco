@@ -3,10 +3,10 @@
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="partial"
+                <input type="checkbox" id="port_partial"
                   name="partial"[% ' checked="checked"' IF params.partial %]/>
               </label>
-              <label class="nd_checkboxlabel" for="partial">
+              <label class="nd_checkboxlabel" for="port_partial">
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
             </div>
