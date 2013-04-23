@@ -99,6 +99,10 @@
   }
 
   $(document).ready(function() {
+    // sidebar form fields should change colour and have bin/copy icon
+    form_inputs.each(function() {device_form_state($(this))});
+    form_inputs.change(function() {device_form_state($(this))});
+
     // sidebar collapser events trigger change of up/down arrow
     $('.collapse').on('show', function() {
       $(this).siblings().find('.arrow-up-down')

@@ -169,8 +169,6 @@ $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
   $('.field_copy_icon').hide();
   $('.field_clear_icon').hide();
-  form_inputs.each(function() {device_form_state($(this))});
-  form_inputs.change(function() {device_form_state($(this))});
 
   // activate typeahead on the main search box, for device names only
   $('#nq').typeahead({
