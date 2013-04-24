@@ -1,17 +1,23 @@
 2.007000_002 - 
 
-  * NOTE this version requires SNMP::Info 3.x
-
   [NEW FEATURES]
 
   * Finally we have a discover/refresh daemon job :)
   * Also... a Scheduler which removes need for crontab installation
   * The netdisco-do script can run a one-off discover for a device
 
+  [ENHANCEMENTS]
+
+  * SNMP connection now uses cached info if available
+  * Better handling of MIBs home location in deploy script
+  * Port filter in device port display is now highlighted green
+  * Navbar search is fuzzier
+
   [BUG FIXES]
 
   * Rename plugins developer doc to .pod
   * Update to latest Bootstrap and JQuery, and temp. fix #7326 in Bootstrap
+  * Partial Name in Port search now working
 
 2.007000_001 - 2013-03-17
 
