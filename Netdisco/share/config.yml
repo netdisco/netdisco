@@ -3,7 +3,7 @@
 
 # Web app env-related settings should go to environments/$env.yml
 
-# Your application's name
+# application's name
 appname: "Netdisco"
 
 # The default web layout to use for your application (located in
@@ -33,7 +33,7 @@ engines:
     end_tag:   '%]'
     PRE_CHOMP: 1
 
-# netdisco stuff (can be overidden in the environment .yml)
+# Netdisco stuff (can be overidden in the environment .yml)
 
 web_plugins:
   - Inventory
@@ -55,7 +55,12 @@ snmpver: 2
 snmpretries: 2
 snmptimeout: 1000000
 
-mibhome: /usr/share/netdisco/mibs
+# If unset, Netdisco uses "NETDISCO_HOME/netdisco-mibs", assuming you're
+# using the netdisco-deploy script to download MIBs there.  Otherwise, set
+# this, for example:
+#
+# mibhome: /usr/share/netdisco/mibs
+
 mibdirs:
   - cisco
   - rfc

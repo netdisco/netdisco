@@ -31,11 +31,19 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
-                <input type="checkbox" id="partial"
+                <input type="checkbox" id="node_partial"
                   name="partial"[% ' checked="checked"' IF params.partial %]/>
               </label>
-              <label class="nd_checkboxlabel" for="partial">
+              <label class="nd_checkboxlabel" for="node_partial">
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
+            </div>
+            <div class="clearfix">
+              <em>MAC address format:</em><br/>
+              <select id="nd_node_mac_format" name="mac_format">
+                [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
+                <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
+                [% END %]
+              </select>
             </div>
             <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Search Again</button>

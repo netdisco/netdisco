@@ -17,7 +17,8 @@
     [% WHILE (row = macs.next) %]
     <tr>
       <td><a class="nd_linkcell"
-        href="[% search_node %]&q=[% row.mac | uri %]">[% row.mac | html_entity %]</a></td>
+        href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          [% row.net_mac.$mac_format_call | html_entity %]</a></td>
       [% IF params.vendor %]
       <td>[% row.oui.company | html_entity %]</td>
       [% END %]

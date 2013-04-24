@@ -2,6 +2,10 @@
   // ajax content is loaded
   var path = 'device';
 
+  // fields in the Device Search Options form (Device tab)
+  var form_inputs = $("#ports_form .clearfix input").not('[type="checkbox"]')
+      .add("#ports_form .clearfix select");
+
   function inner_view_processing(tab) {
     // LT wanted the page title to reflect what's on the page :)
     document.title = $('#nd_device_name').text()
@@ -95,6 +99,10 @@
   }
 
   $(document).ready(function() {
+    // sidebar form fields should change colour and have bin/copy icon
+    form_inputs.each(function() {device_form_state($(this))});
+    form_inputs.change(function() {device_form_state($(this))});
+
     // sidebar collapser events trigger change of up/down arrow
     $('.collapse').on('show', function() {
       $(this).siblings().find('.arrow-up-down')
@@ -106,28 +114,12 @@
         .toggleClass('icon-chevron-up icon-chevron-down');
     });
 
-    // show or hide sweeping brush icon when field has content
-    var sweep = $('#ports_form').find("input[name=f]");
-
-    if (sweep.val() === "") {
-      $('.field_clear_icon').hide();
-    } else {
-      $('.field_clear_icon').show();
-    }
-
-    sweep.change(function() {
-      if ($(this).val() === "") {
-        $('.field_clear_icon').hide();
-      } else {
-        $('.field_clear_icon').show();
-      }
-    });
-
-    // handler for sweeping brush icon in port filter box
+    // handler for bin icon in port filter box
+    var portfilter = $('#ports_form').find("input[name=f]");
     $('.field_clear_icon').click(function() {
-      sweep.val('');
-      $('.field_clear_icon').hide();
+      portfilter.val('');
       $('#ports_form').trigger('submit');
+      device_form_state(portfilter); // will hide copy icons
     });
 
     // clickable device port names can simply resubmit AJAX rather than
@@ -137,9 +129,10 @@
 
       var port = $(this).text();
       port = $.trim(port);
-      sweep.val(port);
+      portfilter.val(port);
 
       $('.field_clear_icon').show();
       $('#ports_form').trigger('submit');
+      device_form_state(portfilter); // will hide copy icons
     });
   });

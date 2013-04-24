@@ -1,23 +1,27 @@
-
-** in no particular order... **
-** names by tasks indicate who's "taken" them **
-
 FRONTEND
 ========
 
 * UI for topo DB table editing
   - drop topo file support and use DB only
-* Port/Name/VLAN box should be green when filled
 * Choice of MAC address formats
-* Empty inventory should trigger request to discover
+* No devices - trigger first discover splash page
 
 * (jeneric) device module tab
 
 DAEMON
 ======
 
+* macsuck/arpnip
+
 CORE
 ====
 
 * pseudo-device support
 * VRF support
+
+DOCS
+====
+
+* Scheduler
+* Discover/Refresh jobs
+* netdisco-do

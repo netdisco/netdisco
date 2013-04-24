@@ -252,6 +252,19 @@ td {
   width: 95px;
 }
 
+/* set the MAC format drop-down width */
+#nd_mac_format {
+  margin-top: 4px;
+  width: 154px;
+}
+
+/* set the MAC format drop-down width */
+#nd_node_mac_format {
+  margin-left: -2px;
+  margin-top: 4px;
+  width: 165px;
+}
+
 /* sidebar submit button width and spacing from Node Props */
 .sidebar button {
   margin-top: 9px;
@@ -266,11 +279,26 @@ td {
 /* little icon inside of search input fields */
 .field_clear_icon, .field_copy_icon {
   position: absolute;
-  margin-left: 132px;
+  margin-left: 140px;
+  margin-top: 5px;
   z-index: 1;
-  padding: 7px;
+  padding: 0px;
   cursor: pointer;
+}
+
+.field_copy_icon {
   color: #999;
+}
+
+.field_clear_icon {
+  background-color: #A9DBA9;
+  color: #3A87AD;
+}
+
+ /* for the ports form, but the positioning is slightly different */
+#ports_form .field_clear_icon {
+  margin-left: 149px;
+  margin-top: 5px;
 }
 
 /* change highlighting for form fields which are being used in a search */
@@ -292,6 +320,11 @@ form .clearfix.success input {
 /* bring sidebar items closer together */
 .inputs-list label {
   margin-bottom: 1px;
+}
+
+.inputs-list i {
+  margin-right: 5px;
+  margin-left: 2px;
 }
 
 /* nudge content closer to the header labels in the sidebar */

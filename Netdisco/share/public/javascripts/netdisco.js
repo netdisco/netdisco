@@ -135,7 +135,41 @@ if (window.History && window.History.enabled) {
   });
 }
 
+// if any field in Search Options has content, highlight in green
+function device_form_state(e) {
+  if (e.prop('value') != "") {
+    e.parent(".clearfix").addClass('success');
+
+    if (e.parents('#device_form').length) {
+      $('#nq').css('text-decoration', 'line-through');
+
+      if (e.attr('type') == 'text') {
+        $('.field_copy_icon').hide();
+      }
+    }
+
+    var id = '#' + e.attr('name') + '_clear_btn';
+    $(id).show();
+  }
+  else {
+    e.parent(".clearfix").removeClass('success');
+    var id = '#' + e.attr('name') + '_clear_btn';
+    $(id).hide();
+
+    var num_empty = $.grep(form_inputs,
+                           function(n,i) {return($(n).val() != "")}).length;
+    if (num_empty === 3) {
+      $('#nq').css('text-decoration', 'none');
+      $('.field_copy_icon').show();
+    }
+  }
+}
+
 $(document).ready(function() {
+  // sidebar form fields should change colour and have bin/copy icon
+  $('.field_copy_icon').hide();
+  $('.field_clear_icon').hide();
+
   // activate typeahead on the main search box, for device names only
   $('#nq').typeahead({
     source: function (query, process) {

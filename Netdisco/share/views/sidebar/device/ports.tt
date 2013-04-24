@@ -1,9 +1,9 @@
 
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <a class="field_clear_icon" href="#"
-                rel="tooltip" data-placement="top" data-offset="3" data-title="Show all Ports">
-                <img src="[% uri_base %]/images/tango_sweep.png"/></a>
+              <i class="field_clear_icon icon-trash icon-large"
+                 rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports"
+                 id="f_clear_btn" data-btn-for="port"></i>
               <input id="nd_port_query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
@@ -28,7 +28,7 @@
                     <span class="label label-info">B</span>&nbsp; Blocking
                   </li>
                   <li>
-                    <span class="label">P</span>&nbsp; IP Phone
+                    <i class="icon-phone icon-large"></i>&nbsp; IP Phone
                   </li>
                   <li>
                     <span class="label label-important">N</span>&nbsp; Neighbor Inacessible
@@ -76,15 +76,7 @@
               <div id="nd_portprops" class="collapse">
                 <ul class="inputs-list unstyled">
                   <li>
-                    <label class="checkbox">
-                      <input type="checkbox" id="free"
-                        name="free"[% ' checked="checked"' IF params.free %]/>
-                      Only Show Free Ports
-                    </label>
-                  </li>
-                  <li>
-                    <span rel="tooltip" data-placement="left"
-                      data-offset="5" data-title="Free if Down for this period of time">
+                    <em>Mark as Free if Down for:</em><br/>
                     <select id="nd_days_select" name="age_num">
                       [% FOREACH count IN [1..32] %]
                       <option[% ' selected="selected"' IF params.age_num == count %]>[% count %]</option>
@@ -95,7 +87,13 @@
                       <option[% ' selected="selected"' IF params.age_unit == unit %]>[% unit %]</option>
                       [% END %]
                     </select>
-                    </span>
+                  </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" id="free"
+                        name="free"[% ' checked="checked"' IF params.free %]/>
+                      Only show Free Ports
+                    </label>
                   </li>
                 </ul>
               </div>
@@ -107,6 +105,14 @@
                 </label></span>
               <div id="nd_nodeprops" class="collapse">
                 <ul class="inputs-list unstyled">
+                  <li>
+                    <em>MAC address format:</em><br/>
+                    <select id="nd_mac_format" name="mac_format">
+                      [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
+                      <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
+                      [% END %]
+                    </select>
+                  </li>
                   [% FOREACH item IN vars.connected_properties %]
                   <li>
                     <label class="checkbox">

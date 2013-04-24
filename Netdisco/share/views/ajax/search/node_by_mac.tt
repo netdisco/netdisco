@@ -20,7 +20,8 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% search_node %]&q=[% row.mac | uri %]">[% row.mac | html_entity %]</a>
+          href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+            [% row.net_mac.$mac_format_call | html_entity %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]
@@ -51,7 +52,8 @@
       <td>
         [% IF first_row %]
         <a class="nd_linkcell"
-          href="[% search_node %]&q=[% node.mac | uri %]">[% node.mac | html_entity %]</a>
+          href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
+            [% node.net_mac.$mac_format_call | html_entity %]</a>
         [% ELSE %]
         &nbsp;
         [% END %]

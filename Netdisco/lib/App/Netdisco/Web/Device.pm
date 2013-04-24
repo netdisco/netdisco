@@ -51,6 +51,7 @@ hook 'before' => sub {
   if (not param('tab') or param('tab') ne 'ports') {
       params->{'age_num'} = 3;
       params->{'age_unit'} = 'months';
+      params->{'mac_format'} = 'IEEE';
   }
 };
 
@@ -62,7 +63,12 @@ hook 'before_template' => sub {
     tab => 'ports',
     age_num => 3,
     age_unit => 'months',
+    mac_format => 'IEEE',
   });
+
+  # for Net::MAC method
+  $tokens->{mac_format_call} = 'as_'. params->{'mac_format'}
+    if params->{'mac_format'};
 
   foreach my $col (@{ var('port_columns') }) {
       next unless $col->{default} eq 'on';

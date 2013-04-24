@@ -196,7 +196,8 @@
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF row.remote_ip OR NOT loop.first %]
           [% '<span class="label label-warning">A</span> &nbsp;' IF NOT node.active %]
-          <a href="[% search_node %]&q=[% node.mac | uri %]">[% node.mac | html_entity %]</a>
+          <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
+            [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
