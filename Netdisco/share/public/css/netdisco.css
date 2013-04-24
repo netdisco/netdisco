@@ -252,6 +252,19 @@ td {
   width: 95px;
 }
 
+/* set the MAC format drop-down width */
+#nd_mac_format {
+  margin-top: 4px;
+  width: 154px;
+}
+
+/* set the MAC format drop-down width */
+#nd_node_mac_format {
+  margin-left: -2px;
+  margin-top: 4px;
+  width: 165px;
+}
+
 /* sidebar submit button width and spacing from Node Props */
 .sidebar button {
   margin-top: 9px;
