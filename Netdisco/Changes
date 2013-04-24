@@ -13,6 +13,7 @@
   * Better handling of MIBs home location in deploy script
   * Port filter in device port display is now highlighted green
   * Navbar search is fuzzier
+  * Phone node icon is a little phone handset
 
   [BUG FIXES]
 

@@ -322,6 +322,11 @@ form .clearfix.success input {
   margin-bottom: 1px;
 }
 
+.inputs-list i {
+  margin-right: 5px;
+  margin-left: 2px;
+}
+
 /* nudge content closer to the header labels in the sidebar */
 .inputs-list li:first-child {
   padding-top: 3px !important;

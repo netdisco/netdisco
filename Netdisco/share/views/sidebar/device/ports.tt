@@ -28,7 +28,7 @@
                     <span class="label label-info">B</span>&nbsp; Blocking
                   </li>
                   <li>
-                    <span class="label">P</span>&nbsp; IP Phone
+                    <i class="icon-phone icon-large"></i>&nbsp; IP Phone
                   </li>
                   <li>
                     <span class="label label-important">N</span>&nbsp; Neighbor Inacessible
