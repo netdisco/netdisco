@@ -19,4 +19,7 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
 );
 
+__PACKAGE__->add_unique_constraint(['dev1','port1']);
+__PACKAGE__->add_unique_constraint(['dev2','port2']);
+
 1;
