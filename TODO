@@ -3,7 +3,6 @@ FRONTEND
 
 * UI for topo DB table editing
   - drop topo file support and use DB only
-* Choice of MAC address formats
 * No devices - trigger first discover splash page
 
 * (jeneric) device module tab
