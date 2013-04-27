@@ -5,7 +5,7 @@ FRONTEND
 * UI for topo DB table editing
 * No devices - trigger first discover splash page
 * view job queue
-* view logs
+* view logs with colour
 
 * (jeneric) device module tab
 
