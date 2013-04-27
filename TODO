@@ -3,7 +3,6 @@ FRONTEND
 
 * import/slurp legacy topo file
 * UI for topo DB table editing
-  - drop topo file support and use DB only
 * No devices - trigger first discover splash page
 
 * (jeneric) device module tab
