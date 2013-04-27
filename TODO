@@ -4,6 +4,7 @@ FRONTEND
 * import/slurp legacy topo file
 * UI for topo DB table editing
 * No devices - trigger first discover splash page
+* view job queue
 
 * (jeneric) device module tab
 
