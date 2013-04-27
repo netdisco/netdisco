@@ -39,7 +39,7 @@
               </label>
             </div>
             <div class="clearfix">
-              <em>MAC address format:</em><br/>
+              <em class="muted">MAC address format:</em><br/>
               <select id="nd_node_mac_format" name="mac_format">
                 [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
                 <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
