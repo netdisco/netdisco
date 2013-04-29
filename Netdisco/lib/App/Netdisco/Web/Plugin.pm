@@ -7,6 +7,7 @@ set(
   'navbar_items' => [],
   'search_tabs'  => [],
   'device_tabs'  => [],
+  'admin_tasks'  => [],
   'reports_menu' => {},
   'reports' => {},
   'report_order' => [qw/Device Port Node VLAN Network Wireless/],
@@ -47,6 +48,26 @@ register 'register_navbar_item' => sub {
   }
 
   push @{ setting('navbar_items') }, $config;
+};
+
+register 'register_admin_task' => sub {
+  my ($self, $config) = plugin_args(@_);
+
+  if (!length $config->{tag}
+      or !length $config->{label}) {
+
+      error "bad config to register_admin_task";
+      return;
+  }
+
+  foreach my $item (@{ setting('admin_tasks') }) {
+      if ($item->{tag} eq $config->{tag}) {
+          $item = $config;
+          return;
+      }
+  }
+
+  push @{ setting('admin_tasks') }, $config;
 };
 
 sub _register_tab {

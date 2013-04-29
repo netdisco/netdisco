@@ -175,6 +175,24 @@ any query parameters which might customize the report search.
 See the L<App::Netdisco::Web::Plugin::Report::DuplexMismatch> module for a
 simple example of how to implement the handler.
 
+=head1 Admin Tasks
+
+These components appear in the black navigation bar under an Admin menu, but only
+if the logged in user has Administrator rights in Netdisco.
+
+To register an item for display in the Admin menu, use the following code:
+
+ register_admin_task({
+   tag   => 'newfeature',
+   label => 'My New Feature',
+ });
+
+This causes an item to appear in the Admin menu with a visible text of "My New
+Feature" which when clicked sends the user to the C</admin/mynewfeature> page.
+Note that this won't work for any target link - the path must be an
+App::Netdisco Dancer route handler. Please bug the App::Netdisco devs if you
+want arbitrary links supported.
+
 =head1 Templates
 
 All of Netdisco's web page templates are stashed away in its distribution,
