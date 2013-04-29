@@ -35,8 +35,13 @@ sub discover {
 
   my $host = NetAddr::IP::Lite->new($job->device);
   my $device = get_device($host->addr);
-  my $snmp = snmp_connect($device);
 
+  if ($device->in_storage
+      and $device->vendor and $device->vendor eq 'netdisco') {
+      return job_done("Skipped discover for pseudo-device $host");
+  }
+
+  my $snmp = snmp_connect($device);
   if (!defined $snmp) {
       return job_error("discover failed: could not SNMP connect to $host");
   }
@@ -74,8 +79,13 @@ sub discover_neighbors {
 
   my $host = NetAddr::IP::Lite->new($job->device);
   my $device = get_device($host->addr);
-  my $snmp = snmp_connect($device);
 
+  if ($device->in_storage
+      and $device->vendor and $device->vendor eq 'netdisco') {
+      return job_done("Skipped discover for pseudo-device $host");
+  }
+
+  my $snmp = snmp_connect($device);
   if (!defined $snmp) {
       return job_error("discover_neighbors failed: could not SNMP connect to $host");
   }
