@@ -570,6 +570,9 @@ store the device's port neighbors information.
 If any neighbor is unknown to Netdisco, a discover job for it will immediately
 be queued (modulo configuration file C<discover_no_type> setting).
 
+Entries in the Topology database table will override any discovered device
+port relationships, and will also have their respective neighbors discovered.
+
 The Device database object can be a fresh L<DBIx::Class::Row> object which is
 not yet stored to the database.
 
@@ -577,6 +580,9 @@ not yet stored to the database.
 
 sub find_neighbors {
   my ($device, $snmp) = @_;
+
+  # first allow any manually configred topology to be set
+  _set_manual_topology($device, $snmp);
 
   my $c_ip = $snmp->c_ip;
   unless ($snmp->hasCDP or scalar keys %$c_ip) {
@@ -698,6 +704,41 @@ sub find_neighbors {
         ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
         $device->ip, $remote_ip, $remote_type, $port;
       _enqueue_discover($remote_ip, $remote_type);
+  }
+}
+
+# take data from the topology table and update remote_ip and remote_port
+# in the devices table. only use root_ips and skip any bad topo entries.
+sub _set_manual_topology {
+  my ($device, $snmp) = @_;
+
+  my $topo_links = schema('netdisco')->resultset('Topology');
+  debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
+
+  while (my $link = $topo_links->next) {
+      # could fail for broken topo, but we ignore to try the rest
+      try {
+          schema('netdisco')->txn_do(sub {
+            # only work on root_ips
+            # skip bad entries
+            my $left  = get_device($link->dev1) or return;
+            my $right = get_device($link->dev2) or return;
+
+            $left->ports
+              ->single({port => $link->port1})
+              ->update({
+                remote_ip => $right->ip,
+                remote_port => $link->port2,
+              });
+
+            $right->ports
+              ->single({port => $link->port2})
+              ->update({
+                remote_ip => $left->ip,
+                remote_port => $link->port1,
+              });
+          });
+      };
   }
 }
 
