@@ -14,6 +14,7 @@
   * Port filter in device port display is now highlighted green
   * Navbar search is fuzzier
   * Phone node icon is a little phone handset
+  * User icon color indicates port_control/admin ability
 
   [BUG FIXES]
 

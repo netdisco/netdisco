@@ -7,7 +7,7 @@ use Dancer::Plugin::DBIC;
 hook 'before' => sub {
   # list of port detail columns
   var('port_columns' => [
-    { name => 'c_admin',       label => 'Admin Controls',    default => ''   },
+    { name => 'c_admin',       label => 'Port Controls',     default => ''   },
     { name => 'c_port',        label => 'Port',              default => 'on' },
     { name => 'c_descr',       label => 'Description',       default => ''   },
     { name => 'c_type',        label => 'Type',              default => ''   },
