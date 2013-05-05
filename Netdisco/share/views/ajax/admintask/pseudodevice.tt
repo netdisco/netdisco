@@ -20,11 +20,18 @@
     </tr>
     [% WHILE (row = results.next) %]
     <tr>
+      <form name="update">
       <td class="center_cell"><a class="nd_linkcell"
         href="[% device_ports %]&q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
       <td class="center_cell">[% row.ip | html_entity %]</td>
-      <td class="center_cell">[% row.ports.count | html_entity %]</td>
-      <td class="center_cell"><a class="btn btn-small" href="#"><i class="icon-plus-sign"></i> Add</a></td>
+      <td class="center_cell"><input name="ports" type="number" value="[% row.port_count | html_entity %]"</td>
+      <td class="center_cell">
+        <button class="btn" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+      </form>
+      <form name="del" class="nd_inline_form">
+        <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </form>
+      </td>
     </tr>
     [% END %]
   </tbody>

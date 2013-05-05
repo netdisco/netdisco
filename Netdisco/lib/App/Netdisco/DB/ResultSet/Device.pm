@@ -491,4 +491,34 @@ sub get_distinct_col {
   )->get_column($col)->all;
 }
 
+=head2 with_port_count
+
+This is a modifier for any C<search()> which
+will add the following additional synthesized column to the result set:
+
+=over 4
+
+=item port_count
+
+=back
+
+=cut
+
+sub with_port_count {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs($cond, $attrs)
+    ->search({},
+      {
+        '+columns' => { port_count =>
+          $rs->result_source->schema->resultset('DevicePort')
+            ->search(
+              { 'dp.ip' => { -ident => 'me.ip' } },
+              { alias => 'dp' }
+            )->count_rs->as_query
+        },
+      });
+}
+
 1;
