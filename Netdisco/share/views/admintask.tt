@@ -1,0 +1,38 @@
+<i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
+  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+<div class="container-fluid">
+  <div class="sidebar sidebar_pinned">
+    <div class="well">
+      <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
+      <i class="sidebar_pin icon-pushpin sidebar_pin_clicked"
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
+
+      <div class="tab-content">
+        <div id="[% task.tag %]_search" class="tab-pane active">
+          <form id="[% task.tag %]_form" class="nd_sidesearchform form-stacked"
+              method="get" action="[% uri_for('/admin') %]">
+            [% TRY %]
+            [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
+            <script type="text/javascript">has_sidebar["[% task.tag %]"] = 1;</script>
+            [% CATCH %]
+            <script type="text/javascript">has_sidebar["[% task.tag %]"] = 0;</script>
+            [% END %]
+          </form>
+        </div> <!-- /tab-pane -->
+      </div> <!-- /tab-content -->
+    </div>
+  </div>
+
+  <div class="content">
+    <ul id="search_results" class="nav nav-tabs">
+      <li class="active"><a id="[% task.tag %]_link" href="#[% task.tag %]_pane">[% task.label %]</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="[% task.tag %]_pane"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+[%+ INCLUDE 'js/admintask.js' -%]
+</script>

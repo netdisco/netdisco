@@ -7,7 +7,7 @@ set(
   'navbar_items' => [],
   'search_tabs'  => [],
   'device_tabs'  => [],
-  'admin_tasks'  => [],
+  'admin_tasks'  => {},
   'reports_menu' => {},
   'reports' => {},
   'report_order' => [qw/Device Port Node VLAN Network Wireless/],
@@ -60,14 +60,7 @@ register 'register_admin_task' => sub {
       return;
   }
 
-  foreach my $item (@{ setting('admin_tasks') }) {
-      if ($item->{tag} eq $config->{tag}) {
-          $item = $config;
-          return;
-      }
-  }
-
-  push @{ setting('admin_tasks') }, $config;
+  setting('admin_tasks')->{ $config->{tag} } = $config;
 };
 
 sub _register_tab {

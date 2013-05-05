@@ -7,9 +7,14 @@
     $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
     [% END %]
 
-    // and for the reports page
+    // and for the report pages
     [% IF report %]
     $('[% "#${report.tag}_form" %]').submit(function(event){ do_search(event, '[% report.tag %]'); });
+    [% END %]
+
+    // and for the admin pages
+    [% IF task %]
+    $('[% "#${task.tag}_form" %]').submit(function(event){ do_search(event, '[% task.tag %]'); });
     [% END %]
 
     // on page load, load the content for the active tab

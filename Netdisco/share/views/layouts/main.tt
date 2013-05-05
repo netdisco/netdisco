@@ -84,18 +84,16 @@
         <i id="navsearchgo" class="icon-search navbar_icon"></i>
         </span>
       </form>
-      [% IF vars.user.admin %]
+      [% IF vars.user.admin AND settings.admin_tasks.size %]
       <ul class="nav">
-        [% IF settings.admin_tasks.size %]
         <li class="dropdown[% ' active' IF vars.nav == 'admin' %]">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin Tasks <b class="caret"></b></a>
           <ul class="dropdown-menu">
-          [% FOREACH ai IN settings.admin_tasks %]
-            <li><a href="[% uri_for('/admin/' _ ai.tag) %]">[% ai.label | html_entity %]</a></li>
+          [% FOREACH ai IN settings.admin_tasks.keys.sort %]
+            <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings.admin_tasks.$ai.label | html_entity %]</a></li>
           [% END %]
           </ul>
         </li> <!-- /dropdown -->
-        [% END %]
       </ul>
       [% END %]
       <ul class="nav pull-right">

@@ -13,6 +13,7 @@ use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
 use App::Netdisco::Web::Report;
+use App::Netdisco::Web::AdminTask;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
 

@@ -44,8 +44,8 @@ function do_search (event, tab) {
 
   // update browser search history with the new query.
   // however if it's the same tab, this is a *replace* of the query url.
-  // and just skip this bit if it's the reports display.
-  if (path != 'report' && window.History && window.History.enabled) {
+  // and just skip this bit if it's the report or admin display.
+  if (path != 'report' && path != 'admin' && window.History && window.History.enabled) {
     is_from_history_plugin = 1;
     window.History.replaceState(
       {name: tab, fields: $(form).serializeArray()},
