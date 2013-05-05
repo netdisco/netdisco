@@ -648,6 +648,12 @@ sub find_neighbors {
           }
       }
 
+      # IP Phone detection type fixup
+      if (defined $remote_type and $remote_type =~ m/(mitel.5\d{3})/i) {
+          $remote_type = 'IP Phone - '. $remote_type
+            if $remote_type !~ /ip phone/i;
+      }
+
       # hack for devices seeing multiple neighbors on the port
       if (ref [] eq ref $remote_ip) {
           debug sprintf
@@ -666,6 +672,12 @@ sub find_neighbors {
           $remote_port = $port;
       }
       else {
+          # what we came here to do.... discover the neighbor
+          debug sprintf
+            ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+            $device->ip, $remote_ip, $remote_type, $port;
+          _enqueue_discover($remote_ip, $remote_type);
+
           $remote_port = $c_port->{$entry};
 
           if (defined $remote_port) {
@@ -678,17 +690,18 @@ sub find_neighbors {
           }
       }
 
-      # XXX too custom? IP Phone detection
-      if (defined $remote_type and $remote_type =~ m/(mitel.5\d{3})/i) {
-          $remote_type = 'IP Phone - '. $remote_type
-            if $remote_type !~ /ip phone/i;
-      }
-
+      # if all the data looks sane, update the port row with neighbor info
       my $portrow = schema('netdisco')->resultset('DevicePort')
           ->single({ip => $device->ip, port => $port});
 
       if (!defined $portrow) {
           info sprintf ' [%s] neigh - local port %s not in database!',
+            $device->ip, $port;
+          next;
+      }
+
+      if ($portrow->manual_topo) {
+          info sprintf ' [%s] neigh - %s has manually defined topology',
             $device->ip, $port;
           next;
       }
@@ -699,11 +712,6 @@ sub find_neighbors {
           remote_type => $remote_type,
           remote_id   => $remote_id,
       });
-
-      debug sprintf
-        ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-        $device->ip, $remote_ip, $remote_type, $port;
-      _enqueue_discover($remote_ip, $remote_type);
   }
 }
 
@@ -712,34 +720,43 @@ sub find_neighbors {
 sub _set_manual_topology {
   my ($device, $snmp) = @_;
 
-  my $topo_links = schema('netdisco')->resultset('Topology');
-  debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
+  schema('netdisco')->txn_do(sub {
+    # clear manual topology flags
+    schema('netdisco')->resultset('DevicePort')->update({manual_topo => \'false'});
 
-  while (my $link = $topo_links->next) {
-      # could fail for broken topo, but we ignore to try the rest
-      try {
-          schema('netdisco')->txn_do(sub {
-            # only work on root_ips
-            # skip bad entries
-            my $left  = get_device($link->dev1) or return;
-            my $right = get_device($link->dev2) or return;
+    my $topo_links = schema('netdisco')->resultset('Topology');
+    debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
 
-            $left->ports
-              ->single({port => $link->port1})
-              ->update({
-                remote_ip => $right->ip,
-                remote_port => $link->port2,
-              });
+    while (my $link = $topo_links->next) {
+        # could fail for broken topo, but we ignore to try the rest
+        try {
+            schema('netdisco')->txn_do(sub {
+              # only work on root_ips
+              my $left  = get_device($link->dev1);
+              my $right = get_device($link->dev2);
 
-            $right->ports
-              ->single({port => $link->port2})
-              ->update({
-                remote_ip => $left->ip,
-                remote_port => $link->port1,
-              });
-          });
-      };
-  }
+              # skip bad entries
+              return unless ($left->in_storage and $right->in_storage);
+
+              $left->ports
+                ->single({port => $link->port1})
+                ->update({
+                  remote_ip => $right->ip,
+                  remote_port => $link->port2,
+                  manual_topo => \'true',
+                });
+
+              $right->ports
+                ->single({port => $link->port2})
+                ->update({
+                  remote_ip => $left->ip,
+                  remote_port => $link->port1,
+                  manual_topo => \'true',
+                });
+            });
+        };
+    }
+  });
 }
 
 # only enqueue if device is not already discovered, and
