@@ -27,14 +27,6 @@ body {
   width: 100%;
 }
 
-.nd_user_port_control {
-  color: rgba(255,255,0,0.8) !important;
-}
-
-.nd_user_admin {
-  color: rgba(255,0,0,0.8) !important;
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* various styles to adjust the hero box used for homepage + login */
 

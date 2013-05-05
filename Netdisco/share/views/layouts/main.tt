@@ -101,9 +101,9 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
           [% IF vars.user.admin %]
-            <i class="icon-user nd_user_admin"></i>
+            <i class="icon-user text-error"></i>
           [% ELSIF vars.user.port_control %]
-            <i class="icon-user nd_user_port_control"></i>
+            <i class="icon-user text-warning"></i>
           [% ELSE %]
             <i class="icon-user"></i>
           [% END %]
