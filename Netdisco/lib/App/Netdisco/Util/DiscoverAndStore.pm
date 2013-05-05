@@ -13,7 +13,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   store_device store_interfaces store_wireless
   store_vlans store_power store_modules
-  find_neighbors
+  store_neighbors discover_new_neighbors
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -562,24 +562,26 @@ sub store_modules {
   });
 }
 
-=head2 find_neighbors( $device, $snmp )
+=head2 store_neighbors( $device, $snmp )
+
+returns: C<@to_discover>
 
 Given a Device database object, and a working SNMP connection, discover and
 store the device's port neighbors information.
 
-If any neighbor is unknown to Netdisco, a discover job for it will immediately
-be queued (modulo configuration file C<discover_no_type> setting).
-
 Entries in the Topology database table will override any discovered device
-port relationships, and will also have their respective neighbors discovered.
+port relationships.
 
 The Device database object can be a fresh L<DBIx::Class::Row> object which is
 not yet stored to the database.
 
+A list of discovererd neighbors will be returned as [C<$ip>, C<$type>] tuples.
+
 =cut
 
-sub find_neighbors {
+sub store_neighbors {
   my ($device, $snmp) = @_;
+  my @to_discover = ();
 
   # first allow any manually configred topology to be set
   _set_manual_topology($device, $snmp);
@@ -587,7 +589,7 @@ sub find_neighbors {
   my $c_ip = $snmp->c_ip;
   unless ($snmp->hasCDP or scalar keys %$c_ip) {
       debug sprintf ' [%s] neigh - CDP/LLDP not enabled!', $device->ip;
-      return;
+      return @to_discover;
   }
 
   my $interfaces = $snmp->interfaces;
@@ -664,7 +666,7 @@ sub find_neighbors {
               debug sprintf
                 ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
                 $device->ip, $n, $remote_type, $port;
-              _enqueue_discover($n, $remote_type);
+              push @to_discover, [$n, $remote_type];
           }
 
           # set self as remote IP to suppress any further work
@@ -676,7 +678,7 @@ sub find_neighbors {
           debug sprintf
             ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
             $device->ip, $remote_ip, $remote_type, $port;
-          _enqueue_discover($remote_ip, $remote_type);
+          push @to_discover, [$remote_ip, $remote_type];
 
           $remote_port = $c_port->{$entry};
 
@@ -713,6 +715,8 @@ sub find_neighbors {
           remote_id   => $remote_id,
       });
   }
+
+  return @to_discover;
 }
 
 # take data from the topology table and update remote_ip and remote_port
@@ -759,30 +763,51 @@ sub _set_manual_topology {
   });
 }
 
-# only enqueue if device is not already discovered, and
-# discover_no_type config permits the discovery
-sub _enqueue_discover {
-  my ($ip, $remote_type) = @_;
+=head2 discover_new_neighbors( $device, $snmp )
 
-  my $device = get_device($ip);
-  return if $device->in_storage;
+Given a Device database object, and a working SNMP connection, discover and
+store the device's port neighbors information.
 
-  my $remote_type_match = setting('discover_no_type');
-  if ($remote_type and $remote_type_match
-      and $remote_type =~ m/$remote_type_match/) {
-    debug sprintf '      queue - %s, type [%s] excluded by discover_no_type',
-      $ip, $remote_type;
-    return;
+Entries in the Topology database table will override any discovered device
+port relationships.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+Any discovered neighbor unknown to Netdisco will have a C<discover> job
+immediately queued (subject to the filtering by the C<discover_no_type>
+setting).
+
+=cut
+
+sub discover_new_neighbors {
+  my @to_discover = store_neighbors(@_);
+
+  # only enqueue if device is not already discovered, and
+  # discover_no_type config permits the discovery
+  foreach my $neighbor (@to_discover) {
+      my ($ip, $remote_type) = @$neighbor;
+
+      my $device = get_device($ip);
+      next if $device->in_storage;
+
+      my $remote_type_match = setting('discover_no_type');
+      if ($remote_type and $remote_type_match
+          and $remote_type =~ m/$remote_type_match/) {
+        debug sprintf ' queue - %s, type [%s] excluded by discover_no_type',
+          $ip, $remote_type;
+        next;
+      }
+
+      try {
+          # could fail if queued job already exists
+          schema('netdisco')->resultset('Admin')->create({
+              device => $ip,
+              action => 'discover',
+              status => 'queued',
+          });
+      };
   }
-
-  try {
-      # could fail if queued job already exists
-      schema('netdisco')->resultset('Admin')->create({
-          device => $ip,
-          action => 'discover',
-          status => 'queued',
-      });
-  };
 }
 
 1;

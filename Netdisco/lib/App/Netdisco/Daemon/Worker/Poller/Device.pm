@@ -65,11 +65,12 @@ sub discover {
   store_vlans($device, $snmp);
   store_power($device, $snmp);
   store_modules($device, $snmp);
+  store_neighbors($device, $snmp);
 
   return job_done("Ended discover for $host");
 }
 
-# run find_neighbors on all known devices, and run discover on any
+# run discover_neighbors on all known devices, and run discover on any
 # newly found devices.
 sub discovernew {
   my ($self, $job) = @_;
@@ -116,9 +117,9 @@ sub discover_neighbors {
       return job_error("discover_neighbors failed: could not SNMP connect to $host");
   }
 
-  find_neighbors($device, $snmp);
+  discover_new_neighbors($device, $snmp);
 
-  return job_done("Ended find_neighbors for $host");
+  return job_done("Ended discover_neighbors for $host");
 }
 
 1;
