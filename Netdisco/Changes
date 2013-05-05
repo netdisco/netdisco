@@ -4,8 +4,8 @@
 
   * Finally we have a discover/refresh daemon job :)
   * Also... a Scheduler which removes need for crontab installation
-  * The netdisco-do script can run a one-off discover for a device
-  * Can select MAC Address display format on Node and Device Port search
+  * The netdisco-do script can run any one-off job
+  * Select MAC Address display format on Node and Device Port search
 
   [ENHANCEMENTS]
 
@@ -22,6 +22,7 @@
   * Update to latest Bootstrap and JQuery, and temp. fix #7326 in Bootstrap
   * Partial Name in Port search now working
   * Add unique constraints to topology table
+  * Handle whitespace ahead of OUI data
 
 2.007000_001 - 2013-03-17
 
