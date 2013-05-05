@@ -11,14 +11,17 @@ register_admin_task({
   label => 'Manage Pseudo Devices',
 });
 
-#ajax '/ajax/content/report/duplexmismatch' => sub {
-#    my $set = schema('netdisco')->resultset('Virtual::DuplexMismatch');
-#    return unless $set->count;
-#
-#    content_type('text/html');
-#    template 'ajax/report/duplexmismatch.tt', {
-#      results => $set,
-#    }, { layout => undef };
-#};
+ajax '/ajax/content/admin/pseudodevice' => sub {
+    my $set = schema('netdisco')->resultset('Device')
+      ->search(
+        {vendor => 'netdisco'},
+        {order_by => { -desc => 'last_discover' }},
+      );
+
+    content_type('text/html');
+    template 'ajax/admintask/pseudodevice.tt', {
+      results => $set,
+    }, { layout => undef };
+};
 
 true;

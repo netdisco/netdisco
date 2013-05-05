@@ -191,6 +191,11 @@ td {
   text-align: center;
 }
 
+/* manage pseudo devices table form */
+.center_cell input {
+  margin-bottom: 2px;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* tabs */
 
