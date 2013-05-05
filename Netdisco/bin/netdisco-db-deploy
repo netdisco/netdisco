@@ -1,9 +1,17 @@
 #!/usr/bin/env perl
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
-use App::Netdisco;
+FindBin::again();
+use Path::Class 'dir';
 
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
+
+use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
