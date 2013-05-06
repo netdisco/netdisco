@@ -7,6 +7,7 @@
   * The netdisco-do script can run any one-off job
   * Select MAC Address display format on Node and Device Port search
   * Helper script to import the Netdisco 1.x Topology file to the database
+  * Support for pseudo devices (useful for dummy device links)
 
   [ENHANCEMENTS]
 

@@ -17,7 +17,6 @@ DAEMON
 CORE
 ====
 
-* pseudo-device support
 * VRF support
 
 DOCS

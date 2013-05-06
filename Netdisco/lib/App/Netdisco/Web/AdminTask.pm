@@ -5,6 +5,12 @@ use Dancer ':syntax';
 get '/admin/*' => sub {
     my ($tag) = splat;
 
+    if (! var('user')->admin) {
+        status(302);
+        header(Location => uri_for('/')->path_query());
+        return;
+    }
+
     # trick the ajax into working as if this were a tabbed page
     params->{tab} = $tag;
 

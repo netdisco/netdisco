@@ -7,6 +7,8 @@ use Dancer::Plugin::DBIC;
 use Try::Tiny;
 
 ajax '/ajax/portcontrol' => sub {
+    return unless var('user')->port_control;
+
     try {
         my $log = sprintf 'd:[%s] p:[%s] f:[%s]. a:[%s] v[%s]',
           param('device'), (param('port') || ''), param('field'),

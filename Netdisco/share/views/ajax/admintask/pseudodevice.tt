@@ -26,9 +26,14 @@
       <td class="center_cell">[% row.ip | html_entity %]</td>
       <td class="center_cell"><input name="ports" type="number" value="[% row.port_count | html_entity %]"</td>
       <td class="center_cell">
+        <input name="dns" type="hidden" value="[% row.dns | html_entity %]">
+        <input name="ip" type="hidden" value="[% row.ip | html_entity %]">
         <button class="btn" name="update" type="submit"><i class="icon-save text-warning"></i></button>
       </form>
       <form name="del" class="nd_inline_form">
+        <input name="dns" type="hidden" value="[% row.dns | html_entity %]">
+        <input name="ip" type="hidden" value="[% row.ip | html_entity %]">
+        <input name="ports" type="hidden" value="[% row.port_count | html_entity %]">
         <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
       </form>
       </td>
