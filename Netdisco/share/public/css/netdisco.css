@@ -207,6 +207,10 @@ td {
   color: #6D5720;
 }
 
+.nd_single_tab {
+  color: rgb(187,112,0) !important;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
