@@ -10,7 +10,7 @@ use Try::Tiny;
 
 register_admin_task({
   tag => 'pseudodevice',
-  label => 'Manage Pseudo Devices',
+  label => 'Pseudo Devices',
 });
 
 sub _sanity_ok {

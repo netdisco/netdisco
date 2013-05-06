@@ -5,9 +5,43 @@
   // this is called by do_search to support local code
   // here, when tab changes need to strike/unstrike the navbar search
   function inner_view_processing(tab) {
-    var target = '#pseudodevice_pane';
+    var target = '#' + tab + '_pane';
 
-    // activity for add pseudo device
+    // activate typeahead on the topo boxes
+    $('.nd_topo_dev').autocomplete({
+      source: '/ajax/data/deviceip/typeahead'
+      ,minLength: 0
+    });
+
+    // get all devices on device input focus
+    $(".nd_topo_dev").on('focus', function(e) { $(this).autocomplete('search', '%') });
+
+    // activate typeahead on the topo boxes
+    $('.nd_topo_port.nd_topo_dev1').autocomplete({
+      source: function (request, response)  {
+        var query = $('.nd_topo_dev1').serialize();
+        return $.get('/ajax/data/port/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
+      ,minLength: 0
+    });
+
+    // activate typeahead on the topo boxes
+    $('.nd_topo_port.nd_topo_dev2').autocomplete({
+      source: function (request, response)  {
+        var query = $('.nd_topo_dev2').serialize();
+        return $.get('/ajax/data/port/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
+      ,minLength: 0
+    });
+
+    // get all ports on port input focus
+    $(".nd_topo_port").on('focus', function(e) { $(this).autocomplete('search') });
+
+    // activity for admin task tables
     // dynamically bind to all forms in the table
     $(target).on('submit', 'form', function() {
       // stop form from submitting normally
@@ -18,7 +52,7 @@
         type: 'POST'
         ,async: false
         ,dataType: 'html'
-        ,url: uri_base + '/ajax/content/admin/pseudodevice/' + $(this).attr('name')
+        ,url: uri_base + '/ajax/content/admin/' + tab + '/' + $(this).attr('name')
         ,data: $(this).serializeArray()
         ,beforeSend: function() {
           $(target).html(

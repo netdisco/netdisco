@@ -24,7 +24,7 @@
       <td class="center_cell"><a class="nd_linkcell"
         href="[% device_ports %]&q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
       <td class="center_cell">[% row.ip | html_entity %]</td>
-      <td class="center_cell"><input name="ports" type="number" value="[% row.port_count | html_entity %]"</td>
+      <td class="center_cell"><input name="ports" type="number" value="[% row.port_count | html_entity %]"></td>
       <td class="center_cell">
         <input name="dns" type="hidden" value="[% row.dns | html_entity %]">
         <input name="ip" type="hidden" value="[% row.ip | html_entity %]">

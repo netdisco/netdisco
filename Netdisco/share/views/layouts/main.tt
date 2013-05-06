@@ -13,6 +13,7 @@
 
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-latest.min.js"></script>
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-ui.custom.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-history.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
@@ -32,6 +33,7 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/smoothness/jquery-ui.custom.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
