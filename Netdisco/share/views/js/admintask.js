@@ -15,6 +15,7 @@
 
     // get all devices on device input focus
     $(".nd_topo_dev").on('focus', function(e) { $(this).autocomplete('search', '%') });
+    $(".nd_topo_dev_caret").on('click', function(e) { $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
 
     // activate typeahead on the topo boxes
     $('.nd_topo_port.nd_topo_dev1').autocomplete({
@@ -40,6 +41,7 @@
 
     // get all ports on port input focus
     $(".nd_topo_port").on('focus', function(e) { $(this).autocomplete('search') });
+    $(".nd_topo_port_caret").on('click', function(e) { $(this).siblings('.nd_topo_port').autocomplete('search') });
 
     // activity for admin task tables
     // dynamically bind to all forms in the table

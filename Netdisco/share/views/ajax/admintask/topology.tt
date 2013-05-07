@@ -11,10 +11,30 @@
   </tbody>
     <tr>
       <form name="add">
-      <td class="center_cell"><input class="nd_topo_dev  nd_topo_dev1" name="dev1"  type="text"></td>
-      <td class="center_cell"><input class="nd_topo_port nd_topo_dev1" name="port1" type="text"></td>
-      <td class="center_cell"><input class="nd_topo_dev  nd_topo_dev2" name="dev2"  type="text"></td>
-      <td class="center_cell"><input class="nd_topo_port nd_topo_dev2" name="port2" type="text"></td>
+      <td class="center_cell">
+        <div class="input-append">
+          <input class="nd_topo_dev nd_topo_dev1" name="dev1"  type="text">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="center_cell">
+        <div class="input-append">
+          <input class="nd_topo_port nd_topo_dev1" name="port1" type="text">
+          <span class="add-on nd_topo_port_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="center_cell">
+        <div class="input-append">
+          <input class="nd_topo_dev nd_topo_dev2" name="dev2"  type="text">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="center_cell">
+        <div class="input-append">
+          <input class="nd_topo_port nd_topo_dev2" name="port2" type="text">
+          <span class="add-on nd_topo_port_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
       <td class="center_cell">
         <button class="btn btn-small" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
