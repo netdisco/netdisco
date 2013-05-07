@@ -10,6 +10,7 @@
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
       source: '/ajax/data/deviceip/typeahead'
+      ,delay: 150
       ,minLength: 0
     });
 
@@ -36,6 +37,7 @@
           return response(data);
         });
       }
+      ,delay: 150
       ,minLength: 0
     });
 
