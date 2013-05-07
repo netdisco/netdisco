@@ -19,10 +19,18 @@ ajax '/ajax/data/deviceip/typeahead' => sub {
     my $q = param('query') || param('term');
     my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
 
+    my @data = ();
+    while (my $d = $set->next) {
+        my $label = $d->ip;
+        if ($d->dns or $d->name) {
+            $label = sprintf '%s (%s)',
+              ($d->dns || $d->name), $d->ip;
+        }
+        push @data, {label => $label, value => $d->ip};
+    }
+
     content_type 'application/json';
-    return to_json [map {
-      {label => ($_->dns || $_->name || $_->ip), value => $_->ip}
-    } $set->all];
+    return to_json \@data;
 };
 
 ajax '/ajax/data/port/typeahead' => sub {
