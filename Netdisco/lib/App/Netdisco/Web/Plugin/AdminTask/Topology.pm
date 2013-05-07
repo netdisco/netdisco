@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
+use NetAddr::IP::Lite ':lower';
 use Try::Tiny;
 
 register_admin_task({
@@ -18,15 +19,14 @@ sub _sanity_ok {
     try {
         return 0 unless var('user')->admin;
 
-        return 0 unless length param('dns')
-          and param('dns') =~ m/^[[:print:]]+$/
-          and param('dns') !~ m/[[:space:]]/;
+        my $dev1 = NetAddr::IP::Lite->new(param('dev1'));
+        return 0 if $dev1->addr eq '0.0.0.0';
 
-        my $ip = NetAddr::IP::Lite->new(param('ip'));
-        return 0 if $ip->addr eq '0.0.0.0';
+        my $dev2 = NetAddr::IP::Lite->new(param('dev2'));
+        return 0 if $dev2->addr eq '0.0.0.0';
 
-        return 0 unless length param('ports')
-          and param('ports') =~ m/^[[:digit:]]+$/;
+        return 0 unless length param('port1');
+        return 0 unless length param('port2');
 
         $happy = 1;
     };
@@ -39,20 +39,13 @@ ajax '/ajax/content/admin/topology/add' => sub {
       unless _sanity_ok();
 
     try {
-        schema('netdisco')->txn_do(sub {
-          my $device = schema('netdisco')->resultset('Device')
-            ->create({
-              ip => param('ip'),
-              dns => param('dns'),
-              vendor => 'netdisco',
-              last_discover => \'now()',
-            });
-
-          $device->ports->populate([
-            ['port'],
-            map {["Port$_"]} @{[1 .. param('ports')]},
-          ]);
-        });
+        my $device = schema('netdisco')->resultset('Topology')
+          ->create({
+            dev1  => param('dev1'),
+            port1 => param('port1'),
+            dev2  => param('dev2'),
+            port2 => param('port2'),
+          });
     };
 
     forward '/ajax/content/admin/topology';
@@ -64,11 +57,13 @@ ajax '/ajax/content/admin/topology/del' => sub {
 
     try {
         schema('netdisco')->txn_do(sub {
-          my $device = schema('netdisco')->resultset('Device')
-            ->find({ip => param('ip')});
-
-          $device->ports->delete;
-          $device->delete;
+          my $device = schema('netdisco')->resultset('Topology')
+            ->search({
+              dev1  => param('dev1'),
+              port1 => param('port1'),
+              dev2  => param('dev2'),
+              port2 => param('port2'),
+            })->delete;
         });
     };
 

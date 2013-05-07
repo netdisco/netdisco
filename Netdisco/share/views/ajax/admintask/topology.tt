@@ -22,7 +22,7 @@
     </tr>
     [% WHILE (row = results.next) %]
     <tr>
-      <form name="update">
+      <form name="del">
       <td class="center_cell"><a class="nd_linkcell"
         href="[% device_ports %]&q=[% row.dev1 | uri %]">[% row.dev1 | html_entity %]</a></td>
       <td class="center_cell">[% row.port1 | html_entity %]</td>
