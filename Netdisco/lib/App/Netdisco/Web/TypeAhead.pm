@@ -5,7 +5,6 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Util::Web (); # for sort_port
-use Try::Tiny;
 
 ajax '/ajax/data/devicename/typeahead' => sub {
     my $q = param('query') || param('term');
@@ -38,14 +37,13 @@ ajax '/ajax/data/port/typeahead' => sub {
     my $port = param('port1') || param('port2');
     return unless length $dev;
 
-    my $set = undef;
-    try {
-        $set = schema('netdisco')->resultset('Device')
-          ->find({ip => $dev})->ports({},{order_by => 'port'});
-        $set = $set->search({port => { -ilike => "\%$port\%" }})
-          if length $port;
-    };
-    return unless defined $set;
+    my $device = schema('netdisco')->resultset('Device')
+      ->find({ip => $dev});
+    return unless $device;
+
+    my $set = $device->ports({},{order_by => 'port'});
+    $set = $set->search({port => { -ilike => "\%$port\%" }})
+      if length $port;
 
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
     return unless scalar @$results;
