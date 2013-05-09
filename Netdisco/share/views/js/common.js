@@ -1,19 +1,21 @@
   $(document).ready(function() {
-    // search hook for each tab
+    // search tabs
     [% FOREACH tab IN settings.search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
     [% END %]
+
+    // device tabs
     [% FOREACH tab IN settings.device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
     [% END %]
 
-    // and for the report pages
     [% IF report %]
+    // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function(event){ do_search(event, '[% report.tag %]'); });
-    [% END %]
+    [% END -%]
 
-    // and for the admin pages
     [% IF task %]
+    // for the admin pages
     $('[% "#${task.tag}_form" %]').submit(function(event){ do_search(event, '[% task.tag %]'); });
     [% END %]
 

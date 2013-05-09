@@ -6,7 +6,11 @@
   var form_inputs = $("#ports_form .clearfix input").not('[type="checkbox"]')
       .add("#ports_form .clearfix select");
 
+  // this is called by do_search to support local code
+  // which might need to act on the newly inserted content
+  // but which cannot use jQuery delegation via .on()
   function inner_view_processing(tab) {
+
     // LT wanted the page title to reflect what's on the page :)
     document.title = $('#nd_device_name').text()
       +' - '+ $('#'+ tab + '_link').text();
@@ -25,65 +29,7 @@
         $(this).html('<div class="cell-arrow-up-down icon-chevron-up icon-large"></div>Show VLANs');
     });
 
-    // toggle visibility of port up/down and edit controls
-
-    $('.nd_editable_cell').mouseenter(function() {
-      $(this).children('.nd_hand_icon').show();
-      if (! $(this).is(':focus')) {
-        $(this).children('.nd_edit_icon').show(); // ports
-        $(this).siblings('td').find('.nd_device_details_edit').show(); // details
-      }
-    });
-
-    $('.nd_editable_cell').mouseleave(function() {
-      $(this).children('.nd_hand_icon').hide();
-      if (! $(this).is(':focus')) {
-        $(this).children('.nd_edit_icon').hide(); // ports
-        $(this).siblings('td').find('.nd_device_details_edit').hide(); // details
-      }
-    });
-
-    $('[contenteditable=true]').focus(function() {
-        $(this).children('.nd_edit_icon').hide(); // ports
-        $(this).siblings('td').find('.nd_device_details_edit').hide(); // details
-    });
-
-    // activity for port up/down control
-    $('.icon-hand-up').click(function() {
-      port_control(this); // save
-    });
-    $('.icon-hand-down').click(function() {
-      port_control(this); // save
-    });
-
-    // activity for power enable/disable control
-    $('.nd_power_icon').click(function() {
-      port_control(this); // save
-    });
-
     var dirty = false;
-
-    // activity for contenteditable control
-    $('[contenteditable=true]').keydown(function() {
-      var esc = event.which == 27,
-          nl  = event.which == 13;
-
-      if (esc) {
-        if (dirty) { document.execCommand('undo') }
-        $(this).blur();
-        dirty = false;
-
-      }
-      else if (nl) {
-        $(this).blur();
-        event.preventDefault();
-        dirty = false;
-        port_control(this); // save
-      }
-      else {
-        dirty = true;
-      }
-    });
 
     // show or hide netmap help button
     if (tab == 'netmap') {
@@ -98,7 +44,11 @@
     $("[rel=popover]").popover({live: true});
   }
 
+  // on load, establish global delegations for now and future
   $(document).ready(function() {
+    var tab = '[% tab.tag %]'
+    var target = '#' + tab + '_pane';
+
     // sidebar form fields should change colour and have bin/copy icon
     form_inputs.each(function() {device_form_state($(this))});
     form_inputs.change(function() {device_form_state($(this))});
@@ -124,7 +74,7 @@
 
     // clickable device port names can simply resubmit AJAX rather than
     // fetch the whole page again.
-    $('body').on('click', '.nd_this_port_only', function() {
+    $(target).on('click', '.nd_this_port_only', function() {
       event.preventDefault(); // link is real so prevent page submit
 
       var port = $(this).text();
@@ -134,5 +84,60 @@
       $('.field_clear_icon').show();
       $('#ports_form').trigger('submit');
       device_form_state(portfilter); // will hide copy icons
+    });
+
+    // toggle visibility of port up/down and edit controls
+    $(target).on('mouseenter', '.nd_editable_cell', function() {
+      $(this).children('.nd_hand_icon').show();
+      if (! $(this).is(':focus')) {
+        $(this).children('.nd_edit_icon').show(); // ports
+        $(this).siblings('td').find('.nd_device_details_edit').show(); // details
+      }
+    });
+    $(target).on('mouseleave', '.nd_editable_cell', function() {
+      $(this).children('.nd_hand_icon').hide();
+      if (! $(this).is(':focus')) {
+        $(this).children('.nd_edit_icon').hide(); // ports
+        $(this).siblings('td').find('.nd_device_details_edit').hide(); // details
+      }
+    });
+    $(target).on('focus', '[contenteditable=true]', function() {
+        $(this).children('.nd_edit_icon').hide(); // ports
+        $(this).siblings('td').find('.nd_device_details_edit').hide(); // details
+    });
+
+    // activity for port up/down control
+    $(target).on('click', '.icon-hand-up', function() {
+      port_control(this); // save
+    });
+    $(target).on('click', '.icon-hand-down', function() {
+      port_control(this); // save
+    });
+
+    // activity for power enable/disable control
+    $(target).on('click', '.nd_power_icon', function() {
+      port_control(this); // save
+    });
+
+    // activity for contenteditable control
+    $(target).on('keydown', '[contenteditable=true]', function() {
+      var esc = event.which == 27,
+          nl  = event.which == 13;
+
+      if (esc) {
+        if (dirty) { document.execCommand('undo') }
+        $(this).blur();
+        dirty = false;
+
+      }
+      else if (nl) {
+        $(this).blur();
+        event.preventDefault();
+        dirty = false;
+        port_control(this); // save
+      }
+      else {
+        dirty = true;
+      }
     });
   });
