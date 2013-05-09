@@ -29,8 +29,7 @@ sub _sanity_ok {
 }
 
 ajax '/ajax/content/admin/pseudodevice/add' => sub {
-    forward '/ajax/content/admin/pseudodevice'
-      unless _sanity_ok();
+    return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Device')
@@ -47,13 +46,10 @@ ajax '/ajax/content/admin/pseudodevice/add' => sub {
         map {["Port$_"]} @{[1 .. param('ports')]},
       ]);
     });
-
-    forward '/ajax/content/admin/pseudodevice';
 };
 
 ajax '/ajax/content/admin/pseudodevice/del' => sub {
-    forward '/ajax/content/admin/pseudodevice'
-      unless _sanity_ok();
+    return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Device')
@@ -62,13 +58,10 @@ ajax '/ajax/content/admin/pseudodevice/del' => sub {
       $device->ports->delete;
       $device->delete;
     });
-
-    forward '/ajax/content/admin/pseudodevice';
 };
 
 ajax '/ajax/content/admin/pseudodevice/update' => sub {
-    forward '/ajax/content/admin/pseudodevice'
-      unless _sanity_ok();
+    return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Device')
@@ -90,8 +83,6 @@ ajax '/ajax/content/admin/pseudodevice/update' => sub {
           for ($start .. $count);
       }
     });
-
-    forward '/ajax/content/admin/pseudodevice';
 };
 
 ajax '/ajax/content/admin/pseudodevice' => sub {

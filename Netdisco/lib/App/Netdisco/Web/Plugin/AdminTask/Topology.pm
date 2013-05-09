@@ -28,8 +28,7 @@ sub _sanity_ok {
 }
 
 ajax '/ajax/content/admin/topology/add' => sub {
-    forward '/ajax/content/admin/topology'
-      unless _sanity_ok();
+    return unless _sanity_ok();
 
     my $device = schema('netdisco')->resultset('Topology')
       ->create({
@@ -38,13 +37,10 @@ ajax '/ajax/content/admin/topology/add' => sub {
         dev2  => param('dev2'),
         port2 => param('port2'),
       });
-
-    forward '/ajax/content/admin/topology';
 };
 
 ajax '/ajax/content/admin/topology/del' => sub {
-    forward '/ajax/content/admin/topology'
-      unless _sanity_ok();
+    return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Topology')
@@ -55,8 +51,6 @@ ajax '/ajax/content/admin/topology/del' => sub {
           port2 => param('port2'),
         })->delete;
     });
-
-    forward '/ajax/content/admin/topology';
 };
 
 ajax '/ajax/content/admin/topology' => sub {
