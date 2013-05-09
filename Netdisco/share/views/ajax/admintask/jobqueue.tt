@@ -2,8 +2,8 @@
   <thead>
     <tr>
       <th class="center_cell">Entered</th>
-      <th class="center_cell">Status</th>
       <th class="center_cell">Action</th>
+      <th class="center_cell">Status</th>
       <th class="center_cell">Device</th>
       <th class="center_cell">Port</th>
       <th class="center_cell">Param</th>
@@ -21,7 +21,11 @@
       [% ' class="info"'    IF row.status.search('^queued-') %]
     >
       <td class="center_cell">[% row.entered_stamp | html_entity %]</td>
-      <td class="center_cell">[% row.action.ucfirst | html_entity %]</td>
+      <td class="center_cell">
+        [% FOREACH word IN row.action.split('_') %]
+        [% word.ucfirst | html_entity %]&nbsp;
+        [% END %]
+      </td>
       [% IF row.status.search('^queued-') %]
       <td class="center_cell">Running on &quot;[% row.status.remove('^queued-') | html_entity %]&quot;</td>
       [% ELSE %]
