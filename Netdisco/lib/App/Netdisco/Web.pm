@@ -16,6 +16,7 @@ use App::Netdisco::Web::Report;
 use App::Netdisco::Web::AdminTask;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
+use App::Netdisco::Web::JobControl;
 
 sub _load_web_plugins {
   my $plugin_list = shift;
@@ -54,6 +55,12 @@ hook 'before_template' => sub {
 };
 
 get '/' => sub {
+    if (var('user') and var('user')->admin) {
+        if (schema('netdisco')->resultset('Device')->count == 0) {
+            var('nodevices' => true);
+        }
+    }
+
     template 'index';
 };
 

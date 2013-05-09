@@ -13,7 +13,7 @@ register_admin_task({
 });
 
 sub _sanity_ok {
-    return 0 unless var('user')->admin;
+    return 0 unless var('user') and var('user')->admin;
 
     return 0 unless length param('dns')
       and param('dns') =~ m/^[[:print:]]+$/
@@ -86,7 +86,7 @@ ajax '/ajax/content/admin/pseudodevice/update' => sub {
 };
 
 ajax '/ajax/content/admin/pseudodevice' => sub {
-    return unless var('user')->admin;
+    return unless var('user') and var('user')->admin;
 
     my $set = schema('netdisco')->resultset('Device')
       ->search(

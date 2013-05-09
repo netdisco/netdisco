@@ -7,6 +7,23 @@
   // but which cannot use jQuery delegation via .on()
   function inner_view_processing(tab) {
 
+    // reload this table every 10 seconds
+    if (tab == 'jobqueue') {
+        $('#nd_device_name').text('10');
+        setTimeout(function() { $('#nd_device_name').text('9') }, 1000 );
+        setTimeout(function() { $('#nd_device_name').text('8') }, 2000 );
+        setTimeout(function() { $('#nd_device_name').text('7') }, 3000 );
+        setTimeout(function() { $('#nd_device_name').text('6') }, 4000 );
+        setTimeout(function() { $('#nd_device_name').text('5') }, 5000 );
+        setTimeout(function() { $('#nd_device_name').text('4') }, 6000 );
+        setTimeout(function() { $('#nd_device_name').text('3') }, 7000 );
+        setTimeout(function() { $('#nd_device_name').text('2') }, 8000 );
+        setTimeout(function() { $('#nd_device_name').text('1') }, 9000 );
+        setTimeout(function() {
+          $('#' + tab + '_form').trigger('submit');
+        }, 10000);
+    }
+
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
       source: '/ajax/data/deviceip/typeahead'

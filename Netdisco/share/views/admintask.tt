@@ -28,6 +28,9 @@
     <ul id="search_results" class="nav nav-tabs">
       <li class="active"><a id="[% task.tag %]_link" class="nd_single_tab"
         href="#[% task.tag %]_pane">[% task.label %]</a></li>
+      [% IF task.tag == 'jobqueue' %]
+      <span id="nd_device_name"></span>
+      [% END %]
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="[% task.tag %]_pane"></div>

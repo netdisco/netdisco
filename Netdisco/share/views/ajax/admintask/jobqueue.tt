@@ -1,0 +1,47 @@
+<table class="table table-bordered table-condensed table-striped">
+  <thead>
+    <tr>
+      <th class="center_cell">Entered</th>
+      <th class="center_cell">Status</th>
+      <th class="center_cell">Action</th>
+      <th class="center_cell">Device</th>
+      <th class="center_cell">Port</th>
+      <th class="center_cell">Param</th>
+      <th class="center_cell">User</th>
+      <th class="center_cell">Started</th>
+      <th class="center_cell">Finished</th>
+      <th class="center_cell">Action</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr
+      [% ' class="success"' IF row.status == 'done' %]
+      [% ' class="error"'   IF row.status == 'error' %]
+      [% ' class="info"'    IF row.status.search('^queued-') %]
+    >
+      <td class="center_cell">[% row.entered_stamp | html_entity %]</td>
+      <td class="center_cell">[% row.action.ucfirst | html_entity %]</td>
+      [% IF row.status.search('^queued-') %]
+      <td class="center_cell">Running on &quot;[% row.status.remove('^queued-') | html_entity %]&quot;</td>
+      [% ELSE %]
+      <td class="center_cell">[% row.status.ucfirst | html_entity %]</td>
+      [% END %]
+      <td class="center_cell"><a class="nd_linkcell"
+        href="[% device_ports %]&q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
+      <td class="center_cell">[% row.port | html_entity %]</td>
+      <td class="center_cell">[% row.subaction | html_entity %]</td>
+      <td class="center_cell">[% row.username | html_entity %]</td>
+      <td class="center_cell">[% row.started_stamp | html_entity %]</td>
+      <td class="center_cell">[% row.finished_stamp | html_entity %]</td>
+      <td class="center_cell">
+      <form name="del" class="nd_inline_form">
+        <input name="job" type="hidden" value="[% row.job | html_entity %]">
+        <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </form>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

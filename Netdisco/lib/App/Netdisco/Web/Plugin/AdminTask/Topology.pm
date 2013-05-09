@@ -13,7 +13,7 @@ register_admin_task({
 });
 
 sub _sanity_ok {
-    return 0 unless var('user')->admin;
+    return 0 unless var('user') and var('user')->admin;
 
     my $dev1 = NetAddr::IP::Lite->new(param('dev1'));
     return 0 unless ($dev1 and $dev1->addr ne '0.0.0.0');
@@ -54,7 +54,7 @@ ajax '/ajax/content/admin/topology/del' => sub {
 };
 
 ajax '/ajax/content/admin/topology' => sub {
-    return unless var('user')->admin;
+    return unless var('user') and var('user')->admin;
 
     my $set = schema('netdisco')->resultset('Topology')
       ->search({},{order_by => [qw/dev1 dev2 port1/]});
