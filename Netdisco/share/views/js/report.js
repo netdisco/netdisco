@@ -8,4 +8,8 @@
 
   // on load, check initial Device Search Options form state,
   // and on each change to the form fields
-  $(document).ready(function() { });
+  $(document).ready(function() {
+    var tab = '[% report.tag %]'
+    var target = '#' + tab + '_pane';
+  });
+
