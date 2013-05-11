@@ -2,7 +2,7 @@
   [% IF models.count %]
   <div class="row">
     <div class="span6">
-      <h3 class="nd_inv_tbl_head">By Platform</h3>
+      <h3 class="nd_inventory-table-head">By Platform</h3>
       <table class="table table-condensed">
         <thead>
           <tr>
@@ -32,7 +32,7 @@
       </table>
     </div>
     <div class="span6">
-      <h3 class="nd_inv_tbl_head">By Software Release</h3>
+      <h3 class="nd_inventory-table-head">By Software Release</h3>
       <table class="table table-condensed">
         <thead>
           <tr>

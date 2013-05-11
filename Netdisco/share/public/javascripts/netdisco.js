@@ -9,8 +9,8 @@ function do_search (event, tab) {
 
   // page title
   var pgtitle = 'Netdisco';
-  if ($('#nd_device_name').text().length) {
-    var pgtitle = $('#nd_device_name').text() +' - '+ $('#'+ tab + '_link').text();
+  if ($('#nd_device-name').text().length) {
+    var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ tab + '_link').text();
   }
 
   // each sidebar search form has a hidden copy of the main navbar search
@@ -26,16 +26,16 @@ function do_search (event, tab) {
   // hide or show sidebars depending on previous state,
   // and whether the sidebar contains any content (detected by TT)
   if (has_sidebar[tab] == 0) {
-    $('.sidebar, #sidebar_toggle_img_out').hide();
+    $('.nd_sidebar, #nd_sidebar-toggle-img-out').hide();
     $('.content').css('margin-right', '10px');
   }
   else {
     if (sidebar_hidden) {
-      $('#sidebar_toggle_img_out').show();
+      $('#nd_sidebar-toggle-img-out').show();
     }
     else {
       $('.content').css('margin-right', '215px');
-      $('.sidebar').show();
+      $('.nd_sidebar').show();
     }
   }
 
@@ -104,8 +104,8 @@ function update_content(from, to) {
 
   // page title
   var pgtitle = 'Netdisco';
-  if ($('#nd_device_name').text().length) {
-    var pgtitle = $('#nd_device_name').text() +' - '+ $('#'+ to + '_link').text();
+  if ($('#nd_device-name').text().length) {
+    var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ to + '_link').text();
   }
 
   if (window.History && window.History.enabled && is_from_state_event == 0) {
@@ -144,7 +144,7 @@ function device_form_state(e) {
       $('#nq').css('text-decoration', 'line-through');
 
       if (e.attr('type') == 'text') {
-        $('.field_copy_icon').hide();
+        $('.nd_field-copy-icon').hide();
       }
     }
 
@@ -160,15 +160,15 @@ function device_form_state(e) {
                            function(n,i) {return($(n).val() != "")}).length;
     if (num_empty === 3) {
       $('#nq').css('text-decoration', 'none');
-      $('.field_copy_icon').show();
+      $('.nd_field-copy-icon').show();
     }
   }
 }
 
 $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
-  $('.field_copy_icon').hide();
-  $('.field_clear_icon').hide();
+  $('.nd_field-copy-icon').hide();
+  $('.nd_field-clear-icon').hide();
 
   // activate typeahead on the main search box, for device names only
   $('#nq').typeahead({
@@ -197,30 +197,30 @@ $(document).ready(function() {
   $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
 
   // sidebar toggle - pinning
-  $('.sidebar_pin').click(function() {
-    $('.sidebar').toggleClass('sidebar_pinned');
-    $('.sidebar_pin').toggleClass('sidebar_pin_clicked');
+  $('.nd_sidebar-pin').click(function() {
+    $('.nd_sidebar').toggleClass('nd_sidebar-pinned');
+    $('.nd_sidebar-pin').toggleClass('nd_sidebar-pin-clicked');
     // update tooltip note for current state
-    if ($('.sidebar_pin').hasClass('sidebar_pin_clicked')) {
-      $('.sidebar_pin').first().data('tooltip').options.title = 'Unpin Sidebar';
+    if ($('.nd_sidebar-pin').hasClass('nd_sidebar-pin-clicked')) {
+      $('.nd_sidebar-pin').first().data('tooltip').options.title = 'Unpin Sidebar';
     }
     else {
-      $('.sidebar_pin').first().data('tooltip').options.title = 'Pin Sidebar';
+      $('.nd_sidebar-pin').first().data('tooltip').options.title = 'Pin Sidebar';
     }
   });
 
   // sidebar toggle - trigger in/out on image click()
-  $('#sidebar_toggle_img_in').click(function() {
-    $('.sidebar').toggle(250);
-    $('#sidebar_toggle_img_out').toggle();
+  $('#nd_sidebar-toggle-img-in').click(function() {
+    $('.nd_sidebar').toggle(250);
+    $('#nd_sidebar-toggle-img-out').toggle();
     $('.content').css('margin-right', '10px');
     sidebar_hidden = 1;
   });
-  $('#sidebar_toggle_img_out').click(function() {
-    $('#sidebar_toggle_img_out').toggle();
+  $('#nd_sidebar-toggle-img-out').click(function() {
+    $('#nd_sidebar-toggle-img-out').toggle();
     $('.content').css('margin-right', '215px');
-    $('.sidebar').toggle(250);
-    if (! $('.sidebar').hasClass('sidebar_pinned')) {
+    $('.nd_sidebar').toggle(250);
+    if (! $('.nd_sidebar').hasClass('nd_sidebar-pinned')) {
         $(window).scrollTop(0);
     }
     sidebar_hidden = 0;
@@ -228,7 +228,7 @@ $(document).ready(function() {
 
   // could not get twitter bootstrap tabs to behave, so implemented this
   // but warning! will probably not work for dropdowns in tabs
-  $('#search_results li').delegate('a', 'click', function(event) {
+  $('#nd_search-results li').delegate('a', 'click', function(event) {
     event.preventDefault();
     var from_li = $('.nav-tabs').find('> .active').first();
     var to_li = $(this).parent('li')

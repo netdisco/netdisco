@@ -6,7 +6,7 @@
       [% NEXT IF item.name == 'c_admin' %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
-        <th[% ' class="center_cell"' IF NOT loop.first %]>[% item.label | html_entity %]</th>
+        <th[% ' class="nd_center-cell"' IF NOT loop.first %]>[% item.label | html_entity %]</th>
       [% END %]
     </tr>
   </thead>
@@ -28,37 +28,37 @@
       [% IF params.c_port %]
       [% IF vars.user.port_control AND params.c_admin %]
       [% IF row.up_admin == 'up' %]
-      <td nowrap class="nd_editable_cell" data-action="down"
+      <td nowrap class="nd_editable-cell" data-action="down"
         data-field="c_port" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-down nd_hand_icon"
+        <i class="icon-hand-down nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Disable"></i>
       [% ELSE %]
-      <td nowrap class="nd_editable_cell" data-action="up"
+      <td nowrap class="nd_editable-cell" data-action="up"
         data-field="c_port" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-up nd_hand_icon"
+        <i class="icon-hand-up nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Enable"></i>
       [% END %]
       [% ELSE %]
       <td nowrap>
       [% END %]
-        <a class="nd_linkcell nd_this_port_only" href="[% uri_for('/device',
+        <a class="nd_linkcell nd_this-port-only" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
         [% row.port | html_entity %]
       </a></td>
       [% END %]
 
       [% IF params.c_descr %]
-      <td nowrap class="center_cell">[% row.descr | html_entity %]</td>
+      <td nowrap class="nd_center-cell">[% row.descr | html_entity %]</td>
       [% END %]
 
       [% IF params.c_type %]
-      <td class="center_cell">[% row.type | html_entity %]</td>
+      <td class="nd_center-cell">[% row.type | html_entity %]</td>
       [% END %]
 
       [% IF params.c_duplex %]
-      <td class="center_cell">
+      <td class="nd_center-cell">
         [% IF row.up == 'up' AND row.duplex %]
         [% row.duplex_admin | html_entity %] / [% row.duplex | html_entity %]
         [% END %]
@@ -66,46 +66,46 @@
       [% END %]
 
       [% IF params.c_lastchange %]
-      <td class="center_cell">[% row.lastchange_stamp | html_entity %]</td>
+      <td class="nd_center-cell">[% row.lastchange_stamp | html_entity %]</td>
       [% END %]
 
       [% IF params.c_name %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td nowrap class="center_cell nd_editable_cell" contenteditable="true"
+      <td nowrap class="nd_center-cell nd_editable-cell" contenteditable="true"
           data-field="c_name" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit_icon"></i>
+      <i class="icon-edit nd_edit-icon"></i>
       [% ELSE %]
-      <td nowrap class="center_cell">
+      <td nowrap class="nd_center-cell">
       [% END %]
-      <div class="nd_editable_cell_content">
+      <div class="nd_editable-cell-content">
         [% row.name | html_entity %]
       </div>
       </td>
       [% END %]
 
       [% IF params.c_speed %]
-      <td class="center_cell">[% row.speed | html_entity %]</td>
+      <td class="nd_center-cell">[% row.speed | html_entity %]</td>
       [% END %]
 
       [% IF params.c_mac %]
-      <td class="center_cell">[% row.mac | html_entity %]</td>
+      <td class="nd_center-cell">[% row.mac | html_entity %]</td>
       [% END %]
 
       [% IF params.c_mtu %]
-      <td class="center_cell">[% row.mtu | html_entity %]</td>
+      <td class="nd_center-cell">[% row.mtu | html_entity %]</td>
       [% END %]
 
       [% IF params.c_vlan %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td class="center_cell nd_editable_cell" contenteditable="true"
+      <td class="nd_center-cell nd_editable-cell" contenteditable="true"
         data-field="c_vlan" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit_icon"></i>
-      <div class="nd_editable_cell_content">
+      <i class="icon-edit nd_edit-icon"></i>
+      <div class="nd_editable-cell-content">
         [% IF row.vlan %][% row.vlan | html_entity %][% END %]
       </div>
       </td>
       [% ELSE %]
-      <td class="center_cell">
+      <td class="nd_center-cell">
         <a class="nd_linkcell"
           href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
             [% row.vlan | html_entity %]</a>
@@ -123,11 +123,10 @@
           [% SET output = output _ ', ' IF NOT loop.last %]
         [% END %]
         [% IF row.tagged_vlans_count > 10 %] [%# TODO make this a settable variable %]
-          [% SET output = '<div class="vlan_total">(' _ row.tagged_vlans_count
-            _ ')</div><span class="nd_linkcell nd_collapse_vlans">
-              <i class="cell-arrow-up-down icon-chevron-up icon-large">
-              </i>Show VLANs</span>
-              <div class="nd_collapsing nd_collapse_pre_hidden">' _ output %]
+          [% SET output = '<div class="nd_vlan-total">(' _ row.tagged_vlans_count
+            _ ')</div><span class="nd_linkcell nd_collapse-vlans">
+              <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
+              <div class="nd_collapsing nd_collapse-pre-hidden">' _ output %]
           [% SET output = output _ '</div>' %]
         [% END %]
         [% output %]
@@ -143,12 +142,12 @@
                 data-field="c_power" data-for-device="[% device | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power_icon nd_power_on"
+                <i class="icon-off nd_power-icon nd_power-on"
                   rel="tooltip" data-placement="top" data-offset="3"
                   data-animation="" data-title="Click to Disable"></i>
             [% ELSE %]
               <td nowrap>
-                <i class="icon-off nd_power_on"></i>
+                <i class="icon-off nd_power-on"></i>
             [% END %]
                 <span>
                 [% IF row.power.power > 0 %]
@@ -163,7 +162,7 @@
                 data-field="c_power" data-for-device="[% device | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power_icon"
+                <i class="icon-off nd_power-icon"
                   rel="tooltip" data-placement="top" data-offset="3"
                   data-animation="" data-title="Click to Enable"></i>
             [% ELSE %]
@@ -216,11 +215,11 @@
       [% END %]
 
       [% IF params.c_stp %]
-      <td class="center_cell">[% row.stp | html_entity %]</td>
+      <td class="nd_center-cell">[% row.stp | html_entity %]</td>
       [% END %]
 
       [% IF params.c_up %]
-      <td class="center_cell">
+      <td class="nd_center-cell">
         [% row.up_admin | html_entity %] / [% row.up | html_entity %]
       </td>
       [% END %]

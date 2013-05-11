@@ -22,7 +22,7 @@
     form_inputs.change(function() {device_form_state($(this))});
 
     // handler for copy icon in search option
-    $('.field_copy_icon').click(function() {
+    $('.nd_field-copy-icon').click(function() {
       var name = $(this).data('btn-for');
       var input = $('#device_form [name=' + name + ']');
       input.val( $('#nq').val() );
@@ -30,7 +30,7 @@
     });
 
     // handler for bin icon in search option
-    $('.field_clear_icon').click(function() {
+    $('.nd_field-clear-icon').click(function() {
       var name = $(this).data('btn-for');
       var input = $('#device_form [name=' + name + ']');
       input.val('');

@@ -1,16 +1,16 @@
-<i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
+<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
-  <div class="sidebar sidebar_pinned">
+  <div class="nd_sidebar nd_sidebar-pinned">
     <div class="well">
-      <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
+      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
-      <i class="sidebar_pin icon-pushpin sidebar_pin_clicked"
+      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
 
       <div class="tab-content">
         <div id="[% task.tag %]_search" class="tab-pane active">
-          <form id="[% task.tag %]_form" class="nd_sidesearchform form-stacked"
+          <form id="[% task.tag %]_form" class="nd_sidebar-form form-stacked"
               method="get" action="[% uri_for('/admin') %]">
             [% TRY %]
             [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
@@ -25,11 +25,11 @@
   </div>
 
   <div class="content">
-    <ul id="search_results" class="nav nav-tabs">
-      <li class="active"><a id="[% task.tag %]_link" class="nd_single_tab"
+    <ul id="nd_search-results" class="nav nav-tabs">
+      <li class="active"><a id="[% task.tag %]_link" class="nd_single-tab"
         href="#[% task.tag %]_pane">[% task.label %]</a></li>
       [% IF task.tag == 'jobqueue' %]
-      <span id="nd_device_name"></span>
+      <span id="nd_device-name"></span>
       [% END %]
     </ul>
     <div class="tab-content">

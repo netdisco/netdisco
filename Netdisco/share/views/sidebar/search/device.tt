@@ -1,48 +1,48 @@
 
-            <p class="nd_sidebar_title"><em>Device Search Options</em></p>
+            <p class="nd_sidebar-title"><em>Device Search Options</em></p>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <i data-btn-for="dns" class="field_copy_icon icon-copy icon-large"></i>
+              <i data-btn-for="dns" class="nd_field-copy-icon icon-copy icon-large"></i>
               <i id="dns_clear_btn" data-btn-for="dns"
-                class="field_clear_icon icon-trash icon-large"></i>
-              <input class="nd_side_input" placeholder="DNS"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="DNS"
                 type="text" name="dns" value="[% params.dns | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="DNS"/>
             </div>
             <div class="clearfix">
-              <i data-btn-for="ip" class="field_copy_icon icon-copy icon-large"></i>
+              <i data-btn-for="ip" class="nd_field-copy-icon icon-copy icon-large"></i>
               <i id="ip_clear_btn" data-btn-for="ip"
-                class="field_clear_icon icon-trash icon-large"></i>
-              <input class="nd_side_input" placeholder="IP Address"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="IP Address"
                 type="text" name="ip" value="[% params.ip | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="IP Address"/>
             </div>
             <div class="clearfix">
-              <i data-btn-for="name" class="field_copy_icon icon-copy icon-large"></i>
+              <i data-btn-for="name" class="nd_field-copy-icon icon-copy icon-large"></i>
               <i id="name_clear_btn" data-btn-for="name"
-                class="field_clear_icon icon-trash icon-large"></i>
-              <input class="nd_side_input" placeholder="System Name"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="System Name"
                 type="text" name="name" value="[% params.name | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="System Name"/>
             </div>
             <div class="clearfix">
-              <i data-btn-for="location" class="field_copy_icon icon-copy icon-large"></i>
+              <i data-btn-for="location" class="nd_field-copy-icon icon-copy icon-large"></i>
               <i id="location_clear_btn" data-btn-for="location"
-                class="field_clear_icon icon-trash icon-large"></i>
-              <input class="nd_side_input" placeholder="Location"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="Location"
                 type="text" name="location" value="[% params.location | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Location"/>
             </div>
             <div class="clearfix">
-              <i data-btn-for="description" class="field_copy_icon icon-copy icon-large"></i>
+              <i data-btn-for="description" class="nd_field-copy-icon icon-copy icon-large"></i>
               <i id="description_clear_btn" data-btn-for="description"
-                class="field_clear_icon icon-trash icon-large"></i>
-              <input class="nd_side_input" placeholder="Description"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="Description"
                 type="text" name="description" value="[% params.description | html_entity %]"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Description"/>
             </div>
             <div class="clearfix">
-              <select class="nd_side_select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
+              <select class="nd_side-select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
                 multiple="on" name="model"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Model"/>
                 [% FOREACH opt IN model_list %]
@@ -51,7 +51,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side_select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
+              <select class="nd_side-select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
                 multiple="on" name="os_ver"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release"/>
                 [% FOREACH opt IN os_ver_list %]
@@ -60,7 +60,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side_select" size="[% vendor_list.size > 5 ? 5 : vendor_list.size %]"
+              <select class="nd_side-select" size="[% vendor_list.size > 5 ? 5 : vendor_list.size %]"
                 multiple="on" name="vendor"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor"/>
                 [% FOREACH opt IN vendor_list %]
