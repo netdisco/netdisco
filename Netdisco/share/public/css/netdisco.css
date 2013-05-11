@@ -87,15 +87,18 @@ body {
 .nd_editable-cell > .nd_editable-cell-content {
   margin-left: 18px;
 }
+.table .nd_nudge-for-icon {
+  padding-left: 25px;
+}
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
-td {
+.table td {
   vertical-align: baseline;
 }
 
-.nd_center-cell {
+.table .nd_center-cell {
   text-align: center;
 }
 
@@ -418,7 +421,7 @@ form .clearfix.success input {
 #nd_legend i {
   width: 9px;
 }
-.table-bordered i {
+.table i {
   width: 9px;
 }
 

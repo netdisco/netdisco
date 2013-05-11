@@ -1,4 +1,4 @@
-<table class="table-bordered table-condensed table-striped">
+<table class="table table-bordered table-striped">
   <thead>
     <tr>
       <th></th>
@@ -6,7 +6,10 @@
       [% NEXT IF item.name == 'c_admin' %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
-        <th[% ' class="nd_center-cell"' IF NOT loop.first %]>[% item.label | html_entity %]</th>
+        <th[% ' class="nd_nudge-for-icon"' IF
+          (vars.user.port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]>
+          [% item.label | html_entity %]
+        </th>
       [% END %]
     </tr>
   </thead>
@@ -50,32 +53,32 @@
       [% END %]
 
       [% IF params.c_descr %]
-      <td nowrap class="nd_center-cell">[% row.descr | html_entity %]</td>
+      <td nowrap>[% row.descr | html_entity %]</td>
       [% END %]
 
       [% IF params.c_type %]
-      <td class="nd_center-cell">[% row.type | html_entity %]</td>
+      <td>[% row.type | html_entity %]</td>
       [% END %]
 
       [% IF params.c_duplex %]
-      <td class="nd_center-cell">
+      <td>
         [% IF row.up == 'up' AND row.duplex %]
-        [% row.duplex_admin | html_entity %] / [% row.duplex | html_entity %]
+        [% row.duplex_admin.ucfirst | html_entity %] / [% row.duplex.ucfirst | html_entity %]
         [% END %]
       </td>
       [% END %]
 
       [% IF params.c_lastchange %]
-      <td class="nd_center-cell">[% row.lastchange_stamp | html_entity %]</td>
+      <td>[% row.lastchange_stamp | html_entity %]</td>
       [% END %]
 
       [% IF params.c_name %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td nowrap class="nd_center-cell nd_editable-cell" contenteditable="true"
+      <td nowrap class="nd_editable-cell" contenteditable="true"
           data-field="c_name" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       [% ELSE %]
-      <td nowrap class="nd_center-cell">
+      <td nowrap>
       [% END %]
       <div class="nd_editable-cell-content">
         [% row.name | html_entity %]
@@ -84,20 +87,20 @@
       [% END %]
 
       [% IF params.c_speed %]
-      <td class="nd_center-cell">[% row.speed | html_entity %]</td>
+      <td>[% row.speed | html_entity %]</td>
       [% END %]
 
       [% IF params.c_mac %]
-      <td class="nd_center-cell">[% row.mac | html_entity %]</td>
+      <td>[% row.mac | html_entity %]</td>
       [% END %]
 
       [% IF params.c_mtu %]
-      <td class="nd_center-cell">[% row.mtu | html_entity %]</td>
+      <td>[% row.mtu | html_entity %]</td>
       [% END %]
 
       [% IF params.c_vlan %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td class="nd_center-cell nd_editable-cell" contenteditable="true"
+      <td class="nd_editable-cell" contenteditable="true"
         data-field="c_vlan" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       <div class="nd_editable-cell-content">
@@ -105,7 +108,7 @@
       </div>
       </td>
       [% ELSE %]
-      <td class="nd_center-cell">
+      <td>
         <a class="nd_linkcell"
           href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
             [% row.vlan | html_entity %]</a>
@@ -215,12 +218,12 @@
       [% END %]
 
       [% IF params.c_stp %]
-      <td class="nd_center-cell">[% row.stp | html_entity %]</td>
+      <td>[% row.stp | html_entity %]</td>
       [% END %]
 
       [% IF params.c_up %]
-      <td class="nd_center-cell">
-        [% row.up_admin | html_entity %] / [% row.up | html_entity %]
+      <td>
+        [% row.up_admin.ucfirst | html_entity %] / [% row.up.ucfirst | html_entity %]
       </td>
       [% END %]
     </tr>

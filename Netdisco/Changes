@@ -25,6 +25,7 @@
   * Partial Name in Port search now working
   * Add unique constraints to topology table
   * Handle whitespace ahead of OUI data
+  * Wasn't using Bootstrap table class properly
 
 2.007000_001 - 2013-03-17
 
