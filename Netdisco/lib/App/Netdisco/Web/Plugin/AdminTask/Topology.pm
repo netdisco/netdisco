@@ -27,7 +27,7 @@ sub _sanity_ok {
     return 1;
 }
 
-ajax '/ajax/content/admin/topology/add' => sub {
+ajax '/ajax/control/admin/topology/add' => sub {
     return unless _sanity_ok();
 
     my $device = schema('netdisco')->resultset('Topology')
@@ -39,7 +39,7 @@ ajax '/ajax/content/admin/topology/add' => sub {
       });
 };
 
-ajax '/ajax/content/admin/topology/del' => sub {
+ajax '/ajax/control/admin/topology/del' => sub {
     return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {

@@ -2,6 +2,9 @@
   // ajax content is loaded
   var path = 'admin';
 
+  // keep track of timers so we can kill them
+  var nd_timers = new Array();
+
   // this is called by do_search to support local code
   // which might need to act on the newly inserted content
   // but which cannot use jQuery delegation via .on()
@@ -10,18 +13,23 @@
     // reload this table every 10 seconds
     if (tab == 'jobqueue') {
         $('#nd_device-name').text('10');
-        setTimeout(function() { $('#nd_device-name').text('9') }, 1000 );
-        setTimeout(function() { $('#nd_device-name').text('8') }, 2000 );
-        setTimeout(function() { $('#nd_device-name').text('7') }, 3000 );
-        setTimeout(function() { $('#nd_device-name').text('6') }, 4000 );
-        setTimeout(function() { $('#nd_device-name').text('5') }, 5000 );
-        setTimeout(function() { $('#nd_device-name').text('4') }, 6000 );
-        setTimeout(function() { $('#nd_device-name').text('3') }, 7000 );
-        setTimeout(function() { $('#nd_device-name').text('2') }, 8000 );
-        setTimeout(function() { $('#nd_device-name').text('1') }, 9000 );
-        setTimeout(function() {
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('9') }, 1000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('8') }, 2000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('7') }, 3000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('6') }, 4000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('5') }, 5000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('4') }, 6000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('3') }, 7000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('2') }, 8000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('1') }, 9000 ));
+        nd_timers.push(setTimeout(function() {
+          // clear any running timers
+          for (var i = 0; i < nd_timers.length; i++) {
+              clearTimeout(nd_timers[i]);
+          }
+          // reload the tab content
           $('#' + tab + '_form').trigger('submit');
-        }, 10000);
+        }, 10000));
     }
 
     // activate typeahead on the topo boxes
@@ -79,16 +87,21 @@
       // stop form from submitting normally
       event.preventDefault();
 
+      // clear any running timers
+      for (var i = 0; i < nd_timers.length; i++) {
+          clearTimeout(nd_timers[i]);
+      }
+
       // submit the query and put results into the tab pane
       $.ajax({
         type: 'POST'
         ,async: true
         ,dataType: 'html'
-        ,url: uri_base + '/ajax/content/admin/' + tab + '/' + $(this).attr('name')
+        ,url: uri_base + '/ajax/control/admin/' + tab + '/' + $(this).attr('name')
         ,data: $(this).serializeArray()
         ,beforeSend: function() {
           $(target).html(
-            '<div class="span2 alert">Waiting for results...</div>'
+            '<div class="span2 alert">Request submitted...</div>'
           );
         }
         ,success: function(content) {
@@ -97,7 +110,7 @@
         ,error: function() {
           $(target).html(
             '<div class="span5 alert alert-error">' +
-            'Update failed! Please contact your site administrator.</div>'
+            'Request failed! Please contact your site administrator.</div>'
           );
         }
       });

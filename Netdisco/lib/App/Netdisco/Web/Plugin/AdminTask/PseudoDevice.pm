@@ -28,7 +28,7 @@ sub _sanity_ok {
     return 1;
 }
 
-ajax '/ajax/content/admin/pseudodevice/add' => sub {
+ajax '/ajax/control/admin/pseudodevice/add' => sub {
     return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -48,7 +48,7 @@ ajax '/ajax/content/admin/pseudodevice/add' => sub {
     });
 };
 
-ajax '/ajax/content/admin/pseudodevice/del' => sub {
+ajax '/ajax/control/admin/pseudodevice/del' => sub {
     return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -60,7 +60,7 @@ ajax '/ajax/content/admin/pseudodevice/del' => sub {
     });
 };
 
-ajax '/ajax/content/admin/pseudodevice/update' => sub {
+ajax '/ajax/control/admin/pseudodevice/update' => sub {
     return unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {

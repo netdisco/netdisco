@@ -1,4 +1,4 @@
-<table class="table table-bordered table-condensed">
+<table class="table table-bordered table-condensed table-hover">
   <thead>
     <tr>
       <th class="nd_center-cell">Entered</th>

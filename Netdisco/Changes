@@ -4,10 +4,13 @@
 
   * Finally we have a discover/refresh daemon job :)
   * Also... a Scheduler which removes need for crontab installation
-  * The netdisco-do script can run any one-off job
+  * The netdisco-do script can queue any one-off job
   * Select MAC Address display format on Node and Device Port search
   * Helper script to import the Netdisco 1.x Topology file to the database
   * Support for pseudo devices (useful for dummy device links)
+  * Manual Topology editing via the web
+  * Job Queue view and delete page
+  * Empty device table prompts initial discover on homepage
 
   [ENHANCEMENTS]
 
