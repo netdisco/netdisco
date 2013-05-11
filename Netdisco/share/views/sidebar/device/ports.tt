@@ -28,17 +28,17 @@
                     <span class="label label-info">B</span>&nbsp; Blocking
                   </li>
                   <li>
-                    <i class="icon-phone icon-large"></i>&nbsp; IP Phone
-                  </li>
-                  <li>
                     <span class="label label-important">N</span>&nbsp; Neighbor Inacessible
                   </li>
                   <li>
                     <span class="label label-warning">A</span>&nbsp; Archived Data
                   </li>
+                  <li>
+                    <i class="icon-phone"></i>&nbsp; IP Phone
+                  </li>
                   [% IF vars.user.port_control %]
                   <li>
-                    <span class="label"><i class="icon-refresh"></i></span>&nbsp; Click "Update View"
+                    <i class="icon-refresh"></i>&nbsp; Click "Update View"
                   </li>
                   [% END %]
                 </ul>
