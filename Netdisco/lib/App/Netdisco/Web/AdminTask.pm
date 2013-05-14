@@ -1,7 +1,7 @@
 package App::Netdisco::Web::AdminTask;
 
 use Dancer ':syntax';
-use Dancer::Plugin::AJAX;
+use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 sub add_discover_job {

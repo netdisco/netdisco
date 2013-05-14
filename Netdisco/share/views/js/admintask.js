@@ -78,7 +78,9 @@
     $(target).on('focus', '.nd_topo_port', function(e) {
       $(this).autocomplete('search') });
     $(target).on('click', '.nd_topo_port_caret', function(e) {
-      $(this).siblings('.nd_topo_port').autocomplete('search') });
+      $(this).siblings('.nd_topo_port').val('');
+      $(this).siblings('.nd_topo_port').autocomplete('search');
+    });
 
 
     // activity for admin task tables
