@@ -44,10 +44,10 @@
     <tr>
       <form name="del">
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% device_ports %]&q=[% row.dev1 | uri %]">[% row.dev1 | html_entity %]</a></td>
+        href="[% uri_for('/device') %]?q=[% row.dev1 | uri %]">[% row.dev1 | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port1 | html_entity %]</td>
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% device_ports %]&q=[% row.dev2 | uri %]">[% row.dev2 | html_entity %]</a></td>
+        href="[% uri_for('/device') %]?q=[% row.dev2 | uri %]">[% row.dev2 | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port2 | html_entity %]</td>
       <td class="nd_center-cell">
         <input name="dev1" type="hidden" value="[% row.dev1 | html_entity %]">

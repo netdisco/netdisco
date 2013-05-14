@@ -22,7 +22,7 @@
     <tr>
       <form name="update">
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% device_ports %]&q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
+        href="[% uri_for('/device') %]?q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.ip | html_entity %]</td>
       <td class="nd_center-cell"><input name="ports" type="number" value="[% row.port_count | html_entity %]"></td>
       <td class="nd_center-cell">

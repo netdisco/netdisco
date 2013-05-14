@@ -107,6 +107,11 @@ td div.input-append {
   margin-bottom: 0px;
 }
 
+/* admin buttons in the device details view */
+td > form.nd_inline-form {
+  margin-bottom: 2px;
+}
+
 /* fix layout of form fields inside the (pseudo devices) table */
 .nd_center-cell input {
   margin-bottom: 0px;

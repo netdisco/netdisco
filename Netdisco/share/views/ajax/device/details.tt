@@ -93,5 +93,16 @@
       <td>VTP Domain</td>
       <td>[% d.vtp_domain | html_entity %]</td>
     </tr>
+    [% IF vars.user.admin %]
+    <tr>
+      <td>Admin Tasks</td>
+      <td>
+        <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discover') %]">
+          <input type="hidden" value="[% d.ip %]" name="device" type="text"/>
+          <button type="submit" class="btn btn-info btn-small">Rediscover</button>
+        </form>
+      </td>
+    </tr>
+    [% END %]
   </tbody>
 </table>
