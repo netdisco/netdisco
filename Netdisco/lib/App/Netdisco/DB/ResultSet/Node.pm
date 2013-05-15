@@ -4,6 +4,10 @@ use base 'DBIx::Class::ResultSet';
 use strict;
 use warnings FATAL => 'all';
 
+__PACKAGE__->load_components(qw/
+  +App::Netdisco::DB::ExplicitLocking
+/);
+
 =head1 search_by_mac( \%cond, \%attrs? )
 
  my $set = $rs->search_by_mac({mac => '00:11:22:33:44:55', active => 1});

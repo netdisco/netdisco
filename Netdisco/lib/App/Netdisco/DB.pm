@@ -21,6 +21,7 @@ __PACKAGE__->load_components(qw/
   Schema::Versioned
   +App::Netdisco::DB::ExplicitLocking
 /);
+
 __PACKAGE__->upgrade_directory($schema_versions_dir);
 
 1;
