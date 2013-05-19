@@ -142,13 +142,13 @@ sub _check_and_store {
 
   debug sprintf ' [%s] arpnip - IP [%s] : mac [%s]',
     $device->ip, $ip, $node;
-  _add_arp($node, $ip);
+  _store_arp($node, $ip);
 
   return 1;
 }
 
 # add arp cache entry to the node_ip table
-sub _add_arp {
+sub _store_arp {
   my ($mac, $ip) = @_;
 
   schema('netdisco')->resultset('NodeIp')
