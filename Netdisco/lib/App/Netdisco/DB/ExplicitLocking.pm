@@ -45,7 +45,7 @@ sub txn_do_locked {
   my $table_fmt = join ', ', ('%s' x scalar @$table);
   my $sql = sprintf $sql_fmt, $table_fmt;
 
-  if (length $mode) {
+  if (ref '' eq ref $mode and length $mode) {
       scalar grep {$_ eq $mode} values %lock_modes
         or $schema->throw_exception('bad LOCK_MODE to txn_do_locked()');
   }

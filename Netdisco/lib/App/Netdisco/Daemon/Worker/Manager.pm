@@ -14,7 +14,7 @@ my $fqdn = hostfqdn || 'localhost';
 
 my $role_map = {
   (map {$_ => 'Poller'}
-      qw/refresh discover discovernew discover_neighbors/),
+      qw/refresh discover discovernew discover_neighbors arpnip/),
   (map {$_ => 'Interactive'}
       qw/location contact portcontrol portname vlan power/)
 };

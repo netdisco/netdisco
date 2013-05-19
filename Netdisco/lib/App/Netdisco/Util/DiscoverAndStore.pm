@@ -52,6 +52,7 @@ sub store_device {
 
   my $hostname = hostname_from_ip($device->ip);
   $device->dns($hostname) if length $hostname;
+  my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
 
   # build device aliases suitable for DBIC
   my @aliases;
@@ -60,7 +61,7 @@ sub store_device {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if $ip->within(NetAddr::IP::Lite->new('127.0.0.0/8'));
+      next if $ip->within($localnet);
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};

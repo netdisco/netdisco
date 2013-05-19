@@ -1,4 +1,4 @@
-package App::Netdisco::DB::ResultSet::Subnets;
+package App::Netdisco::DB::ResultSet::Subnet;
 use base 'DBIx::Class::ResultSet';
 
 use strict;
