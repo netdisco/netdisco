@@ -67,7 +67,7 @@ sub discover {
   store_modules($device, $snmp);
   store_neighbors($device, $snmp);
 
-  return job_done("Ended discover for $host");
+  return job_done("Ended discover for ". $host->addr);
 }
 
 # run discover_neighbors on all known devices, and run discover on any
@@ -119,7 +119,7 @@ sub discover_neighbors {
 
   discover_new_neighbors($device, $snmp);
 
-  return job_done("Ended discover_neighbors for $host");
+  return job_done("Ended discover_neighbors for". $host->addr);
 }
 
 1;

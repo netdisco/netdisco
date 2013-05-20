@@ -35,7 +35,7 @@ sub arpnip {
 
   do_arpnip($device, $snmp);
 
-  return job_done("Ended arpnip for $host");
+  return job_done("Ended arpnip for ". $host->addr);
 }
 
 1;

@@ -6,7 +6,9 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
+use Time::HiRes 'gettimeofday';
 use Net::MAC;
+use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -41,134 +43,86 @@ sub do_arpnip {
       return;
   }
 
+  my (@v4, @v6);
   my $port_macs = _get_port_macs($device, $snmp);
 
+  # get v4 arp table
+  push @v4, _get_arps($device, $port_macs, $snmp->at_paddr, $snmp->at_netaddr);
+  # get v6 neighbor cache
+  push @v6, _get_arps($device, $port_macs, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+
+  # get directly connected networks
+  my @subnets = _gather_subnets($device, $snmp);
+  # TODO: IPv6 subnets
+
+  # get names for arp entries we're going to update
+  my @names = _gather_dns(@v4, @v6);
+
+  # would be possible just to use now() on updated records, but by using this
+  # same value for them all, we _can_ if we want add a job at the end to
+  # select and do something with the updated set (don't do that yet, though)
+  my ($seconds, $microseconds) = gettimeofday;
+  my $now = "$seconds.$microseconds";
+
+  # update node_ip with ARP and Neighbor Cache entries
   schema('netdisco')->resultset('NodeIp')->txn_do_locked(
     EXCLUSIVE, sub {
-      my $arp_count = _add_arps($device, $snmp, $port_macs);
+      _store_arp(@$_, $now) for @v4;
       debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
-        $device->ip, $arp_count;
+        $device->ip, scalar @v4;
 
-      my $neigh_count = _add_neighbors($device, $snmp, $port_macs);
+      _store_arp(@$_, $now) for @v6;
       debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
-        $device->ip, $neigh_count;
+        $device->ip, scalar @v6;
 
       $device->update({last_arpnip => \'now()'});
     });
 
-  schema('netdisco')->resultset('Subnet')
-    ->txn_do_locked(EXCLUSIVE, sub { _add_subnets($device, $snmp) });
-  # TODO: IPv6 subnets
-}
-
-# add arp table to DB
-sub _add_arps {
-  my ($device, $snmp, $port_macs) = @_;
-  my $count = 0;
-
-  # Fetch ARP Cache
-  my $at_paddr   = $snmp->at_paddr;
-  my $at_netaddr = $snmp->at_netaddr;
-
-  while (my ($arp, $node) = each %$at_paddr) {
-      my $ip = $at_netaddr->{$arp};
-      next unless defined $ip;
-      $count += _check_and_store($device, $port_macs, $node, $ip);
+  # update subnets with new networks
+  foreach my $cidr (@subnets) {
+      schema('netdisco')->resultset('Subnet')
+        ->update_or_create({net => $cidr, last_discover => \'now()'});
   }
+  debug sprintf ' [%s] arpnip - processed %s Subnet entries',
+    $device->ip, scalar @subnets;
 
-  return $count;
-}
-
-# add v6 neighbor cache to db
-sub _add_neighbors {
-  my ($device, $snmp, $port_macs) = @_;
-  my $count = 0;
-
-  # Fetch v6 Neighbor Cache
-  my $phys_addr = $snmp->ipv6_n2p_mac;
-  my $net_addr  = $snmp->ipv6_n2p_addr;
-
-  while (my ($arp, $node) = each %$phys_addr) {
-      my $ip = $net_addr->{$arp};
-      next unless defined $ip;
-      $count += _check_and_store($device, $port_macs, $node, $ip);
-  }
-
-  return $count;
-}
-
-# checks any arpnip entry for sanity and adds to DB
-sub _check_and_store {
-  my ($device, $port_macs, $node, $ip) = @_;
-  my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
-
-  # incomplete MAC addresses (BayRS frame relay DLCI, etc)
-  if ($mac->get_error) {
-      debug sprintf ' [%s] arpnip - mac [%s] malformed - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-  else {
-      # lower case, hex, colon delimited, 8-bit groups
-      $node = lc $mac->as_IEEE;
-  }
-
-  # broadcast MAC addresses
-  return 0 if $node eq 'ff:ff:ff:ff:ff:ff';
-
-  # CLIP
-  return 0 if $node eq '00:00:00:00:00:01';
-
-  # VRRP
-  if (index($node, '00:00:5e:00:01:') == 0) {
-      debug sprintf ' [%s] arpnip - VRRP mac [%s] - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-
-  # HSRP
-  if (index($node, '00:00:0c:07:ac:') == 0) {
-      debug sprintf ' [%s] arpnip - HSRP mac [%s] - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-
-  # device's own MACs
-  if (exists $port_macs->{$node}) {
-      debug sprintf ' [%s] arpnip - mac [%s] is device port - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-
-  debug sprintf ' [%s] arpnip - IP [%s] : mac [%s]',
-    $device->ip, $ip, $node;
-  _store_arp($node, $ip);
-
-  return 1;
-}
-
-# add arp cache entry to the node_ip table
-sub _store_arp {
-  my ($mac, $ip) = @_;
-
-  schema('netdisco')->resultset('NodeIp')
-    ->search({ip => $ip, -bool => 'active'})
-    ->update({active => \'false'});
-
-  schema('netdisco')->resultset('NodeIp')
-    ->search({mac => $mac, ip => $ip})
-    ->update_or_create({
-      mac => $mac,
-      ip => $ip,
-      dns => hostname_from_ip($ip),
-      active => \'true',
-      time_last => \'now()',
+  # do this in an exclusive lock because during a network arpnip the little
+  # updates would be rejected by the other exclusive locks. this will wait.
+  schema('netdisco')->resultset('NodeIp')->txn_do_locked(
+    EXCLUSIVE, sub {
+      foreach my $entry (@names) {
+          my ($mac, $ip, $name) = @$entry;
+          # just in case the node_ip entry disappeared
+          try {
+              schema('netdisco')->resultset('NodeIp')->find({
+                  mac => $mac,
+                  ip => $ip,
+                })->update({dns => $name});
+          };
+      }
+      debug sprintf ' [%s] arpnip - updated %s DNS entries',
+        $device->ip, scalar @names;
     });
 }
 
-# gathers and stores device subnets
-sub _add_subnets {
+# gather dns records for updated node_ip entries
+sub _gather_dns {
+  my @arps = @_;
+  my @names = ();
+
+  foreach my $arp (@arps) {
+      my $name = hostname_from_ip($arp->[1]);
+      next unless length $name;
+      push @names, [@$arp, $name];
+  }
+
+  return @names;
+}
+
+# gathers device subnets
+sub _gather_subnets {
   my ($device, $snmp) = @_;
+  my @subnets = ();
 
   my $ip_netmask = $snmp->ip_netmask;
   my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
@@ -185,11 +139,91 @@ sub _add_subnets {
       next if $netmask eq '255.255.255.255' or $netmask eq '0.0.0.0';
 
       my $cidr = NetAddr::IP::Lite->new($addr, $netmask)->network->cidr;
-      schema('netdisco')->resultset('Subnet')
-        ->update_or_create({net => $cidr, last_discover => \'now()'});
 
       debug sprintf ' [%s] arpnip - found subnet %s', $device->ip, $cidr;
+      push @subnets, $cidr;
   }
+
+  return @subnets;
+}
+
+# add arp cache entry to the node_ip table
+sub _store_arp {
+  my ($mac, $ip, $now) = @_;
+
+  schema('netdisco')->resultset('NodeIp')
+    ->search({ip => $ip, -bool => 'active'})
+    ->update({active => \'false'});
+
+  schema('netdisco')->resultset('NodeIp')
+    ->search({mac => $mac, ip => $ip})
+    ->update_or_create({
+      mac => $mac,
+      ip => $ip,
+      active => \'true',
+      time_last => \"to_timestamp($now)",
+    });
+}
+
+# get an arp table (v4 or v6)
+sub _get_arps {
+  my ($device, $port_macs, $paddr, $netaddr) = @_;
+  my @arps = ();
+
+  while (my ($arp, $node) = each %$paddr) {
+      my $ip = $netaddr->{$arp};
+      next unless defined $ip;
+      my $arp = _check_arp($device, $port_macs, $node, $ip);
+      push @arps, $arp if ref [] eq ref $arp;
+  }
+
+  return @arps;
+}
+
+# checks any arpnip entry for sanity and adds to DB
+sub _check_arp {
+  my ($device, $port_macs, $node, $ip) = @_;
+  my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+
+  # incomplete MAC addresses (BayRS frame relay DLCI, etc)
+  if ($mac->get_error) {
+      debug sprintf ' [%s] arpnip - mac [%s] malformed - skipping',
+        $device->ip, $node;
+      return;
+  }
+  else {
+      # lower case, hex, colon delimited, 8-bit groups
+      $node = lc $mac->as_IEEE;
+  }
+
+  # broadcast MAC addresses
+  return if $node eq 'ff:ff:ff:ff:ff:ff';
+
+  # CLIP
+  return if $node eq '00:00:00:00:00:01';
+
+  # VRRP
+  if (index($node, '00:00:5e:00:01:') == 0) {
+      debug sprintf ' [%s] arpnip - VRRP mac [%s] - skipping',
+        $device->ip, $node;
+      return;
+  }
+
+  # HSRP
+  if (index($node, '00:00:0c:07:ac:') == 0) {
+      debug sprintf ' [%s] arpnip - HSRP mac [%s] - skipping',
+        $device->ip, $node;
+      return;
+  }
+
+  # device's own MACs
+  if (exists $port_macs->{$node}) {
+      debug sprintf ' [%s] arpnip - mac [%s] is device port - skipping',
+        $device->ip, $node;
+      return;
+  }
+
+  return [$node, $ip];
 }
 
 # returns table of MACs used by device's interfaces so that we don't bother to
