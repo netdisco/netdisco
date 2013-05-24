@@ -55,16 +55,13 @@ sub do_arpnip {
   my @subnets = _gather_subnets($device, $snmp);
   # TODO: IPv6 subnets
 
-  # get names for arp entries we're going to update
-  my @names = _gather_dns(@v4, @v6);
-
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we _can_ if we want add a job at the end to
-  # select and do something with the updated set (don't do that yet, though)
-  my ($seconds, $microseconds) = gettimeofday;
-  my $now = "$seconds.$microseconds";
+  # select and do something with the updated set (no reason to yet, though)
+  my $now = join '.', gettimeofday;
 
   # update node_ip with ARP and Neighbor Cache entries
+  # TODO: find out whether FOR UPDATE would be suitable instead of table lock
   schema('netdisco')->resultset('NodeIp')->txn_do_locked(
     EXCLUSIVE, sub {
       _store_arp(@$_, $now) for @v4;
@@ -75,98 +72,24 @@ sub do_arpnip {
       debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
         $device->ip, scalar @v6;
 
-      $device->update({last_arpnip => \'now()'});
+      $device->update({last_arpnip => \"to_timestamp($now)"});
     });
 
   # update subnets with new networks
   foreach my $cidr (@subnets) {
-      try {
-          schema('netdisco')->txn_do(sub {
-            schema('netdisco')->resultset('Subnet')
-              ->update_or_create({net => $cidr, last_discover => \'now()'});
+      schema('netdisco')->txn_do(sub {
+          # update_or_create doesn't seem to lock the row
+          schema('netdisco')->resultset('Subnet')->find(
+            {net => $cidr}, {for => 'update'},
+          );
+          schema('netdisco')->resultset('Subnet')->update_or_create({
+            net => $cidr,
+            last_discover => \"to_timestamp($now)",
           });
-      };
+      });
   }
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
     $device->ip, scalar @subnets;
-
-  # do this in an exclusive lock because during a network arpnip the little
-  # updates would be rejected by the other exclusive locks. this will wait.
-  schema('netdisco')->resultset('NodeIp')->txn_do_locked(
-    EXCLUSIVE, sub {
-      foreach my $entry (@names) {
-          my ($mac, $ip, $name) = @$entry;
-          # just in case the node_ip entry disappeared
-          try {
-              schema('netdisco')->resultset('NodeIp')->find({
-                  mac => $mac,
-                  ip => $ip,
-                })->update({dns => $name});
-          };
-      }
-      debug sprintf ' [%s] arpnip - updated %s DNS entries',
-        $device->ip, scalar @names;
-    });
-}
-
-# gather dns records for updated node_ip entries
-sub _gather_dns {
-  my @arps = @_;
-  my @names = ();
-
-  foreach my $arp (@arps) {
-      my $name = hostname_from_ip($arp->[1]);
-      next unless length $name;
-      push @names, [@$arp, $name];
-  }
-
-  return @names;
-}
-
-# gathers device subnets
-sub _gather_subnets {
-  my ($device, $snmp) = @_;
-  my @subnets = ();
-
-  my $ip_netmask = $snmp->ip_netmask;
-  my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
-
-  foreach my $entry (keys %$ip_netmask) {
-      my $ip = NetAddr::IP::Lite->new($entry);
-      my $addr = $ip->addr;
-
-      next if $addr eq '0.0.0.0';
-      next if $ip->within($localnet);
-      next if setting('ignore_private_nets') and $ip->is_rfc1918;
-
-      my $netmask = $ip_netmask->{$addr};
-      next if $netmask eq '255.255.255.255' or $netmask eq '0.0.0.0';
-
-      my $cidr = NetAddr::IP::Lite->new($addr, $netmask)->network->cidr;
-
-      debug sprintf ' [%s] arpnip - found subnet %s', $device->ip, $cidr;
-      push @subnets, $cidr;
-  }
-
-  return @subnets;
-}
-
-# add arp cache entry to the node_ip table
-sub _store_arp {
-  my ($mac, $ip, $now) = @_;
-
-  schema('netdisco')->resultset('NodeIp')
-    ->search({ip => $ip, -bool => 'active'})
-    ->update({active => \'false'});
-
-  schema('netdisco')->resultset('NodeIp')
-    ->search({mac => $mac, ip => $ip})
-    ->update_or_create({
-      mac => $mac,
-      ip => $ip,
-      active => \'true',
-      time_last => \"to_timestamp($now)",
-    });
 }
 
 # get an arp table (v4 or v6)
@@ -178,7 +101,8 @@ sub _get_arps {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
       my $arp = _check_arp($device, $port_macs, $node, $ip);
-      push @arps, $arp if ref [] eq ref $arp;
+      push @arps, [@$arp, hostname_from_ip($ip)]
+        if ref [] eq ref $arp;
   }
 
   return @arps;
@@ -228,6 +152,53 @@ sub _check_arp {
   }
 
   return [$node, $ip];
+}
+
+# add arp cache entry to the node_ip table
+sub _store_arp {
+  my ($mac, $ip, $name, $now) = @_;
+
+  schema('netdisco')->resultset('NodeIp')
+    ->search({ip => $ip, -bool => 'active'})
+    ->update({active => \'false'});
+
+  schema('netdisco')->resultset('NodeIp')
+    ->search({mac => $mac, ip => $ip})
+    ->update_or_create({
+      mac => $mac,
+      ip => $ip,
+      dns => $name,
+      active => \'true',
+      time_last => \"to_timestamp($now)",
+    });
+}
+
+# gathers device subnets
+sub _gather_subnets {
+  my ($device, $snmp) = @_;
+  my @subnets = ();
+
+  my $ip_netmask = $snmp->ip_netmask;
+  my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
+
+  foreach my $entry (keys %$ip_netmask) {
+      my $ip = NetAddr::IP::Lite->new($entry);
+      my $addr = $ip->addr;
+
+      next if $addr eq '0.0.0.0';
+      next if $ip->within($localnet);
+      next if setting('ignore_private_nets') and $ip->is_rfc1918;
+
+      my $netmask = $ip_netmask->{$addr};
+      next if $netmask eq '255.255.255.255' or $netmask eq '0.0.0.0';
+
+      my $cidr = NetAddr::IP::Lite->new($addr, $netmask)->network->cidr;
+
+      debug sprintf ' [%s] arpnip - found subnet %s', $device->ip, $cidr;
+      push @subnets, $cidr;
+  }
+
+  return @subnets;
 }
 
 # returns table of MACs used by device's interfaces so that we don't bother to
