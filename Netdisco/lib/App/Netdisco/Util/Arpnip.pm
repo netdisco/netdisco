@@ -80,8 +80,12 @@ sub do_arpnip {
 
   # update subnets with new networks
   foreach my $cidr (@subnets) {
-      schema('netdisco')->resultset('Subnet')
-        ->update_or_create({net => $cidr, last_discover => \'now()'});
+      try {
+          schema('netdisco')->txn_do(sub {
+            schema('netdisco')->resultset('Subnet')
+              ->update_or_create({net => $cidr, last_discover => \'now()'});
+          });
+      };
   }
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
     $device->ip, scalar @subnets;
