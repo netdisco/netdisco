@@ -53,6 +53,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "manual_topo",
   { data_type => "bool", is_nullable => 0, default_value => \"false" },
+  "maybe_uplink",
+  { data_type => "bool", is_nullable => 1 },
   "vlan",
   { data_type => "text", is_nullable => 1 },
   "pvid",

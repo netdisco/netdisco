@@ -2,7 +2,7 @@
 
   [NEW FEATURES]
 
-  * Finally we have a discover/refresh daemon job :)
+  * Finally we have a discover/refresh/arpnip/macsuck daemon jobs :)
   * Also... a Scheduler which removes need for crontab installation
   * The netdisco-do script can queue any one-off job
   * Select MAC Address display format on Node and Device Port search

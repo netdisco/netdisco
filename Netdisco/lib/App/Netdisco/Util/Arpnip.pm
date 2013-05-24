@@ -86,7 +86,7 @@ sub do_arpnip {
             last_discover => \"to_timestamp($now)",
           },
           # update_or_create doesn't seem to lock the row
-          { for => 'update'});
+          { for => 'update' });
       });
   }
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',

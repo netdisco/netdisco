@@ -11,6 +11,7 @@ use namespace::clean;
 # add dispatch methods for poller tasks
 with 'App::Netdisco::Daemon::Worker::Poller::Device';
 with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
+with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
 
 sub worker_body {
   my $self = shift;
