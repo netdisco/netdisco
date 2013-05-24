@@ -8,7 +8,6 @@ use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
 use Net::MAC;
-use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -61,7 +60,7 @@ sub do_arpnip {
   my $now = join '.', gettimeofday;
 
   # update node_ip with ARP and Neighbor Cache entries
-  # TODO: find out whether FOR UPDATE would be suitable instead of table lock
+  # TODO: ORDER BY ... FOR UPDATE will allow us to avoid the table lock
   schema('netdisco')->resultset('NodeIp')->txn_do_locked(
     EXCLUSIVE, sub {
       _store_arp(@$_, $now) for @v4;
