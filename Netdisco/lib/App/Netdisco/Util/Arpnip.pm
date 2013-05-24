@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::DB::ExplicitLocking ':modes';
+use App::Netdisco::Util::PortMAC ':all';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
@@ -27,10 +28,12 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 arpnip( $device, $snmp )
+=head2 do_arpnip( $device, $snmp )
 
 Given a Device database object, and a working SNMP connection, connect to a
 device and discover its ARP cache for IPv4 and Neighbor cache for IPv6.
+
+Will also discover subnets in use on the device and update the Subnets table.
 
 =cut
 
@@ -43,7 +46,7 @@ sub do_arpnip {
   }
 
   my (@v4, @v6);
-  my $port_macs = _get_port_macs($device, $snmp);
+  my $port_macs = get_port_macs($device);
 
   # get v4 arp table
   push @v4, _get_arps($device, $port_macs, $snmp->at_paddr, $snmp->at_netaddr);
@@ -77,14 +80,13 @@ sub do_arpnip {
   # update subnets with new networks
   foreach my $cidr (@subnets) {
       schema('netdisco')->txn_do(sub {
-          # update_or_create doesn't seem to lock the row
-          schema('netdisco')->resultset('Subnet')->find(
-            {net => $cidr}, {for => 'update'},
-          );
-          schema('netdisco')->resultset('Subnet')->update_or_create({
+          schema('netdisco')->resultset('Subnet')->update_or_create(
+          {
             net => $cidr,
             last_discover => \"to_timestamp($now)",
-          });
+          },
+          # update_or_create doesn't seem to lock the row
+          { for => 'update'});
       });
   }
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
@@ -198,27 +200,6 @@ sub _gather_subnets {
   }
 
   return @subnets;
-}
-
-# returns table of MACs used by device's interfaces so that we don't bother to
-# macsuck them.
-sub _get_port_macs {
-  my ($device, $snmp) = @_;
-  my $port_macs;
-
-  my $dp_macs = schema('netdisco')->resultset('DevicePort')
-    ->search({ mac => { '!=' => undef} });
-  while (my $r = $dp_macs->next) {
-      $port_macs->{ $r->mac } = $r->ip;
-  }
-
-  my $d_macs = schema('netdisco')->resultset('Device')
-    ->search({ mac => { '!=' => undef} });
-  while (my $r = $d_macs->next) {
-      $port_macs->{ $r->mac } = $r->ip;
-  }
-
-  return $port_macs;
 }
 
 1;

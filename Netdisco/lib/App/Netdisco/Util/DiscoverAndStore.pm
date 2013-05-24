@@ -106,7 +106,7 @@ sub store_device {
     my $gone = $device->device_ips->delete;
     debug sprintf ' [%s] device - removed %s aliases',
       $device->ip, $gone;
-    $device->update_or_insert;
+    $device->update_or_insert({}, {for => 'update'});
     $device->device_ips->populate(\@aliases);
     debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
@@ -253,7 +253,7 @@ sub store_interfaces {
     my $gone = $device->ports->delete;
     debug sprintf ' [%s] interfaces - removed %s interfaces',
       $device->ip, $gone;
-    $device->update_or_insert;
+    $device->update_or_insert({}, {for => 'update'});
     $device->ports->populate(\@interfaces);
     debug sprintf ' [%s] interfaces - added %d new interfaces',
       $device->ip, scalar @interfaces;
