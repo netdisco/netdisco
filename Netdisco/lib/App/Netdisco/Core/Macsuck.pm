@@ -3,7 +3,6 @@ package App::Netdisco::Core::Macsuck;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::DB::ExplicitLocking ':modes';
 use App::Netdisco::Util::PortMAC ':all';
 use Time::HiRes 'gettimeofday';
 
@@ -18,7 +17,7 @@ App::Netdisco::Core::Macsuck
 
 =head1 DESCRIPTION
 
-Helper subroutine to support parts of the Netdisco application.
+Helper subroutines to support parts of the Netdisco application.
 
 There are no default exports, however the C<:all> tag will export all
 subroutines.
@@ -52,7 +51,7 @@ sub do_macsuck {
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we _can_ if we want add a job at the end to
   # select and do something with the updated set (no reason to yet, though)
-  my $now = join '.', gettimeofday;
+  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
   my $total_nodes = 0;
 
   # do this before we start messing with the snmp community string
@@ -109,7 +108,7 @@ sub do_macsuck {
 
   debug sprintf ' [%s] macsuck - %s forwarding table entries',
     $device->ip, $total_nodes;
-  $device->update({last_macsuck => \"to_timestamp($now)"});
+  $device->update({last_macsuck => \$now});
 }
 
 sub _wireless_client_info {
@@ -160,7 +159,7 @@ sub _wireless_client_info {
             sigqual => $cd11_sigqual->{$idx},
             sigstrength => $cd11_sigstrength->{$idx},
             ssid    => ($cd11_ssid->{$idx} || 'unknown'),
-            time_last => \"to_timestamp($now)",
+            time_last => \$now,
           }, { for => 'update' });
       });
   }
@@ -217,8 +216,8 @@ sub _store_node {
       vlan => $vlan,
       active => \'true',
       oui => substr($mac,0,8),
-      time_last => \"to_timestamp($now)",
-      ($old_count ? (time_recent => \"to_timestamp($now)") : ()),
+      time_last => \$now,
+      ($old_count ? (time_recent => \$now) : ()),
     });
   });
 }

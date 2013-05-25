@@ -3,7 +3,6 @@ package App::Netdisco::Core::Arpnip;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::DB::ExplicitLocking ':modes';
 use App::Netdisco::Util::PortMAC ':all';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
@@ -21,7 +20,7 @@ App::Netdisco::Core::Arpnip
 
 =head1 DESCRIPTION
 
-Helper subroutine to support parts of the Netdisco application.
+Helper subroutines to support parts of the Netdisco application.
 
 There are no default exports, however the C<:all> tag will export all
 subroutines.
@@ -60,22 +59,16 @@ sub do_arpnip {
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we _can_ if we want add a job at the end to
   # select and do something with the updated set (no reason to yet, though)
-  my $now = join '.', gettimeofday;
+  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   # update node_ip with ARP and Neighbor Cache entries
-  # TODO: ORDER BY ... FOR UPDATE will allow us to avoid the table lock
-  schema('netdisco')->resultset('NodeIp')->txn_do_locked(
-    EXCLUSIVE, sub {
-      _store_arp(@$_, $now) for @v4;
-      debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
-        $device->ip, scalar @v4;
+  _store_arp(@$_, $now) for @v4;
+  debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
+    $device->ip, scalar @v4;
 
-      _store_arp(@$_, $now) for @v6;
-      debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
-        $device->ip, scalar @v6;
-
-      $device->update({last_arpnip => \"to_timestamp($now)"});
-    });
+  _store_arp(@$_, $now) for @v6;
+  debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
+    $device->ip, scalar @v6;
 
   # update subnets with new networks
   foreach my $cidr (@subnets) {
@@ -83,10 +76,12 @@ sub do_arpnip {
           schema('netdisco')->resultset('Subnet')->update_or_create(
           {
             net => $cidr,
-            last_discover => \"to_timestamp($now)",
+            last_discover => \$now,
           },
-          # update_or_create doesn't seem to lock the row
-          { for => 'update' });
+          {
+            order_by => 'net',
+            for => 'update',
+          });
       });
   }
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
@@ -159,19 +154,22 @@ sub _check_arp {
 sub _store_arp {
   my ($mac, $ip, $name, $now) = @_;
 
-  schema('netdisco')->resultset('NodeIp')
-    ->search({ip => $ip, -bool => 'active'})
-    ->update({active => \'false'});
+  schema('netdisco')->txn_do(sub {
+    my $current = schema('netdisco')->resultset('NodeIp')
+      ->search({ip => $ip, -bool => 'active'})
+      ->search(undef, {order_by => [qw/mac ip/], for => 'update'});
+    my $count = scalar $current->all;
+    $current->update({active => \'false'});
 
-  schema('netdisco')->resultset('NodeIp')
-    ->search({mac => $mac, ip => $ip})
-    ->update_or_create({
-      mac => $mac,
-      ip => $ip,
-      dns => $name,
-      active => \'true',
-      time_last => \"to_timestamp($now)",
-    });
+    schema('netdisco')->resultset('NodeIp')
+      ->search({'me.mac' => $mac, 'me.ip' => $ip})
+      ->search(undef, {order_by => [qw/mac ip/], for => 'update'})
+      ->update_or_create({
+        dns => $name,
+        active => \'true',
+        time_last => \$now,
+      });
+  });
 }
 
 # gathers device subnets

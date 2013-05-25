@@ -106,7 +106,7 @@ sub store_device {
     my $gone = $device->device_ips->delete;
     debug sprintf ' [%s] device - removed %s aliases',
       $device->ip, $gone;
-    $device->update_or_insert({}, {for => 'update'});
+    $device->update_or_insert(undef, {for => 'update'});
     $device->device_ips->populate(\@aliases);
     debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
@@ -253,7 +253,7 @@ sub store_interfaces {
     my $gone = $device->ports->delete;
     debug sprintf ' [%s] interfaces - removed %s interfaces',
       $device->ip, $gone;
-    $device->update_or_insert({}, {for => 'update'});
+    $device->update_or_insert(undef, {for => 'update'});
     $device->ports->populate(\@interfaces);
     debug sprintf ' [%s] interfaces - added %d new interfaces',
       $device->ip, scalar @interfaces;
@@ -744,7 +744,7 @@ sub _set_manual_topology {
               return unless ($left->in_storage and $right->in_storage);
 
               $left->ports
-                ->single({port => $link->port1})
+                ->single({port => $link->port1}, {for => 'update'})
                 ->update({
                   remote_ip => $right->ip,
                   remote_port => $link->port2,
@@ -752,7 +752,7 @@ sub _set_manual_topology {
                 });
 
               $right->ports
-                ->single({port => $link->port2})
+                ->single({port => $link->port2}, {for => 'update'})
                 ->update({
                   remote_ip => $left->ip,
                   remote_port => $link->port1,
