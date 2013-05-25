@@ -1,4 +1,4 @@
-package App::Netdisco::Util::Arpnip;
+package App::Netdisco::Core::Arpnip;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -17,7 +17,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
-App::Netdisco::Util::Arpnip
+App::Netdisco::Core::Arpnip
 
 =head1 DESCRIPTION
 

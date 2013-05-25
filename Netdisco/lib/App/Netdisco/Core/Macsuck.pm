@@ -1,4 +1,4 @@
-package App::Netdisco::Util::Macsuck;
+package App::Netdisco::Core::Macsuck;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -14,7 +14,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
-App::Netdisco::Util::Macsuck
+App::Netdisco::Core::Macsuck
 
 =head1 DESCRIPTION
 

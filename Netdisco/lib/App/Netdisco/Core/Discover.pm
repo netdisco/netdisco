@@ -1,4 +1,4 @@
-package App::Netdisco::Util::DiscoverAndStore;
+package App::Netdisco::Core::Discover;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -19,7 +19,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
-App::Netdisco::Util::DiscoverAndStore
+App::Netdisco::Core::Discover
 
 =head1 DESCRIPTION
 

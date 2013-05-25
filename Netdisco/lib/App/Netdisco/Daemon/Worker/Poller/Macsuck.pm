@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::SNMP 'snmp_connect';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Macsuck ':all';
+use App::Netdisco::Core::Macsuck ':all';
 use App::Netdisco::Daemon::Util ':all';
 
 use NetAddr::IP::Lite ':lower';
