@@ -4,11 +4,16 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::PortMAC ':all';
+use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Time::HiRes 'gettimeofday';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ do_macsuck /;
+our @EXPORT_OK = qw/
+  do_macsuck
+  store_node
+  store_wireless_client_info
+/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -55,31 +60,29 @@ sub do_macsuck {
   my $total_nodes = 0;
 
   # do this before we start messing with the snmp community string
-  _wireless_client_info($device, $snmp, $now)
-    if setting('store_wireless_client');
+  store_wireless_client_info($device, $snmp, $now);
 
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = {map {($_->port => $_)} $device->ports->all}; 
   my $port_macs = get_port_macs($device);
-  my $fwtable = { 0 => _walk_fwtable($device, $snmp, $port_macs) };
 
+  # get forwarding table data via basic snmp connection
+  my $fwtable = { 0 => _walk_fwtable($device, $snmp, $port_macs, $device_ports) };
+
+  # ...then per-vlan if supported
   my @vlan_list = _get_vlan_list($device, $snmp);
   foreach my $vlan (@vlan_list) {
-      _snmp_comm_reindex($snmp, $vlan);
-      $fwtable->{$vlan} = _walk_fwtable($device, $snmp, $port_macs);
+      snmp_comm_reindex($snmp, $vlan);
+      $fwtable->{$vlan} = _walk_fwtable($device, $snmp, $port_macs, $device_ports);
   }
 
-  # cache the device ports so we can look at them for each mac found
-  my $uplink_cache = {};
-  my $ports = $device->ports;
-  while (my $p = $ports->next) {
-      $uplink_cache->{ $p->port } = $p->get_column('maybe_uplink');
-  }
-
-  # now it's time to call _store_node for every node discovered
+  # now it's time to call store_node for every node discovered
   # on every port on every vlan on every device.
 
-  foreach my $vlan (sort keys %$fwtable) {
+  # reverse sort allows vlan 0 entries to be added as fallback
+  foreach my $vlan (reverse sort keys %$fwtable) {
       foreach my $port (keys %{ $fwtable->{$vlan} }) {
-          if ($uplink_cache->{$port}) {
+          if ($device_ports->{$port}->is_uplink) {
               debug sprintf
                 ' [%s] macsuck - port %s is uplink, topo broken - skipping.',
                 $device->ip, $port;
@@ -89,19 +92,13 @@ sub do_macsuck {
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
             $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
-          MAC: foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
-              # skip if vlan is 0 and mac exists in another vlan
-              if ($vlan == 0) {
-                  foreach my $zv (keys %$fwtable) {
-                      next if $zv == 0;
-                      foreach my $zp (keys %{ $fwtable->{$zv} }) {
-                          next MAC if exists $fwtable->{$zv}->{$zp}->{$mac};
-                      }
-                  }
-              }
+          foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
+              # remove vlan 0 entry for this MAC addr
+              delete $fwtable->{0}->{$_}->{$mac}
+                for keys %{ $fwtable->{0} };
 
               ++$total_nodes;
-              _store_node($device->ip, $vlan, $port, $mac, $now);
+              store_node($device->ip, $vlan, $port, $mac, $now);
           }
       }
   }
@@ -111,66 +108,27 @@ sub do_macsuck {
   $device->update({last_macsuck => \$now});
 }
 
-sub _wireless_client_info {
-  my ($device, $snmp, $now) = @_;
+=head2 store_node( $ip, $vlan, $port, $mac, $now? )
 
-  debug sprintf ' [%s] macsuck - wireless client info', $device->ip;
+Writes a fresh entry to the Netdisco C<node> database table. Will mark old
+entries for this data as no longer C<active>.
 
-  my $cd11_txrate = $snmp->cd11_txrate;
-  return unless $cd11_txrate and scalar keys %$cd11_txrate;
+All four fields in the tuple are required. If you don't know the VLAN ID,
+Netdisco supports using ID "0".
 
-  my $cd11_rateset = $snmp->cd11_rateset();
-  my $cd11_uptime  = $snmp->cd11_uptime();
-  my $cd11_sigstrength = $snmp->cd11_sigstrength();
-  my $cd11_sigqual = $snmp->cd11_sigqual();
-  my $cd11_mac     = $snmp->cd11_mac();
-  my $cd11_port    = $snmp->cd11_port();
-  my $cd11_rxpkt   = $snmp->cd11_rxpkt();
-  my $cd11_txpkt   = $snmp->cd11_txpkt();
-  my $cd11_rxbyte  = $snmp->cd11_rxbyte();
-  my $cd11_txbyte  = $snmp->cd11_txbyte();
-  my $cd11_ssid    = $snmp->cd11_ssid();
+Optionally, a fifth argument can be the literal string passed to the time_last
+field of the database record. If not provided, it defauls to C<now()>.
 
-  while (my ($idx, $txrates) = each %$cd11_txrate) {
-      my $rates = $cd11_rateset->{$idx};
-      my $mac   = $cd11_mac->{$idx};
-      next unless defined $mac; # avoid null entries
-            # there can be more rows in txrate than other tables
-      
-      my $txrate  = defined $txrates->[$#$txrates]
-        ? int($txrates->[$#$txrates])
-        : undef;
+=cut
 
-      my $maxrate = defined $rates->[$#$rates]
-        ? int($rates->[$#$rates])
-        : undef;
-
-      schema('netdisco')->txn_do(sub {
-        schema('netdisco')->resultset('NodeWireless')
-          ->search({ mac => $mac })
-          ->update_or_create({
-            txrate  => $txrate,
-            maxrate => $maxrate,
-            uptime  => $cd11_uptime->{$idx},
-            rxpkt   => $cd11_rxpkt->{$idx},
-            txpkt   => $cd11_txpkt->{$idx},
-            rxbyte  => $cd11_rxbyte->{$idx},
-            txbyte  => $cd11_txbyte->{$idx},
-            sigqual => $cd11_sigqual->{$idx},
-            sigstrength => $cd11_sigstrength->{$idx},
-            ssid    => ($cd11_ssid->{$idx} || 'unknown'),
-            time_last => \$now,
-          }, { for => 'update' });
-      });
-  }
-}
-
-sub _store_node {
+sub store_node {
   my ($ip, $vlan, $port, $mac, $now) = @_;
+  $now ||= 'now()';
 
   schema('netdisco')->txn_do(sub {
     my $nodes = schema('netdisco')->resultset('Node');
 
+    # TODO: probably needs changing if we're to support VTP domains
     my $old = $nodes->search(
       {
         mac => $mac,
@@ -182,11 +140,11 @@ sub _store_node {
         },
       });
 
-    # selecting the data triggers row lock
+    # lock rows,
     # and get the count so we know whether to set time_recent
     my $old_count = scalar $old->search(undef,
       {
-        # ORDER BY FOR UPDATE avoids need for table lock
+        columns => [qw/switch vlan port mac/],
         order_by => [qw/switch vlan port mac/],
         for => 'update',
       })->all;
@@ -200,13 +158,12 @@ sub _store_node {
         'me.mac' => $mac,
       },
       {
-        # ORDER BY FOR UPDATE avoids need for table lock
         order_by => [qw/switch vlan port mac/],
         for => 'update',
       });
 
-    # trigger row lock
-    $new->search({vlan => [$vlan, 0, undef]})->all;
+    # lock rows
+    $new->search({vlan => [$vlan, 0, undef]})->first;
 
     # upgrade old schema
     $new->search({vlan => [$vlan, 0, undef]})
@@ -220,21 +177,6 @@ sub _store_node {
       ($old_count ? (time_recent => \$now) : ()),
     });
   });
-}
-
-# make a new snmp connection to $device using community indexing
-sub _snmp_comm_reindex {
-  my ($snmp, $vlan) = @_;
-
-  my $ver  = $snmp->snmp_ver;
-  my $comm = $snmp->snmp_comm;
-
-  if ($ver == 3) {
-      $snmp->update(Context => "vlan-$vlan");
-  }
-  else {
-      $snmp->update(Community => $comm . '@' . $vlan);
-  }
 }
 
 # return a list of vlan numbers which are OK to macsuck on this device
@@ -314,7 +256,7 @@ sub _get_vlan_list {
 # walks the forwarding table (BRIDGE-MIB) for the device and returns a
 # table of node entries.
 sub _walk_fwtable {
-  my ($device, $snmp, $port_macs) = @_;
+  my ($device, $snmp, $port_macs, $device_ports) = @_;
   my $cache = {};
 
   my $fw_mac   = $snmp->fw_mac;
@@ -322,13 +264,6 @@ sub _walk_fwtable {
   my $fw_vlan  = $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index;
   my $interfaces = $snmp->interfaces;
-
-  # cache the device ports so we can look at them for each mac found
-  my $ports_cache = {};
-  my $ports = $device->ports;
-  while (my $p = $ports->next) {
-      $ports_cache->{ $p->port } = $p;
-  }
 
   # to map forwarding table port to device port we have
   #   fw_port -> bp_index -> interfaces
@@ -370,7 +305,7 @@ sub _walk_fwtable {
       }
 
       # this uses the cached $ports resultset to limit hits on the db
-      my $device_port = $ports_cache->{$port};
+      my $device_port = $device_ports->{$port};
 
       unless (defined $device_port) {
           debug sprintf
@@ -385,9 +320,9 @@ sub _walk_fwtable {
       # we have several ways to detect "uplink" port status:
       #  * a neighbor was discovered using CDP/LLDP
       #  * a mac addr is seen which belongs to any device port/interface
-      #  * (TODO) admin sets is_uplink on the device_port
+      #  * (TODO) admin sets is_uplink_admin on the device_port
 
-      if ($device_port->maybe_uplink) {
+      if ($device_port->is_uplink) {
           if (my $neighbor = $device_port->neighbor) {
               debug sprintf
                 ' [%s] macsuck %s - port %s has neighbor %s - skipping.',
@@ -419,7 +354,7 @@ sub _walk_fwtable {
 
           debug sprintf ' [%s] macsuck %s - port %s is probably an uplink',
             $device->ip, $mac, $port;
-          $device_port->update({maybe_uplink => \'true'});
+          $device_port->update({is_uplink => \'true'});
 
           # when there's no CDP/LLDP, we only want to gather macs at the
           # topology edge, hence skip ports with known device macs.
@@ -439,6 +374,91 @@ sub _walk_fwtable {
   }
 
   return $cache;
+}
+
+=head2 store_wireless_client_info( $device, $snmp, $now? )
+
+Given a Device database object, and a working SNMP connection, connect to a
+device and discover 802.11 related information for all connected wireless
+clients.
+
+If the device doesn't support the 802.11 MIBs, then this will silently return.
+
+If the device does support the 802.11 MIBs but Netdisco's configuration
+does not permit polling (C<store_wireless_client> must be true) then a debug
+message is logged and the subroutine returns.
+
+Otherwise, client information is gathered and stored to the database.
+
+Optionally, a third argument can be the literal string passed to the time_last
+field of the database record. If not provided, it defauls to C<now()>.
+
+=cut
+
+sub store_wireless_client_info {
+  my ($device, $snmp, $now) = @_;
+  $now ||= 'now()';
+
+  my $cd11_txrate = $snmp->cd11_txrate;
+  return unless $cd11_txrate and scalar keys %$cd11_txrate;
+
+  if (setting('store_wireless_client')) {
+      debug sprintf ' [%s] macsuck - gathering wireless client info',
+        $device->ip;
+  }
+  else {
+      debug sprintf ' [%s] macsuck - dot11 info available but skipped due to config',
+        $device->ip;
+      return;
+  }
+
+  my $cd11_rateset = $snmp->cd11_rateset();
+  my $cd11_uptime  = $snmp->cd11_uptime();
+  my $cd11_sigstrength = $snmp->cd11_sigstrength();
+  my $cd11_sigqual = $snmp->cd11_sigqual();
+  my $cd11_mac     = $snmp->cd11_mac();
+  my $cd11_port    = $snmp->cd11_port();
+  my $cd11_rxpkt   = $snmp->cd11_rxpkt();
+  my $cd11_txpkt   = $snmp->cd11_txpkt();
+  my $cd11_rxbyte  = $snmp->cd11_rxbyte();
+  my $cd11_txbyte  = $snmp->cd11_txbyte();
+  my $cd11_ssid    = $snmp->cd11_ssid();
+
+  while (my ($idx, $txrates) = each %$cd11_txrate) {
+      my $rates = $cd11_rateset->{$idx};
+      my $mac   = $cd11_mac->{$idx};
+      next unless defined $mac; # avoid null entries
+            # there can be more rows in txrate than other tables
+
+      my $txrate  = defined $txrates->[$#$txrates]
+        ? int($txrates->[$#$txrates])
+        : undef;
+
+      my $maxrate = defined $rates->[$#$rates]
+        ? int($rates->[$#$rates])
+        : undef;
+
+      schema('netdisco')->txn_do(sub {
+        schema('netdisco')->resultset('NodeWireless')
+          ->search({ 'me.mac' => $mac })
+          ->update_or_create({
+            txrate  => $txrate,
+            maxrate => $maxrate,
+            uptime  => $cd11_uptime->{$idx},
+            rxpkt   => $cd11_rxpkt->{$idx},
+            txpkt   => $cd11_txpkt->{$idx},
+            rxbyte  => $cd11_rxbyte->{$idx},
+            txbyte  => $cd11_txbyte->{$idx},
+            sigqual => $cd11_sigqual->{$idx},
+            sigstrength => $cd11_sigstrength->{$idx},
+            ssid    => ($cd11_ssid->{$idx} || 'unknown'),
+            time_last => \$now,
+          }, {
+            order_by => [qw/mac ssid/],
+            for => 'update',
+          });
+      });
+  }
 }
 
 1;

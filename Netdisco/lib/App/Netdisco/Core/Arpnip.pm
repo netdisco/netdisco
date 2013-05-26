@@ -11,7 +11,7 @@ use Net::MAC;
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ do_arpnip /;
+our @EXPORT_OK = qw/ do_arpnip check_mac store_arp /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -44,13 +44,12 @@ sub do_arpnip {
       return;
   }
 
-  my (@v4, @v6);
   my $port_macs = get_port_macs($device);
 
   # get v4 arp table
-  push @v4, _get_arps($device, $port_macs, $snmp->at_paddr, $snmp->at_netaddr);
+  my @v4 = _get_arps($device, $port_macs, $snmp->at_paddr, $snmp->at_netaddr);
   # get v6 neighbor cache
-  push @v6, _get_arps($device, $port_macs, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  my @v6 = _get_arps($device, $port_macs, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   # get directly connected networks
   my @subnets = _gather_subnets($device, $snmp);
@@ -62,28 +61,15 @@ sub do_arpnip {
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   # update node_ip with ARP and Neighbor Cache entries
-  _store_arp(@$_, $now) for @v4;
+  store_arp(@$_, $now) for @v4;
   debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
     $device->ip, scalar @v4;
 
-  _store_arp(@$_, $now) for @v6;
+  store_arp(@$_, $now) for @v6;
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
     $device->ip, scalar @v6;
 
-  # update subnets with new networks
-  foreach my $cidr (@subnets) {
-      schema('netdisco')->txn_do(sub {
-          schema('netdisco')->resultset('Subnet')->update_or_create(
-          {
-            net => $cidr,
-            last_discover => \$now,
-          },
-          {
-            order_by => 'net',
-            for => 'update',
-          });
-      });
-  }
+  _store_subnet($_, $now) for @subnets;
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
     $device->ip, scalar @subnets;
 }
@@ -96,24 +82,55 @@ sub _get_arps {
   while (my ($arp, $node) = each %$paddr) {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
-      my $arp = _check_arp($device, $port_macs, $node, $ip);
-      push @arps, [@$arp, hostname_from_ip($ip)]
-        if ref [] eq ref $arp;
+      push @arps, [$node, $ip, hostname_from_ip($ip)]
+        if check_mac($device, $node, $port_macs);
   }
 
   return @arps;
 }
 
-# checks any arpnip entry for sanity and adds to DB
-sub _check_arp {
-  my ($device, $port_macs, $node, $ip) = @_;
+=head2 check_mac( $device, $node, $port_macs? )
+
+Given a Device database object and a MAC address, perform various sanity
+checks which need to be done before writing an ARP/Neighbor entry to the
+database storage.
+
+Returns false, and logs a debug level message, if the checks fail.
+
+Returns a true value if these checks pass:
+
+=over 4
+
+=item *
+
+MAC address is not malformed
+
+=item *
+
+MAC address is not broadcast, CLIP, VRRP or HSRP
+
+=item *
+
+MAC address does not belong to an interface on C<$device>
+
+=back
+
+Optionally pass a cached set of Device port MAC addresses as the fourth
+argument, or else C<check_mac> will retrieve this for itself from the
+database.
+
+=cut
+
+sub check_mac {
+  my ($device, $node, $port_macs) = @_;
+  $port_macs ||= get_port_macs($device);
   my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)
   if ($mac->get_error) {
       debug sprintf ' [%s] arpnip - mac [%s] malformed - skipping',
         $device->ip, $node;
-      return;
+      return 0;
   }
   else {
       # lower case, hex, colon delimited, 8-bit groups
@@ -121,53 +138,73 @@ sub _check_arp {
   }
 
   # broadcast MAC addresses
-  return if $node eq 'ff:ff:ff:ff:ff:ff';
+  return 0 if $node eq 'ff:ff:ff:ff:ff:ff';
 
   # CLIP
-  return if $node eq '00:00:00:00:00:01';
+  return 0 if $node eq '00:00:00:00:00:01';
 
   # VRRP
   if (index($node, '00:00:5e:00:01:') == 0) {
       debug sprintf ' [%s] arpnip - VRRP mac [%s] - skipping',
         $device->ip, $node;
-      return;
+      return 0;
   }
 
   # HSRP
   if (index($node, '00:00:0c:07:ac:') == 0) {
       debug sprintf ' [%s] arpnip - HSRP mac [%s] - skipping',
         $device->ip, $node;
-      return;
+      return 0;
   }
 
   # device's own MACs
   if (exists $port_macs->{$node}) {
       debug sprintf ' [%s] arpnip - mac [%s] is device port - skipping',
         $device->ip, $node;
-      return;
+      return 0;
   }
 
-  return [$node, $ip];
+  return 1;
 }
 
-# add arp cache entry to the node_ip table
-sub _store_arp {
+=head2 store_arp( $mac, $ip, $name, $now? )
+
+Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
+and DNS host name.
+
+Will mark old entries for this IP as no longer C<active>.
+
+Optionally a literal string can be passed in the fourth argument for the
+C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
+
+=cut
+
+sub store_arp {
   my ($mac, $ip, $name, $now) = @_;
+  $now ||= 'now()';
 
   schema('netdisco')->txn_do(sub {
     my $current = schema('netdisco')->resultset('NodeIp')
       ->search({ip => $ip, -bool => 'active'})
-      ->search(undef, {order_by => [qw/mac ip/], for => 'update'});
-    my $count = scalar $current->all;
+      ->search(undef, {
+        columns => [qw/mac ip/],
+        order_by => [qw/mac ip/],
+        for => 'update'
+      });
+    $current->first; # lock rows
     $current->update({active => \'false'});
 
     schema('netdisco')->resultset('NodeIp')
       ->search({'me.mac' => $mac, 'me.ip' => $ip})
-      ->search(undef, {order_by => [qw/mac ip/], for => 'update'})
-      ->update_or_create({
+      ->update_or_create(
+      {
         dns => $name,
         active => \'true',
         time_last => \$now,
+      },
+      {
+        order_by => [qw/mac ip/],
+        for => 'update',
       });
   });
 }
@@ -198,6 +235,20 @@ sub _gather_subnets {
   }
 
   return @subnets;
+}
+
+# update subnets with new networks
+sub _store_subnet {
+  my ($subnet, $now) = @_;
+
+  schema('netdisco')->txn_do(sub {
+    schema('netdisco')->resultset('Subnet')->update_or_create(
+    {
+      net => $subnet,
+      last_discover => \$now,
+    },
+    { for => 'update' });
+  });
 }
 
 1;

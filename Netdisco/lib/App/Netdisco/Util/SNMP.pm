@@ -10,7 +10,7 @@ use Path::Class 'dir';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  snmp_connect snmp_connect_rw
+  snmp_connect snmp_connect_rw snmp_comm_reindex
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -150,6 +150,27 @@ sub _build_mibdirs {
   my $home = (setting('mibhome') || $ENV{NETDISCO_HOME} || $ENV{HOME});
   return map { dir($home, $_) }
              @{ setting('mibdirs') || [] };
+}
+
+=head2 snmp_comm_reindex( $snmp, $vlan )
+
+Takes an established L<SNMP::Info> instance and makes a fresh connection using
+community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
+
+=cut
+
+sub snmp_comm_reindex {
+  my ($snmp, $vlan) = @_;
+
+  my $ver  = $snmp->snmp_ver;
+  my $comm = $snmp->snmp_comm;
+
+  if ($ver == 3) {
+      $snmp->update(Context => "vlan-$vlan");
+  }
+  else {
+      $snmp->update(Community => $comm . '@' . $vlan);
+  }
 }
 
 1;
