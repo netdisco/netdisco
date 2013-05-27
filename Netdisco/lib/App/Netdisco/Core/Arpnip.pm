@@ -3,15 +3,15 @@ package App::Netdisco::Core::Arpnip;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::PortMAC ':all';
+use App::Netdisco::Util::PortMAC 'get_port_macs';
+use App::Netdisco::Util::SanityCheck 'check_mac';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
-use Net::MAC;
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ do_arpnip check_mac store_arp /;
+our @EXPORT_OK = qw/ do_arpnip store_arp /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -82,89 +82,11 @@ sub _get_arps {
   while (my ($arp, $node) = each %$paddr) {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
-      push @arps, [$node, $ip, hostname_from_ip($ip)]
-        if check_mac($device, $node, $port_macs);
+      next unless check_mac($device, $node, $port_macs);
+      push @arps, [$node, $ip, hostname_from_ip($ip)];
   }
 
   return @arps;
-}
-
-=head2 check_mac( $device, $node, $port_macs? )
-
-Given a Device database object and a MAC address, perform various sanity
-checks which need to be done before writing an ARP/Neighbor entry to the
-database storage.
-
-Returns false, and logs a debug level message, if the checks fail.
-
-Returns a true value if these checks pass:
-
-=over 4
-
-=item *
-
-MAC address is not malformed
-
-=item *
-
-MAC address is not broadcast, CLIP, VRRP or HSRP
-
-=item *
-
-MAC address does not belong to an interface on C<$device>
-
-=back
-
-Optionally pass a cached set of Device port MAC addresses as the fourth
-argument, or else C<check_mac> will retrieve this for itself from the
-database.
-
-=cut
-
-sub check_mac {
-  my ($device, $node, $port_macs) = @_;
-  $port_macs ||= get_port_macs($device);
-  my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
-
-  # incomplete MAC addresses (BayRS frame relay DLCI, etc)
-  if ($mac->get_error) {
-      debug sprintf ' [%s] arpnip - mac [%s] malformed - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-  else {
-      # lower case, hex, colon delimited, 8-bit groups
-      $node = lc $mac->as_IEEE;
-  }
-
-  # broadcast MAC addresses
-  return 0 if $node eq 'ff:ff:ff:ff:ff:ff';
-
-  # CLIP
-  return 0 if $node eq '00:00:00:00:00:01';
-
-  # VRRP
-  if (index($node, '00:00:5e:00:01:') == 0) {
-      debug sprintf ' [%s] arpnip - VRRP mac [%s] - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-
-  # HSRP
-  if (index($node, '00:00:0c:07:ac:') == 0) {
-      debug sprintf ' [%s] arpnip - HSRP mac [%s] - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-
-  # device's own MACs
-  if (exists $port_macs->{$node}) {
-      debug sprintf ' [%s] arpnip - mac [%s] is device port - skipping',
-        $device->ip, $node;
-      return 0;
-  }
-
-  return 1;
 }
 
 =head2 store_arp( $mac, $ip, $name, $now? )

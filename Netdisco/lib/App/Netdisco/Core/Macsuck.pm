@@ -3,7 +3,8 @@ package App::Netdisco::Core::Macsuck;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::PortMAC ':all';
+use App::Netdisco::Util::PortMAC 'get_port_macs';
+use App::Netdisco::Util::SanityCheck 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Time::HiRes 'gettimeofday';
 
@@ -77,9 +78,9 @@ sub do_macsuck {
   }
 
   # now it's time to call store_node for every node discovered
-  # on every port on every vlan on every device.
+  # on every port on every vlan on this device.
 
-  # reverse sort allows vlan 0 entries to be added as fallback
+  # reverse sort allows vlan 0 entries to be included only as fallback
   foreach my $vlan (reverse sort keys %$fwtable) {
       foreach my $port (keys %{ $fwtable->{$vlan} }) {
           if ($device_ports->{$port}->is_uplink) {
@@ -270,6 +271,7 @@ sub _walk_fwtable {
 
   while (my ($idx, $mac) = each %$fw_mac) {
       my $bp_id = $fw_port->{$idx};
+      next unless check_mac($device, $mac, $port_macs);
 
       unless (defined $bp_id) {
           debug sprintf
@@ -360,15 +362,6 @@ sub _walk_fwtable {
           # topology edge, hence skip ports with known device macs.
           next unless setting('macsuck_bleed');
       }
-
-      if ($mac =~ /^([0-9a-f]{2}):/i and ($1 =~ /.(1|3|5|7|9|b|d|f)/i)) {
-          debug sprintf ' [%s] macsuck %s is multicast - skipping.',
-            $device->ip, $mac;
-          next;
-      }
-
-      next if $mac eq '00:00:00:00:00:00';
-      next if lc($mac) eq 'ff:ff:ff:ff:ff:ff';
 
       ++$cache->{$port}->{$mac};
   }
