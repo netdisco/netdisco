@@ -714,6 +714,8 @@ sub store_neighbors {
           remote_port => $remote_port,
           remote_type => $remote_type,
           remote_id   => $remote_id,
+          is_uplink   => \"true",
+          manual_topo => \"false",
       });
   }
 
@@ -748,7 +750,10 @@ sub _set_manual_topology {
                 ->update({
                   remote_ip => $right->ip,
                   remote_port => $link->port2,
-                  manual_topo => \'true',
+                  remote_type => undef,
+                  remote_id   => undef,
+                  is_uplink   => \"true",
+                  manual_topo => \"true",
                 });
 
               $right->ports
@@ -756,7 +761,10 @@ sub _set_manual_topology {
                 ->update({
                   remote_ip => $left->ip,
                   remote_port => $link->port1,
-                  manual_topo => \'true',
+                  remote_type => undef,
+                  remote_id   => undef,
+                  is_uplink   => \"true",
+                  manual_topo => \"true",
                 });
             });
         };

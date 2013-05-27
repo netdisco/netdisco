@@ -37,6 +37,41 @@ ajax '/ajax/control/admin/topology/add' => sub {
         dev2  => param('dev2'),
         port2 => param('port2'),
       });
+
+    # re-set remote device details in affected ports
+    # could fail for bad device or port names
+    try {
+        schema('netdisco')->txn_do(sub {
+          # only work on root_ips
+          my $left  = get_device(param('dev1'));
+          my $right = get_device(param('dev2'));
+
+          # skip bad entries
+          return unless ($left->in_storage and $right->in_storage);
+
+          $left->ports
+            ->single({port => param('port1')}, {for => 'update'})
+            ->update({
+              remote_ip => param('dev2'),
+              remote_port => param('port2'),
+              remote_type => undef,
+              remote_id   => undef,
+              is_uplink   => \"true",
+              manual_topo => \"true",
+            });
+
+          $right->ports
+            ->single({port => param('port2')}, {for => 'update'})
+            ->update({
+              remote_ip => param('dev1'),
+              remote_port => param('port1'),
+              remote_type => undef,
+              remote_id   => undef,
+              is_uplink   => \"true",
+              manual_topo => \"true",
+            });
+        });
+    };
 };
 
 ajax '/ajax/control/admin/topology/del' => sub {
