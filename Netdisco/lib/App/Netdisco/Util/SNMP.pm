@@ -88,8 +88,8 @@ sub _snmp_connect_generic {
   my $comm_type = pop;
   my @communities = @{ setting($comm_type) || []};
   unshift @communities, $device->snmp_comm
-    if length $device->snmp_comm
-       and length $comm_type and $comm_type eq 'community';
+    if defined $device->snmp_comm
+       and defined $comm_type and $comm_type eq 'community';
 
   my $info = undef;
   VERSION: foreach my $ver (@versions) {
@@ -123,7 +123,7 @@ sub _try_connect {
       $info = $class->new(%$snmp_args, Version => $ver, Community => $comm);
       undef $info unless (
         (not defined $info->error)
-        and length $info->uptime
+        and defined $info->uptime
         and ($info->layers or $info->description)
         and $info->class
       );
