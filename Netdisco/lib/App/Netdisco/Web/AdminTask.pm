@@ -34,7 +34,7 @@ post '/admin/discover' => sub {
 get '/admin/*' => sub {
     my ($tag) = splat;
 
-    if (! var('user')->admin) {
+    if (! eval { var('user')->admin }) {
         status(302);
         header(Location => uri_for('/')->path_query());
         return;
