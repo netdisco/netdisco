@@ -656,6 +656,9 @@ sub store_neighbors {
           $remote_type = 'IP Phone - '. $remote_type
             if $remote_type !~ /ip phone/i;
       }
+      else {
+          $remote_type = '';
+      }
 
       # hack for devices seeing multiple neighbors on the port
       if (ref [] eq ref $remote_ip) {
