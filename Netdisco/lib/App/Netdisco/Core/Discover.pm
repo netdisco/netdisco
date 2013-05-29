@@ -119,7 +119,7 @@ sub _set_canonical_ip {
   my $oldip = $device->ip;
   my $newip = $snmp->root_ip;
 
-  if (length $newip) {
+  if (defined $newip) {
       if ($oldip ne $newip) {
           debug sprintf ' [%s] device - changing root IP to alt IP %s',
             $oldip, $newip;
@@ -666,11 +666,13 @@ sub store_neighbors {
             ' [%s] neigh - port %s has multiple neighbors, setting remote as self',
             $device->ip, $port;
 
-          foreach my $n (@$remote_ip) {
-              debug sprintf
-                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                $device->ip, $n, $remote_type, $port;
-              push @to_discover, [$n, $remote_type];
+          if (wantarray) {
+              foreach my $n (@$remote_ip) {
+                  debug sprintf
+                    ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+                    $device->ip, $n, $remote_type, $port;
+                  push @to_discover, [$n, $remote_type];
+              }
           }
 
           # set self as remote IP to suppress any further work
@@ -679,10 +681,12 @@ sub store_neighbors {
       }
       else {
           # what we came here to do.... discover the neighbor
-          debug sprintf
-            ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-            $device->ip, $remote_ip, $remote_type, $port;
-          push @to_discover, [$remote_ip, $remote_type];
+          if (wantarray) {
+              debug sprintf
+                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+                $device->ip, $remote_ip, $remote_type, $port;
+              push @to_discover, [$remote_ip, $remote_type];
+          }
 
           $remote_port = $c_port->{$entry};
 
