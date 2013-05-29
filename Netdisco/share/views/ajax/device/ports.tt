@@ -187,18 +187,19 @@
                 self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
             ([% row.remote_port | html_entity %])</a>
-          [% ELSIF row.is_uplink %]
-          <span class="label label-important">N</span> (probable neighbor)
-          [% ELSE %]
+          [% ELSIF row.remote_ip AND row.remote_port %]
           <span class="label label-important">N</span>
           <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
             [% row.remote_ip | html_entity %] (port: [% row.remote_port | html_entity %]
-            id: [% (row.remote_type _ ' / ') IF row.remote_type %][% row.remote_id | html_entity %])</a>
+            [% ' id: '_ row.remote_type IF row.remote_type%]
+            [% ' type: '_ row.remote_id IF row.remote_id%])</a>
+          [% ELSE %]
+          <span class="label label-important">N</span> (probable neighbor)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
         [% FOREACH node IN row.$nodes %]
-          [% '<br/>' IF row.remote_ip OR NOT loop.first %]
+          [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<span class="label label-warning">A</span> &nbsp;' IF NOT node.active %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
