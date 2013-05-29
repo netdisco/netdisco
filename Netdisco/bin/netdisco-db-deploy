@@ -77,7 +77,8 @@ try {
 };
 
 # upgrade from whatever dbix_class_schema_versions says, to $VERSION
-my $db_version = $schema->get_db_version;
+# except that get_db_version will be 0 at first deploy
+my $db_version = ($schema->get_db_version || 1);
 my $target_version = $schema->schema_version;
 
 # one step at a time, in case user has applied local changes already
