@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 set(
+  '_extra_device_port_cols' => [],
   '_navbar_items' => [],
   '_search_tabs'  => [],
   '_device_tabs'  => [],
@@ -27,6 +28,26 @@ register 'register_template_path' => sub {
   unshift
     @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
     $path;
+};
+
+register 'register_device_port_column' => sub {
+  my ($self, $config) = plugin_args(@_);
+  $config->{default} ||= '';
+  $config->{position} ||= 'right';
+
+  if (!length $config->{name} or !length $config->{label}) {
+      error "bad config to register_device_port_column";
+      return;
+  }
+
+  foreach my $item (@{ setting('_extra_device_port_cols') }) {
+      if ($item->{name} eq $config->{name}) {
+          $item = $config;
+          return;
+      }
+  }
+
+  push @{ setting('_extra_device_port_cols') }, $config;
 };
 
 register 'register_navbar_item' => sub {

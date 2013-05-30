@@ -28,6 +28,17 @@
         [% END %]
       </td>
 
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
+        <td>
+          [% TRY %]
+          [% INCLUDE "plugin/device_port_column/${config.name}.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+        </td>
+      [% END %]
+
       [% IF params.c_port %]
       [% IF vars.user.port_control AND params.c_admin %]
       [% IF row.up_admin == 'up' %]
@@ -50,6 +61,17 @@
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
         [% row.port | html_entity %]
       </a></td>
+      [% END %]
+
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
+        <td>
+          [% TRY %]
+          [% INCLUDE "plugin/device_port_column/${config.name}.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+        </td>
       [% END %]
 
       [% IF params.c_descr %]
@@ -228,6 +250,17 @@
       <td>
         [% row.up_admin.ucfirst | html_entity %] / [% row.up.ucfirst | html_entity %]
       </td>
+      [% END %]
+
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
+        <td>
+          [% TRY %]
+          [% INCLUDE "plugin/device_port_column/${config.name}.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+        </td>
       [% END %]
     </tr>
     [% END %]

@@ -5,10 +5,12 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 hook 'before' => sub {
-  # list of port detail columns
-  var('port_columns' => [
+  my @default_port_columns_left = (
     { name => 'c_admin',       label => 'Port Controls',     default => ''   },
     { name => 'c_port',        label => 'Port',              default => 'on' },
+  );
+
+  my @default_port_columns_right = (
     { name => 'c_descr',       label => 'Description',       default => ''   },
     { name => 'c_type',        label => 'Type',              default => ''   },
     { name => 'c_duplex',      label => 'Duplex',            default => ''   },
@@ -24,7 +26,21 @@ hook 'before' => sub {
     { name => 'c_neighbors',   label => 'Connected Devices', default => 'on' },
     { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
     { name => 'c_up',          label => 'Status',            default => ''   },
-  ]);
+  );
+
+  # build list of port detail columns
+  my @port_columns = ();
+
+  push @port_columns,
+    grep {$_->{position} eq 'left'} @{ setting('_extra_device_port_cols') };
+  push @port_columns, @default_port_columns_left;
+  push @port_columns,
+    grep {$_->{position} eq 'mid'} @{ setting('_extra_device_port_cols') };
+  push @port_columns, @default_port_columns_right;
+  push @port_columns,
+    grep {$_->{position} eq 'right'} @{ setting('_extra_device_port_cols') };
+
+  var('port_columns' => \@port_columns);
 
   # view settings for port connected devices
   var('connected_properties' => [

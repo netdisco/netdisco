@@ -21,8 +21,9 @@ sub _load_web_plugins {
   my $plugin_list = shift;
 
   foreach my $plugin (@$plugin_list) {
+      $plugin =~ s/^X::/+App::NetdiscoX::Web::Plugin::/;
       $plugin = 'App::Netdisco::Web::Plugin::'. $plugin
-        unless $plugin =~ m/^\+/;
+        if $plugin !~ m/^\+/;
       $plugin =~ s/^\+//;
 
       debug "loading Netdisco plugin $plugin";

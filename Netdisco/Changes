@@ -11,6 +11,8 @@
   * Manual Topology editing via the web
   * Job Queue view and delete page
   * Empty device table prompts initial discover on homepage
+  * Support for App::NetdiscoX::Web::Plugin namespace
+  * Observium Sparklines port column plugin
 
   [ENHANCEMENTS]
 
@@ -20,6 +22,7 @@
   * Navbar search is fuzzier
   * Phone node icon is a little phone handset
   * User icon color indicates port_control/admin ability
+  * Buttons for discover/macsuck/arpnip on device details page
 
   [BUG FIXES]
 
