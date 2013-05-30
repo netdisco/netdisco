@@ -11,8 +11,7 @@ use namespace::clean;
 
 my $jobactions = {
   map {$_ => undef} qw/
-      refresh
-      discovernew
+      discoverall
   /
 #    saveconfigs
 #    macwalk

@@ -5,7 +5,7 @@ App::Netdisco::Manual::Configuration - How to Configure Netdisco
 =head1 INTRODUCTION
 
 The configuration files for Netdisco come with all options set to sensible
-default values, and just a few that you initially must set yourself.
+default values, and just a few that you must initially set yourself.
 
 However as you use the system over time, there are many situations where you
 might want to tune the behaviour of Netdisco, and for that we have a lot of

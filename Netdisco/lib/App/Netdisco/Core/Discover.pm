@@ -815,8 +815,8 @@ sub discover_new_neighbors {
         next;
       }
 
+      # could fail if queued job already exists
       try {
-          # could fail if queued job already exists
           schema('netdisco')->resultset('Admin')->create({
               device => $ip,
               action => 'discover',
