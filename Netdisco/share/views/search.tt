@@ -8,7 +8,7 @@
       <i class="nd_sidebar-pin icon-pushpin"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Pin Sidebar"></i>
       <div class="tab-content">
-        [% FOREACH tab IN settings.search_tabs %]
+        [% FOREACH tab IN settings._search_tabs %]
         <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
           <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') %]">
             <input name="tab" value="[% tab.tag %]" type="hidden"/>
@@ -29,12 +29,12 @@
 
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
-      [% FOREACH tab IN settings.search_tabs %]
+      [% FOREACH tab IN settings._search_tabs %]
       <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
       [% END %]
     </ul>
     <div class="tab-content">
-      [% FOREACH tab IN settings.search_tabs %]
+      [% FOREACH tab IN settings._search_tabs %]
       <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag %]_pane"></div>
       [% END %]
   </div>

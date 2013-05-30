@@ -4,13 +4,13 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 set(
-  'navbar_items' => [],
-  'search_tabs'  => [],
-  'device_tabs'  => [],
-  'admin_tasks'  => {},
-  'reports_menu' => {},
-  'reports' => {},
-  'report_order' => [qw/Device Port Node VLAN Network Wireless/],
+  '_navbar_items' => [],
+  '_search_tabs'  => [],
+  '_device_tabs'  => [],
+  '_admin_tasks'  => {},
+  '_reports_menu' => {},
+  '_reports' => {},
+  '_report_order' => [qw/Device Port Node VLAN Network Wireless/],
 );
 
 # this is what Dancer::Template::TemplateToolkit does by default
@@ -40,14 +40,14 @@ register 'register_navbar_item' => sub {
       return;
   }
 
-  foreach my $item (@{ setting('navbar_items') }) {
+  foreach my $item (@{ setting('_navbar_items') }) {
       if ($item->{tag} eq $config->{tag}) {
           $item = $config;
           return;
       }
   }
 
-  push @{ setting('navbar_items') }, $config;
+  push @{ setting('_navbar_items') }, $config;
 };
 
 register 'register_admin_task' => sub {
@@ -60,12 +60,12 @@ register 'register_admin_task' => sub {
       return;
   }
 
-  setting('admin_tasks')->{ $config->{tag} } = $config;
+  setting('_admin_tasks')->{ $config->{tag} } = $config;
 };
 
 sub _register_tab {
   my ($nav, $config) = @_;
-  my $stash = setting("${nav}_tabs");
+  my $stash = setting("_${nav}_tabs");
 
   if (!length $config->{tag}
       or !length $config->{label}) {
@@ -96,7 +96,7 @@ register 'register_device_tab' => sub {
 
 register 'register_report' => sub {
   my ($self, $config) = plugin_args(@_);
-  my @categories = @{ setting('report_order') };
+  my @categories = @{ setting('_report_order') };
 
   if (!length $config->{category}
       or !length $config->{tag}
@@ -107,15 +107,15 @@ register 'register_report' => sub {
       return;
   }
 
-  foreach my $item (@{setting('reports_menu')->{ $config->{category} }}) {
+  foreach my $item (@{setting('_reports_menu')->{ $config->{category} }}) {
       if ($item eq $config->{tag}) {
-          setting('reports')->{$config->{tag}} = $config;
+          setting('_reports')->{$config->{tag}} = $config;
           return;
       }
   }
 
-  push @{setting('reports_menu')->{ $config->{category} }}, $config->{tag};
-  setting('reports')->{$config->{tag}} = $config;
+  push @{setting('_reports_menu')->{ $config->{category} }}, $config->{tag};
+  setting('_reports')->{$config->{tag}} = $config;
 };
 
 register_plugin;

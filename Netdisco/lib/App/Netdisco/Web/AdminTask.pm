@@ -71,7 +71,7 @@ get '/admin/*' => sub {
 
     var(nav => 'admin');
     template 'admintask', {
-      task => setting('admin_tasks')->{ $tag },
+      task => setting('_admin_tasks')->{ $tag },
     };
 };
 

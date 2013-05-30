@@ -51,6 +51,9 @@ hook 'before_template' => sub {
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;
+
+    # allow hash keys with leading underscores
+    $Template::Stash::PRIVATE = undef;
 };
 
 get '/' => sub {

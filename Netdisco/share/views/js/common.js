@@ -1,11 +1,11 @@
   $(document).ready(function() {
     // search tabs
-    [% FOREACH tab IN settings.search_tabs %]
+    [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
     [% END %]
 
     // device tabs
-    [% FOREACH tab IN settings.device_tabs %]
+    [% FOREACH tab IN settings._device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
     [% END %]
 
