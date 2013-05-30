@@ -4,32 +4,53 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
-sub add_discover_job {
-    my $ip = NetAddr::IP::Lite->new(shift);
-    return unless $ip
-      and $ip->addr ne '0.0.0.0';
+sub add_job {
+    my ($jobtype, $device) = @_;
+
+    if ($device) {
+        $device = NetAddr::IP::Lite->new($device);
+        return unless $device
+          and $device->addr ne '0.0.0.0';
+    }
 
     schema('netdisco')->resultset('Admin')->create({
-      device => $ip->addr,
-      action => 'discover',
+      ($device ? (device => $device->addr) : ()),
+      action => $jobtype,
       status => 'queued',
       username => session('user'),
       userip => request->remote_address,
     });
 }
 
-ajax '/ajax/control/admin/discover' => sub {
-    return unless var('user') and var('user')->admin;
-    add_discover_job(param('device'));
-};
+# we have a separate list for jobs needing a device to avoid queueing
+# such a job when there's no device param (it could still be duff, tho).
+my %jobs = map { $_ => 1} qw/
+    discover
+    macsuck
+    arpnip
+/;
+my %jobs_all = map {$_ => 1} qw/
+    discoverall
+    macwalk
+    arpwalk
+/;
 
-post '/admin/discover' => sub {
-    return unless var('user') and var('user')->admin;
-    add_discover_job(param('device'));
+foreach my $jobtype (keys %jobs_all, keys %jobs) {
+    ajax "/ajax/control/admin/$jobtype" => sub {
+        return unless var('user') and var('user')->admin;
+        return if exists $jobs{$jobtype} and not param('device');
+        add_job($jobtype, param('device'));
+    };
 
-    status(302);
-    header(Location => uri_for('/admin/jobqueue')->path_query());
-};
+    post "/admin/$jobtype" => sub {
+        return unless var('user') and var('user')->admin;
+        return if exists $jobs{$jobtype} and not param('device');
+        add_job($jobtype, param('device'));
+
+        status(302);
+        header(Location => uri_for('/admin/jobqueue')->path_query());
+    };
+}
 
 get '/admin/*' => sub {
     my ($tag) = splat;

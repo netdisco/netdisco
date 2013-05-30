@@ -12,10 +12,10 @@ use namespace::clean;
 my $jobactions = {
   map {$_ => undef} qw/
       discoverall
+      arpwalk
+      macwalk
   /
 #    saveconfigs
-#    macwalk
-#    arpwalk
 #    nbtwalk
 #    backup
 };

@@ -13,6 +13,36 @@ use NetAddr::IP::Lite ':lower';
 use Role::Tiny;
 use namespace::clean;
 
+# queue a macsuck job for all devices known to Netdisco
+sub macwalk {
+  my ($self, $job) = @_;
+
+  my $devices = schema('netdisco')->resultset('Device')->get_column('ip');
+  my $jobqueue = schema('netdisco')->resultset('Admin');
+
+  schema('netdisco')->txn_do(sub {
+    # clean up user submitted jobs older than 1min,
+    # assuming skew between schedulers' clocks is not greater than 1min
+    $jobqueue->search({
+        action => 'macsuck',
+        status => 'queued',
+        entered => { '<' => \"(now() - interval '1 minute')" },
+    })->delete;
+
+    # is scuppered by any user job submitted in last 1min (bad), or
+    # any similar job from another scheduler (good)
+    $jobqueue->populate([
+      map {{
+          device => $_,
+          action => 'macsuck',
+          status => 'queued',
+      }} ($devices->all)
+    ]);
+  });
+
+  return job_done("Queued macsuck job for all devices");
+}
+
 sub macsuck {
   my ($self, $job) = @_;
 
