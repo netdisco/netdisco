@@ -4,6 +4,8 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
+use Try::Tiny;
+
 sub add_job {
     my ($jobtype, $device) = @_;
 
@@ -13,13 +15,16 @@ sub add_job {
           and $device->addr ne '0.0.0.0';
     }
 
-    schema('netdisco')->resultset('Admin')->create({
-      ($device ? (device => $device->addr) : ()),
-      action => $jobtype,
-      status => 'queued',
-      username => session('user'),
-      userip => request->remote_address,
-    });
+    try {
+    # job might already be in the queue, so this could die
+        schema('netdisco')->resultset('Admin')->create({
+          ($device ? (device => $device->addr) : ()),
+          action => $jobtype,
+          status => 'queued',
+          username => session('user'),
+          userip => request->remote_address,
+        });
+    }
 }
 
 # we have a separate list for jobs needing a device to avoid queueing
