@@ -43,13 +43,13 @@
       [% IF vars.user.port_control AND params.c_admin %]
       [% IF row.up_admin == 'up' %]
       <td nowrap class="nd_editable-cell" data-action="down"
-        data-field="c_port" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
+        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
         <i class="icon-hand-down nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Disable"></i>
       [% ELSE %]
       <td nowrap class="nd_editable-cell" data-action="up"
-        data-field="c_port" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
+        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
         <i class="icon-hand-up nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Enable"></i>
@@ -97,7 +97,7 @@
       [% IF params.c_name %]
       [% IF vars.user.port_control AND params.c_admin %]
       <td nowrap class="nd_editable-cell" contenteditable="true"
-          data-field="c_name" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
+          data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       [% ELSE %]
       <td nowrap>
@@ -123,7 +123,7 @@
       [% IF params.c_vlan %]
       [% IF vars.user.port_control AND params.c_admin %]
       <td class="nd_editable-cell" contenteditable="true"
-        data-field="c_vlan" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
+        data-field="c_vlan" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       <div class="nd_editable-cell-content">
         [% IF row.vlan %][% row.vlan | html_entity %][% END %]
@@ -164,7 +164,7 @@
           [% IF row.power.admin == 'true' %]
             [% IF vars.user.port_control AND params.c_admin %]
               <td nowrap data-action="false"
-                data-field="c_power" data-for-device="[% device | html_entity %]"
+                data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
                 <i class="icon-off nd_power-icon nd_power-on"
@@ -184,7 +184,7 @@
           [% ELSE %]
             [% IF vars.user.port_control AND params.c_admin %]
               <td nowrap data-action="true"
-                data-field="c_power" data-for-device="[% device | html_entity %]"
+                data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
                 <i class="icon-off nd_power-icon"
