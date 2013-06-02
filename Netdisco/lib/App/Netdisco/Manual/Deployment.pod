@@ -39,6 +39,11 @@ configuration would be:
    Allow from all
  </Proxy>
 
+You also need to set the following configuration in your C<deployment.yml>
+file:
+
+ behind_proxy: 1
+
 To combine this with Non-root Hosting as above, simply change the paths
 referenced in the configuration like so (and use C<--path> option):
 
