@@ -66,9 +66,13 @@
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
         <td>
+          [% TRY %]
           [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
         </td>
-      [% END -%]
+      [% END %]
 
       [% IF params.c_descr %]
       <td nowrap>[% row.descr | html_entity %]</td>

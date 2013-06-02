@@ -7,6 +7,8 @@ package App::Netdisco::DB::Result::DevicePort;
 use strict;
 use warnings;
 
+use MIME::Base64 'encode_base64url';
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device_port");
 __PACKAGE__->add_columns(
@@ -265,5 +267,14 @@ See the C<with_is_free> and C<only_free_ports> modifiers to C<search()>.
 =cut
 
 sub is_free { return (shift)->get_column('is_free') }
+
+=head2 base64url_port
+
+Returns a Base64 encoded version of the C<port> column value suitable for use
+in a URL.
+
+=cut
+
+sub base64url_port { return encode_base64url((shift)->port) }
 
 1;

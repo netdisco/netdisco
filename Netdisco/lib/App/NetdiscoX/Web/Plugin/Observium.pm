@@ -1,4 +1,4 @@
-package App::NetdiscoX::Web::Plugin::ObserviumSparklines;
+package App::NetdiscoX::Web::Plugin::Observium;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
@@ -9,13 +9,13 @@ use File::ShareDir 'dist_dir';
 use Path::Class;
 
 register_device_port_column({
-  name  => 'observiumsparklines',
+  name  => 'observium',
   position => 'mid',
   label => 'Traffic',
   default => 'on',
 });
 
-register_css('observiumsparklines');
-register_javascript('observiumsparklines');
+register_css('observium');
+register_javascript('observium');
 
 true;
