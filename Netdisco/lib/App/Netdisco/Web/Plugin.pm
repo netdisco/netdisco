@@ -4,6 +4,8 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 set(
+  '_additional_css'         => [],
+  '_additional_javascript'  => [],
   '_extra_device_port_cols' => [],
   '_navbar_items' => [],
   '_search_tabs'  => [],
@@ -28,6 +30,32 @@ register 'register_template_path' => sub {
   unshift
     @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
     $path;
+};
+
+sub _register_include {
+  my ($type, $plugin) = @_;
+
+  if (!length $type) {
+      error "bad type to _register_include";
+      return;
+  }
+
+  if (!length $plugin) {
+      error "bad plugin name to register_$type";
+      return;
+  }
+
+  push @{ setting("_additional_$type") }, $plugin;
+}
+
+register 'register_css' => sub {
+  my ($self, $plugin) = plugin_args(@_);
+  _register_include('css', $plugin);
+};
+
+register 'register_javascript' => sub {
+  my ($self, $plugin) = plugin_args(@_);
+  _register_include('javascript', $plugin);
 };
 
 register 'register_device_port_column' => sub {

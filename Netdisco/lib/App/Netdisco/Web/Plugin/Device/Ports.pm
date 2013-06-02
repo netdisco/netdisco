@@ -77,7 +77,7 @@ ajax '/ajax/content/device/ports' => sub {
     template 'ajax/device/ports.tt', {
       results => $results,
       nodes => $nodes_name,
-      device => $device->ip,
+      device => $device,
     }, { layout => undef };
 };
 

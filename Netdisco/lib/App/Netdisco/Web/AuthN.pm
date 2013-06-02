@@ -18,6 +18,8 @@ hook 'before' => sub {
     if (session('user') && session->id) {
         var(user => schema('netdisco')->resultset('User')
                                       ->find(session('user')));
+        var('user')->port_control(0)
+          if setting('no_port_control');
     }
 };
 

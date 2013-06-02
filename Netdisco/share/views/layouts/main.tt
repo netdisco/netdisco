@@ -17,26 +17,34 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-history.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.qtip.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/d3.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';
   </script>
-
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco.js"></script>
 
   [% IF vars.user.port_control %]
-  <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco_portcontrol.js"></script>
+  [% END %]
 
-  <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
+  [% FOREACH add_js IN settings._additional_javascript %]
+  <script type="text/javascript" src="[% uri_base %]/plugin/[% add_js %]/[% add_js %].js"></script>
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/jquery.qtip.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/smoothness/jquery-ui.custom.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
+
+  [% FOREACH add_css IN settings._additional_css %]
+  <link rel="stylesheet" href="[% uri_base %]/plugin/[% add_css %]/[% add_css %].css"/>
+  [% END %]
 </head>
 
 <body>

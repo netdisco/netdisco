@@ -12,7 +12,9 @@
   * Job Queue view and delete page
   * Empty device table prompts initial discover on homepage
   * Support for App::NetdiscoX::Web::Plugin namespace
+  * Plugins can add columns to Device Ports display
   * Observium Sparklines port column plugin
+  * Plugins can have CSS and Javascript loaded within <head>
 
   [ENHANCEMENTS]
 

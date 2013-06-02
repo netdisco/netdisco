@@ -10,6 +10,7 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 
 use App::Netdisco::Web::AuthN;
+use App::Netdisco::Web::Static;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
 use App::Netdisco::Web::Report;

@@ -1,2 +1,0 @@
-<!-- not yet a hyperlink as observium does not support device details page by device-name -->
-<img src="http://[% settings.plugin_c_observiumsparklines.webhost | html_entity %]/graph.php?type=port_bits&device=[% device | uri %]&port=[% row.port | uri %]&from=-1d&to=now&width=100&height=20&legend=no"/>

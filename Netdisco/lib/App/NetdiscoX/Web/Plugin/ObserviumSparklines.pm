@@ -5,11 +5,17 @@ use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
 
+use File::ShareDir 'dist_dir';
+use Path::Class;
+
 register_device_port_column({
-  name  => 'c_observiumsparklines',
+  name  => 'observiumsparklines',
   position => 'mid',
   label => 'Traffic',
   default => 'on',
 });
+
+register_css('observiumsparklines');
+register_javascript('observiumsparklines');
 
 true;
