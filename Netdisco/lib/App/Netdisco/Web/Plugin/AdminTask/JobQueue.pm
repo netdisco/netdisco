@@ -12,8 +12,8 @@ register_admin_task({
 });
 
 ajax '/ajax/control/admin/jobqueue/del' => sub {
-    return unless var('user') and var('user')->admin;
-    return unless length param('job');
+    send_error('Forbidden', 403) unless var('user')->admin;
+    send_error('Missing job', 400) unless length param('job');
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Admin')
@@ -22,7 +22,7 @@ ajax '/ajax/control/admin/jobqueue/del' => sub {
 };
 
 ajax '/ajax/content/admin/jobqueue' => sub {
-    return unless var('user') and var('user')->admin;
+    send_error('Forbidden', 403) unless var('user')->admin;
 
     my $set = schema('netdisco')->resultset('Admin')
       ->with_times

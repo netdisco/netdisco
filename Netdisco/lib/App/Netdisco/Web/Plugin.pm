@@ -23,8 +23,7 @@ register 'register_template_path' => sub {
   my ($self, $path) = plugin_args(@_);
 
   if (!length $path) {
-      error "bad template path to register_template_paths";
-      return;
+      return error "bad template path to register_template_paths";
   }
 
   unshift
@@ -36,13 +35,11 @@ sub _register_include {
   my ($type, $plugin) = @_;
 
   if (!length $type) {
-      error "bad type to _register_include";
-      return;
+      return error "bad type to _register_include";
   }
 
   if (!length $plugin) {
-      error "bad plugin name to register_$type";
-      return;
+      return error "bad plugin name to register_$type";
   }
 
   push @{ setting("_additional_$type") }, $plugin;
@@ -64,8 +61,7 @@ register 'register_device_port_column' => sub {
   $config->{position} ||= 'right';
 
   if (!length $config->{name} or !length $config->{label}) {
-      error "bad config to register_device_port_column";
-      return;
+      return error "bad config to register_device_port_column";
   }
 
   foreach my $item (@{ setting('_extra_device_port_cols') }) {
@@ -85,8 +81,7 @@ register 'register_navbar_item' => sub {
       or !length $config->{path}
       or !length $config->{label}) {
 
-      error "bad config to register_navbar_item";
-      return;
+      return error "bad config to register_navbar_item";
   }
 
   foreach my $item (@{ setting('_navbar_items') }) {
@@ -105,8 +100,7 @@ register 'register_admin_task' => sub {
   if (!length $config->{tag}
       or !length $config->{label}) {
 
-      error "bad config to register_admin_task";
-      return;
+      return error "bad config to register_admin_task";
   }
 
   setting('_admin_tasks')->{ $config->{tag} } = $config;
@@ -119,8 +113,7 @@ sub _register_tab {
   if (!length $config->{tag}
       or !length $config->{label}) {
 
-      error "bad config to register_${nav}_item";
-      return;
+      return error "bad config to register_${nav}_item";
   }
 
   foreach my $item (@{ $stash }) {
@@ -152,8 +145,7 @@ register 'register_report' => sub {
       or !length $config->{label}
       or 0 == scalar grep {$config->{category} eq $_} @categories) {
 
-      error "bad config to register_report";
-      return;
+      return error "bad config to register_report";
   }
 
   foreach my $item (@{setting('_reports_menu')->{ $config->{category} }}) {

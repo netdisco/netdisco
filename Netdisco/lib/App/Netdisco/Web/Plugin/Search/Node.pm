@@ -14,7 +14,7 @@ register_search_tab({ tag => 'node', label => 'Node' });
 # nodes matching the param as an IP or DNS hostname or MAC
 ajax '/ajax/content/search/node' => sub {
     my $node = param('q');
-    return unless $node;
+    send_error('Missing node', 400) unless $node;
     content_type('text/html');
 
     my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);

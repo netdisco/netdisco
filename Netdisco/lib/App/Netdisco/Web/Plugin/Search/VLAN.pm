@@ -11,7 +11,7 @@ register_search_tab({ tag => 'vlan', label => 'VLAN' });
 # devices carrying vlan xxx
 ajax '/ajax/content/search/vlan' => sub {
     my $q = param('q');
-    return unless $q;
+    send_error('Missing query', 400) unless $q;
     my $set;
 
     if ($q =~ m/^\d+$/) {

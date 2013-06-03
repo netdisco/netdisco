@@ -28,7 +28,7 @@ sub _sanity_ok {
 }
 
 ajax '/ajax/control/admin/topology/add' => sub {
-    return unless _sanity_ok();
+    send_error('Bad Request', 400) unless _sanity_ok();
 
     my $device = schema('netdisco')->resultset('Topology')
       ->create({
@@ -75,7 +75,7 @@ ajax '/ajax/control/admin/topology/add' => sub {
 };
 
 ajax '/ajax/control/admin/topology/del' => sub {
-    return unless _sanity_ok();
+    send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Topology')
@@ -89,7 +89,7 @@ ajax '/ajax/control/admin/topology/del' => sub {
 };
 
 ajax '/ajax/content/admin/topology' => sub {
-    return unless var('user') and var('user')->admin;
+    send_error('Forbidden', 403) unless var('user')->admin;
 
     my $set = schema('netdisco')->resultset('Topology')
       ->search({},{order_by => [qw/dev1 dev2 port1/]});

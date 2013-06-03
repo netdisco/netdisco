@@ -5,8 +5,10 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 ajax '/ajax/portcontrol' => sub {
-    return unless var('user')->port_control;
-    return unless param('device') and param('port') and param('field');
+    send_error('Forbidden', 403)
+      unless var('user')->port_control;
+    send_error('No device/port/field', 400)
+      unless param('device') and param('port') and param('field');
 
     my $log = sprintf 'd:[%s] p:[%s] f:[%s]. a:[%s] v[%s]',
       param('device'), (param('port') || ''), param('field'),
@@ -21,7 +23,8 @@ ajax '/ajax/portcontrol' => sub {
       'c_power'  => 'power',
     );
 
-    return unless (param('action') or param('value'));
+    send_error('No action/value', 400)
+      unless (param('action') or param('value'));
 
     my $action = $action_map{ param('field') };
     my $subaction = ($action =~ m/^(?:power|portcontrol)/
@@ -45,7 +48,7 @@ ajax '/ajax/portcontrol' => sub {
 
 ajax '/ajax/userlog' => sub {
     my $user = session('user');
-    send_error('No username') unless $user;
+    send_error('No username', 400) unless $user;
 
     my $rs = schema('netdisco')->resultset('Admin')->search({
       username => $user,

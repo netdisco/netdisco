@@ -11,8 +11,8 @@ sub add_job {
 
     if ($device) {
         $device = NetAddr::IP::Lite->new($device);
-        return unless $device
-          and $device->addr ne '0.0.0.0';
+        return send_error('Bad device', 400)
+          if ! $device or $device->addr eq '0.0.0.0';
     }
 
     try {
@@ -24,7 +24,7 @@ sub add_job {
           username => session('user'),
           userip => request->remote_address,
         });
-    }
+    };
 }
 
 # we have a separate list for jobs needing a device to avoid queueing
@@ -42,18 +42,22 @@ my %jobs_all = map {$_ => 1} qw/
 
 foreach my $jobtype (keys %jobs_all, keys %jobs) {
     ajax "/ajax/control/admin/$jobtype" => sub {
-        return unless var('user') and var('user')->admin;
-        return if exists $jobs{$jobtype} and not param('device');
+        send_error('Forbidden', 403)
+          unless var('user')->admin;
+        send_error('Missing device', 400)
+          if exists $jobs{$jobtype} and not param('device');
+
         add_job($jobtype, param('device'));
     };
 
     post "/admin/$jobtype" => sub {
-        return unless var('user') and var('user')->admin;
-        return if exists $jobs{$jobtype} and not param('device');
-        add_job($jobtype, param('device'));
+        send_error('Forbidden', 403)
+          unless var('user')->admin;
+        send_error('Missing device', 400)
+          if exists $jobs{$jobtype} and not param('device');
 
-        status(302);
-        header(Location => uri_for('/admin/jobqueue')->path_query());
+        add_job($jobtype, param('device'));
+        redirect uri_for('/admin/jobqueue')->path_query;
     };
 }
 
@@ -61,9 +65,7 @@ get '/admin/*' => sub {
     my ($tag) = splat;
 
     if (! eval { var('user')->admin }) {
-        status(302);
-        header(Location => uri_for('/')->path_query());
-        return;
+        return redirect uri_for('/')->path_query;
     }
 
     # trick the ajax into working as if this were a tabbed page

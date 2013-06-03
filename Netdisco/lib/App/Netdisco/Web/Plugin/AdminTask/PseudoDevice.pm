@@ -29,7 +29,7 @@ sub _sanity_ok {
 }
 
 ajax '/ajax/control/admin/pseudodevice/add' => sub {
-    return unless _sanity_ok();
+    send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Device')
@@ -49,7 +49,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => sub {
 };
 
 ajax '/ajax/control/admin/pseudodevice/del' => sub {
-    return unless _sanity_ok();
+    send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Device')
@@ -61,7 +61,7 @@ ajax '/ajax/control/admin/pseudodevice/del' => sub {
 };
 
 ajax '/ajax/control/admin/pseudodevice/update' => sub {
-    return unless _sanity_ok();
+    send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
       my $device = schema('netdisco')->resultset('Device')
@@ -86,7 +86,7 @@ ajax '/ajax/control/admin/pseudodevice/update' => sub {
 };
 
 ajax '/ajax/content/admin/pseudodevice' => sub {
-    return unless var('user') and var('user')->admin;
+    send_error('Forbidden', 403) unless var('user')->admin;
 
     my $set = schema('netdisco')->resultset('Device')
       ->search(

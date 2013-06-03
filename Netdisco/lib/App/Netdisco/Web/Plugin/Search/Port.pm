@@ -11,7 +11,7 @@ register_search_tab({ tag => 'port', label => 'Port' });
 # device ports with a description (er, name) matching
 ajax '/ajax/content/search/port' => sub {
     my $q = param('q');
-    return unless $q;
+    send_error('Missing query', 400) unless $q;
     my $set;
 
     if ($q =~ m/^\d+$/) {

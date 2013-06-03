@@ -11,7 +11,7 @@ ajax '/ajax/data/devicename/typeahead' => sub {
     my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
 
     content_type 'application/json';
-    return to_json [map {$_->dns || $_->name || $_->ip} $set->all];
+    to_json [map {$_->dns || $_->name || $_->ip} $set->all];
 };
 
 ajax '/ajax/data/deviceip/typeahead' => sub {
@@ -29,27 +29,26 @@ ajax '/ajax/data/deviceip/typeahead' => sub {
     }
 
     content_type 'application/json';
-    return to_json \@data;
+    to_json \@data;
 };
 
 ajax '/ajax/data/port/typeahead' => sub {
     my $dev  = param('dev1')  || param('dev2');
     my $port = param('port1') || param('port2');
-    return unless length $dev;
+    send_error('Missing device', 400) unless length $dev;
 
     my $device = schema('netdisco')->resultset('Device')
       ->find({ip => $dev});
-    return unless $device;
+    send_error('Bad device', 400) unless $device;
 
     my $set = $device->ports({},{order_by => 'port'});
     $set = $set->search({port => { -ilike => "\%$port\%" }})
       if length $port;
 
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
-    return unless scalar @$results;
 
     content_type 'application/json';
-    return to_json [map {$_->port} @$results];
+    to_json [map {$_->port} @$results];
 };
 
 true;

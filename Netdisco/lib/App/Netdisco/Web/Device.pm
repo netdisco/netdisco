@@ -116,9 +116,7 @@ get '/device' => sub {
     });
 
     if (!defined $dev) {
-        status(302);
-        header(Location => uri_for('/', {nosuchdevice => 1})->path_query());
-        return;
+        return redirect uri_for('/', {nosuchdevice => 1})->path_query;
     }
 
     params->{'tab'} ||= 'details';
