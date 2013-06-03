@@ -1,4 +1,4 @@
-<table class="table-bordered table-condensed table-striped">
+<table class="table table-bordered table-striped">
   <thead>
     <tr>
       <th></th>
@@ -6,7 +6,10 @@
       [% NEXT IF item.name == 'c_admin' %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
-        <th[% ' class="center_cell"' IF NOT loop.first %]>[% item.label | html_entity %]</th>
+        <th[% ' class="nd_nudge-for-icon"' IF
+          (vars.user.port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]>
+          [% item.label | html_entity %]
+        </th>
       [% END %]
     </tr>
   </thead>
@@ -25,87 +28,109 @@
         [% END %]
       </td>
 
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
+        <td>
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+        </td>
+      [% END %]
+
       [% IF params.c_port %]
       [% IF vars.user.port_control AND params.c_admin %]
       [% IF row.up_admin == 'up' %]
-      <td nowrap class="nd_editable_cell" data-action="down"
-        data-field="c_port" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-down nd_hand_icon"
+      <td nowrap class="nd_editable-cell" data-action="down"
+        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+        <i class="icon-hand-down nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Disable"></i>
       [% ELSE %]
-      <td nowrap class="nd_editable_cell" data-action="up"
-        data-field="c_port" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-up nd_hand_icon"
+      <td nowrap class="nd_editable-cell" data-action="up"
+        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+        <i class="icon-hand-up nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Enable"></i>
       [% END %]
       [% ELSE %]
       <td nowrap>
       [% END %]
-        <a class="nd_linkcell nd_this_port_only" href="[% uri_for('/device',
+        <a class="nd_linkcell nd_this-port-only" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
         [% row.port | html_entity %]
       </a></td>
       [% END %]
 
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
+        <td>
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+        </td>
+      [% END %]
+
       [% IF params.c_descr %]
-      <td nowrap class="center_cell">[% row.descr | html_entity %]</td>
+      <td nowrap>[% row.descr | html_entity %]</td>
       [% END %]
 
       [% IF params.c_type %]
-      <td class="center_cell">[% row.type | html_entity %]</td>
+      <td>[% row.type | html_entity %]</td>
       [% END %]
 
       [% IF params.c_duplex %]
-      <td class="center_cell">
+      <td>
         [% IF row.up == 'up' AND row.duplex %]
-        [% row.duplex_admin | html_entity %] / [% row.duplex | html_entity %]
+        [% row.duplex_admin.ucfirst | html_entity %] / [% row.duplex.ucfirst | html_entity %]
         [% END %]
       </td>
       [% END %]
 
       [% IF params.c_lastchange %]
-      <td class="center_cell">[% row.lastchange_stamp | html_entity %]</td>
+      <td>[% row.lastchange_stamp | html_entity %]</td>
       [% END %]
 
       [% IF params.c_name %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td nowrap class="center_cell nd_editable_cell" contenteditable="true"
-          data-field="c_name" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit_icon"></i>
+      <td nowrap class="nd_editable-cell" contenteditable="true"
+          data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+      <i class="icon-edit nd_edit-icon"></i>
       [% ELSE %]
-      <td nowrap class="center_cell">
+      <td nowrap>
       [% END %]
-      <div class="nd_editable_cell_content">
+      <div class="nd_editable-cell-content">
         [% row.name | html_entity %]
       </div>
       </td>
       [% END %]
 
       [% IF params.c_speed %]
-      <td class="center_cell">[% row.speed | html_entity %]</td>
+      <td>[% row.speed | html_entity %]</td>
       [% END %]
 
       [% IF params.c_mac %]
-      <td class="center_cell">[% row.mac | html_entity %]</td>
+      <td>[% row.mac | html_entity %]</td>
       [% END %]
 
       [% IF params.c_mtu %]
-      <td class="center_cell">[% row.mtu | html_entity %]</td>
+      <td>[% row.mtu | html_entity %]</td>
       [% END %]
 
       [% IF params.c_vlan %]
       [% IF vars.user.port_control AND params.c_admin %]
-      <td class="center_cell nd_editable_cell" contenteditable="true"
-        data-field="c_vlan" data-for-device="[% device | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit_icon"></i>
-      <div class="nd_editable_cell_content">
+      <td class="nd_editable-cell" contenteditable="true"
+        data-field="c_vlan" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+      <i class="icon-edit nd_edit-icon"></i>
+      <div class="nd_editable-cell-content">
         [% IF row.vlan %][% row.vlan | html_entity %][% END %]
       </div>
       </td>
       [% ELSE %]
-      <td class="center_cell">
+      <td>
         <a class="nd_linkcell"
           href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
             [% row.vlan | html_entity %]</a>
@@ -123,11 +148,10 @@
           [% SET output = output _ ', ' IF NOT loop.last %]
         [% END %]
         [% IF row.tagged_vlans_count > 10 %] [%# TODO make this a settable variable %]
-          [% SET output = '<div class="vlan_total">(' _ row.tagged_vlans_count
-            _ ')</div><span class="nd_linkcell nd_collapse_vlans">
-              <i class="cell-arrow-up-down icon-chevron-up icon-large">
-              </i>Show VLANs</span>
-              <div class="nd_collapsing nd_collapse_pre_hidden">' _ output %]
+          [% SET output = '<div class="nd_vlan-total">(' _ row.tagged_vlans_count
+            _ ')</div><span class="nd_linkcell nd_collapse-vlans">
+              <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
+              <div class="nd_collapsing nd_collapse-pre-hidden">' _ output %]
           [% SET output = output _ '</div>' %]
         [% END %]
         [% output %]
@@ -140,15 +164,15 @@
           [% IF row.power.admin == 'true' %]
             [% IF vars.user.port_control AND params.c_admin %]
               <td nowrap data-action="false"
-                data-field="c_power" data-for-device="[% device | html_entity %]"
+                data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power_icon nd_power_on"
+                <i class="icon-off nd_power-icon nd_power-on"
                   rel="tooltip" data-placement="top" data-offset="3"
                   data-animation="" data-title="Click to Disable"></i>
             [% ELSE %]
               <td nowrap>
-                <i class="icon-off nd_power_on"></i>
+                <i class="icon-off nd_power-on"></i>
             [% END %]
                 <span>
                 [% IF row.power.power > 0 %]
@@ -160,10 +184,10 @@
           [% ELSE %]
             [% IF vars.user.port_control AND params.c_admin %]
               <td nowrap data-action="true"
-                data-field="c_power" data-for-device="[% device | html_entity %]"
+                data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power_icon"
+                <i class="icon-off nd_power-icon"
                   rel="tooltip" data-placement="top" data-offset="3"
                   data-animation="" data-title="Click to Enable"></i>
             [% ELSE %]
@@ -179,22 +203,25 @@
 
       [% IF params.c_nodes OR params.c_neighbors %]
       <td>
-        [% IF params.c_neighbors AND row.remote_ip %]
+        [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.neighbor %]
           <a href="[% uri_for('/device',
                 self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
             ([% row.remote_port | html_entity %])</a>
-          [% ELSE %]
+          [% ELSIF row.remote_ip AND row.remote_port %]
           <span class="label label-important">N</span>
           <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
             [% row.remote_ip | html_entity %] (port: [% row.remote_port | html_entity %]
-            id: [% (row.remote_type _ ' / ') IF row.remote_type %][% row.remote_id | html_entity %])</a>
+            [% ' id: '_ row.remote_type IF row.remote_type%]
+            [% ' type: '_ row.remote_id IF row.remote_id%])</a>
+          [% ELSE %]
+          <span class="label label-important">N</span> (probable neighbor)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
         [% FOREACH node IN row.$nodes %]
-          [% '<br/>' IF row.remote_ip OR NOT loop.first %]
+          [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<span class="label label-warning">A</span> &nbsp;' IF NOT node.active %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
@@ -216,13 +243,24 @@
       [% END %]
 
       [% IF params.c_stp %]
-      <td class="center_cell">[% row.stp | html_entity %]</td>
+      <td>[% row.stp | html_entity %]</td>
       [% END %]
 
       [% IF params.c_up %]
-      <td class="center_cell">
-        [% row.up_admin | html_entity %] / [% row.up | html_entity %]
+      <td>
+        [% row.up_admin.ucfirst | html_entity %] / [% row.up.ucfirst | html_entity %]
       </td>
+      [% END %]
+
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
+        <td>
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+        </td>
       [% END %]
     </tr>
     [% END %]

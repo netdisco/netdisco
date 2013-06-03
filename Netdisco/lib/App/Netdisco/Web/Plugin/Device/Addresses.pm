@@ -13,7 +13,7 @@ ajax '/ajax/content/device/addresses' => sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($q) or return;
+      ->search_for_device($q) or send_error('Bad device', 400);
 
     my $set = $device->device_ips->search({}, {order_by => 'alias'});
     return unless $set->count;

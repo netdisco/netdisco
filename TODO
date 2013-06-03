@@ -1,22 +1,19 @@
 FRONTEND
 ========
 
-* UI for topo DB table editing
-  - drop topo file support and use DB only
-* Choice of MAC address formats
-* No devices - trigger first discover splash page
+* moar reports
 
 * (jeneric) device module tab
+
+BACKEND
+=======
 
 DAEMON
 ======
 
-* macsuck/arpnip
-
 CORE
 ====
 
-* pseudo-device support
 * VRF support
 
 DOCS

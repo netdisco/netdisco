@@ -1,0 +1,44 @@
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Device Name</th>
+      <th class="nd_center-cell">Device IP</th>
+      <th class="nd_center-cell">Number of Ports</th>
+      <th class="nd_center-cell">Action</th>
+    </tr>
+  </thead>
+  </tbody>
+    <tr>
+      <form name="add">
+      <td class="nd_center-cell"><input name="dns" type="text"></td>
+      <td class="nd_center-cell"><input name="ip" type="text"></td>
+      <td class="nd_center-cell"><input name="ports" type="number"></td>
+      <td class="nd_center-cell">
+        <button class="btn btn-small" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+      </td>
+      </form>
+    </tr>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <form name="update">
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% uri_for('/device') %]?q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.ip | html_entity %]</td>
+      <td class="nd_center-cell"><input name="ports" type="number" value="[% row.port_count | html_entity %]"></td>
+      <td class="nd_center-cell">
+        <input name="dns" type="hidden" value="[% row.dns | html_entity %]">
+        <input name="ip" type="hidden" value="[% row.ip | html_entity %]">
+        <button class="btn" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+      </form>
+      <form name="del" class="nd_inline-form">
+        <input name="dns" type="hidden" value="[% row.dns | html_entity %]">
+        <input name="ip" type="hidden" value="[% row.ip | html_entity %]">
+        <input name="ports" type="hidden" value="[% row.port_count | html_entity %]">
+        <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </form>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

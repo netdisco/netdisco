@@ -12,7 +12,7 @@ register_device_tab({ tag => 'details', label => 'Details' });
 ajax '/ajax/content/device/details' => sub {
     my $q = param('q');
     my $device = schema('netdisco')->resultset('Device')
-      ->with_times()->search_for_device($q) or return;
+      ->with_times()->search_for_device($q) or send_error('Bad device', 400);
 
     content_type('text/html');
     template 'ajax/device/details.tt', {

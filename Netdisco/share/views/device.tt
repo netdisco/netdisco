@@ -1,6 +1,6 @@
-<i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
+<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
-<i class="icon-question-sign icon-large" id="netmap_help_img" rel="popover"
+<i class="icon-question-sign icon-large" id="nd_netmap-help" rel="popover"
   data-title="Neighbor Map Controls"
   data-html="true"
   data-content="
@@ -12,16 +12,16 @@
     </ul>"
   data-placement='left' data-trigger='click'></i>
 <div class="container-fluid">
-  <div class="sidebar sidebar_pinned">
+  <div class="nd_sidebar nd_sidebar-pinned">
     <div class="well">
-      <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
+      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
-      <i class="sidebar_pin icon-pushpin sidebar_pin_clicked"
+      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
       <div class="tab-content">
-        [% FOREACH tab IN settings.device_tabs %]
+        [% FOREACH tab IN settings._device_tabs %]
         <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-          <form id="[% tab.tag %]_form" class="nd_sidesearchform form-stacked"
+          <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked"
               method="get" action="[% uri_for('/device') %]">
             <input name="tab" value="[% tab.tag %]" type="hidden"/>
             [% TRY %]
@@ -41,14 +41,14 @@
   </div>
 
   <div class="content">
-    <ul id="search_results" class="nav nav-tabs">
-      [% FOREACH tab IN settings.device_tabs %]
+    <ul id="nd_search-results" class="nav nav-tabs">
+      [% FOREACH tab IN settings._device_tabs %]
       <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
       [% END %]
-      <span id="nd_device_name">[% d.dns || d.name | html_entity %]</span>
+      <span id="nd_device-name">[% d.dns || d.name | html_entity %]</span>
     </ul>
     <div class="tab-content">
-      [% FOREACH tab IN settings.device_tabs %]
+      [% FOREACH tab IN settings._device_tabs %]
       <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag %]_pane"></div>
       [% END %]
   </div>

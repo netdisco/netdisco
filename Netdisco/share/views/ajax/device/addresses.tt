@@ -1,9 +1,9 @@
-<table class="table-bordered table-condensed table-striped">
+<table class="table table-bordered table-condensed table-striped">
   <thead>
     <tr>
       <th>Address</th>
       <th>DNS</th>
-      <th class="center_cell">Interface</th>
+      <th class="nd_center-cell">Interface</th>
       <th>Description</th>
       <th>Prefix</th>
     </tr>
@@ -13,7 +13,7 @@
     <tr>
       <td>[% row.alias | html_entity %]</a>
       <td>[% row.dns | html_entity %]</a>
-      <td class="center_cell"><a class="nd_linkcell"
+      <td class="nd_center-cell"><a class="nd_linkcell"
         href="[% device_ports %]&q=[% params.q | uri %]&f=[% row.port | uri %]">[% row.port | html_entity %]</a></td>
       <td>[% row.device_port.name | html_entity %]</td>
       <td><a class="nd_linkcell"

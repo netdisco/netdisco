@@ -10,6 +10,8 @@ use namespace::clean;
 
 # add dispatch methods for poller tasks
 with 'App::Netdisco::Daemon::Worker::Poller::Device';
+with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
+with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
 
 sub worker_body {
   my $self = shift;
@@ -61,7 +63,7 @@ sub close_job {
 
   try {
       schema('netdisco')->resultset('Admin')
-        ->find($job->job)
+        ->find($job->job, {for => 'update'})
         ->update({
           status => $status,
           log => $log,

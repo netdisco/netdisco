@@ -14,7 +14,7 @@ ajax '/ajax/content/device/ports' => sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($q) or return;
+      ->search_for_device($q) or send_error('Bad device', 400);
     my $set = $device->ports;
 
     # refine by ports if requested
@@ -77,7 +77,7 @@ ajax '/ajax/content/device/ports' => sub {
     template 'ajax/device/ports.tt', {
       results => $results,
       nodes => $nodes_name,
-      device => $device->ip,
+      device => $device,
     }, { layout => undef };
 };
 

@@ -61,7 +61,7 @@ sub close_job {
 
   try {
       schema('netdisco')->resultset('Admin')
-        ->find($job->job)
+        ->find($job->job, {for => 'update'})
         ->update({
           status => $status,
           log => $log,

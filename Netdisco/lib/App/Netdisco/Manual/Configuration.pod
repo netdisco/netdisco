@@ -1,0 +1,142 @@
+=head1 NAME
+
+App::Netdisco::Manual::Configuration - How to Configure Netdisco
+
+=head1 INTRODUCTION
+
+The configuration files for Netdisco come with all options set to sensible
+default values, and just a few that you must initially set yourself.
+
+However as you use the system over time, there are many situations where you
+might want to tune the behaviour of Netdisco, and for that we have a lot of
+configuration settings available.
+
+=head2 GUIDANCE
+
+There are two configuration files: C<config.yml> (which lives inside Netdisco)
+and C<deployment.yml> (which usually lives in C<${HOME}/environments>).
+
+The C<config.yml> file includes defaults for every setting, and should be left
+alone.  Any time you want to set an option, use only the C<deployment.yml>
+file. The two are merged when Netdisco starts, with your settings in
+C<deployment.yml> overriding the defaults from C<config.yml>.
+
+The configuration file format for Netdisco is YAML. This is easy for humans to
+edit, but you should take care over whitespace and avoid TAB characters. YAML
+supports several data types:
+
+=over 4
+
+=item *
+
+Boolean - True/False value, using C<1> and C<0> or C<true> and C<false>
+respectively
+
+=item *
+
+List - Set of things using C<[a, b, c]> on one line or C<-> on separate lines
+
+=item *
+
+Dictionary - Key/Value pairs (like Perl Hash) using C<{key1: val1, key2,
+val2}> on one line or C<key: value> on separate lines
+
+=item *
+
+String - Quoted, just like in Perl (and essential if the item contains the
+colon character)
+
+=back
+
+=head1 SUPPORTED SETTINGS
+
+=head2 Essential Settings
+
+If you followed the installation instructions, then you should have set the
+database connection parameters to match those of your local system. That is,
+the C<dsn> (DB name, host, port), C<user> and C<pass>.
+
+=head2 General Settings
+
+=head3 C<log: debug|warning|error>
+
+Default: C<warning>
+
+The log level used by Netdisco. It's useful to see warning messages from the
+backend poller, as this can highlight broken topology.
+
+=head3 C<logger: console|file>
+
+Default: C<file>
+
+Destination for log messages. Console means standard ouput. When set to
+C<file>, the default destination is the C<${HOME}/logs> directory.
+
+=head3 C<logger_format: String>
+
+Default: C<< '[%P] %L @%D> %m' >>
+
+Structure of the log messages. See L<Dancer::Logger::Abstract/"logger_format">
+for details.
+
+=head2 Web Frontend
+
+=head3 C<domain_suffix: String>
+
+Default: None
+
+Set this to your local site's domain name. This is usually removed from node
+names in the web interface to make things more readable.
+
+=head3 C<no_auth: Boolean>
+
+Default: C<false>
+
+Enable this to disable login authentication in the web frontend. The username
+will be set to C<guest> so if you want to allow extended permissions (C<admin>
+or C<port_control>, create a dummy user with the appropriate flag, in the
+database:
+
+ netdisco=> insert into users (username, port_control) values ('guest', true);
+
+=head3 C<port: String>
+
+Default: C<5000>
+
+Port which the web server listens on. Netdisco comes with a good pre-forking
+web server, so you can change this to C<80> if you want to use it directly.
+However the default is designed to work well with servers such as Apache in
+reverse-proxy mode.
+
+=head3 C<web_plugins: List of String>
+
+Default: List of L<App::Netdisco::Web::Plugin> names
+
+Netdisco's plugin system allows the user more control over the user interface.
+Plugins can be distributed independently from Netdisco and are a better
+alternative to source code patches. This setting is the list of Plugins which
+are used in the default Netdisco distribution.
+
+You can override this to set your own list. If you only want to add to the
+default list then use C<extra_web_plugins>, which allows the Netdisco
+developers to update C<web_plugins> in a future release.
+
+=head3 C<extra_web_plugins: List of String>
+
+Default: None
+
+List of additional L<App::Netdisco::Web::Plugin> names to load. See also the
+C<web_plugins> setting.
+
+=head2 Netdisco Core
+
+=head2 Backend Daemon
+
+=head2 Dancer Internal
+
+=head1 UNSUPPORTED SETTINGS
+
+These settings are from Netdisco 1.x but are yet to be supported in Netdisco
+2. If you really need the feature, please let the developers know.
+
+=cut

@@ -1,0 +1,51 @@
+<table class="table table-bordered table-condensed table-hover">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Entered</th>
+      <th class="nd_center-cell">Action</th>
+      <th class="nd_center-cell">Status</th>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Port</th>
+      <th class="nd_center-cell">Param</th>
+      <th class="nd_center-cell">User</th>
+      <th class="nd_center-cell">Started</th>
+      <th class="nd_center-cell">Finished</th>
+      <th class="nd_center-cell">Action</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr
+      [% ' class="success"' IF row.status == 'done' %]
+      [% ' class="error"'   IF row.status == 'error' %]
+      [% ' class="info"'    IF row.status.search('^queued-') %]
+    >
+      <td class="nd_center-cell">[% row.entered_stamp | html_entity %]</td>
+      <td class="nd_center-cell">
+        [% FOREACH word IN row.action.split('_') %]
+        [% word.ucfirst | html_entity %]&nbsp;
+        [% END %]
+      </td>
+      [% IF row.status.search('^queued-') %]
+      <td class="nd_center-cell">Running on &quot;[% row.status.remove('^queued-') | html_entity %]&quot;</td>
+      [% ELSE %]
+      <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
+      [% END %]
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.port | html_entity %]</td>
+      <td class="nd_center-cell">[% row.subaction | html_entity %]</td>
+      <td class="nd_center-cell">[% row.username | html_entity %]</td>
+      <td class="nd_center-cell">[% row.started_stamp | html_entity %]</td>
+      <td class="nd_center-cell">[% row.finished_stamp | html_entity %]</td>
+      <td class="nd_center-cell">
+      <form name="del" class="nd_inline-form">
+        <input name="job" type="hidden" value="[% row.job | html_entity %]">
+        <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </form>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

@@ -1,0 +1,6 @@
+<a href="http://[% settings.plugin_observium.webhost | uri %]/device/hostname=[% device.dns || device.name | uri %]/tab=port/ifdescr=[% row.base64url_port %]/"
+  [% 'target="_blank"' IF settings.plugin_observium.open_in_new_window %]
+  class="btn nd_observium"
+  data-content='
+    <img src="http://[% settings.plugin_observium.webhost | uri %]/graph.php?type=port_bits&device=[% device.dns || device.name | uri %]&port=[% row.port | uri %]&from=-1w&to=now&width=208&height=100&title=yes"/>'
+><i class="icon-bar-chart"></i></a>

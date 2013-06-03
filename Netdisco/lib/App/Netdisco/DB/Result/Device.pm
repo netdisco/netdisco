@@ -180,6 +180,16 @@ __PACKAGE__->has_many(
 
 =head1 ADDITIONAL COLUMNS
 
+=head2 port_count
+
+Returns the number of ports on this device. Enable this
+column by applying the C<with_port_count()> modifier to C<search()>.
+
+=cut
+
+sub port_count { return (shift)->get_column('port_count') }
+
+
 =head2 uptime_age
 
 Formatted version of the C<uptime> field.

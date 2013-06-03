@@ -32,12 +32,12 @@ function port_control (e) {
       }
       else if ($.trim(td.attr('data-action')) == 'false') {
         $(e).next('span').text('');
-        $(e).toggleClass('nd_power_on');
+        $(e).toggleClass('nd_power-on');
         $(e).data('tooltip').options.title = 'Click to Enable';
         td.attr('data-action', 'true');
       }
       else if ($.trim(td.attr('data-action')) == 'true') {
-        $(e).toggleClass('nd_power_on');
+        $(e).toggleClass('nd_power-on');
         $(e).data('tooltip').options.title = 'Click to Disable';
         td.attr('data-action', 'false');
       }

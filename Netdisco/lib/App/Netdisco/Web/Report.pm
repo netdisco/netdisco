@@ -10,7 +10,7 @@ get '/report/*' => sub {
 
     var(nav => 'reports');
     template 'report', {
-      report => setting('reports')->{ $tag },
+      report => setting('_reports')->{ $tag },
     };
 };
 

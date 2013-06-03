@@ -1,0 +1,99 @@
+#!/usr/bin/env perl
+
+use FindBin;
+FindBin::again();
+use Path::Class 'dir';
+
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
+
+use App::Netdisco;
+use Dancer ':script';
+use Dancer::Plugin::DBIC 'schema';
+
+use App::Netdisco::Util::Device 'get_device';
+use NetAddr::IP::Lite ':lower';
+use Try::Tiny;
+
+=head1 NAME
+
+nd-import-topology - Import a Nedisco 1.x Manual Topology File
+
+=head2 USAGE
+
+ ./nd-import-topology /path/to/netdisco-topology.txt
+
+=head2 DESCRIPTION
+
+This helper script will read and import the content of a Netdisco 1.x format
+Manual Topology file into the Netdisco 2.x database's C<topology> table.
+
+It's safe to run the script multiple times on the same file - any new data
+will be imported.
+
+The file syntax must be like so:
+
+ left-device
+   link:left-port,right-device,right-port
+
+The devices can be either host names or IPs. Data will be imported even if the
+devices are currently unknown to Netdisco.
+
+=cut
+
+my $file = $ARGV[0];
+die "missing topology file name on command line\n" unless $file;
+
+chomp $file;
+my $dev = undef; # current device
+print "Loading topology information from $file\n";
+
+open (DEVS,'<', $file)
+  or die "topo_load_file($file): $!\n";
+
+while (my $line = <DEVS>) {
+    chomp $line;
+    $line =~ s/(?<!\\)#.*//;
+    $line =~ s/\\#/#/g;
+    $line =~ s/^\s+//g;
+    $line =~ s/\s+$//g;
+    next if $line =~ m/^\s*$/;
+    
+    if ($line =~ m/^link:(.*)/){
+        my ($from_port, $to, $to_port) = split(m/,/, $1);
+
+        unless (defined $dev) {
+            print " Skipping $line. No device yet defined!\n";
+            next;
+        }
+
+        # save Link info
+        try {
+            schema('netdisco')->txn_do(sub {
+              schema('netdisco')->resultset('Topology')->create({
+                dev1  => $dev,
+                port1 => $from_port,
+                dev2  => get_device($to)->ip,
+                port2 => $to_port,
+              });
+            });
+        };
+    }
+    elsif ($line =~ /^alias:(.*)/) {
+        # ignore aliases
+    }
+    else {
+        my $ip = NetAddr::IP::Lite->new($line)
+          or next;
+        next if $ip->addr eq '0.0.0.0';
+
+        $dev = get_device($ip->addr)->ip;
+        print " Set device: $dev\n";
+    }
+}
+
+close (DEVS);

@@ -1,5 +1,5 @@
 <div class="container">
-  <div class="row nd_herorow">
+  <div class="row nd_hero-row">
     <div class="span8 offset2">
       [% IF params.failed %]
       <div class="alert alert-error fade in">
@@ -30,7 +30,7 @@
         <h2>Welcome to Netdisco</h2>
         <small>Netdisco is an Open Source web-based network management tool.</small>
         [% IF NOT session.user %]
-        <form class="nd_loginform" method="post" action="[% uri_for('/login') %]">
+        <form class="nd_login-form" method="post" action="[% uri_for('/login') %]">
           <div class="form-horizontal">
             <input placeholder="Username" class="span2" name="username" type="text"/>
             <input placeholder="Password" class="span2" name="password" type="password"/>
@@ -44,6 +44,19 @@
         <script type="text/javascript"> $('#nq').focus(); // set focus to navbar search </script>
         [% END %]
       </div>
+      [% IF vars.nodevices %]
+      <div class="hero-unit">
+        <h3>Initial Discovery</h3>
+        <p>You haven't discovered any devices yet.<p>
+        <p>Enter a network device name or IP to queue the first discovery:</p>
+        <form method="post" action="[% uri_for('/admin/discover') %]">
+          <div class="form-horizontal">
+            <input placeholder="Device hostname or IP" class="span4" name="device" type="text"/>
+            <button type="submit" class="btn btn-info">Discover</button>
+          </div>
+        </form>
+      </div>
+      [% END %]
     </div>
   </div>
 </div> <!-- /container -->

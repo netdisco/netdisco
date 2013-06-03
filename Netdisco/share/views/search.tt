@@ -1,16 +1,16 @@
-<i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
+<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
-  <div class="sidebar">
+  <div class="nd_sidebar">
     <div class="well">
-      <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
+      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
-      <i class="sidebar_pin icon-pushpin"
+      <i class="nd_sidebar-pin icon-pushpin"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Pin Sidebar"></i>
       <div class="tab-content">
-        [% FOREACH tab IN settings.search_tabs %]
+        [% FOREACH tab IN settings._search_tabs %]
         <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-          <form id="[% tab.tag %]_form" class="nd_sidesearchform form-stacked" method="get" action="[% uri_for('/search') %]">
+          <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') %]">
             <input name="tab" value="[% tab.tag %]" type="hidden"/>
             [% TRY %]
             [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
@@ -28,13 +28,13 @@
   </div>
 
   <div class="content">
-    <ul id="search_results" class="nav nav-tabs">
-      [% FOREACH tab IN settings.search_tabs %]
+    <ul id="nd_search-results" class="nav nav-tabs">
+      [% FOREACH tab IN settings._search_tabs %]
       <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
       [% END %]
     </ul>
     <div class="tab-content">
-      [% FOREACH tab IN settings.search_tabs %]
+      [% FOREACH tab IN settings._search_tabs %]
       <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag %]_pane"></div>
       [% END %]
   </div>

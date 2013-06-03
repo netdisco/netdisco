@@ -38,7 +38,7 @@ __PACKAGE__->add_columns(
     original      => { default_value => \"now()" },
   },
   "ssid",
-  { data_type => "text", is_nullable => 1, default_value => '' },
+  { data_type => "text", is_nullable => 0, default_value => '' },
 );
 __PACKAGE__->set_primary_key("mac", "ssid");
 

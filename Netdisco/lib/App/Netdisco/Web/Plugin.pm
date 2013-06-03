@@ -4,12 +4,16 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 set(
-  'navbar_items' => [],
-  'search_tabs'  => [],
-  'device_tabs'  => [],
-  'reports_menu' => {},
-  'reports' => {},
-  'report_order' => [qw/Device Port Node VLAN Network Wireless/],
+  '_additional_css'         => [],
+  '_additional_javascript'  => [],
+  '_extra_device_port_cols' => [],
+  '_navbar_items' => [],
+  '_search_tabs'  => [],
+  '_device_tabs'  => [],
+  '_admin_tasks'  => {},
+  '_reports_menu' => {},
+  '_reports' => {},
+  '_report_order' => [qw/Device Port Node VLAN Network Wireless/],
 );
 
 # this is what Dancer::Template::TemplateToolkit does by default
@@ -19,13 +23,55 @@ register 'register_template_path' => sub {
   my ($self, $path) = plugin_args(@_);
 
   if (!length $path) {
-      error "bad template path to register_template_paths";
-      return;
+      return error "bad template path to register_template_paths";
   }
 
   unshift
     @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
     $path;
+};
+
+sub _register_include {
+  my ($type, $plugin) = @_;
+
+  if (!length $type) {
+      return error "bad type to _register_include";
+  }
+
+  if (!length $plugin) {
+      return error "bad plugin name to register_$type";
+  }
+
+  push @{ setting("_additional_$type") }, $plugin;
+}
+
+register 'register_css' => sub {
+  my ($self, $plugin) = plugin_args(@_);
+  _register_include('css', $plugin);
+};
+
+register 'register_javascript' => sub {
+  my ($self, $plugin) = plugin_args(@_);
+  _register_include('javascript', $plugin);
+};
+
+register 'register_device_port_column' => sub {
+  my ($self, $config) = plugin_args(@_);
+  $config->{default} ||= '';
+  $config->{position} ||= 'right';
+
+  if (!length $config->{name} or !length $config->{label}) {
+      return error "bad config to register_device_port_column";
+  }
+
+  foreach my $item (@{ setting('_extra_device_port_cols') }) {
+      if ($item->{name} eq $config->{name}) {
+          $item = $config;
+          return;
+      }
+  }
+
+  push @{ setting('_extra_device_port_cols') }, $config;
 };
 
 register 'register_navbar_item' => sub {
@@ -35,29 +81,39 @@ register 'register_navbar_item' => sub {
       or !length $config->{path}
       or !length $config->{label}) {
 
-      error "bad config to register_navbar_item";
-      return;
+      return error "bad config to register_navbar_item";
   }
 
-  foreach my $item (@{ setting('navbar_items') }) {
+  foreach my $item (@{ setting('_navbar_items') }) {
       if ($item->{tag} eq $config->{tag}) {
           $item = $config;
           return;
       }
   }
 
-  push @{ setting('navbar_items') }, $config;
+  push @{ setting('_navbar_items') }, $config;
 };
 
-sub _register_tab {
-  my ($nav, $config) = @_;
-  my $stash = setting("${nav}_tabs");
+register 'register_admin_task' => sub {
+  my ($self, $config) = plugin_args(@_);
 
   if (!length $config->{tag}
       or !length $config->{label}) {
 
-      error "bad config to register_${nav}_item";
-      return;
+      return error "bad config to register_admin_task";
+  }
+
+  setting('_admin_tasks')->{ $config->{tag} } = $config;
+};
+
+sub _register_tab {
+  my ($nav, $config) = @_;
+  my $stash = setting("_${nav}_tabs");
+
+  if (!length $config->{tag}
+      or !length $config->{label}) {
+
+      return error "bad config to register_${nav}_item";
   }
 
   foreach my $item (@{ $stash }) {
@@ -82,26 +138,25 @@ register 'register_device_tab' => sub {
 
 register 'register_report' => sub {
   my ($self, $config) = plugin_args(@_);
-  my @categories = @{ setting('report_order') };
+  my @categories = @{ setting('_report_order') };
 
   if (!length $config->{category}
       or !length $config->{tag}
       or !length $config->{label}
       or 0 == scalar grep {$config->{category} eq $_} @categories) {
 
-      error "bad config to register_report";
-      return;
+      return error "bad config to register_report";
   }
 
-  foreach my $item (@{setting('reports_menu')->{ $config->{category} }}) {
+  foreach my $item (@{setting('_reports_menu')->{ $config->{category} }}) {
       if ($item eq $config->{tag}) {
-          setting('reports')->{$config->{tag}} = $config;
+          setting('_reports')->{$config->{tag}} = $config;
           return;
       }
   }
 
-  push @{setting('reports_menu')->{ $config->{category} }}, $config->{tag};
-  setting('reports')->{$config->{tag}} = $config;
+  push @{setting('_reports_menu')->{ $config->{category} }}, $config->{tag};
+  setting('_reports')->{$config->{tag}} = $config;
 };
 
 register_plugin;

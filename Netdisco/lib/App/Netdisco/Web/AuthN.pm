@@ -18,30 +18,31 @@ hook 'before' => sub {
     if (session('user') && session->id) {
         var(user => schema('netdisco')->resultset('User')
                                       ->find(session('user')));
+
+        # really just for dev work, to quieten the logs
+        var('user')->port_control(0) if setting('no_port_control');
     }
 };
 
 post '/login' => sub {
-    status(302);
-
     if (param('username') and param('password')) {
         my $user = schema('netdisco')->resultset('User')->find(param('username'));
+
         if ($user) {
             my $sum = Digest::MD5::md5_hex(param('password'));
             if (($sum and $user->password) and ($sum eq $user->password)) {
                 session(user => $user->username);
-                header(Location => uri_for('/inventory')->path_query());
-                return;
+                return redirect uri_for('/inventory')->path_query;
             }
         }
     }
-    header(Location => uri_for('/', {failed => 1})->path_query());
+
+    redirect uri_for('/', {failed => 1})->path_query;
 };
 
 get '/logout' => sub {
     session->destroy;
-    status(302);
-    header(Location => uri_for('/', {logout => 1})->path_query());
+    redirect uri_for('/', {logout => 1})->path_query;
 };
 
 true;

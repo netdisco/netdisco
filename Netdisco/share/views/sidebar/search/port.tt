@@ -1,5 +1,5 @@
 
-            <p class="nd_sidebar_title"><em>Port Search Options</em></p>
+            <p class="nd_sidebar-title"><em>Port Search Options</em></p>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">

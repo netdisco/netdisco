@@ -2,10 +2,19 @@
 
   [NEW FEATURES]
 
-  * Finally we have a discover/refresh daemon job :)
+  * Finally we have a discover/refresh/arpnip/macsuck daemon jobs :)
   * Also... a Scheduler which removes need for crontab installation
-  * The netdisco-do script can run a one-off discover for a device
-  * Can select MAC Address display format on Node and Device Port search
+  * The netdisco-do script can queue any one-off job
+  * Select MAC Address display format on Node and Device Port search
+  * Helper script to import the Netdisco 1.x Topology file to the database
+  * Support for pseudo devices (useful for dummy device links)
+  * Manual Topology editing via the web
+  * Job Queue view and delete page
+  * Empty device table prompts initial discover on homepage
+  * Support for App::NetdiscoX::Web::Plugin namespace
+  * Plugins can add columns to Device Ports display
+  * Observium Sparklines port column plugin
+  * Plugins can have CSS and Javascript loaded within <head>
 
   [ENHANCEMENTS]
 
@@ -14,12 +23,20 @@
   * Port filter in device port display is now highlighted green
   * Navbar search is fuzzier
   * Phone node icon is a little phone handset
+  * User icon color indicates port_control/admin ability
+  * Buttons for discover/macsuck/arpnip on device details page
+  * Support 'path' config option as alternative to --path /mountpoint
+  * Local plugins can be placed in ${NETDISCO_HOME}/site_plugins/...
+  * Missing mibdirs causes all MIBs to be loaded (with a warning)
 
   [BUG FIXES]
 
   * Rename plugins developer doc to .pod
   * Update to latest Bootstrap and JQuery, and temp. fix #7326 in Bootstrap
   * Partial Name in Port search now working
+  * Add unique constraints to topology table
+  * Handle whitespace ahead of OUI data
+  * Wasn't using Bootstrap table class properly
 
 2.007000_001 - 2013-03-17
 

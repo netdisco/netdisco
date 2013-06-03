@@ -1,4 +1,4 @@
-<table class="table-condensed table-striped">
+<table class="table table-condensed table-striped">
   </tbody>
     <tr>
       <td>System Name</td>
@@ -7,11 +7,11 @@
     <tr>
       <td>Location
       [% IF vars.user.port_control %]
-      <i class="icon-edit nd_edit_icon nd_device_details_edit"></i>
+      <i class="icon-edit nd_edit-icon nd_device-details-edit"></i>
       [% END %]
       </td>
       [% IF vars.user.port_control %]
-      <td class="nd_editable_cell" contenteditable="true"
+      <td class="nd_editable-cell" contenteditable="true"
         data-field="location" data-for-device="[% d.ip %]">
           [% d.location | html_entity %]
       </td>
@@ -25,11 +25,11 @@
     <tr>
       <td>Contact
       [% IF vars.user.port_control %]
-      <i class="icon-edit nd_edit_icon nd_device_details_edit"></i>
+      <i class="icon-edit nd_edit-icon nd_device-details-edit"></i>
       [% END %]
       </td>
       [% IF vars.user.port_control %]
-      <td class="nd_editable_cell" contenteditable="true"
+      <td class="nd_editable-cell" contenteditable="true"
         data-field="contact" data-for-device="[% d.ip | html_entity %]">
           [% d.contact | html_entity %]
       </td>
@@ -93,5 +93,24 @@
       <td>VTP Domain</td>
       <td>[% d.vtp_domain | html_entity %]</td>
     </tr>
+    [% IF vars.user.admin %]
+    <tr>
+      <td>Admin Tasks</td>
+      <td>
+        <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discover') %]">
+          <input type="hidden" value="[% d.ip %]" name="device" type="text"/>
+          <button type="submit" class="btn btn-info btn-small">Discover</button>
+        </form>
+        <form method="post" class="nd_inline-form" action="[% uri_for('/admin/arpnip') %]">
+          <input type="hidden" value="[% d.ip %]" name="device" type="text"/>
+          <button type="submit" class="btn btn-info btn-small">Arpnip</button>
+        </form>
+        <form method="post" class="nd_inline-form" action="[% uri_for('/admin/macsuck') %]">
+          <input type="hidden" value="[% d.ip %]" name="device" type="text"/>
+          <button type="submit" class="btn btn-info btn-small">Macsuck</button>
+        </form>
+      </td>
+    </tr>
+    [% END %]
   </tbody>
 </table>

@@ -1,15 +1,22 @@
   $(document).ready(function() {
-    // search hook for each tab
-    [% FOREACH tab IN settings.search_tabs %]
-    $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
-    [% END %]
-    [% FOREACH tab IN settings.device_tabs %]
+    // search tabs
+    [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
     [% END %]
 
-    // and for the reports page
+    // device tabs
+    [% FOREACH tab IN settings._device_tabs %]
+    $('[% "#${tab.tag}_form" %]').submit(function(event){ do_search(event, '[% tab.tag %]'); });
+    [% END %]
+
     [% IF report %]
+    // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function(event){ do_search(event, '[% report.tag %]'); });
+    [% END -%]
+
+    [% IF task %]
+    // for the admin pages
+    $('[% "#${task.tag}_form" %]').submit(function(event){ do_search(event, '[% task.tag %]'); });
     [% END %]
 
     // on page load, load the content for the active tab

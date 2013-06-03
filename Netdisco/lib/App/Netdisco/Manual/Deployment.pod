@@ -22,6 +22,11 @@ parameter to the web startup script:
 
  ~/bin/netdisco-web --path /netdisco2
 
+Alternatively, can set the C<path> configuration option in your
+C<deployment.yml> file:
+
+ path: '/netdisco2'
+
 =head1 Behind a Proxy
 
 By default the web application daemon starts listening on port 5000 and goes 
@@ -39,8 +44,13 @@ configuration would be:
    Allow from all
  </Proxy>
 
+You also need to set the following configuration in your C<deployment.yml>
+file:
+
+ behind_proxy: 1
+
 To combine this with Non-root Hosting as above, simply change the paths
-referenced in the configuration like so (and use C<--path> option):
+referenced in the configuration like so (and use Non-root Hosting as above):
 
  ProxyPass /netdisco2 http://localhost:5000/
  ProxyPassReverse /netdisco2 http://localhost:5000/

@@ -34,7 +34,16 @@ set plack_middlewares => [
 ];
 
 use App::Netdisco::Web;
-dance;
+use Plack::Builder;
+
+my $app = sub {
+  my $env     = shift;
+  my $request = Dancer::Request->new(env => $env);
+  Dancer->dance($request);
+};
+
+my $path = (setting('path') || '/');
+builder { mount $path => $app };
 
 =head1 NAME
 

@@ -1,5 +1,5 @@
 
-            <p class="nd_sidebar_title"><em>Node Search Options</em></p>
+            <p class="nd_sidebar-title"><em>Node Search Options</em></p>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix input-prepend">
               <label class="add-on">
@@ -39,8 +39,8 @@
               </label>
             </div>
             <div class="clearfix">
-              <em>MAC address format:</em><br/>
-              <select id="nd_node_mac_format" name="mac_format">
+              <em class="muted">MAC address format:</em><br/>
+              <select id="nd_node-mac-format" name="mac_format">
                 [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
                 <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
                 [% END %]

@@ -38,6 +38,9 @@ engines:
 web_plugins:
   - Inventory
   - Report::DuplexMismatch
+  - AdminTask::PseudoDevice
+  - AdminTask::Topology
+  - AdminTask::JobQueue
   - Search::Device
   - Search::Node
   - Search::VLAN

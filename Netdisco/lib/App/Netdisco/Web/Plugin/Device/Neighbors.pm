@@ -43,7 +43,7 @@ get '/ajax/data/device/netmap' => sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($q) or return;
+      ->search_for_device($q) or send_error('Bad device', 400);
     my $start = $device->ip;
 
     my @devices = schema('netdisco')->resultset('Device')->search({}, {
@@ -72,7 +72,7 @@ get '/ajax/data/device/netmap' => sub {
     _add_children($tree{children}, var('links')->{$start});
 
     content_type('application/json');
-    return to_json(\%tree);
+    to_json(\%tree);
 };
 
 ajax '/ajax/data/device/alldevicelinks' => sub {
@@ -93,7 +93,7 @@ ajax '/ajax/data/device/alldevicelinks' => sub {
     }
 
     content_type('application/json');
-    return to_json(\%tree);
+    to_json(\%tree);
 };
 
 true;

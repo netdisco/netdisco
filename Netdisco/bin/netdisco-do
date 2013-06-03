@@ -50,6 +50,8 @@ if (!length $action) {
   package MyWorker;
   use Moo;
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
+  with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
+  with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
 }
 my $worker = MyWorker->new();
 

@@ -1,16 +1,16 @@
-<i class="sidebar_toggle icon-wrench icon-large" id="sidebar_toggle_img_out"
+<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
-  <div class="sidebar sidebar_pinned">
+  <div class="nd_sidebar nd_sidebar-pinned">
     <div class="well">
-      <i class="sidebar_toggle icon-signout" id="sidebar_toggle_img_in"
+      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
-      <i class="sidebar_pin icon-pushpin sidebar_pin_clicked"
+      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
 
       <div class="tab-content">
         <div id="[% report.tag %]_search" class="tab-pane active">
-          <form id="[% report.tag %]_form" class="nd_sidesearchform form-stacked"
+          <form id="[% report.tag %]_form" class="nd_sidebar-form form-stacked"
               method="get" action="[% uri_for('/report') %]">
             [% TRY %]
             [% INCLUDE "sidebar/report/${report.tag}.tt" %]
@@ -25,8 +25,9 @@
   </div>
 
   <div class="content">
-    <ul id="search_results" class="nav nav-tabs">
-      <li class="active"><a id="[% report.tag %]_link" href="#[% report.tag %]_pane">[% report.label %]</a></li>
+    <ul id="nd_search-results" class="nav nav-tabs">
+      <li class="active"><a id="[% report.tag %]_link" class="nd_single-tab"
+        href="#[% report.tag %]_pane">[% report.label %]</a></li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="[% report.tag %]_pane"></div>

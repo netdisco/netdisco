@@ -1,0 +1,64 @@
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Left Device</th>
+      <th class="nd_center-cell">Left Port</th>
+      <th class="nd_center-cell">Right Device</th>
+      <th class="nd_center-cell">Right Port</th>
+      <th class="nd_center-cell">Action</th>
+    </tr>
+  </thead>
+  </tbody>
+    <tr>
+      <form name="add">
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input class="nd_topo_dev nd_topo_dev1" name="dev1"  type="text">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input class="nd_topo_port nd_topo_dev1" name="port1" type="text">
+          <span class="add-on nd_topo_port_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input class="nd_topo_dev nd_topo_dev2" name="dev2"  type="text">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input class="nd_topo_port nd_topo_dev2" name="port2" type="text">
+          <span class="add-on nd_topo_port_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <button class="btn btn-small" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+      </td>
+      </form>
+    </tr>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <form name="del">
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% uri_for('/device') %]?q=[% row.dev1 | uri %]">[% row.dev1 | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.port1 | html_entity %]</td>
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% uri_for('/device') %]?q=[% row.dev2 | uri %]">[% row.dev2 | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.port2 | html_entity %]</td>
+      <td class="nd_center-cell">
+        <input name="dev1" type="hidden" value="[% row.dev1 | html_entity %]">
+        <input name="port1" type="hidden" value="[% row.port1 | html_entity %]">
+        <input name="dev2" type="hidden" value="[% row.dev2 | html_entity %]">
+        <input name="port2" type="hidden" value="[% row.port2 | html_entity %]">
+        <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </form>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

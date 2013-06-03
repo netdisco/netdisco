@@ -1,9 +1,17 @@
 #!/usr/bin/env perl
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
-use App::Netdisco;
+FindBin::again();
+use Path::Class 'dir';
 
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
+
+use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
@@ -69,7 +77,8 @@ try {
 };
 
 # upgrade from whatever dbix_class_schema_versions says, to $VERSION
-my $db_version = $schema->get_db_version;
+# except that get_db_version will be 0 at first deploy
+my $db_version = ($schema->get_db_version || 1);
 my $target_version = $schema->schema_version;
 
 # one step at a time, in case user has applied local changes already

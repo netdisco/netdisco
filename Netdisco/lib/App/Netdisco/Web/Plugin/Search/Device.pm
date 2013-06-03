@@ -21,7 +21,7 @@ ajax '/ajax/content/search/device' => sub {
     }
     else {
         my $q = param('q');
-        return unless $q;
+        send_error('Missing query', 400) unless $q;
 
         $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
     }

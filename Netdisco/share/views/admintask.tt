@@ -1,0 +1,42 @@
+<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
+  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+<div class="container-fluid">
+  <div class="nd_sidebar nd_sidebar-pinned">
+    <div class="well">
+      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar"></i>
+      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
+        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar"></i>
+
+      <div class="tab-content">
+        <div id="[% task.tag %]_search" class="tab-pane active">
+          <form id="[% task.tag %]_form" class="nd_sidebar-form form-stacked"
+              method="get" action="[% uri_for('/admin') %]">
+            [% TRY %]
+            [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
+            <script type="text/javascript">has_sidebar["[% task.tag %]"] = 1;</script>
+            [% CATCH %]
+            <script type="text/javascript">has_sidebar["[% task.tag %]"] = 0;</script>
+            [% END %]
+          </form>
+        </div> <!-- /tab-pane -->
+      </div> <!-- /tab-content -->
+    </div>
+  </div>
+
+  <div class="content">
+    <ul id="nd_search-results" class="nav nav-tabs">
+      <li class="active"><a id="[% task.tag %]_link" class="nd_single-tab"
+        href="#[% task.tag %]_pane">[% task.label %]</a></li>
+      [% IF task.tag == 'jobqueue' %]
+      <span id="nd_device-name"></span>
+      [% END %]
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="[% task.tag %]_pane"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+[%+ INCLUDE 'js/admintask.js' -%]
+</script>

@@ -1,4 +1,4 @@
-package App::Netdisco::Util::DiscoverAndStore;
+package App::Netdisco::Core::Discover;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -13,13 +13,13 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   store_device store_interfaces store_wireless
   store_vlans store_power store_modules
-  find_neighbors
+  store_neighbors discover_new_neighbors
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
-App::Netdisco::Util::DiscoverAndStore
+App::Netdisco::Core::Discover
 
 =head1 DESCRIPTION
 
@@ -52,6 +52,7 @@ sub store_device {
 
   my $hostname = hostname_from_ip($device->ip);
   $device->dns($hostname) if length $hostname;
+  my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
 
   # build device aliases suitable for DBIC
   my @aliases;
@@ -60,7 +61,7 @@ sub store_device {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if $ip->within(NetAddr::IP::Lite->new('127.0.0.0/8'));
+      next if $ip->within($localnet);
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};
@@ -105,7 +106,7 @@ sub store_device {
     my $gone = $device->device_ips->delete;
     debug sprintf ' [%s] device - removed %s aliases',
       $device->ip, $gone;
-    $device->update_or_insert;
+    $device->update_or_insert(undef, {for => 'update'});
     $device->device_ips->populate(\@aliases);
     debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
@@ -118,7 +119,7 @@ sub _set_canonical_ip {
   my $oldip = $device->ip;
   my $newip = $snmp->root_ip;
 
-  if (length $newip) {
+  if (defined $newip) {
       if ($oldip ne $newip) {
           debug sprintf ' [%s] device - changing root IP to alt IP %s',
             $oldip, $newip;
@@ -252,7 +253,7 @@ sub store_interfaces {
     my $gone = $device->ports->delete;
     debug sprintf ' [%s] interfaces - removed %s interfaces',
       $device->ip, $gone;
-    $device->update_or_insert;
+    $device->update_or_insert(undef, {for => 'update'});
     $device->ports->populate(\@interfaces);
     debug sprintf ' [%s] interfaces - added %d new interfaces',
       $device->ip, scalar @interfaces;
@@ -562,26 +563,34 @@ sub store_modules {
   });
 }
 
-=head2 find_neighbors( $device, $snmp )
+=head2 store_neighbors( $device, $snmp )
+
+returns: C<@to_discover>
 
 Given a Device database object, and a working SNMP connection, discover and
 store the device's port neighbors information.
 
-If any neighbor is unknown to Netdisco, a discover job for it will immediately
-be queued (modulo configuration file C<discover_no_type> setting).
+Entries in the Topology database table will override any discovered device
+port relationships.
 
 The Device database object can be a fresh L<DBIx::Class::Row> object which is
 not yet stored to the database.
 
+A list of discovererd neighbors will be returned as [C<$ip>, C<$type>] tuples.
+
 =cut
 
-sub find_neighbors {
+sub store_neighbors {
   my ($device, $snmp) = @_;
+  my @to_discover = ();
+
+  # first allow any manually configred topology to be set
+  _set_manual_topology($device, $snmp);
 
   my $c_ip = $snmp->c_ip;
   unless ($snmp->hasCDP or scalar keys %$c_ip) {
       debug sprintf ' [%s] neigh - CDP/LLDP not enabled!', $device->ip;
-      return;
+      return @to_discover;
   }
 
   my $interfaces = $snmp->interfaces;
@@ -642,17 +651,28 @@ sub find_neighbors {
           }
       }
 
+      # IP Phone detection type fixup
+      if (defined $remote_type and $remote_type =~ m/(mitel.5\d{3})/i) {
+          $remote_type = 'IP Phone - '. $remote_type
+            if $remote_type !~ /ip phone/i;
+      }
+      else {
+          $remote_type = '';
+      }
+
       # hack for devices seeing multiple neighbors on the port
       if (ref [] eq ref $remote_ip) {
           debug sprintf
             ' [%s] neigh - port %s has multiple neighbors, setting remote as self',
             $device->ip, $port;
 
-          foreach my $n (@$remote_ip) {
-              debug sprintf
-                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                $device->ip, $n, $remote_type, $port;
-              _enqueue_discover($n, $remote_type);
+          if (wantarray) {
+              foreach my $n (@$remote_ip) {
+                  debug sprintf
+                    ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+                    $device->ip, $n, $remote_type, $port;
+                  push @to_discover, [$n, $remote_type];
+              }
           }
 
           # set self as remote IP to suppress any further work
@@ -660,6 +680,14 @@ sub find_neighbors {
           $remote_port = $port;
       }
       else {
+          # what we came here to do.... discover the neighbor
+          if (wantarray) {
+              debug sprintf
+                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+                $device->ip, $remote_ip, $remote_type, $port;
+              push @to_discover, [$remote_ip, $remote_type];
+          }
+
           $remote_port = $c_port->{$entry};
 
           if (defined $remote_port) {
@@ -672,12 +700,7 @@ sub find_neighbors {
           }
       }
 
-      # XXX too custom? IP Phone detection
-      if (defined $remote_type and $remote_type =~ m/(mitel.5\d{3})/i) {
-          $remote_type = 'IP Phone - '. $remote_type
-            if $remote_type !~ /ip phone/i;
-      }
-
+      # if all the data looks sane, update the port row with neighbor info
       my $portrow = schema('netdisco')->resultset('DevicePort')
           ->single({ip => $device->ip, port => $port});
 
@@ -687,44 +710,120 @@ sub find_neighbors {
           next;
       }
 
+      if ($portrow->manual_topo) {
+          info sprintf ' [%s] neigh - %s has manually defined topology',
+            $device->ip, $port;
+          next;
+      }
+
       $portrow->update({
           remote_ip   => $remote_ip,
           remote_port => $remote_port,
           remote_type => $remote_type,
           remote_id   => $remote_id,
+          is_uplink   => \"true",
+          manual_topo => \"false",
       });
-
-      debug sprintf
-        ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-        $device->ip, $remote_ip, $remote_type, $port;
-      _enqueue_discover($remote_ip, $remote_type);
   }
+
+  return @to_discover;
 }
 
-# only enqueue if device is not already discovered, and
-# discover_no_type config permits the discovery
-sub _enqueue_discover {
-  my ($ip, $remote_type) = @_;
+# take data from the topology table and update remote_ip and remote_port
+# in the devices table. only use root_ips and skip any bad topo entries.
+sub _set_manual_topology {
+  my ($device, $snmp) = @_;
 
-  my $device = get_device($ip);
-  return if $device->in_storage;
+  schema('netdisco')->txn_do(sub {
+    # clear manual topology flags
+    schema('netdisco')->resultset('DevicePort')->update({manual_topo => \'false'});
 
-  my $remote_type_match = setting('discover_no_type');
-  if ($remote_type and $remote_type_match
-      and $remote_type =~ m/$remote_type_match/) {
-    debug sprintf '      queue - %s, type [%s] excluded by discover_no_type',
-      $ip, $remote_type;
-    return;
-  }
+    my $topo_links = schema('netdisco')->resultset('Topology');
+    debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
 
-  try {
+    while (my $link = $topo_links->next) {
+        # could fail for broken topo, but we ignore to try the rest
+        try {
+            schema('netdisco')->txn_do(sub {
+              # only work on root_ips
+              my $left  = get_device($link->dev1);
+              my $right = get_device($link->dev2);
+
+              # skip bad entries
+              return unless ($left->in_storage and $right->in_storage);
+
+              $left->ports
+                ->single({port => $link->port1}, {for => 'update'})
+                ->update({
+                  remote_ip => $right->ip,
+                  remote_port => $link->port2,
+                  remote_type => undef,
+                  remote_id   => undef,
+                  is_uplink   => \"true",
+                  manual_topo => \"true",
+                });
+
+              $right->ports
+                ->single({port => $link->port2}, {for => 'update'})
+                ->update({
+                  remote_ip => $left->ip,
+                  remote_port => $link->port1,
+                  remote_type => undef,
+                  remote_id   => undef,
+                  is_uplink   => \"true",
+                  manual_topo => \"true",
+                });
+            });
+        };
+    }
+  });
+}
+
+=head2 discover_new_neighbors( $device, $snmp )
+
+Given a Device database object, and a working SNMP connection, discover and
+store the device's port neighbors information.
+
+Entries in the Topology database table will override any discovered device
+port relationships.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+Any discovered neighbor unknown to Netdisco will have a C<discover> job
+immediately queued (subject to the filtering by the C<discover_no_type>
+setting).
+
+=cut
+
+sub discover_new_neighbors {
+  my @to_discover = store_neighbors(@_);
+
+  # only enqueue if device is not already discovered, and
+  # discover_no_type config permits the discovery
+  foreach my $neighbor (@to_discover) {
+      my ($ip, $remote_type) = @$neighbor;
+
+      my $device = get_device($ip);
+      next if $device->in_storage;
+
+      my $remote_type_match = setting('discover_no_type');
+      if ($remote_type and $remote_type_match
+          and $remote_type =~ m/$remote_type_match/) {
+        debug sprintf ' queue - %s, type [%s] excluded by discover_no_type',
+          $ip, $remote_type;
+        next;
+      }
+
       # could fail if queued job already exists
-      schema('netdisco')->resultset('Admin')->create({
-          device => $ip,
-          action => 'discover',
-          status => 'queued',
-      });
-  };
+      try {
+          schema('netdisco')->resultset('Admin')->create({
+              device => $ip,
+              action => 'discover',
+              status => 'queued',
+          });
+      };
+  }
 }
 
 1;

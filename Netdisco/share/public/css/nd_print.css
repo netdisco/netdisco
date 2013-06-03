@@ -2,11 +2,11 @@ body {
   padding-top: 0px !important;
 }
 
-#search_results > li:not(.active) {
+#nd_search-results > li:not(.active) {
   display: none !important;
 }
 
-.navbar, .sidebar {
+.navbar, .nd_sidebar {
   display: none !important;
 }
 

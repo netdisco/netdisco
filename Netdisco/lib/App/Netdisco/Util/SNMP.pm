@@ -10,7 +10,7 @@ use Path::Class 'dir';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  snmp_connect snmp_connect_rw
+  snmp_connect snmp_connect_rw snmp_comm_reindex
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -88,8 +88,8 @@ sub _snmp_connect_generic {
   my $comm_type = pop;
   my @communities = @{ setting($comm_type) || []};
   unshift @communities, $device->snmp_comm
-    if length $device->snmp_comm
-       and length $comm_type and $comm_type eq 'community';
+    if defined $device->snmp_comm
+       and defined $comm_type and $comm_type eq 'community';
 
   my $info = undef;
   VERSION: foreach my $ver (@versions) {
@@ -123,7 +123,7 @@ sub _try_connect {
       $info = $class->new(%$snmp_args, Version => $ver, Community => $comm);
       undef $info unless (
         (not defined $info->error)
-        and length $info->uptime
+        and defined $info->uptime
         and ($info->layers or $info->description)
         and $info->class
       );
@@ -149,7 +149,35 @@ sub _try_connect {
 sub _build_mibdirs {
   my $home = (setting('mibhome') || $ENV{NETDISCO_HOME} || $ENV{HOME});
   return map { dir($home, $_) }
-             @{ setting('mibdirs') || [] };
+             @{ setting('mibdirs') || _get_mibdirs_content($home) };
+}
+
+sub _get_mibdirs_content {
+  my $home = shift;
+  warning 'Netdisco SNMP work will be really slow - loading ALL MIBs. Please set mibdirs.';
+  my @list = map {s|$home/||; $_} grep {-d} glob("$home/*");
+  return \@list;
+}
+
+=head2 snmp_comm_reindex( $snmp, $vlan )
+
+Takes an established L<SNMP::Info> instance and makes a fresh connection using
+community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
+
+=cut
+
+sub snmp_comm_reindex {
+  my ($snmp, $vlan) = @_;
+
+  my $ver  = $snmp->snmp_ver;
+  my $comm = $snmp->snmp_comm;
+
+  if ($ver == 3) {
+      $snmp->update(Context => "vlan-$vlan");
+  }
+  else {
+      $snmp->update(Community => $comm . '@' . $vlan);
+  }
 }
 
 1;

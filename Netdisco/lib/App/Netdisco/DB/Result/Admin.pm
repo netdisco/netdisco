@@ -55,4 +55,46 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("job");
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+=head1 ADDITIONAL COLUMNS
+
+=head2 entererd_stamp
+
+Formatted version of the C<entered> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub entered_stamp  { return (shift)->get_column('entered_stamp')  }
+
+=head2 started_stamp
+
+Formatted version of the C<started> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub started_stamp  { return (shift)->get_column('started_stamp')  }
+
+=head2 finished_stamp
+
+Formatted version of the C<finished> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub finished_stamp  { return (shift)->get_column('finished_stamp')  }
+
 1;

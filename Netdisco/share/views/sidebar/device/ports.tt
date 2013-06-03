@@ -1,20 +1,20 @@
 
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <i class="field_clear_icon icon-trash icon-large"
+              <i class="nd_field-clear-icon icon-trash icon-large"
                  rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports"
                  id="f_clear_btn" data-btn-for="port"></i>
-              <input id="nd_port_query" placeholder="Port, Name or VLAN"
+              <input id="nd_port-query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
             </div>
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_legend">
                 <label class="nd_collapser">Legend
-                <i class="arrow-up-down icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
                 </label></span>
               <div id="nd_legend" class="collapse">
-                <ul class="inputs-list unstyled">
+                <ul class="nd_inputs-list unstyled">
                   <li>
                     <span class="label">S</span>&nbsp; Admin Disabled
                   </li>
@@ -28,17 +28,17 @@
                     <span class="label label-info">B</span>&nbsp; Blocking
                   </li>
                   <li>
-                    <i class="icon-phone icon-large"></i>&nbsp; IP Phone
-                  </li>
-                  <li>
                     <span class="label label-important">N</span>&nbsp; Neighbor Inacessible
                   </li>
                   <li>
                     <span class="label label-warning">A</span>&nbsp; Archived Data
                   </li>
+                  <li>
+                    <i class="icon-phone"></i>&nbsp; IP Phone
+                  </li>
                   [% IF vars.user.port_control %]
                   <li>
-                    <span class="label"><i class="icon-refresh"></i></span>&nbsp; Click "Update View"
+                    <i class="icon-refresh"></i>&nbsp; Click "Update View"
                   </li>
                   [% END %]
                 </ul>
@@ -47,10 +47,10 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_columns">
                 <label class="nd_collapser">Display Columns
-                <i class="arrow-up-down icon-chevron-down icon-large"></i>
+                <i class="nd_arrow-up-down-right icon-chevron-down icon-large"></i>
                 </label></span>
               <div id="nd_columns" class="collapse in">
-                <ul class="inputs-list unstyled">
+                <ul class="nd_inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
                   [% NEXT IF item.name == 'c_admin' AND NOT vars.user.port_control %]
                   <li>
@@ -71,18 +71,18 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_portprops">
                 <label class="nd_collapser">Port Properties
-                <i class="arrow-up-down icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
                 </label></span>
               <div id="nd_portprops" class="collapse">
-                <ul class="inputs-list unstyled">
+                <ul class="nd_inputs-list unstyled">
                   <li>
-                    <em>Mark as Free if Down for:</em><br/>
-                    <select id="nd_days_select" name="age_num">
+                    <em class="muted">Mark as Free if Down for:</em><br/>
+                    <select id="nd_days-select" name="age_num">
                       [% FOREACH count IN [1..32] %]
                       <option[% ' selected="selected"' IF params.age_num == count %]>[% count %]</option>
                       [% END %]
                     </select>
-                    <select id="nd_age_select" name="age_unit">
+                    <select id="nd_age-select" name="age_unit">
                       [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
                       <option[% ' selected="selected"' IF params.age_unit == unit %]>[% unit %]</option>
                       [% END %]
@@ -101,13 +101,13 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_nodeprops">
                 <label class="nd_collapser">Node Properties
-                <i class="arrow-up-down icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
                 </label></span>
               <div id="nd_nodeprops" class="collapse">
-                <ul class="inputs-list unstyled">
+                <ul class="nd_inputs-list unstyled">
                   <li>
-                    <em>MAC address format:</em><br/>
-                    <select id="nd_mac_format" name="mac_format">
+                    <em class="muted">MAC address format:</em><br/>
+                    <select id="nd_mac-format" name="mac_format">
                       [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
                       <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
                       [% END %]

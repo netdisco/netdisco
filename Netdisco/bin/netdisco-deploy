@@ -134,7 +134,7 @@ sub deploy_oui {
 
   if ($resp->{success}) {
       foreach my $line (split /\n/, $resp->{content}) {
-          if ($line =~ m/^(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
+          if ($line =~ m/^\s*(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
               my ($oui, $company) = ($1, $2);
               $oui =~ s/-/:/g;
               $data{lc($oui)} = $company;
