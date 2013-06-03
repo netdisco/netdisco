@@ -1,4 +1,4 @@
-2.007000_002 - 
+2.007000_002 - 2013-06-03
 
   [NEW FEATURES]
 
@@ -28,6 +28,7 @@
   * Support 'path' config option as alternative to --path /mountpoint
   * Local plugins can be placed in ${NETDISCO_HOME}/site_plugins/...
   * Missing mibdirs causes all MIBs to be loaded (with a warning)
+  * Include qtip2 libraries
 
   [BUG FIXES]
 

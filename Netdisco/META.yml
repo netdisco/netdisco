@@ -19,43 +19,44 @@ no_index:
     - inc
     - share
 requires:
-  Algorithm::Cron: 0
-  App::cpanminus: 0
-  App::local::lib::helper: 0
+  Algorithm::Cron: 0.07
+  App::cpanminus: 1.6108
+  App::local::lib::helper: 0.07
   DBD::Pg: 0
-  DBD::SQLite: 0
-  DBIx::Class: 0
-  DBIx::Class::Helper::Row::SubClass: 0
-  Daemon::Control: 0
-  Dancer: 1.3098
-  Dancer::Plugin::DBIC: 0
-  File::ShareDir: 0
-  HTML::Entities: 0
-  HTTP::Tiny: 0
+  DBD::SQLite: 1.37
+  DBIx::Class: 0.0821
+  DBIx::Class::Helpers: 2.016006
+  Daemon::Control: 0.001
+  Dancer: 1.3112
+  Dancer::Plugin::DBIC: 0.1802
+  File::ShareDir: 1.03
+  HTML::Parser: 3.7
+  HTTP::Tiny: 0.029
   JSON: 0
-  List::MoreUtils: 0
-  MCE: 1.405
-  Moo: 0
-  Net::DNS: 0
-  Net::MAC: 0
-  NetAddr::IP: 4.059
-  Path::Class: 0
-  Plack: 1.0006
-  Plack::Middleware::Expires: 0
-  Role::Tiny: 0
-  SNMP::Info: 3.00
-  SQL::Translator: 0
-  Socket6: 0
-  Starman: 0
-  Template: 0
-  YAML: 0
-  namespace::clean: 0
+  List::MoreUtils: 0.33
+  MCE: 1.408
+  MIME::Base64: 3.13
+  Moo: 1.001
+  Net::DNS: 0.72
+  Net::MAC: 2.103622
+  NetAddr::IP: 4.068
+  Path::Class: 0.32
+  Plack: 1.0023
+  Plack::Middleware::Expires: 0.03
+  Role::Tiny: 1.002005
+  SNMP::Info: 3.01
+  SQL::Translator: 0.11016
+  Socket6: 0.23
+  Starman: 0.3008
+  Template: 2.24
+  YAML: 0.84
+  namespace::clean: 0.24
   perl: 5.10.0
-  version: 0.9901
+  version: 0.9902
 resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
-  bugtracker: http://sourceforge.net/tracker/?group_id=80033&atid=558508
+  bugtracker: http://sourceforge.net/p/netdisco/bugs/
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
-  repository: git://netdisco.git.sourceforge.net/gitroot/netdisco/netdisco-ng
-version: 2.007000_001
+  repository: git://git.code.sf.net/p/netdisco/netdisco-ng
+version: 2.007000_002
