@@ -26,6 +26,7 @@
   * User icon color indicates port_control/admin ability
   * Buttons for discover/macsuck/arpnip on device details page
   * Support 'path' config option as alternative to --path /mountpoint
+  * Local plugins can be placed in ${NETDISCO_HOME}/site_plugins/...
 
   [BUG FIXES]
 
