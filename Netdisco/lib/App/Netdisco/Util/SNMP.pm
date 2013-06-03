@@ -149,7 +149,14 @@ sub _try_connect {
 sub _build_mibdirs {
   my $home = (setting('mibhome') || $ENV{NETDISCO_HOME} || $ENV{HOME});
   return map { dir($home, $_) }
-             @{ setting('mibdirs') || [] };
+             @{ setting('mibdirs') || _get_mibdirs_content($home) };
+}
+
+sub _get_mibdirs_content {
+  my $home = shift;
+  warning 'Netdisco SNMP work will be really slow - loading ALL MIBs. Please set mibdirs.';
+  my @list = map {s|$home/||; $_} grep {-d} glob("$home/*");
+  return \@list;
 }
 
 =head2 snmp_comm_reindex( $snmp, $vlan )
