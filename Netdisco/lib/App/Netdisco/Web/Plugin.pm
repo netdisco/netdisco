@@ -164,16 +164,16 @@ true;
 
 =head1 NAME
 
-App::Netdisco::Web::Plugin - Plugin subsystem for App::Netdisco Web UI components
+App::Netdisco::Web::Plugin - Netdisco Web UI components
 
 =head1 Introduction
 
-L<App::Netdisco>'s plugin subsystem allows the user more control of Netdisco
-UI components displayed in the web browser. Plugins can be distributed
+L<App::Netdisco>'s plugin system allows you more control of what Netdisco
+components are displayed in the web interface. Plugins can be distributed
 independently from Netdisco and are a better alternative to source code
 patches.
 
-The following UI components are implemented as plugins:
+The following web interface components are implemented as plugins:
 
 =over 4
 
@@ -189,6 +189,14 @@ Tabs for Search and Device pages
 
 Reports (pre-canned searches)
 
+=item *
+
+Additional Device Port Columns
+
+=item *
+
+Admin Menu function (job control, manual topology, pseudo devices)
+
 =back
 
 This document explains how to configure which plugins are loaded. See
@@ -196,10 +204,13 @@ L<App::Netdisco::Manual::WritingPlugins> if you want to develop new plugins.
 
 =head1 Application Configuration
 
-In the main C<config.yml> file for App::Netdisco (located in C<share/...>)
-you'll find the C<web_plugins> configuration directive. This lists, in YAML
-format, a set of Perl module names (or partial names) which are the plugins to
-be loaded. For example:
+Netdisco configuration supports a C<web_plugins> directive along with the
+similar C<extra_web_plugins>. These list, in YAML format, the set of Perl
+module names which are the plugins to be loaded. Each item injects one part of
+the Netdisco web user interface.
+
+You can override these settings to add, change, or remove entries from the
+default lists. Here is an example of the C<web_plugins> list:
 
  web_plugins:
    - Inventory
@@ -210,19 +221,28 @@ be loaded. For example:
    - Device::Details
    - Device::Ports
 
-When the name is specified as above, App::Netdisco automatically prepends
-"C<App::Netdisco::Web::Plugin::>" to the name. This makes, for example,
-L<App::Netdisco::Web::Plugin::Inventory>. This is the module which is loaded
-to add a user interface component.
+Any change should go into your local C<deployment.yml> configuration file. If
+you want to view the default settings, see the C<share/config.yml> file in the
+C<App::Netdisco> distribution.
+
+=head1 How to Configure
+
+The C<extra_web_plugins> setting is empty, and used only if you want to add
+new plugins but not change the set enabled by default. If you do want to add
+to or remove from the default set, then create a version of C<web_plugins>
+instead.
+
+Netdisco prepends "C<App::Netdisco::Web::Plugin::>" to any entry in the list.
+For example, "C<Inventory>" will load the
+C<App::Netdisco::Web::Plugin::Inventory> module.
 
 Such plugin modules can either ship with the App::Netdisco distribution
 itself, or be installed separately. Perl uses the standard C<@INC> path
 searching mechanism to load the plugin modules.
 
-If an entry in the C<web_plugins> list starts with a "C<+>" (plus) sign then
-App::Netdisco attemps to load the module as-is, without prepending anything to
-the name. This allows you to have App::Netdiso web UI plugins in other
-namespaces:
+If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
+to load the module as-is, without prepending anything to the name. This allows
+you to have App::Netdiso web UI plugins in other namespaces:
 
  web_plugins:
    - Inventory
@@ -230,21 +250,13 @@ namespaces:
    - Device::Details
    - +My::Other::Netdisco::Web::Component
 
-The order of the entries in C<web_plugins> is significant. Unsurprisingly, the
-modules are loaded in order. Therefore Navigation Bar items appear in the
-order listed, and Tabs appear on the Search and Device pages in the order
-listed.
+The order of the entries is significant. Unsurprisingly, the modules are
+loaded in order. Therefore Navigation Bar items appear in the order listed,
+and Tabs appear on the Search and Device pages in the order listed, and so on.
 
-The consequence of this is that if you want to change the order (or add or
-remove entries) then simply edit the C<web_plugins> setting. In fact, we
-recommend adding this setting to your C<< <environment>.yml >> file and
-leaving the C<config.yml> file alone. Your Environment's version will take
-prescedence.
-
-Finally, if you want to add components without completely overriding the
-C<web_plugins> setting, use the C<extra_web_plugins> setting instead in your
-Environment configuration. Any Navigation Bar items or Page Tabs are added
-after those in C<web_plugins>.
+Finally, you can also prepend module names with "C<X::>", to support the
+"Netdisco extension" namespace. For example, "C<X::Observium>" will load the
+L<App::NetdiscoX::Web::Plugin::Observium> module.
 
 =cut
 

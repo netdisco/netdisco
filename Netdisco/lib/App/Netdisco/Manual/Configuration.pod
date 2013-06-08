@@ -140,10 +140,10 @@ You can override this to set your own list. If you only want to add to the
 default list then use C<extra_web_plugins>, which allows the Netdisco
 developers to update default C<web_plugins> in a future release.
 
-Entries in the list will by default omit the leading C<App::Netdisco::> from
-the name. To override this for one entry, prefix it with a C<+> sign. You can
-also prefix with C<X::> to signify the alternate C<App::NetdiscoX::>
-namepsace.
+Entries in the list will by default omit the leading
+C<App::Netdisco::Web::Plugin::> from the name. To override this for one entry,
+prefix it with a C<+> sign. You can also prefix with C<X::> to signify the
+alternate C<App::NetdiscoX::Web::Plugin::> namepsace.
 
 =head3 C<extra_web_plugins>
 
