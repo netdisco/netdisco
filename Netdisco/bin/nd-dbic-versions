@@ -22,7 +22,7 @@ use Getopt::Long;
 
 nd-dbic-versions - Create DB Schema Versions for Netdisco
 
-=head2 USAGE
+=head1 USAGE
 
 This script creates SQL DDL files of the Netdisco database schema.
 
@@ -33,7 +33,7 @@ If called with the "-p <version>" option, upgrade SQL DDL command files
 are created between the specified version and the current DBIx::Class
 specification.
 
-=head2 New Version
+=head1 NEW VERSION
 
 =over 4
 

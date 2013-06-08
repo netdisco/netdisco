@@ -78,6 +78,24 @@ portctl_uplinks: 0
 portctl_nophones: 1
 portctl_vlans: 1
 
+ignore_interfaces:
+  - 'EOBC'
+  - 'unrouted VLAN'
+  - 'StackPort'
+  - 'Control Plane Interface'
+  - 'SPAN (S|R)P Interface'
+  - 'StackSub'
+  - 'netflow'
+  - 'Vlan\\d+-mpls layer'
+  - 'BRI\\S+-Bearer Channel'
+  - 'BRI\\S+-Physical'
+  - 'BRI\\S+-Signalling'
+  - 'Embedded-Service-Engine\\d+\\/\\d+'
+  - 'Virtual-Template\\d+'
+  - 'Virtual-Access\\d+'
+  - '(E|T)\\d \\d\\/\\d\\/\\d'
+  - 'Vlan1'
+
 # sleep time between polls of the database job queue
 daemon_sleep_time: 5
 

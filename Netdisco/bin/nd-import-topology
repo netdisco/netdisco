@@ -23,11 +23,11 @@ use Try::Tiny;
 
 nd-import-topology - Import a Nedisco 1.x Manual Topology File
 
-=head2 USAGE
+=head1 USAGE
 
- ./nd-import-topology /path/to/netdisco-topology.txt
+ ~/bin/localenv nd-import-topology /path/to/netdisco-topology.txt
 
-=head2 DESCRIPTION
+=head1 DESCRIPTION
 
 This helper script will read and import the content of a Netdisco 1.x format
 Manual Topology file into the Netdisco 2.x database's C<topology> table.

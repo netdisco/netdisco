@@ -9,6 +9,7 @@ FRONTEND
 BACKEND
 =======
 
+* db connect params as separate settings
 * new DBIC multi-prefetch
 * PING from workers
 
@@ -20,16 +21,13 @@ CORE
 
 * VRF support
 * import legacy config file
-* deploy should drop mib files in mibhome
 * list of string settings should use index()
-* default ignore_interfaces
 
 DOCS
 ====
 
 * Scheduler
 * Discover/Refresh jobs
-* netdisco-do
 * new X:: plugin namespace
 * observiumsparklines plugin
 * port column plugins

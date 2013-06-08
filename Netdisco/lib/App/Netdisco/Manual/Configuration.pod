@@ -273,10 +273,23 @@ Value: List of Strings. Default:
    - Control Plane Interface
    - SPAN (S|R)P Interface
    - StackSub
+   - netflow
+   - Vlan\d+-mpls layer
+   - BRI\S+-Bearer Channel
+   - BRI\S+-Physical
+   - BRI\S+-Signalling
+   - Embedded-Service-Engine\d+\/\d+
+   - Virtual-Template\d+
+   - Virtual-Access\d+
+   - (E|T)\d \d\/\d\/\d
+   - Vlan1
 
-If present, device ports matching any of the items in this list will be
-ignored by the discovery process. Note this may have side effects - connected
-devices and nodes on those ports will in turn also not be discovered.
+If present, device ports whose names match fully any of the items in this list
+will be ignored by the discovery process.
+
+Note this may have side effects - connected devices and nodes on those ports
+will in turn also not be discovered. Also note that backslashes must be
+doubled in the YAML format.
 
 =head3 C<ignore_private_nets>
 
