@@ -20,6 +20,9 @@ CORE
 
 * VRF support
 * import legacy config file
+* deploy should drop mib files in mibhome
+* list of string settings should use index()
+* default ignore_interfaces
 
 DOCS
 ====
@@ -27,7 +30,6 @@ DOCS
 * Scheduler
 * Discover/Refresh jobs
 * netdisco-do
-* config directives list
 * new X:: plugin namespace
 * observiumsparklines plugin
 * port column plugins

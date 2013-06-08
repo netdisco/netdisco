@@ -74,7 +74,7 @@ community_rw: ['private']
 
 # rights control for Interactive jobs
 vlanctl: 1
-allow_uplinks: 0
+portctl_uplinks: 0
 portctl_nophones: 1
 portctl_vlans: 1
 
