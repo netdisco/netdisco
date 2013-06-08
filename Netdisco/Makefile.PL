@@ -49,8 +49,8 @@ install_script 'bin/netdisco-web';
 
 resources
   homepage => 'http://netdisco.org/',
-  bugtracker => 'http://sourceforge.net/tracker/?group_id=80033&atid=558508',
-  repository => 'git://netdisco.git.sourceforge.net/gitroot/netdisco/netdisco-ng',
+  bugtracker => 'http://sourceforge.net/p/netdisco/bugs/',
+  repository => 'git://git.code.sf.net/p/netdisco/netdisco-ng',
   MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users';
 
 WriteAll;
