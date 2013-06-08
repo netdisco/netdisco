@@ -49,7 +49,7 @@ sub worker_body {
       }
 
       debug "int ($wid): sleeping now...";
-      sleep( setting('daemon_sleep_time') || 5 );
+      sleep( setting('workers')->{sleep_time} || 5 );
   }
 }
 

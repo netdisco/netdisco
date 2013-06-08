@@ -43,8 +43,8 @@ sub capacity_for {
   };
 
   my $setting_map = {
-    Poller => 'daemon_pollers',
-    Interactive => 'daemon_interactives',
+    Poller => 'pollers',
+    Interactive => 'interactives',
   };
 
   my $role = $role_map->{$action};
@@ -52,7 +52,7 @@ sub capacity_for {
 
   my $current = $queue->search({role => $role})->count;
 
-  return ($current < setting($setting));
+  return ($current < setting('workers')->{$setting}));
 }
 
 sub take_jobs {

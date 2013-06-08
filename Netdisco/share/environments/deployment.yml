@@ -37,11 +37,11 @@ plugins:
 
 # local settings for Netdisco poller and port changes
 
-mibdirs:
-  - cisco
-  - rfc
-  - net-snmp
+# If unset, loads all MIBs
+# mibdirs:
+#   - cisco
+#   - rfc
+#   - net-snmp
 
 community: ['public']
 community_rw: ['private']
-

@@ -44,15 +44,15 @@ sub build_tasks_list {
   # NB MCE does not like max_workers => 0
   my $tasks = [];
 
-  set(daemon_pollers => 2)
-    if !defined setting('daemon_pollers');
-  set(daemon_interactives => 2)
-    if !defined setting('daemon_interactives');
+  setting('workers')->{pollers} = 2
+    if !defined setting('workers')->{pollers};
+  setting('workers')->{interactives} = 2
+    if !defined setting('workers')->{interactives};
 
   push @$tasks, {
     max_workers => 1,
     user_begin => worker_factory('Manager'),
-  } if setting('daemon_pollers') or setting('daemon_interactives');
+  } if setting('workers')->{pollers} or setting('workers')->{interactives};
 
   push @$tasks, {
     max_workers => 1,
@@ -60,27 +60,27 @@ sub build_tasks_list {
   } if setting('housekeeping');
 
   push @$tasks, {
-    max_workers => setting('daemon_pollers'),
+    max_workers => setting('workers')->{pollers},
     user_begin => worker_factory('Poller'),
-  } if setting('daemon_pollers');
+  } if setting('workers')->{pollers};
 
   push @$tasks, {
-    max_workers => setting('daemon_interactives'),
+    max_workers => setting('workers')->{interactives},
     user_begin => worker_factory('Interactive'),
-  } if setting('daemon_interactives');
+  } if setting('workers')->{interactives};
 
   info sprintf "MCE will load %s tasks: %s Manager, %s Scheduler, %s Poller, %s Interactive",
     (scalar @$tasks),
-    ((setting('daemon_pollers') or setting('daemon_interactives')) ? 1 : 0),
+    ((setting('workers')-{pollers} or setting('workers')->{interactives}) ? 1 : 0),
     (setting('housekeeping') ? 1 : 0),
-    (setting('daemon_pollers') || 0),
-    (setting('daemon_interactives') || 0);
+    (setting('workers')->{pollers} || 0),
+    (setting('workers')->{interactives} || 0);
 
   return $tasks;
 }
 
 sub num_workers {
-  return (setting('daemon_pollers') + setting('daemon_interactives'));
+  return (setting('workers')->{pollers} + setting('workers')->{interactives});
 }
 
 sub worker_factory {
