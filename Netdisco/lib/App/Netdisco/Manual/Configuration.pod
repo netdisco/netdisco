@@ -310,9 +310,9 @@ field to use as the management IP address for a device.
 
 =head3 C<vlanctl>
 
-Value: Boolean. Default: C<false>.
+Value: Boolean. Default: C<true>.
 
-Set to true to allow Netdisco to be able to change the default VLAN on an
+Set to false to prevent Netdisco from changing the default VLAN on an
 interface.
 
 =head3 C<portctl_nophones>

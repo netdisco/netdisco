@@ -212,8 +212,8 @@ documentation for further information.
 
 =head2 Plugins
 
-App::Netdisco includes a Plugin subsystem for customizing the web user
-interface. See L<App::Netdisco::Web::Plugin> for further information.
+Netdisco includes a Plugin subsystem for customizing the web user interface.
+See L<App::Netdisco::Web::Plugin> for further information.
 
 =head2 Developing
 
