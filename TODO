@@ -21,7 +21,6 @@ CORE
 
 * VRF support
 * import legacy config file
-* list of string settings should use index()
 
 DOCS
 ====

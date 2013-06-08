@@ -225,10 +225,14 @@ IPv6).
 
 Value: List of Strings. Default: None.
 
-Place a regular expression pattern here to exclude the discovery of certain
+Place regular expression patterns here to exclude the discovery of certain
 devices based on the CDP/LLDP device type information. Good for excluding a
 whole device class like lightweight access points or IP phones that have CDP
-but don't talk SNMP
+but don't talk SNMP. For example:
+
+ discover_no_type:
+   - 'cisco\s+AIR-LAP'
+   - '(?i)Cisco\s+IP\s+Phone'
 
 =head3 C<macsuck_all_vlans>
 
@@ -267,29 +271,28 @@ it.
 Value: List of Strings. Default:
 
  ignore_interfaces:
-   - EOBC
-   - unrouted VLAN
-   - StackPort
-   - Control Plane Interface
-   - SPAN (S|R)P Interface
-   - StackSub
-   - netflow
-   - Vlan\d+-mpls layer
-   - BRI\S+-Bearer Channel
-   - BRI\S+-Physical
-   - BRI\S+-Signalling
-   - Embedded-Service-Engine\d+\/\d+
-   - Virtual-Template\d+
-   - Virtual-Access\d+
-   - (E|T)\d \d\/\d\/\d
-   - Vlan1
+   - 'EOBC'
+   - 'unrouted VLAN'
+   - 'StackPort'
+   - 'Control Plane Interface'
+   - 'SPAN (S|R)P Interface'
+   - 'StackSub'
+   - 'netflow'
+   - 'Vlan\d+-mpls layer'
+   - 'BRI\S+-Bearer Channel'
+   - 'BRI\S+-Physical'
+   - 'BRI\S+-Signalling'
+   - 'Embedded-Service-Engine\d+\/\d+'
+   - 'Virtual-Template\d+'
+   - 'Virtual-Access\d+'
+   - '(E|T)\d \d\/\d\/\d'
+   - 'Vlan1'
 
 If present, device ports whose names match fully any of the items in this list
 will be ignored by the discovery process.
 
 Note this may have side effects - connected devices and nodes on those ports
-will in turn also not be discovered. Also note that backslashes must be
-doubled in the YAML format.
+will in turn also not be discovered.
 
 =head3 C<ignore_private_nets>
 
