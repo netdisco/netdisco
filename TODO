@@ -1,12 +1,16 @@
 FRONTEND
 ========
 
-* moar reports
+* NetAddr::MAC ?
 
+* moar reports
 * (jeneric) device module tab
 
 BACKEND
 =======
+
+* new DBIC multi-prefetch
+* PING from workers
 
 DAEMON
 ======
@@ -15,6 +19,7 @@ CORE
 ====
 
 * VRF support
+* import legacy config file
 
 DOCS
 ====
@@ -22,3 +27,10 @@ DOCS
 * Scheduler
 * Discover/Refresh jobs
 * netdisco-do
+* config directives list
+* new X:: plugin namespace
+* observiumsparklines plugin
+* port column plugins
+* add css and js for plugin
+* site_plugins
+* nd-import-topology
