@@ -10,18 +10,13 @@
   // but which cannot use jQuery delegation via .on()
   function inner_view_processing(tab) {
 
-    // reload this table every 10 seconds
+    // reload this table every 5 seconds
     if (tab == 'jobqueue') {
-        $('#nd_device-name').text('10');
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('9') }, 1000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('8') }, 2000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('7') }, 3000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('6') }, 4000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('5') }, 5000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('4') }, 6000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('3') }, 7000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('2') }, 8000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('1') }, 9000 ));
+        $('#nd_device-name').text('5');
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('4') }, 1000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('3') }, 2000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('2') }, 3000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('1') }, 4000 ));
         nd_timers.push(setTimeout(function() {
           // clear any running timers
           for (var i = 0; i < nd_timers.length; i++) {
@@ -29,7 +24,7 @@
           }
           // reload the tab content
           $('#' + tab + '_form').trigger('submit');
-        }, 10000));
+        }, 5000));
     }
 
     // activate typeahead on the topo boxes

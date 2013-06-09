@@ -52,7 +52,7 @@ sub capacity_for {
 
   my $current = $queue->search({role => $role})->count;
 
-  return ($current < setting('workers')->{$setting}));
+  return ($current < setting('workers')->{$setting});
 }
 
 sub take_jobs {

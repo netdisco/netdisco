@@ -71,7 +71,7 @@ sub build_tasks_list {
 
   info sprintf "MCE will load %s tasks: %s Manager, %s Scheduler, %s Poller, %s Interactive",
     (scalar @$tasks),
-    ((setting('workers')-{pollers} or setting('workers')->{interactives}) ? 1 : 0),
+    ((setting('workers')->{pollers} or setting('workers')->{interactives}) ? 1 : 0),
     (setting('housekeeping') ? 1 : 0),
     (setting('workers')->{pollers} || 0),
     (setting('workers')->{interactives} || 0);

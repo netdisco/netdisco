@@ -20,7 +20,8 @@ hook 'before' => sub {
                                       ->find(session('user')));
 
         # really just for dev work, to quieten the logs
-        var('user')->port_control(0) if setting('no_port_control');
+        var('user')->port_control(0)
+          if var('user') and setting('no_port_control');
     }
 };
 

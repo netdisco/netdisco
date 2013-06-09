@@ -73,11 +73,11 @@ for its use.
 say 'This is the Netdisco II deployment script.';
 say '';
 say 'Before we continue, the following prerequisites must be in place:';
-say ' * Internet access';
 say ' * Database added to PostgreSQL for Netdisco';
 say ' * User added to PostgreSQL with rights to the Netdisco Database';
 say ' * "~/environments/deployment.yml" file configured with Database dsn/user/pass';
 say ' * A full backup of any existing Netdisco database data';
+say ' * Internet access (for OUIs and MIBs)';
 say '';
 say 'You will be asked to confirm all changes to your system.';
 say '';
