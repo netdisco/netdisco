@@ -41,8 +41,10 @@ requires 'version' => 0.9902;
 
 install_share 'share';
 
+install_script 'bin/nd-import-topology';
 install_script 'bin/netdisco-db-deploy';
 install_script 'bin/netdisco-deploy';
+install_script 'bin/netdisco-do';
 install_script 'bin/netdisco-daemon-fg';
 install_script 'bin/netdisco-daemon';
 install_script 'bin/netdisco-web-fg';
