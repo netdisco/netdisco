@@ -1,5 +1,22 @@
 #!/usr/bin/env perl
 
+our $home;
+
+BEGIN {
+  # try really hard to find a localenv if one isn't already in place.
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+  eval "require App::Netdisco::Util::Noop";
+
+  if ($@) {
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      die "Sorry, can't find libs required for App::Netdisco.\n";
+  }
+}
+
 use FindBin;
 FindBin::again();
 use Path::Class 'dir';
@@ -15,71 +32,6 @@ BEGIN {
 use App::Netdisco;
 use Dancer qw/:moose :script/;
 use Dancer::Plugin::DBIC 'schema';
-
-=head1 NAME
-
-netdisco-do - Run any Netdisco poller job from the command-line.
-
-=head1 USAGE
-
- ~/bin/netdisco-do <action> [-D] [-d <device> [-p <port>] [-e <extra>]]
-
-Regardless of Netdisco configuration, debug level logging is enabled if the
-C<-D> flag is given.
-
-=head1 DESCRIPTION
-
-This program allows you to run any Netdisco poller job from the command-line.
-
-Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>) simply add
-entries to the Netdisco job queue for other jobs, so won't seem to do much
-when you trigger them.
-
-=head1 ACTIONS
-
-=head2 discover
-
-Run a discover on the device (specified with C<-d>).
-
-=head2 macsuck
-
-Run a macsuck on the device (specified with C<-d>).
-
-=head2 arpnip
-
-Run an arpnip on the device (specified with C<-d>).
-
-=head2 set_location
-
-Set the SNMP location field on the device (specified with C<-d>). Pass the
-location string in the C<-e> extra parameter.
-
-=head2 set_contact
-
-Set the SNMP contact field on the device (specified with C<-d>). Pass the
-contact name in the C<-e> extra parameter.
-
-=head2 set_portname
-
-Set the description on a device port. Requires the C<-d> parameter (device),
-C<-p> parameter (port), and C<-e> parameter (description).
-
-=head2 set_portcontrol
-
-Set the up/down status on a device port. Requires the C<-d> parameter
-(device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
-
-=head2 set_vlan
-
-Set the native VLAN on a device port. Requires the C<-d> parameter (device),
-C<-p> parameter (port), and C<-e> parameter (VLAN number).
-
-=head2 set_power
-
-Set the PoE on/off status on a device port. Requires the C<-d> parameter
-(device), C<-p> parameter (port), and C<-e> parameter ("true" or "false").
-
-=cut
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
@@ -164,3 +116,68 @@ info sprintf '%s: finished at %s', $action, scalar localtime;
 info sprintf '%s: status %s: %s', $action, $status, $log;
 
 exit ($status eq 'done' ? 0 : 1);
+
+=head1 NAME
+
+netdisco-do - Run any Netdisco poller job from the command-line.
+
+=head1 USAGE
+
+ ~/bin/netdisco-do <action> [-D] [-d <device> [-p <port>] [-e <extra>]]
+
+Regardless of Netdisco configuration, debug level logging is enabled if the
+C<-D> flag is given.
+
+=head1 DESCRIPTION
+
+This program allows you to run any Netdisco poller job from the command-line.
+
+Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>) simply add
+entries to the Netdisco job queue for other jobs, so won't seem to do much
+when you trigger them.
+
+=head1 ACTIONS
+
+=head2 discover
+
+Run a discover on the device (specified with C<-d>).
+
+=head2 macsuck
+
+Run a macsuck on the device (specified with C<-d>).
+
+=head2 arpnip
+
+Run an arpnip on the device (specified with C<-d>).
+
+=head2 set_location
+
+Set the SNMP location field on the device (specified with C<-d>). Pass the
+location string in the C<-e> extra parameter.
+
+=head2 set_contact
+
+Set the SNMP contact field on the device (specified with C<-d>). Pass the
+contact name in the C<-e> extra parameter.
+
+=head2 set_portname
+
+Set the description on a device port. Requires the C<-d> parameter (device),
+C<-p> parameter (port), and C<-e> parameter (description).
+
+=head2 set_portcontrol
+
+Set the up/down status on a device port. Requires the C<-d> parameter
+(device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
+
+=head2 set_vlan
+
+Set the native VLAN on a device port. Requires the C<-d> parameter (device),
+C<-p> parameter (port), and C<-e> parameter (VLAN number).
+
+=head2 set_power
+
+Set the PoE on/off status on a device port. Requires the C<-d> parameter
+(device), C<-p> parameter (port), and C<-e> parameter ("true" or "false").
+
+=cut
