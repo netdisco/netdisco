@@ -1,3 +1,9 @@
+2.008000 - 2013-06-09
+
+  [BUG FIXES]
+
+  * localenv discovery in scripts is now more reliable
+
 2.007000_002 - 2013-06-03
 
   [NEW FEATURES]

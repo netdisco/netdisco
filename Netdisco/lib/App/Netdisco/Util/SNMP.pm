@@ -147,7 +147,7 @@ sub _try_connect {
 }
 
 sub _build_mibdirs {
-  my $home = (setting('mibhome') || $ENV{NETDISCO_HOME} || $ENV{HOME});
+  my $home = (setting('mibhome') || dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   return map { dir($home, $_) }
              @{ setting('mibdirs') || _get_mibdirs_content($home) };
 }

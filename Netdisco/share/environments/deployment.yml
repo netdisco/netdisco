@@ -1,21 +1,13 @@
-# configuration file for production environment
+#
+# NETDISCO 2 CONFIGURATION FILE
+#
+# Settings in this file override share/config.yml
+# See App::Netdisco::Manual::Configuration for more info.
 
-# only log warning and error messsages
-log: "warning"
+# ------------------
+# ESSENTIAL SETTINGS
+# ------------------
 
-# log message to a file in logs/
-logger: "file"
-
-# don't consider warnings critical
-warnings: 0
-
-# hide errors 
-show_errors: 0
-
-# cache route resolution for maximum performance
-route_cache: 1
-
-# database connections
 plugins:
   DBIC:
     # alter dsn/user/pass for your local Netdisco DB
@@ -28,20 +20,23 @@ plugins:
         RaiseError: 1
         AutoCommit: 1
 
-# uncomment and set to 1 to disable authentication/login
-# no_auth: 0
+# --------------------
+# RECOMMENDED SETTINGS
+# --------------------
 
 # will be stripped from fqdn when displayed in the web UI
-# also, do not forget the leading dot
-# domain_suffix: '.example.com'
+# also, do not forget the leading dot.
+#  domain_suffix: '.example.com'
 
-# local settings for Netdisco poller and port changes
+# uncomment and set to true to disable authentication/login.
+#  no_auth: false
 
-mibdirs:
-  - cisco
-  - rfc
-  - net-snmp
+# community: ['public']
+# community_rw: ['private']
 
-community: ['public']
-community_rw: ['private']
+# if unset, Netdisco loads all MIBs in mibhome directory.
+#  mibdirs:
+#    - cisco
+#    - rfc
+#    - net-snmp
 

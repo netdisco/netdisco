@@ -101,7 +101,7 @@ sub set_power {
 
   my $ip = $job->device;
   my $pn = $job->port;
-  (my $data = $job->subaction) =~ s/-\w+//;
+  (my $data = $job->subaction) =~ s/-\w+//; # remove -other
 
   # snmp connect using rw community
   my $info = snmp_connect_rw($ip)

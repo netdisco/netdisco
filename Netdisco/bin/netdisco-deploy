@@ -1,13 +1,11 @@
 #!/usr/bin/env perl
 
-use FindBin;
-FindBin::again();
 our $home;
 
 BEGIN {
   # try really hard to find a localenv if one isn't already in place.
   $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
-  eval "use Daemon::Control";
+  eval "require App::Netdisco::Util::Noop";
 
   if ($@) {
       use File::Spec;
@@ -19,11 +17,14 @@ BEGIN {
   }
 }
 
+use FindBin;
+FindBin::again();
+use Path::Class;
+
 BEGIN {
   # stuff useful locations into @INC and $PATH
   my $location = $FindBin::RealBin;
 
-  use Path::Class;
   unshift @INC,
     dir($location)->parent->subdir('lib')->stringify,
     dir($location, 'lib')->stringify;
@@ -35,6 +36,7 @@ BEGIN {
 use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
+
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
 use 5.010_000;
@@ -50,7 +52,7 @@ use Try::Tiny;
 
 netdisco-deploy - Database, OUI and MIB deployment for Netdisco
 
-=head2 USAGE
+=head1 USAGE
 
 This script deploys the Netdisco database schema, OUI data, and MIBs. Each of
 these is an optional service which the user is asked to confirm.
@@ -73,11 +75,11 @@ for its use.
 say 'This is the Netdisco II deployment script.';
 say '';
 say 'Before we continue, the following prerequisites must be in place:';
-say ' * Internet access';
 say ' * Database added to PostgreSQL for Netdisco';
 say ' * User added to PostgreSQL with rights to the Netdisco Database';
 say ' * "~/environments/deployment.yml" file configured with Database dsn/user/pass';
 say ' * A full backup of any existing Netdisco database data';
+say ' * Internet access (for OUIs and MIBs)';
 say '';
 say 'You will be asked to confirm all changes to your system.';
 say '';

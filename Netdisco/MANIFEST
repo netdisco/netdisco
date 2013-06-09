@@ -108,6 +108,7 @@ lib/App/Netdisco/Manual/ReleaseNotes.pod
 lib/App/Netdisco/Manual/WritingPlugins.pod
 lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DNS.pm
+lib/App/Netdisco/Util/Noop.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/SanityCheck.pm
@@ -144,7 +145,6 @@ MANIFEST			This list of files
 META.yml
 share/config.yml
 share/environments/deployment.yml
-share/environments/development.yml
 share/public/500.html
 share/public/css/bootstrap.min.css
 share/public/css/font-awesome.min.css

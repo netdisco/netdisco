@@ -198,7 +198,7 @@ sub store_interfaces {
           next;
       }
 
-      if (scalar grep {$port =~ m/$_/} @{setting('ignore_interfaces') || []}) {
+      if (scalar grep {$port =~ m/^$_$/} @{setting('ignore_interfaces') || []}) {
           debug sprintf
             ' [%s] interfaces - ignoring %s (%s) (config:ignore_interfaces)',
             $device->ip, $entry, $port;
@@ -807,12 +807,14 @@ sub discover_new_neighbors {
       my $device = get_device($ip);
       next if $device->in_storage;
 
-      my $remote_type_match = setting('discover_no_type');
-      if ($remote_type and $remote_type_match
-          and $remote_type =~ m/$remote_type_match/) {
-        debug sprintf ' queue - %s, type [%s] excluded by discover_no_type',
-          $ip, $remote_type;
-        next;
+      if ($remote_type) {
+          if (scalar grep {$remote_type =~ m/$_/}
+                          @{setting('discover_no_type') || []}) {
+              debug sprintf
+                ' queue - %s, type [%s] excluded by discover_no_type',
+                $ip, $remote_type;
+              next;
+          }
       }
 
       # could fail if queued job already exists

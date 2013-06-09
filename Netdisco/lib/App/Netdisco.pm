@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.007000_002';
+our $VERSION = '2.008000';
 
 BEGIN {
   if (not length ($ENV{DANCER_APPDIR} || '')
@@ -28,6 +28,15 @@ BEGIN {
       $ENV{DANCER_PUBLIC} ||= $auto->subdir('public')->stringify;
       $ENV{DANCER_VIEWS}  ||= $auto->subdir('views')->stringify;
   }
+
+  {
+      # Dancer 1 uses the broken YAML.pm module
+      # This is a global sledgehammer - could just apply to Dancer::Config
+      use YAML;
+      use YAML::XS;
+      no warnings 'redefine';
+      *YAML::LoadFile = sub { goto \&YAML::XS::LoadFile };
+  }
 }
 
 =head1 NAME
@@ -41,18 +50,9 @@ network management tool. Pieces are still missing however, so if you're a new
 user please see L<http://netdisco.org/> for further information on the project
 and how to download the current official release.
 
-=over 4
-
-=item *
-
-See the demo at: L<http://demo-ollyg.dotcloud.com/netdisco/>
-
-=back
-
-L<App::Netdisco> provides a web frontend and a backend daemon to handle
-interactive requests such as changing port or device properties. There is not
-yet a device poller, so please still use the old Netdisco's discovery, arpnip,
-and macsuck.
+L<App::Netdisco> provides a web frontend with built-in web server, and a
+backend daemon to handle interactive requests such as changing port or device
+properties.
 
 If you have any trouble getting the frontend running, speak to someone in the
 C<#netdisco> IRC channel (on freenode). Before installing or upgrading please
@@ -139,6 +139,8 @@ take care of all this for you:
 
  ~/bin/netdisco-deploy
 
+Answer yes to all questions, if this is a new installation of Netdisco 2.
+
 =head1 Startup
 
 Run the following command to start the web-app server as a backgrounded daemon
@@ -146,12 +148,17 @@ Run the following command to start the web-app server as a backgrounded daemon
 
  ~/bin/netdisco-web start
 
+If the Inventory is empty because this is a new installation, you probably
+want to either run some polling jobs from the command-line, or give a web user
+some admin rights (see L</"User Rights">, below).
+
 Run the following command to start the job control daemon (port control, etc):
 
  ~/bin/netdisco-daemon start
 
 You should take care not to run this Netdisco daemon and the legacy daemon at
-the same time.
+the same time. Similarly, if you use the device discovery with Netdisco 2,
+disable your system's cron jobs for the Netdisco 1 poller.
 
 =head1 Upgrading
 
@@ -161,13 +168,13 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
  
- # apply database schema updates (optionally, get latest OIDs/MIBs)
+ # apply database schema updates
  ~/bin/netdisco-deploy
  
  # restart web service
  ~/bin/netdisco-web restart
  
- # optionally, restart job daemon if you use it
+ # restart job daemon (if you use it)
  ~/bin/netdisco-daemon restart
 
 =head1 Tips and Tricks
@@ -180,12 +187,30 @@ or MAC addreses, VLAN numbers, and so on.
 
 =head2 User Rights
 
-When user authentication is disabled (C<no_auth>) the default username is
-"guest", which has no special privilege. To grant port and device control
+When user authentication is disabled (C<no_auth: true>) the default username
+is "guest", which has no special privilege. To grant port and device control
 rights to this user, create a row in the C<users> table of the Netdisco
-database with a username of C<guest> and the C<port_control> flag set to true:
+database with a username of C<guest> and appropriate flags set to true:
 
- netdisco=> insert into users (username, port_control) values ('guest', true);
+ netdisco=> insert into users (username) values ('guest');
+ netdisco=> update users set port_control = true where username = 'guest';
+ netdisco=> update users set admin = true where username = 'guest';
+
+=head2 Command-Line Device and Port Actions
+
+To run a device (discover, etc) or port control job from the command-line, use
+the bundled L<netdisco-do> program. For example:
+
+ ~/bin/netdisco-do -D discover -d 192.0.2.1
+
+=head2 Import Topology
+
+Netdisco 1.x had support for a topology information file to fill in device
+port relations which could not be discovered. This is now stored in the
+database (and edited in the web interface). To import a legacy topology file,
+run:
+
+ ~/bin/localenv nd-import-topology /path/to/netdisco-topology.txt
 
 =head2 Deployment Scenarios
 
@@ -202,10 +227,8 @@ documentation for further information.
 
 =head2 Plugins
 
-App::Netdisco includes a Plugin subsystem for building the web user interface.
-Items in the navigation bar and the tabs on pages are loaded as Plugins, and
-you have control over their appearance and ordering. See
-L<App::Netdisco::Web::Plugin> for further information.
+Netdisco includes a Plugin subsystem for customizing the web user interface.
+See L<App::Netdisco::Web::Plugin> for further information.
 
 =head2 Developing
 
@@ -229,7 +252,7 @@ Oliver Gorwits <oliver@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2012 by The Netdisco Developer Team.
+This software is copyright (c) 2012, 2013 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:

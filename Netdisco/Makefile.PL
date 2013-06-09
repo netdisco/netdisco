@@ -35,13 +35,16 @@ requires 'SNMP::Info' => 3.01;
 requires 'SQL::Translator' => 0.11016;
 requires 'Template' => 2.24;
 requires 'YAML' => 0.84;
+requires 'YAML::XS' => 0.41;
 requires 'namespace::clean' => 0.24;
 requires 'version' => 0.9902;
 
 install_share 'share';
 
+install_script 'bin/nd-import-topology';
 install_script 'bin/netdisco-db-deploy';
 install_script 'bin/netdisco-deploy';
+install_script 'bin/netdisco-do';
 install_script 'bin/netdisco-daemon-fg';
 install_script 'bin/netdisco-daemon';
 install_script 'bin/netdisco-web-fg';

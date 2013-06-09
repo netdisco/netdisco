@@ -3,14 +3,12 @@
 use strict;
 use warnings FATAL => 'all';
 
-use FindBin;
-FindBin::again();
 our $home;
 
 BEGIN {
   # try really hard to find a localenv if one isn't already in place.
   $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
-  eval "use Daemon::Control";
+  eval "require App::Netdisco::Util::Noop";
 
   if ($@) {
       use File::Spec;
@@ -22,7 +20,10 @@ BEGIN {
   }
 }
 
+use FindBin;
+FindBin::again();
 use Path::Class;
+use Daemon::Control;
 
 my $netdisco = file($FindBin::RealBin, 'netdisco-daemon-fg');
 my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());

@@ -68,8 +68,8 @@ sub vlan_reconfig_check {
 
 =item *
 
-Permission check that C<allow_uplinks> is true in Netdisco config, if C<$port>
-is an uplink.
+Permission check that C<portctl_uplinks> is true in Netdisco config, if
+C<$port> is an uplink.
 
 =item *
 
@@ -97,7 +97,7 @@ sub port_reconfig_check {
 
   # uplink check
   return "forbidden: port [$name] on [$ip] is an uplink"
-    if $port->remote_type and not $has_phone and not setting('allow_uplinks');
+    if $port->remote_type and not $has_phone and not setting('portctl_uplinks');
 
   # phone check
   return "forbidden: port [$name] on [$ip] is a phone"

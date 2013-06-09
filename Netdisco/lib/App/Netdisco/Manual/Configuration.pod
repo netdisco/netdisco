@@ -58,59 +58,78 @@ the C<dsn> (DB name, host, port), C<user> and C<pass>.
 
 =head2 General Settings
 
-=head3 C<log: debug|warning|error>
+=head3 C<log>
 
-Default: C<warning>
+Value: C<debug|warning|error>. Default: C<warning>.
 
 The log level used by Netdisco. It's useful to see warning messages from the
 backend poller, as this can highlight broken topology.
 
-=head3 C<logger: console|file>
+=head3 C<logger>
 
-Default: C<file>
+Value: C<console|file>. Default: C<file>.
 
 Destination for log messages. Console means standard ouput. When set to
 C<file>, the default destination is the C<${HOME}/logs> directory.
 
-=head3 C<logger_format: String>
+=head3 C<logger_format>
 
-Default: C<< '[%P] %L @%D> %m' >>
+Value: Format String. Default: C<< '[%P] %L @%D> %m' >>.
 
 Structure of the log messages. See L<Dancer::Logger::Abstract/"logger_format">
 for details.
 
 =head2 Web Frontend
 
-=head3 C<domain_suffix: String>
+=head3 C<domain_suffix>
 
-Default: None
+Value: String. Default: None.
 
 Set this to your local site's domain name. This is usually removed from node
-names in the web interface to make things more readable.
+names in the web interface to make things more readable. Make sure to include
+the leading dot character.
 
-=head3 C<no_auth: Boolean>
+=head3 C<no_auth>
 
-Default: C<false>
+Value: Boolean. Default: C<false>.
 
 Enable this to disable login authentication in the web frontend. The username
 will be set to C<guest> so if you want to allow extended permissions (C<admin>
-or C<port_control>, create a dummy user with the appropriate flag, in the
+or C<port_control>, create a dummy user with the appropriate flag in the
 database:
 
- netdisco=> insert into users (username, port_control) values ('guest', true);
+ netdisco=> insert into users (username) values ('guest');
+ netdisco=> update users set port_control = true where username = 'guest';
+ netdisco=> update users set admin = true where username = 'guest';
 
-=head3 C<port: String>
+=head3 C<port>
 
-Default: C<5000>
+Value: Number. Default: C<5000>.
 
 Port which the web server listens on. Netdisco comes with a good pre-forking
 web server, so you can change this to C<80> if you want to use it directly.
 However the default is designed to work well with servers such as Apache in
 reverse-proxy mode.
 
-=head3 C<web_plugins: List of String>
+=head3 C<path>
 
-Default: List of L<App::Netdisco::Web::Plugin> names
+Value: String. Default: None.
+
+Mount point for the Netdisco web frontend. This is usually the root of the web
+server. Set this to the path under which all pages live, e.g. C</netdisco2>.
+As an alternative you can use the C<--path> option to C<netdisco-web>.
+
+=head3 C<behind_proxy>
+
+Value: Boolean. Default: C<false>.
+
+A hint to the Netdisco web frontend that it's running behind a reverse proxy.
+In that case, Netdisco will pay attention to the C<X_FORWARDED_PROTOCOL>,
+C<X_FORWARDED_HOST>, etc settings in HTML headers.
+
+=head3 C<web_plugins>
+
+Value: List of Modules. Default: List of bundled L<App::Netdisco::Web::Plugin> names.
 
 Netdisco's plugin system allows the user more control over the user interface.
 Plugins can be distributed independently from Netdisco and are a better
@@ -119,24 +138,462 @@ are used in the default Netdisco distribution.
 
 You can override this to set your own list. If you only want to add to the
 default list then use C<extra_web_plugins>, which allows the Netdisco
-developers to update C<web_plugins> in a future release.
+developers to update default C<web_plugins> in a future release.
 
-=head3 C<extra_web_plugins: List of String>
+Entries in the list will by default omit the leading
+C<App::Netdisco::Web::Plugin::> from the name. To override this for one entry,
+prefix it with a C<+> sign. You can also prefix with C<X::> to signify the
+alternate C<App::NetdiscoX::Web::Plugin::> namepsace.
 
-Default: None
+=head3 C<extra_web_plugins>
+
+Value: List of Modules. Default: Empty List.
 
 List of additional L<App::Netdisco::Web::Plugin> names to load. See also the
 C<web_plugins> setting.
 
 =head2 Netdisco Core
 
+=head3 C<mibhome>
+
+Value: Directory. Default: C<${HOME}/netdisco-mibs>.
+
+Base directory in which to find C<mibdirs>. This is where C<netdisco-deploy>
+will drop MIB files.
+
+=head3 C<mibdirs>
+
+Value: List of Directories. Default: All subdirectories of C<mibhome>.
+
+A list of subdirectories of C<mibhome> from which to load MIB files. You
+should always include C<rfc>. For example:
+
+ mibdirs:
+   - rfc
+   - cisco
+   - foundry
+
+=head3 C<community>
+
+Value: List of Strings. Default: C<public>.
+
+A list of read-only SNMP community strings to try on each device. The working
+community will be cached in the database.
+
+=head3 C<community_rw>
+
+Value: List of Strings. Default: C<private>.
+
+A list of read-write SNMP community strings to try on each device. The working
+community will be cached in the database.
+
+=head3 C<snmpver>
+
+Value: C<1|2|3>. Default: 2.
+
+Version of the SNMP protocol used when connecting to devices.
+
+=head3 C<snmptimeout>
+
+Value: Number. Default: 1000000.
+
+Micro-seconds before connection retry in L<SNMP::Session>. 1000000
+micro-seconds = 1 second.
+
+=head3 C<snmpretries>
+
+Value: Number. Default: 2.
+
+Number of times to retry connecting to a device before giving up.
+
+=head3 C<discover_no>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+IP addresses in the list will not be visited during device discovery. You can
+include hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
+
+=head3 C<discover_only>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+If present, device discovery will be limited to IP addresses matching entries
+in this list. You can include hostnames, IP addresses and subnets (IPv4 and
+IPv6).
+
+=head3 C<discover_no_type>
+
+Value: List of Strings. Default: None.
+
+Place regular expression patterns here to exclude the discovery of certain
+devices based on the CDP/LLDP device type information. Good for excluding a
+whole device class like lightweight access points or IP phones that have CDP
+but don't talk SNMP. For example:
+
+ discover_no_type:
+   - 'cisco\s+AIR-LAP'
+   - '(?i)Cisco\s+IP\s+Phone'
+
+=head3 C<macsuck_all_vlans>
+
+Value: Boolean. Default: C<false>.
+
+Set to macsuck all VLANs, not just the ones that are being used on ports.
+This is a debug option. Set this if you think that the option of not
+macsucking VLANs that aren't in use on device ports is some how interfering.
+
+=head3 C<macsuck_no_unnamed>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to skip macsuck-ing on VLANs which have no name set. This option
+may be useful on Cisco Catalyst family devices where ports are a member of a
+VLAN which is not defined in the VLAN database.
+
+=head3 C<macsuck_bleed>
+
+Value: Boolean. Default: C<false>.
+
+Set to true will let nodes accumulate on uplink ports without topology
+information. This is a debug option to help you figure out your topology and
+generally should not be set.
+
+=head3 C<store_wireless_client>
+
+Value: Boolean. Default: C<true>.
+
+Set to false to skip the wireless client information gathering. This is
+captured at macsuck time, so if you aren't using the information you can skip
+it.
+
+=head3 C<ignore_interfaces>
+
+Value: List of Strings. Default:
+
+ ignore_interfaces:
+   - 'EOBC'
+   - 'unrouted VLAN'
+   - 'StackPort'
+   - 'Control Plane Interface'
+   - 'SPAN (S|R)P Interface'
+   - 'StackSub'
+   - 'netflow'
+   - 'Vlan\d+-mpls layer'
+   - 'BRI\S+-Bearer Channel'
+   - 'BRI\S+-Physical'
+   - 'BRI\S+-Signalling'
+   - 'Embedded-Service-Engine\d+\/\d+'
+   - 'Virtual-Template\d+'
+   - 'Virtual-Access\d+'
+   - '(E|T)\d \d\/\d\/\d'
+
+If present, device ports whose names match fully any of the items in this list
+will be ignored by the discovery process.
+
+Note this may have side effects - connected devices and nodes on those ports
+will in turn also not be discovered.
+
+=head3 C<ignore_private_nets>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to ignore device interfaces that are part of private nets (RFC
+1918).
+
+=head3 C<reverse_sysname>
+
+Value: Boolean. Default: C<false>.
+
+Turn this on to have Netdisco do a reverse lookup of the device C<sysName.0>
+field to use as the management IP address for a device.
+
+=head3 C<vlanctl>
+
+Value: Boolean. Default: C<true>.
+
+Set to false to prevent Netdisco from changing the default VLAN on an
+interface.
+
+=head3 C<portctl_nophones>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to make sure an IP Phone port never can be turned off/on.
+
+=head3 C<portctl_vlans>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to allow Netdisco to be able to disable VLAN trunk interfaces.
+
+B<EXTREMELY VERY DANGEROUS>: Turning off a VLAN trunk link could take out most
+of your network.
+
+=head3 C<portctl_uplinks>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to allow Netdisco to be able to disable Uplinks. (Router
+Interfaces too)
+
+B<EXTREMELY VERY DANGEROUS>: Turning off uplinks will take out chunks of your
+network.
+
+=head3 C<no_port_control>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to disable globally support for Port Control. Mainly useful for
+development to suppress web frontend job queue callbacks.
+
 =head2 Backend Daemon
+
+=head3 C<workers>
+
+Value: Settings Tree. Default:
+
+ workers:
+   interactives: 2
+   pollers: 2
+   sleep_time: 5
+
+Control the activity of the backend daemon with this configuration setting.
+
+C<interactives> and C<pollers> sets how many workers are started for
+interactive jobs (port control) and polling jobs (discover, macsuck, arpnip)
+on this node, respectively. Other nodes can have different settings.
+
+C<sleep_time> is the number of seconds between polling the database to find
+new jobs. This is a balance between responsiveness and database load.
+
+=head3 C<housekeeping>
+
+Value: Settings Tree. Default: None.
+
+If set, then this node's backend daemon will schedule polling jobs (discover,
+macsuck, arpnip, etc) in the central database. It's fine to have multiple
+nodes scheduling work for redundancy (but make sure they all have good NTP).
+
+Note that this is independent of the Pollers configured in C<workers>. It's
+okay to have this node schedule housekeeping but not do any of the polling
+itself (C<pollers: 0>).
+
+Work can be scheduled using C<cron> style notation, or a simple weekday and
+hour fields (which accept same types as C<cron> notation). For example:
+
+ housekeeping:
+   discoverall:
+     when: '0 9 * * *'
+   arpwalk:
+     when:
+       min: 30
+   macwalk:
+     when:
+       hour: '*/2'
 
 =head2 Dancer Internal
 
-=head1 UNSUPPORTED SETTINGS
+=head3 C<charset>
+
+Value: String. Default: C<UTF-8>.
+
+See L<Dancer::Config/"charset-string">.
+
+=head3 C<warnings>
+
+Value: Boolean. Default: C<false>.
+
+Should warnings be considered as critical errors?
+
+=head3 C<show_errors>
+
+Value: Boolean. Default: C<false>.
+
+Whether to show a stack trace when an error is caught in the web frontend.
+
+=head3 C<engines>
+
+Value: Settings Tree.
+
+Useful for overriding the Template Toolkit settings, if you want.
+
+=head3 C<layout>
+
+Value: String. Default: C<main>.
+
+Don't touch this.
+
+=head3 C<plugins>
+
+Value: Settings Tree.
+
+Useful for overriding the Database configuration, but only if you know what
+you're doing.
+
+=head3 C<session>
+
+Value: String. Default: C<YAML>.
+
+How to handle web sessions. Default is to store on disk so they can be shared
+between multiple web server processes (although it's slower).
+
+=head3 C<template>
+
+Value: String. Default: C<template_toolkit>.
+
+Which engine to use for templating in the web frontend. Don't touch this.
+
+=head3 C<route_cache>
+
+Value: Boolean. Default: C<true>.
+
+Whether to build a route cache for web requests, for better performance.
+
+=head3 C<appname>
+
+Value: String. Default: C<Netdisco>.
+
+Don't touch this.
+
+=head1 UNSUPPORTED (SO FAR)
 
 These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 2. If you really need the feature, please let the developers know.
+
+=over 4
+
+=item *
+
+C<admin>
+
+=item *
+
+C<arpnip_min_age>
+
+=item *
+
+C<arpnip_no>
+
+=item *
+
+C<arpnip_only>
+
+=item *
+
+C<bulkwalk_no>
+
+=item *
+
+C<bulkwalk_off>
+
+=item *
+
+C<bulkwalk_repeaters>
+
+=item *
+
+C<col_xxx_show>
+
+=item *
+
+C<discover_min_age>
+
+=item *
+
+C<expire_devices>
+
+=item *
+
+C<expire_nodes>
+
+=item *
+
+C<expire_nodes_archive>
+
+=item *
+
+C<get_community>
+
+=item *
+
+C<macsuck_min_age>
+
+=item *
+
+C<macsuck_no>
+
+=item *
+
+C<macsuck_no_devicevlan>
+
+=item *
+
+C<macsuck_no_vlan>
+
+=item *
+
+C<macsuck_only>
+
+=item *
+
+C<macsuck_timeout>
+
+=item *
+
+C<nonincreasing>
+
+=item *
+
+C<port_info>
+
+=item *
+
+C<portctl_timeout>
+
+=item *
+
+C<portcontrol>
+
+=item *
+
+C<snmpforce_v1>
+
+=item *
+
+C<snmpforce_v2>
+
+=item *
+
+C<snmpforce_v3>
+
+=item *
+
+C<store_modules>
+
+=item *
+
+C<timeout>
+
+=item *
+
+C<v3_user>
+
+=item *
+
+C<v3_users>
+
+=item *
+
+C<v3_users_rw>
+
+=item *
+
+C<web_console_models>
+
+=item *
+
+C<web_console_vendors>
+
+=back
 
 =cut

@@ -51,7 +51,7 @@ sub worker_body {
       }
 
       debug "poll ($wid): sleeping now...";
-      sleep( setting('daemon_sleep_time') || 5 );
+      sleep( setting('workers')->{sleep_time} || 5 );
   }
 }
 
