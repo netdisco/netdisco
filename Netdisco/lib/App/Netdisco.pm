@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.007000_004';
+our $VERSION = '2.007000_005';
 
 BEGIN {
   if (not length ($ENV{DANCER_APPDIR} || '')

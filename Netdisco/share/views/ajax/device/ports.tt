@@ -213,10 +213,10 @@
           <span class="label label-important">N</span>
           <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
             [% row.remote_ip | html_entity %] (port: [% row.remote_port | html_entity %]
-            [% ' id: '_ row.remote_type IF row.remote_type%]
-            [% ' type: '_ row.remote_id IF row.remote_id%])</a>
+            [% ' id: '_ row.remote_id IF row.remote_id %]
+            [% ' type: '_ row.remote_type IF row.remote_type %])</a>
           [% ELSE %]
-          <span class="label label-important">N</span> (probable neighbor)
+          <span class="label label-important">N</span> (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]

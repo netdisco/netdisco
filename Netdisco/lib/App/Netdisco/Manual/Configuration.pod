@@ -286,7 +286,6 @@ Value: List of Strings. Default:
    - 'Virtual-Template\d+'
    - 'Virtual-Access\d+'
    - '(E|T)\d \d\/\d\/\d'
-   - 'Vlan1'
 
 If present, device ports whose names match fully any of the items in this list
 will be ignored by the discovery process.

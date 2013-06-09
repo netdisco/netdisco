@@ -73,7 +73,6 @@ ignore_interfaces:
   - 'Virtual-Template\d+'
   - 'Virtual-Access\d+'
   - '(E|T)\d \d\/\d\/\d'
-  - 'Vlan1'
 ignore_private_nets: false
 reverse_sysname: false
 vlanctl: true

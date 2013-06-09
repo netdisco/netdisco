@@ -8,7 +8,7 @@ ajax '/ajax/portcontrol' => sub {
     send_error('Forbidden', 403)
       unless var('user')->port_control;
     send_error('No device/port/field', 400)
-      unless param('device') and param('port') and param('field');
+      unless param('device') and (param('port') or param('field'));
 
     my $log = sprintf 'd:[%s] p:[%s] f:[%s]. a:[%s] v[%s]',
       param('device'), (param('port') || ''), param('field'),
