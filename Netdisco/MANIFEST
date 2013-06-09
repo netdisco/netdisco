@@ -108,6 +108,7 @@ lib/App/Netdisco/Manual/ReleaseNotes.pod
 lib/App/Netdisco/Manual/WritingPlugins.pod
 lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DNS.pm
+lib/App/Netdisco/Util/Noop.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/SanityCheck.pm

@@ -1,13 +1,11 @@
 #!/usr/bin/env perl
 
-use FindBin;
-FindBin::again();
 our $home;
 
 BEGIN {
   # try really hard to find a localenv if one isn't already in place.
   $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
-  eval "use Daemon::Control";
+  eval "require App::Netdisco::Util::Noop";
 
   if ($@) {
       use File::Spec;
@@ -19,11 +17,14 @@ BEGIN {
   }
 }
 
+use FindBin;
+FindBin::again();
+use Path::Class;
+
 BEGIN {
   # stuff useful locations into @INC and $PATH
   my $location = $FindBin::RealBin;
 
-  use Path::Class;
   unshift @INC,
     dir($location)->parent->subdir('lib')->stringify,
     dir($location, 'lib')->stringify;
@@ -35,6 +36,7 @@ BEGIN {
 use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
+
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
 use 5.010_000;
