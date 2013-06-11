@@ -69,8 +69,7 @@ sub build_tasks_list {
     user_begin => worker_factory('Interactive'),
   } if setting('workers')->{interactives};
 
-  info sprintf "MCE will load %s tasks: %s Manager, %s Scheduler, %s Poller, %s Interactive",
-    (scalar @$tasks),
+  info sprintf "MCE will load: %s Manager, %s Scheduler, %s Poller, %s Interactive",
     ((setting('workers')->{pollers} or setting('workers')->{interactives}) ? 1 : 0),
     (setting('housekeeping') ? 1 : 0),
     (setting('workers')->{pollers} || 0),

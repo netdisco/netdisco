@@ -3,7 +3,7 @@ package App::Netdisco::Core::Discover;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Try::Tiny;
@@ -51,7 +51,7 @@ sub store_device {
   _set_canonical_ip($device, $snmp);
 
   my $hostname = hostname_from_ip($device->ip);
-  $device->dns($hostname) if length $hostname;
+  $device->dns($hostname) if $hostname;
   my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
 
   # build device aliases suitable for DBIC
@@ -791,30 +791,26 @@ The Device database object can be a fresh L<DBIx::Class::Row> object which is
 not yet stored to the database.
 
 Any discovered neighbor unknown to Netdisco will have a C<discover> job
-immediately queued (subject to the filtering by the C<discover_no_type>
-setting).
+immediately queued (subject to the filtering by the C<discover_*> settings).
 
 =cut
 
 sub discover_new_neighbors {
   my @to_discover = store_neighbors(@_);
 
-  # only enqueue if device is not already discovered, and
-  # discover_no_type config permits the discovery
+  # only enqueue if device is not already discovered,
+  # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
       my ($ip, $remote_type) = @$neighbor;
 
       my $device = get_device($ip);
       next if $device->in_storage;
 
-      if ($remote_type) {
-          if (scalar grep {$remote_type =~ m/$_/}
-                          @{setting('discover_no_type') || []}) {
-              debug sprintf
-                ' queue - %s, type [%s] excluded by discover_no_type',
-                $ip, $remote_type;
-              next;
-          }
+      if (not is_discoverable($device, $remote_type)) {
+          debug sprintf
+            ' queue - %s, type [%s] excluded by discover_* config',
+            $ip, $remote_type;
+          next;
       }
 
       # could fail if queued job already exists

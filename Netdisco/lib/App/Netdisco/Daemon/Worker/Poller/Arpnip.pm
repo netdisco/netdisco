@@ -20,6 +20,16 @@ sub arpwalk {
   my $devices = schema('netdisco')->resultset('Device')->get_column('ip');
   my $jobqueue = schema('netdisco')->resultset('Admin');
 
+  if ($job->subaction and $job->subaction eq 'after-discoverall') {
+      # make sure there are no incomplete discover jobs queued
+      my $discover = $jobqueue->search(
+        { action => 'discover', status => { -like => 'queued%' } }
+      )->count;
+
+      return job_defer("Deferred arpwalk due to pending discover jobs")
+        if $discover;
+  }
+
   schema('netdisco')->txn_do(sub {
     # clean up user submitted jobs older than 1min,
     # assuming skew between schedulers' clocks is not greater than 1min

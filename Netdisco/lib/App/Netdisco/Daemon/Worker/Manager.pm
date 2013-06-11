@@ -95,11 +95,10 @@ sub lock_job {
   # lock db row and update to show job has been picked
   try {
       schema('netdisco')->txn_do(sub {
-          my $row = schema('netdisco')->resultset('Admin')->find(
-            {job => $job->job, status => 'queued'}, {for => 'update'}
-          );
-
-          $row->update({status => "queued-$fqdn"});
+          schema('netdisco')->resultset('Admin')->find(
+            {job => $job->job, status => 'queued'},
+            {for => 'update'}
+          )->update({ status => "queued-$fqdn" });
       });
       $happy = 1;
   };

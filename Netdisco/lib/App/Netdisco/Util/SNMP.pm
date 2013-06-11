@@ -154,7 +154,7 @@ sub _build_mibdirs {
 
 sub _get_mibdirs_content {
   my $home = shift;
-  warning 'Netdisco SNMP work will be really slow - loading ALL MIBs. Please set mibdirs.';
+  warning 'Netdisco SNMP work will be slow - loading ALL MIBs. Consider setting mibdirs.';
   my @list = map {s|$home/||; $_} grep {-d} glob("$home/*");
   return \@list;
 }

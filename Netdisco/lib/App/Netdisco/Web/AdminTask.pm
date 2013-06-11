@@ -16,7 +16,7 @@ sub add_job {
     }
 
     try {
-    # job might already be in the queue, so this could die
+    # jobs might already be in the queue, so this could die
         schema('netdisco')->resultset('Admin')->create({
           ($device ? (device => $device->addr) : ()),
           action => $jobtype,
@@ -24,6 +24,23 @@ sub add_job {
           username => session('user'),
           userip => request->remote_address,
         });
+
+        if (param('extra') and param('extra') eq 'with-walk') {
+            schema('netdisco')->resultset('Admin')->create({
+              action => 'macwalk',
+              subaction => 'after-discoverall',
+              status => 'queued',
+              username => session('user'),
+              userip => request->remote_address,
+            });
+            schema('netdisco')->resultset('Admin')->create({
+              action => 'arpwalk',
+              subaction => 'after-discoverall',
+              status => 'queued',
+              username => session('user'),
+              userip => request->remote_address,
+            });
+        }
     };
 }
 

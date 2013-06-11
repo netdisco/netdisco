@@ -67,11 +67,16 @@ Returns false if the host is not permitted to discover the target device.
 =cut
 
 sub is_discoverable {
-  my $q = shift;
+  my ($ip, $remote_type) = @_;
+  my $device = get_device($ip) or return 0;
 
-  my $device = get_device($q) or return 0;
+  if ($remote_type) {
+      return 0 if
+        scalar grep {$remote_type =~ m/$_/}
+                    @{setting('discover_no_type') || []};
+  }
+
   my $addr = NetAddr::IP::Lite->new($device->ip);
-
   my $discover_no   = setting('discover_no') || [];
   my $discover_only = setting('discover_only') || [];
 

@@ -10,7 +10,7 @@
 # ----------------
 
 log: 'warning'
-logger: 'file'
+logger: 'console'
 logger_format: '[%P] %L @%D> %m'
 
 # ------------

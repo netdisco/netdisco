@@ -65,13 +65,6 @@ Value: C<debug|warning|error>. Default: C<warning>.
 The log level used by Netdisco. It's useful to see warning messages from the
 backend poller, as this can highlight broken topology.
 
-=head3 C<logger>
-
-Value: C<console|file>. Default: C<file>.
-
-Destination for log messages. Console means standard ouput. When set to
-C<file>, the default destination is the C<${HOME}/logs> directory.
-
 =head3 C<logger_format>
 
 Value: Format String. Default: C<< '[%P] %L @%D> %m' >>.
@@ -410,6 +403,15 @@ Should warnings be considered as critical errors?
 Value: Boolean. Default: C<false>.
 
 Whether to show a stack trace when an error is caught in the web frontend.
+
+=head3 C<logger>
+
+Value: C<console|file>. Default: C<console>.
+
+Destination for log messages. Should usually be C<console>, which does the
+right thing when running foreground apps, and is also captured to
+C<${HOME}/logs> when running daemonized. Only change this if you know what
+you're doing.
 
 =head3 C<engines>
 

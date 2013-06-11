@@ -50,6 +50,10 @@ sub discover {
   my $host = NetAddr::IP::Lite->new($job->device);
   my $device = get_device($host->addr);
 
+  if ($device->ip eq '0.0.0.0') {
+      return job_error("discover failed: no device param (need -d ?)");
+  }
+
   if ($device->in_storage
       and $device->vendor and $device->vendor eq 'netdisco') {
       return job_done("Skipped discover for pseudo-device $host");

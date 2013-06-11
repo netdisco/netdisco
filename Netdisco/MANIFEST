@@ -26,6 +26,7 @@ lib/App/Netdisco/Daemon/DB.pm
 lib/App/Netdisco/Daemon/DB/Result/Admin.pm
 lib/App/Netdisco/Daemon/Queue.pm
 lib/App/Netdisco/Daemon/Util.pm
+lib/App/Netdisco/Daemon/Worker/Common.pm
 lib/App/Netdisco/Daemon/Worker/Interactive.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/DeviceActions.pm
 lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm
@@ -93,6 +94,7 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-18-19-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-19-20-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-3-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-20-21-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql

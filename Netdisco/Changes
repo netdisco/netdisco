@@ -1,8 +1,20 @@
+2.008002 - 2013-06-11
+
+  [ENHANCEMENTS]
+
+  * Initial (bootstrap) discover now queues an arpwalk and macwalk as well
+
+  [BUG FIXES]
+
+  * Fix logging when daemonized
+  * Remove bad constraint on device_ip table
+  * Limit queueing of discovery to things which can be discovered
+
 2.008001 - 2013-06-11
 
   [BUG FIXES]
 
-  * more fixes for localenv discovery in scripts
+  * More fixes for localenv discovery in scripts
 
 2.008000 - 2013-06-09
 

@@ -8,7 +8,7 @@ use base 'DBIx::Class::Schema';
 
 __PACKAGE__->load_namespaces;
 
-our $VERSION = 20; # schema version used for upgrades, keep as integer
+our $VERSION = 21; # schema version used for upgrades, keep as integer
 
 use Path::Class;
 use File::Basename;
