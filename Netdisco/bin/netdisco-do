@@ -3,11 +3,10 @@
 our $home;
 
 BEGIN {
-  # try really hard to find a localenv if one isn't already in place.
+  # try to find a localenv if one isn't already in place.
   $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
-  eval "require App::Netdisco::Util::Noop";
 
-  if ($@) {
+  if (!exists $ENV{PERL_LOCAL_LIB_ROOT}) {
       use File::Spec;
       my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
       exec($localenv, $0, @ARGV) if -f $localenv;
@@ -119,7 +118,7 @@ exit ($status eq 'done' ? 0 : 1);
 
 =head1 NAME
 
-netdisco-do - Run any Netdisco poller job from the command-line.
+netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 USAGE
 
