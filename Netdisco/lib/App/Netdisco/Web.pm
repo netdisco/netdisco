@@ -43,6 +43,9 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
     _load_web_plugins( setting('extra_web_plugins') );
 }
 
+# workaround for https://github.com/PerlDancer/Dancer/issues/935
+hook after_error_render => sub { setting('layout' => 'main') };
+
 hook 'before_template' => sub {
     my $tokens = shift;
 
@@ -51,7 +54,7 @@ hook 'before_template' => sub {
         if request->base->path ne '/';
 
     # allow portable dynamic content
-    $tokens->{uri_for} = sub { uri_for(@_)->path_query() };
+    $tokens->{uri_for} = sub { uri_for(@_)->path_query };
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

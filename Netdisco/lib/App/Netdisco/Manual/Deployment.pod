@@ -14,18 +14,36 @@ Obviously, you'll need to substitute this wherever you see "C<~>" in the
 installation instructions. The Netdisco application will use this setting
 itself to locate files and configuration.
 
+=head1 Pass Options to the Web Frontend Daemon
+
+Simply add any options after the "C<start>" command. See other sections of
+this document for some examples.
+
 =head1 Non-root Hosting
 
 Netdisco will assume its web site is hosted at the apex of your server - that
 is, the document root. To relocate the web application, pass the C<--path>
 parameter to the web startup script:
 
- ~/bin/netdisco-web --path /netdisco2
+ ~/bin/netdisco-web start --path=/netdisco2
 
 Alternatively, can set the C<path> configuration option in your
 C<deployment.yml> file:
 
  path: '/netdisco2'
+
+=head1 Listening Port for the Web Frontend
+
+Pass the C<--port> parameter to any of the web scripts. For example:
+
+ ~/bin/netdisco-web start --port=8080
+
+=head1 Listening Address for the Web Frontend
+
+Pass the C<--listen> parameter to any of the web scripts. Note that you always
+must include the port number. For example:
+
+ ~/bin/netdisco-web start --listen=127.0.0.1:8080
 
 =head1 Behind a Proxy
 
@@ -33,33 +51,35 @@ By default the web application daemon starts listening on port 5000 and goes
 into the background. This is ideal for hosting behind a web proxy (e.g. Apache
 with C<mod_proxy>).
 
-After enabling the C<proxy> and C<proxy_http> modules in Apache, a suitable
-configuration would be:
+After enabling the C<headers>, C<proxy> and C<proxy_http> modules in Apache, a
+suitable configuration would be:
 
+ ProxyPreserveHost On
  ProxyPass / http://localhost:5000/
  ProxyPassReverse / http://localhost:5000/
  
+ ProxyRequests Off
  <Proxy *>
    Order allow,deny
    Allow from all
  </Proxy>
 
-You also need to set the following configuration in your C<deployment.yml>
-file:
-
- behind_proxy: 1
-
 To combine this with Non-root Hosting as above, simply change the paths
-referenced in the configuration like so (and use Non-root Hosting as above):
+referenced in the configuration, and set C<path> in your C<deployment.yml> as
+discussed above. Note there is no trailing slash in the Apache config:
 
- ProxyPass /netdisco2 http://localhost:5000/
- ProxyPassReverse /netdisco2 http://localhost:5000/
+ ProxyPass /netdisco2 http://localhost:5000/netdisco2
+ ProxyPassReverse /netdisco2 http://localhost:5000/netdisco2
+
+To delegate user authentication to Apache, use the C<trust_remote_user> or
+C<trust_x_remote_user> settings. See L<App::Netdisco::Manual::Configuration>
+for more details.
 
 =head1 SQL and HTTP Trace
 
 For SQL debugging try the following commands:
 
- DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv starman --workers=1 ~/bin/netdisco-web-fg
+ DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv starman ~/bin/netdisco-web-fg --workers=1 --disable-keepalive
  DBIC_TRACE_PROFILE=console DBIC_TRACE=1 ~/bin/localenv ~/bin/netdisco-daemon-fg
 
 =head1 Further Reading...

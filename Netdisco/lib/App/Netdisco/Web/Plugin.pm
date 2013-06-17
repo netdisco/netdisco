@@ -22,7 +22,7 @@ config->{engines}->{template_toolkit}->{INCLUDE_PATH} ||= [ setting('views') ];
 register 'register_template_path' => sub {
   my ($self, $path) = plugin_args(@_);
 
-  if (!length $path) {
+  if (!$path) {
       return error "bad template path to register_template_paths";
   }
 
@@ -34,11 +34,11 @@ register 'register_template_path' => sub {
 sub _register_include {
   my ($type, $plugin) = @_;
 
-  if (!length $type) {
+  if (!$type) {
       return error "bad type to _register_include";
   }
 
-  if (!length $plugin) {
+  if (!$plugin) {
       return error "bad plugin name to register_$type";
   }
 
@@ -60,7 +60,7 @@ register 'register_device_port_column' => sub {
   $config->{default} ||= '';
   $config->{position} ||= 'right';
 
-  if (!length $config->{name} or !length $config->{label}) {
+  if (!$config->{name} or !$config->{label}) {
       return error "bad config to register_device_port_column";
   }
 
@@ -77,9 +77,9 @@ register 'register_device_port_column' => sub {
 register 'register_navbar_item' => sub {
   my ($self, $config) = plugin_args(@_);
 
-  if (!length $config->{tag}
-      or !length $config->{path}
-      or !length $config->{label}) {
+  if (!$config->{tag}
+      or !$config->{path}
+      or !$config->{label}) {
 
       return error "bad config to register_navbar_item";
   }
@@ -97,8 +97,8 @@ register 'register_navbar_item' => sub {
 register 'register_admin_task' => sub {
   my ($self, $config) = plugin_args(@_);
 
-  if (!length $config->{tag}
-      or !length $config->{label}) {
+  if (!$config->{tag}
+      or !$config->{label}) {
 
       return error "bad config to register_admin_task";
   }
@@ -110,8 +110,8 @@ sub _register_tab {
   my ($nav, $config) = @_;
   my $stash = setting("_${nav}_tabs");
 
-  if (!length $config->{tag}
-      or !length $config->{label}) {
+  if (!$config->{tag}
+      or !$config->{label}) {
 
       return error "bad config to register_${nav}_item";
   }
@@ -140,9 +140,9 @@ register 'register_report' => sub {
   my ($self, $config) = plugin_args(@_);
   my @categories = @{ setting('_report_order') };
 
-  if (!length $config->{category}
-      or !length $config->{tag}
-      or !length $config->{label}
+  if (!$config->{category}
+      or !$config->{tag}
+      or !$config->{label}
       or 0 == scalar grep {$config->{category} eq $_} @categories) {
 
       return error "bad config to register_report";

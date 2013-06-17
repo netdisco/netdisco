@@ -60,6 +60,7 @@ ajax '/ajax/content/search/node' => sub {
               ->search_by_dns({dns => $node, @active});
         }
         return unless $set and $set->count;
+        $set = $set->search_rs({}, { order_by => 'me.mac' });
 
         template 'ajax/search/node_by_ip.tt', {
           macs => $set,

@@ -50,7 +50,7 @@ sub worker_body {
       }
 
       debug "$type ($wid): sleeping now...";
-      sleep( setting('workers')->{sleep_time} || 5 );
+      sleep(1);
   }
 }
 

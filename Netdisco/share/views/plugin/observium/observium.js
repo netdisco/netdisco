@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-  // bind qtip2 even to all future .observium buttons
+  // bind qtip2 event to all future .nd_observium buttons
   $('#ports_pane').on('mouseover', '.nd_observium', function(event) {
     $(this).qtip({
       overwrite: false,

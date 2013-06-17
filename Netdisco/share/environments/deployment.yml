@@ -8,17 +8,11 @@
 # ESSENTIAL SETTINGS
 # ------------------
 
-plugins:
-  DBIC:
-    # alter dsn/user/pass for your local Netdisco DB
-    netdisco:
-      schema_class: 'App::Netdisco::DB'
-      dsn: 'dbi:Pg:dbname=netdisco;host=localhost'
-      user: 'changeme'
-      pass: 'changeme'
-      options:
-        RaiseError: 1
-        AutoCommit: 1
+database:
+  name: 'netdisco'
+  host: 'localhost'
+  user: 'changeme'
+  pass: 'changeme'
 
 # --------------------
 # RECOMMENDED SETTINGS

@@ -93,13 +93,13 @@ sub _snmp_connect_generic {
 
   my $info = undef;
   VERSION: foreach my $ver (@versions) {
-      next unless length $ver;
+      next unless $ver;
 
       CLASS: foreach my $class (@classes) {
-          next unless length $class;
+          next unless $class;
 
           COMMUNITY: foreach my $comm (@communities) {
-              next unless length $comm;
+              next unless $comm;
 
               $info = _try_connect($ver, $class, $comm, \%snmp_args)
                 and last VERSION;

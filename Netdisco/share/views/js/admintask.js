@@ -11,12 +11,14 @@
   function inner_view_processing(tab) {
 
     // reload this table every 5 seconds
-    if (tab == 'jobqueue') {
-        $('#nd_device-name').text('5');
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('4') }, 1000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('3') }, 2000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('2') }, 3000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_device-name').text('1') }, 4000 ));
+    if (tab == 'jobqueue'
+        && $('#nd_countdown-control-icon').hasClass('icon-pause')) {
+
+        $('#nd_countdown').text('5');
+        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('4') }, 1000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('3') }, 2000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('2') }, 3000 ));
+        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('1') }, 4000 ));
         nd_timers.push(setTimeout(function() {
           // clear any running timers
           for (var i = 0; i < nd_timers.length; i++) {
@@ -29,7 +31,7 @@
 
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
-      source: '/ajax/data/deviceip/typeahead'
+      source: uri_base + '/ajax/data/deviceip/typeahead'
       ,delay: 150
       ,minLength: 0
     });
@@ -38,7 +40,7 @@
     $('.nd_topo_port.nd_topo_dev1').autocomplete({
       source: function (request, response)  {
         var query = $('.nd_topo_dev1').serialize();
-        return $.get('/ajax/data/port/typeahead', query, function (data) {
+        return $.get( uri_base + '/ajax/data/port/typeahead', query, function (data) {
           return response(data);
         });
       }
@@ -49,7 +51,7 @@
     $('.nd_topo_port.nd_topo_dev2').autocomplete({
       source: function (request, response)  {
         var query = $('.nd_topo_dev2').serialize();
-        return $.get('/ajax/data/port/typeahead', query, function (data) {
+        return $.get( uri_base + '/ajax/data/port/typeahead', query, function (data) {
           return response(data);
         });
       }
@@ -77,6 +79,31 @@
       $(this).siblings('.nd_topo_port').autocomplete('search');
     });
 
+    // job control refresh icon should reload the page
+    $('#nd_countdown-refresh').click(function() {
+      event.preventDefault();
+      for (var i = 0; i < nd_timers.length; i++) {
+          clearTimeout(nd_timers[i]);
+      }
+      $('#' + tab + '_form').trigger('submit');
+    });
+
+    // job control pause/play icon switcheroo
+    $('#nd_countdown-control').click(function() {
+      event.preventDefault();
+      var icon = $('#nd_countdown-control-icon');
+      icon.toggleClass('icon-pause icon-play text-error text-success');
+
+      if (icon.hasClass('icon-play')) {
+        for (var i = 0; i < nd_timers.length; i++) {
+            clearTimeout(nd_timers[i]);
+        }
+        $('#nd_countdown').text('0');
+      }
+      else {
+        $('#' + tab + '_form').trigger('submit');
+      }
+    });
 
     // activity for admin task tables
     // dynamically bind to all forms in the table
@@ -101,15 +128,38 @@
             '<div class="span2 alert">Request submitted...</div>'
           );
         }
-        ,success: function(content) {
+        ,success: function() {
           $('#' + tab + '_form').trigger('submit');
         }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          $(target).html(
-            '<div class="span5 alert alert-error">' +
-            'Request failed! Please contact your site administrator.</div>'
-          );
+          $('#' + tab + '_form').trigger('submit');
         }
       });
     });
+
+    // bind qtip2 to show the event log output
+    $(target).on('mouseover', '.nd_jobqueueitem', function(event) {
+      $(this).qtip({
+        overwrite: false,
+        content: {
+          attr: 'data-content'
+        },
+        show: {
+          event: event.type,
+          ready: true,
+          delay: 100
+        },
+        position: {
+          my: 'top center',
+          at: 'bottom center',
+          target: false
+        },
+        style: {
+          classes: 'qtip-cluetip qtip-rounded nd_qtip-unconstrained'
+        }
+      });
+    });
+
   });

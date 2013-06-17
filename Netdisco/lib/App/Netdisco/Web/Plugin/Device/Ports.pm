@@ -57,8 +57,15 @@ ajax '/ajax/content/device/ports' => sub {
     # get number of vlans on the port to control whether to list them or not
     $set = $set->with_vlan_count if param('c_vmember');
 
+    # run single collapsed query for all relations, but only if we're not
+    # also fetching archived data (tests show it's better this way)
+    $set = $set->search_rs({}, { prefetch => [{ port_vlans_tagged => 'vlan'}] })
+      if param('c_vmember') and not (param('c_nodes') and param('n_archived'));
+
     # what kind of nodes are we interested in?
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
+    $set = $set->search_rs({}, { order_by => ["${nodes_name}.mac", "ips.ip"] })
+      if param('c_nodes');
     $nodes_name .= '_with_age' if param('c_nodes') and param('n_age');
 
     # retrieve active/all connected nodes, if asked for

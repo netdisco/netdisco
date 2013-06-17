@@ -54,7 +54,7 @@ colon character)
 
 If you followed the installation instructions, then you should have set the
 database connection parameters to match those of your local system. That is,
-the C<dsn> (DB name, host, port), C<user> and C<pass>.
+the database C<name>, C<host>, C<user> and C<pass>.
 
 =head2 General Settings
 
@@ -95,14 +95,26 @@ database:
  netdisco=> update users set port_control = true where username = 'guest';
  netdisco=> update users set admin = true where username = 'guest';
 
-=head3 C<port>
+=head3 C<trust_remote_user>
 
-Value: Number. Default: C<5000>.
+Value: Boolean. Default: C<false>.
 
-Port which the web server listens on. Netdisco comes with a good pre-forking
-web server, so you can change this to C<80> if you want to use it directly.
-However the default is designed to work well with servers such as Apache in
-reverse-proxy mode.
+Enable this if Netdisco is running within another web server such as Apache,
+and you want that server to handle user authentication. Normally the
+authenticated username will automatically be set in the C<REMOTE_USER> HTTP
+Header. See L<Dancer::Deployment/Running from Apache> for further details.
+
+=head3 C<trust_x_remote_user>
+
+Value: Boolean. Default: C<false>.
+
+Enable this if you proxy requests to Netdisco via another web server such as
+Apache, and you want that server to handle user authentication. You need to
+configure the authorized username to be passed in the C<X-REMOTE_USER> HTTP
+Header. For example with Apache:
+
+ RequestHeader unset X-REMOTE_USER
+ RequestHeader set X-REMOTE_USER "%{REMOTE_USER}e" env=REMOTE_USER
 
 =head3 C<path>
 
@@ -111,14 +123,6 @@ Value: String. Default: None.
 Mount point for the Netdisco web frontend. This is usually the root of the web
 server. Set this to the path under which all pages live, e.g. C</netdisco2>.
 As an alternative you can use the C<--path> option to C<netdisco-web>.
-
-=head3 C<behind_proxy>
-
-Value: Boolean. Default: C<false>.
-
-A hint to the Netdisco web frontend that it's running behind a reverse proxy.
-In that case, Netdisco will pay attention to the C<X_FORWARDED_PROTOCOL>,
-C<X_FORWARDED_HOST>, etc settings in HTML headers.
 
 =head3 C<web_plugins>
 
@@ -348,7 +352,7 @@ Value: Settings Tree. Default:
  workers:
    interactives: 2
    pollers: 2
-   sleep_time: 5
+   sleep_time: 2
 
 Control the activity of the backend daemon with this configuration setting.
 

@@ -33,6 +33,7 @@ lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm
 lib/App/Netdisco/Daemon/Worker/Manager.pm
 lib/App/Netdisco/Daemon/Worker/Poller.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Arpnip.pm
+lib/App/Netdisco/Daemon/Worker/Poller/Common.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Device.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Macsuck.pm
 lib/App/Netdisco/Daemon/Worker/Scheduler.pm

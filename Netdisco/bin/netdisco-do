@@ -53,6 +53,9 @@ $CONFIG->{log} = ($debug ? 'debug' : 'info');
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
 
+# for the in-memory local job queue
+schema('daemon')->deploy;
+
 # get requested action
 my $action = shift @ARGV;
 
@@ -78,18 +81,6 @@ if (not $worker->can( $action )) {
   error sprintf 'error: %s is not a valid action', $action;
   exit (1);
 }
-
-# static configuration for the in-memory local job queue
-setting('plugins')->{DBIC}->{daemon} = {
-    dsn => 'dbi:SQLite:dbname=:memory:',
-    options => {
-        AutoCommit => 1,
-        RaiseError => 1,
-        sqlite_use_immediate_transaction => 1,
-    },
-    schema_class => 'App::Netdisco::Daemon::DB',
-};
-schema('daemon')->deploy;
 
 # what job are we asked to do?
 my $job = schema('daemon')->resultset('Admin')->new_result({

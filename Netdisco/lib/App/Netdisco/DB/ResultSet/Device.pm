@@ -196,7 +196,7 @@ sub search_by_field {
 
     # this is a bit of an inelegant trick to catch junk data entry,
     # whilst avoiding returning *all* entries in the table
-    if (length $p->{ip} and 'NetAddr::IP::Lite' ne ref $p->{ip}) {
+    if ($p->{ip} and 'NetAddr::IP::Lite' ne ref $p->{ip}) {
       $p->{ip} = ( NetAddr::IP::Lite->new($p->{ip})
         || NetAddr::IP::Lite->new('255.255.255.255') );
     }

@@ -21,7 +21,7 @@ sub set_portcontrol {
 
   my $reconfig_check = port_reconfig_check($port);
   return job_error("Cannot alter port: $reconfig_check")
-    if length $reconfig_check;
+    if $reconfig_check;
 
   return _set_port_generic($job, 'up_admin');
 }
@@ -35,11 +35,11 @@ sub set_vlan {
 
   my $port_reconfig_check = port_reconfig_check($port);
   return job_error("Cannot alter port: $port_reconfig_check")
-    if length $port_reconfig_check;
+    if $port_reconfig_check;
 
   my $vlan_reconfig_check = vlan_reconfig_check($port);
   return job_error("Cannot alter vlan: $vlan_reconfig_check")
-    if length $vlan_reconfig_check;
+    if $vlan_reconfig_check;
 
   return _set_port_generic($job, 'vlan');
 }
@@ -96,7 +96,7 @@ sub set_power {
 
   my $reconfig_check = port_reconfig_check($port);
   return job_error("Cannot alter port: $reconfig_check")
-    if length $reconfig_check;
+    if $reconfig_check;
 
 
   my $ip = $job->device;

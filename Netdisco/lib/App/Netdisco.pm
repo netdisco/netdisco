@@ -7,10 +7,10 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.008002';
+our $VERSION = '2.010000';
 
 BEGIN {
-  if (not length ($ENV{DANCER_APPDIR} || '')
+  if (not ($ENV{DANCER_APPDIR} || '')
       or not -f file($ENV{DANCER_APPDIR}, 'config.yml')) {
 
       my $auto = dir(dist_dir('App-Netdisco'))->absolute;
@@ -24,6 +24,7 @@ BEGIN {
         ? $test_envdir : $auto->subdir('environments')->stringify);
 
       $ENV{DANCER_ENVIRONMENT} ||= 'deployment';
+      $ENV{PLACK_ENV} ||= $ENV{DANCER_ENVIRONMENT};
 
       $ENV{DANCER_PUBLIC} ||= $auto->subdir('public')->stringify;
       $ENV{DANCER_VIEWS}  ||= $auto->subdir('views')->stringify;
@@ -38,6 +39,41 @@ BEGIN {
       *YAML::LoadFile = sub { goto \&YAML::XS::LoadFile };
   }
 }
+
+# set up database schema config from simple config vars
+use Dancer ':script';
+
+if (ref {} eq ref setting('database')) {
+    my $name = (setting('database')->{name} || 'netdisco');
+    my $host = (setting('database')->{host} || 'localhost');
+    my $user = (setting('database')->{user});
+    my $pass = (setting('database')->{pass});
+
+    # set up the netdisco schema now we have access to the config
+    # but only if it doesn't exist from an earlier config style
+    setting('plugins')->{DBIC}->{netdisco} ||= {
+        dsn => (sprintf 'dbi:Pg:dbname=%s;host=%s', $name, $host),
+        user => $user,
+        pass => $pass,
+        options => {
+            AutoCommit => 1,
+            RaiseError => 1,
+        },
+        schema_class => 'App::Netdisco::DB',
+    };
+
+}
+
+# static configuration for the in-memory local job queue
+setting('plugins')->{DBIC}->{daemon} = {
+    dsn => 'dbi:SQLite:dbname=:memory:',
+    options => {
+        AutoCommit => 1,
+        RaiseError => 1,
+        sqlite_use_immediate_transaction => 1,
+    },
+    schema_class => 'App::Netdisco::Daemon::DB',
+};
 
 =head1 NAME
 
@@ -68,7 +104,11 @@ commands will test for the existence of them on your system:
  perl -MDBD::Pg\ 999
  perl -MSNMP\ 999
 
-With those two installed, we can proceed...
+You'll also need a compiler for some of the other Perl dependencies. For
+example on Ubuntu/Debian, install the C<build-essential> package. On
+Fedora/Red-Hat, install C<make>, C<automake>, and C<gcc>.
+
+With those installed, we can proceed...
 
 Create a user on your system called C<netdisco> if one does not already exist.
 We'll install Netdisco and its dependencies into this user's home area, which
@@ -124,7 +164,7 @@ template from this distribution:
  chmod +w ~/environments/deployment.yml
 
 Edit the file and change the database connection parameters to match those for
-your local system (that is, the C<dsn>, C<user> and C<pass>).
+your local system (that is, the C<name>, C<host>, C<user> and C<pass>).
 
 In the same file uncomment and edit the C<domain_suffix> setting to be
 appropriate for your local site. Optionally, set the C<no_auth> value to true
@@ -184,17 +224,6 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 The main black navigation bar has a search box which is smart enough to work
 out what you're looking for in most cases. For example device names, node IP
 or MAC addreses, VLAN numbers, and so on.
-
-=head2 User Rights
-
-When user authentication is disabled (C<no_auth: true>) the default username
-is "guest", which has no special privilege. To grant port and device control
-rights to this user, create a row in the C<users> table of the Netdisco
-database with a username of C<guest> and appropriate flags set to true:
-
- netdisco=> insert into users (username) values ('guest');
- netdisco=> update users set port_control = true where username = 'guest';
- netdisco=> update users set admin = true where username = 'guest';
 
 =head2 Command-Line Device and Port Actions
 

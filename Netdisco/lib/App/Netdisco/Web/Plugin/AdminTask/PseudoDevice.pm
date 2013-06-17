@@ -15,14 +15,14 @@ register_admin_task({
 sub _sanity_ok {
     return 0 unless var('user') and var('user')->admin;
 
-    return 0 unless length param('dns')
+    return 0 unless param('dns')
       and param('dns') =~ m/^[[:print:]]+$/
       and param('dns') !~ m/[[:space:]]/;
 
     my $ip = NetAddr::IP::Lite->new(param('ip'));
     return 0 unless ($ip and$ip->addr ne '0.0.0.0');
 
-    return 0 unless length param('ports')
+    return 0 unless param('ports')
       and param('ports') =~ m/^[[:digit:]]+$/;
 
     return 1;

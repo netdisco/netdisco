@@ -39,13 +39,13 @@ sub txn_do_locked {
   }
 
   $schema->throw_exception('missing Table name to txn_do_locked()')
-    unless length $table;
+    unless $table;
 
   $table = [$table] if ref '' eq ref $table;
   my $table_fmt = join ', ', ('%s' x scalar @$table);
   my $sql = sprintf $sql_fmt, $table_fmt;
 
-  if (ref '' eq ref $mode and length $mode) {
+  if (ref '' eq ref $mode and $mode) {
       scalar grep {$_ eq $mode} values %lock_modes
         or $schema->throw_exception('bad LOCK_MODE to txn_do_locked()');
   }

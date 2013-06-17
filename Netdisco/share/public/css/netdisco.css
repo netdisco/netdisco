@@ -35,6 +35,41 @@ body {
   overflow-x: hidden;
 }
 
+/* fake looks for form submit buttons embedded in bootstrap dropdowns */
+.nd_btn-link {
+  display: block;
+  padding: 2px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 18px;
+  color: #333333;
+  white-space: nowrap;
+  text-decoration: none;
+  margin-top: 0px !important;
+  width: 100%;
+  text-align: left;
+  margin-left: -1px;
+}
+
+.nd_btn-link:hover, .nd_btn-link:focus {
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #0081c2;
+  background-repeat: repeat-x;
+  text-shadow: none;
+}
+
+/* to be added to qtip-bootstrap class */
+.nd_qtip-unconstrained {
+  min-width: none;
+  max-width: none;
+}
+
+.qtip-content {
+  padding-bottom: 0px;
+  line-height: 8px;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
 
@@ -138,6 +173,11 @@ td > form.nd_inline-form {
   margin-top: 9px;
   font-weight: bold;
   color: #6D5720;
+}
+
+/* for the job control admin page play/pause links */
+#nd_countdown-refresh:hover, #nd_countdown-control:hover {
+  text-decoration: none;
 }
 
 /* when there's only one tab (report, task etc) change the text color */

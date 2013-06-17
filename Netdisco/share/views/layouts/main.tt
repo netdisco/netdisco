@@ -48,14 +48,6 @@
 </head>
 
 <body>
-[%
-  user_dd = [
-    { "title" = "Settings", "link" = "/settings" },
-    { "title" = "Help", "link" = "/help" },
-    { "title" = "Log Out", "link" = "/logout" }
-  ]
-%]
-
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
@@ -99,6 +91,22 @@
         <li class="dropdown[% ' active' IF vars.nav == 'admin' %]">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin Tasks <b class="caret"></b></a>
           <ul class="dropdown-menu">
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discoverall') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Discover All</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/arpwalk') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Arpnip All</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/macwalk') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Macsuck All</button>
+            </form>
+          </li>
+          [% '<li class="divider"></li>' IF settings._admin_tasks.keys.size %]
           [% FOREACH ai IN settings._admin_tasks.keys.sort %]
             <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
           [% END %]
@@ -117,12 +125,14 @@
           [% ELSE %]
             <i class="icon-user"></i>
           [% END %]
+          [% IF NOT settings.no_auth %]
             [% session.user | html_entity %] <b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            [% FOREACH item IN user_dd %]
-            <li><a href="[% uri_for(item.link) %]">[% item.title | html_entity %]</a></li>
-            [% END %]
-          </ul>
+            <ul class="dropdown-menu">
+              <li><a href="[% uri_for('/logout') %]">Log Out</a></li>
+            </ul>
+          [% ELSE %]
+            [% session.user | html_entity %]</a>
+          [% END %]
         </li> <!-- /dropdown -->
       </ul>
       [% END %]

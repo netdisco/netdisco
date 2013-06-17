@@ -14,16 +14,20 @@ BEGIN {
     dir($FindBin::RealBin, 'lib')->stringify;
 }
 
+if ($ENV{_} and $ENV{_} =~ m/netdisco-web-fg$/) {
+    die "You probably want: '~/bin/localenv starman $0 --workers=1 --disable-keepalive'\n";
+}
+
 use App::Netdisco;
 use Dancer;
 debug sprintf "App::Netdisco %s", ($App::Netdisco::VERSION || 'HEAD');
 
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
-set('session_dir', dir($home, 'netdisco-web-sessions'));
+set(session_dir => dir($home, 'netdisco-web-sessions')->stringify);
 
 set plack_middlewares => [
   [ Expires => (
-      content_type => [qw{ application/javascript text/css }, qr{image}],
+      content_type => [qr{^application/javascript}, qr{^text/css}, qr{image}, qr{font}],
       expires => 'access plus 1 day',
   )],
   [ Static => (
@@ -31,19 +35,17 @@ set plack_middlewares => [
       root => $ENV{DANCER_PUBLIC},
       pass_through => 1,
   )],
+  # install Dancer::Debug for this...
+  #[ Debug => (
+  #    panels => [qw/Dancer::Settings Parameters Dancer::Version DBITrace/],
+  #)],
 ];
 
 use App::Netdisco::Web;
 use Plack::Builder;
 
-my $app = sub {
-  my $env     = shift;
-  my $request = Dancer::Request->new(env => $env);
-  Dancer->dance($request);
-};
-
 my $path = (setting('path') || '/');
-builder { mount $path => $app };
+builder { mount $path => dance };
 
 =head1 NAME
 

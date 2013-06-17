@@ -35,7 +35,7 @@ ajax '/ajax/data/deviceip/typeahead' => sub {
 ajax '/ajax/data/port/typeahead' => sub {
     my $dev  = param('dev1')  || param('dev2');
     my $port = param('port1') || param('port2');
-    send_error('Missing device', 400) unless length $dev;
+    send_error('Missing device', 400) unless $dev;
 
     my $device = schema('netdisco')->resultset('Device')
       ->find({ip => $dev});
@@ -43,7 +43,7 @@ ajax '/ajax/data/port/typeahead' => sub {
 
     my $set = $device->ports({},{order_by => 'port'});
     $set = $set->search({port => { -ilike => "\%$port\%" }})
-      if length $port;
+      if $port;
 
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
 

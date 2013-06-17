@@ -21,8 +21,8 @@ sub _sanity_ok {
     my $dev2 = NetAddr::IP::Lite->new(param('dev2'));
     return 0 unless ($dev2 and $dev2->addr ne '0.0.0.0');
 
-    return 0 unless length param('port1');
-    return 0 unless length param('port2');
+    return 0 unless param('port1');
+    return 0 unless param('port2');
 
     return 1;
 }

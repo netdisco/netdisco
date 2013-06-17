@@ -8,6 +8,23 @@ This document will list only the most significant changes with each release of
 Netdisco. You are B<STRONGLY> recommended to read this document each time you
 install and upgrade.
 
+=head1 2.010000
+
+=head2 General Changes
+
+You can now simplify database configuration to just the following, instead of
+the more verbose C<plugins/DBIC> setting which was there before:
+
+ database:
+   name: 'netdisco'
+   host: 'localhost'
+   user: 'someuser'
+   pass: 'somepass'
+
+Also, the C<REMOTE_USER> and C<X-REMOTE_USER> environment variables are now
+supported for delegating authentication to another web server. See the
+Deployment and Configuration documentation for further details.
+
 =head1 2.008000
 
 =head2 Heath Advice
@@ -16,7 +33,7 @@ This release contains the first version of our new poller, which handles
 device and node discovery. Please make sure to backup any existing Netdisco
 database before trying it out.
 
-=head2 Other Changes
+=head2 General Changes
 
 You can remove any settings from C<~/environments/deployment.yml> which you
 didn't edit or add to the file yourself. All defaults are now properly
@@ -35,7 +52,7 @@ Please B<rename or copy> your environment file:
 
  mv ~/environments/development.yml ~/environments/deployment.yml
 
-=head2 Other Changes
+=head2 General Changes
 
 The installation is now relocateable outside of a user's home directory by
 setting the C<NETDISCO_HOME> environment variable. This defaults to your own

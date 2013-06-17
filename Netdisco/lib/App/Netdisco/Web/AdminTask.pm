@@ -74,7 +74,7 @@ foreach my $jobtype (keys %jobs_all, keys %jobs) {
           if exists $jobs{$jobtype} and not param('device');
 
         add_job($jobtype, param('device'));
-        redirect uri_for('/admin/jobqueue')->path_query;
+        redirect uri_for('/admin/jobqueue')->as_string;
     };
 }
 
@@ -82,7 +82,7 @@ get '/admin/*' => sub {
     my ($tag) = splat;
 
     if (! eval { var('user')->admin }) {
-        return redirect uri_for('/')->path_query;
+        return redirect uri_for('/')->as_string;
     }
 
     # trick the ajax into working as if this were a tabbed page

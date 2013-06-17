@@ -8,17 +8,6 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/ add_jobs capacity_for take_jobs reset_jobs /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-# static configuration for the in-memory local job queue
-setting('plugins')->{DBIC}->{daemon} = {
-    dsn => 'dbi:SQLite:dbname=:memory:',
-    options => {
-        AutoCommit => 1,
-        RaiseError => 1,
-        sqlite_use_immediate_transaction => 1,
-    },
-    schema_class => 'App::Netdisco::Daemon::DB',
-};
-
 schema('daemon')->deploy;
 my $queue = schema('daemon')->resultset('Admin');
 

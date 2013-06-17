@@ -1,3 +1,27 @@
+2.009000_001 - 
+
+  [NEW FEATURES]
+
+  * Support for delegated authentication with REMOTE_USER and X-REMOTE_USER
+  * Ask to set up guest user for Admin/Port Control rights in deploy script
+  * Job Queue page play/pause/refresh controls
+
+  [ENHANCEMENTS]
+
+  * Database config simplified to only four essential settings
+  * Use DBIx::Class new collapsed query support when we can
+  * Add discoverall, macwalk, arpwalk items to the Admin Tasks menu
+  * Increase default frequency of job queue polling to 2 seconds
+  * Add tooltip showing the job queue item logged status message
+
+  [BUG FIXES]
+
+  * Macwalk and Arpwalk job defer fixed
+  * Sort VLANs, MACs, IPs properly in Device Port view
+  * Fix hyperlinks when running behind reverse proxy on custom path
+  * Add workaround for https://github.com/PerlDancer/Dancer/issues/935
+  * Fix Plack middleware config for Expiry
+
 2.008002 - 2013-06-11
 
   [ENHANCEMENTS]

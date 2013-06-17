@@ -116,7 +116,7 @@ get '/device' => sub {
     });
 
     if (!defined $dev) {
-        return redirect uri_for('/', {nosuchdevice => 1})->path_query;
+        return redirect uri_for('/', {nosuchdevice => 1})->as_string();
     }
 
     params->{'tab'} ||= 'details';

@@ -29,7 +29,12 @@
       <li class="active"><a id="[% task.tag %]_link" class="nd_single-tab"
         href="#[% task.tag %]_pane">[% task.label %]</a></li>
       [% IF task.tag == 'jobqueue' %]
-      <span id="nd_device-name"></span>
+      <span id="nd_device-name">
+        <a id="nd_countdown-refresh" href="#"><i class="text-success icon-refresh"></i></a>
+        <a id="nd_countdown-control" href="#">
+          <i id="nd_countdown-control-icon" class="text-error icon-pause"></i></a>
+        <span id="nd_countdown"></span>
+      </span>
       [% END %]
     </ul>
     <div class="tab-content">

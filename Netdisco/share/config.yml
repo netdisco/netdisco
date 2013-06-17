@@ -19,7 +19,6 @@ logger_format: '[%P] %L @%D> %m'
 
 domain_suffix: ''
 no_auth: false
-port: 5000
 path: '/'
 behind_proxy: false
 web_plugins:
@@ -88,7 +87,7 @@ no_port_control: false
 workers:
   interactives: 2
   pollers: 2
-  sleep_time: 5
+  sleep_time: 2
 
 #housekeeping:
 #  discoverall:

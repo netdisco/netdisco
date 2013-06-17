@@ -192,7 +192,7 @@ sub store_interfaces {
   foreach my $entry (keys %$interfaces) {
       my $port = $interfaces->{$entry};
 
-      if (not length $port) {
+      if (not $port) {
           debug sprintf ' [%s] interfaces - ignoring %s (no port mapping)',
             $device->ip, $port;
           next;
@@ -288,7 +288,7 @@ sub store_wireless {
       (my $iid = $entry) =~ s/\.\d+$//;
       my $port = $interfaces->{$iid};
 
-      if (not length $port) {
+      if (not $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
             $device->ip, $port;
           next;
@@ -316,7 +316,7 @@ sub store_wireless {
   foreach my $entry (keys %$channel) {
       my $port = $interfaces->{$entry};
 
-      if (not length $port) {
+      if (not $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
             $device->ip, $port;
           next;
@@ -613,7 +613,7 @@ sub store_neighbors {
       my $remote_type = $c_platform->{$entry};
       my $remote_id   = $c_id->{$entry};
 
-      next unless length $remote_ip;
+      next unless $remote_ip;
 
       # a bunch of heuristics to search known devices if we don't have a
       # useable remote IP...

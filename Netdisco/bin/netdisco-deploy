@@ -96,6 +96,36 @@ $bool = $term->ask_yn(
 );
 deploy_db() if $bool;
 
+my $users = schema('netdisco')->resultset('User');
+if ($users->count == 0 and setting('no_auth')) {
+    say '';
+    $bool = $term->ask_yn(
+      prompt => 'Would you like the default web user to have Admin rights (discover, etc)?',
+      default => 'n',
+    );
+
+    if ($bool) {
+        $users->create({
+          username => 'guest',
+          admin => 'true',
+          port_control => 'true',
+        });
+    }
+    else {
+        say '';
+        $bool = $term->ask_yn(
+          prompt => 'Would you like the default web user to have Port Control rights?',
+          default => 'n',
+        );
+        if ($bool) {
+            $users->create({
+              username => 'guest',
+              port_control => 'true',
+            });
+        }
+    }
+}
+
 say '';
 $bool = $term->ask_yn(
   prompt => 'Download and update vendor MAC prefixes (OUI data)?', default => 'n',

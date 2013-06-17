@@ -84,7 +84,7 @@ sub worker_body {
       # TODO also check for stale jobs in Netdisco DB
 
       debug "mgr ($wid): sleeping now...";
-      sleep( setting('workers')->{sleep_time} || 5 );
+      sleep( setting('workers')->{sleep_time} || 2 );
   }
 }
 

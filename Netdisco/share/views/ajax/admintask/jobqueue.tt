@@ -16,9 +16,10 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr
-      [% ' class="success"' IF row.status == 'done' %]
-      [% ' class="error"'   IF row.status == 'error' %]
-      [% ' class="info"'    IF row.status.search('^queued-') %]
+      [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]
+      [% ' class="nd_jobqueueitem error"'   IF row.status == 'error' %]
+      [% ' class="nd_jobqueueitem info"'    IF row.status.search('^queued-') %]
+      data-content="<pre>[% row.log | html_entity %]</pre>"
     >
       <td class="nd_center-cell">[% row.entered_stamp | html_entity %]</td>
       <td class="nd_center-cell">

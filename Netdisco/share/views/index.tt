@@ -23,7 +23,7 @@
       <div class="alert fade in">
         <a class="close" data-dismiss="alert">×</a>
         Sorry, page not found.
-          <a href="http://sourceforge.net/tracker/?group_id=80033&atid=558508" target="_blank">Report a Bug?</a>
+          <a href="http://sourceforge.net/p/netdisco/bugs/" target="_blank">Report a Bug?</a>
       </div>
       [% END %]
       <div class="hero-unit">

@@ -142,9 +142,11 @@
       <td>
         [% IF row.tagged_vlans_count %]
         [% SET output = '' %]
-        [% FOREACH vlan IN row.tagged_vlans %]
+        [% SET vlanlist = [] %]
+        [% FOREACH vlan IN row.tagged_vlans %][% vlanlist.push(vlan.vlan) %][% END %]
+        [% FOREACH vlan IN vlanlist.nsort %]
           [% SET output = output _
-            '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan.vlan _ '">' _ vlan.vlan _ '</a>' %]
+            '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan _ '">' _ vlan _ '</a>' %]
           [% SET output = output _ ', ' IF NOT loop.last %]
         [% END %]
         [% IF row.tagged_vlans_count > 10 %] [%# TODO make this a settable variable %]

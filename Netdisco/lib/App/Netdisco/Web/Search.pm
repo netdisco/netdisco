@@ -65,7 +65,7 @@ get '/search' => sub {
 
     if (not param('tab')) {
         if (not $q) {
-            return redirect uri_for('/')->path_query;
+            return redirect uri_for('/')->as_string;
         }
 
         # pick most likely tab for initial results
@@ -82,7 +82,7 @@ get '/search' => sub {
                       tab => 'details',
                       q => ($nd->first->dns || $nd->first->ip),
                       f => '',
-                    })->path_query;
+                    })->as_string;
                 }
 
                 # multiple devices

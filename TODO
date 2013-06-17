@@ -10,15 +10,11 @@ DAEMON
 BACKEND
 =======
 
-* db connect params as separate settings
-* new DBIC multi-prefetch
 * PING from workers
-* ask to set up guest user in deploy script
 
 CORE
 ====
 
-* NetAddr::MAC ?
 * VRF support
 * import legacy config file
 
