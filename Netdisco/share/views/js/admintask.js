@@ -80,7 +80,7 @@
     });
 
     // job control refresh icon should reload the page
-    $('#nd_countdown-refresh').click(function() {
+    $('#nd_countdown-refresh').click(function(event) {
       event.preventDefault();
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
@@ -89,7 +89,7 @@
     });
 
     // job control pause/play icon switcheroo
-    $('#nd_countdown-control').click(function() {
+    $('#nd_countdown-control').click(function(event) {
       event.preventDefault();
       var icon = $('#nd_countdown-control-icon');
       icon.toggleClass('icon-pause icon-play text-error text-success');
@@ -107,7 +107,7 @@
 
     // activity for admin task tables
     // dynamically bind to all forms in the table
-    $(target).on('submit', 'form', function() {
+    $(target).on('click', '.nd_adminbutton', function(event) {
       // stop form from submitting normally
       event.preventDefault();
 
@@ -116,13 +116,16 @@
           clearTimeout(nd_timers[i]);
       }
 
+      // what purpose - add/update/del
+      var mode = $(this).attr('name')
+
       // submit the query and put results into the tab pane
       $.ajax({
         type: 'POST'
         ,async: true
         ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/admin/' + tab + '/' + $(this).attr('name')
-        ,data: $(this).serializeArray()
+        ,url: uri_base + '/ajax/control/admin/' + tab + '/' + mode
+        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
         ,beforeSend: function() {
           $(target).html(
             '<div class="span2 alert">Request submitted...</div>'

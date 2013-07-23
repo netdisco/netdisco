@@ -210,7 +210,9 @@
           <a href="[% uri_for('/device',
                 self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
-            ([% row.remote_port | html_entity %])</a>
+            ([% row.remote_port | html_entity %]
+            [% ' id: '_ row.remote_id IF row.remote_id %]
+            [% ' type: '_ row.remote_type IF row.remote_type %])</a>
           [% ELSIF row.remote_ip AND row.remote_port %]
           <span class="label label-important">N</span>
           <a href="[% search_node %]&q=[% row.remote_ip | uri %]">

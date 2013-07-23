@@ -3,6 +3,12 @@
 use strict;
 use warnings FATAL => 'all';
 
+BEGIN {
+  if ($ENV{_} and $ENV{_} =~ m/netdisco-web-fg$/) {
+      die "You probably want: '~/bin/localenv starman $0 --workers=1 --disable-keepalive'\n";
+  }
+}
+
 use FindBin;
 FindBin::again();
 use Path::Class 'dir';

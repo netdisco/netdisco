@@ -1,4 +1,22 @@
-2.009000_001 - 
+2.010002 - 2013-07-23
+
+  [ENHANCEMENTS]
+
+  * Nullify unused schema changes
+
+  [BUG FIXES]
+
+  * Fix FF bug with forms embedded in tables
+  * Fix bugs in topo update code
+
+2.010001_003 - 2013-06-20
+
+  [BUG FIXES]
+
+   * Pass event param to all js functions which require it
+   * Handle UTF-8 data in the device port remote_id
+
+2.010000 - 2013-06-16
 
   [NEW FEATURES]
 

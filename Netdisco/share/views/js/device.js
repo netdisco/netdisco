@@ -62,7 +62,7 @@
 
     // clickable device port names can simply resubmit AJAX rather than
     // fetch the whole page again.
-    $('#ports_pane').on('click', '.nd_this-port-only', function() {
+    $('#ports_pane').on('click', '.nd_this-port-only', function(event) {
       event.preventDefault(); // link is real so prevent page submit
 
       var port = $(this).text();
@@ -120,7 +120,7 @@
     });
 
     // activity for contenteditable control
-    $('.tab-content').on('keydown', '[contenteditable=true]', function() {
+    $('.tab-content').on('keydown', '[contenteditable=true]', function(event) {
       var esc = event.which == 27,
           nl  = event.which == 13;
 

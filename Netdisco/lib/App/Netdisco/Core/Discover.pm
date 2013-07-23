@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
+use Encode;
 use Try::Tiny;
 
 use base 'Exporter';
@@ -611,7 +612,7 @@ sub store_neighbors {
       my $remote_ipad = NetAddr::IP::Lite->new($remote_ip);
       my $remote_port = undef;
       my $remote_type = $c_platform->{$entry};
-      my $remote_id   = $c_id->{$entry};
+      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
 
       next unless $remote_ip;
 

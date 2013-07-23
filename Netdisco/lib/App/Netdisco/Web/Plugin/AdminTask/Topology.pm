@@ -5,6 +5,9 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Device 'get_device';
+
+use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
 
 register_admin_task({
@@ -50,7 +53,8 @@ ajax '/ajax/control/admin/topology/add' => sub {
           return unless ($left->in_storage and $right->in_storage);
 
           $left->ports
-            ->single({port => param('port1')}, {for => 'update'})
+            ->search({port => param('port1')}, {for => 'update'})
+            ->single()
             ->update({
               remote_ip => param('dev2'),
               remote_port => param('port2'),
@@ -61,7 +65,8 @@ ajax '/ajax/control/admin/topology/add' => sub {
             });
 
           $right->ports
-            ->single({port => param('port2')}, {for => 'update'})
+            ->search({port => param('port2')}, {for => 'update'})
+            ->single()
             ->update({
               remote_ip => param('dev1'),
               remote_port => param('port1'),

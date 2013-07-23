@@ -40,10 +40,8 @@
       <td class="nd_center-cell">[% row.started_stamp | html_entity %]</td>
       <td class="nd_center-cell">[% row.finished_stamp | html_entity %]</td>
       <td class="nd_center-cell">
-      <form name="del" class="nd_inline-form">
-        <input name="job" type="hidden" value="[% row.job | html_entity %]">
-        <button class="btn" name="del" type="submit"><i class="icon-trash text-error"></i></button>
-      </form>
+        <input data-form="del" name="job" type="hidden" value="[% row.job | html_entity %]">
+        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
       </td>
     </tr>
     [% END %]
