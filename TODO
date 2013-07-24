@@ -1,6 +1,10 @@
 FRONTEND
 ========
 
+* report on port usage
+* SSL support
+* user management admin task
+
 * moar reports
 * (jeneric) device module tab
 
@@ -20,6 +24,8 @@ CORE
 
 DOCS
 ====
+
+* missing user management ("User Rights")
 
 * Scheduler
 * Discover/Refresh jobs

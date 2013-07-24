@@ -16,12 +16,14 @@ function do_search (event, tab) {
   // each sidebar search form has a hidden copy of the main navbar search
   // query. when the tab query takes place, copy the navbar locally, then
   // replicate to all other tabs.
-  if ($('#nq').val()) {
-    $(form).find("input[name=q]").val( $('#nq').val() );
+  if (path != 'report' && path != 'admin') {
+    if ($('#nq').val()) {
+      $(form).find("input[name=q]").val( $('#nq').val() );
+    }
+    $('form').find("input[name=q]").each( function() {
+      $(this).val( $(form).find("input[name=q]").val() );
+    });
   }
-  $('form').find("input[name=q]").each( function() {
-    $(this).val( $(form).find("input[name=q]").val() );
-  });
 
   // hide or show sidebars depending on previous state,
   // and whether the sidebar contains any content (detected by TT)

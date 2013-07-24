@@ -1,3 +1,9 @@
+2.010004 - 2013-07-24
+
+  [BUG FIXES]
+
+  * Navbar query box was being cleared sometimes under admin task panels
+
 2.010002 - 2013-07-23
 
   [ENHANCEMENTS]

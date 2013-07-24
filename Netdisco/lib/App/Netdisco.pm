@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.010002';
+our $VERSION = '2.010004';
 
 BEGIN {
   if (not ($ENV{DANCER_APPDIR} || '')
@@ -190,7 +190,7 @@ Run the following command to start the web-app server as a backgrounded daemon
 
 If the Inventory is empty because this is a new installation, you probably
 want to either run some polling jobs from the command-line, or give a web user
-some admin rights (see L</"User Rights">, below).
+some admin rights (TODO: user rights management).
 
 Run the following command to start the job control daemon (port control, etc):
 
