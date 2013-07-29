@@ -1,3 +1,22 @@
+2.011000 - 2013-07-29
+
+  [NEW FEATURES]
+
+  * Port Utilization report
+  * User Management (for admins only)
+
+  [ENHANCEMENTS]
+
+  * Add docs note about SSL support
+  * Button to empty the job queue, and improve display when the queue is empty
+  * Table headers float on the page when scrolling
+
+  [BUG FIXES]
+
+  * REMOTE_USER is an env var, not an HTTP Header
+  * Swap play/pause icons in jobqueue
+  * Find the RW snmp community string correctly now
+
 2.010004 - 2013-07-24
 
   [BUG FIXES]

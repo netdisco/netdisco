@@ -1,4 +1,4 @@
-<table class="table table-bordered table-condensed table-striped">
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
   <thead>
     <tr>
       <th class="nd_center-cell">Left Device</th>
@@ -12,7 +12,7 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td class="nd_center-cell">[% row.left_dns || row.left_ip | html_entity %]</a>
+      <td class="nd_center-cell">[% row.left_dns || row.left_ip | html_entity %]</td>
       <td class="nd_center-cell"><a class="nd_linkcell"
         href="[% device_ports %]&q=[% row.left_dns || row.left_ip | uri %]&f=[% row.left_port | uri %]&c_duplex=on">
           [% row.left_port | html_entity %]</a></td>

@@ -21,8 +21,8 @@ the more verbose C<plugins/DBIC> setting which was there before:
    user: 'someuser'
    pass: 'somepass'
 
-Also, the C<REMOTE_USER> and C<X-REMOTE_USER> environment variables are now
-supported for delegating authentication to another web server. See the
+Also, the C<REMOTE_USER> environment variable and C<X-REMOTE_USER> HTTP Header
+are now supported for delegating authentication to another web server. See the
 Deployment and Configuration documentation for further details.
 
 =head1 2.008000

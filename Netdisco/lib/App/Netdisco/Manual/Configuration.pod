@@ -101,8 +101,9 @@ Value: Boolean. Default: C<false>.
 
 Enable this if Netdisco is running within another web server such as Apache,
 and you want that server to handle user authentication. Normally the
-authenticated username will automatically be set in the C<REMOTE_USER> HTTP
-Header. See L<Dancer::Deployment/Running from Apache> for further details.
+authenticated username will automatically be set in the C<REMOTE_USER>
+environment variable. See L<Dancer::Deployment/Running from Apache> for
+further details.
 
 =head3 C<trust_x_remote_user>
 
@@ -110,8 +111,8 @@ Value: Boolean. Default: C<false>.
 
 Enable this if you proxy requests to Netdisco via another web server such as
 Apache, and you want that server to handle user authentication. You need to
-configure the authorized username to be passed in the C<X-REMOTE_USER> HTTP
-Header. For example with Apache:
+configure the authorized username to be passed from the frontend environment
+to Netdisco in the C<X-REMOTE_USER> HTTP Header. For example with Apache:
 
  RequestHeader unset X-REMOTE_USER
  RequestHeader set X-REMOTE_USER "%{REMOTE_USER}e" env=REMOTE_USER

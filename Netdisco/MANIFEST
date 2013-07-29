@@ -72,6 +72,7 @@ lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanNative.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
+lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
@@ -98,6 +99,7 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-2-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-20-21-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-21-22-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-22-23-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-23-24-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
@@ -127,6 +129,7 @@ lib/App/Netdisco/Web/Plugin.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/Users.pm
 lib/App/Netdisco/Web/Plugin/Device/Addresses.pm
 lib/App/Netdisco/Web/Plugin/Device/Details.pm
 lib/App/Netdisco/Web/Plugin/Device/Modules.pm
@@ -134,6 +137,7 @@ lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
 lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
+lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
 lib/App/Netdisco/Web/Plugin/Search/Device.pm
 lib/App/Netdisco/Web/Plugin/Search/Node.pm
 lib/App/Netdisco/Web/Plugin/Search/Port.pm
@@ -194,19 +198,23 @@ share/public/javascripts/jquery-deserialize.js
 share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/jquery-ui.custom.min.js
+share/public/javascripts/jquery.floatThead.js
 share/public/javascripts/jquery.qtip.min.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/toastr.js
+share/public/javascripts/underscore.min.js
 share/views/admintask.tt
 share/views/ajax/admintask/jobqueue.tt
 share/views/ajax/admintask/pseudodevice.tt
 share/views/ajax/admintask/topology.tt
+share/views/ajax/admintask/users.tt
 share/views/ajax/device/addresses.tt
 share/views/ajax/device/details.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/report/duplexmismatch.tt
+share/views/ajax/report/portutilization.tt
 share/views/ajax/search/device.tt
 share/views/ajax/search/node_by_ip.tt
 share/views/ajax/search/node_by_mac.tt

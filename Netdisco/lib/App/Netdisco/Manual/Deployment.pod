@@ -75,6 +75,16 @@ To delegate user authentication to Apache, use the C<trust_remote_user> or
 C<trust_x_remote_user> settings. See L<App::Netdisco::Manual::Configuration>
 for more details.
 
+=head1 SSL Support
+
+There is no SSL support in the built-in web server. This is because it's not
+straightforward to support all the SSL options, and using port 443 requires
+root privilege, which the Netdisco application should not have.
+
+You are instead recommended to run C<netdisco-web> behind a reverse proxy as
+described elsewhere in this document. Apache can easily act as an SSL reverse
+proxy.
+
 =head1 SQL and HTTP Trace
 
 For SQL debugging try the following commands:

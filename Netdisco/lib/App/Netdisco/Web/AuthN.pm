@@ -10,8 +10,8 @@ hook 'before' => sub {
         if (setting('trust_x_remote_user') and scalar request->header('X-REMOTE_USER')) {
             session(user => scalar request->header('X-REMOTE_USER'));
         }
-        elsif (setting('trust_remote_user') and scalar request->header('REMOTE_USER')) {
-            session(user => scalar request->header('REMOTE_USER'));
+        elsif (setting('trust_remote_user') and $ENV{REMOTE_USER}) {
+            session(user => $ENV{REMOTE_USER});
         }
         elsif (setting('no_auth')) {
             session(user => 'guest');

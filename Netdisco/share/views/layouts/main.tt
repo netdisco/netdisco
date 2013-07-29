@@ -17,9 +17,11 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-history.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/underscore.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.qtip.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/d3.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.floatThead.js"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';

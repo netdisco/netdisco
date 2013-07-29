@@ -1,4 +1,4 @@
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped nd_floatinghead">
   <thead>
     <tr>
       <th class="nd_center-cell">Left Device</th>

@@ -12,7 +12,7 @@
 
     // reload this table every 5 seconds
     if (tab == 'jobqueue'
-        && $('#nd_countdown-control-icon').hasClass('icon-pause')) {
+        && $('#nd_countdown-control-icon').hasClass('icon-play')) {
 
         $('#nd_countdown').text('5');
         nd_timers.push(setTimeout(function() { $('#nd_countdown').text('4') }, 1000 ));
@@ -94,7 +94,7 @@
       var icon = $('#nd_countdown-control-icon');
       icon.toggleClass('icon-pause icon-play text-error text-success');
 
-      if (icon.hasClass('icon-play')) {
+      if (icon.hasClass('icon-pause')) {
         for (var i = 0; i < nd_timers.length; i++) {
             clearTimeout(nd_timers[i]);
         }

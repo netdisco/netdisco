@@ -2,8 +2,10 @@ FRONTEND
 ========
 
 * report on port usage
-* SSL support
 * user management admin task
+
+* LDAP authentication and RBAC
+  - http://advent.perldancer.org/2012/2
 
 * moar reports
 * (jeneric) device module tab

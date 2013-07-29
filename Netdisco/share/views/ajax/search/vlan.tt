@@ -1,4 +1,4 @@
-<table class="table table-bordered table-condensed table-striped">
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
   <thead>
     <tr>
       <th>Vlan</th>

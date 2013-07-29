@@ -32,7 +32,7 @@
       <span id="nd_device-name">
         <a id="nd_countdown-refresh" href="#"><i class="text-success icon-refresh"></i></a>
         <a id="nd_countdown-control" href="#">
-          <i id="nd_countdown-control-icon" class="text-error icon-pause"></i></a>
+          <i id="nd_countdown-control-icon" class="text-success icon-play"></i></a>
         <span id="nd_countdown"></span>
       </span>
       [% END %]

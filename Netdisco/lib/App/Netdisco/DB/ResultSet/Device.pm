@@ -511,12 +511,16 @@ sub with_port_count {
     ->search_rs($cond, $attrs)
     ->search({},
       {
-        '+columns' => { port_count =>
-          $rs->result_source->schema->resultset('DevicePort')
-            ->search(
-              { 'dp.ip' => { -ident => 'me.ip' } },
-              { alias => 'dp' }
-            )->count_rs->as_query
+        '+columns' => {
+          port_count =>
+            $rs->result_source->schema->resultset('DevicePort')
+              ->search(
+                {
+                  'dp.ip' => { -ident => 'me.ip' },
+                  'dp.type' => { '!=' => 'propVirtual' },
+                },
+                { alias => 'dp' }
+              )->count_rs->as_query,
         },
       });
 }

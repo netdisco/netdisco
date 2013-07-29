@@ -23,10 +23,12 @@ path: '/'
 behind_proxy: false
 web_plugins:
   - Inventory
+  - Report::PortUtilization
   - Report::DuplexMismatch
   - AdminTask::PseudoDevice
   - AdminTask::Topology
   - AdminTask::JobQueue
+  - AdminTask::Users
   - Search::Device
   - Search::Node
   - Search::VLAN

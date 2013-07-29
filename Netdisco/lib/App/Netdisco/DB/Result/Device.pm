@@ -65,6 +65,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "snmp_comm",
   { data_type => "text", is_nullable => 1 },
+  "snmp_comm_rw",
+  { data_type => "text", is_nullable => 1 },
   "snmp_class",
   { data_type => "text", is_nullable => 1 },
   "vtp_domain",

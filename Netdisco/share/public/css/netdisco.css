@@ -28,6 +28,11 @@ body {
   width: 100%;
 }
 
+/* results table header should have a background, for floatThead */
+div.content > div.tab-content table.nd_floatinghead thead {
+  background-color: floralWhite;
+}
+
 /* jquery ui autocomplete scrollable */
 .ui-autocomplete {
   max-height: 200px;
@@ -68,6 +73,11 @@ body {
 .qtip-content {
   padding-bottom: 0px;
   line-height: 8px;
+}
+
+/* for where min-width is set but we don't want it */
+.nd_no-min-width {
+  min-width: 0px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

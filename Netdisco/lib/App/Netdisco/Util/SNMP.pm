@@ -90,6 +90,9 @@ sub _snmp_connect_generic {
   unshift @communities, $device->snmp_comm
     if defined $device->snmp_comm
        and defined $comm_type and $comm_type eq 'community';
+  unshift @communities, $device->snmp_comm_rw
+    if defined $device->snmp_comm_rw
+       and defined $comm_type and $comm_type eq 'community_rw';
 
   my $info = undef;
   VERSION: foreach my $ver (@versions) {
@@ -101,13 +104,37 @@ sub _snmp_connect_generic {
           COMMUNITY: foreach my $comm (@communities) {
               next unless $comm;
 
-              $info = _try_connect($ver, $class, $comm, \%snmp_args)
-                and last VERSION;
+              $info = _try_connect($ver, $class, $comm, \%snmp_args);
+
+              if ($comm_type eq 'community_rw') {
+                  _try_write($info, $comm, $device) or next COMMUNITY;
+              }
+
+              last VERSION if $info;
           }
       }
   }
 
   return $info;
+}
+
+sub _try_write {
+  my ($info, $comm, $device) = @_;
+  my $happy = 0;
+
+  try {
+      debug sprintf '[%s] try_write with comm: %s', $device->ip, $comm;
+      $info->clear_cache;
+      my $rv = $info->set_location( $info->location );
+      $device->update({snmp_comm_rw => $comm})
+        if $device->in_storage;
+      $happy = 1 if $rv;
+  }
+  catch {
+      debug $_;
+  };
+
+  return $happy;
 }
 
 sub _try_connect {
@@ -154,7 +181,7 @@ sub _build_mibdirs {
 
 sub _get_mibdirs_content {
   my $home = shift;
-  warning 'Netdisco SNMP work will be slow - loading ALL MIBs. Consider setting mibdirs.';
+  # warning 'Netdisco SNMP work will be slow - loading ALL MIBs. Consider setting mibdirs.';
   my @list = map {s|$home/||; $_} grep {-d} glob("$home/*");
   return \@list;
 }

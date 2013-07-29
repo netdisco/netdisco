@@ -1,4 +1,7 @@
-<table class="table table-bordered table-condensed table-hover">
+[% IF results.count == 0 %]
+<div class="span2 alert alert-info">The job queue is empty.</div>
+[% ELSE %]
+<table class="table table-bordered table-condensed table-hover nd_floatinghead">
   <thead>
     <tr>
       <th class="nd_center-cell">Entered</th>
@@ -10,7 +13,21 @@
       <th class="nd_center-cell">User</th>
       <th class="nd_center-cell">Started</th>
       <th class="nd_center-cell">Finished</th>
-      <th class="nd_center-cell">Action</th>
+      <th class="nd_center-cell">
+          <div class="btn-group">
+            <button class="btn dropdown-toggle" data-toggle="dropdown">
+              Action
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu nd_no-min-width">
+              <li>
+                <a class="nd_adminbutton" name="delall" href="#">
+                  <i class="icon-trash text-error"></i> Empty Queue
+                </a>
+              </li>
+            </ul>
+          </div>
+      </th>
     </tr>
   </thead>
   </tbody>
@@ -47,4 +64,5 @@
     [% END %]
   </tbody>
 </table>
+[% END %]
 

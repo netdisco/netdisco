@@ -1,0 +1,52 @@
+<table class="table table-bordered table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Full Name</th>
+      <th class="nd_center-cell">Username</th>
+      <th class="nd_center-cell">Password</th>
+      <!-- <th class="nd_center-cell">External Auth</th> -->
+      <th class="nd_center-cell">Port Control</th>
+      <th class="nd_center-cell">Administrator</th>
+      <th class="nd_center-cell">Action</th>
+    </tr>
+  </thead>
+  </tbody>
+    <tr>
+      <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
+      <td class="nd_center-cell"><input data-form="add" name="username" type="text"></td>
+      <td class="nd_center-cell"><input data-form="add" name="password" type="text"></td>
+      <td class="nd_center-cell"><input data-form="add" type="checkbox" name="port_control"></td>
+      <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
+      <td class="nd_center-cell">
+        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+      </td>
+    </tr>
+
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="nd_center-cell">
+        <input data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
+      </td>
+      <td class="nd_center-cell">
+        <input data-form="update" name="username" type="text" value="[% row.username | html_entity %]">
+      </td>
+      <td class="nd_center-cell">
+        <input data-form="update" name="password" type="text" value="********">
+      </td>
+      <td class="nd_center-cell">
+        <input data-form="update" name="port_control" type="checkbox" [% 'checked="checked"' IF row.port_control %]>
+      </td>
+      <td class="nd_center-cell">
+        <input data-form="update" name="admin" type="checkbox" [% 'checked="checked"' IF row.admin %]>
+      </td>
+
+      <td class="nd_center-cell">
+        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <input data-form="del" name="username" type="hidden" value="[% row.username | html_entity %]">
+        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

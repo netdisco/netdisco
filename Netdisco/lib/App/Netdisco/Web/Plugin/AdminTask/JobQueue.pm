@@ -21,6 +21,14 @@ ajax '/ajax/control/admin/jobqueue/del' => sub {
     });
 };
 
+ajax '/ajax/control/admin/jobqueue/delall' => sub {
+    send_error('Forbidden', 403) unless var('user')->admin;
+
+    schema('netdisco')->txn_do(sub {
+      my $device = schema('netdisco')->resultset('Admin')->delete;
+    });
+};
+
 ajax '/ajax/content/admin/jobqueue' => sub {
     send_error('Forbidden', 403) unless var('user')->admin;
 
