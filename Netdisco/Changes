@@ -1,3 +1,9 @@
+2.012001 - 2013-08-06
+
+  [BUG FIXES]
+
+  * Add missing dependency on Dancer::Plugin::Auth::Extensible
+
 2.012000 - 2013-08-06
 
   [ENHANCEMENTS]
