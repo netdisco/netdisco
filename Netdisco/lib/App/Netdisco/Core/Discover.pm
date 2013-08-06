@@ -754,7 +754,7 @@ sub _set_manual_topology {
               return unless ($left->in_storage and $right->in_storage);
 
               $left->ports
-                ->single({port => $link->port1}, {for => 'update'})
+                ->single({port => $link->port1})
                 ->update({
                   remote_ip => $right->ip,
                   remote_port => $link->port2,
@@ -765,7 +765,7 @@ sub _set_manual_topology {
                 });
 
               $right->ports
-                ->single({port => $link->port2}, {for => 'update'})
+                ->single({port => $link->port2})
                 ->update({
                   remote_ip => $left->ip,
                   remote_port => $link->port1,

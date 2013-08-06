@@ -1,3 +1,20 @@
+2.012000 - 2013-08-06
+
+  [ENHANCEMENTS]
+
+  * Use icons for port status and archive presentation
+  * Always offer to discover device on site homepage
+  * Device re-discover/arpnip/macsuck is async with toastr notify
+  * Implement extensible authN and role based access control
+  * RW snmp community strings now in the "community" table
+
+  [BUG FIXES]
+
+  * Floating table headers not compatible with in-header drop-down menus
+  * Fix blur events on editable cells
+  * Pseudo device ports being counted properly since Port Utilization report
+  * Manual topology is preserved when re-discovering neighbors
+
 2.011000 - 2013-07-29
 
   [NEW FEATURES]

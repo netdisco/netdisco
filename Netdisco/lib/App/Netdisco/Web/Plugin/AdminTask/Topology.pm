@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::AdminTask::Topology;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::Device 'get_device';
@@ -16,8 +17,6 @@ register_admin_task({
 });
 
 sub _sanity_ok {
-    return 0 unless var('user') and var('user')->admin;
-
     my $dev1 = NetAddr::IP::Lite->new(param('dev1'));
     return 0 unless ($dev1 and $dev1->addr ne '0.0.0.0');
 
@@ -30,7 +29,7 @@ sub _sanity_ok {
     return 1;
 }
 
-ajax '/ajax/control/admin/topology/add' => sub {
+ajax '/ajax/control/admin/topology/add' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     my $device = schema('netdisco')->resultset('Topology')
@@ -79,7 +78,7 @@ ajax '/ajax/control/admin/topology/add' => sub {
     };
 };
 
-ajax '/ajax/control/admin/topology/del' => sub {
+ajax '/ajax/control/admin/topology/del' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -93,9 +92,7 @@ ajax '/ajax/control/admin/topology/del' => sub {
     });
 };
 
-ajax '/ajax/content/admin/topology' => sub {
-    send_error('Forbidden', 403) unless var('user')->admin;
-
+ajax '/ajax/content/admin/topology' => require_role admin => sub {
     my $set = schema('netdisco')->resultset('Topology')
       ->search({},{order_by => [qw/dev1 dev2 port1/]});
 

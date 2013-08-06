@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::Search::Device;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use List::MoreUtils ();
 
@@ -11,7 +12,7 @@ use App::Netdisco::Web::Plugin;
 register_search_tab({ tag => 'device', label => 'Device' });
 
 # device with various properties or a default match-all
-ajax '/ajax/content/search/device' => sub {
+ajax '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any {param($_)}
       qw/name location dns ip description model os_ver vendor/;
     my $set;

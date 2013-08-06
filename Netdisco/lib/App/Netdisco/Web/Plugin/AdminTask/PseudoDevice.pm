@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::AdminTask::PseudoDevice;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use NetAddr::IP::Lite ':lower';
@@ -13,8 +14,6 @@ register_admin_task({
 });
 
 sub _sanity_ok {
-    return 0 unless var('user') and var('user')->admin;
-
     return 0 unless param('dns')
       and param('dns') =~ m/^[[:print:]]+$/
       and param('dns') !~ m/[[:space:]]/;
@@ -28,7 +27,7 @@ sub _sanity_ok {
     return 1;
 }
 
-ajax '/ajax/control/admin/pseudodevice/add' => sub {
+ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -42,13 +41,20 @@ ajax '/ajax/control/admin/pseudodevice/add' => sub {
       return unless $device;
 
       $device->ports->populate([
-        ['port'],
-        map {["Port$_"]} @{[1 .. param('ports')]},
+        [qw/port type/],
+        map {["Port$_", 'other']} @{[1 .. param('ports')]},
       ]);
+
+      # device_ip table is used to show whether topo is "broken"
+      schema('netdisco')->resultset('DeviceIp')
+        ->create({
+          ip => param('ip'),
+          alias => param('ip'),
+        });
     });
 };
 
-ajax '/ajax/control/admin/pseudodevice/del' => sub {
+ajax '/ajax/control/admin/pseudodevice/del' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -60,7 +66,7 @@ ajax '/ajax/control/admin/pseudodevice/del' => sub {
     });
 };
 
-ajax '/ajax/control/admin/pseudodevice/update' => sub {
+ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -72,8 +78,8 @@ ajax '/ajax/control/admin/pseudodevice/update' => sub {
       if (param('ports') > $count) {
           my $start = $count + 1;
           $device->ports->populate([
-            ['port'],
-            map {["Port$_"]} @{[$start .. param('ports')]},
+            [qw/port type/],
+            map {["Port$_", 'other']} @{[$start .. param('ports')]},
           ]);
       }
       elsif (param('ports') < $count) {
@@ -85,9 +91,7 @@ ajax '/ajax/control/admin/pseudodevice/update' => sub {
     });
 };
 
-ajax '/ajax/content/admin/pseudodevice' => sub {
-    send_error('Forbidden', 403) unless var('user')->admin;
-
+ajax '/ajax/content/admin/pseudodevice' => require_role admin => sub {
     my $set = schema('netdisco')->resultset('Device')
       ->search(
         {vendor => 'netdisco'},

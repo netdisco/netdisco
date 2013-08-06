@@ -3,6 +3,7 @@ package App::Netdisco::Web::Search;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 hook 'before' => sub {
   # view settings for node options
@@ -59,7 +60,7 @@ hook 'before_template' => sub {
   }
 };
 
-get '/search' => sub {
+get '/search' => require_login sub {
     my $q = param('q');
     my $s = schema('netdisco');
 

@@ -86,58 +86,30 @@
         }
     });
 
-    // toggle visibility of port up/down and edit controls
-    $('.tab-content').on('mouseenter', '.nd_editable-cell', function() {
-      $(this).children('.nd_hand-icon').show();
-      if (! $(this).is(':focus')) {
-        $(this).children('.nd_edit-icon').show(); // ports
-        $(this).siblings('td').find('.nd_device-details-edit').show(); // details
-      }
-    });
-    $('.tab-content').on('mouseleave', '.nd_editable-cell', function() {
-      $(this).children('.nd_hand-icon').hide();
-      if (! $(this).is(':focus')) {
-        $(this).children('.nd_edit-icon').hide(); // ports
-        $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
-      }
-    });
-    $('.tab-content').on('focus', '[contenteditable=true]', function() {
-        $(this).children('.nd_edit-icon').hide(); // ports
-        $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
-    });
+    // activity for admin tasks in device details
+    $('#details_pane').on('click', '.nd_adminbutton', function(event) {
+      // stop form from submitting normally
+      event.preventDefault();
 
-    // activity for port up/down control
-    $('#ports_pane').on('click', '.icon-hand-up', function() {
-      port_control(this); // save
-    });
-    $('#ports_pane').on('click', '.icon-hand-down', function() {
-      port_control(this); // save
-    });
+      // what purpose - discover/macsuck/arpnip
+      var mode = $(this).attr('name');
+      var tr = $(this).closest('tr');
 
-    // activity for power enable/disable control
-    $('#ports_pane').on('click', '.nd_power-icon', function() {
-      port_control(this); // save
-    });
-
-    // activity for contenteditable control
-    $('.tab-content').on('keydown', '[contenteditable=true]', function(event) {
-      var esc = event.which == 27,
-          nl  = event.which == 13;
-
-      if (esc) {
-        if (dirty) { document.execCommand('undo') }
-        $(this).blur();
-        dirty = false;
-
-      }
-      else if (nl) {
-        $(this).blur();
-        event.preventDefault();
-        dirty = false;
-        port_control(this); // save
-      }
-      else {
-        dirty = true;
-      }
+      // submit the query
+      $.ajax({
+        type: 'POST'
+        ,async: true
+        ,dataType: 'html'
+        ,url: uri_base + '/ajax/control/admin/' + mode
+        ,data: tr.find('input[data-form="' + mode + '"]').serializeArray()
+        ,success: function() {
+          toastr.info('Queued '+ mode +' for device '+ tr.attr('data-for-device'));
+        }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
+        ,error: function() {
+          toastr.error('Failed to queue '+ mode +' for device '+ tr.attr('data-for-device'));
+        }
+      });
     });
   });

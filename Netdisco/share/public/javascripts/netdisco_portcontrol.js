@@ -50,23 +50,92 @@ function port_control (e) {
   });
 }
 
-// for growl-like functionality, check for notifications periodically
-(function worker() {
-  $.ajax({
-    url: uri_base + '/ajax/userlog'
-    ,success: function(data) {
-      for (var i = 0; i < data['error'].length; i++) {
-        toastr.error(data['error'][i], 'Failed Change Request');
-      }
-      for (var i = 0; i < data['done'].length; i++) {
-        toastr.success(data['done'][i], 'Successful Change Request');
-      }
-      // Schedule next request when the current one's complete
-      setTimeout(worker, 5000);
-    }
-    ,error: function() {
-      // after one failure, don't try again
-      toastr.warning('Unable to retrieve change request log')
+// on load, establish global delegations for now and future
+$(document).ready(function() {
+  // for growl-like functionality, check for notifications periodically
+  if (nd_port_control) {
+    (function worker() {
+      $.ajax({
+        url: uri_base + '/ajax/userlog'
+        ,success: function(data) {
+          for (var i = 0; i < data['error'].length; i++) {
+            toastr.error(data['error'][i], 'Failed Job:');
+          }
+          for (var i = 0; i < data['done'].length; i++) {
+            toastr.success(data['done'][i], 'Successful Job:');
+          }
+          // Schedule next request when the current one's complete
+          setTimeout(worker, 5000);
+        }
+        ,error: function() {
+          // after one failure, don't try again
+          toastr.warning('Unable to retrieve change request log')
+        }
+      });
+    })();
+  }
+
+  // toggle visibility of port up/down and edit controls
+  $('.tab-content').on('mouseenter', '.nd_editable-cell', function() {
+    $(this).children('.nd_hand-icon').show();
+    if (! $(this).is(':focus')) {
+      $(this).children('.nd_edit-icon').show(); // ports
+      $(this).siblings('td').find('.nd_device-details-edit').show(); // details
     }
   });
-})();
+  $('.tab-content').on('mouseleave', '.nd_editable-cell', function() {
+    $(this).children('.nd_hand-icon').hide();
+    if (! $(this).is(':focus')) {
+      $(this).children('.nd_edit-icon').hide(); // ports
+      $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
+    }
+  });
+  $('.tab-content').on('focus', '[contenteditable=true]', function() {
+      $(this).children('.nd_edit-icon').hide(); // ports
+      $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
+  });
+
+  // activity for port up/down control
+  $('#ports_pane').on('click', '.icon-hand-up', function() {
+    port_control(this); // save
+  });
+  $('#ports_pane').on('click', '.icon-hand-down', function() {
+    port_control(this); // save
+  });
+
+  // activity for power enable/disable control
+  $('#ports_pane').on('click', '.nd_power-icon', function() {
+    port_control(this); // save
+  });
+
+  var dirty = false;
+
+  // activity for contenteditable control
+  $('.tab-content').on('keydown', '[contenteditable=true]', function(event) {
+    var esc = event.which == 27,
+        nl  = event.which == 13;
+
+    if (esc) {
+      $(this).blur();
+    }
+    else if (nl) {
+      event.preventDefault();
+      port_control(this); // save
+      dirty = false;
+      $(this).blur();
+    }
+    else {
+      dirty = true;
+    }
+  });
+
+  // activity for contenteditable control
+  $('.tab-content').on('blur', '[contenteditable=true]', function(event) {
+    if (dirty) {
+      document.execCommand('undo');
+      dirty = false;
+      $(this).blur();
+    }
+  });
+
+});

@@ -2,6 +2,7 @@ package App::Netdisco::Web::Plugin::Inventory;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
@@ -11,7 +12,7 @@ register_navbar_item({
   label => 'Inventory',
 });
 
-get '/inventory' => sub {
+get '/inventory' => require_login sub {
     my $models = schema('netdisco')->resultset('Device')->get_models();
     my $releases = schema('netdisco')->resultset('Device')->get_releases();
 

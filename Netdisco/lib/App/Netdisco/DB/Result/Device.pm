@@ -180,6 +180,15 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 community
+
+Returns the row from the community string table, if one exists.
+
+=cut
+
+__PACKAGE__->might_have(
+    community => 'App::Netdisco::DB::Result::Community', 'ip');
+
 =head1 ADDITIONAL COLUMNS
 
 =head2 port_count

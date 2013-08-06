@@ -1,3 +1,4 @@
+[% SET user_can_port_control = user_has_role('port_control') %]
 <table class="table table-bordered table-striped nd_floatinghead">
   <thead>
     <tr>
@@ -7,7 +8,7 @@
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
         <th[% ' class="nd_nudge-for-icon"' IF
-          (vars.user.port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]>
+          (user_can_port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]>
           [% item.label | html_entity %]
         </th>
       [% END %]
@@ -16,15 +17,17 @@
   </tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td>
+      <td class="nd_center-cell">
         [% IF row.up_admin == 'down' %]
-        <span class="label">S</span>
+        <i class="icon-angle-down"></i>
         [% ELSIF row.stp == 'blocking' %]
-        <span class="label label-info">B</span>
+        <i class="icon-fullscreen text-info"></i>
         [% ELSIF params.free OR row.is_free %]
-        <span class="label label-success">F</span>
+        <i class="icon-arrow-down text-success"></i>
         [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
-        <span class="label label-warning">D</span>
+        <i class="icon-arrow-down text-error"></i>
+        [% ELSE %]
+        <i class="icon-angle-up text-success"></i>
         [% END %]
       </td>
 
@@ -40,7 +43,7 @@
       [% END %]
 
       [% IF params.c_port %]
-      [% IF vars.user.port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin %]
       [% IF row.up_admin == 'up' %]
       <td nowrap class="nd_editable-cell" data-action="down"
         data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
@@ -95,7 +98,7 @@
       [% END %]
 
       [% IF params.c_name %]
-      [% IF vars.user.port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin %]
       <td nowrap class="nd_editable-cell" contenteditable="true"
           data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
@@ -121,7 +124,7 @@
       [% END %]
 
       [% IF params.c_vlan %]
-      [% IF vars.user.port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin %]
       <td class="nd_editable-cell" contenteditable="true"
         data-field="c_vlan" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
@@ -164,7 +167,7 @@
       [% IF params.c_power %]
         [% IF row.power %]
           [% IF row.power.admin == 'true' %]
-            [% IF vars.user.port_control AND params.c_admin %]
+            [% IF user_can_port_control AND params.c_admin %]
               <td nowrap data-action="false"
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
@@ -184,7 +187,7 @@
                 [% END %]
                 </span>
           [% ELSE %]
-            [% IF vars.user.port_control AND params.c_admin %]
+            [% IF user_can_port_control AND params.c_admin %]
               <td nowrap data-action="true"
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
@@ -214,25 +217,25 @@
             [% ' id: '_ row.remote_id IF row.remote_id %]
             [% ' type: '_ row.remote_type IF row.remote_type %])</a>
           [% ELSIF row.remote_ip AND row.remote_port %]
-          <span class="label label-important">N</span>
+          <i class="icon-unlink text-error"></i>&nbsp;
           <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
             [% row.remote_ip | html_entity %] (port: [% row.remote_port | html_entity %]
             [% ' id: '_ row.remote_id IF row.remote_id %]
             [% ' type: '_ row.remote_type IF row.remote_type %])</a>
           [% ELSE %]
-          <span class="label label-important">N</span> (possible uplink)
+          <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
-          [% '<span class="label label-warning">A</span> &nbsp;' IF NOT node.active %]
+          [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
-            <br/>&nbsp; [% '<span class="label label-warning">A</span> &nbsp;' IF NOT ip.active %]
+            <br/>&nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
               <a href="[% search_node %]&q=[% ip.ip | uri %]">[% dns %] ([% ip.ip | html_entity %])</a>

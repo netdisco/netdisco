@@ -381,12 +381,6 @@ td > form.nd_inline-form {
   display: inline;
 }
 
-/* fixup for placing the Archived "A" inside the prepended checkbox */
-.nd_legendlabel {
-  float: right;
-  line-height: 1.2;
-}
-
 /* placement of form field in sidebar */
 .nd_side-input {
   margin-left: -3px;
@@ -472,28 +466,18 @@ form .clearfix.success input {
   background-color: #A9DBA9;
 }
 
-/* when we use font-awesome icons, override the size */
-#nd_legend i {
-  width: 9px;
-}
-.table i {
-  width: 9px;
-}
-
 /* bring sidebar items closer together */
 .nd_inputs-list label {
   margin-bottom: 1px;
 }
 
-/* compact icons for the sidebar legend */
-.nd_inputs-list i {
-  margin-right: 5px;
-  margin-left: 2px;
-}
-
 /* nudge content closer to the header labels in the sidebar */
 .nd_inputs-list li:first-child {
   padding-top: 3px !important;
+}
+
+.icons-ul {
+  margin-left: 22px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

@@ -40,6 +40,15 @@ web_plugins:
   - Device::Addresses
 web_plugins_extra: []
 
+# authN and authZ controls from the database
+plugins:
+  Auth::Extensible:
+    no_default_pages: true
+    realms:
+      users:
+        provider: 'App::Netdisco::Web::Auth::Provider::DBIC'
+        schema_name: 'netdisco'
+
 # -------------
 # NETDISCO CORE
 # -------------

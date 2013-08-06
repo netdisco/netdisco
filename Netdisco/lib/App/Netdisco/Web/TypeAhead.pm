@@ -3,10 +3,11 @@ package App::Netdisco::Web::TypeAhead;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web (); # for sort_port
 
-ajax '/ajax/data/devicename/typeahead' => sub {
+ajax '/ajax/data/devicename/typeahead' => require_login sub {
     my $q = param('query') || param('term');
     my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
 
@@ -14,7 +15,7 @@ ajax '/ajax/data/devicename/typeahead' => sub {
     to_json [map {$_->dns || $_->name || $_->ip} $set->all];
 };
 
-ajax '/ajax/data/deviceip/typeahead' => sub {
+ajax '/ajax/data/deviceip/typeahead' => require_login sub {
     my $q = param('query') || param('term');
     my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
 
@@ -32,7 +33,7 @@ ajax '/ajax/data/deviceip/typeahead' => sub {
     to_json \@data;
 };
 
-ajax '/ajax/data/port/typeahead' => sub {
+ajax '/ajax/data/port/typeahead' => require_login sub {
     my $dev  = param('dev1')  || param('dev2');
     my $port = param('port1') || param('port2');
     send_error('Missing device', 400) unless $dev;

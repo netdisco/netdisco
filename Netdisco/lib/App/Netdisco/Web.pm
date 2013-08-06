@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
@@ -56,6 +57,9 @@ hook 'before_template' => sub {
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
 
+    # access to logged in user's roles
+    $tokens->{user_has_role}  = sub { user_has_role(@_) };
+
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;
 
@@ -63,13 +67,7 @@ hook 'before_template' => sub {
     $Template::Stash::PRIVATE = undef;
 };
 
-get '/' => sub {
-    if (var('user') and var('user')->admin) {
-        if (schema('netdisco')->resultset('Device')->count == 0) {
-            var('nodevices' => true);
-        }
-    }
-
+get qr{^/(?:login(?:/denied)?)?} => sub {
     template 'index';
 };
 

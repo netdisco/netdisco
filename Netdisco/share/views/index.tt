@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row nd_hero-row">
     <div class="span8 offset2">
-      [% IF params.failed %]
+      [% IF params.login_failed %]
       <div class="alert alert-error fade in">
         <a class="close" data-dismiss="alert">×</a>
         Incorrect username or password, please try again.
@@ -22,42 +22,37 @@
       [% IF vars.notfound %]
       <div class="alert fade in">
         <a class="close" data-dismiss="alert">×</a>
-        Sorry, page not found.
-          <a href="http://sourceforge.net/p/netdisco/bugs/" target="_blank">Report a Bug?</a>
+        Sorry, page not found.&nbsp;
+          <a href="http://sourceforge.net/p/netdisco/bugs/" target="_blank"><i class="icon-bug"></i>&nbsp;Report a Bug?</a>
       </div>
       [% END %]
       <div class="hero-unit">
         <h2>Welcome to Netdisco</h2>
         <small>Netdisco is an Open Source web-based network management tool.</small>
-        [% IF NOT session.user %]
+        [% IF NOT session.logged_in_user %]
         <form class="nd_login-form" method="post" action="[% uri_for('/login') %]">
           <div class="form-horizontal">
             <input placeholder="Username" class="span2" name="username" type="text"/>
             <input placeholder="Password" class="span2" name="password" type="password"/>
             <button type="submit" class="btn btn-info">Log In</button>
           </div>
-          [% IF vars.requested_path %]
-          <input type="hidden" name="path" value="[% vars.requested_path | html_entity %]"/>
+          [% IF vars.return_url %]
+          <input type="hidden" name="path" value="[% vars.return_url | html_entity %]"/>
           [% END %]
         </form>
         [% ELSE %]
+        [% IF user_has_role('admin') %]
+          <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') %]">
+            <div class="form-horizontal">
+              <input placeholder="Device hostname or IP" class="span4" name="device" type="text"/>
+              <input type="hidden" name="extra" value="with-walk"/>
+              <button type="submit" class="btn btn-info">Discover</button>
+            </div>
+          </form>
+        [% END %]
         <script type="text/javascript"> $('#nq').focus(); // set focus to navbar search </script>
         [% END %]
       </div>
-      [% IF vars.nodevices %]
-      <div class="hero-unit">
-        <h3>Initial Discovery</h3>
-        <p>You haven't discovered any devices yet.<p>
-        <p>Enter a network device name or IP to queue the first discovery:</p>
-        <form method="post" action="[% uri_for('/admin/discover') %]">
-          <div class="form-horizontal">
-            <input placeholder="Device hostname or IP" class="span4" name="device" type="text"/>
-            <input type="hidden" name="extra" value="with-walk"/>
-            <button type="submit" class="btn btn-info">Discover</button>
-          </div>
-        </form>
-      </div>
-      [% END %]
     </div>
   </div>
 </div> <!-- /container -->

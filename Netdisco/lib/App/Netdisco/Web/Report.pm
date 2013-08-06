@@ -1,8 +1,9 @@
 package App::Netdisco::Web::Report;
 
 use Dancer ':syntax';
+use Dancer::Plugin::Auth::Extensible;
 
-get '/report/*' => sub {
+get '/report/*' => require_login sub {
     my ($tag) = splat;
 
     # trick the ajax into working as if this were a tabbed page

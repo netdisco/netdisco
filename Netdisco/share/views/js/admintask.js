@@ -107,7 +107,7 @@
 
     // activity for admin task tables
     // dynamically bind to all forms in the table
-    $(target).on('click', '.nd_adminbutton', function(event) {
+    $('.content').on('click', '.nd_adminbutton', function(event) {
       // stop form from submitting normally
       event.preventDefault();
 
@@ -117,7 +117,7 @@
       }
 
       // what purpose - add/update/del
-      var mode = $(this).attr('name')
+      var mode = $(this).attr('name');
 
       // submit the query and put results into the tab pane
       $.ajax({

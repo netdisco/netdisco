@@ -387,7 +387,12 @@ hour fields (which accept same types as C<cron> notation). For example:
        min: 30
    macwalk:
      when:
+       min: 15
        hour: '*/2'
+       wday: 'mon-fri'
+
+Note that the fields default to "all" (i.e. "C<*>") when not specified. See
+L<Algorithm::Cron> for further details.
 
 =head2 Dancer Internal
 

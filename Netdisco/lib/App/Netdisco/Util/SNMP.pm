@@ -90,8 +90,8 @@ sub _snmp_connect_generic {
   unshift @communities, $device->snmp_comm
     if defined $device->snmp_comm
        and defined $comm_type and $comm_type eq 'community';
-  unshift @communities, $device->snmp_comm_rw
-    if defined $device->snmp_comm_rw
+  unshift @communities, $device->community->snmp_comm_rw
+    if eval { $device->community->snmp_comm_rw }
        and defined $comm_type and $comm_type eq 'community_rw';
 
   my $info = undef;
@@ -126,7 +126,7 @@ sub _try_write {
       debug sprintf '[%s] try_write with comm: %s', $device->ip, $comm;
       $info->clear_cache;
       my $rv = $info->set_location( $info->location );
-      $device->update({snmp_comm_rw => $comm})
+      $device->update_or_create_related('community', {snmp_comm_rw => $comm})
         if $device->in_storage;
       $happy = 1 if $rv;
   }

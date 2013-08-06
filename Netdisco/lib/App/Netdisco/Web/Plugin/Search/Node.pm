@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::Search::Node;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
@@ -12,7 +13,7 @@ use App::Netdisco::Web::Plugin;
 register_search_tab({ tag => 'node', label => 'Node' });
 
 # nodes matching the param as an IP or DNS hostname or MAC
-ajax '/ajax/content/search/node' => sub {
+ajax '/ajax/content/search/node' => require_login sub {
     my $node = param('q');
     send_error('Missing node', 400) unless $node;
     content_type('text/html');

@@ -3,6 +3,7 @@ package App::Netdisco::Web::AdminTask;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use Try::Tiny;
 
@@ -21,7 +22,7 @@ sub add_job {
           ($device ? (device => $device->addr) : ()),
           action => $jobtype,
           status => 'queued',
-          username => session('user'),
+          username => session('logged_in_user'),
           userip => request->remote_address,
         });
 
@@ -30,14 +31,14 @@ sub add_job {
               action => 'macwalk',
               subaction => 'after-discoverall',
               status => 'queued',
-              username => session('user'),
+              username => session('logged_in_user'),
               userip => request->remote_address,
             });
             schema('netdisco')->resultset('Admin')->create({
               action => 'arpwalk',
               subaction => 'after-discoverall',
               status => 'queued',
-              username => session('user'),
+              username => session('logged_in_user'),
               userip => request->remote_address,
             });
         }
@@ -58,18 +59,14 @@ my %jobs_all = map {$_ => 1} qw/
 /;
 
 foreach my $jobtype (keys %jobs_all, keys %jobs) {
-    ajax "/ajax/control/admin/$jobtype" => sub {
-        send_error('Forbidden', 403)
-          unless var('user')->admin;
+    ajax "/ajax/control/admin/$jobtype" => require_role admin => sub {
         send_error('Missing device', 400)
           if exists $jobs{$jobtype} and not param('device');
 
         add_job($jobtype, param('device'));
     };
 
-    post "/admin/$jobtype" => sub {
-        send_error('Forbidden', 403)
-          unless var('user')->admin;
+    post "/admin/$jobtype" => require_role admin => sub {
         send_error('Missing device', 400)
           if exists $jobs{$jobtype} and not param('device');
 
@@ -78,12 +75,8 @@ foreach my $jobtype (keys %jobs_all, keys %jobs) {
     };
 }
 
-get '/admin/*' => sub {
+get '/admin/*' => require_role admin => sub {
     my ($tag) = splat;
-
-    if (! eval { var('user')->admin }) {
-        return redirect uri_for('/')->as_string;
-    }
 
     # trick the ajax into working as if this were a tabbed page
     params->{tab} = $tag;

@@ -26,7 +26,7 @@
               </label>
               <label class="nd_checkboxlabel" for="archived">
                 <span class="nd_searchcheckbox uneditable-input">
-                  Archived Data <span class="nd_legendlabel label label-warning">A</span></span>
+                  Archived Data &nbsp;<i class="icon-book text-warning"></i></span>
               </label>
             </div>
             <div class="clearfix input-prepend">

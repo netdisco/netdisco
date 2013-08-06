@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.011000';
+our $VERSION = '2.012000';
 
 BEGIN {
   if (not ($ENV{DANCER_APPDIR} || '')
@@ -58,6 +58,7 @@ if (ref {} eq ref setting('database')) {
         options => {
             AutoCommit => 1,
             RaiseError => 1,
+            auto_savepoint => 1,
         },
         schema_class => 'App::Netdisco::DB',
     };

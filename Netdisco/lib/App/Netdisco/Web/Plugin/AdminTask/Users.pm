@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::AdminTask::Users;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use Digest::MD5 ();
@@ -13,8 +14,6 @@ register_admin_task({
 });
 
 sub _sanity_ok {
-    return 0 unless var('user') and var('user')->admin;
-
     return 0 unless param('username')
       and param('username') =~ m/^[[:print:]]+$/
       and param('username') !~ m/[[:space:]]/;
@@ -22,7 +21,7 @@ sub _sanity_ok {
     return 1;
 }
 
-ajax '/ajax/control/admin/users/add' => sub {
+ajax '/ajax/control/admin/users/add' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -37,7 +36,7 @@ ajax '/ajax/control/admin/users/add' => sub {
     });
 };
 
-ajax '/ajax/control/admin/users/del' => sub {
+ajax '/ajax/control/admin/users/del' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -46,7 +45,7 @@ ajax '/ajax/control/admin/users/del' => sub {
     });
 };
 
-ajax '/ajax/control/admin/users/update' => sub {
+ajax '/ajax/control/admin/users/update' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -65,9 +64,7 @@ ajax '/ajax/control/admin/users/update' => sub {
     });
 };
 
-ajax '/ajax/content/admin/users' => sub {
-    send_error('Forbidden', 403) unless var('user')->admin;
-
+ajax '/ajax/content/admin/users' => require_role admin => sub {
     my $set = schema('netdisco')->resultset('User')
       ->search(undef, { order_by => [qw/fullname username/]});
 

@@ -25,10 +25,11 @@
 
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';
+    var nd_port_control = '[% NOT settings.no_port_control %]';
   </script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco.js"></script>
 
-  [% IF vars.user.port_control %]
+  [% IF user_has_role('port_control') %]
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco_portcontrol.js"></script>
   [% END %]
 
@@ -54,7 +55,7 @@
   <div class="navbar-inner">
     <div class="container">
       <a class="brand" href="[% uri_for('/') %]">Netdisco</a>
-      [% IF session.user %]
+      [% IF session.logged_in_user %]
       <ul class="nav">
         [% FOREACH ni IN settings._navbar_items %]
         <li[% ' class="active"' IF vars.nav == ni.tag %]>
@@ -88,7 +89,7 @@
         <i id="navsearchgo" class="icon-search nd_navbar-icon"></i>
         </span>
       </form>
-      [% IF vars.user.admin AND settings._admin_tasks.size %]
+      [% IF user_has_role('admin') %]
       <ul class="nav">
         <li class="dropdown[% ' active' IF vars.nav == 'admin' %]">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin Tasks <b class="caret"></b></a>
@@ -108,32 +109,34 @@
               <button type="submit" class="btn btn-link nd_btn-link">Macsuck All</button>
             </form>
           </li>
-          [% '<li class="divider"></li>' IF settings._admin_tasks.keys.size %]
-          [% FOREACH ai IN settings._admin_tasks.keys.sort %]
-            <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
+          [% IF settings._admin_tasks.size %]
+            <li class="divider"></li>
+            [% FOREACH ai IN settings._admin_tasks.keys.sort %]
+              <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
+            [% END %]
           [% END %]
           </ul>
         </li> <!-- /dropdown -->
       </ul>
       [% END %]
       <ul class="nav pull-right">
-        <li class="nd_navbar-text">Logged in as &nbsp;</li>
+        <li class="nd_navbar-text">Logged in as&nbsp;</li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-          [% IF vars.user.admin %]
+          [% IF user_has_role('admin') %]
             <i class="icon-user text-error"></i>
-          [% ELSIF vars.user.port_control %]
+          [% ELSIF user_has_role('port_control') %]
             <i class="icon-user text-warning"></i>
           [% ELSE %]
             <i class="icon-user"></i>
-          [% END %]
+          [% END %]&nbsp;
           [% IF NOT settings.no_auth %]
-            [% session.user | html_entity %] <b class="caret"></b></a>
+            [% session.logged_in_user | html_entity %] <b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="[% uri_for('/logout') %]">Log Out</a></li>
             </ul>
           [% ELSE %]
-            [% session.user | html_entity %]</a>
+            [% session.logged_in_user | html_entity %]</a>
           [% END %]
         </li> <!-- /dropdown -->
       </ul>

@@ -14,32 +14,18 @@
                 <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
                 </label></span>
               <div id="nd_legend" class="collapse">
-                <ul class="nd_inputs-list unstyled">
-                  <li>
-                    <span class="label">S</span>&nbsp; Admin Disabled
-                  </li>
-                  <li>
-                    <span class="label label-warning">D</span>&nbsp; Link Down
-                  </li>
-                  <li>
-                    <span class="label label-success">F</span>&nbsp; Port Free (Down)
-                  </li>
-                  <li>
-                    <span class="label label-info">B</span>&nbsp; Blocking
-                  </li>
-                  <li>
-                    <span class="label label-important">N</span>&nbsp; Neighbor Inacessible
-                  </li>
-                  <li>
-                    <span class="label label-warning">A</span>&nbsp; Archived Data
-                  </li>
-                  <li>
-                    <i class="icon-phone"></i>&nbsp; IP Phone
-                  </li>
-                  [% IF vars.user.port_control %]
-                  <li>
-                    <i class="icon-refresh"></i>&nbsp; Click "Update View"
-                  </li>
+                <ul class="icons-ul"><!-- nd_inputs-list unstyled"> -->
+                  <li><i class="icon-li icon-angle-up text-success"></i>&nbsp; Link Up</li>
+                  <li><i class="icon-li icon-arrow-down text-error"></i>&nbsp; Link Down</li>
+                  <li><i class="icon-li icon-arrow-down text-success"></i>&nbsp; Port Free</li>
+                  <li><i class="icon-li icon-angle-down"></i>&nbsp; Admin Disabled</li>
+                  <li><i class="icon-li icon-fullscreen text-info"></i>&nbsp; Blocking</li>
+                  <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Inacessible</li>
+                  <li><i class="icon-li icon-phone"></i>&nbsp; IP Phone</li>
+                  <li><i class="icon-li icon-signal"></i>&nbsp; Wireless Client</li>
+                  <li><i class="icon-li icon-book"></i>&nbsp; Archived Data</li>
+                  [% IF user_has_role('port_control') %]
+                  <li><i class="icon-li icon-refresh"></i>&nbsp; Click "Update View"</li>
                   [% END %]
                 </ul>
               </div>
@@ -52,7 +38,7 @@
               <div id="nd_columns" class="collapse in">
                 <ul class="nd_inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
-                  [% NEXT IF item.name == 'c_admin' AND NOT vars.user.port_control %]
+                  [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"

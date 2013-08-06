@@ -3,10 +3,9 @@ package App::Netdisco::Web::PortControl;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
-ajax '/ajax/portcontrol' => sub {
-    send_error('Forbidden', 403)
-      unless var('user')->port_control;
+ajax '/ajax/portcontrol' => require_role port_control => sub {
     send_error('No device/port/field', 400)
       unless param('device') and (param('port') or param('field'));
 
@@ -37,7 +36,7 @@ ajax '/ajax/portcontrol' => sub {
       action => $action,
       subaction => $subaction,
       status => 'queued',
-      username => session('user'),
+      username => session('logged_in_user'),
       userip => request->remote_address,
       log => $log,
     });
@@ -46,13 +45,11 @@ ajax '/ajax/portcontrol' => sub {
     to_json({});
 };
 
-ajax '/ajax/userlog' => sub {
-    my $user = session('user');
-    send_error('No username', 400) unless $user;
-
+ajax '/ajax/userlog' => require_login sub {
     my $rs = schema('netdisco')->resultset('Admin')->search({
-      username => $user,
-      action => [qw/location contact portcontrol portname vlan power/],
+      username => session('logged_in_user'),
+      action => [qw/location contact portcontrol portname vlan power
+        discover macsuck arpnip/],
       finished => { '>' => \"(now() - interval '5 seconds')" },
     });
 

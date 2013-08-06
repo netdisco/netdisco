@@ -40,6 +40,7 @@ lib/App/Netdisco/Daemon/Worker/Scheduler.pm
 lib/App/Netdisco/DB.pm
 lib/App/Netdisco/DB/ExplicitLocking.pm
 lib/App/Netdisco/DB/Result/Admin.pm
+lib/App/Netdisco/DB/Result/Community.pm
 lib/App/Netdisco/DB/Result/Device.pm
 lib/App/Netdisco/DB/Result/DeviceIp.pm
 lib/App/Netdisco/DB/Result/DeviceModule.pm
@@ -73,6 +74,7 @@ lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
+lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
@@ -100,6 +102,8 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-20-21-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-21-22-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-22-23-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-23-24-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-24-25-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-25-26-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
@@ -123,6 +127,7 @@ lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AdminTask.pm
+lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/Plugin.pm

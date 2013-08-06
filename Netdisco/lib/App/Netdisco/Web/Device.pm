@@ -3,6 +3,7 @@ package App::Netdisco::Web::Device;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 hook 'before' => sub {
   my @default_port_columns_left = (
@@ -106,7 +107,7 @@ hook 'before_template' => sub {
   $tokens->{self_options} = $self_uri->query_form_hash;
 };
 
-get '/device' => sub {
+get '/device' => require_login sub {
     my $q = param('q');
     my $dev = schema('netdisco')->resultset('Device')->single({
         -or => [

@@ -3,12 +3,13 @@ package App::Netdisco::Web::Plugin::Device::Neighbors;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
 register_device_tab({ tag => 'netmap', label => 'Neighbors' });
 
-ajax '/ajax/content/device/netmap' => sub {
+ajax '/ajax/content/device/netmap' => require_login sub {
     content_type('text/html');
     template 'ajax/device/netmap.tt', {}, { layout => undef };
 };
@@ -39,7 +40,7 @@ sub _add_children {
 }
 
 # d3 seems not to use proper ajax semantics, so get instead of ajax
-get '/ajax/data/device/netmap' => sub {
+get '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
@@ -75,7 +76,7 @@ get '/ajax/data/device/netmap' => sub {
     to_json(\%tree);
 };
 
-ajax '/ajax/data/device/alldevicelinks' => sub {
+ajax '/ajax/data/device/alldevicelinks' => require_login sub {
     my @devices = schema('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
       columns => ['ip', 'dns'],

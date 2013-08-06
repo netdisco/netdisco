@@ -73,7 +73,7 @@ sub worker_body {
           # due to a table constraint, this will (intentionally) fail if a
           # similar job is already queued.
           try {
-              debug "sched ($wid): queueing $a job";
+              info "sched ($wid): queueing $a job";
               schema('netdisco')->resultset('Admin')->create({
                 action => $a,
                 device => ($sched->{device} || undef),

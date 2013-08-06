@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::Device::Ports;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
@@ -10,7 +11,7 @@ use App::Netdisco::Web::Plugin;
 register_device_tab({ tag => 'ports', label => 'Ports' });
 
 # device ports with a description (er, name) matching
-ajax '/ajax/content/device/ports' => sub {
+ajax '/ajax/content/device/ports' => require_login sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
