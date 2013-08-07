@@ -62,6 +62,7 @@ ajax '/ajax/control/admin/pseudodevice/del' => require_role admin => sub {
         ->find({ip => param('ip')});
 
       $device->ports->delete;
+      $device->device_ips->delete;
       $device->delete;
     });
 };

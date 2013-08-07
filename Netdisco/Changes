@@ -1,3 +1,9 @@
+2.012002 - 2013-08-07
+
+  [BUG FIXES]
+
+  * Tidy up Device IP after deleting a pseudo device
+
 2.012001 - 2013-08-06
 
   [BUG FIXES]
