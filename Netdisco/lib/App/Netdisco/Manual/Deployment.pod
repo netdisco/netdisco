@@ -55,7 +55,7 @@ After enabling the C<headers>, C<proxy> and C<proxy_http> modules in Apache, a
 suitable configuration would be:
 
  ProxyPreserveHost On
- ProxyPass / http://localhost:5000/
+ ProxyPass / http://localhost:5000/ retry=0 timeout=5
  ProxyPassReverse / http://localhost:5000/
  
  ProxyRequests Off
@@ -68,7 +68,7 @@ To combine this with Non-root Hosting as above, simply change the paths
 referenced in the configuration, and set C<path> in your C<deployment.yml> as
 discussed above. Note there is no trailing slash in the Apache config:
 
- ProxyPass /netdisco2 http://localhost:5000/netdisco2
+ ProxyPass /netdisco2 http://localhost:5000/netdisco2 retry=0 timeout=5
  ProxyPassReverse /netdisco2 http://localhost:5000/netdisco2
 
 To delegate user authentication to Apache, use the C<trust_remote_user> or

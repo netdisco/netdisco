@@ -1,3 +1,15 @@
+2.012005 - 2013-08-16
+
+  [ENHANCEMENTS]
+
+  * Improved handling of automatic macsuck/arpnip after initial discover
+
+  [BUG FIXES]
+
+  * Fix no_auth to work with new Auth::Extensible plugin
+  * Remove done job from local queue regardless of exit status
+  * Set last arpnip timestamp
+
 2.012002 - 2013-08-07
 
   [BUG FIXES]

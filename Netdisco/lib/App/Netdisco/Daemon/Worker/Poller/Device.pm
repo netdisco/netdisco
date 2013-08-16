@@ -36,6 +36,8 @@ sub discoverall {
           device => $_,
           action => 'discover',
           status => 'queued',
+          username => $job->username,
+          userip => $job->userip,
       }} ($devices->all)
     ]);
   });
@@ -43,12 +45,13 @@ sub discoverall {
   return job_done("Queued discover job for all devices");
 }
 
-# queue a discover job for one device, and its *new* neighbors
+# run a discover job for one device, and its *new* neighbors
 sub discover {
   my ($self, $job) = @_;
 
   my $host = NetAddr::IP::Lite->new($job->device);
   my $device = get_device($host->addr);
+  my $jobqueue = schema('netdisco')->resultset('Admin');
 
   if ($device->ip eq '0.0.0.0') {
       return job_error("discover failed: no device param (need -d ?)");
@@ -71,6 +74,33 @@ sub discover {
   store_power($device, $snmp);
   store_modules($device, $snmp);
   discover_new_neighbors($device, $snmp);
+
+  # if requested, and the device has not yet been arpniped/macsucked, queue now
+  if ($device->in_storage and $job->subaction and $job->subaction eq 'with-nodes') {
+      if (!defined $device->last_macsuck) {
+          schema('netdisco')->txn_do(sub {
+            $jobqueue->create({
+              device => $device->ip,
+              action => 'macsuck',
+              status => 'queued',
+              username => $job->username,
+              userip => $job->userip,
+            });
+          });
+      }
+
+      if (!defined $device->last_arpnip) {
+          schema('netdisco')->txn_do(sub {
+            $jobqueue->create({
+              device => $device->ip,
+              action => 'arpnip',
+              status => 'queued',
+              username => $job->username,
+              userip => $job->userip,
+            });
+          });
+      }
+  }
 
   return job_done("Ended discover for ". $host->addr);
 }

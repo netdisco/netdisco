@@ -79,6 +79,9 @@ sub close_job {
               finished => $now,
             });
       }
+
+      # remove job from local queue
+      $self->do('scrub_jobs', $self->wid);
   }
   catch { $self->sendto('stderr', "error closing job: $_\n") };
 }

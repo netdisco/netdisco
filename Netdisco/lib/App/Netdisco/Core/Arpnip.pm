@@ -72,6 +72,8 @@ sub do_arpnip {
   _store_subnet($_, $now) for @subnets;
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
     $device->ip, scalar @subnets;
+
+  $device->update({last_arpnip => \$now});
 }
 
 # get an arp table (v4 or v6)

@@ -8,7 +8,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Try::Tiny;
 
 sub add_job {
-    my ($jobtype, $device) = @_;
+    my ($jobtype, $device, $subaction) = @_;
 
     if ($device) {
         $device = NetAddr::IP::Lite->new($device);
@@ -16,32 +16,16 @@ sub add_job {
           if ! $device or $device->addr eq '0.0.0.0';
     }
 
+    # job might already be in the queue, so this could die
     try {
-    # jobs might already be in the queue, so this could die
         schema('netdisco')->resultset('Admin')->create({
           ($device ? (device => $device->addr) : ()),
           action => $jobtype,
+          ($subaction ? (subaction => $subaction) : ()),
           status => 'queued',
           username => session('logged_in_user'),
           userip => request->remote_address,
         });
-
-        if (param('extra') and param('extra') eq 'with-walk') {
-            schema('netdisco')->resultset('Admin')->create({
-              action => 'macwalk',
-              subaction => 'after-discoverall',
-              status => 'queued',
-              username => session('logged_in_user'),
-              userip => request->remote_address,
-            });
-            schema('netdisco')->resultset('Admin')->create({
-              action => 'arpwalk',
-              subaction => 'after-discoverall',
-              status => 'queued',
-              username => session('logged_in_user'),
-              userip => request->remote_address,
-            });
-        }
     };
 }
 
@@ -63,14 +47,14 @@ foreach my $jobtype (keys %jobs_all, keys %jobs) {
         send_error('Missing device', 400)
           if exists $jobs{$jobtype} and not param('device');
 
-        add_job($jobtype, param('device'));
+        add_job($jobtype, param('device'), param('extra'));
     };
 
     post "/admin/$jobtype" => require_role admin => sub {
         send_error('Missing device', 400)
           if exists $jobs{$jobtype} and not param('device');
 
-        add_job($jobtype, param('device'));
+        add_job($jobtype, param('device'), param('extra'));
         redirect uri_for('/admin/jobqueue')->as_string;
     };
 }

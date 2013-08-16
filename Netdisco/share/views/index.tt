@@ -45,7 +45,7 @@
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') %]">
             <div class="form-horizontal">
               <input placeholder="Device hostname or IP" class="span4" name="device" type="text"/>
-              <input type="hidden" name="extra" value="with-walk"/>
+              <input type="hidden" name="extra" value="with-nodes"/>
               <button type="submit" class="btn btn-info">Discover</button>
             </div>
           </form>
