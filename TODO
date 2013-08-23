@@ -23,8 +23,6 @@ CORE
 DOCS
 ====
 
-* missing user management ("User Rights")
-
 * Scheduler
 * Discover/Refresh jobs
 * new X:: plugin namespace

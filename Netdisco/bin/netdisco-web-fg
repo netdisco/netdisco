@@ -20,10 +20,6 @@ BEGIN {
     dir($FindBin::RealBin, 'lib')->stringify;
 }
 
-if ($ENV{_} and $ENV{_} =~ m/netdisco-web-fg$/) {
-    die "You probably want: '~/bin/localenv starman $0 --workers=1 --disable-keepalive'\n";
-}
-
 use App::Netdisco;
 use Dancer;
 debug sprintf "App::Netdisco %s", ($App::Netdisco::VERSION || 'HEAD');
