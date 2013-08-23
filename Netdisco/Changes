@@ -7,6 +7,7 @@
   [ENHANCEMENTS]
 
   * Display "Auto" when there is no discovered duplex setting
+  * Add suggest_guest option to display login banner offering Guest acct
 
 2.012006 - 2013-08-23
 

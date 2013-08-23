@@ -95,6 +95,13 @@ database:
  netdisco=> update users set port_control = true where username = 'guest';
  netdisco=> update users set admin = true where username = 'guest';
 
+=head3 C<suggest_guest>
+
+Value: Boolean. Default: C<false>.
+
+Enable this to display a banner suggesting to log in with a guest account.
+The username and password of this account must both be "guest".
+
 =head3 C<trust_remote_user>
 
 Value: Boolean. Default: C<false>.
