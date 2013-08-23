@@ -1,3 +1,9 @@
+2.012007 - 2013-08-23
+
+  [ENHANCEMENTS]
+
+  * Display "Auto" when there is no discovered duplex setting
+
 2.012006 - 2013-08-23
 
   [BUG FIXES]
