@@ -75,7 +75,7 @@ sub match_with_local_pass {
     my $settings = $self->realm_settings;
     my $password_column = $settings->{users_password_column} || 'password';
 
-    return unless $password and $user->password_column;
+    return unless $password and $user->$password_column;
 
     my $sum = Digest::MD5::md5_hex($password);
     return ($sum eq $user->$password_column ? 1 : 0);

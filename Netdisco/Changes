@@ -1,3 +1,9 @@
+2.013001 - 2013-08-23
+
+  [BUG FIXES]
+
+  * Typo in authN module which prevented local auth
+
 2.013000 - 2013-08-23
 
   [NEW FEATURES]
