@@ -189,7 +189,7 @@ sub store_interfaces {
   }
 
   # build device interfaces suitable for DBIC
-  my @interfaces;
+  my %interfaces;
   foreach my $entry (keys %$interfaces) {
       my $port = $interfaces->{$entry};
 
@@ -231,7 +231,7 @@ sub store_interfaces {
           }
       }
 
-      push @interfaces, {
+      $interfaces{$port} = {
           port         => $port,
           descr        => $i_descr->{$entry},
           up           => $i_up->{$entry},
@@ -255,9 +255,9 @@ sub store_interfaces {
     debug sprintf ' [%s] interfaces - removed %s interfaces',
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});
-    $device->ports->populate(\@interfaces);
+    $device->ports->populate([values %interfaces]);
     debug sprintf ' [%s] interfaces - added %d new interfaces',
-      $device->ip, scalar @interfaces;
+      $device->ip, scalar values %interfaces;
   });
 }
 

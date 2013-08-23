@@ -1,3 +1,9 @@
+2.012006 - 2013-08-23
+
+  [BUG FIXES]
+
+  * Duplicate port names are handled without error
+
 2.012005 - 2013-08-16
 
   [ENHANCEMENTS]
