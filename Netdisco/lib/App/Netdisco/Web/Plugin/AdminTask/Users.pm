@@ -30,6 +30,7 @@ ajax '/ajax/control/admin/users/add' => require_role admin => sub {
           username => param('username'),
           password => Digest::MD5::md5_hex(param('password')),
           fullname => param('fullname'),
+          ldap => (param('ldap') ? \'true' : \'false'),
           port_control => (param('port_control') ? \'true' : \'false'),
           admin => (param('admin') ? \'true' : \'false'),
         });
@@ -58,6 +59,7 @@ ajax '/ajax/control/admin/users/update' => require_role admin => sub {
           ? (password => Digest::MD5::md5_hex(param('password')))
           : ()),
         fullname => param('fullname'),
+        ldap => (param('ldap') ? \'true' : \'false'),
         port_control => (param('port_control') ? \'true' : \'false'),
         admin => (param('admin') ? \'true' : \'false'),
       });

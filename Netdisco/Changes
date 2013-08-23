@@ -1,4 +1,8 @@
-2.012007 - 2013-08-23
+2.013000 - 2013-08-23
+
+  [NEW FEATURES]
+
+  * LDAP authentication support - see Configuration POD for details
 
   [ENHANCEMENTS]
 

@@ -117,6 +117,72 @@ to Netdisco in the C<X-REMOTE_USER> HTTP Header. For example with Apache:
  RequestHeader unset X-REMOTE_USER
  RequestHeader set X-REMOTE_USER "%{REMOTE_USER}e" env=REMOTE_USER
 
+=head3 C<ldap>
+
+Value: Settings Tree. Default: None.
+
+If set, and a user has the C<ldap> flag also set on their account, then LDAP
+authentication will be used for their login. You I<must> install the
+L<Net::LDAP> Perl module in order to use this feature. For example:
+
+ ldap:
+   servers:
+     - 'ad.example.com'
+   user_string: 'MYDOMAIN\%USER%'
+   opts:
+     debug: 3
+
+There are several options within this setting:
+
+=head4 C<servers>
+
+This must be a list of one or more LDAP servers. If using Active Directory
+these would be your Domain Controllers.
+
+=head4 C<user_string>
+
+String to construct the user portion of the DN. C<%USER%> is a variable which
+will be replaced at runtime with the logon name entered on the logon page of
+the application.
+
+Active Directory users may simply use C<MYDOMAIN\%USER%> and skip all other
+options except C<servers>, as this notation eliminates the need to construct
+the full distinguished name.
+
+Examples: C<cn=%USER%> or C<uid=%USER%>.
+
+=head4 C<base>
+
+Indicates where in the hierarchy to begin searches. If a proxy user is not
+defined and anonymous binds are not enabled this value will be appended to the
+C<user_string> to construct the distinguished name for authentication.
+
+=head4 C<proxy_user>
+
+User to bind with to perform searches. If defined as C<anonymous>, then
+anonymous binds will be performed and C<proxy_pass> will be ignored. For
+organizations with users in multiple OUs this option can be used to search for
+the user and construct the DN based upon the result.
+
+=head4 C<proxy_pass>
+
+Proxy user password. Ignored if proxy user defined as anonymous.
+
+=head4 C<opts>
+
+Hash of options to add to the connect string. Normally only needed if server
+does not support LDAPv3, or to enable debugging as in the example above.
+
+=head4 C<tls_opts>
+
+A hash which, when defined, causes the connection tol use Transport Layer
+Security (TLS) which provides an encrypted connection. TLS is the preferred
+method of encryption, ldaps (port 636) is not supported.
+
+This is only possible if using LDAPv3 and the server supports it. These are
+the options for the TLS connection. See the L<Net::LDAP> documentation under
+start_tls for options, but the defaults should work in most cases.
+
 =head3 C<path>
 
 Value: String. Default: None.
