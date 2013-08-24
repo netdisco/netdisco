@@ -425,7 +425,7 @@ Value: Settings Tree. Default:
 
  workers:
    interactives: 2
-   pollers: 2
+   pollers: 5
    sleep_time: 2
 
 Control the activity of the backend daemon with this configuration setting.
@@ -539,6 +539,12 @@ Whether to build a route cache for web requests, for better performance.
 Value: String. Default: C<Netdisco>.
 
 Don't touch this.
+
+=head3 C<behind_proxy>
+
+Value: Boolean. Default: C<false>.
+
+There's no need to touch this. See deployment documentation for how to proxy.
 
 =head1 UNSUPPORTED (SO FAR)
 

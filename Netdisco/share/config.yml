@@ -10,7 +10,6 @@
 # ----------------
 
 log: 'warning'
-logger: 'console'
 logger_format: '[%P] %L @%D> %m'
 
 # ------------
@@ -19,8 +18,19 @@ logger_format: '[%P] %L @%D> %m'
 
 domain_suffix: ''
 no_auth: false
+suggest_guest: false
+trust_remote_user: false
+trust_x_remote_user: false
+#ldap:
+#  servers: []
+#  user_string: 'MYDOMAIN\%USER%'
+#  base: ''
+#  proxy_user: ''
+#  proxy_pass: ''
+#  opts:
+#    debug: 3
+#  tls_opts: {}
 path: '/'
-behind_proxy: false
 web_plugins:
   - Inventory
   - Report::PortUtilization
@@ -39,15 +49,6 @@ web_plugins:
   - Device::Neighbors
   - Device::Addresses
 web_plugins_extra: []
-
-# authN and authZ controls from the database
-plugins:
-  Auth::Extensible:
-    no_default_pages: true
-    realms:
-      users:
-        provider: 'App::Netdisco::Web::Auth::Provider::DBIC'
-        schema_name: 'netdisco'
 
 # -------------
 # NETDISCO CORE
@@ -97,7 +98,7 @@ no_port_control: false
 
 workers:
   interactives: 2
-  pollers: 2
+  pollers: 5
   sleep_time: 2
 
 #housekeeping:
@@ -108,7 +109,9 @@ workers:
 #      min: 30
 #  macwalk:
 #    when:
+#      min: 15
 #      hour: '*/2'
+#      wday: 'mon-fri'
 
 # ---------------
 # DANCER INTERNAL
@@ -117,6 +120,7 @@ workers:
 charset: 'UTF-8'
 warnings: false
 show_errors: false
+logger: 'console'
 engines:
   template_toolkit:
     encoding: 'utf8'
@@ -124,8 +128,15 @@ engines:
     end_tag: '%]'
     PRE_CHOMP: 1
 layout: 'main'
+plugins:
+  Auth::Extensible:
+    no_default_pages: true
+    realms:
+      users:
+        provider: 'App::Netdisco::Web::Auth::Provider::DBIC'
+        schema_name: 'netdisco'
 session: 'YAML'
 template: 'template_toolkit'
 route_cache: true
 appname: 'Netdisco'
-
+behind_proxy: false

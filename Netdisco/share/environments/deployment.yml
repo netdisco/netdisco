@@ -28,9 +28,19 @@ database:
 # community: ['public']
 # community_rw: ['private']
 
-# if unset, Netdisco loads all MIBs in mibhome directory.
+# when not set, Netdisco loads all MIBs in mibhome directory.
 #  mibdirs:
 #    - cisco
 #    - rfc
 #    - net-snmp
+
+# housekeeping:
+#   discoverall:
+#     when: '5 7 * * *'
+#   macwalk:
+#     when:
+#       min: 20
+#   arpwalk:
+#     when:
+#       min: 50
 
