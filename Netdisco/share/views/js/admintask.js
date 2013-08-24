@@ -44,6 +44,7 @@
           return response(data);
         });
       }
+      ,delay: 150
       ,minLength: 0
     });
 

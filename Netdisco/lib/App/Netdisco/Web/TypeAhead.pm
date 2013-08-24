@@ -26,7 +26,7 @@ ajax '/ajax/data/deviceip/typeahead' => require_login sub {
             $label = sprintf '%s (%s)',
               ($d->dns || $d->name), $d->ip;
         }
-        push @data, {label => $label, value => $d->ip};
+        push @data, { label => $label, value => $d->ip };
     }
 
     content_type 'application/json';
@@ -46,10 +46,13 @@ ajax '/ajax/data/port/typeahead' => require_login sub {
     $set = $set->search({port => { -ilike => "\%$port\%" }})
       if $port;
 
-    my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
+    my $results = [
+      map  {{ label => (sprintf "%s (%s)", $_->port, $_->name), value => $_->port }}
+      sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all
+    ];
 
     content_type 'application/json';
-    to_json [map {$_->port} @$results];
+    to_json \@$results;
 };
 
 true;

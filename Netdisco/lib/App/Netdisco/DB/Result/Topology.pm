@@ -22,4 +22,14 @@ __PACKAGE__->add_columns(
 __PACKAGE__->add_unique_constraint(['dev1','port1']);
 __PACKAGE__->add_unique_constraint(['dev2','port2']);
 
+__PACKAGE__->belongs_to(
+  device1 => 'App::Netdisco::DB::Result::Device',
+  {'foreign.ip' => 'self.dev1'}
+);
+
+__PACKAGE__->belongs_to(
+  device2 => 'App::Netdisco::DB::Result::Device',
+  {'foreign.ip' => 'self.dev2'}
+);
+
 1;

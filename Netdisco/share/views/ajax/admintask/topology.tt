@@ -40,11 +40,12 @@
     </tr>
     [% WHILE (row = results.next) %]
     <tr>
-      <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') %]?q=[% row.dev1 | uri %]">[% row.dev1 | html_entity %]</a></td>
+      <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.dev1 | uri %]">
+        [% (row.device1.dns || row.device1.name || row.device1.ip) | html_entity %]</a>
+      </td>
       <td class="nd_center-cell">[% row.port1 | html_entity %]</td>
-      <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') %]?q=[% row.dev2 | uri %]">[% row.dev2 | html_entity %]</a></td>
+      <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.dev2 | uri %]">
+        [% (row.device2.dns || row.device2.name || row.device2.ip) | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port2 | html_entity %]</td>
       <td class="nd_center-cell">
         <input data-form="del" name="dev1" type="hidden" value="[% row.dev1 | html_entity %]">
