@@ -102,8 +102,8 @@ sub match_with_ldap {
         my $result = _ldap_search($ldapuser, $attrs, $user, $pass);
         $ldapuser  = $result->[0] if ($result->[0]);
     }
-    # otherwise, if we can't search and aren't using AD and then construct DN by
-    # appending base
+    # otherwise, if we can't search and aren't using AD and then construct DN
+    # by appending base
     elsif ($ldapuser =~ m/=/) {
         $ldapuser = "$ldapuser,$conf->{base}";
     }
@@ -128,12 +128,10 @@ sub match_with_ldap {
 
 sub _ldap_search {
     my ($filter, $attrs, $user, $pass) = @_;
+    my $conf = setting('ldap');
 
     return undef unless defined($filter);
     return undef if (defined $attrs and ref [] ne ref $attrs);
-
-    return unless setting('ldap') and ref {} eq ref setting('ldap');
-    my $conf = setting('ldap');
 
     foreach my $server (@{$conf->{server}}) {
         my $opts = $conf->{opts} || {};
