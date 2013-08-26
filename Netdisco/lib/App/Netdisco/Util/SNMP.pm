@@ -1,7 +1,7 @@
 package App::Netdisco::Util::SNMP;
 
 use Dancer qw/:syntax :script/;
-use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Device qw/get_device check_no/;
 
 use SNMP::Info;
 use Try::Tiny;
@@ -65,10 +65,26 @@ sub _snmp_connect_generic {
     DestHost => $device->ip,
     Retries => (setting('snmpretries') || 2),
     Timeout => (setting('snmptimeout') || 1000000),
+    NonIncreasing => (setting('nonincreasing') || 0),
+    BulkWalk => ((defined setting('bulkwalk_off')) ? setting('bulkwalk_off') : 1),
+    BulkRepeaters => (setting('bulkwalk_repeaters') || 20),
     MibDirs => [ _build_mibdirs() ],
     IgnoreNetSNMPConf => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
   );
+
+  # an override for bulkwalk
+  $snmp_args{BulkWalk} = 0 if check_no($device, 'bulkwalk_no');
+
+  # further protect against buggy Net-SNMP, and disable bulkwalk
+  if ($snmp_args{BulkWalk}
+      and ($SNMP::VERSION eq '5.0203' || $SNMP::VERSION eq '5.0301')) {
+
+      warning sprintf
+        "[%s] turning off BulkWalk due to buggy Net-SNMP - please upgrade!",
+        $device->ip;
+      $snmp_args{BulkWalk} = 0;
+  }
 
   # TODO: add version force support
   # use existing SNMP version or try 2, 1
@@ -175,7 +191,7 @@ sub _try_connect {
 
 sub _build_mibdirs {
   my $home = (setting('mibhome') || dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  return map { dir($home, $_) }
+  return map { dir($home, $_)->stringify }
              @{ setting('mibdirs') || _get_mibdirs_content($home) };
 }
 

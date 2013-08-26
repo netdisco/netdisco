@@ -258,6 +258,40 @@ Value: List of Strings. Default: C<private>.
 A list of read-write SNMP community strings to try on each device. The working
 community will be cached in the database.
 
+=head3 C<bulkwalk_off>
+
+Value: Boolean. Default C<false>.
+
+Set to C<true> to use C<GETNEXT> instead of the standard C<BULKWALK> for every
+device. This will slow things down, but might be necessary for problem
+devices. For more fine-grained control see the C<bulkwalk_no> setting.
+
+=head3 C<bulkwalk_no>
+
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
+
+IP addresses in the list will use C<GETNEXT> (and not C<BULKWALK>). You can
+include hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
+
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
+
+=head3 C<bulkwalk_repeaters>
+
+Value: Numnber. Default: 20.
+
+Sets the Net-SNMP C<MaxRepeaters> value, which is used on C<BULKWALK>
+operations. See L<SNMP> for more info.
+
+=head3 C<nonincreasing>
+
+Value: Boolean. Default: C<false>.
+
+Setting this to C<true> will allow the bulkwalk of devices that have tables
+with non-increasing OIDs. The default is to not allow this behavior, to
+prevent discovery on problem devices from looping indefinitely. Requires
+Net-SNMP 5.3 or higher.
+
 =head3 C<snmpver>
 
 Value: C<1|2|3>. Default: 2.
@@ -279,18 +313,24 @@ Number of times to retry connecting to a device before giving up.
 
 =head3 C<discover_no>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will not be visited during device discovery. You can
 include hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
 
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
+
 =head3 C<discover_only>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 If present, device discovery will be limited to IP addresses matching entries
 in this list. You can include hostnames, IP addresses and subnets (IPv4 and
 IPv6).
+
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
 
 =head3 C<discover_no_type>
 
@@ -314,17 +354,23 @@ discover jobs for a device.
 
 =head3 C<macsuck_no>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will not be visited for macsuck. You can include
 hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
 
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
+
 =head3 C<macsuck_only>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 If present, macsuck will be limited to IP addresses matching entries in this
 list. You can include hostnames, IP addresses and subnets (IPv4 and IPv6).
+
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
 
 =head3 C<macsuck_all_vlans>
 
@@ -373,17 +419,23 @@ macsuck jobs for a device.
 
 =head3 C<arpnip_no>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will not be visited for arpnip. You can include
 hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
 
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
+
 =head3 C<arpnip_only>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 If present, arpnip will be limited to IP addresses matching entries in this
 list. You can include hostnames, IP addresses and subnets (IPv4 and IPv6).
+
+Alternatively include a "C<property:regex>" entry to match the named property
+of the device. The regex must match the complete value.
 
 =head3 C<arpnip_min_age>
 
@@ -625,18 +677,6 @@ These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 
 =item *
 
-C<bulkwalk_no>
-
-=item *
-
-C<bulkwalk_off>
-
-=item *
-
-C<bulkwalk_repeaters>
-
-=item *
-
 C<col_xxx_show>
 
 =item *
@@ -658,10 +698,6 @@ C<get_community>
 =item *
 
 C<macsuck_timeout>
-
-=item *
-
-C<nonincreasing>
 
 =item *
 
