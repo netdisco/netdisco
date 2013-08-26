@@ -312,6 +312,20 @@ Value: Number. Default: 0.
 Sets the minimum amount of time in seconds which must elapse between any two
 discover jobs for a device.
 
+=head3 C<macsuck_no>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+IP addresses in the list will not be visited for macsuck. You can include
+hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
+
+=head3 C<macsuck_only>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+If present, macsuck will be limited to IP addresses matching entries in this
+list. You can include hostnames, IP addresses and subnets (IPv4 and IPv6).
+
 =head3 C<macsuck_all_vlans>
 
 Value: Boolean. Default: C<false>.
@@ -342,6 +356,20 @@ Value: Number. Default: 0.
 
 Sets the minimum amount of time in seconds which must elapse between any two
 macsuck jobs for a device.
+
+=head3 C<arpnip_no>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+IP addresses in the list will not be visited for arpnip. You can include
+hostnames, IP addresses and subnets (IPv4 or IPv6) in the list.
+
+=head3 C<arpnip_only>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+If present, arpnip will be limited to IP addresses matching entries in this
+list. You can include hostnames, IP addresses and subnets (IPv4 and IPv6).
 
 =head3 C<arpnip_min_age>
 
@@ -583,14 +611,6 @@ These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 
 =item *
 
-C<arpnip_no>
-
-=item *
-
-C<arpnip_only>
-
-=item *
-
 C<bulkwalk_no>
 
 =item *
@@ -623,19 +643,11 @@ C<get_community>
 
 =item *
 
-C<macsuck_no>
-
-=item *
-
 C<macsuck_no_devicevlan>
 
 =item *
 
 C<macsuck_no_vlan>
-
-=item *
-
-C<macsuck_only>
 
 =item *
 

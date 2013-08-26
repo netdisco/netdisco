@@ -66,7 +66,14 @@ sub _single_body {
 
   if ($device->in_storage
       and $device->vendor and $device->vendor eq 'netdisco') {
-      return job_done("Skipped $job_type for pseudo-device $host");
+      return job_done("$job_type skipped: $host is pseudo-device");
+  }
+
+  my $filter_method = $job_type .'_filter';
+  my $job_filter = $self->$filter_method;
+
+  unless ($job_filter->($device->ip)) {
+      return job_defer("$job_type deferred: $host is not ${job_type}able");
   }
 
   my $snmp = snmp_connect($device);
