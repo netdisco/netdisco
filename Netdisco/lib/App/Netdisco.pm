@@ -7,7 +7,7 @@ use 5.010_000;
 use File::ShareDir 'dist_dir';
 use Path::Class;
 
-our $VERSION = '2.013001';
+our $VERSION = '2.014000';
 
 BEGIN {
   if (not ($ENV{DANCER_APPDIR} || '')
@@ -82,14 +82,44 @@ App::Netdisco - An open source web-based network management tool.
 
 =head1 Introduction
 
-The content of this distribution is the next major version of the Netdisco
-network management tool. Pieces are still missing however, so if you're a new
-user please see L<http://netdisco.org/> for further information on the project
-and how to download the current official release.
+Netdisco is a web-based network management tool designed for network
+administrators. Data is collected into a Postgres database using SNMP.
+
+Some of the things you can do with Netdisco:
+
+=over 4
+
+=item *
+
+B<Locate> a machine on the network by MAC or IP and show the switch port it
+lives at
+
+=item *
+
+B<Turn off> a switch port, or change the VLAN or PoE status of a port
+
+=item *
+
+B<Inventory> your network hardware by model, vendor, software and operating
+system
+
+=item *
+
+B<Pretty pictures> of your network
+
+=back
 
 L<App::Netdisco> provides a web frontend with built-in web server, and a
 backend daemon to handle interactive requests such as changing port or device
 properties.
+
+=over 4
+
+=item *
+
+See the demo at: L<http://netdisco2-demo.herokuapp.com/>
+
+=back
 
 If you have any trouble getting the frontend running, speak to someone in the
 C<#netdisco> IRC channel (on freenode). Before installing or upgrading please
