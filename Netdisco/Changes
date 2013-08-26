@@ -7,6 +7,10 @@
   * Support for discover_min_age, macsuck_min_age, arpnip_min_age
   * Support for macsuck_no, macsuck_only, arpnip_no, arpnip_only
 
+  [BUG FIXES]
+
+  * Wireless node counters should be bigint
+
 2.013001 - 2013-08-23
 
   [BUG FIXES]
