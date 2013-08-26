@@ -1,13 +1,16 @@
-2.013002 - 
+2.014000 - 2013-08-26
 
-  [ENHANCEMENTS]
+  [NEW FEATURES]
 
-  * Display port descriptions in topology editing form
   * Support store_modules config (default true)
   * Support for discover_min_age, macsuck_min_age, arpnip_min_age
   * Support for macsuck_no, macsuck_only, arpnip_no, arpnip_only
   * Support for macsuck_no_vlan and macsuck_no_devicevlan
   * Support for nonincreasing, bulkwalk_* settings and also property:match values
+
+  [ENHANCEMENTS]
+
+  * Display port descriptions in topology editing form
 
   [BUG FIXES]
 

@@ -39,6 +39,7 @@ requires:
   MIME::Base64: 3.13
   Moo: 1.001
   Net::DNS: 0.72
+  Net::Domain: 1.23
   Net::MAC: 2.103622
   NetAddr::IP: 4.068
   Path::Class: 0.32
@@ -61,4 +62,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.013001
+version: 2.014000
