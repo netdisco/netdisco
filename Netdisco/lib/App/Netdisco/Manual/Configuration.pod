@@ -329,13 +329,20 @@ Set to true will let nodes accumulate on uplink ports without topology
 information. This is a debug option to help you figure out your topology and
 generally should not be set.
 
-=head3 C<store_wireless_client>
+=head3 C<store_wireless_clients>
 
 Value: Boolean. Default: C<true>.
 
 Set to false to skip the wireless client information gathering. This is
 captured at macsuck time, so if you aren't using the information you can skip
 it.
+
+=head3 C<store_modules>
+
+Value: Boolean. Default: C<true>.
+
+Set to false to skip the module inventory on device discovery. On some
+platforms this can double the discovery time.
 
 =head3 C<ignore_interfaces>
 
@@ -555,10 +562,6 @@ These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 
 =item *
 
-C<admin>
-
-=item *
-
 C<arpnip_min_age>
 
 =item *
@@ -659,10 +662,6 @@ C<snmpforce_v3>
 
 =item *
 
-C<store_modules>
-
-=item *
-
 C<timeout>
 
 =item *
@@ -676,14 +675,6 @@ C<v3_users>
 =item *
 
 C<v3_users_rw>
-
-=item *
-
-C<web_console_models>
-
-=item *
-
-C<web_console_vendors>
 
 =back
 

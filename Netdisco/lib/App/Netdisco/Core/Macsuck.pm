@@ -39,7 +39,7 @@ without a neighbor.
 If the device has VLANs, C<do_macsuck> will walk each VALN to get the MAC
 addresses from there.
 
-It will also gather wireless client information if C<store_wireless_client>
+It will also gather wireless client information if C<store_wireless_clients>
 configuration setting is enabled.
 
 =cut
@@ -378,7 +378,7 @@ clients.
 If the device doesn't support the 802.11 MIBs, then this will silently return.
 
 If the device does support the 802.11 MIBs but Netdisco's configuration
-does not permit polling (C<store_wireless_client> must be true) then a debug
+does not permit polling (C<store_wireless_clients> must be true) then a debug
 message is logged and the subroutine returns.
 
 Otherwise, client information is gathered and stored to the database.
@@ -395,7 +395,7 @@ sub store_wireless_client_info {
   my $cd11_txrate = $snmp->cd11_txrate;
   return unless $cd11_txrate and scalar keys %$cd11_txrate;
 
-  if (setting('store_wireless_client')) {
+  if (setting('store_wireless_clients')) {
       debug sprintf ' [%s] macsuck - gathering wireless client info',
         $device->ip;
   }

@@ -72,7 +72,7 @@ sub discover {
   store_wireless($device, $snmp);
   store_vlans($device, $snmp);
   store_power($device, $snmp);
-  store_modules($device, $snmp);
+  store_modules($device, $snmp) if setting('store_modules');
   discover_new_neighbors($device, $snmp);
 
   # if requested, and the device has not yet been arpniped/macsucked, queue now

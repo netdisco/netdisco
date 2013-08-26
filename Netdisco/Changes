@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Display port descriptions in topology editing form
+  * Support store_modules config (default true)
 
 2.013001 - 2013-08-23
 
