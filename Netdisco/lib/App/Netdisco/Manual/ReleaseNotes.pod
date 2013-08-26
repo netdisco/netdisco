@@ -19,7 +19,22 @@ You can now configure LDAP authentication for users.
 =head2 Security Notices
 
 The read-write SNMP community is now stored in the database, when used for the
-first time on a device.
+first time on a device. If you don't want the web frontend to be able to
+access this, you need to:
+
+=over 4
+
+=item *
+
+Have separate C<deployment.yml> files for web frontend and daemon, such that
+only the daemon config contains any community strings.
+
+=item *
+
+Use separate Postgres users for web frontend and daemon, such that the web
+frontend user cannot SELECT from the C<community> DB table.
+
+=back
 
 =head1 2.011000
 

@@ -646,10 +646,6 @@ C<portctl_timeout>
 
 =item *
 
-C<portcontrol>
-
-=item *
-
 C<snmpforce_v1>
 
 =item *
