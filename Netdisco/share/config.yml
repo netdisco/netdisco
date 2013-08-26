@@ -67,6 +67,8 @@ discover_no_type: []
 macsuck_all_vlans: false
 macsuck_no_unnamed: false
 macsuck_bleed: false
+macsuck_no_vlan: []
+macsuck_no_devicevlan: []
 store_wireless_clients: true
 store_modules: true
 ignore_interfaces:

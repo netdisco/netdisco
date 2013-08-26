@@ -6,6 +6,7 @@
   * Support store_modules config (default true)
   * Support for discover_min_age, macsuck_min_age, arpnip_min_age
   * Support for macsuck_no, macsuck_only, arpnip_no, arpnip_only
+  * Support for macsuck_no_vlan and macsuck_no_devicevlan
 
   [BUG FIXES]
 

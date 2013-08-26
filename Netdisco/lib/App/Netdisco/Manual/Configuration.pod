@@ -342,6 +342,20 @@ Set to true to skip macsuck-ing on VLANs which have no name set. This option
 may be useful on Cisco Catalyst family devices where ports are a member of a
 VLAN which is not defined in the VLAN database.
 
+=head3 C<macsuck_no_vlan>
+
+Value: List of VLAN names or numbers. Default: Empty List.
+
+On some devices, per-VLAN macsuck will timeout with specific VLAN numbers. You
+can put those numbers (or their names) into this list to have them skipped.
+
+=head3 C<macsucl_no_devicevlan>
+
+Value: List of "IP:vlan-number" or "IP:vlan-name". Default: Empty List.
+
+Similar to C<macsuck_no_vlan>, but allows specifying the device root
+(canonical) IP, in order to restrict VLAN skipping only to some devices.
+
 =head3 C<macsuck_bleed>
 
 Value: Boolean. Default: C<false>.
@@ -640,14 +654,6 @@ C<expire_nodes_archive>
 =item *
 
 C<get_community>
-
-=item *
-
-C<macsuck_no_devicevlan>
-
-=item *
-
-C<macsuck_no_vlan>
 
 =item *
 
