@@ -4,7 +4,7 @@ use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::SNMP 'snmp_connect';
-use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Core::Discover ':all';
 use App::Netdisco::Daemon::Util ':all';
 
@@ -59,7 +59,11 @@ sub discover {
 
   if ($device->in_storage
       and $device->vendor and $device->vendor eq 'netdisco') {
-      return job_done("Skipped discover for pseudo-device $host");
+      return job_done("discover skipped: $host is pseudo-device");
+  }
+
+  unless (is_discoverable($device->ip)) {
+      return job_defer("discover deferred: $host is not discoverable");
   }
 
   my $snmp = snmp_connect($device);

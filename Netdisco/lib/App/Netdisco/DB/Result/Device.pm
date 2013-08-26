@@ -250,4 +250,28 @@ between the date stamp and time stamp. That is:
 
 sub last_arpnip_stamp  { return (shift)->get_column('last_arpnip_stamp')  }
 
+=head2 since_last_discover
+
+Number of seconds which have elapsed since the value of C<last_discover>.
+
+=cut
+
+sub since_last_discover  { return (shift)->get_column('since_last_discover')  }
+
+=head2 since_last_macsuck
+
+Number of seconds which have elapsed since the value of C<last_macsuck>.
+
+=cut
+
+sub since_last_macsuck  { return (shift)->get_column('since_last_macsuck')  }
+
+=head2 since_last_arpnip
+
+Number of seconds which have elapsed since the value of C<last_arpnip>.
+
+=cut
+
+sub since_last_arpnip  { return (shift)->get_column('since_last_arpnip')  }
+
 1;

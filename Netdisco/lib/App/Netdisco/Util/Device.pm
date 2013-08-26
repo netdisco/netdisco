@@ -52,7 +52,7 @@ sub get_device {
     ->search({alias => $ip})->first;
   $ip = $alias->ip if defined $alias;
 
-  return schema('netdisco')->resultset('Device')
+  return schema('netdisco')->resultset('Device')->with_times
     ->find_or_new({ip => $ip});
 }
 
@@ -71,13 +71,15 @@ Returns false if the host is not permitted to discover the target device.
 
 =cut
 
+sub _bail_msg { debug $_[0]; return 0; }
+
 sub is_discoverable {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
 
   if ($remote_type) {
-      return 0 if
-        scalar grep {$remote_type =~ m/$_/}
+      return _bail_msg("is_discoverable: device matched discover_no_type")
+        if scalar grep {$remote_type =~ m/$_/}
                     @{setting('discover_no_type') || []};
   }
 
@@ -88,7 +90,8 @@ sub is_discoverable {
   if (scalar @$discover_no) {
       foreach my $item (@$discover_no) {
           my $ip = NetAddr::IP::Lite->new($item) or return 0;
-          return 0 if $ip->contains($addr);
+          return _bail_msg("is_discoverable: device matched discover_no")
+            if $ip->contains($addr);
       }
   }
 
@@ -98,7 +101,16 @@ sub is_discoverable {
           my $ip = NetAddr::IP::Lite->new($item) or return 0;
           ++$okay if $ip->contains($addr);
       }
-      return 0 if not $okay;
+      return _bail_msg("is_discoverable: device failed to match discover_only")
+        if not $okay;
+  }
+
+  my $discover_since = setting('discover_min_age') || 0;
+
+  if ($device->since_last_discover
+      and $device->since_last_discover < $discover_since) {
+
+      return _bail_msg("is_discoverable: last discovered less than discover_min_age");
   }
 
   return 1;

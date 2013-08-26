@@ -23,6 +23,7 @@ requires 'List::MoreUtils' => 0.33;
 requires 'MIME::Base64' => 3.13;
 requires 'Moo' => 1.001000;
 requires 'MCE' => 1.408;
+requires 'Net::Domain' => 1.23;
 requires 'Net::DNS' => 0.72;
 requires 'Net::MAC' => 2.103622;
 requires 'NetAddr::IP' => 4.068;

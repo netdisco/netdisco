@@ -305,6 +305,13 @@ but don't talk SNMP. For example:
    - 'cisco\s+AIR-LAP'
    - '(?i)Cisco\s+IP\s+Phone'
 
+=head3 C<discover_min_age>
+
+Value: Number. Default: 0.
+
+Sets the minimum amount of time in seconds which must elapse between any two
+discover jobs for a device.
+
 =head3 C<macsuck_all_vlans>
 
 Value: Boolean. Default: C<false>.
@@ -587,10 +594,6 @@ C<bulkwalk_repeaters>
 =item *
 
 C<col_xxx_show>
-
-=item *
-
-C<discover_min_age>
 
 =item *
 

@@ -3,7 +3,6 @@ package App::Netdisco::Daemon::Worker::Manager;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Device 'is_discoverable';
 use Net::Domain 'hostfqdn';
 use Try::Tiny;
 
@@ -56,10 +55,6 @@ sub worker_body {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
       while (my $job = $rs->next) {
           my $jid = $job->job;
-
-          # filter for discover_*
-          next unless is_discoverable($job->device);
-          debug sprintf "mgr (%s): job %s is discoverable", $wid, $jid;
 
           # check for available local capacity
           next unless $self->do('capacity_for', $job->action);
