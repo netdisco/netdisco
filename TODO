@@ -1,8 +1,6 @@
 FRONTEND
 ========
 
-* LDAP authentication
-
 * moar reports
 * (jeneric) device module tab
 
@@ -12,13 +10,13 @@ DAEMON
 BACKEND
 =======
 
-* PING from workers
+* PING from workers?
 
 CORE
 ====
 
-* VRF support
-* import legacy config file
+* VRF support (multi-tenancy?)
+* import legacy config file?
 
 DOCS
 ====
