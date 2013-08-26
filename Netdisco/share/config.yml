@@ -58,17 +58,28 @@ web_plugins_extra: []
 # mibdirs defaults to contents of mibhome
 community: ['public']
 community_rw: ['private']
+bulkwalk_off: false
+bulkwalk_no: []
+bulkwalk_repeaters: 20
+nonincreasing: false
 snmpver: 2
 snmptimeout: 1000000
 snmpretries: 2
 discover_no: []
 discover_only: []
 discover_no_type: []
+discover_min_age: 0
+macsuck_no: []
+macksuck_only: []
 macsuck_all_vlans: false
 macsuck_no_unnamed: false
-macsuck_bleed: false
 macsuck_no_vlan: []
 macsuck_no_devicevlan: []
+macsuck_bleed: false
+macsuck_min_age: 0
+arpnip_no: []
+arpnip_only: []
+arpnip_min_age: 0
 store_wireless_clients: true
 store_modules: true
 ignore_interfaces:
