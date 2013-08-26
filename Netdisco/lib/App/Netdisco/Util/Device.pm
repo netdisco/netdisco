@@ -110,7 +110,7 @@ sub is_discoverable {
   if ($device->since_last_discover
       and $device->since_last_discover < $discover_since) {
 
-      return _bail_msg("is_discoverable: last discovered less than discover_min_age");
+      return _bail_msg("is_discoverable: last discover less than discover_min_age");
   }
 
   return 1;
@@ -152,6 +152,14 @@ sub is_arpnipable {
       return 0 if not $okay;
   }
 
+  my $arpnip_since = setting('arpnip_min_age') || 0;
+
+  if ($device->since_last_arpnip
+      and $device->since_last_arpnip < $arpnip_since) {
+
+      return _bail_msg("is_arpnipable: last arpnip less than arpnip_min_age");
+  }
+
   return 1;
 }
 
@@ -189,6 +197,14 @@ sub is_macsuckable {
           ++$okay if $ip->contains($addr);
       }
       return 0 if not $okay;
+  }
+
+  my $macsuck_since = setting('macsuck_min_age') || 0;
+
+  if ($device->since_last_macsuck
+      and $device->since_last_macsuck < $macsuck_since) {
+
+      return _bail_msg("is_macsuckable: last macsuck less than macsuck_min_age");
   }
 
   return 1;

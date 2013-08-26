@@ -336,6 +336,20 @@ Set to true will let nodes accumulate on uplink ports without topology
 information. This is a debug option to help you figure out your topology and
 generally should not be set.
 
+=head3 C<macsuck_min_age>
+
+Value: Number. Default: 0.
+
+Sets the minimum amount of time in seconds which must elapse between any two
+macsuck jobs for a device.
+
+=head3 C<arpnip_min_age>
+
+Value: Number. Default: 0.
+
+Sets the minimum amount of time in seconds which must elapse between any two
+arpnip jobs for a device.
+
 =head3 C<store_wireless_clients>
 
 Value: Boolean. Default: C<true>.
@@ -569,10 +583,6 @@ These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 
 =item *
 
-C<arpnip_min_age>
-
-=item *
-
 C<arpnip_no>
 
 =item *
@@ -610,10 +620,6 @@ C<expire_nodes_archive>
 =item *
 
 C<get_community>
-
-=item *
-
-C<macsuck_min_age>
 
 =item *
 
