@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Check device is in storage before comparing last_* times with *_min_age
+  * Handle UTF-8 data in device module hw_ver, sw_ver, fw_ver, model
 
 2.014000 - 2013-08-26
 
