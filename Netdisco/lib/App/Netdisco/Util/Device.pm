@@ -149,6 +149,9 @@ sub is_discoverable {
   return _bail_msg("is_discoverable: device failed to match discover_only")
     if check_no($device, 'discover_only');
 
+  # cannot check last_discover for as yet undiscovered devices :-)
+  return 1 if not $device->in_storage;
+
   if ($device->since_last_discover and setting('discover_min_age')
       and $device->since_last_discover < setting('discover_min_age')) {
 
@@ -180,6 +183,9 @@ sub is_arpnipable {
   return _bail_msg("is_arpnipable: device failed to match arpnip_only")
     if check_no($device, 'arpnip_only');
 
+  return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
+    if not $device->in_storage;
+
   if ($device->since_last_arpnip and setting('arpnip_min_age')
       and $device->since_last_arpnip < setting('arpnip_min_age')) {
 
@@ -210,6 +216,9 @@ sub is_macsuckable {
 
   return _bail_msg("is_macsuckable: device failed to match macsuck_only")
     if check_no($device, 'macsuck_only');
+
+  return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")
+    if not $device->in_storage;
 
   if ($device->since_last_macsuck and setting('macsuck_min_age')
       and $device->since_last_macsuck < setting('macsuck_min_age')) {

@@ -1,3 +1,9 @@
+2.014001 - 2013-08-27
+
+  [BUG FIXES]
+
+  * Check device is in storage before comparing last_* times with *_min_age
+
 2.014000 - 2013-08-26
 
   [NEW FEATURES]
