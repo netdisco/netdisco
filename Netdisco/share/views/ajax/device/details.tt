@@ -104,6 +104,27 @@
         <button class="btn btn-info btn-small nd_adminbutton" name="arpnip" type="submit">Arpnip</button>
         <input type="hidden" data-form="macsuck" value="[% d.ip %]" name="device" type="text"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="macsuck" type="submit">Macsuck</button>
+
+        <input type="hidden" data-form="delete" value="[% d.ip %]" name="device" type="text"/>
+        <button class="btn btn-danger btn-small pull-right"
+          data-toggle="modal" data-target="#deleteConfirm" type="button">Delete</button>
+
+        <div id="deleteConfirm" class="modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="deleteConfirmLabel">Confirm Delete</h3>
+          </div>
+          <div class="modal-body">
+            <p>Deleting device &quot;[% d.dns || d.ip | html_entity %]&quot; is not reversible
+            and will also remove all associated Nodes from the database.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">No!</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Really Delete</button>
+          </div>
+        </div>
       </td>
     </tr>
     [% END %]

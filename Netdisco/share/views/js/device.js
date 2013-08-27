@@ -86,6 +86,8 @@
         }
     });
 
+    $('#deleteConfirm').modal();
+
     // activity for admin tasks in device details
     $('#details_pane').on('click', '.nd_adminbutton', function(event) {
       // stop form from submitting normally
