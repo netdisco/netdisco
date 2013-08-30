@@ -80,6 +80,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   min-width: 0px;
 }
 
+/* for when hidden modals interfere with mouse actions on higher elements */
+.nd_deep-horizon {
+  z-index: -1000;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
 

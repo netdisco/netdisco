@@ -113,4 +113,13 @@
         }
       });
     });
+
+    // bootstrap modal mucks about with mouse actions on higher elements
+    // so need to bury and raise it when needed
+    $('#ports_pane').on('show', '.nd_modal', function () {
+      $(this).toggleClass('nd_deep-horizon');
+    });
+    $('#ports_pane').on('hidden', '.nd_modal', function () {
+      $(this).toggleClass('nd_deep-horizon');
+    });
   });

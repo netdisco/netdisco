@@ -1,6 +1,18 @@
+// to tell whether bootstrap's modal had Submit button pressed :(
+var nd_save_ok = false;
+
 // user clicked or asked for port changes to be submitted via ajax
 function port_control (e) {
-  var td = $(e).closest('td');
+  var td = $(e).closest('td'),
+      logmessage = $('#nd_portlog_log').val();
+  $('#nd_portlog_log').val('');
+
+  if (nd_save_ok == false) {
+    td.find('.nd_editable-cell-content').text(td.data('default'));
+    td.blur();
+    return;
+  }
+  nd_save_ok = false;
 
   $.ajax({
     type: 'POST'
@@ -11,6 +23,7 @@ function port_control (e) {
       ,field:  td.data('field')
       ,action: td.data('action')
       ,value:  td.text().trim()
+      ,log:    logmessage,
     }
     ,success: function() {
       toastr.info('Submitted change request');
@@ -44,8 +57,8 @@ function port_control (e) {
     }
     ,error: function() {
       toastr.error('Failed to submit change request');
-      document.execCommand('undo');
-      $(e).blur();
+      td.find('.nd_editable-cell-content').text(td.data('default'));
+      td.blur();
     }
   });
 }
@@ -95,34 +108,49 @@ $(document).ready(function() {
       $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
   });
 
-  // activity for port up/down control
-  $('#ports_pane').on('click', '.icon-hand-up', function() {
-    port_control(this); // save
-  });
-  $('#ports_pane').on('click', '.icon-hand-down', function() {
-    port_control(this); // save
+  // to tell whether bootstrap's modal had Submit button pressed :(
+  $('#ports_pane').on('click', '#nd_portlog_submit', function() {
+    nd_save_ok = true;
   });
 
-  // activity for power enable/disable control
-  $('#ports_pane').on('click', '.nd_power-icon', function() {
-    port_control(this); // save
+  // activity for port up/down control, power enable/disable control
+  $('#ports_pane').on('click', '.icon-hand-up,.icon-hand-down,.nd_power-icon', function() {
+    var clicked = this; // create a closure
+    $('#nd_portlog').one('hidden', function() {
+      port_control(clicked); // save
+    });
+    $('#nd_portlog').modal('show');
   });
 
+  // has cell content changed?
   var dirty = false;
 
   // activity for contenteditable control
   $('.tab-content').on('keydown', '[contenteditable=true]', function(event) {
-    var esc = event.which == 27,
+    var cell = this,
+        td = $(cell).closest('td'),
+        esc = event.which == 27,
         nl  = event.which == 13;
 
     if (esc) {
-      $(this).blur();
+      $(cell).blur();
     }
     else if (nl) {
       event.preventDefault();
-      port_control(this); // save
+
+      if (td.data('field') == 'c_vlan') {
+        $('#nd_portlog').one('hidden', function() {
+          port_control(cell); // save
+        });
+        $('#nd_portlog').modal('show');
+      }
+      else {
+        // no confirm for port descr change
+        port_control(cell); // save
+      }
+
       dirty = false;
-      $(this).blur();
+      $(cell).blur();
     }
     else {
       dirty = true;

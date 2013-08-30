@@ -125,7 +125,7 @@
 
       [% IF params.c_vlan %]
       [% IF user_can_port_control AND params.c_admin %]
-      <td class="nd_editable-cell" contenteditable="true"
+      <td class="nd_editable-cell" contenteditable="true" data-default="[% row.vlan | html_entity %]"
         data-field="c_vlan" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       <div class="nd_editable-cell-content">
@@ -273,3 +273,20 @@
     [% END %]
   </tbody>
 </table>
+
+[% IF user_can_port_control %]
+<div id="nd_portlog" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+  role="dialog" aria-labelledby="nd_portlog_label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+    <h3 id="nd_portlog_label">Log Message</h3>
+  </div>
+  <div class="modal-body">
+    <p>Log message:</p>
+    <textarea id="nd_portlog_log" class="input-block-level" rows="2" data-form="delete" name="log"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button id="nd_portlog_submit" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Submit</button>
+  </div>
+</div>
+[% END %]
