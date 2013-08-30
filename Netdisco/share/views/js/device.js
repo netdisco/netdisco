@@ -104,12 +104,12 @@
         ,url: uri_base + '/ajax/control/admin/' + mode
         ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
         ,success: function() {
-          toastr.info('Queued '+ mode +' for device '+ tr.attr('data-for-device'));
+          toastr.info('Queued '+ mode +' for device '+ tr.data('for-device'));
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          toastr.error('Failed to queue '+ mode +' for device '+ tr.attr('data-for-device'));
+          toastr.error('Failed to queue '+ mode +' for device '+ tr.data('for-device'));
         }
       });
     });
