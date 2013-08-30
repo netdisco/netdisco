@@ -6,40 +6,40 @@ function port_control (e) {
     type: 'POST'
     ,url: uri_base + '/ajax/portcontrol'
     ,data: {
-      device:  td.attr('data-for-device')
-      ,port:   td.attr('data-for-port')
-      ,field:  td.attr('data-field')
-      ,action: td.attr('data-action')
+      device:  td.data('for-device')
+      ,port:   td.data('for-port')
+      ,field:  td.data('field')
+      ,action: td.data('action')
       ,value:  td.text().trim()
     }
     ,success: function() {
       toastr.info('Submitted change request');
 
       // update all the screen furniture for port up/down control
-      if ($.trim(td.attr('data-action')) == 'down') {
+      if ($.trim(td.data('action')) == 'down') {
         td.prev('td').html('<span class="label">S</span>');
         $(e).toggleClass('icon-hand-down');
         $(e).toggleClass('icon-hand-up');
         $(e).data('tooltip').options.title = 'Click to Enable';
-        td.attr('data-action', 'up');
+        td.data('action', 'up');
       }
-      else if ($.trim(td.attr('data-action')) == 'up') {
+      else if ($.trim(td.data('action')) == 'up') {
         td.prev('td').html('<span class="label"><i class="icon-refresh"></i></span>');
         $(e).toggleClass('icon-hand-up');
         $(e).toggleClass('icon-hand-down');
         $(e).data('tooltip').options.title = 'Click to Disable';
-        td.attr('data-action', 'down');
+        td.data('action', 'down');
       }
-      else if ($.trim(td.attr('data-action')) == 'false') {
+      else if ($.trim(td.data('action')) == 'false') {
         $(e).next('span').text('');
         $(e).toggleClass('nd_power-on');
         $(e).data('tooltip').options.title = 'Click to Enable';
-        td.attr('data-action', 'true');
+        td.data('action', 'true');
       }
-      else if ($.trim(td.attr('data-action')) == 'true') {
+      else if ($.trim(td.data('action')) == 'true') {
         $(e).toggleClass('nd_power-on');
         $(e).data('tooltip').options.title = 'Click to Disable';
-        td.attr('data-action', 'false');
+        td.data('action', 'false');
       }
     }
     ,error: function() {
