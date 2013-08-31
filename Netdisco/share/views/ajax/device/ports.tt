@@ -276,17 +276,14 @@
 
 [% IF user_can_port_control %]
 <div id="nd_portlog" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-  role="dialog" aria-labelledby="nd_portlog_label" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h3 id="nd_portlog_label">Log Message</h3>
-  </div>
+    role="dialog" aria-hidden="true">
   <div class="modal-body">
-    <p>Log message:</p>
-    <textarea id="nd_portlog_log" class="input-block-level" rows="2" data-form="delete" name="log"></textarea>
+    <textarea id="nd_portlog_log" class="input-block-level" rows="2" name="log"
+      placeholder="Enter a log message"></textarea>
   </div>
   <div class="modal-footer">
-    <button id="nd_portlog_submit" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Submit</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="nd_portlog_submit" class="btn btn-info" data-dismiss="modal">Continue</button>
   </div>
 </div>
 [% END %]

@@ -108,15 +108,15 @@
         <button class="btn btn-danger btn-small pull-right"
           data-toggle="modal" data-target="#deleteConfirm" type="button">Delete</button>
 
-        <div id="deleteConfirm" class="nd_modal modal hide fade" tabindex="-1"
-          role="dialog" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+        <div id="nd_devdel" class="nd_modal modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel_label" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="deleteConfirmLabel">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
+            <h3 id="nd_devdel_label">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
             <ul>
-              <li>This action is not reversible</li>
+              <li>This action is immediate and not reversible</li>
               <li>All associated Nodes will be removed from the database</li>
             </ul>
             <p>Log message:</p>
