@@ -27,7 +27,8 @@
       $('#nd_netmap-help').hide();
     }
 
-    // activate tooltips and popovers
+    // activate modals, tooltips and popovers
+    $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});
     $("[rel=popover]").popover({live: true});
   }
@@ -37,7 +38,7 @@
     var tab = '[% tab.tag %]'
     var target = '#' + tab + '_pane';
 
-    // sidebar form fields should change colour and have bin/copy icon
+    // sidebar form fields should change colour and have trash/copy icon
     form_inputs.each(function() {device_form_state($(this))});
     form_inputs.change(function() {device_form_state($(this))});
 
@@ -52,7 +53,7 @@
         .toggleClass('icon-chevron-up icon-chevron-down');
     });
 
-    // handler for bin icon in port filter box
+    // handler for trashcan icon in port filter box
     var portfilter = $('#ports_form').find("input[name=f]");
     $('.nd_field-clear-icon').click(function() {
       portfilter.val('');
@@ -101,15 +102,24 @@
         ,async: true
         ,dataType: 'html'
         ,url: uri_base + '/ajax/control/admin/' + mode
-        ,data: tr.find('input[data-form="' + mode + '"]').serializeArray()
+        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
         ,success: function() {
-          toastr.info('Queued '+ mode +' for device '+ tr.attr('data-for-device'));
+          toastr.info('Queued '+ mode +' for device '+ tr.data('for-device'));
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          toastr.error('Failed to queue '+ mode +' for device '+ tr.attr('data-for-device'));
+          toastr.error('Failed to queue '+ mode +' for device '+ tr.data('for-device'));
         }
       });
+    });
+
+    // bootstrap modal mucks about with mouse actions on higher elements
+    // so need to bury and raise it when needed
+    $('#ports_pane').on('show', '.nd_modal', function () {
+      $(this).toggleClass('nd_deep-horizon');
+    });
+    $('#ports_pane').on('hidden', '.nd_modal', function () {
+      $(this).toggleClass('nd_deep-horizon');
     });
   });

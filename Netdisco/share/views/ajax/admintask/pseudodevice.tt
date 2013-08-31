@@ -16,7 +16,9 @@
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
+    [% SET count = 0 %]
     [% WHILE (row = results.next) %]
+    [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell"><a class="nd_linkcell"
         href="[% uri_for('/device') %]?q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
@@ -28,10 +30,30 @@
         <input data-form="update" name="dns" type="hidden" value="[% row.dns | html_entity %]">
         <input data-form="update" name="ip" type="hidden" value="[% row.ip | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
-        <input data-form="del" name="dns" type="hidden" value="[% row.dns | html_entity %]">
-        <input data-form="del" name="ip" type="hidden" value="[% row.ip | html_entity %]">
-        <input data-form="del" name="ports" type="hidden" value="[% row.port_count | html_entity %]">
-        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+
+        <button class="btn" data-toggle="modal"
+          data-target="#nd_devdel-[% count %]" type="button"><i class="icon-trash text-error"></i></button>
+
+        <div id="nd_devdel-[% count %]" class="nd_modal modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel_label-[% count %]" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="nd_devdel_label-[% count %]">Are you sure?</h3>
+          </div>
+          <div class="modal-body">
+            <blockquote>
+              <p class="text-info">
+                Pseudo-device &quot;[% row.dns | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
+            </blockquote>
+            <input data-form="del" name="dns" type="hidden" value="[% row.dns | html_entity %]">
+            <input data-form="del" name="ip" type="hidden" value="[% row.ip | html_entity %]">
+            <input data-form="del" name="ports" type="hidden" value="[% row.port_count | html_entity %]">
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
       </td>
     </tr>
     [% END %]

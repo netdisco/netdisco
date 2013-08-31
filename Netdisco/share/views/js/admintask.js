@@ -59,6 +59,9 @@
       ,delay: 150
       ,minLength: 0
     });
+
+    // activate modals
+    $('.nd_modal').modal({show: false});
   }
 
   // on load, establish global delegations for now and future

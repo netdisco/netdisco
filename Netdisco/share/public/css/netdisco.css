@@ -80,6 +80,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   min-width: 0px;
 }
 
+/* for when hidden modals interfere with mouse actions on higher elements */
+.nd_deep-horizon {
+  z-index: -1000;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
 
@@ -145,6 +150,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 .table .nd_center-cell {
   text-align: center;
+}
+
+/* undo nd_center-cell when in a modial dialog (which lives in table cell) */
+.table .nd_center-cell .modal-body {
+  text-align: left;
 }
 
 /* fix layout of form fields inside the (topology) table */
