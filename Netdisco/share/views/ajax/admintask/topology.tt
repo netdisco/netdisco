@@ -60,11 +60,16 @@
             <h3 id="nd_devdel_label-[% count %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
-            <p>The link between these two ports will be removed:</p>
+            <blockquote>
+              <p class="text-info">The link between these two ports will be removed:</p>
+              <p>&nbsp;</p>
             <ul>
-              <li>[% (row.device1.dns || row.device1.name || row.device1.ip) | html_entity %], [% row.port1 | html_entity %]</li>
-              <li>[% (row.device2.dns || row.device2.name || row.device2.ip) | html_entity %], [% row.port2 | html_entity %]</li>
+              <li><p class="text-info">[% (row.device1.dns || row.device1.name || row.device1.ip) | html_entity %],&nbsp;
+                [% row.port1 | html_entity %]</p></li>
+              <li><p class="text-info">[% (row.device2.dns || row.device2.name || row.device2.ip) | html_entity %],&nbsp;
+                [% row.port2 | html_entity %]</p></li>
             </ul>
+            </blockquote>
             <input data-form="del" name="dev1" type="hidden" value="[% row.dev1 | html_entity %]">
             <input data-form="del" name="port1" type="hidden" value="[% row.port1 | html_entity %]">
             <input data-form="del" name="dev2" type="hidden" value="[% row.dev2 | html_entity %]">

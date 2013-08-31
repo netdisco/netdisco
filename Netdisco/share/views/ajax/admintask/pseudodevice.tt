@@ -41,10 +41,10 @@
             <h3 id="nd_devdel_label-[% count %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
-            <p>The following pseudo-device will be deleted:</p>
-            <ul>
-              <li>[% row.dns | html_entity %] / [% row.ip | html_entity %]</li>
-            </ul>
+            <blockquote>
+              <p class="text-info">
+                Pseudo-device &quot;[% row.dns | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
+            </blockquote>
             <input data-form="del" name="dns" type="hidden" value="[% row.dns | html_entity %]">
             <input data-form="del" name="ip" type="hidden" value="[% row.ip | html_entity %]">
             <input data-form="del" name="ports" type="hidden" value="[% row.port_count | html_entity %]">

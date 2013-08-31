@@ -115,12 +115,14 @@
             <h3 id="nd_devdel_label">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
-            <ul>
-              <li>This action is immediate and not reversible</li>
-              <li>All associated Nodes will be removed from the database</li>
-            </ul>
-            <p>Log message:</p>
-            <textarea class="input-block-level" rows="2" data-form="delete" name="log"></textarea>
+            <blockquote>
+              <ul>
+                <li><p>This action is immediate and not reversible</p></li>
+                <li><p>All associated Nodes will be removed from the database</p></li>
+              </ul>
+            </blockquote>
+            <textarea class="input-block-level" rows="2" data-form="delete"
+              placeholder="Enter a log message" name="log"></textarea>
             <input type="hidden" data-form="delete" value="[% d.ip %]" name="device"/>
           </div>
           <div class="modal-footer">
