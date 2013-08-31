@@ -106,7 +106,7 @@
         <button class="btn btn-info btn-small nd_adminbutton" name="macsuck">Macsuck</button>
 
         <button class="btn btn-danger btn-small pull-right"
-          data-toggle="modal" data-target="#deleteConfirm" type="button">Delete</button>
+          data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
 
         <div id="nd_devdel" class="nd_modal modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel_label" aria-hidden="true">

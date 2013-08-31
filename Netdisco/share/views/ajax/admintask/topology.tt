@@ -38,7 +38,9 @@
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
+    [% SET count = 0 %]
     [% WHILE (row = results.next) %]
+    [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.dev1 | uri %]">
         [% (row.device1.dns || row.device1.name || row.device1.ip) | html_entity %]</a>
@@ -48,11 +50,31 @@
         [% (row.device2.dns || row.device2.name || row.device2.ip) | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port2 | html_entity %]</td>
       <td class="nd_center-cell">
-        <input data-form="del" name="dev1" type="hidden" value="[% row.dev1 | html_entity %]">
-        <input data-form="del" name="port1" type="hidden" value="[% row.port1 | html_entity %]">
-        <input data-form="del" name="dev2" type="hidden" value="[% row.dev2 | html_entity %]">
-        <input data-form="del" name="port2" type="hidden" value="[% row.port2 | html_entity %]">
-        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+        <button class="btn" data-toggle="modal"
+          data-target="#nd_devdel-[% count %]" type="button"><i class="icon-trash text-error"></i></button>
+
+        <div id="nd_devdel-[% count %]" class="nd_modal modal hide fade" tabindex="-1"
+          role="dialog"aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3>Are you sure?</h3>
+          </div>
+          <div class="modal-body">
+            <p>The link between these two ports will be removed:</p>
+            <ul>
+              <li>[% (row.device1.dns || row.device1.name || row.device1.ip) | html_entity %], [% row.port1 | html_entity %]</li>
+              <li>[% (row.device2.dns || row.device2.name || row.device2.ip) | html_entity %], [% row.port2 | html_entity %]</li>
+            </ul>
+            <input data-form="del" name="dev1" type="hidden" value="[% row.dev1 | html_entity %]">
+            <input data-form="del" name="port1" type="hidden" value="[% row.port1 | html_entity %]">
+            <input data-form="del" name="dev2" type="hidden" value="[% row.dev2 | html_entity %]">
+            <input data-form="del" name="port2" type="hidden" value="[% row.port2 | html_entity %]">
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
       </td>
     </tr>
     [% END %]
