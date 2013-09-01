@@ -45,7 +45,7 @@ web_plugins:
   - Search::Port
   - Device::Details
   - Device::Ports
-  # - Device::Modules
+  - Device::Modules
   - Device::Neighbors
   - Device::Addresses
 web_plugins_extra: []

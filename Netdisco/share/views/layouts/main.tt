@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap-tree.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
 
   [% FOREACH add_css IN settings._additional_css %]

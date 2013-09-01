@@ -1,0 +1,60 @@
+[% BLOCK recurse -%]
+[% INCLUDE print_line item=item %]
+  [% IF nodes.$item.children.defined -%]
+  <ul>
+  [% FOREACH kidtype IN nodes.$item.children.keys -%]
+    [%- FOREACH kid IN nodes.$item.children.$kidtype -%]
+      [%- IF kid -%]
+        [% INCLUDE recurse item=kid %]
+      [%- END -%]
+    [%- END -%]
+  [%- END -%]
+  </ul>
+  [% END -%]
+  </li>
+[%- END -%]
+[% BLOCK print_line -%]
+<li>
+[% IF nodes.$item.children.defined -%]
+<span><i class="icon-minus-sign text-info"></i>&nbsp;
+[%- ELSE -%]
+<span><i class="icon-leaf"></i>&nbsp;
+[%- END -%]
+ [% nodes.$item.module.description -%]
+[%- IF nodes.$item.module.name -%]
+ ([% nodes.$item.module.name %])
+[%- END -%]
+[%- IF nodes.$item.module.fw_ver -%]
+ fw: [% nodes.$item.module.fw_ver %]
+[%- END -%]
+[%- IF nodes.$item.module.hw_ver -%]
+ hw: [% nodes.$item.module.fw_ver %]
+[%- END -%]
+[%- IF nodes.$item.module.sw_ver -%]
+ sw: [% nodes.$item.module.sw_ver %]
+[%- END -%]
+[%- IF nodes.$item.module.serial -%]
+ [serial: [% nodes.$item.module.serial %]]
+[%- END -%]
+[%- IF nodes.$item.module.type -%]
+ / [% nodes.$item.module.type %]
+[%- END -%]
+[%- IF nodes.$item.module.model -%]
+ / [% nodes.$item.module.model %]
+[%- END -%]
+[%- IF nodes.$item.module.fru -%]
+ <b>[FRU]</b>
+[%- END -%]
+</span>
+[%- END -%]
+<div class="tree">
+<ul>
+[% FOREACH module IN nodes.root %]
+  [% INCLUDE recurse item=module %]
+[%- END -%]
+</ul>
+</div>
+
+<script type="text/javascript">
+[%+ INCLUDE 'js/bootstrap-tree.js' -%]
+</script>

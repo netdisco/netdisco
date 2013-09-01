@@ -116,4 +116,43 @@ sub sort_port {
     return $val;
 }
 
+=head2 sort_modules( $modules )
+
+Sort devices modules into tree hierarchy based upon position and parent -
+input arg is module list.
+
+=cut
+
+sub sort_modules {
+    my $input = shift;
+
+    my %modules;
+
+    foreach my $module (@$input) {
+        $modules{$module->index}{module} = $module;
+        if ($module->parent) {
+            # Next wrong: some things have weird pos'
+            # index |              description               |        type         | parent |  class  | pos 
+            #-------+----------------------------------------+---------------------+--------+---------+-----
+            #     1 | Cisco Aironet 1200 Series Access Point | cevChassisAIRAP1210 |      0 | chassis |  -1
+            #     3 | PowerPC405GP Ethernet                  | cevPortFEIP         |      1 | port    |  -1
+            #     2 | 802.11G Radio                          | cevPortUnknown      |      1 | port    |   0
+            $module->pos = 0 if ($module->pos < 0);
+
+            # this is wrong.  a given parent can
+            # have multiple items at a single pos value.
+            # (HP may have gotten this wrong, but that's
+            # reality...)
+            if ($module->pos) {
+                ${$modules{$module->parent}{children}{$module->class}}[$module->pos] = $module->index;
+            } else {
+                push(@{$modules{$module->parent}{children}{$module->class}}, $module->index);
+            }
+        } else {
+            push(@{$modules{root}}, $module->index);
+        }
+    }
+    return \%modules;
+}
+
 1;
