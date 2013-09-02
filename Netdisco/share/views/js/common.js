@@ -57,6 +57,15 @@
       var pgtitle = update_page_title('[% tab.tag %]');
       update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
+      [% IF tab.tag == 'ports' %]
+      $.cookie(
+        'nd_ports-form'
+        ,$('#ports_form').find("input")
+                         .not('#nd_port-query,input[name="q"],input[name="tab"]')
+                         .serialize()
+        ,{ expires: 365 }
+      );
+      [% END %]
       do_search(event, '[% tab.tag %]');
     });
     [% END %]
