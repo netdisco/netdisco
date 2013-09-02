@@ -38,6 +38,7 @@
   }
 
   $(document).ready(function() {
+    [% IF search %]
     // search tabs
     [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
@@ -47,7 +48,9 @@
       do_search(event, '[% tab.tag %]');
     });
     [% END %]
+    [% END %]
 
+    [% IF device %]
     // device tabs
     [% FOREACH tab IN settings._device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
@@ -56,6 +59,7 @@
       copy_navbar_to_sidebar('[% tab.tag %]');
       do_search(event, '[% tab.tag %]');
     });
+    [% END %]
     [% END %]
 
     [% IF report %]

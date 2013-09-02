@@ -121,7 +121,10 @@ get '/device' => require_login sub {
     }
 
     params->{'tab'} ||= 'details';
-    template 'device', { d => $dev };
+    template 'device', {
+      d => $dev,
+      device => params->{'tab'},
+    };
 };
 
 true;
