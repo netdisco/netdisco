@@ -4,8 +4,8 @@ var nd_save_ok = false;
 // user clicked or asked for port changes to be submitted via ajax
 function port_control (e) {
   var td = $(e).closest('td'),
-      logmessage = $('#nd_portlog_log').val();
-  $('#nd_portlog_log').val('');
+      logmessage = $('#nd_portlog-log').val();
+  $('#nd_portlog-log').val('');
 
   if (nd_save_ok == false) {
     td.find('.nd_editable-cell-content').text(td.data('default'));
@@ -109,7 +109,7 @@ $(document).ready(function() {
   });
 
   // to tell whether bootstrap's modal had Submit button pressed :(
-  $('#ports_pane').on('click', '#nd_portlog_submit', function() {
+  $('#ports_pane').on('click', '#nd_portlog-submit', function() {
     nd_save_ok = true;
   });
 

@@ -528,4 +528,44 @@ sub with_port_count {
       });
 }
 
+=head1 SPECIAL METHODS
+
+=head2 delete( \%options? )
+
+Overrides the built-in L<DBIx::Class> delete method to more efficiently
+handle the removal or archiving of nodes.
+
+=cut
+
+sub delete {
+  my $self = shift;
+
+  my $schema = $self->result_source->schema;
+  my $devices = $self->search(undef, { columns => 'ip' });
+
+  foreach my $set (qw/
+    Community
+    DeviceIp
+    DeviceVlan
+    DevicePower
+    DeviceModule
+  /) {
+      $schema->resultset($set)->search(
+        { ip => { '-in' => $devices->as_query }},
+      )->delete;
+  }
+
+  $schema->resultset('Admin')->search({
+    device => { '-in' => $devices->as_query },
+    action => { '-like' => 'queued%' },
+  })->delete;
+
+  $schema->resultset('DevicePort')->search(
+    { ip => { '-in' => $devices->as_query }},
+  )->delete(@_);
+
+  # now let DBIC do its thing
+  return $self->next::method();
+}
+
 1;

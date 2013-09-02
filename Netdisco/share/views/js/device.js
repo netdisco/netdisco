@@ -104,12 +104,12 @@
         ,url: uri_base + '/ajax/control/admin/' + mode
         ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
         ,success: function() {
-          toastr.info('Queued '+ mode +' for device '+ tr.data('for-device'));
+          toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          toastr.error('Failed to queue '+ mode +' for device '+ tr.data('for-device'));
+          toastr.error('Failed to '+ mode +' for device '+ tr.data('for-device'));
         }
       });
     });
@@ -121,5 +121,11 @@
     });
     $('#ports_pane').on('hidden', '.nd_modal', function () {
       $(this).toggleClass('nd_deep-horizon');
+    });
+
+    // clear any values in the delete confirm dialog
+    $('#details_pane').on('hidden', '.nd_modal', function () {
+      $('#nd_devdel-log').val('');
+      $('#nd_devdel-archive').attr('checked', false);
     });
   });

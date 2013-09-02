@@ -133,4 +133,39 @@ sub with_vlan_count {
       });
 }
 
+=head1 SPECIAL METHODS
+
+=head2 delete( \%options? )
+
+Overrides the built-in L<DBIx::Class> delete method to more efficiently
+handle the removal or archiving of nodes.
+
+=cut
+
+sub delete {
+  my $self = shift;
+
+  my $schema = $self->result_source->schema;
+  my $ports = $self->search(undef, { columns => 'ip' });
+
+  foreach my $set (qw/
+    DevicePortPower
+    DevicePortVlan
+    DevicePortWireless
+    DevicePortSsid
+    DevicePortLog
+  /) {
+      $schema->resultset($set)->search(
+        { ip => { '-in' => $ports->as_query }},
+      )->delete;
+  }
+
+  $schema->resultset('Node')->search(
+    { switch => { '-in' => $ports->as_query }},
+  )->delete(@_);
+
+  # now let DBIC do its thing
+  return $self->next::method();
+}
+
 1;

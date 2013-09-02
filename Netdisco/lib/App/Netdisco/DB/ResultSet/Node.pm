@@ -8,7 +8,9 @@ __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::ExplicitLocking
 /);
 
-=head1 search_by_mac( \%cond, \%attrs? )
+=head1 ADDITIONAL METHODS
+
+=head2 search_by_mac( \%cond, \%attrs? )
 
  my $set = $rs->search_by_mac({mac => '00:11:22:33:44:55', active => 1});
 
@@ -61,6 +63,59 @@ sub search_by_mac {
         join => 'device',
       })
       ->search($cond, $attrs);
+}
+
+=head1 SPECIAL METHODS
+
+=head2 delete( \%options? )
+
+Overrides the built-in L<DBIx::Class> delete method to more efficiently
+handle the removal or archiving of nodes.
+
+=cut
+
+sub delete {
+  my $self = shift;
+  my ($opts) = @_;
+
+  my $schema = $self->result_source->schema;
+  my $nodes = $self->search(undef, { columns => 'mac' });
+
+  if (ref {} eq ref $opts
+      and exists $opts->{archive} and $opts->{archive}) {
+
+      foreach my $set (qw/
+        NodeIp
+        NodeNbt
+        NodeMonitor
+        Node
+      /) {
+          $schema->resultset($set)->search(
+            { mac => { '-in' => $nodes->as_query }},
+          )->update({ active => \'false' });
+      }
+
+      $schema->resultset('NodeWireless')
+        ->search({ mac => { '-in' => $nodes->as_query }})->delete;
+
+      # avoid letting DBIC delete nodes
+      return 0E0;
+  }
+  else {
+      foreach my $set (qw/
+        NodeIp
+        NodeNbt
+        NodeMonitor
+        NodeWireless
+      /) {
+          $schema->resultset($set)->search(
+            { mac => { '-in' => $nodes->as_query }},
+          )->delete;
+      }
+
+      # now let DBIC do its thing
+      return $self->next::method();
+  }
 }
 
 1;

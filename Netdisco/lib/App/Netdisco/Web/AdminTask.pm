@@ -59,6 +59,22 @@ foreach my $jobtype (keys %jobs_all, keys %jobs) {
     };
 }
 
+ajax '/ajax/control/admin/delete' => require_role admin => sub {
+    send_error('Missing device', 400) unless param('device');
+
+    my $device = NetAddr::IP::Lite->new(param('device'));
+    send_error('Bad device', 400)
+      if ! $device or $device->addr eq '0.0.0.0';
+
+    schema('netdisco')->txn_do(sub {
+      my $device = schema('netdisco')->resultset('Device')
+        ->search({ip => param('device')});
+
+      # will delete everything related too...
+      $device->delete;
+    });
+};
+
 get '/admin/*' => require_role admin => sub {
     my ($tag) = splat;
 

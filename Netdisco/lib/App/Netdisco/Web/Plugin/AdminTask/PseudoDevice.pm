@@ -56,15 +56,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
 
 ajax '/ajax/control/admin/pseudodevice/del' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
-
-    schema('netdisco')->txn_do(sub {
-      my $device = schema('netdisco')->resultset('Device')
-        ->find({ip => param('ip')});
-
-      $device->ports->delete;
-      $device->device_ips->delete;
-      $device->delete;
-    });
+    forward '/ajax/control/admin/delete', { device => param('ip') };
 };
 
 ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {

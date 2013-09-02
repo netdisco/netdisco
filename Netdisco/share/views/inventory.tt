@@ -59,6 +59,7 @@
     </div>
   </div>
   [% ELSE %]
-  <div class="span4 alert alert-info">No devices found. Do you need to run a Discover?</div>
+  <div class="span4 alert alert-info">No devices found. Do you need to run a
+    <a href="[% uri_for('/') %]">Discover?</a></div>
   [% END %]
 </div>

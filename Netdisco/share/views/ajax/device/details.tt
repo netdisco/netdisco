@@ -109,25 +109,29 @@
           data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
 
         <div id="nd_devdel" class="nd_modal modal hide fade" tabindex="-1"
-          role="dialog" aria-labelledby="nd_devdel_label" aria-hidden="true">
+          role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel_label">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
+            <h3 id="nd_devdel-label">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
             <blockquote>
               <ul>
                 <li><p>This action is immediate and not reversible</p></li>
-                <li><p>All associated Nodes will be removed from the database</p></li>
+                <li><p>All associated Nodes may be removed from the database</p></li>
               </ul>
             </blockquote>
-            <textarea class="input-block-level" rows="2" data-form="delete"
+            <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
               placeholder="Enter a log message" name="log"></textarea>
+            <label class="checkbox">
+              <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="archive">
+              <h4 class="nd_unbolden">Archive Nodes</h4>
+            </label>
             <input type="hidden" data-form="delete" value="[% d.ip %]" name="device"/>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">No !</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Really Delete</button>
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

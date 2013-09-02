@@ -85,6 +85,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   z-index: -1000;
 }
 
+/* for when we pinch h4 styling but don't want bold */
+.nd_unbolden {
+  font-weight: normal;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
 

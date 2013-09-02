@@ -130,7 +130,15 @@ sub _set_canonical_ip {
             my $gone = $device->device_ips->delete;
             debug sprintf ' [%s] device - removed %s aliases',
               $oldip, $gone;
-            $device->delete;
+
+            # our special delete which is more efficient
+            schema('netdisco')->resultset('Device')
+              ->search({ ip => $device->ip })->delete;
+
+            # a new row object from the old one
+            $device = schema('netdisco')->resultset('Device')
+              ->new({ $device->get_columns });
+
             debug sprintf ' [%s] device - deleted self', $oldip;
           });
 
