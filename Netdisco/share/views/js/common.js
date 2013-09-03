@@ -58,13 +58,13 @@
       update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
       [% IF tab.tag == 'ports' %]
-      $.cookie(
-        'nd_ports-form'
-        ,$('#ports_form').find("input")
-                         .not('#nd_port-query,input[name="q"],input[name="tab"]')
-                         .serialize()
-        ,{ expires: 365 }
-      );
+      var cookie = $('#ports_form').find('input,select')
+        .not('#nd_port-query,input[name="q"],input[name="tab"]')
+        .serializeArray();
+      $('#ports_form').find('input[type="checkbox"]').map(function() {
+        cookie.push({'name': 'columns', 'value': $(this).attr('name')});
+      });
+      $.cookie('nd_ports-form', $.param(cookie) ,{ expires: 365 });
       [% END %]
       do_search(event, '[% tab.tag %]');
     });
