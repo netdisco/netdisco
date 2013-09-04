@@ -15,7 +15,7 @@ ajax '/ajax/content/device/modules' => require_login sub {
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
-    my @set = $device->modules->search({}, {order_by => { -asc => [qw/parent pos index/] }});
+    my @set = $device->modules->search({}, {order_by => { -asc => [qw/parent class pos index/] }});
 
     # sort modules (empty set would be a 'no records' msg)
     my $results = &App::Netdisco::Util::Web::sort_modules( \@set );

@@ -125,29 +125,24 @@ input arg is module list.
 
 sub sort_modules {
     my $input = shift;
-
     my %modules;
 
     foreach my $module (@$input) {
         $modules{$module->index}{module} = $module;
         if ($module->parent) {
-            # Next wrong: some things have weird pos'
+            # Example
             # index |              description               |        type         | parent |  class  | pos 
             #-------+----------------------------------------+---------------------+--------+---------+-----
             #     1 | Cisco Aironet 1200 Series Access Point | cevChassisAIRAP1210 |      0 | chassis |  -1
             #     3 | PowerPC405GP Ethernet                  | cevPortFEIP         |      1 | port    |  -1
             #     2 | 802.11G Radio                          | cevPortUnknown      |      1 | port    |   0
-            $module->pos = 0 if ($module->pos < 0);
 
-            # this is wrong.  a given parent can
-            # have multiple items at a single pos value.
-            # (HP may have gotten this wrong, but that's
-            # reality...)
-            if ($module->pos) {
-                ${$modules{$module->parent}{children}{$module->class}}[$module->pos] = $module->index;
-            } else {
-                push(@{$modules{$module->parent}{children}{$module->class}}, $module->index);
-            }
+            # Some devices do not implement correctly, so given parent
+            # can have multiple items within the same class at a single pos
+            # value.  However, the database results are sorted by 1) parent
+            # 2) class 3) pos 4) index so we should just be able to push onto
+            # the array and ordering be preserved.
+            push(@{$modules{$module->parent}{children}{$module->class}}, $module->index);
         } else {
             push(@{$modules{root}}, $module->index);
         }
