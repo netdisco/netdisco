@@ -105,6 +105,7 @@ get '/search' => require_login sub {
     my $vendor_list = [ $s->resultset('Device')->get_distinct_col('vendor') ];
 
     template 'search', {
+      search => params->{'tab'},
       model_list  => $model_list,
       os_ver_list => $os_ver_list,
       vendor_list => $vendor_list,

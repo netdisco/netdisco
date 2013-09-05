@@ -1,29 +1,12 @@
 // parameterised for the active tab - submits search form and injects
 // HTML response into the tab pane, or an error/empty-results message
 function do_search (event, tab) {
-  var form = '#' + tab + '_form';
+  var form   = '#' + tab + '_form';
   var target = '#' + tab + '_pane';
+  var query  = $(form).serialize();
 
   // stop form from submitting normally
   event.preventDefault();
-
-  // page title
-  var pgtitle = 'Netdisco';
-  if ($('#nd_device-name').text().length) {
-    var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ tab + '_link').text();
-  }
-
-  // each sidebar search form has a hidden copy of the main navbar search
-  // query. when the tab query takes place, copy the navbar locally, then
-  // replicate to all other tabs.
-  if (path != 'report' && path != 'admin') {
-    if ($('#nq').val()) {
-      $(form).find("input[name=q]").val( $('#nq').val() );
-    }
-    $('form').find("input[name=q]").each( function() {
-      $(this).val( $(form).find("input[name=q]").val() );
-    });
-  }
 
   // hide or show sidebars depending on previous state,
   // and whether the sidebar contains any content (detected by TT)
@@ -39,21 +22,6 @@ function do_search (event, tab) {
       $('.content').css('margin-right', '215px');
       $('.nd_sidebar').show();
     }
-  }
-
-  // get the form params
-  var query = $(form).serialize();
-
-  // update browser search history with the new query.
-  // however if it's the same tab, this is a *replace* of the query url.
-  // and just skip this bit if it's the report or admin display.
-  if (path != 'report' && path != 'admin' && window.History && window.History.enabled) {
-    is_from_history_plugin = 1;
-    window.History.replaceState(
-      {name: tab, fields: $(form).serializeArray()},
-      pgtitle, uri_base + '/' + path + '?' + query
-    );
-    is_from_history_plugin = 0;
   }
 
   // in case of slow data load, let the user know

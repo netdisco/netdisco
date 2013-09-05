@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+use URL::Encode 'url_params_mixed';
 
 hook 'before' => sub {
   my @default_port_columns_left = (
@@ -53,6 +54,36 @@ hook 'before' => sub {
   return unless (request->path eq uri_for('/device')->path
     or index(request->path, uri_for('/ajax/content/device')->path) == 0);
 
+  # override ports form defaults with cookie settings
+
+  my $cookie = cookie('nd_ports-form');
+  my $cdata = url_params_mixed($cookie);
+
+  if ($cdata and ref {} eq ref $cdata) {
+      foreach my $item (@{ var('port_columns') }) {
+          my $key = $item->{name};
+          next unless defined $cdata->{$key}
+            and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
+          $item->{default} = $cdata->{$key};
+      }
+
+      foreach my $item (@{ var('connected_properties') }) {
+          my $key = $item->{name};
+          next unless defined $cdata->{$key}
+            and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
+          $item->{default} = $cdata->{$key};
+      }
+
+      foreach my $key (qw/age_num age_unit mac_format/) {
+          params->{$key} ||= $cdata->{$key}
+            if defined $cdata->{$key}
+               and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
+      }
+  }
+
+  # copy ports form defaults into request query params if this is
+  # a redirect from within the application (tab param is not set)
+
   foreach my $col (@{ var('port_columns') }) {
       next unless $col->{default} eq 'on';
       params->{$col->{name}} = 'checked'
@@ -66,9 +97,9 @@ hook 'before' => sub {
   }
 
   if (not param('tab') or param('tab') ne 'ports') {
-      params->{'age_num'} = 3;
-      params->{'age_unit'} = 'months';
-      params->{'mac_format'} = 'IEEE';
+      params->{'age_num'} ||= 3;
+      params->{'age_unit'} ||= 'months';
+      params->{'mac_format'} ||= 'IEEE';
   }
 };
 
@@ -76,12 +107,13 @@ hook 'before_template' => sub {
   my $tokens = shift;
 
   # new searches will use these defaults in their sidebars
-  $tokens->{device_ports} = uri_for('/device', {
-    tab => 'ports',
-    age_num => 3,
-    age_unit => 'months',
-    mac_format => 'IEEE',
-  });
+  $tokens->{device_ports} = uri_for('/device', { tab => 'ports' });
+
+  # copy ports form defaults into helper values for building template links
+
+  foreach my $key (qw/age_num age_unit mac_format/) {
+      $tokens->{device_ports}->query_param($key, params->{$key});
+  }
 
   # for Net::MAC method
   $tokens->{mac_format_call} = 'as_'. params->{'mac_format'}
@@ -121,7 +153,10 @@ get '/device' => require_login sub {
     }
 
     params->{'tab'} ||= 'details';
-    template 'device', { d => $dev };
+    template 'device', {
+      d => $dev,
+      device => params->{'tab'},
+    };
 };
 
 true;
