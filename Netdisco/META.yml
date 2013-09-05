@@ -51,6 +51,7 @@ requires:
   Socket6: 0.23
   Starman: 0.3008
   Template: 2.24
+  URL::Encode: 0.01
   YAML: 0.84
   YAML::XS: 0.41
   namespace::clean: 0.24
@@ -62,4 +63,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.014000
+version: 2.015000

@@ -1,4 +1,16 @@
-2.014001 - 2013-08-27
+2.015000 - 2013-09-06
+
+  [NEW FEATURES]
+
+  * Device Modules tab (jeneric)
+  * Half Duplex Ports Report
+  * Remember device ports columns and display options in a Cookie
+  * Delete device button for admins
+
+  [ENHANCEMENTS]
+
+  * Change icon for shutdown ports
+  * Modal confirm dialog boxes for dangerous admin actions
 
   [BUG FIXES]
 

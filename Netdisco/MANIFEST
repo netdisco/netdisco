@@ -143,6 +143,7 @@ lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
 lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
+lib/App/Netdisco/Web/Plugin/Report/HalfDuplex.pm
 lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
 lib/App/Netdisco/Web/Plugin/Search/Device.pm
 lib/App/Netdisco/Web/Plugin/Search/Node.pm
@@ -161,6 +162,7 @@ META.yml
 share/config.yml
 share/environments/deployment.yml
 share/public/500.html
+share/public/css/bootstrap-tree.css
 share/public/css/bootstrap.min.css
 share/public/css/font-awesome.min.css
 share/public/css/jquery.qtip.min.css
@@ -204,6 +206,7 @@ share/public/javascripts/jquery-deserialize.js
 share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/jquery-ui.custom.min.js
+share/public/javascripts/jquery.cookie.js
 share/public/javascripts/jquery.floatThead.js
 share/public/javascripts/jquery.qtip.min.js
 share/public/javascripts/netdisco.js
@@ -217,9 +220,11 @@ share/views/ajax/admintask/topology.tt
 share/views/ajax/admintask/users.tt
 share/views/ajax/device/addresses.tt
 share/views/ajax/device/details.tt
+share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/report/duplexmismatch.tt
+share/views/ajax/report/halfduplex.tt
 share/views/ajax/report/portutilization.tt
 share/views/ajax/search/device.tt
 share/views/ajax/search/node_by_ip.tt
@@ -230,6 +235,7 @@ share/views/device.tt
 share/views/index.tt
 share/views/inventory.tt
 share/views/js/admintask.js
+share/views/js/bootstrap-tree.js
 share/views/js/common.js
 share/views/js/device.js
 share/views/js/report.js

@@ -6,11 +6,27 @@ App::Netdisco::Manual::ReleaseNotes - Release Notes
 
 This document will list only the most significant changes with each release of
 Netdisco. You are B<STRONGLY> recommended to read this document each time you
-install and upgrade.
+install and upgrade. Also see the Changes file, for more information.
+
+=head1 2.015000
+
+=head2 Heath Advice
+
+Some of the "dangerous action" confirmation dialogs offer to take a log
+message (e.g. Port Control, Device Delete). Currently the log messages are
+B<not saved>. This feature will be added in the next release.
+
+=head1 2.014000
+
+=head2 General Notices
+
+The backend poller daemon is now considered stable. You can uncomment the
+C<housekeeping> section of the example configuration and thereby enable
+regular device (re-)discovery, arpnip and macsuck.
 
 =head1 2.013000
 
-=head2 General Changes
+=head2 General Notices
 
 You can now configure LDAP authentication for users.
 
@@ -38,13 +54,13 @@ frontend user cannot SELECT from the C<community> DB table.
 
 =head1 2.011000
 
-=head2 General Changes
+=head2 General Notices
 
 Users can be managed through the web interface (by admins only).
 
 =head1 2.010000
 
-=head2 General Changes
+=head2 General Notices
 
 You can now simplify database configuration to just the following, instead of
 the more verbose C<plugins/DBIC> setting which was there before:
@@ -67,7 +83,7 @@ This release contains the first version of our new poller, which handles
 device and node discovery. Please make sure to backup any existing Netdisco
 database before trying it out.
 
-=head2 General Changes
+=head2 General Notices
 
 You can remove any settings from C<~/environments/deployment.yml> which you
 didn't edit or add to the file yourself. All defaults are now properly
@@ -86,7 +102,7 @@ Please B<rename or copy> your environment file:
 
  mv ~/environments/development.yml ~/environments/deployment.yml
 
-=head2 General Changes
+=head2 General Notices
 
 The installation is now relocateable outside of a user's home directory by
 setting the C<NETDISCO_HOME> environment variable. This defaults to your own
