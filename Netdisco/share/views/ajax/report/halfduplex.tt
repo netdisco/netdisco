@@ -1,0 +1,23 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th class="nd_center-cell">Port</th>
+      <th class="nd_center-cell">Description</th>
+      <th class="nd_center-cell">Duplex</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td>[% row.device.dns || row.device.ip | html_entity %]</td>
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% device_ports %]&q=[% row.device.dns || row.device.ip | uri %]&f=[% row.port | uri %]&c_duplex=on">
+          [% row.port | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.name | html_entity %]</td>
+      <td class="nd_center-cell">[% row.duplex.ucfirst | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

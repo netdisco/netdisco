@@ -2,10 +2,10 @@
   <thead>
     <tr>
       <th class="nd_center-cell">Left Device</th>
-      <th class="nd_center-cell">Interface</th>
+      <th class="nd_center-cell">Port</th>
       <th class="nd_center-cell">Duplex</th>
       <th class="nd_center-cell">Right Device</th>
-      <th class="nd_center-cell">Interface</th>
+      <th class="nd_center-cell">Port</th>
       <th class="nd_center-cell">Duplex</th>
     </tr>
   </thead>
