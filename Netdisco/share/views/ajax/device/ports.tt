@@ -19,7 +19,7 @@
     <tr>
       <td class="nd_center-cell">
         [% IF row.up_admin == 'down' %]
-        <i class="icon-angle-down"></i>
+        <i class="icon-remove"></i>
         [% ELSIF row.stp == 'blocking' %]
         <i class="icon-fullscreen text-info"></i>
         [% ELSIF params.free OR row.is_free %]

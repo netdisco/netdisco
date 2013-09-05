@@ -18,7 +18,7 @@
                   <li><i class="icon-li icon-angle-up text-success"></i>&nbsp; Link Up</li>
                   <li><i class="icon-li icon-arrow-down text-error"></i>&nbsp; Link Down</li>
                   <li><i class="icon-li icon-arrow-down text-success"></i>&nbsp; Port Free</li>
-                  <li><i class="icon-li icon-angle-down"></i>&nbsp; Admin Disabled</li>
+                  <li><i class="icon-li icon-remove"></i>&nbsp; Admin Disabled</li>
                   <li><i class="icon-li icon-fullscreen text-info"></i>&nbsp; Blocking</li>
                   <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Inacessible</li>
                   <li><i class="icon-li icon-phone"></i>&nbsp; IP Phone</li>
