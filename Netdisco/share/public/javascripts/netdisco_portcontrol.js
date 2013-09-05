@@ -30,14 +30,14 @@ function port_control (e) {
 
       // update all the screen furniture for port up/down control
       if ($.trim(td.data('action')) == 'down') {
-        td.prev('td').html('<span class="label">S</span>');
+        td.prev('td').html('<i class="icon-remove"></i>');
         $(e).toggleClass('icon-hand-down');
         $(e).toggleClass('icon-hand-up');
         $(e).data('tooltip').options.title = 'Click to Enable';
         td.data('action', 'up');
       }
       else if ($.trim(td.data('action')) == 'up') {
-        td.prev('td').html('<span class="label"><i class="icon-refresh"></i></span>');
+        td.prev('td').html('<i class="icon-refresh"></i>');
         $(e).toggleClass('icon-hand-up');
         $(e).toggleClass('icon-hand-down');
         $(e).data('tooltip').options.title = 'Click to Disable';
