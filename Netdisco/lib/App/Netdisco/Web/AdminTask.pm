@@ -67,6 +67,13 @@ ajax '/ajax/control/admin/delete' => require_role admin => sub {
       if ! $device or $device->addr eq '0.0.0.0';
 
     schema('netdisco')->txn_do(sub {
+      schema('netdisco')->resultset('UserLog')->create({
+        username => session('logged_in_user'),
+        userip => request->remote_address,
+        event => "Delete device ". $device->addr,
+        details => param('log'),
+      });
+
       my $device = schema('netdisco')->resultset('Device')
         ->search({ip => param('device')});
 

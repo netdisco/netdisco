@@ -30,15 +30,33 @@ ajax '/ajax/portcontrol' => require_role port_control => sub {
       ? (param('action') ."-other")
       : param('value'));
 
-    schema('netdisco')->resultset('Admin')->create({
-      device => param('device'),
-      port => param('port'),
-      action => $action,
-      subaction => $subaction,
-      status => 'queued',
-      username => session('logged_in_user'),
-      userip => request->remote_address,
-      log => $log,
+    schema('netdisco')->txn_do(sub {
+      if (param('port')) {
+          my $a = "$action $subaction";
+          $a =~ s/-other$//;
+          $a =~ s/^portcontrol/port/;
+
+          schema('netdisco')->resultset('DevicePortLog')->create({
+            ip => param('device'),
+            port => param('port'),
+            action => $a,
+            reason => 'other',
+            username => session('logged_in_user'),
+            userip => request->remote_address,
+            log => param('log'),
+          });
+      }
+
+      schema('netdisco')->resultset('Admin')->create({
+        device => param('device'),
+        port => param('port'),
+        action => $action,
+        subaction => $subaction,
+        status => 'queued',
+        username => session('logged_in_user'),
+        userip => request->remote_address,
+        log => $log,
+      });
     });
 
     content_type('application/json');
