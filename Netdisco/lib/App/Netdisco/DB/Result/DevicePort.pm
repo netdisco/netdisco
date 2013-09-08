@@ -119,7 +119,8 @@ __PACKAGE__->has_many( nodes_with_age => 'App::Netdisco::DB::Result::Virtual::No
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
   },
-  { join_type => 'LEFT' },
+  { join_type => 'LEFT',
+    cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
 __PACKAGE__->has_many( active_nodes => 'App::Netdisco::DB::Result::Virtual::ActiveNode',
@@ -127,7 +128,8 @@ __PACKAGE__->has_many( active_nodes => 'App::Netdisco::DB::Result::Virtual::Acti
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
   },
-  { join_type => 'LEFT' },
+  { join_type => 'LEFT',
+    cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
 __PACKAGE__->has_many( active_nodes_with_age => 'App::Netdisco::DB::Result::Virtual::ActiveNodeWithAge',
@@ -135,7 +137,8 @@ __PACKAGE__->has_many( active_nodes_with_age => 'App::Netdisco::DB::Result::Virt
     'foreign.switch' => 'self.ip',
     'foreign.port' => 'self.port',
   },
-  { join_type => 'LEFT' },
+  { join_type => 'LEFT',
+    cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
 =head2 neighbor_alias
@@ -178,7 +181,8 @@ __PACKAGE__->has_many( port_vlans_tagged => 'App::Netdisco::DB::Result::Virtual:
     'foreign.ip' => 'self.ip',
     'foreign.port' => 'self.port',
   },
-  { join_type => 'LEFT' },
+  { join_type => 'LEFT',
+    cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
 =head2 tagged_vlans

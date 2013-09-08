@@ -55,6 +55,7 @@ Link relationship for C<tagging_ports>, see below.
 
 __PACKAGE__->has_many( port_vlans_tagged => 'App::Netdisco::DB::Result::Virtual::DevicePortVlanTagged',
     { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
+    { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
 =head2 port_vlans_native
@@ -65,6 +66,7 @@ Link relationship to support C<native_ports>, see below.
 
 __PACKAGE__->has_many( port_vlans_native => 'App::Netdisco::DB::Result::Virtual::DevicePortVlanNative',
     { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
+    { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
 =head2 tagging_ports
