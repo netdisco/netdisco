@@ -55,12 +55,37 @@ ajax '/ajax/content/device/ports' => require_login sub {
         }
     }
 
-    # filter for free ports if asked
-    my $free_filter = (param('free') ? 'only_free_ports' : 'with_is_free');
-    $set = $set->$free_filter({
-      age_num => (param('age_num') || 3),
-      age_unit => (param('age_unit') || 'months')
-    });
+    # filter for port status if asked
+    my %port_state = map {$_ => 1} (param('port_state') || ());
+
+    if (exists $port_state{free}) {
+        if (scalar keys %port_state == 1) {
+            $set = $set->only_free_ports({
+              age_num => (param('age_num') || 3),
+              age_unit => (param('age_unit') || 'months')
+            });
+        }
+        else {
+            $set = $set->with_is_free({
+              age_num => (param('age_num') || 3),
+              age_unit => (param('age_unit') || 'months')
+            });
+        }
+        delete $port_state{free};
+    }
+
+    if (scalar keys %port_state < 3) {
+        my @combi = ();
+
+        push @combi, {'me.up' => 'up'}
+          if exists $port_state{up};
+        push @combi, {'me.up_admin' => 'up', 'me.up' => { '!=' => 'up'}}
+          if exists $port_state{down};
+        push @combi, {'me.up_admin' => { '!=' => 'up'}}
+          if exists $port_state{shut};
+
+        $set = $set->search({-or => \@combi});
+    }
 
     # make sure query asks for formatted timestamps when needed
     $set = $set->with_times if param('c_lastchange');

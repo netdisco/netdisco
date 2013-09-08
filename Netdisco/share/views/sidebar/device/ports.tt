@@ -75,11 +75,15 @@
                     </select>
                   </li>
                   <li>
-                    <label class="checkbox">
-                      <input type="checkbox" id="free"
-                        name="free"[% ' checked="checked"' IF params.free %]/>
-                      Only show Free Ports
-                    </label>
+                    <em class="muted">Show Ports with Status:</em><br/>
+                    <div class="clearfix">
+                      <select class="nd_side-select" size="4" multiple="on" name="port_state"/>
+                        <option selected="selected" value="up">Link Up</option>
+                        <option selected="selected" value="free">Port Free</option>
+                        <option selected="selected" value="down">Link Down</option>
+                        <option selected="selected" value="shut">Admin Disabled</option>
+                      </select>
+                    </div>
                   </li>
                 </ul>
               </div>
