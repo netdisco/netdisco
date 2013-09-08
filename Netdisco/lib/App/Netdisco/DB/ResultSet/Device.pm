@@ -551,7 +551,7 @@ sub delete {
     DeviceModule
   /) {
       $schema->resultset($set)->search(
-        { ip => { '-in' => $devices->as_query }},
+        { ip => { '-in' => $devices->as_query } },
       )->delete;
   }
 
@@ -560,8 +560,15 @@ sub delete {
     action => { '-like' => 'queued%' },
   })->delete;
 
+  $schema->resultset('Topology')->search({
+    -or => [
+      { dev1 => { '-in' => $devices->as_query } },
+      { dev2 => { '-in' => $devices->as_query } },
+    ],
+  })->delete;
+
   $schema->resultset('DevicePort')->search(
-    { ip => { '-in' => $devices->as_query }},
+    { ip => { '-in' => $devices->as_query } },
   )->delete(@_);
 
   # now let DBIC do its thing
