@@ -68,7 +68,7 @@
 
       var port = $(this).text();
       port = $.trim(port);
-      portfilter.val(port);
+      portfilter.val('"'+ port +'"');
 
       $('.nd_field-clear-icon').show();
       $('#ports_form').trigger('submit');
