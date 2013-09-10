@@ -1,4 +1,4 @@
-2.015001_001 - 2013-09-10
+2.016000 - 2013-09-10
 
   [NEW FEATURES]
 
@@ -9,6 +9,7 @@
 
   * Store port control and device delete log messages
   * Allow port list filtering by port state (up/down/etc)
+  * Explicit partial match setting for port filter
 
   [BUG FIXES]
 

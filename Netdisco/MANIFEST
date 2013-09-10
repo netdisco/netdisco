@@ -68,6 +68,7 @@ lib/App/Netdisco/DB/Result/User.pm
 lib/App/Netdisco/DB/Result/UserLog.pm
 lib/App/Netdisco/DB/Result/Virtual/ActiveNode.pm
 lib/App/Netdisco/DB/Result/Virtual/ActiveNodeWithAge.pm
+lib/App/Netdisco/DB/Result/Virtual/ApRadioChannelPower.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanNative.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
@@ -127,6 +128,7 @@ lib/App/Netdisco/Util/SanityCheck.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
+lib/App/Netdisco/Web/About.pm
 lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
@@ -142,6 +144,8 @@ lib/App/Netdisco/Web/Plugin/Device/Modules.pm
 lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
+lib/App/Netdisco/Web/Plugin/Report/ApChannelDist.pm
+lib/App/Netdisco/Web/Plugin/Report/ApRadioChannelPower.pm
 lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
 lib/App/Netdisco/Web/Plugin/Report/HalfDuplex.pm
 lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
@@ -213,6 +217,7 @@ share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/toastr.js
 share/public/javascripts/underscore.min.js
+share/views/about.tt
 share/views/admintask.tt
 share/views/ajax/admintask/jobqueue.tt
 share/views/ajax/admintask/pseudodevice.tt
@@ -223,6 +228,8 @@ share/views/ajax/device/details.tt
 share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
+share/views/ajax/report/apchanneldist.tt
+share/views/ajax/report/apradiochannelpower.tt
 share/views/ajax/report/duplexmismatch.tt
 share/views/ajax/report/halfduplex.tt
 share/views/ajax/report/portutilization.tt
