@@ -119,15 +119,6 @@
       });
     });
 
-    // bootstrap modal mucks about with mouse actions on higher elements
-    // so need to bury and raise it when needed
-    $('#ports_pane').on('show', '.nd_modal', function () {
-      $(this).toggleClass('nd_deep-horizon');
-    });
-    $('#ports_pane').on('hidden', '.nd_modal', function () {
-      $(this).toggleClass('nd_deep-horizon');
-    });
-
     // clear any values in the delete confirm dialog
     $('#details_pane').on('hidden', '.nd_modal', function () {
       $('#nd_devdel-log').val('');

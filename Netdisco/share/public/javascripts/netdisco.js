@@ -235,4 +235,13 @@ $(document).ready(function() {
       to_id.replace(/^#/,"").replace(/_pane$/,"")
     );
   });
+
+  // bootstrap modal mucks about with mouse actions on higher elements
+  // so need to bury and raise it when needed
+  $('.tab-pane').on('show', '.nd_modal', function () {
+    $(this).toggleClass('nd_deep-horizon');
+  });
+  $('.tab-pane').on('hidden', '.nd_modal', function () {
+    $(this).toggleClass('nd_deep-horizon');
+  });
 });
