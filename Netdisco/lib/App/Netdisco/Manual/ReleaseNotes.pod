@@ -8,6 +8,13 @@ This document will list only the most significant changes with each release of
 Netdisco. You are B<STRONGLY> recommended to read this document each time you
 install and upgrade. Also see the Changes file, for more information.
 
+=head1 2.016000
+
+=head2 General Notices
+
+The dangerous action log messages are now saved to the database. In a future
+version there will be a way to display them in the web interface.
+
 =head1 2.015000
 
 =head2 Heath Advice
