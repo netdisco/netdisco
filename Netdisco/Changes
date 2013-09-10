@@ -1,3 +1,23 @@
+2.015001_001 - 2013-09-10
+
+  [NEW FEATURES]
+
+  * Wireless AP Reports (jeneric)
+  * About page (jeneric)
+
+  [ENHANCEMENTS]
+
+  * Store port control and device delete log messages
+  * Allow port list filtering by port state (up/down/etc)
+
+  [BUG FIXES]
+
+  * z-index fix for modals
+  * Better toastr message on device delete
+  * Delete manual topology on device delete
+  * Fix Node age stamp option in ports
+  * Prevent cascade operations on virtual tables in DBIC
+
 2.015000 - 2013-09-06
 
   [NEW FEATURES]
