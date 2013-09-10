@@ -7,6 +7,15 @@
               <input id="nd_port-query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
+              <div class="clearfix input-prepend nd_port-partial">
+                <label class="add-on nd_port-partial-label">
+                  <input type="checkbox" id="partial"
+                    name="partial"[% ' checked="checked"' IF params.partial %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="partial">
+                  <span class="nd_port-partial-checkbox uneditable-input">Partial Match</span>
+                </label>
+              </div>
             </div>
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_legend">

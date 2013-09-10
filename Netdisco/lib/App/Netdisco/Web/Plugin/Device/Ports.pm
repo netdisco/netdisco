@@ -31,9 +31,16 @@ ajax '/ajax/content/device/ports' => require_login sub {
             return unless $set->count;
         }
         else {
-            $f =~ s/\*/%/g if index($f, '*') >= 0;
-            $f =~ s/\?/_/g if index($f, '?') >= 0;
-            $f = { '-ilike' => $f };
+            if (param('partial')) {
+                # change wildcard chars to SQL
+                $f =~ s/\*/%/g;
+                $f =~ s/\?/_/g;
+                # set wilcards at param boundaries
+                $f =~ s/^\%*/%/;
+                $f =~ s/\%*$/%/;
+                # enable ILIKE op
+                $f = { '-ilike' => $f };
+            }
 
             if ($set->search({'me.port' => $f})->count) {
                 $set = $set->search({'me.port' => $f});

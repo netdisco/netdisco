@@ -385,6 +385,23 @@ td > form.nd_inline-form {
   cursor: pointer;
 }
 
+/* fixup for prepended partial port name checkbox in sidebar */
+.nd_port-partial-checkbox {
+  width: 136px;
+  padding: 0px 0px 0px 11px !important;
+  cursor: pointer;
+}
+
+.nd_port-partial-label {
+  padding: 0px !important;
+}
+
+.nd_port-partial {
+  margin-left: 5px !important;
+  margin-top: -5px;
+  margin-bottom: 5px !important;
+}
+
 /* fixup for prepended checkbox in sidebar */
 .nd_sidebar .input-prepend {
   margin-left: -2px;
