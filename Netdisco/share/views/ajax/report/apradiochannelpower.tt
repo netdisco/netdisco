@@ -1,0 +1,52 @@
+<div class="accordion" id="accordion-radio-pwr">
+[% count = 0 %]
+[% FOREACH row IN results.keys.sort %]
+  [% count = count + 1 %]
+  <div class="accordion-group">
+      <div class="accordion-heading"> 
+          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count %]" href="#collapse-[% count %]">
+            <i class="[% row.size < 10 ? 'icon-chevron-down' : 'icon-chevron-up' %]"></i> &nbsp;
+            [% results.$row.device.dns || results.$row.device.name %] &nbsp;
+            ( [% results.$row.device.model %] ) &nbsp;
+            [% IF results.$row.device.location %]
+              Location: [% results.$row.device.location %]
+            [% END %]
+          </a>
+      </div>
+    <div id="collapse-[% count %]" class="accordion-body collapse[% ' in' IF row.size < 10 %]">
+      <div class="accordion-inner">
+      <table class="table table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th>Port</th>            
+            <th>Name</th>
+            <th>Description</th>
+            <th class="nd_center-cell">Channel</th>
+            <th class="nd_center-cell">Tx Power (mW/dBm)</th>
+          </tr>
+        </thead>
+        <tbody>
+        [% FOREACH p IN results.$row.ports %]
+          [% NEXT UNLESS p.channel # No channel port is admin down %]
+          <tr>
+            <td>
+              <a href="[% device_ports %]&q=[% results.$row.device.dns || results.$row.device.ip | uri %]&f=[% p.port | uri %]">
+                [% p.port | html_entity %]</a></td>
+            <td>[% p.name %]</td>
+            <td>[% p.descr %]</td>
+            <td class="nd_center-cell">[% p.channel %]</td>
+            <td class="nd_center-cell">[% IF p.power or p.power2 %][% p.power %] / [% p.power2 %][% END %]</td>
+          </tr>
+        [% END %]
+        </tbody>
+      </table>
+    </div>
+  </div>
+[%END%]
+</div>
+
+<script>
+$('.accordion').on('show hide', function (n) {
+    $(n.target).siblings('.accordion-heading').find('.accordion-toggle i').toggleClass('icon-chevron-up icon-chevron-down');
+});
+</script>

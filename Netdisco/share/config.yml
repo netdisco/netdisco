@@ -34,6 +34,8 @@ path: '/'
 web_plugins:
   - Inventory
   - Report::PortUtilization
+  - Report::ApChannelDist
+  - Report::ApRadioChannelPower
   - Report::HalfDuplex
   - Report::DuplexMismatch
   - AdminTask::PseudoDevice

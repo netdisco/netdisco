@@ -1,0 +1,17 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Channel</th>
+      <th class="nd_center-cell">Count</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="nd_center-cell">[% row.channel %]</td>
+      <td class="nd_center-cell">[% row.get_column('ch_count') %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
