@@ -31,19 +31,9 @@ ajax '/ajax/content/device/ports' => require_login sub {
             return unless $set->count;
         }
         else {
-            # Google-style search. Quoted means exact, otherwise wildcard.
-            # but still supoort manual wildcarding.
-            if ($f =~ m/^['"]/ and $f =~ m/['"]$/) {
-                $f =~ s/^['"]//;
-                $f =~ s/['"]$//;
-            }
-            else {
-                $f =~ s/\*/%/g;
-                $f =~ s/\?/_/g;
-                $f =~ s/^\%*/%/;
-                $f =~ s/\%*$/%/;
-                $f = { '-ilike' => $f };
-            }
+            $f =~ s/\*/%/g if index($f, '*') >= 0;
+            $f =~ s/\?/_/g if index($f, '?') >= 0;
+            $f = { '-ilike' => $f };
 
             if ($set->search({'me.port' => $f})->count) {
                 $set = $set->search({'me.port' => $f});

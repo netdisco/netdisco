@@ -14,7 +14,7 @@
       <td>[% row.alias | html_entity %]</a>
       <td>[% row.dns | html_entity %]</a>
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% device_ports %]&q=[% params.q | uri %]&f=%22[% row.port | uri %]%22">[% row.port | html_entity %]</a></td>
+        href="[% device_ports %]&q=[% params.q | uri %]&f=[% row.port | uri %]">[% row.port | html_entity %]</a></td>
       <td>[% row.device_port.name | html_entity %]</td>
       <td><a class="nd_linkcell"
         href="[% search_device %]&ip=[% row.subnet | uri %]">[% row.subnet | html_entity %]</a></td>
