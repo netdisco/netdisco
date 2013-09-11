@@ -22,7 +22,7 @@
         <i class="icon-remove"></i>
         [% ELSIF row.stp == 'blocking' %]
         <i class="icon-fullscreen text-info"></i>
-        [% ELSIF row.has_column('is_free') AND row.is_free %]
+        [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="icon-arrow-down text-success"></i>
         [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
         <i class="icon-arrow-down text-error"></i>

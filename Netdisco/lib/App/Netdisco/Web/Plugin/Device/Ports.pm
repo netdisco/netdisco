@@ -53,7 +53,11 @@ ajax '/ajax/content/device/ports' => require_login sub {
     }
 
     # filter for port status if asked
-    my %port_state = map {$_ => 1} (param('port_state') || ());
+    my %port_state = map {$_ => 1}
+      (ref [] eq ref param('port_state') ? @{param('port_state')}
+        : param('port_state') ? param('port_state') : ());
+
+    return unless scalar keys %port_state;
 
     if (exists $port_state{free}) {
         if (scalar keys %port_state == 1) {
