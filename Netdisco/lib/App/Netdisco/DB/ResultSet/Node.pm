@@ -77,13 +77,12 @@ handle the removal or archiving of nodes.
 sub delete {
   my $self = shift;
   my ($opts) = @_;
+  $opts = {} if (ref {} ne ref $opts);
 
   my $schema = $self->result_source->schema;
   my $nodes = $self->search(undef, { columns => 'mac' });
 
-  if (ref {} eq ref $opts
-      and exists $opts->{archive} and $opts->{archive}) {
-
+  if (exists $opts->{archive_nodes} and $opts->{archive_nodes}) {
       foreach my $set (qw/
         NodeIp
         NodeNbt
@@ -98,6 +97,10 @@ sub delete {
       $schema->resultset('NodeWireless')
         ->search({ mac => { '-in' => $nodes->as_query }})->delete;
 
+      # avoid letting DBIC delete nodes
+      return 0E0;
+  }
+  elsif (exists $opts->{keep_nodes} and $opts->{keep_nodes}) {
       # avoid letting DBIC delete nodes
       return 0E0;
   }

@@ -133,7 +133,7 @@ sub _set_canonical_ip {
 
             # our special delete which is more efficient
             schema('netdisco')->resultset('Device')
-              ->search({ ip => $device->ip })->delete;
+              ->search({ ip => $device->ip })->delete({keep_nodes => 1});
 
             # a new row object from the old one
             $device = schema('netdisco')->resultset('Device')
@@ -259,7 +259,7 @@ sub store_interfaces {
   }
 
   schema('netdisco')->txn_do(sub {
-    my $gone = $device->ports->delete;
+    my $gone = $device->ports->delete({keep_nodes => 1});
     debug sprintf ' [%s] interfaces - removed %s interfaces',
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});

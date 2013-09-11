@@ -78,7 +78,7 @@ ajax '/ajax/control/admin/delete' => require_role admin => sub {
         ->search({ip => param('device')});
 
       # will delete everything related too...
-      $device->delete;
+      $device->delete({archive_nodes => param('archive')});
     });
 };
 
