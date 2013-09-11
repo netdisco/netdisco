@@ -1,3 +1,9 @@
+2.016002 - 2013-09-11
+
+  [BUG FIXES]
+
+  * Fix device and device_port delete not to kill nodes during Discovery
+
 2.016001 - 2013-09-11
 
   [BUG FIXES]
