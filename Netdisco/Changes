@@ -1,3 +1,10 @@
+2.016003 - 2013-09-12
+
+  [BUG FIXES]
+
+  * Fix for Node Age being very broken.
+  * Port status icon logic was incorrect for some up/down states.
+
 2.016002 - 2013-09-11
 
   [BUG FIXES]
