@@ -61,7 +61,7 @@ sub with_is_free {
       {
         '+columns' => { is_free =>
           \["up != 'up' and "
-              ."age(to_timestamp(extract(epoch from device.last_discover) "
+              ."age(now(), to_timestamp(extract(epoch from device.last_discover) "
                 ."- (device.uptime - lastchange)/100)) "
               ."> ?::interval",
             [{} => $interval]] },
@@ -92,7 +92,7 @@ sub only_free_ports {
         'up' => { '!=' => 'up' },
       },{
         where =>
-          \["age(to_timestamp(extract(epoch from device.last_discover) "
+          \["age(now(), to_timestamp(extract(epoch from device.last_discover) "
                 ."- (device.uptime - lastchange)/100)) "
               ."> ?::interval",
             [{} => $interval]],

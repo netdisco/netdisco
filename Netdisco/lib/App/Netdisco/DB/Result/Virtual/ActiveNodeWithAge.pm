@@ -14,7 +14,7 @@ __PACKAGE__->table("active_node_with_age");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(q{
   SELECT *,
-    replace(age( date_trunc( 'minute', time_last + interval '30 second' ) ) ::text, 'mon', 'month')
+    replace( date_trunc( 'minute', age( now(), time_last + interval '30 second' ) ) ::text, 'mon', 'month')
       AS time_last_age
   FROM node WHERE active
 });
