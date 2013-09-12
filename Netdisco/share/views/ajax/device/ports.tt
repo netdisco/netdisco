@@ -18,13 +18,13 @@
     [% FOREACH row IN results %]
     <tr>
       <td class="nd_center-cell">
-        [% IF row.up_admin == 'down' %]
+        [% IF row.up_admin != 'up' %]
         <i class="icon-remove"></i>
         [% ELSIF row.stp == 'blocking' %]
         <i class="icon-fullscreen text-info"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="icon-arrow-down text-success"></i>
-        [% ELSIF row.up_admin == 'up' AND row.up == 'down' %]
+        [% ELSIF row.up_admin == 'up' AND row.up != 'up' %]
         <i class="icon-arrow-down text-error"></i>
         [% ELSE %]
         <i class="icon-angle-up text-success"></i>
