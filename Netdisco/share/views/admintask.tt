@@ -36,6 +36,12 @@
           <i id="nd_countdown-control-icon" class="text-success icon-play"></i></a>
         <span id="nd_countdown"></span>
       </span>
+      [% ELSIF task.provides_csv %]
+      <span id="nd_device-name">
+        <a id="nd_csv-download" href="#" download="netdisco.csv">
+          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
+            rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
+      </span>
       [% END %]
     </ul>
     <div class="tab-content">

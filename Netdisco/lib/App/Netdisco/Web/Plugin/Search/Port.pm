@@ -1,16 +1,15 @@
 package App::Netdisco::Web::Plugin::Search::Port;
 
 use Dancer ':syntax';
-use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ tag => 'port', label => 'Port' });
+register_search_tab({ tag => 'port', label => 'Port', provides_csv => 1 });
 
 # device ports with a description (er, name) matching
-ajax '/ajax/content/search/port' => require_login sub {
+get '/ajax/content/search/port' => require_login sub {
     my $q = param('q');
     send_error('Missing query', 400) unless $q;
     my $set;
@@ -30,10 +29,15 @@ ajax '/ajax/content/search/port' => require_login sub {
     }
     return unless $set->count;
 
-    content_type('text/html');
-    template 'ajax/search/port.tt', {
-      results => $set,
-    }, { layout => undef };
+    if (request->is_ajax) {
+        template 'ajax/search/port.tt', {results => $set},
+          { layout => undef };
+    }
+    else {
+        header( 'Content-Type' => 'text/comma-separated-values' );
+        template 'ajax/search/port_csv.tt', {results => $set},
+          { layout => undef };
+    }
 };
 
 true;

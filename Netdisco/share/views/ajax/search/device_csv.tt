@@ -1,0 +1,12 @@
+[% USE CSV -%]
+[% CSV.dump(headers) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% device = row.dns || row.ip %]
+  [% FOREACH col IN [ device row.contact row.location row.name row.model row.os_ver row.ip row.serial] %]
+    [% mylist.push(col) %]
+  [% END %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

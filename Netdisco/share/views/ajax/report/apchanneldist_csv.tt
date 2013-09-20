@@ -1,0 +1,10 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Channel' 'Count' ]) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% mylist.push(row.channel) %]
+  [% mylist.push(row.get_column('ch_count')) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

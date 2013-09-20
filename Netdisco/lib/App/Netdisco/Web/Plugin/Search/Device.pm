@@ -1,7 +1,6 @@
 package App::Netdisco::Web::Plugin::Search::Device;
 
 use Dancer ':syntax';
-use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
@@ -9,10 +8,12 @@ use List::MoreUtils ();
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ tag => 'device', label => 'Device' });
+register_search_tab({ tag => 'device', label => 'Device', provides_csv => 1 });
+
+my $headers = ['Device','Contact','Location','System Name','Model','OS Version','Management IP','Serial'];
 
 # device with various properties or a default match-all
-ajax '/ajax/content/search/device' => require_login sub {
+get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any {param($_)}
       qw/name location dns ip description model os_ver vendor/;
     my $set;
@@ -28,10 +29,17 @@ ajax '/ajax/content/search/device' => require_login sub {
     }
     return unless $set->count;
 
-    content_type('text/html');
-    template 'ajax/search/device.tt', {
-      results => $set,
-    }, { layout => undef };
+    if (request->is_ajax) {
+        template 'ajax/search/device.tt', {results => $set},
+          { layout => undef };
+    }
+    else {
+        header( 'Content-Type' => 'text/comma-separated-values' );
+        template 'ajax/search/device_csv.tt', {
+          results => $set,
+          headers => $headers,
+        }, { layout => undef };
+    }
 };
 
 true;

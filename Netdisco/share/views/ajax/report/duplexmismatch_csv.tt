@@ -1,0 +1,13 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Left Device' 'Port' 'Duplex' 'Right Device' 'Port' 'Duplex' ]) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% device_left = row.left_dns || row.left_ip %]
+  [% device_right = row.right_dns || row.right_ip %]
+  [% FOREACH col IN [ device_left row.left_port row.left_duplex.ucfirst device_right row.right_port row.right_duplex.ucfirst ] %]
+    [% mylist.push(col) %]
+  [% END %]
+  [% CSV.dump(mylist) %]
+
+[% END %]
