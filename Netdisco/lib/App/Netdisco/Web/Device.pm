@@ -59,7 +59,7 @@ hook 'before' => sub {
   my $cookie = cookie('nd_ports-form');
   my $cdata = url_params_mixed($cookie);
 
-  if ($cdata and ref {} eq ref $cdata) {
+  if ($cdata and ref {} eq ref $cdata and not param('reset')) {
       foreach my $item (@{ var('port_columns') }) {
           my $key = $item->{name};
           next unless defined $cdata->{$key}
@@ -84,22 +84,32 @@ hook 'before' => sub {
   # copy ports form defaults into request query params if this is
   # a redirect from within the application (tab param is not set)
 
-  foreach my $col (@{ var('port_columns') }) {
-      next unless $col->{default} eq 'on';
-      params->{$col->{name}} = 'checked'
-        if not param('tab') or param('tab') ne 'ports';
-  }
+  if (param('reset') or not param('tab') or param('tab') ne 'ports') {
+      foreach my $col (@{ var('port_columns') }) {
+          delete params->{$col->{name}};
+          params->{$col->{name}} = 'checked'
+            if $col->{default} eq 'on';
+      }
 
-  foreach my $col (@{ var('connected_properties') }) {
-      next unless $col->{default} eq 'on';
-      params->{$col->{name}} = 'checked'
-        if not param('tab') or param('tab') ne 'ports';
-  }
+      foreach my $col (@{ var('connected_properties') }) {
+          delete params->{$col->{name}};
+          params->{$col->{name}} = 'checked'
+            if $col->{default} eq 'on';
+      }
 
-  if (not param('tab') or param('tab') ne 'ports') {
+      # not stored in the cookie
       params->{'age_num'} ||= 3;
       params->{'age_unit'} ||= 'months';
       params->{'mac_format'} ||= 'IEEE';
+
+      if (param('reset')) {
+          params->{'age_num'} = 3;
+          params->{'age_unit'} = 'months';
+          params->{'mac_format'} = 'IEEE';
+
+          # nuke the port params cookie
+          cookie('nd_ports-form' => '', expires => '-1 day');
+      }
   }
 };
 
