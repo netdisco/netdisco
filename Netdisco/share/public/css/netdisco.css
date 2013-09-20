@@ -205,6 +205,10 @@ td > form.nd_inline-form {
   font-weight: normal;
 }
 
+#nd_csv-download:hover {
+  text-decoration: none;
+}
+
 /* for the job control admin page play/pause links */
 #nd_countdown-refresh:hover, #nd_countdown-control:hover {
   text-decoration: none;

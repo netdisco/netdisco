@@ -34,7 +34,7 @@
       [% END %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
-          <i id="nd_csv-download-icon" class="icon-file-text-alt icon-large"
+          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
             rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
       </span>
     </ul>
