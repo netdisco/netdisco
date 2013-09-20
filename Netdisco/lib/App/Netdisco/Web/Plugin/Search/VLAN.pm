@@ -25,12 +25,12 @@ get '/ajax/content/search/vlan' => require_login sub {
     return unless $set->count;
 
     if (request->is_ajax) {
-        template 'ajax/search/vlan.tt', { results => $set}
+        template 'ajax/search/vlan.tt', { results => $set },
           { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/search/vlan_csv.tt', { results => $set}
+        template 'ajax/search/vlan_csv.tt', { results => $set },
           { layout => undef };
     }
 };
