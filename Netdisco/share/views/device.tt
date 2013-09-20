@@ -18,8 +18,10 @@
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
       <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-reset icon-undo"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Reset to Defaults" data-container="body"></i>
+      <a id="nd_sidebar-reset-link" href="#">
+        <i class="nd_sidebar-reset icon-undo"
+          rel="tooltip" data-placement="left" data-offset="5" data-title="Reset to Defaults" data-container="body"></i>
+      </a>
       <div class="tab-content">
         [% FOREACH tab IN settings._device_tabs %]
         <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">

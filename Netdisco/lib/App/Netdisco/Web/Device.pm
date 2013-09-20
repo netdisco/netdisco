@@ -59,7 +59,7 @@ hook 'before' => sub {
   my $cookie = cookie('nd_ports-form');
   my $cdata = url_params_mixed($cookie);
 
-  if ($cdata and ref {} eq ref $cdata) {
+  if ($cdata and ref {} eq ref $cdata and not param('reset')) {
       foreach my $item (@{ var('port_columns') }) {
           my $key = $item->{name};
           next unless defined $cdata->{$key}

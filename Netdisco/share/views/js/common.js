@@ -4,7 +4,7 @@
     var form = '#' + tab + '_form';
     var query = $(form).serialize();
 
-    if (show == '1') {
+    if (show.length) {
       $('#nd_csv-download')
         .attr('href', '/ajax/content/' + type + '/' + tab + '?' + query)
         .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
@@ -81,6 +81,8 @@
       copy_navbar_to_sidebar('[% tab.tag %]');
 
       [% IF tab.tag == 'ports' %]
+      // to be fair I can't remember why we do this in JS and not from the app
+      // perhaps because selecting form fields to go in the cookie is easier?
       var cookie = $('#ports_form').find('input,select')
         .not('#nd_port-query,input[name="q"],input[name="tab"]')
         .serializeArray();
@@ -88,6 +90,10 @@
         cookie.push({'name': 'columns', 'value': $(this).attr('name')});
       });
       $.cookie('nd_ports-form', $.param(cookie) ,{ expires: 365 });
+
+      // form reset icon on ports tab
+      $('#nd_sidebar-reset-link').attr('href', '/device?tab=ports&reset=on&' +
+        $('#ports_form').find('input[name="q"],input[name="f"],input[name="partial"]').serialize())
       [% END %]
 
       do_search(event, '[% tab.tag %]');
