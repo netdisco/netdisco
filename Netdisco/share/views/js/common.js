@@ -1,3 +1,23 @@
+  // csv download icon on any table page
+  // needs to be dynamically updated to use current search options
+  function update_csv_download_link (type, tab, show) {
+    var form = '#' + tab + '_form';
+    var query = $(form).serialize();
+
+    if (show == '1') {
+      $('#nd_csv-download')
+        .attr('href', '/ajax/content/' + type + '/' + tab + '?' + query)
+        .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
+        .show();
+    }
+    else {
+      $('#nd_csv-download').hide();
+    }
+  }
+
+  // page title includes tab name and possibly device name
+  // this is nice for when you have multiple netdisco pages open in the
+  // browser
   function update_page_title (tab) {
     var pgtitle = 'Netdisco';
     if ($('#nd_device-name').text().length) {
@@ -43,6 +63,7 @@
     [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
+      update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
       update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
       do_search(event, '[% tab.tag %]');
@@ -55,8 +76,10 @@
     [% FOREACH tab IN settings._device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
+      update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
       update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
+
       [% IF tab.tag == 'ports' %]
       var cookie = $('#ports_form').find('input,select')
         .not('#nd_port-query,input[name="q"],input[name="tab"]')
@@ -66,6 +89,7 @@
       });
       $.cookie('nd_ports-form', $.param(cookie) ,{ expires: 365 });
       [% END %]
+
       do_search(event, '[% tab.tag %]');
     });
     [% END %]
@@ -74,7 +98,8 @@
     [% IF report %]
     // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function (event) {
-      update_page_title('[% tab.tag %]');
+      update_page_title('[% report.tag %]');
+      update_csv_download_link('report', '[% report.tag %]', '1');
       do_search(event, '[% report.tag %]');
     });
     [% END -%]
@@ -82,7 +107,8 @@
     [% IF task %]
     // for the admin pages
     $('[% "#${task.tag}_form" %]').submit(function (event) {
-      update_page_title('[% tab.tag %]');
+      update_page_title('[% task.tag %]');
+      update_csv_download_link('task', '[% task.tag %]', '1');
       do_search(event, '[% task.tag %]');
     });
     [% END %]

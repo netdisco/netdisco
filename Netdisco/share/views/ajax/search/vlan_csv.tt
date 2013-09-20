@@ -1,0 +1,12 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Vlan' 'Device' 'Description' 'Model' 'OS' 'Vendor' ]) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% device = row.dns || row.ip %]
+  [% FOREACH col IN [ row.vlan.vlan device row.vlan.description row.model row.os row.vendor ] %]
+    [% mylist.push(col) %]
+  [% END %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

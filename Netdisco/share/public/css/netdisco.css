@@ -200,6 +200,15 @@ td > form.nd_inline-form {
   color: #6D5720;
 }
 
+/* reset to normal weight for the download as CSV icon */
+#nd_csv-download {
+  font-weight: normal;
+}
+
+#nd_csv-download:hover {
+  text-decoration: none;
+}
+
 /* for the job control admin page play/pause links */
 #nd_countdown-refresh:hover, #nd_countdown-control:hover {
   text-decoration: none;
