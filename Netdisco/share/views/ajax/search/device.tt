@@ -1,4 +1,3 @@
-[% INCLUDE "download_as.tt" %]
 <table class="table table-bordered table-condensed table-striped nd_floatinghead">
   <thead>
     <tr>

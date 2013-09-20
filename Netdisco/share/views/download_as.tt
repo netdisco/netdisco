@@ -1,8 +1,0 @@
-[% myuri = request.uri %]
-[% UNLESS myuri.match('/report') %]
-    [% myuri = myuri.remove('/ajax/content/') %]
-[% END %]
-<div>
-  <p class="text-right">Download as: <a href="[% myuri %]&format=csv">CSV</a></p>
-</div>
-
