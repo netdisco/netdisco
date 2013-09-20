@@ -1,0 +1,12 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Device' 'Total Ports' 'In Use' 'Shutdown' 'Free' ]) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% device = row.dns || row.ip %]
+  [% FOREACH col IN [ device row.port_count row.ports_in_use row.ports_shutdown row.ports_free ] %]
+    [% mylist.push(col) %]
+  [% END %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

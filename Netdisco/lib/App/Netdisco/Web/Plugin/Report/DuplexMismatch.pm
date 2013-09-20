@@ -7,20 +7,38 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_report({
-  category => 'Port',
-  tag => 'duplexmismatch',
-  label => 'Duplex Mismatches Between Devices',
-});
+register_report(
+    {   category => 'Port',
+        tag      => 'duplexmismatch',
+        label    => 'Duplex Mismatches Between Devices',
+    }
+);
 
 ajax '/ajax/content/report/duplexmismatch' => require_login sub {
     my $set = schema('netdisco')->resultset('Virtual::DuplexMismatch');
     return unless $set->count;
 
     content_type('text/html');
-    template 'ajax/report/duplexmismatch.tt', {
-      results => $set,
-    }, { layout => undef };
+    template 'ajax/report/duplexmismatch.tt', { results => $set, },
+        { layout => undef };
+};
+
+get '/ajax/content/report/duplexmismatch' => require_login sub {
+    my $format = param('format');
+    my $set    = schema('netdisco')->resultset('Virtual::DuplexMismatch');
+    return unless $set->count;
+
+    if ( $format eq 'csv' ) {
+
+        header( 'Content-Type' => 'text/comma-separated-values' );
+        header( 'Content-Disposition' =>
+                "attachment; filename=\"duplexmismatch.csv\"" );
+        template 'ajax/report/duplexmismatch_csv.tt', { results => $set, },
+            { layout => undef };
+    }
+    else {
+        return;
+    }
 };
 
 true;
