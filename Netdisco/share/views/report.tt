@@ -28,6 +28,10 @@
     <ul id="nd_search-results" class="nav nav-tabs">
       <li class="active"><a id="[% report.tag %]_link" class="nd_single-tab"
         href="#[% report.tag %]_pane">[% report.label %]</a></li>
+      <span id="nd_device-name">
+        <a id="nd_csv-download" href="#" download="netdisco_report.csv">
+          <i id="nd_csv-download-icon" class="icon-file-text-alt"></i></a>
+      </span>
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="[% report.tag %]_pane"></div>

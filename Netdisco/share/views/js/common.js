@@ -1,3 +1,18 @@
+  // csv download icon on any table page
+  // needs to be dynamically updated to use current search options
+  function update_csv_download_link (type, tab) {
+    var form = '#' + tab + '_form';
+    var query = $(form).serialize();
+
+    // this is needed otherwise we can 404 on url with traling slash
+    if (query.length) { query = '/' + query }
+
+    $('#nd_csv-download').attr('href', '/ajax/content/' + type + '/' + tab + query);
+  }
+
+  // page title includes tab name and possibly device name
+  // this is nice for when you have multiple netdisco pages open in the
+  // browser
   function update_page_title (tab) {
     var pgtitle = 'Netdisco';
     if ($('#nd_device-name').text().length) {
@@ -74,7 +89,8 @@
     [% IF report %]
     // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function (event) {
-      update_page_title('[% tab.tag %]');
+      update_page_title('[% report.tag %]');
+      update_csv_download_link('report', '[% report.tag %]');
       do_search(event, '[% report.tag %]');
     });
     [% END -%]
@@ -82,7 +98,7 @@
     [% IF task %]
     // for the admin pages
     $('[% "#${task.tag}_form" %]').submit(function (event) {
-      update_page_title('[% tab.tag %]');
+      update_page_title('[% task.tag %]');
       do_search(event, '[% task.tag %]');
     });
     [% END %]
