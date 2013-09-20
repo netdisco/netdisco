@@ -6,7 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab( { tag => 'vlan', label => 'VLAN' } );
+register_search_tab( { tag => 'vlan', label => 'VLAN', provides_csv => 1 } );
 
 # devices carrying vlan xxx
 get '/ajax/content/search/vlan' => require_login sub {

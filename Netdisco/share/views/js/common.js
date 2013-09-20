@@ -1,11 +1,17 @@
   // csv download icon on any table page
   // needs to be dynamically updated to use current search options
-  function update_csv_download_link (type, tab) {
+  function update_csv_download_link (type, tab, show) {
     var form = '#' + tab + '_form';
     var query = $(form).serialize();
 
-    $('#nd_csv-download').attr('href',
-      '/ajax/content/' + type + '/' + tab + '?' + query);
+    if (show == '1') {
+      $('#nd_csv-download').attr('href',
+        '/ajax/content/' + type + '/' + tab + '?' + query);
+      $('#nd_csv-download').show();
+    }
+    else {
+      $('#nd_csv-download').hide();
+    }
   }
 
   // page title includes tab name and possibly device name
@@ -56,7 +62,7 @@
     [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
-      update_csv_download_link('search', '[% tab.tag %]');
+      update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
       update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
       do_search(event, '[% tab.tag %]');
@@ -69,7 +75,7 @@
     [% FOREACH tab IN settings._device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
-      update_csv_download_link('device', '[% tab.tag %]');
+      update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
       update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
 
@@ -92,7 +98,7 @@
     // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function (event) {
       update_page_title('[% report.tag %]');
-      update_csv_download_link('report', '[% report.tag %]');
+      update_csv_download_link('report', '[% report.tag %]', '1');
       do_search(event, '[% report.tag %]');
     });
     [% END -%]
@@ -101,7 +107,7 @@
     // for the admin pages
     $('[% "#${task.tag}_form" %]').submit(function (event) {
       update_page_title('[% task.tag %]');
-      update_csv_download_link('task', '[% task.tag %]');
+      update_csv_download_link('task', '[% task.tag %]', '1');
       do_search(event, '[% task.tag %]');
     });
     [% END %]

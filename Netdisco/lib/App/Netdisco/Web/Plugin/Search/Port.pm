@@ -6,7 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ tag => 'port', label => 'Port' });
+register_search_tab({ tag => 'port', label => 'Port', provides_csv => 1 });
 
 # device ports with a description (er, name) matching
 get '/ajax/content/search/port' => require_login sub {

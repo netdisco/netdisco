@@ -6,7 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_device_tab( { tag => 'addresses', label => 'Addresses' } );
+register_device_tab( { tag => 'addresses', label => 'Addresses', provides_csv => 1 } );
 
 # device interface addresses
 get '/ajax/content/device/addresses' => require_login sub {

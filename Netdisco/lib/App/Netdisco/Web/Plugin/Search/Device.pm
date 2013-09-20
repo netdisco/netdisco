@@ -8,7 +8,7 @@ use List::MoreUtils ();
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab({ tag => 'device', label => 'Device' });
+register_search_tab({ tag => 'device', label => 'Device', provides_csv => 1 });
 
 my $headers = ['Device','Contact','Location','System Name','Model','OS Version','Management IP','Serial'];
 
