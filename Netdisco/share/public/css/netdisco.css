@@ -331,7 +331,16 @@ td > form.nd_inline-form {
 
 .nd_sidebar-pin {
   float: left;
-  margin-top: 6px;
+  margin-top: 8px;
+  margin-left: -16px;
+  font-size: 15px;
+  color: #555;
+  cursor: pointer;
+}
+
+.nd_sidebar-reset {
+  float: left;
+  margin-top: 27px;
   margin-left: -16px;
   font-size: 15px;
   color: #555;
@@ -340,7 +349,7 @@ td > form.nd_inline-form {
 
 #nd_sidebar-toggle-img-in {
   float: left;
-  margin-top: -9px;
+  margin-top: -10px;
   margin-left: -16px;
   font-size: 15px;
   color: #555;
