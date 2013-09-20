@@ -5,9 +5,10 @@
     var query = $(form).serialize();
 
     if (show == '1') {
-      $('#nd_csv-download').attr('href',
-        '/ajax/content/' + type + '/' + tab + '?' + query);
-      $('#nd_csv-download').show();
+      $('#nd_csv-download')
+        .attr('href', '/ajax/content/' + type + '/' + tab + '?' + query)
+        .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
+        .show();
     }
     else {
       $('#nd_csv-download').hide();
