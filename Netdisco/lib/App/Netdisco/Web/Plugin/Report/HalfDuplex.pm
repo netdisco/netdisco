@@ -10,6 +10,7 @@ register_report({
   category => 'Port',
   tag => 'halfduplex',
   label => 'Ports in Half Duplex Mode',
+  provides_csv => 1,
 });
 
 get '/ajax/content/report/halfduplex' => require_login sub {

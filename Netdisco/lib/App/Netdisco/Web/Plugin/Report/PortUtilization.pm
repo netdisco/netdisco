@@ -1,7 +1,6 @@
 package App::Netdisco::Web::Plugin::Report::PortUtilization;
 
 use Dancer ':syntax';
-use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
@@ -11,33 +10,22 @@ register_report(
     {   category => 'Device',
         tag      => 'portutilization',
         label    => 'Port Utilization',
+        provides_csv => 1,
     }
 );
 
-ajax '/ajax/content/report/portutilization' => require_login sub {
-    return unless schema('netdisco')->resultset('Device')->count;
-    my $set = schema('netdisco')->resultset('Virtual::PortUtilization');
-
-    content_type('text/html');
-    template 'ajax/report/portutilization.tt', { results => $set, },
-        { layout => undef };
-};
-
 get '/ajax/content/report/portutilization' => require_login sub {
-    my $format = param('format');
     return unless schema('netdisco')->resultset('Device')->count;
     my $set = schema('netdisco')->resultset('Virtual::PortUtilization');
 
-    if ( $format eq 'csv' ) {
-
-        header( 'Content-Type' => 'text/comma-separated-values' );
-        header( 'Content-Disposition' =>
-                "attachment; filename=\"portutilization.csv\"" );
-        template 'ajax/report/portutilization_csv.tt', { results => $set, },
+    if (request->is_ajax) {
+        template 'ajax/report/portutilization.tt', { results => $set, },
             { layout => undef };
     }
     else {
-        return;
+        header( 'Content-Type' => 'text/comma-separated-values' );
+        template 'ajax/report/portutilization_csv.tt', { results => $set, },
+            { layout => undef };
     }
 };
 
