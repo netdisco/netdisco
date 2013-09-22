@@ -210,6 +210,7 @@
       <td>
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.neighbor %]
+          <i class="icon-link"></i>
           <a href="[% uri_for('/device',
                 self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
