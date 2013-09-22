@@ -1,0 +1,22 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Device' 'Model' 'Device Location' 'Port' ' Port Name'
+              'Port Description' 'Channel' 'Tx Power mW' 'Tx Power dBm' ]) %]
+
+[% FOREACH row IN results.keys.sort %]
+  [% mydlist = [] %]
+  [% mydevice = results.$row.device.dns || results.$row.device.name %]
+  [% mydlist.push(mydevice) %]
+  [% mydlist.push(results.$row.device.model) %]
+  [% mydlist.push(results.$row.device.location) %]
+  [% FOREACH p IN results.$row.ports %]
+    [% myplist = [] %]
+    [% NEXT UNLESS p.channel # No channel port is admin down %]
+      [% FOREACH col IN [ p.port p.name p.descr p.channel p.power
+                          p.power2 ] %]
+        [% myplist.push(col) %]
+      [% END %]
+    [% CALL mydlist.splice(3, 6, myplist ) %]
+    [% CSV.dump(mydlist) %]
+
+  [% END %]
+[%END%]
