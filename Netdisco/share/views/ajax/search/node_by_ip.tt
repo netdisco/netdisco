@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <th>MAC</th>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <th>Vendor</th>
       [% END %]
       <th>Match</th>
@@ -19,7 +19,7 @@
       <td><a class="nd_linkcell"
         href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
           [% row.net_mac.$mac_format_call | html_entity %]</a></td>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <td>[% row.oui.company | html_entity %]</td>
       [% END %]
       <td>IP &rarr; MAC</td>
@@ -35,7 +35,7 @@
     [% FOREACH node IN row.node_sightings(archive_filter) %]
     <tr>
       <td>&nbsp;</td>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <td>&nbsp;</td>
       [% END %]
       <td>Switch Port</td>
@@ -56,7 +56,7 @@
     [% FOREACH nodeip IN row.ip_aliases(archive_filter) %]
     <tr>
       <td>&nbsp;</td>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <td>&nbsp;</td>
       [% END %]
       <td>MAC &rarr; IP</td>

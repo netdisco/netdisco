@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <th>MAC</th>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <th>Vendor</th>
       [% END %]
       <th>Match</th>
@@ -26,7 +26,7 @@
         &nbsp;
         [% END %]
       </a>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <td>
         [% IF first_row %]
         [% row.oui.company | html_entity %]
@@ -58,7 +58,7 @@
         &nbsp;
         [% END %]
       </td>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <td>
         [% IF first_row %]
         [% node.oui.company | html_entity %]
@@ -93,7 +93,7 @@
         &nbsp;
         [% END %]
       </td>
-      [% IF params.vendor %]
+      [% IF params.show_vendor %]
       <td>
         [% IF first_row %]
         [% port.oui.company | html_entity %]
