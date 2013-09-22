@@ -17,7 +17,7 @@
         href="[% device_ports %]&q=[% params.q | uri %]&f=[% row.port | uri %]">[% row.port | html_entity %]</a></td>
       <td>[% row.device_port.name | html_entity %]</td>
       <td><a class="nd_linkcell"
-        href="[% search_device %]&ip=[% row.subnet | uri %]">[% row.subnet | html_entity %]</a></td>
+        href="[% search_device %]&q=[% row.subnet | uri %]&ip=[% row.subnet | uri %]">[% row.subnet | html_entity %]</a></td>
     </tr>
     [% END %]
   </tbody>
