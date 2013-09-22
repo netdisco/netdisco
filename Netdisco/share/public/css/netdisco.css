@@ -206,7 +206,7 @@ td > form.nd_inline-form {
   font-weight: normal;
 }
 
-#nd_csv-download:hover {
+#nd_csv-download:hover, #nd_sidebar-reset-link:hover {
   text-decoration: none;
 }
 
