@@ -20,8 +20,8 @@
   // browser
   function update_page_title (tab) {
     var pgtitle = 'Netdisco';
-    if ($('#nd_device-name').text().length) {
-      var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ tab + '_link').text();
+    if ($.trim($('#nd_device-name').text()).length) {
+      pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
     }
     return pgtitle;
   }
@@ -44,14 +44,14 @@
   }
 
   // each sidebar search form has a hidden copy of the main navbar search
-  // query. when the tab query takes place, copy the navbar locally, then
-  // replicate to all other tabs.
   function copy_navbar_to_sidebar (tab) {
     var form = '#' + tab + '_form';
 
+    // copy navbar value to currently active sidebar form
     if ($('#nq').val()) {
       $(form).find("input[name=q]").val( $('#nq').val() );
     }
+    // then copy to all other inactive tab sidebars
     $('form').find("input[name=q]").each( function() {
       $(this).val( $(form).find("input[name=q]").val() );
     });
@@ -63,9 +63,9 @@
     [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
-      update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
-      update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
+      update_browser_history('[% tab.tag %]', pgtitle);
+      update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
       do_search(event, '[% tab.tag %]');
     });
     [% END %]
@@ -76,9 +76,9 @@
     [% FOREACH tab IN settings._device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
-      update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
-      update_browser_history('[% tab.tag %]', pgtitle);
       copy_navbar_to_sidebar('[% tab.tag %]');
+      update_browser_history('[% tab.tag %]', pgtitle);
+      update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
 
       [% IF tab.tag == 'ports' %]
       // to be fair I can't remember why we do this in JS and not from the app
@@ -93,7 +93,9 @@
 
       // form reset icon on ports tab
       $('#nd_sidebar-reset-link').attr('href', '/device?tab=ports&reset=on&' +
-        $('#ports_form').find('input[name="q"],input[name="f"],input[name="partial"]').serialize())
+        $('#ports_form')
+          .find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]')
+          .serialize())
       [% END %]
 
       do_search(event, '[% tab.tag %]');

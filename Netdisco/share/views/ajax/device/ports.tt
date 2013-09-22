@@ -24,7 +24,7 @@
         <i class="icon-fullscreen text-info"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="icon-arrow-down text-success"></i>
-        [% ELSIF row.up_admin == 'up' AND row.up != 'up' %]
+        [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
         <i class="icon-arrow-down text-error"></i>
         [% ELSE %]
         <i class="icon-angle-up text-success"></i>
@@ -210,6 +210,7 @@
       <td>
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.neighbor %]
+          <i class="icon-link"></i>
           <a href="[% uri_for('/device',
                 self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]

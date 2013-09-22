@@ -9,6 +9,7 @@ body {
 /* magnifying glass icon for search box */
 .nd_navbar-icon {
   vertical-align: sub;
+  margin-top: 4px;
   cursor: pointer;
 }
 
@@ -205,7 +206,7 @@ td > form.nd_inline-form {
   font-weight: normal;
 }
 
-#nd_csv-download:hover {
+#nd_csv-download:hover, #nd_sidebar-reset-link:hover {
   text-decoration: none;
 }
 
@@ -398,15 +399,15 @@ td > form.nd_inline-form {
 
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
-  width: 123px;
+  width: 121px;
   padding-left: 8px;
   cursor: pointer;
 }
 
 /* fixup for prepended partial port name checkbox in sidebar */
 .nd_port-partial-checkbox {
-  width: 136px;
-  padding: 0px 0px 0px 11px !important;
+  width: 84px;
+  padding: 0px 0px 0px 5px !important;
   cursor: pointer;
 }
 
@@ -415,6 +416,27 @@ td > form.nd_inline-form {
 }
 
 .nd_port-partial {
+  margin-left: 5px !important;
+  margin-top: -5px;
+  margin-bottom: 5px !important;
+}
+
+/* fixup for prepended invert port name checkbox in sidebar */
+.nd_port-invert-checkbox {
+  width: 30px;
+  padding: 0px 0px 0px 5px !important;
+  cursor: pointer;
+}
+
+.nd_port-invert-label {
+  padding: 0px !important;
+  /* for some reason only .add-on:first-child gets these */
+  -webkit-border-radius: 4px 0 0 4px !important;
+  -moz-border-radius: 4px 0 0 4px !important;
+  border-radius: 4px 0 0 4px !important;
+}
+
+.nd_port-invert {
   margin-left: 5px !important;
   margin-top: -5px;
   margin-bottom: 5px !important;
@@ -434,7 +456,7 @@ td > form.nd_inline-form {
 /* placement of form field in sidebar */
 .nd_side-input {
   margin-left: -3px;
-  width: 152px;
+  width: 151px;
 }
 
 /* placement of form field in sidebar */
