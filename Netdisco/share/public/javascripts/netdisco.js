@@ -82,6 +82,14 @@ function update_content(from, to) {
     var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ to + '_link').text();
   }
 
+  // navbar text decoration special case
+  if (to != 'device') {
+    $('#nq').css('text-decoration', 'none');
+  }
+  else {
+    form_inputs.each(function() {device_form_state($(this))});
+  }
+
   if (window.History && window.History.enabled && is_from_state_event == 0) {
     is_from_history_plugin = 1;
     window.History.pushState(
