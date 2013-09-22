@@ -68,6 +68,23 @@ hook 'before_template' => sub {
     $Template::Stash::PRIVATE = undef;
 };
 
+# remove empty lines from CSV response
+# this makes writing templates much more straightforward!
+hook 'after' => sub {
+    my $r = shift; # a Dancer::Response
+
+    if ($r->content_type and $r->content_type eq 'text/comma-separated-values') {
+        my @newlines = ();
+        my @lines = split m/\n/, $r->content;
+
+        foreach my $line (@lines) {
+            push @newlines, $line if $line !~ m/^\s*$/;
+        }
+
+        $r->content(join "\n", @newlines);
+    }
+};
+
 get qr{^/(?:login(?:/denied)?)?} => sub {
     template 'index';
 };
