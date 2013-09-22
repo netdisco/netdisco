@@ -5,7 +5,7 @@
   <div class="accordion-group">
       <div class="accordion-heading"> 
           <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count %]" href="#collapse-[% count %]">
-            <i class="[% row.size < 10 ? 'icon-chevron-down' : 'icon-chevron-up' %]"></i> &nbsp;
+            <i class="[% results.$row.ports.size < 10 ? 'icon-chevron-down' : 'icon-chevron-up' %]"></i> &nbsp;
             [% results.$row.device.dns || results.$row.device.name %] &nbsp;
             ( [% results.$row.device.model %] ) &nbsp;
             [% IF results.$row.device.location %]
@@ -13,7 +13,7 @@
             [% END %]
           </a>
       </div>
-    <div id="collapse-[% count %]" class="accordion-body collapse[% ' in' IF row.size < 10 %]">
+    <div id="collapse-[% count %]" class="accordion-body collapse[% ' in' IF results.$row.ports.size < 10 %]">
       <div class="accordion-inner">
       <table class="table table-bordered table-condensed">
         <thead>
