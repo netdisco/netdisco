@@ -399,7 +399,7 @@ td > form.nd_inline-form {
 
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
-  width: 123px;
+  width: 121px;
   padding-left: 8px;
   cursor: pointer;
 }
@@ -435,7 +435,7 @@ td > form.nd_inline-form {
 /* placement of form field in sidebar */
 .nd_side-input {
   margin-left: -3px;
-  width: 152px;
+  width: 151px;
 }
 
 /* placement of form field in sidebar */
