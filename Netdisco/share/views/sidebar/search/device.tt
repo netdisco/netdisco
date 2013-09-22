@@ -77,4 +77,5 @@
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
               </label>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Search Again</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Devices</button>

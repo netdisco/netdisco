@@ -88,7 +88,8 @@
         <input placeholder="Find Anything" class="search-query span3"
           id="nq" name="q" type="text" autocomplete="off"/>
         <span style="font-size: 24px;">
-        <i id="navsearchgo" class="icon-search nd_navbar-icon"></i>
+          <i id="navsearchgo" class="icon-search nd_navbar-icon"
+            rel="tooltip" data-placement="bottom" data-offset="5" data-title="New Search" data-container="body"></i>
         </span>
       </form>
       [% IF user_has_role('admin') %]

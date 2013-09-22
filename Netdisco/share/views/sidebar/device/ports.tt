@@ -124,4 +124,5 @@
                 </ul>
               </div>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">Update View</button>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>

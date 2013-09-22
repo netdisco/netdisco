@@ -9,6 +9,7 @@ body {
 /* magnifying glass icon for search box */
 .nd_navbar-icon {
   vertical-align: sub;
+  margin-top: 4px;
   cursor: pointer;
 }
 
