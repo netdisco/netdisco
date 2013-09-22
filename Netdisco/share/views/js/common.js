@@ -20,8 +20,8 @@
   // browser
   function update_page_title (tab) {
     var pgtitle = 'Netdisco';
-    if ($('#nd_device-name').text().length) {
-      var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ tab + '_link').text();
+    if ($.trim($('#nd_device-name').text()).length) {
+      pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
     }
     return pgtitle;
   }
