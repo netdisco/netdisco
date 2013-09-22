@@ -1,17 +1,16 @@
 package App::Netdisco::Web::Plugin::Device::Ports;
 
 use Dancer ':syntax';
-use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
-register_device_tab({ tag => 'ports', label => 'Ports' });
+register_device_tab({ tag => 'ports', label => 'Ports', provides_csv => 1 });
 
 # device ports with a description (er, name) matching
-ajax '/ajax/content/device/ports' => require_login sub {
+get '/ajax/content/device/ports' => require_login sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
@@ -122,12 +121,21 @@ ajax '/ajax/content/device/ports' => require_login sub {
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
     return unless scalar @$results;
 
-    content_type('text/html');
-    template 'ajax/device/ports.tt', {
-      results => $results,
-      nodes => $nodes_name,
-      device => $device,
-    }, { layout => undef };
+    if (request->is_ajax) {
+        template 'ajax/device/ports.tt', {
+          results => $results,
+          nodes => $nodes_name,
+          device => $device,
+        }, { layout => undef };
+    }
+    else {
+        header( 'Content-Type' => 'text/comma-separated-values' );
+        template 'ajax/device/ports_csv.tt', {
+          results => $results,
+          nodes => $nodes_name,
+          device => $device,
+        }, { layout => undef };
+    }
 };
 
 true;
