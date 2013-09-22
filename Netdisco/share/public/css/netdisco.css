@@ -406,8 +406,8 @@ td > form.nd_inline-form {
 
 /* fixup for prepended partial port name checkbox in sidebar */
 .nd_port-partial-checkbox {
-  width: 136px;
-  padding: 0px 0px 0px 11px !important;
+  width: 84px;
+  padding: 0px 0px 0px 5px !important;
   cursor: pointer;
 }
 
@@ -416,6 +416,27 @@ td > form.nd_inline-form {
 }
 
 .nd_port-partial {
+  margin-left: 5px !important;
+  margin-top: -5px;
+  margin-bottom: 5px !important;
+}
+
+/* fixup for prepended invert port name checkbox in sidebar */
+.nd_port-invert-checkbox {
+  width: 30px;
+  padding: 0px 0px 0px 5px !important;
+  cursor: pointer;
+}
+
+.nd_port-invert-label {
+  padding: 0px !important;
+  /* for some reason only .add-on:first-child gets these */
+  -webkit-border-radius: 4px 0 0 4px !important;
+  -moz-border-radius: 4px 0 0 4px !important;
+  border-radius: 4px 0 0 4px !important;
+}
+
+.nd_port-invert {
   margin-left: 5px !important;
   margin-top: -5px;
   margin-bottom: 5px !important;

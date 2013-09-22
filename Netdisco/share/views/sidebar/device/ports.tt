@@ -15,6 +15,13 @@
                 <label class="nd_checkboxlabel" for="partial">
                   <span class="nd_port-partial-checkbox uneditable-input">Partial Match</span>
                 </label>
+                <label class="add-on nd_port-invert-label">
+                  <input type="checkbox" id="invert"
+                    name="invert"[% ' checked="checked"' IF params.invert %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="invert">
+                  <span class="nd_port-invert-checkbox uneditable-input">Not</span>
+                </label>
               </div>
             </div>
             <div class="clearfix">

@@ -93,7 +93,9 @@
 
       // form reset icon on ports tab
       $('#nd_sidebar-reset-link').attr('href', '/device?tab=ports&reset=on&' +
-        $('#ports_form').find('input[name="q"],input[name="f"],input[name="partial"]').serialize())
+        $('#ports_form')
+          .find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]')
+          .serialize())
       [% END %]
 
       do_search(event, '[% tab.tag %]');

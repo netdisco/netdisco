@@ -36,10 +36,15 @@ ajax '/ajax/content/device/ports' => require_login sub {
                 $f =~ s/\*/%/g;
                 $f =~ s/\?/_/g;
                 # set wilcards at param boundaries
-                $f =~ s/^\%*/%/;
-                $f =~ s/\%*$/%/;
+                if ($f !~ m/[%_]/) {
+                    $f =~ s/^\%*/%/;
+                    $f =~ s/\%*$/%/;
+                }
                 # enable ILIKE op
-                $f = { '-ilike' => $f };
+                $f = { (param('invert') ? '-not_ilike' : '-ilike') => $f };
+            }
+            elsif (param('invert')) {
+                $f = { '!=' => $f };
             }
 
             if ($set->search({'me.port' => $f})->count) {
