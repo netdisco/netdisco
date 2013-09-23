@@ -1,3 +1,50 @@
+2.017000 - 2013-09-23
+
+  [NEW FEATURES]
+
+  * CSV download support for plugins
+  * CSV download option for many reports and search/device results tabs
+  * Icon in device port sidebar to reset to display defaults
+  * Add "not" option in device port sidebar to invert Port/Name/VLAN filter
+
+  [ENHANCEMENTS]
+
+  * Try to make clear the intent of the navbar search and sidebar search
+  * Device port sidebar legen display improvements
+  * Minor CSS tweaks
+  * Better logic for wildcarding on partial device port name match
+  * Show manual topology links in device port table (yellow icon)
+  * Change order or user tasks menu to have logout at the bottom
+  * Show SNMP::Info version in the about page (if installed)
+  * Navbar background image :-)
+  * Documentation of the following features:
+    Main App::Netdsisco page:
+      - How to migrate from Netdisco 1.x
+      - Suggest enable "housekeeping" setting in config after install
+    Manual::Development:
+      - How to git clone and run web server in dev mode
+    Manual::WritingPlugins:
+      - Plugins can return CSV data
+      - Dancer route handler Role Based Access Control
+      - ~/site_plugins INC dir supported for locally developed Plugins
+      - App::NetdiscoX::Web::Plugin:: namespace for non-core Plugins
+      - How to load Javascript and CSS files in <head> from a Plugin
+      - Advice on supporting config settings (deployment.yml) in Plugins
+      - Device Port column Plugins
+      - Observium plugin (an example of a device port column plugin)
+
+  [BUG FIXES]
+
+  * Depend on newer Starman to avoid nasty EPIPE bug
+  * Page title update fixes
+  * Make sure navbar search field is always filled when internally linking
+  * Fix APs channel list collapse when more than 10 APs
+  * Make navbar search strikethrough work in more corner cases
+  * Treat ifStatus "dormant" interfaces as "up"
+  * Remove collision in "vendor" query string param name
+  * Clear port remote_* details when manual topology is deleted
+  * Misnamed no_port_control option is renamed to check_userlog
+
 2.016003 - 2013-09-12
 
   [BUG FIXES]
@@ -23,12 +70,12 @@
 
   * Wireless AP Reports (jeneric)
   * About page (jeneric)
+  * Allow port list filtering by port state (up/down/etc)
+  * Explicit partial match setting for port filter
 
   [ENHANCEMENTS]
 
   * Store port control and device delete log messages
-  * Allow port list filtering by port state (up/down/etc)
-  * Explicit partial match setting for port filter
 
   [BUG FIXES]
 

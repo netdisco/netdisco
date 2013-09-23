@@ -35,6 +35,18 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.017000
+
+=head2 General Notices
+
+There is a bug in Macsuck whereby in rare circumstances some invalid SQL is
+generated. The root cause is known but we want to take more time to get the
+fix right. It should only be a few more days.
+
+The C<no_port_control> configuration setting is now called C<check_userlog>
+and its logic is inverted. Don't worry if this is not familiar to you - the
+option is only used by Netdisco Developers.
+
 =head1 2.016000
 
 =head2 General Notices
