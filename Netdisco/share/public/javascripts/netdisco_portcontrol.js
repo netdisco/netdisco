@@ -37,7 +37,7 @@ function port_control (e) {
         td.data('action', 'up');
       }
       else if ($.trim(td.data('action')) == 'up') {
-        td.prev('td').html('<i class="icon-refresh"></i>');
+        td.prev('td').html('<i class="icon-refresh icon-spin"></i>');
         $(e).toggleClass('icon-hand-up');
         $(e).toggleClass('icon-hand-down');
         $(e).data('tooltip').options.title = 'Click to Disable';
