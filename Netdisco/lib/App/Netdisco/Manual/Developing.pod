@@ -36,20 +36,20 @@ codebase, hopefully in enough detail that you can get hacking yourself :-)
 
 This is Netdisco major version 2. The minor version has six digits, which are
 split into two components of three digits each. It's unlikely that the major
-version number (2) will increment. Each "feature" release to CPAN will
-increment the first three digits of the minor version. Each "bug fix" release
+version number (2) will increment. Each "significant" release to CPAN will
+increment the first three digits of the minor version. Each "trivial" release
 will increment the second three digits of the minor version.
 
-Stable releases will have an even "feature" number. Beta releases will have an
-odd "feature" number and also a suffix with an underscore, to prevent CPAN
+Beta releases will have a a suffix with an underscore, to prevent CPAN
 indexing the distribution. Some examples:
 
- 2.002002     - "feature" release 2, "bug fix" release 2
- 2.002003     - another bug was found and fixed, hence "bug fix" release 3
- 2.003000_001 - first beta for the next "feature" release
+ 2.002002     - "significant" release 2, second "trivial" release
+ 2.002003     - a bug was found and fixed, hence "trivial" release 3
+ 2.003000_001 - first beta for the next "significant" release
  2.003000_002 - second beta
- 2.004000     - the next "feature" release
+ 2.004000     - the next "significant" release
 
+The words "significant" and "trivial" are entirely subjective, of course.
 
 =head1 Global Configuration
 
@@ -97,7 +97,6 @@ connections with them. The connections are managed transparently so all we
 need to do to access the Netdisco database, with no additional setup, is:
 
  schema('netdisco')->resultset(...)->search({...});
-
 
 =head1 DBIx::Class Layer
 
@@ -174,14 +173,10 @@ using the C<nd-dbic-versions> script which also ships with the distribution.
 
 =head2 Foreign Key Constraints
 
-We have not yet deployed any FK constraints into the Netdisco schema. This is
+We have not deployed any FK constraints into the Netdisco schema. This is
 partly because the current poller inserts and deletes entries from the
 database in an order which would violate such constraints, but also because
 some of the archiving features of Netdisco might not be compatible anyway.
-
-Regardless, a lack of FK constraints doesn't upset DBIx::Class. The
-constraints can easily be deployed in a future release of Netdisco.
-
 
 =head1 Web Application
 
@@ -235,24 +230,7 @@ server so you can fire-and-forget the Netdisco web app without much trouble at
 all. This script in turn calls C<netdisco-web-fg> which is the real Dancer
 application, that runs in the foreground if called on its own.
 
-All web app code lives below L<App::Netdisco::Web>, but there are also some
-helper routines in L<App::Netdisco::Util::Web> (for example sorting device
-port names).
-
-If you're working on code in the web application, it's possible to have the
-app restart itself each time you save a file in your editor. The following
-command will watch the C<lib> and C<share> folder trees for changes, and you
-probably want to edit your C<deployment.yml> configuration to enable
-additional logging (see L<App::Netdisco::Manual::Configuration>):
-
- DANCER_ENVIRONMENT=development DBIC_TRACE_PROFILE=console DBIC_TRACE=1 \
-     ~/bin/localenv starman -R lib,share bin/netdisco-web-fg
-
 =head2 Authentication
-
-Dancer includes (of course) good session management using cookies and a memory
-database. You should change this to a disk database if using a proper forking
-web server installation so that sessions are available to all instances.
 
 Session and authentication code lives in L<App::Netdisco::Web::AuthN>. It is
 fully backwards compatible with the existing Netdisco user management, making
@@ -260,6 +238,15 @@ use of the database users and their MD5 passwords.
 
 There is also support for unauthenticated access to the web app (for instance
 if you have some kind of external authentication, or simply trust everyone).
+See L<App::Netdisco::Manual::Configuration> for further details.
+
+=head2 Authorization
+
+Every Dancer route handler must have proper role based access control enabled,
+to prevent unauthorized access to Netdisco's data, or admin features. This is
+done with the L<Dancer::Plugin::Auth::Extensible> module. It handles both the
+authentication using Netdisco's database, and then protects each route
+handler. See L<App::Netdisco::Manual::WritingPlugins> for details.
 
 =head2 Templates
 
@@ -336,22 +323,6 @@ they're loaded within the page body by the templates. These files contain a
 function C<inner_view_processing> which is called each time AJAX delivers new
 content into a tab in the page (think of it like a callback, perhaps).
 
-Also in the C<share/public/javascripts/...> folder are the other public
-libraries loaded by the Netdisco application:
-
-The Toastr library is used for "Growl"-like notifications which appear in the
-corner of the web browser and then fade away. These notify the user of
-successful background job submission, and jos results.
-
-The d3 library is a graphics toolkit used to display the NetMap feature. This
-works differently from the old Netdisco in that everything is generated
-on-the-fly using SQL queries (C<DeviceLinks> resultset) and this d3 library
-for rendering.
-
-Finally Twitter Bootstrap also ships with a toolkit of helpful Javascript
-driven features such as the tooltips and collapsers.
-
-
 =head1 Job Daemon
 
 The old Netdisco has a job control daemon which processes "port control"
@@ -361,12 +332,9 @@ web application. However, it still makes use of the Dancer configuration and
 database connection management features mentioned above.
 
 The job daemon is backwards compatible with the old Netdisco database job
-requests table, although it doesn't yet log results in the same way. Most
-important, it cannot yet poll any devices for discovery or macsuck/arpnip,
-although that's next on the list!
-
-All code for the job daemon lives under the L<App::Netdisco::Daemon> namespace
-and like the rest of Netdisco is broken down into manageable chunks.
+requests table. All code for the job daemon lives under the
+L<App::Netdisco::Daemon> namespace and like the rest of Netdisco is broken
+down into manageable chunks.
 
 =head2 Running the Job Daemon
 
@@ -384,7 +352,7 @@ runs in the foreground if called on its own.
 The job daemon is based on the L<MCE> library, which handles the forking and
 management of child processes doing the actual work. This actually runs in the
 foreground unless wrapped with Daemon::Control, as mentioned above. MCE
-handles three flavours of "worker" for different tasks.
+handles four flavours of "worker" for different tasks.
 
 One goal that we had designing the daemon was that sites should be able to run
 many instances on different servers, with different processing capacities.
@@ -406,10 +374,8 @@ the "interactive" jobs of workers we have two types of worker.
 
 The Interactive worker picks jobs from the local job queue relating to device
 and port reconfiguration only. It submits results directly back to the central
-Netdisco database.
-
-The Poller worker (is not yet written!) and similarly picks job from the local
-queue, this time relating to device discovery and polling.
+Netdisco database. The Poller worker similarly picks job from the local queue,
+this time relating to device discovery and polling.
 
 There is support in the daemon for the workers to pick more than one job at a
 time from the local queue, in case we decide this is worth doing. However the
@@ -418,6 +384,11 @@ it has workers available (so as not to hog jobs for itself against other
 daemons on other servers). The user is free to configure the number of
 Interactive and Poller workers in their C<config.yml> file (zero or more of
 each).
+
+The fourth kind of worker is called the Scheduler and takes care of adding
+discover, macsuck, and arpnip jobs to the queue (which are in turn handled by
+the Poller worker). This worker is automatically started only if the user has
+enabled the "C<housekeeping>" section of their C<deployment.yml> site config.
 
 =head2 SNMP::Info
 
@@ -433,9 +404,6 @@ provides routines to map interface and PoE IDs.
 Configuration for SNMP::Info comes from the YAML files, of course. This means
 that our C<mibhome> and C<mibdirs> settings are now in YAML format. In
 particular, the C<mibdirs> list is a real list within the configuration.
-
-Other libraries will be added to this namespace in due course, as we add more
-functionality to the Job Daemon.
 
 =head2 DBIx::Class Layer
 

@@ -220,16 +220,21 @@ Run the following command to start the web-app server as a backgrounded daemon
  ~/bin/netdisco-web start
 
 If the Inventory is empty because this is a new installation, you probably
-want to either run some polling jobs from the command-line, or give a web user
-some admin rights (TODO: user rights management).
+want to run some polling jobs. This can be done from from the web interface or
+command-line (see L<netdisco-do>).
 
 Run the following command to start the job control daemon (port control, etc):
 
  ~/bin/netdisco-daemon start
 
-You should take care not to run this Netdisco daemon and the legacy daemon at
-the same time. Similarly, if you use the device discovery with Netdisco 2,
-disable your system's cron jobs for the Netdisco 1 poller.
+You should take care not to run this Netdisco daemon and the Netdisco 1.x
+daemon at the same time. Similarly, if you use the device discovery with
+Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
+
+At this point you can revisit the C<~/environments/deployment.yml> file to
+uncomment more configuration. Check out the community string settings, and
+C<housekeeping> which enables the automatic periodic device discovery. See
+L<Configuration|App::Netdisco::Manual::Configuration> for further details.
 
 =head1 Upgrading
 
@@ -296,13 +301,6 @@ Lots of information about the architecture of this application is contained
 within the L<Developer|App::Netdisco::Manual::Developing> documentation.
 
 =head1 Caveats
-
-Some sections are not yet implemented, e.g. the I<Device Module> tab.
-
-Some menu items on the main black navigation bar go nowhere.
-
-None of the Reports yet exist (e.g. searching for wireless devices, or duplex
-mismatches). These will be implemented as a plugin bundle.
 
 The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
 

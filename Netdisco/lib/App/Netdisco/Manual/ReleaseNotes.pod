@@ -8,6 +8,33 @@ This document will list only the most significant changes with each release of
 Netdisco. You are B<STRONGLY> recommended to read this document each time you
 install and upgrade. Also see the Changes file, for more information.
 
+=head1 Migrating from Netdisco 1.x
+
+This distribution (App::Netdisco) is a complete rewrite of the Netdisco
+application. Users often ask whether they can run both versions at the same
+time, and whether the database must be copied. Here are the guidelines for
+migrating from Netdisco 1.x:
+
+=over 4
+
+=item *
+
+You can run both Netdisco 1.x and App::Netdisco web frontends at the same
+time, using the same database.
+
+=item *
+
+Only enable the backend daemon and discovery jobs from I<either> Netdisco 1.x
+I<or> App::Netdisco.
+
+=item *
+
+You can share a single database between Netdisco 1.x and App::Netdisco. The
+deploy script for App::Netdisco will make some schema changes to the database,
+but they are backwards compatible.
+
+=back
+
 =head1 2.016000
 
 =head2 General Notices

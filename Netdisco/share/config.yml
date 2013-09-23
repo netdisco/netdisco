@@ -51,7 +51,7 @@ web_plugins:
   - Device::Modules
   - Device::Neighbors
   - Device::Addresses
-web_plugins_extra: []
+extra_web_plugins: []
 
 # -------------
 # NETDISCO CORE

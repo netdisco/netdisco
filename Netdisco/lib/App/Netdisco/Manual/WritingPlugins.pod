@@ -14,7 +14,7 @@ See L<App::Netdisco::Web::Plugin> for more general information about plugins.
 =head1 Developing Plugins
 
 A plugin is simply a Perl module which is loaded. Therefore it can do anything
-you like, but most usefully for the App::Netdisco web application, the module
+you like, but most usefully for the App::Netdisco web application the module
 will install a L<Dancer> route handler subroutine, and link this to a web user
 interface (UI) component.
 
@@ -29,15 +29,15 @@ Here's the boilerplate code for our example plugin module:
  package App::Netdisco::Web::Plugin::MyNewFeature
  
  use Dancer ':syntax';
- use Dancer::Plugin::Ajax;
  use Dancer::Plugin::DBIC;
+ use Dancer::Plugin::Auth::Extensible;
  
  use App::Netdisco::Web::Plugin;
  
  # plugin registration code goes here, ** see below **
  
- # your Dancer route handler, for example:
- get '/mynewfeature' => sub {
+ # your Dancer route handler
+ get '/mynewfeature' => require_login sub {
    # ...lorem ipsum...
  };
  
@@ -91,17 +91,16 @@ Therefore your plugin module should look like the following:
  package App::Netdisco::Web::Plugin::Search::MyNewFeature
  
  use Dancer ':syntax';
- use Dancer::Plugin::Ajax;
  use Dancer::Plugin::DBIC;
+ use Dancer::Plugin::Auth::Extensible;
  
  use App::Netdisco::Web::Plugin;
  
  register_search_tab({tag => 'newfeature', label => 'My New Feature'});
  
- ajax '/ajax/content/search/newfeature' => sub {
+ get '/ajax/content/search/newfeature' => require_login sub {
    # ...lorem ipsum...
  
-   content_type('text/html');
    # return some HTML content here, probably using a template
  };
  
@@ -168,12 +167,38 @@ the following URL:
 
  /ajax/content/report/<report tag>
 
-Therefore you should implement in your plugin an AJAX handler for this path.
+Therefore you should implement in your plugin a route handler for this path.
 The handler must return the HTML content for the report. It can also process
 any query parameters which might customize the report search.
 
 See the L<App::Netdisco::Web::Plugin::Report::DuplexMismatch> module for a
 simple example of how to implement the handler.
+
+=head1 CSV Response
+
+Most pages in Netdisco are a table with data. It's possible to have the
+application add a link to download a CSV version of the same data. To do this,
+include the following option in your call to C<register_search_tab>,
+C<register_device_tab>, or C<register_report>:
+
+ provides_csv => 1
+
+The other thing you need to do is adjust your Dancer route handler to return
+either HTML or CSV data. Here's the typical way to do it:
+
+ get '/ajax/content/search/newfeature' => require_login sub {
+   # build some kind of dataset here (e.g. a DBIx::Class query)
+
+   if (request->is_ajax) {
+     template 'mytemplate', { data => $mydataset }, { layout => undef };
+   }
+   else {
+     header( 'Content-Type' => 'text/comma-separated-values' );
+     template 'mytemplate_csv', { data => $mydataset }, { layout => undef };
+   }
+ };
+
+Note that the C<is_ajax> call is part of the standard Dancer featureset.
 
 =head1 Admin Tasks
 
@@ -192,6 +217,64 @@ Feature" which when clicked sends the user to the C</admin/mynewfeature> page.
 Note that this won't work for any target link - the path must be an
 App::Netdisco Dancer route handler. Please bug the App::Netdisco devs if you
 want arbitrary links supported.
+
+=head1 Device Port Columns
+
+You can also add columns to the Device Ports page. The canonical example of
+this is to add hyperlinks (or embedded images) of traffic graphs for each
+port, however the plugin is a regular Template::Toolkit template so can be any
+HTML output.
+
+The column plugin has a name (used internally to locate files on disk), label
+(the heading for the column in the table or CSV output), position in the table
+(three options: left, mid, right), and finally a flag for whether the column
+is displayed by default.
+
+To register the column call the following helper routine:
+
+ register_device_port_column({
+   name  => 'myportcolumnplugin',
+   label => 'My Port Column Heading',
+   position => 'left', # or "mid" or "right"
+   default  => 'on',   # or undef
+ });
+
+App::Netdisco searches for one Template::Toolkit file in the regular template
+include paths (see also C<register_template_path>, below). The template must
+be called "C<device_port_column.tt>" on disk and live in the directory:
+
+ plugin/myportcolumnplugin/device_port_column.tt
+
+For a good example of this, see the L<App::NetdiscoX::Web::Plugin::Observium>
+distribution.
+
+=head1 User Authorization
+
+All Dancer route handlers must have proper authorization configured. This is
+not difficult. Make sure that your module loads the
+L<Dancer::Plugin::Auth::Extensible> module (as shown above).
+
+For each route handler you either simply require that a user be logged in, or
+that the user is an administrator.
+
+To require a logged in user, include the C<require_login> wrapper:
+
+ get '/ajax/content/search/newfeature' => require_login sub {
+    # etc .....
+
+To require an administrator, specify their role:
+
+ get '/ajax/control/admin/newfeature' => require_role admin => sub {
+    # etc .....
+
+Finally in case you need it, the other role a user can have is
+C<port_control>:
+
+ ajax '/ajax/portcontrol' => require_role port_control => sub {
+    # etc .....
+
+Take care over the subtle differences in syntax, especially the placement of
+the fat comma ("C<< => >>").
 
 =head1 Templates
 
@@ -215,7 +298,7 @@ templates along with your plugin, as shown.
 Each path added using C<register_template_path> is searched I<before> any
 existing paths in the template config.
 
-=head3 Template Variables
+=head2 Template Variables
 
 Some useful variables are made available in your templates automatically by
 App::Netdisco:
@@ -259,6 +342,79 @@ current page with some additional parameters, for example:
  <a href="[% uri_for('/device', self_options) %]&foo=bar" ...>
 
 =back
+
+=head1 Javascript and Stylesheets
+
+A simple mechanism exists for loading additional Javascript and CSS documents.
+This is done in the C<< <head> >> section of the web page.
+
+Within a Template include path (see C<register_template_path>, above) create a
+directory called "C<plugin>" and within that another directory named after
+your plugin (e.g. "C<mynewfeature>"). The Javascript and/or CSS files must
+then be named "C<mynewfeature.js>" and "C<mynewfeature.css>" respectively.
+For example:
+
+  plugin/mynewfeature/mynewfeature.js
+  plugin/mynewfeature/mynewfeature.css
+
+Tell App::Netdisco that you wish to load one or the other using the following
+helper routines:
+
+  register_javascript('mynewfeature');
+  register_css('mynewfeature');
+
+Note that this searches all template include paths, both those built into the
+application and those configured in your plugin(s) with
+C<register_template_path>.
+
+=head1 Naming and File Location
+
+There are several options for how you name, distribute and install your
+App::Netdisco plugin.
+
+=head2 Namespaces
+
+As mentioned in L<App::Netdisco::Web::Plugin>, official Netdisco plugins live
+in the C<App::Netdisco::Web::Plugin::> namespace. You can use this namespace
+and submit the product to the Netdisco developer team for consideration for
+inclusion in the official distribution.
+
+Alternatively you can release the plugin to CPAN under your own account. In
+that case we request that you instead use the C<App::NetdiscoX::Web::Plugin::>
+namespace (note the "X"). Users can load such modules by using the
+abbreviated form "X::MyPluginName" which is then expanded to the full package.
+
+=head2 File Location
+
+If writing your own plugins, Netdisco supports a local include path which is
+usually C<~/site_plugins> (or C<${NETDISCO_HOME}/site_plugins>).
+
+This means if your plugin is called
+"App::NetdiscoX::Web::Plugin::MyPluginName" then it could live at:
+
+ ~/site_plugins/App/NetdiscoX/Web/Plugin/MyPluginName.pm
+
+This feature should make development of new plugins or maintenance of local
+plugins much more straighforward.
+
+=head1 Plugin Configuration
+
+You can support new configuration items which the user should add to their
+C<~/environments/deployment.yml> file. Please use a single Hash-Ref option
+named "C<plugin_mypluginname>" (if your plugin's called C<mypluginname>). For
+example:
+
+ plugin_observium:
+   webhost: "web-server.example.com"
+   open_in_new_window: true
+
+You can then refer to this configuration in your plugin module:
+
+ my $webhost = setting('plugin_observium')->{'webhost'};
+
+Or in templates via Dancer's C<settings> key:
+
+ <a href="http://[% settings.plugin_observium.webhost | uri %]/>Observium</a>
 
 =cut
 
