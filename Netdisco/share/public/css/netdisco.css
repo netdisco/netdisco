@@ -6,6 +6,10 @@ body {
   padding-top: 50px;
 }
 
+.navbar-inner .container {
+  background: url(../images/navbar_disco.png) no-repeat;
+}
+
 /* magnifying glass icon for search box */
 .nd_navbar-icon {
   vertical-align: sub;
