@@ -66,7 +66,7 @@ function port_control (e) {
 // on load, establish global delegations for now and future
 $(document).ready(function() {
   // for growl-like functionality, check for notifications periodically
-  if (nd_port_control) {
+  if (nd_check_userlog) {
     (function worker() {
       $.ajax({
         url: uri_base + '/ajax/userlog'

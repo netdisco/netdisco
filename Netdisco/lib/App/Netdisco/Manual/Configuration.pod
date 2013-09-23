@@ -532,12 +532,13 @@ Interfaces too)
 B<EXTREMELY VERY DANGEROUS>: Turning off uplinks will take out chunks of your
 network.
 
-=head3 C<no_port_control>
+=head3 C<check_userlog>
 
-Value: Boolean. Default: C<false>.
+Value: Boolean. Default: C<true>.
 
-Set to true to disable globally support for Port Control. Mainly useful for
-development to suppress web frontend job queue callbacks.
+Set to false to disable the periodic AJAX check for completed entries in the
+job queue for this user. Mainly useful for development to suppress noisy web
+frontend activity.
 
 =head2 Backend Daemon
 

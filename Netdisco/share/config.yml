@@ -107,7 +107,7 @@ vlanctl: true
 portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false
-no_port_control: false
+check_userlog: true
 
 # --------------
 # BACKEND DAEMON
