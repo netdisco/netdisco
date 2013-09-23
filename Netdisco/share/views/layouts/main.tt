@@ -133,12 +133,13 @@
           [% ELSE %]
             <i class="icon-user"></i>
           [% END %]&nbsp;
-            [% session.logged_in_user | html_entity %] <b class="caret"></b></a>
-            <ul class="dropdown-menu">
+            [% session.logged_in_user | html_entity %] <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="[% uri_for('/about') %]">About</a></li>
           [% IF NOT settings.no_auth %]
-              <li><a href="[% uri_for('/logout') %]">Log Out</a></li>
+            <li><a href="[% uri_for('/logout') %]">Log Out</a></li>
           [% END %]
-              <li><a href="[% uri_for('/about') %]">About</a></li>
           </ul>
         </li> <!-- /dropdown -->
       </ul>
