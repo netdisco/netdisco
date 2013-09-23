@@ -55,7 +55,7 @@ ajax '/ajax/control/admin/topology/add' => require_role admin => sub {
             ->search({port => param('port1')}, {for => 'update'})
             ->single()
             ->update({
-              remote_ip => param('dev2'),
+              remote_ip   => param('dev2'),
               remote_port => param('port2'),
               remote_type => undef,
               remote_id   => undef,
@@ -67,7 +67,7 @@ ajax '/ajax/control/admin/topology/add' => require_role admin => sub {
             ->search({port => param('port2')}, {for => 'update'})
             ->single()
             ->update({
-              remote_ip => param('dev1'),
+              remote_ip   => param('dev1'),
               remote_port => param('port1'),
               remote_type => undef,
               remote_id   => undef,
@@ -90,6 +90,43 @@ ajax '/ajax/control/admin/topology/del' => require_role admin => sub {
           port2 => param('port2'),
         })->delete;
     });
+
+    # re-set remote device details in affected ports
+    # could fail for bad device or port names
+    try {
+        schema('netdisco')->txn_do(sub {
+          # only work on root_ips
+          my $left  = get_device(param('dev1'));
+          my $right = get_device(param('dev2'));
+
+          # skip bad entries
+          return unless ($left->in_storage and $right->in_storage);
+
+          $left->ports
+            ->search({port => param('port1')}, {for => 'update'})
+            ->single()
+            ->update({
+              remote_ip   => undef,
+              remote_port => undef,
+              remote_type => undef,
+              remote_id   => undef,
+              is_uplink   => \"false",
+              manual_topo => \"false",
+            });
+
+          $right->ports
+            ->search({port => param('port2')}, {for => 'update'})
+            ->single()
+            ->update({
+              remote_ip   => undef,
+              remote_port => undef,
+              remote_type => undef,
+              remote_id   => undef,
+              is_uplink   => \"false",
+              manual_topo => \"false",
+            });
+        });
+    };
 };
 
 ajax '/ajax/content/admin/topology' => require_role admin => sub {
