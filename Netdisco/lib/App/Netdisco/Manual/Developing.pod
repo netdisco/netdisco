@@ -7,6 +7,49 @@ App::Netdisco::Manual::Developing - Notes for contributors
 This document aims to help developers understand the intent and design of the
 code within Netdisco. Patches and feedback are always welcome :-)
 
+=head1 TLDR; I want to clone git and run the web server.
+
+First do a normal App::Netdisco install into a dedicated user's home, as per
+the L<documentation|App::Netdisco>. Then:
+
+ su - netdisco && cd $HOME
+ mkdir git && cd git
+  
+ git clone git://git.code.sf.net/p/netdisco/netdisco-ng netdisco-ng
+ cd netdisco-ng/Netdisco
+  
+ ~/bin/localenv DBIC_TRACE_PROFILE=console DBIC_TRACE=1 plackup -R share,lib -p 5001 bin/netdisco-web-fg
+
+The above creates you a git clone (change the URL if you're a Netdisco
+Developer) and runs the web server:
+
+=over 4
+
+=item *
+
+In the foreground
+
+=item *
+
+Using a single process only (no forking)
+
+=item *
+
+With L<DBIx::Class> tracing
+
+=item *
+
+On port 5001 so it won't conflict with any already-running web frontend
+
+=item *
+
+Restarts the web server when you save a file in the C<share> or C<lib> directory
+
+=back
+
+You should be able to work out something similar for
+C<bin/netdisco-daemon-fg>, too. Happy hacking!
+
 =head1 Introduction
 
 This release of Netdisco is built as a L<Dancer> application, and uses many
