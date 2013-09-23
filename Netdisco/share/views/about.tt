@@ -3,7 +3,7 @@
       <div class="hero-unit">
         <h2>About Netdisco</h2>
         <small>Netdisco is a web-based network management tool designed for
-        network administrators.  Data is collected into a Postgres database
+        network administrators.  Data is collected into a PostgreSQL database
         using SNMP.</small>
       </div>
     <div class="row">
@@ -22,27 +22,32 @@
               <th>[% disco_ver | html_entity %]</th>
             </tr>
             <tr>
+              <th><a href="https://metacpan.org/module/netdisco-db-deploy">DB Schema</a></th>
+              <th>v[% schema_ver | html_entity %]</th>
+            </tr>
+            <tr>
               <th><a href="http://http://perldancer.org/">Dancer</a></th>
               <th>[% dancer_ver | html_entity %]</th>
             </tr>
             <tr>
-              <th><a href="http://www.perl.org">Perl</a></th>
-              <th>[% perl_ver | html_entity %]</th>
+              <th><a href="http://getbootstrap.com">Bootstrap</a></th>
+              <th>[%# Can't determine magically %] 2.3.1</th>
             </tr>
             <tr>
               <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
               <th>
-                [% db_version| html_entity %] DBI [% dbi_ver | html_entity %]
+                [% db_version| html_entity %].<br />
+                &nbsp;DBI [% dbi_ver | html_entity %],
                 DBD::Pg [% dbdpg_ver | html_entity %]
               </th>
             </tr>
             <tr>
-              <th><a href="http://getbootstrap.com">Bootstrap</a></th>
-              <th>[% # Can't determine magically %] 2.3.1</th>
+              <th><a href="http://http://snmp-info.sourceforge.net/">SNMP::Info</a></th>
+              <th>[% snmpinfo_ver | html_entity %]</th>
             </tr>
             <tr>
-              <th><a href="http://http://snmp-info.sourceforge.net/">SNMP::Info</a></th>
-              <th>[% # Don't want to load in web to get version %]</th>
+              <th><a href="http://www.perl.org">Perl</a></th>
+              <th>[% perl_ver | html_entity %]</th>
             </tr>
           </tbody>
         </table>

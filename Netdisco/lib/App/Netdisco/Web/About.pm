@@ -56,6 +56,9 @@ get '/about' => require_login sub {
     my $dbi_ver    = $DBI::VERSION;
     my $dbdpg_ver  = $DBD::Pg::VERSION;
 
+    eval 'require SNMP::Info';
+    my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
+
     var( nav => 'about' );
 
     template 'about',
@@ -75,6 +78,8 @@ get '/about' => require_login sub {
         db_version        => $db_version,
         dbi_ver           => $dbi_ver,
         dbdpg_ver         => $dbdpg_ver,
+        snmpinfo_ver      => $snmpinfo_ver,
+        schema_ver        => $schema_version,
         };
 };
 

@@ -54,7 +54,7 @@ only the daemon config contains any community strings.
 
 =item *
 
-Use separate Postgres users for web frontend and daemon, such that the web
+Use separate PostgreSQL users for web frontend and daemon, such that the web
 frontend user cannot SELECT from the C<community> DB table.
 
 =back
