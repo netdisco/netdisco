@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Respect ignore_interfaces and i_ignore when detecting wrapped device uptime
+  * Try NodeIp OUI company name search if no node results found
 
   [BUG FIXES]
 

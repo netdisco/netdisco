@@ -59,6 +59,18 @@ ajax '/ajax/content/search/node' => require_login sub {
             }
             $set = schema('netdisco')->resultset('NodeIp')
               ->search_by_dns({dns => $node, @active});
+
+            # if the user selects Vendor search opt, then
+            # we'll try the OUI company name as a fallback
+            if (not $set->count and param('show_vendor')) {
+                $node = param('q');
+                $set = schema('netdisco')->resultset('NodeIp')
+                  ->with_times
+                  ->search(
+                    {'oui.company' => { -ilike => "\%$node\%"}},
+                    {'prefetch' => 'oui'},
+                  );
+            }
         }
         return unless $set and $set->count;
         $set = $set->search_rs({}, { order_by => 'me.mac' });

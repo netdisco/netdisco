@@ -18,6 +18,29 @@ my $search_attr = {
     join => 'oui'
 };
 
+=head1 with_times
+
+This is a modifier for any C<search()> (including the helpers below) which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item time_first_stamp
+
+=item time_last_stamp
+
+=back
+
+=cut
+
+sub with_times {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs({}, $search_attr)
+    ->search($cond, $attrs);
+}
+
 =head1 search_by_ip( \%cond, \%attrs? )
 
  my $set = $rs->search_by_ip({ip => '192.0.2.1', active => 1});
