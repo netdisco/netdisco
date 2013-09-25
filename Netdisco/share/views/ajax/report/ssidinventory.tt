@@ -1,0 +1,20 @@
+[% USE Number.Format %]
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">SSID</th>
+      <th class="nd_center-cell">Broadcast</th>
+      <th class="nd_center-cell">Count</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="nd_center-cell">[% row.ssid %]</td>
+      <td class="nd_center-cell">[% row.broadcast ? 'Yes' : 'No' %]</td>
+      <td class="nd_center-cell">[% row.get_column('scount') | format_number %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
