@@ -1,5 +1,9 @@
 2.017001 -
 
+  [ENHANCEMENTS]
+
+  * Respect ignore_interfaces and i_ignore when detecting wrapped device uptime
+
   [BUG FIXES]
 
   * Update NodeWireless entries which match both MAC and SSID found, only
