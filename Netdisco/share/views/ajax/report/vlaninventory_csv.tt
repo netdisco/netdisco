@@ -1,0 +1,12 @@
+[% USE CSV -%]
+[% CSV.dump([ 'VLAN ID' 'VLAN Name' 'Device Count' 'Port Count' ]) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% mylist.push(row.vlan) %]
+  [% mylist.push(row.description) %]
+  [% mylist.push(row.get_column('dcount')) %]
+  [% mylist.push(row.get_column('pcount')) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

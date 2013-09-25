@@ -69,6 +69,17 @@ __PACKAGE__->has_many( port_vlans_native => 'App::Netdisco::DB::Result::Virtual:
     { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
+=head2 ports
+
+Link relationship to support C<ports>.
+
+=cut
+
+__PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePortVlan',
+    { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
+    { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
+
 =head2 tagging_ports
 
 Returns the set of Device Ports on which this VLAN is configured to be tagged.

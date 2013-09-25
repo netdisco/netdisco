@@ -1,0 +1,24 @@
+[% USE Number.Format %]
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">VLAN ID</th>
+      <th class="nd_center-cell">VLAN Name</th>
+      <th class="nd_center-cell">Device Count</th>
+      <th class="nd_center-cell">Port Count</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td><a class="nd_linkcell"
+          href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
+            [% row.vlan | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.description %]</td>
+      <td class="nd_center-cell">[% row.get_column('dcount') | format_number %]</td>
+      <td class="nd_center-cell">[% row.get_column('pcount') | format_number %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
