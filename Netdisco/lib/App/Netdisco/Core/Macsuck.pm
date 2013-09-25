@@ -455,9 +455,11 @@ sub store_wireless_client_info {
         ? int($rates->[$#$rates])
         : undef;
 
+      my $ssid = $cd11_ssid->{$idx} || 'unknown';
+
       schema('netdisco')->txn_do(sub {
         schema('netdisco')->resultset('NodeWireless')
-          ->search({ 'me.mac' => $mac })
+          ->search({ 'me.mac' => $mac, 'me.ssid' => $ssid })
           ->update_or_create({
             txrate  => $txrate,
             maxrate => $maxrate,
@@ -468,7 +470,6 @@ sub store_wireless_client_info {
             txbyte  => $cd11_txbyte->{$idx},
             sigqual => $cd11_sigqual->{$idx},
             sigstrength => $cd11_sigstrength->{$idx},
-            ssid    => ($cd11_ssid->{$idx} || 'unknown'),
             time_last => \$now,
           }, {
             order_by => [qw/mac ssid/],
