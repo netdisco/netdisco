@@ -1,0 +1,39 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Location</th>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">System Name</th>
+      <th class="nd_center-cell">Vendor</th>
+      <th class="nd_center-cell">Model</th>
+    </tr>
+  </thead>
+  </tbody>
+  [% WHILE (row = results.next) %]
+  [% NEXT UNLESS row.vendor AND row.model %]
+  <tr>
+      <td>
+        [% IF row.location %]
+          <a href="[% search_device %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
+            [% row.location | html_entity %]</a>
+        [% ELSE %]
+          [Not Set]
+        [% END %]
+      </td>
+      <td><a href="[% uri_for('/device') %]?q=[% row.dns || row.ip | uri %]">[% row.dns || row.ip | html_entity %]</a></td>
+      <td><a href="[% search_device %]&q=[% row.name | uri %]&name=[% row.name | uri %]">
+            [% row.name | html_entity %]</a>
+      </td>
+      <td>
+        <a href="[% search_device %]&q=[% row.vendor | uri %]&vendor=[% row.vendor | uri %]">
+            [% row.vendor | html_entity %]</a>
+      </td>
+      <td>
+        <a href="[% search_device %]&q=[% row.model | uri %]&model=[% row.model | uri %]">
+            [% row.model | html_entity %]</a>
+      </td>
+  </tr>
+    [% END %]
+  </tbody>
+</table>
+
