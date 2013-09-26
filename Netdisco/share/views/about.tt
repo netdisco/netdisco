@@ -1,3 +1,4 @@
+[% USE Number.Format %]
 <div class="container">
   <div class="row nd_hero-row">
       <div class="hero-unit">
@@ -27,7 +28,7 @@
             </tr>
             <tr>
               <th><a href="http://http://perldancer.org/">Dancer</a></th>
-              <th>[% dancer_ver | html_entity %]</th>
+              <th>[% dancer_version | html_entity %]</th>
             </tr>
             <tr>
               <th><a href="http://getbootstrap.com">Bootstrap</a></th>
@@ -47,7 +48,7 @@
             </tr>
             <tr>
               <th><a href="http://www.perl.org">Perl</a></th>
-              <th>[% perl_ver | html_entity %]</th>
+              <th>[% perl_version | html_entity %]</th>
             </tr>
           </tbody>
         </table>
@@ -62,17 +63,17 @@
           </thead>
           <tbody>
             <tr>
-              <th>[% device_count %] devices with [% device_port_count %] interfaces
-                  using [% device_count + device_ip_count %] IPs</th>
+              <th>[% device_count | format_number %] devices with [% device_port_count | format_number %] interfaces
+                  using [% device_count + device_ip_count | format_number %] IPs</th>
             </tr>
             <tr>
-              <th>[% device_links %] layer 2 links between devices.</th>
+              <th>[% device_links | format_number %] layer 2 links between devices.</th>
             </tr>
             <tr>
-              <th>[% node_count %] nodes in [% node_table_count %] entries. </th>
+              <th>[% node_count | format_number %] nodes in [% node_table_count | format_number %] entries. </th>
             </tr>
             <tr>
-              <th>[% ip_count %] IPs in [% ip_table_count %] entries.</th>
+              <th>[% ip_count | format_number %] IPs in [% ip_table_count | format_number %] entries.</th>
             </tr>
             <tr>
               <th>Statistics took [% process_time %] seconds to process.</th>

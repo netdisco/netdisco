@@ -50,8 +50,6 @@ get '/about' => require_login sub {
     my $process_time = $time2 - $time1;
 
     my $disco_ver  = $App::Netdisco::VERSION;
-    my $dancer_ver = $Dancer::VERSION;
-    my $perl_ver   = sprintf( "v%vd", $^V );
     my $db_version = $devices->next->get_column('version');
     my $dbi_ver    = $DBI::VERSION;
     my $dbdpg_ver  = $DBD::Pg::VERSION;
@@ -73,8 +71,6 @@ get '/about' => require_login sub {
         node_table_count  => $node_table_count,
         process_time      => $process_time,
         disco_ver         => $disco_ver,
-        dancer_ver        => $dancer_ver,
-        perl_ver          => $perl_ver,
         db_version        => $db_version,
         dbi_ver           => $dbi_ver,
         dbdpg_ver         => $dbdpg_ver,
