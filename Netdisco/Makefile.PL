@@ -37,6 +37,7 @@ requires 'SNMP::Info' => 3.05;
 requires 'SQL::Translator' => 0.11016;
 requires 'Template' => 2.24;
 requires 'Template::Plugin::CSV' => 0.04;
+requires 'Template::Plugin::Number::Format' => 1.02;
 requires 'URL::Encode' => 0.01;
 requires 'YAML' => 0.84;
 requires 'YAML::XS' => 0.41;
