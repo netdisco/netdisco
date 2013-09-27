@@ -45,6 +45,7 @@ sub store_device {
   my ($device, $snmp) = @_;
 
   my $ip_index   = $snmp->ip_index;
+  my $ip_table   = $snmp->ip_table;
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
@@ -58,16 +59,16 @@ sub store_device {
   # build device aliases suitable for DBIC
   my @aliases;
   foreach my $entry (keys %$ip_index) {
-      my $ip = NetAddr::IP::Lite->new($entry);
+      my $ip = NetAddr::IP::Lite->new($ip_table->{$entry});
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
       next if $ip->within($localnet);
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
-      my $iid = $ip_index->{$addr};
+      my $iid = $ip_index->{$entry};
       my $port = $interfaces->{$iid};
-      my $subnet = $ip_netmask->{$addr}
+      my $subnet = $ip_netmask->{$entry}
         ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
         : undef;
 
