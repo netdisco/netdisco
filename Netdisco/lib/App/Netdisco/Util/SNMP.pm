@@ -66,7 +66,8 @@ sub _snmp_connect_generic {
     Retries => (setting('snmpretries') || 2),
     Timeout => (setting('snmptimeout') || 1000000),
     NonIncreasing => (setting('nonincreasing') || 0),
-    BulkWalk => ((defined setting('bulkwalk_off')) ? setting('bulkwalk_off') : 1),
+    BulkWalk => ((defined setting('bulkwalk_off') && setting('bulkwalk_off'))
+                 ? 0 : 1),
     BulkRepeaters => (setting('bulkwalk_repeaters') || 20),
     MibDirs => [ _build_mibdirs() ],
     IgnoreNetSNMPConf => 1,
