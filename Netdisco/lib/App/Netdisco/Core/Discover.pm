@@ -217,14 +217,14 @@ sub store_interfaces {
           next;
       }
 
-      if (not $dev_uptime_wrapped and $i_lastchange->{$entry} > $dev_uptime) {
+      my $lc = $i_lastchange->{$entry} || 0;
+      if (not $dev_uptime_wrapped and $lc > $dev_uptime) {
           info sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
             $device->ip, $port;
           $device->uptime( $dev_uptime + 2**32 );
           $dev_uptime_wrapped = 1;
       }
 
-      my $lc = $i_lastchange->{$entry};
       if ($device->is_column_changed('uptime') and $lc) {
           if ($lc < $dev_uptime) {
               # ambiguous: lastchange could be sysUptime before or after wrap
