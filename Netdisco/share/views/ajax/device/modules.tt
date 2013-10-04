@@ -28,7 +28,7 @@
  fw: [% nodes.$item.module.fw_ver %]
 [%- END -%]
 [%- IF nodes.$item.module.hw_ver -%]
- hw: [% nodes.$item.module.fw_ver %]
+ hw: [% nodes.$item.module.hw_ver %]
 [%- END -%]
 [%- IF nodes.$item.module.sw_ver -%]
  sw: [% nodes.$item.module.sw_ver %]
