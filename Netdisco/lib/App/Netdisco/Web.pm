@@ -48,6 +48,7 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 
+# this hook should be loaded _after_ all plugins
 hook 'before_template' => sub {
     my $tokens = shift;
 
@@ -60,6 +61,10 @@ hook 'before_template' => sub {
 
     # access to logged in user's roles
     $tokens->{user_has_role}  = sub { user_has_role(@_) };
+
+    # fix Plugin Template Variables to be only path+query
+    $tokens->{$_} = $tokens->{$_}->path_query
+      for qw/search_node search_device device_ports/;
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

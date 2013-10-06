@@ -8,6 +8,7 @@
   [BUG FIXES]
 
   * Update NodeWireless entries which match both MAC and SSID found, only
+  * Fix SSL-proxy behaviour by using only path+query in links (W. Gould)
 
 2.017000 - 2013-09-23
 

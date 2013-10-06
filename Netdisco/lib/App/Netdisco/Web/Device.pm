@@ -159,7 +159,7 @@ get '/device' => require_login sub {
     });
 
     if (!defined $dev) {
-        return redirect uri_for('/', {nosuchdevice => 1})->as_string();
+        return redirect uri_for('/', {nosuchdevice => 1})->path_query;
     }
 
     params->{'tab'} ||= 'details';

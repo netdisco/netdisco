@@ -66,7 +66,7 @@ get '/search' => require_login sub {
 
     if (not param('tab')) {
         if (not $q) {
-            return redirect uri_for('/')->as_string;
+            return redirect uri_for('/')->path;
         }
 
         # pick most likely tab for initial results
@@ -83,7 +83,7 @@ get '/search' => require_login sub {
                       tab => 'details',
                       q => ($nd->first->dns || $nd->first->ip),
                       f => '',
-                    })->as_string;
+                    })->path;
                 }
 
                 # multiple devices
