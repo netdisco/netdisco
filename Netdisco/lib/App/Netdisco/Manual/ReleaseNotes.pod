@@ -35,6 +35,16 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.017001_001
+
+=head2 General Notices
+
+The previous mentioned bug in Macsuck is now fixed.
+
+During Arpnip, Node IPs are no longer resolved to DNS hostnames in real-time.
+In the next release, another job will be queued to perform this action for the
+device.
+
 =head1 2.017000
 
 =head2 General Notices

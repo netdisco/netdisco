@@ -52,6 +52,7 @@ requires:
   Starman: 0.4008
   Template: 2.24
   Template::Plugin::CSV: 0.04
+  Template::Plugin::Number::Format: 1.02
   URL::Encode: 0.01
   YAML: 0.84
   YAML::XS: 0.41
@@ -64,4 +65,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.017000
+version: 2.017001_001

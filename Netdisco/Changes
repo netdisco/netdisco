@@ -1,9 +1,16 @@
-2.017001 -
+2.017001_001 - 
+
+  [NEW FEATURES]
+
+  * Add VLAN Inventory Report
+  * Add Wireless SSID Inventory Report
+  * Add Device Inventory by Location Report
 
   [ENHANCEMENTS]
 
   * Respect ignore_interfaces and i_ignore when detecting wrapped device uptime
   * Try NodeIp OUI company name search if no node results found
+  * Format About page numbers
 
   [BUG FIXES]
 
@@ -12,6 +19,8 @@
   * Avoid macsuck generated SQL bug when cleaning NULL VLAN (W. Gould)
   * During macsuck get VLAN from Q-BRIDGE if available (jeneric)
   * OK to include device ports when doing arpnip (jeneric)
+  * Correct bulkwalk_off logic
+  * Silence warnings when ports don't support i_lastchange
 
 2.017000 - 2013-09-23
 
