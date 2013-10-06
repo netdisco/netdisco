@@ -10,6 +10,7 @@
   * Update NodeWireless entries which match both MAC and SSID found, only
   * Fix SSL-proxy behaviour by using only path+query in links (W. Gould)
   * Avoid macsuck generated SQL bug when cleaning NULL VLAN (W. Gould)
+  * During macsuck get VLAN from Q-BRIDGE if available (jeneric)
 
 2.017000 - 2013-09-23
 

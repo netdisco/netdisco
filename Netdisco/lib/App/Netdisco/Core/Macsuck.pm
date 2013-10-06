@@ -94,6 +94,10 @@ sub do_macsuck {
             $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
+              # get VLAN from Q-BRIDGE if available
+              $vlan = $fwtable->{$vlan}->{$port}->{$mac}
+                if $vlan == 0;
+
               # remove vlan 0 entry for this MAC addr
               delete $fwtable->{0}->{$_}->{$mac}
                 for keys %{ $fwtable->{0} };
@@ -382,7 +386,7 @@ sub _walk_fwtable {
           next unless setting('macsuck_bleed');
       }
 
-      ++$cache->{$port}->{$mac};
+      $cache->{$port}->{$mac} = ($fw_vlan->{$idx} || '0');
   }
 
   return $cache;
