@@ -100,6 +100,10 @@ sub delete {
       # avoid letting DBIC delete nodes
       return 0E0;
   }
+  elsif (exists $opts->{only_nodes} and $opts->{only_nodes}) {
+      # now let DBIC do its thing
+      return $self->next::method();
+  }
   elsif (exists $opts->{keep_nodes} and $opts->{keep_nodes}) {
       # avoid letting DBIC delete nodes
       return 0E0;
