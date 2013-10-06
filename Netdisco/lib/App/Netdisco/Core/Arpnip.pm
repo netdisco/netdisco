@@ -3,7 +3,6 @@ package App::Netdisco::Core::Arpnip;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::PortMAC 'get_port_macs';
 use App::Netdisco::Util::SanityCheck 'check_mac';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
@@ -44,12 +43,10 @@ sub do_arpnip {
       return;
   }
 
-  my $port_macs = get_port_macs($device);
-
   # get v4 arp table
-  my @v4 = _get_arps($device, $port_macs, $snmp->at_paddr, $snmp->at_netaddr);
+  my @v4 = _get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
   # get v6 neighbor cache
-  my @v6 = _get_arps($device, $port_macs, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  my @v6 = _get_arps($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   # get directly connected networks
   my @subnets = _gather_subnets($device, $snmp);
@@ -78,13 +75,13 @@ sub do_arpnip {
 
 # get an arp table (v4 or v6)
 sub _get_arps {
-  my ($device, $port_macs, $paddr, $netaddr) = @_;
+  my ($device, $paddr, $netaddr) = @_;
   my @arps = ();
 
   while (my ($arp, $node) = each %$paddr) {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
-      next unless check_mac($device, $node, $port_macs);
+      next unless check_mac($device, $node);
       push @arps, [$node, $ip, hostname_from_ip($ip)];
   }
 

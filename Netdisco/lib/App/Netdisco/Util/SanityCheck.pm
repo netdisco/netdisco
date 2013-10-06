@@ -44,22 +44,25 @@ MAC address is well-formed (according to common formats)
 
 MAC address is not all-zero, broadcast, CLIP, VRRP or HSRP
 
+=back
+
+Optionally pass a cached set of Device port MAC addresses as the third
+argument, in which case an additional check is added:
+
+=over 4
+
 =item *
 
 MAC address does not belong to an interface on any known Device
 
 =back
 
-Optionally pass a cached set of Device port MAC addresses as the third
-argument, or else C<check_mac> will retrieve this for itself from the
-database.
-
 =cut
 
 sub check_mac {
   my ($device, $node, $port_macs) = @_;
-  $port_macs ||= get_port_macs($device);
   my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+  $port_macs ||= {};
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)
   if ($mac->get_error) {
