@@ -25,7 +25,7 @@ requires:
   DBD::Pg: 0
   DBD::SQLite: 1.37
   DBIx::Class: 0.0821
-  DBIx::Class::Helpers: 2.016006
+  DBIx::Class::Helpers: 2.018004
   Daemon::Control: 0.001
   Dancer: 1.3112
   Dancer::Plugin::Auth::Extensible: 0.2
@@ -65,4 +65,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.017001_001
+version: 2.017001_002
