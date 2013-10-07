@@ -10,7 +10,7 @@ use Time::HiRes 'gettimeofday';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ do_arpnip store_arp /;
+our @EXPORT_OK = qw/ do_arpnip store_arp resolve_node_names /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -82,16 +82,16 @@ sub _get_arps {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
       next unless check_mac($device, $node);
-      push @arps, [$node, $ip, hostname_from_ip($ip)];
+      push @arps, [$node, $ip];
   }
 
   return @arps;
 }
 
-=head2 store_arp( $mac, $ip, $name, $now? )
+=head2 store_arp( $mac, $ip, $now? )
 
-Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
-and DNS host name.
+Stores a new entry to the C<node_ip> table with the given MAC, and IP (v4 or
+v6).
 
 Will mark old entries for this IP as no longer C<active>.
 
@@ -101,7 +101,7 @@ C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
 =cut
 
 sub store_arp {
-  my ($mac, $ip, $name, $now) = @_;
+  my ($mac, $ip, $now) = @_;
   $now ||= 'now()';
 
   schema('netdisco')->txn_do(sub {
@@ -119,7 +119,6 @@ sub store_arp {
       ->search({'me.mac' => $mac, 'me.ip' => $ip})
       ->update_or_create(
       {
-        dns => $name,
         active => \'true',
         time_last => \$now,
       },
@@ -169,6 +168,41 @@ sub _store_subnet {
       last_discover => \$now,
     },
     { for => 'update' });
+  });
+}
+
+=head2 resolve_node_names( $device )
+
+Given a Device database object, resolve Node IP (ARP) entries belonging to
+this device into DNS names, and store them in the C<node_ip> database table.
+
+This action is usually queued following C<do_arpip> so that it may run
+asynchronously, and/or on another daemon worker node.
+
+=cut
+
+sub resolve_node_names {
+  my ($device) = @_;
+
+  schema('netdisco')->txn_do(sub {
+    my $nodeips = schema('netdisco')
+      ->resultset('NodeIp')->search(
+        {
+          -and => [
+            -bool => 'me.active',
+            -bool => 'nodes.active',
+          ],
+          'nodes.switch' => $device->ip,
+        },
+        {
+          join => 'nodes',
+          for => 'update',
+        }
+      );
+
+    while (my $nodeip = $nodeips->next) {
+      $nodeip->update({dns => hostname_from_ip($nodeip->ip)});
+    }
   });
 }
 

@@ -1,10 +1,11 @@
-2.017001_001 - 
+2.017001_002 - 
 
   [NEW FEATURES]
 
   * Add VLAN Inventory Report
   * Add Wireless SSID Inventory Report
   * Add Device Inventory by Location Report
+  * Node DNS names resolved in their own job - see nodenames_no and nodenames_only
 
   [ENHANCEMENTS]
 

@@ -35,15 +35,20 @@ but they are backwards compatible.
 
 =back
 
-=head1 2.017001_001
+=head1 2.017001_002
 
 =head2 General Notices
 
 The previous mentioned bug in Macsuck is now fixed.
 
 During Arpnip, Node IPs are no longer resolved to DNS hostnames in real-time.
-In the next release, another job will be queued to perform this action for the
-device.
+Another job is queued to perform this action for the device. You can therefore
+control using the new C<nodenames_no> and C<nodenames_only> config parameters
+which daemons run this job.
+
+The idea here is to support sites where the SNMP polling node has no useful
+DNS, but another system can update the DNS entries for nodes (yet do no
+polling).
 
 =head1 2.017000
 
