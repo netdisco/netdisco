@@ -83,7 +83,7 @@ get '/search' => require_login sub {
                       tab => 'details',
                       q => ($nd->first->dns || $nd->first->ip),
                       f => '',
-                    })->path;
+                    })->path_query;
                 }
 
                 # multiple devices
