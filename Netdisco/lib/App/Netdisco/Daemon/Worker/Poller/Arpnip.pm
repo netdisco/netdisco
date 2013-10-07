@@ -54,7 +54,7 @@ sub nodenames {
   }
 
   unless (can_nodenames($device->ip)) {
-      return job_defer("nodenames deferred: $host is not nodenames");
+      return job_defer("nodenames deferred: cannot run for $host");
   }
 
   resolve_node_names($device);
