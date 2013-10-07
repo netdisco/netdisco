@@ -185,7 +185,24 @@ sub resolve_node_names {
   my ($device) = @_;
 
   schema('netdisco')->txn_do(sub {
-    # hostname_from_ip($ip)
+    my $nodeips = schema('netdisco')
+      ->resultset('NodeIp')->search(
+        {
+          -and => [
+            -bool => 'me.active',
+            -bool => 'nodes.active',
+          ],
+          'nodes.switch' => $device->ip,
+        },
+        {
+          join => 'nodes',
+          for => 'update',
+        }
+      );
+
+    while (my $nodeip = $nodeips->next) {
+      $nodeip->update({dns => hostname_from_ip($nodeip->ip)});
+    }
   });
 }
 
