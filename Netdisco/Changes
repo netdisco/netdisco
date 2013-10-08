@@ -23,6 +23,7 @@
   * Correct bulkwalk_off logic
   * Silence warnings when ports don't support i_lastchange
   * Correct *_only and *_no setting logic
+  * Correct the instructions for runing dev instance of web and daemon
 
 2.017000 - 2013-09-23
 
