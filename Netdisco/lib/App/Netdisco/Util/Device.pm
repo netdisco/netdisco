@@ -10,6 +10,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_device
   check_no
+  check_only
   is_discoverable
   is_arpnipable
   can_nodenames
@@ -58,41 +59,10 @@ sub get_device {
     ->find_or_new({ip => $ip});
 }
 
-=head2 check_no( $ip, $setting_name )
-
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false.
-
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-C<"model:regex"> - matched against the device model
-
-=item *
-
-C<"vendor:regex"> - matched against the device vendor
-
-=back
-
-To simply match all devices, use IP Prefix "C<0.0.0.0/0>". All regular
-expressions are anchored (that is, they must match the whole string).
-
-=cut
-
-sub check_no {
-  my ($ip, $setting_name) = @_;
+sub _check_acl {
+  my ($ip, $config) = @_;
   my $device = get_device($ip) or return 0;
   my $addr = NetAddr::IP::Lite->new($device->ip);
-
-  my $config = setting($setting_name) || [];
-  return 0 unless scalar @$config;
 
   foreach my $item (@$config) {
       if ($item =~ m/^(.*)\s*:\s*(.*)$/) {
@@ -115,6 +85,86 @@ sub check_no {
   }
 
   return 0;
+}
+
+=head2 check_no( $ip, $setting_name )
+
+Given the IP address of a device, returns true if the configuration setting
+C<$setting_name> matches that device, else returns false.
+
+ print "rejected!" if check_no($ip, 'discover_no');
+
+There are several options for what C<$setting_name> can contain:
+
+=over 4
+
+=item *
+
+Hostname, IP address, IP prefix
+
+=item *
+
+C<"model:regex"> - matched against the device model
+
+=item *
+
+C<"vendor:regex"> - matched against the device vendor
+
+=back
+
+To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
+regular expressions are anchored (that is, they must match the whole string).
+To match no devices we recommend an entry of "C<localhost>" in the setting.
+
+=cut
+
+sub check_no {
+  my ($ip, $setting_name) = @_;
+
+  my $config = setting($setting_name) || [];
+  return 0 unless scalar @$config;
+
+  return _check_acl($ip, $config);
+}
+
+=head2 check_only( $ip, $setting_name )
+
+Given the IP address of a device, returns false if the configuration setting
+C<$setting_name> matches that device, else returns true.
+
+ print "rejected!" unless check_only($ip, 'discover_only');
+
+There are several options for what C<$setting_name> can contain:
+
+=over 4
+
+=item *
+
+Hostname, IP address, IP prefix
+
+=item *
+
+C<"model:regex"> - matched against the device model
+
+=item *
+
+C<"vendor:regex"> - matched against the device vendor
+
+=back
+
+To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
+regular expressions are anchored (that is, they must match the whole string).
+To match no devices we recommend an entry of "C<localhost>" in the setting.
+
+=cut
+
+sub check_only {
+  my ($ip, $setting_name) = @_;
+
+  my $config = setting($setting_name) || [];
+  return 1 unless scalar @$config;
+
+  return _check_acl($ip, $config);
 }
 
 =head2 is_discoverable( $ip, $device_type? )
@@ -148,7 +198,7 @@ sub is_discoverable {
     if check_no($device, 'discover_no');
 
   return _bail_msg("is_discoverable: device failed to match discover_only")
-    if check_no($device, 'discover_only');
+    unless check_only($device, 'discover_only');
 
   # cannot check last_discover for as yet undiscovered devices :-)
   return 1 if not $device->in_storage;
@@ -182,7 +232,7 @@ sub is_arpnipable {
     if check_no($device, 'arpnip_no');
 
   return _bail_msg("is_arpnipable: device failed to match arpnip_only")
-    if check_no($device, 'arpnip_only');
+    unless check_only($device, 'arpnip_only');
 
   return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
     if not $device->in_storage;
@@ -217,7 +267,7 @@ sub can_nodenames {
     if check_no($device, 'nodenames_no');
 
   return _bail_msg("can_nodenames: device failed to match nodenames_only")
-    if check_no($device, 'nodenames_only');
+    unless check_only($device, 'nodenames_only');
 
   return 1;
 }
@@ -242,7 +292,7 @@ sub is_macsuckable {
     if check_no($device, 'macsuck_no');
 
   return _bail_msg("is_macsuckable: device failed to match macsuck_only")
-    if check_no($device, 'macsuck_only');
+    unless check_only($device, 'macsuck_only');
 
   return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")
     if not $device->in_storage;

@@ -22,6 +22,7 @@
   * OK to include device ports when doing arpnip (jeneric)
   * Correct bulkwalk_off logic
   * Silence warnings when ports don't support i_lastchange
+  * Correct *_only and *_no setting logic
 
 2.017000 - 2013-09-23
 
