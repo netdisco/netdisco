@@ -307,18 +307,18 @@ App::Netdisco:
 
 =item  C<search_node>
 
-A base url which links to the Node tab of the Search page, together with the
-correct default search options set.
+A path and query string which links to the Node tab of the Search page,
+together with the correct default search options set.
 
 =item  C<search_device>
 
-A base url which links to the Device tab of the Search page, together with the
-correct default search options set.
+A path and query string which links to the Device tab of the Search page,
+together with the correct default search options set.
 
 =item  C<device_ports>
 
-A base url which links to the Ports tab of the Device page, together with
-the correct default column view options set.
+A path and query sting which links to the Ports tab of the Device page,
+together with the correct default column view options set.
 
 =item  C<uri_base>
 

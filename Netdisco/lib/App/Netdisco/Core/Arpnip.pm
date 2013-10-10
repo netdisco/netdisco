@@ -3,7 +3,6 @@ package App::Netdisco::Core::Arpnip;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::PortMAC 'get_port_macs';
 use App::Netdisco::Util::SanityCheck 'check_mac';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
@@ -11,7 +10,7 @@ use Time::HiRes 'gettimeofday';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ do_arpnip store_arp /;
+our @EXPORT_OK = qw/ do_arpnip store_arp resolve_node_names /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -44,12 +43,10 @@ sub do_arpnip {
       return;
   }
 
-  my $port_macs = get_port_macs($device);
-
   # get v4 arp table
-  my @v4 = _get_arps($device, $port_macs, $snmp->at_paddr, $snmp->at_netaddr);
+  my @v4 = _get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
   # get v6 neighbor cache
-  my @v6 = _get_arps($device, $port_macs, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  my @v6 = _get_arps($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   # get directly connected networks
   my @subnets = _gather_subnets($device, $snmp);
@@ -78,23 +75,23 @@ sub do_arpnip {
 
 # get an arp table (v4 or v6)
 sub _get_arps {
-  my ($device, $port_macs, $paddr, $netaddr) = @_;
+  my ($device, $paddr, $netaddr) = @_;
   my @arps = ();
 
   while (my ($arp, $node) = each %$paddr) {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
-      next unless check_mac($device, $node, $port_macs);
-      push @arps, [$node, $ip, hostname_from_ip($ip)];
+      next unless check_mac($device, $node);
+      push @arps, [$node, $ip];
   }
 
   return @arps;
 }
 
-=head2 store_arp( $mac, $ip, $name, $now? )
+=head2 store_arp( $mac, $ip, $now? )
 
-Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
-and DNS host name.
+Stores a new entry to the C<node_ip> table with the given MAC, and IP (v4 or
+v6).
 
 Will mark old entries for this IP as no longer C<active>.
 
@@ -104,7 +101,7 @@ C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
 =cut
 
 sub store_arp {
-  my ($mac, $ip, $name, $now) = @_;
+  my ($mac, $ip, $now) = @_;
   $now ||= 'now()';
 
   schema('netdisco')->txn_do(sub {
@@ -122,7 +119,6 @@ sub store_arp {
       ->search({'me.mac' => $mac, 'me.ip' => $ip})
       ->update_or_create(
       {
-        dns => $name,
         active => \'true',
         time_last => \$now,
       },
@@ -172,6 +168,41 @@ sub _store_subnet {
       last_discover => \$now,
     },
     { for => 'update' });
+  });
+}
+
+=head2 resolve_node_names( $device )
+
+Given a Device database object, resolve Node IP (ARP) entries belonging to
+this device into DNS names, and store them in the C<node_ip> database table.
+
+This action is usually queued following C<do_arpip> so that it may run
+asynchronously, and/or on another daemon worker node.
+
+=cut
+
+sub resolve_node_names {
+  my ($device) = @_;
+
+  schema('netdisco')->txn_do(sub {
+    my $nodeips = schema('netdisco')
+      ->resultset('NodeIp')->search(
+        {
+          -and => [
+            -bool => 'me.active',
+            -bool => 'nodes.active',
+          ],
+          'nodes.switch' => $device->ip,
+        },
+        {
+          join => 'nodes',
+          for => 'update',
+        }
+      );
+
+    while (my $nodeip = $nodeips->next) {
+      $nodeip->update({dns => hostname_from_ip($nodeip->ip)});
+    }
   });
 }
 

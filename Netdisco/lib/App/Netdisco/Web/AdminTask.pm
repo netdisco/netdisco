@@ -55,7 +55,7 @@ foreach my $jobtype (keys %jobs_all, keys %jobs) {
           if exists $jobs{$jobtype} and not param('device');
 
         add_job($jobtype, param('device'), param('extra'));
-        redirect uri_for('/admin/jobqueue')->as_string;
+        redirect uri_for('/admin/jobqueue')->path;
     };
 }
 

@@ -1,13 +1,35 @@
-2.017001 -
+2.018001 - 
+
+  [BUG FIXES]
+
+  * Update Print media CSS to handle new UI components
+
+2.018000 - 2013-10-08
+
+  [NEW FEATURES]
+
+  * Add VLAN Inventory Report
+  * Add Wireless SSID Inventory Report
+  * Add Device Inventory by Location Report
+  * Node DNS names resolved in their own job - see nodenames_no and nodenames_only
 
   [ENHANCEMENTS]
 
   * Respect ignore_interfaces and i_ignore when detecting wrapped device uptime
   * Try NodeIp OUI company name search if no node results found
+  * Format About page numbers
 
   [BUG FIXES]
 
   * Update NodeWireless entries which match both MAC and SSID found, only
+  * Fix SSL-proxy behaviour by using only path+query in links (W. Gould)
+  * Avoid macsuck generated SQL bug when cleaning NULL VLAN (W. Gould)
+  * During macsuck get VLAN from Q-BRIDGE if available (jeneric)
+  * OK to include device ports when doing arpnip (jeneric)
+  * Correct bulkwalk_off logic
+  * Silence warnings when ports don't support i_lastchange
+  * Correct *_only and *_no setting logic
+  * Correct the instructions for runing dev instance of web and daemon
 
 2.017000 - 2013-09-23
 

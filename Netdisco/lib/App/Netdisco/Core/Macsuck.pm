@@ -94,6 +94,10 @@ sub do_macsuck {
             $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
+              # get VLAN from Q-BRIDGE if available
+              $vlan = $fwtable->{$vlan}->{$port}->{$mac}
+                if $vlan == 0;
+
               # remove vlan 0 entry for this MAC addr
               delete $fwtable->{0}->{$_}->{$mac}
                 for keys %{ $fwtable->{0} };
@@ -130,53 +134,48 @@ sub store_node {
     my $nodes = schema('netdisco')->resultset('Node');
 
     # TODO: probably needs changing if we're to support VTP domains
-    my $old = $nodes->search(
-      {
-        mac => $mac,
-        vlan => $vlan,
-        -bool => 'active',
-        -not => {
-          switch => $ip,
-          port => $port,
-        },
-      });
+    my $old = $nodes->search({
+      mac => $mac,
+      vlan => $vlan,
+      -bool => 'active',
+      -not => {
+        switch => $ip,
+        port => $port,
+      },
+    });
 
     # lock rows,
     # and get the count so we know whether to set time_recent
     my $old_count = scalar $old->search(undef,
       {
         columns => [qw/switch vlan port mac/],
-        order_by => [qw/switch vlan port mac/],
         for => 'update',
       })->all;
 
     $old->update({ active => \'false' });
 
-    my $new = $nodes->search(
-      {
-        'me.switch' => $ip,
-        'me.port' => $port,
-        'me.mac' => $mac,
-      },
-      {
-        order_by => [qw/switch vlan port mac/],
-        for => 'update',
-      });
-
-    # lock rows
-    $new->search({vlan => [$vlan, 0, undef]})->first;
-
-    # upgrade old schema
-    $new->search({vlan => [0, undef]})->delete();
+    my $new = $nodes->search({
+      'me.switch' => $ip,
+      'me.port' => $port,
+      'me.mac' => $mac,
+    });
 
     # new data
-    $new->update_or_create({
-      vlan => $vlan,
-      active => \'true',
-      oui => substr($mac,0,8),
-      time_last => \$now,
-      ($old_count ? (time_recent => \$now) : ()),
-    });
+    $new->update_or_create(
+      {
+        vlan => $vlan,
+        active => \'true',
+        oui => substr($mac,0,8),
+        time_last => \$now,
+        ($old_count ? (time_recent => \$now) : ()),
+      },
+      { for => 'update' }
+    );
+
+    # upgrade old schema
+    # an entry for this MAC existed in old schema with vlan => null
+    # which now has either vlan number or 0
+    $new->search({vlan => undef})->delete({only_nodes => 1});
   });
 }
 
@@ -387,7 +386,7 @@ sub _walk_fwtable {
           next unless setting('macsuck_bleed');
       }
 
-      ++$cache->{$port}->{$mac};
+      $cache->{$port}->{$mac} = ($fw_vlan->{$idx} || '0');
   }
 
   return $cache;
