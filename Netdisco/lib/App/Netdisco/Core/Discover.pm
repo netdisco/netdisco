@@ -749,9 +749,11 @@ sub _set_manual_topology {
 
   schema('netdisco')->txn_do(sub {
     # clear manual topology flags
-    schema('netdisco')->resultset('DevicePort')->update({manual_topo => \'false'});
+    schema('netdisco')->resultset('DevicePort')
+      ->search({ip => $device->ip})->update({manual_topo => \'false'});
 
-    my $topo_links = schema('netdisco')->resultset('Topology');
+    my $topo_links = schema('netdisco')->resultset('Topology')
+      ->search({-or => [dev1 => $device->ip, dev2 => $device->ip]});
     debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
 
     while (my $link = $topo_links->next) {
