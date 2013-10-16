@@ -127,24 +127,27 @@ sub set_canonical_ip {
           debug sprintf ' [%s] device - changing root IP to alt IP %s',
             $oldip, $newip;
 
-          # remove old device and aliases
           schema('netdisco')->txn_do(sub {
-            my $copy = schema('netdisco')->resultset('Device')
-              ->find({ip => $oldip});
+            if ($device->in_storage) {
+                # remove old device and aliases
+                my $copy = schema('netdisco')->resultset('Device')
+                  ->find({ip => $oldip});
 
-            # our special delete which is more efficient
-            schema('netdisco')->resultset('Device')
-              ->search({ ip => $device->ip })->delete({keep_nodes => 1});
-            debug sprintf ' [%s] device - deleted self', $oldip;
+                schema('netdisco')->resultset('Device')
+                  ->search({ ip => $device->ip })->delete({keep_nodes => 1});
+                debug sprintf ' [%s] device - deleted self', $oldip;
 
-            $device = schema('netdisco')->resultset('Device')
-              ->create({ $copy->get_columns, ip => $newip })
-              if defined $copy;
+                $device = schema('netdisco')->resultset('Device')
+                  ->create({ $copy->get_columns, ip => $newip });
 
-            # make nodes follow device
-            schema('netdisco')->resultset('Node')
-              ->search({switch => $oldip})
-              ->update({switch => $newip});
+                # make nodes follow device
+                schema('netdisco')->resultset('Node')
+                  ->search({switch => $oldip})
+                  ->update({switch => $newip});
+            }
+            else {
+                $device->set_column(ip => $newip);
+            }
           });
       }
   }
