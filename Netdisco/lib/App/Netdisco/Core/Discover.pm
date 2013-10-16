@@ -32,6 +32,67 @@ subroutines.
 
 =head1 EXPORT_OK
 
+=head2 set_canonical_ip( $device, $snmp )
+
+Returns: C<$device>
+
+Given a Device database object, and a working SNMP connection, check whether
+the database object's IP is the best choice for that device. If not, return
+a new Device database object with the canonical IP.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+=cut
+
+sub set_canonical_ip {
+  my ($device, $snmp) = @_;
+
+  my $oldip = $device->ip;
+  my $newip = $snmp->root_ip;
+
+  if (defined $newip) {
+      if ($oldip ne $newip) {
+          debug sprintf ' [%s] device - changing root IP to alt IP %s',
+            $oldip, $newip;
+
+          schema('netdisco')->txn_do(sub {
+            if ($device->in_storage) {
+                # remove old device and aliases
+                my $copy = schema('netdisco')->resultset('Device')
+                  ->find({ip => $oldip});
+
+                schema('netdisco')->resultset('Device')
+                  ->search({ ip => $device->ip })->delete({keep_nodes => 1});
+                debug sprintf ' [%s] device - deleted self', $oldip;
+
+                $device = schema('netdisco')->resultset('Device')
+                  ->create({ $copy->get_columns, ip => $newip });
+
+                # make nodes follow device
+                schema('netdisco')->resultset('Node')
+                  ->search({switch => $oldip})
+                  ->update({switch => $newip});
+            }
+            else {
+                $device->set_column(ip => $newip);
+            }
+          });
+      }
+  }
+  else {
+      my $revname = ipv4_from_hostname($snmp->name);
+      if (setting('reverse_sysname') and $revname) {
+          debug sprintf ' [%s] device - changing root IP to revname %s',
+            $oldip, $revname;
+          $device->ip($revname);
+      }
+  }
+
+  # either root_ip is changed or unchanged, but it exists
+  return $device;
+}
+
 =head2 store_device( $device, $snmp )
 
 Given a Device database object, and a working SNMP connection, discover and
@@ -114,54 +175,6 @@ sub store_device {
     debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
   });
-}
-
-sub set_canonical_ip {
-  my ($device, $snmp) = @_;
-
-  my $oldip = $device->ip;
-  my $newip = $snmp->root_ip;
-
-  if (defined $newip) {
-      if ($oldip ne $newip) {
-          debug sprintf ' [%s] device - changing root IP to alt IP %s',
-            $oldip, $newip;
-
-          schema('netdisco')->txn_do(sub {
-            if ($device->in_storage) {
-                # remove old device and aliases
-                my $copy = schema('netdisco')->resultset('Device')
-                  ->find({ip => $oldip});
-
-                schema('netdisco')->resultset('Device')
-                  ->search({ ip => $device->ip })->delete({keep_nodes => 1});
-                debug sprintf ' [%s] device - deleted self', $oldip;
-
-                $device = schema('netdisco')->resultset('Device')
-                  ->create({ $copy->get_columns, ip => $newip });
-
-                # make nodes follow device
-                schema('netdisco')->resultset('Node')
-                  ->search({switch => $oldip})
-                  ->update({switch => $newip});
-            }
-            else {
-                $device->set_column(ip => $newip);
-            }
-          });
-      }
-  }
-  else {
-      my $revname = ipv4_from_hostname($snmp->name);
-      if (setting('reverse_sysname') and $revname) {
-          debug sprintf ' [%s] device - changing root IP to revname %s',
-            $oldip, $revname;
-          $device->ip($revname);
-      }
-  }
-
-  # either root_ip is changed or unchanged, but it exists
-  return $device;
 }
 
 =head2 store_interfaces( $device, $snmp )
