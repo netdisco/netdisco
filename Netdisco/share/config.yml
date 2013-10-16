@@ -153,6 +153,7 @@ engines:
 layout: 'main'
 plugins:
   Auth::Extensible:
+    no_api_change_warning: true
     no_default_pages: true
     realms:
       users:
