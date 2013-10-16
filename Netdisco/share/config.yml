@@ -86,8 +86,6 @@ macsuck_min_age: 0
 arpnip_no: []
 arpnip_only: []
 arpnip_min_age: 0
-nodenames_no: []
-nodenames_only: []
 store_wireless_clients: true
 store_modules: true
 ignore_interfaces:
@@ -122,6 +120,9 @@ workers:
   interactives: 2
   pollers: 5
   sleep_time: 2
+
+dns:
+  max_outstanding: 250
 
 #housekeeping:
 #  discoverall:

@@ -10,7 +10,7 @@ use Time::HiRes 'gettimeofday';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ do_arpnip store_arp resolve_node_names /;
+our @EXPORT_OK = qw/ do_arpnip store_arp /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -44,9 +44,9 @@ sub do_arpnip {
   }
 
   # get v4 arp table
-  my @v4 = _get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
+  my $v4 = _get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
   # get v6 neighbor cache
-  my @v6 = _get_arps($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  my $v6 = _get_arps($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   # get directly connected networks
   my @subnets = _gather_subnets($device, $snmp);
@@ -58,13 +58,13 @@ sub do_arpnip {
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   # update node_ip with ARP and Neighbor Cache entries
-  store_arp(@$_, $now) for @v4;
+  store_arp(\%$_, $now) for @$v4;
   debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
-    $device->ip, scalar @v4;
+    $device->ip, scalar @$v4;
 
-  store_arp(@$_, $now) for @v6;
+  store_arp(\%$_, $now) for @$v6;
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
-    $device->ip, scalar @v6;
+    $device->ip, scalar @$v6;
 
   _store_subnet($_, $now) for @subnets;
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
@@ -82,16 +82,24 @@ sub _get_arps {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
       next unless check_mac($device, $node);
-      push @arps, [$node, $ip];
+      push @arps, {
+        node => $node,
+        ip   => $ip,
+        dns  => undef,
+      };
   }
 
-  return @arps;
+  debug sprintf ' resolving %d aliases with max %d outstanding requests',
+      scalar @arps, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+  my $resolved_ips = hostnames_resolve_async(\@arps);
+
+  return $resolved_ips;
 }
 
-=head2 store_arp( $mac, $ip, $now? )
+=head2 store_arp( $mac, $ip, $name, $now? )
 
-Stores a new entry to the C<node_ip> table with the given MAC, and IP (v4 or
-v6).
+Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
+and DNS host name.
 
 Will mark old entries for this IP as no longer C<active>.
 
@@ -101,8 +109,11 @@ C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
 =cut
 
 sub store_arp {
-  my ($mac, $ip, $now) = @_;
+  my ($hash_ref, $now) = @_;
   $now ||= 'now()';
+  my $ip   = $hash_ref->{'ip'};
+  my $mac  = $hash_ref->{'node'};
+  my $name = $hash_ref->{'dns'};
 
   schema('netdisco')->txn_do(sub {
     my $current = schema('netdisco')->resultset('NodeIp')
@@ -119,6 +130,7 @@ sub store_arp {
       ->search({'me.mac' => $mac, 'me.ip' => $ip})
       ->update_or_create(
       {
+        dns => $name,
         active => \'true',
         time_last => \$now,
       },
@@ -168,41 +180,6 @@ sub _store_subnet {
       last_discover => \$now,
     },
     { for => 'update' });
-  });
-}
-
-=head2 resolve_node_names( $device )
-
-Given a Device database object, resolve Node IP (ARP) entries belonging to
-this device into DNS names, and store them in the C<node_ip> database table.
-
-This action is usually queued following C<do_arpip> so that it may run
-asynchronously, and/or on another daemon worker node.
-
-=cut
-
-sub resolve_node_names {
-  my ($device) = @_;
-
-  schema('netdisco')->txn_do(sub {
-    my $nodeips = schema('netdisco')
-      ->resultset('NodeIp')->search(
-        {
-          -and => [
-            -bool => 'me.active',
-            -bool => 'nodes.active',
-          ],
-          'nodes.switch' => $device->ip,
-        },
-        {
-          join => 'nodes',
-          for => 'update',
-        }
-      );
-
-    while (my $nodeip = $nodeips->next) {
-      $nodeip->update({dns => hostname_from_ip($nodeip->ip)});
-    }
   });
 }
 

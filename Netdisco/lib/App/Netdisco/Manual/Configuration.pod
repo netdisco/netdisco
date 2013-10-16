@@ -444,22 +444,6 @@ Value: Number. Default: 0.
 Sets the minimum amount of time in seconds which must elapse between any two
 arpnip jobs for a device.
 
-=head3 C<nodenames_no>
-
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
-
-Devices in the list will not have their Node IPs resolved to names using the
-DNS. You can include hostnames, IP addresses and subnets (IPv4 or IPv6) in the
-list.
-
-=head3 C<nodenames_only>
-
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
-
-Only thos devices in the list will have their Node IPs resolved to names using
-the DNS. You can include hostnames, IP addresses and subnets (IPv4 or IPv6) in
-the list.
-
 =head3 C<store_wireless_clients>
 
 Value: Boolean. Default: C<true>.
@@ -575,6 +559,19 @@ on this node, respectively. Other nodes can have different settings.
 
 C<sleep_time> is the number of seconds between polling the database to find
 new jobs. This is a balance between responsiveness and database load.
+
+=head3 C<dns>
+
+Value: Settings Tree. Default:
+
+ dns:
+   max_outstanding: 250
+
+Sets the maximum number of outstanding requests for asynchronous DNS
+resolution used during arpnip and device alias discovery.
+
+This setting overrides the C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment
+value and the C<AnyEvent> library default of 10.  
 
 =head3 C<housekeeping>
 

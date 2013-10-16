@@ -76,9 +76,13 @@ sub store_device {
           alias => $addr,
           port => $port,
           subnet => $subnet,
-          dns => hostname_from_ip($addr),
+          dns => undef,
       };
   }
+
+  debug sprintf ' resolving %d aliases with max %d outstanding requests',
+      scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+  my $resolved_aliases = hostnames_resolve_async(\@aliases);
 
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
@@ -108,7 +112,7 @@ sub store_device {
     debug sprintf ' [%s] device - removed %s aliases',
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});
-    $device->device_ips->populate(\@aliases);
+    $device->device_ips->populate($resolved_aliases);
     debug sprintf ' [%s] device - added %d new aliases',
       $device->ip, scalar @aliases;
   });
@@ -547,7 +551,7 @@ sub store_modules {
 
   # build device modules list for DBIC
   my @modules;
-  foreach my $entry (keys %$e_class) {
+  foreach my $entry (keys %$e_index) {
       push @modules, {
           index  => $e_index->{$entry},
           type   => $e_type->{$entry},
@@ -670,7 +674,7 @@ sub store_neighbors {
             if $remote_type !~ /ip phone/i;
       }
       else {
-          $remote_type = '';
+          $remote_type ||= '';
       }
 
       # hack for devices seeing multiple neighbors on the port

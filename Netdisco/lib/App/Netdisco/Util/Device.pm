@@ -13,7 +13,6 @@ our @EXPORT_OK = qw/
   check_only
   is_discoverable
   is_arpnipable
-  can_nodenames
   is_macsuckable
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -242,32 +241,6 @@ sub is_arpnipable {
 
       return _bail_msg("is_arpnipable: time since last arpnip less than arpnip_min_age");
   }
-
-  return 1;
-}
-
-=head2 can_nodenames( $ip )
-
-Given an IP address, returns C<true> if Netdisco on this host is permitted by
-the local configuration to resolve Node IPs to DNS names for the device.
-
-The configuration items C<nodenames_no> and C<nodenames_only> are checked
-against the given IP.
-
-Returns false if the host is not permitted to do this job for the target
-device.
-
-=cut
-
-sub can_nodenames {
-  my $ip = shift;
-  my $device = get_device($ip) or return 0;
-
-  return _bail_msg("can_nodenames device matched nodenames_no")
-    if check_no($device, 'nodenames_no');
-
-  return _bail_msg("can_nodenames: device failed to match nodenames_only")
-    unless check_only($device, 'nodenames_only');
 
   return 1;
 }
