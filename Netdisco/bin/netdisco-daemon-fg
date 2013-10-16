@@ -26,6 +26,10 @@ use Role::Tiny::With;
 use MCE::Signal '-setpgrp';
 use MCE;
 
+# set max outstanding requests for AnyEvent::DNS
+local $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
+    = setting('dns')->{max_outstanding} || 10;
+
 # set temporary MCE files' location in home directory
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));

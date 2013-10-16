@@ -53,6 +53,10 @@ $CONFIG->{log} = ($debug ? 'debug' : 'info');
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
 
+# set max outstanding requests for AnyEvent::DNS
+local $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
+    = setting('dns')->{max_outstanding} || 10;
+
 # for the in-memory local job queue
 schema('daemon')->deploy;
 
