@@ -17,20 +17,17 @@ use namespace::clean;
 sub discoverall {
   my ($self, $job) = @_;
 
-  my $devices = schema('netdisco')->resultset('Device')->get_column('ip');
   my $jobqueue = schema('netdisco')->resultset('Admin');
+  my $devices = schema('netdisco')->resultset('Device')
+    ->search({ip => { -not_in =>
+        $jobqueue->search({
+          device => { '!=' => undef},
+          action => 'discover',
+          status => { -like => 'queued%' },
+        })->get_column('device')->as_query
+    }})->get_column('ip');
 
-  schema('netdisco')->txn_do(sub {
-    # clean up user submitted jobs older than 1min,
-    # assuming skew between schedulers' clocks is not greater than 1min
-    $jobqueue->search({
-        action => 'discover',
-        status => 'queued',
-        entered => { '<' => \"(now() - interval '1 minute')" },
-    })->delete;
-
-    # is scuppered by any user job submitted in last 1min (bad), or
-    # any similar job from another scheduler (good)
+  schema('netdisco')->resultset('Admin')->txn_do_locked(sub {
     $jobqueue->populate([
       map {{
           device => $_,
