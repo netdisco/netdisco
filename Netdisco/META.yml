@@ -20,6 +20,7 @@ no_index:
     - share
 requires:
   Algorithm::Cron: 0.07
+  AnyEvent: 7.05
   App::cpanminus: 1.6108
   App::local::lib::helper: 0.07
   DBD::Pg: 0
@@ -28,9 +29,10 @@ requires:
   DBIx::Class::Helpers: 2.018004
   Daemon::Control: 0.001
   Dancer: 1.3112
-  Dancer::Plugin::Auth::Extensible: 0.2
+  Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.1803
   File::ShareDir: 1.03
+  Guard: 1.022
   HTML::Parser: 3.7
   HTTP::Tiny: 0.029
   JSON: 0
@@ -65,4 +67,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.018000
+version: 2.018000_001
