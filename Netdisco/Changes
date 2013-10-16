@@ -4,6 +4,7 @@
 
   * Update Print media CSS to handle new UI components
   * Deadlock in Discover over access to the device_ports table
+  * Set canonical IP failed on synthesized cols (and was wrong anyway) (closes #35)
 
 2.018000 - 2013-10-08
 

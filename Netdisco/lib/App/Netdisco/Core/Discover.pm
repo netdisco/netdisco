@@ -12,6 +12,7 @@ use Try::Tiny;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  set_canonical_ip
   store_device store_interfaces store_wireless
   store_vlans store_power store_modules
   store_neighbors discover_new_neighbors
@@ -47,9 +48,6 @@ sub store_device {
   my $ip_index   = $snmp->ip_index;
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
-
-  # find root IP
-  _set_canonical_ip($device, $snmp);
 
   my $hostname = hostname_from_ip($device->ip);
   $device->dns($hostname) if $hostname;
@@ -118,7 +116,7 @@ sub store_device {
   });
 }
 
-sub _set_canonical_ip {
+sub set_canonical_ip {
   my ($device, $snmp) = @_;
 
   my $oldip = $device->ip;
@@ -131,34 +129,36 @@ sub _set_canonical_ip {
 
           # remove old device and aliases
           schema('netdisco')->txn_do(sub {
-            my $gone = $device->device_ips->delete;
-            debug sprintf ' [%s] device - removed %s aliases',
-              $oldip, $gone;
+            my $copy = schema('netdisco')->resultset('Device')
+              ->find({ip => $oldip});
 
             # our special delete which is more efficient
             schema('netdisco')->resultset('Device')
               ->search({ ip => $device->ip })->delete({keep_nodes => 1});
-
-            # a new row object from the old one
-            $device = schema('netdisco')->resultset('Device')
-              ->new({ $device->get_columns });
-
             debug sprintf ' [%s] device - deleted self', $oldip;
+
+            $device = schema('netdisco')->resultset('Device')
+              ->create({ $copy->get_columns, ip => $newip })
+              if defined $copy;
+
+            # make nodes follow device
+            schema('netdisco')->resultset('Node')
+              ->search({switch => $oldip})
+              ->update({switch => $newip});
           });
-
-          $device->ip($newip);
       }
-
-      # either root_ip is changed or unchanged, but it exists
-      return;
+  }
+  else {
+      my $revname = ipv4_from_hostname($snmp->name);
+      if (setting('reverse_sysname') and $revname) {
+          debug sprintf ' [%s] device - changing root IP to revname %s',
+            $oldip, $revname;
+          $device->ip($revname);
+      }
   }
 
-  my $revname = ipv4_from_hostname($snmp->name);
-  if (setting('reverse_sysname') and $revname) {
-      debug sprintf ' [%s] device - changing root IP to revname %s',
-        $oldip, $revname;
-      $device->ip($revname);
-  }
+  # either root_ip is changed or unchanged, but it exists
+  return $device;
 }
 
 =head2 store_interfaces( $device, $snmp )
