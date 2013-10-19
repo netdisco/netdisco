@@ -183,6 +183,7 @@
       [% IF params.n_ip %]
         [% mynode.push('') %]
         [% mynode.push('') %]
+        [% mynode.push('') %]
         [% SET has_ips = 0 %]
 
         [% FOREACH ip IN node.ips %]
