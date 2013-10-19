@@ -94,6 +94,9 @@ sub do_macsuck {
             $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
+              # make sure this port is UP in netdisco
+              $device_ports->{$port}->update({up_admin => 'up', up => 'up'});
+
               # get VLAN from Q-BRIDGE if available
               $vlan = $fwtable->{$vlan}->{$port}->{$mac}
                 if $vlan == 0;

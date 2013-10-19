@@ -1,5 +1,9 @@
 2.018001 - 
 
+  [ENHANCEMENTS]
+
+  * Ports with active nodes are set to be "up" immediately (closes #9)
+
   [BUG FIXES]
 
   * Update Print media CSS to handle new UI components
