@@ -26,16 +26,6 @@ sub _walk_body {
         })->get_column('device')->as_query
     }})->get_column('ip');
 
-  if ($job->subaction and $job->subaction eq 'after-discoverall') {
-      # make sure there are no incomplete discover jobs queued
-      my $discover = $jobqueue->search(
-        { action => 'discover', status => { -like => 'queued%' } }
-      )->count;
-
-      return job_defer("Deferred $job_type due to pending discover jobs")
-        if $discover;
-  }
-
   schema('netdisco')->resultset('Admin')->txn_do_locked(sub {
     $jobqueue->populate([
       map {{
