@@ -64,7 +64,8 @@ sub do_macsuck {
   store_wireless_client_info($device, $snmp, $now);
 
   # cache the device ports to save hitting the database for many single rows
-  my $device_ports = {map {($_->port => $_)} $device->ports->all}; 
+  my $device_ports = {map {($_->port => $_)}
+                          $device->ports(undef, {prefetch => 'neighbor_alias'})->all};
   my $port_macs = get_port_macs($device);
 
   # get forwarding table data via basic snmp connection

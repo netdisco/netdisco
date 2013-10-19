@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Ports with active nodes are set to be "up" immediately (closes #9)
+  * Avoid returning to the DB for every MAC on a neighbor port
 
   [BUG FIXES]
 
