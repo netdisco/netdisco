@@ -141,6 +141,17 @@ __PACKAGE__->has_many( active_nodes_with_age => 'App::Netdisco::DB::Result::Virt
     cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
+=head2 power
+
+Returns a row from the C<device_port_power> table if one refers to this
+device port.
+
+=cut
+
+__PACKAGE__->might_have( power => 'App::Netdisco::DB::Result::DevicePortPower', {
+  'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
+});
+
 =head2 neighbor_alias
 
 When a device port has an attached neighbor device, this relationship will
@@ -153,21 +164,10 @@ database.
 
 =cut
 
-__PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp',
+__PACKAGE__->has_many( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp',
   { 'foreign.alias' => 'self.remote_ip' },
   { join_type => 'LEFT' },
 );
-
-=head2 power
-
-Returns a row from the C<device_port_power> table if one refers to this
-device port.
-
-=cut
-
-__PACKAGE__->might_have( power => 'App::Netdisco::DB::Result::DevicePortPower', {
-  'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
-});
 
 =head2 port_vlans_tagged
 
@@ -232,7 +232,7 @@ the database.
 
 sub neighbor {
     my $row = shift;
-    return eval { $row->neighbor_alias->device || undef };
+    return eval { $row->neighbor_alias->first->device || undef };
 }
 
 =head1 ADDITIONAL COLUMNS

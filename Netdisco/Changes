@@ -7,6 +7,7 @@
   * Set canonical IP failed on synthesized cols (and was wrong anyway) (closes #35)
   * Remove dupe restriction on job queue, try for smarter *all queuing (closes #41)
   * Remove scary message from Auth::Extensible (closes #38)
+  * Return first port neighbor match, if multiple devices claim the IP (closes #42)
 
 2.018000 - 2013-10-08
 
