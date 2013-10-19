@@ -129,6 +129,7 @@ field of the database record. If not provided, it defauls to C<now()>.
 sub store_node {
   my ($ip, $vlan, $port, $mac, $now) = @_;
   $now ||= 'now()';
+  $vlan ||= 0;
 
   schema('netdisco')->txn_do(sub {
     my $nodes = schema('netdisco')->resultset('Node');
@@ -157,13 +158,13 @@ sub store_node {
     my $new = $nodes->search({
       'me.switch' => $ip,
       'me.port' => $port,
+      'me.vlan' => $vlan,
       'me.mac' => $mac,
     });
 
     # new data
     $new->update_or_create(
       {
-        vlan => $vlan,
         active => \'true',
         oui => substr($mac,0,8),
         time_last => \$now,
