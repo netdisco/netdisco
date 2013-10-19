@@ -56,7 +56,7 @@ hook 'before' => sub {
 
   # override ports form defaults with cookie settings
 
-  my $cookie = cookie('nd_ports-form');
+  my $cookie = (cookie('nd_ports-form') || '');
   my $cdata = url_params_mixed($cookie);
 
   if ($cdata and ref {} eq ref $cdata and not param('reset')) {
