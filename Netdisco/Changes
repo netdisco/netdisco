@@ -10,6 +10,7 @@
   * Return first port neighbor match, if multiple devices claim the IP (closes #42)
   * Should handle empty ports preferences (closes #39)
   * Decode more entPhysicalEntry columns as UTF-8 (closes #37)
+  * Lock device_port table when updating Device Ports (closes #40)
 
 2.018000 - 2013-10-08
 

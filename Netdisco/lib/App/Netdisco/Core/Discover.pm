@@ -282,7 +282,7 @@ sub store_interfaces {
       };
   }
 
-  schema('netdisco')->txn_do(sub {
+  schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
     my $gone = $device->ports->delete({keep_nodes => 1});
     debug sprintf ' [%s] interfaces - removed %s interfaces',
       $device->ip, $gone;

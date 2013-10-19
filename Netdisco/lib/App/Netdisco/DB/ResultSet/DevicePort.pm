@@ -4,6 +4,10 @@ use base 'DBIx::Class::ResultSet';
 use strict;
 use warnings FATAL => 'all';
 
+__PACKAGE__->load_components(qw/
+  +App::Netdisco::DB::ExplicitLocking
+/);
+
 =head1 ADDITIONAL METHODS
 
 =head2 with_times
