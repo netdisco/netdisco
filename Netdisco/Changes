@@ -9,6 +9,7 @@
   * Remove scary message from Auth::Extensible (closes #38)
   * Return first port neighbor match, if multiple devices claim the IP (closes #42)
   * Should handle empty ports preferences (closes #39)
+  * Decode more entPhysicalEntry columns as UTF-8 (closes #37)
 
 2.018000 - 2013-10-08
 
