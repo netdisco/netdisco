@@ -390,7 +390,8 @@ VLAN which is not defined in the VLAN database.
 
 =head3 C<macsuck_no_vlan>
 
-Value: List of VLAN names or numbers. Default: Empty List.
+Value: List of VLAN names or numbers. Default: fddi-default,
+token-ring-default,fddinet-default,trnet-default.
 
 On some devices, per-VLAN macsuck will timeout with specific VLAN numbers. You
 can put those numbers (or their names) into this list to have them skipped.
