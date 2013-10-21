@@ -192,13 +192,26 @@ sub _get_vlan_list {
 
   my (%vlans, %vlan_names);
   my $i_vlan = $snmp->i_vlan || {};
+  my $trunks = $snmp->i_vlan_membership || {};
+  my $i_type = $snmp->i_type || {};
 
   # get list of vlans in use
   while (my ($idx, $vlan) = each %$i_vlan) {
       # hack: if vlan id comes as 1.142 instead of 142
       $vlan =~ s/^\d+\.//;
-
-      ++$vlans{$vlan};
+      
+      # VLANs are ports interfaces capture VLAN, but don't count as in use
+      # Port channels are also 'propVirtual', but capture while checking
+      # trunk VLANs below
+      if (exists $i_type->{$idx} and $i_type->{$idx} eq 'propVirtual') {
+        $vlans{$vlan} ||= 0;
+      }
+      else {
+        ++$vlans{$vlan};
+      }
+      foreach my $t_vlan (@{$trunks->{$idx}}) {
+        ++$vlans{$t_vlan};
+      }
   }
 
   unless (scalar keys %vlans) {
@@ -214,7 +227,8 @@ sub _get_vlan_list {
       (my $vlan = $idx) =~ s/^\d+\.//;
 
       # just in case i_vlan is different to v_name set
-      ++$vlans{$vlan};
+      # capture the VLAN, but it's not in use on a port
+      $vlans{$vlan} ||= 0;
 
       $vlan_names{$vlan} = $name;
   }
@@ -267,8 +281,7 @@ sub _get_vlan_list {
       }
 
       # check in use by a port on this device
-      if (scalar keys %$i_vlan and not exists $vlans{$vlan}
-            and not setting('macsuck_all_vlans')) {
+      if (!$vlans{$vlan} && !setting('macsuck_all_vlans')) {
 
           debug sprintf
             ' [%s] macsuck VLAN %s/%s - not in use by any port - skipping.',
