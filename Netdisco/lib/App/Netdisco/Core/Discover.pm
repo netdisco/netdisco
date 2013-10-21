@@ -151,7 +151,7 @@ sub store_device {
   }
 
   my @properties = qw/
-    snmp_ver snmp_comm
+    snmp_ver
     description uptime contact name location
     layers ports mac serial model
     ps1_type ps2_type ps1_status ps2_status

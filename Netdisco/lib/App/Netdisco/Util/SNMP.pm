@@ -1,7 +1,7 @@
 package App::Netdisco::Util::SNMP;
 
 use Dancer qw/:syntax :script/;
-use App::Netdisco::Util::Device qw/get_device check_no/;
+use App::Netdisco::Util::Device qw/get_device check_acl check_no/;
 
 use SNMP::Info;
 use Try::Tiny;
@@ -41,7 +41,7 @@ Returns C<undef> if the connection fails.
 
 =cut
 
-sub snmp_connect { _snmp_connect_generic(@_, 'community') }
+sub snmp_connect { _snmp_connect_generic(@_, 'read') }
 
 =head2 snmp_connect_rw( $ip )
 
@@ -52,15 +52,15 @@ Returns C<undef> if the connection fails.
 
 =cut
 
-sub snmp_connect_rw { _snmp_connect_generic(@_, 'community_rw') }
+sub snmp_connect_rw { _snmp_connect_generic(@_, 'write') }
 
 sub _snmp_connect_generic {
-  my $ip = shift;
+  my ($ip, $mode) = @_;
+  $mode ||= 'read';
 
   # get device details from db
   my $device = get_device($ip);
 
-  # TODO: only supporing v2c at the moment
   my %snmp_args = (
     DestHost => $device->ip,
     Retries => (setting('snmpretries') || 2),
@@ -87,29 +87,21 @@ sub _snmp_connect_generic {
       $snmp_args{BulkWalk} = 0;
   }
 
-  # TODO: add version force support
-  # use existing SNMP version or try 2, 1
-  my @versions = (($device->snmp_ver || setting('snmpver') || 2));
-  push @versions, 1;
-
   # use existing or new device class
   my @classes = ('SNMP::Info');
   if ($device->snmp_class) {
-    unshift @classes, $device->snmp_class;
+      unshift @classes, $device->snmp_class;
   }
   else {
-    $snmp_args{AutoSpecity} = 1;
+      $snmp_args{AutoSpecity} = 1;
   }
 
+  # TODO: add version force support
+  # use existing SNMP version or try 3, 2, 1
+  my @versions = reverse (1 .. ($device->snmp_ver || setting('snmpver') || 3));
+
   # get the community string(s)
-  my $comm_type = pop;
-  my @communities = @{ setting($comm_type) || []};
-  unshift @communities, $device->snmp_comm
-    if defined $device->snmp_comm
-       and defined $comm_type and $comm_type eq 'community';
-  unshift @communities, $device->community->snmp_comm_rw
-    if eval { $device->community->snmp_comm_rw }
-       and defined $comm_type and $comm_type eq 'community_rw';
+  my @communities = _build_communities($device, $mode);
 
   my $info = undef;
   VERSION: foreach my $ver (@versions) {
@@ -119,14 +111,11 @@ sub _snmp_connect_generic {
           next unless $class;
 
           COMMUNITY: foreach my $comm (@communities) {
-              next unless $comm;
+              next if $ver eq 3 and exists $comm->{community};
+              next if $ver ne 3 and !exists $comm->{community};
 
-              $info = _try_connect($ver, $class, $comm, \%snmp_args);
-
-              if ($comm_type eq 'community_rw') {
-                  _try_write($info, $comm, $device) or next COMMUNITY;
-              }
-
+              my %local_args = (%snmp_args, Version => $ver);
+              $info = _try_connect($device, $class, $comm, $mode, \%local_args);
               last VERSION if $info;
           }
       }
@@ -135,52 +124,32 @@ sub _snmp_connect_generic {
   return $info;
 }
 
-sub _try_write {
-  my ($info, $comm, $device) = @_;
-  my $happy = 0;
-
-  try {
-      debug sprintf '[%s] try_write with comm: %s', $device->ip, $comm;
-      $info->clear_cache;
-      my $rv = $info->set_location( $info->location );
-      $device->update_or_create_related('community', {snmp_comm_rw => $comm})
-        if $device->in_storage;
-      $happy = 1 if $rv;
-  }
-  catch {
-      debug $_;
-  };
-
-  return $happy;
-}
-
 sub _try_connect {
-  my ($ver, $class, $comm, $snmp_args) = @_;
+  my ($device, $class, $comm, $mode, $snmp_args) = @_;
+  my %comm_args = _mk_info_commargs($comm);
   my $info = undef;
 
   try {
       debug
         sprintf '[%s] try_connect with ver: %s, class: %s, comm: %s',
-        $snmp_args->{DestHost}, $ver, $class, $comm;
+        $snmp_args->{DestHost}, $snmp_args->{Version}, $class,
+        ($comm->{community} || "v3user:$comm->{user}");
       eval "require $class";
 
-      $info = $class->new(%$snmp_args, Version => $ver, Community => $comm);
-      undef $info unless (
-        (not defined $info->error)
-        and defined $info->uptime
-        and ($info->layers or $info->description)
-        and $info->class
-      );
+      $info = $class->new(%$snmp_args, %comm_args);
+      $info = ($mode eq 'read' ? _try_read($info, $device, $comm)
+                               : _try_write($info, $device, $comm));
 
       # first time a device is discovered, re-instantiate into specific class
       if ($info and $info->device_type ne $class) {
           $class = $info->device_type;
           debug
             sprintf '[%s] try_connect with ver: %s, new class: %s, comm: %s',
-            $snmp_args->{DestHost}, $ver, $class, $comm;
+            $snmp_args->{DestHost}, $snmp_args->{Version}, $class,
+            ($comm->{community} || "v3user:$comm->{user}");
 
           eval "require $class";
-          $info = $class->new(%$snmp_args, Version => $ver, Community => $comm);
+          $info = $class->new(%$snmp_args, %comm_args);
       }
   }
   catch {
@@ -188,6 +157,75 @@ sub _try_connect {
   };
 
   return $info;
+}
+
+sub _try_read {
+  my ($info, $device, $comm) = @_;
+
+  undef $info unless (
+    (not defined $info->error)
+    and defined $info->uptime
+    and ($info->layers or $info->description)
+    and $info->class
+  );
+
+  if ($device->in_storage) {
+      # read strings are tried before writes, so this should not accidentally
+      # store a write string if there's a good read string also in config.
+      $device->update({snmp_comm => $comm->{community}})
+        if exists $comm->{community};
+      $device->update_or_create_related('community',
+        {snmp_auth_tag => $comm->{tag}}) if $comm->{tag};
+  }
+  else {
+      $device->set_column(snmp_comm => $comm->{community})
+        if exists $comm->{community};
+  }
+
+  return $info;
+}
+
+sub _try_write {
+  my ($info, $device, $comm) = @_;
+
+  # SNMP v1/2 R/W must be able to read as well (?)
+  $info = _try_read($info, $device, $comm)
+    if exists $comm->{community};
+  return unless $info;
+
+  $info->set_location( $info->load_location )
+    or return undef;
+
+  if ($device->in_storage) {
+      # one of these two cols must be set
+      $device->update_or_create_related('community', {
+        ($comm->{tag} ? (snmp_auth_tag => $comm->{tag}) : ()),
+        (exists $comm->{community} ? (snmp_comm_rw => $comm->{community}) : ()),
+      });
+  }
+
+  return $info;
+}
+
+sub _mk_info_commargs {
+  my $comm = shift;
+  return () unless ref {} eq ref $comm and scalar keys %$comm;
+
+  return (Community => $comm->{community})
+    if exists $comm->{community};
+
+  my $seclevel = (exists $comm->{auth} ?
+                  (exists $comm->{priv} ? 'authPriv' : 'authNoPriv' )
+                  : 'noAuthNoPriv');
+
+  return (
+    SecName => $comm->{user},
+    SecLevel => $seclevel,
+    AuthProto => uc (eval { $comm->{auth}->{proto} } || 'MD5'),
+    AuthPass  => (eval { $comm->{auth}->{pass} } || ''),
+    PrivProto => uc (eval { $comm->{priv}->{proto} } || 'DES'),
+    PrivPass  => (eval { $comm->{priv}->{pass} } || ''),
+  );
 }
 
 sub _build_mibdirs {
@@ -203,7 +241,78 @@ sub _get_mibdirs_content {
   return \@list;
 }
 
-=head2 snmp_comm_reindex( $snmp, $vlan )
+sub _build_communities {
+  my ($device, $mode) = @_;
+  $mode ||= 'read';
+
+  my $config = (setting('snmp_auth') || []);
+  my $stored_tag = eval { $device->community->snmp_auth_tag };
+  my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
+  my @communities = ();
+
+  # first try last-known-good
+  push @communities, {read => 1, community => $device->snmp_comm}
+    if defined $device->snmp_comm and $mode eq 'read';
+
+  # first try last-known-good
+  push @communities, {read => 1, write => 1, community => $snmp_comm_rw}
+    if $snmp_comm_rw and $mode eq 'write';
+
+  # new style snmp config
+  foreach my $stanza (@$config) {
+      # user tagged
+      my $tag = '';
+      if (1 == scalar keys %$stanza) {
+          $tag = (keys %$stanza)[0];
+          $stanza = $stanza->{$tag};
+
+          # corner case: untagged lone community
+          if ($tag eq 'community') {
+              $tag = $stanza;
+              $stanza = {community => $tag};
+          }
+      }
+
+      # defaults
+      $stanza->{tag} ||= $tag;
+      $stanza->{read} = 1 if !exists $stanza->{read};
+      $stanza->{only} ||= ['any'];
+      $stanza->{only} = [$stanza->{only}] if ref '' eq ref $stanza->{only};
+
+      die "error: config: snmpv3 stanza in snmp_auth must have a tag\n"
+        if not $stanza->{tag}
+           and !exists $stanza->{community};
+
+      if ($stanza->{$mode} and check_acl($device, $stanza->{only})) {
+          if ($stored_tag and $stored_tag eq $stanza->{tag}) {
+              # last known-good by tag
+              unshift @communities, $stanza
+          }
+          else {
+              push @communities, $stanza
+          }
+      }
+  }
+
+  # legacy config (note: read strings tried before write)
+  if ($mode eq 'read') {
+      push @communities, map {{
+        read => 1,
+        community => $_,
+      }} @{setting('community') || []};
+  }
+  else {
+      push @communities, map {{
+        read  => 1,
+        write => 1,
+        community => $_,
+      }} @{setting('community_rw') || []};
+  }
+
+  return @communities;
+}
+
+=head2 snmp_comm_reindex( $snmp, $device, $vlan )
 
 Takes an established L<SNMP::Info> instance and makes a fresh connection using
 community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
@@ -211,15 +320,22 @@ community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
 =cut
 
 sub snmp_comm_reindex {
-  my ($snmp, $vlan) = @_;
-
+  my ($snmp, $device, $vlan) = @_;
   my $ver  = $snmp->snmp_ver;
-  my $comm = $snmp->snmp_comm;
 
   if ($ver == 3) {
-      $snmp->update(Context => "vlan-$vlan");
+      my $prefix = '';
+      my @comms = _build_communities($device, 'read');
+      foreach my $c (@comms) {
+          next unless $c->{tag}
+            and $c->{tag} eq (eval { $device->community->snmp_auth_tag } || '');
+          $prefix = $c->{context_prefix} and last;
+      }
+      my $prefix ||= 'vlan-';
+      $snmp->update(Context => ($prefix . $vlan));
   }
   else {
+      my $comm = $snmp->snmp_comm;
       $snmp->update(Community => $comm . '@' . $vlan);
   }
 }

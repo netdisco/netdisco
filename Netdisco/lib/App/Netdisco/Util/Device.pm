@@ -9,6 +9,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_device
+  check_acl
   check_no
   check_only
   is_discoverable
@@ -58,13 +59,24 @@ sub get_device {
     ->find_or_new({ip => $ip});
 }
 
-sub _check_acl {
+=head2 check_acl( $ip, \@prefixes )
+
+Given the IP address of a device, returns true if any of the IP prefixes in
+C<< \@prefixes >> contains that device, otherwise returns false.
+
+Normally you use C<check_no> and C<check_only>, passing the name of the
+configuration setting to load. This helper instead requires not the name of
+the setting, but its value.
+
+=cut
+
+sub check_acl {
   my ($ip, $config) = @_;
   my $device = get_device($ip) or return 0;
   my $addr = NetAddr::IP::Lite->new($device->ip);
 
   foreach my $item (@$config) {
-      if ($item =~ m/^(.*)\s*:\s*(.*)$/) {
+      if ($item =~ m/^([^:]+)\s*:\s*([^:]+)$/) {
           my $prop  = $1;
           my $match = $2;
 
@@ -123,7 +135,7 @@ sub check_no {
   my $config = setting($setting_name) || [];
   return 0 unless scalar @$config;
 
-  return _check_acl($ip, $config);
+  return check_acl($ip, $config);
 }
 
 =head2 check_only( $ip, $setting_name )
@@ -163,7 +175,7 @@ sub check_only {
   my $config = setting($setting_name) || [];
   return 1 unless scalar @$config;
 
-  return _check_acl($ip, $config);
+  return check_acl($ip, $config);
 }
 
 =head2 is_discoverable( $ip, $device_type? )

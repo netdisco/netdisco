@@ -67,15 +67,16 @@ sub do_macsuck {
   my $device_ports = {map {($_->port => $_)}
                           $device->ports(undef, {prefetch => 'neighbor_alias'})->all};
   my $port_macs = get_port_macs($device);
+  my $interfaces = $snmp->interfaces;
 
   # get forwarding table data via basic snmp connection
-  my $fwtable = { 0 => _walk_fwtable($device, $snmp, $port_macs, $device_ports) };
+  my $fwtable = { 0 => _walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports) };
 
   # ...then per-vlan if supported
   my @vlan_list = _get_vlan_list($device, $snmp);
   foreach my $vlan (@vlan_list) {
-      snmp_comm_reindex($snmp, $vlan);
-      $fwtable->{$vlan} = _walk_fwtable($device, $snmp, $port_macs, $device_ports);
+      snmp_comm_reindex($snmp, $device, $vlan);
+      $fwtable->{$vlan} = _walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports);
   }
 
   # now it's time to call store_node for every node discovered
@@ -285,14 +286,13 @@ sub _get_vlan_list {
 # walks the forwarding table (BRIDGE-MIB) for the device and returns a
 # table of node entries.
 sub _walk_fwtable {
-  my ($device, $snmp, $port_macs, $device_ports) = @_;
+  my ($device, $snmp, $interfaces, $port_macs, $device_ports) = @_;
   my $cache = {};
 
   my $fw_mac   = $snmp->fw_mac;
   my $fw_port  = $snmp->fw_port;
   my $fw_vlan  = $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index;
-  my $interfaces = $snmp->interfaces;
 
   # to map forwarding table port to device port we have
   #   fw_port -> bp_index -> interfaces
