@@ -331,7 +331,7 @@ sub snmp_comm_reindex {
             and $c->{tag} eq (eval { $device->community->snmp_auth_tag } || '');
           $prefix = $c->{context_prefix} and last;
       }
-      my $prefix ||= 'vlan-';
+      $prefix ||= 'vlan-';
       $snmp->update(Context => ($prefix . $vlan));
   }
   else {
