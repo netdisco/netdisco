@@ -1,4 +1,10 @@
-2.018001 - 
+2.019001 - 2013-10-08
+
+  [BUG FIXES]
+
+  * Fix syntax error in Util/SNMP.pm
+
+2.019000 - 2013-10-08
 
   [ENHANCEMENTS]
 
