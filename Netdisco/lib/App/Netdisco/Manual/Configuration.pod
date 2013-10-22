@@ -248,8 +248,20 @@ should always include C<rfc>. For example:
 
 Value: List of Strings. Default: C<public>.
 
-A list of read-only SNMP community strings to try on each device. The working
-community will be cached in the database.
+A list of read-only SNMP community strings to try on each device. This is the
+simplest way to configure your SNMPv1 or SNMPv2 community strings. For
+example:
+
+ community:
+   - public
+   - anotherstring
+   - mycommunity
+
+Each is tried in turn when polling the device, and then the working community
+string will be cached in the database.
+
+For fine-grained control over which communities are tried for which devices,
+or to set SNMPv3 authentication, see C<snmp_auth>, below.
 
 =head3 C<community_rw>
 
@@ -257,6 +269,80 @@ Value: List of Strings. Default: C<private>.
 
 A list of read-write SNMP community strings to try on each device. The working
 community will be cached in the database.
+
+This is the simplest way to configure SNMPv1 or SNMPv2 community strings. Each
+is tried in turn when writing to the device, and then the working community
+string will be cached in the database.
+
+For fine-grained control over which communities are tried for which devices,
+or to set SNMPv3 authentication, see C<snmp_auth>, below.
+
+=head3 C<snmp_auth>
+
+Value: List of Settings Trees. Default: Empty List.
+
+This setting is used for SNMPv3 authentication configuration, and also
+provides an alternative fine-grained control for SNMPv1 and SNMPv2 community
+strings. You provide a list of authentication stanzas, and Netdisco will try
+each in turn, then cache the one which works for a device.
+
+Each stanza can be restricted for use only on specific IP prefixes (subnets),
+and also limited to read (get) and/or write (set) operations. By default, a
+stanza is enabled for all device IPs, for read access only. The "tag" of a
+stanza is simply a friendly name used by Netdisco to refer to the
+configuration.
+
+ snmp_auth:
+   -
+     community: public
+   -
+     write: true
+     communtiy: mycommunity
+   -
+     read: false
+     write: true
+     community: mycommunity2
+   -
+     tag: v3example
+     user: netdisco
+     auth:
+       pass: netdiscokey
+       proto: MD5
+     priv:
+       pass: netdiscokey2
+       proto: DES
+   -
+     tag: v3aclexample
+     user: netdisco2
+     only:
+       - 192.0.2.0/30
+       - 172.20.10.0/24
+   -
+     tag: v2aclexample
+     community: s3kr1t
+     read: false
+     write: true
+     only:
+       - 2001:db8::/32
+
+
+For SNMPv1 and SNMPv2, only the C<community> key is required. You can add
+C<read> and/or C<write> restrictions, and an IP restriction using C<only>.
+Giving the stanza a C<tag> name is optional, but recommended.
+
+For SNMPv3 the C<tag> and C<user> keys are required. You can add C<read>
+and/or C<write> restrictions, and an IP restriction using C<only>. Providing
+an C<auth> section enables the authentication security level. Providing a
+C<priv> section enables the message encryption security level.
+
+As per Net-SNMP, the default SNMPv3 authentication security method is MD5, and
+the default encryption protocol is DES, with AES or AES256 being common
+alternatives. Note that you cannot have C<priv> without C<auth>.
+
+On some device platforms SNMPv3 contexts are used to macsuck each VLAN. For
+this you usually configure a common context prefix, with Netdisco's default
+being "C<vlan->" (i.e. C<vlan-1>, C<vlan-2>, etc). Add the C<context_prefix>
+key to a stanza to override this.
 
 =head3 C<bulkwalk_off>
 
@@ -444,6 +530,17 @@ Value: Number. Default: 0.
 
 Sets the minimum amount of time in seconds which must elapse between any two
 arpnip jobs for a device.
+
+=head3 C<dns>
+
+Value: Settings Tree. Default: C<max_outstanding: 250>
+
+After arpnip, each found IP will have its DNS name resolved. Similarly on
+device discovery, all interface aliases will have their IPs resolved to names.
+
+This setting controls how many outstanding DNS queries are permitted at any
+time. You can also override this setting using the
+C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment variable.
 
 =head3 C<store_wireless_clients>
 
@@ -737,18 +834,6 @@ C<snmpforce_v3>
 =item *
 
 C<timeout>
-
-=item *
-
-C<v3_user>
-
-=item *
-
-C<v3_users>
-
-=item *
-
-C<v3_users_rw>
 
 =back
 
