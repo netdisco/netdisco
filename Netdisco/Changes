@@ -1,10 +1,16 @@
-2.019001 - 2013-10-08
+2.019002 - 2013-10-24
+
+  [BUG FIXES]
+
+  * Fix HTTP redirects when running under HTTP/S
+
+2.019001 - 2013-10-22
 
   [BUG FIXES]
 
   * Fix syntax error in Util/SNMP.pm
 
-2.019000 - 2013-10-08
+2.019000 - 2013-10-22
 
   [ENHANCEMENTS]
 
