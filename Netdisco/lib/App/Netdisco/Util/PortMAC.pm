@@ -29,28 +29,35 @@ addresses on a device.
 =cut
 
 sub get_port_macs {
-  my $device = shift;
-  my $port_macs = {};
+    my $device    = shift;
+    my $port_macs = {};
 
-  unless ($device->in_storage) {
-      debug sprintf ' [%s] get_port_macs - skipping device not yet discovered',
-        $device->ip;
-      return $port_macs;
-  }
+    unless ( $device->in_storage ) {
+        debug sprintf
+            ' [%s] get_port_macs - skipping device not yet discovered',
+            $device->ip;
+        return $port_macs;
+    }
 
-  my $dp_macs = schema('netdisco')->resultset('DevicePort')
-    ->search({ mac => { '!=' => undef} });
-  while (my $r = $dp_macs->next) {
-      $port_macs->{ $r->mac } = $r->ip;
-  }
+    my $dp_macs
+        = schema('netdisco')->resultset('DevicePort')
+        ->search( { mac => { '!=' => undef } },
+        { select => [ 'mac', 'ip' ] } );
+    my $dp_cursor = $dp_macs->cursor;
+    while ( my @vals = $dp_cursor->next ) {
+        $port_macs->{ $vals[0] } = $vals[1];
+    }
 
-  my $d_macs = schema('netdisco')->resultset('Device')
-    ->search({ mac => { '!=' => undef} });
-  while (my $r = $d_macs->next) {
-      $port_macs->{ $r->mac } = $r->ip;
-  }
+    my $d_macs
+        = schema('netdisco')->resultset('Device')
+        ->search( { mac => { '!=' => undef } },
+        { select => [ 'mac', 'ip' ] } );
+    my $d_cursor = $d_macs->cursor;
+    while ( my @vals = $d_cursor->next ) {
+        $port_macs->{ $vals[0] } = $vals[1];
+    }
 
-  return $port_macs;
+    return $port_macs;
 }
 
 1;
