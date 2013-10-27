@@ -66,8 +66,7 @@ get '/search' => require_login sub {
 
     if (not param('tab')) {
         if (not $q) {
-            header(Location => uri_for('/')->path);
-            return status(302);
+            return redirect uri_for('/')->path;
         }
 
         # pick most likely tab for initial results
@@ -80,12 +79,11 @@ get '/search' => require_login sub {
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
                     # redirect to device details for the one device
-                    header(Location => uri_for('/device', {
+                    return redirect uri_for('/device', {
                       tab => 'details',
                       q => ($nd->first->dns || $nd->first->ip),
                       f => '',
-                    })->path_query);
-                    return status(302);
+                    })->path_query;
                 }
 
                 # multiple devices

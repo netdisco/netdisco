@@ -1,3 +1,13 @@
+2.019003 -
+
+  [ENHANCEMENTS]
+
+  * Use cursor to greatly speed up macsuck/arpnip startup code (jeneric)
+
+  [BUG FIXES]
+
+  * Fix redirect in Dancer to not forcibly apply scheme+host
+
 2.019002 - 2013-10-24
 
   [BUG FIXES]

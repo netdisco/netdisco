@@ -159,8 +159,7 @@ get '/device' => require_login sub {
     });
 
     if (!defined $dev) {
-        header(Location => uri_for('/', {nosuchdevice => 1})->path_query);
-        return status(302);
+        return redirect uri_for('/', {nosuchdevice => 1})->path_query;
     }
 
     params->{'tab'} ||= 'details';

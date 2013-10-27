@@ -100,4 +100,15 @@ any qr{.*} => sub {
     template 'index';
 };
 
+{
+  # https://github.com/PerlDancer/Dancer/issues/967
+  no warnings 'redefine';
+  *Dancer::_redirect = sub {
+      my ($destination, $status) = @_;
+      my $response = Dancer::SharedData->response;
+      $response->status($status || 302);
+      $response->headers('Location' => $destination);
+  };
+}
+
 true;
