@@ -146,6 +146,7 @@ $(document).ready(function() {
       }
       else {
         // no confirm for port descr change
+        nd_save_ok = true;
         port_control(cell); // save
       }
 

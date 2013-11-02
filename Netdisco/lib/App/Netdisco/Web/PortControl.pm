@@ -22,9 +22,6 @@ ajax '/ajax/portcontrol' => require_role port_control => sub {
       'c_power'  => 'power',
     );
 
-    send_error('No action/value', 400)
-      unless (param('action') or param('value'));
-
     my $action = $action_map{ param('field') };
     my $subaction = ($action =~ m/^(?:power|portcontrol)/
       ? (param('action') ."-other")
