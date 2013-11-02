@@ -41,11 +41,12 @@ web_plugins:
   - Report::DuplexMismatch
   - Report::SsidInventory
   - Report::VlanInventory
+  - AdminTask::JobQueue
+  - AdminTask::PollerPerformance
   - AdminTask::PseudoDevice
   - AdminTask::Topology
-  - AdminTask::JobQueue
-  - AdminTask::Users
   - AdminTask::UserLog
+  - AdminTask::Users
   - Search::Device
   - Search::Node
   - Search::VLAN

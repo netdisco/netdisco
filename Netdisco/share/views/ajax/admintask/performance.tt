@@ -1,0 +1,29 @@
+[% IF results.count == 0 %]
+<div class="span2 alert alert-info">The aren't enough jobs to report.</div>
+[% ELSE %]
+<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Action</th>
+      <th class="nd_center-cell">Number of Devices</th>
+      <th class="nd_center-cell">Queued At</th>
+      <th class="nd_center-cell">Started</th>
+      <th class="nd_center-cell">Finished</th>
+      <th class="nd_center-cell">Time Elapsed</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="nd_center-cell">[% row.action.ucfirst | html_entity %]</td>
+      <td class="nd_center-cell">[% row.get_column('number')  | html_entity %]</td>
+      <td class="nd_center-cell">[% row.get_column('entered_stamp') | html_entity %]</td>
+      <td class="nd_center-cell">[% row.get_column('start')   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.get_column('end')     | html_entity %]</td>
+      <td class="nd_center-cell">[% row.get_column('elapsed') | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+[% END %]
+
