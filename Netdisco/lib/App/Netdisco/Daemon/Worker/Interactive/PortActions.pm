@@ -41,7 +41,7 @@ sub set_vlan {
   return job_error("Cannot alter vlan: $vlan_reconfig_check")
     if $vlan_reconfig_check;
 
-  return _set_port_generic($job, 'vlan');
+  return _set_port_generic($job, 'untagged', 'vlan');
 }
 
 sub _set_port_generic {

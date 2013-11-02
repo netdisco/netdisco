@@ -1,5 +1,9 @@
 2.019004 -
 
+  [ENHANCEMENTS]
+
+  * Can now set untagged VLAN on trunking and non-trunking ports
+
   [BUG FIXES]
 
   * Set of Port Name (description) fixed to assume OK dialog response
