@@ -36,6 +36,10 @@
           <i id="nd_countdown-control-icon" class="text-success icon-play"></i></a>
         <span id="nd_countdown"></span>
       </span>
+      [% ELSIF task.tag == 'userlog' %]
+      <span id="nd_device-name">
+        <a class="nd_adminbutton" name="delall" href="#"><i class="icon-trash text-error"></i></a>
+      </span>
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">

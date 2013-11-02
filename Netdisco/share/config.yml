@@ -45,6 +45,7 @@ web_plugins:
   - AdminTask::Topology
   - AdminTask::JobQueue
   - AdminTask::Users
+  - AdminTask::UserLog
   - Search::Device
   - Search::Node
   - Search::VLAN

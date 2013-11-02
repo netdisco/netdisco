@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Can now set untagged VLAN on trunking and non-trunking ports
+  * Add user activity log to frontend admin menu
 
   [BUG FIXES]
 

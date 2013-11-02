@@ -1,0 +1,30 @@
+[% IF results.count == 0 %]
+<div class="span2 alert alert-info">The user activity log is empty.</div>
+[% ELSE %]
+<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Creation</th>
+      <th class="nd_center-cell">User</th>
+      <th class="nd_center-cell">User IP</th>
+      <th class="nd_center-cell">Event</th>
+      <th class="nd_center-cell">Action</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr data-content="<pre>[% row.details | html_entity %]</pre>">
+      <td class="nd_center-cell">[% row.creation | html_entity %]</td>
+      <td class="nd_center-cell">[% row.username | html_entity %]</td>
+      <td class="nd_center-cell">[% row.userip   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.event    | html_entity %]</td>
+      <td class="nd_center-cell">
+        <input data-form="del" name="entry" type="hidden" value="[% row.entry | html_entity %]">
+        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+[% END %]
+
