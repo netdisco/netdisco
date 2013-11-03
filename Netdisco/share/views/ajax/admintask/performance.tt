@@ -16,11 +16,11 @@
     [% WHILE (row = results.next) %]
     <tr>
       <td class="nd_center-cell">[% row.action.ucfirst | html_entity %]</td>
-      <td class="nd_center-cell">[% row.get_column('number')  | html_entity %]</td>
-      <td class="nd_center-cell">[% row.get_column('entered_stamp') | html_entity %]</td>
-      <td class="nd_center-cell">[% row.get_column('start')   | html_entity %]</td>
-      <td class="nd_center-cell">[% row.get_column('end')     | html_entity %]</td>
-      <td class="nd_center-cell">[% row.get_column('elapsed') | html_entity %]</td>
+      <td class="nd_center-cell">[% row.number  | html_entity %]</td>
+      <td class="nd_center-cell">[% row.entered_stamp | html_entity %]</td>
+      <td class="nd_center-cell">[% row.start   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.end     | html_entity %]</td>
+      <td class="nd_center-cell">[% row.elapsed | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>
