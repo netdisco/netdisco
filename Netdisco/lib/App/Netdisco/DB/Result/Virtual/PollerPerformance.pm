@@ -10,7 +10,7 @@ __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 __PACKAGE__->table('poller_performance');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
-  SELECT action, entered, to_char( entered, 'YYYY - MM - DD HH24:MI:SS' ) AS entered_stamp,
+  SELECT action, entered, to_char( entered, 'YYYY-MM-DD HH24:MI:SS' ) AS entered_stamp,
       COUNT( device ) AS number, MIN( started ) AS start, MAX( finished ) AS end,
       justify_interval( extract ( epoch FROM( max( finished ) - min( started ) ) ) * interval '1 second' ) AS elapsed 
     FROM admin
