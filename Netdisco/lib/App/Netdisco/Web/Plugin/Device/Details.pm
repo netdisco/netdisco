@@ -13,11 +13,16 @@ register_device_tab({ tag => 'details', label => 'Details' });
 ajax '/ajax/content/device/details' => require_login sub {
     my $q = param('q');
     my $device = schema('netdisco')->resultset('Device')
-      ->with_times()->search_for_device($q) or send_error('Bad device', 400);
+      ->search_for_device($q) or send_error('Bad device', 400);
+
+    my $results
+        = schema('netdisco')->resultset('Device')
+        ->search( { 'me.ip' => $device->ip } )->with_times()
+        ->with_poestats_as_hashref;
 
     content_type('text/html');
     template 'ajax/device/details.tt', {
-      d => $device,
+      d => $results->[0],
     }, { layout => undef };
 };
 

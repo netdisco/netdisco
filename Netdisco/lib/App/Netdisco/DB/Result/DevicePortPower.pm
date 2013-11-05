@@ -43,4 +43,15 @@ __PACKAGE__->belongs_to( port => 'App::Netdisco::DB::Result::DevicePort', {
   'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
 
+=head2 device_module
+
+Returns the entry from the C<device_power> table for which this Power entry
+applies.
+
+=cut
+
+__PACKAGE__->belongs_to( device_module => 'App::Netdisco::DB::Result::DevicePower', {
+  'foreign.ip' => 'self.ip', 'foreign.module' => 'self.module',
+});
+
 1;

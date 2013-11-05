@@ -86,6 +86,19 @@
         <br/>PS1 [[% d.ps1_type | html_entity %]]: [% d.ps1_status | html_entity %]
         <br/>PS2 [[% d.ps2_type | html_entity %]]: [% d.ps2_status | html_entity %]</td>
     </tr>
+    [% IF d.power_modules.size %]
+    <tr>
+      <td>PoE Status</td>
+      <td>
+      [% FOREACH m IN d.power_modules %]
+        [% UNLESS m.module == 1 %]
+          <br/>
+        [% END %]
+        Module [% m.module %]: [% m.status | html_entity %], [% m.capable_ports %] power-capable ports, [% m.powered_ports %] powered ([% m.disabled_ports %] admin disabled, [% m.errored_ports %] errors), [% m.pwr_committed %]/[% m.power %] watts committed.
+      [% END %]
+      </td>
+    </tr>
+    [% END %]
     <tr>
       <td>MAC Address</td>
       <td>[% d.mac | html_entity %]</td>

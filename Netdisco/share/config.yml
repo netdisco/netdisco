@@ -38,6 +38,7 @@ web_plugins:
   - Report::ApRadioChannelPower
   - Report::HalfDuplex
   - Report::DeviceByLocation
+  - Report::DevicePoeStatus
   - Report::DuplexMismatch
   - Report::SsidInventory
   - Report::VlanInventory

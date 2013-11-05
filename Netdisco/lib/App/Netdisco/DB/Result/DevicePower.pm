@@ -35,5 +35,15 @@ Returns the entry from the C<device> table on which this power module was discov
 
 __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 
+=head2 ports
+
+Returns the set of PoE ports associated with a power module.
+
+=cut
+
+__PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePortPower', {
+  'foreign.ip' => 'self.ip', 'foreign.module' => 'self.module',
+} );
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
