@@ -1,11 +1,15 @@
 2.019004 -
 
+  [NEW FEATURES]
+  * Add Device PoE status report
+
   [ENHANCEMENTS]
 
   * Can now set untagged VLAN on trunking and non-trunking ports
   * Add user activity log to frontend admin menu
   * Add Poller Performance admin report
   * Add Slow Devices admin report
+  * Add PoE module status in Device details
 
   [BUG FIXES]
 

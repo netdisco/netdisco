@@ -577,8 +577,8 @@ sub delete {
 
 =head2 with_poestats_as_hashref
 
-This is a modifier for C<search()> which returns a hash reference with the
-power_modules hash augmented with the following statistics as keys:
+This is a modifier for C<search()> which returns a list of hash references
+with the power_modules hash augmented with the following statistics as keys:
 
 =over 4
 
