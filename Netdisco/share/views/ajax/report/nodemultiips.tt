@@ -1,0 +1,24 @@
+[% USE Number.Format %]
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">MAC</th>
+      <th class="nd_center-cell">Vendor</th>
+      <th class="nd_center-cell">Location</th>
+      <th class="nd_center-cell">IPs</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results %]
+    <tr>
+      <td class="nd_center-cell"><a href="[% search_node %]&q=[% row.mac.upper | uri %]">
+            [% row.mac.upper | html_entity %]</a>
+      <td class="nd_center-cell">[% row.vendor | html_entity %]</td>
+      <td class="nd_center-cell"><a href="[% device_ports %]&q=[% row.dns || row.switch | uri %]&f=[% row.port | uri %]&c_nodes=on">
+               [% row.dns || row.name || row.switch | html_entity %] ([% row.port | html_entity %])</a></td>
+      <td class="nd_center-cell">[% row.ip_count | format_number %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

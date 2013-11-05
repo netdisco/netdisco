@@ -125,4 +125,68 @@ sub delete {
   }
 }
 
+=head2 with_multi_ips_as_hashref
+
+This is a modifier for C<search()> which returns a list of hash references
+for nodes within the search criteria with multiple IP addresses.  Each hash
+reference contains the keys:
+
+=over 4
+
+=item mac
+
+Node MAC address.
+
+=item switch
+
+IP address of the device where the node is attached.
+
+=item port
+
+Port on the device where the node is attached.
+
+=item dns
+
+DNS name of the device where the node is attached.
+
+=item name
+
+C<sysName> of the device where the node is attached.
+
+=item ip_count
+
+Count of IP addresses associated with the node.
+
+=item vendor
+
+Vendor string based upon the node OUI.
+
+=back
+
+=cut
+
+sub with_multi_ips_as_hashref {
+  my ( $rs, $cond, $attrs ) = @_;
+
+  my @return = $rs->search(
+    {},
+    { result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+      select       => [ 'mac', 'switch', 'port' ],
+      join         => [qw/device ips oui/],
+      '+columns'   => [
+        { 'dns'      => 'device.dns' },
+        { 'name'     => 'device.name' },
+        { 'ip_count' => { count => 'ips.ip' } },
+        { 'vendor'   => 'oui.company' }
+      ],
+      group_by =>
+        [qw/ me.mac me.switch me.port device.dns device.name oui.company/],
+      having => \[ 'count(ips.ip) > ?', [ count => 1 ] ],
+      order_by => { -desc => [qw/count/] },
+    }
+  )->all;
+
+  return \@return;
+}
+
 1;

@@ -1,0 +1,13 @@
+[% USE CSV -%]
+[% CSV.dump([ 'MAC' 'Vendor' 'Switch' 'Port' 'IPs' ]) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.mac.upper) %]
+  [% mylist.push(row.vendor) %]
+  [% mylist.push(row.dns || row.name || row.switch) %]
+  [% mylist.push(row.port) %]
+  [% mylist.push(row.ip_count) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]
