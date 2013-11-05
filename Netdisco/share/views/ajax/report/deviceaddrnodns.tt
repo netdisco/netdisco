@@ -1,0 +1,21 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Address</th>
+      <th class="nd_center-cell">Contact</th>
+      <th class="nd_center-cell">Location</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results %]
+    <tr>
+      <td class="nd_center-cell"><a href="[% search_device %]&q=[% row.dns || row.ip | uri %]">
+            [% row.dns || row.name || row.ip | html_entity %]</a>
+      <td class="nd_center-cell">[% row.alias | html_entity %]</td>
+      <td class="nd_center-cell">[% row.contact | html_entity %]</td>
+      <td class="nd_center-cell">[% row.location | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>

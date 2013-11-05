@@ -37,6 +37,7 @@ web_plugins:
   - Report::ApChannelDist
   - Report::ApRadioChannelPower
   - Report::HalfDuplex
+  - Report::DeviceAddrNoDNS
   - Report::DeviceByLocation
   - Report::DevicePoeStatus
   - Report::DuplexMismatch
