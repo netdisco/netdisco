@@ -6,6 +6,7 @@
   * Add Device addresses with DNS entries report
   * Add Ports with multiple nodes attached report
   * Add Ports administratively disabled report
+  * Add Ports that are blocking report
 
   [ENHANCEMENTS]
 

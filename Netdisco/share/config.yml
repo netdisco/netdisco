@@ -34,6 +34,7 @@ path: '/'
 web_plugins:
   - Inventory
   - Report::PortAdminDown
+  - Report::PortBlocking
   - Report::PortMultiNodes
   - Report::PortUtilization
   - Report::ApChannelDist

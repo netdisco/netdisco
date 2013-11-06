@@ -1,0 +1,23 @@
+[% USE Number.Format %]
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th class="nd_center-cell">Port</th>
+      <th class="nd_center-cell">Port Description</th>      
+      <th class="nd_center-cell">STP Status</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results %]
+    <tr>
+      <td>[% row.dns || row.name || row.ip | html_entity %]</td>
+      <td class="nd_center-cell"><a href="[% device_ports %]&q=[% row.dns || row.ip | uri %]&f=[% row.port | uri %]&c_nodes=on">
+               [% row.port | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.description | html_entity %]</td>
+      <td class="nd_center-cell">[% row.stp | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
