@@ -4,6 +4,7 @@
   * Add Device PoE status report
   * Add Nodes with multiple IP addresses report
   * Add Device addresses with DNS entries report
+  * Add Ports with multiple nodes attached report
 
   [ENHANCEMENTS]
 

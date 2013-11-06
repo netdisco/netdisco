@@ -1,0 +1,12 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Device' 'Port' 'Port Description' 'Node Count' ]) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.dns || row.name || row.ip) %]
+  [% mylist.push(row.port) %]
+  [% mylist.push(row.description) %]
+  [% mylist.push(row.mac_count) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]
