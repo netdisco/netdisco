@@ -15,19 +15,26 @@ register_report(
 );
 
 get '/ajax/content/report/deviceaddrnodns' => require_login sub {
-    my $results = schema('netdisco')->resultset('Device')
-        ->address_nodns_as_hashref;
+    my @results = schema('netdisco')->resultset('Device')->search(
+        { 'device_ips.dns' => undef },
+        {   result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+            select       => [ 'ip', 'dns', 'name', 'location', 'contact' ],
+            join         => [qw/device_ips/],
+            '+columns' => [ { 'alias' => 'device_ips.alias' }, ],
+            order_by => { -asc => [qw/me.ip device_ips.alias/] },
+        }
+    )->all;
 
-    return unless scalar $results;
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/deviceaddrnodns.tt', { results => $results, },
+        template 'ajax/report/deviceaddrnodns.tt', { results => \@results, },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/deviceaddrnodns_csv.tt',
-            { results => $results, },
+            { results => \@results, },
             { layout  => undef };
     }
 };
