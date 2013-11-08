@@ -152,6 +152,20 @@ __PACKAGE__->might_have( power => 'App::Netdisco::DB::Result::DevicePortPower', 
   'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
 
+=head2 wireless
+
+Returns a row from the C<device_port_wireless> table if one refers to this
+device port.
+
+=cut
+
+__PACKAGE__->might_have(
+    wireless => 'App::Netdisco::DB::Result::DevicePortWireless',
+    {   'foreign.ip'   => 'self.ip',
+        'foreign.port' => 'self.port',
+    }
+);
+
 =head2 neighbor_alias
 
 When a device port has an attached neighbor device, this relationship will

@@ -83,6 +83,22 @@ __PACKAGE__->belongs_to( device_port => 'App::Netdisco::DB::Result::DevicePort',
   { join_type => 'LEFT' }
 );
 
+=head2 wireless_port
+
+Returns the single C<wireless_port> to which this Node entry was associated at
+the time of discovery.
+
+The JOIN is of type LEFT, in case the C<device> is no longer present in the
+database but the relation is being used in C<search()>.
+
+=cut
+
+__PACKAGE__->belongs_to(
+    wireless_port => 'App::Netdisco::DB::Result::DeviceWirelessPort',
+    { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' },
+    { join_type    => 'LEFT' }
+);
+
 =head2 ips
 
 Returns the set of C<node_ip> entries associated with this Node. That is, the

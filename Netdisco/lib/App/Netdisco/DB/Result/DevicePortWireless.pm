@@ -45,5 +45,21 @@ __PACKAGE__->belongs_to( port => 'App::Netdisco::DB::Result::DevicePort', {
     'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
 
+=head2 nodes
+
+Returns the set of Nodes whose MAC addresses are associated with this Device
+Port Wireless.
+
+=cut
+
+__PACKAGE__->has_many( nodes => 'App::Netdisco::DB::Result::Node',
+  {
+    'foreign.switch' => 'self.ip',
+    'foreign.port' => 'self.port',
+  },
+  { join_type => 'LEFT',
+    cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
+);
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

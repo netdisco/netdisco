@@ -38,6 +38,7 @@ web_plugins:
   - Report::PortMultiNodes
   - Report::PortUtilization
   - Report::ApChannelDist
+  - Report::ApClients
   - Report::ApRadioChannelPower
   - Report::HalfDuplex
   - Report::DeviceAddrNoDNS
