@@ -20,6 +20,7 @@
   [BUG FIXES]
 
   * Set of Port Name (description) fixed to assume OK dialog response
+  * Default class of a PoE port is 0 if not otherwise defined
 
 2.019003 - 2013-10-27
 

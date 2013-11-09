@@ -650,13 +650,15 @@ sub with_poestats_as_hashref {
               $module->{errored_ports}++;
             }
         elsif ( $port->{status} eq 'deliveringPower' ) {
+            # Default is class0
+            my $class = $port->{class} || 'class0';
             $module->{powered_ports}++;
             if ( defined $port->{power} and $port->{power} ) {
               $module->{pwr_delivering} += int( $port->{power} / 1000 );
-               $module->{pwr_committed}  += $poemax->{ $port->{class} };
+               $module->{pwr_committed}  += $poemax->{ $class };
             }
             else {
-              $module->{pwr_committed} += $poemax->{ $port->{class} };
+              $module->{pwr_committed} += $poemax->{ $class };
             }
           }
         }
