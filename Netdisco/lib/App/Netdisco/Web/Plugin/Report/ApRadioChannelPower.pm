@@ -22,7 +22,7 @@ sub port_tree {
     foreach my $device (@$devices) {
         my $power2;
 
-        if ( defined( $device->power ) && $device->power ) {
+        if ( defined( $device->power ) && $device->power > 0 ) {
             $power2 = sprintf( "%.1f",
                 10.0 * CORE::log( $device->power ) / CORE::log(10) );
         }
