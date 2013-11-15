@@ -133,7 +133,7 @@ sub _ldap_search {
     return undef unless defined($filter);
     return undef if (defined $attrs and ref [] ne ref $attrs);
 
-    foreach my $server (@{$conf->{server}}) {
+    foreach my $server (@{$conf->{servers}}) {
         my $opts = $conf->{opts} || {};
         my $ldap = Net::LDAP->new($server, %$opts) or next;
         my $msg  = undef;
