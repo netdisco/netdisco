@@ -23,6 +23,7 @@
   * Default class of a PoE port is 0 if not otherwise defined
   * Don't try to convert negative mW to dBm in AP power report
   * LDAP login fix (Daniel Tuecks)
+  * Custom path handling corrections (Daniel Tuecks)
 
 2.019003 - 2013-10-27
 

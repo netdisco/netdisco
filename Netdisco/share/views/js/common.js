@@ -6,7 +6,7 @@
 
     if (show.length) {
       $('#nd_csv-download')
-        .attr('href', '/ajax/content/' + type + '/' + tab + '?' + query)
+        .attr('href', uri_base + '/ajax/content/' + type + '/' + tab + '?' + query)
         .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
         .show();
     }
