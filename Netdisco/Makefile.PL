@@ -8,6 +8,7 @@ requires 'Algorithm::Cron' => 0.07;
 requires 'AnyEvent' => 7.05;
 requires 'App::cpanminus' => 1.6108;
 requires 'App::local::lib::helper' => 0.07;
+#requires 'App::NetdiscoX::Web::Plugin::Observium' => 0;
 requires 'DBD::Pg' => 0;
 requires 'DBD::SQLite' => 1.37;
 requires 'DBIx::Class' => 0.08210;

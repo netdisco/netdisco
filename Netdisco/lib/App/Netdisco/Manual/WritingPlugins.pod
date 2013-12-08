@@ -296,7 +296,8 @@ path. We recommend use of the L<File::ShareDir> module to package and ship
 templates along with your plugin, as shown.
 
 Each path added using C<register_template_path> is searched I<before> any
-existing paths in the template config.
+existing paths in the template config. See the
+L<App::NetdiscoX::Web::Plugin::Observium> distribution for a working example.
 
 =head2 Template Variables
 

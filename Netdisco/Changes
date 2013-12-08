@@ -1,6 +1,7 @@
 2.019004 -
 
   [NEW FEATURES]
+
   * Add Device PoE status report
   * Add Nodes with multiple IP addresses report
   * Add Device addresses with DNS entries report
@@ -8,6 +9,7 @@
   * Add Ports administratively disabled report
   * Add Ports that are blocking report
   * Add Access Point client count report
+  * Move Obserivum plugin outside of this dist, into App::NetdiscoX::
 
   [ENHANCEMENTS]
 

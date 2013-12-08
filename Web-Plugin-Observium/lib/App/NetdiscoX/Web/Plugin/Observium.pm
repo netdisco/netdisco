@@ -1,12 +1,13 @@
 package App::NetdiscoX::Web::Plugin::Observium;
 
-use Dancer ':syntax';
-use Dancer::Plugin::DBIC;
+our $VERSION = '2.001004';
 
+use Dancer ':syntax';
 use App::Netdisco::Web::Plugin;
 
 use File::ShareDir 'dist_dir';
-use Path::Class;
+register_template_path(
+  dist_dir( 'App-NetdiscoX-Web-Plugin-Observium' ));
 
 register_device_port_column({
   name  => 'observium',

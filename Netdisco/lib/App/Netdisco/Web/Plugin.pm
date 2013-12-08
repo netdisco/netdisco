@@ -3,6 +3,8 @@ package App::Netdisco::Web::Plugin;
 use Dancer ':syntax';
 use Dancer::Plugin;
 
+use Path::Class 'dir';
+
 set(
   '_additional_css'         => [],
   '_additional_javascript'  => [],
@@ -28,7 +30,7 @@ register 'register_template_path' => sub {
 
   unshift
     @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
-    $path;
+    $path, dir($path, 'views')->stringify;
 };
 
 sub _register_include {

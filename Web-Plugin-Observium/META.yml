@@ -1,0 +1,27 @@
+---
+abstract: 'Port Traffic Links and Thumbnail Graphs from Observium'
+author:
+  - 'Oliver Gorwits <oliver@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.36
+configure_requires:
+  ExtUtils::MakeMaker: 6.36
+distribution_type: module
+dynamic_config: 1
+generated_by: 'Module::Install version 1.06'
+license: bsd
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: App-NetdiscoX-Web-Plugin-Observium
+no_index:
+  directory:
+    - inc
+    - share
+resources:
+  MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
+  bugtracker: http://sourceforge.net/p/netdisco/bugs/
+  homepage: http://netdisco.org/
+  license: http://opensource.org/licenses/bsd-license.php
+  repository: git://git.code.sf.net/p/netdisco/netdisco-ng
+version: 2.001004
