@@ -1,6 +1,6 @@
 package App::NetdiscoX::Web::Plugin::Observium;
 
-our $VERSION = '2.001004';
+our $VERSION = '2.001005';
 
 use Dancer ':syntax';
 use App::Netdisco::Web::Plugin;
