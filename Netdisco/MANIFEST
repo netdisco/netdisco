@@ -296,6 +296,7 @@ share/views/js/device.js
 share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt
+share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
 share/views/sidebar/device/ports.tt
