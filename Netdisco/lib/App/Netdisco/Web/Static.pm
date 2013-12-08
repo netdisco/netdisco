@@ -7,7 +7,7 @@ get '/plugin/*/*.js' => sub {
   my ($plugin) = splat;
 
   my $content = template
-    "plugin/$plugin/$plugin.js", {},
+    'plugin.tt', { target => "plugin/$plugin/$plugin.js" },
     { layout => undef };
 
   send_file \$content,
@@ -19,7 +19,7 @@ get '/plugin/*/*.css' => sub {
   my ($plugin) = splat;
 
   my $content = template
-    "plugin/$plugin/$plugin.css", {},
+    'plugin.tt', { target => "plugin/$plugin/$plugin.css" },
     { layout => undef };
 
   send_file \$content,

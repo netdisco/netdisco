@@ -1,0 +1,5 @@
+[% TRY %]
+[% INCLUDE $target %]
+[% CATCH %]
+<!-- dummy content required by Template Toolkit TRY -->
+[% END %]
