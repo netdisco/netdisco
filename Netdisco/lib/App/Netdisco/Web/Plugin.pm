@@ -9,6 +9,7 @@ set(
   '_additional_css'         => [],
   '_additional_javascript'  => [],
   '_extra_device_port_cols' => [],
+  '_extra_device_details'   => [],
   '_navbar_items' => [],
   '_search_tabs'  => [],
   '_device_tabs'  => [],
@@ -74,6 +75,23 @@ register 'register_device_port_column' => sub {
   }
 
   push @{ setting('_extra_device_port_cols') }, $config;
+};
+
+register 'register_device_details' => sub {
+  my ($self, $config) = plugin_args(@_);
+
+  if (!$config->{name} or !$config->{label}) {
+      return error "bad config to register_device_details";
+  }
+
+  foreach my $item (@{ setting('_extra_device_details') }) {
+      if ($item->{name} eq $config->{name}) {
+          $item = $config;
+          return;
+      }
+  }
+
+  push @{ setting('_extra_device_details') }, $config;
 };
 
 register 'register_navbar_item' => sub {
@@ -194,6 +212,10 @@ Reports (pre-canned searches)
 =item *
 
 Additional Device Port Columns
+
+=item *
+
+Additional Device Details
 
 =item *
 

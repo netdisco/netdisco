@@ -248,6 +248,32 @@ be called "C<device_port_column.tt>" on disk and live in the directory:
 For a good example of this, see the L<App::NetdiscoX::Web::Plugin::Observium>
 distribution.
 
+=head1 Device Details
+
+You can add items to the Device Details tab as well. A good example of this is
+to add a link to the RANCID backup of the device in a WebSVN app somewhere.
+Like Device Port Columns plugins, the plugin is a regular Template::Toolkit
+snippet so can be any HTML output.
+
+The details plugin has a name (used internally to locate files on disk) and
+label (the heading for the row in the table).
+
+To register the column call the following helper routine:
+
+ register_device_details({
+   name  => 'mydevicedetailsplugin',
+   label => 'My Device Details Heading',
+ });
+
+App::Netdisco searches for one Template::Toolkit file in the regular template
+include paths (see also C<register_template_path>, below). The template must
+be called "C<device_details.tt>" on disk and live in the directory:
+
+ plugin/mydevicedetailsplugin/device_details.tt
+
+For a good example of this, see the L<App::NetdiscoX::Web::Plugin::RANCID>
+distribution.
+
 =head1 User Authorization
 
 All Dancer route handlers must have proper authorization configured. This is

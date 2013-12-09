@@ -64,6 +64,22 @@
       <td>Description</td>
       <td>[% d.description | html_entity | html_line_break %]</td>
     </tr>
+    [% IF settings._extra_device_details.size %]
+    <tr>
+        [% FOREACH config IN settings._extra_device_details %]
+        <td>
+            [% config.label %]
+        </td>
+        <td>
+            [% TRY %]
+            [% INCLUDE "plugin/${config.name}/device_details.tt" %]
+            [% CATCH %]
+            <!-- dummy content required by Template Toolkit TRY -->
+            [% END %]
+        </td>
+        [% END %]
+    </tr>
+    [% END %]
     <tr>
       <td>Uptime</td>
       <td>[% d.uptime_age | html_entity %]</td>
