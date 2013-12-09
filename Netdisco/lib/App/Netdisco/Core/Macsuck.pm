@@ -85,7 +85,7 @@ sub do_macsuck {
   # reverse sort allows vlan 0 entries to be included only as fallback
   foreach my $vlan (reverse sort keys %$fwtable) {
       foreach my $port (keys %{ $fwtable->{$vlan} }) {
-          if ($device_ports->{$port}->is_uplink) {
+          if ($device_ports->{$port}->is_uplink and not setting('macsuck_bleed')) {
               debug sprintf
                 ' [%s] macsuck - port %s is uplink, topo broken - skipping.',
                 $device->ip, $port;

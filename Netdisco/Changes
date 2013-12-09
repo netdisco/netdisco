@@ -1,3 +1,9 @@
+2.020002 -
+
+  [BUG FIXES]
+
+  * Respect macsuck_bleed on broken topology detection
+
 2.020001 - 2013-12-08
 
   [BUG FIXES]
