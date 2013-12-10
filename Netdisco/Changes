@@ -11,6 +11,8 @@
   [BUG FIXES]
 
   * Respect macsuck_bleed on broken topology detection
+  * Correct logic to prevent duplicate queuing of jobs during discover due
+    to previous change in admin table
 
 2.020001 - 2013-12-08
 
