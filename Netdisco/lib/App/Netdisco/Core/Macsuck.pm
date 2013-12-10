@@ -53,6 +53,8 @@ sub do_macsuck {
         $device->ip;
       return;
   }
+  
+  my $ip = $device->ip;
 
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we _can_ if we want add a job at the end to
@@ -88,16 +90,17 @@ sub do_macsuck {
           if ($device_ports->{$port}->is_uplink and not setting('macsuck_bleed')) {
               debug sprintf
                 ' [%s] macsuck - port %s is uplink, topo broken - skipping.',
-                $device->ip, $port;
+                $ip, $port;
               next;
           }
 
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
-            $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
+            $ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
+
+          # make sure this port is UP in netdisco
+          $device_ports->{$port}->update({up_admin => 'up', up => 'up'});
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
-              # make sure this port is UP in netdisco
-              $device_ports->{$port}->update({up_admin => 'up', up => 'up'});
 
               # get VLAN from Q-BRIDGE if available
               $vlan = $fwtable->{$vlan}->{$port}->{$mac}
@@ -108,13 +111,13 @@ sub do_macsuck {
                 for keys %{ $fwtable->{0} };
 
               ++$total_nodes;
-              store_node($device->ip, $vlan, $port, $mac, $now);
+              store_node($ip, $vlan, $port, $mac, $now);
           }
       }
   }
 
   debug sprintf ' [%s] macsuck - %s forwarding table entries',
-    $device->ip, $total_nodes;
+    $ip, $total_nodes;
   $device->update({last_macsuck => \$now});
 }
 
@@ -140,48 +143,33 @@ sub store_node {
     my $nodes = schema('netdisco')->resultset('Node');
 
     # TODO: probably needs changing if we're to support VTP domains
-    my $old = $nodes->search({
-      mac => $mac,
-      vlan => $vlan,
-      -bool => 'active',
-      -not => {
-        switch => $ip,
-        port => $port,
-      },
-    });
-
-    # lock rows,
-    # and get the count so we know whether to set time_recent
-    my $old_count = scalar $old->search(undef,
-      {
-        columns => [qw/switch vlan port mac/],
-        for => 'update',
-      })->all;
-
-    $old->update({ active => \'false' });
-
-    my $new = $nodes->search({
-      'me.switch' => $ip,
-      'me.port' => $port,
-      'me.vlan' => $vlan,
-      'me.mac' => $mac,
-    });
+    my $old = $nodes->search(
+        { mac   => $mac,
+          -bool => 'active',
+          -not  => {
+                    switch => $ip,
+                    port   => $port,
+                    vlan   => $vlan,
+                  },
+        })->update( { active => \'false' } );
 
     # new data
-    $new->update_or_create(
+    $nodes->update_or_create(
       {
+        switch => $ip,
+        port => $port,
+        vlan => $vlan,
+        mac => $mac,
         active => \'true',
         oui => substr($mac,0,8),
         time_last => \$now,
-        ($old_count ? (time_recent => \$now) : ()),
+        (($old != 0) ? (time_recent => \$now) : ()),
       },
-      { for => 'update' }
+      {
+        key => 'primary',
+        for => 'update',
+      }
     );
-
-    # upgrade old schema
-    # an entry for this MAC existed in old schema with vlan => null
-    # which now has either vlan number or 0
-    $new->search({vlan => undef})->delete({only_nodes => 1});
   });
 }
 
