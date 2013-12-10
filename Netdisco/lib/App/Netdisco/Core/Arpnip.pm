@@ -117,25 +117,21 @@ sub store_arp {
 
   schema('netdisco')->txn_do(sub {
     my $current = schema('netdisco')->resultset('NodeIp')
-      ->search({ip => $ip, -bool => 'active'})
-      ->search(undef, {
-        columns => [qw/mac ip/],
-        order_by => [qw/mac ip/],
-        for => 'update'
-      });
-    $current->first; # lock rows
-    $current->update({active => \'false'});
+      ->search(
+        { ip => $ip, -bool => 'active'},
+        { columns => [qw/mac ip/] })->update({active => \'false'});
 
     schema('netdisco')->resultset('NodeIp')
-      ->search({'me.mac' => $mac, 'me.ip' => $ip})
       ->update_or_create(
       {
+        mac => $mac,
+        ip => $ip,
         dns => $name,
         active => \'true',
         time_last => \$now,
       },
       {
-        order_by => [qw/mac ip/],
+        key => 'primary',
         for => 'update',
       });
   });

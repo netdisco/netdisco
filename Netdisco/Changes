@@ -4,6 +4,10 @@
 
   * Support for Device Details plugins (see X::RANCID)
 
+  [ENHANCEMENTS]
+
+  * Improvements in arpnip/arpwalk and macsuck/macwalk performance 
+
   [BUG FIXES]
 
   * Respect macsuck_bleed on broken topology detection
