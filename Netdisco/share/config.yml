@@ -50,6 +50,7 @@ web_plugins:
   - Report::VlanInventory
   - AdminTask::JobQueue
   - AdminTask::PollerPerformance
+  - AdminTask::SlowDevices
   - AdminTask::PseudoDevice
   - AdminTask::Topology
   - AdminTask::UserLog
