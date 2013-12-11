@@ -1,8 +1,9 @@
-2.020002 -
+2.020002 - 2013-12-11
 
   [NEW FEATURES]
 
   * Support for Device Details plugins (see X::RANCID)
+  * Add Slow Devices (for polling) report
 
   [ENHANCEMENTS]
 

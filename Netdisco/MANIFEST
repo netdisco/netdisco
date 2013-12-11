@@ -110,7 +110,9 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-25-26-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-26-27-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-27-28-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-28-29-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-29-30-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-30-31-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
