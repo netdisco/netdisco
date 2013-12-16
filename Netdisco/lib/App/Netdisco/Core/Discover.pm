@@ -168,7 +168,7 @@ sub store_device {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
-    debug sprintf ' [%s] device - removed %s aliases',
+    debug sprintf ' [%s] device - removed %d aliases',
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});
     $device->device_ips->populate($resolved_aliases);
@@ -284,7 +284,7 @@ sub store_interfaces {
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
     my $gone = $device->ports->delete({keep_nodes => 1});
-    debug sprintf ' [%s] interfaces - removed %s interfaces',
+    debug sprintf ' [%s] interfaces - removed %d interfaces',
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});
     $device->ports->populate([values %interfaces]);
@@ -337,7 +337,7 @@ sub store_wireless {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->ssids->delete;
-    debug sprintf ' [%s] wireless - removed %s SSIDs',
+    debug sprintf ' [%s] wireless - removed %d SSIDs',
       $device->ip, $gone;
     $device->ssids->populate(\@ssids);
     debug sprintf ' [%s] wireless - added %d new SSIDs',
@@ -364,7 +364,7 @@ sub store_wireless {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->wireless_ports->delete;
-    debug sprintf ' [%s] wireless - removed %s wireless channels',
+    debug sprintf ' [%s] wireless - removed %d wireless channels',
       $device->ip, $gone;
     $device->wireless_ports->populate(\@channels);
     debug sprintf ' [%s] wireless - added %d new wireless channels',
@@ -439,7 +439,7 @@ sub store_vlans {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->vlans->delete;
-    debug sprintf ' [%s] vlans - removed %s device VLANs',
+    debug sprintf ' [%s] vlans - removed %d device VLANs',
       $device->ip, $gone;
     $device->vlans->populate(\@devicevlans);
     debug sprintf ' [%s] vlans - added %d new device VLANs',
@@ -448,7 +448,7 @@ sub store_vlans {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->port_vlans->delete;
-    debug sprintf ' [%s] vlans - removed %s port VLANs',
+    debug sprintf ' [%s] vlans - removed %d port VLANs',
       $device->ip, $gone;
     $device->port_vlans->populate(\@portvlans);
     debug sprintf ' [%s] vlans - added %d new port VLANs',
@@ -515,7 +515,7 @@ sub store_power {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->power_modules->delete;
-    debug sprintf ' [%s] power - removed %s power modules',
+    debug sprintf ' [%s] power - removed %d power modules',
       $device->ip, $gone;
     $device->power_modules->populate(\@devicepower);
     debug sprintf ' [%s] power - added %d new power modules',
@@ -524,7 +524,7 @@ sub store_power {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->powered_ports->delete;
-    debug sprintf ' [%s] power - removed %s PoE capable ports',
+    debug sprintf ' [%s] power - removed %d PoE capable ports',
       $device->ip, $gone;
     $device->powered_ports->populate(\@portpower);
     debug sprintf ' [%s] power - added %d new PoE capable ports',
@@ -588,7 +588,7 @@ sub store_modules {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->modules->delete;
-    debug sprintf ' [%s] modules - removed %s chassis modules',
+    debug sprintf ' [%s] modules - removed %d chassis modules',
       $device->ip, $gone;
     $device->modules->populate(\@modules);
     debug sprintf ' [%s] modules - added %d new chassis modules',

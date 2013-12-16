@@ -10,7 +10,8 @@
   [BUG FIXES]
 
   * [#61] Arpnip debug text says it is resolving aliases instead of ARP
-    entries (Robert Kerr) 
+    entries (Robert Kerr)
+  * [#60] Incorrect format string in store_vlans (Robert Kerr) 
 
 2.020002 - 2013-12-11
 
