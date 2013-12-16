@@ -1,3 +1,11 @@
+2.030000 -
+
+  [ENHANCEMENTS]
+
+  * Require SNMP::Info 3.10+, use new c_cap method to tag device remote_type
+    as 'IP Phone:' or 'AP:' when those capabilities are advertised by LLDP
+    or CDP
+
 2.020002 - 2013-12-11
 
   [NEW FEATURES]

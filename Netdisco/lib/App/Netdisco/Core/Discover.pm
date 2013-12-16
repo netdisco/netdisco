@@ -617,7 +617,7 @@ sub store_neighbors {
   my ($device, $snmp) = @_;
   my @to_discover = ();
 
-  # first allow any manually configred topology to be set
+  # first allow any manually configured topology to be set
   _set_manual_topology($device, $snmp);
 
   my $c_ip = $snmp->c_ip;
@@ -631,6 +631,7 @@ sub store_neighbors {
   my $c_port     = $snmp->c_port;
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
+  my $c_cap      = $snmp->c_cap;
 
   foreach my $entry (keys %$c_ip) {
       my $port = $interfaces->{ $c_if->{$entry} };
@@ -645,6 +646,7 @@ sub store_neighbors {
       my $remote_port = undef;
       my $remote_type = $c_platform->{$entry};
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_cap  = $c_cap->{$entry} || [];
 
       next unless $remote_ip;
 
@@ -684,13 +686,20 @@ sub store_neighbors {
           }
       }
 
-      # IP Phone detection type fixup
-      if (defined $remote_type and $remote_type =~ m/(mitel.5\d{3})/i) {
-          $remote_type = 'IP Phone - '. $remote_type
+      # IP Phone and WAP detection type fixup
+      if (defined $remote_type) {
+        my $phone_flag = grep {/phone/i} @$remote_cap;
+        my $ap_flag = grep {/wlanAccessPoint/} @$remote_cap;
+        if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
+          $remote_type = 'IP Phone: '. $remote_type
             if $remote_type !~ /ip phone/i;
-      }
-      else {
+        }
+        elsif ($ap_flag) {
+          $remote_type = 'AP: '. $remote_type;          
+        }
+        else {
           $remote_type ||= '';
+        }
       }
 
       # hack for devices seeing multiple neighbors on the port
