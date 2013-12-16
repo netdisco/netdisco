@@ -92,7 +92,7 @@
       $.cookie('nd_ports-form', $.param(cookie) ,{ expires: 365 });
 
       // form reset icon on ports tab
-      $('#nd_sidebar-reset-link').attr('href', '/device?tab=ports&reset=on&' +
+      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag %]&reset=on&' +
         $('#ports_form')
           .find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]')
           .serialize())
