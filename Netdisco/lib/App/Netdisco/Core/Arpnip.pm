@@ -89,7 +89,7 @@ sub _get_arps {
       };
   }
 
-  debug sprintf ' resolving %d aliases with max %d outstanding requests',
+  debug sprintf ' resolving %d ARP entries with max %d outstanding requests',
       scalar @arps, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
   my $resolved_ips = hostnames_resolve_async(\@arps);
 

@@ -6,6 +6,11 @@
     as 'IP Phone:' or 'AP:' when those capabilities are advertised by LLDP
     or CDP
 
+  [BUG FIXES]
+
+  * [#61] Arpnip debug text says it is resolving aliases instead of ARP
+    entries (Robert Kerr) 
+
 2.020002 - 2013-12-11
 
   [NEW FEATURES]
