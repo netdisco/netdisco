@@ -1,5 +1,9 @@
 2.030000 -
 
+  [NEW FEATURES]
+
+  * Add IP Phones discovered through LLDP/CDP report
+
   [ENHANCEMENTS]
 
   * Require SNMP::Info 3.10+, use new c_cap method to tag device remote_type

@@ -1,0 +1,28 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Port</th>
+      <th class="nd_center-cell">Remote ID</th>
+      <th class="nd_center-cell">Remote IP</th>
+      <th class="nd_center-cell">Remote Port</th>
+      <th class="nd_center-cell">Remote Type</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="nd_center-cell">[% row.dns || row.name || row.ip | html_entity %]</td>
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% device_ports %]&q=[% row.dns || row.ip | uri %]&f=[% row.port | uri %]">
+          [% row.port | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.remote_id | html_entity %]</td>
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% search_node %]&q=[% row.remote_ip | uri %]">[% row.remote_ip | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.remote_port | html_entity %]</td>
+      <td class="nd_center-cell">[% row.remote_type | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

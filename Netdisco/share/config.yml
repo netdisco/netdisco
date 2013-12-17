@@ -46,6 +46,7 @@ web_plugins:
   - Report::DevicePoeStatus
   - Report::DuplexMismatch
   - Report::NodeMultiIPs
+  - Report::PhonesDiscovered
   - Report::SsidInventory
   - Report::VlanInventory
   - AdminTask::JobQueue
