@@ -121,9 +121,11 @@ See the demo at: L<http://netdisco2-demo.herokuapp.com/>
 
 =back
 
-If you have any trouble getting the frontend running, speak to someone in the
-C<#netdisco> IRC channel (on freenode). Before installing or upgrading please
-review the latest L<Release Notes|App::Netdisco::Manual::ReleaseNotes>.
+If you have any trouble getting installed or running, check out the
+L<Deployment|App::Netdisco::Manual::Deployment> notes, or speak to someone in
+the C<#netdisco> IRC channel (on freenode).  Before installing or upgrading
+please always review the latest L<Release
+Notes|App::Netdisco::Manual::ReleaseNotes>.
 
 =head1 Dependencies
 

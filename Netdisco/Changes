@@ -11,6 +11,7 @@
     or CDP
   * Port MAC query now only returns distinct MAC's
   * Keep a hint to SNMP community if new style snmp_auth config is in use
+  * [#43] Add doc note about PostgreSQL MD5 authN
 
   [BUG FIXES]
 
