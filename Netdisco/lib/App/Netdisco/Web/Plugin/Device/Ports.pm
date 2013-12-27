@@ -21,12 +21,23 @@ get '/ajax/content/device/ports' => require_login sub {
     my $f = param('f');
     if ($f) {
         if ($f =~ m/^\d+$/) {
-            $set = $set->search({
-              -or => {
-                'me.vlan' => $f,
-                'port_vlans_tagged.vlan' => $f,
-              },
-            }, { join => 'port_vlans_tagged' });
+            if (param('invert')) {
+                $set = $set->search({
+                  'me.vlan' => { '!=' => $f },
+                  'port_vlans_tagged.vlan' => [
+                    '-or' => { '!=' => $f }, { '=' => undef }
+                  ],
+                }, { join => 'port_vlans_tagged' });
+            }
+            else {
+                $set = $set->search({
+                  -or => {
+                    'me.vlan' => $f,
+                    'port_vlans_tagged.vlan' => $f,
+                  },
+                }, { join => 'port_vlans_tagged' });
+            }
+
             return unless $set->count;
         }
         else {
