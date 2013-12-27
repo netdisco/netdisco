@@ -544,7 +544,6 @@ sub delete {
   my $devices = $self->search(undef, { columns => 'ip' });
 
   foreach my $set (qw/
-    Community
     DeviceIp
     DeviceVlan
     DevicePower
@@ -554,6 +553,15 @@ sub delete {
         { ip => { '-in' => $devices->as_query } },
       )->delete;
   }
+
+  $schema->resultset('Community')->search({
+    ip => { '-in' => $devices->as_query },
+    snmp_auth_tag => undef,
+  })->delete;
+
+  $schema->resultset('Community')->search(
+    { ip => { '-in' => $devices->as_query } },
+  )->update({snmp_comm_rw => undef});
 
   $schema->resultset('Admin')->search({
     device => { '-in' => $devices->as_query },

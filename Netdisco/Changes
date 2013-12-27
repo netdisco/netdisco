@@ -9,7 +9,8 @@
   * Require SNMP::Info 3.10+, use new c_cap method to tag device remote_type
     as 'IP Phone:' or 'AP:' when those capabilities are advertised by LLDP
     or CDP
-  * Port MAC query now only returns distinct MAC's   
+  * Port MAC query now only returns distinct MAC's
+  * Keep a hint to SNMP community if new style snmp_auth config is in use
 
   [BUG FIXES]
 
@@ -17,6 +18,7 @@
     entries (Robert Kerr)
   * [#60] Incorrect format string in store_vlans (Robert Kerr)
   * Fix form reset icon on ports tab when using custom path (Daniel Tuecks)
+  * Don't store failed SNMP community in the database
 
 2.020002 - 2013-12-11
 
