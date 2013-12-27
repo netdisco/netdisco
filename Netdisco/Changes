@@ -20,6 +20,7 @@
   * [#60] Incorrect format string in store_vlans (Robert Kerr)
   * Fix form reset icon on ports tab when using custom path (Daniel Tuecks)
   * Don't store failed SNMP community in the database
+  * [#51] Support DBD::Pg default for "host" field as local socket
 
 2.020002 - 2013-12-11
 

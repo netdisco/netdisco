@@ -45,14 +45,17 @@ use Dancer ':script';
 
 if (ref {} eq ref setting('database')) {
     my $name = (setting('database')->{name} || 'netdisco');
-    my $host = (setting('database')->{host} || 'localhost');
-    my $user = (setting('database')->{user});
-    my $pass = (setting('database')->{pass});
+    my $host = setting('database')->{host};
+    my $user = setting('database')->{user};
+    my $pass = setting('database')->{pass};
+
+    my $dsn = "dbi:Pg:dbname=${name}";
+    $dsn .= ";host=${host}" if $host;
 
     # set up the netdisco schema now we have access to the config
     # but only if it doesn't exist from an earlier config style
     setting('plugins')->{DBIC}->{netdisco} ||= {
-        dsn => (sprintf 'dbi:Pg:dbname=%s;host=%s', $name, $host),
+        dsn  => $dsn,
         user => $user,
         pass => $pass,
         options => {
