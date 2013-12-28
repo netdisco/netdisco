@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * Add IP Phones discovered through LLDP/CDP report
+  * Add device/node/vlan/port specific search from Navbar
 
   [ENHANCEMENTS]
 

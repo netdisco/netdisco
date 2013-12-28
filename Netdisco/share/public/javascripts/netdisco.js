@@ -179,6 +179,15 @@ $(document).ready(function() {
   $('#navsearchgo').click(function() {
     $('#navsearchgo').parents('form').submit();
   });
+  $('.nd_navsearchgo-specific').click(function(event) {
+    event.preventDefault();
+    console.log($(this).data('tab'));
+    $(this).parents('form').append(
+      $(document.createElement('input')).attr('type', 'hidden')
+                                        .attr('name', 'tab')
+                                        .attr('value', $(this).data('tab'))
+    ).submit();
+  });
 
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742

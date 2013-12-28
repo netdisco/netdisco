@@ -8,13 +8,29 @@ body {
 
 .navbar-inner .container {
   background: url(../images/navbar_disco.png) no-repeat;
+  background-position: 13px 0px;
 }
 
-/* magnifying glass icon for search box */
+/* used for icons in sidebar search buttons */
 .nd_navbar-icon {
   vertical-align: sub;
   margin-top: 4px;
   cursor: pointer;
+}
+
+/* careful align of navbar search button and menu */
+.nd_navbar-search-group {
+  margin-top: 0px !important;
+}
+.nd_navbar-search-icon {
+  color: #999;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.nd_navbar-search-caret {
+  padding-top: 10px !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
 }
 
 /* for the "logged in as..." text */
