@@ -30,7 +30,11 @@ sub _add_children {
         next if exists var('seen')->{$c};
         var('seen')->{$c}++;
         push @legit, $c;
-        push @{$ptr}, { name => _get_name($c), ip => $c };
+        push @{$ptr}, {
+          name => _get_name($c),
+          fullname => (var('devices')->{$c} || $c),
+          ip => $c,
+        };
     }
 
     for (my $i = 0; $i < @legit; $i++) {
@@ -66,6 +70,7 @@ get '/ajax/data/device/netmap' => require_login sub {
     my %tree = (
         ip => $start,
         name => _get_name($start),
+        fullname => (var('devices')->{$start} || $start),
         children => [],
     );
 
