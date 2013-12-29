@@ -22,7 +22,7 @@ sub capacity_for {
   debug "checking local capacity for action $action";
 
   my $action_map = {
-    Poller => [qw/discoverall discover arpwalk arpnip macwalk macsuck/],
+    Poller => [qw/discoverall discover arpwalk arpnip macwalk macsuck expiry/],
     Interactive => [qw/location contact portcontrol portname vlan power/],
   };
 

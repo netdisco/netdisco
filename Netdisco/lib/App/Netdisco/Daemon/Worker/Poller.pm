@@ -9,7 +9,8 @@ with 'App::Netdisco::Daemon::Worker::Common';
 # add dispatch methods for poller tasks
 with 'App::Netdisco::Daemon::Worker::Poller::Device',
      'App::Netdisco::Daemon::Worker::Poller::Arpnip',
-     'App::Netdisco::Daemon::Worker::Poller::Macsuck';
+     'App::Netdisco::Daemon::Worker::Poller::Macsuck',
+     'App::Netdisco::Daemon::Worker::Poller::Expiry';
 
 sub worker_type { 'pol' }
 sub worker_name { 'Poller' }

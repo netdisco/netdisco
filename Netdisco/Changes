@@ -7,6 +7,7 @@
   * [#3] [#47] Device Neighbor Map can have max depth and VLAN filter
   * [#31] get_community now supported
   * [#19] Ask for Reason when changing Port up/down Status, or VLAN
+  * [#30] Support for expire_devices, expire_nodes, and expire_nodes_archive
 
   [ENHANCEMENTS]
 

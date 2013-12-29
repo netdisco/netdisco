@@ -99,6 +99,9 @@ macsuck_min_age: 0
 arpnip_no: []
 arpnip_only: []
 arpnip_min_age: 0
+expire_devices: 0
+expire_nodes: 0
+expire_nodes_archive: 0
 store_wireless_clients: true
 store_modules: true
 ignore_interfaces:

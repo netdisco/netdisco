@@ -41,10 +41,31 @@ but they are backwards compatible.
 
 SNMP community strings provided in the C<community_rw> configuration setting
 will I<no longer> be used for I<read> actions on a device (despite having
-"C<rw>" in the setting name). If you have the same community string for read
-and write access, then you must set both C<community> and C<community_rw> in
-your C<deployment.yml> file. In any case, we recommend using the new
-C<snmp_auth> configuration format which supercedes both these settings.
+"C<rw>" in the setting name).
+
+If you have the same community string for read and write access, then you must
+set both C<community> and C<community_rw> in your C<deployment.yml> file. In
+any case, we recommend using the new C<snmp_auth> configuration format which
+supercedes both these settings.
+
+=head2 Health Advice
+
+This release includes support for Device and Node expiry from your database.
+This is an important part of housekeeping for your installation, and our
+recommendation is to enable this feature such that suitably old Devices and
+Nodes are expired nightly.
+
+Add the following to your "C<housekeeping>" configuration in
+C<deployment.yml>, to have a nightly check at 11:20pm:
+
+  housekeeping:
+    expiry:
+      when: '20 23 * * *'
+
+You should also configure one or more of C<expire_devices>, C<expire_nodes>,
+and C<expire_nodes_archive> to a number of days. See the
+L<Configuration|App::Netdisco::Manual::Configuration> documentation for
+further details.
 
 =head1 2.020000
 
@@ -95,7 +116,7 @@ version there will be a way to display them in the web interface.
 
 =head1 2.015000
 
-=head2 Heath Advice
+=head2 Health Advice
 
 Some of the "dangerous action" confirmation dialogs offer to take a log
 message (e.g. Port Control, Device Delete). Currently the log messages are
@@ -162,7 +183,7 @@ Deployment and Configuration documentation for further details.
 
 =head1 2.008000
 
-=head2 Heath Advice
+=head2 Health Advice
 
 This release contains the first version of our new poller, which handles
 device and node discovery. Please make sure to backup any existing Netdisco

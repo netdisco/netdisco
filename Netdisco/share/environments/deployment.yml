@@ -43,4 +43,9 @@ database:
 #   arpwalk:
 #     when:
 #       min: 50
+#   expiry:
+#     when: '20 23 * * *'
 
+# expire_devices: 60
+# expire_nodes: 90
+# expire_nodes_archive: 60

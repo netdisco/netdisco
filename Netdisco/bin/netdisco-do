@@ -75,6 +75,7 @@ if (!length $action) {
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
   with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
   with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
+  with 'App::Netdisco::Daemon::Worker::Poller::Expiry';
   with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
   with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
 }

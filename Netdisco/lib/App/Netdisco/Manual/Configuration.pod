@@ -555,6 +555,28 @@ Value: Number. Default: 0.
 Sets the minimum amount of time in seconds which must elapse between any two
 arpnip jobs for a device.
 
+=head3 C<expire_devices>
+
+Value: Number of Days.
+
+Devices that have not been refreshed in this number of days will be removed.
+All nodes connected to this device will be removed as well.
+
+=head3 C<expire_nodes>
+
+Value: Number of Days.
+
+Nodes that have not been refreshed in this number of days will be removed from
+the database. Archived and non-archived nodes are removed. This includes
+SwitchPort/MAC and MAC/IP mappings.
+
+=head3 C<expire_nodes_archive>
+
+Value: Number of Days.
+
+Archived data for switch-port/MAC and MAC/IP mappings older than this number
+of days will be removed.
+
 =head3 C<dns>
 
 Value: Settings Tree. Default: C<max_outstanding: 250>
@@ -741,9 +763,11 @@ hour fields (which accept same types as C<cron> notation). For example:
        min: 15
        hour: '*/2'
        wday: 'mon-fri'
+   expiry:
+     when: '20 23 * * *'
 
-Note that the fields default to "all" (i.e. "C<*>") when not specified. See
-L<Algorithm::Cron> for further details.
+Note that the "C<when>" fields default to "all" (i.e. "C<*>") when not
+specified. See L<Algorithm::Cron> for further details.
 
 =head2 Dancer Internal
 
@@ -834,18 +858,6 @@ These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 =item *
 
 C<col_xxx_show>
-
-=item *
-
-C<expire_devices>
-
-=item *
-
-C<expire_nodes>
-
-=item *
-
-C<expire_nodes_archive>
 
 =item *
 
