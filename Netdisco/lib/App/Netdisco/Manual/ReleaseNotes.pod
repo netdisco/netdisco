@@ -35,6 +35,17 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.020003
+
+=head2 Incompatible Changes
+
+SNMP community strings provided in the C<community_rw> configuration setting
+will I<no longer> be used for I<read> actions on a device (despite having
+"C<rw>" in the setting name). If you have the same community string for read
+and write access, then you must set both C<community> and C<community_rw> in
+your C<deployment.yml> file. In any case, we recommend using the new
+C<snmp_auth> configuration format which supercedes both these settings.
+
 =head1 2.020000
 
 =head2 General Notices
