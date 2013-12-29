@@ -35,6 +35,7 @@ lib/App/Netdisco/Daemon/Worker/Poller.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Arpnip.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Common.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Device.pm
+lib/App/Netdisco/Daemon/Worker/Poller/Expiry.pm
 lib/App/Netdisco/Daemon/Worker/Poller/Macsuck.pm
 lib/App/Netdisco/Daemon/Worker/Scheduler.pm
 lib/App/Netdisco/DB.pm
@@ -74,6 +75,7 @@ lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanNative.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
+lib/App/Netdisco/DB/Result/Virtual/PhonesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
@@ -142,6 +144,7 @@ lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/Plugin.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/PortLog.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
@@ -162,6 +165,7 @@ lib/App/Netdisco/Web/Plugin/Report/DevicePoeStatus.pm
 lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
 lib/App/Netdisco/Web/Plugin/Report/HalfDuplex.pm
 lib/App/Netdisco/Web/Plugin/Report/NodeMultiIPs.pm
+lib/App/Netdisco/Web/Plugin/Report/PhonesDiscovered.pm
 lib/App/Netdisco/Web/Plugin/Report/PortAdminDown.pm
 lib/App/Netdisco/Web/Plugin/Report/PortBlocking.pm
 lib/App/Netdisco/Web/Plugin/Report/PortMultiNodes.pm
@@ -240,6 +244,7 @@ share/views/about.tt
 share/views/admintask.tt
 share/views/ajax/admintask/jobqueue.tt
 share/views/ajax/admintask/performance.tt
+share/views/ajax/admintask/portlog.tt
 share/views/ajax/admintask/pseudodevice.tt
 share/views/ajax/admintask/slowdevices.tt
 share/views/ajax/admintask/topology.tt
@@ -268,6 +273,8 @@ share/views/ajax/report/halfduplex.tt
 share/views/ajax/report/halfduplex_csv.tt
 share/views/ajax/report/nodemultiips.tt
 share/views/ajax/report/nodemultiips_csv.tt
+share/views/ajax/report/phonesdiscovered.tt
+share/views/ajax/report/phonesdiscovered_csv.tt
 share/views/ajax/report/portadmindown.tt
 share/views/ajax/report/portadmindown_csv.tt
 share/views/ajax/report/portblocking.tt
@@ -301,6 +308,8 @@ share/views/layouts/main.tt
 share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
+share/views/sidebar/admintask/portlog.tt
+share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
 share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
