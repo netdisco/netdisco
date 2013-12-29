@@ -4,6 +4,7 @@
 
   * Add IP Phones discovered through LLDP/CDP report
   * Add device/node/vlan/port specific search from Navbar
+  * [#3] [#47] Device Neighbor Map can have max depth and VLAN filter
 
   [ENHANCEMENTS]
 

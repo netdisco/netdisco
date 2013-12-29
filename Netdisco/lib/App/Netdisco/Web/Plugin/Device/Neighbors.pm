@@ -23,8 +23,11 @@ sub _get_name {
 }
 
 sub _add_children {
-    my ($ptr, $childs) = @_;
+    my ($ptr, $childs, $step, $limit) = @_;
+
+    return $step if $limit and $step > $limit;
     my @legit = ();
+    my $max = $step;
 
     foreach my $c (@$childs) {
         next if exists var('seen')->{$c};
@@ -39,13 +42,23 @@ sub _add_children {
 
     for (my $i = 0; $i < @legit; $i++) {
         $ptr->[$i]->{children} = [];
-        _add_children($ptr->[$i]->{children}, var('links')->{$legit[$i]});
+        my $nm = _add_children($ptr->[$i]->{children}, var('links')->{$legit[$i]},
+          ($step + 1), $limit);
+        $max = $nm if $nm > $max;
     }
+
+    return $max;
 }
 
 # d3 seems not to use proper ajax semantics, so get instead of ajax
 get '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
+
+    my $vlan = param('vlan');
+    undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
+
+    my $depth = param('depth');
+    undef $depth if (defined $depth and $depth !~ m/^\d+$/);
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
@@ -59,8 +72,18 @@ get '/ajax/data/device/netmap' => require_login sub {
 
     var(links => {});
     my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
+      columns => [qw/left_ip right_ip/],
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
+
+    if ($vlan) {
+        $rs = $rs->search({
+          'left_vlans.vlan' => $vlan,
+          'right_vlans.vlan' => $vlan,
+        }, {
+          join => [qw/left_vlans right_vlans/],
+        });
+    }
 
     while (my $l = $rs->next) {
         var('links')->{ $l->{left_ip} } ||= [];
@@ -75,7 +98,8 @@ get '/ajax/data/device/netmap' => require_login sub {
     );
 
     var(seen => {$start => 1});
-    _add_children($tree{children}, var('links')->{$start});
+    my $max = _add_children($tree{children}, var('links')->{$start}, 1, $depth);
+    $tree{scale} = $max;
 
     content_type('application/json');
     to_json(\%tree);

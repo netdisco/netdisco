@@ -395,18 +395,6 @@ td > form.nd_inline-form {
   display: none;
 }
 
-/* question mark image with popover for netmap instructions */
-#nd_netmap-help {
-  position: fixed;
-  top: 160px;
-  right: 7px;
-  z-index: 1;
-  color: #555;
-  font-size: 20px;
-  cursor: pointer;
-  display: none;
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
@@ -414,6 +402,11 @@ td > form.nd_inline-form {
   margin-left: 10px;
   margin-top: 6px;
   margin-bottom: 12px;
+}
+
+/* labels in simple sidebars */
+.nd_sidebar-label {
+  margin-left: 7px;
 }
 
 /* fixup for prepended checkbox in sidebar */
@@ -565,6 +558,11 @@ form .clearfix.success input {
 /* nudge content closer to the header labels in the sidebar */
 .nd_inputs-list li:first-child {
   padding-top: 3px !important;
+}
+
+.nd_netmap-sidebar {
+  margin-top: 40px;
+  margin-left: -9px;
 }
 
 .icons-ul {

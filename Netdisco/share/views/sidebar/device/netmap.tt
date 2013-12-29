@@ -1,0 +1,24 @@
+
+            <span class="nd_sidebar-title"><em>Neighbor Map Controls</em></span>
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+            <div class="clearfix nd_netmap-sidebar">
+              <ul class="muted">
+                <li>Click and drag to pan</li>
+                <li>Scroll to zoom</li>
+                <li>Hover shows neighbors</li>
+                <li>Click to center device</li>
+              </ul>
+
+              <em class="muted nd_sidebar-label">Draw to Depth:</em><br/>
+              <input id="nd_port-query" placeholder="" type="number"
+                name="depth" value="[% params.depth | html_entity %]" type="text"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Max Depth"/>
+
+              <em class="muted nd_sidebar-label">Filter by VLAN:</em><br/>
+              <input id="nd_port-query" placeholder="" type="number"
+                name="vlan" value="[% params.vlan | html_entity %]" type="text"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="VLAN"/>
+            </div>
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+                <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i> Redraw Map</button>
+

@@ -19,14 +19,6 @@
     // changes, and only reset when they submit or cancel the change
     var dirty = false;
 
-    // show or hide netmap help button
-    if (tab == 'netmap') {
-      $('#nd_netmap-help').show();
-    }
-    else {
-      $('#nd_netmap-help').hide();
-    }
-
     // activate modals, tooltips and popovers
     $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});

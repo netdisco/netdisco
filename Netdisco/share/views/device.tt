@@ -1,16 +1,5 @@
 <i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
-<i class="icon-question-sign icon-large" id="nd_netmap-help" rel="popover"
-  data-title="Neighbor Map Controls"
-  data-html="true"
-  data-content="
-    <ul>
-      <li>Click and drag to pan</li>
-      <li>Mouse-wheel scroll to zoom</li>
-      <li>Hover to hightlight neighbors</li>
-      <li>Click to view device's map</li>
-    </ul>"
-  data-placement='left' data-trigger='click'></i>
 <div class="container-fluid">
   <div class="nd_sidebar nd_sidebar-pinned">
     <div class="well">
