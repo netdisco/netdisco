@@ -241,11 +241,11 @@ sub _build_communities {
   my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
   my @communities = ();
 
-  # first try last-known-good
+  # try last-known-good read
   push @communities, {read => 1, community => $device->snmp_comm}
     if defined $device->snmp_comm and $mode eq 'read';
 
-  # first try last-known-good
+  # try last-known-good write
   push @communities, {write => 1, community => $snmp_comm_rw}
     if $snmp_comm_rw and $mode eq 'write';
 
@@ -299,7 +299,49 @@ sub _build_communities {
       }} @{setting('community_rw') || []};
   }
 
+  # but first of all, use external command if configured
+  unshift @communities, _get_external_community($device, $mode)
+    if setting('get_community') and length setting('get_community');
+
   return @communities;
+}
+
+sub _get_external_community {
+  my ($device, $mode) = @_;
+  my $cmd = setting('get_community');
+  my $ip = $device->ip;
+  my $host = $device->dns || $ip;
+
+  if (defined $cmd and length $cmd) {
+      # replace variables
+      $cmd =~ s/\%HOST\%/$host/egi;
+      $cmd =~ s/\%IP\%/$ip/egi;
+
+      my $result = `$cmd`;
+      return () unless defined $result and length $result;
+
+      my @lines = split (m/\n/, $result);
+      foreach my $line (@lines) {
+          if ($line =~ m/^community\s*=\s*(.*)\s*$/i) {
+              if (length $1 and $mode eq 'read') {
+                  return map {{
+                    read => 1,
+                    community => $_,
+                  }} split(m/\s*,\s*/,$1);
+              }
+          }
+          elsif ($line =~ m/^setCommunity\s*=\s*(.*)\s*$/i) {
+              if (length $1 and $mode eq 'write') {
+                  return map {{
+                    write => 1,
+                    community => $_,
+                  }} split(m/\s*,\s*/,$1);
+              }
+          }
+      }
+  }
+
+  return ();
 }
 
 =head2 snmp_comm_reindex( $snmp, $device, $vlan )

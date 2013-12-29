@@ -344,6 +344,30 @@ this you usually configure a common context prefix, with Netdisco's default
 being "C<vlan->" (i.e. C<vlan-1>, C<vlan-2>, etc). Add the C<context_prefix>
 key to a stanza to override this.
 
+=head3 C<get_community>
+
+Value: String. Default none.
+
+An external program to run to get the community string for a given device.
+This is useful if, for example, you have you devices already configured in
+another NMS and you want to use that information instead of configuring
+C<snmp_auth>.
+
+The strings "C<%IP%>" and "C<%HOST%>" are replaced by the IP address and the
+hostname (or IP address if no hostname is known) of the system being
+contacted. For example:
+
+ get_community: '/path/to/my/program %IP%'
+
+The command must return output in the following form:
+
+ community=<comma-separated list of readonly-communities>
+ setCommunity=<comma-separated list of write-communities>
+
+If the community string is not known for the given system, the command should
+return no output and the community strings configured in C<snmp_auth>,
+C<community>, and C<community_rw> will be used instead.
+
 =head3 C<bulkwalk_off>
 
 Value: Boolean. Default C<false>.
@@ -802,10 +826,6 @@ C<expire_nodes>
 =item *
 
 C<expire_nodes_archive>
-
-=item *
-
-C<get_community>
 
 =item *
 
