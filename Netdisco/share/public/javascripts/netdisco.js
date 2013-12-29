@@ -181,12 +181,13 @@ $(document).ready(function() {
   });
   $('.nd_navsearchgo-specific').click(function(event) {
     event.preventDefault();
-    console.log($(this).data('tab'));
-    $(this).parents('form').append(
-      $(document.createElement('input')).attr('type', 'hidden')
-                                        .attr('name', 'tab')
-                                        .attr('value', $(this).data('tab'))
-    ).submit();
+    if ($('#nq').val()) {
+      $(this).parents('form').append(
+        $(document.createElement('input')).attr('type', 'hidden')
+                                          .attr('name', 'tab')
+                                          .attr('value', $(this).data('tab'))
+      ).submit();
+    }
   });
 
   // fix green background on search checkboxes
