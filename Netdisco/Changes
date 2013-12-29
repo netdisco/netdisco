@@ -6,6 +6,7 @@
   * Add device/node/vlan/port specific search from Navbar
   * [#3] [#47] Device Neighbor Map can have max depth and VLAN filter
   * [#31] get_community now supported
+  * [#19] Ask for Reason when changing Port up/down Status, or VLAN
 
   [ENHANCEMENTS]
 

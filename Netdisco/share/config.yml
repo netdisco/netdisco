@@ -75,6 +75,8 @@ extra_web_plugins: []
 # mibdirs defaults to contents of mibhome
 community: ['public']
 community_rw: ['private']
+snmp_auth: []
+get_community: ''
 bulkwalk_off: false
 bulkwalk_no: []
 bulkwalk_repeaters: 20
@@ -122,6 +124,17 @@ portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false
 check_userlog: true
+port_control_reasons:
+  address:     'Address Allocation Abuse'
+  copyright:   'Copyright Violation'
+  dos:         'Denial of Service'
+  bandwidth:   'Excessive Bandwidth'
+  polling:     'Excessive Polling of DNS/DHCP/SNMP'
+  noserv:      'Not In Service'
+  exploit:     'Remote Exploit Possible'
+  compromised: 'System Compromised'
+  other:       'Other'
+  resolved:    'Issue Resolved'
 
 # --------------
 # BACKEND DAEMON

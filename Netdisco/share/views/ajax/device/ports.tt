@@ -279,6 +279,15 @@
 <div id="nd_portlog" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
     role="dialog" aria-hidden="true">
   <div class="modal-body">
+    <blockquote>
+      <ul><li><p>Please provide a reason for chainging the Port Configuration</p></li></ul>
+    </blockquote>
+    <select id="nd_portlog-reason" class="input-block-level" name="reason">
+      [% FOREACH pair IN settings.port_control_reasons.pairs %]
+        <option[% ' selected="selected"' IF pair.key == 'other' %] value="[% pair.key | html_entity %]">
+          [% pair.value | html_entity %]</option>
+      [% END %]
+    </select>
     <textarea id="nd_portlog-log" class="input-block-level" rows="2" name="log"
       placeholder="Enter a log message"></textarea>
   </div>

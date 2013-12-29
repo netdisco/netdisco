@@ -662,6 +662,26 @@ Set to false to disable the periodic AJAX check for completed entries in the
 job queue for this user. Mainly useful for development to suppress noisy web
 frontend activity.
 
+=head3 C<port_control_reasons>
+
+Value: Hash of Strings. Default:
+
+ port_control_reasons:
+   address:     'Address Allocation Abuse'
+   copyright:   'Copyright Violation'
+   dos:         'Denial of Service'
+   bandwidth:   'Excessive Bandwidth'
+   polling:     'Excessive Polling of DNS/DHCP/SNMP'
+   noserv:      'Not In Service'
+   exploit:     'Remote Exploit Possible'
+   compromised: 'System Compromised'
+   other:       'Other'
+   resolved:    'Issue Resolved'
+
+When a user has Port Control rights and shuts down a port, they are asked for
+a reason. This configuration lists those reasons, and can be overridden to add
+or remove any entries.
+
 =head2 Backend Daemon
 
 =head3 C<workers>

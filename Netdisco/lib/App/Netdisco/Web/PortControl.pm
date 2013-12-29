@@ -37,9 +37,9 @@ ajax '/ajax/portcontrol' => require_role port_control => sub {
             ip => param('device'),
             port => param('port'),
             action => $a,
-            reason => 'other',
             username => session('logged_in_user'),
             userip => request->remote_address,
+            reason => (param('reason') || 'other'),
             log => param('log'),
           });
       }
