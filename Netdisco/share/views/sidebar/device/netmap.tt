@@ -2,7 +2,7 @@
             <span class="nd_sidebar-title"><em>Neighbor Map Controls</em></span>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix nd_netmap-sidebar">
-              <ul class="muted">
+              <ul class="muted nd_netmap-sidebar-help">
                 <li>Click and drag to pan</li>
                 <li>Scroll to zoom</li>
                 <li>Hover shows neighbors</li>

@@ -561,8 +561,12 @@ form .clearfix.success input {
 }
 
 .nd_netmap-sidebar {
-  margin-top: 40px;
+  margin-top: 7px;
   margin-left: -9px;
+}
+
+.nd_netmap-sidebar-help {
+  margin-left: 32px;
 }
 
 .icons-ul {
