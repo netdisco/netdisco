@@ -83,32 +83,9 @@
           </ul>
         </li> <!-- /dropdown -->
         [% END %]
-      </ul>
-      <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
-        <input placeholder="Find Anything" class="search-query span3"
-          id="nq" name="q" type="text" autocomplete="off"/>
-        <div class="btn-group nd_navbar-search-group">
-          <button class="btn btn-inverse nd_navbar-search-icon">
-            <span style="font-size: 18px;">
-              <i id="navsearchgo" class="icon-search"
-                rel="tooltip" data-placement="bottom" data-offset="5" data-title="New Search" data-container="body"></i>
-            </span>
-          </button>
-          <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
-            <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
-          </ul>
-        </div>
-      </form>
-      [% IF user_has_role('admin') %]
-      <ul class="nav">
+        [% IF user_has_role('admin') %]
         <li class="dropdown[% ' active' IF vars.nav == 'admin' %]">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin Tasks <b class="caret"></b></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
           <ul class="dropdown-menu">
           <li>
             <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discoverall') %]">
@@ -133,8 +110,29 @@
           [% END %]
           </ul>
         </li> <!-- /dropdown -->
+        [% END %]
       </ul>
-      [% END %]
+      <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
+        <input placeholder="Find Anything" class="search-query span3"
+          id="nq" name="q" type="text" autocomplete="off"/>
+        <div class="btn-group nd_navbar-search-group">
+          <button class="btn btn-inverse nd_navbar-search-icon">
+            <span style="font-size: 18px;">
+              <i id="navsearchgo" class="icon-search"
+                rel="tooltip" data-placement="bottom" data-offset="5" data-title="New Search" data-container="body"></i>
+            </span>
+          </button>
+          <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
+            <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
+          </ul>
+        </div>
+      </form>
       <ul class="nav pull-right">
         <li class="nd_navbar-text">Logged in as&nbsp;</li>
         <li class="dropdown">
