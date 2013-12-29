@@ -1,0 +1,29 @@
+[% IF results.count == 0 %]
+<div class="span2 alert alert-info">This port's log is empty.</div>
+[% ELSE %]
+<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Creation</th>
+      <th class="nd_center-cell">User</th>
+      <th class="nd_center-cell">User IP</th>
+      <th class="nd_center-cell">Action</th>
+      <th class="nd_center-cell">Reason</th>
+      <th class="nd_center-cell">Log</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td class="nd_center-cell">[% row.creation | html_entity %]</td>
+      <td class="nd_center-cell">[% row.username | html_entity %]</td>
+      <td class="nd_center-cell">[% row.userip   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.action   | html_entity %]</td>
+      <td class="nd_center-cell">[% settings.port_control_reasons.item(row.reason) || row.reason | html_entity %]</td>
+      <td class="nd_center-cell">[% row.log || '-' | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+[% END %]
+

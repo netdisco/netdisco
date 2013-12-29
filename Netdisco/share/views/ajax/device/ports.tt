@@ -57,6 +57,12 @@
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Enable"></i>
       [% END %]
+        <a class="nd_log-icon"
+          href="[% uri_for('/admin/portlog') %]?q=[% device.dns || device.ip | uri %]&f=[% row.port | uri %]">
+          <i class="icon-file-text-alt"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="View Port Log"></i>
+        </a>
       [% ELSE %]
       <td nowrap>
       [% END %]

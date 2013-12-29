@@ -1,0 +1,5 @@
+
+
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+            <input name="f" value="[% params.f | html_entity %]" type="hidden"/>
+            <script type="text/javascript">has_sidebar["portlog"] = 0;</script>

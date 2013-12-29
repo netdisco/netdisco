@@ -251,9 +251,22 @@ td > form.nd_inline-form {
 /* port admin up/down control */
 .nd_edit-icon, .nd_hand-icon {
   cursor: pointer;
+  float: right;
+  display: none;
+  margin-top: 3px;
+}
+
+/* port admin log view */
+.nd_log-icon {
+  cursor: pointer;
+  color: black;
   float: left;
   display: none;
   margin-top: 3px;
+}
+.nd_log-icon:hover, .nd_log-icon:focus {
+  text-decoration: none;
+  color: black;
 }
 
 /* port power control */

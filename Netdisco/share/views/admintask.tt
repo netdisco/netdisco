@@ -13,8 +13,8 @@
           <form id="[% task.tag %]_form" class="nd_sidebar-form form-stacked"
               method="get" action="[% uri_for('/admin') %]">
             [% TRY %]
-            [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
             <script type="text/javascript">has_sidebar["[% task.tag %]"] = 1;</script>
+            [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
             [% CATCH %]
             <script type="text/javascript">has_sidebar["[% task.tag %]"] = 0;</script>
             [% END %]
@@ -39,6 +39,12 @@
       [% ELSIF task.tag == 'userlog' %]
       <span id="nd_device-name">
         <a class="nd_adminbutton" name="delall" href="#"><i class="icon-trash text-error"></i></a>
+      </span>
+      [% ELSIF task.tag == 'portlog' %]
+      <span id="nd_device-name">
+        <a href="[% device_ports %]&q=[% params.q | uri %]&c_admin=on">[% params.q %]</a>
+        -
+        <a href="[% device_ports %]&q=[% params.q | uri %]&f=[% params.f | uri %]&c_admin=on">[% params.f %]</a>
       </span>
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">

@@ -218,6 +218,16 @@ Note that this won't work for any target link - the path must be an
 App::Netdisco Dancer route handler. Please bug the App::Netdisco devs if you
 want arbitrary links supported.
 
+An additional feature allows you to create Admin Tasks which do not appear in
+the Navbar menu. This is useful if the page is only linked directly from
+another (for example Port Log). To enable this feature add the C<hidden> key:
+
+ register_admin_task({
+   tag   => 'newfeature',
+   label => 'My New Feature',
+   hidden => true,
+ });
+
 =head1 Device Port Columns
 
 You can also add columns to the Device Ports page. The canonical example of
