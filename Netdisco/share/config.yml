@@ -45,6 +45,7 @@ web_plugins:
   - Report::DeviceByLocation
   - Report::DevicePoeStatus
   - Report::DuplexMismatch
+  - Report::IpInventory
   - Report::NodeMultiIPs
   - Report::PhonesDiscovered
   - Report::SsidInventory

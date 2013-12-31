@@ -55,4 +55,15 @@ ajax '/ajax/data/port/typeahead' => require_login sub {
     to_json \@$results;
 };
 
+ajax '/ajax/data/subnet/typeahead' => require_login sub {
+    my $q = param('query') || param('term');
+    $q = "$q\%" if $q !~ m/\%/;
+    my $nets = schema('netdisco')->resultset('Subnet')->search(
+           { 'me.net::text'  => { '-ilike' => $q }},
+           { columns => ['net'] } );
+
+    content_type 'application/json';
+    to_json [map {$_->net} $nets->all];
+};
+
 true;

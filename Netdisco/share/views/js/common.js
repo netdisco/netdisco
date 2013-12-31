@@ -128,6 +128,8 @@
 
     // on page load, load the content for the active tab
     [% IF params.tab %]
+    [% IF params.tab != 'ipinventory' %]
     $('#[% params.tab %]_form').trigger("submit");
+    [% END %]
     [% END %]
   });
