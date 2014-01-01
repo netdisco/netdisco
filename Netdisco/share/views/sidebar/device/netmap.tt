@@ -19,6 +19,6 @@
                 name="vlan" value="[% params.vlan | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="VLAN"/>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
                 <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i> Redraw Map</button>
 

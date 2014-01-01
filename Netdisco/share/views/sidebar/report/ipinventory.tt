@@ -69,7 +69,7 @@
               </div>
             </fieldset>
 
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search IPs</button>
 
 <script type = "text/javascript">

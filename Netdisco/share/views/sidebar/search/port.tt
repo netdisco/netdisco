@@ -10,5 +10,5 @@
                 <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
               </label>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
               <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Ports</button>

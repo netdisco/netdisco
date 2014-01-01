@@ -46,5 +46,5 @@
                 [% END %]
               </select>
             </div>
-            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
               <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Nodes</button>
