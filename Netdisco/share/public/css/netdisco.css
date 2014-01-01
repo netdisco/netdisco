@@ -528,7 +528,7 @@ td > form.nd_inline-form {
 /* sidebar submit button width and spacing */
 
 /* when the sidebar submit button DOES NOT HAVE a dropdown */
-.nd_sidebar button:not(.nd_sidebar-btn-drop, .nd_sidebar-btn-drop-drop ) {
+.nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop) {
   margin-top: 9px;
   margin-left: -3px;
   width: 165px;
