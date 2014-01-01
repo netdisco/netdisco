@@ -526,10 +526,21 @@ td > form.nd_inline-form {
 }
 
 /* sidebar submit button width and spacing */
-.nd_sidebar button {
+
+/* when the sidebar submit button DOES NOT HAVE a dropdown */
+.nd_sidebar button:not(.nd_sidebar-btn-drop, .nd_sidebar-btn-drop-drop ) {
   margin-top: 9px;
   margin-left: -3px;
   width: 165px;
+}
+
+/* when the sidebar submit button HAS a dropdown */
+.nd_sidebar-btn-drop {
+  width: 138px;
+}
+.nd_sidebar-btn-drop-drop {
+  height: 28px;
+  width: 28px;
 }
 
 /* little icon inside of search input fields */

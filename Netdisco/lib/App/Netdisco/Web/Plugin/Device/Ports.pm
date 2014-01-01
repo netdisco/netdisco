@@ -12,6 +12,9 @@ register_device_tab({ tag => 'ports', label => 'Ports', provides_csv => 1 });
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
     my $q = param('q');
+    my $prefer = param('prefer');
+    $prefer = ''
+      unless defined $prefer and $prefer =~ m/^(?:port|name|vlan)$/;
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
@@ -20,7 +23,7 @@ get '/ajax/content/device/ports' => require_login sub {
     # refine by ports if requested
     my $f = param('f');
     if ($f) {
-        if ($f =~ m/^\d+$/) {
+        if (($prefer eq 'vlan') or not $prefer and $f =~ m/^\d+$/) {
             if (param('invert')) {
                 $set = $set->search({
                   'me.vlan' => { '!=' => $f },
@@ -57,7 +60,9 @@ get '/ajax/content/device/ports' => require_login sub {
                 $f = { '!=' => $f };
             }
 
-            if ($set->search({'me.port' => $f})->count) {
+            if (($prefer eq 'port') or not $prefer and
+                $set->search({'me.port' => $f})->count) {
+
                 $set = $set->search({'me.port' => $f});
             }
             else {

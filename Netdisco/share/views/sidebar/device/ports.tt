@@ -1,5 +1,6 @@
 
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+            <input id="nd_ports-form-prefer-field" name="prefer" value="[% params.prefer | html_entity %]" type="hidden"/>
             <div class="clearfix">
               <i class="nd_field-clear-icon icon-trash icon-large"
                  rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports"
@@ -133,5 +134,17 @@
                 </ul>
               </div>
             </div>
-            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
-              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>
+            <div class="btn-group">
+              <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info nd_sidebar-btn-drop">
+                <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>
+              <button class="btn btn-info dropdown-toggle nd_sidebar-btn-drop-drop" data-toggle="dropdown">
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="">Default Search</a></li>
+                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="port">Filter by Port</a></li>
+                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="name">Filter by Name</a></li>
+                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="vlan">Filter by VLAN</a></li>
+              </ul>
+            </div>
+

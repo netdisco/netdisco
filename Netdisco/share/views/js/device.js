@@ -29,6 +29,7 @@
   $(document).ready(function() {
     var tab = '[% tab.tag %]'
     var target = '#' + tab + '_pane';
+    var portfilter = $('#ports_form').find("input[name=f]");
 
     // sidebar form fields should change colour and have trash/copy icon
     form_inputs.each(function() {device_form_state($(this))});
@@ -45,12 +46,23 @@
         .toggleClass('icon-chevron-up icon-chevron-down');
     });
 
+    // if the user edits the filter box, revert to automagical search
+    $('#ports_form').on('input', "input[name=f]", function() {
+      $('#nd_ports-form-prefer-field').attr('value', '');
+    });
+
     // handler for trashcan icon in port filter box
-    var portfilter = $('#ports_form').find("input[name=f]");
     $('.nd_field-clear-icon').click(function() {
       portfilter.val('');
       $('#ports_form').trigger('submit');
       device_form_state(portfilter); // will hide copy icons
+    });
+
+    // allow port filter to have a preference for port/name/vlan
+    $('#ports_form').on('click', '.nd_device-port-submit-prefer', function() {
+      event.preventDefault();
+      $('#nd_ports-form-prefer-field').attr('value', $(this).data('prefer'));
+      $(this).parents('form').submit();
     });
 
     // clickable device port names can simply resubmit AJAX rather than
@@ -61,8 +73,11 @@
       var port = $(this).text();
       port = $.trim(port);
       portfilter.val(port);
-
       $('.nd_field-clear-icon').show();
+
+      // make sure we're preferring a port filter
+      $('#nd_ports-form-prefer-field').attr('value', 'port');
+
       $('#ports_form').trigger('submit');
       device_form_state(portfilter); // will hide copy icons
     });

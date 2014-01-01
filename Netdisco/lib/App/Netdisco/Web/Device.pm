@@ -146,6 +146,7 @@ hook 'before_template' => sub {
   my $self_uri = uri_for(request->path, scalar params);
   $self_uri->query_param_delete('q');
   $self_uri->query_param_delete('f');
+  $self_uri->query_param_delete('prefer');
   $tokens->{self_options} = $self_uri->query_form_hash;
 };
 

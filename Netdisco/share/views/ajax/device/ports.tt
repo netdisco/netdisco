@@ -67,7 +67,7 @@
       <td nowrap>
       [% END %]
         <a class="nd_linkcell nd_this-port-only" href="[% uri_for('/device',
-            self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]">
+            self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
         [% row.port | html_entity %]
       </a></td>
       [% END %]

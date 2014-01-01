@@ -19,6 +19,9 @@
   * Port MAC query now only returns distinct MAC's
   * Keep a hint to SNMP community if new style snmp_auth config is in use
   * [#43] Add doc note about PostgreSQL MD5 authN
+  * [#49] Allow device port searching with preference for port/name/vlan.
+    This is to support some devices (HP?) which have plain numbers for port names
+    and Netdisco defaults to assuming this is a VLAN number (R. Kerr)
 
   [BUG FIXES]
 
