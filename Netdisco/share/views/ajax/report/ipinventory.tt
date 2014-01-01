@@ -1,0 +1,39 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th class="nd_center-cell">DNS</th>
+      <th class="nd_center-cell">Last Used</th>      
+      <th class="nd_center-cell">First Discovered</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results %]
+    <tr>
+    [% IF row.time_last && row.node %]
+      <td><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
+      </td>
+    [% ELSIF row.time_last %]
+      <td><a href="[% search_device %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+      </td>
+    [% ELSE %]
+      <td>[% row.ip | html_entity %]</td>
+    [% END %]
+      <td class="nd_center-cell">[% row.dns | html_entity %]</td>
+    [% IF row.age %]
+      [% age = row.age.replace('mon', 'month') %]
+      [% IF age.match('(day|month|year)') %]
+        [% age = age.remove('(-)?\d{2}:\d{2}.*$') %]
+      [% ELSE %]
+        [% age = age.replace('(\d{2}:\d{2}):\d{2}(\.\d*)$', '$1') %]
+      [% END %]
+    [% ELSE %]
+      [% age = 'Never' %]
+    [% END %]
+      <td class="nd_center-cell">[% age | html_entity %]</td>
+      <td class="nd_center-cell">[% row.time_first || 'Never' | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>

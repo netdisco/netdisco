@@ -16,7 +16,7 @@ set(
   '_admin_tasks'  => {},
   '_reports_menu' => {},
   '_reports' => {},
-  '_report_order' => [qw/Device Port Node VLAN Network Wireless/],
+  '_report_order' => [qw/Device Port IP Node VLAN Network Wireless/],
 );
 
 # this is what Dancer::Template::TemplateToolkit does by default

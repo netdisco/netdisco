@@ -1,0 +1,98 @@
+
+            <div class="clearfix">
+              <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input"
+                placeholder="CIDR Prefix/Subnet" required="required"
+                name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Prefix/Subnet in CIDR Format"/>
+            </div>
+
+            <fieldset>
+              <legend class="nd_sidebar-legend">
+                <label class="checkbox">
+                  <input type="checkbox" id="age_on" name="age_on"
+                    [% 'checked="checked"' UNLESS (params.exists('age_on') AND params.age_on == '') %]/>
+                  <em><strong>Age Filter</strong></em>
+                </label>
+              </legend>
+              <div class="clearfix">
+                <ul class="unstyled">
+                  <li>
+                    <div class="clearfix input-prepend">
+                      <label class="add-on">
+                      <input type="checkbox" id="age_invert"
+                        name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
+                      </label>
+                      <label class="nd_checkboxlabel" for="age_invert">
+                        <span class="nd_searchcheckbox uneditable-input">Not</span>
+                      </label>
+                    </div>
+                  </li>
+                </ul>
+                <em class="muted">Seen within the date range:</em><br/>
+                <input class="nd_side-input" id="daterange"
+                  type="text" name="daterange" value="[% params.daterange | html_entity %]"/>
+            </fieldset>
+
+            <fieldset>
+              <legend class="nd_sidebar-legend">
+                <label><em><strong>Options</strong></em></label>
+              </legend>
+              <div class="clearfix">
+                <ul class="unstyled">
+                  <li>
+                    <em class="muted">Limit:</em><br/>
+                    <select id="nd_mac-format" class="nd_side-select" name="limit">
+                      [% FOREACH size IN [ '32', '64', '128', '256', '1024', '2048', '4096', '8192' ] %]
+                      <option[% ' selected="selected"' IF params.limit == size %]>[% size %]</option>
+                      [% END %]
+                    </select>
+                  </li>
+                  <li>
+                    <em class="muted">Order By:</em><br/>
+                    <select id="nd_mac-format" class="nd_side-select" name="order">
+                      [% FOREACH item IN [ 'IP', 'Age' ] %]
+                      <option[% ' selected="selected"' IF params.order == item %]>[% item %]</option>
+                      [% END %]
+                    </select>
+                  </li>
+                </ul>
+                <div class="clearfix input-prepend"
+                    rel="tooltip" data-placement="left" data-offset="5" data-title="Applies to IPv4 Only">
+                  <label class="add-on">
+                  <input type="checkbox" id="never"
+                    name="never"[% ' checked="checked"' IF params.never %]/>
+                  </label>
+                  <label class="nd_checkboxlabel" for="never">
+                    <span class="nd_searchcheckbox uneditable-input">List IP's Never Seen</span>
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+
+            <button id="[% tab.id %]_submit" type="submit" class="btn btn-info">
+             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search IPs</button>
+
+<script type = "text/javascript">
+[%+ INCLUDE 'js/daterangepicker.js' -%]
+[%+ INCLUDE 'js/moment.min.js' -%]
+$('#daterange').daterangepicker({
+            ranges: {
+                        'Today': [moment(), moment()],
+                        'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                        'Last 7 Days': [moment().subtract('days', 6), moment()],
+                        'Last 30 Days': [moment().subtract('days', 29), moment()],
+                        'This Month': [moment().startOf('month'), moment().endOf('month')],
+                        'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+            },
+            startDate: moment().subtract('days', 29),
+            endDate: moment(),
+            minDate: '2004-01-01',
+            showDropdowns: true,
+            timePicker: false,
+            opens: 'left',
+            format: 'YYYY-MM-DD',
+            separator: ' to ',
+}, function(start, end) {
+            $('#daterange span').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
+});
+</script>

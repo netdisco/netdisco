@@ -1,5 +1,5 @@
 package App::Netdisco::DB::ResultSet::NodeWireless;
-use base 'DBIx::Class::ResultSet';
+use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
 use warnings FATAL => 'all';

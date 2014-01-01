@@ -1,5 +1,5 @@
 package App::Netdisco::DB::ResultSet::Admin;
-use base 'DBIx::Class::ResultSet';
+use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
 use warnings FATAL => 'all';

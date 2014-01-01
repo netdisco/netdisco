@@ -495,6 +495,10 @@ td > form.nd_inline-form {
   margin-left: 5px !important;
   width: 152px;
 }
+.nd_sidebar-topinput {
+  margin-left: 5px !important;
+  width: 152px;
+}
 
 /* set the day/mon/year drop-down width */
 #nd_days-select {
@@ -571,6 +575,10 @@ form .clearfix.success input {
 /* nudge content closer to the header labels in the sidebar */
 .nd_inputs-list li:first-child {
   padding-top: 3px !important;
+}
+
+.nd_sidebar-legend {
+  margin-bottom: 9px;
 }
 
 .nd_netmap-sidebar {
