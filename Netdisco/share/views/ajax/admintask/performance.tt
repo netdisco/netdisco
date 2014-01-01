@@ -14,7 +14,18 @@
   </thead>
   </tbody>
     [% WHILE (row = results.next) %]
-    <tr>
+    <tr
+      [% IF NOT mac AND row.action == 'macsuck' %]
+        class="info"
+        [% SET mac = 1 %]
+      [% ELSIF NOT arp AND row.action == 'arpnip' %]
+        class="info"
+        [% SET arp = 1 %]
+      [% ELSIF NOT dis AND row.action == 'discover' %]
+        class="info"
+        [% SET dis = 1 %]
+      [% END %]
+    >
       <td class="nd_center-cell">[% row.action.ucfirst | html_entity %]</td>
       <td class="nd_center-cell">[% row.number  | html_entity %]</td>
       <td class="nd_center-cell">[% row.entered_stamp | html_entity %]</td>
