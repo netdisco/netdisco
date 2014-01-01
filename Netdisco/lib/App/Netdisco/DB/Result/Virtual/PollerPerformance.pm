@@ -17,8 +17,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     WHERE action IN ( 'discover', 'macsuck', 'arpnip' ) 
     GROUP BY action, entered 
     HAVING count( device ) > 1 
-    ORDER BY elapsed DESC, entered DESC 
-    LIMIT 15
+    ORDER BY entered DESC, elapsed DESC
+    LIMIT 30
 ENDSQL
 );
 
