@@ -70,6 +70,7 @@ lib/App/Netdisco/DB/Result/UserLog.pm
 lib/App/Netdisco/DB/Result/Virtual/ActiveNode.pm
 lib/App/Netdisco/DB/Result/Virtual/ActiveNodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/ApRadioChannelPower.pm
+lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanNative.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
@@ -79,7 +80,9 @@ lib/App/Netdisco/DB/Result/Virtual/PhonesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
+lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
+lib/App/Netdisco/DB/ResultSet.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
@@ -164,6 +167,7 @@ lib/App/Netdisco/Web/Plugin/Report/DeviceByLocation.pm
 lib/App/Netdisco/Web/Plugin/Report/DevicePoeStatus.pm
 lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
 lib/App/Netdisco/Web/Plugin/Report/HalfDuplex.pm
+lib/App/Netdisco/Web/Plugin/Report/IpInventory.pm
 lib/App/Netdisco/Web/Plugin/Report/NodeMultiIPs.pm
 lib/App/Netdisco/Web/Plugin/Report/PhonesDiscovered.pm
 lib/App/Netdisco/Web/Plugin/Report/PortAdminDown.pm
@@ -171,6 +175,7 @@ lib/App/Netdisco/Web/Plugin/Report/PortBlocking.pm
 lib/App/Netdisco/Web/Plugin/Report/PortMultiNodes.pm
 lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
 lib/App/Netdisco/Web/Plugin/Report/SsidInventory.pm
+lib/App/Netdisco/Web/Plugin/Report/SubnetUtilization.pm
 lib/App/Netdisco/Web/Plugin/Report/VlanInventory.pm
 lib/App/Netdisco/Web/Plugin/Search/Device.pm
 lib/App/Netdisco/Web/Plugin/Search/Node.pm
@@ -190,6 +195,7 @@ share/environments/deployment.yml
 share/public/500.html
 share/public/css/bootstrap-tree.css
 share/public/css/bootstrap.min.css
+share/public/css/daterangepicker-bs2.css
 share/public/css/font-awesome.min.css
 share/public/css/jquery.qtip.min.css
 share/public/css/nd_print.css
@@ -271,6 +277,8 @@ share/views/ajax/report/duplexmismatch.tt
 share/views/ajax/report/duplexmismatch_csv.tt
 share/views/ajax/report/halfduplex.tt
 share/views/ajax/report/halfduplex_csv.tt
+share/views/ajax/report/ipinventory.tt
+share/views/ajax/report/ipinventory_csv.tt
 share/views/ajax/report/nodemultiips.tt
 share/views/ajax/report/nodemultiips_csv.tt
 share/views/ajax/report/phonesdiscovered.tt
@@ -285,6 +293,8 @@ share/views/ajax/report/portutilization.tt
 share/views/ajax/report/portutilization_csv.tt
 share/views/ajax/report/ssidinventory.tt
 share/views/ajax/report/ssidinventory_csv.tt
+share/views/ajax/report/subnets.tt
+share/views/ajax/report/subnets_csv.tt
 share/views/ajax/report/vlaninventory.tt
 share/views/ajax/report/vlaninventory_csv.tt
 share/views/ajax/search/device.tt
@@ -301,7 +311,9 @@ share/views/inventory.tt
 share/views/js/admintask.js
 share/views/js/bootstrap-tree.js
 share/views/js/common.js
+share/views/js/daterangepicker.js
 share/views/js/device.js
+share/views/js/moment.min.js
 share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt
@@ -311,6 +323,9 @@ share/views/search.tt
 share/views/sidebar/admintask/portlog.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
+share/views/sidebar/report/ipinventory.tt
+share/views/sidebar/report/subnets.tt
 share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
+t/10-sort_port.t

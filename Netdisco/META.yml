@@ -18,6 +18,7 @@ no_index:
   directory:
     - inc
     - share
+    - t
 requires:
   Algorithm::Cron: 0.07
   AnyEvent: 7.05
@@ -67,4 +68,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.020003_001
+version: 2.020003_002
