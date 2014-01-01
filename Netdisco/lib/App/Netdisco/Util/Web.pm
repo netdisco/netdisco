@@ -36,7 +36,7 @@ sub sort_port {
 
     my $numbers        = qr{^(\d+)$};
     my $numeric        = qr{^([\d\.]+)$};
-    my $dotted_numeric = qr{^(\d+)\.(\d+)$};
+    my $dotted_numeric = qr{^(\d+)[:.](\d+)$};
     my $letter_number  = qr{^([a-zA-Z]+)(\d+)$};
     my $wordcharword   = qr{^([^:\/.]+)[-\ :\/\.]+([^:\/.0-9]+)(\d+)?$}; #port-channel45
     my $netgear        = qr{^Slot: (\d+) Port: (\d+) }; # "Slot: 0 Port: 15 Gigabit - Level"
