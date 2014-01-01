@@ -1,0 +1,25 @@
+[% IF results.count == 0 %]
+<div class="span2 alert alert-info">No matching records.</div>
+[% ELSE %]
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Subnet</th>
+      <th class="nd_center-cell">Size</th>
+      <th class="nd_center-cell">Number of Active Nodes</th>
+      <th class="nd_center-cell">Percent Utilization</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results.all %]
+    <tr>
+      <td class="nd_center-cell">[% row.subnet | html_entity %]</td>
+      <td class="nd_center-cell">[% row.subnet_size | html_entity %]</td>
+      <td class="nd_center-cell">[% row.active | html_entity %]</td>
+      <td class="nd_center-cell">[% row.percent | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+[% END %]
+

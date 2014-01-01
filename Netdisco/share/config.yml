@@ -50,6 +50,7 @@ web_plugins:
   - Report::PhonesDiscovered
   - Report::SsidInventory
   - Report::VlanInventory
+  - Report::SubnetUtilization
   - AdminTask::JobQueue
   - AdminTask::PollerPerformance
   - AdminTask::SlowDevices

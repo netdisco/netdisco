@@ -1,0 +1,14 @@
+[% USE CSV %]
+[% CSV.dump([ 'Subnet' 'Size' 'Number of Active Nodes' 'Percent Utilization' ]) %]
+
+[% FOREACH row IN results.all %]
+  [% mylist = [] %]
+  [% mylist.push(row.subnet) %]
+  [% mylist.push(row.subnet_size) %]
+  [% mylist.push(row.active) %]
+  [% mylist.push(row.percent) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]
+
+

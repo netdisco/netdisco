@@ -1,0 +1,28 @@
+
+            <div class="clearfix">
+              <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input"
+                placeholder="CIDR Prefix/Subnet" required="required"
+                name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Prefix/Subnet in CIDR Format"/>
+            </div>
+
+            <fieldset>
+              <legend class="nd_sidebar-legend">
+                <label><em><strong>Options</strong></em></label>
+              </legend>
+              <div class="clearfix">
+                <ul class="unstyled">
+                  <li>
+                    <em class="muted">Activity Period:</em><br/>
+                    <select id="nd_mac-format" class="nd_side-select" name="age">
+                      [% FOREACH size IN [ '7 days', '14 days', '30 days', '3 months', '1 year', '5 years' ] %]
+                      <option[% ' selected="selected"' IF params.age == size %]>[% size %]</option>
+                      [% END %]
+                    </select>
+                  </li>
+                </ul>
+              </div>
+            </fieldset>
+
+            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
+             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Subnets</button>
