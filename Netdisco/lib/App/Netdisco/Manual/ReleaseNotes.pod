@@ -67,6 +67,13 @@ and C<expire_nodes_archive> to a number of days. See the
 L<Configuration|App::Netdisco::Manual::Configuration> documentation for
 further details.
 
+=head2 General Notices
+
+If you use an Apache reverse proxy, we recomment increasing the timeout from
+our previous example of 5 seconds to, perhaps 60. This is because some reports
+do take more time to run their queries on the database. See
+L<Deployment|App::Netdisco::Manual::Deployment> documentation for details.
+
 =head1 2.020000
 
 =head2 General Notices
