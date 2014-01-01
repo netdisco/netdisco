@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use NetAddr::IP::Lite ':lower';
 
 register_report(
     {   category     => 'IP',
@@ -37,6 +38,9 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     # Default to something simple with no results to prevent
     # "Search failed!" error
     my $subnet = param('subnet') || '0.0.0.0/32';
+    $subnet = NetAddr::IP::Lite->new($subnet);
+    $subnet = NetAddr::IP::Lite->new('0.0.0.0/32')
+      if (! $subnet) or ($subnet->addr eq '0.0.0.0');
 
     my $age    = param('age_on')     || '0';
     my $agenot = param('age_invert') || '0';
@@ -91,9 +95,11 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     my $rs_union = $rs1->union( [ $rs2, $rs3 ] );
 
     if ( $never ) {
+        $subnet = NetAddr::IP::Lite->new('0.0.0.0/32') if ($subnet->bits ne 32);
+
         my $rs4 = schema('netdisco')->resultset('Virtual::CidrIps')->search(
             undef,
-            {   bind => [ $subnet ],
+            {   bind => [ $subnet->cidr ],
                 columns   => [qw( ip time_first time_last dns active)],
                 '+select' => [ \'false AS node', \'age(time_last) AS age' ],
                 '+as'     => [ 'node', 'age' ],
@@ -104,7 +110,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     }
 
     my $rs_sub = $rs_union->search(
-        { ip => { '<<' => $subnet } },
+        { ip => { '<<' => $subnet->cidr } },
         {   order_by => [qw( ip time_last )],
             select   => [
                 \'DISTINCT ON (ip) ip',

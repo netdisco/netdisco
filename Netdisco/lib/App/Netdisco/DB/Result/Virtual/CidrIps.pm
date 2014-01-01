@@ -11,16 +11,18 @@ __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 __PACKAGE__->table('cidr_ips');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
-SELECT host(network (cidr) + sub.int)::inet AS ip, NULL::text AS dns,
-  NULL::timestamp AS time_first, NULL::timestamp AS time_last, false::boolean AS active
-FROM
-  ( SELECT cidr, generate_series(1, broadcast(cidr) - (network(cidr)) - 1) AS int
-FROM (
-SELECT CASE WHEN family(cidr) = 4 THEN cidr
-       ELSE '0.0.0.0/32'::inet
-       END AS cidr
-FROM ( SELECT ?::inet AS cidr) AS input) AS addr
-) AS sub
+SELECT host(network (prefix) + sub.int)::inet AS ip,
+       NULL::text AS dns,
+       NULL::timestamp AS time_first,
+       NULL::timestamp AS time_last,
+       false::boolean AS active
+  FROM (
+    SELECT prefix,
+           generate_series(1, (broadcast(prefix) - network(prefix) - 1)) AS int
+      FROM (
+        SELECT ?::inet AS prefix
+      ) AS addr
+  ) AS sub
 ENDSQL
 
 __PACKAGE__->add_columns(
