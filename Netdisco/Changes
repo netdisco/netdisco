@@ -22,6 +22,7 @@
   * [#49] Allow device port searching with preference for port/name/vlan.
     This is to support some devices (HP?) which have plain numbers for port names
     and Netdisco defaults to assuming this is a VLAN number (R. Kerr)
+  * Upgrade floatThead JS plugin to improve performance for large tables
 
   [BUG FIXES]
 
