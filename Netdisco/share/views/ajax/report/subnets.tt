@@ -13,7 +13,8 @@
   </tbody>
     [% FOREACH row IN results.all %]
     <tr>
-      <td class="nd_center-cell">[% row.subnet | html_entity %]</td>
+      <td class="nd_center-cell"><a href="[% uri_for('/report/ipinventory') %]?subnet=[% row.subnet | uri %]&daterange=[% daterange | uri %]&limit=[% row.subnet_size | uri %]&age_on=on">
+               [% row.subnet | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.subnet_size | html_entity %]</td>
       <td class="nd_center-cell">[% row.active | html_entity %]</td>
       <td class="nd_center-cell">[% row.percent | html_entity %]</td>

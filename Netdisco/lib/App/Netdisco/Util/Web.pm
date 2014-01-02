@@ -1,9 +1,11 @@
 package App::Netdisco::Util::Web;
 
 use base 'Exporter';
+use Time::Piece;
+use Time::Seconds;
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sort_port
+  sort_port sort_modules interval_to_daterange
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -148,6 +150,36 @@ sub sort_modules {
         }
     }
     return \%modules;
+}
+
+=head2 interval_to_daterange( $interval )
+
+Takes an interval in days, weeks, months, or years in a format like '7 days'
+and returns a date range in the format 'YYYY-MM-DD to YYYY-MM-DD' by
+subtracting the interval from the current date.
+
+=cut
+
+sub interval_to_daterange {
+    my $interval = shift;
+
+    return unless $interval =~ m/^(?:\d+)\s+(?:day|week|month|year)s?$/;
+
+    my %const = (
+        day   => ONE_DAY,
+        week  => ONE_WEEK,
+        month => ONE_MONTH,
+        year  => ONE_YEAR
+    );
+
+    my ( $amt, $factor )
+        = $interval =~ /^(\d+)\s+(day|week|month|year)s?$/gmx;
+
+    $amt-- if $factor eq 'day';
+
+    my $start = Time::Piece->new - $const{$factor} * $amt;
+
+    return $start->ymd . " to " . Time::Piece->new->ymd;
 }
 
 1;
