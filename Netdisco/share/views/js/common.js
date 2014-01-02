@@ -27,18 +27,29 @@
   }
 
   // update browser search history with the new query.
-  // however if it's the same tab, this is a *replace* of the query url.
-  // and just skip this bit if it's the report or admin display.
-  function update_browser_history (tab, pgtitle) {
+  // support history add (push) or replace via push parameter
+  function update_browser_history (tab, pgtitle, push) {
     var form = '#' + tab + '_form';
     var query = $(form).serialize();
+    if (query.length) { query = '?' + query }
 
     if (window.History && window.History.enabled) {
       is_from_history_plugin = 1;
-      window.History.replaceState(
-        {name: tab, fields: $(form).serializeArray()},
-        pgtitle, uri_base + '/' + path + '?' + query
-      );
+
+      if (push.length) {
+        var target = uri_base + '/' + path + '/' + tab + query;
+        if (location.pathname == target) { return };
+        window.History.pushState(
+          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
+        );
+      }
+      else {
+        var target = uri_base + '/' + path + query;
+        window.History.replaceState(
+          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
+        );
+      }
+
       is_from_history_plugin = 0;
     }
   }
@@ -64,7 +75,7 @@
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
       copy_navbar_to_sidebar('[% tab.tag %]');
-      update_browser_history('[% tab.tag %]', pgtitle);
+      update_browser_history('[% tab.tag %]', pgtitle, '');
       update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
       do_search(event, '[% tab.tag %]');
     });
@@ -77,7 +88,7 @@
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
       var pgtitle = update_page_title('[% tab.tag %]');
       copy_navbar_to_sidebar('[% tab.tag %]');
-      update_browser_history('[% tab.tag %]', pgtitle);
+      update_browser_history('[% tab.tag %]', pgtitle, '');
       update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
 
       [% IF tab.tag == 'ports' %]
@@ -111,7 +122,8 @@
     [% IF report %]
     // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function (event) {
-      update_page_title('[% report.tag %]');
+      var pgtitle = update_page_title('[% report.tag %]');
+      update_browser_history('[% report.tag %]', pgtitle, '1');
       update_csv_download_link('report', '[% report.tag %]', '1');
       do_search(event, '[% report.tag %]');
     });
