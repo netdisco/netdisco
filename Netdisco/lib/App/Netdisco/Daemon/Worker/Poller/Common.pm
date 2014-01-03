@@ -16,15 +16,26 @@ use namespace::clean;
 sub _walk_body {
   my ($self, $job_type, $job) = @_;
 
+  my $action_method = $job_type .'_action';
+  my $job_action = $self->$action_method;
+
+  my $layer_method = $job_type .'_layer';
+  my $job_layer = $self->$layer_method;
+
   my $jobqueue = schema('netdisco')->resultset('Admin');
-  my $devices = schema('netdisco')->resultset('Device')
+  my @devices = schema('netdisco')->resultset('Device')
     ->search({ip => { -not_in =>
         $jobqueue->search({
           device => { '!=' => undef},
           action => $job_type,
           status => { -like => 'queued%' },
         })->get_column('device')->as_query
-    }})->get_column('ip');
+    }})->has_layer($job_layer)->get_column('ip')->all;
+
+  my $filter_method = $job_type .'_filter';
+  my $job_filter = $self->$filter_method;
+
+  my @filtered_devices = grep {$job_filter->($_)} @devices;
 
   schema('netdisco')->resultset('Admin')->txn_do_locked(sub {
     $jobqueue->populate([
@@ -32,7 +43,7 @@ sub _walk_body {
           device => $_,
           action => $job_type,
           status => 'queued',
-      }} ($devices->all)
+      }} (@filtered_devices)
     ]);
   });
 
