@@ -414,6 +414,31 @@ sub carrying_vlan_name {
       ->search($cond, $attrs);
 }
 
+=head2 has_layer( $layer )
+
+ my $rset = $rs->has_layer(3);
+
+This predefined C<search()> returns a ResultSet of matching rows from the
+Device table of devices advertising support of the supplied layer in the
+OSI Model.
+
+=over 4
+
+=item *
+
+The C<layer> parameter must be an integer between 1 and 7.
+
+=cut
+
+sub has_layer {
+    my ( $rs, $layer ) = @_;
+
+    die "layer required and must be between 1 and 7\n"
+        if !$layer || $layer < 1 || $layer > 7;
+
+    return $rs->search_rs( \[ 'substring(layers,9-?, 1)::int = 1', $layer ] );
+}
+
 =head2 get_models
 
 Returns a sorted list of Device models with the following columns only:
