@@ -404,9 +404,10 @@ Net-SNMP 5.3 or higher.
 
 =head3 C<snmpver>
 
-Value: C<1|2|3>. Default: 2.
+Value: C<1|2|3>. Default: 3.
 
-Version of the SNMP protocol used when connecting to devices.
+Highest version of the SNMP protocol used when connecting to devices. Use this
+setting to disable SNMP v3 globally. Usually you don't need to configure this.
 
 =head3 C<snmptimeout>
 

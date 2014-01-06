@@ -98,7 +98,7 @@ sub _snmp_connect_generic {
 
   # TODO: add version force support
   # use existing SNMP version or try 3, 2, 1
-  my @versions = reverse (1 .. ($device->snmp_ver || setting('snmpver') || 3));
+  my @versions = reverse (1 .. (setting('snmpver') || 3));
 
   # get the community string(s)
   my @communities = _build_communities($device, $mode);
@@ -169,6 +169,10 @@ sub _try_read {
     and $info->class
   );
 
+  $device->in_storage
+    ? $device->update({snmp_ver => $info->snmp_ver})
+    : $device->set_column(snmp_ver => $info->snmp_ver);
+
   if ($comm->{community}) {
       $device->in_storage
         ? $device->update({snmp_comm => $comm->{community}})
@@ -188,6 +192,10 @@ sub _try_write {
   my $loc = $info->load_location;
   $info->set_location($loc) or return undef;
   return undef unless ($loc eq $info->load_location);
+
+  $device->in_storage
+    ? $device->update({snmp_ver => $info->snmp_ver})
+    : $device->set_column(snmp_ver => $info->snmp_ver);
 
   # one of these two cols must be set
   $device->update_or_create_related('community', {

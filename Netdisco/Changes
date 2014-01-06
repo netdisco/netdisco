@@ -38,6 +38,7 @@
   * Make "Not" option work for vlan number search in Device Ports
   * [#48] Fix for netmap links when domain_suffix is set (R. Kerr)
   * [#57] Port sort order for Extreme switches "1:10" format
+  * [#65] Ignore smmp_ver in DB when reconnecting to a device.
 
 2.020002 - 2013-12-11
 
