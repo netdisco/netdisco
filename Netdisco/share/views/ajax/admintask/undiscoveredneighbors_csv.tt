@@ -1,0 +1,18 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Device Triggering Last Discovery Attempt' 'Device Port'
+              'Remote IP' 'Remote Port' 'Remote ID' 'Remote Type'
+              'Last Discovery Attempt' 'Discovery Log']) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.dns || row.name || row.ip) %]
+  [% mylist.push(row.port) %]
+  [% mylist.push(row.remote_ip) %]
+  [% mylist.push(row.remote_port) %]
+  [% mylist.push(row.remote_id) %]
+  [% mylist.push(row.remote_type) %]
+  [% mylist.push(row.finished) %]
+  [% mylist.push(row.log) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

@@ -1,0 +1,26 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th>Device Location Triggering<br>Last Discovery Attempt</th>
+      <th>Undiscovered Neighbor</th> 
+      <th class="nd_center-cell">Last Discovery Attempt</th>
+      <th class="nd_center-cell">Last Discovery Log</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results %]
+    <tr>
+      <td><a href="[% device_ports %]&q=[% row.dns || row.ip | uri %]&f=[% row.port | uri %]">
+               [% row.dns || row.name || row.ip | html_entity %] ( [% row.port | html_entity %] ) </a></td>
+      <td><a href="[% search_node %]&q=[% row.remote_ip | uri %]">
+                                 [% row.remote_ip | html_entity %]</a>
+                                 ([% row.remote_port | html_entity %])
+                                 [% ' id: '_ row.remote_id IF row.remote_id %]
+                                 [% ' type: '_ row.remote_type IF row.remote_type %]</td>
+      <td class="nd_center-cell">[% row.finished | html_entity %]</td>
+      <td class="nd_center-cell">[% row.log | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+

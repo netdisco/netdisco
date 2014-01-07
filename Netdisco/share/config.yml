@@ -59,6 +59,7 @@ web_plugins:
   - AdminTask::UserLog
   - AdminTask::Users
   - AdminTask::PortLog
+  - AdminTask::UndiscoveredNeighbors
   - Search::Device
   - Search::Node
   - Search::VLAN
