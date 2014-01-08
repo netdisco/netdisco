@@ -24,6 +24,7 @@ requires:
   AnyEvent: 7.05
   App::cpanminus: 1.6108
   App::local::lib::helper: 0.07
+  Archive::Extract: 0
   DBD::Pg: 0
   DBD::SQLite: 1.37
   DBIx::Class: 0.0821
@@ -56,6 +57,8 @@ requires:
   Template: 2.24
   Template::Plugin::CSV: 0.04
   Template::Plugin::Number::Format: 1.02
+  Term::ReadLine: 0
+  Term::UI: 0
   URL::Encode: 0.01
   YAML: 0.84
   YAML::XS: 0.41
@@ -68,4 +71,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.020003_003
+version: 2.021000

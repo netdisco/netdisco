@@ -81,6 +81,7 @@ lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm
+lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm
 lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
 lib/App/Netdisco/DB/ResultSet.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
@@ -151,6 +152,7 @@ lib/App/Netdisco/Web/Plugin/AdminTask/PortLog.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/UndiscoveredNeighbors.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/UserLog.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Users.pm
 lib/App/Netdisco/Web/Plugin/Device/Addresses.pm
@@ -254,6 +256,8 @@ share/views/ajax/admintask/portlog.tt
 share/views/ajax/admintask/pseudodevice.tt
 share/views/ajax/admintask/slowdevices.tt
 share/views/ajax/admintask/topology.tt
+share/views/ajax/admintask/undiscoveredneighbors.tt
+share/views/ajax/admintask/undiscoveredneighbors_csv.tt
 share/views/ajax/admintask/userlog.tt
 share/views/ajax/admintask/users.tt
 share/views/ajax/device/addresses.tt
