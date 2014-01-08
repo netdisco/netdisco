@@ -101,7 +101,8 @@ sub check_acl {
 =head2 check_no( $ip, $setting_name )
 
 Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false.
+C<$setting_name> matches that device, else returns false. If the setting
+is undefined or empty, then C<check_no> also returns false.
 
  print "rejected!" if check_no($ip, 'discover_no');
 
@@ -133,15 +134,16 @@ sub check_no {
   my ($ip, $setting_name) = @_;
 
   my $config = setting($setting_name) || [];
-  return 0 unless scalar @$config;
+  return 0 if not scalar @$config;
 
   return check_acl($ip, $config);
 }
 
 =head2 check_only( $ip, $setting_name )
 
-Given the IP address of a device, returns false if the configuration setting
-C<$setting_name> matches that device, else returns true.
+Given the IP address of a device, returns true if the configuration setting
+C<$setting_name> matches that device, else returns false. If the setting
+is undefined or empty, then C<check_only> also returns true.
 
  print "rejected!" unless check_only($ip, 'discover_only');
 
@@ -173,7 +175,7 @@ sub check_only {
   my ($ip, $setting_name) = @_;
 
   my $config = setting($setting_name) || [];
-  return 1 unless scalar @$config;
+  return 1 if not scalar @$config;
 
   return check_acl($ip, $config);
 }

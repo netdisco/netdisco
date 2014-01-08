@@ -11,6 +11,7 @@
   * [#30] Support for expire_devices, expire_nodes, and expire_nodes_archive
   * Port Log viewable via an icon by device port name (Port Control rights req'd)
   * [#1] Subnet Utilization report (J. van Ingen)
+  * Support for snmpforce_v1, snmpforce_v2, snmpforce_v3
 
   [ENHANCEMENTS]
 

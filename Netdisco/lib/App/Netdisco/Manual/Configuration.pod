@@ -388,7 +388,7 @@ of the device. The regex must match the complete value.
 
 =head3 C<bulkwalk_repeaters>
 
-Value: Numnber. Default: 20.
+Value: Number. Default: 20.
 
 Sets the Net-SNMP C<MaxRepeaters> value, which is used on C<BULKWALK>
 operations. See L<SNMP> for more info.
@@ -408,6 +408,24 @@ Value: C<1|2|3>. Default: 3.
 
 Highest version of the SNMP protocol used when connecting to devices. Use this
 setting to disable SNMP v3 globally. Usually you don't need to configure this.
+
+=head3 C<snmpforce_v1>
+
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
+
+Forces matching devices to use SNMPv1.
+
+=head3 C<snmpforce_v2>
+
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
+
+Forces matching devices to use SNMPv2c.
+
+=head3 C<snmpforce_v3>
+
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
+
+Forces matching devices to use SNMPv3.
 
 =head3 C<snmptimeout>
 
@@ -871,18 +889,6 @@ C<port_info>
 =item *
 
 C<portctl_timeout>
-
-=item *
-
-C<snmpforce_v1>
-
-=item *
-
-C<snmpforce_v2>
-
-=item *
-
-C<snmpforce_v3>
 
 =item *
 

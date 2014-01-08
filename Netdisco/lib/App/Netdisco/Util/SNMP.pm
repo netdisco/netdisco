@@ -96,9 +96,12 @@ sub _snmp_connect_generic {
       $snmp_args{AutoSpecity} = 1;
   }
 
-  # TODO: add version force support
-  # use existing SNMP version or try 3, 2, 1
-  my @versions = reverse (1 .. (setting('snmpver') || 3));
+  # which SNMP versions to try and in what order
+  my @versions =
+    ( check_no($device->ip, 'snmpforce_v3') ? (3)
+    : check_no($device->ip, 'snmpforce_v2') ? (2)
+    : check_no($device->ip, 'snmpforce_v1') ? (1)
+    : (reverse (1 .. (setting('snmpver') || 3))) );
 
   # get the community string(s)
   my @communities = _build_communities($device, $mode);
