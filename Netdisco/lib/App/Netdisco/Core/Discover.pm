@@ -276,7 +276,7 @@ sub store_interfaces {
           duplex_admin => $i_duplex_admin->{$entry},
           stp          => $i_stp_state->{$entry},
           type         => $i_type->{$entry},
-          vlan         => $i_vlan->{$entry},
+          vlan         => $i_pvid->{$entry},
           pvid         => $i_pvid->{$entry},
           lastchange   => $lc,
       };
