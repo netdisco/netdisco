@@ -72,13 +72,14 @@ sub do_macsuck {
   my $interfaces = $snmp->interfaces;
 
   # get forwarding table data via basic snmp connection
-  my $fwtable = { 0 => _walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports) };
+  my $fwtable = _walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports);
 
   # ...then per-vlan if supported
   my @vlan_list = _get_vlan_list($device, $snmp);
   foreach my $vlan (@vlan_list) {
       snmp_comm_reindex($snmp, $device, $vlan);
-      $fwtable->{$vlan} = _walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports);
+      my $pv_fwtable = _walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports, $vlan);
+      $fwtable = {%$fwtable, %$pv_fwtable};
   }
 
   # now it's time to call store_node for every node discovered
@@ -101,10 +102,6 @@ sub do_macsuck {
           $device_ports->{$port}->update({up_admin => 'up', up => 'up'});
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
-
-              # get VLAN from Q-BRIDGE if available
-              $vlan = $fwtable->{$vlan}->{$port}->{$mac}
-                if $vlan == 0;
 
               # remove vlan 0 entry for this MAC addr
               delete $fwtable->{0}->{$_}->{$mac}
@@ -287,7 +284,7 @@ sub _get_vlan_list {
 # walks the forwarding table (BRIDGE-MIB) for the device and returns a
 # table of node entries.
 sub _walk_fwtable {
-  my ($device, $snmp, $interfaces, $port_macs, $device_ports) = @_;
+  my ($device, $snmp, $interfaces, $port_macs, $device_ports, $comm_vlan) = @_;
   my $cache = {};
 
   my $fw_mac   = $snmp->fw_mac;
@@ -392,7 +389,9 @@ sub _walk_fwtable {
           next unless setting('macsuck_bleed');
       }
 
-      $cache->{$port}->{$mac} = ($fw_vlan->{$idx} || '0');
+      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
+      
+      ++$cache->{$vlan}->{$port}->{$mac};
   }
 
   return $cache;

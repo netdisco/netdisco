@@ -9,6 +9,7 @@
   [BUG FIXES]
 
   * Correct is_discoverable check in Undiscovered Neighbors report
+  * Correct macsuck for Q-BRIDGE-MIB based devices
 
 2.021000 - 2014-01-08
 
