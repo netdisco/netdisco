@@ -2,6 +2,7 @@
 
   [ENHANCEMENTS]
 
+  * [#32] Show device layers in Details tab
   * [#66] Remove reference to "native" VLAN in code and replace with "untagged"
   * [#66] DB Schema update to add "native" column to PK of device_port_vlan table
 

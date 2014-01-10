@@ -85,6 +85,18 @@
       <td>[% d.uptime_age | html_entity %]</td>
     </tr>
     <tr>
+      <td>Layers</td>
+      <td>
+        [% d.layers.substr(7,1) ? '<span class="badge badge-success">1</span>' : '<span class="badge">&nbsp;</span>' %]
+        [% d.layers.substr(6,1) ? '<span class="badge badge-success">2</span>' : '<span class="badge">&nbsp;</span>' %]
+        [% d.layers.substr(5,1) ? '<span class="badge badge-success">3</span>' : '<span class="badge">&nbsp;</span>' %]
+        [% d.layers.substr(4,1) ? '<span class="badge badge-success">4</span>' : '<span class="badge">&nbsp;</span>' %]
+        [% d.layers.substr(3,1) ? '<span class="badge badge-success">5</span>' : '<span class="badge">&nbsp;</span>' %]
+        [% d.layers.substr(2,1) ? '<span class="badge badge-success">6</span>' : '<span class="badge">&nbsp;</span>' %]
+        [% d.layers.substr(1,1) ? '<span class="badge badge-success">7</span>' : '<span class="badge">&nbsp;</span>' %]
+      </td>
+    </tr>
+    <tr>
       <td>Last Discover</td>
       <td>[% d.last_discover_stamp | html_entity %]</td>
     </tr>
