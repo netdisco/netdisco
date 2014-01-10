@@ -257,6 +257,15 @@ sub neighbor {
 
 =head1 ADDITIONAL COLUMNS
 
+=head2 native
+
+An alias for the C<pvid> column, which stores the PVID (that is, the VLAN
+ID assigned to untagged frames received on the port).
+
+=cut
+
+sub native { return (shift)->pvid }
+
 =head2 tagged_vlans_count
 
 Returns the number of tagged VLANs active on this device port. Enable this

@@ -204,7 +204,6 @@ sub store_interfaces {
   my $i_duplex_admin = $snmp->i_duplex_admin;
   my $i_stp_state    = $snmp->i_stp_state;
   my $i_vlan         = $snmp->i_vlan;
-  my $i_pvid         = $snmp->i_pvid;
   my $i_lastchange   = $snmp->i_lastchange;
 
   # clear the cached uptime and get a new one
@@ -277,7 +276,7 @@ sub store_interfaces {
           stp          => $i_stp_state->{$entry},
           type         => $i_type->{$entry},
           vlan         => $i_vlan->{$entry},
-          pvid         => $i_pvid->{$entry},
+          pvid         => $i_vlan->{$entry},
           lastchange   => $lc,
       };
   }
