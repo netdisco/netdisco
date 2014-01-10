@@ -49,23 +49,37 @@ __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 
 =head2 port_vlans_tagged
 
-Link relationship for C<tagging_ports>, see below.
+Link relationship for C<tagged_ports>, see below.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_tagged => 'App::Netdisco::DB::Result::Virtual::DevicePortVlanTagged',
-    { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
+__PACKAGE__->has_many( port_vlans_tagged => 'App::Netdisco::DB::Result::DevicePortVlan',
+    sub {
+      my $args = shift;
+      return {
+        "$args->{foreign_alias}.ip"   => { -ident => "$args->{self_alias}.ip" },
+        "$args->{foreign_alias}.vlan" => { -ident => "$args->{self_alias}.vlan" },
+        -not_bool => "$args->{foreign_alias}.native",
+      };
+    },
     { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
-=head2 port_vlans_native
+=head2 port_vlans_untagged
 
-Link relationship to support C<native_ports>, see below.
+Link relationship to support C<untagged_ports>, see below.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_native => 'App::Netdisco::DB::Result::Virtual::DevicePortVlanNative',
-    { 'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan' },
+__PACKAGE__->has_many( port_vlans_untagged => 'App::Netdisco::DB::Result::DevicePortVlan',
+    sub {
+      my $args = shift;
+      return {
+        "$args->{foreign_alias}.ip"   => { -ident => "$args->{self_alias}.ip" },
+        "$args->{foreign_alias}.vlan" => { -ident => "$args->{self_alias}.vlan" },
+        -bool => "$args->{foreign_alias}.native",
+      };
+    },
     { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
@@ -80,21 +94,20 @@ __PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePortVlan',
     { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
-=head2 tagging_ports
+=head2 tagged_ports
 
 Returns the set of Device Ports on which this VLAN is configured to be tagged.
 
 =cut
 
-__PACKAGE__->many_to_many( tagging_ports => 'port_vlans_tagged', 'port' );
+__PACKAGE__->many_to_many( tagged_ports => 'port_vlans_tagged', 'port' );
 
-=head2 native_ports
+=head2 untagged_ports
 
-Returns the set of Device Ports on which this VLAN is the native VLAN (that
-is, untagged).
+Returns the set of Device Ports on which this VLAN is an untagged VLAN.
 
 =cut
 
-__PACKAGE__->many_to_many( native_ports  => 'port_vlans_native', 'port' );
+__PACKAGE__->many_to_many( untagged_ports  => 'port_vlans_untagged', 'port' );
 
 1;

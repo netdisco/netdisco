@@ -125,11 +125,12 @@ sub with_vlan_count {
     ->search({},
       {
         '+columns' => { tagged_vlans_count =>
-          $rs->result_source->schema->resultset('Virtual::DevicePortVlanTagged')
+          $rs->result_source->schema->resultset('DevicePortVlan')
             ->search(
               {
                 'dpvt.ip' => { -ident => 'me.ip' },
                 'dpvt.port' => { -ident => 'me.port' },
+                -not_bool => { -ident => 'dpvt.native' },
               },
               { alias => 'dpvt' }
             )->count_rs->as_query

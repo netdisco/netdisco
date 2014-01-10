@@ -1,5 +1,10 @@
 2.021001
 
+  [ENHANCEMENTS]
+
+  * [#66] Remove reference to "native" VLAN in code and replace with "untagged"
+  * [#66] DB Schema update to add "native" column to PK of device_port_vlan table
+
   [BUG FIXES]
 
   * Correct is_discoverable check in Undiscovered Neighbors report

@@ -35,7 +35,7 @@ __PACKAGE__->add_columns(
   "vlantype",
   { data_type => "text", is_nullable => 1 },
 );
-__PACKAGE__->set_primary_key("ip", "port", "vlan");
+__PACKAGE__->set_primary_key("ip", "port", "vlan", "native");
 
 
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02

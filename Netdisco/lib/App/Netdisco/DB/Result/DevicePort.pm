@@ -84,8 +84,8 @@ __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 
 Returns the set of C<device_port_vlan> entries associated with this Port.
 
-These will be both native and non-native (tagged). See also
-C<port_vlans_tagged> and C<tagged_vlans>.
+These will be both tagged and untagged. See also C<port_vlans_tagged> and
+C<tagged_vlans>.
 
 =cut
 
@@ -190,13 +190,19 @@ port, where the VLANs are all tagged.
 
 =cut
 
-__PACKAGE__->has_many( port_vlans_tagged => 'App::Netdisco::DB::Result::Virtual::DevicePortVlanTagged',
-  {
-    'foreign.ip' => 'self.ip',
-    'foreign.port' => 'self.port',
+__PACKAGE__->has_many( port_vlans_tagged => 'App::Netdisco::DB::Result::DevicePortVlan',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.ip"   => { -ident => "$args->{self_alias}.ip" },
+      "$args->{foreign_alias}.port" => { -ident => "$args->{self_alias}.port" },
+      -not_bool => "$args->{foreign_alias}.native",
+    };
   },
-  { join_type => 'LEFT',
-    cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
+  {
+    join_type => 'LEFT',
+    cascade_copy => 0, cascade_update => 0, cascade_delete => 0,
+  },
 );
 
 =head2 tagged_vlans
