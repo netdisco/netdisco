@@ -1,3 +1,9 @@
+2.021001
+
+  [BUG FIXES]
+
+  * Correct is_discoverable check in Undiscovered Neighbors report
+
 2.021000 - 2014-01-08
 
   [NEW FEATURES]

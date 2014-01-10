@@ -24,10 +24,9 @@ get '/ajax/content/admin/undiscoveredneighbors' => require_role admin => sub {
     return unless scalar @devices;
 
     # Don't include devices excluded from discovery by config
-    my @results = grep {
-        is_discoverable( $_->{'ports'}->{remote_ip},
-            $_->{'ports'}->{'remote_type'} )
-    } @devices;
+    my @results
+        = grep { is_discoverable( $_->{'remote_ip'}, $_->{'remote_type'} ) }
+        @devices;
 
     return unless scalar @results;
 
