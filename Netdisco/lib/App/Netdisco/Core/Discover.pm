@@ -8,6 +8,7 @@ use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Encode;
 use Try::Tiny;
+use Net::MAC;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -661,6 +662,13 @@ sub store_neighbors {
               info sprintf
                 ' [%s] neigh - bad address %s on port %s, searching for %s instead',
                 $device->ip, $remote_ip, $port, $remote_id;
+
+              if (!defined $neigh) {
+                  my $mac = Net::MAC->new(mac => $remote_id, 'die' => 0, verbose => 0);
+                  if (not $mac->get_error) {
+                      $neigh = $devices->single({mac => $remote_id});
+                  }
+              }
 
               if (!defined $neigh) {
                   (my $shortid = $remote_id) =~ s/\..*//;

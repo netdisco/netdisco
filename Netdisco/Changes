@@ -13,6 +13,7 @@
   * [#66] DB Schema update to add "native" column to PK of device_port_vlan table
   * [#64] Addition of Wireshark abbreviations for OUI manufacturers
   * [#79] Support perlbrew environment as alternative to localenv
+  * [#52] Check is neighbour remote_id is a MAC (R. Kerr)
 
   [BUG FIXES]
 
