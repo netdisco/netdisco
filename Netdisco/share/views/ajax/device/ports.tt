@@ -224,7 +224,13 @@
             [% ' id: '_ row.remote_id IF row.remote_id %]
             [% ' type: '_ row.remote_type IF row.remote_type %])</a>
           [% ELSIF row.remote_ip AND row.remote_port %]
-          <i class="icon-unlink text-error"></i>&nbsp;
+            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+              <i class="icon-phone"></i>&nbsp;
+            [% ELSIF row.remote_type AND row.remote_type.match('(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)') %]
+              <i class="icon-signal"></i>&nbsp;
+            [% ELSE %]
+              <i class="icon-unlink text-error"></i>&nbsp;
+            [% END %]
           <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
             [% row.remote_ip | html_entity %] (port: [% row.remote_port | html_entity %]
             [% ' id: '_ row.remote_id IF row.remote_id %]

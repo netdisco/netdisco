@@ -1,3 +1,4 @@
+[% USE Number.Format %]
 <table class="table table-bordered table-hover nd_floatinghead">
   <thead>
     <tr>
@@ -113,6 +114,35 @@
       [% IF params.stamps %]
       <td>[% port.creation | html_entity %]</td>
       <td>[% port.creation | html_entity %]</td>
+      [% END %]
+    </tr>
+    [% SET first_row = 0 %]
+    [% END %]
+    [% WHILE (wlan = wireless.next) %]
+    <tr>
+      <td>
+        [% IF first_row %]
+        <a class="nd_linkcell"
+          href="[% search_node %]&q=[% wireless.mac | uri %]">[% wireless.mac | html_entity %]</a>
+        [% ELSE %]
+        &nbsp;
+        [% END %]
+      </td>
+      [% IF params.show_vendor %]
+      <td>
+        &nbsp;
+      </td>
+      [% END %]
+      <td>Wireless Info</td>
+      <td class="nd_center-cell">SSID: [% wlan.ssid | html_entity %]<br>
+          MaxRate: [% wlan.maxrate | html_entity %]Mbps TxRate: [% wlan.txrate | html_entity %]Mbps<br>
+          SigStr: [% wlan.sigstrength | html_entity %] SigQual: [% wlan.sigqual | html_entity %]<br>
+          Rx: [% wlan.rxpkt | format_number %] pkts, [% wlan.rxbyte | format_number %] bytes<br>
+          Tx: [% wlan.txpkt | format_number %] pkts, [% wlan.txbyte | format_number %] bytes<br>
+      </td>
+      [% IF params.stamps %]
+      <td> &nbsp; </td>
+      <td>[% wlan.get_column('time_last_stamp') | html_entity %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]

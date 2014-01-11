@@ -31,14 +31,25 @@ ajax '/ajax/content/search/node' => require_login sub {
         my $ports = schema('netdisco')->resultset('DevicePort')
           ->search({mac => $mac->as_IEEE});
 
+        my $wireless = schema('netdisco')->resultset('NodeWireless')->search(
+            { mac => $mac->as_IEEE },
+            { order_by   => { '-desc' => 'time_last' },
+              '+columns' => [
+                {
+                  time_last_stamp => \"to_char(time_last, 'YYYY-MM-DD HH24:MI')"
+                }]
+            }
+        );
+
         return unless $sightings->count
             or $ips->count
             or $ports->count;
 
         template 'ajax/search/node_by_mac.tt', {
-          ips => $ips,
+          ips       => $ips,
           sightings => $sightings,
-          ports => $ports,
+          ports     => $ports,
+          wireless  => $wireless,
         }, { layout => undef };
     }
     else {
