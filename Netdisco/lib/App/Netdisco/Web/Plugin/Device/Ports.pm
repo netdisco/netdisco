@@ -129,6 +129,10 @@ get '/ajax/content/device/ports' => require_login sub {
     $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'ips'}] })
       if param('c_nodes');
 
+    # retrieve wireless SSIDs, if asked for
+    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'wireless'}] })
+      if param('c_nodes');
+
     # retrieve neighbor devices, if asked for
     $set = $set->search_rs({}, { prefetch => [{neighbor_alias => 'device'}] })
       if param('c_neighbors');

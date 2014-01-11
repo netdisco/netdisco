@@ -48,6 +48,7 @@ hook 'before' => sub {
   var('connected_properties' => [
     { name => 'n_age',      label => 'Age Stamp',     default => ''   },
     { name => 'n_ip',       label => 'IP Address',    default => 'on' },
+    { name => 'n_ssid',     label => 'SSID',          default => 'on' },
     { name => 'n_archived', label => 'Archived Data', default => ''   },
   ]);
 

@@ -47,5 +47,17 @@ __PACKAGE__->set_primary_key("mac", "ssid");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3xsSiWzL85ih3vhdews8Hg
 
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+=head2 node
+
+Returns the C<node> table entry matching this wireless entry.
+
+The JOIN is of type LEFT, in case the C<node> is no longer present in the
+database but the relation is being used in C<search()>.
+
+=cut
+
+__PACKAGE__->belongs_to( node => 'App::Netdisco::DB::Result::Node',
+                       { 'foreign.mac' => 'self.mac' },
+                       { join_type => 'LEFT' } );
+
 1;

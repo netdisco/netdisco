@@ -1,5 +1,9 @@
 2.021001
 
+  [NEW FEATURES]
+
+  * [#81] Identify wireless nodes and provide information when available 
+
   [ENHANCEMENTS]
 
   * [#32] Show device layers in Details tab

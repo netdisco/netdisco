@@ -112,6 +112,17 @@ the current Node's.
 __PACKAGE__->has_many( ips => 'App::Netdisco::DB::Result::NodeIp',
   { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
 
+=head2 wireless
+
+Returns the set of C<node_wireless> entries associated with this Node. That
+is, the SSIDs and wireless statistics associated with this MAC address
+at the time of discovery.
+
+=cut
+
+__PACKAGE__->has_many( wireless => 'App::Netdisco::DB::Result::NodeWireless',
+  { 'foreign.mac' => 'self.mac' } );
+
 =head2 oui
 
 Returns the C<oui> table entry matching this Node. You can then join on this
