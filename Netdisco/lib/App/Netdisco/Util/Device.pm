@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::IP::Lite ':lower';
+use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -76,6 +77,12 @@ sub check_acl {
   my $addr = NetAddr::IP::Lite->new($device->ip);
 
   foreach my $item (@$config) {
+      if (ref qr// eq ref $item) {
+          my $name = hostname_from_ip($addr->addr) or next;
+          return 1 if $name =~ $item;
+          next;
+      }
+
       if ($item =~ m/^([^:]+)\s*:\s*([^:]+)$/) {
           my $prop  = $1;
           my $match = $2;
@@ -155,6 +162,12 @@ IP address range, using a hyphen and no whitespace
 
 =item *
 
+Regular Expression in YAML format which will match the device DNS name, e.g.:
+
+ - !!perl/regexp ^sep0.*$
+
+=item *
+
 C<"model:regex"> - matched against the device model
 
 =item *
@@ -197,6 +210,12 @@ Hostname, IP address, IP prefix
 =item *
 
 IP address range, using a hyphen and no whitespace
+
+=item *
+
+Regular Expression in YAML format which will match the device DNS name, e.g.:
+
+ - !!perl/regexp ^sep0.*$
 
 =item *
 

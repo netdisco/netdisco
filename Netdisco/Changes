@@ -4,6 +4,7 @@
 
   * [#81] Identify wireless nodes and provide information when available 
   * [#13] Support IP address ranges in *_only/*_no configuration
+  * [#14] Support partial DNS names in *_only/*_no (via regexp)
 
   [ENHANCEMENTS]
 

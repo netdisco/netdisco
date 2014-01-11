@@ -381,8 +381,9 @@ devices. For more fine-grained control see the C<bulkwalk_no> setting.
 Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will use C<GETNEXT> (and not C<BULKWALK>). You can
-include hostnames, IP addresses, subnets (IPv4 or IPv6), and address ranges
-(using a hyphen and no whitespace) in the list.
+include hostnames, IP addresses, subnets (IPv4 or IPv6), YAML Regexp to match
+the DNS name, and address ranges (using a hyphen and no whitespace) in the
+list.
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
@@ -446,8 +447,9 @@ Number of times to retry connecting to a device before giving up.
 Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will not be visited during device discovery. You can
-include hostnames, IP addresses, subnets (IPv4 or IPv6), and address ranges
-(using a hyphen and no whitespace) in the list.
+include hostnames, IP addresses, subnets (IPv4 or IPv6), YAML Regexp to match
+the DNS name, and address ranges (using a hyphen and no whitespace) in the
+list.
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
@@ -458,7 +460,8 @@ Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 If present, device discovery will be limited to IP addresses matching entries
 in this list. You can include hostnames, IP addresses, subnets (IPv4 and
-IPv6), and address ranges (using a hyphen and no whitespace).
+IPv6), YAML Regexp to match the DNS name, and address ranges (using a hyphen
+and no whitespace).
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
@@ -488,8 +491,8 @@ discover jobs for a device.
 Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will not be visited for macsuck. You can include
-hostnames, IP addresses, subnets (IPv4 or IPv6), and address ranges (using a
-hyphen and no whitespace) in the list.
+hostnames, IP addresses, subnets (IPv4 or IPv6), YAML Regexp to match the DNS
+name, and address ranges (using a hyphen and no whitespace) in the list.
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
@@ -499,8 +502,9 @@ of the device. The regex must match the complete value.
 Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 If present, macsuck will be limited to IP addresses matching entries in this
-list. You can include hostnames, IP addresses, subnets (IPv4 and IPv6), and
-address ranges (using a hyphen and no whitespace).
+list. You can include hostnames, IP addresses, subnets (IPv4 and IPv6), YAML
+Regexp to match the DNS name, and address ranges (using a hyphen and no
+whitespace).
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
@@ -556,8 +560,8 @@ macsuck jobs for a device.
 Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 IP addresses in the list will not be visited for arpnip. You can include
-hostnames, IP addresses, subnets (IPv4 or IPv6), and address ranges (using a
-hyphen and no whitespace) in the list.
+hostnames, IP addresses, subnets (IPv4 or IPv6), YAML Regexp to match the DNS
+name, and address ranges (using a hyphen and no whitespace) in the list.
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
@@ -567,8 +571,9 @@ of the device. The regex must match the complete value.
 Value: List of Network Identifiers or Device Properties. Default: Empty List.
 
 If present, arpnip will be limited to IP addresses matching entries in this
-list. You can include hostnames, IP addresses, subnets (IPv4 and IPv6), and
-address ranges (using a hyphen and no whitespace).
+list. You can include hostnames, IP addresses, subnets (IPv4 and IPv6), YAML
+Regexp to match the DNS name, and address ranges (using a hyphen and no
+whitespace).
 
 Alternatively include a "C<property:regex>" entry to match the named property
 of the device. The regex must match the complete value.
