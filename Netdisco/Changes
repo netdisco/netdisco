@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * [#81] Identify wireless nodes and provide information when available 
+  * [#13] Support IP address ranges in *_only/*_no configuration
 
   [ENHANCEMENTS]
 

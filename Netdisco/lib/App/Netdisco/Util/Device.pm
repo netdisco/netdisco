@@ -59,10 +59,10 @@ sub get_device {
     ->find_or_new({ip => $ip});
 }
 
-=head2 check_acl( $ip, \@prefixes )
+=head2 check_acl( $ip, \@config )
 
-Given the IP address of a device, returns true if any of the IP prefixes in
-C<< \@prefixes >> contains that device, otherwise returns false.
+Given the IP address of a device, returns true if any of the items in C<<
+\@config >> matches that device, otherwise returns false.
 
 Normally you use C<check_no> and C<check_only>, passing the name of the
 configuration setting to load. This helper instead requires not the name of
@@ -88,10 +88,45 @@ sub check_acl {
               and $device->prop =~ m/^$match$/) {
               return 1;
           }
+
           next;
       }
 
-      my $ip = NetAddr::IP::Lite->new($item) or next;
+      if ($item =~ m/([a-f0-9]+)-([a-f0-9]+)$/i) {
+          my $first = $1;
+          my $last  = $2;
+
+          if ($item =~ m/:/) {
+              next unless $addr->bits == 128;
+
+              $first = hex $first;
+              $last  = hex $last;
+
+              (my $header = $item) =~ s/:[^:]+$/:/;
+              foreach my $part ($first .. $last) {
+                  my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
+                    or next;
+                  return 1 if $ip == $addr;
+              }
+          }
+          else {
+              next unless $addr->bits == 32;
+
+              (my $header = $item) =~ s/\.[^.]+$/./;
+              foreach my $part ($first .. $last) {
+                  my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
+                    or next;
+                  return 1 if $ip == $addr;
+              }
+          }
+
+          next;
+      }
+
+      my $ip = NetAddr::IP::Lite->new($item)
+        or next;
+      next unless $ip->bits == $addr->bits;
+
       return 1 if $ip->contains($addr);
   }
 
@@ -113,6 +148,10 @@ There are several options for what C<$setting_name> can contain:
 =item *
 
 Hostname, IP address, IP prefix
+
+=item *
+
+IP address range, using a hyphen and no whitespace
 
 =item *
 
@@ -154,6 +193,10 @@ There are several options for what C<$setting_name> can contain:
 =item *
 
 Hostname, IP address, IP prefix
+
+=item *
+
+IP address range, using a hyphen and no whitespace
 
 =item *
 
