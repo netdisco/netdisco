@@ -16,7 +16,7 @@
         [% ' (' _ row.device.dns _ ')' IF row.device.dns %]
       </td>
       <td>[% row.descr | html_entity %]</td>
-      <td>[% row.vlan | html_entity %]</td>
+      <td>[% row.vlan  | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>

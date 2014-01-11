@@ -111,7 +111,7 @@ will add the following additional synthesized columns to the result set:
 
 =over 4
 
-=item tagged_vlans_count
+=item vlan_count
 
 =back
 
@@ -124,15 +124,14 @@ sub with_vlan_count {
     ->search_rs($cond, $attrs)
     ->search({},
       {
-        '+columns' => { tagged_vlans_count =>
+        '+columns' => { vlan_count =>
           $rs->result_source->schema->resultset('DevicePortVlan')
             ->search(
               {
-                'dpvt.ip' => { -ident => 'me.ip' },
-                'dpvt.port' => { -ident => 'me.port' },
-                -not_bool => { -ident => 'dpvt.native' },
+                'dpv.ip'   => { -ident => 'me.ip' },
+                'dpv.port' => { -ident => 'me.port' },
               },
-              { alias => 'dpvt' }
+              { alias => 'dpv' }
             )->count_rs->as_query
         },
       });

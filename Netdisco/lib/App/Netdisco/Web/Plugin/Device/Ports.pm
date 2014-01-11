@@ -27,18 +27,18 @@ get '/ajax/content/device/ports' => require_login sub {
             if (param('invert')) {
                 $set = $set->search({
                   'me.vlan' => { '!=' => $f },
-                  'port_vlans_tagged.vlan' => [
+                  'port_vlans.vlan' => [
                     '-or' => { '!=' => $f }, { '=' => undef }
                   ],
-                }, { join => 'port_vlans_tagged' });
+                }, { join => 'port_vlans' });
             }
             else {
                 $set = $set->search({
                   -or => {
                     'me.vlan' => $f,
-                    'port_vlans_tagged.vlan' => $f,
+                    'port_vlans.vlan' => $f,
                   },
-                }, { join => 'port_vlans_tagged' });
+                }, { join => 'port_vlans' });
             }
 
             return unless $set->count;
@@ -116,7 +116,7 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # run single collapsed query for all relations, but only if we're not
     # also fetching archived data (tests show it's better this way)
-    $set = $set->search_rs({}, { prefetch => [{ port_vlans_tagged => 'vlan'}] })
+    $set = $set->search_rs({}, { prefetch => 'all_port_vlans' })
       if param('c_vmember') and not (param('c_nodes') and param('n_archived'));
 
     # what kind of nodes are we interested in?

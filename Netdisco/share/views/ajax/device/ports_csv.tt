@@ -95,15 +95,15 @@
     [% myport.push(row.mtu) %]
   [% END %]
 
-  [% IF params.c_vlan %]
+  [% IF params.c_pvid %]
     [% myport.push(row.vlan) %]
   [% END %]
 
   [% IF params.c_vmember %]
-    [% IF row.tagged_vlans_count %]
+    [% IF row.vlan_count %]
       [% SET output = '' %]
       [% SET vlanlist = [] %]
-      [% FOREACH vlan IN row.tagged_vlans %][% vlanlist.push(vlan.vlan) %][% END %]
+      [% FOREACH vlan IN row.all_port_vlans %][% vlanlist.push(vlan.get_column('vlan')) %][% END %]
       [% FOREACH vlan IN vlanlist.nsort %]
         [% SET output = output _ ',' IF NOT loop.first %]
         [% SET output = output _ vlan %]

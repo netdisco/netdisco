@@ -18,7 +18,7 @@ ajax '/ajax/portcontrol' => require_role port_control => sub {
       'contact'  => 'contact',
       'c_port'   => 'portcontrol',
       'c_name'   => 'portname',
-      'c_vlan'   => 'vlan',
+      'c_pvid'   => 'vlan',
       'c_power'  => 'power',
     );
 
