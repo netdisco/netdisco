@@ -46,6 +46,7 @@ use Archive::Extract;
 $Archive::Extract::PREFER_BIN = 1;
 use HTTP::Tiny;
 use Try::Tiny;
+use Encode;
 
 =head1 NAME
 
@@ -168,7 +169,9 @@ sub deploy_oui {
           if ($line =~ m/^\s*(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
               my ($oui, $company) = ($1, $2);
               $oui =~ s/-/:/g;
-              $data{lc($oui)} = $company;
+              my $abbrev = shorten($company);
+              $data{lc($oui)}{'company'} = $company;
+              $data{lc($oui)}{'abbrev'}  = $abbrev;
           }
       }
 
@@ -176,13 +179,49 @@ sub deploy_oui {
           $schema->txn_do(sub{
             $schema->resultset('Oui')->delete;
             $schema->resultset('Oui')->populate([
-              map {{oui => $_, company => $data{$_}}} keys %data
+                          map {
+                              {   oui     => $_,
+                                  company => $data{$_}{'company'},
+                                  abbrev  => $data{$_}{'abbrev'}
+                              }
+                              } keys %data
             ]);
           });
       }
   }
 
   say 'OUI update complete.';
+}
+
+# This subroutine is from Wireshark's make-manuf
+# http://anonsvn.wireshark.org/wireshark/trunk/tools/make-manuf
+sub shorten {
+    my $manuf = shift;
+
+    $manuf = decode "utf8", $manuf, Encode::FB_CROAK;
+    $manuf = " " . $manuf . " ";
+
+    # Remove any punctuation
+    $manuf =~ tr/',.()/    /;
+
+    # & isn't needed when Standalone
+    $manuf =~ s/ \& / /g;
+
+    # Remove any "the", "inc", "plc" ...
+    $manuf
+        =~ s/\s(the|inc|incorporated|plc||systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
+
+    # Convert to consistent case
+    $manuf =~ s/(\w+)/\u\L$1/g;
+
+    # Remove all spaces
+    $manuf =~ s/\s+//g;
+
+  # Truncate all names to a reasonable length, say, 8 characters.
+  # If the string contains UTF-8, this may be substantially more than 8 bytes.
+    $manuf = substr( $manuf, 0, 8 );
+
+    return encode( "utf8", $manuf );
 }
 
 sub deploy_mibs {
