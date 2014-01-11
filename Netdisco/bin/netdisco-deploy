@@ -12,7 +12,9 @@ BEGIN {
       exec($localenv, $0, @ARGV) if -f $localenv;
       $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
       exec($localenv, $0, @ARGV) if -f $localenv;
-      die "Sorry, can't find libs required for App::Netdisco.\n";
+
+      die "Sorry, can't find libs required for App::Netdisco.\n"
+        if !exists $ENV{PERLBREW_PERL};
   }
 }
 
