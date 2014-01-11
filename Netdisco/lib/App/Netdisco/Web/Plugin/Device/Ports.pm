@@ -111,13 +111,9 @@ get '/ajax/content/device/ports' => require_login sub {
     # make sure query asks for formatted timestamps when needed
     $set = $set->with_times if param('c_lastchange');
 
-    # get number of vlans on the port to control whether to list them or not
-    $set = $set->with_vlan_count if param('c_vmember');
-
-    # run single collapsed query for all relations, but only if we're not
-    # also fetching archived data (tests show it's better this way)
-    $set = $set->search_rs({}, { prefetch => 'all_port_vlans' })
-      if param('c_vmember') and not (param('c_nodes') and param('n_archived'));
+    # get vlans on the port
+    $set = $set->search_rs({}, { prefetch => 'all_port_vlans' })->with_vlan_count
+      if param('c_vmember');
 
     # what kind of nodes are we interested in?
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
