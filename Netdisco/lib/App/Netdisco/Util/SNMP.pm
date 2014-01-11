@@ -87,6 +87,16 @@ sub _snmp_connect_generic {
       $snmp_args{BulkWalk} = 0;
   }
 
+  # get the community string(s)
+  my @communities = _build_communities($device, $mode);
+
+  # which SNMP versions to try and in what order
+  my @versions =
+    ( check_no($device->ip, 'snmpforce_v3') ? (3)
+    : check_no($device->ip, 'snmpforce_v2') ? (2)
+    : check_no($device->ip, 'snmpforce_v1') ? (1)
+    : (reverse (1 .. (setting('snmpver') || 3))) );
+
   # use existing or new device class
   my @classes = ('SNMP::Info');
   if ($device->snmp_class) {
@@ -96,30 +106,22 @@ sub _snmp_connect_generic {
       $snmp_args{AutoSpecity} = 1;
   }
 
-  # which SNMP versions to try and in what order
-  my @versions =
-    ( check_no($device->ip, 'snmpforce_v3') ? (3)
-    : check_no($device->ip, 'snmpforce_v2') ? (2)
-    : check_no($device->ip, 'snmpforce_v1') ? (1)
-    : (reverse (1 .. (setting('snmpver') || 3))) );
-
-  # get the community string(s)
-  my @communities = _build_communities($device, $mode);
-
   my $info = undef;
-  VERSION: foreach my $ver (@versions) {
-      next unless $ver;
+  COMMUNITY: foreach my $comm (@communities) {
+      next unless $comm;
 
-      CLASS: foreach my $class (@classes) {
-          next unless $class;
+      VERSION: foreach my $ver (@versions) {
+          next unless $ver;
 
-          COMMUNITY: foreach my $comm (@communities) {
-              next if $ver eq 3 and exists $comm->{community};
-              next if $ver ne 3 and !exists $comm->{community};
+          next if $ver eq 3 and exists $comm->{community};
+          next if $ver ne 3 and !exists $comm->{community};
+
+          CLASS: foreach my $class (@classes) {
+              next unless $class;
 
               my %local_args = (%snmp_args, Version => $ver);
               $info = _try_connect($device, $class, $comm, $mode, \%local_args);
-              last VERSION if $info;
+              last COMMUNITY if $info;
           }
       }
   }
