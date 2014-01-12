@@ -64,9 +64,9 @@ sub with_is_free {
     ->search({},
       {
         '+columns' => { is_free =>
-          \["up != 'up' and "
+          \["me.up != 'up' and "
               ."age(now(), to_timestamp(extract(epoch from device.last_discover) "
-                ."- (device.uptime - lastchange)/100)) "
+                ."- (device.uptime - me.lastchange)/100)) "
               ."> ?::interval",
             [{} => $interval]] },
         join => 'device',
@@ -93,11 +93,11 @@ sub only_free_ports {
     ->search_rs($cond, $attrs)
     ->search(
       {
-        'up' => { '!=' => 'up' },
+        'me.up' => { '!=' => 'up' },
       },{
         where =>
           \["age(now(), to_timestamp(extract(epoch from device.last_discover) "
-                ."- (device.uptime - lastchange)/100)) "
+                ."- (device.uptime - me.lastchange)/100)) "
               ."> ?::interval",
             [{} => $interval]],
       join => 'device' },

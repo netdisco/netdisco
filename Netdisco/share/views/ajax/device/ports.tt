@@ -66,10 +66,22 @@
       [% ELSE %]
       <td nowrap>
       [% END %]
-        <a class="nd_linkcell nd_this-port-only" href="[% uri_for('/device',
+        <a class="nd_this-port-only" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
-        [% row.port | html_entity %]
-      </a></td>
+        [% row.port | html_entity %]</a>
+        [% IF row.slave_of %]<br/>
+          [% IF row.get_column('agg_master_up_admin') != 'up' %]
+            <i class="icon-angle-down"></i>
+          [% ELSIF row.get_column('agg_master_up') == 'up' %]
+            <i class="icon-angle-up text-success"></i>
+          [% ELSE %]
+            <i class="icon-angle-down text-error"></i>
+          [% END %]
+          <a class="nd_this-port-only" href="[% uri_for('/device',
+              self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
+          [% row.slave_of | html_entity %]</a>
+        [% END %]
+      </td>
       [% END %]
 
       [% FOREACH config IN settings._extra_device_port_cols %]

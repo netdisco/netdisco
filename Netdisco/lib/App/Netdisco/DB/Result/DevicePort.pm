@@ -183,6 +183,22 @@ __PACKAGE__->might_have(
     }
 );
 
+=head2 agg_master
+
+Returns another row from the C<device_port> table if this port is slave
+to another in a link aggregate.
+
+=cut
+
+__PACKAGE__->belongs_to(
+    agg_master => 'App::Netdisco::DB::Result::DevicePort', {
+      'foreign.ip'   => 'self.ip',
+      'foreign.port' => 'self.slave_of',
+    }, {
+      join_type => 'LEFT',
+    }
+);
+
 =head2 neighbor_alias
 
 When a device port has an attached neighbor device, this relationship will

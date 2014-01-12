@@ -108,6 +108,13 @@ get '/ajax/content/device/ports' => require_login sub {
         $set = $set->search({-or => \@combi});
     }
 
+    # get aggregate master status
+    $set = $set->search({}, {
+      'join' => 'agg_master',
+      '+select' => [qw/agg_master.up_admin agg_master.up/],
+      '+as'     => [qw/agg_master_up_admin agg_master_up/],
+    });
+
     # make sure query asks for formatted timestamps when needed
     $set = $set->with_times if param('c_lastchange');
 
