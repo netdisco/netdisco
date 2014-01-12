@@ -17,7 +17,7 @@
   </tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td class="nd_center-cell nd_devport_icon">
+      <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove"></i>
         [% ELSIF row.stp == 'blocking' %]
