@@ -74,11 +74,11 @@
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <i class="icon-angle-down"></i>
+            <small><i class="icon-group muted"></i></small>
           [% ELSIF row.get_column('agg_master_up') == 'up' %]
-            <i class="icon-angle-up text-success"></i>
+            <small><i class="icon-group text-success"></i></small>
           [% ELSE %]
-            <i class="icon-angle-down text-error"></i>
+            <small><i class="icon-group text-error"></i></small>
           [% END %]
           <a class="nd_this-port-only" href="[% uri_for('/device',
               self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
