@@ -17,7 +17,7 @@
   </tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td class="nd_center-cell">
+      <td class="nd_center-cell nd_devport_icon">
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove"></i>
         [% ELSIF row.stp == 'blocking' %]
@@ -28,6 +28,15 @@
         <i class="icon-arrow-down text-error"></i>
         [% ELSE %]
         <i class="icon-angle-up text-success"></i>
+        [% END %]
+        [% IF row.slave_of %]<br/>
+          [% IF row.get_column('agg_master_up_admin') != 'up' %]
+            <small><i class="icon-group muted"></i></small>
+          [% ELSIF row.get_column('agg_master_up') == 'up' %]
+            <small><i class="icon-group text-success"></i></small>
+          [% ELSE %]
+            <small><i class="icon-group text-error"></i></small>
+          [% END %]
         [% END %]
       </td>
 
@@ -73,16 +82,9 @@
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
-          [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <small><i class="icon-group muted"></i></small>
-          [% ELSIF row.get_column('agg_master_up') == 'up' %]
-            <small><i class="icon-group text-success"></i></small>
-          [% ELSE %]
-            <small><i class="icon-group text-error"></i></small>
-          [% END %]
-          <a class="nd_this-port-only" href="[% uri_for('/device',
+          (<a class="nd_this-port-only" href="[% uri_for('/device',
               self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
-          [% row.slave_of | html_entity %]</a>
+          [% row.slave_of | html_entity %]</a>)
         [% END %]
       </td>
       [% END %]
