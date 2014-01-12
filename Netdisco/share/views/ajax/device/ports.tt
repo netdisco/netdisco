@@ -82,9 +82,9 @@
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
-          (<a class="nd_this-port-only" href="[% uri_for('/device',
+          <a class="nd_this-port-only" href="[% uri_for('/device',
               self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
-          [% row.slave_of | html_entity %]</a>)
+          [% row.slave_of | html_entity %]</a>
         [% END %]
       </td>
       [% END %]
