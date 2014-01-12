@@ -206,6 +206,7 @@ sub store_interfaces {
   my $i_stp_state    = $snmp->i_stp_state;
   my $i_vlan         = $snmp->i_vlan;
   my $i_lastchange   = $snmp->i_lastchange;
+  my $agg_ports      = $snmp->agg_ports;
 
   # clear the cached uptime and get a new one
   my $dev_uptime = $snmp->load_uptime;
@@ -278,8 +279,20 @@ sub store_interfaces {
           type         => $i_type->{$entry},
           vlan         => $i_vlan->{$entry},
           pvid         => $i_vlan->{$entry},
+          is_master    => 'false',
+          slave_of     => undef,
           lastchange   => $lc,
       };
+  }
+
+  # must do this after building %interfaces so that we can set is_master
+  foreach my $sidx (keys %$agg_ports) {
+      my $slave  = $interfaces->{$sidx} or next;
+      my $master = $interfaces->{ $agg_ports->{$sidx} } or next;
+      next unless exists $interfaces{$slave} and exists $interfaces{$master};
+
+      $interfaces{$slave}->{slave_of} = $master;
+      $interfaces{$master}->{is_master} = 'true';
   }
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
