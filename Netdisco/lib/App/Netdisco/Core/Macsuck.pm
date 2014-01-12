@@ -98,8 +98,10 @@ sub do_macsuck {
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
             $ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
-          # make sure this port is UP in netdisco
-          $device_ports->{$port}->update({up_admin => 'up', up => 'up'});
+          # make sure this port is UP in netdisco (unless it's a lag master,
+          # because we can still see nodes without a functioning aggregate)
+          $device_ports->{$port}->update({up_admin => 'up', up => 'up'})
+            if not $device_ports->{$port}->is_master;
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
 
@@ -324,14 +326,6 @@ sub _walk_fwtable {
           next;
       }
 
-      # TODO: add proper port channel support!
-      if ($port =~ m/port.channel/i) {
-          debug sprintf
-            ' [%s] macsuck %s - port %s is LAG member - skipping.',
-            $device->ip, $mac, $port;
-          next;
-      }
-
       # this uses the cached $ports resultset to limit hits on the db
       my $device_port = $device_ports->{$port};
 
@@ -340,6 +334,13 @@ sub _walk_fwtable {
             ' [%s] macsuck %s - port %s is not in database - skipping.',
             $device->ip, $mac, $port;
           next;
+      }
+
+      # possibly move node to lag master
+      if (defined $device_port->slave_of
+            and exists $device_ports->{$device_port->slave_of}) {
+          $port = $device_port->slave_of;
+          $device_port = $device_ports->{$port};
       }
 
       # check to see if the port is connected to another device
@@ -390,7 +391,6 @@ sub _walk_fwtable {
       }
 
       my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
-      
       ++$cache->{$vlan}->{$port}->{$mac};
   }
 

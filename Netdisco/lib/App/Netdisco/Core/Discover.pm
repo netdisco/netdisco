@@ -786,6 +786,17 @@ sub store_neighbors {
           is_uplink   => \"true",
           manual_topo => \"false",
       });
+
+      if (defined $portrow->slave_of and
+          my $master = schema('netdisco')->resultset('DevicePort')
+              ->single({ip => $device->ip, port => $portrow->slave_of})) {
+
+          $master->update({
+            remote_ip => $remote_ip,
+            is_uplink => \"true",
+            manual_topo => \"false",
+          });
+      }
   }
 
   return @to_discover;
