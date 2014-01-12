@@ -16,7 +16,7 @@ logger_format: '[%P] %L @%D> %m'
 # WEB FRONTEND
 # ------------
 
-domain_suffix: ''
+domain_suffix: ""
 no_auth: false
 suggest_guest: false
 trust_remote_user: false
@@ -24,9 +24,9 @@ trust_x_remote_user: false
 #ldap:
 #  servers: []
 #  user_string: 'MYDOMAIN\%USER%'
-#  base: ''
-#  proxy_user: ''
-#  proxy_pass: ''
+#  base: ""
+#  proxy_user: ""
+#  proxy_pass: ""
 #  opts:
 #    debug: 3
 #  tls_opts: {}
@@ -80,7 +80,7 @@ extra_web_plugins: []
 community: ['public']
 community_rw: ['private']
 snmp_auth: []
-get_community: ''
+get_community: ""
 bulkwalk_off: false
 bulkwalk_no: []
 bulkwalk_repeaters: 20
@@ -117,7 +117,8 @@ ignore_interfaces:
   - 'StackPort'
   - 'Control Plane Interface'
   - 'SPAN (S|R)P Interface'
-  - 'StackSub'
+  - 'StackSub-.*'
+  - 'StackPort\d+'
   - 'netflow'
   - 'Vlan\d+-mpls layer'
   - 'BRI\S+-Bearer Channel'
