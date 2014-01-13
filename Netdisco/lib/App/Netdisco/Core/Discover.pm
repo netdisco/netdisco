@@ -733,7 +733,7 @@ sub store_neighbors {
               foreach my $n (@$remote_ip) {
                   debug sprintf
                     ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                    $device->ip, $n, $remote_type, $port;
+                    $device->ip, $n, ($remote_type || ''), $port;
                   push @to_discover, [$n, $remote_type];
               }
           }
@@ -747,7 +747,7 @@ sub store_neighbors {
           if (wantarray) {
               debug sprintf
                 ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                $device->ip, $remote_ip, $remote_type, $port;
+                $device->ip, $remote_ip, ($remote_type || ''), $port;
               push @to_discover, [$remote_ip, $remote_type];
           }
 
@@ -894,7 +894,7 @@ sub discover_new_neighbors {
       if (not is_discoverable($device, $remote_type)) {
           debug sprintf
             ' queue - %s, type [%s] excluded by discover_* config',
-            $ip, $remote_type;
+            $ip, ($remote_type || '');
           next;
       }
 

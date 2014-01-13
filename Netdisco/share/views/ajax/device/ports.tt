@@ -243,9 +243,9 @@
                   self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
             [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
-            [% IF params.neigh_id %]
+            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
-              [% ' type: '_ row.remote_type IF row.remote_type %])
+              [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
             <i class="icon-unlink text-error"></i>&nbsp;
@@ -257,9 +257,9 @@
             <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
               [% row.remote_ip | html_entity %]
               [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
-            [% IF params.neigh_id %]
+            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
-              [% ' type: '_ row.remote_type IF row.remote_type %])
+              [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
             <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
