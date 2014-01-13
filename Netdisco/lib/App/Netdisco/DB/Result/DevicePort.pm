@@ -199,6 +199,22 @@ __PACKAGE__->belongs_to(
     }
 );
 
+=head2 neighbor_port
+
+Returns another row from the C<device_port> table if this port has valid
+C<remote_ip> and C<remote_port>.
+
+=cut
+
+__PACKAGE__->belongs_to(
+    neighbor_port => 'App::Netdisco::DB::Result::DevicePort', {
+      'foreign.ip'   => 'self.remote_ip',
+      'foreign.port' => 'self.remote_port',
+    }, {
+      join_type => 'LEFT',
+    }
+);
+
 =head2 neighbor_alias
 
 When a device port has an attached neighbor device, this relationship will

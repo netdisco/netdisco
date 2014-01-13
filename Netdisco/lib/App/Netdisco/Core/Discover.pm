@@ -793,6 +793,8 @@ sub store_neighbors {
 
           $master->update({
             remote_ip => $remote_ip,
+            remote_port =>
+                ($portrow->neighbor_port ? $portrow->neighbor_port->slave_of : undef),
             is_uplink => \"true",
             manual_topo => \"false",
           });
