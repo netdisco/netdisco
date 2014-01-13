@@ -75,11 +75,11 @@
       [% ELSE %]
       <td nowrap>
       [% END %]
-        [% IF row.is_master %]
-          <small><i class="icon-group muted"></i></small>
-        [% END %]
-        <a class="nd_this-port-only" href="[% uri_for('/device',
+        <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
+          [% IF row.is_master %]
+            <small><i class="icon-group muted"></i></small>&nbsp;
+          [% END %]
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
           <a class="nd_this-port-only" href="[% uri_for('/device',
