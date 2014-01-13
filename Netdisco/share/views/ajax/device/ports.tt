@@ -242,12 +242,12 @@
             <a href="[% uri_for('/device',
                   self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
-            - [% row.remote_port | html_entity %]</a><br/>
+            [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
             [% IF params.neigh_id %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
               [% ' type: '_ row.remote_type IF row.remote_type %])
             [% END %]
-          [% ELSIF row.remote_ip AND row.remote_port %]
+          [% ELSIF row.remote_ip %]
             <i class="icon-unlink text-error"></i>&nbsp;
             [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
               <i class="icon-phone"></i>&nbsp;
@@ -255,7 +255,8 @@
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
-              [% row.remote_ip | html_entity %] - [% row.remote_port | html_entity %]</a><br/>
+              [% row.remote_ip | html_entity %]
+              [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
             [% IF params.neigh_id %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
               [% ' type: '_ row.remote_type IF row.remote_type %])
