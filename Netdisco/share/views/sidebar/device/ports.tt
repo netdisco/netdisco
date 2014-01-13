@@ -105,6 +105,13 @@
                       </select>
                     </div>
                   </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" id="neigh_id"
+                        name="neigh_id"[% ' checked="checked"' IF params.neigh_id %] />
+                      Connected Device ID
+                    </label>
+                  </li>
                 </ul>
               </div>
             </div>
