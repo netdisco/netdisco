@@ -63,7 +63,12 @@ get '/ajax/content/device/ports' => require_login sub {
             if (($prefer eq 'port') or not $prefer and
                 $set->search({'me.port' => $f})->count) {
 
-                $set = $set->search({'me.port' => $f});
+                $set = $set->search({
+                  -or => [
+                    'me.port' => $f,
+                    'me.slave_of' => $f,
+                  ],
+                });
             }
             else {
                 $set = $set->search({'me.name' => $f});
