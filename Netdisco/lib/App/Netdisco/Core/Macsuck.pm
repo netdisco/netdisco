@@ -336,13 +336,6 @@ sub _walk_fwtable {
           next;
       }
 
-      # possibly move node to lag master
-      if (defined $device_port->slave_of
-            and exists $device_ports->{$device_port->slave_of}) {
-          $port = $device_port->slave_of;
-          $device_port = $device_ports->{$port};
-      }
-
       # check to see if the port is connected to another device
       # and if we have that device in the database.
 
@@ -388,6 +381,13 @@ sub _walk_fwtable {
           # when there's no CDP/LLDP, we only want to gather macs at the
           # topology edge, hence skip ports with known device macs.
           next unless setting('macsuck_bleed');
+      }
+
+      # possibly move node to lag master
+      if (defined $device_port->slave_of
+            and exists $device_ports->{$device_port->slave_of}) {
+          $port = $device_port->slave_of;
+          $device_ports->{$port}->update({is_uplink => \'true'});
       }
 
       my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
