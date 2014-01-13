@@ -792,18 +792,20 @@ sub store_neighbors {
           my $master = schema('netdisco')->resultset('DevicePort')
               ->single({ip => $device->ip, port => $portrow->slave_of})) {
 
-          # TODO needs refactoring - this is quite expensive
-          my $peer = schema('netdisco')->resultset('DevicePort')->find({
-              ip   => $portrow->neighbor->ip,
-              port => $portrow->remote_port,
-          }) if $portrow->neighbor;
+          if (not ($portrow->is_master or defined $master->slave_of)) {
+              # TODO needs refactoring - this is quite expensive
+              my $peer = schema('netdisco')->resultset('DevicePort')->find({
+                  ip   => $portrow->neighbor->ip,
+                  port => $portrow->remote_port,
+              }) if $portrow->neighbor;
 
-          $master->update({
-            remote_ip => ($peer ? $peer->ip : $remote_ip),
-            remote_port => ($peer ? $peer->slave_of : undef ),
-            is_uplink => \"true",
-            manual_topo => \"false",
-          });
+              $master->update({
+                  remote_ip => ($peer ? $peer->ip : $remote_ip),
+                  remote_port => ($peer ? $peer->slave_of : undef ),
+                  is_uplink => \"true",
+                  manual_topo => \"false",
+              });
+          }
       }
   }
 
