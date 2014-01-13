@@ -708,18 +708,19 @@ sub store_neighbors {
 
       # IP Phone and WAP detection type fixup
       if (defined $remote_type) {
-        my $phone_flag = grep {/phone/i} @$remote_cap;
-        my $ap_flag = grep {/wlanAccessPoint/} @$remote_cap;
-        if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
-          $remote_type = 'IP Phone: '. $remote_type
-            if $remote_type !~ /ip phone/i;
-        }
-        elsif ($ap_flag) {
-          $remote_type = 'AP: '. $remote_type;          
-        }
-        else {
-          $remote_type ||= '';
-        }
+          my $phone_flag = grep {/phone/i} @$remote_cap;
+          my $ap_flag    = grep {/wlanAccessPoint/} @$remote_cap;
+
+          if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
+              $remote_type = 'IP Phone: '. $remote_type
+              if $remote_type !~ /ip phone/i;
+          }
+          elsif ($ap_flag) {
+              $remote_type = 'AP: '. $remote_type;
+          }
+          else {
+              $remote_type ||= '';
+          }
       }
 
       # hack for devices seeing multiple neighbors on the port
@@ -791,10 +792,15 @@ sub store_neighbors {
           my $master = schema('netdisco')->resultset('DevicePort')
               ->single({ip => $device->ip, port => $portrow->slave_of})) {
 
+          # TODO needs refactoring - this is quite expensive
+          my $peer = schema('netdisco')->resultset('DevicePort')->find({
+              ip   => $portrow->neighbor->ip,
+              port => $portrow->remote_port,
+          }) if $portrow->neighbor;
+
           $master->update({
-            remote_ip => $remote_ip,
-            remote_port =>
-                ($portrow->neighbor_port ? $portrow->neighbor_port->slave_of : undef),
+            remote_ip => ($peer ? $peer->ip : $remote_ip),
+            remote_port => ($peer ? $peer->slave_of : undef ),
             is_uplink => \"true",
             manual_topo => \"false",
           });
