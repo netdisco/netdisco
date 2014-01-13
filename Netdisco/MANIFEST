@@ -72,8 +72,6 @@ lib/App/Netdisco/DB/Result/Virtual/ActiveNodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/ApRadioChannelPower.pm
 lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
-lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanNative.pm
-lib/App/Netdisco/DB/Result/Virtual/DevicePortVlanTagged.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/PhonesDiscovered.pm
@@ -119,6 +117,9 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-28-29-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-29-30-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-3-4-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-30-31-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-31-32-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-32-33-PostgreSQL.sql
+lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-33-34-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
