@@ -307,7 +307,7 @@ within the L<Developer|App::Netdisco::Manual::Developing> documentation.
 
 =head1 Caveats
 
-The Wireless, IP Phone and NetBIOS Node properies are not yet shown.
+NetBIOS Node properies are not yet shown.
 
 =head1 AUTHOR
 

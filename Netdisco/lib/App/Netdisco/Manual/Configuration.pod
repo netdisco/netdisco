@@ -399,9 +399,10 @@ operations. See L<SNMP> for more info.
 
 Value: Boolean. Default: C<false>.
 
-Setting this to C<true> will allow the bulkwalk of devices that have tables
-with non-increasing OIDs. The default is to not allow this behavior, to
-prevent discovery on problem devices from looping indefinitely. Requires
+Setting this to C<true> prevents bulkwalk of device tables with
+non-increasing OIDs throwing an error C<OID not increasing> when encountered.
+The default is to allow non-increasing OIDs during bulkwalk (which may, in
+very badly performing SNMP agents, result in a never-ending loop).  Requires
 Net-SNMP 5.3 or higher.
 
 =head3 C<snmpver>
