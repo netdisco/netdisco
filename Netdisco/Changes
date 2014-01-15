@@ -20,6 +20,7 @@
   * Correct is_discoverable check in Undiscovered Neighbors report
   * Correct macsuck for Q-BRIDGE-MIB based devices
   * Allow cached SNMP community hint to override SNMP version cycle
+  * [#76] Don't include wireless in ports with multiple nodes attached report 
 
 2.021000 - 2014-01-08
 
