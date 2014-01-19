@@ -240,7 +240,7 @@
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% uri_for('/device',
-                  self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]">
+                  self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
             [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
             [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
