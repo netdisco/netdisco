@@ -1,3 +1,13 @@
+2.022000
+
+  [NEW FEATURES]
+
+  * 
+
+  [BUG FIXES]
+
+  * [#85] device property in _no/_only fails with error (R. Kerr)
+
 2.021001
 
   [NEW FEATURES]

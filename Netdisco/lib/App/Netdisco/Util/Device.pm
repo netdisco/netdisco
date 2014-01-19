@@ -92,7 +92,7 @@ sub check_acl {
 
           # lazy version of vendor: and model:
           if ($device->can($prop) and defined $device->prop
-              and $device->prop =~ m/^$match$/) {
+              and $device->$prop =~ m/^$match$/) {
               return 1;
           }
 
