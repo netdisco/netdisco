@@ -16,10 +16,12 @@ register_report(
 
 get '/ajax/content/report/portmultinodes' => require_login sub {
     my @results = schema('netdisco')->resultset('Device')->search(
-        { 'ports.remote_ip' => undef, 'nodes.active' => 1 },
-        {   result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-            select       => [ 'ip', 'dns', 'name' ],
-            join       => { 'ports' => 'nodes' },
+        {   'ports.remote_ip' => undef,
+            'nodes.active'    => 1,
+            'wireless.port'   => undef
+        },
+        {   select => [ 'ip', 'dns', 'name' ],
+            join       => { 'ports' => [ 'wireless', 'nodes' ] },
             '+columns' => [
                 { 'port'        => 'ports.port' },
                 { 'description' => 'ports.name' },
@@ -29,7 +31,7 @@ get '/ajax/content/report/portmultinodes' => require_login sub {
             having   => \[ 'count(nodes.mac) > ?', [ count => 1 ] ],
             order_by => { -desc => [qw/count/] },
         }
-    )->all;
+    )->hri->all;
 
     return unless scalar @results;
 
