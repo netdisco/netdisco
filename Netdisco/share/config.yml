@@ -51,15 +51,15 @@ web_plugins:
   - Report::SsidInventory
   - Report::VlanInventory
   - Report::SubnetUtilization
+  - AdminTask::PortLog
   - AdminTask::JobQueue
-  - AdminTask::PollerPerformance
-  - AdminTask::SlowDevices
-  - AdminTask::PseudoDevice
   - AdminTask::Topology
+  - AdminTask::PollerPerformance
+  - AdminTask::PseudoDevice
+  - AdminTask::SlowDevices
+  - AdminTask::UndiscoveredNeighbors
   - AdminTask::UserLog
   - AdminTask::Users
-  - AdminTask::PortLog
-  - AdminTask::UndiscoveredNeighbors
   - Search::Device
   - Search::Node
   - Search::VLAN

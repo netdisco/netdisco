@@ -14,6 +14,7 @@ set(
   '_search_tabs'  => [],
   '_device_tabs'  => [],
   '_admin_tasks'  => {},
+  '_admin_order'  => [],
   '_reports_menu' => {},
   '_reports' => {},
   '_report_order' => [qw/Device Port IP Node VLAN Network Wireless/],
@@ -123,6 +124,7 @@ register 'register_admin_task' => sub {
       return error "bad config to register_admin_task";
   }
 
+  push @{ setting('_admin_order') }, $config->{tag};
   setting('_admin_tasks')->{ $config->{tag} } = $config;
 };
 

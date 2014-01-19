@@ -105,7 +105,7 @@
           </li>
           [% IF settings._admin_tasks.size %]
             <li class="divider"></li>
-            [% FOREACH ai IN settings._admin_tasks.keys.sort %]
+            [% FOREACH ai IN settings._admin_order %]
               [% NEXT IF settings._admin_tasks.$ai.hidden %]
               <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
             [% END %]
