@@ -761,12 +761,18 @@ Value: Settings Tree. Default:
 
  dns:
    max_outstanding: 250
+   no: ['fe80::/64','169.254.0.0/16']
 
-Sets the maximum number of outstanding requests for asynchronous DNS
-resolution used during arpnip and device alias discovery.
+Controls the asynchronous DNS resolver used to resolve IP addresses to
+names during arpnip and discovery of device aliases.
 
-This setting overrides the C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment
-value and the C<AnyEvent> library default of 10.  
+C<max_outstanding> sets the maximum number of outstanding requests for
+asynchronous DNS resolution.  This setting overrides the
+C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment value and the C<AnyEvent>
+library default of 10.
+
+C<no> is a list of IP addresses or CIDR ranges to excluded from DNS
+resolution.  Link local addresses are excluded by default.
 
 =head3 C<housekeeping>
 

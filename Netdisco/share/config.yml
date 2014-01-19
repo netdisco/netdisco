@@ -158,6 +158,7 @@ workers:
 
 dns:
   max_outstanding: 250
+  no: ['fe80::/64','169.254.0.0/16']
 
 #housekeeping:
 #  discoverall:

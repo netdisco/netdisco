@@ -3,9 +3,11 @@ package App::Netdisco::Util::DNS;
 use strict;
 use warnings FATAL => 'all';
 
+use Dancer ':script';
 use Net::DNS;
 use AnyEvent::DNS::EtcHosts;
 use AnyEvent::DNS;
+use NetAddr::IP::Lite ':lower';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -104,6 +106,7 @@ sub hostnames_resolve_async {
 
   foreach my $hash_ref (@$ips) {
     my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
+    next if no_resolve($ip);
     $done->begin;
     AnyEvent::DNS::reverse_verify $ip,
             sub { $hash_ref->{'dns'} = shift; $done->end; };
@@ -116,6 +119,31 @@ sub hostnames_resolve_async {
   $done->recv;
 
   return $ips;
+}
+
+=head2 no_resolve( $ip )
+
+Given an IP address, returns true if excluded from DNS resolution by the
+C<dns_no> configuration directive, otherwise returns false.
+
+=cut
+
+sub no_resolve {
+    my $ip = shift;
+
+    my $config = setting('dns')->{no} || [];
+    return 0 if not scalar @$config;
+
+    my $addr = NetAddr::IP::Lite->new($ip);
+
+    foreach my $item (@$config) {
+        my $c_ip = NetAddr::IP::Lite->new($item)
+            or next;
+        next unless $c_ip->bits == $addr->bits;
+
+        return 1 if ($c_ip->contains($addr));
+    }
+    return 0;
 }
 
 1;
