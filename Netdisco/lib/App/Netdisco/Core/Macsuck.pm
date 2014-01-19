@@ -57,8 +57,8 @@ sub do_macsuck {
   my $ip = $device->ip;
 
   # would be possible just to use now() on updated records, but by using this
-  # same value for them all, we _can_ if we want add a job at the end to
-  # select and do something with the updated set (no reason to yet, though)
+  # same value for them all, we can if we want add a job at the end to
+  # select and do something with the updated set (see set archive, below)
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
   my $total_nodes = 0;
 
@@ -98,8 +98,10 @@ sub do_macsuck {
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
             $ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
-          # make sure this port is UP in netdisco
-          $device_ports->{$port}->update({up_admin => 'up', up => 'up'});
+          # make sure this port is UP in netdisco (unless it's a lag master,
+          # because we can still see nodes without a functioning aggregate)
+          $device_ports->{$port}->update({up_admin => 'up', up => 'up'})
+            if not $device_ports->{$port}->is_master;
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
 
@@ -113,8 +115,18 @@ sub do_macsuck {
       }
   }
 
-  debug sprintf ' [%s] macsuck - %s forwarding table entries',
+  debug sprintf ' [%s] macsuck - %s updated forwarding table entries',
     $ip, $total_nodes;
+
+  # a use for $now ... need to archive dissapeared nodes
+  my $archived = schema('netdisco')->resultset('Node')->search({
+    switch => $ip,
+    time_last => { '<' => \$now },
+  })->update({ active => \'false' });
+
+  debug sprintf ' [%s] macsuck - removed %s fwd table entries to archive',
+    $ip, $archived;
+
   $device->update({last_macsuck => \$now});
 }
 
@@ -324,14 +336,6 @@ sub _walk_fwtable {
           next;
       }
 
-      # TODO: add proper port channel support!
-      if ($port =~ m/port.channel/i) {
-          debug sprintf
-            ' [%s] macsuck %s - port %s is LAG member - skipping.',
-            $device->ip, $mac, $port;
-          next;
-      }
-
       # this uses the cached $ports resultset to limit hits on the db
       my $device_port = $device_ports->{$port};
 
@@ -389,8 +393,14 @@ sub _walk_fwtable {
           next unless setting('macsuck_bleed');
       }
 
+      # possibly move node to lag master
+      if (defined $device_port->slave_of
+            and exists $device_ports->{$device_port->slave_of}) {
+          $port = $device_port->slave_of;
+          $device_ports->{$port}->update({is_uplink => \'true'});
+      }
+
       my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
-      
       ++$cache->{$vlan}->{$port}->{$mac};
   }
 

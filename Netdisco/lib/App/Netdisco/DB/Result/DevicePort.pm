@@ -53,6 +53,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "remote_id",
   { data_type => "text", is_nullable => 1 },
+  "is_master",
+  { data_type => "bool", is_nullable => 0, default_value => \"false" },
+  "slave_of",
+  { data_type => "text", is_nullable => 1 },
   "manual_topo",
   { data_type => "bool", is_nullable => 0, default_value => \"false" },
   "is_uplink",
@@ -179,6 +183,22 @@ __PACKAGE__->might_have(
     }
 );
 
+=head2 agg_master
+
+Returns another row from the C<device_port> table if this port is slave
+to another in a link aggregate.
+
+=cut
+
+__PACKAGE__->belongs_to(
+    agg_master => 'App::Netdisco::DB::Result::DevicePort', {
+      'foreign.ip'   => 'self.ip',
+      'foreign.port' => 'self.slave_of',
+    }, {
+      join_type => 'LEFT',
+    }
+);
+
 =head2 neighbor_alias
 
 When a device port has an attached neighbor device, this relationship will
@@ -231,7 +251,7 @@ __PACKAGE__->belongs_to( oui => 'App::Netdisco::DB::Result::Oui',
 
 =head1 ADDITIONAL METHODS
 
-=head2
+=head2 neighbor
 
 Returns the Device entry for the neighbour Device on the given port.
 

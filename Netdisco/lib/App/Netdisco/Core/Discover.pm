@@ -206,6 +206,7 @@ sub store_interfaces {
   my $i_stp_state    = $snmp->i_stp_state;
   my $i_vlan         = $snmp->i_vlan;
   my $i_lastchange   = $snmp->i_lastchange;
+  my $agg_ports      = $snmp->agg_ports;
 
   # clear the cached uptime and get a new one
   my $dev_uptime = $snmp->load_uptime;
@@ -278,8 +279,20 @@ sub store_interfaces {
           type         => $i_type->{$entry},
           vlan         => $i_vlan->{$entry},
           pvid         => $i_vlan->{$entry},
+          is_master    => 'false',
+          slave_of     => undef,
           lastchange   => $lc,
       };
+  }
+
+  # must do this after building %interfaces so that we can set is_master
+  foreach my $sidx (keys %$agg_ports) {
+      my $slave  = $interfaces->{$sidx} or next;
+      my $master = $interfaces->{ $agg_ports->{$sidx} } or next;
+      next unless exists $interfaces{$slave} and exists $interfaces{$master};
+
+      $interfaces{$slave}->{slave_of} = $master;
+      $interfaces{$master}->{is_master} = 'true';
   }
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
@@ -695,18 +708,19 @@ sub store_neighbors {
 
       # IP Phone and WAP detection type fixup
       if (defined $remote_type) {
-        my $phone_flag = grep {/phone/i} @$remote_cap;
-        my $ap_flag = grep {/wlanAccessPoint/} @$remote_cap;
-        if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
-          $remote_type = 'IP Phone: '. $remote_type
-            if $remote_type !~ /ip phone/i;
-        }
-        elsif ($ap_flag) {
-          $remote_type = 'AP: '. $remote_type;          
-        }
-        else {
-          $remote_type ||= '';
-        }
+          my $phone_flag = grep {/phone/i} @$remote_cap;
+          my $ap_flag    = grep {/wlanAccessPoint/} @$remote_cap;
+
+          if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
+              $remote_type = 'IP Phone: '. $remote_type
+              if $remote_type !~ /ip phone/i;
+          }
+          elsif ($ap_flag) {
+              $remote_type = 'AP: '. $remote_type;
+          }
+          else {
+              $remote_type ||= '';
+          }
       }
 
       # hack for devices seeing multiple neighbors on the port
@@ -719,7 +733,7 @@ sub store_neighbors {
               foreach my $n (@$remote_ip) {
                   debug sprintf
                     ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                    $device->ip, $n, $remote_type, $port;
+                    $device->ip, $n, ($remote_type || ''), $port;
                   push @to_discover, [$n, $remote_type];
               }
           }
@@ -733,7 +747,7 @@ sub store_neighbors {
           if (wantarray) {
               debug sprintf
                 ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                $device->ip, $remote_ip, $remote_type, $port;
+                $device->ip, $remote_ip, ($remote_type || ''), $port;
               push @to_discover, [$remote_ip, $remote_type];
           }
 
@@ -773,6 +787,26 @@ sub store_neighbors {
           is_uplink   => \"true",
           manual_topo => \"false",
       });
+
+      if (defined $portrow->slave_of and
+          my $master = schema('netdisco')->resultset('DevicePort')
+              ->single({ip => $device->ip, port => $portrow->slave_of})) {
+
+          if (not ($portrow->is_master or defined $master->slave_of)) {
+              # TODO needs refactoring - this is quite expensive
+              my $peer = schema('netdisco')->resultset('DevicePort')->find({
+                  ip   => $portrow->neighbor->ip,
+                  port => $portrow->remote_port,
+              }) if $portrow->neighbor;
+
+              $master->update({
+                  remote_ip => ($peer ? $peer->ip : $remote_ip),
+                  remote_port => ($peer ? $peer->slave_of : undef ),
+                  is_uplink => \"true",
+                  manual_topo => \"false",
+              });
+          }
+      }
   }
 
   return @to_discover;
@@ -860,7 +894,7 @@ sub discover_new_neighbors {
       if (not is_discoverable($device, $remote_type)) {
           debug sprintf
             ' queue - %s, type [%s] excluded by discover_* config',
-            $ip, $remote_type;
+            $ip, ($remote_type || '');
           next;
       }
 

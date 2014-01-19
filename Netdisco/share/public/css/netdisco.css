@@ -158,9 +158,14 @@ div.content > div.tab-content table.nd_floatinghead thead {
 /* nudge cell content to the right when port_control controls are enabled */
 .nd_editable-cell > .nd_this-port-only {
   margin-left: 18px;
+  margin-right: 18px;
 }
+.nd_editable-cell > .nd_port-only-first {
+  margin-left: 9px;
+}
+
 .nd_editable-cell > .nd_editable-cell-content {
-  margin-left: 18px;
+  margin-right: 18px;
 }
 .table .nd_nudge-for-icon {
   padding-left: 25px;
@@ -175,6 +180,10 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 .table .nd_center-cell {
   text-align: center;
+}
+
+td.nd_devport-icon i {
+  line-height: 18px;
 }
 
 /* undo nd_center-cell when in a modial dialog (which lives in table cell) */
@@ -261,7 +270,7 @@ td > form.nd_inline-form {
   cursor: pointer;
   color: black;
   float: left;
-  display: none;
+  visibility: hidden;
   margin-top: 3px;
 }
 .nd_log-icon:hover, .nd_log-icon:focus {
