@@ -2,7 +2,11 @@
 
   [NEW FEATURES]
 
-  * 
+  * Support for Link Aggregation (port-channel, etherchannel, "trunking", etc)
+
+  [ENHANCEMENTS]
+
+  * [#82] Check /etc/hosts before DNS when doing arp entry name lookup
 
   [BUG FIXES]
 

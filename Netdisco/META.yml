@@ -22,6 +22,7 @@ no_index:
 requires:
   Algorithm::Cron: 0.07
   AnyEvent: 7.05
+  AnyEvent::DNS::EtcHosts: 0
   App::cpanminus: 1.6108
   App::local::lib::helper: 0.07
   Archive::Extract: 0
@@ -50,7 +51,7 @@ requires:
   Plack: 1.0023
   Plack::Middleware::Expires: 0.03
   Role::Tiny: 1.002005
-  SNMP::Info: 3.1
+  SNMP::Info: 3.11
   SQL::Translator: 0.11016
   Socket6: 0.23
   Starman: 0.4008

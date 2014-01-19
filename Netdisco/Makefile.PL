@@ -6,6 +6,7 @@ all_from 'lib/App/Netdisco.pm';
  
 requires 'Algorithm::Cron' => 0.07;
 requires 'AnyEvent' => 7.05;
+requires 'AnyEvent::DNS::EtcHosts' => 0;
 requires 'App::cpanminus' => 1.6108;
 requires 'App::local::lib::helper' => 0.07;
 requires 'Archive::Extract' => 0;
@@ -36,7 +37,7 @@ requires 'Plack::Middleware::Expires' => 0.03;
 requires 'Role::Tiny' => 1.002005;
 requires 'Socket6' => 0.23;
 requires 'Starman' => 0.4008;
-requires 'SNMP::Info' => 3.10;
+requires 'SNMP::Info' => 3.11;
 requires 'SQL::Translator' => 0.11016;
 requires 'Template' => 2.24;
 requires 'Template::Plugin::CSV' => 0.04;

@@ -4,6 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Net::DNS;
+use AnyEvent::DNS::EtcHosts;
 use AnyEvent::DNS;
 
 use base 'Exporter';
