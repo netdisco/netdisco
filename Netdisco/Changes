@@ -12,6 +12,7 @@
   [BUG FIXES]
 
   * [#85] device property in _no/_only fails with error (R. Kerr)
+  * Also prefer port filter when linking to connected devices
 
 2.021001
 
