@@ -124,7 +124,7 @@ sub do_macsuck {
     time_last => { '<' => \$now },
   })->update({ active => \'false' });
 
-  debug sprintf ' [%s] macsuck - removed %s fwd table entries to archive',
+  debug sprintf ' [%s] macsuck - removed %d fwd table entries to archive',
     $ip, $archived;
 
   $device->update({last_macsuck => \$now});
