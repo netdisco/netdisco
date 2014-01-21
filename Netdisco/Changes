@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * Support for Link Aggregation (port-channel, etherchannel, "trunking", etc)
+  * [#68] Devices orphaned by missing topology info report 
 
   [ENHANCEMENTS]
 

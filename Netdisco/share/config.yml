@@ -58,6 +58,7 @@ web_plugins:
   - AdminTask::PseudoDevice
   - AdminTask::SlowDevices
   - AdminTask::UndiscoveredNeighbors
+  - AdminTask::OrphanedDevices
   - AdminTask::UserLog
   - AdminTask::Users
   - Search::Device

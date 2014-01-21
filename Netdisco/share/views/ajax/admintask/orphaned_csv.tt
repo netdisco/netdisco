@@ -1,0 +1,51 @@
+[% USE CSV -%]
+[% CSV.dump(['Orphaned Devices']) %]
+
+[% CSV.dump([ 'Device' 'IP' 'Device Location' 'Contact' ' Vendor'
+              'Model' ]) %]
+
+[% FOREACH row IN orphans %]
+  [% mydlist = [] %]
+  [% mydevice = row.dns || row.name %]
+  [% mydlist.push(mydevice) %]
+  [% mydlist.push(row.ip) %]
+  [% mydlist.push(row.location) %]
+  [% mydlist.push(row.contact) %]
+  [% mydlist.push(row.vendor) %]
+  [% mydlist.push(row.model) %]
+  [% CSV.dump(mydlist) %]
+
+[% END %]
+
+[% IF graphs.size > 1 %]
+[% count = 0 %]
+[% FOREACH network IN graphs %]
+  [% count = count + 1 %]
+  [%# The largest is not an orphan, so skip %]
+  [% NEXT IF count == 1 %]
+
+  [% CSV.dump([' ']) %]
+
+  [% ntwk_header = [] %]
+  [% ntwk_header.push('Orphaned Network') %]
+  [% ntwk_header.push(count - 1) %]
+
+  [% CSV.dump(ntwk_header) %]
+
+  [% CSV.dump([ 'Device' 'IP' 'Device Location' 'Contact' ' Vendor'
+              'Model' ]) %]
+
+  [% FOREACH row IN network %]
+    [% mydlist = [] %]
+    [% mydevice = row.dns || row.name %]
+    [% mydlist.push(mydevice) %]
+    [% mydlist.push(row.ip) %]
+    [% mydlist.push(row.location) %]
+    [% mydlist.push(row.contact) %]
+    [% mydlist.push(row.vendor) %]
+    [% mydlist.push(row.model) %]
+    [% CSV.dump(mydlist) %]
+
+  [% END %]
+[% END %]
+[% END %]

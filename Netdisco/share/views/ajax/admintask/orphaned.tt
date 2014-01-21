@@ -1,0 +1,105 @@
+[% IF orphans.size > 0 %]
+<div class="accordion" id="accordion-orphans">
+  <div class="accordion-group">
+      <div class="accordion-heading"> 
+          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-orphan" href="#collapse-orphan">
+            <i class="icon-chevron-up"></i> &nbsp;
+            Orphaned Devices
+          </a>
+      </div>
+    <div id="collapse-orphan" class="accordion-body collapse">
+      <div class="accordion-inner">
+      <table class="table table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th>Device</th>            
+            <th>Location</th>
+            <th>Contact</th>
+            <th>Vendor</th>
+            <th>Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          [% FOREACH row IN orphans %]
+          <tr>
+            <td><a href="[% uri_for('/device') %]?q=[% row.dns || row.ip | uri %]">
+            [% row.dns || row.name || row.ip | html_entity %]</a></td>
+            <td>
+              [% IF row.location %]
+                <a href="[% search_device %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
+                 [% row.location | html_entity %]</a>
+              [% ELSE %]
+                [Not Set]
+              [% END %]
+            </td>
+            <td>[% row.contact | html_entity %]</td>
+            <td>[% row.vendor | html_entity %]</td>
+            <td>[% row.model | html_entity %]</td>
+          </tr>
+          [%END%]
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+</div>
+[% END %]
+[%# The largest graph is considered the main network, all others are
+    considered orphaned, so we need two to generate div %]
+[% IF graphs.size > 1 %]
+<div class="accordion" id="accordion-networks">
+[% count = 0 %]
+[% FOREACH network IN graphs %]
+  [% count = count + 1 %]
+  [%# The largest is not an orphan, so skip %]
+  [% NEXT IF count == 1 %]
+  <div class="accordion-group">
+      <div class="accordion-heading"> 
+          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count %]" href="#collapse-[% count %]">
+            <i class="icon-chevron-up"></i> &nbsp;
+              Orphaned Network: [% count - 1 | html_entity  %] Size: [% network.size | html_entity  %] Devices
+          </a>
+      </div>
+    <div id="collapse-[% count %]" class="accordion-body collapse">
+      <div class="accordion-inner">
+      <table class="table table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th>Device</th>            
+            <th>Location</th>
+            <th>Contact</th>
+            <th>Vendor</th>
+            <th>Model</th>
+          </tr>
+        </thead>
+        <tbody>
+        [% FOREACH row IN network %]
+          <tr>
+            <td><a href="[% uri_for('/device') %]?tab=netmap&q=[% row.dns || row.ip | uri %]">
+            [% row.dns || row.name || row.ip | html_entity %]</a></td>
+            <td>
+              [% IF row.location %]
+                <a href="[% search_device %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
+                 [% row.location | html_entity %]</a>
+              [% ELSE %]
+                [Not Set]
+              [% END %]
+            </td>
+            <td>[% row.contact | html_entity %]</td>
+            <td>[% row.vendor | html_entity %]</td>
+            <td>[% row.model | html_entity %]</td>
+          </tr>
+        [% END %]
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+[% END %]
+</div>
+[% END %]
+<script>
+$('.accordion').on('show hide', function (n) {
+    $(n.target).siblings('.accordion-heading').find('.accordion-toggle i').toggleClass('icon-chevron-up icon-chevron-down');
+});
+</script>
