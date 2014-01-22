@@ -279,19 +279,23 @@ sub search_fuzzy {
       unless $q;
     $q = "\%$q\%" if $q !~ m/\%/;
 
-    # basic IP check is a string match
-    my $ip_clause = [
-        'me.ip::text'  => { '-ilike' => $q },
+    # basic check is a string match
+    my @ip_clause = (
+        'me.name'     => { '-ilike' => $q },
+        'me.dns'      => { '-ilike' => $q },
+        'me.ip::text' => { '-ilike' => $q },
+        'device_ips.dns' => { '-ilike' => $q },
         'device_ips.alias::text' => { '-ilike' => $q },
-    ];
+    );
 
     # but also allow prefix search
     (my $qc = $q) =~ s/\%//g;
     if (my $ip = NetAddr::IP::Lite->new($qc)) {
-        $ip_clause = [
+        @ip_clause = (
+            # exclude check on name and dns fields
             'me.ip'  => { '<<=' => $ip->cidr },
             'device_ips.alias' => { '<<=' => $ip->cidr },
-        ];
+        );
     }
 
     return $rs->search(
@@ -300,17 +304,12 @@ sub search_fuzzy {
           'me.contact'  => { '-ilike' => $q },
           'me.serial'   => { '-ilike' => $q },
           'me.location' => { '-ilike' => $q },
-          'me.name'     => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
-          -or => [
-            'me.dns'      => { '-ilike' => $q },
-            'device_ips.dns' => { '-ilike' => $q },
-          ],
-          -or => $ip_clause,
+          @ip_clause,
         ],
       },
       {
-        order_by => [qw/ me.dns me.ip /],
+        order_by => { -desc => 'me.creation' },
         join => 'device_ips',
         distinct => 1,
       }
