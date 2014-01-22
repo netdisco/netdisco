@@ -41,7 +41,7 @@ sub get_port_macs {
 
     my $dp_macs
         = schema('netdisco')->resultset('DevicePort')
-        ->search( { mac => { '!=', [ undef, '00:00:00:00:00:00' ] } },
+        ->search( { mac => { '!=' => [ -and => (undef, '00:00:00:00:00:00') ] } },
         { select => [ 'mac', 'ip' ],
           group_by => [ 'mac', 'ip' ] } );
     my $dp_cursor = $dp_macs->cursor;
