@@ -74,6 +74,9 @@ function update_content(from, to) {
   $('#' + to + '_search').toggleClass('active');
 
   var to_form = '#' + to + '_form';
+  var form = $(to_form).find('input[name!=q]')
+    .add('<input name="q" type="hidden" value="' + $('#nq').val() + '"/>')
+    .add('<input name="uuid" type="hidden" value="' + $('#uuid').val() + '"/>');
   var from_form = '#' + from + '_form';
 
   // page title
@@ -93,8 +96,8 @@ function update_content(from, to) {
   if (window.History && window.History.enabled && is_from_state_event == 0) {
     is_from_history_plugin = 1;
     window.History.pushState(
-      {name: to, fields: $(to_form).serializeArray()},
-      pgtitle, uri_base + '/' + path + '?' + $(to_form).serialize()
+      {name: to, fields: form.serializeArray()},
+      pgtitle, uri_base + '/' + path + '?' + form.serialize()
     );
     is_from_history_plugin = 0;
   }

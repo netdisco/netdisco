@@ -1,8 +1,10 @@
   // csv download icon on any table page
   // needs to be dynamically updated to use current search options
   function update_csv_download_link (type, tab, show) {
-    var form = '#' + tab + '_form';
-    var query = $(form).serialize();
+    var form = $('#' + tab + '_form').find('input[name!=q]')
+      .add('<input name="q" type="hidden" value="' + $('#nq').val() + '"/>')
+      .add('<input name="uuid" type="hidden" value="' + $('#uuid').val() + '"/>');
+    var query = form.serialize();
 
     if (show.length) {
       $('#nd_csv-download')
@@ -29,8 +31,10 @@
   // update browser search history with the new query.
   // support history add (push) or replace via push parameter
   function update_browser_history (tab, pgtitle, push) {
-    var form = '#' + tab + '_form';
-    var query = $(form).serialize();
+    var form = $('#' + tab + '_form').find('input[name!=q]')
+      .add('<input name="q" type="hidden" value="' + $('#nq').val() + '"/>')
+      .add('<input name="uuid" type="hidden" value="' + $('#uuid').val() + '"/>');
+    var query = form.serialize();
     if (query.length) { query = '?' + query }
 
     if (window.History && window.History.enabled) {
@@ -40,13 +44,13 @@
         var target = uri_base + '/' + path + '/' + tab + query;
         if (location.pathname == target) { return };
         window.History.pushState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
+          {name: tab, fields: form.serializeArray()}, pgtitle, target
         );
       }
       else {
         var target = uri_base + '/' + path + query;
         window.History.replaceState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
+          {name: tab, fields: form.serializeArray()}, pgtitle, target
         );
       }
 
@@ -59,11 +63,11 @@
     var form = '#' + tab + '_form';
 
     // copy navbar value to currently active sidebar form
-    if ($('#nq').val()) {
-      $(form).find("input[name=q]").val( $('#nq').val() );
+    if ($('#uuid').val()) {
+      $(form).find("input[name=q]").val( $('#uuid').val() );
     }
     // then copy to all other inactive tab sidebars
-    $('form').find("input[name=q]").each( function() {
+    $('.nd_sidebar-form').find("input[name=q]").each( function() {
       $(this).val( $(form).find("input[name=q]").val() );
     });
   }
@@ -105,13 +109,16 @@
       // form reset icon on ports tab
       $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag %]&reset=on&' +
         $('#ports_form')
-          .find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]')
+          .find('input[name="f"],input[name="partial"],input[name="invert"]')
+          .add('<input name="q" type="hidden" value="' + $('#nq').val() + '"/>')
+          .add('<input name="uuid" type="hidden" value="' + $('#uuid').val() + '"/>')
           .serialize());
 
       [% ELSIF tab.tag == 'netmap' %]
       // form reset icon on netmap tab
-      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag %]&reset=on&' +
-        $('#netmap_form').find('input[name="q"]').serialize());
+      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag %]&reset=on&'
+        + '&q=' + $('#nq').val()
+        + '&uuid=' + $('#uuid').val());
       [% END %]
 
       do_search(event, '[% tab.tag %]');

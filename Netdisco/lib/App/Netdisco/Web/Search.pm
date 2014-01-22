@@ -78,10 +78,13 @@ get '/search' => require_login sub {
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
+                    my $row = $nd->first;
+
                     # redirect to device details for the one device
                     return redirect uri_for('/device', {
                       tab => 'details',
-                      q => ($nd->first->dns || $nd->first->ip),
+                      uuid => $row->ip,
+                      q  => ($row->dns || $row->ip),
                       f => '',
                     })->path_query;
                 }

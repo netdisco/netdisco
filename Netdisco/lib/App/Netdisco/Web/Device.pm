@@ -145,6 +145,7 @@ hook 'before_template' => sub {
 
   # for templates to link to same page with modified query but same options
   my $self_uri = uri_for(request->path, scalar params);
+  $self_uri->query_param_delete('uuid');
   $self_uri->query_param_delete('q');
   $self_uri->query_param_delete('f');
   $self_uri->query_param_delete('prefer');
@@ -152,13 +153,11 @@ hook 'before_template' => sub {
 };
 
 get '/device' => require_login sub {
-    my $q = param('q');
-    my $dev = schema('netdisco')->resultset('Device')->single({
-        -or => [
-            \[ 'host(me.ip) = ?' => [ bind_value => $q ] ],
-            'me.dns' => $q,
-        ],
-    });
+    my $uuid = param('uuid');
+
+    my $dev = schema('netdisco')->resultset('Device')->single(
+        \[ 'host(me.ip) = ?' => [ bind_value => $uuid ] ],
+    );
 
     if (!defined $dev) {
         return redirect uri_for('/', {nosuchdevice => 1})->path_query;
