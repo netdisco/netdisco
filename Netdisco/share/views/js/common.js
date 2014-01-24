@@ -66,6 +66,10 @@
     if ($('#uuid').val()) {
       $(form).find("input[name=q]").val( $('#uuid').val() );
     }
+    // handle missing q val, just in case
+    if (! $('#nq').val()) {
+      $('#nq').val( $('#uuid').val() );
+    }
     // then copy to all other inactive tab sidebars
     $('.nd_sidebar-form').find("input[name=q]").each( function() {
       $(this).val( $(form).find("input[name=q]").val() );
