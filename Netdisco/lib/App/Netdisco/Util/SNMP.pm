@@ -218,17 +218,22 @@ sub _mk_info_commargs {
   return (Community => $comm->{community})
     if exists $comm->{community};
 
-  my $seclevel = (exists $comm->{auth} ?
-                  (exists $comm->{priv} ? 'authPriv' : 'authNoPriv' )
-                  : 'noAuthNoPriv');
+  my $seclevel =
+    (exists $comm->{auth} ?
+    (exists $comm->{priv} ? 'authPriv' : 'authNoPriv' )
+                          : 'noAuthNoPriv');
 
   return (
-    SecName => $comm->{user},
+    SecName  => $comm->{user},
     SecLevel => $seclevel,
-    AuthProto => uc (eval { $comm->{auth}->{proto} } || 'MD5'),
-    AuthPass  => (eval { $comm->{auth}->{pass} } || ''),
-    PrivProto => uc (eval { $comm->{priv}->{proto} } || 'DES'),
-    PrivPass  => (eval { $comm->{priv}->{pass} } || ''),
+    ( exists $comm->{auth} ? (
+      AuthProto => uc ($comm->{auth}->{proto} || 'MD5'),
+      AuthPass  => ($comm->{auth}->{pass} || ''),
+      ( exists $comm->{priv} ? (
+        PrivProto => uc ($comm->{priv}->{proto} || 'DES'),
+        PrivPass  => ($comm->{priv}->{pass} || ''),
+      ) : ()),
+    ) : ()),
   );
 }
 

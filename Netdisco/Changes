@@ -15,6 +15,7 @@
   * [#85] device property in _no/_only fails with error (R. Kerr)
   * Also prefer port filter when linking to connected devices
   * Fix SQL logic in PortMAC.pm (imperfectus)
+  * Fix snmpv3 autovivication bug setting priv strings (LT)
 
 2.021001
 
