@@ -178,6 +178,11 @@ $(document).ready(function() {
   // activate tooltips
   $("[rel=tooltip]").tooltip({live: true});
 
+  // if the user edits the navbar search, update uuid
+  $('#nq').on('input', function() {
+    $('#uuid').attr('value', $('#nq').val());
+  });
+
   // bind submission to the navbar go icon
   $('#navsearchgo').click(function() {
     $('#navsearchgo').parents('form').submit();
