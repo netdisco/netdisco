@@ -15,7 +15,7 @@ my $headers = ['Device','Contact','Location','System Name','Model','OS Version',
 # device with various properties or a default match-all
 get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any {param($_)}
-      qw/name location dns ip description model os_ver vendor/;
+      qw/name location dns ip description model os_ver vendor layers/;
     my $set;
 
     if ($has_opt) {

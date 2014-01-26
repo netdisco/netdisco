@@ -2,7 +2,11 @@
 
   [NEW FEATURES]
 
-  * [#86] Use Vendor abbrevs to enhance node display in device port view 
+  * [#86] Use Vendor abbrevs to enhance node display in device port view
+
+  [ENHANCEMENTS]
+  
+  * [#69] Add search by layers to device search 
 
 
 2.022000 - 2014-01-26

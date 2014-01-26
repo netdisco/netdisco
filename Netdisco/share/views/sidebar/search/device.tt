@@ -68,6 +68,15 @@
                 [% END %]
               </select>
             </div>
+            <div class="clearfix">
+              <select class="nd_side-select" size="3"
+                multiple="on" name="layers"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Layer"/>
+                [% FOREACH opt IN [ 1 .. 7 ] %]
+                <option[% ' selected="selected"' IF layers_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="matchall"

@@ -204,6 +204,23 @@ sub search_by_field {
         || NetAddr::IP::Lite->new('255.255.255.255') );
     }
 
+    # For Search on Layers
+    my @layer_search = ( '_', '_', '_', '_', '_', '_', '_' );
+    # @layer_search is computer indexed, left->right
+    my $layers = $p->{layers};
+    if ( defined $layers && ref $layers ) {
+      foreach my $layer (@$layers) {
+        next unless defined $layer and length($layer);
+        next if ( $layer < 1 || $layer > 7 );
+        $layer_search[ $layer - 1 ] = 1;
+      }
+    }
+    elsif ( defined $layers ) {
+      $layer_search[ $layers - 1 ] = 1;
+    }
+    # the database field is in order 87654321
+    my $layer_string = join( '', reverse @layer_search );
+
     return $rs
       ->search_rs({}, $attrs)
       ->search({
@@ -214,6 +231,8 @@ sub search_by_field {
             { '-ilike' => "\%$p->{location}\%" }) : ()),
           ($p->{description} ? ('me.description' =>
             { '-ilike' => "\%$p->{description}\%" }) : ()),
+          ($p->{layers} ? ('me.layers' =>
+            { '-ilike' => "\%$layer_string" }) : ()),
 
           ($p->{model} ? ('me.model' =>
             { '-in' => $p->{model} }) : ()),
