@@ -219,6 +219,9 @@ sub shorten {
     # Remove all spaces
     $manuf =~ s/\s+//g;
 
+    # Deviating from make-manuf for HP
+    $manuf =~ s/Hewlett[-]?Packard/Hp/;
+
   # Truncate all names to a reasonable length, say, 8 characters.
   # If the string contains UTF-8, this may be substantially more than 8 bytes.
     $manuf = substr( $manuf, 0, 8 );
