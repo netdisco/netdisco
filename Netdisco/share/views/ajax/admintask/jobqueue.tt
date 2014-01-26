@@ -36,7 +36,7 @@
       <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
       [% END %]
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
+        href="[% uri_for('/device') %]?q=[% row.device | uri %]&uuid=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port | html_entity %]</td>
       <td class="nd_center-cell">[% row.subaction | html_entity %]</td>
       <td class="nd_center-cell">[% row.username | html_entity %]</td>

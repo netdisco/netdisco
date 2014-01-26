@@ -7,6 +7,8 @@ package App::Netdisco::DB::Result::Device;
 use strict;
 use warnings;
 
+use URI::Escape;
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
@@ -272,5 +274,21 @@ Number of seconds which have elapsed since the value of C<last_arpnip>.
 =cut
 
 sub since_last_arpnip  { return (shift)->get_column('since_last_arpnip')  }
+
+=head1 ADDITIONAL METHODS
+
+=head2 qstr
+
+Returns a query string suitable for including in Netdisco URLs which will
+reference this device.
+
+=cut
+
+sub qstr {
+  my $row = shift;
+  return sprintf 'q=%s&uuid=%s',
+    uri_escape($row->dns || $row->ip),
+    uri_escape($row->ip);
+}
 
 1;

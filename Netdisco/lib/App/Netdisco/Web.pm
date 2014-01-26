@@ -10,6 +10,7 @@ use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
+use URI::Escape;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -65,6 +66,11 @@ hook 'before_template' => sub {
     # fix Plugin Template Variables to be only path+query
     $tokens->{$_} = $tokens->{$_}->path_query
       for qw/search_node search_device device_ports/;
+
+    # precreated query string which uses uuid
+    $tokens->{qstr} = sprintf 'q=%s&uuid=%s',
+      uri_escape(param('q') || ''),
+      uri_escape(param('uuid') || param('q') || '');
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

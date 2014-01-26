@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use base 'DBIx::Class::Core';
+use URI::Escape;
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
@@ -57,5 +58,17 @@ __PACKAGE__->add_columns(
     data_type => 'text',
   },
 );
+
+sub left_qstr {
+  my $row = shift;
+  return sprintf 'q=%s&uuid=%s',
+    uri_escape($row->left_dns || $row->left_ip), uri_escape($row->left_ip);
+}
+
+sub right_qstr {
+  my $row = shift;
+  return sprintf 'q=%s&uuid=%s',
+    uri_escape($row->right_dns || $row->right_ip), uri_escape($row->right_ip);
+}
 
 1;

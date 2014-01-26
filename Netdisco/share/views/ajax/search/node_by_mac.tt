@@ -70,7 +70,7 @@
       [% END %]
       <td>Switch Port</td>
       <td><a class="nd_linkcell"
-            href="[% device_ports %]&q=[% node.device.dns || node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
+            href="[% device_ports %]&[% node.device.qstr %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
             [% node.switch | html_entity %] - [% node.port | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT node.active %]
         [% IF node.device.dns AND node.device_port AND node.device_port.name %]
@@ -105,7 +105,7 @@
       [% END %]
       <td>Switch Port</td>
       <td><a class="nd_linkcell"
-            href="[% device_ports %]&q=[% port.device.dns || port.ip | uri %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
+            href="[% device_ports %]&[% port.device.qstr %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
             [% port.ip | html_entity %] - [% port.descr | html_entity %]</a>
         [% IF port.device.dns AND port.name %]
           ([% port.device.dns | html_entity %] - [% port.name | html_entity %])

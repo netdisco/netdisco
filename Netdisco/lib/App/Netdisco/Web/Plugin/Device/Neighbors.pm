@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use URI::Escape;
 
 register_device_tab({ tag => 'netmap', label => 'Neighbors' });
 
@@ -35,7 +36,8 @@ sub _add_children {
         push @legit, $c;
         push @{$ptr}, {
           name => _get_name($c),
-          fullname => (var('devices')->{$c} || $c),
+          qstr => (sprintf 'q=%s&uuid=%s',
+            uri_escape(var('devices')->{$c} || $c), uri_escape($c)),
           ip => $c,
         };
     }
@@ -93,7 +95,8 @@ get '/ajax/data/device/netmap' => require_login sub {
     my %tree = (
         ip => $start,
         name => _get_name($start),
-        fullname => (var('devices')->{$start} || $start),
+        qstr => (sprintf 'q=%s&uuid=%s',
+          uri_escape(var('devices')->{$start} || $start), uri_escape($start)),
         children => [],
     );
 

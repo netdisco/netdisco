@@ -67,7 +67,7 @@
           data-animation="" data-title="Click to Enable"></i>
       [% END %]
         <a class="nd_log-icon"
-          href="[% uri_for('/admin/portlog') %]?q=[% device.dns || device.ip | uri %]&f=[% row.port | uri %]">
+          href="[% uri_for('/admin/portlog') %]?[% device.qstr %]&f=[% row.port | uri %]">
           <i class="icon-file-text-alt"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
@@ -76,14 +76,14 @@
       <td nowrap>
       [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
-            self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
+            self_options) %]&[% qstr %]&f=[% row.port | uri %]&prefer=port">
           [% IF row.is_master %]
             <small><i class="icon-group muted"></i></small>&nbsp;
           [% END %]
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
           <a class="nd_this-port-only" href="[% uri_for('/device',
-              self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
+              self_options) %]&[% qstr %]&f=[% row.slave_of | uri %]&prefer=port">
           [% row.slave_of | html_entity %]</a>
         [% END %]
       </td>
@@ -240,7 +240,8 @@
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% uri_for('/device',
-                  self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
+                  self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri
+                  %]&uuid=[% row.neighbor.ip | uri %]f=[% row.remote_port | uri %]&prefer=port">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
             [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
             [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
@@ -254,7 +255,7 @@
             [% ELSIF row.remote_type AND row.remote_type.match('(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)') %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
-            <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
+            <a href="[% search_node %]&q=[% row.remote_ip | uri %]&uuid=[% row.remote_ip | uri %]">
               [% row.remote_ip | html_entity %]
               [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
             [% IF params.neigh_id and (row.remote_id or row.remote_type) %]

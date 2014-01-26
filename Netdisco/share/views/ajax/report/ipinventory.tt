@@ -15,7 +15,7 @@
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
       </td>
     [% ELSIF row.time_last %]
-      <td><a href="[% search_device %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+      <td><a href="[% search_device %]&q=[% row.ip | uri %]&uuid=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
       </td>
     [% ELSE %]
       <td>[% row.ip | html_entity %]</td>
