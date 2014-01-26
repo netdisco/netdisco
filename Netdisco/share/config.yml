@@ -192,6 +192,7 @@ plugins:
   Auth::Extensible:
     no_api_change_warning: true
     no_default_pages: true
+    no_login_handler: true
     realms:
       users:
         provider: 'App::Netdisco::Web::Auth::Provider::DBIC'

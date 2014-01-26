@@ -6,7 +6,8 @@
 
   [ENHANCEMENTS]
   
-  * [#69] Add search by layers to device search 
+  * [#69] Add search by layers to device search
+  * [#77] Log user access 
 
 
 2.022000 - 2014-01-26
