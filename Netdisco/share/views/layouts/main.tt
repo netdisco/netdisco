@@ -117,7 +117,7 @@
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
         <input placeholder="Find Anything" class="search-query span3"
           id="nq" name="q" value="[% params.q %]" type="text" autocomplete="off"/>
-        <input id="uuid" name="uuid" value="[% params.uuid %]" type="hidden"/>
+        <input id="uuid" name="uuid" value="[% params.uuid || parms.q %]" type="hidden"/>
         <div class="btn-group nd_navbar-search-group">
           <button class="btn btn-inverse nd_navbar-search-icon">
             <span style="font-size: 18px;">
