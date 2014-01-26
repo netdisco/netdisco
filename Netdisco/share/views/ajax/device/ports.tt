@@ -282,6 +282,13 @@
             [% END %]
             )
           [% END %]
+          [% IF params.n_vendor AND node.oui.defined %]
+            (Vendor:
+            [% FOREACH oui IN node.oui %]
+              [%+ oui.abbrev | html_entity %]
+            [% END %]
+            )
+          [% END %]
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip %]
             [% FOREACH ip IN node.ips %]
