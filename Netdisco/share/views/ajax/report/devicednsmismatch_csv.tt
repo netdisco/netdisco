@@ -1,0 +1,13 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Name' 'DNS' 'IP Address' 'Contact' 'Location' ]) %]
+
+[% WHILE (row = results.next) %]
+  [% mylist = [] %]
+  [% mylist.push(row.name) %]
+  [% mylist.push(row.dns) %]
+  [% mylist.push(row.ip) %]
+  [% mylist.push(row.contact) %]
+  [% mylist.push(row.location) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

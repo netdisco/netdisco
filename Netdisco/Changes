@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * [#86] Use Vendor abbrevs to enhance node display in device port view
+  * [#74] Device Name / DNS mismatches report
 
   [ENHANCEMENTS]
   

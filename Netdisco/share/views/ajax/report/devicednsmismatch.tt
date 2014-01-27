@@ -1,0 +1,23 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>DNS</th>
+      <th>IP Address</th>
+      <th>Contact</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      <td><a href="[% search_device %]&q=[% row.dns || row.ip | uri %]">
+            [% row.name | html_entity %]</a>
+      <td>[% row.dns | html_entity %]</td>
+      <td>[% row.ip | html_entity %]</td>
+      <td>[% row.contact | html_entity %]</td>
+      <td>[% row.location | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
