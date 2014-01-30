@@ -11,7 +11,7 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td><a href="[% device_ports %]&q=[% row.dns || row.ip | uri %]">[% row.dns || row.ip | html_entity %]</a></td>
+      <td><a href="[% device_ports %]&q=[% row.ip | uri %]">[% row.dns || row.ip | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port_count %]</td>
       <td class="nd_center-cell">[% row.ports_in_use %]</td>
       <td class="nd_center-cell">[% row.ports_shutdown %]</td>

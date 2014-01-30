@@ -12,7 +12,7 @@
     [% FOREACH row IN results %]
     <tr>
       <td>[% row.dns || row.name || row.ip | html_entity %]</td>
-      <td class="nd_center-cell"><a href="[% device_ports %]&q=[% row.dns || row.ip | uri %]&f=[% row.port | uri %]&c_nodes=on">
+      <td class="nd_center-cell"><a href="[% device_ports %]&q=[% row.ip | uri %]&f=[% row.port | uri %]&c_nodes=on">
                [% row.port | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.description | html_entity %]</td>
       <td class="nd_center-cell">[% row.mac_count | format_number %]</td>

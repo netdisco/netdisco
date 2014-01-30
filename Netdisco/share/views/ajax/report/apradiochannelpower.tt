@@ -30,7 +30,7 @@
           [% NEXT UNLESS p.channel # No channel port is admin down %]
           <tr>
             <td>
-              <a href="[% device_ports %]&q=[% results.$row.device.dns || results.$row.device.ip | uri %]&f=[% p.port | uri %]">
+              <a href="[% device_ports %]&q=[% results.$row.device.ip | uri %]&f=[% p.port | uri %]">
                 [% p.port | html_entity %]</a></td>
             <td>[% p.name %]</td>
             <td>[% p.descr %]</td>

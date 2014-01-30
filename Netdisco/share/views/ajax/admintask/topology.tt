@@ -42,11 +42,11 @@
     [% WHILE (row = results.next) %]
     [% SET count = count + 1 %]
     <tr>
-      <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.dev1 | uri %]">
+      <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.device1.ip | uri %]">
         [% (row.device1.dns || row.device1.name || row.device1.ip) | html_entity %]</a>
       </td>
       <td class="nd_center-cell">[% row.port1 | html_entity %]</td>
-      <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.dev2 | uri %]">
+      <td class="nd_center-cell"><a class="nd_linkcell" href="[% uri_for('/device') %]?q=[% row.device2.ip | uri %]">
         [% (row.device2.dns || row.device2.name || row.device2.ip) | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.port2 | html_entity %]</td>
       <td class="nd_center-cell">

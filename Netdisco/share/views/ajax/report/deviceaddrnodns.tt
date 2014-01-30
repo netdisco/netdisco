@@ -10,7 +10,7 @@
   </tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td class="nd_center-cell"><a href="[% search_device %]&q=[% row.dns || row.ip | uri %]">
+      <td class="nd_center-cell"><a href="[% search_device %]&q=[% row.ip | uri %]">
             [% row.dns || row.name || row.ip | html_entity %]</a>
       <td class="nd_center-cell">[% row.alias | html_entity %]</td>
       <td class="nd_center-cell">[% row.contact | html_entity %]</td>
