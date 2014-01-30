@@ -9,6 +9,7 @@
       <th>OS Version</th>
       <th>Management IP</th>
       <th>Serial</th>
+      <th>Last Discovered</th>
     </tr>
   </thead>
   </tbody>
@@ -22,6 +23,7 @@
       <td>[% row.os_ver | html_entity %]</td>
       <td>[% row.ip | html_entity %]</td>
       <td>[% row.serial | html_entity %]</td>
+      <td>[% row.last_discover_stamp | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>
