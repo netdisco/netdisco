@@ -136,7 +136,7 @@
       <td>[% d.vtp_domain | html_entity %]</td>
     </tr>
     [% IF user_has_role('admin') %]
-    <tr data-for-device="[% d.dns || d.ip %]">
+    <tr data-for-device="[% d.ip %]">
       <td>Admin Tasks</td>
       <td>
         <input type="hidden" data-form="discover" value="[% d.ip %]" name="device"/>

@@ -9,12 +9,13 @@
       <th>OS Version</th>
       <th>Management IP</th>
       <th>Serial</th>
+      <th>Last Discovered</th>
     </tr>
   </thead>
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td><a href="[% uri_for('/device') %]?q=[% row.dns || row.ip | uri %]">[% row.dns || row.ip | html_entity %]</a></td>
+      <td><a href="[% uri_for('/device') %]?q=[% row.ip | uri %]">[% row.dns || row.ip | html_entity %]</a></td>
       <td>[% row.contact | html_entity %]</td>
       <td>[% row.location | html_entity %]</td>
       <td>[% row.name | html_entity %]</td>
@@ -22,6 +23,7 @@
       <td>[% row.os_ver | html_entity %]</td>
       <td>[% row.ip | html_entity %]</td>
       <td>[% row.serial | html_entity %]</td>
+      <td>[% row.last_discover_stamp | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>

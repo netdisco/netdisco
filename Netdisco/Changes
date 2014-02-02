@@ -10,6 +10,9 @@
   * [#69] Add search by layers to device search
   * [#77] Log user access 
 
+  [BUG FIXES]
+
+  * [#84] No longer use dns as a key into devices; cope with dupe dns (LT)
 
 2.022000 - 2014-01-26
 

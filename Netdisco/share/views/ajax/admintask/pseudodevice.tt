@@ -21,7 +21,7 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') %]?q=[% row.dns | uri %]">[% row.dns | html_entity %]</a></td>
+        href="[% uri_for('/device') %]?q=[% row.ip | uri %]">[% row.dns | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.ip | html_entity %]</td>
       <td class="nd_center-cell">
         <input data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">

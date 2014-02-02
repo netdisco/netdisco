@@ -81,7 +81,7 @@ get '/search' => require_login sub {
                     # redirect to device details for the one device
                     return redirect uri_for('/device', {
                       tab => 'details',
-                      q => ($nd->first->dns || $nd->first->ip),
+                      q => $nd->first->ip,
                       f => '',
                     })->path_query;
                 }

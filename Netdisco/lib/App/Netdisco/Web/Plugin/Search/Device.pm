@@ -19,13 +19,15 @@ get '/ajax/content/search/device' => require_login sub {
     my $set;
 
     if ($has_opt) {
-        $set = schema('netdisco')->resultset('Device')->search_by_field(scalar params);
+        $set = schema('netdisco')->resultset('Device')
+          ->with_times->search_by_field(scalar params);
     }
     else {
         my $q = param('q');
         send_error('Missing query', 400) unless $q;
 
-        $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
+        $set = schema('netdisco')->resultset('Device')
+          ->with_times->search_fuzzy($q);
     }
     return unless $set->count;
 

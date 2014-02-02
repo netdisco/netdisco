@@ -67,7 +67,7 @@
           data-animation="" data-title="Click to Enable"></i>
       [% END %]
         <a class="nd_log-icon"
-          href="[% uri_for('/admin/portlog') %]?q=[% device.dns || device.ip | uri %]&f=[% row.port | uri %]">
+          href="[% uri_for('/admin/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
           <i class="icon-file-text-alt"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
@@ -240,7 +240,7 @@
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% uri_for('/device',
-                  self_options) %]&q=[% row.neighbor.dns || row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
+                  self_options) %]&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
             [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]
             [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
             [% IF params.neigh_id and (row.remote_id or row.remote_type) %]

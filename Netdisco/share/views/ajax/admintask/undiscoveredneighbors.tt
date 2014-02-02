@@ -10,7 +10,7 @@
   </tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td><a href="[% device_ports %]&q=[% row.dns || row.ip | uri %]&f=[% row.port | uri %]">
+      <td><a href="[% device_ports %]&q=[% row.ip | uri %]&f=[% row.port | uri %]">
                [% row.dns || row.name || row.ip | html_entity %] ( [% row.port | html_entity %] ) </a></td>
       <td><a href="[% search_node %]&q=[% row.remote_ip | uri %]">
                                  [% row.remote_ip | html_entity %]</a>

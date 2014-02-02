@@ -11,7 +11,7 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td><a href="[% search_device %]&q=[% row.dns || row.ip | uri %]">
+      <td><a href="[% search_device %]&q=[% row.ip | uri %]">
             [% row.name | html_entity %]</a>
       <td>[% row.dns | html_entity %]</td>
       <td>[% row.ip | html_entity %]</td>
