@@ -100,10 +100,10 @@ $bool = $term->ask_yn(
 deploy_db() if $bool;
 
 my $users = schema('netdisco')->resultset('User');
-if ($users->count == 0 and setting('no_auth')) {
+if ($users->count == 0) {
     say '';
     $bool = $term->ask_yn(
-      prompt => 'Would you like the default web user to have Admin rights (discover, etc)?',
+      prompt => 'Would you like a default web user with Admin rights (discover, etc)?',
       default => 'n',
     );
 
@@ -113,11 +113,15 @@ if ($users->count == 0 and setting('no_auth')) {
           admin => 'true',
           port_control => 'true',
         });
+        if (not setting('no_auth')) {
+            say '';
+            say '*** Done. Please add "no_auth: true" to your ~/environments/deployment.yml file. ***';
+        }
     }
     else {
         say '';
         $bool = $term->ask_yn(
-          prompt => 'Would you like the default web user to have Port Control rights?',
+          prompt => 'Would you like a default web user with Port Control rights?',
           default => 'n',
         );
         if ($bool) {
@@ -125,6 +129,10 @@ if ($users->count == 0 and setting('no_auth')) {
               username => 'guest',
               port_control => 'true',
             });
+            if (not setting('no_auth')) {
+                say '';
+                say '*** Done. Please add "no_auth: true" to your ~/environments/deployment.yml file. ***';
+            }
         }
     }
 }
