@@ -42,9 +42,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     $subnet = NetAddr::IP::Lite->new('0.0.0.0/32')
       if (! $subnet) or ($subnet->addr eq '0.0.0.0');
 
-    my $age    = param('age_on')     || '0';
     my $agenot = param('age_invert') || '0';
-
     my ( $start, $end ) = param('daterange') =~ /(\d+-\d+-\d+)/gmx;
 
     my $limit = param('limit') || 256;
@@ -129,7 +127,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     )->as_query;
 
     my $rs;
-    if ( $age && $start && $end ) {
+    if ( $start && $end ) {
         $start = $start . ' 00:00:00';
         $end   = $end . ' 23:59:59';
 

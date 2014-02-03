@@ -45,16 +45,4 @@
       ,delay: 250
       ,minLength: 3
     });
-
-    // change color of daterange input when activated
-    $('#age_on').change(function() {
-      if ($(this).is(':checked')) {
-        $('#daterange').parent('.clearfix').addClass('success');
-      }
-      else {
-        $('#daterange').parent('.clearfix').removeClass('success');
-      }
-    });
-    // fire the event to set success class correctly on page load
-    $('#age_on').change();
   });
