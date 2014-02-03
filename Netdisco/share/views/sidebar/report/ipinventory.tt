@@ -8,27 +8,18 @@
 
             <fieldset>
               <legend class="nd_sidebar-legend">
-                <label class="checkbox">
-                  <input type="checkbox" id="age_on" name="age_on"
-                    [% 'checked="checked"' UNLESS (params.exists('age_on') AND params.age_on == '') %]/>
-                  <em><strong>Age Filter</strong></em>
-                </label>
+                <label><em><strong>Date Range</strong></em></label>
               </legend>
+              <div class="clearfix input-prepend">
+                <label class="add-on">
+                  <input type="checkbox" id="age_invert"
+                    name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="age_invert">
+                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                </label>
+              </div>
               <div class="clearfix">
-                <ul class="unstyled">
-                  <li>
-                    <div class="clearfix input-prepend">
-                      <label class="add-on">
-                      <input type="checkbox" id="age_invert"
-                        name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
-                      </label>
-                      <label class="nd_checkboxlabel" for="age_invert">
-                        <span class="nd_searchcheckbox uneditable-input">Not</span>
-                      </label>
-                    </div>
-                  </li>
-                </ul>
-                <em class="muted">Seen within the date range:</em><br/>
                 <input class="nd_side-input" id="daterange"
                   type="text" name="daterange" value="[% params.daterange | html_entity %]"/>
               </div>

@@ -290,6 +290,17 @@ $(document).ready(function() {
     ,separator: ' to '
   }
   ,function(start, end) {
-      $('#daterange').parent('.clearfix').addClass('success');
+    $('#daterange').trigger('input');
   });
+
+  // handler for datepicker in node sidebar
+  $('.nd_sidebar').on('input', '#daterange', function() {
+    if ($(this).prop('value') == '') {
+      $('#daterange').parent('.clearfix').removeClass('success');
+    }
+    else {
+      $('#daterange').parent('.clearfix').addClass('success');
+    }
+  });
+  $('#daterange').trigger('input');
 });
