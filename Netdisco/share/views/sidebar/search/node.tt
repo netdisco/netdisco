@@ -39,6 +39,20 @@
               </label>
             </div>
             <div class="clearfix">
+              <em class="muted">Date Range:</em><br/>
+              <div class="clearfix input-prepend">
+                <label class="add-on">
+                  <input type="checkbox" id="age_invert"
+                    name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="age_invert">
+                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                </label>
+              </div>
+              <input class="nd_side-input" id="daterange"
+                type="text" name="daterange" value="[% params.daterange | html_entity %]"/>
+            </div>
+            <div class="clearfix">
               <em class="muted">MAC address format:</em><br/>
               <select id="nd_node-mac-format" name="mac_format">
                 [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
@@ -48,3 +62,4 @@
             </div>
             <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
               <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Nodes</button>
+

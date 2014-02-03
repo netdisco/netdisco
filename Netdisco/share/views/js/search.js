@@ -21,6 +21,13 @@
     form_inputs.each(function() {device_form_state($(this))});
     form_inputs.change(function() {device_form_state($(this))});
 
+    // special case for datepicker in node sidebar
+    $('.nd_sidebar').on('input', '#daterange', function() {
+      if ($(this).prop('value') == '') {
+        $('#daterange').parent('.clearfix').removeClass('success');
+      }
+    });
+
     // handler for copy icon in search option
     $('.nd_field-copy-icon').click(function() {
       var name = $(this).data('btn-for');

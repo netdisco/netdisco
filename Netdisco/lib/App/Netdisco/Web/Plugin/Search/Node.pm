@@ -18,15 +18,36 @@ ajax '/ajax/content/search/node' => require_login sub {
     send_error('Missing node', 400) unless $node;
     content_type('text/html');
 
+    my $agenot = param('age_invert') || '0';
+    my ( $start, $end ) = param('daterange') =~ /(\d+-\d+-\d+)/gmx;
+
     my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
     my @active = (param('archived') ? () : (-bool => 'active'));
 
+    my @times = ();
+    if ($start and $end) {
+        $start = $start . ' 00:00:00';
+        $end   = $end   . ' 23:59:59';
+        if ($agenot) {
+            @times = (-or => [
+              time_first => [ { '<', $start }, undef ],
+              time_last => { '>', $end },
+            ]);
+        }
+        else {
+            @times = (-and => [
+              time_first => { '>=', $start },
+              time_last  => { '<=', $end },
+            ]);
+        }
+    }
+
     if (! $mac->get_error) {
         my $sightings = schema('netdisco')->resultset('Node')
-          ->search_by_mac({mac => $mac->as_IEEE, @active});
+          ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
 
         my $ips = schema('netdisco')->resultset('NodeIp')
-          ->search_by_mac({mac => $mac->as_IEEE, @active});
+          ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
 
         my $ports = schema('netdisco')->resultset('DevicePort')
           ->search({mac => $mac->as_IEEE});
@@ -58,7 +79,7 @@ ajax '/ajax/content/search/node' => require_login sub {
         if (my $ip = NetAddr::IP::Lite->new($node)) {
             # search_by_ip() will extract cidr notation if necessary
             $set = schema('netdisco')->resultset('NodeIp')
-              ->search_by_ip({ip => $ip, @active});
+              ->search_by_ip({ip => $ip, @active, @times});
         }
         else {
             if (param('partial')) {
@@ -69,7 +90,7 @@ ajax '/ajax/content/search/node' => require_login sub {
                     if index($node, setting('domain_suffix')) == -1;
             }
             $set = schema('netdisco')->resultset('NodeIp')
-              ->search_by_dns({dns => $node, @active});
+              ->search_by_dns({dns => $node, @active, @times});
 
             # if the user selects Vendor search opt, then
             # we'll try the OUI company name as a fallback
@@ -78,7 +99,7 @@ ajax '/ajax/content/search/node' => require_login sub {
                 $set = schema('netdisco')->resultset('NodeIp')
                   ->with_times
                   ->search(
-                    {'oui.company' => { -ilike => "\%$node\%"}},
+                    {'oui.company' => { -ilike => "\%$node\%"}, @times},
                     {'prefetch' => 'oui'},
                   );
             }

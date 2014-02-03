@@ -31,6 +31,7 @@
                 <em class="muted">Seen within the date range:</em><br/>
                 <input class="nd_side-input" id="daterange"
                   type="text" name="daterange" value="[% params.daterange | html_entity %]"/>
+              </div>
             </fieldset>
 
             <fieldset>
@@ -72,27 +73,3 @@
             <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search IPs</button>
 
-<script type = "text/javascript">
-[%+ INCLUDE 'js/daterangepicker.js' -%]
-[%+ INCLUDE 'js/moment.min.js' -%]
-$('#daterange').daterangepicker({
-            ranges: {
-                        'Today': [moment(), moment()],
-                        'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
-                        'Last 7 Days': [moment().subtract('days', 6), moment()],
-                        'Last 30 Days': [moment().subtract('days', 29), moment()],
-                        'This Month': [moment().startOf('month'), moment().endOf('month')],
-                        'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
-            },
-            startDate: moment().subtract('days', 29),
-            endDate: moment(),
-            minDate: '2004-01-01',
-            showDropdowns: true,
-            timePicker: false,
-            opens: 'left',
-            format: 'YYYY-MM-DD',
-            separator: ' to ',
-}, function(start, end) {
-            $('#daterange span').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
-});
-</script>
