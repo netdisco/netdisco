@@ -14,10 +14,10 @@ my $jobactions = {
       discoverall
       arpwalk
       macwalk
+      nbtwalk
       expiry
   /
 #    saveconfigs
-#    nbtwalk
 #    backup
 };
 

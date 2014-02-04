@@ -40,6 +40,7 @@ my %jobs_all = map {$_ => 1} qw/
     discoverall
     macwalk
     arpwalk
+    nbtwalk
 /;
 
 foreach my $jobtype (keys %jobs_all, keys %jobs) {

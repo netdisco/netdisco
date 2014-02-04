@@ -43,6 +43,8 @@ database:
 #   arpwalk:
 #     when:
 #       min: 50
+#   nbtwalk:
+#     when: '0 8,13,21 * * *'
 #   expiry:
 #     when: '20 23 * * *'
 

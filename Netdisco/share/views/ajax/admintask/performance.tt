@@ -24,6 +24,9 @@
       [% ELSIF NOT dis AND row.action == 'discover' %]
         class="info"
         [% SET dis = 1 %]
+      [% ELSIF NOT nbt AND row.action == 'nbtstat' %]
+        class="info"
+        [% SET nbt = 1 %]
       [% END %]
     >
       <td class="nd_center-cell">[% row.action.ucfirst | html_entity %]</td>

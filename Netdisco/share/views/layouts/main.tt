@@ -105,6 +105,11 @@
               <button type="submit" class="btn btn-link nd_btn-link">Macsuck All</button>
             </form>
           </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/nbtwalk') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Nbtstat All</button>
+            </form>
+          </li>
           [% IF settings._admin_tasks.size %]
             <li class="divider"></li>
             [% FOREACH ai IN settings._admin_order %]

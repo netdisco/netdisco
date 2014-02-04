@@ -438,9 +438,10 @@ Interactive and Poller workers in their C<config.yml> file (zero or more of
 each).
 
 The fourth kind of worker is called the Scheduler and takes care of adding
-discover, macsuck, and arpnip jobs to the queue (which are in turn handled by
-the Poller worker). This worker is automatically started only if the user has
-enabled the "C<housekeeping>" section of their C<deployment.yml> site config.
+discover, macsuck, arpnip, and nbtstat jobs to the queue (which are in turn
+handled by the Poller worker). This worker is automatically started only if
+the user has enabled the "C<housekeeping>" section of their
+C<deployment.yml> site config.
 
 =head2 SNMP::Info
 

@@ -10,6 +10,7 @@ with 'App::Netdisco::Daemon::Worker::Common';
 with 'App::Netdisco::Daemon::Worker::Poller::Device',
      'App::Netdisco::Daemon::Worker::Poller::Arpnip',
      'App::Netdisco::Daemon::Worker::Poller::Macsuck',
+     'App::Netdisco::Daemon::Worker::Poller::Nbtstat',
      'App::Netdisco::Daemon::Worker::Poller::Expiry';
 
 sub worker_type { 'pol' }

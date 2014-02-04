@@ -191,4 +191,28 @@ sub search_by_mac {
       ->search($cond, $attrs);
 }
 
+=head2 ip_version( $version )
+
+ my $rset = $rs->ip_version(4);
+
+This predefined C<search()> returns a ResultSet of matching rows from the
+NodeIp table of nodes with addresses of the supplied IP version.
+
+=over 4
+
+=item *
+
+The C<version> parameter must be an integer either 4 or 6.
+
+=cut
+
+sub ip_version {
+    my ( $rs, $version ) = @_;
+
+    die "ip_version input must be either 4 or 6\n"
+        unless $version && ( $version == 4 || $version == 6 );
+
+    return $rs->search_rs( \[ 'family(ip) = ?', $version ] );
+}
+
 1;

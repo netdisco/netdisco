@@ -108,6 +108,9 @@ snmpforce_v3: []
 arpnip_no: []
 arpnip_only: []
 arpnip_min_age: 0
+nbtstat_no: []
+nbtstat_only: []
+nbtstat_max_age: 7
 expire_devices: 0
 expire_nodes: 0
 expire_nodes_archive: 0
@@ -173,6 +176,8 @@ dns:
 #      min: 15
 #      hour: '*/2'
 #      wday: 'mon-fri'
+#   nbtwalk:
+#     when: '0 8,13,21 * * *'
 
 # ---------------
 # DANCER INTERNAL

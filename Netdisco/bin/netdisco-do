@@ -77,6 +77,7 @@ if (!length $action) {
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
   with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
   with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
+  with 'App::Netdisco::Daemon::Worker::Poller::Nbtstat';
   with 'App::Netdisco::Daemon::Worker::Poller::Expiry';
   with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
   with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
@@ -129,9 +130,9 @@ C<-D> flag is given.
 
 This program allows you to run any Netdisco poller job from the command-line.
 
-Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>) simply add
-entries to the Netdisco job queue for other jobs, so won't seem to do much
-when you trigger them.
+Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>), C<nbtwalk>)
+simply add entries to the Netdisco job queue for other jobs, so won't seem
+to do much when you trigger them.
 
 =head1 ACTIONS
 
@@ -146,6 +147,10 @@ Run a macsuck on the device (specified with C<-d>).
 =head2 arpnip
 
 Run an arpnip on the device (specified with C<-d>).
+
+=head2 nbtstat
+
+Run an nbtstat on the node (specified with C<-d>).
 
 =head2 set_location
 

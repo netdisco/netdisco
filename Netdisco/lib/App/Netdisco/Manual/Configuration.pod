@@ -586,6 +586,31 @@ Value: Number. Default: 0.
 Sets the minimum amount of time in seconds which must elapse between any two
 arpnip jobs for a device.
 
+=head3 C<nbtstat_no>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+IP addresses in the list will not be visited for nbtstat. You can include
+hostnames, IP addresses, subnets (nbtstat only supports IPv4), YAML Regexp
+to match the DNS name, and address ranges (using a hyphen and no whitespace)
+in the list.
+
+=head3 C<nbtstat_only>
+
+Value: List of Network Identifiers. Default: Empty List.
+
+If present, nbtstat will be limited to IP addresses matching entries in this
+list. You can include hostnames, IP addresses, subnets
+(nbtstat only supports IPv4), YAML Regexp to match the DNS name, and address
+ranges (using a hyphen and no whitespace).
+
+=head3 C<nbtstat_max_age>
+
+Value: Number. Default: 7.
+
+The maximum age of a node in days for it to be checked for NetBIOS
+information.
+
 =head3 C<expire_devices>
 
 Value: Number of Days.
@@ -800,6 +825,8 @@ hour fields (which accept same types as C<cron> notation). For example:
        min: 15
        hour: '*/2'
        wday: 'mon-fri'
+   nbtwalk:
+     when: '0 8,13,21 * * *'
    expiry:
      when: '20 23 * * *'
 

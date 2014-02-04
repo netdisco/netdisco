@@ -13,7 +13,7 @@ my $fqdn = hostfqdn || 'localhost';
 
 my $role_map = {
   (map {$_ => 'Poller'}
-      qw/discoverall discover arpwalk arpnip macwalk macsuck expiry/),
+      qw/discoverall discover arpwalk arpnip macwalk macsuck nbtstat nbtwalk expiry/),
   (map {$_ => 'Interactive'}
       qw/location contact portcontrol portname vlan power/)
 };

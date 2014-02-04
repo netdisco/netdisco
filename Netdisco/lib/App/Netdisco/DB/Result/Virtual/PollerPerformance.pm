@@ -14,7 +14,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
       COUNT( device ) AS number, MIN( started ) AS start, MAX( finished ) AS end,
       justify_interval( extract ( epoch FROM( max( finished ) - min( started ) ) ) * interval '1 second' ) AS elapsed 
     FROM admin
-    WHERE action IN ( 'discover', 'macsuck', 'arpnip' ) 
+    WHERE action IN ( 'discover', 'macsuck', 'arpnip', 'nbtstat' ) 
     GROUP BY action, entered 
     HAVING count( device ) > 1 
     ORDER BY entered DESC, elapsed DESC

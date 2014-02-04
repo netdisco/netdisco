@@ -5,6 +5,7 @@
   * [#86] Use Vendor abbrevs to enhance node display in device port view
   * [#74] Device Name / DNS mismatches report
   * [#71] Node search by date (but not time)
+  * [#73] NetBIOS Poller - nbtstat and nbtwalk
 
   [ENHANCEMENTS]
   
