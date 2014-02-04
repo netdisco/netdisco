@@ -36,7 +36,7 @@ Given a Device database object, and a working SNMP connection, connect to a
 device and discover the MAC addresses listed against each physical port
 without a neighbor.
 
-If the device has VLANs, C<do_macsuck> will walk each VALN to get the MAC
+If the device has VLANs, C<do_macsuck> will walk each VLAN to get the MAC
 addresses from there.
 
 It will also gather wireless client information if C<store_wireless_clients>

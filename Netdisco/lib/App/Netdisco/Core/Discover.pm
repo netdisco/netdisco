@@ -221,7 +221,7 @@ sub store_interfaces {
 
       if (not $port) {
           debug sprintf ' [%s] interfaces - ignoring %s (no port mapping)',
-            $device->ip, $port;
+            $device->ip, $entry;
           next;
       }
 
@@ -336,7 +336,7 @@ sub store_wireless {
 
       if (not $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
-            $device->ip, $port;
+            $device->ip, $iid;
           next;
       }
 
@@ -364,7 +364,7 @@ sub store_wireless {
 
       if (not $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
-            $device->ip, $port;
+            $device->ip, $entry;
           next;
       }
 
