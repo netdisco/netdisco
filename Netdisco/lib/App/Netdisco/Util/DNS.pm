@@ -108,7 +108,7 @@ sub hostnames_resolve_async {
     my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
     next if no_resolve($ip);
     $done->begin;
-    AnyEvent::DNS::reverse_verify $ip,
+    AnyEvent::DNS::reverse_lookup $ip,
             sub { $hash_ref->{'dns'} = shift; $done->end; };
   }
 
