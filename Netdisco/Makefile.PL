@@ -30,6 +30,7 @@ requires 'MCE' => 1.408;
 requires 'Net::Domain' => 1.23;
 requires 'Net::DNS' => 0.72;
 requires 'Net::MAC' => 2.103622;
+requires 'Net::NBName' => 0.26;
 requires 'NetAddr::IP' => 4.068;
 requires 'Path::Class' => 0.32;
 requires 'Plack' => 1.0023;
