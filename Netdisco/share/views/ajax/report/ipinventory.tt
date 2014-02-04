@@ -21,17 +21,7 @@
       <td>[% row.ip | html_entity %]</td>
     [% END %]
       <td class="nd_center-cell">[% row.dns | html_entity %]</td>
-    [% IF row.age %]
-      [% age = row.age.replace('mon', 'month') %]
-      [% IF age.match('(day|month|year)') %]
-        [% age = age.remove('(-)?\d{2}:\d{2}.*$') %]
-      [% ELSE %]
-        [% age = age.replace('(\d{2}:\d{2}):\d{2}(\.\d*)$', '$1') %]
-      [% END %]
-    [% ELSE %]
-      [% age = 'Never' %]
-    [% END %]
-      <td class="nd_center-cell">[% age | html_entity %]</td>
+      <td class="nd_center-cell">[% row.age || 'Never' | html_entity %]</td>
       <td class="nd_center-cell">[% row.time_first || 'Never' | html_entity %]</td>
     </tr>
     [% END %]

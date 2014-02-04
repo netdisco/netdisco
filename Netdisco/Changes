@@ -16,6 +16,7 @@
   [BUG FIXES]
 
   * [#84] No longer use dns as a key into devices; cope with dupe dns (LT)
+  * Correct date formatting and logic in IP Inventory report
 
 2.022000 - 2014-01-26
 

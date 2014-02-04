@@ -65,7 +65,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 'dns',
                 \'true AS active',
                 \'false AS node',
-                \'age(device.last_discover) AS age'
+                \qq/replace( date_trunc( 'minute', age( now(), device.last_discover ) ) ::text, 'mon', 'month') AS age/
             ],
             as => [qw( ip time_first time_last dns active node age)],
         }
@@ -74,7 +74,9 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     my $rs2 = schema('netdisco')->resultset('NodeIp')->search(
         undef,
         {   columns   => [qw( ip time_first time_last dns active)],
-            '+select' => [ \'true AS node', \'age(time_last) AS age' ],
+            '+select' => [ \'true AS node',
+                           \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
+                         ],
             '+as'     => [ 'node', 'age' ],
         }
     )->hri;
@@ -84,7 +86,8 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         {   columns   => [qw( ip time_first time_last )],
             '+select' => [
                 'nbname AS dns', 'active',
-                \'true AS node', \'age(time_last) AS age'
+                \'true AS node',
+                \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/ 
             ],
             '+as' => [ 'dns', 'active', 'node', 'age' ],
         }
@@ -99,7 +102,9 @@ get '/ajax/content/report/ipinventory' => require_login sub {
             undef,
             {   bind => [ $subnet->cidr ],
                 columns   => [qw( ip time_first time_last dns active)],
-                '+select' => [ \'false AS node', \'age(time_last) AS age' ],
+                '+select' => [ \'false AS node',
+                               \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
+                             ],
                 '+as'     => [ 'node', 'age' ],
             }
         )->hri;
@@ -113,8 +118,8 @@ get '/ajax/content/report/ipinventory' => require_login sub {
             select   => [
                 \'DISTINCT ON (ip) ip',
                 'dns',
-                \'date_trunc(\'second\', time_last) AS time_last',
-                \'date_trunc(\'second\', time_first) AS time_first',
+                \qq/date_trunc('second', time_last) AS time_last/,
+                \qq/date_trunc('second', time_first) AS time_first/,
                 'active',
                 'node',
                 'age'
@@ -134,8 +139,8 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         if ( $agenot ) {
             $rs = $rs_union->search(
                 {   -or => [
-                        time_first => [ { '<', $start }, undef ],
-                        time_last => { '>', $end },
+                        time_first => [ undef ],
+                        time_last => [ { '<', $start }, { '>', $end } ]
                     ]
                 },
                 { from => { me => $rs_sub }, }
@@ -144,8 +149,8 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         else {
             $rs = $rs_union->search(
                 {   -and => [
-                        time_first => { '>=', $start },
-                        time_last  => { '<=', $end },
+                        time_last => { '>=', $start },
+                        time_last => { '<=', $end },
                     ]
                 },
                 { from => { me => $rs_sub }, }
