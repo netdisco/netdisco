@@ -5,7 +5,8 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 hook 'before' => sub {
-    params->{return_url} ||= uri_for('/inventory');
+    params->{return_url} ||= ((request->path ne uri_for('/')->path)
+      ? request->path : uri_for('/inventory'));
 
     if (! session('logged_in_user') && request->path ne uri_for('/login')->path) {
         if (setting('trust_x_remote_user') and scalar request->header('X-REMOTE_USER')) {
@@ -28,7 +29,7 @@ hook 'before' => sub {
 };
 
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    template 'index';
+    template 'index', { return_url => params->{return_url} };
 };
 
 # override default login_handler so we can log access in the database
@@ -50,7 +51,7 @@ post '/login' => sub {
         });
 
         return if request->is_ajax;
-        redirect params->{return_url} || uri_for('/');
+        redirect params->{return_url};
     }
     else {
         session->destroy;
@@ -67,7 +68,9 @@ post '/login' => sub {
         }
         else {
             vars->{login_failed}++;
-            forward uri_for('/login'), { login_failed => 1 }, { method => 'GET' };
+            forward uri_for('/login'),
+              { login_failed => 1, return_url => params->{return_url} },
+              { method => 'GET' };
         }
     }
 };
