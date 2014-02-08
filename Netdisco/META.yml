@@ -46,6 +46,7 @@ requires:
   Net::DNS: 0.72
   Net::Domain: 1.23
   Net::MAC: 2.103622
+  Net::NBName: 0.26
   NetAddr::IP: 4.068
   Path::Class: 0.32
   Plack: 1.0023

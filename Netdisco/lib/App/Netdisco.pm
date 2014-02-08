@@ -80,7 +80,7 @@ setting('plugins')->{DBIC}->{daemon} = {
 };
 
 # force skipped DNS resolution, if unset
-setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16']
+setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
 
 =head1 NAME
 
