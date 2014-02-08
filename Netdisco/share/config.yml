@@ -162,8 +162,8 @@ workers:
   sleep_time: 2
 
 dns:
-  max_outstanding: 250
   no: ['fe80::/64','169.254.0.0/16']
+  max_outstanding: 10
 
 #housekeeping:
 #  discoverall:
