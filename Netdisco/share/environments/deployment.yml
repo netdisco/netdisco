@@ -28,8 +28,9 @@ safe_password_store: true
 # ```````````````````````````````````````````````````````
 #domain_suffix: '.example.com'
 
-# uncomment and set to true to disable authentication/login
-# `````````````````````````````````````````````````````````
+# uncomment and set to true to globally disable authentication/login,
+# and also create a user called "guest".
+# ```````````````````````````````````````````````````````````````````
 #no_auth: false
 
 # SNMP community string(s)
