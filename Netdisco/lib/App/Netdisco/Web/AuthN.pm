@@ -33,6 +33,7 @@ get qr{^/(?:login(?:/denied)?)?} => sub {
 
 # override default login_handler so we can log access in the database
 post '/login' => sub {
+    my $mode = (request->is_ajax ? 'API' : 'Web');
     my ($success, $realm) = authenticate_user(
         params->{username}, params->{password}
     );
@@ -44,22 +45,30 @@ post '/login' => sub {
         schema('netdisco')->resultset('UserLog')->create({
           username => session('logged_in_user'),
           userip => request->remote_address,
-          event => "Login",
+          event => "Login ($mode)",
           details => params->{return_url},
         });
 
+        return if request->is_ajax;
         redirect params->{return_url} || uri_for('/');
     }
     else {
+        session->destroy;
+
         schema('netdisco')->resultset('UserLog')->create({
           username => params->{username},
           userip => request->remote_address,
-          event => "Login Failure",
+          event => "Login Failure ($mode)",
           details => params->{return_url},
         });
 
-        vars->{login_failed}++;
-        forward uri_for('/login'), { login_failed => 1 }, { method => 'GET' };
+        if (request->is_ajax) {
+            status('unauthorized');
+        }
+        else {
+            vars->{login_failed}++;
+            forward uri_for('/login'), { login_failed => 1 }, { method => 'GET' };
+        }
     }
 };
 

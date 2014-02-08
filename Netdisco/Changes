@@ -6,6 +6,7 @@
   * [#74] Device Name / DNS mismatches report
   * [#71] Node search by date (but not time)
   * [#73] NetBIOS Poller - nbtstat and nbtwalk
+  * [#56] Support API call to /login
 
   [ENHANCEMENTS]
   

@@ -28,9 +28,9 @@ safe_password_store: true
 # ```````````````````````````````````````````````````````
 #domain_suffix: '.example.com'
 
-# uncomment and set to true to globally disable authentication/login,
-# and also create a user called "guest".
-# ```````````````````````````````````````````````````````````````````
+# uncomment and set to true to globally disable authentication/loginr.
+# create a user called "guest" if you want to assign port/admin rights.
+# `````````````````````````````````````````````````````````````````````
 #no_auth: false
 
 # SNMP community string(s)
