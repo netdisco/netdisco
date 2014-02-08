@@ -20,7 +20,8 @@ migrating from Netdisco 1.x:
 =item *
 
 You can run both Netdisco 1.x and App::Netdisco web frontends at the same
-time, using the same database.
+time, using the same database (if "C<safe_password_store>" is set to
+"C<false>").
 
 =item *
 
@@ -34,6 +35,27 @@ deploy script for App::Netdisco will make some schema changes to the database,
 but they are backwards compatible.
 
 =back
+
+=head1 2.023000
+
+=head2 Incompatible Changes
+
+This release will automatically migrate user passwords to have stronger
+hashing in the database (a good thing!). This is incompatible with Netdisco
+1.x web frontend, so if you must maintain backward-compatibility, set the
+following in your C<deployment.yml> file:
+
+ safe_password_store: false
+
+=head2 General Notices
+
+The number of parallel DNS queries running during node discovery has been
+reduced to 10 for maximum safety, but resulting in lower macsuck performance.
+If you have a robust DNS infrastructure, you can probably put it back up to
+something like 50 or 100:
+
+ dns:
+  max_outstanding: 100
 
 =head1 2.021000
 
