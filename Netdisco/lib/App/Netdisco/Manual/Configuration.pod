@@ -223,6 +223,12 @@ Value: List of Modules. Default: Empty List.
 List of additional L<App::Netdisco::Web::Plugin> names to load. See also the
 C<web_plugins> setting.
 
+=head3 C<jobqueue_refresh>
+
+Value: Integer Number. Default: 5.
+
+Number of seconds between reloads of the Job Queue panel in the web interface.
+
 =head3 C<safe_password_store>
 
 Value: Boolean. Default: true.

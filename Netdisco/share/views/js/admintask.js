@@ -3,7 +3,9 @@
   var path = 'admin';
 
   // keep track of timers so we can kill them
-  var nd_timers = new Array();
+  var nd_timers  = new Array();
+  var timermax   = [% settings.jobqueue_refresh || 5 | html %];
+  var timercache = timermax - 1;
 
   // this is called by do_search to support local code
   // which might need to act on the newly inserted content
@@ -14,19 +16,28 @@
     if (tab == 'jobqueue'
         && $('#nd_countdown-control-icon').hasClass('icon-play')) {
 
-        $('#nd_countdown').text('5');
-        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('4') }, 1000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('3') }, 2000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('2') }, 3000 ));
-        nd_timers.push(setTimeout(function() { $('#nd_countdown').text('1') }, 4000 ));
+        $('#nd_countdown').text(timermax);
+
+        // add new timers
+        for (var i = timercache; i > 0; i--) {
+          nd_timers.push(setTimeout(function() {
+            $('#nd_countdown').text(timercache);
+            timercache = timercache - 1;
+          }, ((timermax * 1000) - (i * 1000)) ));
+        }
+
         nd_timers.push(setTimeout(function() {
           // clear any running timers
           for (var i = 0; i < nd_timers.length; i++) {
               clearTimeout(nd_timers[i]);
           }
-          // reload the tab content
+
+          // reset the timer cache
+          timercache = timermax - 1;
+
+          // reload the tab content in...
           $('#' + tab + '_form').trigger('submit');
-        }, 5000));
+        }, (timermax * 1000)));
     }
 
     // activate typeahead on the topo boxes
