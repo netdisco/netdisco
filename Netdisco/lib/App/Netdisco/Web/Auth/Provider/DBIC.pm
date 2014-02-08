@@ -10,7 +10,7 @@ use base 'Dancer::Plugin::Auth::Extensible::Provider::Base';
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
-
+use Dancer::Plugin::Passphrase;
 use Digest::MD5;
 
 sub authenticate_user {
@@ -77,8 +77,25 @@ sub match_with_local_pass {
 
     return unless $password and $user->$password_column;
 
-    my $sum = Digest::MD5::md5_hex($password);
-    return ($sum eq $user->$password_column ? 1 : 0);
+    if ($user->$password_column !~ m/^{[A-Z]+}/) {
+        debug 'authN: using legacy MD5';
+        my $sum = Digest::MD5::md5_hex($password);
+
+        if ($sum eq $user->$password_column) {
+            if (setting('safe_password_store')) {
+                # upgrade password if successful, and permitted
+                $user->update({password => passphrase($password)->generate});
+            }
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        debug 'authN: using Passphrase';
+        return passphrase($password)->matches($user->$password_column);
+    }
 }
 
 sub match_with_ldap {

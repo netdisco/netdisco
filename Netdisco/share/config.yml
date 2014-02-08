@@ -72,6 +72,7 @@ web_plugins:
   - Device::Neighbors
   - Device::Addresses
 extra_web_plugins: []
+safe_password_store: true
 
 # -------------
 # NETDISCO CORE

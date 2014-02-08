@@ -18,6 +18,11 @@ database:
 # RECOMMENDED SETTINGS
 # --------------------
 
+# set to "false" if you MUST maintain backwards compatibility
+# with Netdisco 1.x web frontend.
+# ```````````````````````````````````````````````````````````
+safe_password_store: true
+
 # will be stripped from fqdn when displayed in the web UI
 # also, do not forget the leading dot.
 # ```````````````````````````````````````````````````````
@@ -48,8 +53,8 @@ database:
 #  expiry:
 #    when: '20 23 * * *'
 
-# increase the performance of parallel DNS resolution for node names
-# (the default is max_outstanding: 10)
+# increase the performance of parallel DNS resolution for node
+# names (the default is max_outstanding: 10)
+# ````````````````````````````````````````````````````````````
 #dns:
 #  max_outstanding: 100
-

@@ -223,6 +223,13 @@ Value: List of Modules. Default: Empty List.
 List of additional L<App::Netdisco::Web::Plugin> names to load. See also the
 C<web_plugins> setting.
 
+=head3 C<safe_password_store>
+
+Value: Boolean. Default: true.
+
+Set to "C<false>" if you MUST maintain backwards compatibility with the Netdisco
+1.x web interface. Strongly recommended that you leave this set to "C<true>".
+
 =head2 Netdisco Core
 
 =head3 C<mibhome>

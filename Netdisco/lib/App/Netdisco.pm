@@ -210,7 +210,8 @@ C<name>, C<host>, C<user> and C<pass>).
 
 In the same file uncomment and edit the C<domain_suffix> setting to be
 appropriate for your local site. If this is a fresh install, uncomment and set
-the C<no_auth> value to true (temporarily disables user authentication).
+the C<no_auth> value to true (temporarily disables user authentication). Have
+a quick read of the other settings to make sure you're happy, then move on.
 
 =head1 Bootstrap
 
@@ -243,7 +244,7 @@ daemon at the same time. Similarly, if you use the device discovery with
 Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
 
 At this point you can revisit the C<~/environments/deployment.yml> file to
-uncomment more configuration. Check out the community string settings, and
+uncomment more configuration. Enable the C<community> string settings, and
 C<housekeeping> which enables the automatic periodic device discovery. See
 L<Configuration|App::Netdisco::Manual::Configuration> for further details.
 

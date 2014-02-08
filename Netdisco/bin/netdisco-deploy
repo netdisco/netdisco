@@ -99,9 +99,9 @@ $bool = $term->ask_yn(
 );
 deploy_db() if $bool;
 
+say '';
 my $users = schema('netdisco')->resultset('User');
 if ($users->count == 0) {
-    say '';
     $bool = $term->ask_yn(
       prompt => 'Would you like a default web user with Admin rights (discover, etc)?',
       default => 'n',
@@ -135,6 +135,10 @@ if ($users->count == 0) {
             }
         }
     }
+}
+elsif (!setting('safe_password_store')) {
+    say '*** WARNING: Weak password hashes are being stored in the database! ***';
+    say '*** WARNING: Please add "safe_password_store: true" to your ~/environments/deployment.yml file. ***';
 }
 
 say '';

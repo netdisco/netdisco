@@ -34,6 +34,7 @@ requires:
   Dancer: 1.3112
   Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.1803
+  Dancer::Plugin::Passphrase: 2
   File::ShareDir: 1.03
   Guard: 1.022
   HTML::Parser: 3.7
