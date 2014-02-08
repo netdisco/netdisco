@@ -76,8 +76,7 @@ post '/login' => sub {
 };
 
 # we override the default login_handler, so logout has to be handled as well
-any ['get','post'] => '/logout' => sub {
-
+any ['get', 'post'] => '/logout' => sub {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => request->remote_address,
@@ -86,12 +85,7 @@ any ['get','post'] => '/logout' => sub {
     });
 
     session->destroy;
-    if (params->{return_url}) {
-        redirect params->{return_url};
-    }
-    else {
-        return "OK, logged out successfully.";
-    }
+    redirect uri_for('/inventory');
 };
 
 true;
