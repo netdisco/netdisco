@@ -1,6 +1,9 @@
-
 BEGIN;
 
-UPDATE node SET vlan = '0' WHERE vlan IS NULL;
+CREATE TABLE "community" (
+  "ip" inet NOT NULL,
+  "snmp_comm_rw" text,
+  PRIMARY KEY ("ip")
+);
 
 COMMIT;

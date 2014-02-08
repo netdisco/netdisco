@@ -1,6 +1,5 @@
-
 BEGIN;
 
-ALTER TABLE community ADD COLUMN snmp_auth_tag text;
+ALTER TABLE device DROP COLUMN snmp_comm_rw;
 
 COMMIT;

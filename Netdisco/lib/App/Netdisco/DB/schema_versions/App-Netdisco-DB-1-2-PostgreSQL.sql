@@ -1,425 +1,372 @@
--- 
--- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Oct 10 14:24:20 2012
--- 
---
--- Table: admin.
---
-CREATE TABLE "admin" (
-  "job" serial NOT NULL,
-  "entered" timestamp DEFAULT current_timestamp,
-  "started" timestamp,
-  "finished" timestamp,
-  "device" inet,
-  "port" text,
-  "action" text,
-  "subaction" text,
-  "status" text,
-  "username" text,
-  "userip" inet,
-  "log" text,
-  "debug" boolean
+BEGIN;
+
+-- admin table - Queue for admin tasks sent from front-end for back-end processing.
+
+CREATE TABLE admin (
+    job         serial,
+    entered     TIMESTAMP DEFAULT now(),
+    started     TIMESTAMP,
+    finished    TIMESTAMP,
+    device      inet,
+    port        text,
+    action      text,
+    subaction   text,
+    status      text,
+    username    text,
+    userip      inet,
+    log         text,
+    debug       boolean
+                   );
+
+CREATE INDEX idx_admin_entered ON admin(entered);
+CREATE INDEX idx_admin_status  ON admin(status);
+CREATE INDEX idx_admin_action  ON admin(action);
+
+CREATE TABLE device (
+    ip           inet PRIMARY KEY,
+    creation     TIMESTAMP DEFAULT now(),
+    dns          text,
+    description  text,
+    uptime       bigint,
+    contact      text,
+    name         text,
+    location     text,
+    layers       varchar(8),
+    ports        integer,
+    mac          macaddr,
+    serial       text,
+    model        text,
+    ps1_type     text,
+    ps2_type     text,
+    ps1_status   text,
+    ps2_status   text,
+    fan          text,
+    slots        integer,
+    vendor       text,      
+    os           text,
+    os_ver       text,
+    log          text,
+    snmp_ver     integer,
+    snmp_comm    text,
+    snmp_class   text,
+    vtp_domain   text,
+    last_discover TIMESTAMP,
+    last_macsuck  TIMESTAMP,
+    last_arpnip   TIMESTAMP
 );
 
---
--- Table: device.
---
-CREATE TABLE "device" (
-  "ip" inet NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "dns" text,
-  "description" text,
-  "uptime" bigint,
-  "contact" text,
-  "name" text,
-  "location" text,
-  "layers" character varying(8),
-  "ports" integer,
-  "mac" macaddr,
-  "serial" text,
-  "model" text,
-  "ps1_type" text,
-  "ps2_type" text,
-  "ps1_status" text,
-  "ps2_status" text,
-  "fan" text,
-  "slots" integer,
-  "vendor" text,
-  "os" text,
-  "os_ver" text,
-  "log" text,
-  "snmp_ver" integer,
-  "snmp_comm" text,
-  "snmp_class" text,
-  "vtp_domain" text,
-  "last_discover" timestamp,
-  "last_macsuck" timestamp,
-  "last_arpnip" timestamp,
-  PRIMARY KEY ("ip")
+-- Indexing for speed-ups
+CREATE INDEX idx_device_dns    ON device(dns);
+CREATE INDEX idx_device_layers ON device(layers);
+CREATE INDEX idx_device_vendor ON device(vendor);
+CREATE INDEX idx_device_model  ON device(model);
+
+CREATE TABLE device_ip (
+    ip          inet,
+    alias       inet,
+    subnet      cidr,
+    port        text,
+    dns         text,
+    creation    TIMESTAMP DEFAULT now(),
+    PRIMARY KEY(ip,alias)
 );
 
---
--- Table: device_module.
---
-CREATE TABLE "device_module" (
-  "ip" inet NOT NULL,
-  "index" integer NOT NULL,
-  "description" text,
-  "type" text,
-  "parent" integer,
-  "name" text,
-  "class" text,
-  "pos" integer,
-  "hw_ver" text,
-  "fw_ver" text,
-  "sw_ver" text,
-  "serial" text,
-  "model" text,
-  "fru" boolean,
-  "creation" timestamp DEFAULT current_timestamp,
-  "last_discover" timestamp,
-  PRIMARY KEY ("ip", "index")
+-- Indexing for speed ups
+CREATE INDEX idx_device_ip_ip      ON device_ip(ip);
+CREATE INDEX idx_device_ip_alias   ON device_ip(alias);
+CREATE INDEX idx_device_ip_ip_port ON device_ip(ip,port);
+
+CREATE TABLE device_module (
+    ip            inet not null,
+    index         integer,
+    description   text,
+    type          text,
+    parent        integer,
+    name          text,
+    class         text,
+    pos           integer,
+    hw_ver        text,
+    fw_ver        text,
+    sw_ver        text,
+    serial        text,
+    model         text,
+    fru           boolean,
+    creation      TIMESTAMP DEFAULT now(),
+    last_discover TIMESTAMP,
+    PRIMARY KEY(ip,index)
+    );
+
+CREATE TABLE device_port (
+    ip          inet,
+    port        text,
+    creation    TIMESTAMP DEFAULT now(),
+    descr       text,
+    up          text,
+    up_admin    text,
+    type        text,
+    duplex      text,
+    duplex_admin text,
+    speed       text, 
+    name        text,
+    mac         macaddr,
+    mtu         integer,
+    stp         text,
+    remote_ip   inet,
+    remote_port text,
+    remote_type text,
+    remote_id   text,
+    vlan        text,
+    pvid        integer,
+    lastchange  bigint,
+    PRIMARY KEY(port,ip) 
 );
 
---
--- Table: device_port_log.
---
-CREATE TABLE "device_port_log" (
-  "id" serial NOT NULL,
-  "ip" inet,
-  "port" text,
-  "reason" text,
-  "log" text,
-  "username" text,
-  "userip" inet,
-  "action" text,
-  "creation" timestamp DEFAULT current_timestamp
+CREATE INDEX idx_device_port_ip ON device_port(ip);
+CREATE INDEX idx_device_port_remote_ip ON device_port(remote_ip);
+-- For the duplex mismatch finder :
+CREATE INDEX idx_device_port_ip_port_duplex ON device_port(ip,port,duplex);
+CREATE INDEX idx_device_port_ip_up_admin ON device_port(ip,up_admin);
+CREATE INDEX idx_device_port_mac ON device_port(mac);
+
+CREATE TABLE device_port_log (
+    id          serial, 
+    ip          inet,
+    port        text,
+    reason      text,
+    log         text, 
+    username    text,
+    userip      inet,
+    action      text,
+    creation    TIMESTAMP DEFAULT now()
+                             );
+
+CREATE INDEX idx_device_port_log_1 ON device_port_log(ip,port);
+CREATE INDEX idx_device_port_log_user ON device_port_log(username);
+
+CREATE TABLE device_port_power (
+    ip          inet,
+    port        text,
+    module      integer,
+    admin       text,
+    status      text,
+    class       text,
+    power       integer,
+    PRIMARY KEY(port,ip)
 );
 
---
--- Table: device_port_power.
---
-CREATE TABLE "device_port_power" (
-  "ip" inet NOT NULL,
-  "port" text NOT NULL,
-  "module" integer,
-  "admin" text,
-  "status" text,
-  "class" text,
-  "power" integer,
-  PRIMARY KEY ("port", "ip")
+CREATE TABLE device_port_ssid (
+    ip          inet,
+    port        text,
+    ssid        text,
+    broadcast   boolean,
+    bssid       macaddr
 );
 
---
--- Table: device_port_ssid.
---
-CREATE TABLE "device_port_ssid" (
-  "ip" inet,
-  "port" text,
-  "ssid" text,
-  "broadcast" boolean
+CREATE INDEX idx_device_port_ssid_ip_port ON device_port_ssid(ip,port);
+
+CREATE TABLE device_port_vlan (
+    ip          inet,
+    port        text,
+    vlan        integer,
+    native      boolean not null default false,
+    creation    TIMESTAMP DEFAULT now(),
+    last_discover TIMESTAMP DEFAULT now(),
+    vlantype    text,
+    PRIMARY KEY(ip,port,vlan)
 );
 
---
--- Table: device_port_wireless.
---
-CREATE TABLE "device_port_wireless" (
-  "ip" inet,
-  "port" text,
-  "channel" integer,
-  "power" integer
+CREATE TABLE device_port_wireless (
+    ip          inet,
+    port        text,
+    channel     integer,
+    power       integer
 );
 
---
--- Table: device_power.
---
-CREATE TABLE "device_power" (
-  "ip" inet NOT NULL,
-  "module" integer NOT NULL,
-  "power" integer,
-  "status" text,
-  PRIMARY KEY ("ip", "module")
+CREATE INDEX idx_device_port_wireless_ip_port ON device_port_wireless(ip,port);
+
+CREATE TABLE device_power (
+    ip          inet,
+    module      integer,
+    power       integer,
+    status      text,
+    PRIMARY KEY(ip,module)
 );
 
---
--- Table: device_route.
---
-CREATE TABLE "device_route" (
-  "ip" inet NOT NULL,
-  "network" cidr NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "dest" inet NOT NULL,
-  "last_discover" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("ip", "network", "dest")
+CREATE TABLE device_vlan (
+    ip          inet,
+    vlan        integer,
+    description text,
+    creation    TIMESTAMP DEFAULT now(),
+    last_discover TIMESTAMP DEFAULT now(),
+    PRIMARY KEY(ip,vlan)
 );
 
---
--- Table: log.
---
-CREATE TABLE "log" (
-  "id" serial NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "class" text,
-  "entry" text,
-  "logfile" text
+
+CREATE TABLE log (
+    id          serial,
+    creation    TIMESTAMP DEFAULT now(),
+    class       text,
+    entry       text,
+    logfile     text
 );
 
---
--- Table: node_ip.
---
-CREATE TABLE "node_ip" (
-  "mac" macaddr NOT NULL,
-  "ip" inet NOT NULL,
-  "active" boolean,
-  "time_first" timestamp DEFAULT current_timestamp,
-  "time_last" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("mac", "ip")
+CREATE TABLE node (
+    mac         macaddr,
+    switch      inet,
+    port        text,
+    vlan        text default '0',
+    active      boolean,
+    oui         varchar(8),
+    time_first  timestamp default now(),
+    time_recent timestamp default now(),
+    time_last   timestamp default now(),
+    PRIMARY KEY(mac,switch,port,vlan) 
 );
 
---
--- Table: node_monitor.
---
-CREATE TABLE "node_monitor" (
-  "mac" macaddr NOT NULL,
-  "active" boolean,
-  "why" text,
-  "cc" text,
-  "date" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("mac")
+-- Indexes speed things up a LOT
+CREATE INDEX idx_node_switch_port_active ON node(switch,port,active);
+CREATE INDEX idx_node_switch_port ON node(switch,port);
+CREATE INDEX idx_node_switch      ON node(switch);
+CREATE INDEX idx_node_mac         ON node(mac);
+CREATE INDEX idx_node_mac_active  ON node(mac,active);
+-- CREATE INDEX idx_node_oui         ON node(oui);
+
+CREATE TABLE node_ip (
+    mac         macaddr,
+    ip          inet,
+    active      boolean,
+    time_first  timestamp default now(),
+    time_last   timestamp default now(),
+    PRIMARY KEY(mac,ip)
 );
 
---
--- Table: node_nbt.
---
-CREATE TABLE "node_nbt" (
-  "mac" macaddr NOT NULL,
-  "ip" inet,
-  "nbname" text,
-  "domain" text,
-  "server" boolean,
-  "nbuser" text,
-  "active" boolean,
-  "time_first" timestamp DEFAULT current_timestamp,
-  "time_last" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("mac")
+-- Indexing speed ups.
+CREATE INDEX idx_node_ip_ip          ON node_ip(ip);
+CREATE INDEX idx_node_ip_ip_active   ON node_ip(ip,active);
+CREATE INDEX idx_node_ip_mac         ON node_ip(mac);
+CREATE INDEX idx_node_ip_mac_active  ON node_ip(mac,active);
+
+CREATE TABLE node_monitor (
+    mac         macaddr,
+    active      boolean,
+    why         text,
+    cc          text,
+    date        TIMESTAMP DEFAULT now(),
+    PRIMARY KEY(mac)
 );
 
---
--- Table: node_wireless.
---
-CREATE TABLE "node_wireless" (
-  "mac" macaddr NOT NULL,
-  "uptime" integer,
-  "maxrate" integer,
-  "txrate" integer,
-  "sigstrength" integer,
-  "sigqual" integer,
-  "rxpkt" integer,
-  "txpkt" integer,
-  "rxbyte" bigint,
-  "txbyte" bigint,
-  "time_last" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("mac")
+-- node_nbt - Hold Netbios information for each node.
+
+CREATE TABLE node_nbt (
+    mac         macaddr PRIMARY KEY,
+    ip          inet,
+    nbname      text,
+    domain      text,
+    server      boolean,
+    nbuser      text,
+    active      boolean,
+    time_first  timestamp default now(),
+    time_last   timestamp default now()
 );
 
---
--- Table: oui.
---
-CREATE TABLE "oui" (
-  "oui" character varying(8) NOT NULL,
-  "company" text,
-  PRIMARY KEY ("oui")
+-- Indexing speed ups.
+CREATE INDEX idx_node_nbt_mac         ON node_nbt(mac);
+CREATE INDEX idx_node_nbt_nbname      ON node_nbt(nbname);
+CREATE INDEX idx_node_nbt_domain      ON node_nbt(domain);
+CREATE INDEX idx_node_nbt_mac_active  ON node_nbt(mac,active);
+
+-- Add "vlan" column to node table
+-- ALTER TABLE node ADD COLUMN vlan text default '0';
+
+alter table node drop constraint node_pkey;
+alter table node add primary key (mac, switch, port, vlan);
+
+CREATE TABLE node_wireless (
+    mac         macaddr,
+    ssid        text default '',
+    uptime      integer,
+    maxrate     integer,
+    txrate      integer,
+    sigstrength integer,
+    sigqual     integer,
+    rxpkt       integer,
+    txpkt       integer,
+    rxbyte      bigint,
+    txbyte      bigint,
+    time_last   timestamp default now(),
+    PRIMARY KEY(mac,ssid)
 );
 
---
--- Table: process.
---
-CREATE TABLE "process" (
-  "controller" integer NOT NULL,
-  "device" inet NOT NULL,
-  "action" text NOT NULL,
-  "status" text,
-  "count" integer,
-  "creation" timestamp DEFAULT current_timestamp
+
+-- Add "ssid" column to node_wireless table
+-- ALTER TABLE node_wireless ADD ssid text default '';
+
+alter table node_wireless drop constraint node_wireless_pkey;
+alter table node_wireless add primary key (mac, ssid);
+
+
+
+CREATE TABLE oui (
+    oui         varchar(8) PRIMARY KEY,
+    company     text
 );
 
---
--- Table: sessions.
---
-CREATE TABLE "sessions" (
-  "id" character(32) NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "a_session" text,
-  PRIMARY KEY ("id")
+
+-- process table - Queue to coordinate between processes in multi-process mode.
+
+CREATE TABLE process (
+    controller  integer not null,
+    device      inet not null,
+    action      text not null,
+    status      text,
+    count       integer,
+    creation    TIMESTAMP DEFAULT now()
+    );
+
+CREATE TABLE sessions (
+    id          char(32) NOT NULL PRIMARY KEY,
+    creation    TIMESTAMP DEFAULT now(),
+    a_session   text
+                       );
+
+CREATE TABLE subnets (
+    net cidr NOT NULL,
+    creation timestamp default now(),
+    last_discover timestamp default now(),
+    PRIMARY KEY(net)
 );
 
---
--- Table: subnets.
---
-CREATE TABLE "subnets" (
-  "net" cidr NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "last_discover" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("net")
+-- Add "topology" table to augment manual topo file
+CREATE TABLE topology (
+    dev1   inet not null,
+    port1  text not null,
+    dev2   inet not null,
+    port2  text not null
 );
 
---
--- Table: user_log.
---
-CREATE TABLE "user_log" (
-  "entry" serial NOT NULL,
-  "username" character varying(50),
-  "userip" inet,
-  "event" text,
-  "details" text,
-  "creation" timestamp DEFAULT current_timestamp
-);
 
---
--- Table: users.
---
-CREATE TABLE "users" (
-  "username" character varying(50) NOT NULL,
-  "password" text,
-  "creation" timestamp DEFAULT current_timestamp,
-  "last_on" timestamp,
-  "port_control" boolean DEFAULT false,
-  "ldap" boolean DEFAULT false,
-  "admin" boolean DEFAULT false,
-  "fullname" text,
-  "note" text,
-  PRIMARY KEY ("username")
-);
 
---
--- Table: device_vlan.
---
-CREATE TABLE "device_vlan" (
-  "ip" inet NOT NULL,
-  "vlan" integer NOT NULL,
-  "description" text,
-  "creation" timestamp DEFAULT current_timestamp,
-  "last_discover" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("ip", "vlan")
-);
-CREATE INDEX "device_vlan_idx_ip" on "device_vlan" ("ip");
+-- This table logs login and logout / change requests for users
 
---
--- Table: device_ip.
---
-CREATE TABLE "device_ip" (
-  "ip" inet NOT NULL,
-  "alias" inet NOT NULL,
-  "subnet" cidr,
-  "port" text,
-  "dns" text,
-  "creation" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("ip", "alias"),
-  CONSTRAINT "device_ip_alias" UNIQUE ("alias")
-);
-CREATE INDEX "device_ip_idx_ip" on "device_ip" ("ip");
-CREATE INDEX "device_ip_idx_ip_port" on "device_ip" ("ip", "port");
+CREATE TABLE user_log (
+    entry           serial,
+    username        varchar(50),
+    userip          inet,
+    event           text,
+    details         text,
+    creation        TIMESTAMP DEFAULT now()
+                      );
 
---
--- Table: device_port.
---
-CREATE TABLE "device_port" (
-  "ip" inet NOT NULL,
-  "port" text NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "descr" text,
-  "up" text,
-  "up_admin" text,
-  "type" text,
-  "duplex" text,
-  "duplex_admin" text,
-  "speed" text,
-  "name" text,
-  "mac" macaddr,
-  "mtu" integer,
-  "stp" text,
-  "remote_ip" inet,
-  "remote_port" text,
-  "remote_type" text,
-  "remote_id" text,
-  "vlan" text,
-  "pvid" integer,
-  "lastchange" bigint,
-  PRIMARY KEY ("port", "ip")
-);
-CREATE INDEX "device_port_idx_ip" on "device_port" ("ip");
-CREATE INDEX "device_port_idx_remote_ip" on "device_port" ("remote_ip");
+CREATE TABLE users (
+    username        varchar(50) PRIMARY KEY,
+    password        text,
+    creation        TIMESTAMP DEFAULT now(),
+    last_on         TIMESTAMP,
+    port_control    boolean DEFAULT false,
+    ldap            boolean DEFAULT false,
+    admin           boolean DEFAULT false,
+    fullname        text,
+    note            text
+                    );
 
---
--- Table: device_port_vlan.
---
-CREATE TABLE "device_port_vlan" (
-  "ip" inet NOT NULL,
-  "port" text NOT NULL,
-  "vlan" integer NOT NULL,
-  "native" boolean DEFAULT false NOT NULL,
-  "creation" timestamp DEFAULT current_timestamp,
-  "last_discover" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("ip", "port", "vlan")
-);
-CREATE INDEX "device_port_vlan_idx_ip" on "device_port_vlan" ("ip");
-CREATE INDEX "device_port_vlan_idx_ip_port" on "device_port_vlan" ("ip", "port");
-CREATE INDEX "device_port_vlan_idx_ip_vlan" on "device_port_vlan" ("ip", "vlan");
-
---
--- Table: node.
---
-CREATE TABLE "node" (
-  "mac" macaddr NOT NULL,
-  "switch" inet NOT NULL,
-  "port" text NOT NULL,
-  "active" boolean,
-  "oui" character varying(8),
-  "time_first" timestamp DEFAULT current_timestamp,
-  "time_recent" timestamp DEFAULT current_timestamp,
-  "time_last" timestamp DEFAULT current_timestamp,
-  PRIMARY KEY ("mac", "switch", "port")
-);
-CREATE INDEX "node_idx_switch" on "node" ("switch");
-CREATE INDEX "node_idx_switch_port" on "node" ("switch", "port");
-CREATE INDEX "node_idx_oui" on "node" ("oui");
-
--- Not used in Netdisco, because they upset the legacy netdisco.pm code
--- 
--- --
--- -- Foreign Key Definitions
--- --
--- 
--- ALTER TABLE "device_vlan" ADD CONSTRAINT "device_vlan_fk_ip" FOREIGN KEY ("ip")
---   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
--- 
--- ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip" FOREIGN KEY ("ip")
---   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
--- 
--- ALTER TABLE "device_ip" ADD CONSTRAINT "device_ip_fk_ip_port" FOREIGN KEY ("ip", "port")
---   REFERENCES "device_port" ("ip", "port") DEFERRABLE;
--- 
--- ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_ip" FOREIGN KEY ("ip")
---   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
--- 
--- ALTER TABLE "device_port" ADD CONSTRAINT "device_port_fk_remote_ip" FOREIGN KEY ("remote_ip")
---   REFERENCES "device_ip" ("alias") DEFERRABLE;
--- 
--- ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip" FOREIGN KEY ("ip")
---   REFERENCES "device" ("ip") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
--- 
--- ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_port" FOREIGN KEY ("ip", "port")
---   REFERENCES "device_port" ("ip", "port") DEFERRABLE;
--- 
--- ALTER TABLE "device_port_vlan" ADD CONSTRAINT "device_port_vlan_fk_ip_vlan" FOREIGN KEY ("ip", "vlan")
---   REFERENCES "device_vlan" ("ip", "vlan") DEFERRABLE;
--- 
--- ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch" FOREIGN KEY ("switch")
---   REFERENCES "device" ("ip") DEFERRABLE;
--- 
--- ALTER TABLE "node" ADD CONSTRAINT "node_fk_switch_port" FOREIGN KEY ("switch", "port")
---   REFERENCES "device_port" ("ip", "port") ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
--- 
--- ALTER TABLE "node" ADD CONSTRAINT "node_fk_oui" FOREIGN KEY ("oui")
---   REFERENCES "oui" ("oui") DEFERRABLE;
--- 
+COMMIT;

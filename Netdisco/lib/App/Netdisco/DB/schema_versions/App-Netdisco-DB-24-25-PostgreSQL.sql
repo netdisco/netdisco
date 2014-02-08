@@ -1,5 +1,5 @@
 BEGIN;
 
-ALTER TABLE device DROP COLUMN snmp_comm_rw;
+ALTER TABLE device_ip DROP CONSTRAINT "device_ip_alias";
 
 COMMIT;

@@ -1,5 +1,5 @@
 BEGIN;
 
-ALTER TABLE device_port ADD COLUMN "manual_topo" bool DEFAULT false NOT NULL;
+ALTER TABLE node ADD PRIMARY KEY (mac, switch, port, vlan);
 
 COMMIT;

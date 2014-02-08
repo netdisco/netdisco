@@ -10,7 +10,7 @@ __PACKAGE__->load_namespaces(
     default_resultset_class => 'ResultSet',
 );
 
-our $VERSION = 34; # schema version used for upgrades, keep as integer
+our $VERSION = 38; # schema version used for upgrades, keep as integer
 
 use Path::Class;
 use File::Basename;

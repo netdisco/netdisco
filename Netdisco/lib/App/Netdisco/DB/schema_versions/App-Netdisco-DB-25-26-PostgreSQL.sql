@@ -1,9 +1,5 @@
 BEGIN;
 
-CREATE TABLE "community" (
-  "ip" inet NOT NULL,
-  "snmp_comm_rw" text,
-  PRIMARY KEY ("ip")
-);
+-- ALTER TABLE device_port ALTER COLUMN remote_id TYPE bytea USING remote_id::bytea;
 
 COMMIT;

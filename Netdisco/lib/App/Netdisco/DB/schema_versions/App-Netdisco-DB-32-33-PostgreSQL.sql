@@ -1,6 +1,5 @@
-
 BEGIN;
 
-ALTER TABLE oui ADD COLUMN abbrev text;
+ALTER TABLE community ADD COLUMN snmp_auth_tag text;
 
 COMMIT;

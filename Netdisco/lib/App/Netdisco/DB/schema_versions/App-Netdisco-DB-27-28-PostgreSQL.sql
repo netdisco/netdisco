@@ -1,6 +1,5 @@
-
 BEGIN;
 
-DROP INDEX IF EXISTS jobs_queued;
+ALTER TABLE device ADD COLUMN snmp_comm_rw text;
 
 COMMIT;

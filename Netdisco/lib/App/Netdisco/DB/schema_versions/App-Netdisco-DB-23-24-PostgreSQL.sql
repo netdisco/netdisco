@@ -1,5 +1,6 @@
 BEGIN;
 
-ALTER TABLE device ADD COLUMN snmp_comm_rw text;
+ALTER TABLE device_port ADD COLUMN "is_uplink" bool;
+ALTER TABLE device_port ADD COLUMN "is_uplink_admin" bool;
 
 COMMIT;

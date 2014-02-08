@@ -12,6 +12,7 @@
   * [#69] Add search by layers to device search
   * [#77] Log user access 
   * Try to help users more easily get a default login
+  * Support upgrade from Netdisco version 0.x
 
   [BUG FIXES]
 

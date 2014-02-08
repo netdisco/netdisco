@@ -1,6 +1,5 @@
 BEGIN;
 
-ALTER TABLE device_port ADD COLUMN "is_uplink" bool;
-ALTER TABLE device_port ADD COLUMN "is_uplink_admin" bool;
+ALTER TABLE node_wireless ADD PRIMARY KEY (mac, ssid);
 
 COMMIT;

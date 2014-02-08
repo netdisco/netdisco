@@ -1,3 +1,0 @@
--- 
--- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed Oct 10 14:24:20 2012

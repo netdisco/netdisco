@@ -1,6 +1,8 @@
-
 BEGIN;
 
-CREATE INDEX node_ip_idx_ip_active ON node_ip (ip, active);
+ALTER TABLE node_wireless ALTER COLUMN rxpkt TYPE bigint;
+ALTER TABLE node_wireless ALTER COLUMN txpkt TYPE bigint;
+ALTER TABLE node_wireless ALTER COLUMN rxbyte TYPE bigint;
+ALTER TABLE node_wireless ALTER COLUMN txbyte TYPE bigint;
 
 COMMIT;

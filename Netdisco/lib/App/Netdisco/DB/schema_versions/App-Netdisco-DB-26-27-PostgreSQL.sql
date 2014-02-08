@@ -1,8 +1,5 @@
 BEGIN;
 
-ALTER TABLE node_wireless ALTER COLUMN rxpkt TYPE bigint;
-ALTER TABLE node_wireless ALTER COLUMN txpkt TYPE bigint;
-ALTER TABLE node_wireless ALTER COLUMN rxbyte TYPE bigint;
-ALTER TABLE node_wireless ALTER COLUMN txbyte TYPE bigint;
+-- ALTER TABLE device_port ALTER COLUMN remote_id TYPE text USING remote_id::text;
 
 COMMIT;
