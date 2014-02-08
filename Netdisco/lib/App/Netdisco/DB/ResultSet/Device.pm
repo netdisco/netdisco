@@ -483,7 +483,7 @@ sub get_models {
     select => [ 'vendor', 'model', { count => 'ip' } ],
     as => [qw/vendor model count/],
     group_by => [qw/vendor model/],
-    order_by => [{-asc => 'vendor'}, {-desc => 'count'}, {-asc => 'model'}],
+    order_by => [{-asc => 'vendor'}, {-asc => 'model'}],
   })
 
 }
@@ -513,7 +513,7 @@ sub get_releases {
     select => [ 'os', 'os_ver', { count => 'ip' } ],
     as => [qw/os os_ver count/],
     group_by => [qw/os os_ver/],
-    order_by => [{-asc => 'os'}, {-desc => 'count'}, {-asc => 'os_ver'}],
+    order_by => [{-asc => 'os'}, {-asc => 'os_ver'}],
   })
 
 }
