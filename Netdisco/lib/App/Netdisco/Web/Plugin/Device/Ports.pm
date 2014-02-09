@@ -141,6 +141,10 @@ get '/ajax/content/device/ports' => require_login sub {
     $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'wireless'}] })
       if param('c_nodes') && param('n_ssid');
 
+    # retrieve NetBIOS, if asked for
+    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'netbios'}] })
+      if param('c_nodes') && param('n_netbios');
+
     # retrieve vendor, if asked for
     $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'oui'}] })
       if param('c_nodes') && param('n_vendor');

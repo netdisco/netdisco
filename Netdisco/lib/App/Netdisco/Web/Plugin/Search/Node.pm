@@ -62,6 +62,17 @@ ajax '/ajax/content/search/node' => require_login sub {
             }
         );
 
+        my $netbios = schema('netdisco')->resultset('NodeNbt')->search(
+            { mac => $mac->as_IEEE },
+            { order_by   => { '-desc' => 'time_last' },
+              '+columns' => [
+                {
+                  time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
+                  time_last_stamp  => \"to_char(time_last,  'YYYY-MM-DD HH24:MI')"
+                }]
+            }
+        );
+
         return unless $sightings->count
             or $ips->count
             or $ports->count;
@@ -71,6 +82,7 @@ ajax '/ajax/content/search/node' => require_login sub {
           sightings => $sightings,
           ports     => $ports,
           wireless  => $wireless,
+          netbios   => $netbios,
         }, { layout => undef };
     }
     else {

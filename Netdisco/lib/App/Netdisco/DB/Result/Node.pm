@@ -112,6 +112,16 @@ the current Node's.
 __PACKAGE__->has_many( ips => 'App::Netdisco::DB::Result::NodeIp',
   { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
 
+=head2 netbios
+
+Returns the C<node_nbt> entry associated with this Node if one exists. That
+is, the NetBIOS information of this MAC address at the time of discovery.
+
+=cut
+
+__PACKAGE__->might_have( netbios => 'App::Netdisco::DB::Result::NodeNbt',
+  { 'foreign.mac' => 'self.mac' } );
+
 =head2 wireless
 
 Returns the set of C<node_wireless> entries associated with this Node. That
