@@ -39,7 +39,7 @@
     </tbody>  
     [% WHILE (row = results.next) %]
       <tr>
-        <td class="nd_linkcell"><a href="[% uri_for('report/netbios') %]?domain=[% row.domain || 'blank' | uri %]">[% row.domain || '(Blank Domain)' | html %]</a></td>
+        <td class="nd_linkcell"><a href="[% uri_for('/report/netbios') %]?domain=[% row.domain || 'blank' | uri %]">[% row.domain || '(Blank Domain)' | html %]</a></td>
         <td>[% row.count | format_number %]</td>
       </tr>
     [% END %]
