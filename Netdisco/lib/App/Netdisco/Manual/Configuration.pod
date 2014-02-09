@@ -648,14 +648,21 @@ of days will be removed.
 
 =head3 C<dns>
 
-Value: Settings Tree. Default: C<max_outstanding: 250>
+Value: Settings Tree. Default:
+
+ dns:
+   max_outstanding: 10
+   hosts_file: '/etc/hosts'
+   no: ['fe80::/64','169.254.0.0/16']
 
 After arpnip, each found IP will have its DNS name resolved. Similarly on
 device discovery, all interface aliases will have their IPs resolved to names.
 
 This setting controls how many outstanding DNS queries are permitted at any
 time. You can also override this setting using the
-C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment variable.
+C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment variable. Similarly, the
+location of the Hosts file can be overridden in this config, or using the
+C<PERL_ANYEVENT_HOSTS> environment variable.
 
 =head3 C<store_wireless_clients>
 

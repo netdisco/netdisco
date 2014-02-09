@@ -165,8 +165,9 @@ workers:
   sleep_time: 2
 
 dns:
-  no: ['fe80::/64','169.254.0.0/16']
   max_outstanding: 10
+  hosts_file: '/etc/hosts'
+  no: ['fe80::/64','169.254.0.0/16']
 
 #housekeeping:
 #  discoverall:

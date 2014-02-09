@@ -81,6 +81,7 @@ setting('plugins')->{DBIC}->{daemon} = {
 
 # force skipped DNS resolution, if unset
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
+setting('dns')->{hosts_file} ||= '/etc/hosts';
 
 =head1 NAME
 

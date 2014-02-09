@@ -58,6 +58,8 @@ Dancer::Logger->init('console', $CONFIG);
 # set max outstanding requests for AnyEvent::DNS
 local $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
     = setting('dns')->{max_outstanding} || 10;
+local $ENV{'PERL_ANYEVENT_HOSTS'}
+    = setting('dns')->{hosts_file} || '/etc/hosts';
 
 # for the in-memory local job queue
 schema('daemon')->deploy;

@@ -24,6 +24,7 @@
   * Correct date formatting and logic in IP Inventory report
   * Fix redirect when accessing a deep link when unauthenticated
   * [#46] Sorting on Inventory page same as ND1
+  * Quieten AnyEvent::DNS::EtcHosts check on PERL_ANYEVENT_HOSTS env var
 
 2.022000 - 2014-01-26
 
