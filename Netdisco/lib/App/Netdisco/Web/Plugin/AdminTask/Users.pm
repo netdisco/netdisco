@@ -4,7 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
-use Dancer::Plugin::Passphrase;
+use App::Netdisco::Web::Plugin::Passphrase;
 
 use App::Netdisco::Web::Plugin;
 use Digest::MD5 ();

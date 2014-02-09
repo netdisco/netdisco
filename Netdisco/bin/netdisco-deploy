@@ -37,7 +37,7 @@ BEGIN {
 use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
-use Dancer::Plugin::Passphrase;
+use App::Netdisco::Web::Plugin::Passphrase;
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
