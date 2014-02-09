@@ -1,4 +1,5 @@
 [% USE date(format = '%Y-%m-%d %H:%M') %]
+[% USE Number.Format %]
 <table class="table table-bordered table-hover nd_floatinghead">
   <thead>
     <tr>
@@ -16,6 +17,24 @@
   </thead>
   </tbody>
     [% WHILE (row = macs.next) %]
+    [% IF row.nbname %]
+    <tr>
+      <td><a class="nd_linkcell"
+        href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          [% row.net_mac.$mac_format_call | html_entity %]</a></td>
+      [% IF params.show_vendor %]
+      <td>[% row.oui.company | html_entity %]</td>
+      [% END %]
+      <td>NetBIOS</td>
+      <td class="nd_linkcell">\\<a href="[% uri_for('report/netbios') %]?domain=[% row.domain | uri %]" title="Devices in this Domain">[% row.domain | html %]</a>\<a href="[% search_node %]&q=[% row.nbname | uri %]">[% row.nbname | html_entity %]</a>
+        <br>[% row.nbuser || '[No User]' | html %]@<a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+      </td>
+      [% IF params.stamps %]
+      <td>[% row.time_first_stamp | html_entity %]</td>
+      <td>[% row.time_last_stamp | html_entity %]</td>
+      [% END %]
+    </tr>
+    [% ELSE %]
     <tr>
       <td><a class="nd_linkcell"
         href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
@@ -33,6 +52,40 @@
       <td>[% row.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
+    [% END %]
+    [% FOREACH nbt IN row.netbios %]
+    <tr>
+      <td>&nbsp;</td>
+      [% IF params.show_vendor %]
+      <td>&nbsp;</td>
+      [% END %]
+      <td>NetBIOS</td>
+      <td class="nd_linkcell">\\<a href="[% uri_for('report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
+        <br>[% nbt.nbuser || '[No User]' | html %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
+      </td>
+      [% IF params.stamps %]
+      <td>[% date.format(nbt.time_first) | html_entity %]</td>
+      <td>[% date.format(nbt.time_last) | html_entity %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+    [% FOREACH ni IN row.nodeips %]
+    <tr>
+      <td>&nbsp;</td>
+      [% IF params.show_vendor %]
+      <td>&nbsp;</td>
+      [% END %]
+      <td>IP &rarr; MAC</td>
+      <td><a href="[% search_node %]&q=[% ni.ip | uri %]">[% ni.ip | html_entity %]</a>
+        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT ni.active %]
+        [% ' (' _ ni.dns.remove(settings.domain_suffix) _ ')' IF ni.dns %]
+      </td>
+      [% IF params.stamps %]
+      <td>[% date.format(ni.time_first) | html_entity %]</td>
+      <td>[% date.format(ni.time_last) | html_entity %]</td>
+      [% END %]
+    </tr>
+    [% END %]
     [% FOREACH node IN row.node_sightings(archive_filter) %]
     <tr>
       <td>&nbsp;</td>
@@ -53,22 +106,6 @@
       <td>[% node.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
-      [% FOREACH nbt IN node.netbios %]
-      <tr>
-        <td>&nbsp;</td>
-        [% IF params.show_vendor %]
-        <td>&nbsp;</td>
-        [% END %]
-        <td>NetBIOS</td>
-        <td class="nd_linkcell">\\<a href="[% uri_for('report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
-          <br>[% nbt.nbuser || '[No User]' | html %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
-        </td>
-        [% IF params.stamps %]
-        <td>[% date.format(nbt.time_first) | html_entity %]</td>
-        <td>[% date.format(nbt.time_last) | html_entity %]</td>
-        [% END %]
-      </tr>
-      [% END %]
       [% FOREACH wlan IN node.wireless %]
       <tr>
         <td>&nbsp;</td>

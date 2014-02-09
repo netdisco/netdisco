@@ -138,8 +138,8 @@
         <br>[% nbt.nbuser || '[No User]' | html %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
       </td>
       [% IF params.stamps %]
-      <td>[% nbt.get_column('time_first_stamp') | html_entity %]</td>
-      <td>[% nbt.get_column('time_last_stamp') | html_entity %]</td>
+      <td>[% nbt.time_first_stamp | html_entity %]</td>
+      <td>[% nbt.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
     [% SET first_row = 0 %]

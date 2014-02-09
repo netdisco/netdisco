@@ -98,6 +98,17 @@ See also the C<node_sightings> helper routine, below.
 __PACKAGE__->has_many( nodes => 'App::Netdisco::DB::Result::Node',
   { 'foreign.mac' => 'self.mac' } );
 
+=head2 netbios
+
+Returns the set of C<node_nbt> entries associated with the MAC of this IP.
+That is, all the NetBIOS entries recorded which shared the same MAC with this
+IP Address.
+
+=cut
+
+__PACKAGE__->has_many( netbios => 'App::Netdisco::DB::Result::NodeNbt',
+  { 'foreign.mac' => 'self.mac' } );
+
 my $search_attr = {
     order_by => {'-desc' => 'time_last'},
     '+columns' => {

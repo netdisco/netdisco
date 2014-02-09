@@ -49,6 +49,9 @@ ajax '/ajax/content/search/node' => require_login sub {
         my $ips = schema('netdisco')->resultset('NodeIp')
           ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
 
+        my $netbios = schema('netdisco')->resultset('NodeNbt')
+          ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
+
         my $ports = schema('netdisco')->resultset('DevicePort')
           ->search({mac => $mac->as_IEEE});
 
@@ -58,17 +61,6 @@ ajax '/ajax/content/search/node' => require_login sub {
               '+columns' => [
                 {
                   time_last_stamp => \"to_char(time_last, 'YYYY-MM-DD HH24:MI')"
-                }]
-            }
-        );
-
-        my $netbios = schema('netdisco')->resultset('NodeNbt')->search(
-            { mac => $mac->as_IEEE },
-            { order_by   => { '-desc' => 'time_last' },
-              '+columns' => [
-                {
-                  time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')",
-                  time_last_stamp  => \"to_char(time_last,  'YYYY-MM-DD HH24:MI')"
                 }]
             }
         );
@@ -89,25 +81,33 @@ ajax '/ajax/content/search/node' => require_login sub {
     else {
         my $set;
 
+        my $name = $node;
+
+        if (param('partial')) {
+            $name = "\%$name\%" if $name !~ m/%/;
+        }
+
+        $set = schema('netdisco')->resultset('NodeNbt')
+            ->search_by_name({nbname => $name, @active, @times});
+
+        unless ( $set->has_rows ) {
         if (my $ip = NetAddr::IP::Lite->new($node)) {
             # search_by_ip() will extract cidr notation if necessary
             $set = schema('netdisco')->resultset('NodeIp')
               ->search_by_ip({ip => $ip, @active, @times});
         }
         else {
-            if (param('partial')) {
-                $node = "\%$node\%" if $node !~ m/%/;
-            }
-            elsif (setting('domain_suffix')) {
-                $node .= setting('domain_suffix')
-                    if index($node, setting('domain_suffix')) == -1;
+
+            if ($name !~ m/%/ and setting('domain_suffix')) {
+                $name .= setting('domain_suffix')
+                    if index($name, setting('domain_suffix')) == -1;
             }
             $set = schema('netdisco')->resultset('NodeIp')
               ->search_by_dns({dns => $node, @active, @times});
 
             # if the user selects Vendor search opt, then
             # we'll try the OUI company name as a fallback
-            if (not $set->count and param('show_vendor')) {
+            if (not $set->has_rows and param('show_vendor')) {
                 $node = param('q');
                 $set = schema('netdisco')->resultset('NodeIp')
                   ->with_times
@@ -117,7 +117,8 @@ ajax '/ajax/content/search/node' => require_login sub {
                   );
             }
         }
-        return unless $set and $set->count;
+        return unless $set and $set->has_rows;
+        }
         $set = $set->search_rs({}, { order_by => 'me.mac' });
 
         template 'ajax/search/node_by_ip.tt', {

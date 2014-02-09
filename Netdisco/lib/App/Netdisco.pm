@@ -312,17 +312,13 @@ See L<App::Netdisco::Web::Plugin> for further information.
 Lots of information about the architecture of this application is contained
 within the L<Developer|App::Netdisco::Manual::Developing> documentation.
 
-=head1 Caveats
-
-NetBIOS Node properies are not yet shown.
-
 =head1 AUTHOR
 
 Oliver Gorwits <oliver@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2012, 2013 by The Netdisco Developer Team.
+This software is copyright (c) 2012, 2013, 2014 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
