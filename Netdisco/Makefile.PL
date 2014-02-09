@@ -19,6 +19,7 @@ requires 'Dancer' => 1.3112;
 requires 'Dancer::Plugin::DBIC' => 0.1803;
 requires 'Dancer::Plugin::Auth::Extensible' => 0.30;
 requires 'Dancer::Plugin::Passphrase' => 2.00;
+requires 'Digest::SHA' => 5.86;
 requires 'File::ShareDir' => 1.03;
 requires 'Guard' => 1.022;
 requires 'HTML::Parser' => 3.70;
