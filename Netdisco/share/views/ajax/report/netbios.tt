@@ -1,0 +1,48 @@
+[% USE date(format = '%Y-%m-%d %H:%M') %]
+[% USE Number.Format %]
+[% first = results.first %]
+[% IF results.first.mac %]
+  [% row = results.reset %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+        <th>Domain</th>
+        <th>Node</th>
+        <th>Name</th>
+        <th>User</th>
+        <th>First Seen</th>
+        <th>Last Seen</th>
+      </tr>
+    </thead>
+    </tbody>
+      [% WHILE (row = results.next) %]
+      <tr>
+        <td>[% row.domain | html_entity %]</td>
+        <td><a href="[% search_node %]&q=[% row.mac | uri %]">[% row.mac.upper | html_entity %]</td>
+        <td>[% IF row.domain %]\\[% row.domain | html %]\[% END %]<a href="[% search_node %]&q=[% row.nbname | uri %]">[% row.nbname | html_entity %]</a></td>
+        <td>[% row.nbuser || '[No User]' | html %]@<a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a></td>
+        <td>[% date.format(row.time_first) | html_entity %]</td>
+        <td>[% date.format(row.time_last) | html_entity %]</td>
+      </tr>
+      [% END %]
+    </tbody>
+  </table>
+[% ELSE %]
+  [% row = results.reset %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+        <th>Domain</th>
+        <th>Count</th>
+      </tr>
+    </thead>
+    </tbody>  
+    [% WHILE (row = results.next) %]
+      <tr>
+        <td class="nd_linkcell"><a href="[% uri_for('report/netbios') %]?domain=[% row.domain || 'blank' | uri %]">[% row.domain || '(Blank Domain)' | html %]</a></td>
+        <td>[% row.count | format_number %]</td>
+      </tr>
+    [% END %]
+    </tbody>
+  </table>
+[% END %]

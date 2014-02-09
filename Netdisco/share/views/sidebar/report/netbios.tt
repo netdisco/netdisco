@@ -1,0 +1,19 @@
+
+            <p class="nd_sidebar-title"><em>NetBIOS Search Options</em></p>
+            <div class="clearfix">
+              <select class="nd_side-select" size="[% domain_list.size > 8 ? 8 : domain_list.size %]"
+                multiple="on" name="domain"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Domain"/>
+                [% FOREACH opt IN domain_list %]
+                  [% UNLESS opt == '' %]
+                    <option[% ' selected="selected"' IF domain_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                  [% ELSE %]
+                    <option value="blank"[% ' selected="selected"' IF domain_lkp.exists('blank') %]>[% '(Blank Domain)' | html_entity %]</option>     
+                  [% END %]
+                [% END %]
+              </select>
+            </div>
+
+            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
+             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search NetBIOS</button>
+
