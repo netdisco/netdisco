@@ -73,9 +73,10 @@ ajax '/ajax/content/search/node' => require_login sub {
             }
         );
 
-        return unless $sightings->count
-            or $ips->count
-            or $ports->count;
+        return unless $sightings->has_rows
+            or $ips->has_rows
+            or $ports->has_rows
+            or $netbios->has_rows;
 
         template 'ajax/search/node_by_mac.tt', {
           ips       => $ips,
