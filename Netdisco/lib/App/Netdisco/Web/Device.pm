@@ -176,7 +176,6 @@ get '/device' => require_login sub {
 
     params->{'tab'} ||= 'details';
     template 'device', {
-      d => $dev,
       display_name => ($others ? $first->ip : $first->dns),
       device => params->{'tab'},
     };
