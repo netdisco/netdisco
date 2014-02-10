@@ -10,7 +10,7 @@ use base 'Dancer::Plugin::Auth::Extensible::Provider::Base';
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
-use App::Netdisco::Web::Plugin::Passphrase;
+use Dancer::Plugin::Passphrase;
 use Digest::MD5;
 
 sub authenticate_user {
