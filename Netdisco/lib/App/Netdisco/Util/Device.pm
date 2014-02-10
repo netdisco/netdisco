@@ -2,17 +2,14 @@ package App::Netdisco::Util::Device;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-
-use NetAddr::IP::Lite ':lower';
-use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::Permission 'check_acl';
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_device
-  check_acl
-  check_no
-  check_only
+  check_device_no
+  check_device_only
   is_discoverable
   is_arpnipable
   is_macsuckable
@@ -60,87 +57,7 @@ sub get_device {
     ->find_or_new({ip => $ip});
 }
 
-=head2 check_acl( $ip, \@config )
-
-Given the IP address of a device, returns true if any of the items in C<<
-\@config >> matches that device, otherwise returns false.
-
-Normally you use C<check_no> and C<check_only>, passing the name of the
-configuration setting to load. This helper instead requires not the name of
-the setting, but its value.
-
-=cut
-
-sub check_acl {
-  my ($ip, $config) = @_;
-  my $device = get_device($ip) or return 0;
-  my $addr = NetAddr::IP::Lite->new($device->ip);
-
-  foreach my $item (@$config) {
-      if (ref qr// eq ref $item) {
-          my $name = hostname_from_ip($addr->addr) or next;
-          return 1 if $name =~ $item;
-          next;
-      }
-
-      if ($item =~ m/^([^:]+)\s*:\s*([^:]+)$/) {
-          my $prop  = $1;
-          my $match = $2;
-
-          # if not in storage, we can't do much with device properties
-          next unless $device->in_storage;
-
-          # lazy version of vendor: and model:
-          if ($device->can($prop) and defined $device->$prop
-              and $device->$prop =~ m/^$match$/) {
-              return 1;
-          }
-
-          next;
-      }
-
-      if ($item =~ m/([a-f0-9]+)-([a-f0-9]+)$/i) {
-          my $first = $1;
-          my $last  = $2;
-
-          if ($item =~ m/:/) {
-              next unless $addr->bits == 128;
-
-              $first = hex $first;
-              $last  = hex $last;
-
-              (my $header = $item) =~ s/:[^:]+$/:/;
-              foreach my $part ($first .. $last) {
-                  my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
-                    or next;
-                  return 1 if $ip == $addr;
-              }
-          }
-          else {
-              next unless $addr->bits == 32;
-
-              (my $header = $item) =~ s/\.[^.]+$/./;
-              foreach my $part ($first .. $last) {
-                  my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
-                    or next;
-                  return 1 if $ip == $addr;
-              }
-          }
-
-          next;
-      }
-
-      my $ip = NetAddr::IP::Lite->new($item)
-        or next;
-      next unless $ip->bits == $addr->bits;
-
-      return 1 if $ip->contains($addr);
-  }
-
-  return 0;
-}
-
-=head2 check_no( $ip, $setting_name )
+=head2 check_device_no( $ip, $setting_name )
 
 Given the IP address of a device, returns true if the configuration setting
 C<$setting_name> matches that device, else returns false. If the setting
@@ -182,16 +99,17 @@ To match no devices we recommend an entry of "C<localhost>" in the setting.
 
 =cut
 
-sub check_no {
+sub check_device_no {
   my ($ip, $setting_name) = @_;
+  my $device = get_device($ip) or return 0;
 
   my $config = setting($setting_name) || [];
   return 0 if not scalar @$config;
 
-  return check_acl($ip, $config);
+  return check_acl($device->ip, $config);
 }
 
-=head2 check_only( $ip, $setting_name )
+=head2 check_device_only( $ip, $setting_name )
 
 Given the IP address of a device, returns true if the configuration setting
 C<$setting_name> matches that device, else returns false. If the setting
@@ -233,13 +151,14 @@ To match no devices we recommend an entry of "C<localhost>" in the setting.
 
 =cut
 
-sub check_only {
+sub check_device_only {
   my ($ip, $setting_name) = @_;
+  my $device = get_device($ip) or return 0;
 
   my $config = setting($setting_name) || [];
   return 1 if not scalar @$config;
 
-  return check_acl($ip, $config);
+  return check_acl($device->ip, $config);
 }
 
 =head2 is_discoverable( $ip, $device_type? )
@@ -270,10 +189,10 @@ sub is_discoverable {
   }
 
   return _bail_msg("is_discoverable: device matched discover_no")
-    if check_no($device, 'discover_no');
+    if check_device_no($device, 'discover_no');
 
   return _bail_msg("is_discoverable: device failed to match discover_only")
-    unless check_only($device, 'discover_only');
+    unless check_device_only($device, 'discover_only');
 
   # cannot check last_discover for as yet undiscovered devices :-)
   return 1 if not $device->in_storage;
@@ -304,10 +223,10 @@ sub is_arpnipable {
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_arpnipable: device matched arpnip_no")
-    if check_no($device, 'arpnip_no');
+    if check_device_no($device, 'arpnip_no');
 
   return _bail_msg("is_arpnipable: device failed to match arpnip_only")
-    unless check_only($device, 'arpnip_only');
+    unless check_device_only($device, 'arpnip_only');
 
   return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
     if not $device->in_storage;
@@ -338,10 +257,10 @@ sub is_macsuckable {
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_macsuckable: device matched macsuck_no")
-    if check_no($device, 'macsuck_no');
+    if check_device_no($device, 'macsuck_no');
 
   return _bail_msg("is_macsuckable: device failed to match macsuck_only")
-    unless check_only($device, 'macsuck_only');
+    unless check_device_only($device, 'macsuck_only');
 
   return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")
     if not $device->in_storage;

@@ -4,7 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::PortMAC 'get_port_macs';
-use App::Netdisco::Util::SanityCheck 'check_mac';
+use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Time::HiRes 'gettimeofday';
 

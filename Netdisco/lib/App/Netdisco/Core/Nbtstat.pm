@@ -3,7 +3,7 @@ package App::Netdisco::Core::Nbtstat;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SanityCheck 'check_mac';
+use App::Netdisco::Util::Node 'check_mac';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
 use Net::NBName;

@@ -3,7 +3,7 @@ package App::Netdisco::Core::Arpnip;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SanityCheck 'check_mac';
+use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
