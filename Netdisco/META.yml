@@ -34,7 +34,7 @@ requires:
   Dancer: 1.3112
   Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.1803
-  Dancer::Plugin::Passphrase: 2
+  Dancer::Plugin::Passphrase: 2.0.1
   File::ShareDir: 1.03
   Guard: 1.022
   HTML::Parser: 3.7
@@ -53,7 +53,7 @@ requires:
   Plack: 1.0023
   Plack::Middleware::Expires: 0.03
   Role::Tiny: 1.002005
-  SNMP::Info: 3.11
+  SNMP::Info: 3.12
   SQL::Translator: 0.11016
   Socket6: 0.23
   Starman: 0.4008
@@ -74,4 +74,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.022000
+version: 2.023000
