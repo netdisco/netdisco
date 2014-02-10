@@ -5,8 +5,15 @@ App::Netdisco::Manual::Deployment - Tips and Tricks for Deployment
 =head1 Enable MD5 authentication to PostgreSQL
 
 Some installations of PostgreSQL don't have MD5 authentication enabled by
-default. You should enable this by adding the following to your system's
-"C<pg_hba.conf>" file (and restarting the database service):
+default, which blocks database connections with the default Netdisco
+configuration.
+
+If your database and Netdisco are on the same system, then the easiest
+solution is to comment out the "C<host:>" line in your C<deployment.yml> file.
+
+Alternatively, reconfigure PostgreSQL to permit MD5 auth for TCP connections
+by adding the following to your system's "C<pg_hba.conf>" file (and restarting
+the database service):
 
  # TYPE  DATABASE  USER  ADDRESS       METHOD
  host    all       all   127.0.0.1/32  md5
