@@ -5,7 +5,6 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Node 'check_mac';
 use NetAddr::IP::Lite ':lower';
-use Time::HiRes 'gettimeofday';
 use Net::NBName;
 
 use base 'Exporter';
@@ -36,8 +35,7 @@ Returns whether a node is answering netbios calls or not.
 =cut
 
 sub do_nbtstat {
-    my $host = shift;
-
+    my ($host, $now) = @_;
     my $ip = NetAddr::IP::Lite->new($host) or return;
 
     unless ( $ip->version() == 4 ) {
@@ -46,7 +44,6 @@ sub do_nbtstat {
     }
 
     my $nb = Net::NBName->new;
-
     my $ns = $nb->node_status( $ip->addr );
 
     # Check for NetBIOS Info
@@ -55,7 +52,7 @@ sub do_nbtstat {
     my $nbname = _filter_nbname( $ip->addr, $ns );
 
     if ($nbname) {
-        store_nbt($nbname);
+        store_nbt($nbname, $now);
     }
 
     return 1;
@@ -101,7 +98,7 @@ sub _filter_nbname {
 
         # Just assume it's the last MAC we saw this IP at.
         my $node_ip = schema('netdisco')->resultset('NodeIp')
-            ->single( { ip => $ip, active => \'true' } );
+            ->single( { ip => $ip, -bool => 'active' } );
 
         if ( !defined $node_ip ) {
             debug ' no MAC for %s returned by nbtstat or in DB', $ip;
