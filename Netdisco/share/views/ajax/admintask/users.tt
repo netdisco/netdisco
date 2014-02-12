@@ -14,7 +14,7 @@
     <tr>
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
       <td class="nd_center-cell"><input data-form="add" name="username" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="password" type="text"></td>
+      <td class="nd_center-cell"><input data-form="add" name="password" type="password"></td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="ldap"></td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="port_control"></td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
@@ -34,7 +34,7 @@
         <input data-form="update" name="username" type="text" value="[% row.username | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="password" type="text" value="********">
+        <input data-form="update" name="password" type="password" value="********">
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="ldap" type="checkbox" [% 'checked="checked"' IF row.ldap %]>
