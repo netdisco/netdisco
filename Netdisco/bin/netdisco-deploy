@@ -122,7 +122,7 @@ sub _make_password {
   }
 }
 
-my $users = schema('netdisco')->resultset('User');
+my $users = schema('netdisco')->resultset('User')->search({-bool => 'admin'});
 if ($users->count == 0) {
     say '';
     print color 'bold green';
