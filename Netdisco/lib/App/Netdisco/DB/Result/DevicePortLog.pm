@@ -40,10 +40,19 @@ __PACKAGE__->add_columns(
   },
 );
 
+=head1 ADDITIONAL COLUMNS
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5moCbYoDG2BqT7VrP/MRkA
+=head2 creation_stamp
+ 
+Formatted version of the C<creation> field, accurate to the second.
+ 
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+ 
+ 2012-02-06 12:49:23
+ 
+=cut
+ 
+sub creation_stamp  { return (shift)->get_column('creation_stamp')  }
 
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

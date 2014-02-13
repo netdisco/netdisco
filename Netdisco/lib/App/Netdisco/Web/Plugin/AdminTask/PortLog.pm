@@ -28,7 +28,7 @@ ajax '/ajax/content/admin/portlog' => require_role admin => sub {
       }, {
         order_by => { -desc => [qw/creation/] },
         rows => 200,
-      });
+      })->with_times;
 
     content_type('text/html');
     template 'ajax/admintask/portlog.tt', {

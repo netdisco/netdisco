@@ -15,7 +15,7 @@
   </tbody>
     [% WHILE (row = results.next) %]
     <tr>
-      <td class="nd_center-cell">[% row.creation | html_entity %]</td>
+      <td class="nd_center-cell">[% row.creation_stamp | html_entity %]</td>
       <td class="nd_center-cell">[% row.username | html_entity %]</td>
       <td class="nd_center-cell">[% row.userip   | html_entity %]</td>
       <td class="nd_center-cell">[% row.action   | html_entity %]</td>
