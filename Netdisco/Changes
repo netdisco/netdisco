@@ -1,4 +1,9 @@
-2.023001 -
+2.023001 - 2014-02-14
+
+  [ENHANCEMENTS]
+
+  * Display clean version of creation stamp on port log
+  * Make sure only to check for admins in deploy script
 
   [BUG FIXES]
 
