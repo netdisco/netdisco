@@ -4,6 +4,7 @@
 
   * Display clean version of creation stamp on port log
   * Make sure only to check for admins in deploy script
+  * Allow Port Control users to see Port Config Log report
 
   [BUG FIXES]
 

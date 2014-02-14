@@ -67,7 +67,7 @@
           data-animation="" data-title="Click to Enable"></i>
       [% END %]
         <a class="nd_log-icon"
-          href="[% uri_for('/admin/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
+          href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
           <i class="icon-file-text-alt"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
@@ -342,7 +342,7 @@
     role="dialog" aria-hidden="true">
   <div class="modal-body">
     <blockquote>
-      <ul><li><p>Please provide a reason for chainging the Port Configuration</p></li></ul>
+      <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
     </blockquote>
     <select id="nd_portlog-reason" class="input-block-level" name="reason">
       [% FOREACH pair IN settings.port_control_reasons.pairs %]

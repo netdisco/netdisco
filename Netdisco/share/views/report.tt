@@ -13,8 +13,8 @@
           <form id="[% report.tag %]_form" class="nd_sidebar-form form-stacked"
               method="get" action="[% uri_for('/report') %]">
             [% TRY %]
-            [% INCLUDE "sidebar/report/${report.tag}.tt" %]
             <script type="text/javascript">has_sidebar["[% report.tag %]"] = 1;</script>
+            [% INCLUDE "sidebar/report/${report.tag}.tt" %]
             [% CATCH %]
             <script type="text/javascript">has_sidebar["[% report.tag %]"] = 0;</script>
             [% END %]
@@ -28,7 +28,13 @@
     <ul id="nd_search-results" class="nav nav-tabs">
       <li class="active"><a id="[% report.tag %]_link" class="nd_single-tab"
         href="#[% report.tag %]_pane">[% report.label %]</a></li>
-      [% IF report.provides_csv %]
+      [% IF report.tag == 'portlog' %]
+      <span id="nd_device-name">
+        <a href="[% device_ports %]&q=[% params.q | uri %]&c_admin=on">[% params.q %]</a>
+        -
+        <a href="[% device_ports %]&q=[% params.q | uri %]&f=[% params.f | uri %]&c_admin=on">[% params.f %]</a>
+      </span>
+      [% ELSIF report.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
           <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"

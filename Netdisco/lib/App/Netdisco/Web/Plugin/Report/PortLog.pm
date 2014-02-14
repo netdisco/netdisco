@@ -1,4 +1,4 @@
-package App::Netdisco::Web::Plugin::AdminTask::PortLog;
+package App::Netdisco::Web::Plugin::Report::PortLog;
 
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
@@ -7,13 +7,14 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_admin_task({
+register_report({
   tag => 'portlog',
   label => 'Port Control Log',
+  category => 'Port', # not used
   hidden => true,
 });
 
-ajax '/ajax/content/admin/portlog' => require_role admin => sub {
+ajax '/ajax/content/report/portlog' => require_role port_control => sub {
     my $device = param('q');
     my $port = param('f');
     send_error('Bad Request', 400) unless $device and $port;
@@ -31,7 +32,7 @@ ajax '/ajax/content/admin/portlog' => require_role admin => sub {
       })->with_times;
 
     content_type('text/html');
-    template 'ajax/admintask/portlog.tt', {
+    template 'ajax/report/portlog.tt', {
       results => $set,
     }, { layout => undef };
 };

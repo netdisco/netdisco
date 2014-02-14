@@ -178,6 +178,16 @@ any query parameters which might customize the report search.
 See the L<App::Netdisco::Web::Plugin::Report::DuplexMismatch> module for a
 simple example of how to implement the handler.
 
+An additional feature allows you to create Reports which do not appear in the
+Navbar menu. This is useful if the page is only linked directly from another
+(for example Port Log). To enable this feature add the C<hidden> key:
+
+ register_report({
+   tag   => 'newfeature',
+   label => 'My New Feature',
+   hidden => true,
+ });
+
 =head1 CSV Response
 
 Most pages in Netdisco are a table with data. It's possible to have the
@@ -224,7 +234,7 @@ want arbitrary links supported.
 
 An additional feature allows you to create Admin Tasks which do not appear in
 the Navbar menu. This is useful if the page is only linked directly from
-another (for example Port Log). To enable this feature add the C<hidden> key:
+another. To enable this feature add the C<hidden> key:
 
  register_admin_task({
    tag   => 'newfeature',

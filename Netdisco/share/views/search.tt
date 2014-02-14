@@ -13,8 +13,8 @@
           <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') %]">
             <input name="tab" value="[% tab.tag %]" type="hidden"/>
             [% TRY %]
-            [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
             <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 1;</script>
+            [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
             [% CATCH %]
             <!-- no "[% tab.tag %]" search options -->
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>

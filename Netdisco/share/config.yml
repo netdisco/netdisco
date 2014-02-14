@@ -53,7 +53,7 @@ web_plugins:
   - Report::SsidInventory
   - Report::VlanInventory
   - Report::SubnetUtilization
-  - AdminTask::PortLog
+  - Report::PortLog
   - AdminTask::JobQueue
   - AdminTask::Topology
   - AdminTask::PollerPerformance
