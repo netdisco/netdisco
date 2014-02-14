@@ -90,6 +90,7 @@ lib/App/Netdisco/DB/ResultSet.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
+lib/App/Netdisco/DB/ResultSet/DevicePortLog.pm
 lib/App/Netdisco/DB/ResultSet/Node.pm
 lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
@@ -141,9 +142,9 @@ lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DNS.pm
 lib/App/Netdisco/Util/Node.pm
 lib/App/Netdisco/Util/Noop.pm
+lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortMAC.pm
-lib/App/Netdisco/Util/SanityCheck.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
@@ -156,7 +157,6 @@ lib/App/Netdisco/Web/Plugin.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/OrphanedDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
-lib/App/Netdisco/Web/Plugin/AdminTask/PortLog.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
@@ -184,6 +184,7 @@ lib/App/Netdisco/Web/Plugin/Report/NodeMultiIPs.pm
 lib/App/Netdisco/Web/Plugin/Report/PhonesDiscovered.pm
 lib/App/Netdisco/Web/Plugin/Report/PortAdminDown.pm
 lib/App/Netdisco/Web/Plugin/Report/PortBlocking.pm
+lib/App/Netdisco/Web/Plugin/Report/PortLog.pm
 lib/App/Netdisco/Web/Plugin/Report/PortMultiNodes.pm
 lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
 lib/App/Netdisco/Web/Plugin/Report/SsidInventory.pm
@@ -266,7 +267,6 @@ share/views/ajax/admintask/jobqueue.tt
 share/views/ajax/admintask/orphaned.tt
 share/views/ajax/admintask/orphaned_csv.tt
 share/views/ajax/admintask/performance.tt
-share/views/ajax/admintask/portlog.tt
 share/views/ajax/admintask/pseudodevice.tt
 share/views/ajax/admintask/slowdevices.tt
 share/views/ajax/admintask/topology.tt
@@ -308,6 +308,7 @@ share/views/ajax/report/portadmindown.tt
 share/views/ajax/report/portadmindown_csv.tt
 share/views/ajax/report/portblocking.tt
 share/views/ajax/report/portblocking_csv.tt
+share/views/ajax/report/portlog.tt
 share/views/ajax/report/portmultinodes.tt
 share/views/ajax/report/portmultinodes_csv.tt
 share/views/ajax/report/portutilization.tt
@@ -339,11 +340,11 @@ share/views/layouts/main.tt
 share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
-share/views/sidebar/admintask/portlog.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
 share/views/sidebar/report/ipinventory.tt
 share/views/sidebar/report/netbios.tt
+share/views/sidebar/report/portlog.tt
 share/views/sidebar/report/subnets.tt
 share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
