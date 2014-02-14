@@ -1,5 +1,8 @@
 package App::Netdisco::Util::Web;
 
+use strict;
+use warnings;
+
 use base 'Exporter';
 use Time::Piece;
 use Time::Seconds;

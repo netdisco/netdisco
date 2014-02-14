@@ -1,5 +1,8 @@
 package App::Netdisco::Daemon::Util;
 
+use strict;
+use warnings;
+
 # support utilities for Daemon Actions
 
 use base 'Exporter';
