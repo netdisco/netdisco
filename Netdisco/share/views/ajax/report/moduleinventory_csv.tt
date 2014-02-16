@@ -1,0 +1,27 @@
+[% USE CSV -%]
+[% IF results.first.ip %]
+  [% row = results.reset %]
+  [% CSV.dump(['Device' 'Description' 'Name' 'Class' 'Type' 'Model' 'Serial' 'HW Version' 'SW Version' 'FW Version']) %]
+
+  [% WHILE (row = results.next) %]
+    [% mylist = [] %]
+    [% device = row.device.dns || row.device.name || row.device.ip %]
+    [% FOREACH col IN [ device row.description row.name row.class.ucfirst row.type row.model row.serial row.hw_ver row.sw_ver row.fw_ver ] %]
+      [% mylist.push(col) %]
+    [% END %]
+    [% CSV.dump(mylist) %]
+
+  [% END %]
+[% ELSE %]
+  [% row = results.reset %]
+  [% CSV.dump(['Class' 'Count']) %]
+
+  [% WHILE (row = results.next) %]
+    [% mylist = [] %]
+    [% FOREACH col IN [ row.class.ucfirst row.count ] %]
+      [% mylist.push(col) %]
+    [% END %]
+    [% CSV.dump(mylist) %]
+
+  [% END %]
+[% END %]

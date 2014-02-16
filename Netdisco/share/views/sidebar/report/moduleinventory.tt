@@ -1,0 +1,72 @@
+
+            <p class="nd_sidebar-title"><em>Module Search Options</em></p>
+            <div class="clearfix">
+              <i id="device_clear_btn" data-btn-for="device"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input nd_colored-input" placeholder="Device"
+                type="text" name="device" value="[% params.dns | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Device IP, DNS, Description, Name, Location, Serial, or Contact"/>
+            </div>
+            <div class="clearfix">
+              <i id="description_clear_btn" data-btn-for="description"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input nd_colored-input" placeholder="Module Description"
+                type="text" name="description" value="[% params.description | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Description"/>
+            </div>
+            <div class="clearfix">
+              <i id="name_clear_btn" data-btn-for="name"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input nd_colored-input" placeholder="Module Name"
+                type="text" name="name" value="[% params.name | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Name"/>
+            </div>
+            <div class="clearfix">
+              <i id="type_clear_btn" data-btn-for="type"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input nd_colored-input" placeholder="Module Type"
+                type="text" name="type" value="[% params.type | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Type"/>
+            </div>
+            <div class="clearfix">
+              <i id="model_clear_btn" data-btn-for="model"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input nd_colored-input" placeholder="Module Model"
+                type="text" name="model" value="[% params.model | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Model"/>
+            </div>
+            <div class="clearfix">
+              <i id="serial_clear_btn" data-btn-for="serial"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input nd_colored-input" placeholder="Module Serial"
+                type="text" name="serial" value="[% params.serial | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Serial"/>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select nd_colored-input" size="[% class_list.size > 5 ? 5 : class_list.size %]"
+                multiple="on" name="class"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Class"/>
+                [% FOREACH opt IN class_list %]
+                <option[% ' selected="selected"' IF class_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="muted">Limit:</em><br/>
+              <select id="nd_mac-format" class="nd_side-select" name="limit">
+                [% FOREACH size IN [ '128', '256', '1024', '2048', '4096', '8192' ] %]
+                <option[% ' selected="selected"' IF params.limit == size %]>[% size %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="matchall"
+                  name="matchall"[% ' checked="checked"' IF params.matchall %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="matchall">
+                <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
+              </label>
+            </div>
+            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
+              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Modules</button>

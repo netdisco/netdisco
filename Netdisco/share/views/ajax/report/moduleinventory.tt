@@ -1,0 +1,86 @@
+[% USE Number.Format %]
+[% IF results.first.ip %]
+  [% row = results.reset %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+        <th>Device</th>
+        <th>Description</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Type</th>
+        <th>Model</th>
+        <th>Serial</th>
+        <th>HW Version</th>
+        <th>SW Version</th>
+        <th>FW Version</th>
+      </tr>
+    </thead>
+    </tbody>
+      [% WHILE (row = results.next) %]
+      <tr>
+        <td>
+          <a class="nd_linkcell"
+            href="[% uri_for('/device') %]?tab=modules&q=[% row.device.ip | uri %]">
+              [% row.device.dns || row.device.name || row.device.ip | html_entity %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?description=[% row.description | uri %]">
+            [% row.description | html %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?name=[% row.name | uri %]">
+            [% row.name | html %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?class=[% row.class | uri %]">
+            [% row.class.ucfirst | html %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?type=[% row.type | uri %]">
+            [% row.type | html %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?model=[% row.model | uri %]">
+            [% row.model | html %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?serial=[% row.serial | uri %]">
+            [% row.serial | html %]</a>
+        </td>
+        <td>[% row.hw_ver | html_entity %]</td>
+        <td>[% row.sw_ver | html_entity %]</td>
+        <td>[% row.fw_ver | html_entity %]</td>
+      </tr>
+      [% END %]
+    </tbody>
+  </table>
+[% ELSE %]
+  [% row = results.reset %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+        <th>Class</th>
+        <th>Count</th>
+      </tr>
+    </thead>
+    </tbody>  
+    [% WHILE (row = results.next) %]
+      <tr>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/moduleinventory') %]?class=[% row.class | uri %]">
+            [% row.class.ucfirst | html %]</a>
+        </td>
+        <td>[% row.count | format_number %]</td>
+      </tr>
+    [% END %]
+    </tbody>
+  </table>
+[% END %]

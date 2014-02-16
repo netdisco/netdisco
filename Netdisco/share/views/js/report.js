@@ -2,7 +2,7 @@
   // ajax content is loaded
   var path = 'report';
 
-  // fields in the IP Inventory Report form
+  // colored input fields in the Report Options sidebar forms
   var form_inputs = $(".nd_colored-input");
 
   // this is called by do_search to support local code
@@ -15,7 +15,7 @@
     $("[rel=popover]").popover({live: true});
   }
 
-  // on load, check initial Device Search Options form state,
+  // on load, check initial Report Options form state,
   // and on each change to the form fields
   $(document).ready(function() {
     var tab = '[% report.tag %]'
@@ -24,6 +24,14 @@
     // sidebar form fields should change colour and have trash icon
     form_inputs.each(function() {device_form_state($(this))});
     form_inputs.change(function() {device_form_state($(this))});
+
+    // handler for bin icon in search forms
+    $('.nd_field-clear-icon').click(function() {
+      var name = $(this).data('btn-for');
+      var input = $('[name=' + name + ']');
+      input.val('');
+      device_form_state(input); // reset input field
+    });
 
     $('#nd_ipinventory-subnet').on('input', function(event) {
       if ($(this).val().indexOf(':') != -1) {
