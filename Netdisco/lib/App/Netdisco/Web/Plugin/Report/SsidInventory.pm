@@ -15,25 +15,18 @@ register_report(
 );
 
 get '/ajax/content/report/ssidinventory' => require_login sub {
-    my $set = schema('netdisco')->resultset('DevicePortSsid')->search(
-        {},
-        {   select => [ 'ssid', 'broadcast', { count => 'ssid' } ],
-            as       => [qw/ ssid broadcast scount /],
-            group_by => [qw/ ssid broadcast /],
-            order_by => { -desc => [qw/count/] },
-        }
-    );
-    return unless $set->count;
+    my $rs = schema('netdisco')->resultset('DevicePortSsid')->get_ssids->hri;
+    return unless $rs->has_rows;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/ssidinventory.tt', { results => $set, },
+        template 'ajax/report/portssid.tt', { results => $rs, },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/ssidinventory_csv.tt', { results => $set, },
+        template 'ajax/report/portssid_csv.tt', { results => $rs, },
             { layout => undef };
     }
 };
 
-true;
+1;
