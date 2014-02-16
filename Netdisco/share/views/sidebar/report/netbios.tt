@@ -1,7 +1,7 @@
 
             <p class="nd_sidebar-title"><em>NetBIOS Search Options</em></p>
             <div class="clearfix">
-              <select class="nd_side-select" size="[% domain_list.size > 8 ? 8 : domain_list.size %]"
+              <select class="nd_side-select nd_colored-input" size="[% domain_list.size > 8 ? 8 : domain_list.size %]"
                 multiple="on" name="domain"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Domain"/>
                 [% FOREACH opt IN domain_list %]
