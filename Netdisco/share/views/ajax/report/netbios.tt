@@ -1,6 +1,5 @@
 [% USE date(format = '%Y-%m-%d %H:%M') %]
 [% USE Number.Format %]
-[% first = results.first %]
 [% IF results.first.mac %]
   [% row = results.reset %]
   <table class="table table-bordered table-condensed table-striped nd_floatinghead">
