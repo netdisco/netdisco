@@ -36,6 +36,7 @@ web_plugins:
   - Report::PortAdminDown
   - Report::PortBlocking
   - Report::PortMultiNodes
+  - Report::PortSsid
   - Report::PortUtilization
   - Report::ApChannelDist
   - Report::ApClients

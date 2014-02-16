@@ -14,6 +14,8 @@ get '/report/*' => require_login sub {
         ];
     my $class_list = [ schema('netdisco')->resultset('DeviceModule')
             ->get_distinct_col('class') ];
+    my $ssid_list = [ schema('netdisco')->resultset('DevicePortSsid')
+            ->get_distinct_col('ssid') ];
 
     # trick the ajax into working as if this were a tabbed page
     params->{tab} = $tag;
@@ -24,6 +26,7 @@ get '/report/*' => require_login sub {
         report      => setting('_reports')->{$tag},
         domain_list => $domain_list,
         class_list  => $class_list,
+        ssid_list   => $ssid_list,
         };
 };
 

@@ -1,0 +1,54 @@
+[% USE Number.Format %]
+[% IF results.first.device.ip %]
+  [% row = results.reset %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+        <th>Device (Port)</th>
+        <th>Broadcast</th>
+        <th>Model</th>
+        <th>SSID</th>
+        <th>Vendor</th>
+      </tr>
+    </thead>
+    </tbody>
+      [% WHILE (row = results.next) %]
+      <tr>
+        <td>
+          <a class="nd_linkcell"
+            href="[% device_ports %]&q=[% row.port.ip | uri %]&f=[% row.port.port | uri %]&c_nodes=on&n_ssid=on">
+              [% row.device.dns || row.device.name || row.device.ip | html_entity %] ( [% row.port.port | html_entity %] )</a>
+        </td>
+        <td>[% row.broadcast ? 'Yes' : 'No' %]</td>
+        <td>[% row.device.model | html_entity %]</td>
+        <td>[% row.ssid | html_entity %]</td>
+        <td>[% row.device.vendor | html_entity %]</td>
+      </tr>
+      [% END %]
+    </tbody>
+  </table>
+[% ELSE %]
+  [% row = results.reset %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+      <th class="nd_center-cell">SSID</th>
+      <th class="nd_center-cell">Broadcast</th>
+      <th class="nd_center-cell">Count</th>
+      </tr>
+    </thead>
+    </tbody>  
+    [% WHILE (row = results.next) %]
+      <tr>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/portssid') %]?ssid=[% row.ssid | uri %]">
+            [% row.ssid | html %]</a>
+        </td>
+        <td class="nd_center-cell">[% row.broadcast ? 'Yes' : 'No' %]</td>
+        <td class="nd_center-cell">[% row.count | format_number %]</td>
+      </tr>
+    [% END %]
+    </tbody>
+  </table>
+[% END %]

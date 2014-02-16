@@ -1,0 +1,15 @@
+
+            <p class="nd_sidebar-title"><em>SSID Search Options</em></p>
+            <div class="clearfix">
+              <select class="nd_side-select nd_colored-input" size="[% ssid_list.size > 8 ? 8 : ssid_list.size %]"
+                multiple="on" name="ssid"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="SSID"/>
+                [% FOREACH opt IN ssid_list %]
+                    <option[% ' selected="selected"' IF ssid_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+
+            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
+             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search SSID</button>
+
