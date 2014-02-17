@@ -1,0 +1,59 @@
+[% USE Number.Format %]
+[% IF opt %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+        <th>MAC</th>
+        <th>Vendor</th>        
+        <th>Device (Port)</th>
+      </tr>
+    </thead>
+    </tbody>
+      [% WHILE (row = results.next) %]
+      <tr>
+        <td>
+          <a class="nd_linkcell"
+            href="[% search_node %]&q=[% row.mac | uri %]">
+              [% row.mac.upper | html_entity %][% '&nbsp;&nbsp;<i class="icon-book"></i> ' IF NOT row.active %]</a>
+        </td>
+        <td>
+          <a class="nd_linkcell"
+          [% IF row.oui.abbrev %]
+            href="[% uri_for('/report/nodevendor') %]?vendor=[% row.oui.abbrev | uri %]">
+                [% row.oui.abbrev | html_entity %] ( [% row.oui.company | html_entity %] )</a>
+          [% ELSE %]
+            href="[% uri_for('/report/nodevendor') %]?vendor=blank">
+                (Unknown Vendor)</a>
+          [% END %]
+        </td>
+        <td>
+          <a class="nd_linkcell"
+            href="[% device_ports %]&q=[% row.switch | uri %]&f=[% row.port | uri %]&c_nodes=on&n_ssid=on">
+              [% row.device.dns || row.device.name || row.switch | html_entity %] ( [% row.port | html_entity %] )</a>
+        </td>
+      </tr>
+      [% END %]
+    </tbody>
+  </table>
+[% ELSE %]
+  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+    <thead>
+      <tr>
+      <th class="nd_center-cell">Vendor</th>
+      <th class="nd_center-cell">Count</th>
+      </tr>
+    </thead>
+    </tbody>  
+    [% WHILE (row = results.next) %]
+      <tr>
+        <td>
+          <a class="nd_linkcell"
+             href="[% uri_for('/report/nodevendor') %]?vendor=[% row.vendor || 'blank' | uri %]">
+            [% row.vendor || '(Unknown Vendor)' | html_entity %]</a>
+        </td>
+        <td class="nd_center-cell">[% row.count | format_number %]</td>
+      </tr>
+    [% END %]
+    </tbody>
+  </table>
+[% END %]

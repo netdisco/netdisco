@@ -51,6 +51,7 @@ web_plugins:
   - Report::ModuleInventory
   - Report::Netbios
   - Report::NodeMultiIPs
+  - Report::NodeVendor
   - Report::PhonesDiscovered
   - Report::SsidInventory
   - Report::VlanInventory

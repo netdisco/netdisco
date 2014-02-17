@@ -1,0 +1,26 @@
+[% USE CSV -%]
+[% IF opt %]
+  [% CSV.dump(['MAC' 'Vendor' 'Company' 'Device' 'Port']) %]
+
+  [% WHILE (row = results.next) %]
+    [% mylist = [] %]
+    [% device = row.device.dns || row.device.name || row.switch %]
+    [% FOREACH col IN [ row.mac.upper row.oui.abbrev row.oui.company device row.port ] %]
+      [% mylist.push(col) %]
+    [% END %]
+    [% CSV.dump(mylist) %]
+
+  [% END %]
+[% ELSE %]
+  [% CSV.dump(['Vendor' 'Count']) %]
+
+  [% WHILE (row = results.next) %]
+    [% mylist = [] %]
+    [% vendor = row.vendor || '(Unknown Vendor)' %]
+    [% FOREACH col IN [ vendor row.count ] %]
+      [% mylist.push(col) %]
+    [% END %]
+    [% CSV.dump(mylist) %]
+
+  [% END %]
+[% END %]

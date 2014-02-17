@@ -8,7 +8,7 @@ get '/report/*' => require_login sub {
     my ($tag) = splat;
 
     # used in the report search sidebar to populate select inputs
-    my ( $domain_list, $class_list, $ssid_list );
+    my ( $domain_list, $class_list, $ssid_list, $vendor_list );
 
     if ( $tag eq 'netbios' ) {
         $domain_list = [ schema('netdisco')->resultset('NodeNbt')
@@ -22,6 +22,18 @@ get '/report/*' => require_login sub {
         $ssid_list = [ schema('netdisco')->resultset('DevicePortSsid')
                 ->get_distinct_col('ssid') ];
     }
+    elsif ( $tag eq 'nodevendor' ) {
+        $vendor_list = [
+            schema('netdisco')->resultset('Node')->search(
+                {},
+                {   join     => 'oui',
+                    columns  => ['oui.abbrev'],
+                    order_by => 'oui.abbrev',
+                    group_by => 'oui.abbrev',
+                }
+                )->get_column('abbrev')->all
+        ];
+    }
 
     # trick the ajax into working as if this were a tabbed page
     params->{tab} = $tag;
@@ -33,6 +45,7 @@ get '/report/*' => require_login sub {
         domain_list => $domain_list,
         class_list  => $class_list,
         ssid_list   => $ssid_list,
+        vendor_list => $vendor_list,
         };
 };
 
