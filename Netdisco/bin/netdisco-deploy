@@ -122,8 +122,8 @@ sub _make_password {
   }
 }
 
-my $users = schema('netdisco')->resultset('User')->search({-bool => 'admin'});
-if ($users->count == 0) {
+my $users = schema('netdisco')->resultset('User');
+if ($users->search({-bool => 'admin'})->count == 0) {
     say '';
     print color 'bold green';
     say 'We need to create a user for inital login. This user will be a full Administrator.';
