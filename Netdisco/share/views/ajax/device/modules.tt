@@ -20,9 +20,9 @@
 [%- ELSE -%]
 <span><i class="icon-leaf"></i>&nbsp;
 [%- END -%]
- [% nodes.$item.module.description -%]
+ <a href="[% uri_for('/report/moduleinventory') %]?description=[% nodes.$item.module.description | uri %]">[% nodes.$item.module.description -%]</a>
 [%- IF nodes.$item.module.name -%]
- ([% nodes.$item.module.name %])
+ <a href="[% uri_for('/report/moduleinventory') %]?name=[% nodes.$item.module.name | uri %]">([% nodes.$item.module.name %])</a>
 [%- END -%]
 [%- IF nodes.$item.module.fw_ver -%]
  fw: [% nodes.$item.module.fw_ver %]
@@ -34,13 +34,13 @@
  sw: [% nodes.$item.module.sw_ver %]
 [%- END -%]
 [%- IF nodes.$item.module.serial -%]
- [serial: [% nodes.$item.module.serial %]]
+ <a href="[% uri_for('/report/moduleinventory') %]?serial=[% nodes.$item.module.serial | uri %]">[serial: [% nodes.$item.module.serial %]]</a>
 [%- END -%]
 [%- IF nodes.$item.module.type -%]
- / [% nodes.$item.module.type %]
+ / <a href="[% uri_for('/report/moduleinventory') %]?type=[% nodes.$item.module.type | uri %]">[% nodes.$item.module.type %]</a>
 [%- END -%]
 [%- IF nodes.$item.module.model -%]
- / [% nodes.$item.module.model %]
+ / <a href="[% uri_for('/report/moduleinventory') %]?model=[% nodes.$item.module.model | uri %]">[% nodes.$item.module.model %]</a>
 [%- END -%]
 [%- IF nodes.$item.module.fru -%]
  <b>[FRU]</b>
