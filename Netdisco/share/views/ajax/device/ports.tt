@@ -285,7 +285,7 @@
           [% IF params.n_vendor AND node.oui.defined %]
             (Vendor:
             [% FOREACH oui IN node.oui %]
-              [%+ oui.abbrev | html_entity %]
+              <a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% oui.abbrev | uri %]">[% oui.abbrev | html_entity %]</a>
             [% END %]
             )
           [% END %]
