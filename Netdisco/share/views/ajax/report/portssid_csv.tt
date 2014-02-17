@@ -1,6 +1,5 @@
 [% USE CSV -%]
-[% IF results.first.ip %]
-  [% row = results.reset %]
+[% IF opt %]
   [% CSV.dump(['Device' 'Port' 'Name' 'Broadcast' 'Model' 'SSID' 'Vendor']) %]
 
   [% WHILE (row = results.next) %]
@@ -14,7 +13,6 @@
 
   [% END %]
 [% ELSE %]
-  [% row = results.reset %]
   [% CSV.dump(['SSID' 'Count']) %]
 
   [% WHILE (row = results.next) %]

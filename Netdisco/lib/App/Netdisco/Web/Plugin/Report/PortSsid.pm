@@ -57,12 +57,13 @@ get '/ajax/content/report/portssid' => require_login sub {
     return unless $rs->has_rows;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/portssid.tt', { results => $rs, },
+        template 'ajax/report/portssid.tt', { results => $rs, opt => $ssid },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/portssid_csv.tt', { results => $rs, },
+        template 'ajax/report/portssid_csv.tt',
+            { results => $rs, opt => $ssid },
             { layout => undef };
     }
 };

@@ -1,6 +1,5 @@
 [% USE CSV -%]
-[% IF results.first.ip %]
-  [% row = results.reset %]
+[% IF opt %]
   [% CSV.dump(['Device' 'Description' 'Name' 'Class' 'Type' 'Model' 'Serial' 'HW Version' 'SW Version' 'FW Version']) %]
 
   [% WHILE (row = results.next) %]
@@ -13,7 +12,6 @@
 
   [% END %]
 [% ELSE %]
-  [% row = results.reset %]
   [% CSV.dump(['Class' 'Count']) %]
 
   [% WHILE (row = results.next) %]

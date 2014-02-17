@@ -1,7 +1,6 @@
 [% USE CSV -%]
 [% USE date(format = '%Y-%m-%d %H:%M') %]
-[% IF results.first.ip %]
-  [% row = results.reset %]
+[% IF opt %]
   [% CSV.dump(['Domain' 'Node' 'Name' 'User' 'First Seen' 'Last Seen']) %]
 
   [% WHILE (row = results.next) %]
@@ -14,7 +13,6 @@
 
   [% END %]
 [% ELSE %]
-  [% row = results.reset %]
   [% CSV.dump(['Domain' 'Count']) %]
 
   [% WHILE (row = results.next) %]

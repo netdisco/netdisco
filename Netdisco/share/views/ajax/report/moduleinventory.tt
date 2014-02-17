@@ -1,6 +1,5 @@
 [% USE Number.Format %]
-[% IF results.first.ip %]
-  [% row = results.reset %]
+[% IF opt %]
   <table class="table table-bordered table-condensed table-striped nd_floatinghead">
     <thead>
       <tr>
@@ -62,7 +61,6 @@
     </tbody>
   </table>
 [% ELSE %]
-  [% row = results.reset %]
   <table class="table table-bordered table-condensed table-striped nd_floatinghead">
     <thead>
       <tr>

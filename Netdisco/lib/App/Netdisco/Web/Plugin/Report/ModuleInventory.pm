@@ -96,12 +96,14 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
 
     return unless $rs->has_rows;
     if ( request->is_ajax ) {
-        template 'ajax/report/moduleinventory.tt', { results => $rs, },
+        template 'ajax/report/moduleinventory.tt',
+            { results => $rs, opt => $has_opt },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/moduleinventory_csv.tt', { results => $rs, },
+        template 'ajax/report/moduleinventory_csv.tt',
+            { results => $rs, opt => $has_opt },
             { layout => undef };
     }
 };

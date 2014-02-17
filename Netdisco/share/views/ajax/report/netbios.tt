@@ -1,7 +1,6 @@
 [% USE date(format = '%Y-%m-%d %H:%M') %]
 [% USE Number.Format %]
-[% IF results.first.mac %]
-  [% row = results.reset %]
+[% IF opt %]
   <table class="table table-bordered table-condensed table-striped nd_floatinghead">
     <thead>
       <tr>
@@ -27,7 +26,6 @@
     </tbody>
   </table>
 [% ELSE %]
-  [% row = results.reset %]
   <table class="table table-bordered table-condensed table-striped nd_floatinghead">
     <thead>
       <tr>

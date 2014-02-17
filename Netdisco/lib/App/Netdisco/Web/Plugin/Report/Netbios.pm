@@ -42,11 +42,10 @@ get '/ajax/content/report/netbios' => require_login sub {
 
     if ( defined $domain ) {
         $domain = '' if $domain eq 'blank';
-        $rs = $rs->search( { domain => $domain } )->order_by(
-            [   { -asc  => 'domain' },
-                { -desc => 'time_last' }
-            ]
-        )->hri;
+        $rs
+            = $rs->search( { domain => $domain } )
+            ->order_by( [ { -asc => 'domain' }, { -desc => 'time_last' } ] )
+            ->hri;
     }
     else {
         $rs = $rs->search(
@@ -62,12 +61,13 @@ get '/ajax/content/report/netbios' => require_login sub {
     return unless $rs->has_rows;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/netbios.tt', { results => $rs, },
+        template 'ajax/report/netbios.tt', { results => $rs, opt => $domain },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/netbios_csv.tt', { results => $rs, },
+        template 'ajax/report/netbios_csv.tt',
+            { results => $rs, opt => $domain },
             { layout => undef };
     }
 };
