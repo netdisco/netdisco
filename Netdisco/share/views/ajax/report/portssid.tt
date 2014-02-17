@@ -43,7 +43,7 @@
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/portssid') %]?ssid=[% row.ssid | uri %]">
-            [% row.ssid | html %]</a>
+            [% row.ssid | html_entity %]</a>
         </td>
         <td class="nd_center-cell">[% row.broadcast ? 'Yes' : 'No' %]</td>
         <td class="nd_center-cell">[% row.count | format_number %]</td>

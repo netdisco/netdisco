@@ -27,32 +27,32 @@
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?description=[% row.description | uri %]">
-            [% row.description | html %]</a>
+            [% row.description | html_entity %]</a>
         </td>
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?name=[% row.name | uri %]">
-            [% row.name | html %]</a>
+            [% row.name | html_entity %]</a>
         </td>
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?class=[% row.class | uri %]">
-            [% row.class.ucfirst | html %]</a>
+            [% row.class.ucfirst | html_entity %]</a>
         </td>
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?type=[% row.type | uri %]">
-            [% row.type | html %]</a>
+            [% row.type | html_entity %]</a>
         </td>
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?model=[% row.model | uri %]">
-            [% row.model | html %]</a>
+            [% row.model | html_entity %]</a>
         </td>
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?serial=[% row.serial | uri %]">
-            [% row.serial | html %]</a>
+            [% row.serial | html_entity %]</a>
         </td>
         <td>[% row.hw_ver | html_entity %]</td>
         <td>[% row.sw_ver | html_entity %]</td>
@@ -76,7 +76,7 @@
         <td>
           <a class="nd_linkcell"
              href="[% uri_for('/report/moduleinventory') %]?class=[% row.class | uri %]">
-            [% row.class.ucfirst | html %]</a>
+            [% row.class.ucfirst | html_entity %]</a>
         </td>
         <td>[% row.count | format_number %]</td>
       </tr>

@@ -134,8 +134,8 @@
       </td>
       [% END %]
       <td>NetBIOS</td>
-      <td class="nd_linkcell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
-        <br>[% nbt.nbuser || '[No User]' | html %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
+      <td class="nd_linkcell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
+        <br>[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
       </td>
       [% IF params.stamps %]
       <td>[% nbt.time_first_stamp | html_entity %]</td>
