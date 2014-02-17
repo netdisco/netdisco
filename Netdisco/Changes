@@ -1,3 +1,9 @@
+2.023002 - 2014-02-17
+
+  [BUG FIXES]
+
+  * Deploy new admin user did not use resultset
+
 2.023001 - 2014-02-14
 
   [ENHANCEMENTS]
