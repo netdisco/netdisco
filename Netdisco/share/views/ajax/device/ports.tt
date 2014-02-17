@@ -278,7 +278,7 @@
           [% IF params.n_ssid AND node.wireless.defined %]
             (SSID:
             [% FOREACH wlan IN node.wireless %]
-              [%+ wlan.ssid | html_entity %]
+              <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
             [% END %]
             )
           [% END %]
