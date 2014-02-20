@@ -62,6 +62,8 @@ requires:
   Template::Plugin::Number::Format: 1.02
   Term::ReadLine: 0
   Term::UI: 0
+  Try::Tiny: 0
+  URI: 0
   URL::Encode: 0.01
   YAML: 0.84
   YAML::XS: 0.41
