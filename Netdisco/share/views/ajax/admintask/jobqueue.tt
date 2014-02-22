@@ -1,4 +1,4 @@
-[% IF results.count == 0 %]
+[% IF NOT results.has_rows %]
 <div class="span2 alert alert-info">The job queue is empty.</div>
 [% ELSE %]
 <table class="table table-bordered table-condensed table-hover nd_floatinghead">

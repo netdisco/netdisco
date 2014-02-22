@@ -76,7 +76,7 @@ web_plugins:
   - Device::Neighbors
   - Device::Addresses
 extra_web_plugins: []
-jobqueue_refresh: 5
+jobqueue_refresh: 10
 safe_password_store: true
 
 # -------------

@@ -32,7 +32,7 @@ ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
       ->with_times
       ->search({}, {
         order_by => { -desc => [qw/entered device action/] },
-        rows => 200,
+        rows => 50,
       });
 
     content_type('text/html');

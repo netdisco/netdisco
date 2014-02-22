@@ -13,6 +13,7 @@
   * Default netmap depth set to 8
   * Add a "waiting" message to the netmap whilst the data loads
   * Add a spinner to all waiting messages
+  * Try to make the Job Queue page a little faster
 
   [BUG FIXES]
 
