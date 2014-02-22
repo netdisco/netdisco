@@ -83,8 +83,8 @@ $(document).ready(function() {
           setTimeout(worker, 5000);
         }
         ,error: function() {
-          // after one failure, don't try again
-          toastr.warning('Unable to retrieve change request log')
+          // after failure, try less often
+          setTimeout(worker, 60000);
         }
       });
     })();
