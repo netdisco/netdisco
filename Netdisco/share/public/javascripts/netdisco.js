@@ -26,7 +26,7 @@ function do_search (event, tab) {
 
   // in case of slow data load, let the user know
   $(target).html(
-    '<div class="span2 alert">Waiting for results...</div>'
+    '<div class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>'
   );
 
   // submit the query and put results into the tab pane
