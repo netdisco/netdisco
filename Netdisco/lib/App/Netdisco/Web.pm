@@ -10,6 +10,7 @@ use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
+use App::Netdisco::Util::Web 'interval_to_daterange';
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -61,6 +62,9 @@ hook 'before_template' => sub {
 
     # access to logged in user's roles
     $tokens->{user_has_role}  = sub { user_has_role(@_) };
+
+    # create date ranges from within templates
+    $tokens->{to_daterange}  = sub { interval_to_daterange(@_) };
 
     # fix Plugin Template Variables to be only path+query
     $tokens->{$_} = $tokens->{$_}->path_query

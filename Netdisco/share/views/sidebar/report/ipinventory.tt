@@ -21,7 +21,8 @@
               </div>
               <div class="clearfix">
                 <input class="nd_side-input" id="daterange"
-                  type="text" name="daterange" value="[% params.daterange | html_entity %]"/>
+                  type="text" name="daterange" value="[%
+                    (params.exists('daterange') ? params.daterange : to_daterange('30 days')) | html_entity %]"/>
               </div>
             </fieldset>
 
@@ -35,7 +36,8 @@
                     <em class="muted">Limit:</em><br/>
                     <select id="nd_mac-format" class="nd_side-select" name="limit">
                       [% FOREACH size IN [ '32', '64', '128', '256', '1024', '2048', '4096', '8192' ] %]
-                      <option[% ' selected="selected"' IF params.limit == size %]>[% size %]</option>
+                      <option[% ' selected="selected"' IF (params.limit == size OR (NOT params.limit AND size == 256)) %]>
+                        [% size %]</option>
                       [% END %]
                     </select>
                   </li>

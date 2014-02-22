@@ -16,8 +16,10 @@
 
   [BUG FIXES]
 
-  * Workaround for https://rt.cpan.org/Ticket/Display.html?id=93244 (ECR)
-  * Fix for crash when selecting Last Change column in device ports view (ECR)
+  * Workaround for https://rt.cpan.org/Ticket/Display.html?id=93244
+  * Fix for crash when selecting Last Change column in device ports view
+  * Fix IP Inventory Report to work without daterange
+  * Fix "list IPs never seen" to work without daterange in IP Inventory Report
 
 2.023002 - 2014-02-17
 

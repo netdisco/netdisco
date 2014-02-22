@@ -15,24 +15,6 @@ register_report(
     }
 );
 
-# Following two Perl Core 5.10+
-use Time::Piece;
-use Time::Seconds;
-
-hook 'before' => sub {
-
-    return
-        unless ( request->path eq uri_for('/report/ipinventory')->path
-        or index( request->path, uri_for('/ajax/content/report/ipinventory')->path )
-        == 0 );
-
-    my $start = Time::Piece->new - ONE_DAY * 29;
-
-    params->{'limit'} ||= 256;
-    params->{'daterange'}
-        ||= $start->ymd . " to " . Time::Piece->new->ymd;
-};
-
 get '/ajax/content/report/ipinventory' => require_login sub {
 
     # Default to something simple with no results to prevent
@@ -53,7 +35,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     # 'never' is true.  TODO: Need better input validation, both JS and
     # server-side to provide user feedback
     $limit = 8192 if $limit > 8192;
-    $order = $order eq 'IP' ? \'ip ASC' : \'age DESC';
+    $order = $order eq 'IP' ? {-asc => 'ip'} : [{-desc => 'age'}, {-asc => 'ip'}];
 
     my $rs1 = schema('netdisco')->resultset('DeviceIp')->search(
         undef,
@@ -114,8 +96,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     my $rs_sub = $rs_union->search(
         { ip => { '<<' => $subnet->cidr } },
-        {   order_by => [qw( ip time_last )],
-            select   => [
+        {   select   => [
                 \'DISTINCT ON (ip) ip',
                 'dns',
                 \qq/date_trunc('second', time_last) AS time_last/,
@@ -148,10 +129,16 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         }
         else {
             $rs = $rs_union->search(
-                {   -and => [
-                        time_last => { '>=', $start },
-                        time_last => { '<=', $end },
-                    ]
+                {   -or => [
+                      -and => [
+                          time_first => undef,
+                          time_last  => undef,
+                      ],
+                      -and => [
+                          time_last => { '>=', $start },
+                          time_last => { '<=', $end },
+                      ],
+                    ],
                 },
                 { from => { me => $rs_sub }, }
             );
