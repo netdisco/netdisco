@@ -43,14 +43,13 @@
     });
 
     // activate typeahead on prefix/subnet box
-    $('#nd_ipinventory-subnet').typeahead({
-      source: function (query, process) {
-        return $.get( uri_base + '/ajax/data/subnet/typeahead', { query: query }, function (data) {
-          return process(data);
+    $('#nd_ipinventory-subnet').autocomplete({
+      source: function (request, response) {
+        return $.get( uri_base + '/ajax/data/subnet/typeahead', request, function (data) {
+          return response(data);
         });
       }
-      ,matcher: function () { return true; } // trust backend
-      ,delay: 250
+      ,delay: 150
       ,minLength: 3
     });
   });

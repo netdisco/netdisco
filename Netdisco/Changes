@@ -17,6 +17,7 @@
   * Try to make the Job Queue page a little faster
   * Require the Net::LDAP module for all installs
   * Move system information to the Netdisco "home" page
+  * Show all subnets (scrollable), and sort, in sidebar Prefix search
 
   [BUG FIXES]
 

@@ -60,7 +60,7 @@ ajax '/ajax/data/subnet/typeahead' => require_login sub {
     $q = "$q\%" if $q !~ m/\%/;
     my $nets = schema('netdisco')->resultset('Subnet')->search(
            { 'me.net::text'  => { '-ilike' => $q }},
-           { columns => ['net'] } );
+           { columns => ['net'], order_by => 'net' } );
 
     content_type 'application/json';
     to_json [map {$_->net} $nets->all];
