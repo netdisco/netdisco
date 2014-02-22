@@ -129,8 +129,7 @@ to Netdisco in the C<X-REMOTE_USER> HTTP Header. For example with Apache:
 Value: Settings Tree. Default: None.
 
 If set, and a user has the C<ldap> flag also set on their account, then LDAP
-authentication will be used for their login. You I<must> install the
-L<Net::LDAP> Perl module in order to use this feature. For example:
+authentication will be used for their login.
 
  ldap:
    servers:

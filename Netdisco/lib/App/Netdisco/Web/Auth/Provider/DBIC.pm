@@ -12,6 +12,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Passphrase;
 use Digest::MD5;
+use Net::LDAP;
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
@@ -98,9 +99,6 @@ sub match_with_local_pass {
 
 sub match_with_ldap {
     my($self, $pass, $user) = @_;
-
-    eval 'require Net::LDAP';
-    if ($@) {error $@; return}
 
     return unless setting('ldap') and ref {} eq ref setting('ldap');
     my $conf = setting('ldap');

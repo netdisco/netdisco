@@ -14,6 +14,7 @@
   * Add a "waiting" message to the netmap whilst the data loads
   * Add a spinner to all waiting messages
   * Try to make the Job Queue page a little faster
+  * Require the Net::LDAP module for all installs
 
   [BUG FIXES]
 
