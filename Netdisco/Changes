@@ -13,7 +13,8 @@
 
   [BUG FIXES]
 
-  * workaround for https://rt.cpan.org/Ticket/Display.html?id=93244
+  * Workaround for https://rt.cpan.org/Ticket/Display.html?id=93244 (ECR)
+  * Fix for crash when selecting Last Change column in device ports view (ECR)
 
 2.023002 - 2014-02-17
 

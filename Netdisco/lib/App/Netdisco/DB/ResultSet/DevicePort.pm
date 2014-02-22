@@ -31,7 +31,7 @@ sub with_times {
     ->search({},
       {
         '+columns' => { lastchange_stamp =>
-          \("to_char(device.last_discover - (device.uptime - lastchange) / 100 * interval '1 second', "
+          \("to_char(device.last_discover - (device.uptime - me.lastchange) / 100 * interval '1 second', "
             ."'YYYY-MM-DD HH24:MI:SS')") },
         join => 'device',
       });
