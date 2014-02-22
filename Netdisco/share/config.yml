@@ -164,7 +164,7 @@ port_control_reasons:
 
 workers:
   interactives: 2
-  pollers: 5
+  pollers: 10
   sleep_time: 2
 
 dns:

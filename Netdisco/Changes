@@ -9,6 +9,10 @@
   [ENHANCEMENTS]
 
   * Kwalitee fixes
+  * Change default number of pollers to 10
+
+  [BUG FIXES]
+
   * workaround for https://rt.cpan.org/Ticket/Display.html?id=93244
 
 2.023002 - 2014-02-17
