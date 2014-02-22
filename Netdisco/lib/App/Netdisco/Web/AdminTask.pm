@@ -7,6 +7,20 @@ use Dancer::Plugin::Auth::Extensible;
 
 use Try::Tiny;
 
+# we have a separate list for jobs needing a device to avoid queueing
+# such a job when there's no device param (it could still be duff, tho).
+my %jobs = map { $_ => 1} qw/
+    discover
+    macsuck
+    arpnip
+/;
+my %jobs_all = map {$_ => 1} qw/
+    discoverall
+    macwalk
+    arpwalk
+    nbtwalk
+/;
+
 sub add_job {
     my ($jobtype, $device, $subaction) = @_;
 
@@ -23,25 +37,11 @@ sub add_job {
           action => $jobtype,
           ($subaction ? (subaction => $subaction) : ()),
           status => 'queued',
-          username => session('logged_in_user'),
+          (exists $jobs{$jobtype} ? (username => session('logged_in_user')) : ()),
           userip => request->remote_address,
         });
     };
 }
-
-# we have a separate list for jobs needing a device to avoid queueing
-# such a job when there's no device param (it could still be duff, tho).
-my %jobs = map { $_ => 1} qw/
-    discover
-    macsuck
-    arpnip
-/;
-my %jobs_all = map {$_ => 1} qw/
-    discoverall
-    macwalk
-    arpwalk
-    nbtwalk
-/;
 
 foreach my $jobtype (keys %jobs_all, keys %jobs) {
     ajax "/ajax/control/admin/$jobtype" => require_role admin => sub {

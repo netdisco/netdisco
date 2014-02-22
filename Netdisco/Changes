@@ -23,6 +23,7 @@
   * Fix IP Inventory Report to work without daterange
   * Fix "list IPs never seen" to work without daterange in IP Inventory Report
   * Correct "Archive" status of nodes in IP Inventory Report
+  * Do not trigger userlog popups for all/walk jobs
 
 2.023002 - 2014-02-17
 
