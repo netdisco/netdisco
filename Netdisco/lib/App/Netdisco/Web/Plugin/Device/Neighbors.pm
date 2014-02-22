@@ -57,7 +57,7 @@ get '/ajax/data/device/netmap' => require_login sub {
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
-    my $depth = param('depth');
+    my $depth = (param('depth') || 8);
     undef $depth if (defined $depth and $depth !~ m/^\d+$/);
 
     my $device = schema('netdisco')->resultset('Device')

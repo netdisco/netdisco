@@ -11,7 +11,7 @@
 
               <em class="muted nd_sidebar-label">Draw to Depth:</em><br/>
               <input id="nd_port-query" placeholder="" type="number"
-                name="depth" value="[% params.depth | html_entity %]" type="text"
+                name="depth" value="[% params.depth || 8 | html_entity %]" type="text"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Max Depth"/>
 
               <em class="muted nd_sidebar-label">Filter by VLAN:</em><br/>
