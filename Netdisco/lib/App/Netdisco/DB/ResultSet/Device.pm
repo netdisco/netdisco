@@ -372,8 +372,8 @@ sub carrying_vlan {
       if ref {} ne ref $cond or !exists $cond->{vlan};
 
     $cond->{'-and'} ||= [];
-    push @{$cond->{'-and'}}, 'vlans.vlan' => $cond->{vlan};
-    push @{$cond->{'-and'}}, 'port_vlans.vlan' => delete $cond->{vlan};
+    push @{$cond->{'-and'}}, { 'vlans.vlan' => $cond->{vlan} };
+    push @{$cond->{'-and'}}, { 'port_vlans.vlan' => delete $cond->{vlan} };
 
     return $rs
       ->search_rs($cond,
