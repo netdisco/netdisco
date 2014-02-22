@@ -4,7 +4,7 @@
 
   // keep track of timers so we can kill them
   var nd_timers  = new Array();
-  var timermax   = [% settings.jobqueue_refresh || 5 | html %];
+  var timermax   = [% settings.jobqueue_refresh || 5 | html_entity %];
   var timercache = timermax - 1;
 
   // this is called by do_search to support local code
