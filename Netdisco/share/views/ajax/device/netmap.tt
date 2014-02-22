@@ -115,6 +115,9 @@ $.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
         .attr("class", "node")
         .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; });
 
+    // begin to draw...
+    d3.select("#nd_waiting").remove();
+
     node.append("circle")
         .attr("r", 4.5)
         // circle has class name of its device, so we can show/hide it
@@ -180,3 +183,5 @@ $.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
 
 // vim: ft=javascript
 </script>
+
+<div id="nd_waiting" class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>

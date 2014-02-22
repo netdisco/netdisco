@@ -11,6 +11,7 @@
   * Kwalitee fixes
   * Change default number of pollers to 10
   * Default netmap depth set to 8
+  * Add a "waiting" message to the netmap whilst the data loads
 
   [BUG FIXES]
 
