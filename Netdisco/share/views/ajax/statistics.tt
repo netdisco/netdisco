@@ -1,12 +1,4 @@
 [% USE Number.Format %]
-<div class="container">
-  <div class="row nd_hero-row">
-      <div class="hero-unit">
-        <h2>About Netdisco</h2>
-        <small>Netdisco is a web-based network management tool designed for
-        network administrators.  Data is collected into a PostgreSQL database
-        using SNMP.</small>
-      </div>
     <div class="row">
       <div class="span5 offset1">
       <h4>Built using Open Source</h4>
@@ -43,7 +35,7 @@
               </th>
             </tr>
             <tr>
-              <th><a href="http://http://snmp-info.sourceforge.net/">SNMP::Info</a></th>
+              <th><a href="http://snmp-info.sourceforge.net/">SNMP::Info</a></th>
               <th>[% snmpinfo_ver | html_entity %]</th>
             </tr>
             <tr>
@@ -53,7 +45,7 @@
           </tbody>
         </table>
       </div>
-      <div class="span5">
+      <div class="span4 offset1">
       <h4>Statistics for this installation</h4>
         <table class="table table-condensed">
           <thead>
@@ -67,19 +59,19 @@
                   using [% device_count + device_ip_count | format_number %] IPs</th>
             </tr>
             <tr>
-              <th>[% device_links | format_number %] layer 2 links between devices.</th>
+              <th>[% device_links | format_number %] layer 2 links between devices</th>
             </tr>
             <tr>
-              <th>[% node_count | format_number %] nodes in [% node_table_count | format_number %] entries. </th>
+              <th>[% node_count | format_number %] nodes in [% node_table_count | format_number %] entries</th>
             </tr>
             <tr>
-              <th>[% ip_count | format_number %] IPs in [% ip_table_count | format_number %] entries.</th>
+              <th>[% ip_count | format_number %] IPs in [% ip_table_count | format_number %] entries</th>
             </tr>
             <tr>
               <th>Statistics took [% process_time %] seconds to process.</th>
             </tr>
+            <tr><th></th></tr>
           </tbody>
         </table>
       </div>
     </div>
-</div> <!-- /container -->

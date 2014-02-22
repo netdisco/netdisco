@@ -1,14 +1,17 @@
-package App::Netdisco::Web::About;
+package App::Netdisco::Web::Statistics;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-get '/about' => require_login sub {
+get '/ajax/content/statistics' => require_login sub {
 
     my $time1   = time;
     my $schema  = schema('netdisco');
-    my $devices = $schema->resultset('Device')->search(
+    my $devices = $schema->resultset('Device');
+
+    # used only to get the PostgreSQL version
+    my $users   = $schema->resultset('User')->search(
         {},
         {   select => [ { version => '' } ],
             as     => [qw/ version /],
@@ -50,16 +53,15 @@ get '/about' => require_login sub {
     my $process_time = $time2 - $time1;
 
     my $disco_ver  = $App::Netdisco::VERSION;
-    my $db_version = $devices->next->get_column('version');
+    my $db_version = $users->next->get_column('version');
     my $dbi_ver    = $DBI::VERSION;
     my $dbdpg_ver  = $DBD::Pg::VERSION;
 
     eval 'require SNMP::Info';
     my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
 
-    var( nav => 'about' );
-
-    template 'about',
+    var( nav => 'statistics' );
+    template 'ajax/statistics.tt',
         {
         device_count      => $device_count,
         device_ip_count   => $device_ip_count,
@@ -76,7 +78,8 @@ get '/about' => require_login sub {
         dbdpg_ver         => $dbdpg_ver,
         snmpinfo_ver      => $snmpinfo_ver,
         schema_ver        => $schema_version,
-        };
+        },
+        { layout => undef };
 };
 
 true;

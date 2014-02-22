@@ -110,6 +110,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   font-weight: normal;
 }
 
+/* for System Information bar */
+.nd_sysinfo-heading {
+  background-color: #eeeeee;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
 

@@ -34,7 +34,7 @@ function do_search (event, tab) {
     function(response, status, xhr) {
       if (status !== "success") {
         $(target).html(
-          '<div class="span5 alert alert-error">' +
+          '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
           'Search failed! Please contact your site administrator.</div>'
         );
         return;

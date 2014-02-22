@@ -59,7 +59,8 @@
     </div>
   </div>
   [% ELSE %]
-  <div class="span4 alert alert-info">No devices found. Do you need to run a
-    <a href="[% uri_for('/') %]">Discover?</a></div>
+  <script type="text/javascript">
+    window.location = '[% uri_for("/") %]';
+  </script>
   [% END %]
 </div>
