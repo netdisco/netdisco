@@ -95,8 +95,8 @@
       <td>Switch Port</td>
       <td><a class="nd_linkcell"
           href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
-          [% node.switch | html_entity %] - [% node.port | html_entity %]</a>
-        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT node.active %]
+          [% node.switch | html_entity %] - [% node.port | html_entity %]
+        [% '&nbsp;<i class="icon-book text-warning"></i>' IF NOT node.active %]</a>
         [% IF node.device.dns AND node.device_port AND node.device_port.name %]
           ([% node.device.dns | html_entity %] - [% node.device_port.name | html_entity %])
         [% END %]
