@@ -29,38 +29,38 @@ hook 'before' => sub {
 };
 
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    template 'index', { return_url => params->{return_url} };
+    template 'index', { return_url => param('return_url') };
 };
 
 # override default login_handler so we can log access in the database
 post '/login' => sub {
     my $mode = (request->is_ajax ? 'API' : 'Web');
     my ($success, $realm) = authenticate_user(
-        params->{username}, params->{password}
+        param('username'), param('password')
     );
 
     if ($success) {
-        session logged_in_user => params->{username};
+        session logged_in_user => param('username');
         session logged_in_user_realm => $realm;
 
         schema('netdisco')->resultset('UserLog')->create({
           username => session('logged_in_user'),
           userip => request->remote_address,
           event => "Login ($mode)",
-          details => params->{return_url},
+          details => param('return_url'),
         });
 
         return if request->is_ajax;
-        redirect params->{return_url};
+        redirect param('return_url');
     }
     else {
         session->destroy;
 
         schema('netdisco')->resultset('UserLog')->create({
-          username => params->{username},
+          username => param('username'),
           userip => request->remote_address,
           event => "Login Failure ($mode)",
-          details => params->{return_url},
+          details => param('return_url'),
         });
 
         if (request->is_ajax) {
@@ -69,7 +69,7 @@ post '/login' => sub {
         else {
             vars->{login_failed}++;
             forward uri_for('/login'),
-              { login_failed => 1, return_url => params->{return_url} },
+              { login_failed => 1, return_url => param('return_url') },
               { method => 'GET' };
         }
     }

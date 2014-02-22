@@ -157,7 +157,9 @@
             [% session.logged_in_user | html_entity %] <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="[% uri_for('/about') %]">About</a></li>
+          [% IF NOT user_has_role('ldap') %]
+            <li><a href="[% uri_for('/password') %]">Change Password</a></li>
+          [% END %]
           [% IF NOT settings.no_auth %]
             <li><a href="[% uri_for('/logout') %]">Log Out</a></li>
           [% END %]

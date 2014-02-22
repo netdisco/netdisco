@@ -38,8 +38,8 @@
         [% IF NOT session.logged_in_user %]
         <form class="nd_login-form" method="post" action="[% uri_for('/login') %]">
           <div class="form-horizontal">
-            <input placeholder="Username" class="span2" name="username" type="text"/>
-            <input placeholder="Password" class="span2" name="password" type="password"/>
+            <input placeholder="Username" class="span2" name="username" type="text" required="required"/>
+            <input placeholder="Password" class="span2" name="password" type="password" required="required"/>
             <button type="submit" class="btn btn-info">Log In</button>
           </div>
           [% IF params.return_url %]

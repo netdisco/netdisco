@@ -21,6 +21,7 @@ use App::Netdisco::Web::AdminTask;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
 use App::Netdisco::Web::Statistics;
+use App::Netdisco::Web::Password;
 
 sub _load_web_plugins {
   my $plugin_list = shift;
