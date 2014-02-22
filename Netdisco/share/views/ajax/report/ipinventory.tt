@@ -1,7 +1,7 @@
 <table class="table table-bordered table-condensed table-striped nd_floatinghead">
   <thead>
     <tr>
-      <th>Device</th>
+      <th>Node</th>
       <th class="nd_center-cell">DNS</th>
       <th class="nd_center-cell">Last Used</th>      
       <th class="nd_center-cell">First Discovered</th>
@@ -11,7 +11,8 @@
     [% FOREACH row IN results %]
     <tr>
     [% IF row.time_last && row.node %]
-      <td><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+      <td><a href="[% search_node %]&q=[% row.ip | uri %][% '&archived=on' IF NOT row.active %]">
+        [% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
       </td>
     [% ELSIF row.time_last %]

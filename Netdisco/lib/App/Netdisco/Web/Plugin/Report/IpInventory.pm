@@ -109,6 +109,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 'ip',     'dns',  'time_last', 'time_first',
                 'active', 'node', 'age'
             ],
+            order_by => [{-asc => 'ip'}, {-desc => 'active'}],
         }
     )->as_query;
 
