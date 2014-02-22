@@ -46,6 +46,7 @@ requires:
   Moo: 1.001
   Net::DNS: 0.72
   Net::Domain: 1.23
+  Net::LDAP: 0
   Net::MAC: 2.103622
   Net::NBName: 0.26
   NetAddr::IP: 4.068
@@ -76,4 +77,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.023002
+version: 2.024000
