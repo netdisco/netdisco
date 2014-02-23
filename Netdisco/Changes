@@ -1,3 +1,9 @@
+2.024001 -
+
+  [BUG FIXES]
+
+  * Fix NetBIOS report with search on blank domain
+
 2.024000 - 2014-02-22
 
   [NEW FEATURES]

@@ -41,9 +41,9 @@ get '/ajax/content/report/netbios' => require_login sub {
     my $rs = schema('netdisco')->resultset('NodeNbt');
 
     if ( defined $domain ) {
-        $domain = '' if $domain eq 'blank';
+        my $search = $domain eq 'blank' ? '' : $domain;
         $rs
-            = $rs->search( { domain => $domain } )
+            = $rs->search( { domain => $search } )
             ->order_by( [ { -asc => 'domain' }, { -desc => 'time_last' } ] )
             ->hri;
     }
