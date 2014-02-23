@@ -101,7 +101,7 @@ sub _filter_nbname {
 
         # Just assume it's the last MAC we saw this IP at.
         my $node_ip = schema('netdisco')->resultset('NodeIp')
-            ->single( { ip => $ip, active => \'true' } );
+            ->single( { ip => $ip, -bool => 'active' } );
 
         if ( !defined $node_ip ) {
             debug ' no MAC for %s returned by nbtstat or in DB', $ip;

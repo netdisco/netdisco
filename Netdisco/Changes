@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Fix NetBIOS report with search on blank domain
+  * Fix database MAC lookup when MAC not returned by nbtstat
 
 2.024000 - 2014-02-22
 
