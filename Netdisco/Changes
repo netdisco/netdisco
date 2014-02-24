@@ -1,5 +1,10 @@
 2.024001 -
 
+  [NEW FEATURES]
+
+  * DataTables | Table plug-in for jQuery (v1.10.0-beta.2) support within
+    IP Inventory, Module Inventory, NetBIOS, and Subnet reports
+
   [BUG FIXES]
 
   * Fix NetBIOS report with search on blank domain
