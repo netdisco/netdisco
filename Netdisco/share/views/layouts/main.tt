@@ -24,6 +24,8 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.floatThead.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/daterangepicker.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.dataTables.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/dataTables.bootstrap.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/moment.min.js"></script>
 
   <script type="text/javascript">
@@ -48,6 +50,7 @@
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap-tree.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/daterangepicker-bs2.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/dataTables.bootstrap.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/nd_print.css" media="print"/>
 
   [% FOREACH add_css IN settings._additional_css %]
