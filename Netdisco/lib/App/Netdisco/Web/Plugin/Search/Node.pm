@@ -80,7 +80,6 @@ ajax '/ajax/content/search/node' => require_login sub {
     }
     else {
         my $set;
-
         my $name = $node;
 
         if (param('partial')) {
@@ -91,34 +90,35 @@ ajax '/ajax/content/search/node' => require_login sub {
             ->search_by_name({nbname => $name, @active, @times});
 
         unless ( $set->has_rows ) {
-        if (my $ip = NetAddr::IP::Lite->new($node)) {
-            # search_by_ip() will extract cidr notation if necessary
-            $set = schema('netdisco')->resultset('NodeIp')
-              ->search_by_ip({ip => $ip, @active, @times});
-        }
-        else {
-
-            if ($name !~ m/%/ and setting('domain_suffix')) {
-                $name .= setting('domain_suffix')
-                    if index($name, setting('domain_suffix')) == -1;
-            }
-            $set = schema('netdisco')->resultset('NodeIp')
-              ->search_by_dns({dns => $node, @active, @times});
-
-            # if the user selects Vendor search opt, then
-            # we'll try the OUI company name as a fallback
-            if (not $set->has_rows and param('show_vendor')) {
-                $node = param('q');
+            if (my $ip = NetAddr::IP::Lite->new($node)) {
+                # search_by_ip() will extract cidr notation if necessary
                 $set = schema('netdisco')->resultset('NodeIp')
-                  ->with_times
-                  ->search(
-                    {'oui.company' => { -ilike => "\%$node\%"}, @times},
-                    {'prefetch' => 'oui'},
-                  );
+                  ->search_by_ip({ip => $ip, @active, @times});
+            }
+            else {
+                if ($name !~ m/%/ and setting('domain_suffix')) {
+                    $name .= setting('domain_suffix')
+                        if index($name, setting('domain_suffix')) == -1;
+                }
+
+                $set = schema('netdisco')->resultset('NodeIp')
+                  ->search_by_dns({dns => $name, @active, @times});
+
+                # if the user selects Vendor search opt, then
+                # we'll try the OUI company name as a fallback
+
+                if (not $set->has_rows and param('show_vendor')) {
+                    $set = schema('netdisco')->resultset('NodeIp')
+                      ->with_times
+                      ->search(
+                        {'oui.company' => { -ilike => "\%$node\%"}, @times},
+                        {'prefetch' => 'oui'},
+                      );
+                }
             }
         }
+
         return unless $set and $set->has_rows;
-        }
         $set = $set->search_rs({}, { order_by => 'me.mac' });
 
         template 'ajax/search/node_by_ip.tt', {
