@@ -168,7 +168,7 @@ workers:
   sleep_time: 2
 
 dns:
-  max_outstanding: 10
+  max_outstanding: 50
   hosts_file: '/etc/hosts'
   no: ['fe80::/64','169.254.0.0/16']
 

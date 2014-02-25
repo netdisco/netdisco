@@ -650,7 +650,7 @@ of days will be removed.
 Value: Settings Tree. Default:
 
  dns:
-   max_outstanding: 10
+   max_outstanding: 50
    hosts_file: '/etc/hosts'
    no: ['fe80::/64','169.254.0.0/16']
 
@@ -787,7 +787,7 @@ Value: Settings Tree. Default:
 
  workers:
    interactives: 2
-   pollers: 5
+   pollers: 10
    sleep_time: 2
 
 Control the activity of the backend daemon with this configuration setting.
