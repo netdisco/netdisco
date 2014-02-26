@@ -21,19 +21,21 @@ get '/ajax/content/report/subnets' => require_login sub {
 
     my $daterange = App::Netdisco::Util::Web::interval_to_daterange($age);
 
-    my $set = schema('netdisco')->resultset('Virtual::SubnetUtilization')
+    my @results = schema('netdisco')->resultset('Virtual::SubnetUtilization')
       ->search(undef,{
         bind => [ $subnet, $age, $age, $subnet, $age, $age ],
-      });
+      })->all;
+
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
         template 'ajax/report/subnets.tt',
-            { results => $set, daterange => $daterange },
+            { results => \@results, daterange => $daterange },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/subnets_csv.tt', { results => $set },
+        template 'ajax/report/subnets_csv.tt', { results => \@results },
             { layout => undef };
     }
 };
