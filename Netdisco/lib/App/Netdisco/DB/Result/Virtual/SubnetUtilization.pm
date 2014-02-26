@@ -31,7 +31,6 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
               AND d.last_discover > (now() - ?::interval)
     ) as joined
     GROUP BY net
-    ORDER BY percent ASC
 ENDSQL
 
 __PACKAGE__->add_columns(
