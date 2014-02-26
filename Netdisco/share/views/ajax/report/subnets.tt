@@ -27,6 +27,8 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    $('#data-table').dataTable();
+    $('#data-table').dataTable( {
+        "order": [[ 3, "asc" ]]
+    } );
 } );
 </script>
