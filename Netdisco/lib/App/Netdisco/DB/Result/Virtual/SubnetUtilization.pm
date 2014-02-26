@@ -12,9 +12,9 @@ __PACKAGE__->table('subnet_utilization');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
   SELECT net as subnet,
-         power(2, (32 - masklen(net))) as subnet_size,
+         @@ iprange(net) as subnet_size,
          count(DISTINCT ip) as active,
-         round(100 * count(DISTINCT ip) / power(2, (32 - masklen(net)))) as percent
+         round(100 * count(DISTINCT ip) / @@ iprange(net)) as percent
     FROM (
       SELECT DISTINCT net, ni.ip
         FROM subnets s1, node_ip ni
