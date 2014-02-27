@@ -187,6 +187,10 @@
       </td>
       [% END %]
 
+      [% IF params.c_ssid %]
+      <td>[% row.ssid.ssid | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_power %]
         [% IF row.power %]
           [% IF row.power.admin == 'true' %]

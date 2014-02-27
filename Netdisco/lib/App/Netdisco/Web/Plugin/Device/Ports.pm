@@ -149,6 +149,9 @@ get '/ajax/content/device/ports' => require_login sub {
     $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'oui'}] })
       if param('c_nodes') && param('n_vendor');
 
+    # retrieve SSID, if asked for
+    $set = $set->search({}, { prefetch => 'ssid' }) if param('c_ssid');
+
     # retrieve neighbor devices, if asked for
     $set = $set->search_rs({}, { prefetch => [{neighbor_alias => 'device'}] })
       if param('c_neighbors');
