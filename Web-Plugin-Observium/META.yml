@@ -24,4 +24,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.001005
+version: '2.002000'
