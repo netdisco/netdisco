@@ -5,6 +5,7 @@ bin/netdisco-daemon-fg
 bin/netdisco-db-deploy
 bin/netdisco-deploy
 bin/netdisco-do
+bin/netdisco-rancid-export
 bin/netdisco-web
 bin/netdisco-web-fg
 Changes
@@ -76,6 +77,7 @@ lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
+lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/PhonesDiscovered.pm
@@ -154,6 +156,7 @@ lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/Device.pm
+lib/App/Netdisco/Web/GenericReport.pm
 lib/App/Netdisco/Web/Password.pm
 lib/App/Netdisco/Web/Plugin.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
@@ -300,6 +303,8 @@ share/views/ajax/report/devicepoestatus.tt
 share/views/ajax/report/devicepoestatus_csv.tt
 share/views/ajax/report/duplexmismatch.tt
 share/views/ajax/report/duplexmismatch_csv.tt
+share/views/ajax/report/generic_report.tt
+share/views/ajax/report/generic_report_csv.tt
 share/views/ajax/report/halfduplex.tt
 share/views/ajax/report/halfduplex_csv.tt
 share/views/ajax/report/ipinventory.tt
