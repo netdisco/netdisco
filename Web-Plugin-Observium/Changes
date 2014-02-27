@@ -1,3 +1,7 @@
+2.002001 - 2014-02-27
+
+  * Fix config param name
+
 2.002000 - 2014-02-27
 
   * Support HTTPS with http_secure parameter

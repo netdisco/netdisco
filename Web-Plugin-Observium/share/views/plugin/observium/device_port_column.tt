@@ -1,4 +1,4 @@
-<a href="[% http_secure ? 'https' : 'http' %]://[% settings.plugin_observium.webhost | uri %]/device/hostname=[% device.dns || device.name | uri %]/tab=port/ifdescr=[% row.base64url_port %]/"
+<a href="[% settings.plugin_observium.http_secure ? 'https' : 'http' %]://[% settings.plugin_observium.webhost | uri %]/device/hostname=[% device.dns || device.name | uri %]/tab=port/ifdescr=[% row.base64url_port %]/"
   [% 'target="_blank"' IF settings.plugin_observium.open_in_new_window %]
   class="btn nd_observium"
   data-content='
