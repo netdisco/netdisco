@@ -1,0 +1,147 @@
+#!/usr/bin/env perl
+
+our $home;
+
+BEGIN {
+  # try really hard to find a localenv if one isn't already in place.
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+
+  if (!exists $ENV{PERL_LOCAL_LIB_ROOT}) {
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+
+      die "Sorry, can't find libs required for App::Netdisco.\n"
+        if !exists $ENV{PERLBREW_PERL};
+  }
+}
+
+use FindBin;
+FindBin::again();
+use Path::Class;
+
+BEGIN {
+  # stuff useful locations into @INC and $PATH
+  my $location = $FindBin::RealBin;
+
+  unshift @INC,
+    dir($location)->parent->subdir('lib')->stringify,
+    dir($location, 'lib')->stringify;
+
+  use Config;
+  $ENV{PATH} = $location . $Config{path_sep} . $ENV{PATH};
+}
+
+use App::Netdisco;
+use Dancer ':script';
+use Dancer::Plugin::DBIC 'schema';
+
+use App::Netdisco::Util::Permission ':all';
+
+my $settings = setting( 'rancid' );
+my $down_age = $settings->{ 'down_age' } || '1 hour';
+my $rancidhome = $settings->{ 'rancid_home' } || '/var/rancid';
+my $by_ip = {};
+foreach my $g (@{$settings->{ 'by_ip' }}) {
+  $by_ip->{$g} = 1;
+}
+
+my @devices = schema('netdisco')->resultset('Device')->search({},
+  {
+    '+columns' => {
+      old => \"age(now(), last_discover) > interval '$down_age'"
+    }
+  })->all;
+
+my $groups = $settings->{ 'groups' };
+my $list = {};
+
+foreach my $d (@devices) {
+  my $old = $d->get_column( 'old' );
+  my $devgroup = 'other';
+  foreach my $g (keys %$groups) {
+    if (check_acl( $d, $groups->{$g} )) {
+      $devgroup = $g;
+      last;
+    }
+  }
+  push(@{$list->{$devgroup}}, $d);
+}
+
+my %VENDORMAP = (
+# If netdisco vendor name and rancid vendor name
+# do not map 1:1, map it here.
+);
+    
+foreach my $group (keys %$list) {
+  open(ROUTER, ">${rancidhome}/${group}/router.db") || die "${rancidhome}/${group}/router.db: $!\n";
+  foreach my $dev (sort {$a->ip cmp $b->ip} @{$list->{$group}}) {
+    my $vendor = $dev->vendor;
+    my $name;
+    if ($VENDORMAP{$vendor}) {
+      $vendor = $VENDORMAP{$vendor};
+    }
+    if ($by_ip->{$group}) {
+      $name = $dev->ip;
+    } else {
+      $name = ($dev->dns || $dev->name);
+    }
+    printf ROUTER "%s:%s:%s\n", $name, $vendor,
+      $dev->get_column( 'old' ) ? "down" : "up";
+  }
+  close(ROUTER);
+}
+
+=head1 NAME
+
+netdisco-rancid-export - Generate RANCID Group Configuration
+
+=head1 CONFIGURATION
+
+This script requires some configuration to be added to your Netdisco
+"C<~/environments/deployment.yml>" file, for example:
+
+ rancid:
+   rancid_home:  /var/lib/rancid
+   down_age:     '1 day'
+   by_ip:        [ other ]
+   groups:
+     switch:     [ 'name:.*[Ss][Ww].*' ]
+     rtr:        [ 'name:[rR]tr.*' ]
+     ap:         [ 'name:[aA][pP].*' ]
+
+=head2 C<rancid_home>
+
+The location to write RANCID Group configuration files into. A subdirectory
+for each Group will be created.
+
+=head2 C<down_age>
+
+This should be the same or greater than the interval between regular discover
+jobs on your network. Devices which have not been discovered within this time
+will be marked as "C<down>" to RANCID.
+
+=head2 C<groups>
+
+This dictionary maps RANCID Group names with configuration which will match
+devices in the Netdisco database. The configuration is the same as any of
+Netdisco's "C<*_only>" settings, and accepts IP, prefix, device property.
+
+=head2 C<by_ip>
+
+List of RANCID Groups which will have Device IPs written to the RANCID
+configuration file, instead of DNS or SNMP host names.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<App::Netdisco>
+
+=back
+
+=cut
