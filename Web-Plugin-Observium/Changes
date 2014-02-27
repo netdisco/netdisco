@@ -1,3 +1,7 @@
+2.002000 - 2014-02-27
+
+  * Support HTTPS with http_secure parameter
+
 2.001000 - 2013-12-08
 
   * Initial release

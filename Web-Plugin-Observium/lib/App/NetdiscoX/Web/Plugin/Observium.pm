@@ -33,6 +33,7 @@ App::NetdiscoX::Web::Plugin::Observium - Port Traffic Links and Thumbnail Graphs
  plugin_observium:
    webhost: "web-server.example.com"
    open_in_new_window: true
+   http_secure: true
 
 =head1 Description
 
@@ -57,6 +58,12 @@ Value: Boolean. Default: false.
 
 If set to true, the hyperlink is configured to open the port's Observium page
 in  a new browser window or tab.
+
+=head2 http_secure
+
+Value: Boolean. Default: false.
+
+If set to true, the hyperlink is configured to use HTTPS.
 
 =head1 AUTHOR
 
