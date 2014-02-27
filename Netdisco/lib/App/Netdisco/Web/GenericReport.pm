@@ -7,6 +7,9 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
+# in case user did not set
+config->{reports} ||= {};
+
 foreach my $r (keys %{setting('reports')}) {
   my $report = setting('reports')->{$r};
 
