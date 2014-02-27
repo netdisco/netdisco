@@ -55,7 +55,7 @@ safe_password_store: true
 #    when: '20 23 * * *'
 
 # increase the performance of parallel DNS resolution for node
-# names (the default is max_outstanding: 10)
+# names (the default is max_outstanding: 50)
 # ````````````````````````````````````````````````````````````
 #dns:
 #  max_outstanding: 100

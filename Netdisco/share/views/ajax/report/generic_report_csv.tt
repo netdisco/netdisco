@@ -1,0 +1,11 @@
+[% USE CSV %]
+[% CSV.dump(headings) %]
+
+[% FOREACH row IN results.all %]
+  [% mylist = [] %]
+  [% FOREACH col IN columns %]
+    [% mylist.push(row.get_column(col)) %]
+  [% END %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

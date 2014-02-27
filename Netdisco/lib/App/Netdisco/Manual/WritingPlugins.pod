@@ -118,7 +118,11 @@ the name of the registration helper sub:
 =head1 Reports
 
 Report components contain pre-canned searches which the user community have
-found to be useful. The implementation is very similar to one of the Search
+found to be useful. Before you go further, it might be the case that you can
+generate the report without any Perl or HTML: see the L<Reports
+Configuration|App::Netdisco::Manual::Configuration/reports> for details.
+
+Otherwise, the typical implementation is very similar to one of the Search
 and Device page Tabs, so please read that documentation above, first.
 
 Report plugins usually live in the C<App::Netdisco::Web::Plugin::Report>

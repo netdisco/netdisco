@@ -222,6 +222,50 @@ Value: List of Modules. Default: Empty List.
 List of additional L<App::Netdisco::Web::Plugin> names to load. See also the
 C<web_plugins> setting.
 
+=head3 C<reports>
+
+Value: Dictionary of Reports Hashes. Default: None.
+
+Use this configuration to add reports to Netdisco without writing any Perl
+code or HTML templates. For example:
+
+ reports:
+   power_inventory:
+     category: Device
+     label: 'Power Supply Inventory'
+     columns:
+       - {name: 'Name'}
+       - {ps1_type: 'PS1 Type'}
+       - {ps1_status: 'PS1 Status'}
+     query: |
+       SELECT d.name, d.ps1_type, d.ps1_status
+         FROM device d
+       ORDER BY name
+
+Each key of the C<reports> configuration is an alias for the report, and
+becomes part of the web path. Within the tree you must provide each of the
+keys shown:
+
+=head4 C<category>
+
+Section of the Reports menu where this report will appear. See
+L<WritingPlugins|App::Netdisco::Manual::WritingPlugins> for the full list.
+
+=head4 C<label>
+
+Title for the Report.
+
+=head4 C<columns>
+
+List of single-key Hashes which map database column (field) name to table
+heading.
+
+=head4 C<query>
+
+SQL which returns the data. Make sure that the columns are named the same as
+the keys of the C<columns> configuration. Note the way the SQL is specified in
+the example above, using the pipe symbol and then indenting the query text.
+
 =head3 C<jobqueue_refresh>
 
 Value: Integer Number. Default: 5.

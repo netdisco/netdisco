@@ -1,0 +1,18 @@
+<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <thead>
+    <tr>
+      [% FOREACH hdr IN headings %]
+        <th>[% hdr | html_entity %]</th>
+      [% END %]
+    </tr>
+  </thead>
+  </tbody>
+    [% WHILE (row = results.next) %]
+    <tr>
+      [% FOREACH col IN columns %]
+        <td>[% row.get_column(col) | html_entity %]</td>
+      [% END %]
+    </tr>
+    [% END %]
+  </tbody>
+</table>
