@@ -50,6 +50,7 @@ requires:
   Net::MAC: 2.103622
   Net::NBName: 0.26
   NetAddr::IP: 4.068
+  Opcode: 1.07
   Path::Class: 0.32
   Plack: 1.0023
   Plack::Middleware::Expires: 0.03
@@ -77,4 +78,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: '2.024003'
+version: 2.024003_001
