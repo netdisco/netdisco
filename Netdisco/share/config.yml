@@ -78,6 +78,7 @@ web_plugins:
 extra_web_plugins: []
 jobqueue_refresh: 10
 safe_password_store: true
+reports: {}
 
 # -------------
 # NETDISCO CORE

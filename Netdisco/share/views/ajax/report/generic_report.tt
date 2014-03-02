@@ -7,10 +7,10 @@
     </tr>
   </thead>
   </tbody>
-    [% WHILE (row = results.next) %]
+    [% FOREACH row IN results %]
     <tr>
       [% FOREACH col IN columns %]
-        <td>[% row.get_column(col) | html_entity %]</td>
+        <td>[% row.item(col) | html_entity %]</td>
       [% END %]
     </tr>
     [% END %]

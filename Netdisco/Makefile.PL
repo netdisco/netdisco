@@ -34,6 +34,7 @@ requires 'Net::LDAP' => 0;
 requires 'Net::MAC' => 2.103622;
 requires 'Net::NBName' => 0.26;
 requires 'NetAddr::IP' => 4.068;
+requires 'Opcode' => 1.07;
 requires 'Path::Class' => 0.32;
 requires 'Plack' => 1.0023;
 requires 'Plack::Middleware::Expires' => 0.03;
