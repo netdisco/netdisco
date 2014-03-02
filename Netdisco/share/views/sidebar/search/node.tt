@@ -35,7 +35,7 @@
                   name="partial"[% ' checked="checked"' IF params.partial %]/>
               </label>
               <label class="nd_checkboxlabel" for="node_partial">
-                <span class="nd_searchcheckbox uneditable-input">Partial Name</span>
+                <span class="nd_searchcheckbox uneditable-input">Partial Match</span>
               </label>
             </div>
             <div class="clearfix">

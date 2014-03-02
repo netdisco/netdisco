@@ -2,7 +2,8 @@
 
   [ENHANCEMENTS]
 
-  * Partial search on Device Port MAC address
+  * Wildcard support on Device Port MAC Search
+  * Wildcard support on Node name/MAC Search
 
 2.024003 - 2014-02-27
 

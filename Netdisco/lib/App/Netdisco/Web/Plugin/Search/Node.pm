@@ -9,6 +9,7 @@ use NetAddr::IP::Lite ':lower';
 use Net::MAC ();
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Web 'sql_match';
 
 register_search_tab({ tag => 'node', label => 'Node' });
 
@@ -42,35 +43,63 @@ ajax '/ajax/content/search/node' => require_login sub {
         }
     }
 
-    if (! $mac->get_error) {
-        my $sightings = schema('netdisco')->resultset('Node')
-          ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
+    my ($likeval, $likeclause) = sql_match($node, not param('partial'));
+    my $using_wildcards = (($likeval ne $node) ? 1 : 0);
 
-        my $ips = schema('netdisco')->resultset('NodeIp')
-          ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
+    my @where_mac =
+      ($using_wildcards ? \['me.mac::text ILIKE ?', $likeval]
+                        : ($mac->get_error ? \'0=1' : ('me.mac' => $mac->as_IEEE)) );
 
-        my $netbios = schema('netdisco')->resultset('NodeNbt')
-          ->search_by_mac({mac => $mac->as_IEEE, @active, @times});
+    my $sightings = schema('netdisco')->resultset('Node')
+      ->search({-and => [@where_mac, @active, @times]}, {
+          order_by => {'-desc' => 'time_last'},
+          '+columns' => [
+            'device.dns',
+            { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
+            { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
+          ],
+          join => 'device',
+      });
 
-        my $ports = schema('netdisco')->resultset('DevicePort')
-          ->search({mac => $mac->as_IEEE});
+    my $ips = schema('netdisco')->resultset('NodeIp')
+      ->search({-and => [@where_mac, @active, @times]}, {
+          order_by => {'-desc' => 'time_last'},
+          '+columns' => [
+            'oui.company',
+            { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
+            { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
+          ],
+          join => 'oui'
+      });
 
-        my $wireless = schema('netdisco')->resultset('NodeWireless')->search(
-            { mac => $mac->as_IEEE },
-            { order_by   => { '-desc' => 'time_last' },
-              '+columns' => [
-                {
-                  time_last_stamp => \"to_char(time_last, 'YYYY-MM-DD HH24:MI')"
-                }]
-            }
-        );
+    my $netbios = schema('netdisco')->resultset('NodeNbt')
+      ->search({-and => [@where_mac, @active, @times]}, {
+          order_by => {'-desc' => 'time_last'},
+          '+columns' => [
+            'oui.company',
+            { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
+            { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
+          ],
+          join => 'oui'
+      });
 
-        return unless $sightings->has_rows
-            or $ips->has_rows
-            or $ports->has_rows
-            or $netbios->has_rows;
+    my $ports = schema('netdisco')->resultset('DevicePort')
+      ->search({ -and => [@where_mac] });
 
-        template 'ajax/search/node_by_mac.tt', {
+    my $wireless = schema('netdisco')->resultset('NodeWireless')->search(
+        { -and => [@where_mac] },
+        { order_by   => { '-desc' => 'time_last' },
+          '+columns' => [
+            {
+              time_last_stamp => \"to_char(time_last, 'YYYY-MM-DD HH24:MI')"
+            }]
+        }
+    );
+
+    if ($sightings->has_rows or $ips->has_rows
+          or $ports->has_rows or $netbios->has_rows) {
+
+        return template 'ajax/search/node_by_mac.tt', {
           ips       => $ips,
           sightings => $sightings,
           ports     => $ports,
@@ -78,54 +107,46 @@ ajax '/ajax/content/search/node' => require_login sub {
           netbios   => $netbios,
         }, { layout => undef };
     }
-    else {
-        my $set;
-        my $name = $node;
 
-        if (param('partial')) {
-            $name = "\%$name\%" if $name !~ m/%/;
+
+    my $name = (param('partial') ? $likeval : $node);
+    my $set = schema('netdisco')->resultset('NodeNbt')
+        ->search_by_name({nbname => $name, @active, @times});
+
+    unless ( $set->has_rows ) {
+        if (my $ip = NetAddr::IP::Lite->new($node)) {
+            # search_by_ip() will extract cidr notation if necessary
+            $set = schema('netdisco')->resultset('NodeIp')
+              ->search_by_ip({ip => $ip, @active, @times});
         }
+        else {
+            $likeval .= setting('domain_suffix')
+              if index($node, setting('domain_suffix')) == -1;
 
-        $set = schema('netdisco')->resultset('NodeNbt')
-            ->search_by_name({nbname => $name, @active, @times});
+            $set = schema('netdisco')->resultset('NodeIp')
+              ->search_by_dns({dns => $likeval, @active, @times});
 
-        unless ( $set->has_rows ) {
-            if (my $ip = NetAddr::IP::Lite->new($node)) {
-                # search_by_ip() will extract cidr notation if necessary
+            # if the user selects Vendor search opt, then
+            # we'll try the OUI company name as a fallback
+
+            if (not $set->has_rows and param('show_vendor')) {
                 $set = schema('netdisco')->resultset('NodeIp')
-                  ->search_by_ip({ip => $ip, @active, @times});
-            }
-            else {
-                if ($name !~ m/%/ and setting('domain_suffix')) {
-                    $name .= setting('domain_suffix')
-                        if index($name, setting('domain_suffix')) == -1;
-                }
-
-                $set = schema('netdisco')->resultset('NodeIp')
-                  ->search_by_dns({dns => $name, @active, @times});
-
-                # if the user selects Vendor search opt, then
-                # we'll try the OUI company name as a fallback
-
-                if (not $set->has_rows and param('show_vendor')) {
-                    $set = schema('netdisco')->resultset('NodeIp')
-                      ->with_times
-                      ->search(
-                        {'oui.company' => { -ilike => "\%$node\%"}, @times},
-                        {'prefetch' => 'oui'},
-                      );
-                }
+                  ->with_times
+                  ->search(
+                    {'oui.company' => { -ilike => ''.sql_match($node)}, @times},
+                    {'prefetch' => 'oui'},
+                  );
             }
         }
-
-        return unless $set and $set->has_rows;
-        $set = $set->search_rs({}, { order_by => 'me.mac' });
-
-        template 'ajax/search/node_by_ip.tt', {
-          macs => $set,
-          archive_filter => {@active},
-        }, { layout => undef };
     }
+
+    return unless $set and $set->has_rows;
+    $set = $set->search_rs({}, { order_by => 'me.mac' });
+
+    template 'ajax/search/node_by_ip.tt', {
+      macs => $set,
+      archive_filter => {@active},
+    }, { layout => undef };
 };
 
 true;
