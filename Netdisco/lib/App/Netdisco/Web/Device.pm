@@ -167,7 +167,7 @@ get '/device' => require_login sub {
     });
 
     if ($dev->count == 0) {
-        return redirect uri_for('/', {nosuchdevice => 1})->path_query;
+        return redirect uri_for('/', {nosuchdevice => 1, device => $q})->path_query;
     }
 
     # if passed dns, need to check for duplicates

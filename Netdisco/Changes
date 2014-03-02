@@ -7,6 +7,7 @@
   * User Reports appear in "My Reports" menu if no category is given
   * Permit clipboard copy of device IP from Job Queue rows
   * Failed Job Device IPs link to Discover form with pre-filled Discover IP
+  * Unknown device page has pre-filled Discover IP
   * Set form focus to Username field on login form
 
 2.024003 - 2014-02-27
