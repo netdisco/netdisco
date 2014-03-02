@@ -16,7 +16,7 @@ foreach my $r (keys %{setting('reports')}) {
   register_report({
     tag => $r,
     label => $report->{label},
-    category => $report->{category},
+    category => ($report->{category} || 'My Reports'),
     provides_csv => true,
   });
 
