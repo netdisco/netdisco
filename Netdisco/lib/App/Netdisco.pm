@@ -203,7 +203,7 @@ template from this distribution:
 
  mkdir ~/environments
  cp ~/perl5/lib/perl5/auto/share/dist/App-Netdisco/environments/deployment.yml ~/environments
- chmod +w ~/environments/deployment.yml
+ chmod 600 ~/environments/deployment.yml
 
 Edit the file ("C<~/environments/deployment.yml>") and change the database
 connection parameters to match those for your local system (that is, the
