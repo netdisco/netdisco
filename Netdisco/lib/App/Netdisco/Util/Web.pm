@@ -8,7 +8,7 @@ use Time::Piece;
 use Time::Seconds;
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sort_port sort_modules interval_to_daterange
+  sort_port sort_modules interval_to_daterange sql_match
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -24,6 +24,35 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 sql_match( $value, $exact? )
+
+Convert wildcard characters "C<*>" and "C<?>" to "C<%>" and "C<_>"
+respectively.
+
+Pass a true value to C<$exact> to only substitute the existing wildcards, and
+not also add "C<*>" to each end of the value.
+
+In list context, returns two values, the translated value, and also an
+L<SQL::Abstract> LIKE clause.
+
+=cut
+
+sub sql_match {
+  my ($text, $exact) = @_;
+  return unless $text;
+
+  $text =~ s/^\s+//;
+  $text =~ s/\s+$//;
+
+  $text =~ s/[*]+/%/g;
+  $text =~ s/[?]/_/g;
+
+  $text = '%'. $text . '%' unless $exact;
+  $text =~ s/\%+/%/g;
+
+  return ( wantarray ? ($text, {-ilike => $text}) : $text );
+}
 
 =head2 sort_port( $a, $b )
 

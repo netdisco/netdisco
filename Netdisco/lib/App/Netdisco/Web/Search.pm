@@ -5,6 +5,8 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::Web 'sql_match';
+
 hook 'before' => sub {
   # view settings for node options
   var('node_options' => [
@@ -75,6 +77,7 @@ get '/search' => require_login sub {
         }
         else {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
+            my ($likeval, $likeclause) = sql_match($q);
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
@@ -90,7 +93,14 @@ get '/search' => require_login sub {
                 params->{'tab'} = 'device';
             }
             elsif ($s->resultset('DevicePort')
-                     ->search({name => "\%$q\%"})->count) {
+                     ->search({
+                       -or => [
+                         {name => $likeclause},
+                         (length $q == 17 ? {mac => $q}
+                                          : \['mac::text ILIKE ?', $likeval]),
+                       ],
+                     })->count) {
+
                 params->{'tab'} = 'port';
             }
         }

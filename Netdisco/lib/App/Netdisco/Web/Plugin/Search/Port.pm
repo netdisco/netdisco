@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Web 'sql_match';
 
 register_search_tab({ tag => 'port', label => 'Port', provides_csv => 1 });
 
@@ -19,13 +20,14 @@ get '/ajax/content/search/port' => require_login sub {
           ->search({vlan => $q});
     }
     else {
-        my $query = $q;
-        if (param('partial')) {
-            $q = "\%$q\%" if $q !~ m/%/;
-            $query = { -ilike => $q };
-        }
+        my ($likeval, $likeclause) = sql_match($q);
+
         $set = schema('netdisco')->resultset('DevicePort')
-          ->search({name => $query});
+          ->search({-or => [
+                      {name => (param('partial') ? $likeclause : $q)},
+                      (length $q == 17 ? {mac => $q}
+                                       : \['mac::text ILIKE ?', $likeval]),
+                    ]});
     }
     return unless $set->count;
 
