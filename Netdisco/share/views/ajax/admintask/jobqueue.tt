@@ -35,8 +35,13 @@
       [% ELSE %]
       <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
       [% END %]
-      <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
+      <td class="nd_center-cell">
+        [% IF row.status == 'error' %]
+        <a href="[% uri_for('/') %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
+        [% ELSE %]
+        <a href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.device | html_entity %]</a>
+        [% END %]
+      </td>
       <td class="nd_center-cell">[% row.port | html_entity %]</td>
       <td class="nd_center-cell">[% row.subaction | html_entity %]</td>
       <td class="nd_center-cell">[% row.username | html_entity %]</td>

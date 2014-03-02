@@ -5,6 +5,8 @@
   * Wildcard support on Device Port MAC Search
   * Wildcard support on Node name/MAC Search
   * User Reports appear in "My Reports" menu if no category is given
+  * Permit clipboard copy of device IP from Job Queue rows
+  * Failed Job Device IPs link to Discover form with pre-filled Discover IP
 
 2.024003 - 2014-02-27
 

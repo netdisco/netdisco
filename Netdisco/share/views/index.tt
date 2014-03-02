@@ -50,7 +50,7 @@
           [% IF user_has_role('admin') %]
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') %]">
             <div class="form-horizontal">
-              <input placeholder="Device hostname or IP" class="span4" name="device" type="text"/>
+              <input placeholder="Device hostname or IP" class="span4" name="device" value="[% params.device %]" type="text"/>
               <input type="hidden" name="extra" value="with-nodes"/>
               <button type="submit" class="btn btn-info">Discover</button>
             </div>
