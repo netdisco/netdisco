@@ -1,4 +1,4 @@
-2.024003_001 - 2014-03-02
+2.024004 - 2014-03-04
 
   [ENHANCEMENTS]
 
@@ -10,6 +10,7 @@
   * Failed Job Device IPs link to Discover form with pre-filled Discover IP
   * Unknown device page has pre-filled Discover IP
   * Set form focus to Username field on login form
+  * Database host is commented out in example config
 
 2.024003 - 2014-02-27
 

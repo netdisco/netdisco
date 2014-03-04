@@ -10,9 +10,9 @@
 
 database:
   name: 'netdisco'
-  host: 'localhost'
   user: 'changeme'
   pass: 'changeme'
+  #host: 'localhost'
 
 # --------------------
 # RECOMMENDED SETTINGS
