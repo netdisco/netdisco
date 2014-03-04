@@ -1,4 +1,4 @@
-2.003000 - 2014-02-04
+2.003001 - 2014-02-04
 
   * Change to use %DEVICE% as well - full url must be configured in location
   * Fix bug in check_acl call
