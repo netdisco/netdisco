@@ -1,4 +1,10 @@
-2.024004 - 2014-03-04
+2.024005 - 2014-03-04
+
+  [BUG FIXES]
+
+  * Fix Login and Logout that were broken with SSL
+
+2.024003_001 - 2014-03-03
 
   [ENHANCEMENTS]
 

@@ -51,7 +51,7 @@ post '/login' => sub {
         });
 
         return if request->is_ajax;
-        redirect param('return_url');
+        redirect param('return_url')->path;
     }
     else {
         session->destroy;
@@ -85,7 +85,7 @@ any ['get', 'post'] => '/logout' => sub {
     });
 
     session->destroy;
-    redirect uri_for('/inventory');
+    redirect uri_for('/inventory')->path;
 };
 
 true;
