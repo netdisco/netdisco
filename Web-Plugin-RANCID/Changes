@@ -1,3 +1,8 @@
+2.003000 - 2014-02-04
+
+  * Change to use %DEVICE% as well - full url must be configured in location
+  * Fix bug in check_acl call
+
 2.002000 - 2014-02-04
 
   * Support for netdisco-rancid-export config for GROUP name

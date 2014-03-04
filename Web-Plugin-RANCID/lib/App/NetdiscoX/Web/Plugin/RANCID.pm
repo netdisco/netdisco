@@ -1,10 +1,11 @@
 package App::NetdiscoX::Web::Plugin::RANCID;
 
-our $VERSION = '2.002000';
+our $VERSION = '2.003000';
 
 use Dancer ':syntax';
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'check_acl';
 
 use File::ShareDir 'dist_dir';
@@ -36,7 +37,7 @@ hook 'before_template' => sub {
     $rancid->{by_ip}  ||= [];
 
     foreach my $g (keys %{ $rancid->{groups} }) {
-        if (check_acl( $d, $rancid->{groups}->{$g} )) {
+        if (check_acl( get_device($device->{ip}), $rancid->{groups}->{$g} )) {
             $tokens->{rancidgroup} = $g;
             $tokens->{ranciddevice} = $device->{ip}
               if 0 < scalar grep {$_ eq $g} @{ $rancid->{by_ip} };
@@ -79,7 +80,10 @@ Value: String, Required.
 Name of the server hosting your local WebSVN installation. This should
 also include the path under which backup files are stored for the devices.
 
-B<Note that "configs/" will be added to the end of the location for you.>
+The text "C<%DEVICE%>" B<must> be included, and it will be substituted with
+the name or IP of the device. That is, this setting must be a complete link to
+a RANCID web page, only with the device name or ip changed to be
+"C<%DEVICE%>".
 
 The text "C<%GROUP%>" will be replaced with the group name for this device, if
 known to Netdisco. This uses the same configuration as for
