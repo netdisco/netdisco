@@ -1,6 +1,6 @@
 package App::NetdiscoX::Web::Plugin::Observium;
 
-our $VERSION = '2.002001';
+our $VERSION = '2.003000';
 
 use Dancer ':syntax';
 use App::Netdisco::Web::Plugin;
@@ -31,9 +31,8 @@ App::NetdiscoX::Web::Plugin::Observium - Port Traffic Links and Thumbnail Graphs
    - X::Observium
  
  plugin_observium:
-   webhost: "web-server.example.com"
-   open_in_new_window: true
-   http_secure: true
+   location: "https://web-server.example.com/"
+   open_in_same_window: false
 
 =head1 Description
 
@@ -46,24 +45,19 @@ thumbnail graph for the port, taken from a local Observium installation.
 Create an entry in your C<~/environments/deployment.yml> file named
 "C<plugin_observium>", containing the following settings:
 
-=head2 webhost
+=head2 location
 
 Value: String, Required.
 
-Name of the server hosting your local Observium installation.
+Full URL to your local Observium server, including HTTP/HTTPS scheme (as in
+the example above).
 
-=head2 open_in_new_window
+=head2 open_in_same_window
 
 Value: Boolean. Default: false.
 
 If set to true, the hyperlink is configured to open the port's Observium page
-in  a new browser window or tab.
-
-=head2 http_secure
-
-Value: Boolean. Default: false.
-
-If set to true, the hyperlink is configured to use HTTPS.
+in the same browser window or tab as Netdisco. The default is false.
 
 =head1 AUTHOR
 

@@ -1,3 +1,7 @@
+2.003000 - 2014-02-04
+
+  * Change to using location and open_in_same_window
+
 2.002001 - 2014-02-27
 
   * Fix config param name
