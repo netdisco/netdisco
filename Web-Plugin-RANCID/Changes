@@ -1,3 +1,8 @@
+2.002000 - 2014-02-04
+
+  * Support for netdisco-rancid-export config for GROUP name
+  * Change to use location and open_in_same_window
+
 2.001000 - 2013-12-08
 
   * Initial release

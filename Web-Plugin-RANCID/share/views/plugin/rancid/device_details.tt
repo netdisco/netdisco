@@ -1,4 +1,3 @@
-<a href="http://[% settings.plugin_rancid.location | url %]/[% device.dns || device.name | uri %]"
-  [% ' target="_blank"' IF settings.plugin_rancid.open_in_new_window %]
-  class="btn"
->View Configuration</a>
+<a href="[% settings.plugin_rancid.location.replace('\%GROUP\%',rancidgroup) %]/configs/[% ranciddevice | uri %]"
+  [% ' target="_blank"' UNLESS settings.plugin_rancid.open_in_same_window %]
+>View Configuration <i class="icon-circle-arrow-right"></i></a>
