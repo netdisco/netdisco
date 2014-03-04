@@ -6,7 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
-      ? request->path : uri_for('/inventory'));
+      ? request->uri : uri_for('/inventory')->path);
 
     if (! session('logged_in_user') && request->path ne uri_for('/login')->path) {
         if (setting('trust_x_remote_user') and scalar request->header('X-REMOTE_USER')) {
@@ -85,7 +85,7 @@ any ['get', 'post'] => '/logout' => sub {
     });
 
     session->destroy;
-    redirect uri_for('/inventory');
+    redirect uri_for('/inventory')->path;
 };
 
 true;
