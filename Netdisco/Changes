@@ -4,6 +4,10 @@
 
   * Use daterange for IP Subnets (same as IP Inventory)
 
+  [BUG FIXES]
+
+  * Suggest installation of perl-core RPM (arguably Red Hat's bug not ours!)
+
 2.024004 - 2014-03-04
 
   [BUG FIXES]

@@ -146,7 +146,7 @@ On Ubuntu/Debian:
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-DBD-Pg net-snmp-perl make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl make automake gcc
 
 With those installed, we can proceed...
 
