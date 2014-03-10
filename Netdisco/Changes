@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Use daterange for IP Subnets (same as IP Inventory)
+  * Run daemons as target binary's owning user (supports run control)
 
   [BUG FIXES]
 

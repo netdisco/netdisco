@@ -32,6 +32,9 @@ my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 my $log_dir = dir($home, 'logs');
 mkdir $log_dir if ! -d $log_dir;
 
+my $uid = stat($netdisco)[4] || 0;
+my $gid = stat($netdisco)[5] || 0;
+
 Daemon::Control->new({
   name => 'Netdisco Web',
   program  => 'starman',
@@ -39,6 +42,8 @@ Daemon::Control->new({
   pid_file => file($home, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
+  uid => $uid,
+  gid => $gid,
 })->run;
 
 =head1 NAME
