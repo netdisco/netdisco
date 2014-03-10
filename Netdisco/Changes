@@ -1,3 +1,9 @@
+2.025000 -
+
+  [ENHANCEMENTS]
+
+  * Use daterange for IP Subnets (same as IP Inventory)
+
 2.024004 - 2014-03-04
 
   [BUG FIXES]

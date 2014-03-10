@@ -8,19 +8,21 @@
 
             <fieldset>
               <legend class="nd_sidebar-legend">
-                <label><em><strong>Options</strong></em></label>
+                <label><em><strong>Date Range</strong></em></label>
               </legend>
+              <div class="clearfix input-prepend">
+                <label class="add-on">
+                  <input type="checkbox" id="age_invert"
+                    name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="age_invert">
+                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                </label>
+              </div>
               <div class="clearfix">
-                <ul class="unstyled">
-                  <li>
-                    <em class="muted">Activity Period:</em><br/>
-                    <select id="nd_mac-format" class="nd_side-select" name="age">
-                      [% FOREACH size IN [ '7 days', '14 days', '30 days', '3 months', '1 year', '5 years' ] %]
-                      <option[% ' selected="selected"' IF params.age == size %]>[% size %]</option>
-                      [% END %]
-                    </select>
-                  </li>
-                </ul>
+                <input class="nd_side-input" id="daterange"
+                  type="text" name="daterange" value="[%
+                    (params.exists('daterange') ? params.daterange : to_daterange('30 days')) | html_entity %]"/>
               </div>
             </fieldset>
 

@@ -20,15 +20,16 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
         FROM subnets s1, node_ip ni
         WHERE s1.net <<= ?::cidr
               AND ni.ip <<= s1.net
-              AND ni.time_last > (now() - ?::interval)
-              AND s1.last_discover > (now() - ?::interval)
+              AND ni.time_last >= ?
+              AND ni.time_last <= ?
+              AND s1.last_discover >= ?
       UNION
       SELECT DISTINCT net, di.alias as ip
         FROM subnets s2, device_ip di JOIN device d USING (ip)
         WHERE s2.net <<= ?::cidr
               AND di.alias <<= s2.net
-              AND s2.last_discover > (now() - ?::interval)
-              AND d.last_discover > (now() - ?::interval)
+              AND s2.last_discover >= ?
+              AND d.last_discover >= ?
     ) as joined
     GROUP BY net
     ORDER BY percent ASC
