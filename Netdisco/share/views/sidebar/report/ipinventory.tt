@@ -20,7 +20,7 @@
                 </label>
               </div>
               <div class="clearfix">
-                <input class="nd_side-input" id="daterange"
+                <input class="nd_side-input" id="daterange" required="required"
                   type="text" name="daterange" value="[%
                     (params.exists('daterange') ? params.daterange : to_daterange('30 days')) | html_entity %]"/>
               </div>
