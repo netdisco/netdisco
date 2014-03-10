@@ -8,9 +8,6 @@ use App::Netdisco::Util::Node 'is_nbtstatable';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Daemon::Util ':all';
 
-use MCE::Loop;
-MCE::Loop::init {}; # auto chunk size
-
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
 
@@ -21,6 +18,7 @@ with 'App::Netdisco::Daemon::Worker::Poller::Common';
 
 sub nbtstat_action { \&do_nbtstat }
 sub nbtstat_filter { \&is_nbtstatable }
+sub nbtstat_layer  { 2 }
 
 sub nbtwalk { (shift)->_walk_body('nbtstat', @_) }
 
@@ -47,13 +45,11 @@ sub nbtstat  {
     distinct => 1,
   })->ip_version(4);
 
-  my $nodes = [$rs->get_column('ip')->all];
+  my @nodes = $rs->get_column('ip')->all;
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
-  mce_loop {
-    $self->_single_node_body('nbtstat', $_, $now)
-      for @$_;
-  } $nodes;
+  $self->_single_node_body('nbtstat', $_, $now)
+    for @nodes;
 
   return job_done("Ended nbtstat for ". $host->addr);
 }
