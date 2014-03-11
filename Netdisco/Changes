@@ -1,5 +1,11 @@
 2.025000 -
 
+  [NEW FEATURES]
+
+  * Web and Backend daemons will restart when deployment.yml is updated
+  * Web and Backend daemons will drop privilege to same uid/gid as their
+    on-disk files (to allow run-control symlink as non-root)
+
   [ENHANCEMENTS]
 
   * Use daterange for IP Subnets (same as IP Inventory)

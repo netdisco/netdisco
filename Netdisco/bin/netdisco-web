@@ -3,12 +3,13 @@
 use strict;
 use warnings FATAL => 'all';
 
-our $home;
+our $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 
 BEGIN {
-  # try to find a localenv if one isn't already in place.
-  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+  use FindBin;
+  FindBin::again();
 
+  # try to find a localenv if one isn't already in place.
   if (!exists $ENV{PERL_LOCAL_LIB_ROOT}) {
       use File::Spec;
       my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
@@ -19,32 +20,96 @@ BEGIN {
       die "Sorry, can't find libs required for App::Netdisco.\n"
         if !exists $ENV{PERLBREW_PERL};
   }
+
+  use Path::Class;
+
+  # stuff useful locations into @INC and $PATH
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
 }
 
-use FindBin;
-FindBin::again();
-use Path::Class;
 use Daemon::Control;
+use Filesys::Notify::Simple;
+
+use App::Netdisco::Environment;
+my $config = ($ENV{PLACK_ENV} || $ENV{DANCER_ENVIRONMENT}) .'.yml';
 
 my $netdisco = file($FindBin::RealBin, 'netdisco-web-fg');
 my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
+my $uid = (stat($netdisco->stringify))[4] || 0;
+my $gid = (stat($netdisco->stringify))[5] || 0;
+
 my $log_dir = dir($home, 'logs');
 mkdir $log_dir if ! -d $log_dir;
 
-my $uid = stat($netdisco)[4] || 0;
-my $gid = stat($netdisco)[5] || 0;
-
 Daemon::Control->new({
   name => 'Netdisco Web',
-  program  => 'starman',
-  program_args => ['--disable-keepalive', @args, $netdisco->stringify],
+  program  => \&restarter,
+  program_args => [
+    '--disable-keepalive',
+    '--user', $uid, '--group', $gid,
+    @args, $netdisco->stringify
+  ],
   pid_file => file($home, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
-  uid => $uid,
-  gid => $gid,
 })->run;
+
+# the guts of this are borrowed from Plack::Loader::Restarter - many thanks!!
+
+sub restarter {
+  my ($daemon, @program_args) = @_;
+
+  my $child = fork_and_start(@program_args);
+  exit(1) unless $child;
+
+  my $watcher = Filesys::Notify::Simple->new([$ENV{DANCER_ENVDIR}]);
+  warn "config watcher: watching $ENV{DANCER_ENVDIR} for updates.\n";
+
+  # TODO: starman also supports TTIN,TTOU,INT,QUIT
+  local $SIG{HUP}  = sub { signal_child('HUP',  $child); };
+  local $SIG{TERM} = sub { signal_child('TERM', $child); exit(0); };
+
+  while (1) {
+      my @restart;
+
+      # this is blocking
+      $watcher->wait(sub {
+          my @events = @_;
+          @events = grep {file($_->{path})->basename eq $config} @events;
+          return unless @events;
+          @restart = @events;
+      });
+
+      next unless @restart;
+      warn "-- $_->{path} updated.\n" for @restart;
+
+      signal_child('HUP', $child);
+  }
+}
+
+sub fork_and_start {
+  my @starman_args = @_;
+  my $pid = fork;
+  die "Can't fork: $!" unless defined $pid;
+
+  if ($pid == 0) { # child
+      exec( 'starman', @starman_args );
+  }
+  else {
+      return $pid;
+  }
+}
+
+sub signal_child {
+  my ($signal, $pid) = @_;
+  return unless $signal and $pid;
+  warn "config watcher: sending $signal to the server (pid:$pid)...\n";
+  kill $signal => $pid;
+  waitpid($pid, 0);
+}
 
 =head1 NAME
 
