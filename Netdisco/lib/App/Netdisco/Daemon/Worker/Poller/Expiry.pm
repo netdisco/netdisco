@@ -9,7 +9,7 @@ use Role::Tiny;
 use namespace::clean;
 
 # expire devices and nodes according to config
-sub expiry {
+sub expire {
   my ($self, $job) = @_;
 
   if (setting('expire_devices') and setting('expire_devices') > 0) {

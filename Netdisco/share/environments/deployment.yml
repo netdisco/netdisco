@@ -51,7 +51,7 @@ safe_password_store: true
 #      min: 50
 #  nbtwalk:
 #    when: '0 8,13,21 * * *'
-#  expiry:
+#  expire:
 #    when: '20 23 * * *'
 
 # increase the performance of parallel DNS resolution for node

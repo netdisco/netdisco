@@ -50,6 +50,10 @@ setting('plugins')->{DBIC}->{daemon} = {
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
 setting('dns')->{hosts_file} ||= '/etc/hosts';
 
+# housekeeping expire used to be called expiry
+setting('housekeeping')->{expire} ||= setting('housekeeping')->{expiry}
+  if exists setting('housekeeping')->{expiry};
+
 =head1 NAME
 
 App::Netdisco - An open source web-based network management tool.

@@ -898,7 +898,7 @@ hour fields (which accept same types as C<cron> notation). For example:
        wday: 'mon-fri'
    nbtwalk:
      when: '0 8,13,21 * * *'
-   expiry:
+   expire:
      when: '20 23 * * *'
 
 Note that the "C<when>" fields default to "all" (i.e. "C<*>") when not

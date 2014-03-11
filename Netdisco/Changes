@@ -11,6 +11,7 @@
   * Use daterange for IP Subnets (same as IP Inventory)
   * Run daemons as target binary's owning user (supports run control)
   * Clean up library path fiddling across all scripts
+  * Rename housekeeping expiry task to be expire
 
   [BUG FIXES]
 
