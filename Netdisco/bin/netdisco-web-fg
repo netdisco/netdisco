@@ -22,7 +22,7 @@ BEGIN {
 
 use App::Netdisco;
 use Dancer;
-debug sprintf "App::Netdisco %s", ($App::Netdisco::VERSION || 'HEAD');
+warning sprintf "App::Netdisco %s web", ($App::Netdisco::VERSION || 'HEAD');
 
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 set(session_dir => dir($home, 'netdisco-web-sessions')->stringify);

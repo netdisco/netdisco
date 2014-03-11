@@ -14,10 +14,9 @@ BEGIN {
     dir($FindBin::RealBin, 'lib')->stringify;
 }
 
-# for netdisco app config
 use App::Netdisco;
 use Dancer qw/:moose :script/;
-info "App::Netdisco version $App::Netdisco::VERSION daemon loaded.";
+warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
 
 # callbacks and local job queue management
 use App::Netdisco::Daemon::Queue ':all';
