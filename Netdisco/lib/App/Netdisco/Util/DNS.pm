@@ -1,7 +1,7 @@
 package App::Netdisco::Util::DNS;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use Dancer ':script';
 use Net::DNS;

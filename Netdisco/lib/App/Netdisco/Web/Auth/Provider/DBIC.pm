@@ -1,7 +1,7 @@
 package App::Netdisco::Web::Auth::Provider::DBIC;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use base 'Dancer::Plugin::Auth::Extensible::Provider::Base';
 

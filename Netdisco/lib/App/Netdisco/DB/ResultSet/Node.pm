@@ -2,7 +2,7 @@ package App::Netdisco::DB::ResultSet::Node;
 use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::ExplicitLocking

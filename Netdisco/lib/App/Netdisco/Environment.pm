@@ -1,7 +1,7 @@
 package App::Netdisco::Environment;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use File::ShareDir 'dist_dir';
 use Path::Class;

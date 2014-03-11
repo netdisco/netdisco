@@ -1,7 +1,7 @@
 package App::Netdisco;
 
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use 5.010_000;
 
 our $VERSION = '2.024004';
