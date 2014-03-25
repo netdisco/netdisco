@@ -154,7 +154,7 @@ sub store_device {
   my @properties = qw/
     snmp_ver
     description uptime contact name location
-    layers ports mac serial model
+    layers ports mac
     ps1_type ps2_type ps1_status ps2_status
     fan slots
     vendor os os_ver
@@ -163,6 +163,9 @@ sub store_device {
   foreach my $property (@properties) {
       $device->$property( $snmp->$property );
   }
+
+  $device->model(  Encode::decode('UTF-8', $snmp->model)  );
+  $device->serial( Encode::decode('UTF-8', $snmp->serial) );
 
   $device->snmp_class( $snmp->device_type );
   $device->last_discover(\'now()');

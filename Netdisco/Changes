@@ -19,6 +19,7 @@
   * Suggest installation of perl-core RPM (arguably Red Hat's bug not ours!)
   * FATAL warnings considered harmful
   * Only show STP blocked icon if port is UP
+  * Store device model and serial via UTF8 conversion
 
 2.024004 - 2014-03-04
 
