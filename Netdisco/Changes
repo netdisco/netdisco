@@ -18,6 +18,7 @@
 
   * Suggest installation of perl-core RPM (arguably Red Hat's bug not ours!)
   * FATAL warnings considered harmful
+  * Only show STP blocked icon if port is UP
 
 2.024004 - 2014-03-04
 
