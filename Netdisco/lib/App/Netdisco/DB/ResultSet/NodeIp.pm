@@ -212,7 +212,7 @@ sub ip_version {
     die "ip_version input must be either 4 or 6\n"
         unless $version && ( $version == 4 || $version == 6 );
 
-    return $rs->search_rs( \[ 'family(ip) = ?', $version ] );
+    return $rs->search_rs( \[ 'family(me.ip) = ?', $version ] );
 }
 
 1;

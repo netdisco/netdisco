@@ -145,6 +145,8 @@
         <button class="btn btn-info btn-small nd_adminbutton" name="arpnip">Arpnip</button>
         <input type="hidden" data-form="macsuck" value="[% d.ip %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="macsuck">Macsuck</button>
+        <input type="hidden" data-form="nbtstat" value="[% d.ip %]" name="device"/>
+        <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
 
         <button class="btn btn-danger btn-small pull-right"
           data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>

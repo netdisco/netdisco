@@ -108,7 +108,7 @@
           </li>
           <li>
             <form method="post" class="nd_inline-form" action="[% uri_for('/admin/nbtwalk') %]">
-              <button type="submit" class="btn btn-link nd_btn-link">Nbtstat All</button>
+              <button type="submit" class="btn btn-link nd_btn-link">NBTstat All</button>
             </form>
           </li>
           [% IF settings._admin_tasks.size %]
