@@ -20,7 +20,7 @@
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove"></i>
-        [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND NOT row.vlan_count > 1 %]
+        [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND row.vlan_count < 2 %]
         <i class="icon-fullscreen text-info"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="icon-arrow-down text-success"></i>
