@@ -13,6 +13,7 @@ my %jobs = map { $_ => 1} qw/
     discover
     macsuck
     arpnip
+    nbtstat
 /;
 my %jobs_all = map {$_ => 1} qw/
     discoverall
@@ -42,21 +43,6 @@ sub add_job {
         });
     };
 }
-
-# we have a separate list for jobs needing a device to avoid queueing
-# such a job when there's no device param (it could still be duff, tho).
-my %jobs = map { $_ => 1} qw/
-    discover
-    macsuck
-    arpnip
-    nbtstat
-/;
-my %jobs_all = map {$_ => 1} qw/
-    discoverall
-    macwalk
-    arpwalk
-    nbtwalk
-/;
 
 foreach my $jobtype (keys %jobs_all, keys %jobs) {
     ajax "/ajax/control/admin/$jobtype" => require_role admin => sub {
