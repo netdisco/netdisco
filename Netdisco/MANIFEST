@@ -137,6 +137,7 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
+lib/App/Netdisco/Environment.pm
 lib/App/Netdisco/Manual/Configuration.pod
 lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod
