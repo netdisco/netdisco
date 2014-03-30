@@ -13,6 +13,7 @@
   * Clean up library path fiddling across all scripts
   * Rename housekeeping expiry task to be expire
   * Refactor nbtstat to group probes by device where node was arped
+  * Add note about pgtune to install docs
 
   [BUG FIXES]
 

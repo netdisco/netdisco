@@ -140,6 +140,18 @@ application:
   
  postgres:~$ createdb -O netdisco netdisco
 
+The default PostgreSQL configuration isn't well tuned for modern server
+hardware. We strongly recommend that you use the C<pgtune> Python program to
+auto-tune your C<postgresql.conf> file:
+
+=over 4
+
+=item *
+
+L<https://github.com/elitwin/pgtune>
+
+=back
+
 =head1 Installation
 
 The following is a general guide which works well in most circumstances. It
