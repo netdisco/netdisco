@@ -52,7 +52,7 @@ setting('dns')->{hosts_file} ||= '/etc/hosts';
 
 # housekeeping expire used to be called expiry
 setting('housekeeping')->{expire} ||= setting('housekeeping')->{expiry}
-  if exists setting('housekeeping')->{expiry};
+  if setting('housekeeping') and exists setting('housekeeping')->{expiry};
 
 =head1 NAME
 

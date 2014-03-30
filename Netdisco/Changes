@@ -21,6 +21,7 @@
   * FATAL warnings considered harmful
   * Only show STP blocked icon if port is UP
   * Store device model and serial via UTF8 conversion
+  * Only set housekeeping default if user has enabled
 
 2.024004 - 2014-03-04
 
