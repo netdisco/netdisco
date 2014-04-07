@@ -166,7 +166,7 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 (C<~netdisco/perl5>):
 
  su - netdisco
- curl -L http://cpanmin.us/ | perl - --notest --verbose --local-lib ~/perl5 App::Netdisco
+ curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
 
 Link some of the newly installed apps into a handy location:
 
@@ -190,12 +190,18 @@ template from this distribution:
 
 Edit the file ("C<~/environments/deployment.yml>") and change the database
 connection parameters to match those for your local system (that is, the
-C<name>, C<host>, C<user> and C<pass>).
+C<name>, C<user> and C<pass>).
 
 In the same file uncomment and edit the C<domain_suffix> setting to be
-appropriate for your local site. If this is a fresh install, uncomment and set
-the C<no_auth> value to true (temporarily disables user authentication). Have
-a quick read of the other settings to make sure you're happy, then move on.
+appropriate for your local site.
+
+Change the C<community> string setting if your site has different values, and
+uncomment the C<housekeeping> setting to enable SNMP data gathering from
+devices (this replaces cron jobs in Netdisco 1).
+
+Have a quick read of the other settings to make sure you're happy, then move
+on. See L<Configuration|App::Netdisco::Manual::Configuration> for further
+details.
 
 =head1 Bootstrap
 
@@ -206,7 +212,7 @@ take care of all this for you:
 
  ~/bin/netdisco-deploy
 
-Answer yes to all questions, if this is a new installation of Netdisco 2.
+If this is a new installation of Netdisco 2, answer yes to all questions.
 
 =head1 Startup
 
@@ -215,10 +221,6 @@ Run the following command to start the web-app server as a backgrounded daemon
 
  ~/bin/netdisco-web start
 
-If the Inventory is empty because this is a new installation, you probably
-want to run some polling jobs. This can be done from from the web interface or
-command-line (see L<netdisco-do>).
-
 Run the following command to start the job control daemon (port control, etc):
 
  ~/bin/netdisco-daemon start
@@ -226,11 +228,6 @@ Run the following command to start the job control daemon (port control, etc):
 You should take care not to run this Netdisco daemon and the Netdisco 1.x
 daemon at the same time. Similarly, if you use the device discovery with
 Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
-
-At this point you can revisit the C<~/environments/deployment.yml> file to
-uncomment more configuration. Enable the C<community> string settings, and
-C<housekeeping> which enables the automatic periodic device discovery. See
-L<Configuration|App::Netdisco::Manual::Configuration> for further details.
 
 =head1 Upgrading
 
