@@ -28,15 +28,17 @@ safe_password_store: true
 # ```````````````````````````````````````````````````````
 #domain_suffix: '.example.com'
 
-# uncomment and set to true to globally disable authentication/loginr.
-# create a user called "guest" if you want to assign port/admin rights.
-# `````````````````````````````````````````````````````````````````````
-#no_auth: false
-
 # SNMP community string(s)
 # ````````````````````````
-#community: ['public']
-#community_rw: ['private']
+snmp_auth:
+  - tag: 'v2default'
+    community: 'public'
+    read: true
+    write: false
+#  - tag: 'v2default_w'
+#    community: 'private'
+#    read: false
+#    write: true
 
 # daemon will keep netdisco up to date on this schedule
 # `````````````````````````````````````````````````````
@@ -54,8 +56,17 @@ safe_password_store: true
 #  expire:
 #    when: '20 23 * * *'
 
-# increase the performance of parallel DNS resolution for node
-# names (the default is max_outstanding: 50)
-# ````````````````````````````````````````````````````````````
-#dns:
-#  max_outstanding: 100
+# number of SNMP pollers to run in parallel (in netdisco-daemon)
+# ``````````````````````````````````````````````````````````````
+workers:
+  pollers: 10
+
+# amount parallel DNS resolution for node names
+# `````````````````````````````````````````````
+dns:
+  max_outstanding: 50
+
+# uncomment and set to true to globally disable authentication/login.
+# create a user called "guest" if you want to assign port/admin rights.
+# `````````````````````````````````````````````````````````````````````
+#no_auth: false
