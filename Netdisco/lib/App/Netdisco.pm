@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.025000_001';
+our $VERSION = '2.025001';
 
 use App::Netdisco::Environment;
 use Dancer ':script';
