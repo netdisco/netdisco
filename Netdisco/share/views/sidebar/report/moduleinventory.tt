@@ -61,6 +61,15 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
+                <input type="checkbox" id="fruonly"
+                  name="fruonly"[% ' checked="checked"' IF params.fruonly %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="fruonly">
+                <span class="nd_searchcheckbox uneditable-input">FRU Only</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
                 <input type="checkbox" id="matchall"
                   name="matchall"[% ' checked="checked"' IF params.matchall %]/>
               </label>

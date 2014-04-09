@@ -16,16 +16,6 @@ register_report(
 );
 
 hook 'before' => sub {
-
-    # view settings
-    var('module_options' => [
-            {   name    => 'matchall',
-                label   => 'Match All Options',
-                default => 'on'
-            },
-        ]
-    );
-
     return
         unless (
         request->path eq uri_for('/report/moduleinventory')->path
@@ -33,13 +23,20 @@ hook 'before' => sub {
             uri_for('/ajax/content/report/moduleinventory')->path ) == 0
         );
 
+    # view settings
+    var('module_options' => [
+            {   name    => 'fruonly',
+                label   => 'FRU Only',
+                default => 'on'
+            },
+            {   name    => 'matchall',
+                label   => 'Match All Options',
+                default => 'on'
+            },
+        ]
+    );
+
     params->{'limit'} ||= 1024;
-
-    foreach my $col ( @{ var('module_options') } ) {
-        next unless $col->{default} eq 'on';
-        params->{ $col->{name} } = 'checked';
-    }
-
 };
 
 hook 'before_template' => sub {
@@ -69,6 +66,7 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
     qw/device description name type model serial class/;
 
     my $rs = schema('netdisco')->resultset('DeviceModule');
+    $rs = $rs->search({-bool => 'fru'}) if param('fruonly');
 
     if ($has_opt) {
 
