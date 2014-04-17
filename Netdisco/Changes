@@ -1,8 +1,12 @@
-2.025002 -
+2.026001_001 -
 
   [ENHANCEMENTS]
 
   * Add FRU filter option to Module Inventory Report
+
+  [BUG FIXES]
+
+  * Search for localenv could not find $HOME
 
 2.025001 - 2014-04-08
 

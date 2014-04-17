@@ -1,10 +1,15 @@
 #!/usr/bin/env perl
 
-our $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+use strict;
+use warnings;
+
+our $home;
 
 BEGIN {
   use FindBin;
   FindBin::again();
+
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 
   # try to find a localenv if one isn't already in place.
   if (!exists $ENV{PERL_LOCAL_LIB_ROOT}) {
