@@ -15,6 +15,7 @@ BEGIN {
       my $me = File::Spec->catfile($FindBin::RealBin, $FindBin::RealScript);
       my $uid = (stat($me))[4] || 0;
       my $home = ($ENV{NETDISCO_HOME} || (getpwuid($uid))[7] || $ENV{HOME});
+      $ENV{NETDISCO_HOME} ||= $home;
 
       my $auto = dir(dist_dir('App-Netdisco'))->absolute;
 

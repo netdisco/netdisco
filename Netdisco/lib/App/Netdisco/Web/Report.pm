@@ -23,7 +23,7 @@ get '/report/*' => require_login sub {
         if (3 == scalar keys %params) {
             foreach my $col ( @{ var('module_options') } ) {
                 next unless $col->{default} eq 'on';
-                %params{ $col->{name} } = 'checked';
+                $params{ $col->{name} } = 'checked';
             }
         }
     }
