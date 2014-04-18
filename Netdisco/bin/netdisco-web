@@ -9,12 +9,15 @@ BEGIN {
   use FindBin;
   FindBin::again();
 
-  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+  my $me = File::Spec->catfile($FindBin::RealBin, $FindBin::RealScript);
+  my $uid = (stat($me))[4] || 0;
+
+  $home = ($ENV{NETDISCO_HOME} || (getpwuid($uid))[7] || $ENV{HOME});
 
   # try to find a localenv if one isn't already in place.
   if (!exists $ENV{PERL_LOCAL_LIB_ROOT}) {
       use File::Spec;
-      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      my $localenv = File::Spec->catfile($FindBin::Bin, 'localenv');
       exec($localenv, $0, @ARGV) if -f $localenv;
       $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
       exec($localenv, $0, @ARGV) if -f $localenv;
@@ -62,6 +65,7 @@ Daemon::Control->new({
   pid_file => file($home, 'netdisco-web.pid'),
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
+  redirect_before_fork => 0,
 })->run;
 
 # the guts of this are borrowed from Plack::Loader::Restarter - many thanks!!
@@ -69,7 +73,7 @@ Daemon::Control->new({
 sub restarter {
   my ($daemon, @program_args) = @_;
 
-  my $child = fork_and_start(@program_args);
+  my $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;
 
   my $watcher = Filesys::Notify::Simple->new([$ENV{DANCER_ENVDIR}]);
@@ -98,11 +102,12 @@ sub restarter {
 }
 
 sub fork_and_start {
-  my @starman_args = @_;
+  my ($daemon, @starman_args) = @_;
   my $pid = fork;
   die "Can't fork: $!" unless defined $pid;
 
   if ($pid == 0) { # child
+      $daemon->redirect_filehandles();
       exec( 'starman', @starman_args );
   }
   else {

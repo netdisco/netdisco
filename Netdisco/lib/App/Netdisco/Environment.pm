@@ -5,13 +5,18 @@ use warnings;
 
 use File::ShareDir 'dist_dir';
 use Path::Class;
+use FindBin;
 
 BEGIN {
   if (not ($ENV{DANCER_APPDIR} || '')
       or not -f file($ENV{DANCER_APPDIR}, 'config.yml')) {
 
+      FindBin::again();
+      my $me = File::Spec->catfile($FindBin::RealBin, $FindBin::RealScript);
+      my $uid = (stat($me))[4] || 0;
+      my $home = ($ENV{NETDISCO_HOME} || (getpwuid($uid))[7] || $ENV{HOME});
+
       my $auto = dir(dist_dir('App-Netdisco'))->absolute;
-      my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 
       $ENV{DANCER_APPDIR}  ||= $auto->stringify;
       $ENV{DANCER_CONFDIR} ||= $auto->stringify;
