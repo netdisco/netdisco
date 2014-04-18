@@ -19,10 +19,11 @@ get '/report/*' => require_login sub {
                 ->get_distinct_col('class') ];
 
         # this is a bit fragile... three params currently
-        if (3 == scalar keys params()) {
+        my %params = request->params();
+        if (3 == scalar keys %params) {
             foreach my $col ( @{ var('module_options') } ) {
                 next unless $col->{default} eq 'on';
-                params->{ $col->{name} } = 'checked';
+                %params{ $col->{name} } = 'checked';
             }
         }
     }
