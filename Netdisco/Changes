@@ -1,4 +1,4 @@
-2.026001_001 -
+2.026001_002 -
 
   [ENHANCEMENTS]
 
@@ -7,6 +7,7 @@
   [BUG FIXES]
 
   * Search for localenv could not find $HOME
+  * Fixes to allow output of get_init_file to be used as init script
 
 2.025001 - 2014-04-08
 
