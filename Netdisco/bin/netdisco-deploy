@@ -22,7 +22,9 @@ BEGIN {
       die "Sorry, can't find libs required for App::Netdisco.\n"
         if !exists $ENV{PERLBREW_PERL};
   }
+}
 
+BEGIN {
   use Path::Class;
 
   # stuff useful locations into @INC and $PATH
