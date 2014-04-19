@@ -8,6 +8,7 @@
 
   * Search for localenv could not find $HOME
   * Fixes to allow output of get_init_file to be used as init script
+  * Legitimate for same MAC to be in two VLANs on same switchport
 
 2.025001 - 2014-04-08
 

@@ -151,14 +151,13 @@ sub store_node {
   schema('netdisco')->txn_do(sub {
     my $nodes = schema('netdisco')->resultset('Node');
 
-    # TODO: probably needs changing if we're to support VTP domains
     my $old = $nodes->search(
         { mac   => $mac,
+          vlan   => $vlan,
           -bool => 'active',
           -not  => {
                     switch => $ip,
                     port   => $port,
-                    vlan   => $vlan,
                   },
         })->update( { active => \'false' } );
 
