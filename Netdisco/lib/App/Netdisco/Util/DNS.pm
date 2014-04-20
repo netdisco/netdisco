@@ -5,7 +5,6 @@ use warnings;
 
 use Dancer ':script';
 use Net::DNS;
-use AnyEvent::DNS::EtcHosts;
 use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
 
@@ -95,6 +94,22 @@ addresses which resolved.
 
 =cut
 
+# AE::DNS::EtcHosts only works for A/AAAA/SRV, but we want PTR.
+# this loads+parses /etc/hosts file using AE. dirty hack.
+
+BEGIN {
+  use AnyEvent::Socket 'format_address';
+
+  use AnyEvent::DNS::EtcHosts;
+  AnyEvent::DNS::EtcHosts::_load_hosts_unless(sub{},AE::cv);
+  no AnyEvent::DNS::EtcHosts; # unimport
+
+  $AnyEvent::DNS::EtcHosts::HOSTS{$_}
+    = [ map { [ format_address $_->[0] ] }
+        @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
+    for keys %AnyEvent::DNS::EtcHosts::HOSTS;
+}
+
 sub hostnames_resolve_async {
   my $ips = shift;
 
@@ -104,9 +119,18 @@ sub hostnames_resolve_async {
   my $done = AE::cv;
   $done->begin( sub { shift->send } );
 
-  foreach my $hash_ref (@$ips) {
+  IP: foreach my $hash_ref (@$ips) {
     my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
-    next if no_resolve($ip);
+    next IP if no_resolve($ip);
+
+    # check /etc/hosts file and short-circuit if found
+    foreach my $name (reverse sort keys %AnyEvent::DNS::EtcHosts::HOSTS) {
+        if ($AnyEvent::DNS::EtcHosts::HOSTS{$name}->[0]->[0] eq $ip) {
+            $hash_ref->{'dns'} = $name;
+            next IP;
+        }
+    }
+
     $done->begin;
     AnyEvent::DNS::reverse_lookup $ip,
             sub { $hash_ref->{'dns'} = shift; $done->end; };
