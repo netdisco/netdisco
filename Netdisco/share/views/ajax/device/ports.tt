@@ -273,7 +273,12 @@
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
-          [% '<i class="icon-signal"></i>&nbsp; ' IF node.wireless.defined %]
+          [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+            <i class="icon-phone"></i>&nbsp;
+          [% ELSIF node.wireless.defined
+                   OR (row.remote_type AND row.remote_type.match('(cisco\s+AIR-[L|c]?AP|-K9W8-|^AP:\s)')) %]
+            <i class="icon-signal"></i>&nbsp;
+          [% END %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
