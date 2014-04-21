@@ -103,14 +103,13 @@ addresses which resolved.
 
 sub hostnames_resolve_async {
   my $ips = shift;
-
   my $resolver = AnyEvent::DNS->new();
 
   my %HOSTS = ();
-  $HOSTS{$_} = [ map { [ format_address $_->[0] ] }
+  $HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
                      @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
     for keys %AnyEvent::DNS::EtcHosts::HOSTS;
-    
+
   # Set up the condvar
   my $done = AE::cv;
   $done->begin( sub { shift->send } );
