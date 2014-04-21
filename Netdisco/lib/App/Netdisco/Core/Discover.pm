@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
+use List::MoreUtils ();
 use Encode;
 use Try::Tiny;
 use Net::MAC;
@@ -649,7 +650,7 @@ sub store_neighbors {
   my $c_platform = $snmp->c_platform;
   my $c_cap      = $snmp->c_cap;
 
-  foreach my $entry (keys %$c_ip) {
+  foreach my $entry (List::MoreUtils::uniq( (keys %$c_ip), (keys %$c_cap) )) {
       my $port = $interfaces->{ $c_if->{$entry} };
       if (!defined $port) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
@@ -657,12 +658,43 @@ sub store_neighbors {
           next;
       }
 
+      my $portrow = schema('netdisco')->resultset('DevicePort')
+          ->single({ip => $device->ip, port => $port});
+
+      if (!defined $portrow) {
+          info sprintf ' [%s] neigh - local port %s not in database!',
+            $device->ip, $port;
+          next;
+      }
+
       my $remote_ip   = $c_ip->{$entry};
       my $remote_ipad = NetAddr::IP::Lite->new($remote_ip);
       my $remote_port = undef;
-      my $remote_type = $c_platform->{$entry};
+      my $remote_type = $c_platform->{$entry} || '';
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
       my $remote_cap  = $c_cap->{$entry} || [];
+
+      # IP Phone and WAP detection type fixup
+      if (scalar @$remote_cap or $remote_type) {
+          my $phone_flag = grep {/phone/i} @$remote_cap;
+          my $ap_flag    = grep {/wlanAccessPoint/} @$remote_cap;
+
+          if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
+              $remote_type = 'IP Phone: '. $remote_type
+                if $remote_type !~ /ip phone/i;
+          }
+          elsif ($ap_flag) {
+              $remote_type = 'AP: '. $remote_type;
+          }
+
+          $portrow->update({remote_type => $remote_type});
+      }
+
+      if ($portrow->manual_topo) {
+          info sprintf ' [%s] neigh - %s has manually defined topology',
+            $device->ip, $port;
+          next;
+      }
 
       next unless $remote_ip;
 
@@ -709,23 +741,6 @@ sub store_neighbors {
           }
       }
 
-      # IP Phone and WAP detection type fixup
-      if (defined $remote_type) {
-          my $phone_flag = grep {/phone/i} @$remote_cap;
-          my $ap_flag    = grep {/wlanAccessPoint/} @$remote_cap;
-
-          if ($phone_flag or $remote_type =~ m/(mitel.5\d{3})/i) {
-              $remote_type = 'IP Phone: '. $remote_type
-              if $remote_type !~ /ip phone/i;
-          }
-          elsif ($ap_flag) {
-              $remote_type = 'AP: '. $remote_type;
-          }
-          else {
-              $remote_type ||= '';
-          }
-      }
-
       # hack for devices seeing multiple neighbors on the port
       if (ref [] eq ref $remote_ip) {
           debug sprintf
@@ -764,22 +779,6 @@ sub store_neighbors {
               info sprintf ' [%s] neigh - no remote port found for port %s at %s',
                 $device->ip, $port, $remote_ip;
           }
-      }
-
-      # if all the data looks sane, update the port row with neighbor info
-      my $portrow = schema('netdisco')->resultset('DevicePort')
-          ->single({ip => $device->ip, port => $port});
-
-      if (!defined $portrow) {
-          info sprintf ' [%s] neigh - local port %s not in database!',
-            $device->ip, $port;
-          next;
-      }
-
-      if ($portrow->manual_topo) {
-          info sprintf ' [%s] neigh - %s has manually defined topology',
-            $device->ip, $port;
-          next;
       }
 
       $portrow->update({

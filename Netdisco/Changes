@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Add FRU filter option to Module Inventory Report
+  * Display Phone and Wifi icon on nodes even when not discovered as neighbors
 
   [BUG FIXES]
 
