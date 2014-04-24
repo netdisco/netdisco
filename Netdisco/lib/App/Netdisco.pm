@@ -54,6 +54,12 @@ setting('dns')->{hosts_file} ||= '/etc/hosts';
 setting('housekeeping')->{expire} ||= setting('housekeeping')->{expiry}
   if setting('housekeeping') and exists setting('housekeeping')->{expiry};
 
+# set max outstanding requests for AnyEvent::DNS
+$ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
+  = setting('dns')->{max_outstanding} || 10;
+$ENV{'PERL_ANYEVENT_HOSTS'}
+  = setting('dns')->{hosts_file} || '/etc/hosts';
+
 =head1 NAME
 
 App::Netdisco - An open source web-based network management tool.
