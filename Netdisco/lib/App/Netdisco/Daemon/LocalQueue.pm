@@ -19,27 +19,30 @@ sub add_jobs {
 
 sub capacity_for {
   my ($type) = @_;
-  debug "checking local capacity for action $action";
+  debug "checking local capacity for worker type $type";
 
-  my $setting = setting('workers')->{ $job_type_keys->{$type} };
+  my $setting = setting('workers')->{ setting('job_type_keys')->{$type} };
   my $current = $queue->search({type => $type})->count;
   return ($current < $setting);
 }
 
 sub take_jobs {
   my ($wid, $type, $max) = @_;
+  $max ||= 1;
 
   # asking for more jobs means the current ones are done
   scrub_jobs($wid);
 
   debug "searching for $max new jobs for worker $wid (type $type)";
-  my @rows = $queue->search(
+  my $rs = $queue->search(
     {type => $type, wid => 0},
-    {rows => ($max || 1)},
-  )->all;
+    {rows => $max},
+  );
+
+  my @rows = $rs->all;
   return [] if scalar @rows == 0;
 
-  debug sprintf "booking out %s jobs to worker %s", scalar @rows, $wid;
+  debug sprintf "booking out %s jobs to worker %s", (scalar @rows), $wid;
   $rs->update({wid => $wid});
 
   return [ map {{$_->get_columns}} @rows ];
