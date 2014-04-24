@@ -43,7 +43,8 @@ sub take_jobs {
   return [] if scalar @rows == 0;
 
   debug sprintf "booking out %s jobs to worker %s", (scalar @rows), $wid;
-  $rs->update({wid => $wid});
+  $queue->search({job => { -in => [map {$_->job} @rows] }})
+        ->update({wid => $wid});
 
   return [ map {{$_->get_columns}} @rows ];
 }
