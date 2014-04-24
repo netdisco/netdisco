@@ -19,7 +19,7 @@ use Dancer qw/:moose :script/;
 warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
 
 # callbacks and local job queue management
-use App::Netdisco::Daemon::Queue ':all';
+use App::Netdisco::Daemon::LocalQueue ':all';
 
 # needed to quench AF_INET6 symbol errors
 use NetAddr::IP::Lite ':lower';

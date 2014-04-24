@@ -11,13 +11,6 @@ use namespace::clean;
 
 my $fqdn = hostfqdn || 'localhost';
 
-my $role_map = {
-  (map {$_ => 'Poller'}
-      qw/discoverall discover arpwalk arpnip macwalk macsuck nbtstat nbtwalk expire/),
-  (map {$_ => 'Interactive'}
-      qw/location contact portcontrol portname vlan power/)
-};
-
 sub worker_begin {
   my $self = shift;
   my $wid = $self->wid;
@@ -32,7 +25,7 @@ sub worker_begin {
 
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node", $wid, scalar @jobs;
-      map { $_->{role} = $role_map->{$_->{action}} } @jobs;
+      map { $_->{type} = setting('job_types')->{$_->{action}} } @jobs;
 
       $self->do('add_jobs', \@jobs);
   }
@@ -55,9 +48,10 @@ sub worker_body {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
       while (my $job = $rs->next) {
           my $jid = $job->job;
+          my $job_type = setting('job_types')->{$job->action} or next;
 
           # check for available local capacity
-          next unless $self->do('capacity_for', $job->action);
+          next unless $self->do('capacity_for', $job_type);
           debug sprintf "mgr (%s): processing node has capacity for job %s (%s)",
             $wid, $jid, $job->action;
 
@@ -67,7 +61,7 @@ sub worker_body {
             $wid, $jid;
 
           my $local_job = { $job->get_columns };
-          $local_job->{role} = $role_map->{$job->action};
+          $local_job->{type} = $job_type;
 
           # copy job to local queue
           $self->do('add_jobs', [$local_job]);

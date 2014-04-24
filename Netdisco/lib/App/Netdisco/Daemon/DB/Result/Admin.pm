@@ -13,7 +13,7 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
   },
 
-  "role", # Poller, Interactive, etc
+  "type", # Poller, Interactive, etc
   { data_type => "text", is_nullable => 0 },
 
   "wid", # worker ID, only != 0 once taken

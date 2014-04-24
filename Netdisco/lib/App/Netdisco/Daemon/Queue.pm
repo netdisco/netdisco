@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Queue;
+package App::Netdisco::Daemon::LocalQueue;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -18,49 +18,25 @@ sub add_jobs {
 }
 
 sub capacity_for {
-  my ($action) = @_;
+  my ($type) = @_;
   debug "checking local capacity for action $action";
 
-  my $action_map = {
-      Poller => [
-          qw/discoverall discover arpwalk arpnip macwalk macsuck nbtstat nbtwalk expire/
-      ],
-      Interactive => [qw/location contact portcontrol portname vlan power/],
-  };
-
-  my $role_map = {
-    (map {$_ => 'Poller'} @{ $action_map->{Poller} }),
-    (map {$_ => 'Interactive'} @{ $action_map->{Interactive} })
-  };
-
-  my $setting_map = {
-    Poller => 'pollers',
-    Interactive => 'interactives',
-  };
-
-  my $role = $role_map->{$action};
-  my $setting = $setting_map->{$role};
-
-  my $current = $queue->search({role => $role})->count;
-
-  return ($current < setting('workers')->{$setting});
+  my $setting = setting('workers')->{ $job_type_keys->{$type} };
+  my $current = $queue->search({type => $type})->count;
+  return ($current < $setting);
 }
 
 sub take_jobs {
-  my ($wid, $role, $max) = @_;
-  $max ||= 1;
+  my ($wid, $type, $max) = @_;
 
   # asking for more jobs means the current ones are done
-  debug "removing complete jobs for worker $wid from local queue";
-  $queue->search({wid => $wid})->delete;
+  scrub_jobs($wid);
 
-  debug "searching for $max new jobs for worker $wid (role $role)";
-  my $rs = $queue->search(
-    {role => $role, wid => 0},
-    {rows => $max},
-  );
-
-  my @rows = $rs->all;
+  debug "searching for $max new jobs for worker $wid (type $type)";
+  my @rows = $queue->search(
+    {type => $type, wid => 0},
+    {rows => ($max || 1)},
+  )->all;
   return [] if scalar @rows == 0;
 
   debug sprintf "booking out %s jobs to worker %s", scalar @rows, $wid;
@@ -79,7 +55,7 @@ sub reset_jobs {
 
 sub scrub_jobs {
   my ($wid) = @_;
-  debug "deleting jobs owned by worker $wid";
+  debug "deleting dangling jobs owned by worker $wid";
   return unless $wid > 1;
   $queue->search({wid => $wid})->delete;
 }
