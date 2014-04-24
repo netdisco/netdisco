@@ -7,23 +7,8 @@ use Dancer::Plugin::Auth::Extensible;
 
 use Try::Tiny;
 
-# we have a separate list for jobs needing a device to avoid queueing
-# such a job when there's no device param (it could still be duff, tho).
-my %jobs = map { $_ => 1} qw/
-    discover
-    macsuck
-    arpnip
-    nbtstat
-/;
-my %jobs_all = map {$_ => 1} qw/
-    discoverall
-    macwalk
-    arpwalk
-    nbtwalk
-/;
-
 sub add_job {
-    my ($jobtype, $device, $subaction) = @_;
+    my ($action, $device, $subaction) = @_;
 
     if ($device) {
         $device = NetAddr::IP::Lite->new($device);
@@ -35,28 +20,22 @@ sub add_job {
     try {
         schema('netdisco')->resultset('Admin')->create({
           ($device ? (device => $device->addr) : ()),
-          action => $jobtype,
+          action => $action,
           ($subaction ? (subaction => $subaction) : ()),
           status => 'queued',
-          (exists $jobs{$jobtype} ? (username => session('logged_in_user')) : ()),
+          username => session('logged_in_user'),
           userip => request->remote_address,
         });
     };
 }
 
-foreach my $jobtype (keys %jobs_all, keys %jobs) {
-    ajax "/ajax/control/admin/$jobtype" => require_role admin => sub {
-        send_error('Missing device', 400)
-          if exists $jobs{$jobtype} and not param('device');
-
-        add_job($jobtype, param('device'), param('extra'));
+foreach my $action (keys %{ setting('job_types') }) {
+    ajax "/ajax/control/admin/$action" => require_role admin => sub {
+        add_job($action, param('device'), param('extra'));
     };
 
-    post "/admin/$jobtype" => require_role admin => sub {
-        send_error('Missing device', 400)
-          if exists $jobs{$jobtype} and not param('device');
-
-        add_job($jobtype, param('device'), param('extra'));
+    post "/admin/$action" => require_role admin => sub {
+        add_job($action, param('device'), param('extra'));
         redirect uri_for('/admin/jobqueue')->path;
     };
 }
