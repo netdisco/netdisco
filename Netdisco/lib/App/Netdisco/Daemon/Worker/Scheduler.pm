@@ -9,6 +9,7 @@ use Role::Tiny;
 use namespace::clean;
 
 with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
+requires 'jobqueue_insert';
 
 sub worker_begin {
   my $self = shift;

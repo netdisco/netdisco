@@ -18,4 +18,12 @@ sub jobqueue_insert {
   });
 }
 
+sub jobqueue_update {
+  my ($self, $settings) = @_;
+
+  schema('netdisco')->resultset('Admin')
+    ->find(delete $settings->{id}, {for => 'update'})
+    ->update($settings);
+}
+
 true;

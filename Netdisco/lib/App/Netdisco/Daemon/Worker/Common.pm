@@ -7,7 +7,8 @@ use Try::Tiny;
 use Role::Tiny;
 use namespace::clean;
 
-requires qw/worker_type worker_name munge_action/;
+with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
+requires qw/worker_type worker_name munge_action jobqueue_update/;
 
 sub worker_body {
   my $self = shift;
@@ -65,19 +66,19 @@ sub close_job {
   # lock db row and either defer or complete the job
   try {
       if ($status eq 'defer') {
-          schema('netdisco')->resultset('Admin')
-            ->find($job->job, {for => 'update'})
-            ->update({ status => 'queued' });
+          $self->jobqueue_update({
+            id => $job->job,
+            status => 'queued',
+          });
       }
       else {
-          schema('netdisco')->resultset('Admin')
-            ->find($job->job, {for => 'update'})
-            ->update({
-              status => $status,
-              log => $log,
-              started => $job->started,
-              finished => $now,
-            });
+          $self->jobqueue_update({
+            id => $job->job,
+            status => $status,
+            log => $log,
+            started => $job->started,
+            finished => $now,
+          });
       }
 
       # remove job from local queue
