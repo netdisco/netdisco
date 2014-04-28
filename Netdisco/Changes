@@ -14,6 +14,7 @@
   * Legitimate for same MAC to be in two VLANs on same switchport
   * Fix for broken [#82] (/etc/hosts check during ARP IP resolv)
   * Discover nodes on ports which have broken near-edge topology
+  * Use password instead of pass for Dancer::Plugin::DBIC
 
 2.025001 - 2014-04-08
 
