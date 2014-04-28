@@ -2,6 +2,16 @@
 
 App::Netdisco::Manual::Deployment - Tips and Tricks for Deployment
 
+=head1 Init and Run Control Scripts
+
+The Netdisco applications will emit RC scripts suitable for Linux systems:
+
+ bin/netdisco-web get_init_file
+ bin/netdisco-daemon get_init_file
+
+If you'd like to send a patch for BSD, please submit it against the
+L<Daemon::Control> distribution.
+
 =head1 Enable MD5 authentication to PostgreSQL
 
 Some installations of PostgreSQL don't have MD5 authentication enabled by

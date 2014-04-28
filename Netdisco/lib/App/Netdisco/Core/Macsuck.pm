@@ -88,13 +88,6 @@ sub do_macsuck {
   # reverse sort allows vlan 0 entries to be included only as fallback
   foreach my $vlan (reverse sort keys %$fwtable) {
       foreach my $port (keys %{ $fwtable->{$vlan} }) {
-          if ($device_ports->{$port}->is_uplink and not setting('macsuck_bleed')) {
-              debug sprintf
-                ' [%s] macsuck - port %s is uplink, topo broken - skipping.',
-                $ip, $port;
-              next;
-          }
-
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
             $ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
@@ -296,6 +289,7 @@ sub _get_vlan_list {
 # table of node entries.
 sub _walk_fwtable {
   my ($device, $snmp, $interfaces, $port_macs, $device_ports, $comm_vlan) = @_;
+  my $skiplist = {}; # ports through which we can see another device
   my $cache = {};
 
   my $fw_mac   = $snmp->fw_mac;
@@ -308,7 +302,7 @@ sub _walk_fwtable {
 
   while (my ($idx, $mac) = each %$fw_mac) {
       my $bp_id = $fw_port->{$idx};
-      next unless check_mac($device, $mac, $port_macs);
+      next unless check_mac($device, $mac);
 
       unless (defined $bp_id) {
           debug sprintf
@@ -332,6 +326,13 @@ sub _walk_fwtable {
           debug sprintf
             ' [%s] macsuck %s - iid %s has no port mapping - skipping.',
             $device->ip, $mac, $iid;
+          next;
+      }
+
+      if (exists $skiplist->{$port}) {
+          debug sprintf
+            ' [%s] macsuck %s - seen another device thru port %s - skipping.',
+            $device->ip, $mac, $port;
           next;
       }
 
@@ -374,6 +375,8 @@ sub _walk_fwtable {
           }
       }
 
+      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
+
       if (exists $port_macs->{$mac}) {
           my $switch_ip = $port_macs->{$mac};
           if ($device->ip eq $switch_ip) {
@@ -389,7 +392,12 @@ sub _walk_fwtable {
 
           # when there's no CDP/LLDP, we only want to gather macs at the
           # topology edge, hence skip ports with known device macs.
-          next unless setting('macsuck_bleed');
+          if (not setting('macsuck_bleed')) {
+                debug sprintf ' [%s] macsuck %s - adding port %s to skiplist',
+                    $device->ip, $mac, $port;
+                $skiplist->{$port} = delete $cache->{$vlan}->{$port};
+                next;
+          }
       }
 
       # possibly move node to lag master
@@ -399,7 +407,6 @@ sub _walk_fwtable {
           $device_ports->{$port}->update({is_uplink => \'true'});
       }
 
-      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
       ++$cache->{$vlan}->{$port}->{$mac};
   }
 

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.026001_003';
+our $VERSION = '2.026001_004';
 
 use App::Netdisco::Environment;
 use Dancer ':script';
@@ -24,7 +24,7 @@ if (ref {} eq ref setting('database')) {
     setting('plugins')->{DBIC}->{netdisco} ||= {
         dsn  => $dsn,
         user => $user,
-        pass => $pass,
+        password => $pass,
         options => {
             AutoCommit => 1,
             RaiseError => 1,
