@@ -24,7 +24,7 @@ if (ref {} eq ref setting('database')) {
     setting('plugins')->{DBIC}->{netdisco} ||= {
         dsn  => $dsn,
         user => $user,
-        pass => $pass,
+        password => $pass,
         options => {
             AutoCommit => 1,
             RaiseError => 1,
