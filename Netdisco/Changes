@@ -1,9 +1,10 @@
-2.026001_003 -
+2.026001_004 -
 
   [ENHANCEMENTS]
 
   * Add FRU filter option to Module Inventory Report
   * Display Phone and Wifi icon on nodes even when not discovered as neighbors
+  * Sort connected nodes first by VLAN
 
   [BUG FIXES]
 
@@ -11,6 +12,7 @@
   * Fixes to allow output of get_init_file to be used as init script
   * Legitimate for same MAC to be in two VLANs on same switchport
   * Fix for broken [#82] (/etc/hosts check during ARP IP resolv)
+  * Discover nodes on ports which have broken near-edge topology
 
 2.025001 - 2014-04-08
 
