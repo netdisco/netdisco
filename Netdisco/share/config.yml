@@ -208,6 +208,8 @@ job_type_keys:
   Poller: pollers
   Interactive: interactives
 
+job_queue: PostgreSQL
+
 # ---------------
 # DANCER INTERNAL
 # ---------------

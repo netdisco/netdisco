@@ -1,13 +1,14 @@
 package App::Netdisco::Daemon::Worker::Scheduler;
 
 use Dancer qw/:moose :syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 use Algorithm::Cron;
 use Try::Tiny;
 
 use Role::Tiny;
 use namespace::clean;
+
+with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
 
 sub worker_begin {
   my $self = shift;
@@ -55,11 +56,10 @@ sub worker_body {
           # queue it!
           try {
               info "sched ($wid): queueing $action job";
-              schema('netdisco')->resultset('Admin')->create({
+              $self->jobqueue_insert({
                 action => $action,
-                device => ($sched->{device} || undef),
-                subaction => ($sched->{extra} || undef),
-                status => 'queued',
+                device => $sched->{device},
+                extra  => $sched->{extra},
               });
           }
           catch {
