@@ -32,15 +32,7 @@ to your device's IP.
 =cut
 
 sub get_port_macs {
-    my $device    = shift;
     my $port_macs = {};
-
-    unless ( $device->in_storage ) {
-        debug sprintf
-            ' [%s] get_port_macs - skipping device not yet discovered',
-            $device->ip;
-        return $port_macs;
-    }
 
     my $dp_macs
         = schema('netdisco')->resultset('DevicePort')
