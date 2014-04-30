@@ -1,3 +1,9 @@
+2.027001 - 
+
+  [BUG FIXES]
+
+  * get_port_macs returns all port MACs
+
 2.027000 - 2014-04-30
 
   [ENHANCEMENTS]
