@@ -45,8 +45,9 @@ respectively) will now watch your C<deployment.yml> configuration file, and
 restart themselves whenever it is changed.
 
 The Web and Backend daemons will also now drop privilege to the same user and
-group as their files on disk. This allows you to symlink the programs as
-run-control scripts, yet maintain non-root privilege status.
+group as their files on disk. This allows use of run control (init) scripts
+whilst maintaining non-root privilege status (see
+L<Deployment|App::Netdisco::Manual::Deployment> documentation for details).
 
 The housekeeping task C<expiry> has been renamed to C<expire>. Old
 configuration will continue to work, but we recommend you rename this part of

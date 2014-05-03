@@ -4,7 +4,7 @@ App::Netdisco::Manual::Deployment - Tips and Tricks for Deployment
 
 =head1 Init and Run Control Scripts
 
-The Netdisco applications will emit RC scripts suitable for Linux systems:
+The Netdisco applications will generate RC scripts suitable for Linux systems:
 
  bin/netdisco-web get_init_file
  bin/netdisco-daemon get_init_file
