@@ -68,7 +68,7 @@ sub do_macsuck {
   # cache the device ports to save hitting the database for many single rows
   my $device_ports = {map {($_->port => $_)}
                           $device->ports(undef, {prefetch => 'neighbor_alias'})->all};
-  my $port_macs = get_port_macs($device);
+  my $port_macs = get_port_macs();
   my $interfaces = $snmp->interfaces;
 
   # get forwarding table data via basic snmp connection
