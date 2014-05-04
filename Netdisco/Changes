@@ -1,3 +1,9 @@
+2.027002 - 2014-05-04
+
+  [BUG FIXES]
+
+  * revert use password instead of pass for Dancer::Plugin::DBIC
+
 2.027001 - 2014-05-03
 
   [BUG FIXES]
