@@ -8,10 +8,7 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table("admin");
 __PACKAGE__->add_columns(
   "job",
-  {
-    data_type         => "integer",
-    is_nullable       => 0,
-  },
+  { data_type => "integer", is_nullable => 0 },
 
   "type", # Poller, Interactive, etc
   { data_type => "text", is_nullable => 0 },

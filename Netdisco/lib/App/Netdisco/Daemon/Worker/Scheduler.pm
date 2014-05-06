@@ -1,15 +1,13 @@
 package App::Netdisco::Daemon::Worker::Scheduler;
 
 use Dancer qw/:moose :syntax :script/;
-
 use Algorithm::Cron;
-use Try::Tiny;
 
 use Role::Tiny;
 use namespace::clean;
 
 with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
-requires 'jobqueue_insert';
+requires 'jq_insert';
 
 sub worker_begin {
   my $self = shift;
@@ -55,17 +53,12 @@ sub worker_body {
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
           # queue it!
-          try {
-              info "sched ($wid): queueing $action job";
-              $self->jobqueue_insert({
-                action => $action,
-                device => $sched->{device},
-                extra  => $sched->{extra},
-              });
-          }
-          catch {
-              debug "sched ($wid): action $action was not queued (dupe?)";
-          };
+          info "sched ($wid): queueing $action job";
+          $self->jq_insert({
+            action => $action,
+            device => $sched->{device},
+            extra  => $sched->{extra},
+          });
       }
   }
 }

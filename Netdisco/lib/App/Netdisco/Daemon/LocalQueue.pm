@@ -12,9 +12,10 @@ schema('daemon')->deploy;
 my $queue = schema('daemon')->resultset('Admin');
 
 sub add_jobs {
-  my ($jobs) = @_;
-  info sprintf "adding %s jobs to local queue", scalar @$jobs;
-  $queue->populate($jobs);
+  my (@jobs) = @_;
+  info sprintf "adding %s jobs to local queue", scalar @jobs;
+  use Data::Printer;
+  do { schema('daemon')->dclone($_)->insert } for @jobs;
 }
 
 sub capacity_for {
@@ -46,7 +47,7 @@ sub take_jobs {
   $queue->search({job => { -in => [map {$_->job} @rows] }})
         ->update({wid => $wid});
 
-  return [ map {{$_->get_columns}} @rows ];
+  return \@rows;
 }
 
 sub reset_jobs {
