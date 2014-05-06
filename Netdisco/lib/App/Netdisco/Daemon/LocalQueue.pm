@@ -14,8 +14,7 @@ my $queue = schema('daemon')->resultset('Admin');
 sub add_jobs {
   my (@jobs) = @_;
   info sprintf "adding %s jobs to local queue", scalar @jobs;
-  use Data::Printer;
-  do { schema('daemon')->dclone($_)->insert } for @jobs;
+  schema('daemon')->dclone($_)->insert for @jobs;
 }
 
 sub capacity_for {
