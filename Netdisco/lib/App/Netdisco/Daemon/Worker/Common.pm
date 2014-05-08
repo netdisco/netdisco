@@ -6,8 +6,7 @@ use Try::Tiny;
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
-requires qw/worker_type worker_name munge_action jq_defer jq_complete/;
+with 'App::Netdisco::Daemon::JobQueue';
 
 sub worker_body {
   my $self = shift;

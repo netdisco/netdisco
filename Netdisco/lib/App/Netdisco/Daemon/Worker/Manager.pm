@@ -5,8 +5,7 @@ use Dancer qw/:moose :syntax :script/;
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
-requires qw/jq_get jq_getlocal jq_lock/;
+with 'App::Netdisco::Daemon::JobQueue';
 
 sub worker_begin {
   my $self = shift;

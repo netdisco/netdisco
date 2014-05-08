@@ -13,9 +13,6 @@ use NetAddr::IP::Lite ':lower';
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
-requires qw/jq_queued jq_insert/;
-
 # queue a discover job for all devices known to Netdisco
 sub discoverall {
   my ($self, $job) = @_;

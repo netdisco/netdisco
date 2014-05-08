@@ -6,8 +6,7 @@ use Algorithm::Cron;
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::JobQueue::'. setting('job_queue');
-requires 'jq_insert';
+with 'App::Netdisco::Daemon::JobQueue';
 
 sub worker_begin {
   my $self = shift;
