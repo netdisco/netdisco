@@ -18,6 +18,7 @@ our @EXPORT_OK = qw/
   jq_defer
   jq_complete
   jq_insert
+  jq_delete
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
@@ -90,6 +91,11 @@ Returns true if successful else returns false.
 =head2 jq_insert( \%job | [ %job, \%job ...] )
 
 Adds the passed jobs to the queue.
+
+=head2 jq_delete( $id? )
+
+If passed the ID of a job, deletes it from the queue. Otherwise deletes ALL
+jobs from the queue.
 
 =head1 Job Instance Interface
 

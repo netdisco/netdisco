@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::JobQueue 'jq_log';
+use App::Netdisco::JobQueue qw/jq_log jq_delete/;
 
 register_admin_task({
   tag => 'jobqueue',
@@ -15,17 +15,11 @@ register_admin_task({
 
 ajax '/ajax/control/admin/jobqueue/del' => require_role admin => sub {
     send_error('Missing job', 400) unless param('job');
-
-    schema('netdisco')->txn_do(sub {
-      my $device = schema('netdisco')->resultset('Admin')
-        ->search({job => param('job')})->delete;
-    });
+    jq_delete( param('job') );
 };
 
 ajax '/ajax/control/admin/jobqueue/delall' => require_role admin => sub {
-    schema('netdisco')->txn_do(sub {
-      my $device = schema('netdisco')->resultset('Admin')->delete;
-    });
+    jq_delete();
 };
 
 ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {

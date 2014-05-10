@@ -18,6 +18,7 @@ our @EXPORT_OK = qw/
   jq_defer
   jq_complete
   jq_insert
+  jq_delete
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
@@ -175,6 +176,21 @@ sub jq_insert {
   };
 
   return $happy;
+}
+
+sub jq_delete {
+  my $id = shift;
+
+  if ($id) {
+      schema('netdisco')->txn_do(sub {
+        schema('netdisco')->resultset('Admin')->find($id)->delete();
+      });
+  }
+  else {
+      schema('netdisco')->txn_do(sub {
+        schema('netdisco')->resultset('Admin')->delete();
+      });
+  }
 }
 
 true;
