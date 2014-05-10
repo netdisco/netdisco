@@ -5,6 +5,8 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::JobQueue 'jq_insert';
+
 ajax '/ajax/portcontrol' => require_role port_control => sub {
     send_error('No device/port/field', 400)
       unless param('device') and (param('port') or param('field'));
@@ -44,12 +46,11 @@ ajax '/ajax/portcontrol' => require_role port_control => sub {
           });
       }
 
-      schema('netdisco')->resultset('Admin')->create({
+      jq_insert({
         device => param('device'),
         port => param('port'),
         action => $action,
         subaction => $subaction,
-        status => 'queued',
         username => session('logged_in_user'),
         userip => request->remote_address,
         log => $log,

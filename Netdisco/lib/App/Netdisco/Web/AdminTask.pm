@@ -5,7 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-use Try::Tiny;
+use App::Netdisco::JobQueue 'jq_insert';
 
 sub add_job {
     my ($action, $device, $subaction) = @_;
@@ -16,17 +16,13 @@ sub add_job {
           if ! $device or $device->addr eq '0.0.0.0';
     }
 
-    # job might already be in the queue, so this could die
-    try {
-        schema('netdisco')->resultset('Admin')->create({
-          ($device ? (device => $device->addr) : ()),
-          action => $action,
-          ($subaction ? (subaction => $subaction) : ()),
-          status => 'queued',
-          username => session('logged_in_user'),
-          userip => request->remote_address,
-        });
-    };
+    jq_insert({
+        ($device ? (device => $device->addr) : ()),
+        action => $action,
+        ($subaction ? (subaction => $subaction) : ()),
+        username => session('logged_in_user'),
+        userip => request->remote_address,
+    });
 }
 
 foreach my $action (keys %{ setting('job_types') }) {
