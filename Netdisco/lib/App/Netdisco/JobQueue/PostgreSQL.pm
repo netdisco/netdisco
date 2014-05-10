@@ -67,7 +67,7 @@ sub jq_queued {
 sub jq_lock {
   my $job = shift;
   my $fqdn = hostfqdn || 'localhost';
-  my $happy = 0;
+  my $happy = false;
 
   # lock db row and update to show job has been picked
   try {
@@ -76,7 +76,7 @@ sub jq_lock {
         ->find($job->id, {for => 'update'})
         ->update({ status => "queued-$fqdn" });
     });
-    $happy = 1;
+    $happy = true;
   };
 
   return $happy;
@@ -84,7 +84,7 @@ sub jq_lock {
 
 sub jq_defer {
   my $job = shift;
-  my $happy = 0;
+  my $happy = false;
 
   # lock db row and update to show job is available
   try {
@@ -93,7 +93,7 @@ sub jq_defer {
         ->find($job->id, {for => 'update'})
         ->update({ status => 'queued' });
     });
-    $happy = 1;
+    $happy = true;
   };
 
   return $happy;
@@ -101,7 +101,7 @@ sub jq_defer {
 
 sub jq_complete {
   my $job = shift;
-  my $happy = 0;
+  my $happy = false;
 
   # lock db row and update to show job is done/error
   try {
@@ -113,7 +113,7 @@ sub jq_complete {
           finished => $job->finished,
         });
     });
-    $happy = 1;
+    $happy = true;
   };
 
   return $happy;
@@ -122,7 +122,7 @@ sub jq_complete {
 sub jq_insert {
   my $jobs = shift;
   $jobs = [$jobs] if ref [] ne ref $jobs;
-  my $happy = 0;
+  my $happy = false;
 
   try {
     schema('netdisco')->txn_do(sub {
@@ -138,7 +138,7 @@ sub jq_insert {
         }} @$jobs
       ]);
     });
-    $happy = 1;
+    $happy = true;
   };
 
   return $happy;
