@@ -12,6 +12,8 @@ our @EXPORT_OK = qw/
   jq_get
   jq_getlocal
   jq_queued
+  jq_log
+  jq_userlog
   jq_lock
   jq_defer
   jq_complete
@@ -34,7 +36,6 @@ sub jq_get {
       push @returned, schema('daemon')->resultset('Admin')
         ->new_result({ $job->get_columns, type => $job_type });
   }
-
   return @returned;
 }
 
@@ -50,7 +51,6 @@ sub jq_getlocal {
       push @returned, schema('daemon')->resultset('Admin')
         ->new_result({ $job->get_columns, type => $job_type });
   }
-
   return @returned;
 }
 
@@ -62,6 +62,39 @@ sub jq_queued {
       action => $job_type,
       status => { -like => 'queued%' },
   })->get_column('device')->all;
+}
+
+sub jq_log {
+  my @returned = ();
+
+  my $rs = schema('netdisco')->resultset('Admin')->search({}, {
+    order_by => { -desc => [qw/entered device action/] },
+    rows => 50,
+  });
+
+  while (my $job = $rs->next) {
+      my $job_type = setting('job_types')->{$job->action} or next;
+      push @returned, schema('daemon')->resultset('Admin')
+        ->new_result({ $job->get_columns, type => $job_type });
+  }
+  return @returned;
+}
+
+sub jq_userlog {
+  my $user = shift;
+  my @returned = ();
+
+  my $rs = schema('netdisco')->resultset('Admin')->search({
+    username => $user,
+    finished => { '>' => \"(now() - interval '5 seconds')" },
+  });
+
+  while (my $job = $rs->next) {
+      my $job_type = setting('job_types')->{$job->action} or next;
+      push @returned, schema('daemon')->resultset('Admin')
+        ->new_result({ $job->get_columns, type => $job_type });
+  }
+  return @returned;
 }
 
 sub jq_lock {

@@ -5,7 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::JobQueue qw/jq_insert jq_userlog/;
 
 ajax '/ajax/portcontrol' => require_role port_control => sub {
     send_error('No device/port/field', 400)
@@ -62,21 +62,20 @@ ajax '/ajax/portcontrol' => require_role port_control => sub {
 };
 
 ajax '/ajax/userlog' => require_login sub {
-    my $rs = schema('netdisco')->resultset('Admin')->search({
-      username => session('logged_in_user'),
-      action => [qw/location contact portcontrol portname vlan power
-        discover macsuck arpnip/],
-      finished => { '>' => \"(now() - interval '5 seconds')" },
-    });
+    my @jobs = jq_userlog( session('logged_in_user') );
 
     my %status = (
-      'done'  => [
-        map {s/\[\]/&lt;empty&gt;/; $_}
-        $rs->search({status => 'done'})->get_column('log')->all
+      'done' => [
+        map  {s/\[\]/&lt;empty&gt;/; $_}
+        map  { $_->log }
+        grep { $_->status eq 'done' }
+        @jobs
       ],
       'error' => [
-        map {s/\[\]/&lt;empty&gt;/; $_}
-        $rs->search({status => 'error'})->get_column('log')->all
+        map  {s/\[\]/&lt;empty&gt;/; $_}
+        map  { $_->log }
+        grep { $_->status eq 'error' }
+        @jobs
       ],
     );
 

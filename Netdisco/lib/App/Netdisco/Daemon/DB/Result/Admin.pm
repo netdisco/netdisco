@@ -45,5 +45,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("job");
 
 sub extra { (shift)->subaction }
+sub entered_stamp { (shift)->entered }
 
 1;

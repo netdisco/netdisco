@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::JobQueue 'jq_log';
 
 register_admin_task({
   tag => 'jobqueue',
@@ -28,16 +29,9 @@ ajax '/ajax/control/admin/jobqueue/delall' => require_role admin => sub {
 };
 
 ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
-    my $set = schema('netdisco')->resultset('Admin')
-      ->with_times
-      ->search({}, {
-        order_by => { -desc => [qw/entered device action/] },
-        rows => 50,
-      });
-
     content_type('text/html');
     template 'ajax/admintask/jobqueue.tt', {
-      results => $set,
+      results => [ jq_log ],
     }, { layout => undef };
 };
 

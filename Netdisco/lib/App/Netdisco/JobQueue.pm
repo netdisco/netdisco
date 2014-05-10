@@ -12,6 +12,8 @@ our @EXPORT_OK = qw/
   jq_get
   jq_getlocal
   jq_queued
+  jq_log
+  jq_userlog
   jq_lock
   jq_defer
   jq_complete
@@ -48,6 +50,17 @@ Netdisco job instance interface (see below).
 
 Returns a list of IP addresses of devices which currently have a job of the
 given C<$job_type> queued (e.g. C<discover>, C<arpnip>, etc).
+
+=head2 jq_log()
+
+Returns a list of the most recent 50 jobs in the queue. Jobs are returned as
+objects which implement the Netdisco job instance interface (see below).
+
+=head2 jq_userlog( $user )
+
+Returns a list of jobs which have been entered into the queue by the passed
+C<$user>. Jobs are returned as objects which implement the Netdisco job
+instance interface (see below).
 
 =head2 jq_lock( $job )
 
