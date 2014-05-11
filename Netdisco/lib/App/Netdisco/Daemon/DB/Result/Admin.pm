@@ -45,6 +45,10 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("job");
 
 sub extra { (shift)->subaction }
-sub entered_stamp { (shift)->entered }
+
+sub entered_stamp {
+  (my $stamp = (shift)->entered) =~ s/\.\d+$//;
+  return $stamp;
+}
 
 1;
