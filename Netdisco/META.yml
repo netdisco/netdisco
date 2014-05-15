@@ -33,7 +33,7 @@ requires:
   Daemon::Control: 0.001
   Dancer: 1.3112
   Dancer::Plugin::Auth::Extensible: 0.3
-  Dancer::Plugin::DBIC: 0.1803
+  Dancer::Plugin::DBIC: 0.2001
   Dancer::Plugin::Passphrase: 2.0.1
   File::ShareDir: 1.03
   Guard: 1.022
@@ -78,4 +78,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.027002
+version: 2.027003
