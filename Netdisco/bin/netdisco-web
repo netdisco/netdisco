@@ -107,7 +107,7 @@ sub fork_and_start {
   die "Can't fork: $!" unless defined $pid;
 
   if ($pid == 0) { # child
-      $daemon->redirect_filehandles();
+      $daemon->redirect_filehandles;
       exec( 'starman', @starman_args );
   }
   else {
