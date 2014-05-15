@@ -367,7 +367,7 @@ sub _walk_fwtable {
                 $device->ip, $mac, $port, $remote;
               # continue!!
           }
-          else {
+          elsif (not setting('macsuck_bleed')) {
               debug sprintf
                 ' [%s] macsuck %s - port %s is detected uplink - skipping.',
                 $device->ip, $mac, $port;

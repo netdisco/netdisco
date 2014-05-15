@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * fixed use of password instead of pass for Dancer::Plugin::DBIC
+  * another check for macsuck_bleed (J. Leonhardt)
 
 2.027002 - 2014-05-04
 
