@@ -46,9 +46,9 @@ setting('workers')->{queue} ||= 'PostgreSQL';
 setting('dns')->{hosts_file} ||= '/etc/hosts';
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
 
-# housekeeping expire used to be called expiry
-setting('housekeeping')->{expire} ||= setting('housekeeping')->{expiry}
-  if setting('housekeeping') and exists setting('housekeeping')->{expiry};
+# schedule expire used to be called expiry
+setting('schedule')->{expire} ||= setting('schedule')->{expiry}
+  if setting('schedule') and exists setting('schedule')->{expiry};
 
 # set max outstanding requests for AnyEvent::DNS
 $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}

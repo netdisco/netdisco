@@ -54,7 +54,7 @@ sub build_tasks_list {
   push @$tasks, {
     max_workers => 1,
     user_begin => worker_factory('Scheduler'),
-  } if setting('housekeeping');
+  } if setting('schedule');
 
   my @logmsg = ();
   foreach my $key (keys %{setting('job_type_keys')}) {
@@ -72,7 +72,7 @@ sub build_tasks_list {
 
   info sprintf "MCE will load: %s Manager, %s Scheduler, %s",
     (num_workers() ? 1 : 0),
-    (setting('housekeeping') ? 1 : 0),
+    (setting('schedule') ? 1 : 0),
     (join ', ', @logmsg);
 
   return $tasks;

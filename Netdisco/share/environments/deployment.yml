@@ -42,7 +42,7 @@ snmp_auth:
 
 # daemon will keep netdisco up to date on this schedule
 # `````````````````````````````````````````````````````
-#housekeeping:
+#schedule:
 #  discoverall:
 #    when: '5 7 * * *'
 #  macwalk:

@@ -151,7 +151,7 @@ In the same file uncomment and edit the C<domain_suffix> setting to be
 appropriate for your local site.
 
 Change the C<community> string setting if your site has different values, and
-uncomment the C<housekeeping> setting to enable SNMP data gathering from
+uncomment the C<schedule> setting to enable SNMP data gathering from
 devices (this replaces cron jobs in Netdisco 1).
 
 Have a quick read of the other settings to make sure you're happy, then move

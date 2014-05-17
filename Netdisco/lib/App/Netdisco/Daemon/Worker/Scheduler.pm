@@ -13,8 +13,8 @@ sub worker_begin {
   my $wid = $self->wid;
   debug "entering Scheduler ($wid) worker_begin()";
 
-  foreach my $action (keys %{ setting('housekeeping') }) {
-      my $config = setting('housekeeping')->{$action};
+  foreach my $action (keys %{ setting('schedule') }) {
+      my $config = setting('schedule')->{$action};
 
       # accept either single crontab format, or individual time fields
       $config->{when} = Algorithm::Cron->new(
@@ -43,8 +43,8 @@ sub worker_body {
       my $win_end   = $win_start + 60;
 
       # if any job is due, add it to the queue
-      foreach my $action (keys %{ setting('housekeeping') }) {
-          my $sched = setting('housekeeping')->{$action};
+      foreach my $action (keys %{ setting('schedule') }) {
+          my $sched = setting('schedule')->{$action};
 
           # next occurence of job must be in this minute's window
           debug sprintf "sched ($wid): $action: win_start: %s, win_end: %s, next: %s",

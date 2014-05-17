@@ -36,6 +36,14 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.028000
+
+=head2 General Changes
+
+The configuration item C<housekeeping> has been renamed to C<schedule>. Old
+configuration will continue to work, but we recommend you rename this key in
+your configuration anyway.
+
 =head1 2.025001
 
 =head2 General Changes
