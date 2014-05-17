@@ -25,8 +25,6 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
-  my $num_slots = $self->do('num_workers')
-    or return debug "mgr ($wid): this node has no workers... quitting manager";
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
