@@ -4,7 +4,7 @@ use Dancer qw/:moose :syntax :script/;
 
 use Module::Load ();
 Module::Load::load
-  'App::Netdisco::JobQueue::' . setting('job_queue') => ':all';
+  'App::Netdisco::JobQueue::' . setting('workers')->{queue} => ':all';
 
 use base 'Exporter';
 our @EXPORT = ();

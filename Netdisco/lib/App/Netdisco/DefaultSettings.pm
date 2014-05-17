@@ -1,6 +1,7 @@
 package App::Netdisco::DefaultSettings;
 
-use Dancer qw/:moose :syntax :script/;
+use App::Netdisco::Environment;
+use Dancer ':script';
 
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {

@@ -5,8 +5,6 @@ use warnings;
 use 5.010_000;
 
 our $VERSION = '2.027003';
-
-use App::Netdisco::Environment;
 use App::Netdisco::DefaultSettings;
 
 =head1 NAME

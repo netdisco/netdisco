@@ -7,7 +7,7 @@ use namespace::clean;
 
 use Module::Load ();
 Module::Load::load_remote 'JobQueue' =>
-  'App::Netdisco::JobQueue::' . setting('job_queue') => ':all';
+  'App::Netdisco::JobQueue::' . setting('workers')->{queue} => ':all';
 
 sub jq_get      { shift and JobQueue::jq_get(@_) }
 sub jq_getlocal { shift and JobQueue::jq_getlocal(@_) }
