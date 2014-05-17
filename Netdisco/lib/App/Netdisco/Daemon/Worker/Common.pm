@@ -21,10 +21,7 @@ sub worker_body {
 
       foreach my $job (@$jobs) {
           my $target = $self->munge_action($job->action);
-          next unless $self->can($target);
-          debug sprintf "$type ($wid): can ${target}() for job %s", $job->id;
 
-          # do job
           try {
               $job->started(scalar localtime);
               info sprintf "$type (%s): starting %s job(%s) at %s",
@@ -63,9 +60,6 @@ sub close_job {
           $job->finished($now);
           $self->jq_complete($job);
       }
-
-      # remove job from local queue
-      $self->do('scrub_jobs', $self->wid);
   }
   catch { $self->sendto('stderr', "error closing job: $_\n") };
 }
