@@ -14,6 +14,7 @@ our @EXPORT_OK = qw/
   jq_queued
   jq_log
   jq_userlog
+  jq_take
   jq_lock
   jq_defer
   jq_complete
@@ -98,6 +99,11 @@ sub jq_userlog {
   return @returned;
 }
 
+# PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
+# the main daemon process. This is only used by daemon workers which can use
+# MCE ->do() method.
+sub jq_take { (shift)->do('take_jobs', @_) }
+
 sub jq_lock {
   my $job = shift;
   my $fqdn = hostfqdn || 'localhost';
@@ -113,6 +119,7 @@ sub jq_lock {
       # remove any duplicate jobs, needed because we have race conditions
       # when queueing jobs of a type for all devices
       schema('netdisco')->resultset('Admin')->search({
+        status    => 'queued',
         device    => $job->device,
         port      => $job->port,
         action    => $job->action,

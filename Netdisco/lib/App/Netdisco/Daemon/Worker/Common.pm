@@ -17,7 +17,7 @@ sub worker_body {
 
   while (1) {
       debug "$type ($wid): asking for a job";
-      my $jobs = $self->do('take_jobs', $self->wid, $name);
+      my $jobs = $self->jq_take($self->wid, $name);
 
       foreach my $job (@$jobs) {
           my $target = $self->munge_action($job->action);

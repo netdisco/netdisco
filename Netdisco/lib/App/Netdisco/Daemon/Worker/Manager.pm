@@ -5,6 +5,7 @@ use Dancer qw/:moose :syntax :script/;
 use Role::Tiny;
 use namespace::clean;
 
+use List::Util 'sum';
 with 'App::Netdisco::Daemon::JobQueue';
 
 sub worker_begin {
@@ -25,6 +26,8 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
+  my $num_slots = sum( 0, map { setting('workers')->{$_} }
+                              values %{setting('job_type_keys')} );
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";

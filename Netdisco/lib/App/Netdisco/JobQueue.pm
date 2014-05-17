@@ -14,6 +14,7 @@ our @EXPORT_OK = qw/
   jq_queued
   jq_log
   jq_userlog
+  jq_take
   jq_lock
   jq_defer
   jq_complete
@@ -63,6 +64,12 @@ Returns a list of jobs which have been entered into the queue by the passed
 C<$user>. Jobs are returned as objects which implement the Netdisco job
 instance interface (see below).
 
+=head2 jq_take( $wid, $type, $max? )
+
+Searches in the queue for jobs of type C<$type> and if up to C<$max> are
+available, will book them out to the worker with ID C<$wid>. The default
+number of booked jobs is 1.
+
 =head2 jq_lock( $job )
 
 Marks a job in the queue as booked out to this processing node (denoted by the
@@ -88,7 +95,7 @@ status, log and finished fields will be updated from the passed C<$job>.
 
 Returns true if successful else returns false.
 
-=head2 jq_insert( \%job | [ %job, \%job ...] )
+=head2 jq_insert( \%job | [ \%job, \%job ...] )
 
 Adds the passed jobs to the queue.
 
