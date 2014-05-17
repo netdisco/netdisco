@@ -1,6 +1,6 @@
 package App::NetdiscoX::Web::Plugin::RANCID;
 
-our $VERSION = '2.003001';
+our $VERSION = '2.003002';
 
 use Dancer ':syntax';
 
@@ -58,8 +58,7 @@ App::NetdiscoX::Web::Plugin::RANCID - Link to device backups in RANCID/WebSVN
    - X::RANCID
  
  plugin_rancid:
-   location: 'https://websvn-server.example.com/rancid/%GROUP%/'
-   open_in_same_window: false
+   location: 'https://websvn-server.example.com/rancid/%DEVICE%'
 
 =head1 Description
 
@@ -89,12 +88,12 @@ The text "C<%GROUP%>" will be replaced with the group name for this device, if
 known to Netdisco. This uses the same configuration as for
 L<netdisco-rancid-export>, an example of which is below:
 
-rancid:
-  by_ip:    [ other ]
-  groups:
-    switch: [ 'name:.*[Ss][Ww].*' ]
-    rtr:    [ 'name:[rR]tr.*' ]
-    ap:     [ 'name:[aA][pP].*' ]
+ rancid:
+   by_ip:    [ other ]
+   groups:
+     switch: [ 'name:.*[Ss][Ww].*' ]
+     rtr:    [ 'name:[rR]tr.*' ]
+     ap:     [ 'name:[aA][pP].*' ]
 
 Briefly, each group value is a list of rules for matching devices similar to
 those used by any C<*_only> configuration item. You can provide an IP, subnet
@@ -103,7 +102,7 @@ regular expression as in the above example.
 
 The device DNS name is used, or if missing the device SNMP sysName. Adding the
 group to the list in C<by_ip> will make the link include the device IP
-instead.
+instead of the name.
 
 =head2 open_in_same_window
 

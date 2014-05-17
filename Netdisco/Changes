@@ -1,4 +1,23 @@
-2.026001_004 -
+2.027003 - 2014-05-04
+
+  [BUG FIXES]
+
+  * fixed use of password instead of pass for Dancer::Plugin::DBIC
+  * another check for macsuck_bleed (J. Leonhardt)
+
+2.027002 - 2014-05-04
+
+  [BUG FIXES]
+
+  * revert use password instead of pass for Dancer::Plugin::DBIC
+
+2.027001 - 2014-05-03
+
+  [BUG FIXES]
+
+  * get_port_macs returns all port MACs
+
+2.027000 - 2014-04-30
 
   [ENHANCEMENTS]
 

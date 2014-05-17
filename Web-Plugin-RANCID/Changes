@@ -1,3 +1,7 @@
+2.003002 - 2014-05-03
+
+  * POD fixups
+
 2.003001 - 2014-02-04
 
   * Change to use %DEVICE% as well - full url must be configured in location

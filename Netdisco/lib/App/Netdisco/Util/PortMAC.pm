@@ -21,23 +21,18 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 get_port_macs( $device )
+=head2 get_port_macs
 
 Returns a Hash reference of C<< { MAC => IP } >> for all interface MAC
-addresses on a device.
+addresses on all devices.
+
+If you need to filter for a given device, simply compare the IP (hash value)
+to your device's IP.
 
 =cut
 
 sub get_port_macs {
-    my $device    = shift;
     my $port_macs = {};
-
-    unless ( $device->in_storage ) {
-        debug sprintf
-            ' [%s] get_port_macs - skipping device not yet discovered',
-            $device->ip;
-        return $port_macs;
-    }
 
     my $dp_macs
         = schema('netdisco')->resultset('DevicePort')

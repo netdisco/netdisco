@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.026001_004';
+our $VERSION = '2.027003';
 
 use App::Netdisco::Environment;
 use Dancer ':script';
@@ -235,6 +235,9 @@ You should take care not to run this Netdisco daemon and the Netdisco 1.x
 daemon at the same time. Similarly, if you use the device discovery with
 Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
 
+For further documentation on deployment, see
+L<Deployment|App::Netdisco::Manual::Deployment>.
+
 =head1 Upgrading
 
 Before upgrading please review the latest L<Release
@@ -275,12 +278,6 @@ database (and edited in the web interface). To import a legacy topology file,
 run:
 
  ~/bin/localenv nd-import-topology /path/to/netdisco-topology.txt
-
-=head2 Deployment Scenarios
-
-More documentation on how to deploy the application in other scenarios, for
-example behind a web proxy, is in the
-L<Deployment|App::Netdisco::Manual::Deployment> documentation.
 
 =head2 Database API
 
