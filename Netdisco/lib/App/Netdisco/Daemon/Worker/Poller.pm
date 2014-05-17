@@ -13,8 +13,8 @@ with 'App::Netdisco::Daemon::Worker::Poller::Device',
      'App::Netdisco::Daemon::Worker::Poller::Nbtstat',
      'App::Netdisco::Daemon::Worker::Poller::Expiry';
 
-sub worker_type { 'pol' }
-sub worker_name { 'Poller' }
+sub worker_tag  { 'pol' }
+sub worker_type { 'Poller' }
 sub munge_action { $_[1] }
 
 1;

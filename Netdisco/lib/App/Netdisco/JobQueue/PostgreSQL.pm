@@ -102,7 +102,16 @@ sub jq_userlog {
 # PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
 # the main daemon process. This is only used by daemon workers which can use
 # MCE ->do() method.
-sub jq_take { (shift)->do('take_jobs', @_) }
+sub jq_take {
+  my ($self, $wid, $type) = @_;
+
+  # be polite to SQLite database (that is, local CPU)
+  debug "$type ($wid): sleeping now...";
+  sleep(1);
+
+  debug "$type ($wid): asking for a job";
+  $self->do('take_jobs', $wid, $type);
+}
 
 sub jq_lock {
   my $job = shift;

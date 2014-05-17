@@ -12,19 +12,18 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
+  my $tag  = $self->worker_tag;
   my $type = $self->worker_type;
-  my $name = $self->worker_name;
 
   while (1) {
-      debug "$type ($wid): asking for a job";
-      my $jobs = $self->jq_take($self->wid, $name);
+      my $jobs = $self->jq_take($self->wid, $type);
 
       foreach my $job (@$jobs) {
           my $target = $self->munge_action($job->action);
 
           try {
               $job->started(scalar localtime);
-              info sprintf "$type (%s): starting %s job(%s) at %s",
+              info sprintf "$tag (%s): starting %s job(%s) at %s",
                 $wid, $target, $job->id, $job->started;
               my ($status, $log) = $self->$target($job);
               $job->status($status);
@@ -38,18 +37,15 @@ sub worker_body {
 
           $self->close_job($job);
       }
-
-      debug "$type ($wid): sleeping now...";
-      sleep(1);
   }
 }
 
 sub close_job {
   my ($self, $job) = @_;
-  my $type = $self->worker_type;
+  my $tag = $self->worker_tag;
   my $now = scalar localtime;
 
-  info sprintf "$type (%s): wrapping up %s job(%s) - status %s at %s",
+  info sprintf "$tag (%s): wrapping up %s job(%s) - status %s at %s",
     $self->wid, $job->action, $job->id, $job->status, $now;
 
   try {
