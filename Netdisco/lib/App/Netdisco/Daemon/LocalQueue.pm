@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ add_jobs capacity_for take_jobs reset_jobs scrub_jobs /;
+our @EXPORT_OK = qw/ add_jobs capacity_for take_jobs reset_jobs/;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 schema('daemon')->deploy;
@@ -28,10 +28,11 @@ sub capacity_for {
 
 sub take_jobs {
   my ($wid, $type, $max) = @_;
+  return () unless $wid > 1;
   $max ||= 1;
 
-  # asking for more jobs means the current ones are done
-  scrub_jobs($wid);
+  debug "deleting completed jobs by worker $wid";
+  $queue->search({wid => $wid})->delete;
 
   debug "searching for $max new jobs for worker $wid (type $type)";
   my $rs = $queue->search(
@@ -49,19 +50,13 @@ sub take_jobs {
   return \@rows;
 }
 
+# not used by workers, only the daemon when reinitializing a worker
 sub reset_jobs {
   my ($wid) = @_;
   debug "resetting jobs owned by worker $wid to be available";
   return unless $wid > 1;
   $queue->search({wid => $wid})
         ->update({wid => 0});
-}
-
-sub scrub_jobs {
-  my ($wid) = @_;
-  debug "deleting dangling jobs owned by worker $wid";
-  return unless $wid > 1;
-  $queue->search({wid => $wid})->delete;
 }
 
 1;
