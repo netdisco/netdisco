@@ -25,7 +25,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 =head1 NAME
 
-App::Netdisco::Daemon::JobQueue
+App::Netdisco::JobQueue
 
 =head1 DESCRIPTION
 
