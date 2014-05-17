@@ -9,8 +9,8 @@ use Try::Tiny;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  jq_get
-  jq_getlocal
+  jq_getsome
+  jq_locked
   jq_queued
   jq_log
   jq_userlog
@@ -23,7 +23,7 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-sub jq_get {
+sub jq_getsome {
   my $num_slots = shift;
   my @returned = ();
 
@@ -41,7 +41,7 @@ sub jq_get {
   return @returned;
 }
 
-sub jq_getlocal {
+sub jq_locked {
   my $fqdn = hostfqdn || 'localhost';
   my @returned = ();
 

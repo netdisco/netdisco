@@ -15,7 +15,7 @@ sub worker_begin {
 
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";
-  my @jobs = $self->jq_getlocal;
+  my @jobs = $self->jq_locked;
 
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node", $wid, scalar @jobs;
@@ -34,7 +34,7 @@ sub worker_body {
 
       # get some pending jobs
       # TODO also check for stale jobs in Netdisco DB
-      foreach my $job ( $self->jq_get($num_slots) ) {
+      foreach my $job ( $self->jq_getsome($num_slots) ) {
 
           # check for available local capacity
           my $job_type = setting('job_types')->{$job->action};

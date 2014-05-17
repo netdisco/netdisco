@@ -9,8 +9,8 @@ Module::Load::load
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  jq_get
-  jq_getlocal
+  jq_getsome
+  jq_locked
   jq_queued
   jq_log
   jq_userlog
@@ -36,13 +36,13 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 jq_get( $num? )
+=head2 jq_getsome( $num? )
 
 Returns a list of randomly selected queued jobs. Default is to return one job,
 unless C<$num> is provided. Jobs are returned as objects which implement the
 Netdisco job instance interface (see below).
 
-=head2 jq_getlocal()
+=head2 jq_locked()
 
 Returns the list of jobs currently booked out to this processing node (denoted
 by the local hostname). Jobs are returned as objects which implement the

@@ -7,8 +7,8 @@ use Module::Load ();
 Module::Load::load_remote 'JobQueue' => 'App::Netdisco::JobQueue' => ':all';
 
 # central queue
-sub jq_get      { shift and JobQueue::jq_get(@_) }
-sub jq_getlocal { shift and JobQueue::jq_getlocal(@_) }
+sub jq_getsome  { shift and JobQueue::jq_getsome(@_) }
+sub jq_locked   { shift and JobQueue::jq_locked(@_) }
 sub jq_queued   { shift and JobQueue::jq_queued(@_) }
 sub jq_take     { goto \&JobQueue::jq_take }
 sub jq_lock     { shift and JobQueue::jq_lock(@_) }
