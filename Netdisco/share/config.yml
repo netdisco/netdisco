@@ -167,6 +167,7 @@ workers:
   interactives: 2
   pollers: 10
   sleep_time: 2
+  queue: PostgreSQL
 
 dns:
   max_outstanding: 50
@@ -207,8 +208,6 @@ job_types:
 job_type_keys:
   Poller: pollers
   Interactive: interactives
-
-job_queue: PostgreSQL
 
 # ---------------
 # DANCER INTERNAL
