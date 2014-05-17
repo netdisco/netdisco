@@ -1,4 +1,4 @@
-package App::Netdisco::DefaultSettings;
+package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
 use Dancer ':script';
