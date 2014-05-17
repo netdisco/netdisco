@@ -59,9 +59,9 @@ sub jq_queued {
   my $job_type = shift;
 
   return schema('netdisco')->resultset('Admin')->search({
-      device => { '!=' => undef},
-      action => $job_type,
-      status => { -like => 'queued%' },
+    device => { '!=' => undef},
+    action => $job_type,
+    status => { -like => 'queued%' },
   })->get_column('device')->all;
 }
 
@@ -109,6 +109,15 @@ sub jq_lock {
       schema('netdisco')->resultset('Admin')
         ->find($job->id, {for => 'update'})
         ->update({ status => "queued-$fqdn" });
+
+      # remove any duplicate jobs, needed because we have race conditions
+      # when queueing jobs of a type for all devices
+      schema('netdisco')->resultset('Admin')->search({
+        device    => $job->device,
+        port      => $job->port,
+        action    => $job->action,
+        subaction => $job->subaction,
+      }, {for => 'update'})->delete();
     });
     $happy = true;
   };
