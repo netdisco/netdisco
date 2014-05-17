@@ -13,6 +13,10 @@ sub worker_begin {
   my $wid = $self->wid;
   debug "entering Manager ($wid) worker_begin()";
 
+  if (setting('workers')->{'no_manager'}) {
+      return debug "mgr ($wid): no need for manager... skip begin";
+  }
+
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";
   my @jobs = $self->jq_locked;
@@ -26,6 +30,10 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
+
+  return debug "mgr ($wid): no need for manager... quitting"
+    if setting('workers')->{'no_manager'};
+
   my $num_slots = sum( 0, map { setting('workers')->{$_} }
                               values %{setting('job_type_keys')} );
 
