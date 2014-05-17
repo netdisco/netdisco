@@ -1,4 +1,10 @@
-2.027003 - 2014-05-04
+2.027004 - 2014-05-15
+
+  [BUG FIXES]
+
+  * fix bug in call to Daemon::Contol redirect_filehandles (M. Planck)
+
+2.027003 - 2014-05-14
 
   [BUG FIXES]
 
