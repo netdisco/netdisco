@@ -16,19 +16,19 @@ register_report(
 
 get '/ajax/content/report/vlaninventory' => require_login sub {
     my $set = schema('netdisco')->resultset('DeviceVlan')->search(
-        { 'vlan.description' => { '!=', 'NULL' } },
+        { 'me.description' => { '!=', 'NULL' } },
         {   join   => { 'ports' => 'vlan' },
             select => [
-                'vlan.vlan',
-                'vlan.description',
+                'me.vlan',
+                'me.description',
                 { count => { distinct => 'ports.ip' } },
                 { count => 'ports.vlan' }
             ],
             as       => [qw/ vlan description dcount pcount /],
-            group_by => [qw/ vlan.vlan vlan.description /],
+            group_by => [qw/ me.vlan me.description /],
         }
     );
-    return unless $set->count;
+    return unless $set->has_rows;
 
     if ( request->is_ajax ) {
         template 'ajax/report/vlaninventory.tt', { results => $set, },
