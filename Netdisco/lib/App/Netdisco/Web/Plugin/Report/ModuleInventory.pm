@@ -67,6 +67,7 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
 
     my $rs = schema('netdisco')->resultset('DeviceModule');
     $rs = $rs->search({-bool => 'fru'}) if param('fruonly');
+    my @results;
 
     if ($has_opt) {
 
@@ -77,25 +78,32 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
             params->{'ips'} = \@ips;
         }
 
-        $rs = $rs->search_by_field( scalar params )->prefetch('device')
-            ->limit( param('limit') )->hri;
-
-    }
+        @results = $rs->search_by_field( scalar params )->columns(
+            [   qw/ ip description name class type serial hw_ver fw_ver sw_ver model /
+            ]
+            )->search(
+            {},
+            {   '+columns' => [qw/ device.dns device.name /],
+                join       => 'device',
+                collapse   => 1,
+            })->limit( param('limit') )->hri->all;
+   }
     else {
-        $rs = $rs->search(
+        @results = $rs->search(
             {},
             {   select   => [ 'class', { count => 'class' } ],
                 as       => [qw/ class count /],
                 group_by => [qw/ class /]
             }
-        )->order_by( { -desc => 'count' } )->hri;
+        )->order_by( { -desc => 'count' } )->hri->all;
 
     }
 
-    return unless $rs->has_rows;
+    return unless scalar @results;
     if ( request->is_ajax ) {
+        my $results = to_json (\@results);
         template 'ajax/report/moduleinventory.tt',
-            { results => $rs, opt => $has_opt },
+            { results => $results, opt => $has_opt },
             { layout => undef };
     }
     else {

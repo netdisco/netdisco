@@ -1,6 +1,5 @@
-[% USE Number.Format %]
 [% IF opt %]
-  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <table id="data-table" class="table table-striped table-bordered table-fixed-header" width="100%" cellspacing="0">
     <thead>
       <tr>
         <th>Device</th>
@@ -14,71 +13,117 @@
         <th>SW Version</th>
         <th>FW Version</th>
       </tr>
-    </thead>
-    </tbody>
-      [% WHILE (row = results.next) %]
-      <tr>
-        <td>
-          <a class="nd_linkcell"
-            href="[% uri_for('/device') %]?tab=modules&q=[% row.device.ip | uri %]">
-              [% row.device.dns || row.device.name || row.device.ip | html_entity %]</a>
-        </td>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?description=[% row.description | uri %]">
-            [% row.description | html_entity %]</a>
-        </td>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?name=[% row.name | uri %]">
-            [% row.name | html_entity %]</a>
-        </td>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?class=[% row.class | uri %]">
-            [% row.class.ucfirst | html_entity %]</a>
-        </td>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?type=[% row.type | uri %]">
-            [% row.type | html_entity %]</a>
-        </td>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?model=[% row.model | uri %]">
-            [% row.model | html_entity %]</a>
-        </td>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?serial=[% row.serial | uri %]">
-            [% row.serial | html_entity %]</a>
-        </td>
-        <td>[% row.hw_ver | html_entity %]</td>
-        <td>[% row.sw_ver | html_entity %]</td>
-        <td>[% row.fw_ver | html_entity %]</td>
-      </tr>
-      [% END %]
-    </tbody>
+    </thead> 
   </table>
 [% ELSE %]
-  <table class="table table-bordered table-condensed table-striped nd_floatinghead">
+  <table id="data-table" class="table table-striped table-bordered table-fixed-header" width="100%" cellspacing="0">
     <thead>
       <tr>
         <th>Class</th>
         <th>Count</th>
       </tr>
     </thead>
-    </tbody>  
-    [% WHILE (row = results.next) %]
-      <tr>
-        <td>
-          <a class="nd_linkcell"
-             href="[% uri_for('/report/moduleinventory') %]?class=[% row.class | uri %]">
-            [% row.class.ucfirst | html_entity %]</a>
-        </td>
-        <td>[% row.count | format_number %]</td>
-      </tr>
-    [% END %]
-    </tbody>
   </table>
 [% END %]
+
+<script type="text/javascript">
+function capitaliseFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function fhForceRedraw(fixedHeaders) {
+    for (var i = 0; i < fixedHeaders.length; i++) {
+        fixedHeaders[i]._fnUpdateClones(true); // force redraw
+        fixedHeaders[i]._fnUpdatePositions();
+    }
+}
+
+$(document).ready(function() {
+    var table = $('#data-table').dataTable({
+        "deferRender": true,
+        "data": [% results %],
+        "columns": [
+            [% IF opt %] {
+                data: 'ip',
+                render: function(data, type, row, meta) {
+                    return '<a href="[% uri_for('/device') %]?tab=modules&q=' + data + '">' + (row.device.dns || row.device.name || row.ip) + '</a>';
+                }
+            }, {
+                data: 'description',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?description=' + data + '">' + data + '</a>';
+                }
+            }, {
+                data: 'name',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?name=' + data + '">' + data + '</a>';
+                }
+            }, {
+                data: 'class',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + data + '">' + capitaliseFirstLetter(data) + '</a>';
+                }
+            }, {
+                data: 'type',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?type=' + data + '">' + data + '</a>';
+                }
+            }, {
+                data: 'model',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?model=' + data + '">' + data + '</a>';
+                }
+            }, {
+                data: 'serial',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?serial=' + data + '">' + data + '</a>';
+                }
+            }, {
+                data: 'hw_ver'
+            }, {
+                data: 'sw_ver'
+            }, {
+                data: 'fw_ver'
+            }
+            [% ELSE %] {
+                data: 'class',
+                render: function(data, type, full, meta) {
+                    return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + data + '">' + capitaliseFirstLetter(data) + '</a>';
+                }
+            }, {
+                data: 'count',
+                render: function(data, type, full, meta) {
+                    return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+            }
+            [% END %]
+        ]
+    });
+
+    var fixedHeaders = [];
+    $('.table-fixed-header').each(function() {
+        fixedHeaders.push(
+            new FixedHeader(this, {
+            'offsetTop': 40 // offset for bootstrap navbar
+        }));
+    });
+
+    $(window).resize(function() {
+        fhForceRedraw(fixedHeaders);
+    });
+
+    $('.table-fixed-header').on('draw.dt', function() {
+        fhForceRedraw(fixedHeaders);
+    });
+
+    $('#nd_sidebar-toggle-img-out').click(function() {
+        fhForceRedraw(fixedHeaders);
+    });
+
+    $('#nd_sidebar-toggle-img-in').click(function() {
+        fhForceRedraw(fixedHeaders);
+    });
+
+    
+});
+</script>
