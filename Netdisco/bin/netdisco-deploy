@@ -50,6 +50,7 @@ use Term::ANSIColor;
 
 use Archive::Extract;
 $Archive::Extract::PREFER_BIN = 1;
+use File::Slurp ();
 use HTTP::Tiny;
 use Digest::MD5;
 use Try::Tiny;
@@ -182,13 +183,20 @@ sub deploy_db {
 sub deploy_oui {
   my $schema = schema('netdisco');
   $schema->storage->disconnect;
-
-  my $url = 'http://standards.ieee.org/develop/regauth/oui/oui.txt';
-  my $resp = HTTP::Tiny->new->get($url);
+  my @lines = ();
   my %data = ();
 
-  if ($resp->{success}) {
-      foreach my $line (split /\n/, $resp->{content}) {
+  if (@ARGV) {
+      @lines = File::Slurp::read_file($ARGV[0], err_mode => 'quiet');
+  }
+  else {
+      my $url = 'http://standards.ieee.org/develop/regauth/oui/oui.txt';
+      my $resp = HTTP::Tiny->new->get($url);
+      @lines = split /\n/, $resp->{content};
+  }
+
+  if (scalar @lines) {
+      foreach my $line (@lines) {
           if ($line =~ m/^\s*(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
               my ($oui, $company) = ($1, $2);
               $oui =~ s/-/:/g;
@@ -211,10 +219,15 @@ sub deploy_oui {
             ]);
           });
       }
+
+      print color 'bold blue';
+      say 'OUI update complete.';
+  }
+  else {
+      print color 'bold red';
+      say 'OUI update failed.';
   }
 
-  print color 'bold blue';
-  say 'OUI update complete.';
   print color 'reset';
 }
 

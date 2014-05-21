@@ -1,5 +1,9 @@
 2.027005 - 2014-05-15
 
+  [ENHANCEMENTS]
+
+  * Support offline update of oui.txt and MIBs bundle
+
   [BUG FIXES]
 
   * Improve VLAN Inventory performance and show all VLANs (C. Stromsoe)
