@@ -38,9 +38,13 @@ set plack_middlewares => [
       pass_through => 1,
   )],
   # install Dancer::Debug for this...
-  #[ Debug => (
-  #    panels => [qw/Dancer::Settings Parameters Dancer::Version DBITrace/],
-  #)],
+  (
+    $ENV{DANCER_DEBUG} ?
+      [ Debug => (
+          panels => [qw/Dancer::Settings Parameters Dancer::Version DBITrace/],
+      )]
+    : ()
+  )
 ];
 
 use App::Netdisco::Web;

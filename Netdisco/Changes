@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Support offline update of oui.txt and MIBs bundle
+  * Support Dancer::Debug at runtime with DANCER_DEBUG=1 env var
 
   [BUG FIXES]
 

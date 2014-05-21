@@ -136,6 +136,18 @@ You are instead recommended to run C<netdisco-web> behind a reverse proxy as
 described elsewhere in this document. Apache can easily act as an SSL reverse
 proxy.
 
+=head1 Debug Tricks
+
+You can see what HTTP Headers are received by Netdisco, and other information
+such as how it's parsing the config file, by enabling the Dancer debug plugin.
+First download the plugin:
+
+ ~/bin/localenv cpanm --notest Dancer::Debug
+
+Then run the web daemon with the environment variable to enable the feature:
+
+ DANCER_DEBUG=1 ~/bin/netdisco-web restart
+
 =head1 Further Reading...
 
 Other ways to run and host the web application can be found in the
