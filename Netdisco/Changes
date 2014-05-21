@@ -1,3 +1,14 @@
+2.027005 - 2014-05-15
+
+  [ENHANCEMENTS]
+
+  * Support offline update of oui.txt and MIBs bundle
+  * Support Dancer::Debug at runtime with DANCER_DEBUG=1 env var
+
+  [BUG FIXES]
+
+  * Improve VLAN Inventory performance and show all VLANs (C. Stromsoe)
+
 2.027004 - 2014-05-15
 
   [BUG FIXES]

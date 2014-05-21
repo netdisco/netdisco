@@ -28,6 +28,32 @@ the database service):
  # TYPE  DATABASE  USER  ADDRESS       METHOD
  host    all       all   127.0.0.1/32  md5
 
+=head1 Deploy without Internet access
+
+The C<netdisco-deploy> script asks for Internet access but it is possible to
+install off-line. You should download the following two files:
+
+=over 4
+
+=item *
+
+http://standards.ieee.org/develop/regauth/oui/oui.txt
+
+=item *
+
+http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz
+
+=back
+
+Run the C<netdisco-deploy> script but pass the OUI file name as a parameter on
+the command line:
+
+ ~/bin/netdisco-deploy ./oui.txt
+
+Then answer yes to questions, even though you're not connected to the
+Internet. For the MIBs you can simply extract the downloaded archive to the
+home directory of Netdisco.
+
 =head1 Relocating the Installation
 
 The installation process installs Netdisco self-contained to your home
@@ -109,6 +135,18 @@ root privilege, which the Netdisco application should not have.
 You are instead recommended to run C<netdisco-web> behind a reverse proxy as
 described elsewhere in this document. Apache can easily act as an SSL reverse
 proxy.
+
+=head1 Debug Tricks
+
+You can see what HTTP Headers are received by Netdisco, and other information
+such as how it's parsing the config file, by enabling the Dancer debug plugin.
+First download the plugin:
+
+ ~/bin/localenv cpanm --notest Dancer::Debug
+
+Then run the web daemon with the environment variable to enable the feature:
+
+ DANCER_DEBUG=1 ~/bin/netdisco-web restart
 
 =head1 Further Reading...
 

@@ -165,7 +165,9 @@ take care of all this for you:
 
  ~/bin/netdisco-deploy
 
-If this is a new installation of Netdisco 2, answer yes to all questions.
+If this is a new installation of Netdisco 2, answer yes to all questions. If
+you wish to deploy without Internet access, see the
+L<Deployment|App::Netdisco::Manual::Deployment> documentation.
 
 =head1 Startup
 
