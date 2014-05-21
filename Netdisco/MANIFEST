@@ -20,13 +20,15 @@ inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/App/Netdisco.pm
+lib/App/Netdisco/Configuration.pm
 lib/App/Netdisco/Core/Arpnip.pm
 lib/App/Netdisco/Core/Discover.pm
 lib/App/Netdisco/Core/Macsuck.pm
 lib/App/Netdisco/Core/Nbtstat.pm
 lib/App/Netdisco/Daemon/DB.pm
 lib/App/Netdisco/Daemon/DB/Result/Admin.pm
-lib/App/Netdisco/Daemon/Queue.pm
+lib/App/Netdisco/Daemon/JobQueue.pm
+lib/App/Netdisco/Daemon/LocalQueue.pm
 lib/App/Netdisco/Daemon/Util.pm
 lib/App/Netdisco/Daemon/Worker/Common.pm
 lib/App/Netdisco/Daemon/Worker/Interactive.pm
@@ -138,6 +140,8 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 lib/App/Netdisco/Environment.pm
+lib/App/Netdisco/JobQueue.pm
+lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/Manual/Configuration.pod
 lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod

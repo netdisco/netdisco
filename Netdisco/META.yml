@@ -36,6 +36,7 @@ requires:
   Dancer::Plugin::DBIC: 0.2001
   Dancer::Plugin::Passphrase: 2.0.1
   File::ShareDir: 1.03
+  File::Slurp: 9999.19
   Guard: 1.022
   HTML::Parser: 3.7
   HTTP::Tiny: 0.029
@@ -43,6 +44,7 @@ requires:
   List::MoreUtils: 0.33
   MCE: 1.408
   MIME::Base64: 3.13
+  Module::Load: 0.32
   Moo: 1.001
   Net::DNS: 0.72
   Net::Domain: 1.23
@@ -78,4 +80,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.027004
+version: 2.027005_001
