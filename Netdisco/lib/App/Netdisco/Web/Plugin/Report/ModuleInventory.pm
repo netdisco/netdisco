@@ -109,7 +109,7 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/moduleinventory_csv.tt',
-            { results => $rs, opt => $has_opt },
+            { results => \@results, opt => $has_opt },
             { layout => undef };
     }
 };
