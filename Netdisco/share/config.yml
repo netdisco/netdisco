@@ -167,13 +167,14 @@ workers:
   interactives: 2
   pollers: 10
   sleep_time: 2
+  queue: PostgreSQL
 
 dns:
   max_outstanding: 50
   hosts_file: '/etc/hosts'
   no: ['fe80::/64','169.254.0.0/16']
 
-#housekeeping:
+#schedule:
 #  discoverall:
 #    when: '5 7 * * *'
 #  macwalk:
@@ -186,6 +187,27 @@ dns:
 #    when: '0 8,13,21 * * *'
 #  expire:
 #    when: '20 23 * * *'
+
+job_types:
+  discoverall: Poller
+  discover:    Poller
+  arpwalk:     Poller
+  arpnip:      Poller
+  macwalk:     Poller
+  macsuck:     Poller
+  nbtwalk:     Poller
+  nbtstat:     Poller
+  expire:      Poller
+  location:    Interactive
+  contact:     Interactive
+  portcontrol: Interactive
+  portname:    Interactive
+  vlan:        Interactive
+  power:       Interactive
+
+job_type_keys:
+  Poller: pollers
+  Interactive: interactives
 
 # ---------------
 # DANCER INTERNAL

@@ -870,7 +870,7 @@ library default of 10.
 C<no> is a list of IP addresses or CIDR ranges to excluded from DNS
 resolution.  Link local addresses are excluded by default.
 
-=head3 C<housekeeping>
+=head3 C<schedule>
 
 Value: Settings Tree. Default: None.
 
@@ -879,13 +879,13 @@ macsuck, arpnip, etc) in the central database. It's fine to have multiple
 nodes scheduling work for redundancy (but make sure they all have good NTP).
 
 Note that this is independent of the Pollers configured in C<workers>. It's
-okay to have this node schedule housekeeping but not do any of the polling
+okay to have this node schedule schedule but not do any of the polling
 itself (C<pollers: 0>).
 
 Work can be scheduled using C<cron> style notation, or a simple weekday and
 hour fields (which accept same types as C<cron> notation). For example:
 
- housekeeping:
+ schedule:
    discoverall:
      when: '0 9 * * *'
    arpwalk:

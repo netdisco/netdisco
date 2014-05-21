@@ -8,12 +8,9 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table("admin");
 __PACKAGE__->add_columns(
   "job",
-  {
-    data_type         => "integer",
-    is_nullable       => 0,
-  },
+  { data_type => "integer", is_nullable => 0 },
 
-  "role", # Poller, Interactive, etc
+  "type", # Poller, Interactive, etc
   { data_type => "text", is_nullable => 0 },
 
   "wid", # worker ID, only != 0 once taken
@@ -46,5 +43,12 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key("job");
+
+sub extra { (shift)->subaction }
+
+sub entered_stamp {
+  (my $stamp = (shift)->entered) =~ s/\.\d+$//;
+  return $stamp;
+}
 
 1;

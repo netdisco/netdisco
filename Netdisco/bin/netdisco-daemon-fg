@@ -18,21 +18,15 @@ use App::Netdisco;
 use Dancer qw/:moose :script/;
 warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
 
-# callbacks and local job queue management
-use App::Netdisco::Daemon::Queue ':all';
+# local job queue management
+use App::Netdisco::Daemon::LocalQueue ':all';
 
 # needed to quench AF_INET6 symbol errors
 use NetAddr::IP::Lite ':lower';
-
+use List::Util 'sum';
 use Role::Tiny::With;
 use MCE::Signal '-setpgrp';
 use MCE;
-
-# set defaults for AnyEvent::DNS
-local $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
-    = setting('dns')->{max_outstanding} || 10;
-local $ENV{'PERL_ANYEVENT_HOSTS'}
-    = setting('dns')->{hosts_file} || '/etc/hosts';
 
 # set temporary MCE files' location in home directory
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
@@ -52,42 +46,41 @@ sub build_tasks_list {
   # NB MCE does not like max_workers => 0
   my $tasks = [];
 
-  setting('workers')->{pollers} = 2
-    if !defined setting('workers')->{pollers};
-  setting('workers')->{interactives} = 2
-    if !defined setting('workers')->{interactives};
-
   push @$tasks, {
     max_workers => 1,
     user_begin => worker_factory('Manager'),
-  } if setting('workers')->{pollers} or setting('workers')->{interactives};
+  } if num_workers() > 0;
 
   push @$tasks, {
     max_workers => 1,
     user_begin => worker_factory('Scheduler'),
-  } if setting('housekeeping');
+  } if setting('schedule');
 
-  push @$tasks, {
-    max_workers => setting('workers')->{pollers},
-    user_begin => worker_factory('Poller'),
-  } if setting('workers')->{pollers};
+  my @logmsg = ();
+  foreach my $key (keys %{setting('job_type_keys')}) {
+      my $val = setting('job_type_keys')->{$key};
 
-  push @$tasks, {
-    max_workers => setting('workers')->{interactives},
-    user_begin => worker_factory('Interactive'),
-  } if setting('workers')->{interactives};
+      setting('workers')->{$val} = 2
+        if !defined setting('workers')->{$val};
 
-  info sprintf "MCE will load: %s Manager, %s Scheduler, %s Poller, %s Interactive",
-    ((setting('workers')->{pollers} or setting('workers')->{interactives}) ? 1 : 0),
-    (setting('housekeeping') ? 1 : 0),
-    (setting('workers')->{pollers} || 0),
-    (setting('workers')->{interactives} || 0);
+      push @logmsg, setting('workers')->{$val} ." $key";
+      push @$tasks, {
+        max_workers => setting('workers')->{$val},
+        user_begin => worker_factory($key),
+      } if setting('workers')->{$val};
+  }
+
+  info sprintf "MCE will load: %s Manager, %s Scheduler, %s",
+    (num_workers() ? 1 : 0),
+    (setting('schedule') ? 1 : 0),
+    (join ', ', @logmsg);
 
   return $tasks;
 }
 
 sub num_workers {
-  return (setting('workers')->{pollers} + setting('workers')->{interactives});
+  return sum( 0, map { setting('workers')->{$_} }
+                     values %{setting('job_type_keys')} );
 }
 
 sub worker_factory {

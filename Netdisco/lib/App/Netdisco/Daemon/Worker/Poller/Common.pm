@@ -1,11 +1,11 @@
 package App::Netdisco::Daemon::Worker::Poller::Common;
 
 use Dancer qw/:moose :syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::SNMP 'snmp_connect';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Daemon::Util ':all';
+use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::IP::Lite ':lower';
 
@@ -16,36 +16,22 @@ use namespace::clean;
 sub _walk_body {
   my ($self, $job_type, $job) = @_;
 
-  my $action_method = $job_type .'_action';
-  my $job_action = $self->$action_method;
-
   my $layer_method = $job_type .'_layer';
   my $job_layer = $self->$layer_method;
 
-  my $jobqueue = schema('netdisco')->resultset('Admin');
+  my %queued = map {$_ => 1} $self->jq_queued($job_type);
   my @devices = schema('netdisco')->resultset('Device')
-    ->search({ip => { -not_in =>
-        $jobqueue->search({
-          device => { '!=' => undef},
-          action => $job_type,
-          status => { -like => 'queued%' },
-        })->get_column('device')->as_query
-    }})->has_layer($job_layer)->get_column('ip')->all;
+    ->has_layer($job_layer)->get_column('ip')->all;
+  my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
-  my $filter_method = $job_type .'_filter';
-  my $job_filter = $self->$filter_method;
-
-  my @filtered_devices = grep {$job_filter->($_)} @devices;
-
-  schema('netdisco')->resultset('Admin')->txn_do_locked(sub {
-    $jobqueue->populate([
+  $self->jq_insert([
       map {{
           device => $_,
           action => $job_type,
-          status => 'queued',
+          username => $job->username,
+          userip => $job->userip,
       }} (@filtered_devices)
-    ]);
-  });
+  ]);
 
   return job_done("Queued $job_type job for all devices");
 }

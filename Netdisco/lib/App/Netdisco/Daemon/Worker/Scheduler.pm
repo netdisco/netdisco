@@ -1,38 +1,23 @@
 package App::Netdisco::Daemon::Worker::Scheduler;
 
 use Dancer qw/:moose :syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
-
 use Algorithm::Cron;
-use Try::Tiny;
 
 use Role::Tiny;
 use namespace::clean;
 
-my $jobactions = {
-  map {$_ => undef} qw/
-      discoverall
-      arpwalk
-      macwalk
-      nbtwalk
-      expire
-  /
-#    saveconfigs
-#    backup
-};
+with 'App::Netdisco::Daemon::JobQueue';
 
 sub worker_begin {
   my $self = shift;
   my $wid = $self->wid;
   debug "entering Scheduler ($wid) worker_begin()";
 
-  foreach my $a (keys %$jobactions) {
-      next unless setting('housekeeping')
-        and exists setting('housekeeping')->{$a};
-      my $config = setting('housekeeping')->{$a};
+  foreach my $action (keys %{ setting('schedule') }) {
+      my $config = setting('schedule')->{$action};
 
       # accept either single crontab format, or individual time fields
-      my $cron = Algorithm::Cron->new(
+      $config->{when} = Algorithm::Cron->new(
         base => 'local',
         %{
           (ref {} eq ref $config->{when})
@@ -40,9 +25,6 @@ sub worker_begin {
             : {crontab => $config->{when}}
         }
       );
-
-      $jobactions->{$a} = $config;
-      $jobactions->{$a}->{when} = $cron;
   }
 }
 
@@ -61,30 +43,21 @@ sub worker_body {
       my $win_end   = $win_start + 60;
 
       # if any job is due, add it to the queue
-      foreach my $a (keys %$jobactions) {
-          next unless defined $jobactions->{$a};
-          my $sched = $jobactions->{$a};
+      foreach my $action (keys %{ setting('schedule') }) {
+          my $sched = setting('schedule')->{$action};
 
           # next occurence of job must be in this minute's window
-          debug sprintf "sched ($wid): $a: win_start: %s, win_end: %s, next: %s",
+          debug sprintf "sched ($wid): $action: win_start: %s, win_end: %s, next: %s",
             $win_start, $win_end, $sched->{when}->next_time($win_start);
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
           # queue it!
-          # due to a table constraint, this will (intentionally) fail if a
-          # similar job is already queued.
-          try {
-              info "sched ($wid): queueing $a job";
-              schema('netdisco')->resultset('Admin')->create({
-                action => $a,
-                device => ($sched->{device} || undef),
-                subaction => ($sched->{extra} || undef),
-                status => 'queued',
-              });
-          }
-          catch {
-              debug "sched ($wid): action $a was not queued (dupe?)";
-          };
+          info "sched ($wid): queueing $action job";
+          $self->jq_insert({
+            action => $action,
+            device => $sched->{device},
+            extra  => $sched->{extra},
+          });
       }
   }
 }

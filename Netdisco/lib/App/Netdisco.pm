@@ -5,54 +5,7 @@ use warnings;
 use 5.010_000;
 
 our $VERSION = '2.027004';
-
-use App::Netdisco::Environment;
-use Dancer ':script';
-
-# set up database schema config from simple config vars
-if (ref {} eq ref setting('database')) {
-    my $name = (setting('database')->{name} || 'netdisco');
-    my $host = setting('database')->{host};
-    my $user = setting('database')->{user};
-    my $pass = setting('database')->{pass};
-
-    my $dsn = "dbi:Pg:dbname=${name}";
-    $dsn .= ";host=${host}" if $host;
-
-    # set up the netdisco schema now we have access to the config
-    # but only if it doesn't exist from an earlier config style
-    setting('plugins')->{DBIC}->{netdisco} ||= {
-        dsn  => $dsn,
-        user => $user,
-        password => $pass,
-        options => {
-            AutoCommit => 1,
-            RaiseError => 1,
-            auto_savepoint => 1,
-        },
-        schema_class => 'App::Netdisco::DB',
-    };
-
-}
-
-# static configuration for the in-memory local job queue
-setting('plugins')->{DBIC}->{daemon} = {
-    dsn => 'dbi:SQLite:dbname=:memory:',
-    options => {
-        AutoCommit => 1,
-        RaiseError => 1,
-        sqlite_use_immediate_transaction => 1,
-    },
-    schema_class => 'App::Netdisco::Daemon::DB',
-};
-
-# force skipped DNS resolution, if unset
-setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
-setting('dns')->{hosts_file} ||= '/etc/hosts';
-
-# housekeeping expire used to be called expiry
-setting('housekeeping')->{expire} ||= setting('housekeeping')->{expiry}
-  if setting('housekeeping') and exists setting('housekeeping')->{expiry};
+use App::Netdisco::Configuration;
 
 =head1 NAME
 
@@ -196,7 +149,7 @@ In the same file uncomment and edit the C<domain_suffix> setting to be
 appropriate for your local site.
 
 Change the C<community> string setting if your site has different values, and
-uncomment the C<housekeeping> setting to enable SNMP data gathering from
+uncomment the C<schedule> setting to enable SNMP data gathering from
 devices (this replaces cron jobs in Netdisco 1).
 
 Have a quick read of the other settings to make sure you're happy, then move

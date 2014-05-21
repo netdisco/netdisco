@@ -10,6 +10,7 @@ use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
+use Module::Load ();
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
 use App::Netdisco::Web::AuthN;
@@ -34,8 +35,7 @@ sub _load_web_plugins {
       $plugin =~ s/^\+//;
 
       debug "loading Netdisco plugin $plugin";
-      eval "require $plugin";
-      error $@ if $@;
+      Module::Load::load $plugin;
   }
 }
 
