@@ -652,13 +652,13 @@ sub store_neighbors {
   my $c_cap      = $snmp->c_cap;
 
   foreach my $entry (List::MoreUtils::uniq( (keys %$c_ip), (keys %$c_cap) )) {
-      my $port = $interfaces->{ $c_if->{$entry} };
-      if (!defined $port) {
+      if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
           next;
       }
 
+      my $port = $interfaces->{ $c_if->{$entry} };
       my $portrow = schema('netdisco')->resultset('DevicePort')
           ->single({ip => $device->ip, port => $port});
 

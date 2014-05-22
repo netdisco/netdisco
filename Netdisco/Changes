@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Unrouted VLAN interfaces have numbers on Cisco - ignore them
+  * fix undefined key in Discover
 
 2.027005_001 - 2014-05-21
 
