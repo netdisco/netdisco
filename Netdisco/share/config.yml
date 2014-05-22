@@ -125,7 +125,7 @@ store_wireless_clients: true
 store_modules: true
 ignore_interfaces:
   - 'EOBC'
-  - 'unrouted VLAN'
+  - 'unrouted VLAN(?: \d+)?'
   - 'StackPort'
   - 'Control Plane Interface'
   - 'SPAN (S|R)P Interface'

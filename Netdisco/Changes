@@ -1,3 +1,9 @@
+2.027005_002 - 2014-05-22
+
+  [BUG FIXES]
+
+  * Unrouted VLAN interfaces have numbers on Cisco - ignore them
+
 2.027005_001 - 2014-05-21
 
   [ENHANCEMENTS]
