@@ -4,6 +4,7 @@
 
   * Unrouted VLAN interfaces have numbers on Cisco - ignore them
   * fix undefined key in Discover
+  * Increase default snmptimeout from 1 to 3 seconds
 
 2.027005_001 - 2014-05-21
 

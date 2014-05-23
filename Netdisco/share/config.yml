@@ -95,7 +95,7 @@ bulkwalk_no: []
 bulkwalk_repeaters: 20
 nonincreasing: false
 snmpver: 3
-snmptimeout: 1000000
+snmptimeout: 3000000
 snmpretries: 2
 discover_no: []
 discover_only: []
