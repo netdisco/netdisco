@@ -28,6 +28,22 @@ the database service):
  # TYPE  DATABASE  USER  ADDRESS       METHOD
  host    all       all   127.0.0.1/32  md5
 
+=head1 Connect to PostgreSQL database on non-standard port
+
+The standard port for PostgreSQL is 5432. To connect on a different port you
+need to use the C<host> option under C<database:> config in your
+C<~/environments/deployment.yml> file. For example if connecting to a database
+on the local server:
+
+ database:
+   name: 'netdisco'
+   user: 'changeme'
+   pass: 'changeme'
+   host: 'localhost;port=5432'
+
+Obviously, substitute the C<user>, C<pass>, and actual port number for your
+local values. Note the separator character is a semicolon.
+
 =head1 Deploy without Internet access
 
 The C<netdisco-deploy> script asks for Internet access but it is possible to
