@@ -3,7 +3,7 @@ package App::Netdisco::Util::Node;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use Net::MAC;
+use NetAddr::MAC;
 use App::Netdisco::Util::Permission 'check_acl';
 
 use base 'Exporter';
@@ -66,18 +66,18 @@ MAC address does not belong to an interface on any known Device
 
 sub check_mac {
   my ($device, $node, $port_macs) = @_;
-  my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+  my $mac = NetAddr::MAC->new(mac => $node);
   $port_macs ||= {};
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)
-  if ($mac->get_error) {
+  if ($mac->errstr) {
       debug sprintf ' [%s] check_mac - mac [%s] malformed - skipping',
         $device->ip, $node;
       return 0;
   }
   else {
       # lower case, hex, colon delimited, 8-bit groups
-      $node = lc $mac->as_IEEE;
+      $node = lc $mac->as_microsoft;
   }
 
   # broadcast MAC addresses

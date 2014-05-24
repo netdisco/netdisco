@@ -55,6 +55,11 @@ hook 'before' => sub {
     { name => 'n_archived', label => 'Archived Data', default => ''   },
   ]);
 
+  # not stored in the cookie - global defaults
+  params->{'age_num'} ||= 3;
+  params->{'age_unit'} ||= 'months';
+  params->{'mac_format'} ||= 'microsoft';
+
   return unless (request->path eq uri_for('/device')->path
     or index(request->path, uri_for('/ajax/content/device')->path) == 0);
 
@@ -101,15 +106,10 @@ hook 'before' => sub {
             if $col->{default} eq 'on';
       }
 
-      # not stored in the cookie
-      params->{'age_num'} ||= 3;
-      params->{'age_unit'} ||= 'months';
-      params->{'mac_format'} ||= 'IEEE';
-
       if (param('reset')) {
           params->{'age_num'} = 3;
           params->{'age_unit'} = 'months';
-          params->{'mac_format'} = 'IEEE';
+          params->{'mac_format'} = 'microsoft';
 
           # nuke the port params cookie
           cookie('nd_ports-form' => '', expires => '-1 day');
@@ -129,7 +129,21 @@ hook 'before_template' => sub {
       $tokens->{device_ports}->query_param($key, params->{$key});
   }
 
-  # for Net::MAC method
+  # for NetAddr::MAC method
+  $tokens->{mac_formats} = {
+    basic => 'Basic',
+  #  bpr => 'BPR',
+    cisco => 'Cisco',
+    ieee => 'IEEE',
+  #  ipv6 => 'IPv6 Suffix',
+    microsoft => 'Microsoft',
+    singledash => 'Single Dash',
+    sun => 'Sun',
+    tokenring => 'Token Ring',
+  #  eui48 => 'EUI48',
+  #  eui64 => 'EUI64',
+  };
+
   $tokens->{mac_format_call} = 'as_'. params->{'mac_format'}
     if params->{'mac_format'};
 

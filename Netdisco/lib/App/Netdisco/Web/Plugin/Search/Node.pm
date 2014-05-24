@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP::Lite ':lower';
-use Net::MAC ();
+use NetAddr::MAC ();
 
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::Web 'sql_match';
@@ -22,7 +22,7 @@ ajax '/ajax/content/search/node' => require_login sub {
     my $agenot = param('age_invert') || '0';
     my ( $start, $end ) = param('daterange') =~ /(\d+-\d+-\d+)/gmx;
 
-    my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+    my $mac = NetAddr::MAC->new(mac => $node);
     my @active = (param('archived') ? () : (-bool => 'active'));
 
     my @times = ();
@@ -48,7 +48,7 @@ ajax '/ajax/content/search/node' => require_login sub {
 
     my @where_mac =
       ($using_wildcards ? \['me.mac::text ILIKE ?', $likeval]
-                        : ($mac->get_error ? \'0=1' : ('me.mac' => $mac->as_IEEE)) );
+                        : ($mac->errstr ? \'0=1' : ('me.mac' => $mac->as_microsoft)) );
 
     my $sightings = schema('netdisco')->resultset('Node')
       ->search({-and => [@where_mac, @active, @times]}, {

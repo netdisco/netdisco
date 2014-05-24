@@ -125,8 +125,9 @@
                   <li>
                     <em class="muted">MAC address format:</em><br/>
                     <select id="nd_mac-format" name="mac_format">
-                      [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                      <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
+                      [% FOREACH format IN mac_formats.keys.sort %]
+                      <option[% ' selected="selected"' IF params.mac_format == format %]
+                        value="[% format %]">[% mac_formats.$format %]</option>
                       [% END %]
                     </select>
                   </li>

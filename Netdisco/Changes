@@ -4,6 +4,7 @@
 
   * Increase default snmptimeout from 1 to 3 seconds
   * Add documentation note about non-standard pg port
+  * [#23] Move to NetAddr::MAC for better handling of MACs
 
   [BUG FIXES]
 

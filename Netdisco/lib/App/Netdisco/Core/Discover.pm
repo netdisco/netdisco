@@ -10,7 +10,7 @@ use NetAddr::IP::Lite ':lower';
 use List::MoreUtils ();
 use Encode;
 use Try::Tiny;
-use Net::MAC;
+use NetAddr::MAC;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -713,8 +713,8 @@ sub store_neighbors {
                 $device->ip, $remote_ip, $port, $remote_id;
 
               if (!defined $neigh) {
-                  my $mac = Net::MAC->new(mac => $remote_id, 'die' => 0, verbose => 0);
-                  if (not $mac->get_error) {
+                  my $mac = NetAddr::MAC->new(mac => $remote_id);
+                  if (not $mac->errstr) {
                       $neigh = $devices->single({mac => $remote_id});
                   }
               }
