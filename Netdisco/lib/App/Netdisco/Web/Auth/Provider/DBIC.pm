@@ -13,12 +13,14 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Passphrase;
 use Digest::MD5;
 use Net::LDAP;
+use Try::Tiny;
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
     return unless defined $username;
 
     my $user = $self->get_user_details($username) or return;
+    return unless $user->in_storage;
     return $self->match_password($password, $user);
 }
 
@@ -32,9 +34,20 @@ sub get_user_details {
     my $users_table     = $settings->{users_resultset}       || 'User';
     my $username_column = $settings->{users_username_column} || 'username';
 
-    my $user = $database->resultset($users_table)->find({
-        $username_column => $username
-    }) or debug("No such user $username");
+    my $user = try {
+      $database->resultset($users_table)->find({
+          $username_column => $username
+      });
+    };
+
+    # each of these settings permits no user in the database
+    # so create a pseudo user entry instead
+    if (not $user and (setting('trust_remote_user')
+                    or setting('trust_x_remote_user')
+                    or setting('no_auth'))) {
+        $user = $database->resultset($users_table)
+          ->new_result({username => $username});
+    }
 
     return $user;
 }
@@ -55,7 +68,9 @@ sub get_user_roles {
     my $roles       = $settings->{roles_relationship} || 'roles';
     my $role_column = $settings->{role_column}        || 'role';
 
-    return [ $user->$roles->get_column( $role_column )->all ];
+    return [ try {
+      $user->$roles->get_column( $role_column )->all;
+    } ];
 }
 
 sub match_password {
