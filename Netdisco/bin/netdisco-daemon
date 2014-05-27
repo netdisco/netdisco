@@ -93,7 +93,7 @@ sub restarter {
       warn "-- $_->{path} updated.\n" for @restart;
 
       signal_child('TERM', $child);
-      $child = fork_and_start(@program_args);
+      $child = fork_and_start($daemon, @program_args);
       exit(1) unless $child;
   }
 }
