@@ -1,5 +1,5 @@
 [% IF opt %]
-  <table id="data-table" class="table table-striped table-bordered nd_floatinghead" width="100%" cellspacing="0">
+  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
     <thead>
       <tr>
         <th>Device</th>
@@ -13,10 +13,25 @@
         <th>SW Version</th>
         <th>FW Version</th>
       </tr>
-    </thead> 
+    </thead>
+
+    <tfoot>
+      <tr>
+        <th>Device</th>
+        <th>Description</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Type</th>
+        <th>Model</th>
+        <th>Serial</th>
+        <th>HW Version</th>
+        <th>SW Version</th>
+        <th>FW Version</th>
+      </tr>
+    </tfoot>    
   </table>
 [% ELSE %]
-  <table id="data-table" class="table table-striped table-bordered nd_floatinghead" width="100%" cellspacing="0">
+  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
     <thead>
       <tr>
         <th>Class</th>
