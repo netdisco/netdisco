@@ -17,28 +17,32 @@ $(document).ready(function() {
         "data": [% results %],
         "columns": [
            {
-                data: 'ip',
-                render: function(data, type, row, meta) {
-                    return '<a href="[% device_ports %]&q=' + data + '">' + (row.dns || row.ip) + '</a>';
+                "data": 'ip',
+                "render": function(data, type, row, meta) {
+                    return '<a href="[% device_ports %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.ip) + '</a>';
                 }
             }, {
-                data: 'port_count',
-                render: function(data, type, full, meta) {
+                "data": 'port_count',
+                "searchable": false,
+                "render": function(data, type, full, meta) {
                     return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }, {
-                data: 'ports_in_use',
-                render: function(data, type, full, meta) {
+                "data": 'ports_in_use',
+                "searchable": false,
+                "render": function(data, type, full, meta) {
                     return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }, {
-                data: 'ports_shutdown',
-                render: function(data, type, full, meta) {
+                "data": 'ports_shutdown',
+                "searchable": false,
+                "render": function(data, type, full, meta) {
                     return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }, {
-                data: 'ports_free',
-                render: function(data, type, full, meta) {
+                "data": 'ports_free',
+                "searchable": false,
+                "render": function(data, type, full, meta) {
                     return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }
@@ -47,4 +51,3 @@ $(document).ready(function() {
 
 });
 </script>
-
