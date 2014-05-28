@@ -15,18 +15,26 @@ $(document).ready(function() {
     "deferRender": true,
     "data": [% results %],
     "columns": [{
-        data: 'ip',
-        render: function(data, type, row, meta) {
-          return '<a href="[% search_device %]&q=' + data + '">' + (row.dns || row.name || row.ip) + '</a>';
+        "data": 'ip',
+        "render": function(data, type, row, meta) {
+          return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.name || row.ip) + '</a>';
         }
       }, {
-        data: 'alias'
+        "data": 'alias',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
       }, {
-        data: 'contact'
+        "data": 'contact',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
       }, {
-        data: 'location'
+        "data": 'location',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
       }
     ]
   });
-
 });</script>

@@ -14,37 +14,38 @@
 $(document).ready(function() {
     var table = $('#data-table').dataTable({
         "deferRender": true,
+        "order": [[ 0, "asc" ], [2, "asc"], [ 3, "asc" ], [4, "asc"]],
         "data": [% results %],
         "columns": [
            {
-                data: 'location',
-                render: function(data, type, row, meta) {
+                "data": 'location',
+                "render": function(data, type, row, meta) {
                   if (data) {
-                    return '<a href="[% search_device %]&q=' + data + '&location=' + data + '">' + data + '</a>';
+                    return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '&location=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
 
                   } else {
                     return '[Not Set]';
                   }
                 }
             }, {
-                data: 'ip',
-                render: function(data, type, row, meta) {
-                    return '<a href="[% uri_for('/device') %]?q=' + data + '">' + (row.dns || row.ip) + '</a>';
+                "data": 'ip',
+                "render": function(data, type, row, meta) {
+                    return '<a href="[% uri_for('/device') %]?q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.ip) + '</a>';
                 }
             }, {
-                data: 'name',
-                render: function(data, type, row, meta) {
-                    return '<a href="[% search_device %]&q=' + data + '&model=' + data + '">' + data + '</a>';
+                "data": 'name',
+                "render": function(data, type, row, meta) {
+                    return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
                 }
             }, {
-                data: 'vendor',
-                render: function(data, type, row, meta) {
-                    return '<a href="[% search_device %]&q=' + data + '&model=' + data + '">' + data + '</a>';
+                "data": 'vendor',
+                "render": function(data, type, row, meta) {
+                    return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
                 }
             }, {
-                data: 'model',
-                render: function(data, type, row, meta) {
-                    return '<a href="[% search_device %]&q=' + data + '&model=' + data + '">' + data + '</a>';
+                "data": 'model',
+                "render": function(data, type, row, meta) {
+                    return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
                 }
             }
         ]

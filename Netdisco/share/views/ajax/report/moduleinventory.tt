@@ -47,66 +47,74 @@ function capitaliseFirstLetter(string) {
 }
 
 $(document).ready(function() {
-    var table = $('#data-table').dataTable({
-        "deferRender": true,
-        "data": [% results %],
-        "columns": [
-            [% IF opt %] {
-                data: 'ip',
-                render: function(data, type, row, meta) {
-                    return '<a href="[% uri_for('/device') %]?tab=modules&q=' + data + '">' + (row.device.dns || row.device.name || row.ip) + '</a>';
-                }
-            }, {
-                data: 'description',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?description=' + data + '">' + data + '</a>';
-                }
-            }, {
-                data: 'name',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?name=' + data + '">' + data + '</a>';
-                }
-            }, {
-                data: 'class',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + data + '">' + capitaliseFirstLetter(data) + '</a>';
-                }
-            }, {
-                data: 'type',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?type=' + data + '">' + data + '</a>';
-                }
-            }, {
-                data: 'model',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?model=' + data + '">' + data + '</a>';
-                }
-            }, {
-                data: 'serial',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?serial=' + data + '">' + data + '</a>';
-                }
-            }, {
-                data: 'hw_ver'
-            }, {
-                data: 'sw_ver'
-            }, {
-                data: 'fw_ver'
-            }
-            [% ELSE %] {
-                data: 'class',
-                render: function(data, type, full, meta) {
-                    return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + data + '">' + capitaliseFirstLetter(data) + '</a>';
-                }
-            }, {
-                data: 'count',
-                render: function(data, type, full, meta) {
-                    return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                }
-            }
-            [% END %]
-        ]
-    });
-
+  var table = $('#data-table').dataTable({
+    "deferRender": true,
+    "data": [% results %],
+    "columns": [
+      [% IF opt %] {
+      "data": 'ip',
+      "render": function(data, type, row, meta) {
+        return '<a href="[% uri_for('/device') %]?tab=modules&q=' + encodeURIComponent(data) + '">' + he.encode(row.device.dns || row.device.name || row.ip) + '</a>';
+        }
+      }, {
+        "data": 'description',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?description=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+        }
+      }, {
+        "data": 'name',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?name=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+        }
+      }, {
+        "data": 'class',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + encodeURIComponent(data) + '">' + he.encode(capitaliseFirstLetter(data)) + '</a>';
+        }
+      }, {
+        "data": 'type',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?type=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+        }
+      }, {
+        "data": 'model',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+        }
+      }, {
+        "data": 'serial',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?serial=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+        }
+      }, {
+        "data": 'hw_ver',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'sw_ver',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'fw_ver',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }
+      [% ELSE %] {
+        "data": 'class',
+        "render": function(data, type, full, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + encodeURIComponent(data) + '">' + he.encode(capitaliseFirstLetter(data)) + '</a>';
+        }
+      }, {
+        "data": 'count',
+        "render": function(data, type, full, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }
+      [% END %]
+    ]
+  });
 });
 </script>
