@@ -7,46 +7,40 @@
       <th>STP Status</th>
     </tr>
   </thead>
-  </tbody>
-    [% FOREACH row IN results %]
-    <tr>
-      <td>[% row.dns || row.name || row.ip | html_entity %]</td>
-      <td class="nd_center-cell"><a href="[% device_ports %]&q=[% row.ip | uri %]&f=[% row.port | uri %]&c_nodes=on">
-               [% row.port | html_entity %]</a></td>
-      <td class="nd_center-cell">[% row.description | html_entity %]</td>
-      <td class="nd_center-cell">[% row.stp | html_entity %]</td>
-    </tr>
-    [% END %]
-  </tbody>
 </table>
 
 <script type="text/javascript">
 $(document).ready(function() {
-    var table = $('#data-table').dataTable({
-        "deferRender": true,
-        "order": [[ 0, "asc" ], [1, "asc"]],
-        "data": [% results %],
-        "columns": [
-            {
-                "data": 'ip',
-                "render": function(data, type, row, meta) {
-                    return (row.dns || row.name || row.ip);
-                }
-            }, {
-                "data": 'port',
-                "render": function(data, type, row, meta) {
-                    return '<a href="[% device_ports %]&q=' + row.ip + '&f=' + data + '&c_nodes=on">' + data + '</a>';
-                }
-            }, {
-                "data": 'description'
-            }, {
-                "data": 'stp',
-                "orderable": false,
-                "searchable": false,
-            }
-        ]
-    });
-
+  var table = $('#data-table').dataTable({
+    "deferRender": true,
+    "order": [[ 0, "asc" ], [1, "asc"]],
+    "data": [% results %],
+    "columns": [
+      {
+        "data": 'ip',
+        "render": function(data, type, row, meta) {
+          return he.encode(row.dns || row.name || row.ip);
+        }
+      }, {
+        "data": 'port',
+        "render": function(data, type, row, meta) {
+          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data) + '</a>';
+        }
+      }, {
+        "data": 'description',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'stp',
+        "orderable": false,
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }
+    ]
+  });
 });
 </script>
 

@@ -11,31 +11,35 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    var table = $('#data-table').dataTable({
-        "deferRender": true,
-        "order": [[ 0, "asc" ], [1, "asc"]],
-        "data": [% results %],
-        "columns": [
-            {
-                "data": 'ip',
-                "render": function(data, type, row, meta) {
-                    return (row.dns || row.name || row.ip);
-                }
-            }, {
-                "data": 'port',
-                "render": function(data, type, row, meta) {
-                    return '<a href="[% device_ports %]&q=' + row.ip + '&f=' + data + '&c_nodes=on">' + data + '</a>';
-                }
-            }, {
-                "data": 'description'
-            }, {
-                "data": 'up_admin',
-                "orderable": false,
-                "searchable": false,
-            }
-        ]
-    });
-
+  var table = $('#data-table').dataTable({
+    "deferRender": true,
+    "order": [[ 0, "asc" ], [1, "asc"]],
+    "columns": [
+      {
+        "data": 'ip',
+        "render": function(data, type, row, meta) {
+          return he.encode(row.dns || row.name || row.ip);
+        }
+      }, {
+        "data": 'port',
+        "render": function(data, type, row, meta) {
+          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data) + '</a>';
+        }
+      }, {
+        "data": 'description',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'up_admin',
+        "orderable": false,
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }
+    ],
+    "data": [% results %]
+  });
 });
 </script>
-

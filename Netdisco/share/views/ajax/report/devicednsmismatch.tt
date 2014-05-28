@@ -12,27 +12,37 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    var table = $('#data-table').dataTable({
-        "deferRender": true,
-        "data": [% results %],
-        "columns": [
-            {
-                data: 'ip',
-                render: function(data, type, row, meta) {
-                    return '<a search_device %]&q=' + data + '">' + (row.ip || row.name) + '</a>';
-                }
-            }, {
-                data: 'dns'
-            }, {
-                data: 'ip'
-            }, {
-                data: 'contact'
-            }, {
-                data: 'location'
-            }
-        ]
-    });
-
+  var table = $('#data-table').dataTable({
+    "deferRender": true,
+    "data": [% results %],
+    "columns": [
+      {
+        "data": 'ip',
+        "render": function(data, type, row, meta) {
+            return '<a search_device %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.ip || row.name) + '</a>';
+          }
+      }, {
+        "data": 'dns',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'ip',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'contact',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'location',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }
+    ]
+  });
 });
-
 </script>
