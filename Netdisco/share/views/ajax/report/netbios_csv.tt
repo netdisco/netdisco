@@ -3,7 +3,7 @@
 [% IF opt %]
   [% CSV.dump(['Domain' 'Node' 'Name' 'User' 'First Seen' 'Last Seen']) %]
 
-  [% WHILE (row = results.next) %]
+  [% FOREACH row IN results %]
     [% mylist = [] %]
     [% device = row.device.dns || row.device.name || row.device.ip %]
     [% FOREACH col IN [ row.domain row.mac.upper row.nbname row.nbuser date.format(row.time_first) date.format(row.time_last) ] %]
@@ -15,7 +15,7 @@
 [% ELSE %]
   [% CSV.dump(['Domain' 'Count']) %]
 
-  [% WHILE (row = results.next) %]
+  [% FOREACH row IN results %]
     [% mylist = [] %]
     [% domain = row.domain || '(Blank Domain)' %]
     [% FOREACH col IN [ domain row.count ] %]

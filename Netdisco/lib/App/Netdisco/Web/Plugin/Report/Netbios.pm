@@ -58,16 +58,19 @@ get '/ajax/content/report/netbios' => require_login sub {
 
     }
 
-    return unless $rs->has_rows;
+    my @results = $rs->all;
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/netbios.tt', { results => $rs, opt => $domain },
+        my $json = to_json( \@results );
+        template 'ajax/report/netbios.tt',
+            { results => $json, opt => $domain },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/netbios_csv.tt',
-            { results => $rs, opt => $domain },
+            { results => \@results, opt => $domain },
             { layout => undef };
     }
 };
