@@ -1,10 +1,10 @@
 [% USE CSV -%]
 [% CSV.dump([ 'Channel' 'Count' ]) %]
 
-[% WHILE (row = results.next) %]
+[% FOREACH row IN results %]
   [% mylist = [] %]
   [% mylist.push(row.channel) %]
-  [% mylist.push(row.get_column('ch_count')) %]
+  [% mylist.push(row.ch_count) %]
   [% CSV.dump(mylist) %]
 
 [% END %]
