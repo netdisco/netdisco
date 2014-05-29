@@ -100,10 +100,11 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
     }
 
     return unless scalar @results;
+
     if ( request->is_ajax ) {
-        my $results = to_json (\@results);
+        my $json = to_json (\@results);
         template 'ajax/report/moduleinventory.tt',
-            { results => $results, opt => $has_opt },
+            { results => $json, opt => $has_opt },
             { layout => undef };
     }
     else {

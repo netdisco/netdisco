@@ -70,12 +70,12 @@ $(document).ready(function() {
     "columns": [    
       {
         "data": 'domain',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/netbios') %]?domain=' + encodeURIComponent(data || 'blank') + '">' + he.encode(data || '(Blank Domain)') + '</a>';
         }
       }, {
         "data": 'count',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }

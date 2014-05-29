@@ -19,8 +19,8 @@ get '/ajax/content/report/portutilization' => require_login sub {
     my @results = schema('netdisco')->resultset('Virtual::PortUtilization')->hri->all;
 
     if (request->is_ajax) {
-        my $results = to_json (\@results);
-        template 'ajax/report/portutilization.tt', { results => $results, },
+        my $json = to_json (\@results);
+        template 'ajax/report/portutilization.tt', { results => $json },
             { layout => undef };
     }
     else {

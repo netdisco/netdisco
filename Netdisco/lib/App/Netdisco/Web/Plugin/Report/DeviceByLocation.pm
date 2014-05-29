@@ -23,8 +23,8 @@ get '/ajax/content/report/devicebylocation' => require_login sub {
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        my $results = to_json( \@results );
-        template 'ajax/report/devicebylocation.tt', { results => $results },
+        my $json = to_json( \@results );
+        template 'ajax/report/devicebylocation.tt', { results => $json },
             { layout => undef };
     }
     else {

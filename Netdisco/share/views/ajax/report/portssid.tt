@@ -37,7 +37,7 @@ $(document).ready(function() {
         }
       }, {
         "data": 'broadcast',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return (data ? 'Yes' : 'No');
         }
       }, {
@@ -63,18 +63,18 @@ $(document).ready(function() {
     "columns": [
       {
         "data": 'ssid',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/portssid') %]?ssid=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
         }
       }, {
         "data": 'broadcast',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return (data ? 'Yes' : 'No');
         }
       }, {
         "data": 'count',
         "searchable": false,
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       },

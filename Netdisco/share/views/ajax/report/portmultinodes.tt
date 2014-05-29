@@ -34,7 +34,7 @@ $(document).ready(function() {
       }, {
         "data": 'mac_count',
         "searchable": false,
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }

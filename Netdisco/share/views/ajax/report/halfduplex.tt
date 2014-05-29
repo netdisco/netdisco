@@ -34,7 +34,7 @@ $(document).ready(function() {
         "data": 'duplex',
         "searchable": false,
         "orderable": false,
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return he.encode(capitalizeFirstLetter(data));
         }
       }
