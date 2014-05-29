@@ -17,8 +17,7 @@ register_report(
 get '/ajax/content/report/apclients' => require_login sub {
     my @results = schema('netdisco')->resultset('Device')->search(
         { 'nodes.time_last' => { '>=', \'me.last_macsuck' } },
-        {   result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-            select       => [ 'ip', 'dns', 'name', 'model', 'location' ],
+        {   select => [ 'ip', 'dns', 'name', 'model', 'location' ],
             join       => { 'ports' => { 'wireless' => 'nodes' } },
             '+columns' => [
                 { 'port'        => 'ports.port' },
@@ -31,18 +30,19 @@ get '/ajax/content/report/apclients' => require_login sub {
             ],
             order_by => { -desc => [qw/count/] },
         }
-    )->all;
+    )->hri->all;
 
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/portmultinodes.tt', { results => \@results, },
+        my $json = to_json( \@results );
+        template 'ajax/report/portmultinodes.tt', { results => $json },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portmultinodes_csv.tt',
-            { results => \@results, },
+            { results => \@results },
             { layout  => undef };
     }
 };
