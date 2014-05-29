@@ -1,7 +1,7 @@
 [% USE CSV -%]
 [% CSV.dump([ 'Left Device' 'Port' 'Duplex' 'Right Device' 'Port' 'Duplex' ]) %]
 
-[% WHILE (row = results.next) %]
+[% FOREACH row IN results %]
   [% mylist = [] %]
   [% device_left = row.left_dns || row.left_ip %]
   [% device_right = row.right_dns || row.right_ip %]
