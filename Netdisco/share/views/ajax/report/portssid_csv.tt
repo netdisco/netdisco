@@ -2,7 +2,7 @@
 [% IF opt %]
   [% CSV.dump(['Device' 'Port' 'Name' 'Broadcast' 'Model' 'SSID' 'Vendor']) %]
 
-  [% WHILE (row = results.next) %]
+  [% FOREACH row IN results %]
     [% mylist = [] %]
     [% device = row.device.dns || row.device.name || row.device.ip %]
     [% broadcast = row.broadcast ? 'Yes' : 'No' %]
@@ -15,7 +15,7 @@
 [% ELSE %]
   [% CSV.dump(['SSID' 'Count']) %]
 
-  [% WHILE (row = results.next) %]
+  [% FOREACH row IN results %]
     [% mylist = [] %]
     [% FOREACH col IN [ row.ssid row.count ] %]
       [% mylist.push(col) %]

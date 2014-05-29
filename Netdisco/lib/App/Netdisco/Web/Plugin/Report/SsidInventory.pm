@@ -15,16 +15,19 @@ register_report(
 );
 
 get '/ajax/content/report/ssidinventory' => require_login sub {
-    my $rs = schema('netdisco')->resultset('DevicePortSsid')->get_ssids->hri;
-    return unless $rs->has_rows;
+    my @results = schema('netdisco')->resultset('DevicePortSsid')
+        ->get_ssids->hri->all;
+
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/portssid.tt', { results => $rs, },
+        my $json = to_json( \@results );
+        template 'ajax/report/portssid.tt', { results => $json },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/portssid_csv.tt', { results => $rs, },
+        template 'ajax/report/portssid_csv.tt', { results => \@results },
             { layout => undef };
     }
 };
