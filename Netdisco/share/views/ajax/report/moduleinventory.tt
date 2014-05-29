@@ -42,10 +42,6 @@
 [% END %]
 
 <script type="text/javascript">
-function capitaliseFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
@@ -58,32 +54,32 @@ $(document).ready(function() {
         }
       }, {
         "data": 'description',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/moduleinventory') %]?description=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'name',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/moduleinventory') %]?name=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'class',
-        "render": function(data, type, full, meta) {
-          return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + encodeURIComponent(data) + '">' + he.encode(capitaliseFirstLetter(data)) + '</a>';
+        "render": function(data, type, row, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data)) + '</a>';
         }
       }, {
         "data": 'type',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/moduleinventory') %]?type=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'model',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/moduleinventory') %]?model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'serial',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/report/moduleinventory') %]?serial=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
@@ -104,12 +100,12 @@ $(document).ready(function() {
       }
       [% ELSE %] {
         "data": 'class',
-        "render": function(data, type, full, meta) {
-          return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + encodeURIComponent(data) + '">' + he.encode(capitaliseFirstLetter(data)) + '</a>';
+        "render": function(data, type, row, meta) {
+          return '<a href="[% uri_for('/report/moduleinventory') %]?class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data)) + '</a>';
         }
       }, {
         "data": 'count',
-        "render": function(data, type, full, meta) {
+        "render": function(data, type, row, meta) {
           return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }
