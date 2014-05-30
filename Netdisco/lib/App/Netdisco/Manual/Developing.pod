@@ -262,8 +262,8 @@ Compared to the current Netdisco, the handler routines are very small. This is
 because (a) they don't include any HTML - this is delegated to a template, and
 (b) they don't include an SQL - this is delegated to DBIx::Class. Small
 routines are more manageable, and easier to maintain. You'll also notice use
-of modules such as L<NetAddr::MAC> and L<NetAddr::IP::Lite> to simplify and
-make more robust the handling of data.
+of modules such as L<Net::MAC> and L<NetAddr::IP::Lite> to simplify and make
+more robust the handling of data.
 
 In fact, many sections of the web application have been factored out into
 separate Plugin modules. For more information see the
