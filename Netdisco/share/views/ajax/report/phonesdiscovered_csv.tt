@@ -1,7 +1,7 @@
 [% USE CSV -%]
 [% CSV.dump([ 'Device' 'Port' 'Remote ID' 'Remote IP' 'Remote Port' 'Remote Type']) %]
 
-[% WHILE (row = results.next) %]
+[% FOREACH row IN results %]
   [% mylist = [] %]
   [% device = row.dns || row.name || row.ip %]
   [% FOREACH col IN [ device row.port row.remote_id row.remote_ip row.remote_port row.remote_type ] %]
