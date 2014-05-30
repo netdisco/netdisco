@@ -88,7 +88,7 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
    }
     else {
         @results = $rs->search(
-            {},
+            {class => { '!=', undef }},
             {   select   => [ 'class', { count => 'class' } ],
                 as       => [qw/ class count /],
                 group_by => [qw/ class /]
