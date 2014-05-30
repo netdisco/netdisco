@@ -35,8 +35,6 @@ hook 'before' => sub {
             },
         ]
     );
-
-    params->{'limit'} ||= 1024;
 };
 
 hook 'before_template' => sub {
@@ -86,7 +84,7 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
             {   '+columns' => [qw/ device.dns device.name /],
                 join       => 'device',
                 collapse   => 1,
-            })->limit( param('limit') )->hri->all;
+            })->hri->all;
    }
     else {
         @results = $rs->search(
