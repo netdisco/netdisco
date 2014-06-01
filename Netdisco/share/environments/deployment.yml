@@ -18,9 +18,9 @@ database:
 # RECOMMENDED SETTINGS
 # --------------------
 
-# set to "false" if you MUST maintain backwards compatibility
+# set to false if you MUST maintain backwards compatibility
 # with Netdisco 1.x web frontend.
-# ```````````````````````````````````````````````````````````
+# `````````````````````````````````````````````````````````
 safe_password_store: true
 
 # will be stripped from fqdn when displayed in the web UI
@@ -66,7 +66,16 @@ workers:
 dns:
   max_outstanding: 50
 
-# uncomment and set to true to globally disable authentication/login.
+# do not discover IP Phones or Wireless Access Points.
+# usually these are visible as device neighbors but don't support
+# SNMP, which just clogs up the job queue.
+# ```````````````````````````````````````````````````````````````
+discover_no_type:
+  - '(?i)phone'
+  - '(?i)(?:wap|wireless)'
+
+# set to true to globally disable authentication/login.
 # create a user called "guest" if you want to assign port/admin rights.
 # `````````````````````````````````````````````````````````````````````
 #no_auth: false
+
