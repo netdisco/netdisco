@@ -23,25 +23,6 @@
               <legend class="nd_sidebar-legend">
                 <label><em><strong>Options</strong></em></label>
               </legend>
-              <div class="clearfix">
-                <ul class="unstyled">
-                  <li>
-                    <em class="muted">Limit:</em><br/>
-                    <select id="nd_mac-format" class="nd_side-select" name="limit">
-                      [% FOREACH size IN [ '128', '256', '1024', '2048', '4096', '8192' ] %]
-                      <option[% ' selected="selected"' IF params.limit == size %]>[% size %]</option>
-                      [% END %]
-                    </select>
-                  </li>
-                  <li>
-                    <em class="muted">Order By:</em><br/>
-                    <select id="nd_mac-format" class="nd_side-select" name="order">
-                      [% FOREACH item IN [ 'Device', 'MAC', 'Vendor' ] %]
-                      <option[% ' selected="selected"' IF params.order == item %]>[% item %]</option>
-                      [% END %]
-                    </select>
-                  </li>
-                </ul>
                 <div class="clearfix input-prepend"
                     rel="tooltip" data-placement="left" data-offset="5" data-title="Include Archived Data">
                   <label class="add-on">
@@ -52,7 +33,6 @@
                     <span class="nd_searchcheckbox uneditable-input">Archived Data</span>
                   </label>
                 </div>
-              </div>
             </fieldset>
 
             <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">

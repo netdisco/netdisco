@@ -17,22 +17,21 @@ register_report(
 get '/ajax/content/report/portblocking' => require_login sub {
     my @results = schema('netdisco')->resultset('Device')->search(
         { 'stp' => [ 'blocking', 'broken' ], 'up' => { '!=', 'down' } },
-        {   result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-            select       => [ 'ip', 'dns', 'name' ],
+        {   select       => [ 'ip', 'dns', 'name' ],
             join         => ['ports'],
             '+columns'   => [
                 { 'port'        => 'ports.port' },
                 { 'description' => 'ports.name' },
                 { 'stp'         => 'ports.stp' },
-            ],
-            order_by => { -asc => [qw/me.ip ports.port/] },
+            ]
         }
-    )->all;
+    )->hri->all;
 
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/portblocking.tt', { results => \@results, },
+        my $json = to_json (\@results);
+        template 'ajax/report/portblocking.tt', { results => $json },
             { layout => undef };
     }
     else {

@@ -1,9 +1,9 @@
 [% USE CSV -%]
 [% CSV.dump([ 'Device' 'Port' 'Description' 'Duplex' ]) %]
 
-[% WHILE (row = results.next) %]
+[% FOREACH row IN results %]
   [% mylist = [] %]
-  [% device = row.device.dns || row.device.ip %]
+  [% device = rrow.device.dns || row.device.name || row.ip %]
   [% FOREACH col IN [ device row.port row.name row.duplex.ucfirst ] %]
     [% mylist.push(col) %]
   [% END %]

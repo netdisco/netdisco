@@ -36,7 +36,8 @@ get '/ajax/content/report/portmultinodes' => require_login sub {
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/portmultinodes.tt', { results => \@results, },
+        my $json = to_json (\@results);
+        template 'ajax/report/portmultinodes.tt', { results => $json },
             { layout => undef };
     }
     else {

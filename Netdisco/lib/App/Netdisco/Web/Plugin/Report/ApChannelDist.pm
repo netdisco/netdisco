@@ -7,33 +7,35 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::Web::Plugin;
 
 register_report(
-    {   category => 'Wireless',
-        tag      => 'apchanneldist',
-        label    => 'Access Point Channel Distribution',
+    {   category     => 'Wireless',
+        tag          => 'apchanneldist',
+        label        => 'Access Point Channel Distribution',
         provides_csv => 1,
     }
 );
 
 get '/ajax/content/report/apchanneldist' => require_login sub {
-    my $set = schema('netdisco')->resultset('DevicePortWireless')->search(
+    my @results = schema('netdisco')->resultset('DevicePortWireless')->search(
         { channel => { '!=', '0' } },
         {   select   => [ 'channel', { count => 'channel' } ],
             as       => [qw/ channel ch_count /],
             group_by => [qw/channel/],
             order_by => { -desc => [qw/count/] },
         },
-    );
-    return unless $set->count;
+    )->hri->all;
 
-    if (request->is_ajax) {
-        template 'ajax/report/apchanneldist.tt', { results => $set, },
+    return unless scalar @results;
+
+    if ( request->is_ajax ) {
+        my $json = to_json( \@results );
+        template 'ajax/report/apchanneldist.tt', { results => $json },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/apchanneldist_csv.tt', { results => $set, },
+        template 'ajax/report/apchanneldist_csv.tt', { results => \@results },
             { layout => undef };
     }
 };
 
-true;
+1;

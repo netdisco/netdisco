@@ -1,5 +1,5 @@
 
-            <p class="nd_sidebar-title"><em>Module Search Options</em></p>
+            <p class="nd_sidebar-title"><em>Module Search</em></p>
             <div class="clearfix">
               <i id="device_clear_btn" data-btn-for="device"
                 class="nd_field-clear-icon icon-trash icon-large"></i>
@@ -51,14 +51,10 @@
                 [% END %]
               </select>
             </div>
-            <div class="clearfix">
-              <em class="muted">Limit:</em><br/>
-              <select id="nd_mac-format" class="nd_side-select" name="limit">
-                [% FOREACH size IN [ '128', '256', '1024', '2048', '4096', '8192' ] %]
-                <option[% ' selected="selected"' IF params.limit == size %]>[% size %]</option>
-                [% END %]
-              </select>
-            </div>
+            <fieldset>
+              <legend class="nd_sidebar-legend">
+                <label><em><strong>Options</strong></em></label>
+              </legend>
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="fruonly"
@@ -77,5 +73,6 @@
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
               </label>
             </div>
+            </fieldset>
             <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
               <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Modules</button>

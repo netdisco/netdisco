@@ -15,21 +15,24 @@ register_report(
 );
 
 get '/ajax/content/report/devicebylocation' => require_login sub {
-    my $set
+    my @results
         = schema('netdisco')->resultset('Device')
-        ->search( {},
-        { order_by => [qw/ location name ip vendor model /], } );
-    return unless $set->count;
+        ->columns(  [qw/ ip dns name location vendor model /] )
+        ->order_by( [qw/ location name ip vendor model /] )->hri->all;
+
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/devicebylocation.tt', { results => $set, },
+        my $json = to_json( \@results );
+        template 'ajax/report/devicebylocation.tt', { results => $json },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/devicebylocation_csv.tt', { results => $set, },
-            { layout => undef };
+        template 'ajax/report/devicebylocation_csv.tt',
+            { results => \@results },
+            { layout  => undef };
     }
 };
 
-true;
+1;

@@ -14,20 +14,6 @@ register_report(
     }
 );
 
-hook 'before' => sub {
-
-    return
-        unless (
-        request->path eq uri_for('/report/nodevendor')->path
-        or index( request->path,
-            uri_for('/ajax/content/report/nodevendor')->path ) == 0
-        );
-
-    params->{'limit'} ||= 1024;
-    params->{'order'} ||= 'MAC';
-
-};
-
 hook 'before_template' => sub {
     my $tokens = shift;
 
@@ -59,21 +45,15 @@ get '/ajax/content/report/nodevendor' => require_login sub {
 
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
-        my $order = {
-            MAC    => 'me.mac',
-            Device => 'me.switch',
-            Vendor => 'oui.company'
-        };
-
-        $rs = $rs->search( { 'oui.abbrev' => $match } )
-            ->prefetch( [qw/ oui device /] );
+        $rs = $rs->search( { 'oui.abbrev' => $match },
+            {   '+columns' => [qw/ device.dns device.name oui.abbrev /],
+                join       => [qw/ oui device /],
+                collapse   => 1,
+            });
 
         unless ( param('archived') ) {
             $rs = $rs->search( { -bool => 'me.active' } );
         }
-
-        $rs = $rs->order_by( $order->{ param('order') } )
-            ->limit( param('limit') )->hri;
     }
     else {
         $rs = $rs->search(
@@ -83,20 +63,22 @@ get '/ajax/content/report/nodevendor' => require_login sub {
                 as       => [qw/ vendor count /],
                 group_by => [qw/ oui.abbrev /]
             }
-        )->order_by( { -desc => 'count' } )->hri;
+        )->order_by( { -desc => 'count' } );
     }
 
-    return unless $rs->has_rows;
+    my @results = $rs->hri->all;
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
+        my $json = to_json( \@results );
         template 'ajax/report/nodevendor.tt',
-            { results => $rs, opt => $vendor },
+            { results => $json, opt => $vendor },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/nodevendor_csv.tt',
-            { results => $rs, opt => $vendor },
+            { results => \@results, opt => $vendor },
             { layout => undef };
     }
 };

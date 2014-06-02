@@ -15,22 +15,26 @@ register_report(
 );
 
 get '/ajax/content/report/devicednsmismatch' => require_login sub {
-    
+
     my $suffix = setting('domain_suffix') || '';
 
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceDnsMismatch')
-        ->search( undef, { bind => [ $suffix, $suffix ] } );
+    my @results
+        = schema('netdisco')->resultset('Virtual::DeviceDnsMismatch')
+        ->search( undef, { bind => [ $suffix, $suffix ] } )
+        ->columns( [qw/ ip dns name location contact /] )->hri->all;
 
-    return unless $rs->has_rows;
+    return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/devicednsmismatch.tt', { results => $rs, },
+        my $json = to_json( \@results );
+        template 'ajax/report/devicednsmismatch.tt', { results => $json },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/devicednsmismatch_csv.tt', { results => $rs, },
-            { layout => undef };
+        template 'ajax/report/devicednsmismatch_csv.tt',
+            { results => \@results },
+            { layout  => undef };
     }
 };
 
