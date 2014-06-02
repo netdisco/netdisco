@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Ignore devices with "phone" in their CDP/LLDP platform description
+  * Change log format to contain UTC timestamp
 
 2.027007 - 2014-05-27
 

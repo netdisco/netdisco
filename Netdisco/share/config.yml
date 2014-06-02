@@ -10,7 +10,7 @@
 # ----------------
 
 log: 'warning'
-logger_format: '[%P] %L @%D> %m'
+logger_format: '[%P] %U %L %m'
 
 # ------------
 # WEB FRONTEND
