@@ -7,6 +7,8 @@ package App::Netdisco::DB::Result::NodeWireless;
 use strict;
 use warnings;
 
+use Net::MAC;
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("node_wireless");
 __PACKAGE__->add_columns(
@@ -59,5 +61,13 @@ database but the relation is being used in C<search()>.
 __PACKAGE__->belongs_to( node => 'App::Netdisco::DB::Result::Node',
                        { 'foreign.mac' => 'self.mac' },
                        { join_type => 'LEFT' } );
+
+=head2 net_mac
+
+Returns the C<mac> column instantiated into a L<Net::MAC> object.
+
+=cut
+
+sub net_mac { return Net::MAC->new(mac => (shift)->mac) }
 
 1;

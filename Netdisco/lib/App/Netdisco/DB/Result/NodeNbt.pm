@@ -7,6 +7,8 @@ package App::Netdisco::DB::Result::NodeNbt;
 use strict;
 use warnings;
 
+use Net::MAC;
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("node_nbt");
 __PACKAGE__->add_columns(
