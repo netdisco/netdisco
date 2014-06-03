@@ -48,6 +48,27 @@ __PACKAGE__->set_primary_key("mac", "ssid");
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3xsSiWzL85ih3vhdews8Hg
 
+=head1 RELATIONSHIPS
+
+=head2 oui
+
+Returns the C<oui> table entry matching this Node. You can then join on this
+relation and retrieve the Company name from the related table.
+
+The JOIN is of type LEFT, in case the OUI table has not been populated.
+
+=cut
+
+__PACKAGE__->belongs_to( oui => 'App::Netdisco::DB::Result::Oui',
+    sub {
+        my $args = shift;
+        return {
+            "$args->{foreign_alias}.oui" =>
+              { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
+        };
+    },
+    { join_type => 'LEFT' }
+);
 
 =head2 node
 
@@ -61,6 +82,8 @@ database but the relation is being used in C<search()>.
 __PACKAGE__->belongs_to( node => 'App::Netdisco::DB::Result::Node',
                        { 'foreign.mac' => 'self.mac' },
                        { join_type => 'LEFT' } );
+
+=head1 ADDITIONAL COLUMNS
 
 =head2 net_mac
 
