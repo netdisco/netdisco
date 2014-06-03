@@ -343,8 +343,7 @@ sub search_fuzzy {
 Like C<search()>, this returns a ResultSet of matching rows from the Device
 table.
 
-The returned devices each are aware of the given Vlan and have at least one
-Port configured in the Vlan (either tagged, or not).
+The returned devices each are aware of the given Vlan.
 
 =over 4
 
@@ -371,17 +370,17 @@ sub carrying_vlan {
     die "vlan number required for carrying_vlan\n"
       if ref {} ne ref $cond or !exists $cond->{vlan};
 
-    $cond->{'-and'} ||= [];
-    push @{$cond->{'-and'}}, { 'vlans.vlan' => $cond->{vlan} };
-    push @{$cond->{'-and'}}, { 'port_vlans.vlan' => delete $cond->{vlan} };
-
     return $rs
-      ->search_rs($cond,
+      ->search_rs({ 'vlans.vlan' => $cond->{vlan} },
         {
           order_by => [qw/ me.dns me.ip /],
-          columns => [qw/ me.ip me.dns me.model me.os me.vendor /],
-          join => 'port_vlans',
-          prefetch => 'vlans',
+            columns  => [
+                'me.ip',     'me.dns',
+                'me.model',  'me.os',
+                'me.vendor', 'vlans.vlan',
+                'vlans.description'
+            ],
+            join => 'vlans'
         })
       ->search({}, $attrs);
 }
@@ -393,8 +392,7 @@ sub carrying_vlan {
 Like C<search()>, this returns a ResultSet of matching rows from the Device
 table.
 
-The returned devices each are aware of the named Vlan and have at least one
-Port configured in the Vlan (either tagged, or not).
+The returned devices each are aware of the named Vlan.
 
 =over 4
 
@@ -427,8 +425,13 @@ sub carrying_vlan_name {
     return $rs
       ->search_rs({}, {
         order_by => [qw/ me.dns me.ip /],
-        columns => [qw/ me.ip me.dns me.model me.os me.vendor /],
-        prefetch => 'vlans',
+          columns  => [
+              'me.ip',     'me.dns',
+              'me.model',  'me.os',
+              'me.vendor', 'vlans.vlan',
+              'vlans.description'
+          ],
+          join => 'vlans'
       })
       ->search($cond, $attrs);
 }

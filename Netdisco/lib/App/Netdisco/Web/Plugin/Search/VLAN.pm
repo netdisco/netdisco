@@ -12,27 +12,30 @@ register_search_tab( { tag => 'vlan', label => 'VLAN', provides_csv => 1 } );
 get '/ajax/content/search/vlan' => require_login sub {
     my $q = param('q');
     send_error( 'Missing query', 400 ) unless $q;
-    my $set;
+    my $rs;
 
     if ( $q =~ m/^\d+$/ ) {
-        $set = schema('netdisco')->resultset('Device')
+        $rs = schema('netdisco')->resultset('Device')
             ->carrying_vlan( { vlan => $q } );
     }
     else {
-        $set = schema('netdisco')->resultset('Device')
+        $rs = schema('netdisco')->resultset('Device')
             ->carrying_vlan_name( { name => $q } );
     }
-    return unless $set->count;
+
+    my @results = $rs->hri->all;
+    return unless scalar @results;
 
     if (request->is_ajax) {
-        template 'ajax/search/vlan.tt', { results => $set },
+        my $json = to_json( \@results );
+        template 'ajax/search/vlan.tt', { results => $json },
           { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/search/vlan_csv.tt', { results => $set },
+        template 'ajax/search/vlan_csv.tt', { results => \@results },
           { layout => undef };
     }
 };
 
-true;
+1;
