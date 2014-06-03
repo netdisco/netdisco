@@ -150,7 +150,7 @@ sub jq_defer {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
         ->find($job->id, {for => 'update'})
-        ->update({ status => 'queued' });
+        ->update({ status => 'queued', started => undef });
     });
     $happy = true;
   };
@@ -169,6 +169,7 @@ sub jq_complete {
         ->find($job->id, {for => 'update'})->update({
           status => $job->status,
           log    => $job->log,
+          started  => $job->started,
           finished => $job->finished,
         });
     });
