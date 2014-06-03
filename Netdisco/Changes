@@ -9,6 +9,7 @@
   [BUG FIXES]
 
   * Fix for device counts in VLAN Inventory report
+  * Forward port housekeeping/schedule and expiry/expire legacy config
 
 2.027007 - 2014-05-27
 
