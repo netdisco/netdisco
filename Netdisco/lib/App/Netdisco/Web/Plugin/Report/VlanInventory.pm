@@ -21,7 +21,7 @@ get '/ajax/content/report/vlaninventory' => require_login sub {
             select => [
                 'me.vlan',
                 'me.description',
-                { count => { distinct => 'ports.ip' } },
+                { count => { distinct => 'me.ip' } },
                 { count => 'ports.vlan' }
             ],
             as       => [qw/ vlan description dcount pcount /],

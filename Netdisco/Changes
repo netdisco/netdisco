@@ -5,6 +5,10 @@
   * Ignore devices with "phone" in their CDP/LLDP platform description
   * Change log format to contain UTC timestamp
 
+  [BUG FIXES]
+
+  * Fix for device counts in VLAN Inventory report
+
 2.027007 - 2014-05-27
 
   [BUG FIXES]
