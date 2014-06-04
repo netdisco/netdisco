@@ -1,5 +1,5 @@
 [% USE Number.Format %]
-<table class="table table-bordered table-hover nd_floatinghead">
+<table id="nsbm-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th>MAC</th>
@@ -7,7 +7,7 @@
       <th>Vendor</th>
       [% END %]
       <th>Match</th>
-      <th>Device or Node</th>
+      <th class="nd_center-cell">Device or Node</th>
       [% IF params.stamps %]
       <th>First Seen</th>
       <th>Last Seen</th>
@@ -15,29 +15,18 @@
     </tr>
   </thead>
   </tbody>
-    [% SET first_row = 1 %]
     [% WHILE (row = ips.next) %]
     <tr>
       <td>
-        [% IF first_row %]
-        <a class="nd_linkcell"
-          href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          <a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
             [% row.net_mac.$mac_format_call | html_entity %]</a>
-        [% ELSE %]
-        &nbsp;
-        [% END %]
-      </a>
       [% IF params.show_vendor %]
       <td>
-        [% IF first_row %]
         [% row.oui.company | html_entity %]
-        [% ELSE %]
-        &nbsp;
-        [% END %]
       </td>
       [% END %]
       <td>MAC &rarr; IP</td>
-      <td><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+      <td class="nd_center-cell"><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
       </td>
@@ -46,31 +35,21 @@
       <td>[% row.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
-    [% SET first_row = 0 %]
     [% END %]
     [% WHILE (node = sightings.next) %]
     <tr>
       <td>
-        [% IF first_row %]
-        <a class="nd_linkcell"
-          href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
+        <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
-        [% ELSE %]
-        &nbsp;
-        [% END %]
       </td>
       [% IF params.show_vendor %]
       <td>
-        [% IF first_row %]
         [% node.oui.company | html_entity %]
-        [% ELSE %]
-        &nbsp;
-        [% END %]
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a class="nd_linkcell"
-            href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
+      <td class="nd_center-cell">
+            <a href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
             [% node.switch | html_entity %] - [% node.port | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT node.active %]
         [% IF node.device.dns AND node.device_port AND node.device_port.name %]
@@ -82,30 +61,20 @@
       <td>[% node.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
-    [% SET first_row = 0 %]
     [% END %]
     [% WHILE (port = ports.next) %]
     <tr>
       <td>
-        [% IF first_row %]
-        <a class="nd_linkcell"
-          href="[% search_node %]&q=[% port.mac | uri %]">[% port.mac | html_entity %]</a>
-        [% ELSE %]
-        &nbsp;
-        [% END %]
+        <a href="[% search_node %]&q=[% port.net_mac.$mac_format_call | uri %]">[% port.net_mac.$mac_format_call | html_entity %]</a>
       </td>
       [% IF params.show_vendor %]
       <td>
-        [% IF first_row %]
         [% port.oui.company | html_entity %]
-        [% ELSE %]
-        &nbsp;
-        [% END %]
       </td>
       [% END %]
       <td>Switch Port</td>
-      <td><a class="nd_linkcell"
-            href="[% device_ports %]&q=[% port.ip | uri %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
+      <td class="nd_center-cell">
+            <a href="[% device_ports %]&q=[% port.ip | uri %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
             [% port.ip | html_entity %] - [% port.descr | html_entity %]</a>
         [% IF port.device.dns AND port.name %]
           ([% port.device.dns | html_entity %] - [% port.name | html_entity %])
@@ -116,25 +85,19 @@
       <td>[% port.creation | html_entity %]</td>
       [% END %]
     </tr>
-    [% SET first_row = 0 %]
     [% END %]
     [% WHILE (nbt = netbios.next) %]
     <tr>
       <td>
-        [% IF first_row %]
-        <a class="nd_linkcell"
-          href="[% search_node %]&q=[% nbt.mac | uri %]">[% nbt.mac | html_entity %]</a>
-        [% ELSE %]
-        &nbsp;
-        [% END %]
+        <a href="[% search_node %]&q=[% nbt.net_mac.$mac_format_call | uri %]">[% nbt.net_mac.$mac_format_call | html_entity %]</a>
       </td>
       [% IF params.show_vendor %]
       <td>
-        &nbsp;
+        [% nbt.oui.company | html_entity %]
       </td>
       [% END %]
       <td>NetBIOS</td>
-      <td class="nd_linkcell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
+      <td class="nd_center-cell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
         <br>[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
       </td>
       [% IF params.stamps %]
@@ -142,21 +105,15 @@
       <td>[% nbt.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
-    [% SET first_row = 0 %]
     [% END %]
     [% WHILE (wlan = wireless.next) %]
     <tr>
       <td>
-        [% IF first_row %]
-        <a class="nd_linkcell"
-          href="[% search_node %]&q=[% wireless.mac | uri %]">[% wireless.mac | html_entity %]</a>
-        [% ELSE %]
-        &nbsp;
-        [% END %]
+        <a href="[% search_node %]&q=[% wlan.net_mac.$mac_format_call | uri %]">[% wlan.net_mac.$mac_format_call | html_entity %]</a>
       </td>
       [% IF params.show_vendor %]
       <td>
-        &nbsp;
+        [% wlan.oui.company | html_entity %]
       </td>
       [% END %]
       <td>Wireless Info</td>
@@ -171,7 +128,58 @@
       <td>[% wlan.get_column('time_last_stamp') | html_entity %]</td>
       [% END %]
     </tr>
-    [% SET first_row = 0 %]
     [% END %]
   </tbody>
 </table>
+
+<style>
+tr.group,
+tr.group:hover {
+    background-color: #ddd !important;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    var table = $('#nsbm-data-table').DataTable({
+        "columnDefs": [
+            { "visible": false, "targets": 0 }
+        ],
+        "order": [[ 0, 'asc' ]],
+        "drawCallback": function ( settings ) {
+            var api = this.api();
+            var rows = api.rows( {page:'current'} ).nodes();
+            var last=null;
+ 
+            api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+                if ( last !== group ) {
+                    $(rows).eq( i ).before(
+                    [% IF params.show_vendor && params.stamps %]
+                        '<tr class="group"><td colspan="5">'+group+'</td></tr>'
+                    [% ELSIF params.stamps %]
+                        '<tr class="group"><td colspan="4">'+group+'</td></tr>'                    
+                    [% ELSIF params.show_vendor %]
+                        '<tr class="group"><td colspan="3">'+group+'</td></tr>'                    
+                    [% ELSE %]
+                        '<tr class="group"><td colspan="2">'+group+'</td></tr>'                    
+                    [% END %]
+                    );
+
+                    last = group;
+                }
+            } );
+        }
+    } );
+ 
+    // Order by the grouping
+    $('#nsbm-data-table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+            table.order( [ 0, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 0, 'asc' ] ).draw();
+        }
+    } );
+} );
+</script>
