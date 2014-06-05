@@ -1,7 +1,7 @@
 [% USE CSV -%]
 [% CSV.dump([ 'Address' 'DNS' 'Interface' 'Description' 'Prefix' ]) %]
 
-[% WHILE (row = results.next) %]
+[% FOREACH row IN results %]
   [% mylist = [] %]
   [% FOREACH col IN [ row.alias row.dns row.port row.device_port.name row.subnet ] %]
     [% mylist.push(col) %]

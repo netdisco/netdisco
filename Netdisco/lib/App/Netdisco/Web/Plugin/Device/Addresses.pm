@@ -16,18 +16,20 @@ get '/ajax/content/device/addresses' => require_login sub {
         = schema('netdisco')->resultset('Device')->search_for_device($q)
         or send_error( 'Bad device', 400 );
 
-    my $set = $device->device_ips->search( {}, { order_by => 'alias' } );
-    return unless $set->count;
+    my @results = $device->device_ips->search( {}, { order_by => 'alias' } )->hri->all;
+
+    return unless scalar @results;
 
     if (request->is_ajax) {
-        template 'ajax/device/addresses.tt', { results => $set, },
+        my $json = to_json( \@results );
+        template 'ajax/device/addresses.tt', { results => $json },
             { layout => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/device/addresses_csv.tt', { results => $set, },
+        template 'ajax/device/addresses_csv.tt', { results => \@results },
             { layout => undef };
     }
 };
 
-true;
+1;
