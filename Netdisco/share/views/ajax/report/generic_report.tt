@@ -1,4 +1,4 @@
-<table class="table table-bordered table-condensed table-striped nd_floatinghead">
+<table id="rg-data-table" class="table table-bordered table-condensed table-striped" width="100%" cellspacing="0">
   <thead>
     <tr>
       [% FOREACH hdr IN headings %]
@@ -16,3 +16,11 @@
     [% END %]
   </tbody>
 </table>
+
+<script>
+$(document).ready(function() {
+    $('#rg-data-table').dataTable({
+        "pageLength": 25
+    } );
+} );
+</script>
