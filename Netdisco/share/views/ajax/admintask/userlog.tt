@@ -1,7 +1,7 @@
 [% IF results.count == 0 %]
 <div class="span2 alert alert-info">The user activity log is empty.</div>
 [% ELSE %]
-<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+<table id="aul-data-table" class="table table-bordered table-condensed table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Creation</th>
@@ -11,20 +11,53 @@
       <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
-  </tbody>
-    [% WHILE (row = results.next) %]
-    <tr data-content="<pre>[% row.details | html_entity %]</pre>">
-      <td class="nd_center-cell">[% row.creation | html_entity %]</td>
-      <td class="nd_center-cell">[% row.username | html_entity %]</td>
-      <td class="nd_center-cell">[% row.userip   | html_entity %]</td>
-      <td class="nd_center-cell">[% row.event    | html_entity %]</td>
-      <td class="nd_center-cell">
-        <input data-form="del" name="entry" type="hidden" value="[% row.entry | html_entity %]">
-        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
-      </td>
-    </tr>
-    [% END %]
-  </tbody>
 </table>
 [% END %]
 
+<script>
+$(document).ready(function() {
+  $('#aul-data-table').dataTable( {
+    "processing": true,
+    "serverSide": true,
+    "stateSave": true,
+    "pageLength": 25,
+    "order": [[ 0, "desc" ]],
+    "ajax": "/ajax/control/admin/userlog/data",
+    "columns": [{
+      "data": 'creation',
+      "className": "nd_center-cell",
+      "render": function(data, type, row, meta) {
+        return moment(data).format('YYYY-MM-DD HH:mm');
+      }
+    }, {
+      "data": 'username',
+      "className": "nd_center-cell",
+      "render": function(data, type, row, meta) {
+        return he.encode(data || '');
+      }
+    }, {
+      "data": 'userip',
+      "className": "nd_center-cell",
+      "render": function(data, type, row, meta) {
+        return he.encode(data || '');
+      }
+    }, {
+      "data": 'event',
+      "className": "nd_center-cell",
+      "render": function(data, type, row, meta) {
+        return he.encode(data || '');
+      }
+    }, {
+      "data": 'entry',
+      "className": "nd_center-cell",
+      "searchable": false,
+      "orderable": false,
+      "render": function(data, type, row, meta) {
+        return '<input data-form="del" name="entry" type="hidden" value="' + encodeURIComponent(data) + 
+        '"><button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>';
+      }
+    }
+  ]
+  } );
+} );
+</script>
