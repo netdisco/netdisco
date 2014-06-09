@@ -19,8 +19,9 @@
 
 <script>
 $(document).ready(function() {
-    $('#rg-data-table').dataTable({
-        "pageLength": 25
-    } );
+  $('#rg-data-table').dataTable({
+    "pageLength": 25,
+    "stateSave": true
+  } );
 } );
 </script>

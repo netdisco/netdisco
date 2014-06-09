@@ -18,6 +18,8 @@
 $(document).ready(function() {
   var table = $('#ds-data-table').dataTable({
     "deferRender": true,
+    "stateSave": true,
+    "pageLength": 25,
     "data": [% results %],
     "columns": [{
         "data": 'ip',

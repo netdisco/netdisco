@@ -13,6 +13,8 @@
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
+    "stateSave": true,
+    "pageLength": 25,
     "order": [[ 0, "asc" ], [1, "asc"]],
     "columns": [
       {

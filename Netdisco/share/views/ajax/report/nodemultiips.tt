@@ -14,6 +14,8 @@
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
+    "stateSave": true,
+    "pageLength": 25,
     "order": [[ 3, "desc" ]],
     "data": [% results %],
     "columns": [

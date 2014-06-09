@@ -177,6 +177,8 @@ $(document).ready(function() {
             { "visible": false, "targets": 0 }
         ],
         "order": [[ 0, 'asc' ]],
+        "stateSave": true,
+        "pageLength": 25,
         "drawCallback": function ( settings ) {
             var api = this.api();
             var rows = api.rows( {page:'current'} ).nodes();

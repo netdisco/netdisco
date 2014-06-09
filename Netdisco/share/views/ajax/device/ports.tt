@@ -383,6 +383,7 @@ $(document).ready(function() {
             { "type": 'natural', "targets": [ 'natural' ] }
         ],
         "order": [[ 1, 'asc' ]],
+        "stateSave": true,
         "pageLength": 25,
     } );
 } );

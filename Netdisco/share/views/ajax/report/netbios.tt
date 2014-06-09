@@ -26,6 +26,8 @@
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
+    "stateSave": true,
+    "pageLength": 25,
     "data": [% results %],
     [% IF opt %]
     "columns": [

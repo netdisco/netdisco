@@ -13,6 +13,8 @@
 $(document).ready(function() {
   var table = $('#ps-data-table').dataTable({
     "deferRender": true,
+    "stateSave": true,
+    "pageLength": 25,
     "data": [% results %],
     "columns": [{
         "data": 'name',
