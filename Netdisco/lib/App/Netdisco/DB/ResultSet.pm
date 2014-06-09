@@ -142,6 +142,8 @@ sub _with_datatables_where_clause {
                 and $params->{'columns'}{$i}{'searchable'} eq 'true' )
             {
                 my $column = _datatables_index_to_column( $params, $i );
+                my $csa = $rs->current_source_alias;
+                $column =~ s/^(\w+)$/$csa\.$1/x;
 
                 # Cast everything to text for LIKE search
                 $column = $column . '::text';
