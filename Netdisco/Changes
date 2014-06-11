@@ -11,6 +11,7 @@
   * Fix for device counts in VLAN Inventory report
   * Forward port housekeeping/schedule and expiry/expire legacy config
   * Store started timestamp on job completion
+  * Set UTF-8 mode and DBIC quoting on Pg database connection
 
 2.027007 - 2014-05-27
 
