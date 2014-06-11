@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use Net::Domain 'hostfqdn';
 use Try::Tiny;
+use MCE ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -103,14 +104,14 @@ sub jq_userlog {
 # the main daemon process. This is only used by daemon workers which can use
 # MCE ->do() method.
 sub jq_take {
-  my ($self, $wid, $type) = @_;
+  my ($wid, $type) = @_;
 
   # be polite to SQLite database (that is, local CPU)
   debug "$type ($wid): sleeping now...";
   sleep(1);
 
   debug "$type ($wid): asking for a job";
-  $self->do('take_jobs', $wid, $type);
+  MCE->do('take_jobs', $wid, $type);
 }
 
 sub jq_lock {

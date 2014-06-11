@@ -22,7 +22,6 @@ if (ref {} eq ref setting('database')) {
         options => {
             AutoCommit => 1,
             RaiseError => 1,
-            quote_names => 1,
             auto_savepoint => 1,
             pg_enable_utf8 => 1,
         },

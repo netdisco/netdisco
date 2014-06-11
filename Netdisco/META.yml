@@ -26,9 +26,10 @@ requires:
   App::cpanminus: 1.6108
   App::local::lib::helper: 0.07
   Archive::Extract: 0
+  CGI::Expand: 2.05
   DBD::Pg: 0
   DBD::SQLite: 1.37
-  DBIx::Class: 0.0821
+  DBIx::Class: 0.0825
   DBIx::Class::Helpers: 2.018004
   Daemon::Control: 0.001
   Dancer: 1.3112
