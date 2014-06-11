@@ -4,11 +4,8 @@
   <thead>
     <tr>
       <th>MAC</th>
-      [% IF params.show_vendor %]
-      <th>Vendor</th>
-      [% END %]
       <th>Match</th>
-      <th>Device or Node</th>
+      <th class="nd_center-cell">Device or Node</th>
       [% IF params.stamps %]
       <th>First Seen</th>
       <th>Last Seen</th>
@@ -19,11 +16,13 @@
     [% WHILE (row = macs.next) %]
     [% IF row.nbname %]
     <tr>
-      <td><a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
-          [% row.net_mac.$mac_format_call | html_entity %]</a></td>
+      <td>MAC: <a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          [% row.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>[% row.oui.company | html_entity %]</td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% row.oui.abbrev | uri %]">
+        [% row.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>NetBIOS</td>
       <td class="nd_linkcell nd_center-cell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% row.domain | uri %]" title="Devices in this Domain">[% row.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% row.nbname | uri %]">[% row.nbname | html_entity %]</a>
         <br>[% row.nbuser || '[No User]' | html_entity %]@<a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
@@ -35,11 +34,13 @@
     </tr>
     [% ELSE %]
     <tr>
-      <td><a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
-          [% row.net_mac.$mac_format_call | html_entity %]</a></td>
+      <td>MAC: <a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          [% row.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>[% row.oui.company | html_entity %]</td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% row.oui.abbrev | uri %]">
+        [% row.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>IP &rarr; MAC</td>
       <td class="nd_center-cell">
         <a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
@@ -54,13 +55,13 @@
     [% END %]
     [% FOREACH nbt IN row.netbios %]
     <tr>
-      <td><a href="[% search_node %]&q=[% nbt.net_mac.$mac_format_call | uri %]">
-          [% nbt.net_mac.$mac_format_call | html_entity %]</a></td>
+      <td>MAC: <a href="[% search_node %]&q=[% nbt.net_mac.$mac_format_call | uri %]">
+          [% nbt.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% nbt.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% nbt.oui.abbrev | uri %]">
+        [% nbt.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>NetBIOS</td>
       <td class="nd_linkcell nd_center-cell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
         <br>[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
@@ -73,13 +74,13 @@
     [% END %]
     [% FOREACH ni IN row.nodeips %]
     <tr>
-      <td><a href="[% search_node %]&q=[% ni.net_mac.$mac_format_call | uri %]">
-          [% ni.net_mac.$mac_format_call | html_entity %]</a></td>
+      <td>MAC: <a href="[% search_node %]&q=[% ni.net_mac.$mac_format_call | uri %]">
+          [% ni.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% ni.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% ni.oui.abbrev | uri %]">
+        [% ni.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>IP &rarr; MAC</td>
       <td class="nd_center-cell">
         <a href="[% search_node %]&q=[% ni.ip | uri %]">[% ni.ip | html_entity %]</a>
@@ -94,13 +95,13 @@
     [% END %]
     [% FOREACH node IN row.node_sightings(archive_filter) %]
     <tr>
-      <td><a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
-          [% node.net_mac.$mac_format_call | html_entity %]</a></td>
+      <td>MAC: <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
+          [% node.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% node.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% node.oui.abbrev | uri %]">
+        [% node.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>Switch Port</td>
       <td><a class="nd_linkcell nd_center-cell"
           href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
@@ -117,13 +118,13 @@
     </tr>
       [% FOREACH wlan IN node.wireless %]
       <tr>
-        <td><a href="[% search_node %]&q=[% wlan.net_mac.$mac_format_call | uri %]">
-            [% wlan.net_mac.$mac_format_call | html_entity %]</a></td>
+        <td>MAC: <a href="[% search_node %]&q=[% wlan.net_mac.$mac_format_call | uri %]">
+            [% wlan.net_mac.$mac_format_call | html_entity %]</a>
         [% IF params.show_vendor %]
-        <td>
-          [% wlan.oui.company | html_entity %]
-        </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% wlan.oui.abbrev | uri %]">
+        [% wlan.oui.company | html_entity %]</a> )
         [% END %]
+        </td>
         <td>Wireless Info</td>
         <td class="nd_center-cell">SSID: [% wlan.ssid | html_entity %]<br>
           MaxRate: [% wlan.maxrate | html_entity %]Mbps TxRate: [% wlan.txrate | html_entity %]Mbps<br>
@@ -140,13 +141,13 @@
     [% END %]
     [% FOREACH nodeip IN row.ip_aliases(archive_filter) %]
     <tr>
-      <td><a href="[% search_node %]&q=[% nodeip.net_mac.$mac_format_call | uri %]">
-          [% nodeip.net_mac.$mac_format_call | html_entity %]</a></td>
+      <td>MAC: <a href="[% search_node %]&q=[% nodeip.net_mac.$mac_format_call | uri %]">
+          [% nodeip.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% nodeip.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% nodeip.oui.abbrev | uri %]">
+        [% nodeip.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell">
         <a href="[% search_node %]&q=[% nodeip.ip | uri %]">[% nodeip.ip | html_entity %]</a>
@@ -179,6 +180,9 @@ $(document).ready(function() {
         "order": [[ 0, 'asc' ]],
         "stateSave": true,
         "pageLength": 25,
+        "language": {
+            "search": 'Filter records: '
+        },
         "drawCallback": function ( settings ) {
             var api = this.api();
             var rows = api.rows( {page:'current'} ).nodes();
@@ -187,12 +191,8 @@ $(document).ready(function() {
             api.column(0, {page:'current'} ).data().each( function ( group, i ) {
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                    [% IF params.show_vendor && params.stamps %]
-                        '<tr class="group"><td colspan="5">'+group+'</td></tr>'
-                    [% ELSIF params.stamps %]
+                    [% IF params.stamps %]
                         '<tr class="group"><td colspan="4">'+group+'</td></tr>'                    
-                    [% ELSIF params.show_vendor %]
-                        '<tr class="group"><td colspan="3">'+group+'</td></tr>'                    
                     [% ELSE %]
                         '<tr class="group"><td colspan="2">'+group+'</td></tr>'                    
                     [% END %]

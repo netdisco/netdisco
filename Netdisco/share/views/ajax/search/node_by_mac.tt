@@ -3,9 +3,6 @@
   <thead>
     <tr>
       <th>MAC</th>
-      [% IF params.show_vendor %]
-      <th>Vendor</th>
-      [% END %]
       <th>Match</th>
       <th class="nd_center-cell">Device or Node</th>
       [% IF params.stamps %]
@@ -18,13 +15,13 @@
     [% WHILE (row = ips.next) %]
     <tr>
       <td>
-          <a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          MAC: <a href="[% search_node %]&q=[% row.net_mac.$mac_format_call | uri %]">
             [% row.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% row.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% row.oui.abbrev | uri %]">
+        [% row.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell"><a href="[% search_node %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
@@ -39,14 +36,13 @@
     [% WHILE (node = sightings.next) %]
     <tr>
       <td>
-        <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
+        MAC: <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
-      </td>
       [% IF params.show_vendor %]
-      <td>
-        [% node.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% node.oui.abbrev | uri %]">
+        [% node.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>Switch Port</td>
       <td class="nd_center-cell">
             <a href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
@@ -65,13 +61,12 @@
     [% WHILE (port = ports.next) %]
     <tr>
       <td>
-        <a href="[% search_node %]&q=[% port.net_mac.$mac_format_call | uri %]">[% port.net_mac.$mac_format_call | html_entity %]</a>
-      </td>
+        MAC: <a href="[% search_node %]&q=[% port.net_mac.$mac_format_call | uri %]">[% port.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% port.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% port.oui.abbrev | uri %]">
+        [% port.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>Switch Port</td>
       <td class="nd_center-cell">
             <a href="[% device_ports %]&q=[% port.ip | uri %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
@@ -89,13 +84,12 @@
     [% WHILE (nbt = netbios.next) %]
     <tr>
       <td>
-        <a href="[% search_node %]&q=[% nbt.net_mac.$mac_format_call | uri %]">[% nbt.net_mac.$mac_format_call | html_entity %]</a>
-      </td>
+        MAC: <a href="[% search_node %]&q=[% nbt.net_mac.$mac_format_call | uri %]">[% nbt.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% nbt.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% nbt.oui.abbrev | uri %]">
+        [% nbt.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>NetBIOS</td>
       <td class="nd_center-cell">\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
         <br>[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
@@ -109,13 +103,12 @@
     [% WHILE (wlan = wireless.next) %]
     <tr>
       <td>
-        <a href="[% search_node %]&q=[% wlan.net_mac.$mac_format_call | uri %]">[% wlan.net_mac.$mac_format_call | html_entity %]</a>
-      </td>
+        MAC: <a href="[% search_node %]&q=[% wlan.net_mac.$mac_format_call | uri %]">[% wlan.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-      <td>
-        [% wlan.oui.company | html_entity %]
-      </td>
+        ( <a href="[% uri_for('/report/nodevendor') %]?vendor=[% wlan.oui.abbrev | uri %]">
+        [% wlan.oui.company | html_entity %]</a> )
       [% END %]
+      </td>
       <td>Wireless Info</td>
       <td class="nd_center-cell">SSID: [% wlan.ssid | html_entity %]<br>
           MaxRate: [% wlan.maxrate | html_entity %]Mbps TxRate: [% wlan.txrate | html_entity %]Mbps<br>
@@ -148,6 +141,9 @@ $(document).ready(function() {
         "order": [[ 0, 'asc' ]],
         "stateSave": true,
         "pageLength": 25,
+        "language": {
+            "search": 'Filter records: '
+        },
         "drawCallback": function ( settings ) {
             var api = this.api();
             var rows = api.rows( {page:'current'} ).nodes();
@@ -156,12 +152,8 @@ $(document).ready(function() {
             api.column(0, {page:'current'} ).data().each( function ( group, i ) {
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                    [% IF params.show_vendor && params.stamps %]
-                        '<tr class="group"><td colspan="5">'+group+'</td></tr>'
-                    [% ELSIF params.stamps %]
+                    [% IF params.stamps %]
                         '<tr class="group"><td colspan="4">'+group+'</td></tr>'                    
-                    [% ELSIF params.show_vendor %]
-                        '<tr class="group"><td colspan="3">'+group+'</td></tr>'                    
                     [% ELSE %]
                         '<tr class="group"><td colspan="2">'+group+'</td></tr>'                    
                     [% END %]
