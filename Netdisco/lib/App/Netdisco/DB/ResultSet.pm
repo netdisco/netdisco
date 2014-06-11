@@ -93,7 +93,7 @@ sub _with_datatables_order_clause {
     my @order = ();
 
     if ( defined $params->{'order'}{0} ) {
-        for ( my $i = 0; $i < keys $params->{'order'}; $i++ ) {
+        for ( my $i = 0; $i < (scalar keys %{$params->{'order'}}); $i++ ) {
 
            # build direction, must be '-asc' or '-desc' (cf. SQL::Abstract)
            # we only get 'asc' or 'desc', so they have to be prefixed with '-'
@@ -132,7 +132,7 @@ sub _with_datatables_where_clause {
         && $params->{'search'}{'value'} )
     {
         my $search_string = $params->{'search'}{'value'};
-        for ( my $i = 0; $i < keys $params->{'columns'}; $i++ ) {
+        for ( my $i = 0; $i < (scalar keys %{$params->{'columns'}}); $i++ ) {
 
            # Iterate over each column and check if it is searchable.
            # If so, add a constraint to the where clause restricting the given
