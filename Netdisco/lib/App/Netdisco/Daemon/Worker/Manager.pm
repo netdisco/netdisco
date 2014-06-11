@@ -6,7 +6,7 @@ use Role::Tiny;
 use namespace::clean;
 
 use List::Util 'sum';
-with 'App::Netdisco::Daemon::JobQueue';
+use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
 
 sub worker_begin {
   my $self = shift;
@@ -19,7 +19,7 @@ sub worker_begin {
 
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";
-  my @jobs = $self->jq_locked;
+  my @jobs = jq_locked;
 
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node", $wid, scalar @jobs;
@@ -42,7 +42,7 @@ sub worker_body {
 
       # get some pending jobs
       # TODO also check for stale jobs in Netdisco DB
-      foreach my $job ( $self->jq_getsome($num_slots) ) {
+      foreach my $job ( jq_getsome($num_slots) ) {
 
           # check for available local capacity
           my $job_type = setting('job_types')->{$job->action};
@@ -51,7 +51,7 @@ sub worker_body {
             $wid, $job->id, $job->action;
 
           # mark job as running
-          next unless $self->jq_lock($job);
+          next unless jq_lock($job);
           info sprintf "mgr (%s): job %s booked out for this processing node",
             $wid, $job->id;
 

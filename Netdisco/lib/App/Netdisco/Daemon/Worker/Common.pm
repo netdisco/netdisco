@@ -6,7 +6,7 @@ use Try::Tiny;
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::JobQueue';
+use App::Netdisco::JobQueue qw/jq_take jq_defer jq_complete/;
 
 sub worker_body {
   my $self = shift;
@@ -16,7 +16,7 @@ sub worker_body {
   my $type = $self->worker_type;
 
   while (1) {
-      my $jobs = $self->jq_take($self->wid, $type);
+      my $jobs = jq_take($self->wid, $type);
 
       foreach my $job (@$jobs) {
           my $target = $self->munge_action($job->action);
@@ -50,11 +50,11 @@ sub close_job {
 
   try {
       if ($job->status eq 'defer') {
-          $self->jq_defer($job);
+          jq_defer($job);
       }
       else {
           $job->finished($now);
-          $self->jq_complete($job);
+          jq_complete($job);
       }
   }
   catch { $self->sendto('stderr', "error closing job: $_\n") };

@@ -6,7 +6,7 @@ use Algorithm::Cron;
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::JobQueue';
+use App::Netdisco::JobQueue qw/jq_insert/;
 
 sub worker_begin {
   my $self = shift;
@@ -53,7 +53,7 @@ sub worker_body {
 
           # queue it!
           info "sched ($wid): queueing $action job";
-          $self->jq_insert({
+          jq_insert({
             action => $action,
             device => $sched->{device},
             extra  => $sched->{extra},
