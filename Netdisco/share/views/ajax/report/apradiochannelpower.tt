@@ -1,53 +1,117 @@
-<div class="accordion" id="accordion-radio-pwr">
-[% count = 0 %]
-[% FOREACH row IN results.keys.sort %]
-  [% count = count + 1 %]
-  <div class="accordion-group">
-      <div class="accordion-heading"> 
-          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count %]" href="#collapse-[% count %]">
-            <i class="[% results.$row.ports.size < 10 ? 'icon-chevron-down' : 'icon-chevron-up' %]"></i> &nbsp;
-            [% results.$row.device.dns || results.$row.device.name %] &nbsp;
-            ( [% results.$row.device.model %] ) &nbsp;
-            [% IF results.$row.device.location %]
-              Location: [% results.$row.device.location %]
-            [% END %]
-          </a>
-      </div>
-    <div id="collapse-[% count %]" class="accordion-body collapse[% ' in' IF results.$row.ports.size < 10 %]">
-      <div class="accordion-inner">
-      <table class="table table-bordered table-condensed">
-        <thead>
-          <tr>
-            <th>Port</th>            
-            <th>Name</th>
-            <th>Description</th>
-            <th class="nd_center-cell">Channel</th>
-            <th class="nd_center-cell">Tx Power (mW/dBm)</th>
-          </tr>
-        </thead>
-        <tbody>
-        [% FOREACH p IN results.$row.ports %]
-          [% NEXT UNLESS p.channel # No channel port is admin down %]
-          <tr>
-            <td>
-              <a href="[% device_ports %]&q=[% results.$row.device.ip | uri %]&f=[% p.port | uri %]">
-                [% p.port | html_entity %]</a></td>
-            <td>[% p.name %]</td>
-            <td>[% p.descr %]</td>
-            <td class="nd_center-cell">[% p.channel %]</td>
-            <td class="nd_center-cell">[% IF p.power or p.power2 %][% p.power %] / [% p.power2 %][% END %]</td>
-          </tr>
-        [% END %]
-        </tbody>
-      </table>
-    </div>
-  </div>
-  </div>
-[%END%]
-</div>
+<table id="data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th>IP</th>
+      <th>DNS</th>
+      <th>Device</th>
+      <th>Port</th>            
+      <th>Name</th>
+      <th>Description</th>
+      <th class="nd_center-cell">Channel</th>
+      <th class="nd_center-cell">Tx Power (mW/dBm)</th>
+    </tr>
+  </thead>
+</table>
+
+<style>
+tr.group,
+tr.group:hover {
+    background-color: #ddd !important;
+}
+</style>
 
 <script>
-$('.accordion').on('show hide', function (n) {
-    $(n.target).siblings('.accordion-heading').find('.accordion-toggle i').toggleClass('icon-chevron-up icon-chevron-down');
-});
+function groupString(d) {
+    "use strict";
+    var s = '';
+    s = s + 'Device: ';
+    s = s + '<a href="[% uri_for('/device') %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
+    s = s + he.encode(d.dns || d.device_name || d.ip);
+    if (d.dns || d.device_name) {
+        s = s + ' (' +  he.encode(d.ip) + ') ';
+    }
+    s = s + '</a> Model: ' + he.encode(d.model || '');
+    s = s + he.encode(d.location ? ' Location: ' + d.location : '');
+
+    return s;
+}
+
+$(document).ready(function() {
+  var table = $('#data-table').DataTable({
+    "processing": true,
+    "stateSave": true,
+    "pageLength": 25,
+    "language": {
+      "search": 'Filter records: '
+    },
+    "serverSide": true,
+    "ajax": '/ajax/content/report/apradiochannelpower/data',
+    "order": [[ 0, 'asc' ]],
+    "columns": [
+      {
+        // Grouping column
+        "data": 'ip',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'dns',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'device_name',
+        "visible": false
+      }, {
+        "data": 'port',
+        "render": function(data, type, row, meta) {
+          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
+        }
+      }, {
+        "data": 'port_name',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'descr',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'channel',
+        "className": "nd_center-cell"
+      }, {
+        "data": 'power',
+        "className": "nd_center-cell",
+        "render": function(data, type, row, meta) {
+          return (row.power2 ? data + ' / ' + row.power2 : '');
+        }
+      }
+    ],
+    "drawCallback": function ( settings ) {
+      var api = this.api();
+      var rows = api.rows( {page:'current'} ).nodes();
+      var last=null;
+
+      api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+        if ( last !== group ) {
+          var row_data = api.row( i ).data();
+          $(rows).eq( i ).before(
+            '<tr class="group"><td colspan="5">' + groupString(row_data) + '</td></tr>'
+            );
+          last = group;
+        }
+      } );
+    }
+  } );
+ 
+  // Order by the grouping
+  $('#data-table tbody').on( 'click', 'tr.group', function () {
+    var currentOrder = table.order()[0];
+    if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+      table.order( [ 0, 'desc' ] ).draw();
+    }
+    else {
+      table.order( [ 0, 'asc' ] ).draw();
+    }
+  } );
+} );
 </script>
