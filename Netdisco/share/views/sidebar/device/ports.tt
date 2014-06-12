@@ -97,7 +97,7 @@
                   <li>
                     <em class="muted">Show Ports with Status:</em><br/>
                     <div class="clearfix">
-                      <select class="nd_side-select" size="4" multiple="on" name="port_state"/>
+                      <select id="nd_port-state-select" size="4" multiple="on" name="port_state"/>
                         <option selected="selected" value="up">Link Up</option>
                         <option selected="selected" value="free">Port Free</option>
                         <option selected="selected" value="down">Link Down</option>

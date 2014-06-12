@@ -1,5 +1,5 @@
 
-            <p class="nd_sidebar-title"><em>NetBIOS Search Options</em></p>
+            <p class="nd_sidebar-title"><em>NetBIOS Domain</em></p>
             <div class="clearfix">
               <select class="nd_side-select nd_colored-input" size="[% domain_list.size > 8 ? 8 : domain_list.size %]"
                 multiple="on" name="domain"

@@ -1,5 +1,5 @@
 
-            <p class="nd_sidebar-title"><em>SSID Search Options</em></p>
+            <p class="nd_sidebar-title"><em>Details by SSID</em></p>
             <div class="clearfix">
               <select class="nd_side-select nd_colored-input" size="[% ssid_list.size > 8 ? 8 : ssid_list.size %]"
                 multiple="on" name="ssid"

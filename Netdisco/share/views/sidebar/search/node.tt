@@ -30,7 +30,7 @@
               </label>
             </div>
             <div class="clearfix input-prepend">
-              <label class="add-on">
+              <label class="add-on nd_sidebar-legend">
                 <input type="checkbox" id="node_partial"
                   name="partial"[% ' checked="checked"' IF params.partial %]/>
               </label>

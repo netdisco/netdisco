@@ -425,13 +425,14 @@ td > form.nd_inline-form {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
+/* text in the sidebar */
 .nd_sidebar-title {
   margin-left: 10px;
   margin-top: 6px;
   margin-bottom: 12px;
 }
 
-/* labels in simple sidebars */
+/* Flabels in netmap sidebar (not in a collapser) */
 .nd_sidebar-label {
   margin-left: 7px;
 }
@@ -526,16 +527,22 @@ td > form.nd_inline-form {
   width: 95px;
 }
 
+/* set the port state select width */
+#nd_port-state-select {
+  margin-left: -3px;
+  width: 158px;
+}
+
 /* set the MAC format drop-down width */
 #nd_mac-format {
   margin-top: 4px;
-  width: 154px;
+  width: 155px;
 }
 
 /* set the MAC format drop-down width */
 #nd_node-mac-format {
-  margin-left: -2px;
-  margin-top: 4px;
+  margin-left: -3px;
+  margin-bottom: 4px;
   width: 165px;
 }
 
@@ -548,7 +555,7 @@ td > form.nd_inline-form {
   width: 165px;
 }
 
-/* when the sidebar submit button HAS a dropdown */
+/* FIXME when the sidebar submit button HAS a dropdown */
 .nd_sidebar-btn-drop {
   width: 138px;
 }
