@@ -5,6 +5,7 @@
   * Ignore devices with "phone" in their CDP/LLDP platform description
   * Change log format to contain UTC timestamp
   * Link to VLAN search by name from VLAN Inventory report
+  * Neighbor device links to both device and port (fragfutter)
 
   [BUG FIXES]
 
