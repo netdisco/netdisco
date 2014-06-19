@@ -1,4 +1,4 @@
-<table class="table table-bordered table-striped nd_floatinghead">
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Left Device</th>
@@ -85,4 +85,22 @@
     [% END %]
   </tbody>
 </table>
+
+<script>
+$(document).ready(function() {
+  $('#data-table').dataTable({
+    "processing": true,
+    "stateSave": true,
+    "pageLength": 25,
+    "language": {
+      "search": 'Filter records: '
+    },
+    "columnDefs": [ {
+        "targets": [ 4 ],
+        "orderable": false,
+        "searchable": false
+      } ]
+  } );
+} );
+</script>
 
