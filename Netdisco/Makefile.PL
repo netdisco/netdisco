@@ -69,6 +69,7 @@ install_script 'bin/netdisco-daemon-fg';
 install_script 'bin/netdisco-daemon';
 install_script 'bin/netdisco-web-fg';
 install_script 'bin/netdisco-web';
+install_script 'bin/netdisco-rancid-export';
 
 resources
   homepage => 'http://netdisco.org/',

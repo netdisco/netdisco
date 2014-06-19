@@ -13,6 +13,7 @@
   * Forward port housekeeping/schedule and expiry/expire legacy config
   * Store started timestamp on job completion
   * Set UTF-8 mode on Pg database connection
+  * Add netdisco-rancid-export to installed scripts
 
 2.027007 - 2014-05-27
 
