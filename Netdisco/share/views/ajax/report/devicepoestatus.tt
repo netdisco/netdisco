@@ -1,60 +1,185 @@
-[% USE Number.Format %]
-<div class="accordion" id="accordion-radio-pwr">
-[% count = 0 %]
-[% FOREACH row IN results %]
-  [% NEXT UNLESS row.power_modules.size %]
-  [% count = count + 1 %]
-  <div class="accordion-group">
-      <div class="accordion-heading"> 
-          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count %]" href="#collapse-[% count %]">
-            <i class="icon-chevron-down"></i> &nbsp;
-            [% row.dns || row.name %] &nbsp;
-            ( [% row.model %] ) &nbsp;
-            [% IF row.location %]
-              Location: [% row.location %]
-            [% END %]
-          </a>
-      </div>
-      <div id="collapse-[% count %]" class="accordion-body collapse in">
-        <div class="accordion-inner">
-        <table class="table table-bordered table-condensed">
-          <thead>
-            <tr>
-              <th>PoE<br>Module</th>            
-              <th class="nd_center-cell">Power<br>(W)</th>
-              <th class="nd_center-cell">Supply</th>
-              <th class="nd_center-cell">Capable<br>Ports</th>
-              <th class="nd_center-cell">Powered<br>Ports</th>
-              <th class="nd_center-cell">Disabled<br>Ports</th>
-              <th class="nd_center-cell">Errored<br>Ports</th>
-              <th class="nd_center-cell">Committed<br>(W)</th>
-              <th class="nd_center-cell">Delivering<br>(W)</th>
-            </tr>
-          </thead>
-          <tbody>
-          [% FOREACH m IN row.power_modules %]
-            <tr>
-              <td class="nd_center-cell">[% m.module %]</td>
-              <td class="nd_center-cell">[% m.power | format_number %]</td>
-              <td class="nd_center-cell">[% m.status %]</td>
-              <td class="nd_center-cell">[% m.capable_ports %]</td>
-              <td class="nd_center-cell">[% m.powered_ports %]</td>
-              <td class="nd_center-cell">[% m.disabled_ports %]</td>
-              <td class="nd_center-cell">[% m.errored_ports %]</td>
-              <td class="nd_center-cell">[% m.pwr_committed | format_number %]</td>
-              <td class="nd_center-cell">[% m.pwr_delivering | format_number %]</td>
-            </tr>
-          [% END %]
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-[%END%]
-</div>
+<table id="data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th>IP</th>
+      <th>DNS</th>
+      <th>Name</th>
+      <th>Model</th>
+      <th>Location</th>
+      <th>PoE<br>Module</th>
+      <th class="nd_center-cell">Supply</th>
+      <th class="nd_center-cell">Power<br>(W)</th>
+      <th class="nd_center-cell">Capable<br>Ports</th>
+      <th class="nd_center-cell">Powered<br>Ports</th>
+      <th class="nd_center-cell">Disabled<br>Ports</th>
+      <th class="nd_center-cell">Errored<br>Ports</th>
+      <th class="nd_center-cell">Committed<br>(W)</th>
+      <th class="nd_center-cell">Delivering<br>(W)</th>
+    </tr>
+  </thead>
+  <tbody>
+    [% FOREACH row IN results %]
+    <tr>
+      <td>[% row.ip %]</td>
+      <td>[% row.dns %]</td>
+      <td>[% row.name %]</td>
+      <td>[% row.model %]</td>
+      <td>[% row.location %]</td>
+      <td>[% row.module %]</td>
+      <td class="nd_center-cell">[% row.power %]</td>
+      <td class="nd_center-cell">[% row.status %]</td>
+      <td class="nd_center-cell">[% row.poe_capable_ports %]</td>
+      <td class="nd_center-cell">[% row.poe_powered_ports %]</td>
+      <td class="nd_center-cell">[% row.poe_disabled_ports %]</td>
+      <td class="nd_center-cell">[% row.poe_errored_ports %]</td>
+      <td class="nd_center-cell">[% row.poe_power_committed %]</td>
+      <td class="nd_center-cell">[% row.poe_power_delivering %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
+<style>
+tr.group,
+tr.group:hover {
+    background-color: #ddd !important;
+}
+</style>
 
 <script>
-$('.accordion').on('show hide', function (n) {
-    $(n.target).siblings('.accordion-heading').find('.accordion-toggle i').toggleClass('icon-chevron-up icon-chevron-down');
-});
+function groupString(d) {
+    "use strict";
+    var s = '';
+    s = s + 'Device: ';
+    s = s + '<a href="[% uri_for('/device') %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
+    s = s + he.encode(d.dns || d.name || d.ip);
+    if (d.dns || d.name) {
+        s = s + ' (' +  he.encode(d.ip) + ') ';
+    }
+    s = s + '</a> Model: ' + he.encode(d.model || '');
+    s = s + he.encode(d.location ? ' Location: ' + d.location : '');
+
+    return s;
+}
+
+$(document).ready(function() {
+    var table = $('#data-table').DataTable({
+    "processing": true,
+    "stateSave": true,
+    "pageLength": 25,
+    "language": {
+      "search": 'Filter records: '
+    },
+    "serverSide": true,
+    "ajax": '/ajax/content/report/devicepoestatus/data',
+    "order": [[ 0, 'asc' ]],
+    "columns": [
+      {
+        // Grouping column
+        "data": 'ip',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'dns',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'name',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'model',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'location',
+        "visible": false
+      }, {
+        "data": 'module',
+        "searchable": false
+      }, {
+        "data": 'status',
+        "className": "nd_center-cell",
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'power',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_capable_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_powered_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_disabled_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_errored_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_power_committed',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_power_delivering',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }
+    ],
+    "drawCallback": function ( settings ) {
+      var api = this.api();
+      var rows = api.rows( {page:'current'} ).nodes();
+      var last=null;
+
+      api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+        if ( last !== group ) {
+          var row_data = api.row( i ).data();
+          $(rows).eq( i ).before(
+            '<tr class="group"><td colspan="9">' + groupString(row_data) + '</td></tr>'
+            );
+          last = group;
+        }
+      } );
+    }
+  } );
+ 
+    // Order by the grouping
+    $('#data-table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+            table.order( [ 0, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 0, 'asc' ] ).draw();
+        }
+    } );
+} );
 </script>

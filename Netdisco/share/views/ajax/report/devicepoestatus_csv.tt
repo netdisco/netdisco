@@ -4,22 +4,16 @@
               'Errored Ports' 'Committed (W)' 'Delivering (W)' ]) %]
 
 [% FOREACH row IN results %]
-  [% NEXT UNLESS row.power_modules.size %]
   [% mydlist = [] %]
-  [% mydevice = row.dns || row.name %]
+  [% mydevice = row.dns || row.name || row.ip %]
   [% mydlist.push(mydevice) %]
-  [% mydlist.push(row.model) %]
-  [% mydlist.push(row.location) %]
-  [% FOREACH m IN row.power_modules %]
-    [% myplist = [] %]
-    [% FOREACH col IN [ m.module m.power m.status m.capable_ports
-                        m.powered_ports m.disabled_ports m.errored_ports
-                        m.pwr_committed m.pwr_delivering
-                        ] %]
-      [% myplist.push(col) %]
-    [% END %]
-    [% CALL mydlist.splice(3, 9, myplist ) %]
-    [% CSV.dump(mydlist) %]
-
+  [% FOREACH col IN [ row.model row.location row.module row.power row.status
+                      row.poe_capable_ports row.poe_powered_ports
+                      row.poe_disabled_ports row.poe_errored_ports
+                      row.poe_power_committed row.poe_power_delivering
+                      ] %]
+    [% mydlist.push(col) %]
   [% END %]
+  [% CSV.dump(mydlist) %]
+
 [%END%]
