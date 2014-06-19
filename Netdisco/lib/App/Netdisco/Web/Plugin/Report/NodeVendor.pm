@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::Report::NodeVendor;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+use App::Netdisco::Util::ExpandParams 'expand_hash';
 
 use App::Netdisco::Web::Plugin;
 
@@ -35,13 +36,13 @@ hook 'before_template' => sub {
     }
 };
 
-get '/ajax/content/report/nodevendor' => require_login sub {
+get '/ajax/content/report/nodevendor/data' => require_login sub {
+    send_error( 'Missing parameter', 400 )
+        unless ( param('draw') && param('draw') =~ /\d+/ );
 
     my $vendor = param('vendor');
 
     my $rs = schema('netdisco')->resultset('Node');
-
-    if ( defined $vendor ) {
 
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
@@ -54,20 +55,66 @@ get '/ajax/content/report/nodevendor' => require_login sub {
         unless ( param('archived') ) {
             $rs = $rs->search( { -bool => 'me.active' } );
         }
+
+    my $exp_params = expand_hash( scalar params );
+
+    my $recordsTotal = $rs->count;
+
+    my @data = $rs->get_datatables_data($exp_params)->hri->all;
+
+    my $recordsFiltered = $rs->get_datatables_filtered_count($exp_params);
+
+    content_type 'application/json';
+    return to_json(
+        {   draw            => int( param('draw') ),
+            recordsTotal    => int($recordsTotal),
+            recordsFiltered => int($recordsFiltered),
+            data            => \@data,
+        }
+    );
+};
+
+get '/ajax/content/report/nodevendor' => require_login sub {
+
+    my $vendor = param('vendor');
+
+    my $rs = schema('netdisco')->resultset('Node');
+    my @results;
+    
+    if ( defined $vendor && !request->is_ajax ) {
+
+        my $match = $vendor eq 'blank' ? undef : $vendor;
+
+        $rs = $rs->search( { 'oui.abbrev' => $match },
+            {   '+columns' => [qw/ device.dns device.name oui.abbrev /],
+                join       => [qw/ oui device /],
+                collapse   => 1,
+            });
+
+        unless ( param('archived') ) {
+            $rs = $rs->search( { -bool => 'me.active' } );
+        }
+
+        @results = $rs->hri->all;
+        return unless scalar @results;
     }
-    else {
+    elsif ( !defined $vendor ) {
         $rs = $rs->search(
-            { -bool => 'me.active' },
+            { },
             {   join     => 'oui',
                 select   => [ 'oui.abbrev', { count => 'me.mac' } ],
                 as       => [qw/ vendor count /],
                 group_by => [qw/ oui.abbrev /]
             }
         )->order_by( { -desc => 'count' } );
-    }
 
-    my @results = $rs->hri->all;
-    return unless scalar @results;
+        unless ( param('archived') ) {
+            $rs = $rs->search( { -bool => 'me.active' } );
+        }
+        
+        @results = $rs->hri->all;
+        return unless scalar @results;
+    }
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
