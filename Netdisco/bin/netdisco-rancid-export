@@ -43,8 +43,8 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Permission ':all';
 
 my $settings = setting( 'rancid' );
-my $down_age = $settings->{ 'down_age' } || '1 hour';
-my $rancidhome = $settings->{ 'rancid_home' } || '/var/rancid';
+my $down_age = $settings->{ 'down_age' } || '1 day';
+my $rancidhome = $settings->{ 'rancid_home' } || '/var/lib/rancid';
 my $by_ip = {};
 foreach my $g (@{$settings->{ 'by_ip' }}) {
   $by_ip->{$g} = 1;
@@ -113,6 +113,10 @@ This script requires some configuration to be added to your Netdisco
      switch:     [ 'name:.*[Ss][Ww].*' ]
      rtr:        [ 'name:[rR]tr.*' ]
      ap:         [ 'name:[aA][pP].*' ]
+
+Note that C<netdisco-rancid-export> is not part of the automatic scheduler
+built in to Netdisco. You should run this script via C<cron> just after your
+periodic C<discoverall>.
 
 =head2 C<rancid_home>
 
