@@ -15,39 +15,6 @@ register_report(
     }
 );
 
-sub port_tree {
-    my $devices = shift;
-
-    my %ports;
-
-    foreach my $device (@$devices) {
-        my $power2;
-
-        if ( defined( $device->power ) && $device->power > 0 ) {
-            $power2 = sprintf( "%.1f",
-                10.0 * CORE::log( $device->power ) / CORE::log(10) );
-        }
-
-        $ports{ $device->device_name }{device} = {
-            name     => $device->device_name,
-            ip       => $device->ip,
-            dns      => $device->dns,
-            model    => $device->model,
-            location => $device->location
-        };
-        push @{ $ports{ $device->device_name }{ports} },
-            {
-            port    => $device->port,
-            name    => $device->port_name,
-            descr   => $device->descr,
-            channel => $device->channel,
-            power   => $device->power,
-            power2  => $power2
-            };
-    }
-    return \%ports;
-}
-
 get '/ajax/content/report/apradiochannelpower/data' => require_role admin =>
     sub {
     send_error( 'Missing parameter', 400 )
@@ -94,4 +61,4 @@ get '/ajax/content/report/apradiochannelpower' => require_login sub {
     }
 };
 
-true;
+1;
