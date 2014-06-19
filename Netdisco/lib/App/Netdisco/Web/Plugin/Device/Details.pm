@@ -15,15 +15,19 @@ ajax '/ajax/content/device/details' => require_login sub {
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
 
-    my $results
+    my @results
         = schema('netdisco')->resultset('Device')
         ->search( { 'me.ip' => $device->ip } )->with_times()
-        ->with_poestats_as_hashref;
+        ->hri->all;
+    
+    my @power
+        = schema('netdisco')->resultset('DevicePower')
+        ->search( { 'me.ip' => $device->ip } )->with_poestats->hri->all;
 
     content_type('text/html');
     template 'ajax/device/details.tt', {
-      d => $results->[0],
+      d => $results[0], p => \@power
     }, { layout => undef };
 };
 
-true;
+1;
