@@ -60,6 +60,8 @@ hook 'before_template' => sub {
 };
 
 get '/ajax/content/report/moduleinventory/data' => require_login sub {
+    send_error( 'Missing parameter', 400 )
+        unless ( param('draw') && param('draw') =~ /\d+/ );
 
     my $rs = schema('netdisco')->resultset('DeviceModule');
     $rs = $rs->search( { -bool => 'fru' } ) if param('fruonly');
@@ -121,7 +123,9 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
         }
 
         @results = $rs->search_by_field( scalar params )->columns(
-            [   qw/ ip description name class type serial hw_ver fw_ver sw_ver model /
+            [   'ip',     'description', 'name',   'class',
+                'type',   'serial',      'hw_ver', 'fw_ver',
+                'sw_ver', 'model'
             ]
             )->search(
             {},
@@ -130,10 +134,10 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
                 collapse   => 1,
             }
             )->hri->all;
-        
+
         return unless scalar @results;
     }
-    else {
+    elsif ( !$has_opt ) {
         @results = $rs->search(
             { class => { '!=', undef } },
             {   select   => [ 'class', { count => 'class' } ],
@@ -141,7 +145,7 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
                 group_by => [qw/ class /]
             }
         )->order_by( { -desc => 'count' } )->hri->all;
-        
+
         return unless scalar @results;
     }
 
