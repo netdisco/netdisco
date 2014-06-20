@@ -18,12 +18,12 @@ use namespace::clean;
 sub discoverall {
   my ($self, $job) = @_;
 
-  my %queued = map {$_ => 1} $self->jq_queued('discover');
+  my %queued = map {$_ => 1} jq_queued('discover');
   my @devices = schema('netdisco')->resultset('Device')
     ->get_column('ip')->all;
   my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
-  $self->jq_insert([
+  jq_insert([
       map {{
           device => $_,
           action => 'discover',
@@ -72,7 +72,7 @@ sub discover {
   # if requested, and the device has not yet been arpniped/macsucked, queue now
   if ($device->in_storage and $job->subaction and $job->subaction eq 'with-nodes') {
       if (!defined $device->last_macsuck) {
-          $self->jq_insert({
+          jq_insert({
               device => $device->ip,
               action => 'macsuck',
               username => $job->username,
@@ -81,7 +81,7 @@ sub discover {
       }
 
       if (!defined $device->last_arpnip) {
-          $self->jq_insert({
+          jq_insert({
               device => $device->ip,
               action => 'arpnip',
               username => $job->username,

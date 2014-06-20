@@ -20,12 +20,12 @@ sub _walk_body {
   my $layer_method = $job_type .'_layer';
   my $job_layer = $self->$layer_method;
 
-  my %queued = map {$_ => 1} $self->jq_queued($job_type);
+  my %queued = map {$_ => 1} jq_queued($job_type);
   my @devices = schema('netdisco')->resultset('Device')
     ->has_layer($job_layer)->get_column('ip')->all;
   my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
-  $self->jq_insert([
+  jq_insert([
       map {{
           device => $_,
           action => $job_type,
