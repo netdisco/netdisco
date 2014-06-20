@@ -18,9 +18,12 @@
 $(document).ready(function() {
   $('#aul-data-table').dataTable( {
     "processing": true,
-    "serverSide": true,
     "stateSave": true,
     "pageLength": 25,
+    "language": {
+      "search": 'Filter records: '
+    },
+    "serverSide": true,
     "order": [[ 0, "desc" ]],
     "ajax": "/ajax/control/admin/userlog/data",
     "columns": [{

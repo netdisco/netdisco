@@ -387,8 +387,12 @@ $(document).ready(function() {
             { "type": 'natural', "targets": [ 'natural' ] }
         ],
         "order": [[ 1, 'asc' ]],
+        "processing": true,
         "stateSave": true,
         "pageLength": 25,
+        "language": {
+            "search": 'Filter records: '
+        },
     } );
 } );
 </script>

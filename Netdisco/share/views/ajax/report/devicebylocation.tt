@@ -13,9 +13,13 @@
 <script type="text/javascript">
 $(document).ready(function() {
     var table = $('#data-table').dataTable({
-        "deferRender": true,
+        "processing": true,
         "stateSave": true,
         "pageLength": 25,
+        "language": {
+          "search": 'Filter records: '
+        },
+        "deferRender": true,
         "order": [[ 0, "asc" ], [2, "asc"], [ 3, "asc" ], [4, "asc"]],
         "data": [% results %],
         "columns": [

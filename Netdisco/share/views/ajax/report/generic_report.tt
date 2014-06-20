@@ -20,8 +20,12 @@
 <script>
 $(document).ready(function() {
   $('#rg-data-table').dataTable({
+    "processing": true,
+    "stateSave": true,
     "pageLength": 25,
-    "stateSave": true
+    "language": {
+      "search": 'Filter records: '
+    }
   } );
 } );
 </script>

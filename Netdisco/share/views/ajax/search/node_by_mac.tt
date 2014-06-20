@@ -135,15 +135,16 @@ tr.group:hover {
 <script>
 $(document).ready(function() {
     var table = $('#nsbm-data-table').DataTable({
-        "columnDefs": [
-            { "visible": false, "targets": 0 }
-        ],
-        "order": [[ 0, 'asc' ]],
+        "processing": true,
         "stateSave": true,
         "pageLength": 25,
         "language": {
             "search": 'Filter records: '
         },
+        "columnDefs": [
+            { "visible": false, "targets": 0 }
+        ],
+        "order": [[ 0, 'asc' ]],
         "drawCallback": function ( settings ) {
             var api = this.api();
             var rows = api.rows( {page:'current'} ).nodes();

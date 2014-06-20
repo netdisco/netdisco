@@ -30,12 +30,15 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
-    [% IF opt %] 
     "processing": true,
-    "serverSide": true,
-    "searching": false,
     "stateSave": true,
     "pageLength": 25,
+    "language": {
+      "search": 'Filter records: '
+    },
+    [% IF opt %] 
+    "serverSide": true,
+    "searching": false,
     "order": [[ 0, "desc" ]],
     "ajax": '/ajax/content/report/moduleinventory/data?[% url(params('query').hash) %]',
     "columns": [
