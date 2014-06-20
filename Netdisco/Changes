@@ -1,11 +1,17 @@
 2.027008_001 - 2014-06-01
 
+  [NEW FEATURES]
+
+  * HTML tables now use DataTables, table plug-in for jQuery, to support
+    pagination, results filtering, and multi-column ordering
+
   [ENHANCEMENTS]
 
   * Ignore devices with "phone" in their CDP/LLDP platform description
   * Change log format to contain UTC timestamp
   * Link to VLAN search by name from VLAN Inventory report
   * Neighbor device links to both device and port (fragfutter)
+  * Optimization of multiple SQL queries to improve report performance
 
   [BUG FIXES]
 
