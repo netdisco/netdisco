@@ -1,7 +1,7 @@
 [% IF results.count == 0 %]
 <div class="span2 alert alert-info">This port's log is empty.</div>
 [% ELSE %]
-<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+<table id="data-table" class="table table-bordered table-condensed table-striped" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Creation</th>
@@ -27,3 +27,15 @@
 </table>
 [% END %]
 
+<script>
+$(document).ready(function() {
+  $('#data-table').dataTable({
+    "processing": true,
+    "stateSave": true,
+    "pageLength": 25,
+    "language": {
+      "search": 'Filter records: '
+    }
+  } );
+} );
+</script>
