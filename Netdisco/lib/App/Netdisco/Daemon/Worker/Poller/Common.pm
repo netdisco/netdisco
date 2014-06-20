@@ -5,8 +5,9 @@ use Dancer qw/:moose :syntax :script/;
 use App::Netdisco::Util::SNMP 'snmp_connect';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Daemon::Util ':all';
-use Dancer::Plugin::DBIC 'schema';
+use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 
+use Dancer::Plugin::DBIC 'schema';
 use NetAddr::IP::Lite ':lower';
 
 use Role::Tiny;
