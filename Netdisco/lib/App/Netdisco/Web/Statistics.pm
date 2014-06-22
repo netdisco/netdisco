@@ -57,7 +57,7 @@ get '/ajax/content/statistics' => require_login sub {
     my $dbi_ver    = $DBI::VERSION;
     my $dbdpg_ver  = $DBD::Pg::VERSION;
 
-    eval 'require SNMP::Info';
+    eval { require SNMP::Info };
     my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
 
     var( nav => 'statistics' );

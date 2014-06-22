@@ -6,6 +6,7 @@ use App::Netdisco::Util::Permission qw/check_acl/;
 
 use SNMP::Info;
 use Try::Tiny;
+use Module::Load ();
 use Path::Class 'dir';
 
 use base 'Exporter';
@@ -140,7 +141,7 @@ sub _try_connect {
         sprintf '[%s] try_connect with ver: %s, class: %s, comm: %s',
         $snmp_args->{DestHost}, $snmp_args->{Version}, $class,
         ($comm->{community} || "v3user:$comm->{user}");
-      eval "require $class";
+      Module::Load::load $class;
 
       $info = $class->new(%$snmp_args, %comm_args);
       $info = ($mode eq 'read' ? _try_read($info, $device, $comm)
@@ -154,7 +155,7 @@ sub _try_connect {
             $snmp_args->{DestHost}, $snmp_args->{Version}, $class,
             ($comm->{community} || "v3user:$comm->{user}");
 
-          eval "require $class";
+          Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
       }
   }
