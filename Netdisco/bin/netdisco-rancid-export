@@ -43,8 +43,10 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Permission ':all';
 
 my $settings = setting( 'rancid' );
+my $delimiter = $settings->{ 'delimiter' } || ':';
 my $down_age = $settings->{ 'down_age' } || '1 day';
 my $rancidhome = $settings->{ 'rancid_home' } || '/var/lib/rancid';
+my $config_vendormap = $settings->{ 'vendormap' } || {};
 my $by_ip = {};
 foreach my $g (@{$settings->{ 'by_ip' }}) {
   $by_ip->{$g} = 1;
@@ -75,22 +77,29 @@ foreach my $d (@devices) {
 my %VENDORMAP = (
 # If netdisco vendor name and rancid vendor name
 # do not map 1:1, map it here.
+# eg:
+# 'dell:2024' => 'dellnseries',
+# 'dell:3024' => 'dellnseries'
 );
-    
+
 foreach my $group (keys %$list) {
   open(ROUTER, ">${rancidhome}/${group}/router.db") || die "${rancidhome}/${group}/router.db: $!\n";
   foreach my $dev (sort {$a->ip cmp $b->ip} @{$list->{$group}}) {
     my $vendor = $dev->vendor;
+    my $vendormodel = join(':',$dev->vendor,$dev->model);
     my $name;
-    if ($VENDORMAP{$vendor}) {
-      $vendor = $VENDORMAP{$vendor};
+    if ( $VENDORMAP{$vendor} or $VENDORMAP{$vendormodel} ) {
+      $vendor = $VENDORMAP{$vendormodel} || $VENDORMAP{$vendor};
+    }
+    if ( $config_vendormap->{$vendor} or $config_vendormap->{$vendormodel} ) {
+      $vendor = $config_vendormap{$vendormodel} || $config_vendormap{$vendor};
     }
     if ($by_ip->{$group}) {
       $name = $dev->ip;
     } else {
       $name = ($dev->dns || $dev->name);
     }
-    printf ROUTER "%s:%s:%s\n", $name, $vendor,
+    printf ROUTER "%s$delimiter%s$delimiter%s\n", $name, $vendor,
       $dev->get_column( 'old' ) ? "down" : "up";
   }
   close(ROUTER);
@@ -108,11 +117,15 @@ This script requires some configuration to be added to your Netdisco
  rancid:
    rancid_home:  /var/lib/rancid
    down_age:     '1 day'
+   delimiter:    ':'
    by_ip:        [ other ]
    groups:
      switch:     [ 'name:.*[Ss][Ww].*' ]
      rtr:        [ 'name:[rR]tr.*' ]
      ap:         [ 'name:[aA][pP].*' ]
+   vendormap:
+     "dell":      force10
+     "dell:2024": dellnseries
 
 Note that C<netdisco-rancid-export> is not part of the automatic scheduler
 built in to Netdisco. You should run this script via C<cron> just after your
@@ -123,11 +136,30 @@ periodic C<discoverall>.
 The location to write RANCID Group configuration files into. A subdirectory
 for each Group will be created.
 
+Default: "C</var/lib/rancid>".
+
 =head2 C<down_age>
 
 This should be the same or greater than the interval between regular discover
 jobs on your network. Devices which have not been discovered within this time
 will be marked as "C<down>" to RANCID.
+
+Default: "C<1 day>".
+
+=head2 C<delimiter>
+
+RANCID version 3 uses a semicolon as delimiter. Set this to the delimiter
+character if needed to be different from the default.
+
+Default: "C<:>".
+
+=head2 C<vendormap>
+
+If the device Vendor in Netdisco is not the same as the RANCID vendor script,
+configure a mapping here. The left hand side (key) should be the Netdisco
+vendor, the right hand side (value) should be the RANCID vendor script name.
+You can also set the Netdisco vendor to be "C<vendor:model>" for fine-grained
+control. See the synopsis for an example.
 
 =head2 C<groups>
 

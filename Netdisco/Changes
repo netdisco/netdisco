@@ -12,6 +12,7 @@
   * Link to VLAN search by name from VLAN Inventory report
   * Neighbor device links to both device and port (fragfutter)
   * Optimization of multiple SQL queries to improve report performance
+  * VendorMap and Delimiter enhancements to RANCID generator (LesB)
 
   [BUG FIXES]
 
