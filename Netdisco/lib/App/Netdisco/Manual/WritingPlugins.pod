@@ -345,9 +345,9 @@ template file of your own in your plugin, you need a new path:
  register_template_path(
    dist_dir( 'App-Netdisco-Web-Plugin-Search-MyNewFeature' ));
 
-The registered path will be searched before the built-in C<App::Netdisco>
-path. We recommend use of the L<File::ShareDir> module to package and ship
-templates along with your plugin, as shown.
+The "C<views>" subdirectory of the registered path will be searched before the
+built-in C<App::Netdisco> path. We recommend use of the L<File::ShareDir>
+module to package and ship templates along with your plugin, as shown.
 
 Each path added using C<register_template_path> is searched I<before> any
 existing paths in the template config. See the

@@ -14,8 +14,9 @@ use Module::Find ();
 use Module::Load ();
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
+# FIXME: need to avoid splat so that this can be reordered
+Module::Find::usesub 'App::Netdisco::Web::Auto';
 Module::Find::usesub 'App::Netdisco::Web';
-Module::Find::usesub 'App::Netdisco::Auto::Web';
 
 sub _load_web_plugins {
   my $plugin_list = shift;
@@ -39,6 +40,10 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
     unshift @INC, dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'site_plugins')->stringify;
     _load_web_plugins( setting('extra_web_plugins') );
 }
+
+# after plugins are loaded, add our own template path
+push @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
+     setting('views');
 
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };

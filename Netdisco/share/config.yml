@@ -223,6 +223,7 @@ engines:
     start_tag: '[%'
     end_tag: '%]'
     PRE_CHOMP: 1
+    INCLUDE_PATH: []
 layout: 'main'
 plugins:
   Auth::Extensible:

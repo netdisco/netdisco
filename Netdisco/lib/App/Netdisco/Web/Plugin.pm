@@ -30,9 +30,8 @@ register 'register_template_path' => sub {
       return error "bad template path to register_template_paths";
   }
 
-  unshift
-    @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
-    $path, dir($path, 'views')->stringify;
+  push @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
+       dir($path, 'views')->stringify;
 };
 
 sub _register_include {
