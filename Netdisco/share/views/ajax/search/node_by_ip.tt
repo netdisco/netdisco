@@ -103,7 +103,8 @@
       [% END %]
       </td>
       <td>Switch Port</td>
-      <td><a class="nd_linkcell nd_center-cell"
+      <td class="nd_center-cell">
+        <a class="nd_linkcell"
           href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
           [% node.switch | html_entity %] - [% node.port | html_entity %]
         [% '&nbsp;<i class="icon-book text-warning"></i>' IF NOT node.active %]</a>
