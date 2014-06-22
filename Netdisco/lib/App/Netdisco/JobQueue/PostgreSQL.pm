@@ -4,8 +4,8 @@ use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use Net::Domain 'hostfqdn';
+use Module::Load ();
 use Try::Tiny;
-use MCE ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -105,6 +105,7 @@ sub jq_userlog {
 # MCE ->do() method.
 sub jq_take {
   my ($wid, $type) = @_;
+  Module::Load::load 'MCE';
 
   # be polite to SQLite database (that is, local CPU)
   debug "$type ($wid): sleeping now...";
