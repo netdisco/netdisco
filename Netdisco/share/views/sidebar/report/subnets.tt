@@ -10,6 +10,7 @@
               <legend class="nd_sidebar-legend">
                 <label><em><strong>Date Range</strong></em></label>
               </legend>
+              <!--
               <div class="clearfix input-prepend">
                 <label class="add-on">
                   <input type="checkbox" id="age_invert"
@@ -19,6 +20,7 @@
                   <span class="nd_searchcheckbox uneditable-input">Not within...</span>
                 </label>
               </div>
+              -->
               <div class="clearfix">
                 <input class="nd_side-input" id="daterange" required="required"
                   type="text" name="daterange" value="[%

@@ -20,8 +20,13 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
         FROM subnets s1, node_ip ni
         WHERE s1.net <<= ?::cidr
               AND ni.ip <<= s1.net
-              AND ni.time_last >= ?
-              AND ni.time_last <= ?
+              AND ((
+                ni.time_first IS null
+                AND ni.time_last IS null
+              ) OR (
+                ni.time_last >= ?
+                AND ni.time_last <= ?
+              ))
               AND s1.last_discover >= ?
       UNION
       SELECT DISTINCT net, di.alias as ip
