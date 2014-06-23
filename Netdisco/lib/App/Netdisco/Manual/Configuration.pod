@@ -88,7 +88,7 @@ Value: Boolean. Default: C<false>.
 
 Enable this to disable login authentication in the web frontend. The username
 will be set to C<guest> so if you want to allow extended permissions (C<admin>
-or C<port_control>, create a dummy user with the appropriate flag in the
+or C<port_control>), create a dummy user with the appropriate flag in the
 database:
 
  netdisco=> insert into users (username) values ('guest');
