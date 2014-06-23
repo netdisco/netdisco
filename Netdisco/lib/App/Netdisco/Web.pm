@@ -42,7 +42,7 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
 }
 
 # after plugins are loaded, add our own template path
-push @{ config->{engines}->{template_toolkit}->{INCLUDE_PATH} },
+push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
      setting('views');
 
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
