@@ -24,6 +24,7 @@
   * Store started timestamp on job completion
   * Set UTF-8 mode on Pg database connection
   * Add netdisco-rancid-export to installed scripts
+  * Template INCLUDE path stuffing broken for plugins [#103]
 
 2.027007 - 2014-05-27
 

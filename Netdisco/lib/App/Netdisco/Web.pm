@@ -48,6 +48,10 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
     _load_web_plugins( setting('extra_web_plugins') );
 }
 
+# after plugins are loaded, add our own template path
+push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
+     setting('views');
+
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 

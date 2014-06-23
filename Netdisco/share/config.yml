@@ -219,7 +219,7 @@ warnings: false
 show_errors: false
 logger: 'console'
 engines:
-  template_toolkit:
+  netdisco_template_toolkit:
     encoding: 'utf8'
     start_tag: '[%'
     end_tag: '%]'
@@ -235,7 +235,7 @@ plugins:
         provider: 'App::Netdisco::Web::Auth::Provider::DBIC'
         schema_name: 'netdisco'
 session: 'YAML'
-template: 'template_toolkit'
+template: 'netdisco_template_toolkit'
 route_cache: true
 appname: 'Netdisco'
 behind_proxy: false
