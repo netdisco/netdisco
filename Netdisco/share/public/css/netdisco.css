@@ -176,6 +176,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   padding-left: 25px;
 }
 
+.table .nd_icon-right {
+  margin-right: 18px;
+  z-index: 1;
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
@@ -283,8 +288,8 @@ td > form.nd_inline-form {
   color: black;
 }
 
-/* port power control */
-.nd_power-icon {
+/* port power control and help icon */
+.nd_pointer-icon {
   cursor: pointer;
 }
 
@@ -343,6 +348,18 @@ td > form.nd_inline-form {
   float: left;
   margin-right: 6px;
   color: #555;
+}
+
+.nd_help-left {
+  float: left;
+  margin-top: -1px;
+  margin-left: -24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.nd_text-icon-right {
+  padding-right: 30px !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

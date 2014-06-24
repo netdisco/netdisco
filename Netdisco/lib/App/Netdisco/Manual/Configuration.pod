@@ -598,7 +598,7 @@ token-ring-default,fddinet-default,trnet-default.
 On some devices, per-VLAN macsuck will timeout with specific VLAN numbers. You
 can put those numbers (or their names) into this list to have them skipped.
 
-=head3 C<macsucl_no_devicevlan>
+=head3 C<macsuck_no_devicevlan>
 
 Value: List of "IP:vlan-number" or "IP:vlan-name". Default: Empty List.
 

@@ -204,7 +204,7 @@
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power-icon nd_power-on"
+                <i class="icon-off nd_pointer-icon nd_power-on"
                   rel="tooltip" data-placement="top" data-offset="3"
                   data-animation="" data-title="Click to Disable"></i>
             [% ELSE %]
@@ -224,7 +224,7 @@
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power-icon"
+                <i class="icon-off nd_pointer-icon"
                   rel="tooltip" data-placement="top" data-offset="3"
                   data-animation="" data-title="Click to Enable"></i>
             [% ELSE %]

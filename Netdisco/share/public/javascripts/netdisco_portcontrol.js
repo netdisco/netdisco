@@ -118,7 +118,7 @@ $(document).ready(function() {
   });
 
   // activity for port up/down control, power enable/disable control
-  $('#ports_pane').on('click', '.icon-hand-up,.icon-hand-down,.nd_power-icon', function() {
+  $('#ports_pane').on('click', '.icon-hand-up,.icon-hand-down,.nd_pointer-icon', function() {
     var clicked = this; // create a closure
     $('#nd_portlog').one('hidden', function() {
       port_control(clicked); // save
