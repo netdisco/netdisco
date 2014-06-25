@@ -169,7 +169,7 @@ sub store_device {
   $device->model(  Encode::decode('UTF-8', $snmp->model)  );
   $device->serial( Encode::decode('UTF-8', $snmp->serial) );
 
-  $device->snmp_class( $snmp->{'class'} );
+  $device->snmp_class( $snmp->class );
   $device->last_discover(\'now()');
 
   schema('netdisco')->txn_do(sub {
