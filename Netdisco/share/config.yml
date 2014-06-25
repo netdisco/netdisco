@@ -103,7 +103,7 @@ discover_only: []
 discover_no_type: []
 discover_min_age: 0
 macsuck_no: []
-macksuck_only: []
+macsuck_only: []
 macsuck_all_vlans: false
 macsuck_no_unnamed: false
 macsuck_no_vlan: [fddi-default,token-ring-default,fddinet-default,trnet-default]
