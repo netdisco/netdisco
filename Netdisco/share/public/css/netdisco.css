@@ -10,6 +10,10 @@ form {
   margin: 0px;
 }
 
+.nd_adder-form {
+  margin-bottom: 0px;
+}
+
 .navbar-inner .container {
   background: url(../images/navbar_disco.png) no-repeat;
 }
@@ -368,9 +372,15 @@ td > form.nd_inline-form {
   vertical-align: middle !important;
 }
 
+/* pull cell content away from left side */
 .nd_padded-cell-left {
   padding-top: 2px;
   padding-left: 5px;
+}
+
+/* forms in cells */
+.nd_padded-cell-left input {
+  font-family: monospace;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
