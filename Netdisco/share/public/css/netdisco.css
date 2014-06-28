@@ -348,12 +348,16 @@ td > form.nd_inline-form {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles for conf pane */
 
-form {
+.nd_adder-form {
   margin: 0px;
 }
 
-.nd_adder-form {
+.nd_adder-form-item {
   margin-bottom: 0px;
+}
+
+.nd_adder-form-item input {
+  vertical-align: baseline;
 }
 
 .nd_help-left {
