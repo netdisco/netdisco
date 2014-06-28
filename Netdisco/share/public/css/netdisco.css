@@ -6,14 +6,6 @@ body {
   padding-top: 50px;
 }
 
-form {
-  margin: 0px;
-}
-
-.nd_adder-form {
-  margin-bottom: 0px;
-}
-
 .navbar-inner .container {
   background: url(../images/navbar_disco.png) no-repeat;
 }
@@ -182,11 +174,6 @@ div.content > div.tab-content table.nd_floatinghead thead {
 }
 .table .nd_nudge-for-icon {
   padding-left: 25px;
-}
-
-.table .nd_icon-right {
-  margin-right: 18px;
-  z-index: 1;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -358,6 +345,17 @@ td > form.nd_inline-form {
   color: #555;
 }
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* styles for conf pane */
+
+form {
+  margin: 0px;
+}
+
+.nd_adder-form {
+  margin-bottom: 0px;
+}
+
 .nd_help-left {
   float: left;
   margin-top: 2px;
@@ -366,19 +364,16 @@ td > form.nd_inline-form {
   color: #999;
 }
 
-/* make space on rhs for help icon */
 .nd_text-icon-right {
   padding-right: 30px !important;
   vertical-align: middle !important;
 }
 
-/* pull cell content away from left side */
 .nd_padded-cell-left {
   padding-top: 2px;
   padding-left: 5px;
 }
 
-/* forms in cells */
 .nd_padded-cell-left input {
   font-family: monospace;
 }
