@@ -66,6 +66,8 @@ Daemon::Control->new({
   stderr_file => file($log_dir, 'netdisco-web.log'),
   stdout_file => file($log_dir, 'netdisco-web.log'),
   redirect_before_fork => 0,
+  ((scalar grep { $_ =~ m/port/ } @args) ? ()
+                                         : (uid => $uid, gid => $gid)),
 })->run;
 
 # the guts of this are borrowed from Plack::Loader::Restarter - many thanks!!
