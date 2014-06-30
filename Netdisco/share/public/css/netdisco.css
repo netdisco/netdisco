@@ -382,6 +382,13 @@ table .nd_text-icon-right {
   font-family: monospace;
 }
 
+.nd_padded-cell-left input, .nd_padded-cell-left textarea,
+  .nd_padded-cell-left select, .bootstrap-switch {
+
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
 table .nd_inner-table-setting {
   padding: 0px;
   border: 0px;
@@ -393,8 +400,16 @@ table .nd_inner-table-value {
   width: 100%;
 }
 
-table .nd_conf-inner-border {
-  border-color: #dddddd;
+.nd_adder-form a.btn-small {
+  vertical-align: text-bottom;
+}
+
+table.nd_conf-inner-border {
+  border-color: #cccccc;
+  border-width: 2px;
+  width: 80%;
+  display: inline-table;
+  vertical-align: middle;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
