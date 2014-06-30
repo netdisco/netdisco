@@ -1,5 +1,9 @@
 2.027008_002 - 2014-06-23
 
+  [ENHANCEMENTS]
+
+  * table_pagesize option to set default size of table pages
+
   [BUG FIXES]
 
   * Subnets report date range fixed, but (unnecessary?) "not" option removed

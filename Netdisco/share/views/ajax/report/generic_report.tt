@@ -22,7 +22,7 @@ $(document).ready(function() {
   $('#rg-data-table').dataTable({
     "processing": true,
     "stateSave": true,
-    "pageLength": 25,
+    "pageLength": [% settings.table_pagesize %],
     "language": {
       "search": 'Filter records: '
     }
