@@ -8,7 +8,7 @@ our $VERSION = '2.027007';
 use App::Netdisco::Configuration;
 
 use Module::Find ();
-Module::Find::usesub 'App::Netdisco::Auto::Init';
+Module::Find::usesub 'App::NetdiscoE::Init';
 
 =head1 NAME
 

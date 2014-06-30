@@ -15,7 +15,7 @@ use Module::Load ();
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
 # FIXME: need to avoid splat so that this can be reordered
-Module::Find::usesub 'App::Netdisco::Web::Auto';
+Module::Find::usesub 'App::NetdiscoE::Web';
 Module::Find::usesub 'App::Netdisco::Web';
 
 sub _load_web_plugins {

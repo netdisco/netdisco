@@ -368,9 +368,9 @@ td > form.nd_inline-form {
   color: #999;
 }
 
-.nd_text-icon-right {
-  padding-right: 30px !important;
-  vertical-align: middle !important;
+table .nd_text-icon-right {
+  padding-right: 30px;
+  vertical-align: middle;
 }
 
 .nd_padded-cell-left {
@@ -378,8 +378,23 @@ td > form.nd_inline-form {
   padding-left: 5px;
 }
 
-.nd_padded-cell-left input {
+.nd_padded-cell-left input, .nd_padded-cell-left textarea {
   font-family: monospace;
+}
+
+table .nd_inner-table-setting {
+  padding: 0px;
+  border: 0px;
+}
+
+table .nd_inner-table-value {
+  padding: 0px;
+  border: 0px;
+  width: 100%;
+}
+
+table .nd_conf-inner-border {
+  border-color: #dddddd;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
