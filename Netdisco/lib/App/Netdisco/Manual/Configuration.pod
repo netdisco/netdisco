@@ -224,13 +224,13 @@ C<web_plugins> setting.
 
 =head3 C<reports>
 
-Value: Dictionary of Reports Hashes. Default: None.
+Value: List of Reports Hashes. Default: None.
 
 Use this configuration to add reports to Netdisco without writing any Perl
 code or HTML templates. For example:
 
  reports:
-   power_inventory:
+   - tag: power_inventory
      category: Device
      label: 'Power Supply Inventory'
      columns:
@@ -242,8 +242,8 @@ code or HTML templates. For example:
          FROM device d
        ORDER BY name
 
-Each key of the C<reports> configuration is an alias for the report, and
-becomes part of the web path.
+The C<key> of each item in the C<reports> configuration is an alias for the
+report, and becomes part of the web path.
 
 You can munge the data retrieved from the database by placing a Perl script
 with the same name as the C<reports> key into the C<site_plugins> directory of

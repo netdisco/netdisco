@@ -11,8 +11,8 @@ use Safe;
 
 use vars qw/$config @data/;
 
-foreach my $r (keys %{setting('reports')}) {
-  my $report = setting('reports')->{$r};
+foreach my $report (@{setting('reports')}) {
+  my $r = $report->{tag};
 
   register_report({
     tag => $r,
@@ -41,7 +41,7 @@ foreach my $r (keys %{setting('reports')}) {
       # Data Munging support...
 
       my $compartment = Safe->new;
-      $config = setting('reports')->{$r};
+      $config = $report;
       $compartment->share(qw/$config @data/);
       $compartment->permit_only(qw/:default sort/);
 
