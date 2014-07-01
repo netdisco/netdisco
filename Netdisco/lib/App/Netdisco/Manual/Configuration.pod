@@ -67,7 +67,7 @@ backend poller, as this can highlight broken topology.
 
 =head3 C<logger_format>
 
-Value: Format String. Default: C<< '[%P] %L @%D> %m' >>.
+Value: Format String. Default: C<< '[%P] %U %L %m' >>.
 
 Structure of the log messages. See L<Dancer::Logger::Abstract/"logger_format">
 for details.
@@ -781,8 +781,7 @@ field to use as the management IP address for a device.
 
 Value: Boolean. Default: C<true>.
 
-Set to false to prevent Netdisco from changing the default VLAN on an
-interface.
+Set to false to prevent users from changing the default VLAN on an interface.
 
 =head3 C<portctl_nophones>
 
