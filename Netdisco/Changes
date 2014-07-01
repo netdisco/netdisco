@@ -1,4 +1,4 @@
-2.027008_001 - 2014-06-01
+2.028000 - 2014-07-01
 
   [NEW FEATURES]
 
@@ -7,6 +7,7 @@
 
   [ENHANCEMENTS]
 
+  * Web daemon will drop root status always if --port is not given
   * Ignore devices with "phone" in their CDP/LLDP platform description
   * Change log format to contain UTC timestamp
   * Link to VLAN search by name from VLAN Inventory report
@@ -16,11 +17,15 @@
 
   [BUG FIXES]
 
+  * Subnets report date range fixed, & (unnecessary?) "not" option removed
+  * Track how many times the device uptime wrapped (F. Schiavarelli)
   * Fix for device counts in VLAN Inventory report
   * Forward port housekeeping/schedule and expiry/expire legacy config
   * Store started timestamp on job completion
   * Set UTF-8 mode on Pg database connection
+  * Identify changes in device type after initial discover
   * Add netdisco-rancid-export to installed scripts
+  * Template INCLUDE path stuffing broken for plugins [#103]
 
 2.027007 - 2014-05-27
 

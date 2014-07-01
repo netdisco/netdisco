@@ -62,15 +62,28 @@ You I<must> reconfigure. Old configuration will not be migrated.
 
 =head1 2.028000
 
-=head2 General Changes
+=head2 Incompatible Changes
+
+The daemons can be started from init scripts, as root. They will drop back
+from the root user to C<netdisco> before opening logs. However a limitation is
+that the web frontend might need to keep root status to bind to a specific
+port (e.g. 80) - the logs will then be created as root user. Sorry about that.
+
+You might also find when upgrading that previous logs were owned by root and
+Netdisco now wants to write to them as non-root (C<netdisco>) user. Please
+either remove the logs before restarting, or alter their ownership.
+
+Logs can be found in the C<logs> subdirectory of Netdisco's home area.
+
+=head2 General Notices
 
 The configuration item C<housekeeping> has been renamed to C<schedule>. Old
-configuration will continue to work, but we recommend you rename this key in
-your configuration anyway.
+configuration will continue to work, but we recommend you now rename this key
+in your configuration anyway.
 
 =head1 2.025001
 
-=head2 General Changes
+=head2 General Notices
 
 The Web and Backend daemons (C<netdisco-web> and C<netdisco-daemon>
 respectively) will now watch your C<deployment.yml> configuration file, and

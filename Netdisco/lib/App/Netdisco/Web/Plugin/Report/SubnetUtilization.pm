@@ -18,15 +18,12 @@ get '/ajax/content/report/subnets' => require_login sub {
     my $agenot = param('age_invert') || '0';
     my ( $start, $end ) = param('daterange') =~ /(\d+-\d+-\d+)/gmx;
 
-    if ($agenot) {
-        my $tmp = $end;
-        $end = $start;
-        $start = $tmp;
-    }
+    $start = $start . ' 00:00:00';
+    $end   = $end . ' 23:59:59';
 
     my @results = schema('netdisco')->resultset('Virtual::SubnetUtilization')
       ->search(undef,{
-        bind => [ $subnet, $start, $end, $end, $subnet, $end, $end ],
+        bind => [ $subnet, $start, $end, $start, $subnet, $start, $start ],
       })->hri->all;
 
     return unless scalar @results;

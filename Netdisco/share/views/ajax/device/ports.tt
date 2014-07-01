@@ -389,7 +389,7 @@ $(document).ready(function() {
         "order": [[ 1, 'asc' ]],
         "processing": true,
         "stateSave": true,
-        "pageLength": 25,
+        "pageLength": [% settings.table_pagesize %],
         "language": {
             "search": 'Filter records: '
         },

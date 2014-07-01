@@ -177,7 +177,7 @@ $(document).ready(function() {
     var table = $('#nsbi-data-table').DataTable({
         "processing": true,
         "stateSave": true,
-        "pageLength": 25,
+        "pageLength": [% settings.table_pagesize %],
         "language": {
             "search": 'Filter records: '
         },

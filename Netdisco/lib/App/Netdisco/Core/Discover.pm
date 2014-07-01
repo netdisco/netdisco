@@ -169,7 +169,7 @@ sub store_device {
   $device->model(  Encode::decode('UTF-8', $snmp->model)  );
   $device->serial( Encode::decode('UTF-8', $snmp->serial) );
 
-  $device->snmp_class( $snmp->device_type );
+  $device->snmp_class( $snmp->class );
   $device->last_discover(\'now()');
 
   schema('netdisco')->txn_do(sub {
@@ -216,8 +216,19 @@ sub store_interfaces {
   # clear the cached uptime and get a new one
   my $dev_uptime = $snmp->load_uptime;
 
-  # used to track whether we've wrapped the device uptime
+  # used to track how many times the device uptime wrapped
   my $dev_uptime_wrapped = 0;
+
+  # use SNMP-FRAMEWORK-MIB::snmpEngineTime if available to
+  # fix device uptime if wrapped
+  if (defined $snmp->snmpEngineTime) {
+      $dev_uptime_wrapped = int( $snmp->snmpEngineTime * 100 / 2**32 );
+      if ($dev_uptime_wrapped > 0) {
+          info sprintf ' [%s] interface - device uptime wrapped %d times - correcting',
+            $device->ip, $dev_uptime_wrapped;
+          $device->uptime( $dev_uptime + $dev_uptime_wrapped * 2**32 );
+      }
+  }
 
   # build device interfaces suitable for DBIC
   my %interfaces;
@@ -264,7 +275,7 @@ sub store_interfaces {
                   debug sprintf
                     ' [%s] interfaces - correcting LastChange for %s, assuming sysUptime wrap',
                     $device->ip, $port;
-                  $lc += 2**32;
+                  $lc += $dev_uptime_wrapped * 2**32;
               }
           }
       }

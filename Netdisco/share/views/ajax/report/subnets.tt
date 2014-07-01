@@ -11,7 +11,7 @@
   </tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td class="nd_center-cell"><a href="[% uri_for('/report/ipinventory') %]?subnet=[% row.subnet | uri %]&daterange=[% daterange | uri %]&limit=[% row.subnet_size | uri %]">
+      <td class="nd_center-cell"><a href="[% uri_for('/report/ipinventory') %]?subnet=[% row.subnet | uri %]&daterange=[% params.daterange | uri %]&age_invert=[% params.age_invert | uri %]&limit=[% row.subnet_size | uri %]">
                [% row.subnet | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.subnet_size | format_number %]</td>
       <td class="nd_center-cell">[% row.active | format_number %]</td>
@@ -26,7 +26,7 @@ $(document).ready(function() {
   $('#data-table').dataTable({
     "processing": true,
     "stateSave": true,
-    "pageLength": 25,
+    "pageLength": [% settings.table_pagesize %],
     "language": {
       "search": 'Filter records: '
     },
