@@ -352,6 +352,10 @@ td > form.nd_inline-form {
   margin: 0px;
 }
 
+.nd_adder-form i {
+ cursor: pointer;
+}
+
 .nd_adder-form-item {
   margin-bottom: 0px;
 }
@@ -368,8 +372,16 @@ td > form.nd_inline-form {
   color: #999;
 }
 
+.nd_form-save-btn {
+  float: left;
+  margin-top: 2px;
+  margin-left: -53px;
+  cursor: pointer;
+  color: rgb(160,25,63);
+}
+
 table .nd_text-icon-right {
-  padding-right: 30px;
+  padding-right: 57px;
   vertical-align: middle;
 }
 
