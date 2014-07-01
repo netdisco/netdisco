@@ -23,6 +23,7 @@
   * Forward port housekeeping/schedule and expiry/expire legacy config
   * Store started timestamp on job completion
   * Set UTF-8 mode on Pg database connection
+  * Identify changes in device type after initial discover
   * Add netdisco-rancid-export to installed scripts
   * Template INCLUDE path stuffing broken for plugins [#103]
 
