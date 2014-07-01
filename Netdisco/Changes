@@ -1,15 +1,4 @@
-2.027008_002 - 2014-06-23
-
-  [ENHANCEMENTS]
-
-  * table_pagesize option to set default size of table pages
-
-  [BUG FIXES]
-
-  * Subnets report date range fixed, but (unnecessary?) "not" option removed
-  * Track how many times the device uptime wrapped (F. Schiavarelli)
-
-2.027008_001 - 2014-06-23
+2.028000 - 2014-07-01
 
   [NEW FEATURES]
 
@@ -18,6 +7,7 @@
 
   [ENHANCEMENTS]
 
+  * Web daemon will drop root status always if --port is not given
   * Ignore devices with "phone" in their CDP/LLDP platform description
   * Change log format to contain UTC timestamp
   * Link to VLAN search by name from VLAN Inventory report
@@ -27,6 +17,8 @@
 
   [BUG FIXES]
 
+  * Subnets report date range fixed, & (unnecessary?) "not" option removed
+  * Track how many times the device uptime wrapped (F. Schiavarelli)
   * Fix for device counts in VLAN Inventory report
   * Forward port housekeeping/schedule and expiry/expire legacy config
   * Store started timestamp on job completion
