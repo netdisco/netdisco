@@ -7,6 +7,7 @@
   [BUG FIXES]
 
   * Subnets report date range fixed, but (unnecessary?) "not" option removed
+  * Track how many times the device uptime wrapped (F. Schiavarelli)
 
 2.027008_001 - 2014-06-23
 
