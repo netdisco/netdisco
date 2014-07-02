@@ -215,6 +215,7 @@ lib/App/Netdisco/Web/Search.pm
 lib/App/Netdisco/Web/Static.pm
 lib/App/Netdisco/Web/Statistics.pm
 lib/App/Netdisco/Web/TypeAhead.pm
+lib/Dancer/Template/NetdiscoTemplateToolkit.pm
 LICENCE
 Makefile.PL
 MANIFEST			This list of files
