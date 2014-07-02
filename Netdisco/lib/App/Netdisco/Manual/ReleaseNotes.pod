@@ -66,7 +66,7 @@ You I<must> reconfigure. Old configuration will not be migrated.
 
 The daemons can be started from init scripts, as root. They will drop back
 from the root user to C<netdisco> before opening logs. However a limitation is
-that the web frontend might need to keep root status to bind to a specific
+that the web frontend might temporarily keep root status to bind to a specific
 port (e.g. 80) - the logs will then be created as root user. Sorry about that.
 
 You might also find when upgrading that previous logs were owned by root and
