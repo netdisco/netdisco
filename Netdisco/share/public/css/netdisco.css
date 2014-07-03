@@ -378,6 +378,7 @@ td > form.nd_inline-form {
   margin-left: -53px;
   cursor: pointer;
   color: rgb(160,25,63);
+  display: none;
 }
 
 table .nd_text-icon-right {
