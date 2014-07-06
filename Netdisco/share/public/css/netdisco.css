@@ -425,6 +425,14 @@ table.nd_conf-inner-border {
   vertical-align: middle;
 }
 
+.nd_conf-dirty {
+  background-color: lemonchiffon;
+}
+
+.nd_conf-unsaved {
+  background-color: rgb(243,215,226);
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles for sidebar placement and sizing */
 
