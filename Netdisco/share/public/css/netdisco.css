@@ -418,19 +418,22 @@ table .nd_inner-table-value {
 }
 
 table.nd_conf-inner-border {
-  border-color: #7CA9C0;
+  border-color: #bbbbbb;
   border-width: 2px;
   width: 80%;
   display: inline-table;
   vertical-align: middle;
 }
 
-.nd_conf-dirty {
-  background-color: lemonchiffon;
+td.nd_conf-dirty, a.nd_conf-dirty {
+  background-color: cornsilk !important;
 }
 
-.nd_conf-unsaved {
-  background-color: rgb(243,215,226);
+td.nd_conf-unsaved {
+  border-width: 2px;
+  border-color: rgb(160,25,63);
+  border-right: 2px solid rgb(160,25,63);
+  border-bottom: 2px solid rgb(160,25,63);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
