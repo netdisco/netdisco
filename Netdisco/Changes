@@ -1,3 +1,9 @@
+2.028001
+
+  [BUG FIXES]
+
+  * Fix table rendering on port search tab when VLAN is null 
+ 
 2.028000 - 2014-07-01
 
   [NEW FEATURES]
