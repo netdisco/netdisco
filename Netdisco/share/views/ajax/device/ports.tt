@@ -60,12 +60,14 @@
       [% IF user_can_port_control AND params.c_admin %]
       [% IF row.up_admin == 'up' %]
       <td nowrap class="nd_editable-cell" data-action="down"
+        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
         data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
         <i class="icon-hand-down nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
           data-animation="" data-title="Click to Disable"></i>
       [% ELSE %]
       <td nowrap class="nd_editable-cell" data-action="up"
+        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
         data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
         <i class="icon-hand-up nd_hand-icon"
           rel="tooltip" data-placement="top" data-offset="3"
@@ -78,7 +80,7 @@
             data-animation="" data-title="View Port Log"></i>
         </a>
       [% ELSE %]
-      <td nowrap>
+      <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
       [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">

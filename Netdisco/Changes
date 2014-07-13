@@ -10,6 +10,7 @@
   * [ND1#117] unknown devices missing from inventory
   * [#118] Fix table rendering on port search tab when VLAN is null
   * Fix truncated port description change (F. Schiavarelli)
+  * Fix device port ordering in DataTables when Port Control is enabled
 
 2.028000 - 2014-07-01
 
