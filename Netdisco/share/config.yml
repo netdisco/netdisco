@@ -144,6 +144,7 @@ ignore_interfaces:
 ignore_private_nets: false
 reverse_sysname: false
 vlanctl: true
+portctl_nameonly: false
 portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false

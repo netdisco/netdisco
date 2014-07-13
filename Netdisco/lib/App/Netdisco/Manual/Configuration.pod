@@ -782,6 +782,14 @@ field to use as the management IP address for a device.
 Value: Boolean. Default: C<true>.
 
 Set to false to prevent users from changing the default VLAN on an interface.
+This setting has no effect when C<portctl_nameonly> below is set to true.
+
+=head3 C<portctl_nameonly>
+
+Value: Boolean. Default: C<false>.
+
+Set to true to limit port control action to only changing the interface name
+(description).
 
 =head3 C<portctl_nophones>
 

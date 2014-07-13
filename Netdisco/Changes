@@ -1,5 +1,9 @@
 2.028001
 
+  [ENHANCEMENTS]
+
+  * portctl_nameonly to limit port control to name only (F. Schiavarelli)
+
   [BUG FIXES]
 
   * [ND1#117] unknown devices missing from inventory
