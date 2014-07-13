@@ -13,17 +13,21 @@
         </thead>
         <tbody>
           [% FOREACH platform IN models.all %]
-          [% NEXT UNLESS platform.vendor AND platform.model %]
+          [% NEXT UNLESS platform.vendor OR platform.model %]
           <tr>
             <th>
+              [% IF platform.vendor %]
               <a class="nd_linkcell"
                 href="[% search_device %]&q=[% platform.vendor | uri %]&vendor=[% platform.vendor | uri %]">
                   [% platform.vendor | html_entity %]</a>
+              [% ELSE %]unknown[% END %]
             </th>
             <th>
+              [% IF platform.model %]
               <a class="nd_linkcell"
                 href="[% search_device %]&q=[% platform.model | uri %]&model=[% platform.model | uri %]">
                   [% platform.model | html_entity %]</a>
+              [% ELSE %]unknown[% END %]
             </th>
             <th>[% platform.get_column('count') | html_entity %]</th>
           </tr>
@@ -43,13 +47,15 @@
         </thead>
         <tbody>
           [% FOREACH release IN releases.all %]
-          [% NEXT UNLESS (release.os AND release.os_ver) %]
+          [% NEXT UNLESS (release.os OR release.os_ver) %]
           <tr>
-            <th>[% release.os | html_entity %]</th>
+            <th>[% release.os || 'unknown' | html_entity %]</th>
             <th>
+              [% IF release.os_ver %]
               <a class="nd_linkcell"
                 href="[% search_device %]&q=[% release.os_ver | uri %]&os_ver=[% release.os_ver | uri %]">
                   [% release.os_ver | html_entity %]</a>
+              [% ELSE %]unknown[% END %]
             </th>
             <th>[% release.get_column('count') | html_entity %]</th>
           </tr>
