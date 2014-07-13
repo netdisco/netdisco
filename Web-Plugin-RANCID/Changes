@@ -1,3 +1,7 @@
+2.004000 - 2014-07-13
+
+  * Added by_hostname config option support
+
 2.003002 - 2014-05-03
 
   * POD fixups

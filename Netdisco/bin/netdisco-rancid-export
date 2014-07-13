@@ -43,7 +43,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Permission ':all';
 
 my $settings = setting( 'rancid' );
-my $domain_suffix = setting( 'domain_suffix' );
+my $domain_suffix = setting( 'domain_suffix' ) || '';
 my $delimiter = $settings->{ 'delimiter' } || ':';
 my $down_age = $settings->{ 'down_age' } || '1 day';
 my $rancidhome = $settings->{ 'rancid_home' } || '/var/lib/rancid';
