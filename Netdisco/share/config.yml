@@ -212,6 +212,50 @@ job_type_keys:
   Interactive: interactives
 
 # ---------------
+# GraphViz Export
+# ---------------
+
+graphviz:
+  # ---- Graph Settings ----
+  edge_color      : wheat
+
+  graph           : 'graph/netmap.gif'
+  graph_png       : 'graph/netmap.png'
+  graph_bg        : black
+  graph_clusters  : false  # try fdp layout
+  graph_color     : white
+  graph_default   : png
+  #graph_dir      : net_dir.gif
+  graph_epsilon   : 6
+  graph_layout    : twopi  # try neato or fdp too
+  graph_map       : 'graph/netmap.map'
+  graph_overlap   : scale
+  graph_nodesep   : 2
+  graph_ranksep   : .3
+  graph_raw       : 'graph/graph_raw.dot'
+  graph_splines   : false
+  graph_svg       : 'graph/netmap.svg'
+  graph_timeout   : 90
+  graph_x         : 30
+  graph_y         : 30
+
+  node_fillcolor  : dimgrey
+  node_font       : lucon
+  node_fontsize   : 46.0
+  node_fontcolor  : white
+  node_problem    : red
+  node_shape      : box
+  node_style      : filled
+  #edge_style      : setlinewidth(10)
+
+  # ---- Node Maps ----
+  # variable:matching pattern:node attribute:attribute value:key:key name
+  #node_map:
+  #  - 'label:cat(?!-g):fillcolor:blue:cat:Blue Box - Catalyst Device'
+  #  - 'label:-g:fillcolor:darkgreen:dev-g:Green Box - Gateway / Router'
+  #  - 'ip:^192.168\.:color:yellow:dev:Yellow Border - ResNet'
+
+# ---------------
 # DANCER INTERNAL
 # ---------------
 
