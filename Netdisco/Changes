@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * portctl_nameonly to limit port control to name only (F. Schiavarelli)
+  * add by_hostname config option to netdisco-rancid-export
 
   [BUG FIXES]
 
