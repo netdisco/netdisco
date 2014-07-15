@@ -215,7 +215,7 @@ job_type_keys:
 # GraphViz Export
 # ---------------
 
-graphviz:
+graph:
   # ---- Graph Settings ----
   edge_color      : wheat
 

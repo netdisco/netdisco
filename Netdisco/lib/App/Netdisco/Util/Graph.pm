@@ -33,7 +33,7 @@ App::Netdisco::Util::Graph
  $ cpanm --notest Graph GraphViz
  $ mkdir ~/graph
  
- use App::Netdisco::Util::Graph 'graph';
+ use App::Netdisco::Util::Graph;
  graph;
 
 =head1 DESCRIPTION
@@ -41,7 +41,7 @@ App::Netdisco::Util::Graph
 Generate GraphViz output from Netdisco data. Requires that the L<Graph> and
 L<GraphViz> distributions be installed.
 
-Requires the same config as for Netdisco 1, but within a C<graphviz> key.  See
+Requires the same config as for Netdisco 1, but within a C<graph> key.  See
 C<share/config.yml> in the source distribution for an example.
 
 The C<graph> subroutine is exported by default. The C<:all> tag will export
