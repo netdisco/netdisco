@@ -41,8 +41,9 @@ setting('plugins')->{DBIC}->{daemon} = {
     schema_class => 'App::Netdisco::Daemon::DB',
 };
 
-# default queue model is Pg
+# defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';
+setting('workers')->{interactives} ||= 1;
 
 # force skipped DNS resolution, if unset
 setting('dns')->{hosts_file} ||= '/etc/hosts';

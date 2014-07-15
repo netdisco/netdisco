@@ -166,7 +166,7 @@ port_control_reasons:
 # --------------
 
 workers:
-  interactives: 2
+  interactives: 1
   pollers: 10
   sleep_time: 2
   queue: PostgreSQL
