@@ -103,7 +103,6 @@ addresses which resolved.
 
 sub hostnames_resolve_async {
   my $ips = shift;
-  my $resolver = AnyEvent::DNS->new();
 
   my %HOSTS = ();
   $HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
@@ -136,6 +135,9 @@ sub hostnames_resolve_async {
 
   # Wait for the resolver to perform all resolutions
   $done->recv;
+  
+  # Remove reference to resolver so that we close sockets
+  undef $AnyEvent::DNS::RESOLVER if $AnyEvent::DNS::RESOLVER;
 
   return $ips;
 }

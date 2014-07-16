@@ -7,6 +7,7 @@
   [BUG FIXES]
 
   * No default for interactives made daemon die (H. Weber)
+  * Close socket upon completion of async DNS resolution
 
 2.028001 - 2014-07-13
 
