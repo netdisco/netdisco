@@ -1,3 +1,9 @@
+2.028004 - 2014-07-16
+
+  [BUG FIXES]
+
+  * Close socket upon completion of async DNS resolution
+
 2.028003 - 2014-07-15
 
   [NEW FEATURES]
@@ -7,7 +13,6 @@
   [BUG FIXES]
 
   * No default for interactives made daemon die (H. Weber)
-  * Close socket upon completion of async DNS resolution
 
 2.028001 - 2014-07-13
 
