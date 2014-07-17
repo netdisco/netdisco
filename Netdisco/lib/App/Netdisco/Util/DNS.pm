@@ -85,7 +85,7 @@ sub ipv4_from_hostname {
   return unless $name;
 
   # check /etc/hosts file and short-circuit if found
-  if (exists $HOSTS{$name}) {
+  if (exists $HOSTS{$name} and $HOSTS{$name}->[0]->[0]) {
       my $ip = NetAddr::IP::Lite->new($HOSTS{$name}->[0]->[0]);
       return $ip->addr if $ip and $ip->bits == 32;
   }

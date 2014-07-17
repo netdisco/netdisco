@@ -57,6 +57,7 @@ requires:
   Path::Class: 0.32
   Plack: 1.0023
   Plack::Middleware::Expires: 0.03
+  Plack::Middleware::ReverseProxy: 0.15
   Role::Tiny: 1.002005
   SNMP::Info: 3.18
   SQL::Translator: 0.11016
@@ -81,4 +82,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.028004
+version: 2.028005
