@@ -28,6 +28,7 @@ my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 set(session_dir => dir($home, 'netdisco-web-sessions')->stringify);
 
 set plack_middlewares => [
+  ['Plack::Middleware::ReverseProxy'],
   [ Expires => (
       content_type => [qr{^application/javascript}, qr{^text/css}, qr{image}, qr{font}],
       expires => 'access plus 1 day',

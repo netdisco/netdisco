@@ -41,6 +41,7 @@ requires 'Opcode' => 1.07;
 requires 'Path::Class' => 0.32;
 requires 'Plack' => 1.0023;
 requires 'Plack::Middleware::Expires' => 0.03;
+requires 'Plack::Middleware::ReverseProxy' => 0.15;
 requires 'Role::Tiny' => 1.002005;
 requires 'Socket6' => 0.23;
 requires 'Starman' => 0.4008;

@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Custom path handling for DataTables ajax calls
+  * [#116] Log true client IP when running through a proxy
 
 2.028004 - 2014-07-16
 
