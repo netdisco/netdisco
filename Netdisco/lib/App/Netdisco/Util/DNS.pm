@@ -8,6 +8,13 @@ use Net::DNS;
 use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
 
+use base 'Exporter';
+our @EXPORT = ();
+our @EXPORT_OK = qw/
+  hostname_from_ip hostnames_resolve_async ipv4_from_hostname
+/;
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
+
 # AE::DNS::EtcHosts only works for A/AAAA/SRV, but we want PTR.
 # this loads+parses /etc/hosts file using AE. dirty hack.
 use AnyEvent::Socket 'format_address';
@@ -15,12 +22,10 @@ use AnyEvent::DNS::EtcHosts;
 AnyEvent::DNS::EtcHosts::_load_hosts_unless(sub{},AE::cv);
 no AnyEvent::DNS::EtcHosts; # unimport
 
-use base 'Exporter';
-our @EXPORT = ();
-our @EXPORT_OK = qw/
-  hostname_from_ip hostnames_resolve_async ipv4_from_hostname
-/;
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
+our %HOSTS = ();
+$HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
+                    @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
+  for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 
 =head1 NAME
 
@@ -47,6 +52,13 @@ sub hostname_from_ip {
   my $ip = shift;
   return unless $ip;
 
+  # check /etc/hosts file and short-circuit if found
+  foreach my $name (reverse sort keys %HOSTS) {
+      if ($HOSTS{$name}->[0]->[0] eq $ip) {
+          return $name;
+      }
+  }
+
   my $res   = Net::DNS::Resolver->new;
   my $query = $res->search($ip);
 
@@ -71,6 +83,12 @@ Returns C<undef> if no A record exists for the name.
 sub ipv4_from_hostname {
   my $name = shift;
   return unless $name;
+
+  # check /etc/hosts file and short-circuit if found
+  if (exists $HOSTS{$name}) {
+      my $ip = NetAddr::IP::Lite->new($HOSTS{$name}->[0]->[0]);
+      return $ip->addr if $ip and $ip->bits == 32;
+  }
 
   my $res   = Net::DNS::Resolver->new;
   my $query = $res->search($name);
@@ -103,11 +121,6 @@ addresses which resolved.
 
 sub hostnames_resolve_async {
   my $ips = shift;
-
-  my %HOSTS = ();
-  $HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
-                     @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
-    for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 
   # Set up the condvar
   my $done = AE::cv;
