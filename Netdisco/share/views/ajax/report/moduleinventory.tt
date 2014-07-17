@@ -40,7 +40,7 @@ $(document).ready(function() {
     "serverSide": true,
     "searching": false,
     "order": [[ 0, "desc" ]],
-    "ajax": '/ajax/content/report/moduleinventory/data?[% url(params('query').hash) %]',
+    "ajax": "[% uri_for('/ajax/content/report/moduleinventory/data') %]?[% url(params('query').hash) %]",
     "columns": [
       {
       "data": 'ip',

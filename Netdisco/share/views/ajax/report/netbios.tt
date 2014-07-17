@@ -35,7 +35,7 @@ $(document).ready(function() {
     [% IF opt %]
     "serverSide": true,
     "order": [[ 0, "desc" ]],
-    "ajax": '/ajax/content/report/netbios/data?[% url(params('query').hash) %]',
+    "ajax": "[% uri_for('/ajax/content/report/netbios/data') %]?[% url(params('query').hash) %]",
     "columns": [
       {
         "data": 'domain',
