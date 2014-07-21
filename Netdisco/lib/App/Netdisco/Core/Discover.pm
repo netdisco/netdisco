@@ -146,6 +146,10 @@ sub store_device {
       scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
   my $resolved_aliases = hostnames_resolve_async(\@aliases);
 
+  # fake one aliases entry for devices not providing ip_index
+  push @$resolved_aliases, { alias => $device->ip, dns => $hostname }
+    if 0 == scalar @aliases;
+
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
   my $vtpdomain;

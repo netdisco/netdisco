@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * DNS Mismatch report incorrectly trimmed domain_suffix
+  * Fake one device aliases entry for devices not providing ip_index
 
 2.028006 - 2014-07-21
 
