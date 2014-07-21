@@ -119,6 +119,8 @@ arpnip_min_age: 0
 nbtstat_no: []
 nbtstat_only: []
 nbtstat_max_age: 7
+nbtstat_interval: 0.02
+nbtstat_timeout: 1
 expire_devices: 0
 expire_nodes: 0
 expire_nodes_archive: 0

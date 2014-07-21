@@ -221,11 +221,9 @@ Returns false if the host is not permitted to nbtstat the target node.
 sub is_nbtstatable {
   my $ip = shift;
 
-  return _bail_msg("is_nbtstatable: node matched nbtstat_no")
-    if check_node_no($ip, 'nbtstat_no');
+  return if check_node_no($ip, 'nbtstat_no');
 
-  return _bail_msg("is_nbtstatable: node failed to match nbtstat_only")
-    unless check_node_only($ip, 'nbtstat_only');
+  return unless check_node_only($ip, 'nbtstat_only');
 
   return 1;
 }

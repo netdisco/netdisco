@@ -681,6 +681,20 @@ Value: Number. Default: 7.
 The maximum age of a node in days for it to be checked for NetBIOS
 information.
 
+=head3 C<nbtstat_interval>
+
+Value: Number. Default: 0.02.
+
+Interval between nbtstat requests in each poller. Defaults to 0.02 seconds,
+equating to 50 requests per second per poller.
+
+=head3 C<nbtstat_timeout>
+
+Value: Number. Default: 1.
+
+Seconds nbtstat will wait for a response before time out.  Accepts fractional
+seconds as well as integers.
+
 =head3 C<expire_devices>
 
 Value: Number of Days.
