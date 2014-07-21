@@ -4,6 +4,10 @@
 
   * Asynchronous NBTstat
 
+  [BUG FIXES]
+
+  * Device DNS Mismatch report: use name in the name column, and fix link
+
 2.028005 - 2014-07-17
 
   [BUG FIXES]

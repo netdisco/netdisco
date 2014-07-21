@@ -20,6 +20,7 @@ inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/App/Netdisco.pm
+lib/App/Netdisco/AnyEvent/Nbtstat.pm
 lib/App/Netdisco/Configuration.pm
 lib/App/Netdisco/Core/Arpnip.pm
 lib/App/Netdisco/Core/Discover.pm
