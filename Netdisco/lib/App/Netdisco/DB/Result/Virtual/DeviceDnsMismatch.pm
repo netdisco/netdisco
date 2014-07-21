@@ -17,9 +17,8 @@ SELECT *
 FROM device
 WHERE dns IS NULL
   OR name IS NULL
-  OR lower(trim(TRAILING ?
-                FROM dns)::text) != lower(trim(TRAILING ?
-                                               FROM name)::text)
+  OR regexp_replace(lower(dns), ? || '$', '')
+    != regexp_replace(lower(name), ? || '$', '')
 ENDSQL
 
 1;

@@ -1,4 +1,10 @@
-2.028006
+2.028006 - 2014-07-21
+
+  [BUG FIXES]
+
+  * DNS Mismatch report incorrectly trimmed domain_suffix
+
+2.028006 - 2014-07-21
 
   [ENHANCEMENTS]
 
