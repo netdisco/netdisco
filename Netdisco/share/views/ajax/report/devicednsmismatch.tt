@@ -25,7 +25,7 @@ $(document).ready(function() {
       {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-            return '<a search_device %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.ip || row.name) + '</a>';
+            return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.name || row.ip) + '</a>';
           }
       }, {
         "data": 'dns',
