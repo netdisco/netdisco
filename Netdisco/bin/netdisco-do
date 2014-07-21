@@ -81,6 +81,12 @@ if (!length $action) {
   with 'App::Netdisco::Daemon::Worker::Poller::Expiry';
   with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
   with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
+
+  use App::Netdisco::Util::Graph ();
+  sub graph {
+    App::Netdisco::Util::Graph::graph();
+    return ('done', 'Generated graph data.');
+  }
 }
 my $worker = MyWorker->new();
 
@@ -151,6 +157,10 @@ Run an arpnip on the device (specified with C<-d>).
 =head2 nbtstat
 
 Run an nbtstat on the node (specified with C<-d>).
+
+=head2 graph
+
+Generate GrapgViz graphs for the largest cluster of devices.
 
 =head2 set_location
 

@@ -1,5 +1,9 @@
 2.028006 - 2014-07-21
 
+  [ENHANCEMENTS]
+
+  * Add 'graph' option to netdisco-do
+
   [BUG FIXES]
 
   * DNS Mismatch report incorrectly trimmed domain_suffix

@@ -49,9 +49,13 @@ all subroutines.
 
 =head1 EXPORT
 
+=over 4
+
 =item graph()
 
 Creates netmap of network.
+
+=back
 
 =cut
 
@@ -112,6 +116,8 @@ sub graph {
 }
 
 =head1 EXPORT_OK
+
+=over 4
 
 =item graph_each($graph_obj, $name)
 
@@ -350,7 +356,7 @@ sub graph_addnode {
     return $rv;
 }
 
-=head2 make_graph()
+=item make_graph()
 
 Returns C<Graph::Undirected> object that represents the discovered network.
 
@@ -359,6 +365,8 @@ using them as edges. Then each device seen in those entries is added as a
 vertex.
 
 Nodes without topology information are not included.
+
+=back
 
 =cut
 
