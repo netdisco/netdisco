@@ -686,7 +686,7 @@ sub store_neighbors {
       my $remote_ip   = $c_ip->{$entry};
       my $remote_ipad = NetAddr::IP::Lite->new($remote_ip);
       my $remote_port = undef;
-      my $remote_type = $c_platform->{$entry} || '';
+      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
       my $remote_cap  = $c_cap->{$entry} || [];
 

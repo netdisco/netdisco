@@ -1,3 +1,9 @@
+2.028012 - 2014-07-22
+
+  [BUG FIXES]
+
+  * UTF8 decode the remote type string in neighbor protocol
+
 2.028011 - 2014-07-22
 
   [BUG FIXES]
