@@ -36,7 +36,7 @@ sub new {
     };
 
     # Nbtstat tasks
-    $self->{_tasks}     = {};
+    $self->{_tasks} = {};
 
     return $self;
 }
@@ -60,7 +60,7 @@ sub nbtstat {
 
     $self->{_tasks}{ $request->{destination} } = $request;
 
-    my $delay = $self->interval * scalar keys $self->{_tasks};
+    my $delay = $self->interval * scalar keys %{ $self->{_tasks} || {} };
 
     # There's probably a better way to throttle the sends
     # but this will work for now since we currently don't support retries

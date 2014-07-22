@@ -1,8 +1,12 @@
-2.028009_001
+2.028010 - 2014-07-22
 
   [NEW FEATURES]
 
-  * Node Monitor admin panel and netdisco-do action
+  * Node Monitor admin panel and netdisco-do action (beta)
+
+  [BUG FIXES]
+
+  * Hash deref in Nbtstat.pm
 
 2.028008 - 2014-07-22
 
