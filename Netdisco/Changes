@@ -1,3 +1,9 @@
+2.028011 - 2014-07-22
+
+  [BUG FIXES]
+
+  * Load Graph modules only if available
+
 2.028010 - 2014-07-22
 
   [NEW FEATURES]

@@ -82,7 +82,8 @@ if (!length $action) {
   with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
   with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
 
-  use App::Netdisco::Util::Graph ();
+  use Module::Load ();
+  eval { Module::Load::load 'App::Netdisco::Util::Graph' };
   sub graph {
     App::Netdisco::Util::Graph::graph();
     return ('done', 'Generated graph data.');
