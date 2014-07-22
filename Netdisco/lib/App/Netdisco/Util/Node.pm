@@ -37,7 +37,7 @@ database storage.
 
 Returns false, and might log a debug level message, if the checks fail.
 
-Returns a true value if these checks pass:
+Returns a true value (the MAC address in IEEE format) if these checks pass:
 
 =over 4
 
@@ -67,12 +67,13 @@ MAC address does not belong to an interface on any known Device
 sub check_mac {
   my ($device, $node, $port_macs) = @_;
   my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+  my $devip = (ref $device ? $device->ip : '');
   $port_macs ||= {};
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)
   if ($mac->get_error) {
       debug sprintf ' [%s] check_mac - mac [%s] malformed - skipping',
-        $device->ip, $node;
+        $devip, $node;
       return 0;
   }
   else {
@@ -92,32 +93,32 @@ sub check_mac {
   # multicast
   if ($node =~ m/^[0-9a-f](?:1|3|5|7|9|b|d|f):/) {
       debug sprintf ' [%s] check_mac - multicast mac [%s] - skipping',
-        $device->ip, $node;
+        $devip, $node;
       return 0;
   }
 
   # VRRP
   if (index($node, '00:00:5e:00:01:') == 0) {
       debug sprintf ' [%s] check_mac - VRRP mac [%s] - skipping',
-        $device->ip, $node;
+        $devip, $node;
       return 0;
   }
 
   # HSRP
   if (index($node, '00:00:0c:07:ac:') == 0) {
       debug sprintf ' [%s] check_mac - HSRP mac [%s] - skipping',
-        $device->ip, $node;
+        $devip, $node;
       return 0;
   }
 
   # device's own MACs
-  if (exists $port_macs->{$node}) {
+  if ($port_macs and exists $port_macs->{$node}) {
       debug sprintf ' [%s] check_mac - mac [%s] is device port - skipping',
-        $device->ip, $node;
+        $devip, $node;
       return 0;
   }
 
-  return 1;
+  return $node;
 }
 
 =head2 check_node_no( $ip, $setting_name )
