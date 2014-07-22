@@ -1,3 +1,9 @@
+2.028008
+
+  [BUG FIXES]
+
+  * Encode NetBIOS name, domain, user as UTF-8
+
 2.028007 - 2014-07-21
 
   [ENHANCEMENTS]

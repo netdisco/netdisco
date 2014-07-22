@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Node 'check_mac';
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::AnyEvent::Nbtstat;
+use Encode;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -131,10 +132,10 @@ sub _filter_nbname {
 
         $hash_ref->{'ip'} = $ip;
         $hash_ref->{'mac'}    = $mac;
-        $hash_ref->{'nbname'} = $nbname;
-        $hash_ref->{'domain'} = $domain;
+        $hash_ref->{'nbname'} = Encode::decode('UTF-8', $nbname);
+        $hash_ref->{'domain'} = Encode::decode('UTF-8', $domain);
         $hash_ref->{'server'} = $server;
-        $hash_ref->{'nbuser'} = $nbuser;
+        $hash_ref->{'nbuser'} = Encode::decode('UTF-8', $nbuser);
         
     return;
 }
