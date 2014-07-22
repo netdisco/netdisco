@@ -87,6 +87,12 @@ if (!length $action) {
     App::Netdisco::Util::Graph::graph();
     return ('done', 'Generated graph data.');
   }
+
+  use App::Netdisco::Util::NodeMonitor ();
+  sub monitor {
+    App::Netdisco::Util::NodeMonitor::monitor();
+    return ('done', 'Generated monitor data.');
+  }
 }
 my $worker = MyWorker->new();
 
