@@ -81,6 +81,7 @@ lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
+lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/PhonesDiscovered.pm
@@ -154,6 +155,7 @@ lib/App/Netdisco/Util/DNS.pm
 lib/App/Netdisco/Util/ExpandParams.pm
 lib/App/Netdisco/Util/Graph.pm
 lib/App/Netdisco/Util/Node.pm
+lib/App/Netdisco/Util/NodeMonitor.pm
 lib/App/Netdisco/Util/Noop.pm
 lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
@@ -169,6 +171,7 @@ lib/App/Netdisco/Web/GenericReport.pm
 lib/App/Netdisco/Web/Password.pm
 lib/App/Netdisco/Web/Plugin.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/NodeMonitor.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/OrphanedDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
@@ -294,6 +297,7 @@ share/public/javascripts/toastr.js
 share/public/javascripts/underscore.min.js
 share/views/admintask.tt
 share/views/ajax/admintask/jobqueue.tt
+share/views/ajax/admintask/nodemonitor.tt
 share/views/ajax/admintask/orphaned.tt
 share/views/ajax/admintask/orphaned_csv.tt
 share/views/ajax/admintask/performance.tt
