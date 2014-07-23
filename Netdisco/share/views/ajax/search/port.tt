@@ -42,7 +42,7 @@ $(document).ready(function() {
       }, {
         "data": 'port_vlans.vlan',
         "render": function(data, type, row, meta) {
-          return data;
+          return data || '';
         }
       }
     ]

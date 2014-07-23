@@ -68,6 +68,10 @@ sub vlan_reconfig_check {
 
 =item *
 
+Permission check that C<portctl_nameonly> is false in Netdisco config.
+
+=item *
+
 Permission check that C<portctl_uplinks> is true in Netdisco config, if
 C<$port> is an uplink.
 
@@ -94,6 +98,10 @@ sub port_reconfig_check {
 
   my $has_phone = port_has_phone($port);
   my $is_vlan   = is_vlan_interface($port);
+
+  # only permitted to change interface name
+  return "forbidden: not permitted to change port configuration"
+    if setting('portctl_nameonly');
 
   # uplink check
   return "forbidden: port [$name] on [$ip] is an uplink"

@@ -23,6 +23,10 @@ sub set_portcontrol {
   return job_error("Cannot alter port: $reconfig_check")
     if $reconfig_check;
 
+  # need to remove "-other" which appears for power/portcontrol
+  (my $sa = $job->subaction) =~ s/-\w+//;
+  $job->subaction($sa);
+
   return _set_port_generic($job, 'up_admin');
 }
 
@@ -50,7 +54,7 @@ sub _set_port_generic {
 
   my $ip = $job->device;
   my $pn = $job->port;
-  (my $data = $job->subaction) =~ s/-\w+//;
+  my $data = $job->subaction;
 
   my $port = get_port($ip, $pn)
     or return job_error("Unknown port name [$pn] on device [$ip]");

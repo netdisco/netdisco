@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.028000';
+our $VERSION = '2.028012';
 use App::Netdisco::Configuration;
 
 use Module::Find ();

@@ -71,7 +71,7 @@ $(document).ready(function() {
       "search": 'Filter records: '
     },
     "serverSide": true,
-    "ajax": '/ajax/content/report/devicepoestatus/data',
+    "ajax": "[% uri_for('/ajax/content/report/devicepoestatus/data') %]",
     "order": [[ 0, 'asc' ]],
     "columns": [
       {

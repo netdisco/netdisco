@@ -1,6 +1,6 @@
 package App::NetdiscoX::Web::Plugin::RANCID;
 
-our $VERSION = '2.003002';
+our $VERSION = '2.004000';
 
 use Dancer ':syntax';
 
@@ -25,6 +25,7 @@ hook 'before_template' => sub {
     my $config = config;
     my $tokens = shift;
     my $device = $tokens->{d};
+    my $domain_suffix = setting('domain_suffix') || '';
 
     # defaults
     $tokens->{rancidgroup} = '';
@@ -33,14 +34,17 @@ hook 'before_template' => sub {
     return unless exists $config->{rancid};
     my $rancid = $config->{rancid};
 
-    $rancid->{groups} ||= {};
-    $rancid->{by_ip}  ||= [];
+    $rancid->{groups}      ||= {};
+    $rancid->{by_ip}       ||= [];
+    $rancid->{by_hostname} ||= [];
 
     foreach my $g (keys %{ $rancid->{groups} }) {
         if (check_acl( get_device($device->{ip}), $rancid->{groups}->{$g} )) {
             $tokens->{rancidgroup} = $g;
             $tokens->{ranciddevice} = $device->{ip}
               if 0 < scalar grep {$_ eq $g} @{ $rancid->{by_ip} };
+            $tokens->{ranciddevice} =~ s/$domain_suffix$//
+              if 0 < scalar grep {$_ eq $g} @{ $rancid->{by_hostname} };
             last;
         }
     }
@@ -89,7 +93,8 @@ known to Netdisco. This uses the same configuration as for
 L<netdisco-rancid-export>, an example of which is below:
 
  rancid:
-   by_ip:    [ other ]
+   by_ip:       [ other ]
+   by_hostname: [ other2 ]
    groups:
      switch: [ 'name:.*[Ss][Ww].*' ]
      rtr:    [ 'name:[rR]tr.*' ]
@@ -102,7 +107,8 @@ regular expression as in the above example.
 
 The device DNS name is used, or if missing the device SNMP sysName. Adding the
 group to the list in C<by_ip> will make the link include the device IP
-instead of the name.
+instead of the name. Adding the group to the list in C<by_hostname> will
+use the device FQDN minus the C<domain_suffix> config item (i.e. the hostname).
 
 =head2 open_in_same_window
 

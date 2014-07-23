@@ -146,6 +146,10 @@ sub store_device {
       scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
   my $resolved_aliases = hostnames_resolve_async(\@aliases);
 
+  # fake one aliases entry for devices not providing ip_index
+  push @$resolved_aliases, { alias => $device->ip, dns => $hostname }
+    if 0 == scalar @aliases;
+
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
   my $vtpdomain;
@@ -682,7 +686,7 @@ sub store_neighbors {
       my $remote_ip   = $c_ip->{$entry};
       my $remote_ipad = NetAddr::IP::Lite->new($remote_ip);
       my $remote_port = undef;
-      my $remote_type = $c_platform->{$entry} || '';
+      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
       my $remote_cap  = $c_cap->{$entry} || [];
 

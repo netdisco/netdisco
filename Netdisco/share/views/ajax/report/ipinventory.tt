@@ -25,11 +25,15 @@ $(document).ready(function() {
         "data": 'ip',
         "render": function(data, type, row, meta) {
           var cell_str = he.encode(data);
-          if (row.time_last && row.node) {
-            cell_str = '<a href="[% search_node %]&q=' + encodeURIComponent(data) + (row.active ? '' : '&archived=on') + '">' + he.encode(data) + (row.active ? '' : '&nbsp;<i class="icon-book text-warning"></i>&nbsp;') + '</a>';
-          }
-          else if (row.time_last) {
-            cell_str = '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
+          if (type == 'display') {
+            if (row.time_last && row.node) {
+              cell_str = '<a href="[% search_node %]&q=' + encodeURIComponent(data)
+                + (row.active ? '' : '&archived=on') + '">' + he.encode(data)
+                + (row.active ? '' : '&nbsp;<i class="icon-book text-warning"></i>&nbsp;') + '</a>';
+            }
+            else if (row.time_last) {
+              cell_str = '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
+            }
           }
           return cell_str;
         }

@@ -1,3 +1,91 @@
+2.028012 - 2014-07-22
+
+  [BUG FIXES]
+
+  * UTF8 decode the remote type string in neighbor protocol
+
+2.028011 - 2014-07-22
+
+  [BUG FIXES]
+
+  * Load Graph modules only if available
+
+2.028010 - 2014-07-22
+
+  [NEW FEATURES]
+
+  * Node Monitor admin panel and netdisco-do action (beta)
+
+  [BUG FIXES]
+
+  * Hash deref in Nbtstat.pm
+
+2.028008 - 2014-07-22
+
+  [BUG FIXES]
+
+  * Encode NetBIOS name, domain, user as UTF-8
+
+2.028007 - 2014-07-21
+
+  [ENHANCEMENTS]
+
+  * Add 'graph' option to netdisco-do
+
+  [BUG FIXES]
+
+  * DNS Mismatch report incorrectly trimmed domain_suffix
+  * Fake one device aliases entry for devices not providing ip_index
+  * DataTables render function should check for type
+
+2.028006 - 2014-07-21
+
+  [ENHANCEMENTS]
+
+  * Asynchronous NBTstat
+
+  [BUG FIXES]
+
+  * Device DNS Mismatch report: use name in the name column, and fix link
+
+2.028005 - 2014-07-17
+
+  [BUG FIXES]
+
+  * Custom path handling for DataTables ajax calls
+  * [#116] Log true client IP when running through a proxy
+  * Use /etc/hosts for all forward/reverse DNS
+
+2.028004 - 2014-07-16
+
+  [BUG FIXES]
+
+  * Close socket upon completion of async DNS resolution
+
+2.028003 - 2014-07-15
+
+  [NEW FEATURES]
+
+  * GraphViz graph export (beta)
+
+  [BUG FIXES]
+
+  * No default for interactives made daemon die (H. Weber)
+
+2.028001 - 2014-07-13
+
+  [NEW FEATURES]
+
+  * portctl_nameonly to limit port control to name only (F. Schiavarelli)
+  * add by_hostname config option to netdisco-rancid-export
+
+  [BUG FIXES]
+
+  * [ND1#117] unknown devices missing from inventory
+  * [#118] Fix table rendering on port search tab when VLAN is null
+  * Fix truncated port description change (F. Schiavarelli)
+  * Fix device port ordering in DataTables when Port Control is enabled
+
 2.028000 - 2014-07-01
 
   [NEW FEATURES]

@@ -8,6 +8,13 @@ use Net::DNS;
 use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
 
+use base 'Exporter';
+our @EXPORT = ();
+our @EXPORT_OK = qw/
+  hostname_from_ip hostnames_resolve_async ipv4_from_hostname
+/;
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
+
 # AE::DNS::EtcHosts only works for A/AAAA/SRV, but we want PTR.
 # this loads+parses /etc/hosts file using AE. dirty hack.
 use AnyEvent::Socket 'format_address';
@@ -15,12 +22,10 @@ use AnyEvent::DNS::EtcHosts;
 AnyEvent::DNS::EtcHosts::_load_hosts_unless(sub{},AE::cv);
 no AnyEvent::DNS::EtcHosts; # unimport
 
-use base 'Exporter';
-our @EXPORT = ();
-our @EXPORT_OK = qw/
-  hostname_from_ip hostnames_resolve_async ipv4_from_hostname
-/;
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
+our %HOSTS = ();
+$HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
+                    @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
+  for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 
 =head1 NAME
 
@@ -47,6 +52,13 @@ sub hostname_from_ip {
   my $ip = shift;
   return unless $ip;
 
+  # check /etc/hosts file and short-circuit if found
+  foreach my $name (reverse sort keys %HOSTS) {
+      if ($HOSTS{$name}->[0]->[0] eq $ip) {
+          return $name;
+      }
+  }
+
   my $res   = Net::DNS::Resolver->new;
   my $query = $res->search($ip);
 
@@ -72,6 +84,12 @@ sub ipv4_from_hostname {
   my $name = shift;
   return unless $name;
 
+  # check /etc/hosts file and short-circuit if found
+  if (exists $HOSTS{$name} and $HOSTS{$name}->[0]->[0]) {
+      my $ip = NetAddr::IP::Lite->new($HOSTS{$name}->[0]->[0]);
+      return $ip->addr if $ip and $ip->bits == 32;
+  }
+
   my $res   = Net::DNS::Resolver->new;
   my $query = $res->search($name);
 
@@ -92,9 +110,7 @@ resolver C<AnyEvent::DNS>.
 
 Given a reference to an array of hashes will resolve the C<IPv4> or C<IPv6>
 address in the C<ip> or C<alias> key of each hash into its hostname which
-will be inserted in the C<dns> key of the hash.  The resolver does also
-forward-lookups to verify that the resolved hostnames point to the
-address.
+will be inserted in the C<dns> key of the hash.
 
 Returns the supplied reference to an array of hashes with dns values for
 addresses which resolved.
@@ -103,12 +119,6 @@ addresses which resolved.
 
 sub hostnames_resolve_async {
   my $ips = shift;
-  my $resolver = AnyEvent::DNS->new();
-
-  my %HOSTS = ();
-  $HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
-                     @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
-    for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 
   # Set up the condvar
   my $done = AE::cv;
@@ -136,6 +146,9 @@ sub hostnames_resolve_async {
 
   # Wait for the resolver to perform all resolutions
   $done->recv;
+  
+  # Remove reference to resolver so that we close sockets
+  undef $AnyEvent::DNS::RESOLVER if $AnyEvent::DNS::RESOLVER;
 
   return $ips;
 }
