@@ -92,6 +92,15 @@ all the interface IP aliases configured on the Device.
 
 __PACKAGE__->has_many( device_ips => 'App::Netdisco::DB::Result::DeviceIp', 'ip' );
 
+=head2 device_modules
+
+Returns rows from the C<device_module> table which relate to this Device. That
+is, all the constituent modiles within the Device.
+
+=cut
+
+__PACKAGE__->has_many( device_modules => 'App::Netdisco::DB::Result::DeviceModule', 'ip' );
+
 =head2 vlans
 
 Returns the C<device_vlan> entries for this Device. That is, the list of VLANs

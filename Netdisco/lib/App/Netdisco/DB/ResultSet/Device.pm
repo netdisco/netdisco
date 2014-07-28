@@ -275,7 +275,7 @@ The following fields are inspected for a match:
 
 =item contact
 
-=item serial
+=item serial (including modules)
 
 =item location
 
@@ -286,6 +286,7 @@ The following fields are inspected for a match:
 =item dns
 
 =item ip (including aliases)
+
 
 =back
 
@@ -318,6 +319,7 @@ sub search_fuzzy {
         -or => [
           'me.contact'  => { '-ilike' => $q },
           'me.serial'   => { '-ilike' => $q },
+          'device_modules.serial' => { '-ilike' => $q },
           'me.location' => { '-ilike' => $q },
           'me.name'     => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
@@ -330,7 +332,7 @@ sub search_fuzzy {
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        join => 'device_ips',
+        join => [qw/device_ips device_modules/],
         distinct => 1,
       }
     );
