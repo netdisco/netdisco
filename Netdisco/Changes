@@ -1,3 +1,9 @@
+2.028013
+
+  [ENHANCEMENTS]
+
+  * [#122] CDP/LLDP discovery for some HP switches (M. Kosmach)
+
 2.028012 - 2014-07-22
 
   [BUG FIXES]

@@ -730,7 +730,22 @@ sub store_neighbors {
               if (!defined $neigh) {
                   my $mac = Net::MAC->new(mac => $remote_id, 'die' => 0, verbose => 0);
                   if (not $mac->get_error) {
-                      $neigh = $devices->single({mac => $remote_id});
+                      $neigh = $devices->single({mac => $mac->as_IEEE()});
+                  }
+              }
+
+              # some HP switches send 127.0.0.1 as remote_ip if no ip address
+              # on default vlan for HP switches remote_ip looks like
+              # "myswitchname(012345-012345)"
+              if (!defined $neigh) {
+                  (my $tmpid = $remote_id) =~ s/.([0-9a-f]{6})-([0-9a-f]{6})./$1$2/;
+                  my $mac = Net::MAC->new(mac => $tmpid, 'die' => 0, verbose => 0);
+
+                  if (not $mac->get_error) {
+                      info sprintf
+                        '[%s] neigh - found neighbor %s by MAC %s',
+                        $device->ip, $remote_id, $mac->as_IEEE();
+                      $neigh = $devices->single({mac => $mac->as_IEEE()});
                   }
               }
 
