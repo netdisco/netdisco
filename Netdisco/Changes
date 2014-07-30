@@ -4,6 +4,10 @@
 
   * [#122] CDP/LLDP discovery for some HP switches (M. Kosmach)
 
+  [BUG FIXES]
+
+  * Fix when Interactives number set to zero
+
 2.028012 - 2014-07-22
 
   [BUG FIXES]
