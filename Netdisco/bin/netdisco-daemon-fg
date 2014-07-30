@@ -38,7 +38,7 @@ my $mce = MCE->new(
   job_delay   => 1.15,
   tmp_dir     => $tmp_dir,
   user_func    => sub { $_[0]->worker_body },
-  on_post_exit => \&restart_worker,
+  on_post_exit => \&restart_this_worker,
   user_tasks   => build_tasks_list(),
 )->run();
 
@@ -97,7 +97,7 @@ sub worker_factory {
   };
 }
 
-sub restart_worker {
+sub restart_this_worker {
   my ($self, $e) = @_;
   reset_jobs($e->{wid});
 

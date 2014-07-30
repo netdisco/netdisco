@@ -7,6 +7,7 @@
   [BUG FIXES]
 
   * Fix when Interactives number set to zero
+  * [#121] Daemon crash when restarting with in-progress jobs and many workers
 
 2.028012 - 2014-07-22
 
