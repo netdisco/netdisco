@@ -72,6 +72,14 @@ Value: Format String. Default: C<< '[%P] %U %L %m' >>.
 Structure of the log messages. See L<Dancer::Logger::Abstract/"logger_format">
 for details.
 
+=head3 C<include_paths>
+
+Value: List. Default: Empty List.
+
+Additional library paths for the application (both web frontend and backend
+poller daemons). You can also use a colon-separated list in the
+"C<NETDISCO_INC>" environment variable.
+
 =head2 Web Frontend
 
 =head3 C<domain_suffix>
@@ -224,13 +232,13 @@ C<web_plugins> setting.
 
 =head3 C<reports>
 
-Value: Dictionary of Reports Hashes. Default: None.
+Value: List of Reports Hashes. Default: None.
 
 Use this configuration to add reports to Netdisco without writing any Perl
 code or HTML templates. For example:
 
  reports:
-   power_inventory:
+   - tag: power_inventory
      category: Device
      label: 'Power Supply Inventory'
      columns:
@@ -242,8 +250,8 @@ code or HTML templates. For example:
          FROM device d
        ORDER BY name
 
-Each key of the C<reports> configuration is an alias for the report, and
-becomes part of the web path.
+The C<key> of each item in the C<reports> configuration is an alias for the
+report, and becomes part of the web path.
 
 You can munge the data retrieved from the database by placing a Perl script
 with the same name as the C<reports> key into the C<site_plugins> directory of
@@ -604,7 +612,7 @@ token-ring-default,fddinet-default,trnet-default.
 On some devices, per-VLAN macsuck will timeout with specific VLAN numbers. You
 can put those numbers (or their names) into this list to have them skipped.
 
-=head3 C<macsucl_no_devicevlan>
+=head3 C<macsuck_no_devicevlan>
 
 Value: List of "IP:vlan-number" or "IP:vlan-name". Default: Empty List.
 

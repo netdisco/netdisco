@@ -36,6 +36,31 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.029000
+
+=head2 General Notices
+
+The configuration item C<reports> is now a list (used to be a dictionary).
+Each item in the list must have a C<tag> entry which was previously the
+dictionary key. For example, now use:
+
+ reports:
+   - tag: power_inventory
+     category: Device
+     label: 'Power Supply Inventory'
+     columns:
+       - {name: 'Name'}
+       - {ps1_type: 'PS1 Type'}
+       - {ps1_status: 'PS1 Status'}
+     query: |
+       SELECT d.name, d.ps1_type, d.ps1_status
+         FROM device d
+         WHERE d.ps1_type IS NOT NULL
+       ORDER BY name
+
+Old configuration will be continue to work, but we recommend you reconfigure
+anyway.
+
 =head1 2.028000
 
 =head2 Incompatible Changes

@@ -10,20 +10,13 @@ use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
+use Module::Find ();
 use Module::Load ();
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
-use App::Netdisco::Web::AuthN;
-use App::Netdisco::Web::Static;
-use App::Netdisco::Web::Search;
-use App::Netdisco::Web::Device;
-use App::Netdisco::Web::Report;
-use App::Netdisco::Web::AdminTask;
-use App::Netdisco::Web::TypeAhead;
-use App::Netdisco::Web::PortControl;
-use App::Netdisco::Web::Statistics;
-use App::Netdisco::Web::Password;
-use App::Netdisco::Web::GenericReport;
+# FIXME: need to avoid splat so that this can be reordered
+Module::Find::usesub 'App::NetdiscoE::Web';
+Module::Find::usesub 'App::Netdisco::Web';
 
 sub _load_web_plugins {
   my $plugin_list = shift;

@@ -7,6 +7,9 @@ use 5.010_000;
 our $VERSION = '2.028013';
 use App::Netdisco::Configuration;
 
+use Module::Find ();
+Module::Find::usesub 'App::NetdiscoE::Init';
+
 =head1 NAME
 
 App::Netdisco - An open source web-based network management tool.

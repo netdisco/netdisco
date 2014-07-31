@@ -28,6 +28,7 @@ requires 'HTTP::Tiny' => 0.029;
 requires 'JSON' => 0;
 requires 'List::MoreUtils' => 0.33;
 requires 'MIME::Base64' => 3.13;
+requires 'Module::Find' => 0.12;
 requires 'Module::Load' => 0.32;
 requires 'Moo' => 1.001000;
 requires 'MCE' => 1.408;

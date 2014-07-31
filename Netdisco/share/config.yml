@@ -11,6 +11,7 @@
 
 log: 'warning'
 logger_format: '[%P] %U %L %m'
+include_paths: []
 
 # ------------
 # WEB FRONTEND
@@ -78,7 +79,7 @@ web_plugins:
 extra_web_plugins: []
 jobqueue_refresh: 10
 safe_password_store: true
-reports: {}
+reports: []
 table_pagesize: 10
 
 # -------------
@@ -271,6 +272,7 @@ engines:
     start_tag: '[%'
     end_tag: '%]'
     PRE_CHOMP: 1
+    INCLUDE_PATH: []
 layout: 'main'
 plugins:
   Auth::Extensible:

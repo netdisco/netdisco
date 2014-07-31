@@ -3,6 +3,11 @@ package App::Netdisco::Configuration;
 use App::Netdisco::Environment;
 use Dancer ':script';
 
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC, @{ (setting('include_paths') || []) };
+}
+
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
     my $name = (setting('database')->{name} || 'netdisco');
@@ -59,6 +64,14 @@ delete config->{'housekeeping'};
 setting('schedule')->{expire} ||= setting('schedule')->{expiry}
   if setting('schedule') and exists setting('schedule')->{expiry};
 delete config->{'schedule'}->{'expiry'};
+
+# upgrade reports config from hash to list
+if (setting('reports') and ref {} eq ref setting('reports')) {
+    config->{'reports'} = [ map {{
+        tag => $_,
+        %{ setting('reports')->{$_} }
+    }} keys %{ setting('reports') } ];
+}
 
 # set max outstanding requests for AnyEvent::DNS
 $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}

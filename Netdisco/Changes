@@ -1,8 +1,10 @@
-2.028014
+2.029000
 
   [ENHANCEMENTS]
 
   * [#108] Port Bounce port control feature (down and up in succession)
+  * Support for stuffing other locations into @INC at runtime
+  * Reports config is now a list (see ReleaseNotes)
 
   [BUG FIXES]
 
