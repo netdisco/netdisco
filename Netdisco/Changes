@@ -1,16 +1,20 @@
 2.029000
 
-  [ENHANCEMENTS]
+  [NEW FEATURES]
 
   * [#108] Port Bounce port control feature (down and up in succession)
   * Support for stuffing other locations into @INC at runtime
+
+  [ENHANCEMENTS]
+
   * Reports config is now a list (see ReleaseNotes)
+  * Add "AP" as a hint for WAP support
+  * Attempt to keep PID and logfile as netdisco user even when running as root
 
   [BUG FIXES]
 
   * Missing action to netdisco-do should not throw Perl error
   * Sort CDP/LLDP data to be more consistent when multiple neighbors on a port
-  * Add "AP" as a hint for WAP support
 
 2.028013 - 2014-07-31
 
