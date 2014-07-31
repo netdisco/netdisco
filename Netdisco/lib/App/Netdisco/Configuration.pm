@@ -43,7 +43,8 @@ setting('plugins')->{DBIC}->{daemon} = {
 
 # defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';
-setting('workers')->{interactives} ||= 1;
+setting('workers')->{interactives} = 1
+  if setting('workers') and not exists setting('workers')->{interactives};
 
 # force skipped DNS resolution, if unset
 setting('dns')->{hosts_file} ||= '/etc/hosts';

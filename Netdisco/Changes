@@ -1,3 +1,26 @@
+2.028014
+
+  [ENHANCEMENTS]
+
+  * [#108] Port Bounce port control feature (down and up in succession)
+
+  [BUG FIXES]
+
+  * Missing action to netdisco-do should not throw Perl error
+  * Sort CDP/LLDP data to be more consistent when multiple neighbors on a port
+  * Add "AP" as a hint for WAP support
+
+2.028013 - 2014-07-31
+
+  [ENHANCEMENTS]
+
+  * [#122] CDP/LLDP discovery for some HP switches (M. Kosmach)
+
+  [BUG FIXES]
+
+  * Fix when Interactives number set to zero
+  * [#121] Daemon crash when restarting with in-progress jobs and many workers
+
 2.028012 - 2014-07-22
 
   [BUG FIXES]

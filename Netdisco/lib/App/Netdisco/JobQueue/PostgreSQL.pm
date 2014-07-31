@@ -143,12 +143,19 @@ sub jq_lock {
   return $happy;
 }
 
+# PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
+# the main daemon process. This is only used by daemon workers which can use
+# MCE ->do() method.
 sub jq_defer {
   my $job = shift;
   my $happy = false;
 
-  # lock db row and update to show job is available
   try {
+    # other local workers are polling the central queue, so
+    # to prevent a race, first delete the job in our local queue
+    MCE->do('release_jobs', $job->id);
+
+    # lock db row and update to show job is available
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
         ->find($job->id, {for => 'update'})

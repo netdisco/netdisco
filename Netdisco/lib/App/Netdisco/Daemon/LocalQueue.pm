@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ add_jobs capacity_for take_jobs reset_jobs/;
+our @EXPORT_OK = qw/ add_jobs capacity_for take_jobs reset_jobs release_jobs /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 schema('daemon')->deploy;
@@ -57,6 +57,13 @@ sub reset_jobs {
   return unless $wid > 1;
   $queue->search({wid => $wid})
         ->update({wid => 0});
+}
+
+# not used by workers, only the daemon when reinitializing a worker
+sub release_jobs {
+  my ($jid) = @_;
+  debug "releasing local job ID $jid";
+  $queue->search({job => $jid})->delete;
 }
 
 1;
