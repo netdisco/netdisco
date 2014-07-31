@@ -62,16 +62,26 @@
       <td nowrap class="nd_editable-cell" data-action="down"
         data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
         data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-down nd_hand-icon"
-          rel="tooltip" data-placement="top" data-offset="3"
-          data-animation="" data-title="Click to Disable"></i>
+        <span class="nd_hand-icon">
+          <i class="icon-bullseye" data-action="bounce"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Bounce Port"></i>
+          <i class="icon-hand-down"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Disable Port"></i>
+        </span>
       [% ELSE %]
       <td nowrap class="nd_editable-cell" data-action="up"
         data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
         data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-up nd_hand-icon"
-          rel="tooltip" data-placement="top" data-offset="3"
-          data-animation="" data-title="Click to Enable"></i>
+        <span class="nd_hand-icon">
+          <i class="icon-bullseye" data-action="bounce" style="display: none"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Bounce Port"></i>
+          <i class="icon-hand-up"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Enable Port"></i>
+        </span>
       [% END %]
         <a class="nd_log-icon"
           href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
@@ -208,7 +218,7 @@
 
                 <i class="icon-off nd_power-icon nd_power-on"
                   rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Click to Disable"></i>
+                  data-animation="" data-title="Disable Power"></i>
             [% ELSE %]
               <td nowrap>
                 <i class="icon-off nd_power-on"></i>
@@ -228,7 +238,7 @@
 
                 <i class="icon-off nd_power-icon"
                   rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Click to Enable"></i>
+                  data-animation="" data-title="Enable Power"></i>
             [% ELSE %]
               <td>
                 <i class="icon-off"></i>

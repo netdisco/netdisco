@@ -27,7 +27,16 @@ sub set_portcontrol {
   (my $sa = $job->subaction) =~ s/-\w+//;
   $job->subaction($sa);
 
-  return _set_port_generic($job, 'up_admin');
+  if ($sa eq 'bounce') {
+      $job->subaction('down');
+      my @stat = _set_port_generic($job, 'up_admin');
+      return @stat if $stat[0] ne 'done';
+      $job->subaction('up');
+      return _set_port_generic($job, 'up_admin');
+  }
+  else {
+      return _set_port_generic($job, 'up_admin');
+  }
 }
 
 sub set_vlan {

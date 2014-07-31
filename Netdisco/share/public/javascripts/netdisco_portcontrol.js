@@ -22,7 +22,7 @@ function port_control (e) {
       device:  td.data('for-device')
       ,port:   td.data('for-port')
       ,field:  td.data('field')
-      ,action: td.data('action')
+      ,action: ($(e).data('action') || td.data('action'))
       ,value:  td.text().trim()
       ,reason: reason
       ,log:    logmessage
@@ -30,31 +30,35 @@ function port_control (e) {
     ,success: function() {
       toastr.info('Submitted change request');
 
-      // update all the screen furniture for port up/down control
-      if ($.trim(td.data('action')) == 'down') {
-        td.prev('td').html('<i class="icon-remove"></i>');
-        $(e).toggleClass('icon-hand-down');
-        $(e).toggleClass('icon-hand-up');
-        $(e).data('tooltip').options.title = 'Click to Enable';
-        td.data('action', 'up');
-      }
-      else if ($.trim(td.data('action')) == 'up') {
-        td.prev('td').html('<i class="icon-refresh icon-spin"></i>');
-        $(e).toggleClass('icon-hand-up');
-        $(e).toggleClass('icon-hand-down');
-        $(e).data('tooltip').options.title = 'Click to Disable';
-        td.data('action', 'down');
-      }
-      else if ($.trim(td.data('action')) == 'false') {
-        $(e).next('span').text('');
-        $(e).toggleClass('nd_power-on');
-        $(e).data('tooltip').options.title = 'Click to Enable';
-        td.data('action', 'true');
-      }
-      else if ($.trim(td.data('action')) == 'true') {
-        $(e).toggleClass('nd_power-on');
-        $(e).data('tooltip').options.title = 'Click to Disable';
-        td.data('action', 'false');
+      // update all the screen furniture unless bouncing
+      if (! $(e).hasClass('icon-bullseye')) {
+        if ($.trim(td.data('action')) == 'down') {
+          td.prev('td').html('<i class="icon-remove"></i>');
+          $(e).toggleClass('icon-hand-down');
+          $(e).toggleClass('icon-hand-up');
+          $(e).siblings('.icon-bullseye').hide();
+          $(e).data('tooltip').options.title = 'Enable Port';
+          td.data('action', 'up');
+        }
+        else if ($.trim(td.data('action')) == 'up') {
+          td.prev('td').html('<i class="icon-refresh icon-spin"></i>');
+          $(e).toggleClass('icon-hand-up');
+          $(e).toggleClass('icon-hand-down');
+          $(e).siblings('.icon-bullseye').show();
+          $(e).data('tooltip').options.title = 'Disable Port';
+          td.data('action', 'down');
+        }
+        else if ($.trim(td.data('action')) == 'false') {
+          $(e).next('span').text('');
+          $(e).toggleClass('nd_power-on');
+          $(e).data('tooltip').options.title = 'Enable Power';
+          td.data('action', 'true');
+        }
+        else if ($.trim(td.data('action')) == 'true') {
+          $(e).toggleClass('nd_power-on');
+          $(e).data('tooltip').options.title = 'Disable Power';
+          td.data('action', 'false');
+        }
       }
     }
     ,error: function() {
@@ -118,7 +122,7 @@ $(document).ready(function() {
   });
 
   // activity for port up/down control, power enable/disable control
-  $('#ports_pane').on('click', '.icon-hand-up,.icon-hand-down,.nd_power-icon', function() {
+  $('#ports_pane').on('click', '.icon-hand-up,.icon-hand-down,.nd_power-icon,.icon-bullseye', function() {
     var clicked = this; // create a closure
     $('#nd_portlog').one('hidden', function() {
       port_control(clicked); // save

@@ -1,5 +1,9 @@
 2.028014
 
+  [ENHANCEMENTS]
+
+  * [#108] Port Bounce port control feature (down and up in succession)
+
   [BUG FIXES]
 
   * Missing action to netdisco-do should not throw Perl error
