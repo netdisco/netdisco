@@ -65,7 +65,7 @@ schema('daemon')->deploy;
 # get requested action
 my $action = shift @ARGV;
 
-if (!length $action) {
+unless ($action) {
   error 'error: missing action!';
   exit (1);
 }

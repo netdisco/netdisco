@@ -1,3 +1,9 @@
+2.028014
+
+  [BUG FIXES]
+
+  * Missing action to netdisco-do should not throw Perl error
+
 2.028013 - 2014-07-31
 
   [ENHANCEMENTS]
