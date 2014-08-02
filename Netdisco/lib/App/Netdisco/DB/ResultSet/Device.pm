@@ -461,6 +461,8 @@ sub has_layer {
     return $rs->search_rs( \[ 'substring(layers,9-?, 1)::int = 1', $layer ] );
 }
 
+=back
+
 =head2 get_models
 
 Returns a sorted list of Device models with the following columns only:

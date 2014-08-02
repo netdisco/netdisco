@@ -140,7 +140,7 @@ sub _filter_nbname {
     return;
 }
 
-=item store_nbt($nb_hash_ref, $now?)
+=head2 store_nbt($nb_hash_ref, $now?)
 
 Stores entries in C<node_nbt> table from the provided hash reference; MAC
 C<mac>, IP C<ip>, Unique NetBIOS Node Name C<nbname>, NetBIOS Domain or

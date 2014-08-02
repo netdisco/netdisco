@@ -15,6 +15,7 @@
 
   * Missing action to netdisco-do should not throw Perl error
   * Sort CDP/LLDP data to be more consistent when multiple neighbors on a port
+  * Fix POD errors in Nbtstat and ResultSet::Device (thanks cpants :)
 
 2.028013 - 2014-07-31
 
