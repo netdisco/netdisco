@@ -60,6 +60,9 @@ requires 'YAML::XS' => 0.41;
 requires 'namespace::clean' => 0.24;
 requires 'version' => 0.9902;
 
+recommends 'Graph' => 0;
+recommends 'GraphViz' => 0;
+
 install_share 'share';
 
 install_script 'bin/nd-import-topology';
