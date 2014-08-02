@@ -292,7 +292,7 @@ sub store_interfaces {
           mac          => $i_mac->{$entry},
           speed        => $i_speed->{$entry},
           mtu          => $i_mtu->{$entry},
-          name         => $i_name->{$entry},
+          name         => Encode::decode('UTF-8', $i_name->{$entry}),
           duplex       => $i_duplex->{$entry},
           duplex_admin => $i_duplex_admin->{$entry},
           stp          => $i_stp_state->{$entry},
