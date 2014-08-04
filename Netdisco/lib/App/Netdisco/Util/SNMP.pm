@@ -43,7 +43,7 @@ Returns C<undef> if the connection fails.
 
 =cut
 
-sub snmp_connect { _snmp_connect_generic(@_, 'read') }
+sub snmp_connect { _snmp_connect_generic('read', @_) }
 
 =head2 snmp_connect_rw( $ip )
 
@@ -54,16 +54,17 @@ Returns C<undef> if the connection fails.
 
 =cut
 
-sub snmp_connect_rw { _snmp_connect_generic(@_, 'write') }
+sub snmp_connect_rw { _snmp_connect_generic('write', @_) }
 
 sub _snmp_connect_generic {
-  my ($ip, $mode) = @_;
+  my ($mode, $ip, $class) = @_;
   $mode ||= 'read';
 
   # get device details from db
   my $device = get_device($ip);
 
   my %snmp_args = (
+    AutoSpecify => 0,
     DestHost => $device->ip,
     Retries => (setting('snmpretries') || 2),
     Timeout => (setting('snmptimeout') || 1000000),
@@ -74,6 +75,7 @@ sub _snmp_connect_generic {
     MibDirs => [ _build_mibdirs() ],
     IgnoreNetSNMPConf => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
+    DebugSNMP => ($ENV{SNMP_TRACE} || 0),
   );
 
   # an override for bulkwalk
@@ -100,12 +102,12 @@ sub _snmp_connect_generic {
     : (reverse (1 .. (setting('snmpver') || 3))) );
 
   # use existing or new device class
-  my @classes = ('SNMP::Info');
-  if ($device->snmp_class) {
-      unshift @classes, $device->snmp_class;
-  }
-  else {
-      $snmp_args{AutoSpecity} = 1;
+  my @classes = ($class || 'SNMP::Info');
+  unless ($class) {
+      $snmp_args{AutoSpecify} = 1;
+      if ($device->snmp_class) {
+          unshift @classes, $device->snmp_class;
+      }
   }
 
   my $info = undef;
@@ -148,7 +150,7 @@ sub _try_connect {
                                : _try_write($info, $device, $comm));
 
       # first time a device is discovered, re-instantiate into specific class
-      if ($info and $info->device_type ne $class) {
+      if ($snmp_args->{AutoSpecify} and $info and $info->device_type ne $class) {
           $class = $info->device_type;
           debug
             sprintf '[%s] try_connect with ver: %s, new class: %s, comm: %s',

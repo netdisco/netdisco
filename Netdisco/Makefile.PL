@@ -11,6 +11,7 @@ requires 'App::cpanminus' => 1.6108;
 requires 'App::local::lib::helper' => 0.07;
 requires 'Archive::Extract' => 0;
 requires 'CGI::Expand' => 2.05;
+requires 'Data::Printer' => 0;
 requires 'DBD::Pg' => 0;
 requires 'DBD::SQLite' => 1.37;
 requires 'DBIx::Class' => 0.08250;

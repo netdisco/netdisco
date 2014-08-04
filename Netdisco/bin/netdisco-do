@@ -73,7 +73,11 @@ unless ($action) {
 # create worker (placeholder object for the role methods)
 {
   package MyWorker;
+
   use Moo;
+  use Module::Load ();
+  use Data::Printer ();
+
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
   with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
   with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
@@ -82,7 +86,6 @@ unless ($action) {
   with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
   with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
 
-  use Module::Load ();
   eval { Module::Load::load 'App::Netdisco::Util::Graph' };
   sub graph {
     App::Netdisco::Util::Graph::graph();
@@ -93,6 +96,22 @@ unless ($action) {
   sub monitor {
     App::Netdisco::Util::NodeMonitor::monitor();
     return ('done', 'Generated monitor data.');
+  }
+
+  use App::Netdisco::Util::SNMP ();
+  sub show {
+    $extra ||= 'interfaces'; my $class = undef;
+    ($class, $extra) = split(/::([^:]+)$/, $extra);
+    if ($class and $extra) {
+        $class = 'SNMP::Info::'.$class;
+    }
+    else {
+        $extra = $class;
+        undef $class;
+    }
+    my $i = App::Netdisco::Util::SNMP::snmp_connect($device, $class);
+    Data::Printer::p($i->$extra);
+    return ('done', "Showed $extra response from $device.");
   }
 }
 my $worker = MyWorker->new();
