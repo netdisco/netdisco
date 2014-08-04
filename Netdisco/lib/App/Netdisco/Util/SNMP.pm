@@ -57,7 +57,7 @@ Returns C<undef> if the connection fails.
 sub snmp_connect_rw { _snmp_connect_generic('write', @_) }
 
 sub _snmp_connect_generic {
-  my ($mode, $ip, $class) = @_;
+  my ($mode, $ip, $useclass) = @_;
   $mode ||= 'read';
 
   # get device details from db
@@ -102,12 +102,9 @@ sub _snmp_connect_generic {
     : (reverse (1 .. (setting('snmpver') || 3))) );
 
   # use existing or new device class
-  my @classes = ($class || 'SNMP::Info');
-  unless ($class) {
-      $snmp_args{AutoSpecify} = 1;
-      if ($device->snmp_class) {
-          unshift @classes, $device->snmp_class;
-      }
+  my @classes = ($useclass || 'SNMP::Info');
+  if ($device->snmp_class and not $useclass) {
+      unshift @classes, $device->snmp_class;
   }
 
   my $info = undef;
@@ -124,7 +121,8 @@ sub _snmp_connect_generic {
               next unless $class;
 
               my %local_args = (%snmp_args, Version => $ver);
-              $info = _try_connect($device, $class, $comm, $mode, \%local_args);
+              $info = _try_connect($device, $class, $comm, $mode, \%local_args,
+                ($useclass ? 0 : 1) );
               last COMMUNITY if $info;
           }
       }
@@ -134,7 +132,7 @@ sub _snmp_connect_generic {
 }
 
 sub _try_connect {
-  my ($device, $class, $comm, $mode, $snmp_args) = @_;
+  my ($device, $class, $comm, $mode, $snmp_args, $reclass) = @_;
   my %comm_args = _mk_info_commargs($comm);
   my $debug_comm = ( $comm->{community}
       ? $ENV{SHOW_COMMUNITY} ? $comm->{community} : '<hidden>'
@@ -152,7 +150,7 @@ sub _try_connect {
                                : _try_write($info, $device, $comm));
 
       # first time a device is discovered, re-instantiate into specific class
-      if ($snmp_args->{AutoSpecify} and $info and $info->device_type ne $class) {
+      if ($reclass and $info and $info->device_type ne $class) {
           $class = $info->device_type;
           debug
             sprintf '[%s] try_connect with ver: %s, new class: %s, comm: %s',

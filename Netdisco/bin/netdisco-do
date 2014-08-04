@@ -45,12 +45,12 @@ use Pod::Usage;
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug);
+my ($device, $port, $extra, $debug) = (undef, undef, undef, 0);
 my $result = GetOptions(
   'device|d=s' => \$device,
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
-  'debug|D'    => \$debug,
+  'debug|D+'   => \$debug,
 ) or pod2usage(
   -msg => 'error: bad options',
   -verbose => 0,
@@ -60,6 +60,13 @@ my $result = GetOptions(
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($debug ? 'debug' : 'info');
+
+$ENV{INFO_TRACE} = 1 if $debug > 1;
+$ENV{DBIC_TRACE} = 1 if $debug > 2; $ENV{DBIC_TRACE_PROFILE} = 'console';
+$ENV{SNMP_TRACE} = 1 if $debug > 3;
+$ENV{INFO_TRACE} = 2 if $debug > 4;
+$ENV{SNMP_TRACE} = 2 if $debug > 5;
+$ENV{SNMP_TRACE} = 3 if $debug > 6;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
@@ -167,7 +174,7 @@ netdisco-do - Run any Netdisco job from the command-line.
  ~/bin/netdisco-do <action> [-D] [-d <device> [-p <port>] [-e <extra>]]
 
 Regardless of Netdisco configuration, debug level logging is enabled if the
-C<-D> flag is given.
+C<-D> flag is given (up to seven times).
 
 =head1 DESCRIPTION
 
@@ -238,5 +245,42 @@ C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("true" or "false").
+
+=head1 DEBUG LEVELS
+
+The debug flag "C<-D>" can be specified up to seven times, and enables the
+following items in order:
+
+=over 4
+
+=item 1
+
+Netdisco debug log level
+
+=item 2
+
+L<SNMP::Info> logging
+
+=item 3
+
+L<DBIx::Class> logging
+
+=item 4
+
+L<SNMP> (net-snmp) logging
+
+=item 5
+
+Even more L<SNMP::Info> logging
+
+=item 6
+
+Even more L<SNMP> (net-snmp) logging
+
+=item 7
+
+Even more than more L<SNMP> (net-snmp) logging
+
+=back
 
 =cut
