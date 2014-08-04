@@ -136,13 +136,15 @@ sub _snmp_connect_generic {
 sub _try_connect {
   my ($device, $class, $comm, $mode, $snmp_args) = @_;
   my %comm_args = _mk_info_commargs($comm);
+  my $debug_comm = ( $comm->{community}
+      ? $ENV{SHOW_COMMUNITY} ? $comm->{community} : '<hidden>'
+      : "v3user:$comm->{user}" );
   my $info = undef;
 
   try {
       debug
         sprintf '[%s] try_connect with ver: %s, class: %s, comm: %s',
-        $snmp_args->{DestHost}, $snmp_args->{Version}, $class,
-        ($comm->{community} || "v3user:$comm->{user}");
+        $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
       Module::Load::load $class;
 
       $info = $class->new(%$snmp_args, %comm_args);
@@ -154,8 +156,7 @@ sub _try_connect {
           $class = $info->device_type;
           debug
             sprintf '[%s] try_connect with ver: %s, new class: %s, comm: %s',
-            $snmp_args->{DestHost}, $snmp_args->{Version}, $class,
-            ($comm->{community} || "v3user:$comm->{user}");
+            $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
