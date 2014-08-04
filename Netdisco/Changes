@@ -11,6 +11,7 @@
   * Reports config is now a list (see ReleaseNotes)
   * Add "AP" as a hint for WAP support
   * Attempt to keep PID and logfile as netdisco user even when running as root
+  * Show netdisco-do docs on options error
 
   [BUG FIXES]
 

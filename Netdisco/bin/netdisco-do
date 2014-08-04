@@ -41,6 +41,7 @@ use Dancer::Plugin::DBIC 'schema';
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
 use Try::Tiny;
+use Pod::Usage;
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
@@ -50,7 +51,11 @@ my $result = GetOptions(
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
-) or exit(1);
+) or pod2usage(
+  -msg => 'error: bad options',
+  -verbose => 0,
+  -exitval => 1,
+);
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
@@ -66,8 +71,11 @@ schema('daemon')->deploy;
 my $action = shift @ARGV;
 
 unless ($action) {
-  error 'error: missing action!';
-  exit (1);
+    pod2usage(
+      -msg => 'error: missing action!',
+      -verbose => 2,
+      -exitval => 2,
+    );
 }
 
 # create worker (placeholder object for the role methods)
@@ -118,8 +126,11 @@ my $worker = MyWorker->new();
 
 # belt and braces check before we go ahead
 if (not $worker->can( $action )) {
-  error sprintf 'error: %s is not a valid action', $action;
-  exit (1);
+  pod2usage(
+    -msg => (sprintf 'error: %s is not a valid action', $action),
+    -verbose => 2,
+    -exitval => 3,
+  );
 }
 
 # what job are we asked to do?
@@ -151,7 +162,7 @@ exit ($status eq 'done' ? 0 : 1);
 
 netdisco-do - Run any Netdisco job from the command-line.
 
-=head1 USAGE
+=head1 SYNOPSIS
 
  ~/bin/netdisco-do <action> [-D] [-d <device> [-p <port>] [-e <extra>]]
 
