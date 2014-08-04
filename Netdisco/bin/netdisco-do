@@ -199,6 +199,16 @@ Run an nbtstat on the node (specified with C<-d>).
 
 Generate GrapgViz graphs for the largest cluster of devices.
 
+=head2 show
+
+Dump the content of an SNMP MIB leaf, which is useful for diagnostics and
+troubleshooting. You should provide the "C<-e>" option which is the name of
+the leaf (such as C<interfaces> or C<uptime>).
+
+If you wish to test with a device class other than that discovered, prefix the
+leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
+"C<Layer2::HP::uptime>".
+
 =head2 set_location
 
 Set the SNMP location field on the device (specified with C<-d>). Pass the
