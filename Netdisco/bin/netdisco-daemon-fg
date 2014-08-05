@@ -29,6 +29,7 @@ use NetAddr::IP::Lite ':lower';
 use List::Util 'sum';
 use Role::Tiny::With;
 use MCE::Signal '-setpgrp';
+setpgrp(0,0); # only portable variety of setpgrp
 use MCE;
 
 # set temporary MCE files' location in home directory

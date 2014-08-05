@@ -21,6 +21,7 @@
   * Sort CDP/LLDP data to be more consistent when multiple neighbors on a port
   * Fix POD errors in Nbtstat and ResultSet::Device (thanks cpants :)
   * UTF-8 encoding for Port Name (description)
+  * Allow process grouping to work portably againa (daemon config watch)
 
 2.028013 - 2014-07-31
 
