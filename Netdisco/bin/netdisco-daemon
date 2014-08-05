@@ -69,6 +69,7 @@ Daemon::Control->new({
 
 sub restarter {
   my ($daemon, @program_args) = @_;
+  $0 = 'netdisco-daemon';
 
   my $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;

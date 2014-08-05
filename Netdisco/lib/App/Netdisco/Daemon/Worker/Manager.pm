@@ -11,11 +11,12 @@ use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
 sub worker_begin {
   my $self = shift;
   my $wid = $self->wid;
-  debug "entering Manager ($wid) worker_begin()";
 
-  if (setting('workers')->{'no_manager'}) {
-      return debug "mgr ($wid): no need for manager... skip begin";
-  }
+  return debug "mgr ($wid): no need for manager... skip begin"
+    if setting('workers')->{'no_manager'};
+
+  $0 = sprintf 'netdisco-daemon: worker #%s manager: begin', $wid;
+  debug "entering Manager ($wid) worker_begin()";
 
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";
@@ -34,6 +35,7 @@ sub worker_body {
   return debug "mgr ($wid): no need for manager... quitting"
     if setting('workers')->{'no_manager'};
 
+  $0 = sprintf 'netdisco-daemon: worker #%s manager: body', $wid;
   my $num_slots = sum( 0, map { setting('workers')->{$_} }
                               values %{setting('job_type_keys')} );
 
@@ -47,6 +49,8 @@ sub worker_body {
           # check for available local capacity
           my $job_type = setting('job_types')->{$job->action};
           next unless $job_type and $self->do('capacity_for', $job_type);
+
+          $0 = sprintf 'netdisco-daemon: worker #%s manager: booking %s', $wid, $job->id;
           debug sprintf "mgr (%s): processing node has capacity for job %s (%s)",
             $wid, $job->id, $job->action;
 
@@ -60,6 +64,7 @@ sub worker_body {
       }
 
       debug "mgr ($wid): sleeping now...";
+      $0 = sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
       sleep( setting('workers')->{sleep_time} || 2 );
   }
 }
