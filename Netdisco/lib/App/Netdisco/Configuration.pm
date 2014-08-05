@@ -63,7 +63,7 @@ delete config->{'housekeeping'};
 # schedule expire used to be called expiry
 setting('schedule')->{expire} ||= setting('schedule')->{expiry}
   if setting('schedule') and exists setting('schedule')->{expiry};
-delete config->{'schedule'}->{'expiry'};
+delete config->{'schedule'}->{'expiry'} if setting('schedule');
 
 # upgrade reports config from hash to list
 if (setting('reports') and ref {} eq ref setting('reports')) {
