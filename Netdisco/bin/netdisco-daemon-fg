@@ -29,13 +29,15 @@ use NetAddr::IP::Lite ':lower';
 use List::Util 'sum';
 use Role::Tiny::With;
 use MCE::Signal '-setpgrp';
-setpgrp(0,0); # only portable variety of setpgrp
 use MCE;
 
 # set temporary MCE files' location in home directory
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));
 mkdir $tmp_dir if ! -d $tmp_dir;
+
+setpgrp(0,0); # only portable variety of setpgrp
+$0 = 'netdisco-daemon: master';
 
 my $mce = MCE->new(
   spawn_delay => 0.15,
@@ -92,6 +94,7 @@ sub worker_factory {
   return sub {
     my $self = shift;
     my $wid = $self->wid;
+    $0 = sprintf 'netdisco-daemon: worker #%s %s: init', $wid, lc($role);
     info "applying role $role to worker $wid";
 
     # $self->sendto('stderr', ">>> worker $wid starting with role $role\n");

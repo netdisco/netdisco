@@ -56,6 +56,23 @@ __PACKAGE__->set_primary_key("job");
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
+=head1 METHODS
+
+=head2 summary
+
+An attempt to make a meaningful statement about the job.
+
+=cut
+
+sub summary {
+    my $job = shift;
+    return join ' ',
+      $job->action,
+      ($job->device || ''),
+      ($job->port || ''),
+      ($job->subaction ? (q{'}. $job->subaction .q{'}) : '');
+}
+
 =head1 ADDITIONAL COLUMNS
 
 =head2 entererd_stamp
