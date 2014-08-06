@@ -15,6 +15,7 @@
   * Show netdisco-do docs on options error
   * Do not leak SNMP community string into debug output (unless SHOW_COMMUNITY=1)
   * Process tree updated to show daemon worker status/activity
+  * Handle management IP of one device being in use on another device
 
   [BUG FIXES]
 

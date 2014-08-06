@@ -14,7 +14,7 @@ register_search_tab(
 # device with various properties or a default match-all
 get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any { param($_) }
-    qw/name location dns ip description model os_ver vendor layers/;
+      qw/name location dns ip description model os_ver vendor layers/;
     my $rs;
 
     if ($has_opt) {

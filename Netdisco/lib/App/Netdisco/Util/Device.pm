@@ -49,8 +49,12 @@ sub get_device {
   # naive check for existing DBIC object
   return $ip if ref $ip;
 
-  my $alias = schema('netdisco')->resultset('DeviceIp')
-    ->search({alias => $ip})->first;
+  # in case the management IP of one device is in use on another device,
+  # we first try to get an exact match for the IP as mgmt interface.
+  my $alias =
+    schema('netdisco')->resultset('DeviceIp')->find($ip, $ip)
+    ||
+    schema('netdisco')->resultset('DeviceIp')->search({alias => $ip})->first;
   $ip = $alias->ip if defined $alias;
 
   return schema('netdisco')->resultset('Device')->with_times
