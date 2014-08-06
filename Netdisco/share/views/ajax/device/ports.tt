@@ -6,12 +6,11 @@
       [% FOREACH item IN vars.port_columns %]
       [% NEXT IF item.name == 'c_admin' %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
-        [% NEXT UNLESS params.${item.name} %]
+      [% NEXT IF item.name == 'c_neighbors' AND params.c_nodes AND !params.c_neighbors %]
+      [% NEXT IF item.name == 'c_nodes' AND !params.c_nodes AND params.c_neighbors %]
         [% SET th_class = '' %]
         [% IF (user_can_port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]
-          [% th_class = ' class="nd_nudge-for-icon natural"' %]
-        [% ELSIF (item.name == 'c_port' OR item.name == 'c_descr' OR item.name == 'c_name') %]
-          [% th_class = ' class="natural"' %]
+          [% th_class = ' class="nd_nudge-for-icon"' %]
         [% END %]
         <th[% th_class %]>
           [% item.label | html_entity %]
@@ -19,382 +18,500 @@
       [% END %]
     </tr>
   </thead>
-  <tbody>
-    [% FOREACH row IN results %]
-    <tr>
-      <td class="nd_center-cell nd_devport-icon">
-        [% IF row.up_admin != 'up' %]
-        <i class="icon-remove"></i>
-        [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND row.vlan_count < 2 %]
-        <i class="icon-fullscreen text-info"></i>
-        [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
-        <i class="icon-arrow-down text-success"></i>
-        [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
-        <i class="icon-arrow-down text-error"></i>
-        [% ELSE %]
-        <i class="icon-angle-up text-success"></i>
-        [% END %]
-        [% IF row.slave_of %]<br/>
-          [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <small><i class="icon-group muted"></i></small>
-          [% ELSIF row.get_column('agg_master_up') == 'up' %]
-            <small><i class="icon-group text-success"></i></small>
-          [% ELSE %]
-            <small><i class="icon-group text-error"></i></small>
-          [% END %]
-        [% END %]
-      </td>
-
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
-        <td>
-          [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
-          [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
-          [% END %]
-        </td>
-      [% END %]
-
-      [% IF params.c_port %]
-      [% IF user_can_port_control AND params.c_admin %]
-      [% IF row.up_admin == 'up' %]
-      <td nowrap class="nd_editable-cell" data-action="down"
-        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
-        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-down nd_hand-icon"
-          rel="tooltip" data-placement="top" data-offset="3"
-          data-animation="" data-title="Click to Disable"></i>
-      [% ELSE %]
-      <td nowrap class="nd_editable-cell" data-action="up"
-        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
-        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-        <i class="icon-hand-up nd_hand-icon"
-          rel="tooltip" data-placement="top" data-offset="3"
-          data-animation="" data-title="Click to Enable"></i>
-      [% END %]
-        <a class="nd_log-icon"
-          href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
-          <i class="icon-file-text-alt"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="View Port Log"></i>
-        </a>
-      [% ELSE %]
-      <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
-      [% END %]
-        <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
-            self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
-          [% IF row.is_master %]
-            <small><i class="icon-group muted"></i></small>&nbsp;
-          [% END %]
-        [% row.port | html_entity %]</a>
-        [% IF row.slave_of %]<br/>
-          <a class="nd_this-port-only" href="[% uri_for('/device',
-              self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
-          [% row.slave_of | html_entity %]</a>
-        [% END %]
-      </td>
-      [% END %]
-
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
-        <td>
-          [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
-          [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
-          [% END %]
-        </td>
-      [% END %]
-
-      [% IF params.c_descr %]
-      <td nowrap>[% row.descr | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_type %]
-      <td>[% row.type | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_duplex %]
-      <td>
-        [% IF row.up == 'up' AND row.duplex %]
-        [% (row.duplex_admin.ucfirst || 'Auto') | html_entity %] / [% row.duplex.ucfirst | html_entity %]
-        [% END %]
-      </td>
-      [% END %]
-
-      [% IF params.c_lastchange %]
-      <td>[% row.lastchange_stamp | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_name %]
-      [% IF user_can_port_control AND params.c_admin %]
-      <td nowrap class="nd_editable-cell" contenteditable="true"
-          data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit-icon"></i>
-      [% ELSE %]
-      <td nowrap>
-      [% END %]
-      <div class="nd_editable-cell-content">
-        [% row.name | html_entity %]
-      </div>
-      </td>
-      [% END %]
-
-      [% IF params.c_speed %]
-      <td>[% row.speed | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_mac %]
-      <td>[% row.mac | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_mtu %]
-      <td>[% row.mtu | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_pvid %]
-      [% IF user_can_port_control AND params.c_admin %]
-      <td class="nd_editable-cell" contenteditable="true" data-default="[% row.vlan | html_entity %]"
-        data-field="c_pvid" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit-icon"></i>
-      <div class="nd_editable-cell-content">
-        [% IF row.vlan %][% row.vlan | html_entity %][% END %]
-      </div>
-      </td>
-      [% ELSE %]
-      <td>
-        <a class="nd_linkcell"
-          href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
-            [% row.vlan | html_entity %]</a>
-      </td>
-      [% END %]
-      [% END %]
-
-      [% IF params.c_vmember %]
-      <td>
-        [% IF row.vlan_count %]
-        [% SET output = '' %]
-        [% SET vlanlist = [] %]
-        [% FOREACH vlan IN row.all_port_vlans %][% vlanlist.push(vlan.get_column('vlan')) %][% END %]
-        [% FOREACH vlan IN vlanlist.nsort %]
-          [% SET output = output _
-            '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan _ '">' _ vlan _ '</a>' %]
-          [% SET output = output _ ', ' IF NOT loop.last %]
-        [% END %]
-        [% IF row.vlan_count > 10 %] [%# TODO make this a settable variable %]
-          [% SET output = '<div class="nd_vlan-total">(' _ row.vlan_count
-            _ ')</div><span class="nd_linkcell nd_collapse-vlans">
-              <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
-              <div class="nd_collapsing nd_collapse-pre-hidden">' _ output %]
-          [% SET output = output _ '</div>' %]
-        [% END %]
-        [% output %]
-        [% END %]
-      </td>
-      [% END %]
-
-      [% IF params.c_ssid %]
-      <td>[% row.ssid.ssid | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_power %]
-        [% IF row.power %]
-          [% IF row.power.admin == 'true' %]
-            [% IF user_can_port_control AND params.c_admin %]
-              <td nowrap data-action="false"
-                data-field="c_power" data-for-device="[% device.ip | html_entity %]"
-                data-for-port="[% row.port | html_entity %]">
-
-                <i class="icon-off nd_power-icon nd_power-on"
-                  rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Click to Disable"></i>
-            [% ELSE %]
-              <td nowrap>
-                <i class="icon-off nd_power-on"></i>
-            [% END %]
-                <span>
-                [% IF row.power.power > 0 %]
-                  [% row.power.power | html_entity %]&nbsp;mW
-                [% ELSE %]
-                  ([% row.power.status | html_entity %])
-                [% END %]
-                </span>
-          [% ELSE %]
-            [% IF user_can_port_control AND params.c_admin %]
-              <td nowrap data-action="true"
-                data-field="c_power" data-for-device="[% device.ip | html_entity %]"
-                data-for-port="[% row.port | html_entity %]">
-
-                <i class="icon-off nd_power-icon"
-                  rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Click to Enable"></i>
-            [% ELSE %]
-              <td>
-                <i class="icon-off"></i>
-            [% END %]
-          [% END %]
-              </td>
-        [% ELSE %]
-          <td></td>
-        [% END %]
-      [% END %]
-
-      [% IF params.c_nodes OR params.c_neighbors %]
-      <td>
-        [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
-          [% IF row.neighbor %]
-            <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
-            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
-              <i class="icon-phone"></i>&nbsp;
-            [% ELSIF row.remote_type AND row.remote_type.match('(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)') %]
-              <i class="icon-signal"></i>&nbsp;
-            [% END %]
-            <a href="[% uri_for('/device', self_options) %]&q=[% row.neighbor.ip | uri %]">
-                [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]</a>
-            [% IF row.remote_port %]
-                -
-                <a href="[% uri_for('/device', self_options) %]&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
-                    [% row.remote_port | html_entity %]</a>
-            [% END %]
-            <br/>
-            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
-              ([% 'id: '_ row.remote_id IF row.remote_id %]
-              [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
-            [% END %]
-          [% ELSIF row.remote_ip %]
-            <i class="icon-unlink text-error"></i>&nbsp;
-            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
-              <i class="icon-phone"></i>&nbsp;
-            [% ELSIF row.remote_type AND row.remote_type.match('(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)') %]
-              <i class="icon-signal"></i>&nbsp;
-            [% END %]
-            <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
-              [% row.remote_ip | html_entity %]
-              [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
-            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
-              ([% 'id: '_ row.remote_id IF row.remote_id %]
-              [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
-            [% END %]
-          [% ELSE %]
-            <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
-          [% END %]
-        [% END %]
-        [% IF params.c_nodes %]
-        [% FOREACH node IN row.$nodes %]
-          [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
-          [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
-          [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
-            <i class="icon-phone"></i>&nbsp;
-          [% ELSIF node.wireless.defined
-                   OR (row.remote_type AND row.remote_type.match('(cisco\s+AIR-[L|c]?AP|-K9W8-|^AP:\s)')) %]
-            <i class="icon-signal"></i>&nbsp;
-          [% END %]
-          <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
-            [% node.net_mac.$mac_format_call | html_entity %]</a>
-          [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
-            (on vlan [% node.vlan | html_entity %])
-          [% END %]            
-          [% IF params.n_ssid AND node.wireless.defined %]
-            (SSID:
-            [% FOREACH wlan IN node.wireless %]
-              <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
-            [% END %]
-            )
-          [% END %]
-          [% IF params.n_vendor AND node.oui.defined %]
-            (Vendor:
-            [% FOREACH oui IN node.oui %]
-              <a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% oui.abbrev | uri %]">[% oui.abbrev | html_entity %]</a>
-            [% END %]
-            )
-          [% END %]
-          [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
-          [% IF params.n_ip %]
-            [% FOREACH ip IN node.ips %]
-            <br/>&nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
-              [% SET dns = ip.dns %]
-              [% IF dns %]
-              <a href="[% search_node %]&q=[% ip.ip | uri %]">[% dns %] ([% ip.ip | html_entity %])</a>
-              [% ELSE %]
-              <a href="[% search_node %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
-              [% END %]
-            [% END %]
-          [% END %]
-          [% IF params.n_netbios %]
-            [% FOREACH nbt IN node.netbios %]
-            <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
-            <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
-            [% END %]
-          [% END %]
-        [% END %]
-        [% END %]
-      </td>
-      [% END %]
-
-      [% IF params.c_stp %]
-      <td>[% row.stp | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_up %]
-      <td>
-        [% row.up_admin.ucfirst | html_entity %] / [% row.up.ucfirst | html_entity %]
-      </td>
-      [% END %]
-
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
-        <td>
-          [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
-          [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
-          [% END %]
-        </td>
-      [% END %]
-    </tr>
-    [% END %]
-  </tbody>
 </table>
 
-[% IF user_can_port_control %]
-<div id="nd_portlog" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-    role="dialog" aria-hidden="true">
-  <div class="modal-body">
-    <blockquote>
-      <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
-    </blockquote>
-    <select id="nd_portlog-reason" class="input-block-level" name="reason">
-      [% FOREACH pair IN settings.port_control_reasons.pairs %]
-        <option[% ' selected="selected"' IF pair.key == 'other' %] value="[% pair.key | html_entity %]">
-          [% pair.value | html_entity %]</option>
-      [% END %]
-    </select>
-    <textarea id="nd_portlog-log" class="input-block-level" rows="2" name="log"
-      placeholder="Enter a log message"></textarea>
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button id="nd_portlog-submit" class="btn btn-info" data-dismiss="modal">Continue</button>
-  </div>
-</div>
-[% END %]
-
-<script>
+<script type="text/javascript">
 $(document).ready(function() {
-    $('#dp-data-table').dataTable({
-        "columnDefs": [
-            { "sortable": false, "targets": 0 },
-            { "searchable": false, "targets": 0 },
-            { "type": 'natural', "targets": [ 'natural' ] }
-        ],
-        "order": [[ 1, 'asc' ]],
-        "processing": true,
-        "stateSave": true,
-        "pageLength": [% settings.table_pagesize %],
-        "language": {
-            "search": 'Filter records: '
+  var freeDate = moment().subtract( [% params.age_num %], '[% params.age_unit %]' );
+  var table = $('#dp-data-table').dataTable({
+    "processing": true,
+    "stateSave": true,
+    "pageLength": [% settings.table_pagesize %],
+    "language": {
+      "search": 'Filter records: '
+    },
+    "deferRender": true,
+    "order": [[ 1, "asc" ]],
+    "dom": 'C<"nd_clear-both">lfrtip',
+    "colVis": {
+      "exclude": [ 0 ],
+      "restore": 'Reset to Defaults'
+    },
+    "columns": [
+      {
+        "data": "up",
+        "searchable": false,
+        "sortable": false,
+        "className": 'nd_center-cell nd_devport-icon',
+        "render": function(data, type, row, meta) {
+          var cell_str = '<i class="icon-angle-up text-success"></i>';
+          if (row.up_admin !== 'up') {
+            cell_str = '<i class="icon-remove"></i>';
+          } else if (row.up === 'up' && row.stp === 'blocking' && row.vlan_membership.length < 2) {
+            cell_str = '<i class="icon-fullscreen text-info"></i>';
+          } else if (row.up !== 'up'  && freeDate.isAfter(row.lastchange_stamp)) {
+            cell_str = '<i class="icon-arrow-down text-success"></i>';
+          } else if (row.up_admin === 'up' && (row.up !== 'up' && row.up !== 'dormant')) {
+            cell_str = '<i class="icon-arrow-down text-error"></i>';
+          }
+          if (row.slave_of) {
+            cell_str = cell_str + '<br/>';
+            if (row.agg_master_up_admin != 'up') {
+              cell_str = cell_str + '<small><i class="icon-group muted"></i></small>';
+            } else if (row.agg_master_up === 'up') {
+              cell_str = cell_str + '<small><i class="icon-group text-success"></i></small>';
+            } else {
+              cell_str = cell_str + '<small><i class="icon-group text-error"></i></small>';
+            }
+          }
+          return cell_str;
+        }
+      }, {
+        "data": 'port',
+        "type": 'portsort',
+        [% IF user_can_port_control AND params.c_admin %]
+        "createdCell": function (td, cellData, rowData, row, col) {
+            $(td).attr('data-field', 'c_port');
+            $(td).attr('data-for-device', he.encode(rowData.ip));
+            $(td).attr('data-for-port', he.encode(rowData.port));
         },
-    } );
-} );
+        "className": 'nd_editable-cell nd_port-display',
+        [% ELSE %]
+        "className": 'nd_port-display',
+        [% END %]
+        "render": function(data, type, row, meta) {
+          if (type === 'display') {
+            var cell_str = '';
+            [% IF user_can_port_control AND params.c_admin %]
+            if (row.up_admin === 'up') {
+              cell_str = cell_str + '<i class="icon-hand-down nd_hand-icon" rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="Click to Disable"></i>';
+            } else {
+              cell_str = cell_str + '<i class="icon-hand-up nd_hand-icon" rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="Click to Enable"></i>';
+            }
+            cell_str = cell_str + '<a class="nd_log-icon" href="[% uri_for('/report/portlog') %]?q='  + encodeURIComponent(row.ip) + '&f='  + encodeURIComponent(row.port) + '">';
+            cell_str = cell_str + '<i class="icon-file-text-alt" rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="View Port Log"></i></a>';
+            [% ELSE %]
+            cell_str = cell_str + '';
+            [% END %]
+            cell_str = cell_str + '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',self_options) %]&q=[% params.q | uri %]&f=' + encodeURIComponent(row.port) + '&prefer=port">';
+            if (row.is_master) {
+              cell_str = cell_str + '<small><i class="icon-group muted"></i></small>&nbsp;';
+            }
+            cell_str = cell_str + he.encode(row.port) + '</a>';
+            if (row.slave_of) {
+              cell_str = cell_str + '<br/>';
+              cell_str = cell_str + '<a class="nd_this-port-only" href="[% uri_for('/device', self_options) %]&q=[% params.q | uri %]&f=' + encodeURIComponent(row.slave_of) + '&prefer=port">';
+              cell_str = cell_str + he.encode(row.slave_of) + '</a>';
+            }
+            return cell_str;
+          }
+          else {
+            return he.encode(data || '');
+          }
+        }
+      }, {
+        "visible": false,
+        "type": 'portsort',
+        "className": 'nd_port-display',
+        "data": "descr",
+        "render": function(data, type, row, meta) {
+          return type === 'display' ? he.encode(data || '') : data;
+        }
+      }, {
+        "visible": false,
+        "data": "type",
+        "render": function(data, type, row, meta) {
+          return type === 'display' ? he.encode(data || '') : data;
+        }
+      }, {
+        "visible": false,
+        "data": "duplex",
+        "render": function(data, type, row, meta) {
+         if (row.up === 'up' && row.duplex) {
+            var cell_str = '';
+            cell_str = cell_str + he.encode(capitalizeFirstLetter(row.duplex_admin || 'auto') );
+            cell_str = cell_str + ' / ' + he.encode(capitalizeFirstLetter(row.duplex) || '');
+            return cell_str;
+          }
+          else {
+            return '';
+          }
+        }
+      }, {
+        "visible": false,
+        "data": "lastchange_stamp",
+      }, {
+        "data": "name",
+        "type": 'portsort',
+        [% IF user_can_port_control AND params.c_admin %]
+        "createdCell": function (td, cellData, rowData, row, col) {
+            $(td).attr('contenteditable', 'true');
+            $(td).attr('data-field', 'c_name');
+            $(td).attr('data-for-device', he.encode(rowData.ip));
+            $(td).attr('data-for-port', he.encode(rowData.port));
+        },
+        "className": 'nd_editable-cell  nd_port-display',
+        "render": function(data, type, row, meta) {
+          if (type === 'display') {
+            var cell_str = '<i class="icon-edit nd_edit-icon"></i>'
+            cell_str = cell_str + '<div class="nd_editable-cell-content">';
+            cell_str = cell_str + he.encode(data || '');
+            cell_str = cell_str + '</div>';
+            return cell_str;
+          }
+          else {
+            return data;
+          }
+        }
+        [% ELSE %]
+        "render": function(data, type, row, meta) {
+          return type === 'display' ? he.encode(data || '') : data;
+        }  
+        [% END %]
+      }, {
+        "visible": false,
+        "data": "speed",
+        "render": function(data, type, row, meta) {
+          return type === 'display' ? he.encode(data || '') : data;
+        }
+      }, {
+        "visible": false,
+        "data": "mac",
+        "render": function(data, type, row, meta) {
+          return type === 'display' ? he.encode(data || '') : data;
+        }
+      }, {
+        "visible": false,
+        /* mtu is an integer, no need to encode */
+        "data": "mtu"
+      }, {
+        "data": "native_vlan",
+        [% IF user_can_port_control AND params.c_admin %]
+        "createdCell": function (td, cellData, rowData, row, col) {
+            $(td).attr('contenteditable', 'true');
+            $(td).attr('data-field', 'c_pvid');
+            $(td).attr('data-for-device', he.encode(rowData.ip));
+            $(td).attr('data-for-port', he.encode(rowData.port));
+        },
+        "className": 'nd_editable-cell',
+        "render": function ( data, type, row, meta ) {
+          if (type === 'display') {
+            var cell_str = '<i class="icon-edit nd_edit-icon"></i>';
+            cell_str = cell_str + '<div class="nd_editable-cell-content">';
+            if (row.native_vlan) {
+              /* row.native_vlan is an integer, no need to encode */
+              cell_str = cell_str + row.native_vlan;
+            }
+            cell_str = cell_str + '</div>';
+            return cell_str;
+          }
+          else {
+            return data;
+          }
+        }
+        [% ELSE %]
+        "render": function ( data, type, row, meta ) {
+          if (row.native_vlan && type === 'display') {
+            return '<a class="nd_linkcell" href="[% uri_for('/search') %]?tab=vlan&q=' + encodeURIComponent(data) + '">' + data + '</a>';
+          }
+          else {
+            return data;
+          }
+        }
+        [% END %]
+      }, {
+        "visible": false,
+        "type": 'natural',
+        "data": null,
+        "render": function ( data, type, row, meta ) {
+          if (type === 'display' && row.vlan_membership) {
+            var cell_str = '';
+            var arr = row.vlan_membership;
+            arr = arr.sort(function(a, b){return a-b});
+            arr = jQuery.map( arr, function( a ) {
+              return '<a href="[% uri_for('/search') %]?tab=vlan&q=' + a + '">' + a + '</a>';
+            });
+            if (row.vlan_membership.length > 10) {
+              cell_str = cell_str + '<div class="nd_vlan-total">(';
+              cell_str = cell_str + row.vlan_membership.length;
+              cell_str = cell_str + ')</div><span class="nd_linkcell nd_collapse-vlans">';
+              cell_str = cell_str + '<div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>';
+              cell_str = cell_str + '<div class="nd_collapsing nd_collapse-pre-hidden">' + arr.join(", ");
+              cell_str = cell_str + '</div>';
+              return cell_str;
+            }
+            else {
+              return row.vlan_membership ? arr.join(", ") : "";
+            }
+          }
+          else {
+            return row.vlan_membership ? row.vlan_membership.join(", ") : "";
+          }
+        }
+      }, {
+        "visible": false,
+        "data": "power_admin",
+        "defaultContent": "",
+        "className": 'nd_port-display',
+        [% IF user_can_port_control AND params.c_admin %]
+        "createdCell": function (td, cellData, rowData, row, col) {
+            if (row.power_admin && row.power_admin === 'true') {
+              $(td).attr('data-action', 'false');
+            }
+            else {
+              $(td).attr('data-action', 'true');
+            }
+            $(td).attr('data-action', 'false');
+            $(td).attr('data-field', 'c_power');
+            $(td).attr('data-for-device', he.encode(rowData.ip));
+            $(td).attr('data-for-port', he.encode(rowData.port));
+        },
+        [% END %]
+        "render": function ( data, type, row, meta ) {
+          if (type === 'display') {
+            var cell_str = '';
+            if (row.power_admin && row.power_admin === 'true') {
+              [% IF user_can_port_control AND params.c_admin %]
+              cell_str = cell_str + '<i class="icon-off nd_power-icon nd_power-on" ';
+              cell_str = cell_str + 'rel="tooltip" data-placement="top" data-offset="3" ';
+              cell_str = cell_str + 'data-animation="" data-title="Click to Disable"></i>';
+              [% ELSE %]
+              cell_str = cell_str + '<i class="icon-off nd_power-on"></i>';
+              [% END %]
+              cell_str = cell_str + '<span> ';
+                if (row.power && row.power > 0) {
+                  cell_str = cell_str + row.power + '&nbsp;mW';
+                }
+                else {
+                  cell_str = cell_str + he.encode(row.power_status || '');
+                }
+              cell_str = cell_str + '<span>';
+              return cell_str;
+            }
+            else {
+              [% IF user_can_port_control AND params.c_admin %]
+              cell_str = cell_str + '<i class="icon-off nd_power-icon" ';
+              cell_str = cell_str + 'rel="tooltip" data-placement="top" data-offset="3" ';
+              cell_str = cell_str + 'data-animation="" data-title="Click to Enable"></i>';
+              [% ELSE %]
+              cell_str = cell_str + '<i class="icon-off"></i>';
+              [% END %]
+            }
+          }
+          else {
+            return data;
+          }
+        }
+      }, {
+        "data": "null",
+        "defaultContent": "",
+        "render": function ( data, type, row, meta ) {
+          if (row.ssids && type === 'display') {
+            var arr = row.ssids;
+            arr = arr.sort();
+            arr = jQuery.map( arr, function( a ) {
+              return he.encode(a || '');
+            });
+            return row.ssids ? arr.join(", ") : "";
+          }
+          else {
+            return row.ssids ? row.ssids.join(", ") : "";
+          }
+        }
+      }, {
+        "data": "null",
+        "defaultContent": "",
+        "render": function ( data, type, row, meta ) {
+          var cell_str = '';
+          var d_suffix = '[% settings.domain_suffix %]';
+            if (row.remote_ip || row.is_uplink) {
+              if (row.neighbor_alias_ip) {
+                cell_str = cell_str + '<i class="icon-link';
+                if (row.manual_topo) {
+                  cell_str = cell_str + ' text-warning';
+                }
+                cell_str = cell_str + '"></i>';
+                if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
+                  cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
+                }
+                else if (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)/)) {
+                  cell_str = cell_str + '<i class="icon-signal"></i>&nbsp;';
+                }
+                cell_str = cell_str + '<a href="[% uri_for('/device', self_options) %]&q=';
+                cell_str = cell_str + encodeURIComponent(row.neighbor_alias_ip) + '">';
+                var n_dns = row.neighbor_alias_dns ? row.neighbor_alias_dns.replace(d_suffix, '') : '';
+                cell_str = cell_str + he.encode(n_dns || row.neighbor_alias_ip);
+                cell_str = cell_str + '</a>';
+                if (row.remote_port) {
+                  cell_str = cell_str + ' - '
+                  cell_str = cell_str + '<a href="[% uri_for('/device', self_options) %]&q=';
+                  cell_str = cell_str + encodeURIComponent(row.neighbor_alias_ip);
+                  cell_str = cell_str + '&f=' + encodeURIComponent(row.remote_port);
+                  cell_str = cell_str + '&prefer=port">' + he.encode(row.remote_port || '');
+                  cell_str = cell_str + '</a>';
+                }
+                cell_str = cell_str + '<br/>';
+                [% IF params.neigh_id %]
+                if (row.remote_id || row.remote_type) {
+                  cell_str = cell_str + '(';
+                  if (row.remote_id) {
+                    cell_str = cell_str + ' id: ' + he.encode(row.remote_id);
+                  }
+                  else if (row.remote_type) {
+                    cell_str = cell_str + ' type: ' + he.encode(row.remote_type);
+                  }
+                  cell_str = cell_str + ' )<br/>';
+                }
+                [% END %]
+              }
+              else if (row.remote_ip) {
+                cell_str = cell_str + '<i class="icon-unlink text-error"></i>&nbsp;';
+                if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
+                  cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
+                }
+                else if (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)/)) {
+                  cell_str = cell_str + '<i class="icon-signal"></i>&nbsp;';
+                }
+                cell_str = cell_str + '<a href="[% search_node %]&q=';
+                cell_str = cell_str + encodeURIComponent(row.remote_ip) + '">';
+                cell_str = cell_str + he.encode(row.remote_ip || '');
+                if (row.remote_port) {
+                  cell_str = cell_str + ' - ' + he.encode(row.remote_port || '');
+                }
+                cell_str = cell_str + '</a><br/>';
+                [% IF params.neigh_id %]
+                if (row.remote_id || row.remote_type) {
+                  cell_str = cell_str + '(';
+                  if (row.remote_id) {
+                    cell_str = cell_str + ' id: ' + he.encode(row.remote_id);
+                  }
+                  else if (row.remote_type) {
+                    cell_str = cell_str + ' type: ' + he.encode(row.remote_type);
+                  }
+                  cell_str = cell_str + ' )<br/>';
+                }
+                [% END %]
+              }
+              else {
+                cell_str = cell_str + '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)';
+              }
+            }
+            [% IF params.c_nodes %]
+            for (index = 0; index < row.nodes.length; ++index) {
+              if ((row.remote_ip || row.is_uplink) && index === 0 ) {
+                cell_str = cell_str + '<br/>';
+              }
+              if (row.nodes[index].active === 0) {
+                [% IF params.n_archived %]
+                cell_str = cell_str + '<br/>';
+                cell_str = cell_str + '<i class="icon-book"></i>&nbsp; ';
+                [% ELSE %]
+                continue;
+                [% END %]
+              }
+              else if (index !== 0) {
+                cell_str = cell_str + '<br/>';
+              }
+              if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
+                cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
+              }
+              else if (row.nodes[index].ssids || (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|c]?AP|-K9W8-|^AP:\s)/))) {
+                cell_str = cell_str + '<i class="icon-signal"></i>&nbsp;';
+              }
+              cell_str = cell_str + '<a href="[% search_node %]&q=';
+              cell_str = cell_str + encodeURIComponent(row.nodes[index].mac) + '">';
+              cell_str = cell_str + he.encode(row.nodes[index].mac) + '</a>';
+              if (row.nodes[index].vlans.length > 0) {
+                var vl = row.nodes[index].vlans ? row.nodes[index].vlans.join(", ") : "";
+                cell_str = cell_str + ' (on vlan ';
+                cell_str = cell_str + vl + ')';
+              }
+              [% IF params.n_ssid %]
+              if (row.nodes[index].ssids && row.nodes[index].ssids.length > 0) {
+                var arr = row.nodes[index].ssids;
+                arr = arr.sort();
+                arr = jQuery.map( arr, function( a ) {
+                  return '<a href="[% uri_for('/report/portssid') %]?ssid=' + encodeURIComponent(a) + '">' + he.encode(a) + '</a>';
+                });
+                cell_str = cell_str + ' (SSID: ';
+                cell_str = cell_str + arr.join(" ");
+                cell_str = cell_str + ')';
+              }
+              [% END %]
+              [% IF params.n_vendor %]
+              if (row.nodes[index].abbrev) {
+                cell_str = cell_str + '(Vendor: ';
+                cell_str = cell_str + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor=';
+                cell_str = cell_str + encodeURIComponent(row.nodes[index].abbrev) + '">';
+                cell_str = cell_str + he.encode(row.nodes[index].abbrev || '') + '</a>';
+                cell_str = cell_str + ')';
+              }
+              [% END %]
+              [% IF params.n_age %]
+                cell_str = cell_str + ' ( ';
+                var now = moment();
+                var t_last = moment(row.nodes[index].time_last);
+                cell_str = cell_str + t_last.from(now);
+                cell_str = cell_str + ' )';
+              [% END %]
+              [% IF params.n_ip %]
+              if (row.nodes[index].ip && row.nodes[index].ip.length > 0) {              
+                for (idx = 0; idx < row.nodes[index].ip.length; ++idx) {
+                  if (row.nodes[index].ip_active[idx] === 0) {
+                    [% IF params.n_archived %]
+                    cell_str = cell_str + '<br/>&nbsp;';
+                    cell_str = cell_str + '<i class="icon-book"></i>&nbsp; ';
+                    [% ELSE %]
+                    continue;
+                    [% END %]
+                  }
+                  else {
+                    cell_str = cell_str + '<br/>&nbsp;';
+                  }
+                  cell_str = cell_str + '<a href="[% search_node %]&q=';
+                  cell_str = cell_str + encodeURIComponent(row.nodes[index].ip[idx]) + '">';
+                  if (row.nodes[index].dns[idx]) {
+                    cell_str = cell_str + he.encode(row.nodes[index].dns[idx]);
+                    cell_str = cell_str + ' ( ' + he.encode(row.nodes[index].ip[idx]) + ' )</a>';
+                  }
+                  else {
+                    cell_str = cell_str + he.encode(row.nodes[index].ip[idx]) + '</a>';
+                  }
+                }
+              }
+              [% END %]
+              [% IF params.n_netbios %]
+              if (row.nodes[index].nbname) {
+                cell_str = cell_str + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\\<a href="[% uri_for('/report/netbios') %]?domain=';
+                var nb_dom_uri = row.nodes[index].nbname ? encodeURIComponent(row.nodes[index].domain) : 'blank';
+                var nb_dom = row.nodes[index].nbname ? he.encode(row.nodes[index].domain) : '(Blank Domain)';
+                cell_str = cell_str + nb_dom_uri + '" title="Nodes in this Domain">' + nb_dom + '</a>\\';
+                cell_str = cell_str + '<a href="[% search_node %]&q=' + encodeURIComponent(row.nodes[index].nbname) + '">';
+                cell_str = cell_str + he.encode(row.nodes[index].nbname) + '</a>';
+                cell_str = cell_str + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                var nb_user = row.nodes[index].nbuser ? he.encode(row.nodes[index].nbuser) : '[No User]';
+                cell_str = cell_str + nb_user + '@';
+                cell_str = cell_str + '<a href="[% search_node %]&q=';
+                cell_str = cell_str + encodeURIComponent(row.nodes[index].nb_ip) + '">';
+                cell_str = cell_str + he.encode(row.nodes[index].nb_ip) + '</a>';
+              }
+              [% END %]
+            }
+            [% END %]
+            return cell_str;
+        }
+      }, {
+        "visible": false,
+        "data": "stp",
+        "render": function(data, type, row, meta) {
+          return type === 'display' ? he.encode(data || '') : data;
+        }
+      }, {
+        "visible": false,
+        "data": "up",
+      }
+    ],
+    "data": [% results %]
+  });
+});
 </script>
