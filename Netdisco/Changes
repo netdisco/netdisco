@@ -25,6 +25,7 @@
   * UTF-8 encoding for Port Name (description)
   * Allow process grouping to work portably again (daemon config watch)
   * Only start scheduler when schedule config exists
+  * Update to DataTables 1.10.2 for latest Chrome
 
 2.028013 - 2014-07-31
 
