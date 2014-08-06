@@ -374,7 +374,7 @@ community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
 
 sub snmp_comm_reindex {
   my ($snmp, $device, $vlan) = @_;
-  my $ver  = $snmp->snmp_ver;
+  my $ver = $snmp->snmp_ver;
 
   if ($ver == 3) {
       my $prefix = '';
@@ -385,10 +385,17 @@ sub snmp_comm_reindex {
           $prefix = $c->{context_prefix} and last;
       }
       $prefix ||= 'vlan-';
+
+      debug
+        sprintf '[%s] reindexing to "%s%s" (ver: %s, class: %s)',
+        $device->ip, $prefix, $vlan, $ver, $snmp->class;
       $snmp->update(Context => ($prefix . $vlan));
   }
   else {
       my $comm = $snmp->snmp_comm;
+
+      debug sprintf '[%s] reindexing to vlan %s (ver: %s, class: %s)',
+        $device->ip, $vlan, $ver, $snmp->class;
       $snmp->update(Community => $comm . '@' . $vlan);
   }
 }
