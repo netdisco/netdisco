@@ -45,12 +45,17 @@ use Pod::Usage;
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug) = (undef, undef, undef, 0);
+my ($device, $port, $extra, $debug);
+my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
+
 my $result = GetOptions(
   'device|d=s' => \$device,
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
-  'debug|D+'   => \$debug,
+  'debug|D'    => \$debug,
+  'infotrace|I+' => \$infotrace,
+  'snmptrace|S+' => \$snmptrace,
+  'sqltrace|Q+'  => \$sqltrace,
 ) or pod2usage(
   -msg => 'error: bad options',
   -verbose => 0,
@@ -61,12 +66,9 @@ my $CONFIG = config();
 $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($debug ? 'debug' : 'info');
 
-$ENV{INFO_TRACE} = 1 if $debug > 1;
-$ENV{DBIC_TRACE} = 1 if $debug > 2; $ENV{DBIC_TRACE_PROFILE} = 'console';
-$ENV{SNMP_TRACE} = 1 if $debug > 3;
-$ENV{INFO_TRACE} = 2 if $debug > 4;
-$ENV{SNMP_TRACE} = 2 if $debug > 5;
-$ENV{SNMP_TRACE} = 3 if $debug > 6;
+$ENV{INFO_TRACE} = $infotrace;
+$ENV{SNMP_TRACE} = $snmptrace;
+$ENV{DBIC_TRACE} = $sqltrace; $ENV{DBIC_TRACE_PROFILE} = 'console';
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
@@ -171,10 +173,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 SYNOPSIS
 
- ~/bin/netdisco-do <action> [-D] [-d <device> [-p <port>] [-e <extra>]]
-
-Regardless of Netdisco configuration, debug level logging is enabled if the
-C<-D> flag is given (up to seven times).
+ ~/bin/netdisco-do <action> [-DISQ] [-d <device> [-p <port>] [-e <extra>]]
 
 =head1 DESCRIPTION
 
@@ -248,38 +247,26 @@ Set the PoE on/off status on a device port. Requires the C<-d> parameter
 
 =head1 DEBUG LEVELS
 
-The debug flag "C<-D>" can be specified up to seven times, and enables the
+The flags "C<-DISQ>" can be specified, multiple times, and enable the
 following items in order:
 
 =over 4
 
-=item 1
+=item C<-D>
 
 Netdisco debug log level
 
-=item 2
+=item C<-I> or C<-II>
 
-L<SNMP::Info> logging
+L<SNMP::Info> trace level (1 or 2).
 
-=item 3
+=item C<-S> or C<-SS> or C<-SSS>
 
-L<DBIx::Class> logging
+L<SNMP> (net-snmp) trace level (1, 2 or 3).
 
-=item 4
+=item C<-Q>
 
-L<SNMP> (net-snmp) logging
-
-=item 5
-
-Even more L<SNMP::Info> logging
-
-=item 6
-
-Even more L<SNMP> (net-snmp) logging
-
-=item 7
-
-Even more than more L<SNMP> (net-snmp) logging
+L<DBIx::Class> trace enabled.
 
 =back
 
