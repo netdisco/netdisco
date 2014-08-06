@@ -44,7 +44,43 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("job");
 
+=head1 METHODS
+
+=head2 summary
+
+An attempt to make a meaningful statement about the job.
+
+=cut
+
+sub summary {
+    my $job = shift;
+    return join ' ',
+      $job->action,
+      ($job->device || ''),
+      ($job->port || ''),
+      ($job->subaction ? (q{'}. $job->subaction .q{'}) : '');
+}
+
+=head1 ADDITIONAL COLUMNS
+
+=head2 extra
+
+Alias for the C<subaction> column.
+
+=cut
+
 sub extra { (shift)->subaction }
+
+=head2 entererd_stamp
+
+Formatted version of the C<entered> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
 
 sub entered_stamp {
   (my $stamp = (shift)->entered) =~ s/\.\d+$//;
