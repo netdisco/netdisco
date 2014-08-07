@@ -1,7 +1,9 @@
 package App::Netdisco::Daemon::Worker::Common;
 
 use Dancer qw/:moose :syntax :script/;
+
 use Try::Tiny;
+use Sys::Proctitle 'setproctitle';
 
 use Role::Tiny;
 use namespace::clean;
@@ -16,7 +18,7 @@ sub worker_body {
   my $type = $self->worker_type;
 
   while (1) {
-      $0 = sprintf 'netdisco-daemon: worker #%s %s: idle', $wid, lc($type);
+      setproctitle sprintf 'netdisco-daemon: worker #%s %s: idle', $wid, lc($type);
       my $jobs = jq_take($self->wid, $type);
 
       foreach my $job (@$jobs) {
@@ -24,7 +26,7 @@ sub worker_body {
 
           try {
               $job->started(scalar localtime);
-              $0 = sprintf 'netdisco-daemon: worker #%s %s: working on #%s: %s',
+              setproctitle sprintf 'netdisco-daemon: worker #%s %s: working on #%s: %s',
                 $wid, lc($type), $job->id, $job->summary;
               info sprintf "$tag (%s): starting %s job(%s) at %s",
                 $wid, $target, $job->id, $job->started;
@@ -49,7 +51,7 @@ sub close_job {
   my $type = $self->worker_type;
   my $now  = scalar localtime;
 
-  $0 = sprintf 'netdisco-daemon: worker #%s %s: wrapping up %s #%s: %s',
+  setproctitle sprintf 'netdisco-daemon: worker #%s %s: wrapping up %s #%s: %s',
     $self->wid, lc($type), $job->action, $job->id, $job->status;
   info sprintf "$tag (%s): wrapping up %s job(%s) - status %s at %s",
     $self->wid, $job->action, $job->id, $job->status, $now;

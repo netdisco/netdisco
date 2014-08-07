@@ -6,6 +6,7 @@ use warnings;
 use FindBin;
 FindBin::again();
 use Path::Class 'dir';
+use Sys::Proctitle 'setproctitle';
 
 BEGIN {
   # stuff useful locations into @INC
@@ -37,7 +38,7 @@ my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));
 mkdir $tmp_dir if ! -d $tmp_dir;
 
 setpgrp(0,0); # only portable variety of setpgrp
-$0 = 'netdisco-daemon: master';
+setproctitle 'netdisco-daemon: master';
 
 my $mce = MCE->new(
   spawn_delay => 0.15,
@@ -94,7 +95,7 @@ sub worker_factory {
   return sub {
     my $self = shift;
     my $wid = $self->wid;
-    $0 = sprintf 'netdisco-daemon: worker #%s %s: init', $wid, lc($role);
+    setproctitle sprintf 'netdisco-daemon: worker #%s %s: init', $wid, lc($role);
     info "applying role $role to worker $wid";
 
     # $self->sendto('stderr', ">>> worker $wid starting with role $role\n");

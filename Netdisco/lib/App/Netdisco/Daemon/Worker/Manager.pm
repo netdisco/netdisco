@@ -2,10 +2,12 @@ package App::Netdisco::Daemon::Worker::Manager;
 
 use Dancer qw/:moose :syntax :script/;
 
+use List::Util 'sum';
+use Sys::Proctitle 'setproctitle';
+
 use Role::Tiny;
 use namespace::clean;
 
-use List::Util 'sum';
 use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
 
 sub worker_begin {
@@ -40,7 +42,7 @@ sub worker_body {
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
-      $0 = sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
+      setproctitle sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
 
       # get some pending jobs
       # TODO also check for stale jobs in Netdisco DB
@@ -63,7 +65,7 @@ sub worker_body {
       }
 
       debug "mgr ($wid): sleeping now...";
-      $0 = sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
+      setproctitle sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
       sleep( setting('workers')->{sleep_time} || 2 );
   }
 }

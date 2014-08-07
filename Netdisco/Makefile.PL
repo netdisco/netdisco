@@ -48,6 +48,7 @@ requires 'Socket6' => 0.23;
 requires 'Starman' => 0.4008;
 requires 'SNMP::Info' => 3.18;
 requires 'SQL::Translator' => 0.11016;
+requires 'Sys::Proctitle' => 0;
 requires 'Template' => 2.24;
 requires 'Template::Plugin::CSV' => 0.04;
 requires 'Template::Plugin::Number::Format' => 1.02;
