@@ -3,7 +3,7 @@ package App::Netdisco::Daemon::Worker::Manager;
 use Dancer qw/:moose :syntax :script/;
 
 use List::Util 'sum';
-use Sys::Proctitle 'setproctitle';
+use App::Netdisco::Util::Daemon;
 
 use Role::Tiny;
 use namespace::clean;
@@ -42,7 +42,7 @@ sub worker_body {
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
-      setproctitle sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
+      prctl sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
 
       # get some pending jobs
       # TODO also check for stale jobs in Netdisco DB
@@ -65,7 +65,7 @@ sub worker_body {
       }
 
       debug "mgr ($wid): sleeping now...";
-      setproctitle sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
+      prctl sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
       sleep( setting('workers')->{sleep_time} || 2 );
   }
 }

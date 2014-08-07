@@ -19,6 +19,9 @@ no_index:
     - inc
     - share
     - t
+recommends:
+  Graph: 0
+  GraphViz: 0
 requires:
   Algorithm::Cron: 0.07
   AnyEvent: 7.05
@@ -36,6 +39,7 @@ requires:
   Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.2001
   Dancer::Plugin::Passphrase: 2.0.1
+  Data::Printer: 0
   File::ShareDir: 1.03
   File::Slurp: 9999.19
   Guard: 1.022
@@ -45,6 +49,7 @@ requires:
   List::MoreUtils: 0.33
   MCE: 1.408
   MIME::Base64: 3.13
+  Module::Find: 0.12
   Module::Load: 0.32
   Moo: 1.001
   Net::DNS: 0.72

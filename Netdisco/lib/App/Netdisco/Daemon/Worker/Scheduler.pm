@@ -3,7 +3,7 @@ package App::Netdisco::Daemon::Worker::Scheduler;
 use Dancer qw/:moose :syntax :script/;
 
 use Algorithm::Cron;
-use Sys::Proctitle 'setproctitle';
+use App::Netdisco::Util::Daemon;
 
 use Role::Tiny;
 use namespace::clean;
@@ -38,11 +38,11 @@ sub worker_body {
       # sleep until some point in the next minute
       my $naptime = 60 - (time % 60) + int(rand(45));
 
-      setproctitle sprintf 'netdisco-daemon: worker #%s scheduler: idle', $wid;
+      prctl sprintf 'netdisco-daemon: worker #%s scheduler: idle', $wid;
       debug "sched ($wid): sleeping for $naptime seconds";
 
       sleep $naptime;
-      setproctitle sprintf 'netdisco-daemon: worker #%s scheduler: queueing', $wid;
+      prctl sprintf 'netdisco-daemon: worker #%s scheduler: queueing', $wid;
 
       # NB next_time() returns the next *after* win_start
       my $win_start = time - (time % 60) - 1;
