@@ -8,6 +8,8 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::Util::Web (); # for sort_port
 
 ajax '/ajax/data/devicename/typeahead' => require_login sub {
+    return '[]' unless setting('navbar_autocomplete');
+
     my $q = param('query') || param('term');
     my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
 

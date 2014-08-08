@@ -20,6 +20,7 @@ include_paths: []
 domain_suffix: ""
 no_auth: false
 suggest_guest: false
+navbar_autocomplete: true
 trust_remote_user: false
 trust_x_remote_user: false
 #ldap:

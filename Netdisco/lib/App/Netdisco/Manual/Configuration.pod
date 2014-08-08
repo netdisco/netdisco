@@ -103,6 +103,12 @@ database:
  netdisco=> update users set port_control = true where username = 'guest';
  netdisco=> update users set admin = true where username = 'guest';
 
+=head3 C<navbar_autocomplete>
+
+Value: Boolean. Default: C<true>.
+
+Set this to C<false> to disable the device autocomplete in the main navbar.
+
 =head3 C<suggest_guest>
 
 Value: Boolean. Default: C<false>.

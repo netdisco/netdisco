@@ -6,6 +6,7 @@
   * Support for stuffing other locations into @INC at runtime
   * New netdisco-do command "show" for diagnostic reporting
   * Additional debug levels for netdisco-do to show DBIx::Class and net-snmp
+  * [#107] navbar_autocomplete config item to disable main navbar autocomplete
 
   [ENHANCEMENTS]
 
