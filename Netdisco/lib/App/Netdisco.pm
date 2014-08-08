@@ -14,7 +14,7 @@ Module::Find::usesub 'App::NetdiscoE::Init';
 
 App::Netdisco - An open source web-based network management tool.
 
-=head1 Introduction
+=head1 DESCRIPTION
 
 Netdisco is a web-based network management tool designed for network
 administrators. Data is collected into a PostgreSQL database using SNMP.

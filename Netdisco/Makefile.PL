@@ -82,7 +82,7 @@ install_script 'bin/netdisco-rancid-export';
 
 resources
   homepage => 'http://netdisco.org/',
-  bugtracker => 'http://sourceforge.net/p/netdisco/bugs/',
+  bugtracker => 'https://sourceforge.net/p/netdisco/netdisco2/',
   repository => 'git://git.code.sf.net/p/netdisco/netdisco-ng',
   MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users';
 
