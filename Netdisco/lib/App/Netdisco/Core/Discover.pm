@@ -578,10 +578,35 @@ not yet stored to the database.
 sub store_modules {
   my ($device, $snmp) = @_;
 
-  my $e_index  = $snmp->e_index;
+  my $e_index = $snmp->e_index;
 
   if (!defined $e_index) {
-      debug sprintf ' [%s] modules - 0 chassis components', $device->ip;
+      schema('netdisco')->txn_do(sub {
+        my $gone = $device->modules->delete;
+        debug sprintf ' [%s] modules - removed %d chassis modules',
+          $device->ip, $gone;
+
+        $device->modules->update_or_create({
+          ip => $device->ip,
+          index => 1,
+          parent => 0,
+          name => 'chassis',
+          class => 'chassis',
+          pos => -1,
+          # too verbose and link doesn't work anyway
+          # description => $device->description,
+          sw_ver => $device->os_ver,
+          serial => $device->serial,
+          model => $device->model,
+          fru => \'false',
+          last_discover => \'now()',
+        });
+      });
+
+      debug
+        sprintf ' [%s] modules - 0 chassis components (added one pseudo for chassis)',
+        $device->ip;
+
       return;
   }
 
