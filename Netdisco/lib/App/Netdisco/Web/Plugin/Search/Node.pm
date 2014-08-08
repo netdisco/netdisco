@@ -114,9 +114,8 @@ ajax '/ajax/content/search/node' => require_login sub {
     }
 
 
-    my $name = (param('partial') ? $likeval : $node);
     my $set = schema('netdisco')->resultset('NodeNbt')
-        ->search_by_name({nbname => $name, @active, @times});
+        ->search_by_name({nbname => $likeval, @active, @times});
 
     unless ( $set->has_rows ) {
         if (my $ip = NetAddr::IP::Lite->new($node)) {
