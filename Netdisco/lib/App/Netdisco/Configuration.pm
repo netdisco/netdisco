@@ -79,4 +79,7 @@ $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
 $ENV{'PERL_ANYEVENT_HOSTS'}
   = setting('dns')->{hosts_file} || '/etc/hosts';
 
+# always set this
+$ENV{DBIC_TRACE_PROFILE} = 'console';
+
 true;
