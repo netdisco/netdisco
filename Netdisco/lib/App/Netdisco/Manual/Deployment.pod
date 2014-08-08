@@ -164,6 +164,19 @@ Then run the web daemon with the environment variable to enable the feature:
 
  DANCER_DEBUG=1 ~/bin/netdisco-web restart
 
+=head2 Database Backups
+
+We recommend you backup the Netdisco database regularly. You could put the
+following commands into a shell script and call it nightly from C<cron>:
+
+ DATE=`date +%Y%m%d`
+ /usr/bin/pg_dump -F p --create -f /path/to/backups/netdisco-pgsql-$DATE.dump netdisco
+ gzip -9f /path/to/backups/netdisco-pgsql-$DATE.dump
+ /usr/bin/find /path/to/backups/ -type f -ctime +30 -exec rm {} \;
+
+This will keep 30 days of backups. You don't need to stop Netdisco during the
+backup.
+
 =head1 Further Reading...
 
 Other ways to run and host the web application can be found in the

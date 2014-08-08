@@ -17,6 +17,7 @@
   * Process tree updated to show daemon worker status/activity
   * Handle management IP of one device being in use on another device
   * Log at debug the vlan reindexing in macsuck
+  * Add docs note about database backups
 
   [BUG FIXES]
 
