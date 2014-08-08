@@ -33,6 +33,7 @@
   * Clean up duplicate node entries on vlan 0
   * NBTname search with wildcards fixed
   * Update Sourceforge links in metadata, add DESCRIPTION for CPAN (N. Bowers)
+  * [#131] More correct network space utilization (M. Kosmach)
 
 2.028013 - 2014-07-31
 

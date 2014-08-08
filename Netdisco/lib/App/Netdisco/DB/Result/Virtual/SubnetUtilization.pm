@@ -14,7 +14,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
   SELECT net as subnet,
          power(2, (32 - masklen(net))) as subnet_size,
          count(DISTINCT ip) as active,
-         round(100 * count(DISTINCT ip) / power(2, (32 - masklen(net)))) as percent
+         round(100 * count(DISTINCT ip) / (power(2, (32 - masklen(net))) - 2)) as percent
     FROM (
       SELECT DISTINCT net, ni.ip
         FROM subnets s1, node_ip ni
