@@ -3,8 +3,8 @@ package App::Netdisco::Util::Daemon;
 use strict;
 use warnings;
 
-use Module::Load ();
-eval { Module::Load::load 'Sys::Proctitle' };
+# make sure this is already done elsewhere
+use if $^O eq 'linux', 'Sys::Proctitle';
 
 use base 'Exporter';
 our @EXPORT = 'prctl';

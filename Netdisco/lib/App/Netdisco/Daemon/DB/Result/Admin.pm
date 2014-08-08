@@ -57,8 +57,8 @@ sub summary {
     return join ' ',
       $job->action,
       ($job->device || ''),
-      ($job->port || ''),
-      ($job->subaction ? (q{'}. $job->subaction .q{'}) : '');
+      ($job->port || '');
+#      ($job->subaction ? (q{'}. $job->subaction .q{'}) : '');
 }
 
 =head1 ADDITIONAL COLUMNS
