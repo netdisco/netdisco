@@ -38,6 +38,14 @@ but they are backwards compatible.
 
 =head1 2.029000
 
+=head2 Health Advice
+
+This release will remove from the database spurious Node (workstation,
+printer, etc) entries on vlan 0, which were causing dupliate entries in the
+web interface. We advise that you back up the database prior to upgrade:
+
+ /usr/bin/pg_dump -F p --create -f netdisco-pgsql.dump netdisco
+
 =head2 General Notices
 
 The configuration item C<reports> is now a list (used to be a dictionary).
