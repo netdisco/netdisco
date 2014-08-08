@@ -66,9 +66,9 @@ my $CONFIG = config();
 $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($debug ? 'debug' : 'info');
 
-$ENV{INFO_TRACE} = $infotrace;
-$ENV{SNMP_TRACE} = $snmptrace;
-$ENV{DBIC_TRACE} = $sqltrace;
+$ENV{INFO_TRACE} ||= $infotrace;
+$ENV{SNMP_TRACE} ||= $snmptrace;
+$ENV{DBIC_TRACE} ||= $sqltrace;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
