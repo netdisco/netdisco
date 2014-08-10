@@ -101,10 +101,6 @@ jobs from the queue.
 
 =head2 id (auto)
 
-=head2 type (required)
-
-=head2 wid (required, default 0)
-
 =head2 entered
 
 =head2 started

@@ -20,31 +20,30 @@ sub worker_body {
 
   while (1) {
       prctl sprintf 'netdisco-daemon: worker #%s %s: idle', $wid, lc($type);
-      my $jobs = [ $self->{queue}->dequeue(1) ]; # FIXME multiple take, take type, thaw
 
-      foreach my $job (@$jobs) {
-          next unless defined $job;
-          $job = schema('daemon')->dclone( $job );
-          my $target = $self->munge_action($job->action);
+      my $job = $self->{queue}->dequeue(1);
+      next unless defined $job;
 
-          try {
-              $job->started(scalar localtime);
-              prctl sprintf 'netdisco-daemon: worker #%s %s: working on #%s: %s',
-                $wid, lc($type), $job->id, $job->summary;
-              info sprintf "$tag (%s): starting %s job(%s) at %s",
-                $wid, $target, $job->id, $job->started;
-              my ($status, $log) = $self->$target($job);
-              $job->status($status);
-              $job->log($log);
-          }
-          catch {
-              $job->status('error');
-              $job->log("error running job: $_");
-              $self->sendto('stderr', $job->log ."\n");
-          };
+      $job = schema('daemon')->dclone( $job ); # TODO stop using DBIC
+      my $target = $self->munge_action($job->action);
 
-          $self->close_job($job);
+      try {
+          $job->started(scalar localtime);
+          prctl sprintf 'netdisco-daemon: worker #%s %s: working on #%s: %s',
+            $wid, lc($type), $job->id, $job->summary;
+          info sprintf "$tag (%s): starting %s job(%s) at %s",
+            $wid, $target, $job->id, $job->started;
+          my ($status, $log) = $self->$target($job);
+          $job->status($status);
+          $job->log($log);
       }
+      catch {
+          $job->status('error');
+          $job->log("error running job: $_");
+          $self->sendto('stderr', $job->log ."\n");
+      };
+
+      $self->close_job($job);
   }
 }
 
