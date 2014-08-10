@@ -39,7 +39,7 @@ sub worker_body {
   my $wid = $self->wid;
 
   unless (setting('schedule')) {
-      prctl sprintf 'netdisco-daemon: worker #%s scheduler: shutdown', $wid;
+      prctl sprintf 'netdisco-daemon: worker #%s scheduler: inactive', $wid;
       return debug "sch ($wid): no need for scheduler... quitting"
   }
 

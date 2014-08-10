@@ -36,7 +36,7 @@ sub worker_body {
   my $wid = $self->wid;
 
   if (setting('workers')->{'no_manager'}) {
-      prctl sprintf 'netdisco-daemon: worker #%s manager: shutdown', $wid;
+      prctl sprintf 'netdisco-daemon: worker #%s manager: inactive', $wid;
       return debug "mgr ($wid): no need for manager... quitting"
   }
 
