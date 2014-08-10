@@ -31,7 +31,6 @@ requires:
   Archive::Extract: 0
   CGI::Expand: 2.05
   DBD::Pg: 0
-  DBD::SQLite: 1.37
   DBIx::Class: 0.0825
   DBIx::Class::Helpers: 2.018004
   Daemon::Control: 0.001
@@ -47,7 +46,7 @@ requires:
   HTTP::Tiny: 0.029
   JSON: 0
   List::MoreUtils: 0.33
-  MCE: 1.408
+  MCE: 1.515
   MIME::Base64: 3.13
   Module::Find: 0.12
   Module::Load: 0.32
@@ -65,6 +64,7 @@ requires:
   Role::Tiny: 1.002005
   SNMP::Info: 3.18
   SQL::Translator: 0.11016
+  Sereal: 0
   Socket6: 0.23
   Starman: 0.4008
   Template: 2.24
@@ -86,4 +86,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.029001
+version: 2.029002
