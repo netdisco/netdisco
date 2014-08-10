@@ -40,8 +40,8 @@ snmp_auth:
 #    read: false
 #    write: true
 
-# daemon will keep netdisco up to date on this schedule
-# `````````````````````````````````````````````````````
+# this is the schedule for automatically keeping netdisco up-to-date
+# ``````````````````````````````````````````````````````````````````
 #schedule:
 #  discoverall:
 #    when: '5 7 * * *'
@@ -65,12 +65,13 @@ discover_no_type:
   - '(?i)(?:wap|wireless)'
 
 # number of SNMP workers to run in parallel (in netdisco-daemon).
-# the default is twice the number of CPU cores
+# the default is twice the number of CPU cores. increase this if
+# your system has few cores and the schedule is taking too long.
 # ```````````````````````````````````````````````````````````````
 #workers:
 #  tasks: 'AUTO * 2'
 
-# amount parallel DNS resolution for node names
+# number of parallel DNS queries for node names
 # `````````````````````````````````````````````
 #dns:
 #  max_outstanding: 50
