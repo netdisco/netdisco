@@ -35,8 +35,8 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
+use App::Netdisco::Daemon::Job;
 use Dancer qw/:moose :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
@@ -72,9 +72,6 @@ $ENV{DBIC_TRACE} ||= $sqltrace;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
-
-# for the in-memory local job queue
-schema('daemon')->deploy;
 
 # get requested action
 my $action = shift @ARGV;
@@ -143,7 +140,7 @@ if (not $worker->can( $action )) {
 }
 
 # what job are we asked to do?
-my $job = schema('daemon')->resultset('Admin')->new_result({
+my $job = App::Netdisco::Daemon::Job->new({
   job => 0,
   action => $action,
   device => $device,

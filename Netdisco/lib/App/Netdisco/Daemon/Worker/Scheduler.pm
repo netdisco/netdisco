@@ -14,7 +14,7 @@ sub worker_begin {
   my $self = shift;
   my $wid = $self->wid;
 
-  return debug "mgr ($wid): no need for scheduler... skip begin"
+  return debug "sch ($wid): no need for scheduler... skip begin"
     unless setting('schedule');
 
   debug "entering Scheduler ($wid) worker_begin()";
@@ -38,7 +38,7 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
-  return debug "mgr ($wid): no need for scheduler... quitting"
+  return debug "sch ($wid): no need for scheduler... quitting"
     unless setting('schedule');
 
   while (1) {

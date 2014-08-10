@@ -1,7 +1,6 @@
 package App::Netdisco::Daemon::Worker::Common;
 
 use Dancer qw/:moose :syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 use Try::Tiny;
 use App::Netdisco::Util::Daemon;
@@ -20,17 +19,14 @@ sub worker_body {
 
       my $job = $self->{queue}->dequeue(1);
       next unless defined $job;
-
-      # TODO stop using DBIC
-      $job = schema('daemon')->dclone( $job );
       my $action = $job->action;
 
       try {
           $job->started(scalar localtime);
           prctl sprintf 'netdisco-daemon: worker #%s poller: working on #%s: %s',
-            $wid, $job->id, $job->summary;
+            $wid, $job->job, $job->summary;
           info sprintf "pol (%s): starting %s job(%s) at %s",
-            $wid, $action, $job->id, $job->started;
+            $wid, $action, $job->job, $job->started;
           my ($status, $log) = $self->$action($job);
           $job->status($status);
           $job->log($log);
@@ -50,9 +46,9 @@ sub close_job {
   my $now  = scalar localtime;
 
   prctl sprintf 'netdisco-daemon: worker #%s poller: wrapping up %s #%s: %s',
-    $self->wid, $job->action, $job->id, $job->status;
+    $self->wid, $job->action, $job->job, $job->status;
   info sprintf "pol (%s): wrapping up %s job(%s) - status %s at %s",
-    $self->wid, $job->action, $job->id, $job->status, $now;
+    $self->wid, $job->action, $job->job, $job->status, $now;
 
   try {
       if ($job->status eq 'defer') {

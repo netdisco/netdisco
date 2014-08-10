@@ -3,6 +3,7 @@ package App::Netdisco::JobQueue::PostgreSQL;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Daemon::Job;
 use Net::Domain 'hostfqdn';
 use Module::Load ();
 use Try::Tiny;
@@ -42,8 +43,7 @@ sub jq_getsome {
   }
 
   while (my $job = $rs->next) {
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns });
+      push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
   }
   return @returned;
 }
@@ -56,8 +56,7 @@ sub jq_locked {
     ->search({status => "queued-$fqdn"});
 
   while (my $job = $rs->next) {
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns });
+      push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
   }
   return @returned;
 }
@@ -73,34 +72,18 @@ sub jq_queued {
 }
 
 sub jq_log {
-  my @returned = ();
-
-  my $rs = schema('netdisco')->resultset('Admin')->search({}, {
+  return schema('netdisco')->resultset('Admin')->search({}, {
     order_by => { -desc => [qw/entered device action/] },
     rows => 50,
-  });
-
-  while (my $job = $rs->next) {
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns });
-  }
-  return @returned;
+  })->with_times->hri->all;
 }
 
 sub jq_userlog {
   my $user = shift;
-  my @returned = ();
-
-  my $rs = schema('netdisco')->resultset('Admin')->search({
+  return schema('netdisco')->resultset('Admin')->search({
     username => $user,
     finished => { '>' => \"(now() - interval '5 seconds')" },
-  });
-
-  while (my $job = $rs->next) {
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns });
-  }
-  return @returned;
+  })->with_times->hri->all;
 }
 
 sub jq_lock {
@@ -112,7 +95,7 @@ sub jq_lock {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->id, {for => 'update'})
+        ->find($job->job, {for => 'update'})
         ->update({ status => "queued-$fqdn" });
 
       # remove any duplicate jobs, needed because we have race conditions
@@ -126,6 +109,9 @@ sub jq_lock {
       }, {for => 'update'})->delete();
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;
@@ -139,10 +125,13 @@ sub jq_defer {
     # lock db row and update to show job is available
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->id, {for => 'update'})
+        ->find($job->job, {for => 'update'})
         ->update({ status => 'queued', started => undef });
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;
@@ -156,7 +145,7 @@ sub jq_complete {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->id, {for => 'update'})->update({
+        ->find($job->job, {for => 'update'})->update({
           status => $job->status,
           log    => $job->log,
           started  => $job->started,
@@ -164,6 +153,9 @@ sub jq_complete {
         });
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;
@@ -189,6 +181,9 @@ sub jq_insert {
       ]);
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;

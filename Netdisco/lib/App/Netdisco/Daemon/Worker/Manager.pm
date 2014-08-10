@@ -53,7 +53,7 @@ sub worker_body {
           # mark job as running
           next unless jq_lock($job);
           info sprintf "mgr (%s): job %s booked out for this processing node",
-            $wid, $job->id;
+            $wid, $job->job;
 
           # copy job to local queue
           $self->{queue}->enqueue($job);
