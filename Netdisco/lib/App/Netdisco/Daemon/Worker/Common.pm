@@ -15,25 +15,23 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
-  my $tag  = $self->worker_tag;
-  my $type = $self->worker_type;
-
   while (1) {
-      prctl sprintf 'netdisco-daemon: worker #%s %s: idle', $wid, lc($type);
+      prctl sprintf 'netdisco-daemon: worker #%s poller: idle', $wid;
 
       my $job = $self->{queue}->dequeue(1);
       next unless defined $job;
 
-      $job = schema('daemon')->dclone( $job ); # TODO stop using DBIC
-      my $target = $self->munge_action($job->action);
+      # TODO stop using DBIC
+      $job = schema('daemon')->dclone( $job );
+      my $action = $job->action;
 
       try {
           $job->started(scalar localtime);
-          prctl sprintf 'netdisco-daemon: worker #%s %s: working on #%s: %s',
-            $wid, lc($type), $job->id, $job->summary;
-          info sprintf "$tag (%s): starting %s job(%s) at %s",
-            $wid, $target, $job->id, $job->started;
-          my ($status, $log) = $self->$target($job);
+          prctl sprintf 'netdisco-daemon: worker #%s poller: working on #%s: %s',
+            $wid, $job->id, $job->summary;
+          info sprintf "pol (%s): starting %s job(%s) at %s",
+            $wid, $action, $job->id, $job->started;
+          my ($status, $log) = $self->$action($job);
           $job->status($status);
           $job->log($log);
       }
@@ -49,13 +47,11 @@ sub worker_body {
 
 sub close_job {
   my ($self, $job) = @_;
-  my $tag  = $self->worker_tag;
-  my $type = $self->worker_type;
   my $now  = scalar localtime;
 
-  prctl sprintf 'netdisco-daemon: worker #%s %s: wrapping up %s #%s: %s',
-    $self->wid, lc($type), $job->action, $job->id, $job->status;
-  info sprintf "$tag (%s): wrapping up %s job(%s) - status %s at %s",
+  prctl sprintf 'netdisco-daemon: worker #%s poller: wrapping up %s #%s: %s',
+    $self->wid, $job->action, $job->id, $job->status;
+  info sprintf "pol (%s): wrapping up %s job(%s) - status %s at %s",
     $self->wid, $job->action, $job->id, $job->status, $now;
 
   try {

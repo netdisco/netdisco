@@ -30,7 +30,7 @@ use Role::Tiny::With;
 
 # preload all worker modules into shared memory
 use Module::Find ();
-Module::Find::useall 'App::Netdisco::Daemon::Worker';
+Module::Find::useall 'App::Netdisco::Daemon';
 
 use MCE::Signal '-setpgrp';
 use MCE::Flow Sereal => 1;

@@ -11,10 +11,8 @@ with 'App::Netdisco::Daemon::Worker::Poller::Device',
      'App::Netdisco::Daemon::Worker::Poller::Arpnip',
      'App::Netdisco::Daemon::Worker::Poller::Macsuck',
      'App::Netdisco::Daemon::Worker::Poller::Nbtstat',
-     'App::Netdisco::Daemon::Worker::Poller::Expiry';
-
-sub worker_tag  { 'pol' }
-sub worker_type { 'Poller' }
-sub munge_action { $_[1] }
+     'App::Netdisco::Daemon::Worker::Poller::Expiry',
+     'App::Netdisco::Daemon::Worker::Interactive::DeviceActions',
+     'App::Netdisco::Daemon::Worker::Interactive::PortActions';
 
 1;
