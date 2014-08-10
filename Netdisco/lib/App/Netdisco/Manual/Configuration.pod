@@ -879,15 +879,14 @@ or remove any entries.
 Value: Settings Tree. Default:
 
  workers:
-   interactives: 2
-   pollers: 10
-   sleep_time: 2
+   pollers: 'AUTO * 2'
+   sleep_time: 1
 
 Control the activity of the backend daemon with this configuration setting.
 
-C<interactives> and C<pollers> sets how many workers are started for
-interactive jobs (port control) and polling jobs (discover, macsuck, arpnip)
-on this node, respectively. Other nodes can have different settings.
+C<pollers> sets how many workers are started for interactive jobs (port
+control) and polling jobs (discover, macsuck, arpnip) on this node. Other
+nodes can have different settings. "C<AUTO>" is the number of CPU cores.
 
 C<sleep_time> is the number of seconds between polling the database to find
 new jobs. This is a balance between responsiveness and database load.
