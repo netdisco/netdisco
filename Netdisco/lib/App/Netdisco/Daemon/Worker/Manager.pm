@@ -9,7 +9,7 @@ use Role::Tiny;
 use namespace::clean;
 
 use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
-use MCE::Util 'get_ncpu';
+use MCE::Util ();
 
 sub worker_begin {
   my $self = shift;
@@ -27,7 +27,7 @@ sub worker_begin {
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node",
         $wid, scalar @jobs;
-      $self->{queue}->enqueue(@jobs); # FIXME priority and freeze
+      $self->{queue}->enqueue(@jobs);
   }
 }
 
@@ -38,8 +38,9 @@ sub worker_body {
   return debug "mgr ($wid): no need for manager... quitting"
     if setting('workers')->{'no_manager'};
 
-  # FIXME really the best strategy?
-  my $num_slots = (MCE::Util::get_ncpu() * 2) - $self->{queue}->pending();
+  my $num_slots =
+    MCE::Util::_parse_max_workers( setting('workers')->{pollers} )
+      - $self->{queue}->pending();
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
@@ -55,7 +56,7 @@ sub worker_body {
             $wid, $job->id;
 
           # copy job to local queue
-          $self->{queue}->enqueue($job); # FIXME priority and freeze
+          $self->{queue}->enqueue($job);
       }
 
       debug "mgr ($wid): sleeping now...";

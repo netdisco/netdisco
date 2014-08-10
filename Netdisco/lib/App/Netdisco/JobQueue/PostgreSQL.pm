@@ -29,9 +29,17 @@ sub jq_getsome {
 
   my $rs = schema('netdisco')->resultset('Admin')
     ->search(
-      {status => 'queued'},
+      {status => 'queued', action => { -in => setting('job_prio')->{high} } },
       {order_by => 'random()', rows => ($num_slots || 1)},
     );
+
+  unless ($rs->count) {
+      $rs = schema('netdisco')->resultset('Admin')
+        ->search(
+          {status => 'queued', action => { -in => setting('job_prio')->{normal} } },
+          {order_by => 'random()', rows => ($num_slots || 1)},
+        );
+  }
 
   while (my $job = $rs->next) {
       push @returned, schema('daemon')->resultset('Admin')

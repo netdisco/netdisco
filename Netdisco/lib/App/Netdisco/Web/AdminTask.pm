@@ -25,7 +25,9 @@ sub add_job {
     });
 }
 
-foreach my $action (keys %{ setting('job_types') }) {
+foreach my $action (@{ setting('job_prio')->{high} },
+                    @{ setting('job_prio')->{normal} }) {
+
     ajax "/ajax/control/admin/$action" => require_role admin => sub {
         add_job($action, param('device'), param('extra'));
     };

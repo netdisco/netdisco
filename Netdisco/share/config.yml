@@ -193,26 +193,24 @@ dns:
 #  expire:
 #    when: '20 23 * * *'
 
-job_types:
-  discoverall: Poller
-  discover:    Poller
-  arpwalk:     Poller
-  arpnip:      Poller
-  macwalk:     Poller
-  macsuck:     Poller
-  nbtwalk:     Poller
-  nbtstat:     Poller
-  expire:      Poller
-  location:    Interactive
-  contact:     Interactive
-  portcontrol: Interactive
-  portname:    Interactive
-  vlan:        Interactive
-  power:       Interactive
-
-job_type_keys:
-  Poller: pollers
-  Interactive: interactives
+job_prio:
+  high:
+    - location
+    - contact
+    - portcontrol
+    - portname
+    - vlan
+    - power
+  normal:
+    - discoverall
+    - discover
+    - arpwalk
+    - arpnip
+    - macwalk
+    - macsuck
+    - nbtwalk
+    - nbtstat
+    - expire
 
 # ---------------
 # GraphViz Export
