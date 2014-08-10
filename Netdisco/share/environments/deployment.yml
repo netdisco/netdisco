@@ -64,11 +64,11 @@ discover_no_type:
   - '(?i)phone'
   - '(?i)(?:wap|wireless)'
 
-# number of SNMP pollers to run in parallel (in netdisco-daemon).
+# number of SNMP workers to run in parallel (in netdisco-daemon).
 # the default is twice the number of CPU cores
 # ```````````````````````````````````````````````````````````````
 #workers:
-#  pollers: 'AUTO * 2'
+#  tasks: 'AUTO * 2'
 
 # amount parallel DNS resolution for node names
 # `````````````````````````````````````````````

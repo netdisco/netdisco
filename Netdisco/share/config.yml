@@ -170,7 +170,7 @@ port_control_reasons:
 # --------------
 
 workers:
-  pollers: 'AUTO * 2'
+  tasks: 'AUTO * 2'
   sleep_time: 1
   queue: PostgreSQL
 

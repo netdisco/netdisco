@@ -48,6 +48,15 @@ web interface. We advise that you back up the database prior to upgrade:
 
 =head2 General Notices
 
+The backend polling daemon has been rewritten and as a result your
+configuration can be simplified. Some keys have also been renamed. Our advice
+is to remove (or comment out) the complete C<workers> configuration which
+enables auto-tuning.  If you do wish to control the number of worker
+processes, follow this pattern:
+
+ workers:
+   tasks: 'AUTO * 2'  # this is the default, twice the number of CPUs
+
 The configuration item C<reports> is now a list (used to be a dictionary).
 Each item in the list must have a C<tag> entry which was previously the
 dictionary key. For example, now use:

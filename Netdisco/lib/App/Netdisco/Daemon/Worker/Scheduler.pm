@@ -15,7 +15,7 @@ sub worker_begin {
   my $wid = $self->wid;
 
   return debug "mgr ($wid): no need for scheduler... skip begin"
-    unless setting('scheduler');
+    unless setting('schedule');
 
   debug "entering Scheduler ($wid) worker_begin()";
 
@@ -39,7 +39,7 @@ sub worker_body {
   my $wid = $self->wid;
 
   return debug "mgr ($wid): no need for scheduler... quitting"
-    unless setting('scheduler');
+    unless setting('schedule');
 
   while (1) {
       # sleep until some point in the next minute

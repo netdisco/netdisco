@@ -51,11 +51,11 @@ setting('workers')->{queue} ||= 'PostgreSQL';
 if (exists setting('workers')->{interactives}
     or exists setting('workers')->{pollers}) {
 
-    setting('workers')->{pollers} = (
+    setting('workers')->{tasks} =
       (setting('workers')->{pollers} || 0)
-      .' + '. (setting('workers')->{interactives} || 0)
-    ) if setting('workers')->{interactives};
+      + (setting('workers')->{interactives} || 0);
 
+    delete setting('workers')->{pollers};
     delete setting('workers')->{interactives};
 }
 

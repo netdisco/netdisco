@@ -39,7 +39,7 @@ sub worker_body {
     if setting('workers')->{'no_manager'};
 
   my $num_slots =
-    MCE::Util::_parse_max_workers( setting('workers')->{pollers} )
+    MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
       - $self->{queue}->pending();
 
   while (1) {
