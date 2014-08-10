@@ -1,6 +1,7 @@
 package App::Netdisco::Daemon::Worker::Common;
 
 use Dancer qw/:moose :syntax :script/;
+use Dancer::Plugin::DBIC 'schema';
 
 use Try::Tiny;
 use App::Netdisco::Util::Daemon;
@@ -8,7 +9,7 @@ use App::Netdisco::Util::Daemon;
 use Role::Tiny;
 use namespace::clean;
 
-use App::Netdisco::JobQueue qw/jq_take jq_defer jq_complete/;
+use App::Netdisco::JobQueue qw/jq_defer jq_complete/;
 
 sub worker_body {
   my $self = shift;
@@ -19,9 +20,11 @@ sub worker_body {
 
   while (1) {
       prctl sprintf 'netdisco-daemon: worker #%s %s: idle', $wid, lc($type);
-      my $jobs = jq_take($self->wid, $type);
+      my $jobs = [ $self->{Q}->dequeue(1) ]; # FIXME multiple take, take type, thaw
 
       foreach my $job (@$jobs) {
+          next unless defined $job;
+          $job = schema('daemon')->dclone( $job );
           my $target = $self->munge_action($job->action);
 
           try {

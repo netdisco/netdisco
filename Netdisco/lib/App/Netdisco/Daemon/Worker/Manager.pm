@@ -9,6 +9,7 @@ use Role::Tiny;
 use namespace::clean;
 
 use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
+use MCE::Util 'get_ncpu';
 
 sub worker_begin {
   my $self = shift;
@@ -26,7 +27,7 @@ sub worker_begin {
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node",
         $wid, scalar @jobs;
-      $self->do('add_jobs', @jobs);
+      $self->{Q}->enqueue(@jobs); # FIXME priority and freeze
   }
 }
 
@@ -37,8 +38,8 @@ sub worker_body {
   return debug "mgr ($wid): no need for manager... quitting"
     if setting('workers')->{'no_manager'};
 
-  my $num_slots = sum( 0, map { setting('workers')->{$_} }
-                              values %{setting('job_type_keys')} );
+  # FIXME really the best strategy?
+  my $num_slots = (MCE::Util::get_ncpu() * 2) - $self->{Q}->pending();
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
@@ -48,25 +49,18 @@ sub worker_body {
       # TODO also check for stale jobs in Netdisco DB
       foreach my $job ( jq_getsome($num_slots) ) {
 
-          # check for available local capacity
-          my $job_type = setting('job_types')->{$job->action};
-          next unless $job_type and $self->do('capacity_for', $job_type);
-
-          debug sprintf "mgr (%s): processing node has capacity for job %s (%s)",
-            $wid, $job->id, $job->action;
-
           # mark job as running
           next unless jq_lock($job);
           info sprintf "mgr (%s): job %s booked out for this processing node",
             $wid, $job->id;
 
           # copy job to local queue
-          $self->do('add_jobs', $job);
+          $self->{Q}->enqueue($job); # FIXME priority and freeze
       }
 
       debug "mgr ($wid): sleeping now...";
       prctl sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
-      sleep( setting('workers')->{sleep_time} || 2 );
+      sleep( setting('workers')->{sleep_time} || 1 );
   }
 }
 

@@ -172,7 +172,7 @@ port_control_reasons:
 workers:
   interactives: 1
   pollers: 10
-  sleep_time: 2
+  sleep_time: 1
   queue: PostgreSQL
 
 dns:

@@ -9,13 +9,6 @@ __PACKAGE__->table("admin");
 __PACKAGE__->add_columns(
   "job",
   { data_type => "integer", is_nullable => 0 },
-
-  "type", # Poller, Interactive, etc
-  { data_type => "text", is_nullable => 0 },
-
-  "wid", # worker ID, only != 0 once taken
-  { data_type => "integer", is_nullable => 0, default_value => 0 },
-
   "entered",
   { data_type => "timestamp", is_nullable => 1 },
   "started",

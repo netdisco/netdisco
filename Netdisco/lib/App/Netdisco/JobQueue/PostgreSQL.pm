@@ -15,7 +15,6 @@ our @EXPORT_OK = qw/
   jq_queued
   jq_log
   jq_userlog
-  jq_take
   jq_lock
   jq_defer
   jq_complete
@@ -35,9 +34,8 @@ sub jq_getsome {
     );
 
   while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
       push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
+        ->new_result({ $job->get_columns });
   }
   return @returned;
 }
@@ -50,9 +48,8 @@ sub jq_locked {
     ->search({status => "queued-$fqdn"});
 
   while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
       push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
+        ->new_result({ $job->get_columns });
   }
   return @returned;
 }
@@ -76,9 +73,8 @@ sub jq_log {
   });
 
   while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
       push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
+        ->new_result({ $job->get_columns });
   }
   return @returned;
 }
@@ -93,26 +89,10 @@ sub jq_userlog {
   });
 
   while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
       push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
+        ->new_result({ $job->get_columns });
   }
   return @returned;
-}
-
-# PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
-# the main daemon process. This is only used by daemon workers which can use
-# MCE ->do() method.
-sub jq_take {
-  my ($wid, $type) = @_;
-  Module::Load::load 'MCE';
-
-  # be polite to SQLite database (that is, local CPU)
-  debug "$type ($wid): sleeping now...";
-  sleep(1);
-
-  debug "$type ($wid): asking for a job";
-  MCE->do('take_jobs', $wid, $type);
 }
 
 sub jq_lock {
@@ -143,18 +123,11 @@ sub jq_lock {
   return $happy;
 }
 
-# PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
-# the main daemon process. This is only used by daemon workers which can use
-# MCE ->do() method.
 sub jq_defer {
   my $job = shift;
   my $happy = false;
 
   try {
-    # other local workers are polling the central queue, so
-    # to prevent a race, first delete the job in our local queue
-    MCE->do('release_jobs', $job->id);
-
     # lock db row and update to show job is available
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
