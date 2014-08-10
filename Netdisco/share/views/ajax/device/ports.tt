@@ -1,23 +1,5 @@
 [% SET user_can_port_control = user_has_role('port_control') %]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0">
-  <thead>
-    <tr>
-      <th></th>
-      [% FOREACH item IN vars.port_columns %]
-      [% NEXT IF item.name == 'c_admin' %]
-      [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
-      [% NEXT IF item.name == 'c_neighbors' AND params.c_nodes AND !params.c_neighbors %]
-      [% NEXT IF item.name == 'c_nodes' AND !params.c_nodes AND params.c_neighbors %]
-        [% SET th_class = '' %]
-        [% IF (user_can_port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]
-          [% th_class = ' class="nd_nudge-for-icon"' %]
-        [% END %]
-        <th[% th_class %]>
-          [% item.label | html_entity %]
-        </th>
-      [% END %]
-    </tr>
-  </thead>
 </table>
 
 <script type="text/javascript">
@@ -39,6 +21,8 @@ $(document).ready(function() {
     },
     "columns": [
       {
+        "title": '',
+        "name": 'icon',
         "data": "up",
         "searchable": false,
         "sortable": false,
@@ -67,6 +51,8 @@ $(document).ready(function() {
           return cell_str;
         }
       }, {
+        "title": 'Port',
+        "name": 'c_port',
         "data": 'port',
         "type": 'portsort',
         [% IF user_can_port_control AND params.c_admin %]
@@ -110,6 +96,8 @@ $(document).ready(function() {
           }
         }
       }, {
+        "title": 'Description',
+        "name": 'c_descr',
         "visible": false,
         "type": 'portsort',
         "className": 'nd_port-display',
@@ -118,12 +106,16 @@ $(document).ready(function() {
           return type === 'display' ? he.encode(data || '') : data;
         }
       }, {
+        "title": 'Type',
+        "name": 'c_type',
         "visible": false,
         "data": "type",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
         }
       }, {
+        "title": 'Duplex',
+        "name": 'c_duplex',
         "visible": false,
         "data": "duplex",
         "render": function(data, type, row, meta) {
@@ -138,9 +130,13 @@ $(document).ready(function() {
           }
         }
       }, {
+        "title": 'Last Change',
+        "name": 'c_lastchange',
         "visible": false,
         "data": "lastchange_stamp",
       }, {
+        "title": 'Name',
+        "name": 'c_name',
         "data": "name",
         "type": 'portsort',
         [% IF user_can_port_control AND params.c_admin %]
@@ -169,22 +165,30 @@ $(document).ready(function() {
         }  
         [% END %]
       }, {
+        "title": 'Speed',
+        "name": 'c_speed',
         "visible": false,
         "data": "speed",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
         }
       }, {
+        "title": 'Port MAC',
+        "name": 'c_mac',
         "visible": false,
         "data": "mac",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
         }
       }, {
+        "title": 'MTU',
+        "name": 'c_mtu',
         "visible": false,
         /* mtu is an integer, no need to encode */
         "data": "mtu"
       }, {
+        "title": 'Native VLAN',
+        "name": 'c_pvid',
         "data": "native_vlan",
         [% IF user_can_port_control AND params.c_admin %]
         "createdCell": function (td, cellData, rowData, row, col) {
@@ -220,6 +224,8 @@ $(document).ready(function() {
         }
         [% END %]
       }, {
+        "title": 'VLAN Membership',
+        "name": 'c_vmember',
         "visible": false,
         "type": 'natural',
         "data": null,
@@ -249,6 +255,8 @@ $(document).ready(function() {
           }
         }
       }, {
+        "title": 'PoE',
+        "name": 'c_power',
         "visible": false,
         "data": "power_admin",
         "defaultContent": "",
@@ -303,6 +311,8 @@ $(document).ready(function() {
           }
         }
       }, {
+        "title": 'SSID',
+        "name": 'c_ssid',
         "data": "null",
         "defaultContent": "",
         "render": function ( data, type, row, meta ) {
@@ -319,6 +329,13 @@ $(document).ready(function() {
           }
         }
       }, {
+        [% IF params.c_nodes %]
+        "title": 'Connected Devices and Nodes',
+        "name": 'c_nodes',
+        [% ELSE %]
+        "title": 'Connected Devices',
+        "name": 'c_neighbors',
+        [% END %]
         "data": "null",
         "defaultContent": "",
         "render": function ( data, type, row, meta ) {
@@ -503,12 +520,16 @@ $(document).ready(function() {
             return cell_str;
         }
       }, {
+        "title": 'Spanning Tree',
+        "name": 'c_stp',
         "visible": false,
         "data": "stp",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
         }
       }, {
+        "title": 'Status',
+        "name": 'c_up',
         "visible": false,
         "data": "up",
       }
