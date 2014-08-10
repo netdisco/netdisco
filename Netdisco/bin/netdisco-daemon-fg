@@ -28,6 +28,10 @@ use App::Netdisco::Util::Daemon;
 use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
 use Role::Tiny::With;
 
+# preload all worker modules into shared memory
+use Module::Find ();
+Module::Find::useall 'App::Netdisco::Daemon::Worker';
+
 use MCE::Signal '-setpgrp';
 use MCE::Flow Sereal => 1;
 use MCE::Queue;
