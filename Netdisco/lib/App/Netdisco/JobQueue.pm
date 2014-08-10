@@ -10,6 +10,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   jq_getsome
+  jq_getsomep
   jq_locked
   jq_queued
   jq_log
@@ -40,6 +41,10 @@ subroutines.
 Returns a list of randomly selected queued jobs. Default is to return one job,
 unless C<$num> is provided. Jobs are returned as objects which implement the
 Netdisco job instance interface (see below).
+
+=head2 jq_getsomep( $num? )
+
+Same as C<jq_getsome> but for high priority jobs.
 
 =head2 jq_locked()
 

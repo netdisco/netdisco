@@ -12,6 +12,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   jq_getsome
+  jq_getsomep
   jq_locked
   jq_queued
   jq_log
@@ -25,28 +26,25 @@ our @EXPORT_OK = qw/
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 sub jq_getsome {
-  my $num_slots = shift;
+  my ($num_slots, $prio) = @_;
+  return () if defined $num_slots and $num_slots eq '0';
+  $num_slots ||= 1;
+  $prio ||= 'normal';
   my @returned = ();
 
   my $rs = schema('netdisco')->resultset('Admin')
     ->search(
-      {status => 'queued', action => { -in => setting('job_prio')->{high} } },
+      {status => 'queued', action => { -in => setting('job_prio')->{$prio} } },
       {order_by => 'random()', rows => ($num_slots || 1)},
     );
-
-  unless ($rs->count) {
-      $rs = schema('netdisco')->resultset('Admin')
-        ->search(
-          {status => 'queued', action => { -in => setting('job_prio')->{normal} } },
-          {order_by => 'random()', rows => ($num_slots || 1)},
-        );
-  }
 
   while (my $job = $rs->next) {
       push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
   }
   return @returned;
 }
+
+sub jq_getsomep { return jq_getsome(shift, 'high') }
 
 sub jq_locked {
   my $fqdn = hostfqdn || 'localhost';

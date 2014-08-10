@@ -8,7 +8,7 @@ use App::Netdisco::Util::Daemon;
 use Role::Tiny;
 use namespace::clean;
 
-use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
+use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_getsomep jq_lock/;
 use MCE::Util ();
 
 sub worker_begin {
@@ -27,7 +27,7 @@ sub worker_begin {
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node",
         $wid, scalar @jobs;
-      $self->{queue}->enqueue(@jobs);
+      $self->{queue}->enqueuep(100, @jobs);
   }
 }
 
@@ -40,15 +40,34 @@ sub worker_body {
       return debug "mgr ($wid): no need for manager... quitting"
   }
 
-  my $num_slots =
-    MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
-      - $self->{queue}->pending();
-
   while (1) {
-      debug "mgr ($wid): getting potential jobs for $num_slots workers";
       prctl sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
+      my $num_slots = 0;
 
-      # get some pending jobs
+      $num_slots =
+        MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
+          - $self->{queue}->pending();
+      debug "mgr ($wid): getting potential jobs for $num_slots workers (HP)";
+
+      # get some high priority jobs
+      # TODO also check for stale jobs in Netdisco DB
+      foreach my $job ( jq_getsomep($num_slots) ) {
+
+          # mark job as running
+          next unless jq_lock($job);
+          info sprintf "mgr (%s): job %s booked out for this processing node",
+            $wid, $job->job;
+
+          # copy job to local queue
+          $self->{queue}->enqueuep(100, $job);
+      }
+
+      $num_slots =
+        MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
+          - $self->{queue}->pending();
+      debug "mgr ($wid): getting potential jobs for $num_slots workers (NP)";
+
+      # get some normal priority jobs
       # TODO also check for stale jobs in Netdisco DB
       foreach my $job ( jq_getsome($num_slots) ) {
 
