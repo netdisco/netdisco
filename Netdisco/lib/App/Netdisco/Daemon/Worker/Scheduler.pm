@@ -38,8 +38,10 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
-  return debug "sch ($wid): no need for scheduler... quitting"
-    unless setting('schedule');
+  unless (setting('schedule')) {
+      prctl sprintf 'netdisco-daemon: worker #%s scheduler: shutdown', $wid;
+      return debug "sch ($wid): no need for scheduler... quitting"
+  }
 
   while (1) {
       # sleep until some point in the next minute

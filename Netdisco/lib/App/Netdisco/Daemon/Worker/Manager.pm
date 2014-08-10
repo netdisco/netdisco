@@ -35,8 +35,10 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
-  return debug "mgr ($wid): no need for manager... quitting"
-    if setting('workers')->{'no_manager'};
+  if (setting('workers')->{'no_manager'}) {
+      prctl sprintf 'netdisco-daemon: worker #%s manager: shutdown', $wid;
+      return debug "mgr ($wid): no need for manager... quitting"
+  }
 
   my $num_slots =
     MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
