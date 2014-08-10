@@ -3,6 +3,7 @@ package App::Netdisco::JobQueue::PostgreSQL;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Daemon::Job;
 use Net::Domain 'hostfqdn';
 use Module::Load ();
 use Try::Tiny;
@@ -11,11 +12,11 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   jq_getsome
+  jq_getsomep
   jq_locked
   jq_queued
   jq_log
   jq_userlog
-  jq_take
   jq_lock
   jq_defer
   jq_complete
@@ -25,22 +26,25 @@ our @EXPORT_OK = qw/
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 sub jq_getsome {
-  my $num_slots = shift;
+  my ($num_slots, $prio) = @_;
+  return () if defined $num_slots and $num_slots eq '0';
+  $num_slots ||= 1;
+  $prio ||= 'normal';
   my @returned = ();
 
   my $rs = schema('netdisco')->resultset('Admin')
     ->search(
-      {status => 'queued'},
+      {status => 'queued', action => { -in => setting('job_prio')->{$prio} } },
       {order_by => 'random()', rows => ($num_slots || 1)},
     );
 
   while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
+      push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
   }
   return @returned;
 }
+
+sub jq_getsomep { return jq_getsome(shift, 'high') }
 
 sub jq_locked {
   my $fqdn = hostfqdn || 'localhost';
@@ -50,9 +54,7 @@ sub jq_locked {
     ->search({status => "queued-$fqdn"});
 
   while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
+      push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
   }
   return @returned;
 }
@@ -68,51 +70,18 @@ sub jq_queued {
 }
 
 sub jq_log {
-  my @returned = ();
-
-  my $rs = schema('netdisco')->resultset('Admin')->search({}, {
+  return schema('netdisco')->resultset('Admin')->search({}, {
     order_by => { -desc => [qw/entered device action/] },
     rows => 50,
-  });
-
-  while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
-  }
-  return @returned;
+  })->with_times->hri->all;
 }
 
 sub jq_userlog {
   my $user = shift;
-  my @returned = ();
-
-  my $rs = schema('netdisco')->resultset('Admin')->search({
+  return schema('netdisco')->resultset('Admin')->search({
     username => $user,
     finished => { '>' => \"(now() - interval '5 seconds')" },
-  });
-
-  while (my $job = $rs->next) {
-      my $job_type = setting('job_types')->{$job->action} or next;
-      push @returned, schema('daemon')->resultset('Admin')
-        ->new_result({ $job->get_columns, type => $job_type });
-  }
-  return @returned;
-}
-
-# PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
-# the main daemon process. This is only used by daemon workers which can use
-# MCE ->do() method.
-sub jq_take {
-  my ($wid, $type) = @_;
-  Module::Load::load 'MCE';
-
-  # be polite to SQLite database (that is, local CPU)
-  debug "$type ($wid): sleeping now...";
-  sleep(1);
-
-  debug "$type ($wid): asking for a job";
-  MCE->do('take_jobs', $wid, $type);
+  })->with_times->hri->all;
 }
 
 sub jq_lock {
@@ -124,7 +93,7 @@ sub jq_lock {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->id, {for => 'update'})
+        ->find($job->job, {for => 'update'})
         ->update({ status => "queued-$fqdn" });
 
       # remove any duplicate jobs, needed because we have race conditions
@@ -138,30 +107,29 @@ sub jq_lock {
       }, {for => 'update'})->delete();
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;
 }
 
-# PostgreSQL engine depends on LocalQueue, which is accessed synchronously via
-# the main daemon process. This is only used by daemon workers which can use
-# MCE ->do() method.
 sub jq_defer {
   my $job = shift;
   my $happy = false;
 
   try {
-    # other local workers are polling the central queue, so
-    # to prevent a race, first delete the job in our local queue
-    MCE->do('release_jobs', $job->id);
-
     # lock db row and update to show job is available
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->id, {for => 'update'})
+        ->find($job->job, {for => 'update'})
         ->update({ status => 'queued', started => undef });
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;
@@ -175,7 +143,7 @@ sub jq_complete {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->id, {for => 'update'})->update({
+        ->find($job->job, {for => 'update'})->update({
           status => $job->status,
           log    => $job->log,
           started  => $job->started,
@@ -183,6 +151,9 @@ sub jq_complete {
         });
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;
@@ -208,6 +179,9 @@ sub jq_insert {
       ]);
     });
     $happy = true;
+  }
+  catch {
+    error $_;
   };
 
   return $happy;

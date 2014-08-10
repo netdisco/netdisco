@@ -8,7 +8,8 @@ use App::Netdisco::Util::Daemon;
 use Role::Tiny;
 use namespace::clean;
 
-use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_lock/;
+use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_getsomep jq_lock/;
+use MCE::Util ();
 
 sub worker_begin {
   my $self = shift;
@@ -26,7 +27,7 @@ sub worker_begin {
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node",
         $wid, scalar @jobs;
-      $self->do('add_jobs', @jobs);
+      $self->{queue}->enqueuep(100, @jobs);
   }
 }
 
@@ -34,39 +35,54 @@ sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
 
-  return debug "mgr ($wid): no need for manager... quitting"
-    if setting('workers')->{'no_manager'};
-
-  my $num_slots = sum( 0, map { setting('workers')->{$_} }
-                              values %{setting('job_type_keys')} );
+  if (setting('workers')->{'no_manager'}) {
+      prctl sprintf 'netdisco-daemon: worker #%s manager: inactive', $wid;
+      return debug "mgr ($wid): no need for manager... quitting"
+  }
 
   while (1) {
-      debug "mgr ($wid): getting potential jobs for $num_slots workers";
       prctl sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
+      my $num_slots = 0;
 
-      # get some pending jobs
+      $num_slots =
+        MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
+          - $self->{queue}->pending();
+      debug "mgr ($wid): getting potential jobs for $num_slots workers (HP)";
+
+      # get some high priority jobs
       # TODO also check for stale jobs in Netdisco DB
-      foreach my $job ( jq_getsome($num_slots) ) {
-
-          # check for available local capacity
-          my $job_type = setting('job_types')->{$job->action};
-          next unless $job_type and $self->do('capacity_for', $job_type);
-
-          debug sprintf "mgr (%s): processing node has capacity for job %s (%s)",
-            $wid, $job->id, $job->action;
+      foreach my $job ( jq_getsomep($num_slots) ) {
 
           # mark job as running
           next unless jq_lock($job);
           info sprintf "mgr (%s): job %s booked out for this processing node",
-            $wid, $job->id;
+            $wid, $job->job;
 
           # copy job to local queue
-          $self->do('add_jobs', $job);
+          $self->{queue}->enqueuep(100, $job);
+      }
+
+      $num_slots =
+        MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
+          - $self->{queue}->pending();
+      debug "mgr ($wid): getting potential jobs for $num_slots workers (NP)";
+
+      # get some normal priority jobs
+      # TODO also check for stale jobs in Netdisco DB
+      foreach my $job ( jq_getsome($num_slots) ) {
+
+          # mark job as running
+          next unless jq_lock($job);
+          info sprintf "mgr (%s): job %s booked out for this processing node",
+            $wid, $job->job;
+
+          # copy job to local queue
+          $self->{queue}->enqueue($job);
       }
 
       debug "mgr ($wid): sleeping now...";
       prctl sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
-      sleep( setting('workers')->{sleep_time} || 2 );
+      sleep( setting('workers')->{sleep_time} || 1 );
   }
 }
 

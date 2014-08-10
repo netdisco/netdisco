@@ -13,6 +13,10 @@ use App::Netdisco::JobQueue qw/jq_insert/;
 sub worker_begin {
   my $self = shift;
   my $wid = $self->wid;
+
+  return debug "sch ($wid): no need for scheduler... skip begin"
+    unless setting('schedule');
+
   debug "entering Scheduler ($wid) worker_begin()";
 
   foreach my $action (keys %{ setting('schedule') }) {
@@ -33,6 +37,11 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
+
+  unless (setting('schedule')) {
+      prctl sprintf 'netdisco-daemon: worker #%s scheduler: inactive', $wid;
+      return debug "sch ($wid): no need for scheduler... quitting"
+  }
 
   while (1) {
       # sleep until some point in the next minute

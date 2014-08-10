@@ -31,17 +31,17 @@ safe_password_store: true
 # SNMP community string(s)
 # ````````````````````````
 snmp_auth:
-  - tag: 'v2default'
+  - tag: 'default_v2_readonly'
     community: 'public'
     read: true
     write: false
-#  - tag: 'v2default_w'
+#  - tag: 'default_v2_for_write'
 #    community: 'private'
 #    read: false
 #    write: true
 
-# daemon will keep netdisco up to date on this schedule
-# `````````````````````````````````````````````````````
+# this is the schedule for automatically keeping netdisco up-to-date
+# ``````````````````````````````````````````````````````````````````
 #schedule:
 #  discoverall:
 #    when: '5 7 * * *'
@@ -56,16 +56,6 @@ snmp_auth:
 #  expire:
 #    when: '20 23 * * *'
 
-# number of SNMP pollers to run in parallel (in netdisco-daemon)
-# ``````````````````````````````````````````````````````````````
-workers:
-  pollers: 10
-
-# amount parallel DNS resolution for node names
-# `````````````````````````````````````````````
-dns:
-  max_outstanding: 50
-
 # do not discover IP Phones or Wireless Access Points.
 # usually these are visible as device neighbors but don't support
 # SNMP, which just clogs up the job queue.
@@ -73,6 +63,18 @@ dns:
 discover_no_type:
   - '(?i)phone'
   - '(?i)(?:wap|wireless)'
+
+# number of SNMP workers to run in parallel (in netdisco-daemon).
+# the default is twice the number of CPU cores. increase this if
+# your system has few cores and the schedule is taking too long.
+# ```````````````````````````````````````````````````````````````
+#workers:
+#  tasks: 'AUTO * 2'
+
+# number of parallel DNS queries for node names
+# `````````````````````````````````````````````
+#dns:
+#  max_outstanding: 50
 
 # set to true to globally disable authentication/login.
 # create a user called "guest" if you want to assign port/admin rights.

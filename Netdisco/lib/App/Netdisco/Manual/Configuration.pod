@@ -879,15 +879,17 @@ or remove any entries.
 Value: Settings Tree. Default:
 
  workers:
-   interactives: 2
-   pollers: 10
-   sleep_time: 2
+   tasks: 'AUTO * 2'
+   sleep_time: 1
 
 Control the activity of the backend daemon with this configuration setting.
 
-C<interactives> and C<pollers> sets how many workers are started for
-interactive jobs (port control) and polling jobs (discover, macsuck, arpnip)
-on this node, respectively. Other nodes can have different settings.
+C<tasks> sets how many worker processes are started for interactive jobs (port
+control) and polling jobs (discover, macsuck, arpnip) on this node. Other
+nodes can have different settings.
+
+"C<AUTO>" is the number of CPU cores.  Set C<tasks> to "C<0>" to disable all
+workers (which allows you to have a scheduler-only node).
 
 C<sleep_time> is the number of seconds between polling the database to find
 new jobs. This is a balance between responsiveness and database load.
@@ -919,9 +921,9 @@ If set, then this node's backend daemon will schedule polling jobs (discover,
 macsuck, arpnip, etc) in the central database. It's fine to have multiple
 nodes scheduling work for redundancy (but make sure they all have good NTP).
 
-Note that this is independent of the Pollers configured in C<workers>. It's
+Note that this is independent of the Tasks configured in C<workers>. It's
 okay to have this node schedule schedule but not do any of the polling
-itself (C<pollers: 0>).
+itself (C<tasks: 0>).
 
 Work can be scheduled using C<cron> style notation, or a simple weekday and
 hour fields (which accept same types as C<cron> notation). For example:

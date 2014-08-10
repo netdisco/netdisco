@@ -54,9 +54,6 @@ For the daemon, it's very similar:
 
  DBIC_TRACE=1 ~/bin/localenv bin/netdisco-daemon-fg
 
-Don't be alarmed by the high rate of database queries in the daemon - most of
-them are communicating only with a local in-memory SQLite database.
-
 Happy hacking!
 
 =head1 Introduction
@@ -418,24 +415,12 @@ the central Netdisco database and booking out jobs which it's able to service
 according to the local configuration settings. Jobs are "locked" in the
 central queue and then copied to a local job queue within the daemon.
 
-Along with the Manager we start zero or more of two other types of worker.
-Some jobs such as port control are "interactive" and the user typically wants
-quick feedback on the results. Others such as polling are background tasks
-which can take more time and are less schedule sensitive. So as not to starve
-the "interactive" jobs of workers we have two types of worker.
-
-The Interactive worker picks jobs from the local job queue relating to device
-and port reconfiguration only. It submits results directly back to the central
-Netdisco database. The Poller worker similarly picks job from the local queue,
-this time relating to device discovery and polling.
-
 There is support in the daemon for the workers to pick more than one job at a
 time from the local queue, in case we decide this is worth doing. However the
 Manager won't ever book out more jobs from the central Netdisco job queue than
 it has workers available (so as not to hog jobs for itself against other
 daemons on other servers). The user is free to configure the number of
-Interactive and Poller workers in their C<config.yml> file (zero or more of
-each).
+workers in their C<config.yml> file (zero or more).
 
 The fourth kind of worker is called the Scheduler and takes care of adding
 discover, macsuck, arpnip, and nbtstat jobs to the queue (which are in turn
@@ -457,17 +442,6 @@ provides routines to map interface and PoE IDs.
 Configuration for SNMP::Info comes from the YAML files, of course. This means
 that our C<mibhome> and C<mibdirs> settings are now in YAML format. In
 particular, the C<mibdirs> list is a real list within the configuration.
-
-=head2 DBIx::Class Layer
-
-The local job queue for each Job Daemon is actually an SQLite database running
-in memory. This makes the queue management code a little more elegant. The
-schema for this is of course DBIx::Class using Dancer connection management,
-and lives in L<App::Netdisco::Daemon::DB>.
-
-There is currently only one table, the port control job queue, in
-L<App::Netdisco::Daemon::DB::Result::Admin>. It's likely this name will change
-in the future.
 
 =head1 Other Noteable Technology
 

@@ -24,16 +24,17 @@ use App::Netdisco;
 use Dancer qw/:moose :script/;
 warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
 
-# local job queue management
-use App::Netdisco::Daemon::LocalQueue ':all';
 use App::Netdisco::Util::Daemon;
-
-# needed to quench AF_INET6 symbol errors
-use NetAddr::IP::Lite ':lower';
-use List::Util 'sum';
+use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
 use Role::Tiny::With;
+
+# preload all worker modules into shared memory
+use Module::Find ();
+Module::Find::useall 'App::Netdisco::Daemon';
+
 use MCE::Signal '-setpgrp';
-use MCE;
+use MCE::Flow Sereal => 1;
+use MCE::Queue;
 
 # set temporary MCE files' location in home directory
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
@@ -43,77 +44,36 @@ mkdir $tmp_dir if ! -d $tmp_dir;
 setpgrp(0,0); # only portable variety of setpgrp
 prctl 'netdisco-daemon: master';
 
-my $mce = MCE->new(
-  spawn_delay => 0.15,
-  job_delay   => 1.15,
-  tmp_dir     => $tmp_dir,
-  user_func    => sub { $_[0]->worker_body },
-  on_post_exit => \&restart_this_worker,
-  user_tasks   => build_tasks_list(),
-)->run();
+# shared local job queue
+my $queue = MCE::Queue->new;
 
-sub build_tasks_list {
-  # NB MCE does not like max_workers => 0
-  my $tasks = [];
+# support a scheduler-only node
+setting('workers')->{'no_manager'} = 1
+  if setting('workers')->{tasks} eq '0';
 
-  push @$tasks, {
-    max_workers => 1,
-    user_begin => worker_factory('Manager'),
-  } if num_workers() > 0;
+mce_flow {
+  task_name => [qw/ scheduler manager poller /],
+  max_workers => [ 1, 1, setting('workers')->{tasks} ],
+  tmp_dir => $tmp_dir,
+  on_post_exit => sub { MCE->restart_worker },
+}, _mk_wkr('Scheduler'), _mk_wkr('Manager'), _mk_wkr('Poller');
 
-  push @$tasks, {
-    max_workers => 1,
-    user_begin => worker_factory('Scheduler'),
-  } if setting('schedule');
-
-  my @logmsg = ();
-  foreach my $key (keys %{setting('job_type_keys')}) {
-      my $val = setting('job_type_keys')->{$key};
-
-      setting('workers')->{$val} = 2
-        if !defined setting('workers')->{$val};
-
-      push @logmsg, setting('workers')->{$val} ." $key";
-      push @$tasks, {
-        max_workers => setting('workers')->{$val},
-        user_begin => worker_factory($key),
-      } if setting('workers')->{$val};
-  }
-
-  info sprintf "MCE will load: %s Manager, %s Scheduler, %s",
-    (num_workers() ? 1 : 0),
-    (setting('schedule') ? 1 : 0),
-    (join ', ', @logmsg);
-
-  return $tasks;
-}
-
-sub num_workers {
-  return sum( 0, map { setting('workers')->{$_} }
-                     values %{setting('job_type_keys')} );
-}
-
-sub worker_factory {
+sub _mk_wkr {
   my $role = shift;
   return sub {
     my $self = shift;
-    my $wid = $self->wid;
-    prctl sprintf 'netdisco-daemon: worker #%s %s: init', $wid, lc($role);
-    info "applying role $role to worker $wid";
+    $self->{queue} = $queue;
 
-    # $self->sendto('stderr', ">>> worker $wid starting with role $role\n");
-    Role::Tiny->apply_roles_to_object($self, "App::Netdisco::Daemon::Worker::$role");
+    prctl sprintf 'netdisco-daemon: worker #%s %s: init', MCE->wid, lc($role);
+    info sprintf 'applying role %s to worker %s', $role, MCE->wid;
+
+    # post-fork, become manager, scheduler, poller, etc
+    Role::Tiny->apply_roles_to_object(
+      $self => "App::Netdisco::Daemon::Worker::$role");
 
     $self->worker_begin if $self->can('worker_begin');
+    $self->worker_body;
   };
-}
-
-sub restart_this_worker {
-  my ($self, $e) = @_;
-  reset_jobs($e->{wid});
-
-  debug "restarting worker $e->{wid}";
-  $self->restart_worker($e->{wid});
 }
 
 =head1 NAME

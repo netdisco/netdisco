@@ -36,6 +36,19 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.029002
+
+=head2 General Notices
+
+The backend polling daemon has been rewritten and as a result your
+configuration can be simplified. Some keys have also been renamed. Our advice
+is to remove (or comment out) the complete C<workers> configuration which
+enables auto-tuning.  If you do wish to control the number of worker
+processes, follow this pattern:
+
+ workers:
+   tasks: 'AUTO * 2'  # this is the default, twice the number of CPUs
+
 =head1 2.029001
 
 =head2 Health Advice
