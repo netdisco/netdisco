@@ -82,8 +82,8 @@ requires:
   version: 0.9902
 resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
-  bugtracker: http://sourceforge.net/p/netdisco/bugs/
+  bugtracker: https://sourceforge.net/p/netdisco/netdisco2/
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.029000_002
+version: 2.029001
