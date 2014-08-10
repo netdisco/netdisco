@@ -27,7 +27,7 @@ sub worker_begin {
   if (scalar @jobs) {
       info sprintf "mgr (%s): found %s jobs booked to this processing node",
         $wid, scalar @jobs;
-      $self->{Q}->enqueue(@jobs); # FIXME priority and freeze
+      $self->{queue}->enqueue(@jobs); # FIXME priority and freeze
   }
 }
 
@@ -39,7 +39,7 @@ sub worker_body {
     if setting('workers')->{'no_manager'};
 
   # FIXME really the best strategy?
-  my $num_slots = (MCE::Util::get_ncpu() * 2) - $self->{Q}->pending();
+  my $num_slots = (MCE::Util::get_ncpu() * 2) - $self->{queue}->pending();
 
   while (1) {
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
@@ -55,7 +55,7 @@ sub worker_body {
             $wid, $job->id;
 
           # copy job to local queue
-          $self->{Q}->enqueue($job); # FIXME priority and freeze
+          $self->{queue}->enqueue($job); # FIXME priority and freeze
       }
 
       debug "mgr ($wid): sleeping now...";

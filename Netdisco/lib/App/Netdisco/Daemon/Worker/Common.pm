@@ -20,7 +20,7 @@ sub worker_body {
 
   while (1) {
       prctl sprintf 'netdisco-daemon: worker #%s %s: idle', $wid, lc($type);
-      my $jobs = [ $self->{Q}->dequeue(1) ]; # FIXME multiple take, take type, thaw
+      my $jobs = [ $self->{queue}->dequeue(1) ]; # FIXME multiple take, take type, thaw
 
       foreach my $job (@$jobs) {
           next unless defined $job;
