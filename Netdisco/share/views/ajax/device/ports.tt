@@ -16,9 +16,12 @@ $(document).ready(function() {
     "order": [[ 1, "asc" ]],
     "dom": 'C<"nd_clear-both">lfrtip',
     "colVis": {
-      "exclude": [ 0 ],
-      "restore": 'Reset to Defaults'
+      "exclude": [ 0 ]
     },
+    [%# "stateLoadParams": function (settings, data) {
+      var idx = $('#dp-data-table').DataTable().column( 'c_duplex:name' ).index();
+      data.columns[idx].visible = true;
+    }, %]
     "columns": [
       {
         "title": '',
