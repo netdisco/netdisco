@@ -24,7 +24,7 @@ function formatMacAddress(macaddr, format) {
   var fmac = '';
 
   if (!mac.test(macaddr) || !fmt.test(format)) {
-    return '';
+    return macaddr;
   } else {
     macaddr = macaddr.replace(/[:-]/g, "").toLowerCase();
     format = format.toLowerCase();
@@ -41,8 +41,13 @@ function formatMacAddress(macaddr, format) {
         fmac = convertMacAddress(macaddr, "-", 2).toUpperCase();
         break;
 
-      default:
+      case 'sun':
         fmac = convertMacAddress(macaddr, ":", 2);
+        fmac = fmac.replace(/0([0-9A-F])/gi, '$1');
+        break;
+
+      default:
+        fmac = macaddr;
         break;
     }
   }

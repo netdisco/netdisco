@@ -47,21 +47,21 @@
     });
 
     QUnit.module("formatMacAddress");
-    QUnit.test("sun to ieee", function(assert) {
-		var mac = "01:23:45:ab:cd:ef";
-		assert.deepEqual(formatMacAddress(mac,'IEEE'), "01:23:45:AB:CD:EF");
+    QUnit.test("pg to ieee", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'IEEE'), "01:23:45:0B:CD:EF");
     });
-    QUnit.test("sun to cisco", function(assert) {
-		var mac = "01:23:45:ab:cd:ef";
-		assert.deepEqual(formatMacAddress(mac,'Cisco'), "0123.45ab.cdef");
+    QUnit.test("pg to cisco", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'Cisco'), "0123.450b.cdef");
     });
-    QUnit.test("sun to microsoft", function(assert) {
-		var mac = "01:23:45:ab:cd:ef";
-		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-AB-CD-EF");
+    QUnit.test("pg to microsoft", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-0B-CD-EF");
     });
-    QUnit.test("sun to sun", function(assert) {
-		var mac = "01:23:45:ab:cd:ef";
-		assert.deepEqual(formatMacAddress(mac,'Sun'), "01:23:45:ab:cd:ef");
+    QUnit.test("pg to sun", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'Sun'), "1:23:45:b:cd:ef");
     });
     QUnit.test("microsoft to ieee", function(assert) {
 		var mac = "01-23-45-AB-CD-EF";
@@ -76,8 +76,8 @@
 		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-AB-CD-EF");
     });
     QUnit.test("microsoft to sun", function(assert) {
-		var mac = "01-23-45-AB-CD-EF";
-		assert.deepEqual(formatMacAddress(mac,'Sun'), "01:23:45:ab:cd:ef");
+		var mac = "01-23-45-0B-CD-EF";
+		assert.deepEqual(formatMacAddress(mac,'Sun'), "1:23:45:b:cd:ef");
     });
     QUnit.test("ieee to ieee", function(assert) {
 		var mac = "01:23:45:AB:CD:EF";
@@ -92,8 +92,16 @@
 		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-AB-CD-EF");
     });
     QUnit.test("ieee to sun", function(assert) {
-		var mac = "01:23:45:AB:CD:EF";
-		assert.deepEqual(formatMacAddress(mac,'Sun'), "01:23:45:ab:cd:ef");
+		var mac = "01:23:45:0B:CD:EF";
+		assert.deepEqual(formatMacAddress(mac,'Sun'), "1:23:45:b:cd:ef");
+    });
+    QUnit.test("unknown format", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'unknown'), "01:23:45:0b:cd:ef");
+    });
+    QUnit.test("illegal mac", function(assert) {
+		var mac = "01:23:45:0d:ef:gh";
+		assert.deepEqual(formatMacAddress(mac,'unknown'), "01:23:45:0d:ef:gh");
     });
 	</script>
 </body>
