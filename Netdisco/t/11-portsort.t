@@ -14,5 +14,5 @@ if ( !-x $phantomjs ) {
         "phantomjs not found, please set ND_PHANTOMJS or install phantomjs to the default location";
 }
 else {
-    exec( $phantomjs, "$Bin/run_qunit.js", "$Bin/sort-port.html" );
+    exec( $phantomjs, "$Bin/run_qunit.js", "$Bin/portsort.html" );
 }
