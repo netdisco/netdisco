@@ -29,8 +29,20 @@ use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
 use Role::Tiny::With;
 
 # preload all worker modules into shared memory
-use Module::Find ();
-Module::Find::useall 'App::Netdisco::Daemon';
+use App::Netdisco::Daemon::Job ();
+use App::Netdisco::Daemon::Util ();
+use App::Netdisco::Daemon::Worker::Common ();
+use App::Netdisco::Daemon::Worker::Interactive::DeviceActions ();
+use App::Netdisco::Daemon::Worker::Interactive::PortActions ();
+use App::Netdisco::Daemon::Worker::Manager ();
+use App::Netdisco::Daemon::Worker::Poller::Arpnip ();
+use App::Netdisco::Daemon::Worker::Poller::Common ();
+use App::Netdisco::Daemon::Worker::Poller::Device ();
+use App::Netdisco::Daemon::Worker::Poller::Expiry ();
+use App::Netdisco::Daemon::Worker::Poller::Macsuck ();
+use App::Netdisco::Daemon::Worker::Poller::Nbtstat ();
+use App::Netdisco::Daemon::Worker::Poller ();
+use App::Netdisco::Daemon::Worker::Scheduler ();
 
 use MCE::Signal '-setpgrp';
 use MCE::Flow Sereal => 1;

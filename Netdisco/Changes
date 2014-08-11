@@ -1,3 +1,9 @@
+2.029004 - 2014-08-11
+
+  [BUG FIXES]
+
+  * Do not autoload all modules in a namespace... picks up old/bad code.
+
 2.029002 - 2014-08-10
 
   [ENHANCEMENTS]

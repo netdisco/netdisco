@@ -14,9 +14,20 @@ use Module::Find ();
 use Module::Load ();
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
-# FIXME: need to avoid splat so that this can be reordered
+# can override splats only by loading first
 Module::Find::usesub 'App::NetdiscoE::Web';
-Module::Find::usesub 'App::Netdisco::Web';
+
+use App::Netdisco::Web::AuthN;
+use App::Netdisco::Web::Static;
+use App::Netdisco::Web::Search;
+use App::Netdisco::Web::Device;
+use App::Netdisco::Web::Report;
+use App::Netdisco::Web::AdminTask;
+use App::Netdisco::Web::TypeAhead;
+use App::Netdisco::Web::PortControl;
+use App::Netdisco::Web::Statistics;
+use App::Netdisco::Web::Password;
+use App::Netdisco::Web::GenericReport;
 
 sub _load_web_plugins {
   my $plugin_list = shift;
