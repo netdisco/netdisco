@@ -9,7 +9,7 @@ use URL::Encode 'url_params_mixed';
 hook 'before' => sub {
   my @default_port_columns_left = (
     { name => 'c_admin',       label => 'Port Controls',     default => ''   },
-    { name => 'c_port',        label => 'Port',              default => 'on' },
+    { name => 'c_port',        label => 'Port',              default => ''   },
   );
 
   my @default_port_columns_right = (
@@ -17,12 +17,12 @@ hook 'before' => sub {
     { name => 'c_type',        label => 'Type',              default => ''   },
     { name => 'c_duplex',      label => 'Duplex',            default => ''   },
     { name => 'c_lastchange',  label => 'Last Change',       default => ''   },
-    { name => 'c_name',        label => 'Name',              default => 'on' },
+    { name => 'c_name',        label => 'Name',              default => ''   },
     { name => 'c_speed',       label => 'Speed',             default => ''   },
     { name => 'c_mac',         label => 'Port MAC',          default => ''   },
     { name => 'c_mtu',         label => 'MTU',               default => ''   },
-    { name => 'c_pvid',        label => 'Native VLAN',       default => 'on' },
-    { name => 'c_vmember',     label => 'VLAN Membership',   default => 'on' },
+    { name => 'c_pvid',        label => 'Native VLAN',       default => ''   },
+    { name => 'c_vmember',     label => 'VLAN Membership',   default => ''   },
     { name => 'c_power',       label => 'PoE',               default => ''   },
     { name => 'c_ssid',        label => 'SSID',              default => ''   },
     { name => 'c_nodes',       label => 'Connected Nodes',   default => ''   },
