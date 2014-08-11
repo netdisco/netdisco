@@ -59,6 +59,7 @@
                 <ul class="nd_inputs-list unstyled">
                   [% FOREACH item IN vars.port_columns %]
                   [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
+                  [% IF item.name == 'c_admin' OR item.name == 'c_nodes' %]
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"
@@ -70,6 +71,10 @@
                       [% END %]
                     </label>
                   </li>
+                  [% ELSE %]
+                      <input type="checkbox" id="[% item.name | html_entity %]"
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] style="display:none;" />
+                  [% END %]
                   [% END %]
                 </ul>
               </div>
