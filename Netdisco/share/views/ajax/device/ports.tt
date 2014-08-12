@@ -9,9 +9,9 @@
         [% NEXT UNLESS params.${item.name} %]
         [% SET th_class = '' %]
         [% IF (user_can_port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]
-          [% th_class = ' class="nd_nudge-for-icon natural"' %]
+          [% th_class = ' class="nd_nudge-for-icon portsort"' %]
         [% ELSIF (item.name == 'c_port' OR item.name == 'c_descr' OR item.name == 'c_name') %]
-          [% th_class = ' class="natural"' %]
+          [% th_class = ' class="portsort"' %]
         [% END %]
         <th[% th_class %]>
           [% item.label | html_entity %]
@@ -396,7 +396,7 @@ $(document).ready(function() {
         "columnDefs": [
             { "sortable": false, "targets": 0 },
             { "searchable": false, "targets": 0 },
-            { "type": 'natural', "targets": [ 'natural' ] }
+            { "type": 'portsort', "targets": [ 'portsort' ] }
         ],
         "order": [[ 1, 'asc' ]],
         "processing": true,

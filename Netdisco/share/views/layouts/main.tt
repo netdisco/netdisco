@@ -31,6 +31,7 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/dataTables.ip-address-sort.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/he.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/natural.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/portsort.js"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';
