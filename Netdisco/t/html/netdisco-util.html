@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>netdisco-util.js unit tests</title>
+	<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.14.0.css" type="text/css">
+</head>
+
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+	<script src="http://code.jquery.com/qunit/qunit-1.14.0.js" type="text/javascript"></script>
+    <script src="../js/qunit-tap.js" type="text/javascript"></script>
+    <script>
+        qunitTap(QUnit, function() { console.log.apply(console, arguments); });
+    </script>
+	<script src="../../share/public/javascripts/netdisco-util.js" type="text/javascript"></script>
+	<script type="text/javascript">
+    QUnit.module("capitalizeFirstLetter");
+    QUnit.test("all lower case", function(assert) {
+		var lc = "abcdef";
+		assert.deepEqual(capitalizeFirstLetter(lc), "Abcdef");
+    });
+    QUnit.test("first capital", function(assert) {
+		var fc = "Abcdef";
+		assert.deepEqual(capitalizeFirstLetter(fc), "Abcdef");
+    });
+    QUnit.test("mixed case", function(assert) {
+		var fc = "aBcDeF";
+		assert.deepEqual(capitalizeFirstLetter(fc), "ABcDeF");
+    });
+    QUnit.test("mixed letter number", function(assert) {
+		var fc = "aB1234";
+		assert.deepEqual(capitalizeFirstLetter(fc), "AB1234");
+    });
+    QUnit.test("number first", function(assert) {
+		var fc = "1BcDeF";
+		assert.deepEqual(capitalizeFirstLetter(fc), "1BcDeF");
+    });
+    QUnit.test("space first", function(assert) {
+		var fc = " BcDeF";
+		assert.deepEqual(capitalizeFirstLetter(fc), " BcDeF");
+    });
+    QUnit.test("two words", function(assert) {
+		var fc = "two words";
+		assert.deepEqual(capitalizeFirstLetter(fc), "Two words");
+    });
+
+    QUnit.module("formatMacAddress");
+    QUnit.test("pg to ieee", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'IEEE'), "01:23:45:0B:CD:EF");
+    });
+    QUnit.test("pg to cisco", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'Cisco'), "0123.450b.cdef");
+    });
+    QUnit.test("pg to microsoft", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-0B-CD-EF");
+    });
+    QUnit.test("pg to sun", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'Sun'), "1:23:45:b:cd:ef");
+    });
+    QUnit.test("microsoft to ieee", function(assert) {
+		var mac = "01-23-45-AB-CD-EF";
+		assert.deepEqual(formatMacAddress(mac,'IEEE'), "01:23:45:AB:CD:EF");
+    });
+    QUnit.test("microsoft to cisco", function(assert) {
+		var mac = "01-23-45-AB-CD-EF";
+		assert.deepEqual(formatMacAddress(mac,'Cisco'), "0123.45ab.cdef");
+    });
+    QUnit.test("microsoft to microsoft", function(assert) {
+		var mac = "01-23-45-AB-CD-EF";
+		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-AB-CD-EF");
+    });
+    QUnit.test("microsoft to sun", function(assert) {
+		var mac = "01-23-45-0B-CD-EF";
+		assert.deepEqual(formatMacAddress(mac,'Sun'), "1:23:45:b:cd:ef");
+    });
+    QUnit.test("ieee to ieee", function(assert) {
+		var mac = "01:23:45:AB:CD:EF";
+		assert.deepEqual(formatMacAddress(mac,'IEEE'), "01:23:45:AB:CD:EF");
+    });
+    QUnit.test("ieee to cisco", function(assert) {
+		var mac = "01:23:45:AB:CD:EF";
+		assert.deepEqual(formatMacAddress(mac,'Cisco'), "0123.45ab.cdef");
+    });
+    QUnit.test("ieee to microsoft", function(assert) {
+		var mac = "01:23:45:AB:CD:EF";
+		assert.deepEqual(formatMacAddress(mac,'Microsoft'), "01-23-45-AB-CD-EF");
+    });
+    QUnit.test("ieee to sun", function(assert) {
+		var mac = "01:23:45:0B:CD:EF";
+		assert.deepEqual(formatMacAddress(mac,'Sun'), "1:23:45:b:cd:ef");
+    });
+    QUnit.test("unknown format", function(assert) {
+		var mac = "01:23:45:0b:cd:ef";
+		assert.deepEqual(formatMacAddress(mac,'unknown'), "01:23:45:0b:cd:ef");
+    });
+    QUnit.test("illegal mac", function(assert) {
+		var mac = "01:23:45:0d:ef:gh";
+		assert.deepEqual(formatMacAddress(mac,'unknown'), "01:23:45:0d:ef:gh");
+    });
+	</script>
+</body>
+</html>
