@@ -156,11 +156,6 @@ function device_form_state(e) {
   }
 }
 
-//utility function for views
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
   $('.nd_field-copy-icon').hide();
