@@ -3,6 +3,9 @@ use inc::Module::Install;
 name     'App-Netdisco';
 license  'bsd';
 all_from 'lib/App/Netdisco.pm';
+
+test_requires 'Test::More' => 0.88;
+test_requires 'Env::Path' => 0;
  
 requires 'Algorithm::Cron' => 0.07;
 requires 'AnyEvent' => 7.05;
