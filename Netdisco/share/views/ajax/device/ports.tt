@@ -68,9 +68,9 @@ $(document).ready(function() {
             $(td).attr('data-for-device', he.encode(rowData.ip));
             $(td).attr('data-for-port', he.encode(rowData.port));
         },
-        "className": 'nd_editable-cell nd_port-display',
+        "className": 'nd_editable-cell nd_nowrap',
         [% ELSE %]
-        "className": 'nd_port-display',
+        "className": 'nd_nowrap',
         [% END %]
         "render": function(data, type, row, meta) {
           if (type === 'display') {
@@ -107,7 +107,7 @@ $(document).ready(function() {
         "name": 'c_descr',
         "visible": false,
         "type": 'portsort',
-        "className": 'nd_port-display',
+        "className": 'nd_nowrap',
         "data": "descr",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
@@ -153,7 +153,7 @@ $(document).ready(function() {
             $(td).attr('data-for-device', he.encode(rowData.ip));
             $(td).attr('data-for-port', he.encode(rowData.port));
         },
-        "className": 'nd_editable-cell  nd_port-display',
+        "className": 'nd_editable-cell  nd_nowrap',
         "render": function(data, type, row, meta) {
           if (type === 'display') {
             var cell_str = '<i class="icon-edit nd_edit-icon"></i>'
@@ -267,7 +267,7 @@ $(document).ready(function() {
         "visible": false,
         "data": "power_admin",
         "defaultContent": "",
-        "className": 'nd_port-display',
+        "className": 'nd_nowrap',
         [% IF user_can_port_control AND params.c_admin %]
         "createdCell": function (td, cellData, rowData, row, col) {
             if (row.power_admin && row.power_admin === 'true') {
