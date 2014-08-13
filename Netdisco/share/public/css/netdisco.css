@@ -160,6 +160,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #404040;
 }
 
+/* nowrap for port name and description columns */
+.nd_nowrap {
+  white-space:nowrap;
+}
+
 /* nudge cell content to the right when port_control controls are enabled */
 .nd_editable-cell > .nd_this-port-only {
   margin-left: 18px;
@@ -653,3 +658,8 @@ form .clearfix.success input {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+/* Clear div for DataTables ColVis plugin */
+div.nd_clear-both {
+	clear:both;
+}
