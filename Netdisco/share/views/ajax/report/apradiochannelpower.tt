@@ -62,8 +62,11 @@ $(document).ready(function() {
         "visible": false
       }, {
         "data": 'port',
+        "type": 'portsort',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
+          return type === 'display' ?
+            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>' :
+            data;
         }
       }, {
         "data": 'port_name',

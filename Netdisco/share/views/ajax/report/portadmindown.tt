@@ -28,8 +28,11 @@ $(document).ready(function() {
         }
       }, {
         "data": 'port',
+        "type": 'portsort',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data) + '</a>';
+          return type === 'display' ?
+            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data) + '</a>' :
+            data;
         }
       }, {
         "data": 'description',
