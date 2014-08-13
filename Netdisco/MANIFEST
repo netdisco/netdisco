@@ -292,6 +292,7 @@ share/public/javascripts/moment.min.js
 share/public/javascripts/natural.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
+share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
 share/public/javascripts/underscore.min.js
 share/views/admintask.tt
@@ -395,3 +396,7 @@ share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
 t/10-sort_port.t
+t/11-portsort.t
+t/html/portsort.html
+t/js/qunit-tap.js
+t/js/run_qunit.js
