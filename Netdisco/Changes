@@ -4,6 +4,10 @@
 
   * Custom portsort plug-in for DataTables
 
+  [BUG FIXES]
+
+  * Filter undefined entries from user log
+
 2.029004 - 2014-08-11
 
   [BUG FIXES]
