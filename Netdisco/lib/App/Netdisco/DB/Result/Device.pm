@@ -109,6 +109,15 @@ Returns the set of ports on this Device.
 
 __PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePort', 'ip' );
 
+=head2 ports_flattened
+
+Returns the set of ports on this Device with vlan_membership and ssid
+returned as an array.
+
+=cut
+
+__PACKAGE__->has_many( ports_flattened => 'App::Netdisco::DB::Result::Virtual::DevicePortFlattened', 'ip' );
+
 =head2 modules
 
 Returns the set chassis modules on this Device.
