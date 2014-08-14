@@ -34,6 +34,7 @@
   <script type="text/javascript" src="[% uri_base %]/javascripts/portsort.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/dataTables.colVis.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/netdisco-util.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/webtoolkit.base64.js"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base %]';
