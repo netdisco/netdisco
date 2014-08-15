@@ -19,11 +19,9 @@ $(document).ready(function() {
       "exclude": [ 0 ]
     },
     "stateLoadParams": function (settings, data) {
-      var idx = 0;
       [% FOREACH key IN params.keys %]
         [% NEXT UNLESS key.match('^c_') AND !key.match('^c_neighbors') AND params.$key == 'on' %]
-        idx = $('#dp-data-table').DataTable().column( '[% key %]:name' ).index();
-        data.columns[idx].visible = true;
+        data.columns[$('#dp-data-table').DataTable().column( '[% key %]:name' ).index()].visible = true;
       [% END %]
     },
     "columns": [
@@ -57,7 +55,16 @@ $(document).ready(function() {
           }
           return cell_str;
         }
-      }, {
+      },
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %],
+      [% END %]
+      {
         "title": 'Port',
         "name": 'c_port',
         "data": 'port',
@@ -102,7 +109,16 @@ $(document).ready(function() {
             return he.encode(data || '');
           }
         }
-      }, {
+      },
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %],
+      [% END %]
+      {
         "title": 'Description',
         "name": 'c_descr',
         "visible": false,
@@ -539,7 +555,15 @@ $(document).ready(function() {
         "name": 'c_up',
         "visible": false,
         "data": "up",
-      }
+      },
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+      [% END %]
     ],
     "data": [% results %]
   });
