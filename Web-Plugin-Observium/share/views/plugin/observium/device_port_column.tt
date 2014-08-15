@@ -7,12 +7,19 @@
         "searchable": false,
         "render": function ( data, type, row, meta ) {
             var cell_str = '';
-            cell_str = cell_str + '<a href="[% settings.plugin_observium.location %]/device/hostname=[% device.dns || device.name | uri %]/tab=port/ifdescr=';
+            cell_str = cell_str + '<a href="[% settings.plugin_observium.location %]/device/hostname=';
+            cell_str = cell_str + encodeURIComponent( row.device_dns || row.device_name );
+            cell_str = cell_str + '/tab=port/ifdescr=';
             cell_str = cell_str + Base64.encode(row.port) + '/"';
-            [% 'target="_blank"' UNLESS settings.plugin_observium.open_in_same_window %]
+            [% IF !settings.plugin_observium.open_in_same_window %]
+            cell_str = cell_str + 'target="_blank"';
+            [% END %]
             cell_str = cell_str + 'class="btn nd_observium"';
             cell_str = cell_str + 'data-content=\''
-            cell_str = cell_str + '<img src="[% settings.plugin_observium.location %]/graph.php?type=port_bits&device=[% device.dns || device.name | uri %]&port=[% row.port | uri %]&from=-1w&to=now&width=208&height=100&title=yes"/>\''
+            cell_str = cell_str + '<img src="[% settings.plugin_observium.location %]/graph.php?type=port_bits&device=';
+            cell_str = cell_str + encodeURIComponent( row.device_dns || row.device_name );
+            cell_str = cell_str + '&port=' + encodeURIComponent( row.port );
+            cell_str = cell_str + '&from=-1w&to=now&width=208&height=100&title=yes"/>\'';
             cell_str = cell_str + '><i class="icon-bar-chart"></i></a>';
             return cell_str;
         }
