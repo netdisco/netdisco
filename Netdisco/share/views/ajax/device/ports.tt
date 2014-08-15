@@ -21,7 +21,9 @@ $(document).ready(function() {
     "stateLoadParams": function (settings, data) {
       [% FOREACH key IN params.keys %]
         [% NEXT UNLESS key.match('^c_') AND !key.match('^c_neighbors') AND params.$key == 'on' %]
-        data.columns[$('#dp-data-table').DataTable().column( '[% key %]:name' ).index()].visible = true;
+        if (data.columns[$('#dp-data-table').DataTable().column( '[% key %]:name' ).index()]) {
+          data.columns[$('#dp-data-table').DataTable().column( '[% key %]:name' ).index()].visible = true;
+        }
       [% END %]
     },
     "columns": [
