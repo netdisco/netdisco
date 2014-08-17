@@ -3,6 +3,7 @@
 </table>
 
 <script type="text/javascript">
+//<![CDATA[
 $(document).ready(function() {
   var freeDate = moment().subtract( [% params.age_num %], '[% params.age_unit %]' );
   var table = $('#dp-data-table').dataTable({
@@ -61,9 +62,9 @@ $(document).ready(function() {
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
           [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %],
           [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
+          // dummy content required by Template Toolkit TRY
           [% END %],
       [% END %]
       {
@@ -115,9 +116,9 @@ $(document).ready(function() {
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
           [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %],
           [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
+          // dummy content required by Template Toolkit TRY
           [% END %],
       [% END %]
       {
@@ -561,13 +562,14 @@ $(document).ready(function() {
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
           [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %],
           [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
+          // dummy content required by Template Toolkit TRY
           [% END %]
       [% END %]
     ],
     "data": [% results %]
   });
 });
+//]]>
 </script>
