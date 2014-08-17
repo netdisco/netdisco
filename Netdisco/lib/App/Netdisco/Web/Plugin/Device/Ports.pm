@@ -97,41 +97,27 @@ get '/ajax/content/device/ports' => require_login sub {
         : ()
     );
 
+    # user deseleted all port states. that means no ports.
     return unless scalar keys %port_state;
 
-    if ( exists $port_state{free} ) {
-        my $age_num  = ( param('age_num')  || 3 );
-        my $age_unit = ( param('age_unit') || 'months' );
-        my $interval = "$age_num $age_unit";
-        if ( scalar keys %port_state == 1 ) {
-            $rs = $rs->search(
-                { 'me.up' => { '!=' => 'up' }, },
-                {   where => \[
-                        "age(now(), to_timestamp(extract(epoch from me.device_last_discover) "
-                            . "- (me.device_uptime - me.lastchange)/100)) "
-                            . "> ?::interval",
-                        [ {} => $interval ]
-                    ]
-                }
-            );
-        }
-        else {
-            $rs = $rs->search(
-                {},
-                {   where => \[
-                        "age(now(), to_timestamp(extract(epoch from me.device_last_discover) "
-                            . "- (me.device_uptime - me.lastchange)/100)) "
-                            . "> ?::interval",
-                        [ {} => $interval ]
-                    ]
-                }
-            );
-        }
-        delete $port_state{free};
-    }
-
-    if ( scalar keys %port_state < 3 ) {
+    # if four keys, that's shorthand for everything.
+    # so only add these filters if user deselected something.
+    if (scalar keys %port_state != 4) {
         my @combi = ();
+
+        if ( exists $port_state{free} ) {
+            my $age_num  = ( param('age_num')  || 3 );
+            my $age_unit = ( param('age_unit') || 'months' );
+            my $interval = "$age_num $age_unit";
+
+            push @combi, { -and => [
+                { 'me.up_admin' => 'up', 'me.up' => { '!=' => 'up' } },
+                \[ "age(now(), to_timestamp(extract(epoch from me.device_last_discover) "
+                            . "- (me.device_uptime - me.lastchange)/100)) "
+                            . "> ?::interval",
+                        [ {} => $interval ] ],
+            ]};
+        }
 
         push @combi, { 'me.up' => 'up' }
             if exists $port_state{up};
