@@ -3,7 +3,9 @@ abstract: 'An open source web-based network management tool.'
 author:
   - 'Oliver Gorwits <oliver@cpan.org>'
 build_requires:
+  Env::Path: 0
   ExtUtils::MakeMaker: 6.59
+  Test::More: 0.88
 configure_requires:
   ExtUtils::MakeMaker: 6.59
 distribution_type: module
@@ -67,6 +69,7 @@ requires:
   Sereal: 0
   Socket6: 0.23
   Starman: 0.4008
+  Sys::Proctitle: 0
   Template: 2.24
   Template::Plugin::CSV: 0.04
   Template::Plugin::Number::Format: 1.02
@@ -86,4 +89,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.029004
+version: 2.029005

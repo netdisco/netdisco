@@ -9,7 +9,7 @@ use FindBin qw( $Bin );
 my @phantomjs = Env::Path->PATH->Whence('phantomjs');
 my $phantomjs = scalar @phantomjs ? $phantomjs[0] : $ENV{ND_PHANTOMJS};
 
-if ( !-x $phantomjs ) {
+if ( ! defined $phantomjs or !-x $phantomjs ) {
     plan skip_all =>
         "phantomjs not found, please set ND_PHANTOMJS or install phantomjs to the default location";
 }

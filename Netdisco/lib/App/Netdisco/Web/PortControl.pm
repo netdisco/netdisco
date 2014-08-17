@@ -69,12 +69,14 @@ ajax '/ajax/userlog' => require_login sub {
         map  {s/\[\]/&lt;empty&gt;/; $_}
         map  { $_->log }
         grep { $_->status eq 'done' }
+        grep { defined }
         @jobs
       ],
       'error' => [
         map  {s/\[\]/&lt;empty&gt;/; $_}
         map  { $_->log }
         grep { $_->status eq 'error' }
+        grep { defined }
         @jobs
       ],
     );
