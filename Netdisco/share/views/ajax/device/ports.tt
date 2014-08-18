@@ -34,11 +34,13 @@ $(document).ready(function() {
     "processing": true,
     "stateSave": true,
     "pageLength": [% settings.table_pagesize %],
+    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
     "sDom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
     // "pagingType": "full_numbers",
     "language": {
       "search": '_INPUT_',
-      "searchPlaceholder": 'Filter records...'
+      "searchPlaceholder": 'Filter records...',
+      "sLengthMenu": "Show _MENU_ records."
     },
     "deferRender": true,
     "order": [[ 1, "asc" ]],
