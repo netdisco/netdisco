@@ -2,6 +2,29 @@
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0">
 </table>
 
+[% IF user_can_port_control %]
+<div id="nd_portlog" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+    role="dialog" aria-hidden="true">
+  <div class="modal-body">
+    <blockquote>
+      <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
+    </blockquote>
+    <select id="nd_portlog-reason" class="input-block-level" name="reason">
+      [% FOREACH pair IN settings.port_control_reasons.pairs %]
+        <option[% ' selected="selected"' IF pair.key == 'other' %] value="[% pair.key | html_entity %]">
+          [% pair.value | html_entity %]</option>
+      [% END %]
+    </select>
+    <textarea id="nd_portlog-log" class="input-block-level" rows="2" name="log"
+      placeholder="Enter a log message"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="nd_portlog-submit" class="btn btn-info" data-dismiss="modal">Continue</button>
+  </div>
+</div>
+[% END %]
+
 <script type="text/javascript">
 //<![CDATA[
 $(document).ready(function() {
@@ -87,23 +110,39 @@ $(document).ready(function() {
             var cell_str = '';
             [% IF user_can_port_control AND params.c_admin %]
             if (row.up_admin === 'up') {
-              cell_str = cell_str + '<i class="icon-hand-down nd_hand-icon" rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="Click to Disable"></i>';
+              cell_str = cell_str
+                + '<span class="nd_hand-icon">'
+                + '<i class="icon-bullseye" data-action="bounce" rel="tooltip" data-placement="top"'
+                + ' data-offset="3" data-animation="" data-title="Bounce Port"></i>'
+                + ' <i class="icon-hand-down" rel="tooltip" data-placement="top"'
+                + ' data-offset="3" data-animation="" data-title="Disable Port"></i>'
+                + '</span>';
             } else {
-              cell_str = cell_str + '<i class="icon-hand-up nd_hand-icon" rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="Click to Enable"></i>';
+              cell_str = cell_str
+                + '<span class="nd_hand-icon">'
+                + '<i class="icon-bullseye" data-action="bounce" rel="tooltip" data-placement="top" style="display: none"'
+                + ' data-offset="3" data-animation="" data-title="Bounce Port"></i>'
+                + ' <i class="icon-hand-up" rel="tooltip" data-placement="top"'
+                + ' data-offset="3" data-animation="" data-title="Enable Port"></i>'
+                + '</span>';
             }
-            cell_str = cell_str + '<a class="nd_log-icon" href="[% uri_for('/report/portlog') %]?q='  + encodeURIComponent(row.ip) + '&f='  + encodeURIComponent(row.port) + '">';
-            cell_str = cell_str + '<i class="icon-file-text-alt" rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="View Port Log"></i></a>';
+            cell_str = cell_str + '<a class="nd_log-icon" href="[% uri_for('/report/portlog') %]?q='
+              + encodeURIComponent(row.ip) + '&f='  + encodeURIComponent(row.port) + '">';
+            cell_str = cell_str + '<i class="icon-file-text-alt" rel="tooltip" data-placement="top"'
+              + ' data-offset="3" data-animation="" data-title="View Port Log"></i></a>';
             [% ELSE %]
             cell_str = cell_str + '';
             [% END %]
-            cell_str = cell_str + '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',self_options) %]&q=[% params.q | uri %]&f=' + encodeURIComponent(row.port) + '&prefer=port">';
+            cell_str = cell_str + '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',self_options) %]&q=[% params.q | uri %]&f='
+              + encodeURIComponent(row.port) + '&prefer=port">';
             if (row.is_master) {
               cell_str = cell_str + '<small><i class="icon-group muted"></i></small>&nbsp;';
             }
             cell_str = cell_str + he.encode(row.port) + '</a>';
             if (row.slave_of) {
               cell_str = cell_str + '<br/>';
-              cell_str = cell_str + '<a class="nd_this-port-only" href="[% uri_for('/device', self_options) %]&q=[% params.q | uri %]&f=' + encodeURIComponent(row.slave_of) + '&prefer=port">';
+              cell_str = cell_str + '<a class="nd_this-port-only" href="[% uri_for('/device', self_options) %]&q=[% params.q | uri %]&f='
+                + encodeURIComponent(row.slave_of) + '&prefer=port">';
               cell_str = cell_str + he.encode(row.slave_of) + '</a>';
             }
             return cell_str;
@@ -308,7 +347,7 @@ $(document).ready(function() {
               [% IF user_can_port_control AND params.c_admin %]
               cell_str = cell_str + '<i class="icon-off nd_power-icon nd_power-on" ';
               cell_str = cell_str + 'rel="tooltip" data-placement="top" data-offset="3" ';
-              cell_str = cell_str + 'data-animation="" data-title="Click to Disable"></i>';
+              cell_str = cell_str + 'data-animation="" data-title="Disable Power"></i>';
               [% ELSE %]
               cell_str = cell_str + '<i class="icon-off nd_power-on"></i>';
               [% END %]
@@ -326,7 +365,7 @@ $(document).ready(function() {
               [% IF user_can_port_control AND params.c_admin %]
               cell_str = cell_str + '<i class="icon-off nd_power-icon" ';
               cell_str = cell_str + 'rel="tooltip" data-placement="top" data-offset="3" ';
-              cell_str = cell_str + 'data-animation="" data-title="Click to Enable"></i>';
+              cell_str = cell_str + 'data-animation="" data-title="Enable Power"></i>';
               [% ELSE %]
               cell_str = cell_str + '<i class="icon-off"></i>';
               [% END %]
