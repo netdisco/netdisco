@@ -636,10 +636,16 @@ $(document).ready(function() {
                 $(button).find('span').text('Connected Devices');
               }
 
+              // need to re-activate tooltips on new content
+              $(button).click(function() {
+                $("[rel=tooltip]").tooltip({live: true});
+              });
+
               $('#nd_column-controls').append( button );
           }
       }
   }
+
 });
 //]]>
 </script>
