@@ -8,7 +8,6 @@ use URL::Encode 'url_params_mixed';
 
 hook 'before' => sub {
   my @default_port_columns_left = (
-    { name => 'c_admin',       label => 'Port Controls',     default => ''   },
     { name => 'c_port',        label => 'Port',              default => ''   },
   );
 
@@ -25,10 +24,11 @@ hook 'before' => sub {
     { name => 'c_vmember',     label => 'VLAN Membership',   default => ''   },
     { name => 'c_power',       label => 'PoE',               default => ''   },
     { name => 'c_ssid',        label => 'SSID',              default => ''   },
-    { name => 'c_nodes',       label => 'Connected Nodes',   default => ''   },
+    { name => 'c_nodes',       label => 'Show Nodes',        default => ''   },
     { name => 'c_neighbors',   label => 'Connected Devices', default => 'on' },
     { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
     { name => 'c_up',          label => 'Status',            default => ''   },
+    { name => 'c_admin',       label => 'Port Controls',     default => ''   },
   );
 
   # build list of port detail columns

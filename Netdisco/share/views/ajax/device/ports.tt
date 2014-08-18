@@ -27,6 +27,7 @@
 
 <script type="text/javascript">
 //<![CDATA[
+
 $(document).ready(function() {
   var freeDate = moment().subtract( [% params.age_num %], '[% params.age_unit %]' );
   var table = $('#dp-data-table').dataTable({
@@ -38,7 +39,6 @@ $(document).ready(function() {
     },
     "deferRender": true,
     "order": [[ 1, "asc" ]],
-    "dom": 'C<"nd_clear-both">lfrtip',
     "colVis": {
       "exclude": [ 0 ]
     },
@@ -611,6 +611,35 @@ $(document).ready(function() {
     ],
     "data": [% results %]
   });
+
+  // display the column show/hide buttons in the sidebar
+  var colvis = new $.fn.dataTable.ColVis( table );
+  var columns = colvis.s.dt.aoColumns;
+
+  // first remove existing controls, in case indexes have changed
+  $('#nd_column-controls').find('.nd_colvis-checkbox').remove();
+
+  if ( $.inArray( 'all', colvis.s.aiExclude ) === -1 ) {
+      for ( var i=0, iLen=columns.length ; i<iLen ; i++ ) {
+          if ( $.inArray( i, colvis.s.aiExclude ) === -1 ) {
+              var button = colvis.dom.buttons.shift();
+              if (columns[i]["name"] == "icon") {
+                continue;
+              }
+
+              $(button).addClass('nd_colvis-checkbox');
+              $(button).find('label').addClass('checkbox');
+              $(button).find('input').attr('id', columns[i]["name"]);
+              $(button).find('input').attr('name', columns[i]["name"]);
+
+              if (columns[i]["name"] == "c_nodes") {
+                $(button).find('span').text('Connected Devices');
+              }
+
+              $('#nd_column-controls').append( button );
+          }
+      }
+  }
 });
 //]]>
 </script>
