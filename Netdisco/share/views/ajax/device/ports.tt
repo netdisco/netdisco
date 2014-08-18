@@ -373,7 +373,7 @@ $(document).ready(function() {
                 if (row.manual_topo) {
                   cell_str = cell_str + ' text-warning';
                 }
-                cell_str = cell_str + '"></i>';
+                cell_str = cell_str + '"></i>&nbsp;';
                 if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
                   cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
                 }
@@ -447,7 +447,9 @@ $(document).ready(function() {
               }
               if (row.nodes[index].active === 0) {
                 [% IF params.n_archived %]
-                cell_str = cell_str + '<br/>';
+                if (index > 0 && row.nodes[index - 1].active) {
+                  cell_str = cell_str + '<br/>';
+                }
                 cell_str = cell_str + '<i class="icon-book"></i>&nbsp; ';
                 [% ELSE %]
                 continue;
@@ -466,6 +468,15 @@ $(document).ready(function() {
               var fmac = formatMacAddress(row.nodes[index].mac, macfmt);
               cell_str = cell_str + encodeURIComponent(fmac) + '">';
               cell_str = cell_str + he.encode(fmac) + '</a>';
+              [% IF params.n_vendor %]
+              if (row.nodes[index].abbrev) {
+                cell_str = cell_str + ' (';
+                cell_str = cell_str + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor=';
+                cell_str = cell_str + encodeURIComponent(row.nodes[index].abbrev) + '">';
+                cell_str = cell_str + he.encode(row.nodes[index].abbrev || '') + '</a>';
+                cell_str = cell_str + ')';
+              }
+              [% END %]
               if (row.nodes[index].vlans.length > 0) {
                 var vl = row.nodes[index].vlans ? row.nodes[index].vlans.join(", ") : "";
                 cell_str = cell_str + ' (on vlan ';
@@ -483,21 +494,12 @@ $(document).ready(function() {
                 cell_str = cell_str + ')';
               }
               [% END %]
-              [% IF params.n_vendor %]
-              if (row.nodes[index].abbrev) {
-                cell_str = cell_str + '(Vendor: ';
-                cell_str = cell_str + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor=';
-                cell_str = cell_str + encodeURIComponent(row.nodes[index].abbrev) + '">';
-                cell_str = cell_str + he.encode(row.nodes[index].abbrev || '') + '</a>';
-                cell_str = cell_str + ')';
-              }
-              [% END %]
               [% IF params.n_age %]
-                cell_str = cell_str + ' ( ';
+                cell_str = cell_str + ' (';
                 var now = moment();
                 var t_last = moment(row.nodes[index].time_last);
                 cell_str = cell_str + t_last.from(now);
-                cell_str = cell_str + ' )';
+                cell_str = cell_str + ')';
               [% END %]
               [% IF params.n_ip %]
               if (row.nodes[index].ip && row.nodes[index].ip.length > 0) {              
