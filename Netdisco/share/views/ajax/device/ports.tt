@@ -35,7 +35,8 @@ $(document).ready(function() {
     "stateSave": true,
     "pageLength": [% settings.table_pagesize %],
     "language": {
-      "search": 'Filter records: '
+      "search": '_INPUT_',
+      "searchPlaceholder": 'Filter records...'
     },
     "deferRender": true,
     "order": [[ 1, "asc" ]],
