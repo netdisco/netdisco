@@ -34,6 +34,8 @@ $(document).ready(function() {
     "processing": true,
     "stateSave": true,
     "pageLength": [% settings.table_pagesize %],
+    "sDom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
+    // "pagingType": "full_numbers",
     "language": {
       "search": '_INPUT_',
       "searchPlaceholder": 'Filter records...'

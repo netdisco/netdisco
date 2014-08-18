@@ -660,5 +660,10 @@ form .clearfix.success input {
 
 /* Clear div for DataTables ColVis plugin */
 div.nd_clear-both {
-	clear:both;
+  clear:both;
+}
+
+div.nd_datatables-pager {
+  float: left;
+  margin-left: 50px;
 }
