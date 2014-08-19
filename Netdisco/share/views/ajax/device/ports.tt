@@ -35,12 +35,11 @@ $(document).ready(function() {
     "stateSave": true,
     "pageLength": [% settings.table_pagesize %],
     "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
-    "sDom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
-    // "pagingType": "full_numbers",
+    "dom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
     "language": {
       "search": '_INPUT_',
       "searchPlaceholder": 'Filter records...',
-      "sLengthMenu": "Show _MENU_ records."
+      "lengthMenu": "Show _MENU_ records."
     },
     "deferRender": true,
     "order": [[ 1, "asc" ]],
@@ -491,7 +490,7 @@ $(document).ready(function() {
               }
               if (row.nodes[index].active === 0) {
                 [% IF params.n_archived %]
-                if (index > 0 && row.nodes[index - 1].active) {
+                if (index > 0 ) {
                   cell_str = cell_str + '<br/>';
                 }
                 cell_str = cell_str + '<i class="icon-book"></i>&nbsp; ';
@@ -499,7 +498,7 @@ $(document).ready(function() {
                 continue;
                 [% END %]
               }
-              else if (index !== 0) {
+              else if (index > 0 && row.nodes[index].active !== 0) {
                 cell_str = cell_str + '<br/>';
               }
               if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
@@ -624,9 +623,9 @@ $(document).ready(function() {
   // first remove existing controls, in case indexes have changed
   $('#nd_column-controls').find('.nd_colvis-checkbox').remove();
 
-  if ( $.inArray( 'all', colvis.s.aiExclude ) === -1 ) {
+  if ( $.inArray( 'all', colvis.s.exclude ) === -1 ) {
       for ( var i=0, iLen=columns.length ; i<iLen ; i++ ) {
-          if ( $.inArray( i, colvis.s.aiExclude ) === -1 ) {
+          if ( $.inArray( i, colvis.s.exclude ) === -1 ) {
               var button = colvis.dom.buttons.shift();
               if (columns[i]["name"] == "icon") {
                 continue;
