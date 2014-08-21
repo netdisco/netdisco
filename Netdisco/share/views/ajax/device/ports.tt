@@ -74,13 +74,13 @@ $(document).ready(function() {
             cell_str = '<i class="icon-arrow-down text-error"></i>';
           }
           if (row.slave_of) {
-            cell_str = cell_str + '<br/>';
+            cell_str += '<br/>';
             if (row.agg_master_up_admin != 'up') {
-              cell_str = cell_str + '<small><i class="icon-group muted"></i></small>';
+              cell_str += '<small><i class="icon-group muted"></i></small>';
             } else if (row.agg_master_up === 'up') {
-              cell_str = cell_str + '<small><i class="icon-group text-success"></i></small>';
+              cell_str += '<small><i class="icon-group text-success"></i></small>';
             } else {
-              cell_str = cell_str + '<small><i class="icon-group text-error"></i></small>';
+              cell_str += '<small><i class="icon-group text-error"></i></small>';
             }
           }
           return cell_str;
@@ -114,40 +114,38 @@ $(document).ready(function() {
             var cell_str = '';
             [% IF user_can_port_control AND params.c_admin %]
             if (row.up_admin === 'up') {
-              cell_str = cell_str
-                + '<span class="nd_hand-icon">'
+              cell_str += '<span class="nd_hand-icon">'
                 + '<i class="icon-bullseye" data-action="bounce" rel="tooltip" data-placement="top"'
                 + ' data-offset="3" data-animation="" data-title="Bounce Port"></i>'
                 + ' <i class="icon-hand-down" rel="tooltip" data-placement="top"'
                 + ' data-offset="3" data-animation="" data-title="Disable Port"></i>'
                 + '</span>';
             } else {
-              cell_str = cell_str
-                + '<span class="nd_hand-icon">'
+              cell_str += '<span class="nd_hand-icon">'
                 + '<i class="icon-bullseye" data-action="bounce" rel="tooltip" data-placement="top" style="display: none"'
                 + ' data-offset="3" data-animation="" data-title="Bounce Port"></i>'
                 + ' <i class="icon-hand-up" rel="tooltip" data-placement="top"'
                 + ' data-offset="3" data-animation="" data-title="Enable Port"></i>'
                 + '</span>';
             }
-            cell_str = cell_str + '<a class="nd_log-icon" href="[% uri_for('/report/portlog') %]?q='
-              + encodeURIComponent(row.ip) + '&f='  + encodeURIComponent(row.port) + '">';
-            cell_str = cell_str + '<i class="icon-file-text-alt" rel="tooltip" data-placement="top"'
-              + ' data-offset="3" data-animation="" data-title="View Port Log"></i></a>';
+            cell_str += '<a class="nd_log-icon" href="[% uri_for('/report/portlog') %]?q='
+                + encodeURIComponent(row.ip) + '&f='  + encodeURIComponent(row.port) + '">'
+                + '<i class="icon-file-text-alt" rel="tooltip" data-placement="top"'
+                + ' data-offset="3" data-animation="" data-title="View Port Log"></i></a>';
             [% ELSE %]
-            cell_str = cell_str + '';
+            cell_str += '';
             [% END %]
-            cell_str = cell_str + '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',self_options) %]&q=[% params.q | uri %]&f='
-              + encodeURIComponent(row.port) + '&prefer=port">';
+            cell_str += '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',self_options) %]&q=[% params.q | uri %]&f='
+                + encodeURIComponent(row.port) + '&prefer=port">';
             if (row.is_master) {
-              cell_str = cell_str + '<small><i class="icon-group muted"></i></small>&nbsp;';
+              cell_str += '<small><i class="icon-group muted"></i></small>&nbsp;';
             }
-            cell_str = cell_str + he.encode(row.port) + '</a>';
+            cell_str += he.encode(row.port) + '</a>';
             if (row.slave_of) {
-              cell_str = cell_str + '<br/>';
-              cell_str = cell_str + '<a class="nd_this-port-only" href="[% uri_for('/device', self_options) %]&q=[% params.q | uri %]&f='
-                + encodeURIComponent(row.slave_of) + '&prefer=port">';
-              cell_str = cell_str + he.encode(row.slave_of) + '</a>';
+              cell_str += '<br/>'
+                + '<a class="nd_this-port-only" href="[% uri_for('/device', self_options) %]&q=[% params.q | uri %]&f='
+                + encodeURIComponent(row.slave_of) + '&prefer=port">'
+                + he.encode(row.slave_of) + '</a>';
             }
             return cell_str;
           }
@@ -189,10 +187,8 @@ $(document).ready(function() {
         "data": "duplex",
         "render": function(data, type, row, meta) {
          if (row.up === 'up' && row.duplex) {
-            var cell_str = '';
-            cell_str = cell_str + he.encode(capitalizeFirstLetter(row.duplex_admin || 'auto') );
-            cell_str = cell_str + ' / ' + he.encode(capitalizeFirstLetter(row.duplex) || '');
-            return cell_str;
+            return he.encode(capitalizeFirstLetter(row.duplex_admin || 'auto') )
+                + ' / ' + he.encode(capitalizeFirstLetter(row.duplex) || '');
           }
           else {
             return '';
@@ -218,11 +214,9 @@ $(document).ready(function() {
         "className": 'nd_editable-cell  nd_nowrap',
         "render": function(data, type, row, meta) {
           if (type === 'display') {
-            var cell_str = '<i class="icon-edit nd_edit-icon"></i>'
-            cell_str = cell_str + '<div class="nd_editable-cell-content">';
-            cell_str = cell_str + he.encode(data || '');
-            cell_str = cell_str + '</div>';
-            return cell_str;
+            return '<i class="icon-edit nd_edit-icon"></i>'
+                + '<div class="nd_editable-cell-content">'
+                + he.encode(data || '') + '</div>';
           }
           else {
             return data;
@@ -269,13 +263,13 @@ $(document).ready(function() {
         "className": 'nd_editable-cell',
         "render": function ( data, type, row, meta ) {
           if (type === 'display') {
-            var cell_str = '<i class="icon-edit nd_edit-icon"></i>';
-            cell_str = cell_str + '<div class="nd_editable-cell-content">';
+            var cell_str = '<i class="icon-edit nd_edit-icon"></i>'
+                + '<div class="nd_editable-cell-content">';
             if (row.native_vlan) {
               /* row.native_vlan is an integer, no need to encode */
-              cell_str = cell_str + row.native_vlan;
+              cell_str += row.native_vlan;
             }
-            cell_str = cell_str + '</div>';
+            cell_str += '</div>';
             return cell_str;
           }
           else {
@@ -307,13 +301,12 @@ $(document).ready(function() {
               return '<a href="[% uri_for('/search') %]?tab=vlan&q=' + a + '">' + a + '</a>';
             });
             if (row.vlan_membership.length > 10) {
-              cell_str = cell_str + '<div class="nd_vlan-total">(';
-              cell_str = cell_str + row.vlan_membership.length;
-              cell_str = cell_str + ')</div><span class="nd_linkcell nd_collapse-vlans">';
-              cell_str = cell_str + '<div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>';
-              cell_str = cell_str + '<div class="nd_collapsing nd_collapse-pre-hidden">' + arr.join(", ");
-              cell_str = cell_str + '</div>';
-              return cell_str;
+              return '<div class="nd_vlan-total">('
+                + row.vlan_membership.length
+                + ')</div><span class="nd_linkcell nd_collapse-vlans">'
+                + '<div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>'
+                + '<div class="nd_collapsing nd_collapse-pre-hidden">' + arr.join(", ")
+                + '</div>';
             }
             else {
               return row.vlan_membership ? arr.join(", ") : "";
@@ -349,29 +342,29 @@ $(document).ready(function() {
             var cell_str = '';
             if (row.power_admin && row.power_admin === 'true') {
               [% IF user_can_port_control AND params.c_admin %]
-              cell_str = cell_str + '<i class="icon-off nd_power-icon nd_power-on" ';
-              cell_str = cell_str + 'rel="tooltip" data-placement="top" data-offset="3" ';
-              cell_str = cell_str + 'data-animation="" data-title="Disable Power"></i>';
+              cell_str += '<i class="icon-off nd_power-icon nd_power-on" '
+                + 'rel="tooltip" data-placement="top" data-offset="3" '
+                + 'data-animation="" data-title="Disable Power"></i>';
               [% ELSE %]
-              cell_str = cell_str + '<i class="icon-off nd_power-on"></i>';
+              cell_str += '<i class="icon-off nd_power-on"></i>';
               [% END %]
-              cell_str = cell_str + '<span> ';
+              cell_str += '<span> ';
                 if (row.power && row.power > 0) {
-                  cell_str = cell_str + row.power + '&nbsp;mW';
+                  cell_str += row.power + '&nbsp;mW';
                 }
                 else {
-                  cell_str = cell_str + he.encode(row.power_status || '');
+                  cell_str += he.encode(row.power_status || '');
                 }
-              cell_str = cell_str + '<span>';
+              cell_str += '<span>';
               return cell_str;
             }
             else {
               [% IF user_can_port_control AND params.c_admin %]
-              cell_str = cell_str + '<i class="icon-off nd_power-icon" ';
-              cell_str = cell_str + 'rel="tooltip" data-placement="top" data-offset="3" ';
-              cell_str = cell_str + 'data-animation="" data-title="Enable Power"></i>';
+              cell_str += '<i class="icon-off nd_power-icon" '
+                + 'rel="tooltip" data-placement="top" data-offset="3" '
+                + 'data-animation="" data-title="Enable Power"></i>';
               [% ELSE %]
-              cell_str = cell_str + '<i class="icon-off"></i>';
+              cell_str += '<i class="icon-off"></i>';
               [% END %]
             }
           }
@@ -412,118 +405,114 @@ $(document).ready(function() {
           var d_suffix = '[% settings.domain_suffix %]';
             if (row.remote_ip || row.is_uplink) {
               if (row.neighbor_alias_ip) {
-                cell_str = cell_str + '<i class="icon-link';
+                cell_str += '<i class="icon-link';
                 if (row.manual_topo) {
-                  cell_str = cell_str + ' text-warning';
+                  cell_str += ' text-warning';
                 }
-                cell_str = cell_str + '"></i>&nbsp;';
+                cell_str += '"></i>&nbsp;';
                 if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
-                  cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
+                  cell_str += '<i class="icon-phone"></i>&nbsp;';
                 }
                 else if (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)/)) {
-                  cell_str = cell_str + '<i class="icon-signal"></i>&nbsp;';
+                  cell_str += '<i class="icon-signal"></i>&nbsp;';
                 }
-                cell_str = cell_str + '<a href="[% uri_for('/device', self_options) %]&q=';
-                cell_str = cell_str + encodeURIComponent(row.neighbor_alias_ip) + '">';
+                cell_str += '<a href="[% uri_for('/device', self_options) %]&q='
+                  + encodeURIComponent(row.neighbor_alias_ip) + '">';
                 var n_dns = row.neighbor_alias_dns ? row.neighbor_alias_dns.replace(d_suffix, '') : '';
-                cell_str = cell_str + he.encode(n_dns || row.neighbor_alias_ip);
-                cell_str = cell_str + '</a>';
+                cell_str += he.encode(n_dns || row.neighbor_alias_ip) + '</a>';
                 if (row.remote_port) {
-                  cell_str = cell_str + ' - '
-                  cell_str = cell_str + '<a href="[% uri_for('/device', self_options) %]&q=';
-                  cell_str = cell_str + encodeURIComponent(row.neighbor_alias_ip);
-                  cell_str = cell_str + '&f=' + encodeURIComponent(row.remote_port);
-                  cell_str = cell_str + '&prefer=port">' + he.encode(row.remote_port || '');
-                  cell_str = cell_str + '</a>';
+                  cell_str += ' - '
+                    + '<a href="[% uri_for('/device', self_options) %]&q='
+                    + encodeURIComponent(row.neighbor_alias_ip)
+                    + '&f=' + encodeURIComponent(row.remote_port)
+                    + '&prefer=port">' + he.encode(row.remote_port || '') + '</a>';
                 }
-                cell_str = cell_str + '<br/>';
+                cell_str += '<br/>';
                 [% IF params.neigh_id %]
                 if (row.remote_id || row.remote_type) {
-                  cell_str = cell_str + '(';
+                  cell_str += '(';
                   if (row.remote_id) {
-                    cell_str = cell_str + ' id: ' + he.encode(row.remote_id);
+                    cell_str += ' id: ' + he.encode(row.remote_id);
                   }
                   else if (row.remote_type) {
-                    cell_str = cell_str + ' type: ' + he.encode(row.remote_type);
+                    cell_str += ' type: ' + he.encode(row.remote_type);
                   }
-                  cell_str = cell_str + ' )<br/>';
+                  cell_str += ' )<br/>';
                 }
                 [% END %]
               }
               else if (row.remote_ip) {
-                cell_str = cell_str + '<i class="icon-unlink text-error"></i>&nbsp;';
+                cell_str += '<i class="icon-unlink text-error"></i>&nbsp;';
                 if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
-                  cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
+                  cell_str += '<i class="icon-phone"></i>&nbsp;';
                 }
                 else if (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)/)) {
-                  cell_str = cell_str + '<i class="icon-signal"></i>&nbsp;';
+                  cell_str += '<i class="icon-signal"></i>&nbsp;';
                 }
-                cell_str = cell_str + '<a href="[% search_node %]&q=';
-                cell_str = cell_str + encodeURIComponent(row.remote_ip) + '">';
-                cell_str = cell_str + he.encode(row.remote_ip || '');
+                cell_str += '<a href="[% search_node %]&q='
+                  + encodeURIComponent(row.remote_ip) + '">'
+                  + he.encode(row.remote_ip || '');
                 if (row.remote_port) {
-                  cell_str = cell_str + ' - ' + he.encode(row.remote_port || '');
+                  cell_str += ' - ' + he.encode(row.remote_port || '');
                 }
-                cell_str = cell_str + '</a><br/>';
+                cell_str += '</a><br/>';
                 [% IF params.neigh_id %]
                 if (row.remote_id || row.remote_type) {
-                  cell_str = cell_str + '(';
+                  cell_str += '(';
                   if (row.remote_id) {
-                    cell_str = cell_str + ' id: ' + he.encode(row.remote_id);
+                    cell_str += ' id: ' + he.encode(row.remote_id);
                   }
                   else if (row.remote_type) {
-                    cell_str = cell_str + ' type: ' + he.encode(row.remote_type);
+                    cell_str += ' type: ' + he.encode(row.remote_type);
                   }
-                  cell_str = cell_str + ' )<br/>';
+                  cell_str += ' )<br/>';
                 }
                 [% END %]
               }
               else {
-                cell_str = cell_str + '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)';
+                cell_str += '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)';
               }
             }
             [% IF params.c_nodes %]
             var macfmt = '[% params.mac_format %]';
             for (index = 0; index < row.nodes.length; ++index) {
               if ((row.remote_ip || row.is_uplink) && index === 0 ) {
-                cell_str = cell_str + '<br/>';
+                cell_str += '<br/>';
               }
               if (row.nodes[index].active === 0) {
                 [% IF params.n_archived %]
                 if (index > 0 ) {
-                  cell_str = cell_str + '<br/>';
+                  cell_str += '<br/>';
                 }
-                cell_str = cell_str + '<i class="icon-book"></i>&nbsp; ';
+                cell_str += '<i class="icon-book"></i>&nbsp; ';
                 [% ELSE %]
                 continue;
                 [% END %]
               }
               else if (index > 0 && row.nodes[index].active !== 0) {
-                cell_str = cell_str + '<br/>';
+                cell_str += '<br/>';
               }
               if (row.remote_type && row.remote_type.match(/ip.phone/i)) {
-                cell_str = cell_str + '<i class="icon-phone"></i>&nbsp;';
+                cell_str += '<i class="icon-phone"></i>&nbsp;';
               }
               else if (row.nodes[index].ssids || (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|c]?AP|-K9W8-|^AP:\s)/))) {
-                cell_str = cell_str + '<i class="icon-signal"></i>&nbsp;';
+                cell_str += '<i class="icon-signal"></i>&nbsp;';
               }
-              cell_str = cell_str + '<a href="[% search_node %]&q=';
+              cell_str += '<a href="[% search_node %]&q=';
               var fmac = formatMacAddress(row.nodes[index].mac, macfmt);
-              cell_str = cell_str + encodeURIComponent(fmac) + '">';
-              cell_str = cell_str + he.encode(fmac) + '</a>';
+              cell_str += encodeURIComponent(fmac) + '">'
+                + he.encode(fmac) + '</a>';
               [% IF params.n_vendor %]
               if (row.nodes[index].abbrev) {
-                cell_str = cell_str + ' (';
-                cell_str = cell_str + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor=';
-                cell_str = cell_str + encodeURIComponent(row.nodes[index].abbrev) + '">';
-                cell_str = cell_str + he.encode(row.nodes[index].abbrev || '') + '</a>';
-                cell_str = cell_str + ')';
+                cell_str += ' ('
+                  + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor='
+                  + encodeURIComponent(row.nodes[index].abbrev) + '">'
+                  + he.encode(row.nodes[index].abbrev || '') + '</a>)';
               }
               [% END %]
               if (row.nodes[index].vlans.length > 0) {
                 var vl = row.nodes[index].vlans ? row.nodes[index].vlans.join(", ") : "";
-                cell_str = cell_str + ' (on vlan ';
-                cell_str = cell_str + vl + ')';
+                cell_str += ' (on vlan ' + vl + ')';
               }
               [% IF params.n_ssid %]
               if (row.nodes[index].ssids && row.nodes[index].ssids.length > 0) {
@@ -532,58 +521,54 @@ $(document).ready(function() {
                 arr = jQuery.map( arr, function( a ) {
                   return '<a href="[% uri_for('/report/portssid') %]?ssid=' + encodeURIComponent(a) + '">' + he.encode(a) + '</a>';
                 });
-                cell_str = cell_str + ' (SSID: ';
-                cell_str = cell_str + arr.join(" ");
-                cell_str = cell_str + ')';
+                cell_str += ' (SSID: ' + arr.join(" ") + ')';
               }
               [% END %]
               [% IF params.n_age %]
-                cell_str = cell_str + ' (';
+                cell_str += ' (';
                 var now = moment();
                 var t_last = moment(row.nodes[index].time_last);
-                cell_str = cell_str + t_last.from(now);
-                cell_str = cell_str + ')';
+                cell_str += t_last.from(now) + ')';
               [% END %]
               [% IF params.n_ip %]
               if (row.nodes[index].ip && row.nodes[index].ip.length > 0) {              
                 for (idx = 0; idx < row.nodes[index].ip.length; ++idx) {
                   if (row.nodes[index].ip_active[idx] === 0) {
                     [% IF params.n_archived %]
-                    cell_str = cell_str + '<br/>&nbsp;';
-                    cell_str = cell_str + '<i class="icon-book"></i>&nbsp; ';
+                    cell_str += '<br/>&nbsp; <i class="icon-book"></i>&nbsp; ';
                     [% ELSE %]
                     continue;
                     [% END %]
                   }
                   else {
-                    cell_str = cell_str + '<br/>&nbsp;';
+                    cell_str += '<br/>&nbsp;';
                   }
-                  cell_str = cell_str + '<a href="[% search_node %]&q=';
-                  cell_str = cell_str + encodeURIComponent(row.nodes[index].ip[idx]) + '">';
+                  cell_str += '<a href="[% search_node %]&q='
+                    + encodeURIComponent(row.nodes[index].ip[idx]) + '">';
                   if (row.nodes[index].dns[idx]) {
-                    cell_str = cell_str + he.encode(row.nodes[index].dns[idx]);
-                    cell_str = cell_str + ' ( ' + he.encode(row.nodes[index].ip[idx]) + ' )</a>';
+                    cell_str += he.encode(row.nodes[index].dns[idx])
+                      + ' ( ' + he.encode(row.nodes[index].ip[idx]) + ' )</a>';
                   }
                   else {
-                    cell_str = cell_str + he.encode(row.nodes[index].ip[idx]) + '</a>';
+                    cell_str += he.encode(row.nodes[index].ip[idx]) + '</a>';
                   }
                 }
               }
               [% END %]
               [% IF params.n_netbios %]
               if (row.nodes[index].nbname) {
-                cell_str = cell_str + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\\<a href="[% uri_for('/report/netbios') %]?domain=';
+                cell_str += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\\<a href="[% uri_for('/report/netbios') %]?domain=';
                 var nb_dom_uri = row.nodes[index].nbname ? encodeURIComponent(row.nodes[index].domain) : 'blank';
                 var nb_dom = row.nodes[index].nbname ? he.encode(row.nodes[index].domain) : '(Blank Domain)';
-                cell_str = cell_str + nb_dom_uri + '" title="Nodes in this Domain">' + nb_dom + '</a>\\';
-                cell_str = cell_str + '<a href="[% search_node %]&q=' + encodeURIComponent(row.nodes[index].nbname) + '">';
-                cell_str = cell_str + he.encode(row.nodes[index].nbname) + '</a>';
-                cell_str = cell_str + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                cell_str += nb_dom_uri + '" title="Nodes in this Domain">' + nb_dom + '</a>\\'
+                  + '<a href="[% search_node %]&q=' + encodeURIComponent(row.nodes[index].nbname) + '">'
+                  + he.encode(row.nodes[index].nbname) + '</a>'
+                  + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                 var nb_user = row.nodes[index].nbuser ? he.encode(row.nodes[index].nbuser) : '[No User]';
-                cell_str = cell_str + nb_user + '@';
-                cell_str = cell_str + '<a href="[% search_node %]&q=';
-                cell_str = cell_str + encodeURIComponent(row.nodes[index].nb_ip) + '">';
-                cell_str = cell_str + he.encode(row.nodes[index].nb_ip) + '</a>';
+                cell_str += nb_user + '@'
+                  + '<a href="[% search_node %]&q='
+                  + encodeURIComponent(row.nodes[index].nb_ip) + '">'
+                  + he.encode(row.nodes[index].nb_ip) + '</a>';
               }
               [% END %]
             }
