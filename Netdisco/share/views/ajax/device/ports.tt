@@ -504,10 +504,10 @@ $(document).ready(function() {
                 + he.encode(fmac) + '</a>';
               [% IF params.n_vendor %]
               if (row.nodes[index].abbrev) {
-                cell_str += ' ('
+                cell_str += '<span class="n_vendor"> ('
                   + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor='
                   + encodeURIComponent(row.nodes[index].abbrev) + '">'
-                  + he.encode(row.nodes[index].abbrev || '') + '</a>)';
+                  + he.encode(row.nodes[index].abbrev || '') + '</a>)</span>';
               }
               [% END %]
               if (row.nodes[index].vlans.length > 0) {
@@ -521,17 +521,18 @@ $(document).ready(function() {
                 arr = jQuery.map( arr, function( a ) {
                   return '<a href="[% uri_for('/report/portssid') %]?ssid=' + encodeURIComponent(a) + '">' + he.encode(a) + '</a>';
                 });
-                cell_str += ' (SSID: ' + arr.join(" ") + ')';
+                cell_str += '<span class="n_ssid"> (SSID: ' + arr.join(" ") + ')</span>';
               }
               [% END %]
               [% IF params.n_age %]
-                cell_str += ' (';
+                cell_str += '<span class="n_age">  (';
                 var now = moment();
                 var t_last = moment(row.nodes[index].time_last);
-                cell_str += t_last.from(now) + ')';
+                cell_str += t_last.from(now) + ')</span>';
               [% END %]
               [% IF params.n_ip %]
-              if (row.nodes[index].ip && row.nodes[index].ip.length > 0) {              
+              if (row.nodes[index].ip && row.nodes[index].ip.length > 0) {
+                cell_str += '<span class="n_ip">';
                 for (idx = 0; idx < row.nodes[index].ip.length; ++idx) {
                   if (row.nodes[index].ip_active[idx] === 0) {
                     [% IF params.n_archived %]
@@ -553,11 +554,13 @@ $(document).ready(function() {
                     cell_str += he.encode(row.nodes[index].ip[idx]) + '</a>';
                   }
                 }
+                cell_str += '</span>';
               }
               [% END %]
               [% IF params.n_netbios %]
               if (row.nodes[index].nbname) {
-                cell_str += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\\<a href="[% uri_for('/report/netbios') %]?domain=';
+                cell_str += '<span class="n_netbios">'
+                  + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\\<a href="[% uri_for('/report/netbios') %]?domain=';
                 var nb_dom_uri = row.nodes[index].nbname ? encodeURIComponent(row.nodes[index].domain) : 'blank';
                 var nb_dom = row.nodes[index].nbname ? he.encode(row.nodes[index].domain) : '(Blank Domain)';
                 cell_str += nb_dom_uri + '" title="Nodes in this Domain">' + nb_dom + '</a>\\'
@@ -568,7 +571,7 @@ $(document).ready(function() {
                 cell_str += nb_user + '@'
                   + '<a href="[% search_node %]&q='
                   + encodeURIComponent(row.nodes[index].nb_ip) + '">'
-                  + he.encode(row.nodes[index].nb_ip) + '</a>';
+                  + he.encode(row.nodes[index].nb_ip) + '</a></span>';
               }
               [% END %]
             }
