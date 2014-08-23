@@ -96,14 +96,21 @@ sub _get_arps {
   return $resolved_ips;
 }
 
-=head2 store_arp( $mac, $ip, $name, $now? )
+=head2 store_arp( \%host, $now? )
 
 Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
-and DNS host name.
+and DNS host name. Host details are provided in a Hash ref:
 
-Will mark old entries for this IP as no longer C<active>.
+ {
+    ip   => '192.0.2.1',
+    node => '00:11:22:33:44:55',
+    dns  => 'myhost.example.com',
+ }
 
-Optionally a literal string can be passed in the fourth argument for the
+The C<dns> entry is optional. The update will mark old entries for this IP as
+no longer C<active>.
+
+Optionally a literal string can be passed in the second argument for the
 C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
 
 =cut
