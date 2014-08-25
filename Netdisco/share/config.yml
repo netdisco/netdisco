@@ -54,7 +54,7 @@ web_plugins:
   - Report::Netbios
   - Report::NodeMultiIPs
   - Report::NodeVendor
-  - Report::PhonesDiscovered
+  - Report::NodesDiscovered
   - Report::SsidInventory
   - Report::VlanInventory
   - Report::SubnetUtilization

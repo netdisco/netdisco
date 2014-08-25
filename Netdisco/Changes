@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * netdisco-sshcollector script to get ARP data on devices without SNMP (C. Ramseyer)
+  * Add Nodes discovered through LLDP/CDP report (replaces IP Phones report)
 
   [ENHANCEMENTS]
 

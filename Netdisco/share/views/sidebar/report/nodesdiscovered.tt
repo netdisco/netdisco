@@ -1,0 +1,52 @@
+
+            <p class="nd_sidebar-title"><em>Node Search Options</em></p>
+            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+            <div class="clearfix">
+              <input class="nd_side-input" placeholder="Remote ID (host name)"
+                type="text" name="remote_id" value="[% params.name | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Remote ID"/>
+            </div>
+            <div class="clearfix">
+              <input class="nd_side-input" placeholder="Remote Type (platform)"
+                type="text" name="remote_type" value="[% params.name | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Remote Type"/>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select nd_colored-input" size="[% type_list.size > 8 ? 8 : type_list.size %]"
+                multiple="on" name="remote_type"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Remote Type"/>
+                [% FOREACH opt IN type_list %]
+                    <option[% ' selected="selected"' IF type_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="phones"
+                  name="phones"[% ' checked="checked"' IF params.phones %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="phones">
+                <span class="nd_searchcheckbox uneditable-input"><i class="icon-li icon-phone"></i>&nbsp; IP Phones</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="aps"
+                  name="aps"[% ' checked="checked"' IF params.aps %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="aps">
+                <span class="nd_searchcheckbox uneditable-input"><i class="icon-li icon-signal"></i>&nbsp Wireless APs</span>
+              </label>
+            </div>
+            <div class="clearfix"><p></p></div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="matchall"
+                  name="matchall"[% ' checked="checked"' IF params.matchall %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="matchall">
+                <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
+              </label>
+            </div>
+            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
+              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Nodes</button>

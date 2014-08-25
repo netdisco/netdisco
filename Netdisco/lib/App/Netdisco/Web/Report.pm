@@ -8,7 +8,7 @@ get '/report/*' => require_login sub {
     my ($tag) = splat;
 
     # used in the report search sidebar to populate select inputs
-    my ( $domain_list, $class_list, $ssid_list, $vendor_list );
+    my ( $domain_list, $class_list, $ssid_list, $type_list, $vendor_list );
 
     if ( $tag eq 'netbios' ) {
         $domain_list = [ schema('netdisco')->resultset('NodeNbt')
@@ -30,6 +30,10 @@ get '/report/*' => require_login sub {
     elsif ( $tag eq 'portssid' ) {
         $ssid_list = [ schema('netdisco')->resultset('DevicePortSsid')
                 ->get_distinct_col('ssid') ];
+    }
+    elsif ( $tag eq 'nodesdiscovered' ) {
+        $type_list = [ schema('netdisco')->resultset('DevicePort')
+                ->get_distinct_col('remote_type') ];
     }
     elsif ( $tag eq 'nodevendor' ) {
         $vendor_list = [
@@ -54,6 +58,7 @@ get '/report/*' => require_login sub {
         domain_list => $domain_list,
         class_list  => $class_list,
         ssid_list   => $ssid_list,
+        type_list   => $type_list,
         vendor_list => $vendor_list,
         };
 };
