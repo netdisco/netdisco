@@ -3,7 +3,6 @@
   [NEW FEATURES]
 
   * netdisco-sshcollector script to get ARP data on devices without SNMP (C. Ramseyer)
-  * Search device by CDP/LLDP advertised ID or Type
 
 2.029005 - 2014-08-13
 
