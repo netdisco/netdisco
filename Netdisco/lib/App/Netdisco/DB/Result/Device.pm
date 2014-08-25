@@ -177,6 +177,17 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 neighbor_ports
+
+Returns the set of ports on other devices which connect to this device
+
+=cut
+
+__PACKAGE__->has_many(
+    neighbor_ports => 'App::Netdisco::DB::Result::DevicePort',
+    { 'foreign.remote_ip' => 'self.ip' },
+);
+
 =head2 community
 
 Returns the row from the community string table, if one exists.

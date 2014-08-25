@@ -42,6 +42,22 @@
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Description"/>
             </div>
             <div class="clearfix">
+              <i data-btn-for="neighbor_id" class="nd_field-copy-icon icon-copy icon-large"></i>
+              <i id="neighbor_id_clear_btn" data-btn-for="neighbor_id"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="Neighbor ID"
+                type="text" name="neighbor_id" value="[% params.neighbor_id | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Neighbor ID"/>
+            </div>
+            <div class="clearfix">
+              <i data-btn-for="neighbor_type" class="nd_field-copy-icon icon-copy icon-large"></i>
+              <i id="neighbor_type_clear_btn" data-btn-for="neighbor_type"
+                class="nd_field-clear-icon icon-trash icon-large"></i>
+              <input class="nd_side-input" placeholder="Neighbor Type"
+                type="text" name="neighbor_type" value="[% params.neighbor_type | html_entity %]"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Neighbor Type"/>
+            </div>
+            <div class="clearfix">
               <select class="nd_side-select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
                 multiple="on" name="model"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Model"/>

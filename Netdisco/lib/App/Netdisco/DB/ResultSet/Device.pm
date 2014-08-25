@@ -176,6 +176,14 @@ Will match exactly the C<os_ver> field, which is the operating sytem software ve
 
 Will match exactly the C<vendor> (manufacturer).
 
+=item neighbor_id
+
+Will match the device if it has advertised this ID to a CDP/LLDP neighbor.
+
+=item neighbor_type
+
+Will match the device if it has advertised this Type to a CDP/LLDP neighbor.
+
 =item dns
 
 Can match any of the Device IP address aliases as a substring.
@@ -234,6 +242,11 @@ sub search_by_field {
           ($p->{layers} ? ('me.layers' =>
             { '-ilike' => "\%$layer_string" }) : ()),
 
+          ($p->{neighbor_id} ? ('neighbor_ports.remote_id' =>
+            { '-ilike' => "\%$p->{neighbor_id}\%" }) : ()),
+          ($p->{neighbor_type} ? ('neighbor_ports.remote_type' =>
+            { '-ilike' => "\%$p->{neighbor_type}\%" }) : ()),
+
           ($p->{model} ? ('me.model' =>
             { '-in' => $p->{model} }) : ()),
           ($p->{os_ver} ? ('me.os_ver' =>
@@ -256,8 +269,8 @@ sub search_by_field {
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        (($p->{dns} or $p->{ip}) ? (
-          join => 'device_ips',
+        (($p->{dns} or $p->{ip} or $p->{neighbor_id} or $p->{neighbor_type}) ? (
+          join => [qw/device_ips neighbor_ports/],
           distinct => 1,
         ) : ()),
       }
