@@ -70,6 +70,7 @@ if ( $^O eq 'linux' ) {
 
 recommends 'Graph' => 0;
 recommends 'GraphViz' => 0;
+recommends 'Net::OpenSSH' => 0;
 
 install_share 'share';
 
@@ -82,6 +83,7 @@ install_script 'bin/netdisco-daemon';
 install_script 'bin/netdisco-web-fg';
 install_script 'bin/netdisco-web';
 install_script 'bin/netdisco-rancid-export';
+install_script 'bin/netdisco-sshcollector';
 
 resources
   homepage => 'http://netdisco.org/',

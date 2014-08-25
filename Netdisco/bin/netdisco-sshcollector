@@ -1,0 +1,268 @@
+#!/usr/bin/env perl
+
+# vim: set expandtab tabstop=8 softtabstop=4 shiftwidth=4:
+
+=head1 NAME
+
+netdisco-sshcollector - Collect ARP data for Netdisco from devices without
+full SNMP support
+
+=head1 DESCRIPTION
+
+Collects ARP data for Netdisco from devices without full SNMP support.
+Currently, ARP tables can be retrieved from the following device classes:
+
+=over 4
+
+=item * L<App::Netdisco::SSHCollector::Platform::ACE> - Cisco ACE (Application Control Engine) 
+
+=item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
+
+=item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
+
+=back
+
+The collected arp entries are then directly stored in the netdisco database.
+
+=head1 CONFIGURATION
+
+The following should go into your Netdisco 2 configuration file, "C<<
+~/environments/deployment.yml >>"
+
+=over 4
+
+=item C<sshcollector>
+
+Data is collected from the machines specified in this setting. The format is a
+list of dictionaries. The keys C<ip>, C<user>, C<password>, and C<platform>
+are required.  Optionally the C<hostname> key can be used instead of the
+C<ip>. For example:
+
+ sshcollector:
+   - ip: '192.0.2.1'
+     user: oliver
+     password: letmein
+     platform: IOS
+   - hostname: 'core-router.example.com'
+     user: oliver
+     password: letmein
+     platform: IOS
+
+Platform is the final part of the classname to be instantiated to query the
+host, e.g. platform B<ACE> will be queried using
+C<App::Netdisco::SSHCollector::Platform::ACE>.
+
+If the password is "-", public key authentication will be attempted.
+
+=back
+
+=head1 ADDING DEVICES
+
+Additional device classes can be easily integrated just by adding and
+additonal class to the C<App::Netdisco::SSHCollector::Platform> namespace.
+This class must implement an C<arpnip($hostname, $ssh)> method which returns
+an array of hashrefs in the format
+
+ @result = ({ ip => IPADDR, mac => MACADDR }, ...) 
+
+The parameter C<$ssh> is an active C<Net::OpenSSH> connection to the host.
+Depending on the target system, it can be queried using simple methods like
+
+ my @data = $ssh->capture("show whatever")
+
+or automated via Expect - this is mostly useful for non-Linux appliances which
+don't support command execution via ssh:
+
+ my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
+ my $expect = Expect->init($pty);
+ my $prompt = qr/#/;
+ my ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
+ $expect->send("terminal length 0\n");
+ # etc...
+
+The returned IP and MAC addresses should be in a format that the respective
+B<inetaddr> and B<macaddr> datatypes in PostgreSQL can handle.   
+
+=head1 DEPENDENCIES
+
+=over 4
+
+=item L<App::Netdisco>
+
+=item L<Net::OpenSSH>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+ Copyright (C) 2013 by the Netdisco Project
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+     * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+     * Neither the name of the Netdisco Project nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE NETDISCO DEVELOPER TEAM BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ Initial Version for Netdisco 1.x
+ Copyright (C) 2013 by Christian Ramseyer (ramseyer@netnea.com)
+ I hereby grant full ownership of the code to the Netdisco Project
+ 
+=cut
+
+use warnings;
+use strict;
+
+our $VERSION = 2.001000;
+our $home;
+
+BEGIN {
+  use FindBin;
+  FindBin::again();
+
+  $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+
+  # try to find a localenv if one isn't already in place.
+  if (!exists $ENV{PERL_LOCAL_LIB_ROOT}) {
+      use File::Spec;
+      my $localenv = File::Spec->catfile($FindBin::RealBin, 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+      $localenv = File::Spec->catfile($home, 'perl5', 'bin', 'localenv');
+      exec($localenv, $0, @ARGV) if -f $localenv;
+
+      die "Sorry, can't find libs required for App::Netdisco.\n"
+        if !exists $ENV{PERLBREW_PERL};
+  }
+}
+
+BEGIN {
+  use Path::Class;
+
+  # stuff useful locations into @INC and $PATH
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+
+  unshift @INC,
+    split m/:/, ($ENV{NETDISCO_INC} || '');
+
+  use Config;
+  $ENV{PATH} = $FindBin::RealBin . $Config{path_sep} . $ENV{PATH};
+}
+
+use App::Netdisco;
+use App::Netdisco::Core::Arpnip 'store_arp';
+use App::Netdisco::Util::Node 'check_mac';
+use App::Netdisco::Util::DNS 'hostnames_resolve_async';
+use Dancer ':script';
+
+use Data::Printer;
+use Module::Load ();
+use Net::OpenSSH;
+use MCE::Loop Sereal => 1;
+
+#this may be helpful with SSH issues:
+#$Net::OpenSSH::debug = ~0;
+
+MCE::Loop::init { chunk_size => 1 };
+my %stats;
+
+exit main();
+
+sub main {
+    my @input = @{ setting('sshcollector') };
+
+    my @mce_result = mce_loop {
+        my ($mce, $chunk_ref, $chunk_id) = @_;
+        my $host = $chunk_ref->[0];
+
+        my $hostlabel = (!defined $host->{hostname} or $host->{hostname} eq "-")
+            ? $host->{ip} : $host->{hostname};
+
+        if ($hostlabel) {
+            my $ssh = Net::OpenSSH->new(
+                $hostlabel,
+                user => $host->{user},
+                password => $host->{password},
+                timeout => 30,
+                async => 0,
+                master_opts => [
+                    -o => "StrictHostKeyChecking=no",
+                    -o => "BatchMode=no"
+                ],
+            );
+
+            MCE->gather( process($hostlabel, $ssh, $host) );
+        }
+    } \@input;
+
+    return 0 unless scalar @mce_result;
+
+    foreach my $host (@mce_result) {
+        $stats{host}++;
+        info sprintf ' [%s] arpnip - retrieved %s entries',
+            $host->[0], scalar @{$host->[1]};
+        store_arpentries($host->[1]);
+    }
+
+    info sprintf 'arpnip - processed %s ARP Cache entries from %s devices',
+        $stats{entry}, $stats{host};
+    return 0;
+}
+
+sub process {
+    my ($hostlabel, $ssh, $args) = @_;
+
+    my $class = "App::Netdisco::SSHCollector::Platform::".$args->{platform};
+    Module::Load::load $class;
+
+    my $device = $class->new();
+    my $arpentries = [ $device->arpnip($hostlabel, $ssh, $args) ];
+
+    # debug p $arpentries;
+    if (scalar @$arpentries) {
+        hostnames_resolve_async($arpentries);
+        return [$hostlabel, $arpentries];
+    }
+    else {
+        warning "WARNING: no entries received from <$hostlabel>";
+    }
+}
+
+sub store_arpentries {
+    my ($arpentries) = @_;
+
+    foreach my $arpentry ( @$arpentries ) {
+        # skip broadcast/vrrp/hsrp and other wierdos
+        next unless check_mac( undef, $arpentry->{mac} );
+
+        debug sprintf '  arpnip - stored entry: %s / %s',
+            $arpentry->{mac}, $arpentry->{ip};
+        store_arp({
+            node => $arpentry->{mac},
+            ip => $arpentry->{ip},
+            dns => $arpentry->{dns},
+        });
+
+        $stats{entry}++;
+    }
+}
+
+__END__
+

@@ -24,6 +24,7 @@ no_index:
 recommends:
   Graph: 0
   GraphViz: 0
+  Net::OpenSSH: 0
 requires:
   Algorithm::Cron: 0.07
   AnyEvent: 7.05
@@ -69,7 +70,6 @@ requires:
   Sereal: 0
   Socket6: 0.23
   Starman: 0.4008
-  Sys::Proctitle: 0
   Template: 2.24
   Template::Plugin::CSV: 0.04
   Template::Plugin::Number::Format: 1.02

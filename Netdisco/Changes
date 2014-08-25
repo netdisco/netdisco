@@ -1,3 +1,9 @@
+2.029006 - 
+
+  [NEW FEATURES]
+
+  * netdisco-sshcollector script to get ARP data on devices without SNMP (C. Ramseyer)
+
 2.029005 - 2014-08-13
 
   [ENHANCEMENTS]
