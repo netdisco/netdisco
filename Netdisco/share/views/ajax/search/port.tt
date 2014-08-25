@@ -32,7 +32,9 @@ $(document).ready(function() {
           if (row.device.dns || row.device.name) {
             ddns = ' (' + he.encode(row.device.dns || row.device.name)  + ')';
           }
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(data) + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data) + '[' + he.encode(row.port) + ']</a>' + ddns;
+          return '<a href="[% device_ports %]&q=' + encodeURIComponent(data)
+            + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data)
+            + ' [' + he.encode(row.port) + ']</a>' + ddns;
         }
       }, {
         "data": 'descr',

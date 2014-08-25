@@ -4,6 +4,10 @@
 
   * netdisco-sshcollector script to get ARP data on devices without SNMP (C. Ramseyer)
 
+  [ENHANCEMENTS]
+
+  * Port search also searches on the Remote ID and Type
+
 2.029005 - 2014-08-13
 
   [ENHANCEMENTS]

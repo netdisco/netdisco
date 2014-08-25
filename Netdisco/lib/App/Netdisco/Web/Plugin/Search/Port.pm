@@ -37,6 +37,8 @@ get '/ajax/content/search/port' => require_login sub {
                         ? { "me.mac" => $q }
                         : \[ 'me.mac::text ILIKE ?', $likeval ]
                     ),
+                    { "me.remote_id"   => $likeclause },
+                    { "me.remote_type" => $likeclause },
                 ]
             },
             {   '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
