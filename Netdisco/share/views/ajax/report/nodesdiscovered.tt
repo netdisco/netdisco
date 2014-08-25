@@ -33,7 +33,7 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>' :
+            '<a href="[% device_ports %]&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>' :
             data;
         }
       }, {
@@ -44,7 +44,7 @@ $(document).ready(function() {
       }, {
         "data": 'remote_ip',
         "render": function(data, type, row, meta) {
-          return '<a href="[% search_node %]&q=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
+          return '<a href="[% search_node %]&q=' + encodeURIComponent(data || '') + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'remote_port',

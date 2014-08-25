@@ -33,8 +33,7 @@ WHERE d.ip = p.ip
      WHERE a.alias = p.remote_ip
        AND q.ip = a.ip
        AND q.port = p.remote_port)
-  AND p.remote_ip IS NOT NULL
-  AND p.remote_port IS NOT NULL
+  AND (p.remote_id IS NOT NULL OR p.remote_type IS NOT NULL)
 ENDSQL
 );
 
