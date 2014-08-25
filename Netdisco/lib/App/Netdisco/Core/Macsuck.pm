@@ -346,6 +346,8 @@ sub _walk_fwtable {
           next;
       }
 
+      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
+
       # check to see if the port is connected to another device
       # and if we have that device in the database.
 
@@ -371,11 +373,12 @@ sub _walk_fwtable {
               debug sprintf
                 ' [%s] macsuck %s - port %s is detected uplink - skipping.',
                 $device->ip, $mac, $port;
+
+              $skiplist->{$port} = [ $vlan, $mac ] # remember for later
+                if exists $port_macs->{$mac};
               next;
           }
       }
-
-      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
 
       if (exists $port_macs->{$mac}) {
           my $switch_ip = $port_macs->{$mac};
@@ -395,7 +398,8 @@ sub _walk_fwtable {
           if (not setting('macsuck_bleed')) {
                 debug sprintf ' [%s] macsuck %s - adding port %s to skiplist',
                     $device->ip, $mac, $port;
-                $skiplist->{$port} = delete $cache->{$vlan}->{$port};
+
+                $skiplist->{$port} = [ $vlan, $mac ]; # remember for later
                 next;
           }
       }
@@ -407,6 +411,15 @@ sub _walk_fwtable {
           $device_ports->{$port}->update({is_uplink => \'true'});
       }
 
+      ++$cache->{$vlan}->{$port}->{$mac};
+  }
+
+  # restore MACs of neighbor devices.
+  # this is when we have a "possible uplink" detected but we still want to
+  # record the single MAC of the neighbor device so it works in Node search.
+  foreach my $port (keys %$skiplist) {
+      my ($vlan, $mac) = @{ $skiplist->{$port} };
+      delete $cache->{$_}->{$port} for keys %$cache; # nuke nodes on all VLANs
       ++$cache->{$vlan}->{$port}->{$mac};
   }
 

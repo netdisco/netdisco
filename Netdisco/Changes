@@ -8,6 +8,7 @@
   [ENHANCEMENTS]
 
   * Port search also searches on the Remote ID and Type
+  * [#123] Allow devices with no LLDP/CDP to be found as Nodes
 
 2.029005 - 2014-08-13
 
