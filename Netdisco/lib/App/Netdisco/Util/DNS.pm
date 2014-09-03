@@ -166,7 +166,8 @@ sub no_resolve {
     my $config = setting('dns')->{no} || [];
     return 0 if not scalar @$config;
 
-    my $addr = NetAddr::IP::Lite->new($ip);
+    my $addr = NetAddr::IP::Lite->new($ip)
+      or return 1;
 
     foreach my $item (@$config) {
         my $c_ip = NetAddr::IP::Lite->new($item)

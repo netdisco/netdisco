@@ -8,6 +8,7 @@
   [BUG FIXES]
 
   * Skip device aliases which cannot be parsed as IPs
+  * [#137] do not attempt DNS resolution on bad IPs
 
 2.029006 - 2014-08-25
 
