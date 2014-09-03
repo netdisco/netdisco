@@ -20,6 +20,10 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
 
+=item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
+
+=item * L<App::Netdisco::SSHCollector::Platform::PaloAlto> - PaloAlto devices
+
 =back
 
 The collected arp entries are then directly stored in the netdisco database.
@@ -90,6 +94,8 @@ B<inetaddr> and B<macaddr> datatypes in PostgreSQL can handle.
 =item L<App::Netdisco>
 
 =item L<Net::OpenSSH>
+
+=item L<Expect>
 
 =back
 

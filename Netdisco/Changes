@@ -4,6 +4,7 @@
 
   * [#123] Allow devices with no LLDP/CDP to be found as Nodes
   * Accept host names to netdisco-do show
+  * [#139] Add PaloAlto and IOS-XR support to netdisco-sshcollector
 
   [BUG FIXES]
 

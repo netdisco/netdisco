@@ -71,6 +71,7 @@ if ( $^O eq 'linux' ) {
 recommends 'Graph' => 0;
 recommends 'GraphViz' => 0;
 recommends 'Net::OpenSSH' => 0;
+recommends 'Expect' => 0;
 
 install_share 'share';
 
