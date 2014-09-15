@@ -76,6 +76,10 @@ hook 'before_template' => sub {
     # create date ranges from within templates
     $tokens->{to_daterange}  = sub { interval_to_daterange(@_) };
 
+    # data structure for DataTables records per page menu
+    $tokens->{table_showrecordsmenu} =
+      to_json( setting('table_showrecordsmenu') );
+
     # fix Plugin Template Variables to be only path+query
     $tokens->{$_} = $tokens->{$_}->path_query
       for qw/search_node search_device device_ports/;

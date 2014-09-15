@@ -82,6 +82,17 @@ jobqueue_refresh: 10
 safe_password_store: true
 reports: []
 table_pagesize: 10
+table_showrecordsmenu:
+  - - 10
+    - 25
+    - 50
+    - 100
+    - '-1'
+  - - 10
+    - 25
+    - 50
+    - 100
+    - 'All'
 
 # -------------
 # NETDISCO CORE

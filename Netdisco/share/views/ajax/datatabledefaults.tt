@@ -2,7 +2,7 @@
     "processing": true,
     "stateSave": true,
     "pageLength": [% settings.table_pagesize %],
-    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+    "lengthMenu": [% table_showrecordsmenu %],
     "dom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
     "language": {
       "search": '_INPUT_',

@@ -314,6 +314,26 @@ Value: Number. Default: 10.
 
 The number of rows in a table page.
 
+=head3 C<table_showrecordsmenu>
+
+Value: Number. Default:
+
+   - - 10
+     - 25
+     - 50
+     - 100
+     - '-1'
+   - - 10
+     - 25
+     - 50
+     - 100
+     - 'All'
+
+The choices available to users for selecting the number of rows per page. The
+format is two lists: one of the values and one of the labels in the web
+interface. You can see in the default that a value of "C<-1>" means Show All
+Records. Take care of the YAML formatting and indenting for the double list.
+
 =head2 Netdisco Core
 
 =head3 C<mibhome>
