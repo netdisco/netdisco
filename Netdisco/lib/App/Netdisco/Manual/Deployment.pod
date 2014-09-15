@@ -164,7 +164,7 @@ Then run the web daemon with the environment variable to enable the feature:
 
  DANCER_DEBUG=1 ~/bin/netdisco-web restart
 
-=head2 Database Backups
+=head1 Database Backups
 
 We recommend you backup the Netdisco database regularly. You could put the
 following commands into a shell script and call it nightly from C<cron>:
