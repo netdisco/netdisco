@@ -30,12 +30,7 @@
 <script>
 $(document).ready(function() {
   $('#data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    }
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
 </script>

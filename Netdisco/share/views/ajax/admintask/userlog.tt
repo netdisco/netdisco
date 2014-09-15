@@ -17,12 +17,6 @@
 <script>
 $(document).ready(function() {
   $('#aul-data-table').dataTable( {
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "serverSide": true,
     "order": [[ 0, "desc" ]],
     "ajax": "[% uri_for('/ajax/control/admin/userlog/data') %]",
@@ -60,7 +54,8 @@ $(document).ready(function() {
         '"><button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>';
       }
     }
-  ]
+  ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
 </script>

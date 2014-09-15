@@ -399,12 +399,7 @@ $(document).ready(function() {
             { "type": 'portsort', "targets": [ 'portsort' ] }
         ],
         "order": [[ 1, 'asc' ]],
-        "processing": true,
-        "stateSave": true,
-        "pageLength": [% settings.table_pagesize %],
-        "language": {
-            "search": 'Filter records: '
-        },
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
     } );
 } );
 </script>

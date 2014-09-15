@@ -12,12 +12,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#ps-data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "deferRender": true,
     "data": [% results %],
     "columns": [{
@@ -47,7 +41,8 @@ $(document).ready(function() {
           return data || '';
         }
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });</script>
 

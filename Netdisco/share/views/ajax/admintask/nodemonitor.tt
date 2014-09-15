@@ -71,11 +71,6 @@
 <script>
 $(document).ready(function() {
   $('#data-table').dataTable({
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "columnDefs": [ 
       {
         "targets": [ 0, 2, 5 ],
@@ -85,7 +80,8 @@ $(document).ready(function() {
         "targets": [ 0, 2, 5 ],
         "orderable": false
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
 </script>

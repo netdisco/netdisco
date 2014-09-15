@@ -30,12 +30,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     [% IF opt %] 
     "serverSide": true,
     "searching": false,
@@ -93,7 +87,7 @@ $(document).ready(function() {
           return he.encode(data || '');
         }
       }
-    ]
+    ],
     [% ELSE %]
     "deferRender": true,
     "data": [% results %],
@@ -109,8 +103,9 @@ $(document).ready(function() {
           return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }
-    ]
+    ],
       [% END %]
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });
 </script>

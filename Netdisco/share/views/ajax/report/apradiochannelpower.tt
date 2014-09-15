@@ -38,12 +38,6 @@ function groupString(d) {
 
 $(document).ready(function() {
   var table = $('#data-table').DataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "serverSide": true,
     "ajax": "[% uri_for('/ajax/content/report/apradiochannelpower/data') %]",
     "order": [[ 0, 'asc' ]],
@@ -103,7 +97,8 @@ $(document).ready(function() {
           last = group;
         }
       } );
-    }
+    },
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
  
   // Order by the grouping
