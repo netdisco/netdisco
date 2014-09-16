@@ -16,7 +16,6 @@ use strict;
 use warnings;
 
 use Dancer ':script';
-use Data::Printer;
 use Moo;
 
 =head1 PUBLIC METHODS

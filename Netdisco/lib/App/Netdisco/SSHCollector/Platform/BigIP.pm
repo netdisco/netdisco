@@ -22,6 +22,7 @@ can't be executed, falls back to the latter.
 use strict;
 use warnings;
 
+use Dancer ':script';
 use Moo;
 
 =head1 PUBLIC METHODS

@@ -23,8 +23,9 @@ the same context.
 use strict;
 use warnings;
 
-use Moo;
+use Dancer ':script';
 use Expect;
+use Moo;
 
 =head1 PUBLIC METHODS
 
