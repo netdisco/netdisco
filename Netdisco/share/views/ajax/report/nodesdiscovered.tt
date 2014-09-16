@@ -14,12 +14,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "deferRender": true,
     "data": [% results %],
     "columns": [
@@ -33,7 +27,7 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>' :
+            '<a href="[% device_ports %]&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>' :
             data;
         }
       }, {
@@ -44,7 +38,7 @@ $(document).ready(function() {
       }, {
         "data": 'remote_ip',
         "render": function(data, type, row, meta) {
-          return '<a href="[% search_node %]&q=' + encodeURIComponent(data) + '">' + he.encode(data) + '</a>';
+          return '<a href="[% search_node %]&q=' + encodeURIComponent(data || '') + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'remote_port',
@@ -57,7 +51,8 @@ $(document).ready(function() {
           return he.encode(data || '');
         }
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });
 </script>

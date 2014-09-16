@@ -175,12 +175,6 @@ tr.group:hover {
 <script>
 $(document).ready(function() {
     var table = $('#nsbi-data-table').DataTable({
-        "processing": true,
-        "stateSave": true,
-        "pageLength": [% settings.table_pagesize %],
-        "language": {
-            "search": 'Filter records: '
-        },
         "columnDefs": [
             { "visible": false, "targets": 0 }
         ],
@@ -203,7 +197,8 @@ $(document).ready(function() {
                     last = group;
                 }
             } );
-        }
+        },
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
     } );
  
     // Order by the grouping

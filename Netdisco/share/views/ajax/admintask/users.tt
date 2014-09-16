@@ -78,12 +78,6 @@
 <script>
 $(document).ready(function() {
   $('#data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "columnDefs": [ 
       {
         "targets": [ 2, 3, 4, 5, 6 ],
@@ -93,7 +87,8 @@ $(document).ready(function() {
         "targets": [ 0, 1, 2, 3, 4, 5, 6 ],
         "orderable": false
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
 </script>

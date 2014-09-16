@@ -312,7 +312,20 @@ Set to "C<false>" if you MUST maintain backwards compatibility with the Netdisco
 
 Value: Number. Default: 10.
 
-The number of rows in a table page.
+The default number of rows in a table page.
+
+=head3 C<table_showrecordsmenu>
+
+Value: Number. Default:
+
+ table_showrecordsmenu:
+   - [10, 25, 50, 100, '-1']
+   - [10, 25, 50, 100, 'All']
+
+The choices available to users for selecting the number of rows per page. The
+format is two lists: one of the values and one of the labels in the web
+interface. You can see in the default that a value of "C<-1>" means Show All
+Records.
 
 =head2 Netdisco Core
 

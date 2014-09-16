@@ -120,7 +120,8 @@ sub store_device {
   # build device aliases suitable for DBIC
   my @aliases;
   foreach my $entry (keys %$ip_index) {
-      my $ip = NetAddr::IP::Lite->new($entry);
+      my $ip = NetAddr::IP::Lite->new($entry)
+        or next;
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';

@@ -14,12 +14,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#vs-data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "deferRender": true,
     "data": [% results %],
     "columns": [{
@@ -53,6 +47,7 @@ $(document).ready(function() {
           return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
         }
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });</script>

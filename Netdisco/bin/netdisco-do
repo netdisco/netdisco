@@ -113,7 +113,17 @@ unless ($action) {
   }
 
   use App::Netdisco::Util::SNMP ();
+  use App::Netdisco::Util::Device 'get_device';
+  use NetAddr::IP::Lite ':lower';
+  use Scalar::Util 'blessed';
   sub show {
+    my $ip = NetAddr::IP::Lite->new($device)
+      or return ('error', "Bad host or IP: $device");
+    my $dev = get_device($ip->addr);
+    unless (blessed $dev and $dev->in_storage) {
+        return ('error', "Don't know device: $device");
+    }
+
     $extra ||= 'interfaces'; my $class = undef;
     ($class, $extra) = split(/::([^:]+)$/, $extra);
     if ($class and $extra) {
@@ -123,7 +133,7 @@ unless ($action) {
         $extra = $class;
         undef $class;
     }
-    my $i = App::Netdisco::Util::SNMP::snmp_connect($device, $class);
+    my $i = App::Netdisco::Util::SNMP::snmp_connect($dev, $class);
     Data::Printer::p($i->$extra);
     return ('done', "Showed $extra response from $device.");
   }

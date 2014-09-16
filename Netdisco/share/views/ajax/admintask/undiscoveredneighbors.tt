@@ -27,13 +27,8 @@
 <script>
 $(document).ready(function() {
   $('#data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "order": [[ 2, 'desc' ], [ 1, 'asc' ] ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
 </script>

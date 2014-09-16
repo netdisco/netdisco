@@ -12,12 +12,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#ps-data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "deferRender": true,
     "data": [% results %],
     "columns": [{
@@ -32,7 +26,9 @@ $(document).ready(function() {
           if (row.device.dns || row.device.name) {
             ddns = ' (' + he.encode(row.device.dns || row.device.name)  + ')';
           }
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(data) + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data) + '[' + he.encode(row.port) + ']</a>' + ddns;
+          return '<a href="[% device_ports %]&q=' + encodeURIComponent(data)
+            + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data)
+            + ' [' + he.encode(row.port) + ']</a>' + ddns;
         }
       }, {
         "data": 'descr',
@@ -45,7 +41,8 @@ $(document).ready(function() {
           return data || '';
         }
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });</script>
 

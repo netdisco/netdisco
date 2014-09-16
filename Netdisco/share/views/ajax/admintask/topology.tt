@@ -89,17 +89,12 @@
 <script>
 $(document).ready(function() {
   $('#data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "columnDefs": [ {
         "targets": [ 4 ],
         "orderable": false,
         "searchable": false
-      } ]
+      } ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
 </script>

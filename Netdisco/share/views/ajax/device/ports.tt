@@ -31,16 +31,6 @@
 $(document).ready(function() {
   var freeDate = moment().subtract( [% params.age_num %], '[% params.age_unit %]' );
   var table = $('#dp-data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
-    "dom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
-    "language": {
-      "search": '_INPUT_',
-      "searchPlaceholder": 'Filter records...',
-      "lengthMenu": "Show _MENU_ records."
-    },
     "deferRender": true,
     "order": [[ 1, "asc" ]],
     "colVis": {
@@ -601,7 +591,8 @@ $(document).ready(function() {
           [% END %]
       [% END %]
     ],
-    "data": [% results %]
+    "data": [% results %],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 
   // display the column show/hide buttons in the sidebar

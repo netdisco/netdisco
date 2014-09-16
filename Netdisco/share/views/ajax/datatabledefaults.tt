@@ -1,0 +1,11 @@
+
+    "processing": true,
+    "stateSave": true,
+    "pageLength": [% settings.table_pagesize %],
+    "lengthMenu": [% table_showrecordsmenu %],
+    "dom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
+    "language": {
+      "search": '_INPUT_',
+      "searchPlaceholder": 'Filter records...',
+      "lengthMenu": "Show _MENU_ records."
+    }

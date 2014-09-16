@@ -33,7 +33,7 @@ $(document).ready(function() {
         "searching": false,
         "info":     false,
         "order": [[ 4, 'desc' ], [ 0, 'asc' ], [ 1, 'asc' ] ],
-        "pageLength": [% settings.table_pagesize %],
-    } );
+        "pageLength": 12
+    });
 } );
 </script>

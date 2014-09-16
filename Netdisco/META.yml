@@ -22,8 +22,10 @@ no_index:
     - share
     - t
 recommends:
+  Expect: 0
   Graph: 0
   GraphViz: 0
+  Net::OpenSSH: 0
 requires:
   Algorithm::Cron: 0.07
   AnyEvent: 7.05
@@ -89,4 +91,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.029005
+version: 2.029007

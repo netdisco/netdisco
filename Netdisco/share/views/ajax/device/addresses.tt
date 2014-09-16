@@ -13,12 +13,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#da-data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "deferRender": true,
     "data": [% results %],
     "columns": [
@@ -51,7 +45,8 @@ $(document).ready(function() {
           return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '&ip=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });
 </script>

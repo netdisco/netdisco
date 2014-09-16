@@ -6,6 +6,7 @@ bin/netdisco-db-deploy
 bin/netdisco-deploy
 bin/netdisco-do
 bin/netdisco-rancid-export
+bin/netdisco-sshcollector
 bin/netdisco-web
 bin/netdisco-web-fg
 Changes
@@ -79,9 +80,9 @@ lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
+lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
-lib/App/Netdisco/DB/Result/Virtual/PhonesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
@@ -148,6 +149,11 @@ lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod
 lib/App/Netdisco/Manual/ReleaseNotes.pod
 lib/App/Netdisco/Manual/WritingPlugins.pod
+lib/App/Netdisco/SSHCollector/Platform/ACE.pm
+lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
+lib/App/Netdisco/SSHCollector/Platform/IOS.pm
+lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
+lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/Util/Daemon.pm
 lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DNS.pm
@@ -198,8 +204,8 @@ lib/App/Netdisco/Web/Plugin/Report/IpInventory.pm
 lib/App/Netdisco/Web/Plugin/Report/ModuleInventory.pm
 lib/App/Netdisco/Web/Plugin/Report/Netbios.pm
 lib/App/Netdisco/Web/Plugin/Report/NodeMultiIPs.pm
+lib/App/Netdisco/Web/Plugin/Report/NodesDiscovered.pm
 lib/App/Netdisco/Web/Plugin/Report/NodeVendor.pm
-lib/App/Netdisco/Web/Plugin/Report/PhonesDiscovered.pm
 lib/App/Netdisco/Web/Plugin/Report/PortAdminDown.pm
 lib/App/Netdisco/Web/Plugin/Report/PortBlocking.pm
 lib/App/Netdisco/Web/Plugin/Report/PortLog.pm
@@ -341,10 +347,10 @@ share/views/ajax/report/netbios.tt
 share/views/ajax/report/netbios_csv.tt
 share/views/ajax/report/nodemultiips.tt
 share/views/ajax/report/nodemultiips_csv.tt
+share/views/ajax/report/nodesdiscovered.tt
+share/views/ajax/report/nodesdiscovered_csv.tt
 share/views/ajax/report/nodevendor.tt
 share/views/ajax/report/nodevendor_csv.tt
-share/views/ajax/report/phonesdiscovered.tt
-share/views/ajax/report/phonesdiscovered_csv.tt
 share/views/ajax/report/portadmindown.tt
 share/views/ajax/report/portadmindown_csv.tt
 share/views/ajax/report/portblocking.tt
@@ -388,6 +394,7 @@ share/views/sidebar/device/ports.tt
 share/views/sidebar/report/ipinventory.tt
 share/views/sidebar/report/moduleinventory.tt
 share/views/sidebar/report/netbios.tt
+share/views/sidebar/report/nodesdiscovered.tt
 share/views/sidebar/report/nodevendor.tt
 share/views/sidebar/report/portlog.tt
 share/views/sidebar/report/portssid.tt

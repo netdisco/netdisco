@@ -17,12 +17,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var table = $('#ds-data-table').dataTable({
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "language": {
-      "search": 'Filter records: '
-    },
     "deferRender": true,
     "data": [% results %],
     "columns": [{
@@ -71,6 +65,7 @@ $(document).ready(function() {
           return he.encode(data || '');
         }
       }
-    ]
+    ],
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });</script>

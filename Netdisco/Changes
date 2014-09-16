@@ -1,3 +1,33 @@
+2.029008
+
+  [ENHANCEMENTS]
+
+  * Setting for items in number of records per table page menu (table_showrecordsmenu).
+
+2.029007 - 2014-09-12
+
+  [ENHANCEMENTS]
+
+  * [#123] Allow devices with no LLDP/CDP to be found as Nodes
+  * Accept host names to netdisco-do show
+  * [#139] Add PaloAlto and IOS-XR support to netdisco-sshcollector
+
+  [BUG FIXES]
+
+  * Skip device aliases which cannot be parsed as IPs
+  * [#137] do not attempt DNS resolution on bad IPs
+
+2.029006 - 2014-08-25
+
+  [NEW FEATURES]
+
+  * netdisco-sshcollector script to get ARP data on devices without SNMP (C. Ramseyer)
+  * Add Nodes discovered through LLDP/CDP report (replaces IP Phones report)
+
+  [ENHANCEMENTS]
+
+  * Port search also searches on the Remote ID and Type
+
 2.029005 - 2014-08-13
 
   [ENHANCEMENTS]
