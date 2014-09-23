@@ -314,6 +314,7 @@ share/views/ajax/admintask/undiscoveredneighbors.tt
 share/views/ajax/admintask/undiscoveredneighbors_csv.tt
 share/views/ajax/admintask/userlog.tt
 share/views/ajax/admintask/users.tt
+share/views/ajax/datatabledefaults.tt
 share/views/ajax/device/addresses.tt
 share/views/ajax/device/addresses_csv.tt
 share/views/ajax/device/details.tt

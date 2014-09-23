@@ -36,6 +36,15 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.029008
+
+=head2 General Notices
+
+When upgrading you will encounter a current incompatibility between Netdisco
+and one of its components. To work around this, issue the following command:
+
+ ~/bin/localenv cpanm --force https://cpan.metacpan.org/authors/id/Y/YA/YANICK/Dancer-1.3126.tar.gz
+
 =head1 2.029002
 
 =head2 General Notices
