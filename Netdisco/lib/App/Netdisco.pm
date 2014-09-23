@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.029007';
+our $VERSION = '2.029008';
 use App::Netdisco::Configuration;
 
 use Module::Find ();
@@ -123,6 +123,7 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 
  su - netdisco
  curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
+ ~/bin/localenv cpanm --force https://cpan.metacpan.org/authors/id/Y/YA/YANICK/Dancer-1.3126.tar.gz
 
 Link some of the newly installed apps into a handy location:
 
@@ -197,6 +198,9 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
+ 
+ # workaround for current upstream bug
+ ~/bin/localenv cpanm --force https://cpan.metacpan.org/authors/id/Y/YA/YANICK/Dancer-1.3126.tar.gz
  
  # apply database schema updates
  ~/bin/netdisco-deploy
