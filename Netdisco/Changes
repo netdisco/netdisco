@@ -1,3 +1,14 @@
+2.029009 - 2014-09-27
+
+  [ENHANCEMENTS]
+
+  * Defaults now exist for all expire tasks
+  * Added expire_jobs to remove jobs queue items after 14 days
+
+  [BUG FIXES]
+
+  * Require new DBIC version to fix duplicate DB connection problem
+
 2.029008 - 2014-09-23
 
   [ENHANCEMENTS]

@@ -724,14 +724,14 @@ seconds as well as integers.
 
 =head3 C<expire_devices>
 
-Value: Number of Days.
+Value: Number of Days. Default: 60
 
 Devices that have not been refreshed in this number of days will be removed.
 All nodes connected to this device will be removed as well.
 
 =head3 C<expire_nodes>
 
-Value: Number of Days.
+Value: Number of Days. Default: 90
 
 Nodes that have not been refreshed in this number of days will be removed from
 the database. Archived and non-archived nodes are removed. This includes
@@ -739,10 +739,18 @@ SwitchPort/MAC and MAC/IP mappings.
 
 =head3 C<expire_nodes_archive>
 
-Value: Number of Days.
+Value: Number of Days. Default: 60
 
 Archived data for switch-port/MAC and MAC/IP mappings older than this number
 of days will be removed.
+
+=head3 C<expire_jobs>
+
+Value: Number of Days. Default: 14
+
+Jobs which entered the job queue more than this many days ago will be removed
+from the queue during the scheduled expiry process (regardless of whether they
+were ever run).
 
 =head3 C<dns>
 
