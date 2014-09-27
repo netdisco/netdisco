@@ -43,7 +43,7 @@ but they are backwards compatible.
 When upgrading you will encounter a current incompatibility between Netdisco
 and one of its components. To work around this, issue the following command:
 
- ~/bin/localenv cpanm --force https://cpan.metacpan.org/authors/id/Y/YA/YANICK/Dancer-1.3126.tar.gz
+ ~/bin/localenv cpanm --notest --force Dancer@1.3126
 
 =head1 2.029002
 
