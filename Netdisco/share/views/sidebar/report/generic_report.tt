@@ -1,0 +1,4 @@
+
+[% FOREACH k IN report.rconfig.bind_params %]
+            <input name="[% k %]" value="[% params.$k | html_entity %]" type="hidden"/>
+[% END %]

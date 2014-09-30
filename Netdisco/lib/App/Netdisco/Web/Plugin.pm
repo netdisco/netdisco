@@ -169,15 +169,22 @@ register 'register_report' => sub {
       return error "bad config to register_report";
   }
 
-  foreach my $item (@{setting('_reports_menu')->{ $config->{category} }}) {
-      if ($item eq $config->{tag}) {
-          setting('_reports')->{$config->{tag}} = $config;
+  foreach my $tag (@{setting('_reports_menu')->{ $config->{category} }}) {
+      if ($tag eq $config->{tag}) {
+          setting('_reports')->{$tag} = $config;
           return;
       }
   }
 
   push @{setting('_reports_menu')->{ $config->{category} }}, $config->{tag};
   setting('_reports')->{$config->{tag}} = $config;
+
+  foreach my $rconfig (@{setting('reports')}) {
+      if ($rconfig->{tag} eq $config->{tag}) {
+          setting('_reports')->{$config->{tag}}->{'rconfig'} = $rconfig;
+          last;
+      }
+  }
 };
 
 register_plugin;
