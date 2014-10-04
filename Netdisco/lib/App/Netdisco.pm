@@ -191,7 +191,11 @@ Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
 For further documentation on deployment, see
 L<Deployment|App::Netdisco::Manual::Deployment>.
 
-=head1 Upgrading
+=head1 Upgrading from 2.x
+
+If you're running a version of Netdisco prior to 2.x then you should follow
+the full installation instructions, above. This process is for upgrading
+version 2.x only.
 
 Before upgrading please review the latest L<Release
 Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
