@@ -169,20 +169,21 @@ register 'register_report' => sub {
       return error "bad config to register_report";
   }
 
-  foreach my $tag (@{setting('_reports_menu')->{ $config->{category} }}) {
-      if ($tag eq $config->{tag}) {
-          setting('_reports')->{$tag} = $config;
-          return;
-      }
+  if (0 == scalar grep {$_ eq $config->{tag}}
+                       @{setting('_reports_menu')->{ $config->{category} }}) {
+      push @{setting('_reports_menu')->{ $config->{category} }}, $config->{tag};
   }
 
-  push @{setting('_reports_menu')->{ $config->{category} }}, $config->{tag};
-  setting('_reports')->{$config->{tag}} = $config;
+  foreach my $tag (@{setting('_reports_menu')->{ $config->{category} }}) {
+      if ($config->{tag} eq $tag) {
+          setting('_reports')->{$tag} = $config;
 
-  foreach my $rconfig (@{setting('reports')}) {
-      if ($rconfig->{tag} eq $config->{tag}) {
-          setting('_reports')->{$config->{tag}}->{'rconfig'} = $rconfig;
-          last;
+          foreach my $rconfig (@{setting('reports')}) {
+              if ($rconfig->{tag} eq $tag) {
+                  setting('_reports')->{$tag}->{'rconfig'} = $rconfig;
+                  last;
+              }
+          }
       }
   }
 };
