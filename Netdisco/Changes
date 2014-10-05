@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * Administration (SSH, Telnet, Web) links for devices
+  * [#143] Pass parameter(s) to custom reports via bind_params config
 
 2.029009 - 2014-09-27
 

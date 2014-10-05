@@ -256,15 +256,20 @@ code or HTML templates. For example:
          FROM device d
        ORDER BY name
 
-The C<key> of each item in the C<reports> configuration is an alias for the
+The C<tag> of each item in the C<reports> configuration is an alias for the
 report, and becomes part of the web path.
 
 You can munge the data retrieved from the database by placing a Perl script
-with the same name as the C<reports> key into the C<site_plugins> directory of
-Netdisco's home area. The script can access C<$config> for its configuration
-and C<@data> for the retrieved data. It should return a list of munged data.
+with the same name as the C<reports> key into the "C<site_plugins>" directory
+of Netdisco's home area. The script can access C<$config> for its
+configuration and C<@data> for the retrieved data. It should return a list of
+munged data.
 
 Within the tree you can provide each of the keys below:
+
+=head4 C<tag>
+
+Alias for the Report, which must be usable in a web path.
 
 =head4 C<label>
 
@@ -294,6 +299,20 @@ If supplying code to munge the data, the columns returned from your database
 C<query> may not be the same as those in the web report. Set this to a list of
 the columns in C<query>. The C<columns> setting will then be used for the web
 report.
+
+=head4 C<bind_params> (optional)
+
+You can use placeholders in the SQL C<query> (that is, "C<?>") to bind
+user-supplied parameters. This setting should be a list of the parameters to
+pick out of the URL query string and match to the placeholders in the same
+order. For example:
+
+ query: |
+   SELECT ... FROM ... WHERE device = ? AND port = ?
+ bind-params: ['device', 'port']
+ 
+ # then
+ http://localhost:5000/report/my_special_report?device=192.0.2.1&port=Vlan142
 
 =head3 C<jobqueue_refresh>
 
