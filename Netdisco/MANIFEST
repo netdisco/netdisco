@@ -392,6 +392,7 @@ share/views/report.tt
 share/views/search.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
+share/views/sidebar/report/generic_report.tt
 share/views/sidebar/report/ipinventory.tt
 share/views/sidebar/report/moduleinventory.tt
 share/views/sidebar/report/netbios.tt

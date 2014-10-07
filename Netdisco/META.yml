@@ -35,7 +35,7 @@ requires:
   Archive::Extract: 0
   CGI::Expand: 2.05
   DBD::Pg: 0
-  DBIx::Class: 0.0828
+  DBIx::Class: 0.0827
   DBIx::Class::Helpers: 2.018004
   Daemon::Control: 0.001
   Dancer: 1.3112
@@ -90,4 +90,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: '2.029009'
+version: '2.029010'
