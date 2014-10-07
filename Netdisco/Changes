@@ -5,6 +5,10 @@
   * Administration (SSH, Telnet, Web) links for devices
   * [#143] Pass parameter(s) to custom reports via bind_params config
 
+  [BUG FIXES]
+
+  * Require old DBIC version to fix deploy problem
+
 2.029009 - 2014-09-27
 
   [ENHANCEMENTS]

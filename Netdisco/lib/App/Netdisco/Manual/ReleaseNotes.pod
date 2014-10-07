@@ -43,6 +43,15 @@ but they are backwards compatible.
 When upgrading you will encounter a current incompatibility between Netdisco
 and one of its components. To work around this, issue the following command:
 
+ ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
+
+=head1 2.029008
+
+=head2 General Notices
+
+When upgrading you will encounter a current incompatibility between Netdisco
+and one of its components. To work around this, issue the following command:
+
  ~/bin/localenv cpanm --notest --force Dancer@1.3126
 
 =head1 2.029002
