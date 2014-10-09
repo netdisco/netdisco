@@ -1,3 +1,9 @@
+2.029012 - 2014-10-09
+
+  [BUG FIXES]
+
+  * [#152] HP devices with port names "D##" not sorted by portsort.js
+
 2.029011 - 2014-10-07
 
   [BUG FIXES]

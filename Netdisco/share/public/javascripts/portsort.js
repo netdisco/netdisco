@@ -24,7 +24,7 @@
  * See: http://js-naturalsort.googlecode.com/svn/trunk/naturalSort.js
  */
 function portSort (a, b) {
-    var re = /(^(-?\.?[0-9]*)[df]?e?[0-9]?$|^0x[0-9a-f]+$|[0-9]+)/gi,
+    var re = /(^0x[0-9a-f]+$|[0-9]+)/gi,
         // string regex
         sre = /(^[ ]*|[ ]*$)/g,
         // octal regex
@@ -56,8 +56,8 @@ function portSort (a, b) {
             oFyNcL += '';
         }
 
-        if (oFxNcL < oFyNcL) return -1;
-        if (oFxNcL > oFyNcL) return 1;
+        if (oFxNcL < oFyNcL) { return -1; }
+        if (oFxNcL > oFyNcL) { return 1;  }
     }
 
     return 0;
