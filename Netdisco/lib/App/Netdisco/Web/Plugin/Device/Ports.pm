@@ -130,15 +130,13 @@ get '/ajax/content/device/ports' => require_login sub {
     }
 
     # retrieve active/all connected nodes, if asked for
-    $rs
-        = $rs->search_rs( {},
+    $rs = $rs->search_rs( {},
         { prefetch => 'nodes', bind => [ $device->ip ],
           order_by => [
             { -desc => 'nodes.active' },
             { -asc => 'nodes.mac' },
             { -asc => 'nodes.ip' },
-          ] })
-        if param('c_nodes');
+          ] });
 
     my @results = $rs->hri->all;
     return unless scalar @results;

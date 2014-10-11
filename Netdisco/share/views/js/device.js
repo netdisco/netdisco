@@ -95,6 +95,12 @@
         }
     });
 
+    // dynamic show/hide data in device ports connected nodes/devices column
+    $('#ports_form').on('change', "input[type=checkbox].nd_dynamic-dp", function(event) {
+        var target = $(this).attr('id');
+        $('span.' + target).toggle();
+    });
+
     // activity for admin tasks in device details
     $('#details_pane').on('click', '.nd_adminbutton', function(event) {
       // stop form from submitting normally

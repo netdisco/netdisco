@@ -57,6 +57,22 @@
                 </label></span>
               <div id="nd_columns" class="collapse in">
                 <ul id="nd_column-controls" class="nd_inputs-list unstyled">
+                  [% FOREACH item IN vars.port_columns %]
+                  [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
+                  [% IF item.name == 'c_admin' OR item.name == 'c_nodes' %]
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" class="nd_dynamic-dp" id="[% item.name | html_entity %]"
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
+                      [% IF item.name == 'c_admin' %]
+                        <span class="label label-info">[% item.label | html_entity %]</span>
+                      [% ELSE %]
+                        [% item.label | html_entity %]
+                      [% END %]
+                    </label>
+                  </li>
+                  [% END %]
+                  [% END %]
                 </ul>
               </div>
             </div>
@@ -93,7 +109,7 @@
                   </li>
                   <li>
                     <label class="checkbox">
-                      <input type="checkbox" id="neigh_id"
+                      <input type="checkbox" class="nd_dynamic-dp" id="neigh_id"
                         name="neigh_id"[% ' checked="checked"' IF params.neigh_id %] />
                       Connected Device ID
                     </label>
@@ -119,7 +135,7 @@
                   [% FOREACH item IN vars.connected_properties %]
                   <li>
                     <label class="checkbox">
-                      <input type="checkbox" id="[% item.name | html_entity %]"
+                      <input type="checkbox" class="nd_dynamic-dp" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
                       [% item.label | html_entity %]
                     </label>
@@ -128,24 +144,6 @@
                 </ul>
               </div>
             </div>
-            <ul class="nd_inputs-list unstyled">
-              [% FOREACH item IN vars.port_columns %]
-              [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
-              [% IF item.name == 'c_admin' OR item.name == 'c_nodes' %]
-              <li>
-                <label class="checkbox">
-                  <input type="checkbox" id="[% item.name | html_entity %]"
-                    name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
-                  [% IF item.name == 'c_admin' %]
-                    <span class="label label-info">[% item.label | html_entity %]</span>
-                  [% ELSE %]
-                    [% item.label | html_entity %]
-                  [% END %]
-                </label>
-              </li>
-              [% END %]
-              [% END %]
-            </ul>
             <div class="btn-group">
               <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info nd_sidebar-btn-drop">
                 <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>
