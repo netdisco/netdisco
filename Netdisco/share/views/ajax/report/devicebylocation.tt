@@ -48,7 +48,7 @@ $(document).ready(function() {
                     return '<a href="[% search_device %]&q=' + encodeURIComponent(data) + '&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
                 }
             }
-        ].
+        ],
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
     });
 

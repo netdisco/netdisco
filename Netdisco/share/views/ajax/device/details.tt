@@ -81,6 +81,17 @@
     </tr>
     [% END %]
     <tr>
+      <td>Administration</td>
+      <td>
+        <a href="ssh://[% d.ip | html_entity %]" target="_blank">
+          <span class="label label-info"><i class="icon-keyboard"></i> SSH</span></a>
+        <a href="telnet://[% d.ip | html_entity %]" target="_blank">
+          <span class="label label-info"><i class="icon-keyboard"></i> Telnet</span></a>
+        <a href="https://[% d.ip | html_entity %]/" target="_blank">
+          <span class="label label-info"><i class="icon-external-link"></i> Web</span></a>
+      </td>
+    </tr>
+    <tr>
       <td>Uptime</td>
       <td>[% d.uptime_age | html_entity %]</td>
     </tr>

@@ -22,11 +22,10 @@ foreach my $report (@{setting('reports')}) {
   });
 
   get "/ajax/content/report/$r" => require_login sub {
-      my $rs = schema('netdisco')->resultset('Virtual::GenericReport')->result_source;
-
       # TODO: this should be done by creating a new Virtual Result class on
       # the fly (package...) and then calling DBIC register_class on it.
 
+      my $rs = schema('netdisco')->resultset('Virtual::GenericReport')->result_source;
       $rs->view_definition($report->{query});
       $rs->remove_columns($rs->columns);
       $rs->add_columns( exists $report->{query_columns}
@@ -35,13 +34,17 @@ foreach my $report (@{setting('reports')}) {
       );
 
       my $set = schema('netdisco')->resultset('Virtual::GenericReport')
-        ->search(undef, {result_class => 'DBIx::Class::ResultClass::HashRefInflator'});
+        ->search(undef, {
+          result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+          ( (exists $report->{bind_params})
+            ? (bind => [map { param($_) } @{ $report->{bind_params} }]) : () ),
+        });
       @data = $set->all;
 
       # Data Munging support...
 
       my $compartment = Safe->new;
-      $config = $report;
+      $config = $report; # closure for the config of this report
       $compartment->share(qw/$config @data/);
       $compartment->permit_only(qw/:default sort/);
 

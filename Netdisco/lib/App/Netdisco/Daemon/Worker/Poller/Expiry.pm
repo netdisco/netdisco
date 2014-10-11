@@ -40,6 +40,15 @@ sub expire {
       });
   }
 
+  if (setting('expire_jobs') and setting('expire_jobs') > 0) {
+      schema('netdisco')->txn_do(sub {
+        schema('netdisco')->resultset('Admin')->search({
+          entered => \[q/< (now() - ?::interval)/,
+              (setting('expire_jobs') * 86400)],
+        })->delete();
+      });
+  }
+
   return job_done("Checked expiry for all Devices and Nodes");
 }
 

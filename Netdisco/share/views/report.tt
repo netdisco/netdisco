@@ -17,6 +17,7 @@
             [% INCLUDE "sidebar/report/${report.tag}.tt" %]
             [% CATCH %]
             <script type="text/javascript">has_sidebar["[% report.tag %]"] = 0;</script>
+            [% INCLUDE "sidebar/report/generic_report.tt" %]
             [% END %]
           </form>
         </div> <!-- /tab-pane -->

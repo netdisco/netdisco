@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.029007';
+our $VERSION = '2.029012';
 use App::Netdisco::Configuration;
 
 use Module::Find ();
@@ -123,6 +123,7 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 
  su - netdisco
  curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
+ ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
 
 Link some of the newly installed apps into a handy location:
 
@@ -190,13 +191,20 @@ Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
 For further documentation on deployment, see
 L<Deployment|App::Netdisco::Manual::Deployment>.
 
-=head1 Upgrading
+=head1 Upgrading from 2.x
+
+If you're running a version of Netdisco prior to 2.x then you should follow
+the full installation instructions, above. This process is for upgrading
+version 2.x only.
 
 Before upgrading please review the latest L<Release
 Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
+ 
+ # workaround for current upstream bug
+ ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
  
  # apply database schema updates
  ~/bin/netdisco-deploy

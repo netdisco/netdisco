@@ -1,8 +1,47 @@
-2.029008
+2.029012 - 2014-10-09
+
+  [BUG FIXES]
+
+  * [#152] HP devices with port names "D##" not sorted by portsort.js
+
+2.029011 - 2014-10-07
+
+  [BUG FIXES]
+
+  * Fix typo in the Device By Location report template
+
+2.029010 - 2014-10-07
+
+  [NEW FEATURES]
+
+  * Administration (SSH, Telnet, Web) links for devices
+  * [#143] Pass parameter(s) to custom reports via bind_params config
+
+  [BUG FIXES]
+
+  * Require old DBIC version to fix deploy problem
+
+2.029009 - 2014-09-27
 
   [ENHANCEMENTS]
 
-  * Setting for items in number of records per table page menu (table_showrecordsmenu).
+  * Defaults now exist for all expire tasks
+  * Added expire_jobs to remove jobs queue items after 14 days
+
+  [BUG FIXES]
+
+  * Require new DBIC version to fix duplicate DB connection problem
+
+2.029008 - 2014-09-23
+
+  [ENHANCEMENTS]
+
+  * [#144] Setting for items in number of records per table page menu (table_showrecordsmenu).
+
+  [BUG FIXES]
+
+  * Add Dancer import to SSHCollector Platforms
+  * Add note to docs to workaround current Dancer/YAML::XS issue
 
 2.029007 - 2014-09-12
 

@@ -314,6 +314,7 @@ share/views/ajax/admintask/undiscoveredneighbors.tt
 share/views/ajax/admintask/undiscoveredneighbors_csv.tt
 share/views/ajax/admintask/userlog.tt
 share/views/ajax/admintask/users.tt
+share/views/ajax/datatabledefaults.tt
 share/views/ajax/device/addresses.tt
 share/views/ajax/device/addresses_csv.tt
 share/views/ajax/device/details.tt
@@ -391,6 +392,7 @@ share/views/report.tt
 share/views/search.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
+share/views/sidebar/report/generic_report.tt
 share/views/sidebar/report/ipinventory.tt
 share/views/sidebar/report/moduleinventory.tt
 share/views/sidebar/report/netbios.tt
