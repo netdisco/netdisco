@@ -16,8 +16,8 @@ requires 'Archive::Extract' => 0;
 requires 'CGI::Expand' => 2.05;
 requires 'Data::Printer' => 0;
 requires 'DBD::Pg' => 0;
-requires 'DBIx::Class' => 0.08270;
-requires 'DBIx::Class::Helpers' => 2.018004;
+requires 'DBIx::Class' => 0.082801;
+requires 'DBIx::Class::Helpers' => 2.023007;
 requires 'Daemon::Control' => 0.001000;
 requires 'Dancer' => '1.3131_1';
 requires 'Dancer::Plugin::DBIC' => 0.2001;
@@ -50,7 +50,6 @@ requires 'Sereal' => 0;
 requires 'Socket6' => 0.23;
 requires 'Starman' => 0.4008;
 requires 'SNMP::Info' => 3.18;
-requires 'SQL::Translator' => 0.11016;
 requires 'Template' => 2.24;
 requires 'Template::Plugin::CSV' => 0.04;
 requires 'Template::Plugin::Number::Format' => 1.02;
@@ -66,6 +65,14 @@ requires 'version' => 0.9902;
 
 if ( $^O eq 'linux' ) {
   requires 'Sys::Proctitle' => 0;
+}
+
+configure_requires 'DBIx::Class' => '0.082801';
+require DBIx::Class::Optional::Dependencies;
+
+my $deploy_deps = DBIx::Class::Optional::Dependencies->req_list_for('deploy');
+foreach my $k (keys %$deploy_deps) {
+    requires $k => $deploy_deps->{$k};
 }
 
 recommends 'Graph' => 0;

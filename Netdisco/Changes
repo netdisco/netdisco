@@ -1,3 +1,10 @@
+2.029013 - 
+
+  [BUG FIXES]
+
+  * Fix for latest DBIx::Class (deploy)
+  * Fix for latest Dancer (YAML::XS)
+
 2.029012 - 2014-10-09
 
   [BUG FIXES]
