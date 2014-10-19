@@ -7,6 +7,7 @@ build_requires:
   ExtUtils::MakeMaker: 6.59
   Test::More: 0.88
 configure_requires:
+  DBIx::Class: 0.082801
   ExtUtils::MakeMaker: 6.59
 distribution_type: module
 dynamic_config: 1
@@ -35,8 +36,8 @@ requires:
   Archive::Extract: 0
   CGI::Expand: 2.05
   DBD::Pg: 0
-  DBIx::Class: 0.0827
-  DBIx::Class::Helpers: 2.018004
+  DBIx::Class: 0.082801
+  DBIx::Class::Helpers: 2.023007
   Daemon::Control: 0.001
   Dancer: 1.3131_1
   Dancer::Plugin::Auth::Extensible: 0.3
@@ -67,7 +68,7 @@ requires:
   Plack::Middleware::ReverseProxy: 0.15
   Role::Tiny: 1.002005
   SNMP::Info: 3.18
-  SQL::Translator: 0.11016
+  SQL::Translator: 0.11018
   Sereal: 0
   Socket6: 0.23
   Starman: 0.4008

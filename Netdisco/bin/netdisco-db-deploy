@@ -85,7 +85,7 @@ my $schema = schema('netdisco');
 # installs the dbix_class_schema_versions table with version "1"
 # which corresponds to an empty schema
 if (not $schema->get_db_version) {
-    $schema->txn_do(sub { $schema->install(1) });
+    $schema->install(1);
     $schema->storage->disconnect;
 }
 
