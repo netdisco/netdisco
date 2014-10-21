@@ -94,7 +94,7 @@ database but the relation is being used in C<search()>.
 =cut
 
 __PACKAGE__->belongs_to(
-    wireless_port => 'App::Netdisco::DB::Result::DeviceWirelessPort',
+    wireless_port => 'App::Netdisco::DB::Result::DevicePortWireless',
     { 'foreign.ip' => 'self.switch', 'foreign.port' => 'self.port' },
     { join_type    => 'LEFT' }
 );
