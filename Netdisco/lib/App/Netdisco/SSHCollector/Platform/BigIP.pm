@@ -4,7 +4,7 @@ package App::Netdisco::SSHCollector::Platform::BigIP;
 
 =head1 NAME
 
-NApp::etdisco::SSHCollector::Platform::BigIP
+App::Netdisco::SSHCollector::Platform::BigIP
 
 =head1 DESCRIPTION
 
