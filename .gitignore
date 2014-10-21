@@ -8,3 +8,4 @@ test.pl
 MYMETA.*
 *.tar.gz
 MANIFEST.*
+*.komodo*
