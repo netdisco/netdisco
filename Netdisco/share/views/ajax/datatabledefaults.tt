@@ -8,4 +8,26 @@
       "search": '_INPUT_',
       "searchPlaceholder": 'Filter records...',
       "lengthMenu": "Show _MENU_ records."
+    },
+    "rowCallback": function (row, data) {
+      // update in-cell content based on current sidebar settings
+      [% FOREACH key IN settings.table_display.device.ports.keys %]
+      if ($('#dp-data-table').DataTable().column('[% key %]:name').length === 0) {
+        $(row).find('span.[% key %]').toggle( $("input[id='[% key %]']").prop('checked') );
+      }
+      [% END %]
+    },
+    "stateLoadParams": function (settings, data) {
+      // enforce config defaults for columns
+      // TODO: allow state loading
+      [% FOREACH key IN settings.table_display.device.ports.keys %]
+      if (data.columns[$('#dp-data-table').DataTable().column('[% key %]:name').index()]) {
+        data.columns[$('#dp-data-table').DataTable().column('[% key %]:name').index()].visible
+          = [% (settings.table_display.device.ports.$key == 'on') ? 'true' : 'false' %];
+      }
+      else {
+        $("input[id='[% key %]']").prop('checked',
+          [% (settings.table_display.device.ports.$key == 'on') ? 'true' : 'false' %]);
+      }
+      [% END %]
     }

@@ -29,6 +29,7 @@
   // update browser search history with the new query.
   // support history add (push) or replace via push parameter
   function update_browser_history (tab, pgtitle, push) {
+    return; // FIXME
     var form = '#' + tab + '_form';
     var query = $(form).serialize();
     if (query.length) { query = '?' + query }

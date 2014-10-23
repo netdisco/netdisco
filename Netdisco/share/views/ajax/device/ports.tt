@@ -36,14 +36,6 @@ $(document).ready(function() {
     "colVis": {
       "exclude": [ 0 ]
     },
-    "stateLoadParams": function (settings, data) {
-      [% FOREACH key IN params.keys %]
-        [% NEXT UNLESS key.match('^c_') AND !key.match('^c_neighbors') AND params.$key == 'on' %]
-        if (data.columns[$('#dp-data-table').DataTable().column( '[% key %]:name' ).index()]) {
-          data.columns[$('#dp-data-table').DataTable().column( '[% key %]:name' ).index()].visible = true;
-        }
-      [% END %]
-    },
     "columns": [
       {
         "title": '',
@@ -155,7 +147,6 @@ $(document).ready(function() {
       {
         "title": 'Description',
         "name": 'c_descr',
-        "visible": false,
         "type": 'portsort',
         "className": 'nd_nowrap',
         "data": "descr",
@@ -165,7 +156,6 @@ $(document).ready(function() {
       }, {
         "title": 'Type',
         "name": 'c_type',
-        "visible": false,
         "data": "type",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
@@ -173,7 +163,6 @@ $(document).ready(function() {
       }, {
         "title": 'Duplex',
         "name": 'c_duplex',
-        "visible": false,
         "data": "duplex",
         "render": function(data, type, row, meta) {
          if (row.up === 'up' && row.duplex) {
@@ -187,7 +176,6 @@ $(document).ready(function() {
       }, {
         "title": 'Last Change',
         "name": 'c_lastchange',
-        "visible": false,
         "data": "lastchange_stamp",
       }, {
         "title": 'Name',
@@ -220,7 +208,6 @@ $(document).ready(function() {
       }, {
         "title": 'Speed',
         "name": 'c_speed',
-        "visible": false,
         "data": "speed",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
@@ -228,7 +215,6 @@ $(document).ready(function() {
       }, {
         "title": 'Port MAC',
         "name": 'c_mac',
-        "visible": false,
         "data": "mac",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
@@ -236,7 +222,6 @@ $(document).ready(function() {
       }, {
         "title": 'MTU',
         "name": 'c_mtu',
-        "visible": false,
         /* mtu is an integer, no need to encode */
         "data": "mtu"
       }, {
@@ -279,7 +264,6 @@ $(document).ready(function() {
       }, {
         "title": 'VLAN Membership',
         "name": 'c_vmember',
-        "visible": false,
         "type": 'natural',
         "data": null,
         "render": function ( data, type, row, meta ) {
@@ -309,7 +293,6 @@ $(document).ready(function() {
       }, {
         "title": 'PoE',
         "name": 'c_power',
-        "visible": false,
         "data": "power_admin",
         "defaultContent": "",
         "className": 'nd_nowrap',
@@ -382,7 +365,7 @@ $(document).ready(function() {
         }
       }, {
         "title": 'Connected Devices and Nodes',
-        "name": 'c_nodes',
+        "name": 'c_neighbors',
         "data": "null",
         "defaultContent": "",
         "render": function ( data, type, row, meta ) {
@@ -414,7 +397,7 @@ $(document).ready(function() {
                 }
                 cell_str += '<br/>';
                 if (row.remote_id || row.remote_type) {
-                  cell_str += '<span class="neigh_id"> (';
+                  cell_str += '<span class="neigh_id nd_collapse-pre-hidden"> (';
                   if (row.remote_id) {
                     cell_str += ' id: ' + he.encode(row.remote_id);
                   }
@@ -440,7 +423,7 @@ $(document).ready(function() {
                 }
                 cell_str += '</a><br/>';
                 if (row.remote_id || row.remote_type) {
-                  cell_str += '<span class="neigh_id"> (';
+                  cell_str += '<span class="neigh_id nd_collapse-pre-hidden"> (';
                   if (row.remote_id) {
                     cell_str += ' id: ' + he.encode(row.remote_id);
                   }
@@ -454,14 +437,14 @@ $(document).ready(function() {
                 cell_str += '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)';
               }
             }
-            cell_str += '<span class="c_nodes">';
+            cell_str += '<span class="c_nodes nd_collapse-pre-hidden">';
             var macfmt = '[% params.mac_format %]';
             for (index = 0; index < row.nodes.length; ++index) {
               if ((row.remote_ip || row.is_uplink) && index === 0 ) {
                 cell_str += '<br/>';
               }
               if (row.nodes[index].active === 0) {
-                cell_str += '<span class="n_archived">';
+                cell_str += '<span class="n_archived nd_collapse-pre-hidden">';
                 if (index > 0 ) {
                   cell_str += '<br/>';
                 }
@@ -483,7 +466,7 @@ $(document).ready(function() {
 
               // n_vendor
               if (row.nodes[index].abbrev) {
-                cell_str += '<span class="n_vendor"> ('
+                cell_str += '<span class="n_vendor nd_collapse-pre-hidden"> ('
                   + '<a href="[%+ uri_for('/report/nodevendor') %]?vendor='
                   + encodeURIComponent(row.nodes[index].abbrev) + '">'
                   + he.encode(row.nodes[index].abbrev || '') + '</a>)</span>';
@@ -501,21 +484,21 @@ $(document).ready(function() {
                 arr = jQuery.map( arr, function( a ) {
                   return '<a href="[% uri_for('/report/portssid') %]?ssid=' + encodeURIComponent(a) + '">' + he.encode(a) + '</a>';
                 });
-                cell_str += '<span class="n_ssid"> (SSID: ' + arr.join(" ") + ')</span>';
+                cell_str += '<span class="n_ssid nd_collapse-pre-hidden"> (SSID: ' + arr.join(" ") + ')</span>';
               }
 
               // n_age
-              cell_str += '<span class="n_age"> (';
+              cell_str += '<span class="n_age nd_collapse-pre-hidden"> (';
               var now = moment();
               var t_last = moment(row.nodes[index].time_last);
               cell_str += t_last.from(now) + ')</span>';
 
               // n_ip
               if (row.nodes[index].ip && row.nodes[index].ip.length > 0) {
-                cell_str += '<span class="n_ip">';
+                cell_str += '<span class="n_ip nd_collapse-pre-hidden">';
                 for (idx = 0; idx < row.nodes[index].ip.length; ++idx) {
                   if (row.nodes[index].ip_active[idx] === 0) {
-                    cell_str += '<span class="n_archived">';
+                    cell_str += '<span class="n_archived nd_collapse-pre-hidden">';
                     cell_str += '<br/>&nbsp; <i class="icon-book"></i>&nbsp; ';
                   }
                   else {
@@ -539,7 +522,7 @@ $(document).ready(function() {
 
               // n_netbios
               if (row.nodes[index].nbname) {
-                cell_str += '<span class="n_netbios">'
+                cell_str += '<span class="n_netbios nd_collapse-pre-hidden">'
                   + '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\\\<a href="[% uri_for('/report/netbios') %]?domain=';
                 var nb_dom_uri = row.nodes[index].nbname ? encodeURIComponent(row.nodes[index].domain) : 'blank';
                 var nb_dom = row.nodes[index].nbname ? he.encode(row.nodes[index].domain) : '(Blank Domain)';
@@ -564,7 +547,6 @@ $(document).ready(function() {
       }, {
         "title": 'Spanning Tree',
         "name": 'c_stp',
-        "visible": false,
         "data": "stp",
         "render": function(data, type, row, meta) {
           return type === 'display' ? he.encode(data || '') : data;
@@ -572,7 +554,6 @@ $(document).ready(function() {
       }, {
         "title": 'Status',
         "name": 'c_up',
-        "visible": false,
         "data": "up",
       },
       [% FOREACH config IN settings._extra_device_port_cols %]
@@ -608,7 +589,7 @@ $(document).ready(function() {
               $(button).find('input').attr('id', columns[i]["name"]);
               $(button).find('input').attr('name', columns[i]["name"]);
 
-              if (columns[i]["name"] == "c_nodes") {
+              if (columns[i]["name"] == "c_neighbors") {
                 $(button).find('span').text('Connected Devices');
               }
 

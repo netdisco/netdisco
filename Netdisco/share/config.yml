@@ -85,6 +85,34 @@ table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
   - [10, 25, 50, 100, 'All']
+table_display:
+  device:
+    ports:
+      c_admin:      off
+      c_port:       on
+      c_descr:      off
+      c_type:       off
+      c_duplex:     off
+      c_lastchange: off
+      c_name:       on
+      c_speed:      off
+      c_mac:        off
+      c_mtu:        off
+      c_pvid:       on
+      c_vmember:    on
+      c_power:      off
+      c_ssid:       off
+      c_nodes:      off
+      c_neighbors:  on
+      c_stp:        off
+      c_up:         off
+      n_age:        off
+      n_ip:         on
+      n_netbios:    on
+      n_ssid:       on
+      n_vendor:     off
+      n_archived:   off
+      neigh_id:     off
 
 # -------------
 # NETDISCO CORE
