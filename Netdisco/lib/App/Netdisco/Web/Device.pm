@@ -58,33 +58,6 @@ hook 'before' => sub {
   return unless (index(request->path, uri_for('/device')->path) == 0
     or index(request->path, uri_for('/ajax/content/device')->path) == 0);
 
-  # override ports form defaults with cookie settings
-
-  my $cookie = (cookie('nd_ports-form') || '');
-  my $cdata = url_params_mixed($cookie);
-
-  if ($cdata and ref {} eq ref $cdata and not param('reset')) {
-      foreach my $item (@{ var('port_columns') }) {
-          my $key = $item->{name};
-          next unless defined $cdata->{$key}
-            and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
-          $item->{default} = $cdata->{$key};
-      }
-
-      foreach my $item (@{ var('connected_properties') }) {
-          my $key = $item->{name};
-          next unless defined $cdata->{$key}
-            and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
-          $item->{default} = $cdata->{$key};
-      }
-
-      foreach my $key (qw/age_num age_unit mac_format/) {
-          params->{$key} ||= $cdata->{$key}
-            if defined $cdata->{$key}
-               and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
-      }
-  }
-
   # copy ports form defaults into request query params if this is
   # a redirect from within the application (tab param is not set)
 

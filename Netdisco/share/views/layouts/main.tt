@@ -15,7 +15,6 @@
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-ui.custom.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-history.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.cookie.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/underscore.min.js"></script>
