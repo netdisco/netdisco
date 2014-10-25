@@ -629,7 +629,7 @@ ColVis.prototype = {
 				}
 				else
 				{
-					that.s.dt.oInstance.fnSetColumnVis( i, showHide );
+					that.s.dt.oInstance.fnSetColumnVis( i, showHide, false );
 				}
 
 				$.fn.dataTableExt.iApiIndex = oldIndex; /* Restore */

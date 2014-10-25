@@ -38,4 +38,6 @@
 
       // make sure filter is never saved
       data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
     }
