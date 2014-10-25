@@ -18,7 +18,7 @@
               method="get" action="[% uri_for("/device/${tab.tag}") %]">
             [% TRY %]
             <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 1;</script>
-            [% INCLUDE "sidebar/device/${tab.tag}.tt" %]
+            [% PROCESS "sidebar/device/${tab.tag}.tt" %]
             [% CATCH %]
             <!-- no "[% tab.tag %]" search options -->
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>

@@ -57,21 +57,21 @@
                 </label></span>
               <div id="nd_columns" class="collapse in">
                 <ul id="nd_column-controls" class="nd_inputs-list unstyled">
-                  [% FOREACH item IN vars.port_columns %]
-                  [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
-                  [% IF item.name == 'c_admin' OR item.name == 'c_nodes' %]
+                  [% FOREACH entry IN settings.table_display.$section.${tab.tag}.columns %]
+                  [% NEXT IF entry.keys.first == 'c_admin' AND NOT user_has_role('port_control') %]
                   <li>
                     <label class="checkbox">
-                      <input type="checkbox" class="nd_dynamic-dp" id="[% item.name | html_entity %]"
-                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
-                      [% IF item.name == 'c_admin' %]
-                        <span class="label label-info">[% item.label | html_entity %]</span>
+                      <!-- FIXME look at param not default -->
+                      <input type="checkbox" class="nd_dynamic-dp"
+                        [% ' checked="checked"' IF entry.item(entry.keys.first).default %]
+                        id="[% entry.keys.first | html_entity %]" name="[% entry.keys.first | html_entity %]" />
+                      [% IF entry.item(entry.keys.first).highlight %]
+                        <span class="label label-info">[% entry.item(entry.keys.first).label | html_entity %]</span>
                       [% ELSE %]
-                        [% item.label | html_entity %]
+                        [% entry.item(entry.keys.first).label | html_entity %]
                       [% END %]
                     </label>
                   </li>
-                  [% END %]
                   [% END %]
                 </ul>
               </div>
@@ -132,15 +132,48 @@
                       [% END %]
                     </select>
                   </li>
-                  [% FOREACH item IN vars.connected_properties %]
                   <li>
                     <label class="checkbox">
-                      <input type="checkbox" class="nd_dynamic-dp" id="[% item.name | html_entity %]"
-                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF params.${item.name} %] />
-                      [% item.label | html_entity %]
+                      <input type="checkbox" class="nd_dynamic-dp" id="n_age"
+                        name="n_age"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_age %] />
+                      Age Stamp
                     </label>
                   </li>
-                  [% END %]
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" class="nd_dynamic-dp" id="n_ip"
+                        name="n_ip"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_ip %] />
+                      IP Address
+                    </label>
+                  </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" class="nd_dynamic-dp" id="n_netbios"
+                        name="n_netbios"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_netbios %] />
+                      NetBIOS
+                    </label>
+                  </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" class="nd_dynamic-dp" id="n_ssid"
+                        name="n_ssid"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_ssid %] />
+                      SSID
+                    </label>
+                  </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" class="nd_dynamic-dp" id="n_vendor"
+                        name="n_vendor"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_vendor %] />
+                      Vendor
+                    </label>
+                  </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" class="nd_dynamic-dp" id="n_archived"
+                        name="n_archived"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_archived %] />
+                      Archived Data
+                    </label>
+                  </li>
                 </ul>
               </div>
             </div>

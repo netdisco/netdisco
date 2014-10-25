@@ -11,23 +11,22 @@
     },
     "rowCallback": function (row, data) {
       // update in-cell content based on current sidebar settings
-      [% FOREACH key IN settings.table_display.device.ports.keys %]
-      if ($('#dp-data-table').DataTable().column('[% key %]:name').length === 0) {
-        $(row).find('span.[% key %]').toggle( $("input[id='[% key %]']").prop('checked') );
-      }
-      [% END %]
+      $('.nd_dynamic-dp').each( function() {
+        $(row).find('span.' + $(this).attr('id')).toggle( $(this).prop('checked') );
+      });
     },
-    "stateLoadParams": function (settings, data) {
-      // enforce config defaults for columns
-      // TODO: allow state loading
-      [% FOREACH key IN settings.table_display.device.ports.keys %]
-      if (data.columns[$('#dp-data-table').DataTable().column('[% key %]:name').index()]) {
-        data.columns[$('#dp-data-table').DataTable().column('[% key %]:name').index()].visible
-          = [% (settings.table_display.device.ports.$key == 'on') ? 'true' : 'false' %];
+    "stateSaveParams": function (settings, data) {
+      var datatable = $('#[% tabname %]_pane').find('table').first().DataTable();
+      // if no existing state, all columns default to visible.
+      // on table load, state is saved... we can find out whether there was
+      // loaded state, and if not, use this hook to set initial column
+      // visibility.
+      if (datatable.state.loaded() === null) {
+        $('#[% tabname %]_form').find('input[type="checkbox"]').each( function() {
+          var id = $(this).attr('id');
+          if (datatable.column( id + ':name' ).length === 1) {
+            datatable.column( id + ':name' ).visible( $(this).prop('checked') );
+          }
+        });
       }
-      else {
-        $("input[id='[% key %]']").prop('checked',
-          [% (settings.table_display.device.ports.$key == 'on') ? 'true' : 'false' %]);
-      }
-      [% END %]
     }

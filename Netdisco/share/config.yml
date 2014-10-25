@@ -88,31 +88,71 @@ table_showrecordsmenu:
 table_display:
   device:
     ports:
-      c_admin:      off
-      c_port:       on
-      c_descr:      off
-      c_type:       off
-      c_duplex:     off
-      c_lastchange: off
-      c_name:       on
-      c_speed:      off
-      c_mac:        off
-      c_mtu:        off
-      c_pvid:       on
-      c_vmember:    on
-      c_power:      off
-      c_ssid:       off
-      c_nodes:      off
-      c_neighbors:  on
-      c_stp:        off
-      c_up:         off
-      n_age:        off
-      n_ip:         on
-      n_netbios:    on
-      n_ssid:       on
-      n_vendor:     off
-      n_archived:   off
-      neigh_id:     off
+      columns:
+        - c_admin:
+            label:     'Port Controls'
+            default:   false
+            highlight: true
+        - c_port:
+            label:     'Port'
+            default:   true
+        - c_descr:
+            label:     'Description'
+            default:   false
+        - c_type:
+            label:     'Type'
+            default:   false
+        - c_duplex:
+            label:     'Duplex'
+            default:   false
+        - c_lastchange:
+            label:     'Last Change'
+            default:   false
+        - c_name:
+            label:     'Name'
+            default:   true
+        - c_speed:
+            label:     'Speed'
+            default:   false
+        - c_mac:
+            label:     'Port MAC'
+            default:   false
+        - c_mtu:
+            label:     'MTU'
+            default:   false
+        - c_pvid:
+            label:     'Native VLAN'
+            default:   true
+        - c_vmember:
+            label:     'VLAN Membership'
+            default:   true
+        - c_power:
+            label:     'PoE'
+            default:   false
+        - c_ssid:
+            label:     'SSID'
+            default:   false
+        - c_neighbors:
+            label:     'Connected Devices'
+            default:   true
+        - c_nodes:
+            label:     'Show Nodes'
+            default:   false
+        - c_stp:
+            label:     'Spanning Tree'
+            default:   false
+        - c_up:
+            label:     'Status'
+            default:   false
+      content:
+        c_nodes:      false
+        n_age:        false
+        n_ip:         true
+        n_netbios:    true
+        n_ssid:       true
+        n_vendor:     false
+        n_archived:   false
+        neigh_id:     false
 
 # -------------
 # NETDISCO CORE

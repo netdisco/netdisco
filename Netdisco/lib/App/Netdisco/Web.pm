@@ -84,6 +84,11 @@ hook 'before_template' => sub {
     $tokens->{$_} = $tokens->{$_}->path_query
       for qw/search_node search_device device_ports/;
 
+    # shorthand access to section and tabname
+    my @parts = split m{/}, request->path;
+    $tokens->{section} ||= $parts[-2];
+    $tokens->{tabname} ||= $parts[-1];
+
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;
 

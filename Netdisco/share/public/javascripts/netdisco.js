@@ -50,6 +50,7 @@ function do_search (event, tab) {
         scrollingTop: 40
         ,useAbsolutePositioning: false
       });
+      global_inner_view_processing(tab);
       inner_view_processing(tab);
     }
   );
@@ -100,6 +101,38 @@ function update_content(from, to) {
   }
 
   $(to_form).trigger("submit");
+}
+
+// called after every ajax, in case updating anything is required
+function global_inner_view_processing(tab) {
+  // find the current tab's datatables object
+  // then update sidebar checkboxes to hook the datatables colvis
+  var table   = $('#' + tab + '_pane').find('table').first();
+  var colvis  = new $.fn.dataTable.ColVis( table );
+  var columns = colvis.s.dt.aoColumns;
+
+  if ( $.inArray( 'all', colvis.s.exclude ) === -1 ) {
+      for ( var i=0, iLen=columns.length ; i<iLen ; i++ ) {
+          if ( $.inArray( i, colvis.s.exclude ) === -1 ) {
+              var button = colvis.dom.buttons.shift();
+
+              $(button).find('label').addClass('checkbox');
+              $(button).find('input').attr('id', columns[i]["name"]);
+              $(button).find('input').attr('name', columns[i]["name"]);
+
+              var target = $('#' + columns[i]["name"]);
+              $(button).find('span').text( target.closest('label').text() );
+              $(button).find('input').first().prop('checked', target.prop('checked'));
+
+              // need to re-activate tooltips on new content
+              $(button).click(function() {
+                $("[rel=tooltip]").tooltip({live: true});
+              });
+
+              target.closest('li').replaceWith( button );
+          }
+      }
+  }
 }
 
 // handler for ajax navigation
