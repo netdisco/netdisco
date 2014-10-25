@@ -326,7 +326,7 @@ sub graph_addnode {
         $node{URL} = "/device?&q=$ip";
     }
     else {
-        $node{URL} = "/search?tab=node&q=$ip";
+        $node{URL} = "/search/node?q=$ip";
         # Overrides any colors given to nodes above. Bug 1094208
         $node{fillcolor} = $CONFIG{'node_problem'} || 'red';
     }

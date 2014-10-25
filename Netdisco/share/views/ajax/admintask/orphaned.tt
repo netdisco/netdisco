@@ -75,7 +75,7 @@
         <tbody>
         [% FOREACH row IN network %]
           <tr>
-            <td><a href="[% uri_for('/device') %]?tab=netmap&q=[% row.ip | uri %]">
+            <td><a href="[% uri_for('/device/netmap') %]?q=[% row.ip | uri %]">
             [% row.dns || row.name || row.ip | html_entity %]</a></td>
             <td>
               [% IF row.location %]

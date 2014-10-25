@@ -138,4 +138,39 @@
       $('#nd_devdel-log').val('');
       $('#nd_devdel-archive').attr('checked', false);
     });
+
+    // device tabs
+    [% FOREACH tab IN settings._device_tabs %]
+    $('[% "#${tab.tag}_form" %]').submit(function (event) {
+      var pgtitle = update_page_title('[% tab.tag %]');
+      copy_navbar_to_sidebar('[% tab.tag %]');
+      update_browser_history('[% tab.tag %]', pgtitle, '');
+      update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
+
+      [% IF tab.tag == 'ports' %]
+      // to be fair I can't remember why we do this in JS and not from the app
+      // perhaps because selecting form fields to go in the cookie is easier?
+      var cookie = $('#ports_form').find('input,select')
+        .not('#nd_port-query,input[name="q"],input[name="tab"]')
+        .serializeArray();
+      $('#ports_form').find('input[type="checkbox"]').map(function() {
+        cookie.push({'name': 'columns', 'value': $(this).attr('name')});
+      });
+      $.cookie('nd_ports-form', $.param(cookie) ,{ expires: 365 });
+
+      // form reset icon on ports tab
+      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device/[% tab.tag %]?reset=on&' +
+        $('#ports_form')
+          .find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]')
+          .serialize());
+
+      [% ELSIF tab.tag == 'netmap' %]
+      // form reset icon on netmap tab
+      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device/[% tab.tag %]?reset=on&' +
+        $('#netmap_form').find('input[name="q"]').serialize());
+      [% END %]
+
+      do_search(event, '[% tab.tag %]');
+    });
+    [% END %]
   });

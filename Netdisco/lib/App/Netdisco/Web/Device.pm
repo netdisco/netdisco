@@ -55,7 +55,7 @@ hook 'before' => sub {
     { name => 'n_archived', label => 'Archived Data', default => ''   },
   ]);
 
-  return unless (request->path eq uri_for('/device')->path
+  return unless (index(request->path, uri_for('/device')->path) == 0
     or index(request->path, uri_for('/ajax/content/device')->path) == 0);
 
   # override ports form defaults with cookie settings
@@ -121,7 +121,7 @@ hook 'before_template' => sub {
   my $tokens = shift;
 
   # new searches will use these defaults in their sidebars
-  $tokens->{device_ports} = uri_for('/device', { tab => 'ports' });
+  $tokens->{device_ports} = uri_for('/device/ports');
 
   # copy ports form defaults into helper values for building template links
 
@@ -143,7 +143,7 @@ hook 'before_template' => sub {
       $tokens->{device_ports}->query_param($col->{name}, 'checked');
   }
 
-  return unless (request->path eq uri_for('/device')->path
+  return unless (index(request->path, uri_for('/device')->path) == 0
     or index(request->path, uri_for('/ajax/content/device')->path) == 0);
 
   # for templates to link to same page with modified query but same options
@@ -154,8 +154,9 @@ hook 'before_template' => sub {
   $tokens->{self_options} = $self_uri->query_form_hash;
 };
 
-get '/device' => require_login sub {
+my $handler = sub {
     my $q = param('q');
+    my ($tab) = splat;
     my $schema = schema('netdisco')->resultset('Device');
 
     # we are passed either dns or ip
@@ -175,11 +176,13 @@ get '/device' => require_login sub {
     my $first = $dev->first;
     my $others = ($schema->search({dns => $first->dns})->count() - 1);
 
-    params->{'tab'} ||= 'details';
     template 'device', {
       display_name => ($others ? $first->ip : $first->dns),
-      device => params->{'tab'},
+      tabname => ($tab || 'details'),
     };
 };
+
+get '/device'   => require_login $handler;
+get '/device/*' => require_login $handler;
 
 true;

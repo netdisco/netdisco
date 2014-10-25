@@ -179,4 +179,11 @@
         }
       });
     });
+
+    // for the admin pages
+    $('[% "#${task.tag}_form" %]').submit(function (event) {
+      update_page_title('[% task.tag %]');
+      update_csv_download_link('admin', '[% task.tag %]', '1');
+      do_search(event, '[% task.tag %]');
+    });
   });

@@ -52,4 +52,12 @@
       ,delay: 150
       ,minLength: 3
     });
+
+    // for the report pages
+    $('[% "#${report.tag}_form" %]').submit(function (event) {
+      var pgtitle = update_page_title('[% report.tag %]');
+      update_browser_history('[% report.tag %]', pgtitle, '1');
+      update_csv_download_link('report', '[% report.tag %]', '1');
+      do_search(event, '[% report.tag %]');
+    });
   });

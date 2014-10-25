@@ -254,7 +254,7 @@ $(document).ready(function() {
         [% ELSE %]
         "render": function ( data, type, row, meta ) {
           if (row.native_vlan && type === 'display') {
-            return '<a class="nd_linkcell" href="[% uri_for('/search') %]?tab=vlan&q=' + encodeURIComponent(data) + '">' + data + '</a>';
+            return '<a class="nd_linkcell" href="[% uri_for('/search/vlan') %]?q=' + encodeURIComponent(data) + '">' + data + '</a>';
           }
           else {
             return data;
@@ -272,7 +272,7 @@ $(document).ready(function() {
             var arr = row.vlan_membership;
             arr = arr.sort(function(a, b){return a-b});
             arr = jQuery.map( arr, function( a ) {
-              return '<a href="[% uri_for('/search') %]?tab=vlan&q=' + a + '">' + a + '</a>';
+              return '<a href="[% uri_for('/search/vlan') %]?q=' + a + '">' + a + '</a>';
             });
             if (row.vlan_membership.length > 10) {
               return '<div class="nd_vlan-total">('

@@ -51,7 +51,7 @@ function groupString(d) {
     "use strict";
     var s = '';
     s = s + 'Device: ';
-    s = s + '<a href="[% uri_for('/device') %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
+    s = s + '<a href="[% uri_for('/device/details') %]?q=' + encodeURIComponent(d.ip) + '">';
     s = s + he.encode(d.dns || d.name || d.ip);
     if (d.dns || d.name) {
         s = s + ' (' +  he.encode(d.ip) + ') ';

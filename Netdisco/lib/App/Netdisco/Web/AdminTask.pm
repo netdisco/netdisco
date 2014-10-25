@@ -64,11 +64,10 @@ ajax '/ajax/control/admin/delete' => require_role admin => sub {
 get '/admin/*' => require_role admin => sub {
     my ($tag) = splat;
 
-    # trick the ajax into working as if this were a tabbed page
-    params->{tab} = $tag;
-
     var(nav => 'admin');
     template 'admintask', {
+      # trick the ajax into working as if this were a tabbed page
+      tabname => $tag,
       task => setting('_admin_tasks')->{ $tag },
     };
 };

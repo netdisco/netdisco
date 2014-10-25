@@ -38,8 +38,8 @@ hook 'before_template' => sub {
   my $tokens = shift;
 
   # new searches will use these defaults in their sidebars
-  $tokens->{search_node}   = uri_for('/search', {tab => 'node'});
-  $tokens->{search_device} = uri_for('/search', {tab => 'device'});
+  $tokens->{search_node}   = uri_for('/search/node');
+  $tokens->{search_device} = uri_for('/search/device');
 
   foreach my $col (@{ var('node_options') }) {
       next unless $col->{default} eq 'on';
@@ -62,18 +62,24 @@ hook 'before_template' => sub {
   }
 };
 
-get '/search' => require_login sub {
+my $handler = sub {
     my $q = param('q');
+    my ($tab) = splat;
     my $s = schema('netdisco');
 
-    if (not param('tab')) {
+    my $prefer = param('prefer');
+    $prefer = ''
+        unless defined $prefer and $prefer =~ m/^(?:device|node|vlan|port)$/;
+    $tab ||= param('prefer');
+
+    if (not $tab) {
         if (not $q) {
             return redirect uri_for('/')->path;
         }
 
         # pick most likely tab for initial results
         if ($q =~ m/^\d+$/) {
-            params->{'tab'} = 'vlan';
+            $tab = 'vlan';
         }
         else {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
@@ -82,15 +88,14 @@ get '/search' => require_login sub {
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
                     # redirect to device details for the one device
-                    return redirect uri_for('/device', {
-                      tab => 'details',
+                    return redirect uri_for('/device/details', {
                       q => $nd->first->ip,
                       f => '',
                     })->path_query;
                 }
 
                 # multiple devices
-                params->{'tab'} = 'device';
+                $tab = 'device';
             }
             elsif ($s->resultset('DevicePort')
                      ->search({
@@ -101,12 +106,12 @@ get '/search' => require_login sub {
                        ],
                      })->count) {
 
-                params->{'tab'} = 'port';
+                $tab = 'port';
             }
         }
 
         # if all else fails
-        params->{'tab'} ||= 'node';
+        $tab ||= 'node';
     }
 
     # used in the device search sidebar to populate select inputs
@@ -115,11 +120,14 @@ get '/search' => require_login sub {
     my $vendor_list = [ $s->resultset('Device')->get_distinct_col('vendor') ];
 
     template 'search', {
-      search => params->{'tab'},
+      tabname => $tab,
       model_list  => $model_list,
       os_ver_list => $os_ver_list,
       vendor_list => $vendor_list,
     };
 };
+
+get '/search'   => require_login $handler;
+get '/search/*' => require_login $handler;
 
 true;

@@ -94,7 +94,7 @@ function update_content(from, to) {
     is_from_history_plugin = 1;
     window.History.pushState(
       {name: to, fields: $(to_form).serializeArray()},
-      pgtitle, uri_base + '/' + path + '?' + $(to_form).serialize()
+      pgtitle, uri_base + '/' + path + '/' + to + '?' + $(to_form).serialize()
     );
     is_from_history_plugin = 0;
   }
@@ -145,7 +145,7 @@ function device_form_state(e) {
     $(id).show();
 
     // if form still has any field val, set strikethough
-    if (e.parents('form[action="/search"]').length > 0 && with_val != 0) {
+    if (e.parents('form[action^="/search"]').length > 0 && with_val != 0) {
       $('#nq').css('text-decoration', 'line-through');
     }
 
@@ -184,8 +184,8 @@ $(document).ready(function() {
     if ($('#nq').val()) {
       $(this).parents('form').append(
         $(document.createElement('input')).attr('type', 'hidden')
-                                          .attr('name', 'tab')
-                                          .attr('value', $(this).data('tab'))
+                                          .attr('name', 'prefer')
+                                          .attr('value', $(this).data('prefer'))
       ).submit();
     }
   });

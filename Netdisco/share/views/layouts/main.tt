@@ -148,10 +148,10 @@
             <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-prefer="device">Search Devices</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-prefer="node">Search Nodes</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-prefer="vlan">Search VLANs</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-prefer="port">Search Ports</a></li>
           </ul>
         </div>
       </form>

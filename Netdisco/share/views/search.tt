@@ -9,9 +9,9 @@
         rel="tooltip" data-placement="left" data-offset="5" data-title="Pin Sidebar" data-container="body"></i>
       <div class="tab-content">
         [% FOREACH tab IN settings._search_tabs %]
-        <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-          <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') %]">
-            <input name="tab" value="[% tab.tag %]" type="hidden"/>
+        <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF tabname == tab.tag %]">
+          <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked"
+              method="get" action="[% uri_for("/search/${tab.tag}") %]">
             [% TRY %]
             <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 1;</script>
             [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
@@ -30,7 +30,7 @@
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
       [% FOREACH tab IN settings._search_tabs %]
-      <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
+      <li[% ' class="active"' IF tabname == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
       [% END %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
@@ -40,7 +40,7 @@
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN settings._search_tabs %]
-      <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag %]_pane"></div>
+      <div class="tab-pane[% ' active' IF tabname == tab.tag %]" id="[% tab.tag %]_pane"></div>
       [% END %]
   </div>
 </div>

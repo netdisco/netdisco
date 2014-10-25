@@ -36,4 +36,15 @@
       input.val('');
       device_form_state(input); // will hide copy icons
     });
+
+    // search tabs
+    [% FOREACH tab IN settings._search_tabs %]
+    $('[% "#${tab.tag}_form" %]').submit(function (event) {
+      var pgtitle = update_page_title('[% tab.tag %]');
+      copy_navbar_to_sidebar('[% tab.tag %]');
+      update_browser_history('[% tab.tag %]', pgtitle, '');
+      update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
+      do_search(event, '[% tab.tag %]');
+    });
+    [% END %]
   });

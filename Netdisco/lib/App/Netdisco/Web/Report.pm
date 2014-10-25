@@ -48,12 +48,11 @@ get '/report/*' => require_login sub {
         ];
     }
 
-    # trick the ajax into working as if this were a tabbed page
-    params->{tab} = $tag;
-
     var( nav => 'reports' );
     template 'report',
         {
+        # trick the ajax into working as if this were a tabbed page
+        tabname     => $tag,
         report      => setting('_reports')->{$tag},
         domain_list => $domain_list,
         class_list  => $class_list,
