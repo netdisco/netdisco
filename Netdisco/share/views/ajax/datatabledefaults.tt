@@ -35,4 +35,7 @@
           }
         });
       }
+
+      // make sure filter is never saved
+      data.search.search = "";
     }
