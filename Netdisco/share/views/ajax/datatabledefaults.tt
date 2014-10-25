@@ -16,6 +16,10 @@
       });
     },
     "stateSaveParams": function (settings, data) {
+      var pgtitle = update_page_title('[% tabname %]');
+      update_browser_history('[% tabname %]', pgtitle, '');
+      // TODO: would be nice to update CSV link too
+
       var datatable = $('#[% tabname %]_pane').find('table').first().DataTable();
       // if no existing state, all columns default to visible.
       // on table load, state is saved... we can find out whether there was
@@ -23,9 +27,11 @@
       // visibility.
       if (datatable.state.loaded() === null) {
         $('#[% tabname %]_form').find('input[type="checkbox"]').each( function() {
-          var id = $(this).attr('id');
-          if (datatable.column( id + ':name' ).length === 1) {
-            datatable.column( id + ':name' ).visible( $(this).prop('checked') );
+          var id  = $(this).attr('id');
+          var col = datatable.column( id + ':name' );
+          if (col.length === 1) {
+            col.visible( $(this).prop('checked') );
+            data.columns[col.index()].visible = $(this).prop('checked');
           }
         });
       }

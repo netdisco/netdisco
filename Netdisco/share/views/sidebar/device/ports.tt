@@ -58,17 +58,17 @@
               <div id="nd_columns" class="collapse in">
                 <ul id="nd_column-controls" class="nd_inputs-list unstyled">
                   [% FOREACH entry IN settings.table_display.$section.${tab.tag}.columns %]
-                  [% NEXT IF entry.keys.first == 'c_admin' AND NOT user_has_role('port_control') %]
+                  [% SET keyname = entry.keys.first %]
+                  [% NEXT IF keyname == 'c_admin' AND NOT user_has_role('port_control') %]
                   <li>
                     <label class="checkbox">
-                      <!-- FIXME look at param not default -->
                       <input type="checkbox" class="nd_dynamic-dp"
-                        [% ' checked="checked"' IF entry.item(entry.keys.first).default %]
-                        id="[% entry.keys.first | html_entity %]" name="[% entry.keys.first | html_entity %]" />
-                      [% IF entry.item(entry.keys.first).highlight %]
-                        <span class="label label-info">[% entry.item(entry.keys.first).label | html_entity %]</span>
+                        [% ' checked="checked"' IF (params.$keyname || entry.item(keyname).default) %]
+                        id="[% keyname | html_entity %]" name="[% keyname | html_entity %]" />
+                      [% IF entry.item(keyname).highlight %]
+                        <span class="label label-info">[% entry.item(keyname).label | html_entity %]</span>
                       [% ELSE %]
-                        [% entry.item(entry.keys.first).label | html_entity %]
+                        [% entry.item(keyname).label | html_entity %]
                       [% END %]
                     </label>
                   </li>
@@ -110,7 +110,8 @@
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="neigh_id"
-                        name="neigh_id"[% ' checked="checked"' IF params.neigh_id %] />
+                        name="neigh_id"[% ' checked="checked"' IF
+                          (params.neigh_id || settings.table_display.$section.${tab.tag}.content.neigh_id) %] />
                       Connected Device ID
                     </label>
                   </li>
@@ -135,42 +136,48 @@
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="n_age"
-                        name="n_age"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_age %] />
+                        name="n_age"[% ' checked="checked"' IF
+                          (params.n_age || settings.table_display.$section.${tab.tag}.content.n_age) %] />
                       Age Stamp
                     </label>
                   </li>
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="n_ip"
-                        name="n_ip"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_ip %] />
+                        name="n_ip"[% ' checked="checked"' IF
+                          (params.n_ip || settings.table_display.$section.${tab.tag}.content.n_ip) %] />
                       IP Address
                     </label>
                   </li>
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="n_netbios"
-                        name="n_netbios"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_netbios %] />
+                        name="n_netbios"[% ' checked="checked"' IF
+                          (params.n_netbios || settings.table_display.$section.${tab.tag}.content.n_netbios) %] />
                       NetBIOS
                     </label>
                   </li>
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="n_ssid"
-                        name="n_ssid"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_ssid %] />
+                        name="n_ssid"[% ' checked="checked"' IF
+                          (params.n_ssid || settings.table_display.$section.${tab.tag}.content.n_ssid) %] />
                       SSID
                     </label>
                   </li>
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="n_vendor"
-                        name="n_vendor"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_vendor %] />
+                        name="n_vendor"[% ' checked="checked"' IF
+                          (params.n_vendor || settings.table_display.$section.${tab.tag}.content.n_vendor) %] />
                       Vendor
                     </label>
                   </li>
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" class="nd_dynamic-dp" id="n_archived"
-                        name="n_archived"[% ' checked="checked"' IF settings.table_display.$section.${tab.tag}.content.n_archived %] />
+                        name="n_archived"[% ' checked="checked"' IF
+                          (params.n_archived || settings.table_display.$section.${tab.tag}.content.n_archived) %] />
                       Archived Data
                     </label>
                   </li>
