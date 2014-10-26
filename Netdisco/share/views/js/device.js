@@ -27,7 +27,7 @@
 
   // on load, establish global delegations for now and future
   $(document).ready(function() {
-    var tab = '[% tab.tag %]'
+    var tab = '[% tabname %]'
     var target = '#' + tab + '_pane';
     var portfilter = $('#ports_form').find("input[name=f]");
 
@@ -99,6 +99,10 @@
     $('#ports_form').on('change', "input[type=checkbox].nd_dynamic-dp", function(event) {
         var target = $(this).attr('id');
         $('span.' + target).toggle();
+
+        // save new sidebar settings
+        var datatable = $('#[% tabname %]_pane').find('table').first().DataTable();
+        datatable.state.save();
     });
 
     // activity for admin tasks in device details

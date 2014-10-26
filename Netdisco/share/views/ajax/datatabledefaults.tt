@@ -6,8 +6,8 @@
     "dom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
     "language": {
       "search": '_INPUT_',
-      "searchPlaceholder": 'Filter records...',
-      "lengthMenu": "Show _MENU_ records."
+      "searchPlaceholder": 'Filter results...',
+      "lengthMenu": "Show _MENU_ rows."
     },
     "rowCallback": function (row, data) {
       // update in-cell content based on current sidebar settings
@@ -21,12 +21,13 @@
       // TODO: would be nice to update CSV link too
 
       var datatable = $('#[% tabname %]_pane').find('table').first().DataTable();
+      var sidebarform = $('#[% tabname %]_form');
       // if no existing state, all columns default to visible.
       // on table load, state is saved... we can find out whether there was
       // loaded state, and if not, use this hook to set initial column
       // visibility.
       if (datatable.state.loaded() === null) {
-        $('#[% tabname %]_form').find('input[type="checkbox"]').each( function() {
+        sidebarform.find('input[type="checkbox"]').each( function() {
           var id  = $(this).attr('id');
           var col = datatable.column( id + ':name' );
           if (col.length === 1) {
@@ -35,9 +36,18 @@
           }
         });
       }
+      else {
+        // save sidebar settings
+        data["sidebarform"] = sidebarform.serializeArray();
+      }
 
       // make sure filter is never saved
       data.search.search = "";
       // make sure paging position is not saved
       data.start = 0;
+    },
+    "stateLoadParams": function (settings, data) {
+      // load all sidebar settings
+      var sidebarform = $('#[% tabname %]_form');
+      sidebarform.deserialize( data.sidebarform );
     }
