@@ -50,4 +50,34 @@
       // load all sidebar settings
       var sidebarform = $('#[% tabname %]_form');
       sidebarform.deserialize( data.sidebarform );
+    },
+    "initComplete": function (settings, json) {
+      // find the current tab's datatables object
+      // then update sidebar checkboxes to hook the datatables colvis
+      var table   = $('#[% tabname %]_pane').find('table').first();
+      var colvis  = new table.dataTable.ColVis( table );
+      var columns = colvis.s.dt.aoColumns;
+
+      if ( $.inArray( 'all', colvis.s.exclude ) === -1 ) {
+          for ( var i=0, iLen=columns.length ; i<iLen ; i++ ) {
+              if ( $.inArray( i, colvis.s.exclude ) === -1 ) {
+                  var button = colvis.dom.buttons.shift();
+
+                  $(button).find('label').addClass('checkbox');
+                  $(button).find('input').attr('id', columns[i]["name"]);
+                  $(button).find('input').attr('name', columns[i]["name"]);
+
+                  var target = $('#' + columns[i]["name"]);
+                  $(button).find('span').text( target.closest('label').text() );
+                  $(button).find('input').first().prop('checked', target.prop('checked'));
+
+                  // need to re-activate tooltips on new content
+                  $(button).click(function() {
+                    $("[rel=tooltip]").tooltip({live: true});
+                  });
+
+                  target.closest('li').replaceWith( button );
+              }
+          }
+      }
     }

@@ -69,11 +69,9 @@
 
   $(document).ready(function() {
     // on page load, load the content for the active tab
-    [% IF tabname %]
-    [% IF tabname == 'ipinventory' OR tabname == 'subnets' %]
+    [% IF tabname AND (tabname == 'ipinventory' OR tabname == 'subnets') %]
       $('#[% tabname %]_submit').click();
     [% ELSE %]
       $('#[% tabname %]_form').trigger("submit");
-    [% END %]
     [% END %]
   });
