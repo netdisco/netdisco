@@ -394,7 +394,7 @@ template safely if the base of the app is relocated:
 Available in the Device tabs, use this if you need to refer back to the
 current page with some additional parameters, for example:
 
- <a href="[% uri_for('/device', self_options) %]&foo=bar" ...>
+ <a href="[% uri_for('/device/ports', self_options) %]&foo=bar" ...>
 
 =back
 
