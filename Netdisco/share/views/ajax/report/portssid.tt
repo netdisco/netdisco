@@ -33,7 +33,7 @@ $(document).ready(function() {
       {
       "data": 'ip',
       "render": function(data, type, row, meta) {
-        return '<a href="[% device_ports %]&q=' + encodeURIComponent(data) + '&f=' + encodeURIComponent(row.port.port) + '&c_nodes=on&n_ssid=on">' + he.encode(row.device.dns || row.device.name || row.ip) + '(' + he.encode(row.port.port) + ')</a>';
+        return '<a href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(data) + '&f=' + encodeURIComponent(row.port.port) + '&c_nodes=on&n_ssid=on">' + he.encode(row.device.dns || row.device.name || row.ip) + '(' + he.encode(row.port.port) + ')</a>';
         }
       }, {
         "data": 'broadcast',

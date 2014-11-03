@@ -117,7 +117,7 @@ $(document).ready(function() {
             [% ELSE %]
             cell_str += '';
             [% END %]
-            cell_str += '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device/ports',self_options) %]&q=[% params.q | uri %]&f='
+            cell_str += '<a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device/ports') %]&q=[% params.q | uri %]&f='
                 + encodeURIComponent(row.port) + '&prefer=port">';
             if (row.is_master) {
               cell_str += '<small><i class="icon-group muted"></i></small>&nbsp;';
@@ -125,7 +125,7 @@ $(document).ready(function() {
             cell_str += he.encode(row.port) + '</a>';
             if (row.slave_of) {
               cell_str += '<br/>'
-                + '<a class="nd_this-port-only" href="[% uri_for('/device/ports', self_options) %]&q=[% params.q | uri %]&f='
+                + '<a class="nd_this-port-only" href="[% uri_for('/device/ports') %]&q=[% params.q | uri %]&f='
                 + encodeURIComponent(row.slave_of) + '&prefer=port">'
                 + he.encode(row.slave_of) + '</a>';
             }
@@ -384,13 +384,13 @@ $(document).ready(function() {
                 else if (row.remote_type && row.remote_type.match(/(cisco\s+AIR-[L|C]?AP|-K9W8-|^AP:\s)/)) {
                   cell_str += '<i class="icon-signal"></i>&nbsp;';
                 }
-                cell_str += '<a href="[% uri_for('/device/ports', self_options) %]&q='
+                cell_str += '<a href="[% uri_for('/device/ports') %]&q='
                   + encodeURIComponent(row.neighbor_alias_ip) + '">';
                 var n_dns = row.neighbor_alias_dns ? row.neighbor_alias_dns.replace(d_suffix, '') : '';
                 cell_str += he.encode(n_dns || row.neighbor_alias_ip) + '</a>';
                 if (row.remote_port) {
                   cell_str += ' - '
-                    + '<a href="[% uri_for('/device/ports', self_options) %]&q='
+                    + '<a href="[% uri_for('/device/ports') %]&q='
                     + encodeURIComponent(row.neighbor_alias_ip)
                     + '&f=' + encodeURIComponent(row.remote_port)
                     + '&prefer=port">' + he.encode(row.remote_port || '') + '</a>';

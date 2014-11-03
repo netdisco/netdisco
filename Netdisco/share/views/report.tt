@@ -31,9 +31,9 @@
         href="#[% report.tag %]_pane">[% report.label %]</a></li>
       [% IF report.tag == 'portlog' %]
       <span id="nd_device-name">
-        <a href="[% device_ports %]&q=[% params.q | uri %]&c_admin=on">[% params.q %]</a>
+        <a href="[% uri_for('/device/ports') %]&q=[% params.q | uri %]&c_admin=on">[% params.q %]</a>
         -
-        <a href="[% device_ports %]&q=[% params.q | uri %]&f=[% params.f | uri %]&c_admin=on">[% params.f %]</a>
+        <a href="[% uri_for('/device/ports') %]&q=[% params.q | uri %]&f=[% params.f | uri %]&c_admin=on">[% params.f %]</a>
       </span>
       [% ELSIF report.provides_csv %]
       <span id="nd_device-name">

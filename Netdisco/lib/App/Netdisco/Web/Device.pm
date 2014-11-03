@@ -5,20 +5,6 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-hook 'before_template' => sub {
-  my $tokens = shift;
-
-  # new searches will use these defaults in their sidebars
-  $tokens->{device_ports} = uri_for('/device/ports');
-
-  # for templates to link to same page with modified query but same options
-  my $self_uri = uri_for(request->path, scalar params);
-  $self_uri->query_param_delete('q');
-  $self_uri->query_param_delete('f');
-  $self_uri->query_param_delete('prefer');
-  $tokens->{self_options} = $self_uri->query_form_hash;
-};
-
 my $handler = sub {
     my $q = param('q');
     my ($tab) = splat;

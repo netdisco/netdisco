@@ -48,7 +48,7 @@ $(document).ready(function() {
       }, {
         "data": 'port',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on&n_ssid=on">' + he.encode(row.device.dns || row.device.name || row.switch) + '(' + he.encode(data) + ')</a>';
+          return '<a href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on&n_ssid=on">' + he.encode(row.device.dns || row.device.name || row.switch) + '(' + he.encode(data) + ')</a>';
         }
       }, {
         // Included for filtering

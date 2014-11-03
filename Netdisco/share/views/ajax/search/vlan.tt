@@ -19,32 +19,32 @@ $(document).ready(function() {
     "columns": [{
         "data": 'vlans.vlan',
         "render": function(data, type, row, meta) {
-          return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + data + '</a>';
+          return '<a class="nd_linkcell nd_stealth-link" href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + data + '</a>';
         }
       }, {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(row.dns || row.ip) + '</a>';
+          return '<a href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(row.dns || row.ip) + '</a>';
         }
       }, {
         "data": 'vlans.description',
         "render": function(data, type, row, meta) {
-          return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
+          return '<a class="nd_linkcell nd_stealth-link" href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'model',
         "render": function(data, type, row, meta) {
-          return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
+          return '<a class="nd_linkcell nd_stealth-link" href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'os',
         "render": function(data, type, row, meta) {
-          return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
+          return '<a class="nd_linkcell nd_stealth-link" href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'vendor',
         "render": function(data, type, row, meta) {
-          return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
+          return '<a class="nd_linkcell nd_stealth-link" href="[% uri_for('/device/ports') %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
         }
       }
     ],

@@ -82,7 +82,7 @@ hook 'before_template' => sub {
 
     # fix Plugin Template Variables to be only path+query
     $tokens->{$_} = $tokens->{$_}->path_query
-      for qw/search_node search_device device_ports/;
+      for qw/search_node search_device/;
 
     # shorthand access to section and tabname
     my @parts = split m{/}, request->path;

@@ -370,11 +370,6 @@ together with the correct default search options set.
 A path and query string which links to the Device tab of the Search page,
 together with the correct default search options set.
 
-=item  C<device_ports>
-
-A path and query sting which links to the Ports tab of the Device page,
-together with the correct default column view options set.
-
 =item  C<uri_base>
 
 Used for linking to static content within App::Netdisco safely if the base of
@@ -388,13 +383,6 @@ Simply the Dancer C<uri_for> method. Allows you to do things like this in the
 template safely if the base of the app is relocated:
 
  <a href="[% uri_for('/search') %]" ...>
-
-=item  C<self_options>
-
-Available in the Device tabs, use this if you need to refer back to the
-current page with some additional parameters, for example:
-
- <a href="[% uri_for('/device/ports', self_options) %]&foo=bar" ...>
 
 =back
 
