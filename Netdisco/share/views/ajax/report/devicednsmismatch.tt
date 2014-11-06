@@ -42,7 +42,7 @@ $(document).ready(function() {
           return he.encode(data || '');
         }
       }
-    ].
+    ],
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
   });
 });
