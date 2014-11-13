@@ -1,5 +1,9 @@
 2.029013_001 - 2014-11-13
 
+  [ENHANCEMENTS]
+
+  * [#161] Updated IOS-XR SSHCollector
+
   [BUG FIXES]
 
   * Fix for latest DBIx::Class (deploy)

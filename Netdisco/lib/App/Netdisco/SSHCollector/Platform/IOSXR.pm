@@ -8,7 +8,7 @@ App::Netdisco::SSHCollector::Platform::IOSXR
 
 =head1 DESCRIPTION
 
-Collect ARP entries from Cisco IOS XR devices.
+Collect ARP entries from Cisco IOSXR devices.
 
 =cut
 
@@ -16,7 +16,6 @@ use strict;
 use warnings;
 
 use Dancer ':script';
-use Expect;
 use Moo;
 
 =head1 PUBLIC METHODS
@@ -36,28 +35,19 @@ sub arpnip {
     my ($self, $hostlabel, $ssh, @args) = @_;
 
     debug "$hostlabel $$ arpnip()";
+    my @data = $ssh->capture("show arp vrf all");
 
-    my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
-    my $expect = Expect->init($pty);
-
-    my ($pos, $error, $match, $before, $after);
-    my $prompt = qr/#/;
-
-    ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-
-    $expect->send("terminal length 0\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect(5, -re, $prompt);
-
+    chomp @data;
     my @arpentries;
 
-    $expect->send("show arp vrf all\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect(5, -re, $prompt);
-
     # 0.0.0.0     00:00:00   0000.0000.0000  Dynamic    ARPA  GigabitEthernet0/0/0/0
-    for (split(/\n/, $before)){
+    foreach (@data) {
+
         my ($ip, $age, $mac, $state, $t, $iface) = split(/\s+/);
-        if ($ip =~ m/(\d{1,3}\.){3}\d{1,3}/ && $mac =~ m/[0-9a-f.]+/i) {
-            push(@arpentries, { ip => $ip, mac => $mac });
+
+        if ($ip =~ m/(\d{1,3}\.){3}\d{1,3}/
+            && $mac =~ m/([0-9a-f]{4}\.){2}[0-9a-f]{4}/i) {
+              push(@arpentries, { ip => $ip, mac => $mac });
         }
     }
 
