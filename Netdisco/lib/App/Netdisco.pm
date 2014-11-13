@@ -75,7 +75,8 @@ On Fedora/Red-Hat:
 
  root:~# yum install perl-core perl-DBD-Pg net-snmp-perl make automake gcc
 
-With those installed, we can proceed...
+With those installed, next check that your system's clock is correct. Then, we
+can proceed...
 
 Create a user on your system called C<netdisco> if one does not already exist.
 We'll install Netdisco and its dependencies into this user's home area, which
