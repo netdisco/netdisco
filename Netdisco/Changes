@@ -1,9 +1,10 @@
-2.029013 - 
+2.029013_001 - 2014-11-13
 
   [BUG FIXES]
 
   * Fix for latest DBIx::Class (deploy)
   * Fix for latest Dancer (YAML::XS)
+  * [#160] Job Queue fatal error on num_slots
 
 2.029012 - 2014-10-09
 

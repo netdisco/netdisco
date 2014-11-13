@@ -27,17 +27,16 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 sub jq_getsome {
   my ($num_slots, $prio) = @_;
-  return () if defined $num_slots and $num_slots eq '0';
-  $num_slots ||= 1;
+  return () if ((!defined $num_slots) or ($num_slots < 1));
   $prio ||= 'normal';
-  my @returned = ();
 
   my $rs = schema('netdisco')->resultset('Admin')
     ->search(
       {status => 'queued', action => { -in => setting('job_prio')->{$prio} } },
-      {order_by => 'random()', rows => ($num_slots || 1)},
+      {order_by => 'random()', rows => $num_slots},
     );
 
+  my @returned = ();
   while (my $job = $rs->next) {
       push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
   }
