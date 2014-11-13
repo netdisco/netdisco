@@ -6,6 +6,7 @@
   * Fix for latest Dancer (YAML::XS)
   * [#160] Job Queue fatal error on num_slots
   * [#157] Device Port Log being emptied by device discover
+  * [#156] Only delete node_ip and node_nbt when no active nodes reference
 
 2.029012 - 2014-10-09
 
