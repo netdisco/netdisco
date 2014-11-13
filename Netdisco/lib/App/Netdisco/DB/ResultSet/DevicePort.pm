@@ -157,7 +157,6 @@ sub delete {
     DevicePortVlan
     DevicePortWireless
     DevicePortSsid
-    DevicePortLog
   /) {
       $schema->resultset($set)->search(
         { ip => { '-in' => $ports->as_query }},
