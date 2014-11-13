@@ -123,7 +123,6 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 
  su - netdisco
  curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
- ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
 
 Link some of the newly installed apps into a handy location:
 
@@ -202,9 +201,6 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
- 
- # workaround for current upstream bug
- ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
  
  # apply database schema updates
  ~/bin/netdisco-deploy
