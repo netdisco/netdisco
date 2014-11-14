@@ -119,6 +119,11 @@
               <button type="submit" class="btn btn-link nd_btn-link">NBTstat All</button>
             </form>
           </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/expire') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Run Expire Job</button>
+            </form>
+          </li>
           [% IF settings._admin_tasks.size %]
             <li class="divider"></li>
             [% FOREACH ai IN settings._admin_order %]
