@@ -10,6 +10,8 @@ use namespace::clean;
 
 use App::Netdisco::JobQueue qw/jq_defer jq_complete/;
 
+sub worker_begin { (shift)->{started} = time }
+
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
@@ -42,7 +44,8 @@ sub worker_body {
       # restart worker once a day.
       # relies on the worker seeing a job at least every hour.
       my $hour = [localtime()]->[2];
-      if ($wid and (($wid % 24) == $hour)) {
+      if ($wid and (time >= ($self->{started} + 86400))
+               and ($hour == ($wid % 24))) {
           $self->exit(0, "recycling worker $wid");
       }
   }
