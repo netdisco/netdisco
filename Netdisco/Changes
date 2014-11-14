@@ -7,6 +7,7 @@
   * [#164] Workers should restart periodically
   * [#168] Jobs requested via web UI are treated as high priority
   * [#162] Change from Net::MAC to NetAddr::MAC
+  * [#159] Macsuck archive behaviour same as ND1 (unseen nodes remain active)
   * Add "Run Expire Job" to the Admin Menu
 
   [BUG FIXES]

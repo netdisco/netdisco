@@ -741,6 +741,21 @@ Value: Number. Default: 1.
 Seconds nbtstat will wait for a response before time out.  Accepts fractional
 seconds as well as integers.
 
+=head3 C<node_freshness>
+
+Value: Number of Minutes. Default: 0
+
+Controls the behaviour of Netdisco when a node (workstation, printer, etc) has
+disappeared from the network (device MAC address tables).
+
+If set to 0, the default, nodes will remain on the last-seen switch port until
+"C<expire_nodes>" days have passed (when they'll be deleted if you run the
+Expire job). This is the same behaviour as Netdisco 1.
+
+Set to a number of minutes to enforce some kind of ageing on this data. For
+example you could set to 60 to match the default macsuck schedule, meaning
+nodes are archived if they're not in the device tables at the time of polling.
+
 =head3 C<expire_devices>
 
 Value: Number of Days. Default: 60

@@ -130,6 +130,7 @@ nbtstat_only: []
 nbtstat_max_age: 7
 nbtstat_interval: 0.02
 nbtstat_timeout: 1
+node_freshness: 0
 expire_devices: 60
 expire_nodes: 90
 expire_nodes_archive: 60
