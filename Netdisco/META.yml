@@ -59,8 +59,8 @@ requires:
   Net::DNS: 0.72
   Net::Domain: 1.23
   Net::LDAP: 0
-  NetAddr::MAC: 0.87
   NetAddr::IP: 4.068
+  NetAddr::MAC: 0.87
   Opcode: 1.07
   Path::Class: 0.32
   Plack: 1.0023
@@ -91,4 +91,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.029013_001
+version: 2.029013_002
