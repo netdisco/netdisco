@@ -5,6 +5,7 @@
   * [#161] Updated IOS-XR SSHCollector
   * [#165] Mention system clock in docs
   * [#164] Workers should restart periodically
+  * [#168] Jobs requested via web UI are treated as high priority
 
   [BUG FIXES]
 

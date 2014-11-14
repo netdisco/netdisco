@@ -25,15 +25,15 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-sub jq_getsome {
-  my ($num_slots, $prio) = @_;
+sub _getsome {
+  my ($num_slots, $where) = @_;
   return () if ((!defined $num_slots) or ($num_slots < 1));
-  $prio ||= 'normal';
+  return () if ((!defined $where) or (ref {} ne ref $where));
 
   my $rs = schema('netdisco')->resultset('Admin')
     ->search(
-      {status => 'queued', action => { -in => setting('job_prio')->{$prio} } },
-      {order_by => 'random()', rows => $num_slots},
+      { status => 'queued', %$where },
+      { order_by => 'random()', rows => $num_slots },
     );
 
   my @returned = ();
@@ -43,7 +43,22 @@ sub jq_getsome {
   return @returned;
 }
 
-sub jq_getsomep { return jq_getsome(shift, 'high') }
+sub jq_getsome {
+  return _getsome(shift,
+    { action => { -in => setting('job_prio')->{'normal'} } }
+  );
+}
+
+sub jq_getsomep {
+  return _getsome(shift, {
+    -or => [{
+        username => { '!=' => undef },
+        action => { -in => setting('job_prio')->{'normal'} },
+      },{
+        action => { -in => setting('job_prio')->{'high'} },
+    }],
+  });
+}
 
 sub jq_locked {
   my $fqdn = hostfqdn || 'localhost';
