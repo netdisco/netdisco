@@ -7,7 +7,7 @@ package App::Netdisco::DB::Result::NodeWireless;
 use strict;
 use warnings;
 
-use Net::MAC;
+use NetAddr::MAC;
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("node_wireless");
@@ -87,10 +87,10 @@ __PACKAGE__->belongs_to( node => 'App::Netdisco::DB::Result::Node',
 
 =head2 net_mac
 
-Returns the C<mac> column instantiated into a L<Net::MAC> object.
+Returns the C<mac> column instantiated into a L<NetAddr::MAC> object.
 
 =cut
 
-sub net_mac { return Net::MAC->new(mac => (shift)->mac) }
+sub net_mac { return NetAddr::MAC->new(mac => (shift)->mac) }
 
 1;

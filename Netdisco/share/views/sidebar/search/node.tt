@@ -55,9 +55,10 @@
             <div class="clearfix">
               <em class="muted">MAC address format:</em><br/>
               <select id="nd_node-mac-format" name="mac_format">
-                [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                <option[% ' selected="selected"' IF params.mac_format == format %]>[% format %]</option>
-                [% END %]
+                <option[% ' selected="selected"' IF params.mac_format == 'Cisco' %]>Cisco</option>
+                <option[% ' selected="selected"' IF params.mac_format == 'Microsoft' %] value="Microsoft">IEEE</option>
+                <option[% ' selected="selected"' IF params.mac_format == 'IEEE' %] value="IEEE">Microsoft</option>
+                <option[% ' selected="selected"' IF params.mac_format == 'Sun' %]>Sun</option>
               </select>
             </div>
             <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">

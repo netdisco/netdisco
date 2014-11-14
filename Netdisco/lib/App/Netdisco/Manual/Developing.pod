@@ -14,10 +14,10 @@ the L<documentation|App::Netdisco>. Then:
 
  su - netdisco && cd $HOME
  mkdir git && cd git
-  
+
  git clone git://git.code.sf.net/p/netdisco/netdisco-ng netdisco-ng
  cd netdisco-ng/Netdisco
-  
+
  DBIC_TRACE=1 ~/bin/localenv plackup -R share,lib -p 5001 bin/netdisco-web-fg
 
 The above creates you a git clone (change the URL if you're a Netdisco
@@ -259,7 +259,7 @@ Compared to the current Netdisco, the handler routines are very small. This is
 because (a) they don't include any HTML - this is delegated to a template, and
 (b) they don't include an SQL - this is delegated to DBIx::Class. Small
 routines are more manageable, and easier to maintain. You'll also notice use
-of modules such as L<Net::MAC> and L<NetAddr::IP::Lite> to simplify and make
+of modules such as L<NetAddr::MAC> and L<NetAddr::IP::Lite> to simplify and make
 more robust the handling of data.
 
 In fact, many sections of the web application have been factored out into

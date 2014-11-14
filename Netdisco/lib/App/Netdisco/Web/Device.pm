@@ -129,8 +129,7 @@ hook 'before_template' => sub {
       $tokens->{device_ports}->query_param($key, params->{$key});
   }
 
-  # for Net::MAC method
-  $tokens->{mac_format_call} = 'as_'. params->{'mac_format'}
+  $tokens->{mac_format_call} = 'as_'. lc(params->{'mac_format'})
     if params->{'mac_format'};
 
   foreach my $col (@{ var('port_columns') }) {

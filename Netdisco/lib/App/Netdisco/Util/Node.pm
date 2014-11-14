@@ -3,7 +3,7 @@ package App::Netdisco::Util::Node;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use Net::MAC;
+use NetAddr::MAC;
 use App::Netdisco::Util::Permission 'check_acl';
 
 use base 'Exporter';
@@ -66,23 +66,23 @@ MAC address does not belong to an interface on any known Device
 
 sub check_mac {
   my ($device, $node, $port_macs) = @_;
-  my $mac = Net::MAC->new(mac => $node, 'die' => 0, verbose => 0);
+  my $mac = NetAddr::MAC->new(mac => $node);
   my $devip = (ref $device ? $device->ip : '');
   $port_macs ||= {};
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)
-  if ($mac->get_error) {
+  if (!defined $mac or $mac->errstr) {
       debug sprintf ' [%s] check_mac - mac [%s] malformed - skipping',
         $devip, $node;
       return 0;
   }
   else {
       # lower case, hex, colon delimited, 8-bit groups
-      $node = lc $mac->as_IEEE;
+      $node = lc $mac->as_microsoft;
   }
 
   # broadcast MAC addresses
-  return 0 if $node eq 'ff:ff:ff:ff:ff:ff';
+  return 0 if $mac->is_broadcast;
 
   # all-zero MAC addresses
   return 0 if $node eq '00:00:00:00:00:00';
@@ -91,21 +91,21 @@ sub check_mac {
   return 0 if $node eq '00:00:00:00:00:01';
 
   # multicast
-  if ($node =~ m/^[0-9a-f](?:1|3|5|7|9|b|d|f):/) {
+  if ($mac->is_multicast and not $mac->is_msnlb) {
       debug sprintf ' [%s] check_mac - multicast mac [%s] - skipping',
         $devip, $node;
       return 0;
   }
 
   # VRRP
-  if (index($node, '00:00:5e:00:01:') == 0) {
+  if ($mac->is_vrrp) {
       debug sprintf ' [%s] check_mac - VRRP mac [%s] - skipping',
         $devip, $node;
       return 0;
   }
 
   # HSRP
-  if (index($node, '00:00:0c:07:ac:') == 0) {
+  if ($mac->is_hsrp or $mac->is_hsrp2) {
       debug sprintf ' [%s] check_mac - HSRP mac [%s] - skipping',
         $devip, $node;
       return 0;

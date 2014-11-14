@@ -1,12 +1,12 @@
 use inc::Module::Install;
- 
+
 name     'App-Netdisco';
 license  'bsd';
 all_from 'lib/App/Netdisco.pm';
 
 test_requires 'Test::More' => 0.88;
 test_requires 'Env::Path' => 0;
- 
+
 requires 'Algorithm::Cron' => 0.07;
 requires 'AnyEvent' => 7.05;
 requires 'AnyEvent::DNS::EtcHosts' => 0;
@@ -38,7 +38,7 @@ requires 'MCE' => 1.515;
 requires 'Net::Domain' => 1.23;
 requires 'Net::DNS' => 0.72;
 requires 'Net::LDAP' => 0;
-requires 'Net::MAC' => 2.103622;
+requires 'NetAddr::MAC' => 0.87;
 requires 'NetAddr::IP' => 4.068;
 requires 'Opcode' => 1.07;
 requires 'Path::Class' => 0.32;
