@@ -36,6 +36,15 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.029013_002
+
+=head2 General Notices
+
+The node archiving behaviour of Netdisco 2 has until now been accidentally
+different to that in Netdisco 1. This has now been fixed. See the new
+"C<node_freshness>" configuration setting if you wish to revert or tune this
+behaviour.
+
 =head1 2.029010
 
 =head2 General Notices
