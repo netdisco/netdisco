@@ -9,6 +9,7 @@
   * [#162] Change from Net::MAC to NetAddr::MAC
   * [#159] Macsuck archive behaviour same as ND1 (unseen nodes remain active)
   * [#170] Show device SNMP::Info class in web interface
+  * [#133] Custom reports respect sorting in SQL
   * Add "Run Expire Job" to the Admin Menu
 
   [BUG FIXES]

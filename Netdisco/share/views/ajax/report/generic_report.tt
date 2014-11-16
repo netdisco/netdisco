@@ -20,6 +20,7 @@
 <script>
 $(document).ready(function() {
   $('#rg-data-table').dataTable({
+    "order": [],
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );

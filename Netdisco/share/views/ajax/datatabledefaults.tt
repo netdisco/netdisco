@@ -8,4 +8,14 @@
       "search": '_INPUT_',
       "searchPlaceholder": 'Filter records...',
       "lengthMenu": "Show _MENU_ records."
+    },
+    "stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+      [% IF is_custom_report %]
+      // disable sorting for custom reports
+      data.order = "";
+      [% END %]
     }
