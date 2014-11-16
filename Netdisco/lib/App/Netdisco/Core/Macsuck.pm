@@ -112,10 +112,15 @@ sub do_macsuck {
     $ip, $total_nodes;
 
   # a use for $now ... need to archive dissapeared nodes
-  my $archived = schema('netdisco')->resultset('Node')->search({
-    switch => $ip,
-    time_last => { '<' => \$now },
-  })->update({ active => \'false' });
+  my $archived = 0;
+
+  if (setting('node_freshness')) {
+      $archived = schema('netdisco')->resultset('Node')->search({
+        switch => $ip,
+        time_last => \[ "< ($now - ?::interval)",
+          setting('node_freshness') .' minutes' ],
+      })->update({ active => \'false' });
+  }
 
   debug sprintf ' [%s] macsuck - removed %d fwd table entries to archive',
     $ip, $archived;

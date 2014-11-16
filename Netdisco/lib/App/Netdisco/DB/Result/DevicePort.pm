@@ -7,7 +7,7 @@ package App::Netdisco::DB::Result::DevicePort;
 use strict;
 use warnings;
 
-use Net::MAC;
+use NetAddr::MAC;
 
 use MIME::Base64 'encode_base64url';
 
@@ -339,10 +339,10 @@ sub base64url_port { return encode_base64url((shift)->port) }
 
 =head2 net_mac
 
-Returns the C<mac> column instantiated into a L<Net::MAC> object.
+Returns the C<mac> column instantiated into a L<NetAddr::MAC> object.
 
 =cut
 
-sub net_mac { return Net::MAC->new(mac => (shift)->mac) }
+sub net_mac { return NetAddr::MAC->new(mac => (shift)->mac) }
 
 1;

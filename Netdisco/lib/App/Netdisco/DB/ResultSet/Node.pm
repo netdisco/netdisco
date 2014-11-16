@@ -109,9 +109,30 @@ sub delete {
       return 0E0;
   }
   else {
+      # for node_ip and node_nbt *only* delete if there are no longer
+      # any active nodes referencing the IP or NBT (hence 2nd IN clause).
       foreach my $set (qw/
         NodeIp
         NodeNbt
+      /) {
+          $schema->resultset($set)->search({
+            '-and' => [
+              'me.mac' => { '-in' => $nodes->as_query },
+              'me.mac' => { '-in' => $schema->resultset($set)->search({
+                    -bool => 'nodes.active',
+                  },
+                  {
+                    columns => 'mac',
+                    join => 'nodes',
+                    group_by => 'me.mac',
+                    having => \[ 'count(nodes.mac) = 0' ],
+                  })->as_query,
+              },
+            ],
+          })->delete;
+      }
+
+      foreach my $set (qw/
         NodeMonitor
         NodeWireless
       /) {

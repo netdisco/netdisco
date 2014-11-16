@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.029012';
+our $VERSION = '2.029013_002';
 use App::Netdisco::Configuration;
 
 use Module::Find ();
@@ -75,7 +75,8 @@ On Fedora/Red-Hat:
 
  root:~# yum install perl-core perl-DBD-Pg net-snmp-perl make automake gcc
 
-With those installed, we can proceed...
+With those installed, next check that your system's clock is correct. Then, we
+can proceed...
 
 Create a user on your system called C<netdisco> if one does not already exist.
 We'll install Netdisco and its dependencies into this user's home area, which
@@ -123,7 +124,6 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 
  su - netdisco
  curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
- ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
 
 Link some of the newly installed apps into a handy location:
 
@@ -202,9 +202,6 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
- 
- # workaround for current upstream bug
- ~/bin/localenv cpanm --notest --force Dancer@1.3126 DBIx::Class@0.08270
  
  # apply database schema updates
  ~/bin/netdisco-deploy

@@ -10,7 +10,7 @@ use NetAddr::IP::Lite ':lower';
 use List::MoreUtils ();
 use Encode;
 use Try::Tiny;
-use Net::MAC;
+use NetAddr::MAC;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -754,9 +754,9 @@ sub store_neighbors {
                 $device->ip, $remote_ip, $port, $remote_id;
 
               if (!defined $neigh) {
-                  my $mac = Net::MAC->new(mac => $remote_id, 'die' => 0, verbose => 0);
-                  if (not $mac->get_error) {
-                      $neigh = $devices->single({mac => $mac->as_IEEE()});
+                  my $mac = NetAddr::MAC->new(mac => $remote_id);
+                  if ($mac and not $mac->errstr) {
+                      $neigh = $devices->single({mac => $mac->as_microsoft()});
                   }
               }
 
@@ -765,13 +765,13 @@ sub store_neighbors {
               # "myswitchname(012345-012345)"
               if (!defined $neigh) {
                   (my $tmpid = $remote_id) =~ s/.([0-9a-f]{6})-([0-9a-f]{6})./$1$2/;
-                  my $mac = Net::MAC->new(mac => $tmpid, 'die' => 0, verbose => 0);
+                  my $mac = NetAddr::MAC->new(mac => $tmpid);
 
-                  if (not $mac->get_error) {
+                  if ($mac and not $mac->errstr) {
                       info sprintf
                         '[%s] neigh - found neighbor %s by MAC %s',
-                        $device->ip, $remote_id, $mac->as_IEEE();
-                      $neigh = $devices->single({mac => $mac->as_IEEE()});
+                        $device->ip, $remote_id, $mac->as_microsoft();
+                      $neigh = $devices->single({mac => $mac->as_microsoft()});
                   }
               }
 
