@@ -55,6 +55,7 @@ foreach my $report (@{setting('reports')}) {
       if (request->is_ajax) {
           template 'ajax/report/generic_report.tt',
               { results => \@results,
+                is_custom_report => true,
                 headings => [map {values %{$_}} @{$report->{columns}}],
                 columns => [map {keys %{$_}} @{$report->{columns}}] },
               { layout => undef };

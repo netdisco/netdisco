@@ -45,6 +45,10 @@
       data.search.search = "";
       // make sure paging position is not saved
       data.start = 0;
+      [% IF is_custom_report %]
+      // disable sorting for custom reports
+      data.order = "";
+      [% END %]
     },
     "stateLoadParams": function (settings, data) {
       // load all sidebar settings
