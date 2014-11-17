@@ -176,7 +176,10 @@ sub sort_modules {
             # value.  However, the database results are sorted by 1) parent
             # 2) class 3) pos 4) index so we should just be able to push onto
             # the array and ordering be preserved.
-            push(@{$modules{$module->parent}{children}{$module->class}}, $module->index);
+            {
+              no warnings 'uninitialized';
+              push(@{$modules{$module->parent}{children}{$module->class}}, $module->index);
+            }
         } else {
             push(@{$modules{root}}, $module->index);
         }
