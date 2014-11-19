@@ -42,11 +42,12 @@ sub worker_body {
       $self->close_job($job);
 
       # restart worker once a day.
-      # relies on the worker seeing a job at least every hour.
       my $hour = [localtime()]->[2];
-      if ($wid and (time >= ($self->{started} + 86400))
-               and ($hour == ($wid % 24))) {
-          $self->exit(0, "recycling worker $wid");
+      if ($wid) {
+          if ((time >= ($self->{started} + 86400) and $hour == ($wid % 24))
+               or (time > ($self->{started} + 172800))) {
+              $self->exit(0, "recycling worker $wid");
+          }
       }
   }
 }
