@@ -36,9 +36,9 @@ requires:
   Archive::Extract: 0
   CGI::Expand: 2.05
   DBD::Pg: 0
-  DBIx::Class: 0.082801
-  DBIx::Class::Helpers: 2.023007
-  Daemon::Control: 0.001
+  DBIx::Class: 0.08281
+  DBIx::Class::Helpers: 2.024
+  Daemon::Control: 0.001006
   Dancer: 1.3132
   Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.2001
@@ -51,7 +51,7 @@ requires:
   HTTP::Tiny: 0.029
   JSON: 0
   List::MoreUtils: 0.33
-  MCE: 1.515
+  MCE: 1.52
   MIME::Base64: 3.13
   Module::Find: 0.12
   Module::Load: 0.32

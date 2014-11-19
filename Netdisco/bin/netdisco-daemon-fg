@@ -53,7 +53,7 @@ my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
 my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));
 mkdir $tmp_dir if ! -d $tmp_dir;
 
-setpgrp(0,0); # only portable variety of setpgrp
+# process-table text
 prctl 'netdisco-daemon: master';
 
 # shared local job queue
