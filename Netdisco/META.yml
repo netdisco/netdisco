@@ -39,7 +39,7 @@ requires:
   DBIx::Class: 0.082801
   DBIx::Class::Helpers: 2.023007
   Daemon::Control: 0.001
-  Dancer: 1.3131_1
+  Dancer: 1.3132
   Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.2001
   Dancer::Plugin::Passphrase: 2.0.1
@@ -60,7 +60,7 @@ requires:
   Net::Domain: 1.23
   Net::LDAP: 0
   NetAddr::IP: 4.068
-  NetAddr::MAC: 0.87
+  NetAddr::MAC: 0.9
   Opcode: 1.07
   Path::Class: 0.32
   Plack: 1.0023
