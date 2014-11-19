@@ -54,7 +54,9 @@ sub vlan {
   return job_error("Cannot alter vlan: $vlan_reconfig_check")
     if $vlan_reconfig_check;
 
-  return _set_port_generic($job, 'untagged', 'vlan');
+  my @stat = _set_port_generic($job, 'pvid'); # for Cisco trunk
+  return @stat if $stat[0] eq 'done';
+  return _set_port_generic($job, 'vlan');
 }
 
 sub _set_port_generic {
