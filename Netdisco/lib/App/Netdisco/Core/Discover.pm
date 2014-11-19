@@ -957,13 +957,11 @@ sub discover_new_neighbors {
           next;
       }
 
-      # Don't queue if job already exists
-      if (List::MoreUtils::none {$_ eq $ip} jq_queued('discover')) {
-          jq_insert({
-              device => $ip,
-              action => 'discover',
-          });
-      }
+      jq_insert({
+        device => $ip,
+        action => 'discover',
+        subaction => 'with-nodes',
+      });
   }
 }
 

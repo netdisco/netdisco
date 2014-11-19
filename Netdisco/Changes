@@ -11,6 +11,7 @@
   * [#170] Show device SNMP::Info class in web interface
   * [#133] Custom reports respect sorting in SQL
   * Add "Run Expire Job" to the Admin Menu
+  * Discovered devices are polled for ARP and MAC immediately
 
   [BUG FIXES]
 
