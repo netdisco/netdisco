@@ -36,7 +36,7 @@
       <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
       [% END %]
       <td class="nd_center-cell">
-        [% IF row.status == 'error' %]
+        [% IF row.action == 'discover' AND row.status == 'error' %]
         <a href="[% uri_for('/') %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
         [% ELSE %]
         <a href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.device | html_entity %]</a>
