@@ -6,6 +6,10 @@
   * Add BSD install notes
   * Update IP Inventory to show MAC address and have working Last Used sort
 
+  [BUG FIXES]
+
+  * Fix for node search on some formats of IPv6 addr being seen as MAC
+
 2.029014 - 2014-11-19
 
   [ENHANCEMENTS]

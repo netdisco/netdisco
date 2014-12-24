@@ -23,6 +23,7 @@ ajax '/ajax/content/search/node' => require_login sub {
     my ( $start, $end ) = param('daterange') =~ m/(\d+-\d+-\d+)/gmx;
 
     my $mac = NetAddr::MAC->new(mac => $node);
+    undef $mac if (defined $mac and $node =~ m/:{2}[a-f0-9]*$/i); # temp fix
     my @active = (param('archived') ? () : (-bool => 'active'));
 
     my @times = ();
