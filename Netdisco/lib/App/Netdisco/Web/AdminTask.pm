@@ -12,8 +12,7 @@ sub add_job {
 
     if ($device) {
         $device = NetAddr::IP::Lite->new($device);
-        return send_error('Bad device', 400)
-          if ! $device or $device->addr eq '0.0.0.0';
+        return if ! $device or $device->addr eq '0.0.0.0';
     }
 
     jq_insert({
@@ -23,18 +22,22 @@ sub add_job {
         username => session('logged_in_user'),
         userip => request->remote_address,
     });
+
+    true;
 }
 
 foreach my $action (@{ setting('job_prio')->{high} },
                     @{ setting('job_prio')->{normal} }) {
 
     ajax "/ajax/control/admin/$action" => require_role admin => sub {
-        add_job($action, param('device'), param('extra'));
+        add_job($action, param('device'), param('extra'))
+          or send_error('Bad device', 400);
     };
 
     post "/admin/$action" => require_role admin => sub {
-        add_job($action, param('device'), param('extra'));
-        redirect uri_for('/admin/jobqueue')->path;
+        add_job($action, param('device'), param('extra'))
+          ? redirect uri_for('/admin/jobqueue')->path
+          : redirect uri_for('/')->path;
     };
 }
 
