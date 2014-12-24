@@ -656,7 +656,10 @@ form .clearfix.success input {
 /* dataTables */
 
 div.nd_datatables-pager {
-      float: left;
-        margin-left: 50px;
+  float: left;
+  margin-left: 50px;
 }
 
+td.nd_nowrap {
+  white-space: nowrap;
+}

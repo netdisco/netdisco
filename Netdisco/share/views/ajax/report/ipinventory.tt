@@ -2,9 +2,9 @@
   <thead>
     <tr>
       <th>Node</th>
-      <th>DNS</th>
+      <th>MAC Address</th>
+      <th class="nd_center-cell">DNS</th>
       <th>Last Used</th>      
-      <th>First Discovered</th>
     </tr>
   </thead>
 </table>
@@ -32,19 +32,32 @@ $(document).ready(function() {
           return cell_str;
         }
       }, {
+        "data": 'mac',
+        "render": function(data, type, row, meta) {
+          var cell_str = he.encode(data || '');
+          if (type == 'display' && data && row.time_last) {
+            cell_str = '<a href="[% search_node %]&q=' + encodeURIComponent(data)
+              + (row.active ? '' : '&archived=on') + '">' + he.encode(data)
+              + (row.active ? '' : '&nbsp;<i class="icon-book text-warning"></i>&nbsp;') + '</a>';
+          }
+          return cell_str;
+        }
+      }, {
         "data": 'dns',
+        "className": "nd_nowrap nd_center-cell",
         "render": function(data, type, row, meta) {
           return he.encode(data || '');
         }
       }, {
         "data": 'age',
         "render": function(data, type, row, meta) {
-          return he.encode(data || 'Never');
-        }
-      }, {
-        "data": 'time_first',
-        "render": function(data, type, row, meta) {
-          return he.encode(data || 'Never');
+          if (type == 'display') {
+            return he.encode(data || 'Never');
+          }
+          else {
+            // so that sorting works correctly on this column
+            return row.time_last;
+          }
         }
       }
     ],

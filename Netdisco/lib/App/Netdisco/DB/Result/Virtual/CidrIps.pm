@@ -12,6 +12,7 @@ __PACKAGE__->table('cidr_ips');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
 SELECT host(network (prefix) + sub.int)::inet AS ip,
+       NULL AS mac,
        NULL::text AS dns,
        NULL::timestamp AS time_first,
        NULL::timestamp AS time_last,
@@ -28,6 +29,8 @@ ENDSQL
 __PACKAGE__->add_columns(
   "ip",
   { data_type => "inet", is_nullable => 0 },
+  "mac",
+  { data_type => "macaddr", is_nullable => 1 },
   "dns",
   { data_type => "text", is_nullable => 1 },
   "active",

@@ -28,20 +28,20 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     my ( $start, $end ) = param('daterange') =~ /(\d+-\d+-\d+)/gmx;
 
     my $limit = param('limit') || 256;
-    my $order = param('order') || 'IP';
     my $never = param('never') || '0';
+    my $order = [{-desc => 'age'}, {-asc => 'ip'}];
 
     # We need a reasonable limit to prevent a potential DoS, especially if
     # 'never' is true.  TODO: Need better input validation, both JS and
     # server-side to provide user feedback
     $limit = 8192 if $limit > 8192;
-    $order = $order eq 'IP' ? {-asc => 'ip'} : [{-desc => 'age'}, {-asc => 'ip'}];
 
     my $rs1 = schema('netdisco')->resultset('DeviceIp')->search(
         undef,
         {   join   => 'device',
             select => [
                 'alias AS ip',
+                \'NULL as mac',
                 'creation AS time_first',
                 'device.last_discover AS time_last',
                 'dns',
@@ -49,13 +49,13 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 \'false AS node',
                 \qq/replace( date_trunc( 'minute', age( now(), device.last_discover ) ) ::text, 'mon', 'month') AS age/
             ],
-            as => [qw( ip time_first time_last dns active node age)],
+            as => [qw( ip mac time_first time_last dns active node age)],
         }
     )->hri;
 
     my $rs2 = schema('netdisco')->resultset('NodeIp')->search(
         undef,
-        {   columns   => [qw( ip time_first time_last dns active)],
+        {   columns   => [qw( ip mac time_first time_last dns active)],
             '+select' => [ \'true AS node',
                            \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
                          ],
@@ -65,7 +65,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     my $rs3 = schema('netdisco')->resultset('NodeNbt')->search(
         undef,
-        {   columns   => [qw( ip time_first time_last )],
+        {   columns   => [qw( ip mac time_first time_last )],
             '+select' => [
                 'nbname AS dns', 'active',
                 \'true AS node',
@@ -83,7 +83,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         my $rs4 = schema('netdisco')->resultset('Virtual::CidrIps')->search(
             undef,
             {   bind => [ $subnet->cidr ],
-                columns   => [qw( ip time_first time_last dns active)],
+                columns   => [qw( ip mac time_first time_last dns active)],
                 '+select' => [ \'false AS node',
                                \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
                              ],
@@ -98,6 +98,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         { ip => { '<<' => $subnet->cidr } },
         {   select   => [
                 \'DISTINCT ON (ip) ip',
+                'mac',
                 'dns',
                 \qq/date_trunc('second', time_last) AS time_last/,
                 \qq/date_trunc('second', time_first) AS time_first/,
@@ -106,7 +107,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 'age'
             ],
             as => [
-                'ip',     'dns',  'time_last', 'time_first',
+                'ip',     'mac',  'dns',  'time_last', 'time_first',
                 'active', 'node', 'age'
             ],
             order_by => [{-asc => 'ip'}, {-desc => 'active'}],

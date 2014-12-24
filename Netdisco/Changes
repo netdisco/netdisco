@@ -4,6 +4,7 @@
 
   * Request net-snmp-devel on Fedora/Red-Hat builds
   * Add BSD install notes
+  * Update IP Inventory to show MAC address and have working Last Used sort
 
 2.029014 - 2014-11-19
 
