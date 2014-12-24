@@ -73,7 +73,7 @@ On Ubuntu/Debian:
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel make automake gcc
 
 With those installed, next check that your system's clock is correct. Then, we
 can proceed...
