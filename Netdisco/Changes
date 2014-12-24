@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Request net-snmp-devel on Fedora/Red-Hat builds
+  * Add BSD install notes
 
 2.029014 - 2014-11-19
 

@@ -144,6 +144,7 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 lib/App/Netdisco/Environment.pm
 lib/App/Netdisco/JobQueue.pm
 lib/App/Netdisco/JobQueue/PostgreSQL.pm
+lib/App/Netdisco/Manual/BSDInstall.pod
 lib/App/Netdisco/Manual/Configuration.pod
 lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod
