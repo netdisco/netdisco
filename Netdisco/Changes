@@ -3,7 +3,7 @@
   [ENHANCEMENTS]
 
   * Request net-snmp-devel on Fedora/Red-Hat builds
-  * Add BSD install notes
+  * [#101] Add BSD install notes
   * Update IP Inventory to show MAC address and have working Last Used sort
 
   [BUG FIXES]
