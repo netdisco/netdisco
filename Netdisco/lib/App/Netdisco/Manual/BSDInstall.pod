@@ -34,7 +34,7 @@ C<net-snmp> (should install the Perl binding C<SNMP.pm>)
 
 =head2 Netdisco User
 
- pw useradd netdisco -N -m -s /bin/bash -w no
+ pw useradd netdisco -N -m -s /bin/sh -w no
 
 =head2 PostgreSQL Setup
 
@@ -54,5 +54,16 @@ main instructions.
 C<pgtune> doesn't seem to work on NetBSD. This needs looking into. Nothing
 will break, but it just means the server probably isn't tuned to your system's
 hardware (RAM, etc).
+
+=head1 Run Control Script
+
+ # PROVIDE: netdiscoweb
+ # REQUIRE: DAEMON
+ # BEFORE:  LOGIN
+ # KEYWORD: shutdown
+ 
+ rcvar="netdisco_enable"
+
+See also L<https://www.freebsd.org/doc/en/books/porters-handbook/rc-scripts.html>
 
 =cut
