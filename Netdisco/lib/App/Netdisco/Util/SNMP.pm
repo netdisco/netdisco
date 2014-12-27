@@ -12,7 +12,7 @@ use Path::Class 'dir';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  snmp_connect snmp_connect_rw snmp_comm_reindex
+  snmp_connect snmp_connect_rw snmp_comm_reindex get_comm_reindex_vlan_list
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -398,6 +398,117 @@ sub snmp_comm_reindex {
         $device->ip, $vlan, $ver, $snmp->class;
       $snmp->update(Community => $comm . '@' . $vlan);
   }
+}
+
+# return a list of vlan numbers which are OK to macsuck on this device
+sub get_comm_reindex_vlan_list {
+  my ($device, $snmp) = @_;
+
+  return () unless $snmp->cisco_comm_indexing;
+
+  my (%vlans, %vlan_names);
+  my $i_vlan = $snmp->i_vlan || {};
+  my $trunks = $snmp->i_vlan_membership || {};
+  my $i_type = $snmp->i_type || {};
+
+  # get list of vlans in use
+  while (my ($idx, $vlan) = each %$i_vlan) {
+      # hack: if vlan id comes as 1.142 instead of 142
+      $vlan =~ s/^\d+\.//;
+      
+      # VLANs are ports interfaces capture VLAN, but don't count as in use
+      # Port channels are also 'propVirtual', but capture while checking
+      # trunk VLANs below
+      if (exists $i_type->{$idx} and $i_type->{$idx} eq 'propVirtual') {
+        $vlans{$vlan} ||= 0;
+      }
+      else {
+        ++$vlans{$vlan};
+      }
+      foreach my $t_vlan (@{$trunks->{$idx}}) {
+        ++$vlans{$t_vlan};
+      }
+  }
+
+  unless (scalar keys %vlans) {
+      debug sprintf ' [%s] macsuck - no VLANs found.', $device->ip;
+      return ();
+  }
+
+  my $v_name = $snmp->v_name || {};
+  
+  # get vlan names (required for config which filters by name)
+  while (my ($idx, $name) = each %$v_name) {
+      # hack: if vlan id comes as 1.142 instead of 142
+      (my $vlan = $idx) =~ s/^\d+\.//;
+
+      # just in case i_vlan is different to v_name set
+      # capture the VLAN, but it's not in use on a port
+      $vlans{$vlan} ||= 0;
+
+      $vlan_names{$vlan} = $name;
+  }
+
+  debug sprintf ' [%s] macsuck - VLANs: %s', $device->ip,
+    (join ',', sort keys %vlans);
+
+  my @ok_vlans = ();
+  foreach my $vlan (sort keys %vlans) {
+      my $name = $vlan_names{$vlan} || '(unnamed)';
+
+      if (ref [] eq ref setting('macsuck_no_vlan')) {
+          my $ignore = setting('macsuck_no_vlan');
+
+          if ((scalar grep {$_ eq $vlan} @$ignore) or
+              (scalar grep {$_ eq $name} @$ignore)) {
+
+              debug sprintf
+                ' [%s] macsuck VLAN %s - skipped by macsuck_no_vlan config',
+                $device->ip, $vlan;
+              next;
+          }
+      }
+
+      if (ref [] eq ref setting('macsuck_no_devicevlan')) {
+          my $ignore = setting('macsuck_no_devicevlan');
+          my $ip = $device->ip;
+
+          if ((scalar grep {$_ eq "$ip:$vlan"} @$ignore) or
+              (scalar grep {$_ eq "$ip:$name"} @$ignore)) {
+
+              debug sprintf
+                ' [%s] macsuck VLAN %s - skipped by macsuck_no_devicevlan config',
+                $device->ip, $vlan;
+              next;
+          }
+      }
+
+      if (setting('macsuck_no_unnamed') and $name eq '(unnamed)') {
+          debug sprintf
+            ' [%s] macsuck VLAN %s - skipped by macsuck_no_unnamed config',
+            $device->ip, $vlan;
+          next;
+      }
+
+      if ($vlan == 0 or $vlan > 4094) {
+          debug sprintf ' [%s] macsuck - invalid VLAN number %s',
+            $device->ip, $vlan;
+          next;
+      }
+
+      # check in use by a port on this device
+      if (!$vlans{$vlan} && !setting('macsuck_all_vlans')) {
+
+          debug sprintf
+            ' [%s] macsuck VLAN %s/%s - not in use by any port - skipping.',
+            $device->ip, $vlan, $name;
+          next;
+      }
+
+      push @ok_vlans, $vlan;
+  }
+
+  return @ok_vlans;
 }
 
 1;
