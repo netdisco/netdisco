@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS ':all';
+use App::Netdisco::Util::SNMP qw/snmp_connect get_comm_reindex_vlan_list snmp_comm_reindex/;
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use NetAddr::IP::Lite ':lower';
 use List::MoreUtils ();
@@ -17,7 +18,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   set_canonical_ip
   store_device store_interfaces store_wireless
-  store_vlans store_power store_modules
+  store_vlans store_power store_modules store_stp
   store_neighbors discover_new_neighbors
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -165,6 +166,7 @@ sub store_device {
     ps1_type ps2_type ps1_status ps2_status
     fan slots
     vendor os os_ver
+    stp_ver b_mac
   /;
 
   foreach my $property (@properties) {
@@ -869,6 +871,165 @@ sub store_neighbors {
   }
 
   return @to_discover;
+}
+
+
+=head2 store_stp( $device, $snmp )
+
+Given a Device database object, and a working SNMP connection, discover and
+store the device's Spanning Tree Protocol (STP) information.
+
+The Device database object can be a fresh L<DBIx::Class::Row> object which is
+not yet stored to the database.
+
+=cut
+
+sub store_stp {
+  my ($device, $snmp) = @_;
+
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = {map {($_->port => $_)}
+                          $device->ports(undef, {prefetch => 'neighbor_alias'})->all};
+  my $interfaces = $snmp->interfaces;
+
+  my $stptable = [];
+
+  # ...then per-vlan if supported
+  my @vlan_list = get_comm_reindex_vlan_list($device, $snmp);
+
+  if (@vlan_list) {
+    foreach my $vlan (@vlan_list) {
+      snmp_comm_reindex($snmp, $device, $vlan);
+      my $pv_stptable = _walk_stp($device, $snmp, $interfaces, $device_ports, $vlan);
+      push @$stptable, @$pv_stptable;
+    }
+  }
+  else {
+    # get STP table data via basic snmp connection
+    $stptable = _walk_stp($device, $snmp, $interfaces, $device_ports);    
+  }
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->stp_instances->delete;
+    debug sprintf ' [%s] stp - removed %d stp instances',
+      $device->ip, $gone;
+    my $stp_p_gone = $device->stp_ports->delete;
+    debug sprintf ' [%s] stp - removed %d stp port instances',
+      $device->ip, $stp_p_gone;
+    $device->stp_instances->populate($stptable);
+    debug sprintf ' [%s] stp - added %d stp instances',
+      $device->ip, scalar @$stptable;
+  });
+}
+
+# walks device STP instances and per port STP instances
+sub _walk_stp {
+  my ($device, $snmp, $interfaces, $device_ports, $comm_vlan) = @_;
+  my $device_stp = [];
+
+  # Device STP instances
+  my $stp_i_id        = $snmp->stp_i_id;
+  my $stp_i_mac       = $snmp->stp_i_mac;
+  my $stp_i_time      = $snmp->stp_i_time;
+  my $stp_i_ntop      = $snmp->stp_i_ntop;
+  my $stp_i_root      = $snmp->stp_i_root;
+  my $stp_i_root_port = $snmp->stp_i_root_port;
+  # Device per Port STP instances
+  my $stp_p_id     = $snmp->stp_p_id;
+  my $stp_p_stg_id = $snmp->stp_p_stg_id;
+  my $stp_p_bridge = $snmp->stp_p_bridge;
+  my $stp_p_port   = $snmp->stp_p_port;
+  my $stp_p_state  = $snmp->stp_p_state;
+  # Needed for mapping to interface
+  my $bp_index = $snmp->bp_index;
+
+  while (my ($idx, $mac) = each %$stp_i_mac) {
+
+    my $instance = $stp_i_id->{$idx} || $comm_vlan || '0';
+    my $des_root_mac =
+        $stp_i_root->{$idx}
+        ? substr( $stp_i_root->{$idx}, 6, 17 )
+        : $stp_i_root->{$idx};
+
+    my $dev_instance = {
+      instance       => $instance,
+      mac            => $mac,
+      top_change     => $stp_i_id->{$idx},
+      top_lastchange => $stp_i_time->{$idx},
+      des_root_mac   => $des_root_mac,
+      root_port      => $stp_i_root_port->{$idx},
+      # Some versions of DBIx::Class require the first
+      # array element to have all columns for populate
+      ports          => [],
+    };
+ 
+    while (my ($iid, $bridge) = each %$stp_p_bridge) {
+      my $p_instance = $stp_p_stg_id->{$iid} || $comm_vlan || '0';
+      next unless ($p_instance = $instance);
+
+      my $bp_id = $stp_p_id->{$iid};
+ 
+      unless (defined $bp_id) {
+          debug sprintf
+            ' [%s] stpsuck %s - instance %s has no port mapping - skipping.',
+            $device->ip, $iid, $p_instance;
+          next;
+      }
+
+      my $ifindex = $bp_index->{$bp_id};
+
+      unless (defined $ifindex) {
+          debug sprintf
+            ' [%s] stpsuck instance %s - port %s has no bp_index mapping - skipping.',
+            $device->ip, $p_instance, $bp_id;
+          next;
+      }
+
+      my $port = $interfaces->{$ifindex};
+
+      unless (defined $port) {
+          debug sprintf
+            ' [%s] stpsuck instance %s - ifindex %s has no port mapping - skipping.',
+            $device->ip, $p_instance, $ifindex;
+          next;
+      }
+
+      # this uses the cached $ports resultset to limit hits on the db
+      my $device_port = $device_ports->{$port};
+
+      unless (defined $device_port) {
+          debug sprintf
+            ' [%s] stpsuck instance %s - port %s is not in database - skipping.',
+            $device->ip, $p_instance, $port;
+          next;
+      }
+
+    my $des_bridge_mac =
+        $stp_p_bridge->{$iid}
+        ? substr( $stp_p_bridge->{$iid}, 6, 17 )
+        : $stp_p_bridge->{$iid};
+    my $des_port_id =
+        $stp_p_port->{$iid}
+        ? hex (substr( $stp_p_port->{$iid}, 3, 4 ))
+        : $stp_p_port->{$iid};
+
+      my $port_instance = {
+        port           => $port,
+        instance       => $p_instance,
+        port_id        => $bp_id,
+        des_bridge_mac => $des_bridge_mac,
+        des_port_id    => $des_port_id,
+        status         => $stp_p_state->{$iid},
+      };
+
+      push @{$dev_instance->{ports}}, $port_instance;
+    }
+
+    push @$device_stp, $dev_instance;
+
+  }
+
+  return $device_stp;
 }
 
 # take data from the topology table and update remote_ip and remote_port

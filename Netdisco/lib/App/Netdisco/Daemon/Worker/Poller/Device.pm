@@ -2,7 +2,7 @@ package App::Netdisco::Daemon::Worker::Poller::Device;
 
 use Dancer qw/:moose :syntax :script/;
 
-use App::Netdisco::Util::SNMP 'snmp_connect';
+use App::Netdisco::Util::SNMP qw/snmp_connect snmp_comm_reindex/;
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Core::Discover ':all';
 use App::Netdisco::Daemon::Util ':all';
@@ -67,6 +67,7 @@ sub discover {
   store_vlans($device, $snmp);
   store_power($device, $snmp);
   store_modules($device, $snmp) if setting('store_modules');
+  store_stp($device, $snmp);
   discover_new_neighbors($device, $snmp);
 
   # if requested, and the device has not yet been arpniped/macsucked, queue now
