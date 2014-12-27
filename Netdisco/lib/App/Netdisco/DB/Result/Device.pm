@@ -1,9 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::Device;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
-
 use strict;
 use warnings;
 
@@ -75,11 +72,12 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "last_arpnip",
   { data_type => "timestamp", is_nullable => 1 },
+  "stp_ver",
+  { data_type => "text", is_nullable => 1 },
+  "b_mac",
+  { data_type => "macaddr", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("ip");
-
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:671/XuuvsO2aMB1+IRWFjg
 
 =head1 RELATIONSHIPS
 
@@ -185,6 +183,29 @@ Returns the row from the community string table, if one exists.
 
 __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
+
+=head2 stp_instances
+
+Returns the set of STP instances on this Device.
+
+=cut
+
+__PACKAGE__->has_many(
+    stp_instances => 'App::Netdisco::DB::Result::DeviceStp',
+    'ip', { join_type => 'RIGHT' }
+);
+
+=head2 stp_ports
+
+Returns the set of STP instances known to be configured on Ports on this
+Device.
+
+=cut
+
+__PACKAGE__->has_many(
+    stp_ports => 'App::Netdisco::DB::Result::DevicePortStp',
+    'ip', { join_type => 'RIGHT' }
+);
 
 =head1 ADDITIONAL COLUMNS
 
