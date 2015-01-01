@@ -15,6 +15,8 @@
   * Fix for node search on some formats of IPv6 addr being seen as MAC
   * [#190] Ignore entries in the discover form that don't look like IP/hostname
   * Delete all job queue entries (regardless of status) when deleting device
+  * [#15] Undiscovered Neighbor report JOIN fixed, and updated to include
+    the ports where Macsuck saw the MAC address of a known Device
 
 2.029014 - 2014-11-19
 
