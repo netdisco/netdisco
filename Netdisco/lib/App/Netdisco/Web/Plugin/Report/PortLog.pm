@@ -14,6 +14,32 @@ register_report({
   hidden => true,
 });
 
+sub _sanity_ok {
+    return 0 unless
+      param('ip') =~ m/^[[:print:]]+$/
+      and param('port') =~ m/^[[:print:]]+$/
+      and param('log') =~ m/^[[:print:]]+$/;
+
+    return 1;
+}
+
+ajax '/ajax/control/report/portlog/add' => require_login sub {
+    send_error('Bad Request', 400) unless _sanity_ok();
+
+    schema('netdisco')->txn_do(sub {
+      my $user = schema('netdisco')->resultset('DevicePortLog')
+        ->create({
+          ip => param('ip'),
+          port => param('port'),
+          reason => 'other',
+          log => param('log'),
+          username => session('logged_in_user'),
+          userip => request->remote_address,
+          action => 'comment',
+        });
+    });
+};
+
 ajax '/ajax/content/report/portlog' => require_role port_control => sub {
     my $device = param('q');
     my $port = param('f');

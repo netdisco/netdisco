@@ -1,5 +1,9 @@
 2.029015
 
+  [NEW FEATURES]
+
+  * [#4] Allow comment on device port in the log, for any user
+
   [ENHANCEMENTS]
 
   * Request net-snmp-devel on Fedora/Red-Hat builds

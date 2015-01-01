@@ -160,6 +160,16 @@ __PACKAGE__->has_many( active_nodes_with_age => 'App::Netdisco::DB::Result::Virt
     cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
+=head2 logs
+
+Returns the set of C<device_port_log> entries associated with this Port.
+
+=cut
+
+__PACKAGE__->has_many( logs => 'App::Netdisco::DB::Result::DevicePortLog',
+  { 'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port' },
+);
+
 =head2 power
 
 Returns a row from the C<device_port_power> table if one refers to this
@@ -344,5 +354,17 @@ Returns the C<mac> column instantiated into a L<NetAddr::MAC> object.
 =cut
 
 sub net_mac { return NetAddr::MAC->new(mac => (shift)->mac) }
+
+=head2 last_comment
+
+Returns the most recent comment from the logs for this device port.
+
+=cut
+
+sub last_comment {
+  my $row = (shift)->logs->search(undef,
+    { order_by => { -desc => 'creation' }, rows => 1 })->first;
+  return ($row ? $row->log : '');
+}
 
 1;

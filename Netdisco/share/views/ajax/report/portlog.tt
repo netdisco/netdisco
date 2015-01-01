@@ -1,6 +1,3 @@
-[% IF results.count == 0 %]
-<div class="span2 alert alert-info">This port's log is empty.</div>
-[% ELSE %]
 <table id="data-table" class="table table-bordered table-condensed table-striped" width="100%" cellspacing="0">
   <thead>
     <tr>
@@ -10,9 +7,24 @@
       <th class="nd_center-cell">Action</th>
       <th class="nd_center-cell">Reason</th>
       <th class="nd_center-cell">Log</th>
+      <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
   </tbody>
+    <tr>
+      <td class="nd_center-cell">-</td>
+      <td class="nd_center-cell">[% session.logged_in_user | html_entity %]</td>
+      <td class="nd_center-cell">-</td>
+      <td class="nd_center-cell">comment</td>
+      <td class="nd_center-cell">Other</td>
+      <td class="nd_center-cell"><input data-form="add" class="span4" name="log" type="text" placeholder="Add comment..."></td>
+      <input data-form="add" name="ip" type="hidden" value="[% params.q | html_entity %]">
+      <input data-form="add" name="port" type="hidden" value="[% params.f | html_entity %]">
+      <td class="nd_center-cell">
+        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+      </td>
+    </tr>
+
     [% WHILE (row = results.next) %]
     <tr>
       <td class="nd_center-cell">[% row.creation_stamp | html_entity %]</td>
@@ -21,15 +33,16 @@
       <td class="nd_center-cell">[% row.action   | html_entity %]</td>
       <td class="nd_center-cell">[% settings.port_control_reasons.item(row.reason) || row.reason | html_entity %]</td>
       <td class="nd_center-cell">[% row.log || '-' | html_entity %]</td>
+      <td class="nd_center-cell"></td>
     </tr>
     [% END %]
   </tbody>
 </table>
-[% END %]
 
 <script>
 $(document).ready(function() {
   $('#data-table').dataTable({
+    sort: false,
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );

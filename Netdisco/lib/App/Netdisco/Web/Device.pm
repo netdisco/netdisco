@@ -14,6 +14,7 @@ hook 'before' => sub {
 
   my @default_port_columns_right = (
     { name => 'c_descr',       label => 'Description',       default => ''   },
+    { name => 'c_comment',     label => 'Last Comment',      default => ''   },
     { name => 'c_type',        label => 'Type',              default => ''   },
     { name => 'c_duplex',      label => 'Duplex',            default => ''   },
     { name => 'c_lastchange',  label => 'Last Change',       default => ''   },

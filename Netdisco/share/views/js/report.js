@@ -52,4 +52,35 @@
       ,delay: 150
       ,minLength: 3
     });
+
+    // dynamically bind to all forms in the table
+    $('.content').on('click', '.nd_adminbutton', function(event) {
+      // stop form from submitting normally
+      event.preventDefault();
+
+      // what purpose - add/update/del
+      var mode = $(this).attr('name');
+
+      // submit the query and put results into the tab pane
+      $.ajax({
+        type: 'POST'
+        ,async: true
+        ,dataType: 'html'
+        ,url: uri_base + '/ajax/control/report/' + tab + '/' + mode
+        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
+        ,beforeSend: function() {
+          $(target).html(
+            '<div class="span2 alert">Request submitted...</div>'
+          );
+        }
+        ,success: function() {
+          $('#' + tab + '_form').trigger('submit');
+        }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
+        ,error: function() {
+          $('#' + tab + '_form').trigger('submit');
+        }
+      });
+    });
   });
