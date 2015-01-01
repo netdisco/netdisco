@@ -8,7 +8,7 @@ use Fcntl qw/:flock :seek/;
 
 use vars qw{$VERSION @ISA $ISCORE};
 BEGIN {
-	$VERSION = '1.06';
+	$VERSION = '1.12';
 	@ISA     = 'Module::Install::Base';
 	$ISCORE  = 1;
 }
@@ -133,7 +133,7 @@ sub makemaker_args {
 	return $args;
 }
 
-# For mm args that take multiple space-seperated args,
+# For mm args that take multiple space-separated args,
 # append an argument to the current list.
 sub makemaker_append {
 	my $self = shift;
