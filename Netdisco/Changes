@@ -14,6 +14,7 @@
 
   * Fix for node search on some formats of IPv6 addr being seen as MAC
   * [#190] Ignore entries in the discover form that don't look like IP/hostname
+  * Delete all job queue entries (regardless of status) when deleting device
 
 2.029014 - 2014-11-19
 
