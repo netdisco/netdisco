@@ -1,0 +1,71 @@
+<table id="nsbi-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Operating System Version</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% FOREACH row IN results %]
+    <tr>
+      <td>
+        <a href="[% search_device %]&q=[% row.model | uri %]&vendor=[% row.vendor | uri %]&model=[% row.model | uri %]">
+            [% row.vendor.ucfirst | html_entity %]&nbsp;[% row.model | html_entity %]</a>
+            [% IF row.os %] running &quot;[% row.os | html_entity %]&quot;[% END %]
+      </td>
+      <td>
+        <a class="nd_linkcell"
+          href="[% search_device %]&q=[% row.os_ver | uri %]&vendor=[% row.vendor | uri %]&model=[% row.model | uri %]&os=[% row.os | uri %]&os_ver=[% row.os_ver | uri %]&matchall=on">
+            [% row.os_ver | html_entity %]</a>
+      </td>
+      <td>[% row.os_ver_count | html_entity %]</td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
+<style>
+tr.group,
+tr.group:hover {
+    background-color: #ddd !important;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    var table = $('#nsbi-data-table').DataTable({
+        "columnDefs": [
+            { "visible": false, "targets": 0 }
+        ],
+        sort: false,
+        "drawCallback": function ( settings ) {
+            var api = this.api();
+            var rows = api.rows( {page:'current'} ).nodes();
+            var last=null;
+ 
+            api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+                if ( last !== group ) {
+                    $(rows).eq( i ).before(
+                    '<tr class="group"><td colspan="2">'+group+'</td></tr>'
+                    );
+
+                    last = group;
+                }
+            } );
+        },
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
+    } );
+ 
+    // Order by the grouping
+    $('#nsbi-data-table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+            table.order( [ 0, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 0, 'asc' ] ).draw();
+        }
+    } );
+} );
+</script>
