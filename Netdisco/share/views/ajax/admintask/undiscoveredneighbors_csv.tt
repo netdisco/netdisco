@@ -1,5 +1,5 @@
 [% USE CSV -%]
-[% CSV.dump([ 'Device Triggering Last Discovery Attempt' 'Device Port'
+[% CSV.dump([ 'Observing Device' 'Device Port'
               'Remote IP' 'Remote Port' 'Remote ID' 'Remote Type'
               'Last Discovery Attempt' 'Discovery Log']) %]
 

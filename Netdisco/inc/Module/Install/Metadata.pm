@@ -6,7 +6,7 @@ use Module::Install::Base ();
 
 use vars qw{$VERSION @ISA $ISCORE};
 BEGIN {
-	$VERSION = '1.06';
+	$VERSION = '1.12';
 	@ISA     = 'Module::Install::Base';
 	$ISCORE  = 1;
 }
@@ -347,7 +347,7 @@ sub name_from {
 		^ \s*
 		package \s*
 		([\w:]+)
-		\s* ;
+		[\s|;]*
 		/ixms
 	) {
 		my ($name, $module_name) = ($1, $1);
@@ -705,7 +705,7 @@ sub _write_mymeta_data {
 	my @yaml = Parse::CPAN::Meta::LoadFile('META.yml');
 	my $meta = $yaml[0];
 
-	# Overwrite the non-configure dependency hashs
+	# Overwrite the non-configure dependency hashes
 	delete $meta->{requires};
 	delete $meta->{build_requires};
 	delete $meta->{recommends};

@@ -46,6 +46,7 @@ web_plugins:
   - Report::HalfDuplex
   - Report::DeviceAddrNoDNS
   - Report::DeviceByLocation
+  - Report::InventoryByModelByOS
   - Report::DeviceDnsMismatch
   - Report::DevicePoeStatus
   - Report::DuplexMismatch

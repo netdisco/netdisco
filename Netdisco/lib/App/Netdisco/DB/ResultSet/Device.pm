@@ -594,7 +594,6 @@ sub delete {
 
   $schema->resultset('Admin')->search({
     device => { '-in' => $devices->as_query },
-    action => { '-like' => 'queued%' },
   })->delete;
 
   $schema->resultset('Topology')->search({

@@ -4,8 +4,8 @@
 [% FOREACH row IN results %]
   [% mylist = [] %]
   [% mylist.push(row.ip) %]
+  [% mylist.push(row.mac) %]
   [% mylist.push(row.dns) %]
-  [% mylist.push(row.time_first) %]
   [% mylist.push(row.time_last) %]
   [% CSV.dump(mylist) %]
 

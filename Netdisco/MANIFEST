@@ -201,6 +201,7 @@ lib/App/Netdisco/Web/Plugin/Report/DeviceDnsMismatch.pm
 lib/App/Netdisco/Web/Plugin/Report/DevicePoeStatus.pm
 lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
 lib/App/Netdisco/Web/Plugin/Report/HalfDuplex.pm
+lib/App/Netdisco/Web/Plugin/Report/InventoryByModelByOS.pm
 lib/App/Netdisco/Web/Plugin/Report/IpInventory.pm
 lib/App/Netdisco/Web/Plugin/Report/ModuleInventory.pm
 lib/App/Netdisco/Web/Plugin/Report/Netbios.pm
@@ -341,6 +342,7 @@ share/views/ajax/report/generic_report.tt
 share/views/ajax/report/generic_report_csv.tt
 share/views/ajax/report/halfduplex.tt
 share/views/ajax/report/halfduplex_csv.tt
+share/views/ajax/report/inventorybymodelbyos.tt
 share/views/ajax/report/ipinventory.tt
 share/views/ajax/report/ipinventory_csv.tt
 share/views/ajax/report/moduleinventory.tt

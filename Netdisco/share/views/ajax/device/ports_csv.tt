@@ -61,6 +61,10 @@
     [% myport.push(row.descr) %]
   [% END %]
 
+  [% IF params.c_comment %]
+    [% myport.push(row.last_comment) %]
+  [% END %]
+
   [% IF params.c_type %]
     [% myport.push(row.type) %]
   [% END %]

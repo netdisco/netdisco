@@ -22,14 +22,17 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
                                      a.log,
                                      a.finished
     FROM device_port p
-    JOIN device d ON d.ip = p.ip
-    JOIN ADMIN a ON p.remote_ip = a.device
-    WHERE p.remote_ip NOT IN
-        (SELECT ALIAS
-         FROM device_ip)
-      AND a.action = 'discover'
-    ORDER BY p.remote_ip,
-             a.finished DESC
+    JOIN device d
+      ON d.ip = p.ip
+    LEFT JOIN admin a
+      ON (p.remote_ip = a.device AND a.action = 'discover')
+    WHERE
+        (p.remote_ip NOT IN (SELECT alias FROM device_ip))
+      OR
+        ((p.remote_ip IS NULL) AND p.is_uplink)
+    ORDER BY
+      p.remote_ip ASC,
+      a.finished DESC
 ENDSQL
 
 __PACKAGE__->add_columns(

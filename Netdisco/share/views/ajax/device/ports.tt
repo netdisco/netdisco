@@ -83,15 +83,16 @@
             data-animation="" data-title="Enable Port"></i>
         </span>
       [% END %]
+      [% ELSE %]
+      <td nowrap class="nd_editable-cell"
+        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
+      [% END %]
         <a class="nd_log-icon"
           href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
           <i class="icon-file-text-alt"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
         </a>
-      [% ELSE %]
-      <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
-      [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
           [% IF row.is_master %]
@@ -119,6 +120,10 @@
 
       [% IF params.c_descr %]
       <td nowrap>[% row.descr | html_entity %]</td>
+      [% END %]
+
+      [% IF params.c_comment %]
+      <td nowrap>[% row.last_comment | html_entity %]</td>
       [% END %]
 
       [% IF params.c_type %]
