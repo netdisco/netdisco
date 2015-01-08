@@ -18,6 +18,7 @@
   * Delete all job queue entries (regardless of status) when deleting device
   * [#15] Undiscovered Neighbor report JOIN fixed, and updated to include
     the ports where Macsuck saw the MAC address of a known Device
+  * [#193] DBI Exception for Cisco ACE MacAddr format
 
 2.029014 - 2014-11-19
 

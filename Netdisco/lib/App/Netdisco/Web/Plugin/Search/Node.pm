@@ -49,7 +49,7 @@ ajax '/ajax/content/search/node' => require_login sub {
 
     my @where_mac =
       ($using_wildcards ? \['me.mac::text ILIKE ?', $likeval]
-                        : ((!defined $mac or $mac->errstr) ? \'0=1' : ('me.mac' => $mac->as_microsoft)) );
+                        : ((!defined $mac or $mac->errstr) ? \'0=1' : ('me.mac' => $mac->as_ieee)) );
 
     my $sightings = schema('netdisco')->resultset('Node')
       ->search({-and => [@where_mac, @active, @times]}, {

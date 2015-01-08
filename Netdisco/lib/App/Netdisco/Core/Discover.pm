@@ -756,7 +756,7 @@ sub store_neighbors {
               if (!defined $neigh) {
                   my $mac = NetAddr::MAC->new(mac => $remote_id);
                   if ($mac and not $mac->errstr) {
-                      $neigh = $devices->single({mac => $mac->as_microsoft()});
+                      $neigh = $devices->single({mac => $mac->as_ieee});
                   }
               }
 
@@ -770,8 +770,8 @@ sub store_neighbors {
                   if ($mac and not $mac->errstr) {
                       info sprintf
                         '[%s] neigh - found neighbor %s by MAC %s',
-                        $device->ip, $remote_id, $mac->as_microsoft();
-                      $neigh = $devices->single({mac => $mac->as_microsoft()});
+                        $device->ip, $remote_id, $mac->as_ieee;
+                      $neigh = $devices->single({mac => $mac->as_ieee});
                   }
               }
 

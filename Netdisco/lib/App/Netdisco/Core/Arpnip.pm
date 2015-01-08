@@ -7,6 +7,7 @@ use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::DNS ':all';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
+use NetAddr::MAC ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -119,8 +120,10 @@ sub store_arp {
   my ($hash_ref, $now) = @_;
   $now ||= 'now()';
   my $ip   = $hash_ref->{'ip'};
-  my $mac  = $hash_ref->{'node'};
+  my $mac  = NetAddr::MAC->new($hash_ref->{'node'});
   my $name = $hash_ref->{'dns'};
+
+  return if !defined $mac or $mac->errstr;
 
   schema('netdisco')->txn_do(sub {
     my $current = schema('netdisco')->resultset('NodeIp')
@@ -131,7 +134,7 @@ sub store_arp {
     schema('netdisco')->resultset('NodeIp')
       ->update_or_create(
       {
-        mac => $mac,
+        mac => $mac->as_ieee,
         ip => $ip,
         dns => $name,
         active => \'true',

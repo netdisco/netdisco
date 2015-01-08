@@ -78,7 +78,7 @@ sub check_mac {
   }
   else {
       # lower case, hex, colon delimited, 8-bit groups
-      $node = lc $mac->as_microsoft;
+      $node = lc $mac->as_ieee;
   }
 
   # broadcast MAC addresses

@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web 'sql_match';
+use NetAddr::MAC ();
 
 hook 'before' => sub {
   # view settings for node options
@@ -78,6 +79,7 @@ get '/search' => require_login sub {
         else {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
             my ($likeval, $likeclause) = sql_match($q);
+            my $mac = NetAddr::MAC->new($q);
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {
@@ -96,8 +98,9 @@ get '/search' => require_login sub {
                      ->search({
                        -or => [
                          {name => $likeclause},
-                         (length $q == 17 ? {mac => $q}
-                                          : \['mac::text ILIKE ?', $likeval]),
+                         ((!defined $mac or $mac->errstr)
+                            ? \['mac::text ILIKE ?', $likeval]
+                            : {mac => $mac->as_ieee}),
                        ],
                      })->count) {
 
