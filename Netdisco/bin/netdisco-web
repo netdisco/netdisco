@@ -42,6 +42,7 @@ BEGIN {
 use Daemon::Control;
 use Filesys::Notify::Simple;
 use IO::File;
+use File::Copy;
 
 use App::Netdisco::Environment;
 my $config = ($ENV{PLACK_ENV} || $ENV{DANCER_ENVIRONMENT}) .'.yml';
@@ -92,7 +93,7 @@ sub restarter {
   my $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;
 
-  my $watcher = Filesys::Notify::Simple->new([$ENV{DANCER_ENVDIR}]);
+  my $watcher = Filesys::Notify::Simple->new([$ENV{DANCER_ENVDIR}, $log_dir]);
   warn "config watcher: watching $ENV{DANCER_ENVDIR} for updates.\n";
 
   # TODO: starman also supports TTIN,TTOU,INT,QUIT
@@ -105,15 +106,27 @@ sub restarter {
       # this is blocking
       $watcher->wait(sub {
           my @events = @_;
-          @events = grep {file($_->{path})->basename eq $config} @events;
+          @events = grep {$_->{path} eq $log_file or
+                          file($_->{path})->basename eq $config} @events;
           return unless @events;
           @restart = @events;
       });
 
+      my ($hupit, $rotate) = (0, 0);
       next unless @restart;
-      warn "-- $_->{path} updated.\n" for @restart;
 
-      signal_child('HUP', $child);
+      foreach my $f (@restart) {
+          if ($f->{path} eq $log_file) {
+              ++$rotate;
+          }
+          else {
+              warn "-- $f->{path} updated.\n";
+              ++$hupit;
+          }
+      }
+
+      rotate_logs($child) if $rotate;
+      signal_child('HUP', $child) if $hupit;
   }
 }
 
@@ -137,6 +150,34 @@ sub signal_child {
   warn "config watcher: sending $signal to the server (pid:$pid)...\n";
   kill $signal => $pid;
   waitpid($pid, 0);
+}
+
+sub rotate_logs {
+  my $child = shift;
+
+  return unless (-f $log_file) and
+    ((-s $log_file) > (10 * 1024768));
+
+  my @files = glob file($log_dir, '*');
+  foreach my $f (reverse sort @files) {
+      next unless $f =~ m/$log_file\.(\d)$/;
+      my $pos = $1;
+      unlink $f if $pos == 7;
+      my $next = $pos + 1;
+      (my $newf = $f) =~ s/\.$pos$/.$next/;
+      rename $f, $newf;
+  }
+
+  # if the log file's about 10M then the race condition in copy/truncate
+  # has a low probability. if the file's larger, then we rename and kill
+  if ((-s $log_file) > (15 * 1024768)) {
+      rename $log_file, $log_file .'.1';
+      signal_child('HUP', $child);
+  }
+  else {
+      copy $log_file, $log_file .'.1';
+      truncate $log_file, 0;
+  }
 }
 
 =head1 NAME
