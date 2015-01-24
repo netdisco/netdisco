@@ -155,8 +155,9 @@ sub rotate_logs {
   }
 
   # if the log file's about 10M then the race condition in copy/truncate
-  # has a low probability. if the file's larger, then we rename and kill
-  if ((-s $log_file) > (11 * 1024768)) {
+  # has a low risk of data loss. if the file's larger, then we rename and
+  # kill.
+  if ((-s $log_file) > (12 * 1024768)) {
       rename $log_file, $log_file .'.1';
       signal_child('TERM', $child);
       $child = fork_and_start(@_);
