@@ -22,11 +22,8 @@ get '/ajax/content/report/devicepoestatus/data' => require_role admin => sub {
     my $rs = schema('netdisco')->resultset('Virtual::DevicePoeStatus');
 
     my $exp_params = expand_hash( scalar params );
-
     my $recordsTotal = $rs->count;
-
     my @data = $rs->get_datatables_data($exp_params)->hri->all;
-
     my $recordsFiltered = $rs->get_datatables_filtered_count($exp_params);
 
     content_type 'application/json';

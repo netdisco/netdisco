@@ -171,7 +171,7 @@ sub _with_datatables_paging {
     $attrs->{'offset'} = $offset;
 
     $rs = $rs->search( {}, $attrs );
-    $rs = $rs->limit($limit);
+    $rs = $rs->limit($limit) if ($limit and $limit > 0);
 
     return $rs;
 }
