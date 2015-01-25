@@ -8,6 +8,7 @@
 
   * Another fix for NetAddr::MAC tripping up on v6 addresses
   * [#191] Fix error when stopping stopped web daemon
+  * [#174] LDAP users should not be able to change password
 
 2.030000 - 2015-01-08
 

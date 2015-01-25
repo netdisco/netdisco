@@ -16,6 +16,9 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   UNION
   SELECT username, 'admin' AS role FROM users
     WHERE admin
+  UNION
+  SELECT username, 'ldap' AS role FROM users
+    WHERE ldap
 ENDSQL
 );
 
