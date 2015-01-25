@@ -4,6 +4,10 @@
 
   * [#171] Log files now rotate at 10MB up to seven times
 
+  [ENHANCEMENTS]
+
+  * [#179] Catch failure to get uptime from device
+
   [BUG FIXES]
 
   * Another fix for NetAddr::MAC tripping up on v6 addresses

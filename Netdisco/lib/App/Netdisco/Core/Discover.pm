@@ -220,6 +220,11 @@ sub store_interfaces {
 
   # clear the cached uptime and get a new one
   my $dev_uptime = $snmp->load_uptime;
+  if (!defined $dev_uptime) {
+      error sprintf ' [%s] interfaces - Error! Failed to get uptime from device!',
+        $device->ip;
+      return;
+  }
 
   # used to track how many times the device uptime wrapped
   my $dev_uptime_wrapped = 0;
