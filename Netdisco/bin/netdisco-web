@@ -64,6 +64,7 @@ my $log_file = file($log_dir, 'netdisco-web.log');
 foreach my $file ($pid_file, $log_file) {
     unless (-e $file) {
         sysopen my $fh, $file, O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY;
+        print $fh '0' if $file eq $pid_file;
         close $fh;
     }
     chown $uid, $gid, $file;

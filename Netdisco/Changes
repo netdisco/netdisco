@@ -4,6 +4,11 @@
 
   * [#171] Log files now rotate at 10MB up to seven times
 
+  [BUG FIXES]
+
+  * Another fix for NetAddr::MAC tripping up on v6 addresses
+  * [#191] Fix error when stopping stopped web daemon
+
 2.030000 - 2015-01-08
 
   [NEW FEATURES]
