@@ -326,6 +326,8 @@ share/views/ajax/device/ports.tt
 share/views/ajax/device/ports_csv.tt
 share/views/ajax/report/apchanneldist.tt
 share/views/ajax/report/apchanneldist_csv.tt
+share/views/ajax/report/apclients.tt
+share/views/ajax/report/apclients_csv.tt
 share/views/ajax/report/apradiochannelpower.tt
 share/views/ajax/report/apradiochannelpower_csv.tt
 share/views/ajax/report/deviceaddrnodns.tt
