@@ -80,7 +80,6 @@ get '/search' => require_login sub {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
             my ($likeval, $likeclause) = sql_match($q);
             my $mac = NetAddr::MAC->new($q);
-            undef $mac if (defined $mac and $q =~ m/:{2}[a-f0-9]*$/i); # temp fix
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {

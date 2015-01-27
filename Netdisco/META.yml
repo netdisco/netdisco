@@ -61,7 +61,7 @@ requires:
   Net::Domain: 1.23
   Net::LDAP: 0
   NetAddr::IP: 4.068
-  NetAddr::MAC: 0.92
+  NetAddr::MAC: 0.93
   Opcode: 1.07
   Path::Class: 0.32
   Plack: 1.0023
