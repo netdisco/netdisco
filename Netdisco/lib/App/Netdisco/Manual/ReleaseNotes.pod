@@ -36,6 +36,16 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.031000
+
+=head2 General Notices
+
+Netdisco web and backend daemons will now rotate their log files
+("C<~netdisco/logs/netdisco-{web,daemon}.log>"). This happens when they reach
+about 10MB in size and seven historical log files will be maintained in the
+same directory. The first time this happens you may notice the daemons
+restarting due to having to deal with the large initial logfile.
+
 =head1 2.029014
 
 =head2 General Notices
