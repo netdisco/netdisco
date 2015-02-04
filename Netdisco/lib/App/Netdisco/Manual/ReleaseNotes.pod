@@ -46,6 +46,13 @@ about 10MB in size and seven historical log files will be maintained in the
 same directory. The first time this happens you may notice the daemons
 restarting due to having to deal with the large initial logfile.
 
+Two missing features from Netdisco 1 have been implemented: CLI device delete
+and renumber (canonical IP change). They are available using the
+C<netdisco-do> utility.
+
+The Device Port Log comment feature from 2.030000 has been disabled as it is
+incomplete, pending a review of how to handle authorization to the feature.
+
 =head1 2.029014
 
 =head2 General Notices

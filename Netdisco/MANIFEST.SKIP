@@ -4,6 +4,7 @@
 \.swp$
 
 ^share/environments/(?!production|development|deployment)
+^share/sessions
 test.pl
 logs/.*
 ^lib/auto/App/Netdisco
