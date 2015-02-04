@@ -203,7 +203,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 This program allows you to run any Netdisco poller job from the command-line.
 
-Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>), C<nbtwalk>)
+Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
 simply add entries to the Netdisco job queue for other jobs, so won't seem
 to do much when you trigger them.
 
@@ -213,13 +213,19 @@ to do much when you trigger them.
 
 Run a discover on the device (specified with C<-d>).
 
+ ~netdisco/bin/netdisco-do discover -d 192.0.2.1
+
 =head2 macsuck
 
 Run a macsuck on the device (specified with C<-d>).
 
+ ~netdisco/bin/netdisco-do macsuck -d 192.0.2.1
+
 =head2 arpnip
 
 Run an arpnip on the device (specified with C<-d>).
+
+ ~netdisco/bin/netdisco-do arpnip -d 192.0.2.1
 
 =head2 delete
 
@@ -227,9 +233,15 @@ Delete a device (specified with C<-d>). Pass a log message for the action in
 the C<-e> parameter. Optionally request for associated nodes to be archived
 (rather than deleted) by prefixing the C<-e> parameter with "C<1,>".
 
+ ~netdisco/bin/netdisco-do delete -d 192.0.2.1
+ ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
+ ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e '1,older than the sun'
+
 =head2 nbtstat
 
 Run an nbtstat on the node (specified with C<-d>).
+
+ ~netdisco/bin/netdisco-do nbtstat -d 192.0.2.2
 
 =head2 graph
 
@@ -245,35 +257,52 @@ If you wish to test with a device class other than that discovered, prefix the
 leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
 "C<Layer2::HP::uptime>".
 
+ ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
+ ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+
 =head2 set_location
 
 Set the SNMP location field on the device (specified with C<-d>). Pass the
 location string in the C<-e> extra parameter.
+
+ ~netdisco/bin/netdisco-do set_location -d 192.0.2.1 -e 'wiring closet'
 
 =head2 set_contact
 
 Set the SNMP contact field on the device (specified with C<-d>). Pass the
 contact name in the C<-e> extra parameter.
 
+ ~netdisco/bin/netdisco-do set_contact -d 192.0.2.1 -e 'tel: 555-2453'
+
 =head2 set_portname
 
 Set the description on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (description).
+
+ ~netdisco/bin/netdisco-do set_portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
 
 =head2 set_portcontrol
 
 Set the up/down status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
 
+ ~netdisco/bin/netdisco-do set_portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
+ ~netdisco/bin/netdisco-do set_portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
+
 =head2 set_vlan
 
 Set the native VLAN on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
+ ~netdisco/bin/netdisco-do set_vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
+
 =head2 set_power
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
-(device), C<-p> parameter (port), and C<-e> parameter ("true" or "false").
+(device), C<-p> parameter (port), and C<-e> parameter ("on" or "off").
+
+ ~netdisco/bin/netdisco-do set_power -d 192.0.2.1 -p FastEthernet0/1 -e on
+ ~netdisco/bin/netdisco-do set_power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
 =head1 DEBUG LEVELS
 

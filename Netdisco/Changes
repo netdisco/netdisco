@@ -9,6 +9,7 @@
 
   * [#179] Catch failure to get uptime from device
   * [#128] Added some Juniper interface examples to the Port sort test
+  * Improve documentation for netdisco-do
 
   [BUG FIXES]
 
