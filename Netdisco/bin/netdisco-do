@@ -74,7 +74,7 @@ $ENV{DBIC_TRACE} ||= $sqltrace;
 Dancer::Logger->init('console', $CONFIG);
 
 # get requested action
-my $action = shift @ARGV;
+(my $action = shift @ARGV) =~ s/^set_//;
 
 unless ($action) {
     pod2usage(
@@ -293,49 +293,49 @@ leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
 
-=head2 set_location
+=head2 location
 
 Set the SNMP location field on the device (specified with C<-d>). Pass the
 location string in the C<-e> extra parameter.
 
- ~netdisco/bin/netdisco-do set_location -d 192.0.2.1 -e 'wiring closet'
+ ~netdisco/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
 
-=head2 set_contact
+=head2 contact
 
 Set the SNMP contact field on the device (specified with C<-d>). Pass the
 contact name in the C<-e> extra parameter.
 
- ~netdisco/bin/netdisco-do set_contact -d 192.0.2.1 -e 'tel: 555-2453'
+ ~netdisco/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
 
-=head2 set_portname
+=head2 portname
 
 Set the description on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (description).
 
- ~netdisco/bin/netdisco-do set_portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
+ ~netdisco/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
 
-=head2 set_portcontrol
+=head2 portcontrol
 
 Set the up/down status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
 
- ~netdisco/bin/netdisco-do set_portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
- ~netdisco/bin/netdisco-do set_portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
+ ~netdisco/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
+ ~netdisco/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
 
-=head2 set_vlan
+=head2 vlan
 
 Set the native VLAN on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
- ~netdisco/bin/netdisco-do set_vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
+ ~netdisco/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
 
-=head2 set_power
+=head2 power
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("on" or "off").
 
- ~netdisco/bin/netdisco-do set_power -d 192.0.2.1 -p FastEthernet0/1 -e on
- ~netdisco/bin/netdisco-do set_power -d 192.0.2.1 -p FastEthernet0/1 -e off
+ ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
+ ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
 =head1 DEBUG LEVELS
 

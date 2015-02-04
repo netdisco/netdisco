@@ -1,3 +1,9 @@
+2.031002 - 2015-02-04
+
+  [BUG FIXES]
+
+  * [#192] Fix rejection of set_* actions in netdisco-do
+
 2.031001 - 2015-02-04
 
   [BUG FIXES]
