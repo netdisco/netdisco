@@ -8,6 +8,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_device
+  delete_device
   check_device_no
   check_device_only
   is_discoverable
@@ -59,6 +60,39 @@ sub get_device {
 
   return schema('netdisco')->resultset('Device')->with_times
     ->find_or_new({ip => $ip});
+}
+
+=head2 delete_device( $ip, $archive? )
+
+Given an IP address, deletes the device from Netdisco, including all related
+data such as logs and nodes. If the C<$archive> parameter is true, then nodes
+will be maintained in an archive state.
+
+Returns true if the transaction completes, else returns false.
+
+=cut
+
+sub delete_device {
+  my ($ip, $archive, $log) = @_;
+  my $device = get_device($ip) or return 0;
+  return 0 if not $device->in_storage;
+
+  my $happy = 0;
+  schema('netdisco')->txn_do(sub {
+    schema('netdisco')->resultset('UserLog')->create({
+      username => session('logged_in_user'),
+      userip => scalar eval {request->remote_address},
+      event => "Delete device ". $device->ip ." ($ip)",
+      details => $log,
+    });
+
+    # will delete everything related too...
+    schema('netdisco')->resultset('Device')
+      ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
+    $happy = 1;
+  });
+
+  return $happy;
 }
 
 =head2 check_device_no( $ip, $setting_name )

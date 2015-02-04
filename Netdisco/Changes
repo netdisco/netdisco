@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * [#171] Log files now rotate at 10MB up to seven times
+  * Delete device from CLI with new "delete" option to netdisco-do
 
   [ENHANCEMENTS]
 

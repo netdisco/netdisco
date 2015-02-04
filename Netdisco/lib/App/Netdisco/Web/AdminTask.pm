@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::Util::Device 'delete_device';
 
 sub add_job {
     my ($action, $device, $subaction) = @_;
@@ -48,20 +49,9 @@ ajax '/ajax/control/admin/delete' => require_role admin => sub {
     send_error('Bad device', 400)
       if ! $device or $device->addr eq '0.0.0.0';
 
-    schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('UserLog')->create({
-        username => session('logged_in_user'),
-        userip => request->remote_address,
-        event => "Delete device ". $device->addr,
-        details => param('log'),
-      });
-
-      my $device = schema('netdisco')->resultset('Device')
-        ->search({ip => param('device')});
-
-      # will delete everything related too...
-      $device->delete({archive_nodes => param('archive')});
-    });
+    return delete_device(
+      $device->addr, param('archive'), param('log'),
+    );
 };
 
 get '/admin/*' => require_role admin => sub {

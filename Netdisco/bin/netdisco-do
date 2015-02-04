@@ -113,8 +113,9 @@ unless ($action) {
   }
 
   use App::Netdisco::Util::SNMP ();
-  use App::Netdisco::Util::Device 'get_device';
+  use App::Netdisco::Util::Device qw/get_device delete_device/;
   use NetAddr::IP::Lite ':lower';
+
   use Scalar::Util 'blessed';
   sub show {
     my $ip = NetAddr::IP::Lite->new($device)
@@ -136,6 +137,22 @@ unless ($action) {
     my $i = App::Netdisco::Util::SNMP::snmp_connect($dev, $class);
     Data::Printer::p($i->$extra);
     return ('done', "Showed $extra response from $device.");
+  }
+
+  sub delete {
+    my $ip = NetAddr::IP::Lite->new($device)
+      or return ('error', "Bad host or IP: $device");
+    my $dev = get_device($ip->addr);
+    unless (blessed $dev and $dev->in_storage) {
+        return ('error', "Don't know device: $device");
+    }
+
+    $extra ||= ''; my $archive = 0;
+    if ($extra =~ m/^(\d),(.+)/) {
+        ($archive, $extra) = ($1, $2);
+    }
+    delete_device($dev->ip, $archive, $extra);
+    return ('done', "Deleted device $device.");
   }
 }
 my $worker = MyWorker->new();
@@ -203,6 +220,12 @@ Run a macsuck on the device (specified with C<-d>).
 =head2 arpnip
 
 Run an arpnip on the device (specified with C<-d>).
+
+=head2 delete
+
+Delete a device (specified with C<-d>). Pass a log message for the action in
+the C<-e> parameter. Optionally request for associated nodes to be archived
+(rather than deleted) by prefixing the C<-e> parameter with "C<1,>".
 
 =head2 nbtstat
 

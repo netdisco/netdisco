@@ -40,6 +40,8 @@ __PACKAGE__->add_columns(
   },
 );
 
+__PACKAGE__->set_primary_key("id");
+
 =head1 ADDITIONAL COLUMNS
 
 =head2 creation_stamp
