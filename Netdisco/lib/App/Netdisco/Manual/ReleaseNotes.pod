@@ -49,12 +49,12 @@ upgrade:
 
 =head2 General Notices
 
-=head1 2.031003
-
 The database schema can be fully redeployed (even over an existing
 installation, in a safe way) using the following command:
 
  ~netdisco/bin/netdisco-db-deploy --reset
+
+=head1 2.031002
 
 =head2 General Notices
 
