@@ -68,7 +68,7 @@ requires:
   Plack::Middleware::Expires: 0.03
   Plack::Middleware::ReverseProxy: 0.15
   Role::Tiny: 1.002005
-  SNMP::Info: 3.18
+  SNMP::Info: 3.24
   SQL::Translator: 0.11018
   Sereal: 0
   Socket6: 0.23
@@ -92,4 +92,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: 2.031000
+version: 2.031001
