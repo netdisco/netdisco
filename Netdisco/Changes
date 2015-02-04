@@ -3,11 +3,6 @@
   [BUG FIXES]
 
   * [#192] Fix rejection of set_* actions in netdisco-do
-
-2.031001 - 2015-02-04
-
-  [BUG FIXES]
-
   * Update dependency on SNMP::Info to 3.24 to pick up bug fixes
 
 2.031000 - 2015-02-04
@@ -32,6 +27,7 @@
   * [#182] SSID and PoE showing in wrong Device Port columns
   * [#181] AP Client Count report was broken
   * [#195] Fix CGI params parsing rows limit when "All" selected
+  * Delete device was not using the custom handler and respecting node archive
 
 2.030000 - 2015-01-08
 
