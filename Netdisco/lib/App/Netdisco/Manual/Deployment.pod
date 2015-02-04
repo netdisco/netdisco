@@ -177,6 +177,13 @@ following commands into a shell script and call it nightly from C<cron>:
 This will keep 30 days of backups. You don't need to stop Netdisco during the
 backup.
 
+=head1 Database Schema Redeployment
+
+The database schema can be fully redeployed (even over an existing
+installation, in a safe way) using the following command:
+
+ ~netdisco/bin/netdisco-db-deploy --reset
+
 =head1 Further Reading...
 
 Other ways to run and host the web application can be found in the

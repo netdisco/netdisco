@@ -1,3 +1,9 @@
+2.031003 - 2015-02-04
+
+  [BUG FIXES]
+
+  * [#199] Missing schema changes when user has no permissions on DB
+
 2.031002 - 2015-02-04
 
   [BUG FIXES]
