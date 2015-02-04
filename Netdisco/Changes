@@ -4,6 +4,7 @@
 
   * [#171] Log files now rotate at 10MB up to seven times
   * Delete device from CLI with new "delete" option to netdisco-do
+  * [#197] Change IP address of device with "renumber" option to netdisco-do
 
   [ENHANCEMENTS]
 

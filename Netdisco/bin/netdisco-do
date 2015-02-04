@@ -113,7 +113,8 @@ unless ($action) {
   }
 
   use App::Netdisco::Util::SNMP ();
-  use App::Netdisco::Util::Device qw/get_device delete_device/;
+  use App::Netdisco::Util::Device
+    qw/get_device delete_device renumber_device/;
   use NetAddr::IP::Lite ':lower';
 
   use Scalar::Util 'blessed';
@@ -153,6 +154,27 @@ unless ($action) {
     }
     delete_device($dev->ip, $archive, $extra);
     return ('done', "Deleted device $device.");
+  }
+
+  sub renumber {
+    my $ip = NetAddr::IP::Lite->new($device)
+      or return ('error', "Bad host or IP: $device");
+    my $dev = get_device($ip->addr);
+    unless (blessed $dev and $dev->in_storage) {
+        return ('error', "Don't know device: $device");
+    }
+    my $old_ip = $dev->ip;
+
+    my $new_ip = NetAddr::IP::Lite->new($extra)
+      or return ('error', "Bad host or IP: $extra");
+    my $new_dev = get_device($new_ip->addr);
+    unless ($new_dev and not $new_dev->in_storage) {
+        return ('error', "Already know new device: $device");
+    }
+
+    renumber_device($dev->ip, $new_dev->ip);
+    return ('done', sprintf 'Renumbered device %s from %s to %s.',
+      $device, $old_ip, $new_dev->ip);
   }
 }
 my $worker = MyWorker->new();
@@ -236,6 +258,17 @@ the C<-e> parameter. Optionally request for associated nodes to be archived
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e '1,older than the sun'
+
+=head2 renumber
+
+Change the canonical IP address of a device (specified with C<-d>). Pass the
+new IP address in the C<-e> parameter. All related records such as topology,
+log and node information will also be updated to refer to the new device.
+
+Note that I<no> check is made as to whether the new IP is reachable for future
+polling.
+
+ ~netdisco/bin/netdisco-do renumber -d 192.0.2.1 -e 192.0.2.254
 
 =head2 nbtstat
 

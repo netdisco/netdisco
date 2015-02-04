@@ -9,6 +9,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_device
   delete_device
+  renumber_device
   check_device_no
   check_device_only
   is_discoverable
@@ -89,6 +90,36 @@ sub delete_device {
     # will delete everything related too...
     schema('netdisco')->resultset('Device')
       ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
+    $happy = 1;
+  });
+
+  return $happy;
+}
+
+=head2 renumber_device( $current_ip, $new_ip )
+
+Will update all records in Netdisco referring to the device with
+C<$current_ip> to use C<$new_ip> instead, followed by renumbering the device
+iteself.
+
+Returns true if the transaction completes, else returns false.
+
+=cut
+
+sub renumber_device {
+  my ($ip, $new_ip) = @_;
+  my $device = get_device($ip) or return 0;
+  return 0 if not $device->in_storage;
+
+  my $happy = 0;
+  schema('netdisco')->txn_do(sub {
+    schema('netdisco')->resultset('UserLog')->create({
+      username => session('logged_in_user'),
+      userip => scalar eval {request->remote_address},
+      event => "Renumbered device from $ip to $new_ip",
+    });
+
+    $device->renumber($new_ip);
     $happy = 1;
   });
 

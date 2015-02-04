@@ -6,6 +6,7 @@ package App::Netdisco::DB::Result::Device;
 
 use strict;
 use warnings;
+use NetAddr::IP::Lite ':lower';
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
@@ -185,6 +186,69 @@ Returns the row from the community string table, if one exists.
 
 __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
+
+=head1 ADDITIONAL METHODS
+
+=head2 renumber( $new_ip )
+
+Will update this device and all related database records to use the new IP
+C<$new_ip>. Returns C<undef> if $new_ip seems invalid, otherwise returns the
+Device row object.
+
+=cut
+
+sub renumber {
+  my ($device, $ip) = @_;
+  my $schema = $device->result_source->schema;
+
+  my $new_ip = NetAddr::IP::Lite->new($ip)
+    or return;
+
+  foreach my $set (qw/
+    DeviceIp
+    DeviceModule
+    DevicePower
+    DeviceVlan
+    DevicePort
+    DevicePortLog
+    DevicePortPower
+    DevicePortSsid
+    DevicePortVlan
+    DevicePortWireless
+    Community
+  /) {
+    $schema->resultset($set)
+      ->search({ip => $device->ip})
+      ->update({ip => $new_ip->addr});
+  }
+
+  $schema->resultset('DevicePort')
+    ->search({remote_ip => $device->ip})
+    ->update({remote_ip => $new_ip->addr});
+
+  $schema->resultset('DeviceIp')
+    ->search({alias => $device->ip})
+    ->update({alias => $new_ip->addr});
+
+  $schema->resultset('Admin')
+    ->search({device => $device->ip})
+    ->update({device => $new_ip->addr});
+
+  $schema->resultset('Node')
+    ->search({switch => $device->ip})
+    ->update({switch => $new_ip->addr});
+
+  $schema->resultset('Topology')
+    ->search({dev1 => $device->ip})
+    ->update({dev1 => $new_ip->addr});
+  $schema->resultset('Topology')
+    ->search({dev2 => $device->ip})
+    ->update({dev2 => $new_ip->addr});
+
+  $device->update({ip => $new_ip->addr});
+
+  return $device;
+}
 
 =head1 ADDITIONAL COLUMNS
 
