@@ -417,7 +417,8 @@ configuration.
 
  snmp_auth:
    - community: public
-   - communtiy: mycommunity
+   - community: publictwo
+   - community: mycommunity
      write: true
    - community: mycommunity2
      read: false
@@ -442,9 +443,13 @@ configuration.
      only:
        - 2001:db8::/32
 
-For SNMPv1 and SNMPv2, only the C<community> key is required. You can add
-C<read> and/or C<write> restrictions, and an IP restriction using C<only>.
-Giving the stanza a C<tag> name is optional, but recommended.
+For SNMPv1 and SNMPv2, only the C<community> key is required.  Unlike the
+global C<community>/C<community_rw> setting, this is not a list but a single
+item. To emulate their list behaviour, have multiple entries at the top
+C<snmp_auth> level, as in the example above.
+
+You can add C<read> and/or C<write> restrictions, and an IP restriction using
+C<only>. Giving the stanza a C<tag> name is optional, but recommended.
 
 For SNMPv3 the C<tag> and C<user> keys are required. You can add C<read>
 and/or C<write> restrictions, and an IP restriction using C<only>. Providing

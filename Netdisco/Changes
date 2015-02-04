@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * [#199] Missing schema changes when user has no permissions on DB
+  * [#196] Documentation for snmp_auth to explain list emulation of "community"
 
 2.031002 - 2015-02-04
 
