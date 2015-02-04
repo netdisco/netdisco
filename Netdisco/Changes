@@ -1,5 +1,9 @@
 2.031003 - 2015-02-04
 
+  [NEW FEATURES]
+
+  * "psql" option to netdisco-do to open an interactive SQL terminal
+
   [BUG FIXES]
 
   * [#199] Missing schema changes when user has no permissions on DB

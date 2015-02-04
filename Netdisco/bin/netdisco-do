@@ -91,6 +91,13 @@ unless ($action) {
   use Moo;
   use Module::Load ();
   use Data::Printer ();
+  use Scalar::Util 'blessed';
+  use NetAddr::IP::Lite ':lower';
+  use Dancer ':script';
+
+  use App::Netdisco::Util::SNMP ();
+  use App::Netdisco::Util::Device
+    qw/get_device delete_device renumber_device/;
 
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
   with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
@@ -112,12 +119,6 @@ unless ($action) {
     return ('done', 'Generated monitor data.');
   }
 
-  use App::Netdisco::Util::SNMP ();
-  use App::Netdisco::Util::Device
-    qw/get_device delete_device renumber_device/;
-  use NetAddr::IP::Lite ':lower';
-
-  use Scalar::Util 'blessed';
   sub show {
     my $ip = NetAddr::IP::Lite->new($device)
       or return ('error', "Bad host or IP: $device");
@@ -175,6 +176,34 @@ unless ($action) {
     renumber_device($dev->ip, $new_dev->ip);
     return ('done', sprintf 'Renumbered device %s from %s to %s.',
       $device, $old_ip, $new_dev->ip);
+  }
+
+  sub psql {
+    my $name = (setting('database')->{name} || 'netdisco');
+    my $host = setting('database')->{host};
+    my $user = setting('database')->{user};
+    my $pass = setting('database')->{pass};
+
+    my $port = undef;
+    if ($host =~ m/([^;]+);port=(\d+)/) {
+        $host = $1;
+        $port = $2;
+    }
+
+    $ENV{PGHOST} = $host if $host;
+    $ENV{PGPORT} = $port if defined $port;
+    $ENV{PGDATABASE} = $name;
+    $ENV{PGUSER} = $user;
+    $ENV{PGPASSWORD} = $pass;
+    $ENV{PGCLIENTENCODING} = 'UTF8';
+
+    if ($extra) {
+        system('psql', '-c', $extra);
+    }
+    else {
+        system('psql');
+    }
+    return ('done', "psql session closed.");
   }
 }
 my $worker = MyWorker->new();
@@ -292,6 +321,15 @@ leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
 
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+
+=head2 psql
+
+Start an interactive terminal with the Netdisco PostgreSQL database. If you
+pass an SQL statement in the C<-e> option then it will be executed.
+
+ ~netdisco/bin/netdisco-do psql
+ ~netdisco/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
+ ~netdisco/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
 
 =head2 location
 
