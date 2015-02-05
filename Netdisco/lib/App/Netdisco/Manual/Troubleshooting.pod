@@ -6,14 +6,14 @@ App::Netdisco::Manual::Troubleshooting - Tips and Tricks for Troubleshooting
 
 The C<netdisco-do> command has several debug flags which will show what's
 going on internally. Usually you always add C<-D> for general Netdisco
-debugging, then C<-I> for L<SNMP::Info> logging and C<Q> for SQL tracing. For
+debugging, then C<-I> for L<SNMP::Info> logging and C<-Q> for SQL tracing. For
 example:
 
  ~netdisco/bin/netdisco-do discover -d 192.0.2.1 -DIQ
 
 You will see that SNMPv2 community strings are hidden by default, to make the
 output safe for sending to Netdisco developers. To show the community string,
-set the C<SHOW_COMMUNITY> envinronment variable:
+set the C<SHOW_COMMUNITY> environment variable:
 
  SHOW_COMMUNITY=1 ~netdisco/bin/netdisco-do discover -d 192.0.2.1 -DIQ
 
@@ -25,6 +25,8 @@ understood. Netdisco can dump any leaf or table, by name:
 
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+
+You can combine this with SNMP::Info debugging, shown above (C<-I>).
 
 =head1 Interactive SQL terminal on the Netdisco Database
 
