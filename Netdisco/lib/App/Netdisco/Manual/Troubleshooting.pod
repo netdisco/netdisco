@@ -1,0 +1,65 @@
+=head1 NAME
+
+App::Netdisco::Manual::Troubleshooting - Tips and Tricks for Troubleshooting
+
+=head1 Run a Polling Job with Debugging
+
+The C<netdisco-do> command has several debug flags which will show what's
+going on internally. Usually you always add C<-D> for general Netdisco
+debugging, then C<-I> for L<SNMP::Info> logging and C<Q> for SQL tracing. For
+example:
+
+ ~netdisco/bin/netdisco-do discover -d 192.0.2.1 -DIQ
+
+You will see that SNMPv2 community strings are hidden by default, to make the
+output safe for sending to Netdisco developers. To show the community string,
+set the C<SHOW_COMMUNITY> envinronment variable:
+
+ SHOW_COMMUNITY=1 ~netdisco/bin/netdisco-do discover -d 192.0.2.1 -DIQ
+
+=head1 Dump an SNMP object for a Device
+
+This is useful when trying to work out why some information isn't displaying
+correctly (or at all) in Netdisco. It may be that the SNMP response isn't
+understood. Netdisco can dump any leaf or table, by name:
+
+ ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
+ ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+
+=head1 Interactive SQL terminal on the Netdisco Database
+
+Start an interactive terminal with the Netdisco PostgreSQL database. If you
+pass an SQL statement in the "-e" option then it will be executed.
+
+ ~netdisco/bin/netdisco-do psql
+ ~netdisco/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
+ ~netdisco/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
+
+The last example above is useful for sending data to Netdisco developers, as
+it's more compact and readable than the standard tabular output (second
+example).
+
+=head1 Database Schema Redeployment
+
+The database schema can be fully redeployed (even over an existing
+installation), in a safe way, using the following command:
+
+ ~netdisco/bin/netdisco-db-deploy --redeploy-all
+
+=head1 Debug HTTP Requests and Configuration
+
+You can see HTTP Headers received by Netdisco, and other information such as
+how it's parsing the config file, by enabling the Dancer debug plugin.  First
+download the plugin:
+
+ ~netdisco/bin/localenv cpanm --notest Dancer::Debug
+
+Then run the web daemon with the environment variable to enable the feature:
+
+ DANCER_DEBUG=1 ~/bin/netdisco-web restart
+
+A side panel appears in the web page with debug information. Be sure to turn
+this off when you're done (stop and start without the environment variable)
+otherwise secrets could be leaked to end users.
+
+=cut

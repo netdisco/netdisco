@@ -52,7 +52,7 @@ upgrade:
 The database schema can be fully redeployed (even over an existing
 installation, in a safe way) using the following command:
 
- ~netdisco/bin/netdisco-db-deploy --reset
+ ~netdisco/bin/netdisco-db-deploy --redeploy-all
 
 =head1 2.031002
 

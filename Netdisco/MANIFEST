@@ -150,6 +150,7 @@ lib/App/Netdisco/Manual/Configuration.pod
 lib/App/Netdisco/Manual/Deployment.pod
 lib/App/Netdisco/Manual/Developing.pod
 lib/App/Netdisco/Manual/ReleaseNotes.pod
+lib/App/Netdisco/Manual/Troubleshooting.pod
 lib/App/Netdisco/Manual/WritingPlugins.pod
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm

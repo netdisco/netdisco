@@ -152,18 +152,6 @@ You are instead recommended to run C<netdisco-web> behind a reverse proxy as
 described elsewhere in this document. Apache can easily act as an SSL reverse
 proxy.
 
-=head1 Debug Tricks
-
-You can see what HTTP Headers are received by Netdisco, and other information
-such as how it's parsing the config file, by enabling the Dancer debug plugin.
-First download the plugin:
-
- ~/bin/localenv cpanm --notest Dancer::Debug
-
-Then run the web daemon with the environment variable to enable the feature:
-
- DANCER_DEBUG=1 ~/bin/netdisco-web restart
-
 =head1 Database Backups
 
 We recommend you backup the Netdisco database regularly. You could put the
@@ -176,13 +164,6 @@ following commands into a shell script and call it nightly from C<cron>:
 
 This will keep 30 days of backups. You don't need to stop Netdisco during the
 backup.
-
-=head1 Database Schema Redeployment
-
-The database schema can be fully redeployed (even over an existing
-installation, in a safe way) using the following command:
-
- ~netdisco/bin/netdisco-db-deploy --reset
 
 =head1 Further Reading...
 

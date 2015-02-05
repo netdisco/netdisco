@@ -50,7 +50,7 @@ netdisco-db-deploy - Database deployment for Netdisco
 
 This script upgrades or initialises a Netdisco database schema.
 
- ~netdisco/bin/netdisco-db-deploy [--reset]
+ ~netdisco/bin/netdisco-db-deploy [--redeploy-all]
 
 This script connects to the database and runs without user interaction. If
 there's no Nedisco schema, it is deployed. If there's an unversioned schema
@@ -63,7 +63,7 @@ name must match those configured in your environment YAML file (default
 C<~/environments/deployment.yml>).
 
 If you wish to force the redeployment of all database configuration, pass the
-C<--reset> argument on the command line.
+C<--redeploy-all> argument on the command line.
 
 =head1 VERSIONS
 
@@ -91,7 +91,7 @@ Version 17 onwards deploys schema upgrades for Netdisco 2
 
 my $schema = schema('netdisco');
 
-if (scalar @ARGV and $ARGV[0] and $ARGV[0] eq '--reset') {
+if (scalar @ARGV and $ARGV[0] and $ARGV[0] eq '--redeploy-all') {
     $schema->storage->dbh_do(
       sub {
         my ($storage, $dbh, @args) = @_;

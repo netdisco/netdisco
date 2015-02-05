@@ -56,9 +56,10 @@ See the demo at: L<http://netdisco2-demo.herokuapp.com/>
 =back
 
 If you have any trouble getting installed or running, check out the
-L<Deployment|App::Netdisco::Manual::Deployment> notes, or speak to someone in
-the C<#netdisco> IRC channel (on freenode).  Before installing or upgrading
-please always review the latest L<Release
+L<Deployment|App::Netdisco::Manual::Deployment> and
+L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> notes, or speak to
+someone in the C<#netdisco> IRC channel (on freenode).  Before installing or
+upgrading please always review the latest L<Release
 Notes|App::Netdisco::Manual::ReleaseNotes>.
 
 =head1 Dependencies
@@ -190,7 +191,9 @@ daemon at the same time. Similarly, if you use the device discovery with
 Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
 
 For further documentation on deployment, see
-L<Deployment|App::Netdisco::Manual::Deployment>.
+L<Deployment|App::Netdisco::Manual::Deployment>. If you think Netdisco isn't
+behaving correctly, see also the
+L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> page.
 
 =head1 Upgrading from 2.x
 
@@ -223,10 +226,13 @@ or MAC addreses, VLAN numbers, and so on.
 
 =head2 Command-Line Device and Port Actions
 
-To run a device (discover, etc) or port control job from the command-line, use
-the bundled L<netdisco-do> program. For example:
+Most significant Device jobs and Port actions, as well as several
+troubleshooting and housekeeping duties, can be performed at the command-ling
+with the L<netdisco-do> program. For example:
 
  ~/bin/netdisco-do -D discover -d 192.0.2.1
+
+See the L<netdisco-do documentation|netdisco-do> for further details.
 
 =head2 Import Topology
 

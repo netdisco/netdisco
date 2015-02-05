@@ -1,3 +1,10 @@
+2.031004 - 2015-02-05
+
+  [ENHANCEMENTS]
+
+  * New Troubleshooting documentation
+  * Renamed --reset to --redeploy-all in netdisco-db-deploy
+
 2.031003 - 2015-02-04
 
   [NEW FEATURES]
