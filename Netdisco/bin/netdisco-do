@@ -74,7 +74,8 @@ $ENV{DBIC_TRACE} ||= $sqltrace;
 Dancer::Logger->init('console', $CONFIG);
 
 # get requested action
-(my $action = shift @ARGV) =~ s/^set_//;
+(my $action = shift @ARGV) =~ s/^set_//
+  if scalar @ARGV;
 
 unless ($action) {
     pod2usage(
