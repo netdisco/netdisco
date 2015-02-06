@@ -150,11 +150,8 @@ unless ($action) {
         return ('error', "Don't know device: $device");
     }
 
-    $extra ||= ''; my $archive = 0;
-    if ($extra =~ m/^(\d),(.+)/) {
-        ($archive, $extra) = ($1, $2);
-    }
-    delete_device($dev->ip, $archive, $extra);
+    $port = ($port ? 1 : 0);
+    delete_device($dev->ip, $port, $extra);
     return ('done', "Deleted device $device.");
   }
 
@@ -283,11 +280,11 @@ Run an arpnip on the device (specified with C<-d>).
 
 Delete a device (specified with C<-d>). Pass a log message for the action in
 the C<-e> parameter. Optionally request for associated nodes to be archived
-(rather than deleted) by prefixing the C<-e> parameter with "C<1,>".
+(rather than deleted) by setting the C<-p> parameter to "C<yes>".
 
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e '1,older than the sun'
+ ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
 
 =head2 renumber
 
