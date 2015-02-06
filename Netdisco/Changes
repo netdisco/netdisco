@@ -1,3 +1,16 @@
+2.031005 - 2015-02-06
+
+  [ENHANCEMENTS]
+
+  * Change netdisco-do "delete" command to use -p param for archive (preserve)
+  * Add documentation to Troubleshooting page explaining devices/nodes
+
+  [BUG FIXES]
+
+  * Fix netdisco-do "power" action to accept yes/no in -e param
+  * Fix undef error when printing netdisco-do help
+  * Minor documentation fixes
+
 2.031004 - 2015-02-05
 
   [ENHANCEMENTS]

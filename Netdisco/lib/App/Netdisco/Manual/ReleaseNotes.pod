@@ -36,6 +36,15 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.031005
+
+=head2 General Notices
+
+The C<netdisco-do> command's C<delete> option now uses the C<-p> parameter to
+set node archive mode (previously it was a hack on C<-e>). For example:
+
+ ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
+
 =head1 2.031003
 
 =head2 Health Advice

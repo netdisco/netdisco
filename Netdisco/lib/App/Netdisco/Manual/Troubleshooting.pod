@@ -2,7 +2,38 @@
 
 App::Netdisco::Manual::Troubleshooting - Tips and Tricks for Troubleshooting
 
-=head1 Run a Polling Job with Debugging
+=head1 Understanding Nodes and Devices
+
+The two basic components in Netdisco's world are Nodes and Devices. Devices
+are your network hardware, such as routers, switches, and firewalls. Nodes are
+the end-stations connected to Devices, such as workstations, servers,
+printers, and telephones.
+
+Devices respond to SNMP, and therefore can report useful information about
+themselves such as interfaces, operating system, IP addresses, as well as
+knowledge of other systems via MAC address and ARP tables. Devices are
+actively contacted by Netdisco during a discover (and other polling jobs such
+as macsuck, arpnip).
+
+Nodes on the other hand are passive as far as Netdisco is concerned. The only
+job which contacts a Node is nbtstat, which makes NetBIOS queries. Nodes are
+learned about via the MAC and ARP tables on Devices. Sometimes you might run
+an SNMP agent on a server (Node), and in this case Netdisco will treat it as a
+Device unless you prevent this using the C<discover_no> or C<discover_only>
+configuration.
+
+Netdisco discovers Devices using "neighbor protocols" such as CDP and LLDP. We
+assume your Devices are running these protocols and learning about their
+connections to each other. If they aren't, you'll need to configure manual
+topology within the web interface (or simply have standalone Devices).
+
+If you don't see links between Devices in Netdisco, it's either because
+they're not running a neighbor protocol, or for some reason not reporting the
+relationships to Netdisco. Use the C<show> command to troubleshoot this:
+
+ ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e c_id
+
+=head1 Run a C<netdisco-do> Task with Debugging
 
 The C<netdisco-do> command has several debug flags which will show what's
 going on internally. Usually you always add C<-D> for general Netdisco
