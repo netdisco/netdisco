@@ -113,10 +113,13 @@ sub power {
   return job_error("Cannot alter port: $reconfig_check")
     if $reconfig_check;
 
-
   my $ip = $job->device;
   my $pn = $job->port;
+
+  # munge data
   (my $data = $job->subaction) =~ s/-\w+//; # remove -other
+  $data = 'true'  if $data =~ m/^(on|yes|up)$/;
+  $data = 'false' if $data =~ m/^(off|no|down)$/;
 
   # snmp connect using rw community
   my $info = snmp_connect_rw($ip)
