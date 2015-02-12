@@ -1,5 +1,5 @@
 [% USE CSV %]
-[% CSV.dump([ 'Node' 'DNS' 'Time Last' 'Time First' ]) %]
+[% CSV.dump([ 'Node' 'MAC Address' 'DNS' 'Last Used' ]) %]
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
@@ -8,7 +8,6 @@
   [% mylist.push(row.dns) %]
   [% mylist.push(row.time_last) %]
   [% CSV.dump(mylist) %]
-
 [% END %]
 
 
