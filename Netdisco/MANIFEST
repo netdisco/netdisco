@@ -153,6 +153,7 @@ lib/App/Netdisco/Manual/ReleaseNotes.pod
 lib/App/Netdisco/Manual/Troubleshooting.pod
 lib/App/Netdisco/Manual/WritingPlugins.pod
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
+lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
 lib/App/Netdisco/SSHCollector/Platform/IOS.pm
 lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
