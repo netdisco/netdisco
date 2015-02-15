@@ -86,6 +86,24 @@ table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
   - [10, 25, 50, 100, 'All']
+vlanctl: true
+portctl_nameonly: false
+portctl_nophones: false
+portctl_vlans: false
+portctl_uplinks: false
+port_control_reasons:
+  address:     'Address Allocation Abuse'
+  copyright:   'Copyright Violation'
+  dos:         'Denial of Service'
+  bandwidth:   'Excessive Bandwidth'
+  polling:     'Excessive Polling of DNS/DHCP/SNMP'
+  noserv:      'Not In Service'
+  exploit:     'Remote Exploit Possible'
+  compromised: 'System Compromised'
+  other:       'Other'
+  resolved:    'Issue Resolved'
+check_userlog: true
+deviceport_vlan_membership_threshold: 150
 
 # -------------
 # NETDISCO CORE
@@ -157,23 +175,6 @@ ignore_interfaces:
   - '(E|T)\d \d\/\d\/\d'
 ignore_private_nets: false
 reverse_sysname: false
-vlanctl: true
-portctl_nameonly: false
-portctl_nophones: false
-portctl_vlans: false
-portctl_uplinks: false
-check_userlog: true
-port_control_reasons:
-  address:     'Address Allocation Abuse'
-  copyright:   'Copyright Violation'
-  dos:         'Denial of Service'
-  bandwidth:   'Excessive Bandwidth'
-  polling:     'Excessive Polling of DNS/DHCP/SNMP'
-  noserv:      'Not In Service'
-  exploit:     'Remote Exploit Possible'
-  compromised: 'System Compromised'
-  other:       'Other'
-  resolved:    'Issue Resolved'
 
 # --------------
 # BACKEND DAEMON

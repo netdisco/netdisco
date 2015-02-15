@@ -36,6 +36,15 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.031006
+
+=head2 General Notices
+
+When displaying device ports, Netdisco will now avoid showing VLAN Membership
+if it looks like there are a large number of VLANs on many ports. This is an
+average of the VLANs per port, configurable in
+<deviceport_vlan_membership_threshold>. The default is 150.
+
 =head1 2.031005
 
 =head2 General Notices
