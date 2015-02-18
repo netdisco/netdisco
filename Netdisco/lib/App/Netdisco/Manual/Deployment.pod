@@ -165,6 +165,12 @@ following commands into a shell script and call it nightly from C<cron>:
 This will keep 30 days of backups. You don't need to stop Netdisco during the
 backup.
 
+=head1 Display all Table Rows as Default
+
+Add the following to your configuration:
+
+ table_pagesize: -1
+
 =head1 Further Reading...
 
 Other ways to run and host the web application can be found in the
