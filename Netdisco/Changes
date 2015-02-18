@@ -1,3 +1,10 @@
+2.031007 - 2015-02-18
+
+  [BUG FIXES]
+
+  * Updates to sshcollector ASA module (B. Ellenbeck)
+  * Document the config item for displaying all VLANs on device ports
+
 2.031006 - 2015-02-15
 
   [ENHANCEMENTS]

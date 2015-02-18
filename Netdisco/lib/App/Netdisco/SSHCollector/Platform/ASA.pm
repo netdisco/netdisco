@@ -9,6 +9,11 @@ App::Netdisco::SSHCollector::Platform::ASA
 
 Collect ARP entries from Cisco ASA devices.
 
+You will need the following configuration for the user to automatically enter
+C<enable> status after login:
+
+ aaa authorization exec LOCAL auto-enable
+
 =cut
 
 use strict;
@@ -44,25 +49,23 @@ sub arpnip {
 
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
 
-    $expect->send("terminal length 2147483647\n");
+    $expect->send("terminal pager 2147483647\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(5, -re, $prompt);
 
     $expect->send("show arp\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(60, -re, $prompt);
 
     my @arpentries = ();
-    my @lines = split m/\n/, $before;
+    my @lines = split(m/\n/, $before);
 
-    # ifname 192.168.148.99 0022.1925.9305 347
+    # ifname 192.0.2.1 0011.2233.4455 123
+    my $linereg = qr/[A-z0-9\-\.]+\s([A-z0-9\-\.]+)\s
+                     ([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})/x;
+
     foreach my $line (@lines) {
-        my @parts = split m/\n/, $line;
-        my ($ip, $mac) = ($1, $2);
-
-        if ($ip and $mac and
-            $ip =~ m/(\d{1,3}\.){3}\d{1,3}/ and
-            $mac =~ m/[0-9a-f.]+/i) {
-
-            push @arpentries, { ip => $ip, mac => $mac };
+        if ($line =~ $linereg) {
+            my ($ip, $mac) = ($1, $2);
+            push @arpentries, { mac => $mac, ip => $ip };
         }
     }
 
