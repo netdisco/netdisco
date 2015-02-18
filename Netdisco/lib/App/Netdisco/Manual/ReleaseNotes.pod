@@ -63,7 +63,7 @@ This release will I<once again> remove from the database spurious Node
 entries in the web interface. We advise that you back up the database prior to
 upgrade:
 
- /usr/bin/pg_dump -F p --create -f netdisco-pgsql.dump netdisco
+ /usr/bin/pg_dump -F c --create -f netdisco-pgsql.dump netdisco
 
 =head2 General Notices
 
@@ -137,7 +137,7 @@ This release will remove from the database spurious Node (workstation,
 printer, etc) entries on vlan 0, which were causing dupliate entries in the
 web interface. We advise that you back up the database prior to upgrade:
 
- /usr/bin/pg_dump -F p --create -f netdisco-pgsql.dump netdisco
+ /usr/bin/pg_dump -F c --create -f netdisco-pgsql.dump netdisco
 
 =head2 General Notices
 

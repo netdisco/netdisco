@@ -158,7 +158,7 @@ We recommend you backup the Netdisco database regularly. You could put the
 following commands into a shell script and call it nightly from C<cron>:
 
  DATE=`date +%Y%m%d`
- /usr/bin/pg_dump -F p --create -f /path/to/backups/netdisco-pgsql-$DATE.dump netdisco
+ /usr/bin/pg_dump -F c --create -f /path/to/backups/netdisco-pgsql-$DATE.dump netdisco
  gzip -9f /path/to/backups/netdisco-pgsql-$DATE.dump
  /usr/bin/find /path/to/backups/ -type f -ctime +30 -exec rm {} \;
 
