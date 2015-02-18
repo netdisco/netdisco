@@ -413,7 +413,7 @@ Set to false to disable the periodic AJAX check for completed entries in the
 job queue for this user. Mainly useful for development to suppress noisy web
 frontend activity.
 
-=head3 C<deviceport_vlan_membership_threshold>
+=head3 C<devport_vlan_limit>
 
 Value: Number. Default: C<150>.
 

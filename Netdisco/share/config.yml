@@ -103,7 +103,7 @@ port_control_reasons:
   other:       'Other'
   resolved:    'Issue Resolved'
 check_userlog: true
-deviceport_vlan_membership_threshold: 150
+devport_vlan_limit: 150
 
 # -------------
 # NETDISCO CORE

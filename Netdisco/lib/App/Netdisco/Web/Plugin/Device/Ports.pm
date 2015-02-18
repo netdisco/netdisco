@@ -127,7 +127,7 @@ get '/ajax/content/device/ports' => require_login sub {
     my $port_cnt = $device->ports->count() || 1;
     my $vlan_cnt = $device->port_vlans->count() || 1;
     my $vmember_ok =
-      (($vlan_cnt / $port_cnt) <= setting('deviceport_vlan_membership_threshold'));
+      (($vlan_cnt / $port_cnt) <= setting('devport_vlan_limit'));
 
     if ($vmember_ok) {
         $set = $set->search_rs({}, { prefetch => 'all_port_vlans' })->with_vlan_count

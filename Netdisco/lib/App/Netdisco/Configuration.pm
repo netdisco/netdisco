@@ -52,7 +52,14 @@ if (exists setting('workers')->{interactives}
 setting('dns')->{hosts_file} ||= '/etc/hosts';
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
 
-# cope with legacy config name
+# legacy config item names
+
+config->{'devport_vlan_limit'} =
+  config->{'deviceport_vlan_membership_threshold'}
+  if setting('deviceport_vlan_membership_threshold')
+     and not setting('devport_vlan_limit');
+delete config->{'deviceport_vlan_membership_threshold'};
+
 config->{'schedule'} = config->{'housekeeping'}
   if setting('housekeeping') and not setting('schedule');
 delete config->{'housekeeping'};
