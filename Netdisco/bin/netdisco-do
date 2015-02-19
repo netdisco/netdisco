@@ -324,8 +324,10 @@ Run an nbtstat for all known nodes.
 Generate GrapgViz graphs for the largest cluster of devices.
 
 You'll need to install the L<Graph::Undirected> and L<GraphViz> Perl modules,
-and possibly also the C<graphviz> utility for your operating system.
+and possibly also the C<graphviz> utility for your operating system. Also
+create a directory for the output files.
 
+ mkdir ~netdisco/graph
  ~netdisco/bin/localenv cpanm Graph::Undirected
  ~netdisco/bin/localenv cpanm GraphViz
 
