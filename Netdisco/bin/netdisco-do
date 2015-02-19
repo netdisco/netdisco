@@ -264,17 +264,29 @@ Run a discover on the device (specified with C<-d>).
 
  ~netdisco/bin/netdisco-do discover -d 192.0.2.1
 
+=head2 discoverall
+
+Run a discover for all known devices.
+
 =head2 macsuck
 
 Run a macsuck on the device (specified with C<-d>).
 
  ~netdisco/bin/netdisco-do macsuck -d 192.0.2.1
 
+=head2 macwalk
+
+Run a macsuck for all known devices.
+
 =head2 arpnip
 
 Run an arpnip on the device (specified with C<-d>).
 
  ~netdisco/bin/netdisco-do arpnip -d 192.0.2.1
+
+=head2 arpwalk
+
+Run an arpnip for all known devices.
 
 =head2 delete
 
@@ -302,6 +314,10 @@ polling.
 Run an nbtstat on the node (specified with C<-d>).
 
  ~netdisco/bin/netdisco-do nbtstat -d 192.0.2.2
+
+=head2 nbtwalk
+
+Run an nbtstat for all known nodes.
 
 =head2 graph
 
