@@ -51,6 +51,15 @@
               </select>
             </div>
             <div class="clearfix">
+              <select class="nd_side-select" size="[% os_list.size > 5 ? 5 : os_list.size %]"
+                multiple="on" name="os"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Operating System"/>
+                [% FOREACH opt IN os_list %]
+                <option[% ' selected="selected"' IF os_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
               <select class="nd_side-select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
                 multiple="on" name="os_ver"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release"/>

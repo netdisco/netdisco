@@ -56,7 +56,7 @@ hook 'before_template' => sub {
       or index(request->path, uri_for('/ajax/content/search')->path) == 0);
 
   # used in the device search sidebar template to set selected items
-  foreach my $opt (qw/model vendor os_ver/) {
+  foreach my $opt (qw/model vendor os os_ver/) {
       my $p = (ref [] eq ref param($opt) ? param($opt)
                                           : (param($opt) ? [param($opt)] : []));
       $tokens->{"${opt}_lkp"} = { map { $_ => 1 } @$p };
@@ -114,12 +114,14 @@ get '/search' => require_login sub {
 
     # used in the device search sidebar to populate select inputs
     my $model_list  = [ $s->resultset('Device')->get_distinct_col('model')  ];
+    my $os_list     = [ $s->resultset('Device')->get_distinct_col('os') ];
     my $os_ver_list = [ $s->resultset('Device')->get_distinct_col('os_ver') ];
     my $vendor_list = [ $s->resultset('Device')->get_distinct_col('vendor') ];
 
     template 'search', {
       search => params->{'tab'},
       model_list  => $model_list,
+      os_list     => $os_list,
       os_ver_list => $os_ver_list,
       vendor_list => $vendor_list,
     };

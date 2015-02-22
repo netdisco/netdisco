@@ -168,6 +168,10 @@ a description of the vendor operating system).
 
 Will match exactly the C<model> field.
 
+=item os
+
+Will match exactly the C<os> field, which is the operating sytem.
+
 =item os_ver
 
 Will match exactly the C<os_ver> field, which is the operating sytem software version.
@@ -236,6 +240,8 @@ sub search_by_field {
 
           ($p->{model} ? ('me.model' =>
             { '-in' => $p->{model} }) : ()),
+          ($p->{os} ? ('me.os' =>
+            { '-in' => $p->{os} }) : ()),
           ($p->{os_ver} ? ('me.os_ver' =>
             { '-in' => $p->{os_ver} }) : ()),
           ($p->{vendor} ? ('me.vendor' =>
