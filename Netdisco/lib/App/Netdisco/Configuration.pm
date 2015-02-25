@@ -10,7 +10,7 @@ BEGIN {
 
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
-    my $name = (setting('database')->{name} || 'netdisco');
+    my $name = ($ENV{NETDISCO_DBNAME} || setting('database')->{name} || 'netdisco');
     my $host = setting('database')->{host};
     my $user = setting('database')->{user};
     my $pass = setting('database')->{pass};

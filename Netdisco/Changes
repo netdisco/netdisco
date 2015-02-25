@@ -1,3 +1,13 @@
+2.031009 - 2015-02-25
+
+  [ENHANCEMENTS]
+
+  * Support NETDISCO_DBNAME env var to override database name
+
+  [BUG FIXES]
+
+  * Permit whitespace in usernames (for LDAP support)
+
 2.031008 - 2015-02-22
 
   [ENHANCEMENTS]
