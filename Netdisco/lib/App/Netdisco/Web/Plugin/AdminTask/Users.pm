@@ -16,9 +16,7 @@ register_admin_task({
 
 sub _sanity_ok {
     return 0 unless param('username')
-      and param('username') =~ m/^[[:print:]]+$/
-      and param('username') !~ m/[[:space:]]/;
-
+      and param('username') =~ m/^[[:print:] ]+$/;
     return 1;
 }
 
