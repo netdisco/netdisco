@@ -1,3 +1,9 @@
+2.031010 - 2015-02-25
+
+  [ENHANCEMENTS]
+
+  * Support enable password in ASA sshcollector (M. Sheinberg)
+
 2.031009 - 2015-02-25
 
   [ENHANCEMENTS]

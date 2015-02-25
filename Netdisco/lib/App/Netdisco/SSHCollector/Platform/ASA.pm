@@ -14,6 +14,16 @@ C<enable> status after login:
 
  aaa authorization exec LOCAL auto-enable
 
+To use an C<enable> password seaparate from the login password, add an
+C<enable_password> under C<sshcollector> in your configuration file:
+
+ sshcollector:
+   - ip: '192.0.2.1'
+     user: oliver
+     password: letmein
+     enable_password: myenablepass
+     platform: IOS
+
 =cut
 
 use strict;
@@ -37,7 +47,7 @@ Returns an array of hashrefs in the format { mac => MACADDR, ip => IPADDR }.
 =cut
 
 sub arpnip {
-    my ($self, $hostlabel, $ssh, @args) = @_;
+    my ($self, $hostlabel, $ssh, $args) = @_;
 
     debug "$hostlabel $$ arpnip()";
 
@@ -45,8 +55,21 @@ sub arpnip {
     my $expect = Expect->init($pty);
 
     my ($pos, $error, $match, $before, $after);
-    my $prompt = qr/#/;
+    my $prompt;
 
+    if ($args->{enable_password}) {
+       $prompt = qr/>/;
+       ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
+
+       $expect->send("enable\n");
+
+       $prompt = qr/Password:/;
+       ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
+
+       $expect->send( $args->{enable_password} ."\n" );
+    }
+
+    $prompt = qr/#/;
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
 
     $expect->send("terminal pager 2147483647\n");

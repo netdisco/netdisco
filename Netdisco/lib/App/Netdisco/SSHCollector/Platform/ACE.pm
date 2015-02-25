@@ -41,7 +41,7 @@ Returns an array of hashrefs in the format { mac => MACADDR, ip => IPADDR }.
 =cut
 
 sub arpnip{
-    my ($self, $hostlabel, $ssh, @args) = @_;
+    my ($self, $hostlabel, $ssh, $args) = @_;
 
     debug "$hostlabel $$ arpnip()";
 
