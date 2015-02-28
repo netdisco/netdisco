@@ -1,3 +1,9 @@
+2.031012 - 2015-02-28
+
+  [ENHANCEMENTS]
+
+  * Linux (arp) support in netdisco-sshcollector (M. Sheinberg)
+
 2.031011 - 2015-02-27
 
   [BUG FIXES]

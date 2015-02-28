@@ -1,28 +1,23 @@
-package App::Netdisco::SSHCollector::Platform::ASA;
-
+package App::Netdisco::SSHCollector::Platform::Linux;
 
 =head1 NAME
 
-App::Netdisco::SSHCollector::Platform::ASA
+App::Netdisco::SSHCollector::Platform::Linux
 
 =head1 DESCRIPTION
 
-Collect ARP entries from Cisco ASA devices.
+Collect ARP entries from Linux routers
 
-You will need the following configuration for the user to automatically enter
-C<enable> status after login:
-
- aaa authorization exec LOCAL auto-enable
-
-To use an C<enable> password seaparate from the login password, add an
-C<enable_password> under C<sshcollector> in your configuration file:
+This collector uses "C<arp>" as the command for the arp utility on your
+system.  If you wish to specify an absolute path, then add an C<arp_command>
+item to your configuration:
 
  sshcollector:
    - ip: '192.0.2.1'
      user: oliver
      password: letmein
-     enable_password: myenablepass
-     platform: IOS
+     platform: Linux
+     arp_command: '/usr/sbin/arp'
 
 =cut
 
@@ -55,35 +50,19 @@ sub arpnip {
     my $expect = Expect->init($pty);
 
     my ($pos, $error, $match, $before, $after);
-    my $prompt;
+    my $prompt = qr/\$/;
 
-    if ($args->{enable_password}) {
-       $prompt = qr/>/;
-       ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-
-       $expect->send("enable\n");
-
-       $prompt = qr/Password:/;
-       ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-
-       $expect->send( $args->{enable_password} ."\n" );
-    }
-
-    $prompt = qr/#/;
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
 
-    $expect->send("terminal pager 2147483647\n");
+    my $command = ($args->{arp_command} || 'arp');
+    $expect->send("$command -n | tail -n +2\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(5, -re, $prompt);
-
-    $expect->send("show arp\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect(60, -re, $prompt);
 
     my @arpentries = ();
     my @lines = split(m/\n/, $before);
 
-    # ifname 192.0.2.1 0011.2233.4455 123
-    my $linereg = qr/[A-z0-9\-\.]+\s([A-z0-9\-\.]+)\s
-                     ([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})/x;
+    # 192.168.1.1 ether 00:b6:aa:f5:bb:6e C eth1
+    my $linereg = qr/([0-9\.]+)\s+ether\s+([a-f0-9:]+)/;
 
     foreach my $line (@lines) {
         if ($line =~ $linereg) {
