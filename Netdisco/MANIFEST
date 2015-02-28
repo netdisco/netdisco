@@ -157,6 +157,7 @@ lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
 lib/App/Netdisco/SSHCollector/Platform/IOS.pm
 lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
+lib/App/Netdisco/SSHCollector/Platform/Linux.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/Util/Daemon.pm
 lib/App/Netdisco/Util/Device.pm
