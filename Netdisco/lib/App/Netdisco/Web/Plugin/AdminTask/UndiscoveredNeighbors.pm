@@ -17,17 +17,19 @@ register_admin_task(
 );
 
 get '/ajax/content/admin/undiscoveredneighbors' => require_role admin => sub {
-    my @devices
+    my @results
         = schema('netdisco')->resultset('Virtual::UndiscoveredNeighbors')
         ->order_by('ip')->hri->all;
-
-    return unless scalar @devices;
+    return unless scalar @results;
 
     # Don't include devices excluded from discovery by config
-    my @results
-        = grep { is_discoverable( $_->{'remote_ip'}, $_->{'remote_type'} ) }
-        @devices;
-
+    # but only if the number of devices is small, as it triggers a
+    # SELECT per device to check.
+    if (scalar @results < 50) {
+        @results
+            = grep { is_discoverable( $_->{'remote_ip'}, $_->{'remote_type'} ) }
+            @results;
+    }
     return unless scalar @results;
 
     if ( request->is_ajax ) {
