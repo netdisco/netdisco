@@ -10,6 +10,7 @@ our @EXPORT_OK = qw/
   get_device
   delete_device
   renumber_device
+  match_devicetype
   check_device_no
   check_device_only
   is_discoverable
@@ -126,6 +127,21 @@ sub renumber_device {
   return $happy;
 }
 
+=head2 match_devicetype( $type, $setting_name )
+
+Given a C<$type> (which may be any text value), returns true if any of the
+list of regular expressions in C<$setting_name> is matched, otherwise returns
+false.
+
+=cut
+
+sub match_devicetype {
+    my ($type, $setting_name) = @_;
+    return 0 unless $type and $setting_name;
+    return (scalar grep {$type =~ m/$_/}
+                        @{setting($setting_name) || []});
+}
+
 =head2 check_device_no( $ip, $setting_name )
 
 Given the IP address of a device, returns true if the configuration setting
@@ -170,6 +186,8 @@ To match no devices we recommend an entry of "C<localhost>" in the setting.
 
 sub check_device_no {
   my ($ip, $setting_name) = @_;
+
+  return 0 unless $ip and $setting_name;
   my $device = get_device($ip) or return 0;
 
   my $config = setting($setting_name) || [];
@@ -251,10 +269,8 @@ sub is_discoverable {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
 
-  if ($remote_type) {
-      return _bail_msg("is_discoverable: device matched discover_no_type")
-        if scalar grep {$remote_type =~ m/$_/}
-                    @{setting('discover_no_type') || []};
+  if (match_devicetype($remote_type, 'discover_no_type')) {
+      return _bail_msg("is_discoverable: device matched discover_no_type");
   }
 
   return _bail_msg("is_discoverable: device matched discover_no")

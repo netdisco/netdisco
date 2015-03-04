@@ -237,8 +237,16 @@ database.
 
 =cut
 
-__PACKAGE__->has_many( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp',
-  { 'foreign.alias' => 'self.remote_ip' },
+__PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp',
+  sub {
+      my $args = shift;
+      return {
+          "$args->{foreign_alias}.ip" => { '=' =>
+            $args->{self_resultsource}->schema->resultset('DeviceIp')
+              ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
+                       {rows => 1, columns => 'ip', alias => 'devipsub'})->as_query }
+      };
+  },
   { join_type => 'LEFT' },
 );
 
@@ -289,7 +297,7 @@ the database.
 
 sub neighbor {
     my $row = shift;
-    return eval { $row->neighbor_alias->first->device || undef };
+    return eval { $row->neighbor_alias->device || undef };
 }
 
 =head1 ADDITIONAL COLUMNS

@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::PortMAC 'get_port_macs';
+use App::Netdisco::Util::Device qw/check_device_no match_devicetype/;
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Time::HiRes 'gettimeofday';
@@ -67,7 +68,7 @@ sub do_macsuck {
 
   # cache the device ports to save hitting the database for many single rows
   my $device_ports = {map {($_->port => $_)}
-                          $device->ports(undef, {prefetch => 'neighbor_alias'})->all};
+                          $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
   my $port_macs = get_port_macs();
   my $interfaces = $snmp->interfaces;
 
@@ -151,7 +152,8 @@ sub store_node {
 
     my $old = $nodes->search(
         { mac   => $mac,
-          vlan   => $vlan,
+          # where vlan is unknown, need to archive on all other vlans
+          ($vlan ? (vlan => $vlan) : ()),
           -bool => 'active',
           -not  => {
                     switch => $ip,
@@ -361,8 +363,21 @@ sub _walk_fwtable {
       #  * a mac addr is seen which belongs to any device port/interface
       #  * (TODO) admin sets is_uplink_admin on the device_port
 
+      # allow to gather MACs on upstream port for some kinds of device that
+      # do not expose MAC address tables via SNMP. relies on prefetched
+      # neighbors otherwise it would kill the DB with device lookups.
+      my $neigh_cannot_macsuck = eval { # can fail
+          check_device_no($device_port->neighbor, 'macsuck_unsupported') ||
+          match_devicetype($device_port->remote_type, 'macsuck_unsupported_type') };
+
       if ($device_port->is_uplink) {
-          if (my $neighbor = $device_port->neighbor) {
+          if ($neigh_cannot_macsuck) {
+              debug sprintf
+                ' [%s] macsuck %s - port %s neighbor %s without macsuck support',
+                $device->ip, $mac, $port, $device_port->neighbor->ip;
+              # continue!!
+          }
+          elsif (my $neighbor = $device_port->neighbor) {
               debug sprintf
                 ' [%s] macsuck %s - port %s has neighbor %s - skipping.',
                 $device->ip, $mac, $port, $neighbor->ip;
@@ -397,6 +412,11 @@ sub _walk_fwtable {
           debug sprintf ' [%s] macsuck %s - port %s is probably an uplink',
             $device->ip, $mac, $port;
           $device_port->update({is_uplink => \'true'});
+
+          # neighbor exists and Netdisco can speak to it, so we don't want
+          # its MAC address. however don't add to skiplist as that would
+          # clear all other MACs on the port.
+          next if $neigh_cannot_macsuck;
 
           # when there's no CDP/LLDP, we only want to gather macs at the
           # topology edge, hence skip ports with known device macs.

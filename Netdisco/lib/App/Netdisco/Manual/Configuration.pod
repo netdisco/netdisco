@@ -737,6 +737,27 @@ Value: List of "IP:vlan-number" or "IP:vlan-name". Default: Empty List.
 Similar to C<macsuck_no_vlan>, but allows specifying the device root
 (canonical) IP, in order to restrict VLAN skipping only to some devices.
 
+=head3 C<macsuck_unsupported>
+
+Value: List of Network Identifiers or Device Properties. Default: Empty List.
+
+Similar to C<macsuck_no>, but instead of skipping nodes on this device, they
+are allowed to gather on the upstream device port. Useful for devices which
+can be discovered by Netdisco but do not provide a MAC address table via SNMP.
+
+=head3 C<macsuck_unsupported_type>
+
+Value: List of Strings. Default: None.
+
+Place regular expression patterns here to skip macsuck of certain devices
+based on the CDP/LLDP device type information they advertise. MAC addresses
+will be allowed to gather on the upstream device port, as in the
+C<macscuk_unsupported> setting. For example:
+
+ macsuck_unsupported_type:
+   - 'cisco\s+AIR-LAP'
+   - '(?i)Cisco\s+IP\s+Phone'
+
 =head3 C<macsuck_bleed>
 
 Value: Boolean. Default: C<false>.

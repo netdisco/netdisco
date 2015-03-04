@@ -136,6 +136,8 @@ macsuck_no_vlan:
   - 'fddinet-default'
   - 'trnet-default'
 macsuck_no_devicevlan: []
+macsuck_unsupported: []
+macsuck_unsupported_type: []
 macsuck_bleed: false
 macsuck_min_age: 0
 snmpforce_v1: []
