@@ -339,6 +339,10 @@ Run an nbtstat on the node (specified with C<-d>).
 
 Run an nbtstat for all known nodes.
 
+=head2 expire
+
+Run Device and Node expiry actions according to configuration.
+
 =head2 graph
 
 Generate GrapgViz graphs for the largest cluster of devices.

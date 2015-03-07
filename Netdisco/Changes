@@ -14,6 +14,7 @@
   [BUG FIXES]
 
   * Only exclude discover_no on Undiscovered Neighbors report when few (<50) results
+  * Mention expire in netdisco-do docs
 
 2.031012 - 2015-02-28
 
