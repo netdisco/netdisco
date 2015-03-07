@@ -167,11 +167,30 @@ get '/ajax/content/device/ports' => require_login sub {
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
     return unless scalar @$results;
 
+    # retrieve MLAG peers
+    my ($siblings, $peers) = ({}, {});
+    my $prs = schema('netdisco')->resultset('Virtual::MLAGPeers')
+      ->search({ -or => [ {'me.ip' => $device->ip}, {'me.peer_ip' => $device->ip} ]});
+
+    while (my $p = $prs->next) {
+        if ($p->ip eq $device->ip) {
+            push @{$peers->{ $p->lag }}, 
+              {dns => $p->mid, ip => $p->mid_ip, port => $p->mid_port};
+        }
+        else {
+            push @{$siblings->{ $p->lag }}, 
+              {dns => $p->mid, ip => $p->mid_ip, port => $p->mid_port,
+               sibl_dns => $p->peer, sibl_ip => $p->peer_ip, sibl_lag => $p->peer_lag};
+        }
+    };
+
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
           results => $results,
-          nodes => $nodes_name,
+          nodes  => $nodes_name,
           device => $device,
+          peers    => $peers,
+          siblings => $siblings,
           vmember_ok => $vmember_ok,
         }, { layout => undef };
     }

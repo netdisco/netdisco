@@ -262,6 +262,17 @@
       <td>
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.neighbor %]
+            [% IF peers.exists(row.port) %]
+              [% FOREACH peer IN peers.item(row.port) %]
+              <i class="icon-link"></i>
+              <a href="[% uri_for('/device', self_options) %]&q=[% peer.ip | uri %]">
+                  [% peer.dns.remove(settings.domain_suffix) || peer.ip | html_entity %]</a>
+                -
+              <a href="[% uri_for('/device', self_options) %]&q=[% peer.ip | uri %]&f=[% peer.port | uri %]&prefer=port">
+                  [% peer.port | html_entity %]</a>
+              [% '<br/>' IF NOT loop.last %]
+              [% END %]
+            [% ELSE %]
             <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
             [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
               <i class="icon-phone"></i>&nbsp;
@@ -274,6 +285,7 @@
                 -
                 <a href="[% uri_for('/device', self_options) %]&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
                     [% row.remote_port | html_entity %]</a>
+            [% END %]
             [% END %]
             <br/>
             [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
