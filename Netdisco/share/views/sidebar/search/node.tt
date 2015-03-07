@@ -12,6 +12,15 @@
             </div>
             <div class="clearfix input-prepend">
               <label class="add-on">
+                <input type="checkbox" id="deviceports"
+                  name="deviceports"[% ' checked="checked"' IF params.deviceports %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="deviceports">
+                <span class="nd_searchcheckbox uneditable-input">Device Ports</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
                 <input type="checkbox" id="show_vendor"
                   name="show_vendor"[% ' checked="checked"' IF params.show_vendor %]/>
               </label>

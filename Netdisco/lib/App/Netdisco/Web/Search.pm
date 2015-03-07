@@ -11,7 +11,8 @@ use NetAddr::MAC ();
 hook 'before' => sub {
   # view settings for node options
   var('node_options' => [
-    { name => 'stamps', label => 'Time Stamps', default => 'on' },
+    { name => 'stamps',      label => 'Time Stamps',  default => 'on' },
+    { name => 'deviceports', label => 'Device Ports', default => 'on' },
   ]);
 
   # view settings for device options

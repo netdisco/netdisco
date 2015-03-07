@@ -25,7 +25,7 @@ ajax '/ajax/content/search/node' => require_login sub {
     my $mac = NetAddr::MAC->new(mac => $node);
     my @active = (param('archived') ? () : (-bool => 'active'));
 
-    my @times = ();
+    my (@times, @wifitimes, @porttimes);
     if ($start and $end) {
         $start = $start . ' 00:00:00';
         $end   = $end   . ' 23:59:59';
@@ -34,11 +34,27 @@ ajax '/ajax/content/search/node' => require_login sub {
               time_first => [ { '<', $start }, undef ],
               time_last => { '>', $end },
             ]);
+            @wifitimes = (-or => [
+              time_last => { '<', $start },
+              time_last => { '>', $end },
+            ]);
+            @porttimes = (-or => [
+              creation => { '<', $start },
+              creation => { '>', $end },
+            ]);
         }
         else {
             @times = (-and => [
               time_first => { '>=', $start },
               time_last  => { '<=', $end },
+            ]);
+            @wifitimes = (-and => [
+              time_last => { '>=', $start },
+              time_last => { '<=', $end },
+            ]);
+            @porttimes = (-and => [
+              creation => { '>=', $start },
+              creation => { '<=', $end },
             ]);
         }
     }
@@ -85,11 +101,8 @@ ajax '/ajax/content/search/node' => require_login sub {
           join => 'oui'
       });
 
-    my $ports = schema('netdisco')->resultset('DevicePort')
-      ->search({ -and => [@where_mac] });
-
     my $wireless = schema('netdisco')->resultset('NodeWireless')->search(
-        { -and => [@where_mac] },
+        { -and => [@where_mac, @wifitimes] },
         { order_by   => { '-desc' => 'time_last' },
           '+columns' => [
             'oui.company',
@@ -101,8 +114,10 @@ ajax '/ajax/content/search/node' => require_login sub {
         }
     );
 
-    if ($sightings->has_rows or $ips->has_rows
-          or $ports->has_rows or $netbios->has_rows) {
+    my $rs_dp = schema('netdisco')->resultset('DevicePort');
+    if ($sightings->has_rows or $ips->has_rows or $netbios->has_rows) {
+        my $ports = param('deviceports')
+          ? $rs_dp->search({ -and => [@where_mac] }) : undef;
 
         return template 'ajax/search/node_by_mac.tt', {
           ips       => $ips,
@@ -112,7 +127,20 @@ ajax '/ajax/content/search/node' => require_login sub {
           netbios   => $netbios,
         }, { layout => undef };
     }
+    else {
+        my $ports = param('deviceports')
+          ? $rs_dp->search({ -and => [@where_mac, @porttimes] }) : undef;
 
+        if (defined $ports and $ports->has_rows) {
+            return template 'ajax/search/node_by_mac.tt', {
+              ips       => $ips,
+              sightings => $sightings,
+              ports     => $ports,
+              wireless  => $wireless,
+              netbios   => $netbios,
+            }, { layout => undef };
+        }
+    }
 
     my $set = schema('netdisco')->resultset('NodeNbt')
         ->search_by_name({nbname => $likeval, @active, @times});
@@ -133,7 +161,7 @@ ajax '/ajax/content/search/node' => require_login sub {
             # if the user selects Vendor search opt, then
             # we'll try the OUI company name as a fallback
 
-            if (not $set->has_rows and param('show_vendor')) {
+            if (param('show_vendor') and not $set->has_rows) {
                 $set = schema('netdisco')->resultset('NodeIp')
                   ->with_times
                   ->search(

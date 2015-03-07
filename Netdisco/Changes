@@ -8,6 +8,8 @@
   [ENHANCEMENTS]
 
   * Show page and total records number on DataTables tables
+  * Be more strict about Node Search matching ports/wifi within date range
+  * Allow filtering out of Device Ports on Node (MAC) search
 
   [BUG FIXES]
 
