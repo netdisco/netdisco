@@ -1,15 +1,18 @@
 
-    "processing": true,
-    "stateSave": true,
-    "pageLength": [% settings.table_pagesize %],
-    "lengthMenu": [% table_showrecordsmenu %],
-    "dom": '<"top"l<"nd_datatables-pager"p>f>rt<"bottom"><"clear">',
-    "language": {
-      "search": '_INPUT_',
-      "searchPlaceholder": 'Filter records...',
-      "lengthMenu": "Show _MENU_ records."
-    },
-    "stateSaveParams": function (settings, data) {
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": [% settings.table_pagesize %]
+    ,"lengthMenu": [% table_showrecordsmenu %]
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+    ,"language": {
+      "search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+    }
+    ,"stateSaveParams": function (settings, data) {
       // make sure filter is never saved
       data.search.search = "";
       // make sure paging position is not saved

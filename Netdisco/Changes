@@ -1,8 +1,12 @@
-2.031013_001 - 2015-03-02
+2.032000 - 2015-03-02
 
   [NEW FEATURES]
 
   * macsuck_unsupported setting to allow node gathering on delinquent switches
+
+  [ENHANCEMENTS]
+
+  * Show page and total records number on DataTables tables
 
   [BUG FIXES]
 
