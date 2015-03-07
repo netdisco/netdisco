@@ -252,6 +252,14 @@ sub renumber {
 
 =head1 ADDITIONAL COLUMNS
 
+=head2 oui
+
+Returns the first half of the device MAC address.
+
+=cut
+
+sub oui { return substr( ((shift)->mac || ''), 0, 8 ) }
+
 =head2 port_count
 
 Returns the number of ports on this device. Enable this

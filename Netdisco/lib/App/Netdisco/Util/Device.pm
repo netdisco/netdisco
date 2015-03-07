@@ -48,6 +48,7 @@ stored to the database.
 
 sub get_device {
   my $ip = shift;
+  return unless $ip;
 
   # naive check for existing DBIC object
   return $ip if ref $ip;

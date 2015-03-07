@@ -36,6 +36,19 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.032000
+
+=head2 General Notices
+
+The identification of IP Phone hansets and Wireless APs is now configurable,
+using the CDP/LLDP information from the device. See
+L<documentation|App::Netdisco::Manual::Configuration> for:
+
+ phone_capabilities
+ phone_platforms
+ wap_capabilities
+ wap_platforms
+
 =head1 2.031006
 
 =head2 General Notices

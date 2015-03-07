@@ -961,6 +961,92 @@ Value: Boolean. Default: C<false>.
 Turn this on to have Netdisco do a reverse lookup of the device C<sysName.0>
 field to use as the management IP address for a device.
 
+=head3 C<phone_capabilities>
+
+Value: List of Strings. Default:
+
+ phone_capabilities:
+   - '(?i:phone)'
+
+Regular expressions to match the Capability field received within neighbor
+discovery protocols such as CDP/FDP/LLDP. Netdisco uses this to display a
+"phone" icon alongside devices or nodes in the Device Ports table.
+
+To find the received Capabilities on an upstream device, run this command:
+
+ ~netdisco/bin/netdisco-do show -d <IP-of-device> -e c_cap
+
+=head3 C<phone_platforms>
+
+Value: List of Strings. Default:
+
+ phone_platforms:
+   - '(?i:mitel.5\d{3})'
+
+Regular expressions to match the Platform field received within neighbor
+discovery protocols such as CDP/FDP/LLDP. Netdisco uses this to display a
+"phone" icon alongside devices or nodes in the Device Ports table.
+
+To find the received Platforms on an upstream device, run this command:
+
+ ~netdisco/bin/netdisco-do show -d <IP-of-device> -e c_platform
+
+=head3 C<phone_ouis>
+
+Value: List of Strings. Default: Empty List.
+
+If you can't get C<phone_capabilities> or C<phone_platforms> to match, as a
+last ditch attempt you can match on the MAC address of the device (if it has
+one). This is a set of regular expressions matched against the whole MAC
+address (not only the OUI portion) in IEEE format. For example:
+
+ phone_ouis:
+   - '^a4:0c:c3'
+
+=head3 C<wap_capabilities>
+
+Value: List of Strings. Default:
+
+ wap_capabilities:
+   - 'wlanAccessPoint'
+
+Regular expressions to match the Capability field received within neighbor
+discovery protocols such as CDP/FDP/LLDP. Netdisco uses this to display a
+"wireless signal" icon alongside devices or nodes in the Device Ports table.
+
+To find the received Capabilities on an upstream device, run this command:
+
+ ~netdisco/bin/netdisco-do show -d <IP-of-device> -e c_cap
+
+=head3 C<wap_platforms>
+
+Value: List of Strings. Default:
+
+ wap_platforms:
+   - '(?i:\bw?ap\b)'
+   - 'cisco\s+AIR-[L|C]?AP'
+   - '-K9W8-'
+
+Regular expressions to match the Platform field received within neighbor
+discovery protocols such as CDP/FDP/LLDP. Netdisco uses this to display a
+"wireless signal" icon alongside devices or nodes in the Device Ports table.
+
+To find the received Platforms on an upstream device, run this command:
+
+ ~netdisco/bin/netdisco-do show -d <IP-of-device> -e c_platform
+
+=head3 C<wap_ouis>
+
+Value: List of Strings. Default: Empty List.
+
+If you can't get C<wap_capabilities> or C<wap_platforms> to match, as a last
+ditch attempt you can match on the MAC address of the device (if it has one).
+This is a set of regular expressions matched against the whole MAC address
+(not only the OUI portion) in IEEE format. For example:
+
+ wap_ouis:
+   - '^a4:0c:c3'
+
 =head2 Backend Daemon
 
 =head3 C<workers>

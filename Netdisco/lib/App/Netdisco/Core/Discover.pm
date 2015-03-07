@@ -3,11 +3,13 @@ package App::Netdisco::Core::Discover;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Device qw/get_device is_discoverable/;
+use App::Netdisco::Util::Device
+  qw/get_device match_devicetype is_discoverable/;
 use App::Netdisco::Util::DNS ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use NetAddr::IP::Lite ':lower';
 use List::MoreUtils ();
+use Scalar::Util 'blessed';
 use Encode;
 use Try::Tiny;
 use NetAddr::MAC;
@@ -723,14 +725,16 @@ sub store_neighbors {
 
       # IP Phone and WAP detection type fixup
       if (scalar @$remote_cap or $remote_type) {
-          my $phone_flag = grep {/phone/i} @$remote_cap;
-          my $ap_flag    = grep {/wlanAccessPoint/} @$remote_cap;
+          my $phone_flag = grep {match_devicetype($_, 'phone_capabilities')}
+                                @$remote_cap;
+          my $ap_flag    = grep {match_devicetype($_, 'wap_capabilities')}
+                                @$remote_cap;
 
-          if ($phone_flag or $remote_type =~ m/mitel.5\d{3}/i) {
+          if ($phone_flag or match_devicetype($remote_type, 'phone_platforms')) {
               $remote_type = 'IP Phone: '. $remote_type
-                if $remote_type !~ /ip phone/i;
+                if $remote_type !~ /ip.phone/i;
           }
-          elsif ($ap_flag or $remote_type =~ m/\bw?ap\b/i) {
+          elsif ($ap_flag or match_devicetype($remote_type, 'wap_platforms')) {
               $remote_type = 'AP: '. $remote_type;
           }
 
@@ -831,8 +835,21 @@ sub store_neighbors {
               push @to_discover, [$remote_ip, $remote_type];
           }
 
-          $remote_port = $c_port->{$entry};
+          # further device type discovery using MAC OUI
+          # only works once device is fully discovered (so we have a MAC addr)
+          my $neigh = get_device($remote_ip);
+          if (blessed $neigh and $neigh->in_storage and $neigh->mac) {
+              if (match_devicetype($neigh->mac, 'phone_ouis')) {
+                  $remote_type = 'IP Phone: '. $remote_type
+                    if $remote_type !~ /ip.phone/i;
+              }
+              elsif (match_devicetype($neigh->mac, 'wap_ouis')) {
+                  $remote_type = 'AP: '. $remote_type
+                    if $remote_type !~ /^AP: /;
+              }
+          }
 
+          $remote_port = $c_port->{$entry};
           if (defined $remote_port) {
               # clean weird characters
               $remote_port =~ s/[^\d\/\.,()\w:-]+//gi;
