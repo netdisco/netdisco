@@ -11,6 +11,7 @@
   * show page and total records number on DataTables tables
   * be more strict about Node Search matching ports/wifi within date range
   * allow filtering out of Device Ports on Node (MAC) search
+  * display Voice VLAN on Cisco devices
 
   [BUG FIXES]
 
