@@ -39,8 +39,9 @@ sub discoverall {
 sub discover {
   my ($self, $job) = @_;
 
-  my $host = NetAddr::IP::Lite->new($job->device);
-  my $device = get_device($host->addr);
+  my $device = get_device($job->device)
+    or job_error("discover failed: unable to interpret device parameter");
+  my $host = $device->ip;
 
   if ($device->ip eq '0.0.0.0') {
       return job_error("discover failed: no device param (need -d ?)");
@@ -90,7 +91,7 @@ sub discover {
       }
   }
 
-  return job_done("Ended discover for ". $host->addr);
+  return job_done("Ended discover for $host");
 }
 
 1;

@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * macsuck_unsupported setting to allow node gathering on delinquent switches
+  * netdisco-do -d accepts IP prefixes (subnet in CIDR format)
 
   [ENHANCEMENTS]
 

@@ -40,8 +40,12 @@ use Dancer qw/:moose :script/;
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
+use NetAddr::IP ':rfc3021';
+use App::Netdisco::Util::Device 'get_device';
+
 use Try::Tiny;
 use Pod::Usage;
+use Scalar::Util 'blessed';
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
@@ -121,12 +125,9 @@ unless ($action) {
   }
 
   sub show {
-    my $ip = NetAddr::IP::Lite->new($device)
-      or return ('error', "Bad host or IP: $device");
-    my $dev = get_device($ip->addr);
-    unless (blessed $dev and $dev->in_storage) {
-        return ('error', "Don't know device: $device");
-    }
+    my ($self, $job) = @_;
+    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
+    return ('error', 'Missing device (-d).') if !defined $device;
 
     $extra ||= 'interfaces'; my $class = undef;
     ($class, $extra) = split(/::([^:]+)$/, $extra);
@@ -137,59 +138,56 @@ unless ($action) {
         $extra = $class;
         undef $class;
     }
-    my $i = App::Netdisco::Util::SNMP::snmp_connect($dev, $class);
+    my $i = App::Netdisco::Util::SNMP::snmp_connect($device, $class);
     Data::Printer::p($i->$extra);
-    return ('done', "Showed $extra response from $device.");
+    return ('done', sprintf "Showed %s response from %s.", $extra, $device->ip);
   }
 
   sub delete {
-    my $ip = NetAddr::IP::Lite->new($device)
-      or return ('error', "Bad host or IP: $device");
-    my $dev = get_device($ip->addr);
-    unless (blessed $dev and $dev->in_storage) {
-        return ('error', "Don't know device: $device");
-    }
+    my ($self, $job) = @_;
+    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
+    return ('error', 'Missing device (-d).') if !defined $device;
 
     $port = ($port ? 1 : 0);
-    delete_device($dev->ip, $port, $extra);
-    return ('done', "Deleted device $device.");
+    delete_device($device, $port, $extra);
+    return ('done', sprintf "Deleted device %s.", $device->ip);
   }
 
   sub renumber {
-    my $ip = NetAddr::IP::Lite->new($device)
-      or return ('error', "Bad host or IP: $device");
-    my $dev = get_device($ip->addr);
-    unless (blessed $dev and $dev->in_storage) {
-        return ('error', "Don't know device: $device");
-    }
-    my $old_ip = $dev->ip;
+    my ($self, $job) = @_;
+    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
+    return ('error', 'Missing device (-d).') if !defined $device;
+    my $old_ip = $device->ip;
 
     my $new_ip = NetAddr::IP::Lite->new($extra)
       or return ('error', "Bad host or IP: $extra");
     my $new_dev = get_device($new_ip->addr);
     unless ($new_dev and not $new_dev->in_storage) {
-        return ('error', "Already know new device: $device");
+        return ('error', sprintf "Already know new device: %s.", $device->ip);
     }
 
-    renumber_device($dev->ip, $new_dev->ip);
+    renumber_device($device, $new_dev->ip);
     return ('done', sprintf 'Renumbered device %s from %s to %s.',
-      $device, $old_ip, $new_dev->ip);
+      $device->ip, $old_ip, $new_dev->ip);
   }
 
   sub psql {
+    my ($self, $job) = @_;
+    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
+
     my $name = (setting('database')->{name} || 'netdisco');
     my $host = setting('database')->{host};
     my $user = setting('database')->{user};
     my $pass = setting('database')->{pass};
 
-    my $port = undef;
+    my $portnum = undef;
     if ($host =~ m/([^;]+);port=(\d+)/) {
         $host = $1;
-        $port = $2;
+        $portnum = $2;
     }
 
     $ENV{PGHOST} = $host if $host;
-    $ENV{PGPORT} = $port if defined $port;
+    $ENV{PGPORT} = $portnum if defined $portnum;
     $ENV{PGDATABASE} = $name;
     $ENV{PGUSER} = $user;
     $ENV{PGPASSWORD} = $pass;
@@ -215,30 +213,48 @@ if (not $worker->can( $action )) {
   );
 }
 
-# what job are we asked to do?
-my $job = App::Netdisco::Daemon::Job->new({
-  job => 0,
-  action => $action,
-  device => $device,
-  port   => $port,
-  subaction => $extra,
-});
-
-# do job
-my ($status, $log);
-try {
-    info sprintf '%s: started at %s', $action, scalar localtime;
-    ($status, $log) = $worker->$action($job);
+my $net = NetAddr::IP->new($device);
+if ($device and (!$net or $net->num == 0)) {
+    info sprintf '%s: error - Bad host, IP or prefix: %s', $action, $device;
+    exit 1;
 }
-catch {
-    $status = 'error';
-    $log = "error running job: $_";
-};
 
-info sprintf '%s: finished at %s', $action, scalar localtime;
-info sprintf '%s: status %s: %s', $action, $status, $log;
+my @hostlist = defined $device ? ($net->hostenum) : (undef);
+my $exitstatus = 0;
 
-exit ($status eq 'done' ? 0 : 1);
+foreach my $host (@hostlist) {
+    my $dev = $host ? get_device($host->addr) : undef;
+    if ($dev and not (blessed $dev and $dev->in_storage) and $action ne 'discover') {
+        info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
+        next;
+    }
+
+    # what job are we asked to do?
+    my $job = App::Netdisco::Daemon::Job->new({
+      job => 0,
+      action => $action,
+      device => $dev,
+      port   => $port,
+      subaction => $extra,
+    });
+
+    # do job
+    my ($status, $log);
+    try {
+        info sprintf '%s: started at %s', $action, scalar localtime;
+        ($status, $log) = $worker->$action($job);
+    }
+    catch {
+        $status = 'error';
+        $log = "error running job: $_";
+    };
+
+    info sprintf '%s: finished at %s', $action, scalar localtime;
+    info sprintf '%s: status %s: %s', $action, $status, $log;
+    $exitstatus = 1 if !defined $status or $status eq 'error';
+}
+
+exit $exitstatus;
 
 =head1 NAME
 
@@ -251,6 +267,10 @@ netdisco-do - Run any Netdisco job from the command-line.
 =head1 DESCRIPTION
 
 This program allows you to run any Netdisco poller job from the command-line.
+
+The C<-d> option will accept a hostname (that can be resolved to an IP with
+DNS), an IP address, or IP prefix (subnets in CIDR format). It can be any
+interface on the device known to Netdisco.
 
 Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
 simply add entries to the Netdisco job queue for other jobs, so won't seem

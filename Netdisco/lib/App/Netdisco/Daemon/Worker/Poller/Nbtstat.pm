@@ -25,8 +25,9 @@ sub nbtwalk { (shift)->_walk_body('nbtstat', @_) }
 sub nbtstat  {
   my ($self, $job) = @_;
 
-  my $host = NetAddr::IP::Lite->new($job->device);
-  my $device = get_device($host->addr);
+  my $device = get_device($job->device)
+    or job_error("nbtstat failed: unable to interpret device parameter");
+  my $host = $device->ip;
 
   unless (is_discoverable($device->ip)) {
       return job_defer("nbtstat deferred: $host is not discoverable");
@@ -66,7 +67,7 @@ sub nbtstat  {
     }
   }
 
-  return job_done("Ended nbtstat for ". $host->addr);
+  return job_done("Ended nbtstat for $host");
 }
 
 1;

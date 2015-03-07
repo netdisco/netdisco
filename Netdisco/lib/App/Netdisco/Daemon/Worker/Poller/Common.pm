@@ -46,8 +46,9 @@ sub _single_body {
   my $layer_method = $job_type .'_layer';
   my $job_layer = $self->$layer_method;
 
-  my $host = NetAddr::IP::Lite->new($job->device);
-  my $device = get_device($host->addr);
+  my $device = get_device($job->device)
+    or job_error("$job_type failed: unable to interpret device parameter");
+  my $host = $device->ip;
 
   if ($device->in_storage
       and $device->vendor and $device->vendor eq 'netdisco') {
@@ -72,7 +73,7 @@ sub _single_body {
 
   $job_action->($device, $snmp);
 
-  return job_done("Ended $job_type for ". $host->addr);
+  return job_done("Ended $job_type for $host");
 }
 
 sub _single_node_body {
