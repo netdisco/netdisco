@@ -177,6 +177,18 @@ ignore_interfaces:
   - '(E|T)\d \d\/\d\/\d'
 ignore_private_nets: false
 reverse_sysname: false
+phone_capabilities:
+  - '(?i:phone)'
+phone_platforms:
+  - '(?i:mitel.5\d{3})'
+phone_ouis: []
+wap_capabilities:
+  - 'wlanAccessPoint'
+wap_platforms:
+  - '(?i:\bw?ap\b)'
+  - 'cisco\s+AIR-[L|C]?AP'
+  - '-K9W8-'
+wap_ouis: []
 
 # --------------
 # BACKEND DAEMON

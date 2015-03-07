@@ -4,17 +4,18 @@
 
   * macsuck_unsupported setting to allow node gathering on delinquent switches
   * netdisco-do -d accepts IP prefixes (subnet in CIDR format)
+  * [#110] rules for IP Phone and Wireless AP identification now configurable
 
   [ENHANCEMENTS]
 
-  * Show page and total records number on DataTables tables
-  * Be more strict about Node Search matching ports/wifi within date range
-  * Allow filtering out of Device Ports on Node (MAC) search
+  * show page and total records number on DataTables tables
+  * be more strict about Node Search matching ports/wifi within date range
+  * allow filtering out of Device Ports on Node (MAC) search
 
   [BUG FIXES]
 
-  * Only exclude discover_no on Undiscovered Neighbors report when few (<50) results
-  * Mention expire in netdisco-do docs
+  * only exclude discover_no on Undiscovered Neighbors report when few (<50) results
+  * mention expire in netdisco-do docs
 
 2.031012 - 2015-02-28
 
