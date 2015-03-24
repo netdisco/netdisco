@@ -8,9 +8,7 @@
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
         [% SET th_class = '' %]
-        [% IF (user_can_port_control AND params.c_admin AND (item.name == 'c_port' OR item.name == 'c_name')) %]
-          [% th_class = ' class="nd_nudge-for-icon portsort"' %]
-        [% ELSIF (item.name == 'c_port' OR item.name == 'c_descr' OR item.name == 'c_name') %]
+        [% IF (item.name == 'c_port' OR item.name == 'c_descr' OR item.name == 'c_name') %]
           [% th_class = ' class="portsort"' %]
         [% END %]
         <th[% th_class %]>
@@ -62,6 +60,22 @@
       <td nowrap class="nd_editable-cell" data-action="down"
         data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
         data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+      [% ELSE %]
+      <td nowrap class="nd_editable-cell" data-action="up"
+        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
+        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+      [% END %]
+      [% ELSE %]
+      <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
+      [% END %]
+        <a class="nd_log-icon"
+          href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
+          <i class="icon-file-text-alt"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="View Port Log"></i>
+        </a>
+      [% IF user_can_port_control AND params.c_admin %]
+      [% IF row.up_admin == 'up' %]
         <span class="nd_hand-icon">
           <i class="icon-bullseye" data-action="bounce"
             rel="tooltip" data-placement="top" data-offset="3"
@@ -71,9 +85,6 @@
             data-animation="" data-title="Disable Port"></i>
         </span>
       [% ELSE %]
-      <td nowrap class="nd_editable-cell" data-action="up"
-        data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
-        data-field="c_port" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
         <span class="nd_hand-icon">
           <i class="icon-bullseye" data-action="bounce" style="display: none"
             rel="tooltip" data-placement="top" data-offset="3"
@@ -83,14 +94,6 @@
             data-animation="" data-title="Enable Port"></i>
         </span>
       [% END %]
-        <a class="nd_log-icon"
-          href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
-          <i class="icon-file-text-alt"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="View Port Log"></i>
-        </a>
-      [% ELSE %]
-      <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
       [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
             self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
@@ -147,7 +150,7 @@
           data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       [% ELSE %]
-      <td nowrap>
+      <td nowrap class="nd_editable-cell">
       [% END %]
       <div class="nd_editable-cell-content">
         [% row.name | html_entity %]

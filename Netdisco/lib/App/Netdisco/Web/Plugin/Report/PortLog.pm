@@ -40,7 +40,7 @@ ajax '/ajax/control/report/portlog/add' => require_login sub {
     });
 };
 
-ajax '/ajax/content/report/portlog' => require_role port_control => sub {
+ajax '/ajax/content/report/portlog' => require_login sub {
     my $device = param('q');
     my $port = param('f');
     send_error('Bad Request', 400) unless $device and $port;

@@ -162,18 +162,15 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 /* nudge cell content to the right when port_control controls are enabled */
 .nd_editable-cell > .nd_this-port-only {
-  margin-left: 18px;
-  margin-right: 18px;
+  margin-left: 14px;
+  margin-right: 35px;
 }
 .nd_editable-cell > .nd_port-only-first {
-  margin-left: 9px;
+  margin-left: 5px;
 }
 
 .nd_editable-cell > .nd_editable-cell-content {
-  margin-right: 18px;
-}
-.table .nd_nudge-for-icon {
-  padding-left: 25px;
+  margin-right: 25px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -269,13 +266,17 @@ td > form.nd_inline-form {
   display: none;
 }
 
+.nd_hand-icon {
+  margin-right: 4px;
+}
+
 /* port admin log view */
 .nd_log-icon {
   cursor: pointer;
   color: black;
-  float: left;
-  visibility: hidden;
-  margin-top: 3px;
+  float: right;
+  padding-left: 10px;
+  margin-top: 2px;
 }
 .nd_log-icon:hover, .nd_log-icon:focus {
   text-decoration: none;
