@@ -195,7 +195,7 @@ sub deploy_oui {
       @lines = split /\n/, $resp->{content};
   }
 
-  if (scalar @lines) {
+  if (scalar @lines > 50) {
       foreach my $line (@lines) {
           if ($line =~ m/^\s*(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
               my ($oui, $company) = ($1, $2);
@@ -225,7 +225,7 @@ sub deploy_oui {
   }
   else {
       print color 'bold red';
-      say 'OUI update failed.';
+      say 'OUI update failed!';
   }
 
   print color 'reset';
@@ -276,10 +276,15 @@ sub deploy_mibs {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
       $ae->extract(to => $mibhome->parent->stringify);
       unlink $file;
+
+      print color 'bold blue';
+      say 'MIBs update complete.';
+  }
+  else {
+      print color 'bold red';
+      say 'MIB download failed!';
   }
 
-  print color 'bold blue';
-  say 'MIBs update complete.';
   print color 'reset';
 }
 

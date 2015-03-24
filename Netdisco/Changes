@@ -13,6 +13,7 @@
   * Be more strict about Node Search matching ports/wifi within date range
   * Allow filtering out of Device Ports on Node (MAC) search
   * Display Voice VLAN on Cisco devices
+  * [#202] Detect failed OUI and MIB downloads
 
   [BUG FIXES]
 
