@@ -52,4 +52,22 @@ sub expire {
   return job_done("Checked expiry for all Devices and Nodes");
 }
 
+# expire nodes for a specific device
+sub expirenodes {
+  my ($self, $job) = @_;
+
+  return job_error('Missing device') unless $job->device;
+
+  schema('netdisco')->txn_do(sub {
+    schema('netdisco')->resultset('Node')->search({
+      switch => $job->device->ip,
+      ($job->port ? (port => $job->port) : ()),
+    })->delete(
+      ($job->extra ? () : ({ archive_nodes => 1 }))
+    );
+  });
+
+  return job_done("Expired nodes for ". $job->device->ip);
+}
+
 1;

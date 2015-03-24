@@ -312,7 +312,8 @@ Run an arpnip for all known devices.
 
 Delete a device (specified with C<-d>). Pass a log message for the action in
 the C<-e> parameter. Optionally request for associated nodes to be archived
-(rather than deleted) by setting the C<-p> parameter to "C<yes>".
+(rather than deleted) by setting the C<-p> parameter to "C<yes>" (mnemonic:
+U<p>reserve).
 
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1
  ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
@@ -342,6 +343,15 @@ Run an nbtstat for all known nodes.
 =head2 expire
 
 Run Device and Node expiry actions according to configuration.
+
+=head2 expirenodes
+
+Archive nodes on the specified device. If you want to delete nodes, set the
+C<-e> parameter to "C<no>" (mnemonic: U<e>xpire). If you want to perform the
+action on a specific port, set the C<-p> parameter.
+
+ ~netdisco/bin/netdisco-do expirenodes -d 192.0.2.1
+ ~netdisco/bin/netdisco-do expirenodes -d 192.0.2.1 -p FastEthernet0/1 -e no
 
 =head2 graph
 

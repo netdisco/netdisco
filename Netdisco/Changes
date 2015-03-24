@@ -1,10 +1,11 @@
-2.032000_001 - 2015-03-07
+2.032001 - 2015-03-24
 
   [NEW FEATURES]
 
   * macsuck_unsupported setting to allow node gathering on delinquent switches
   * netdisco-do -d accepts IP prefixes (subnet in CIDR format)
   * [#110] rules for IP Phone and Wireless AP identification now configurable
+  * [#119] netdisco-do expirenodes (ND1 expirenodes & expire-nodes-subnet)
 
   [ENHANCEMENTS]
 
