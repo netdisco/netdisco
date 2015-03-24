@@ -43,16 +43,27 @@ On port 5001 so it won't conflict with any already-running web frontend
 
 =item *
 
-Restarts the web server when you save a file in the C<share> or C<lib> directory
+Restarts the web server when you save a file in the C<share> or C<lib>
+directory
 
 =back
 
-You might also want to set C<check_userlog> to C<true> in your config to quieten
-some of the web client callbacks.
+You might also want to set C<check_userlog> to C<false> in your config to
+quieten some of the web client callbacks.
 
 For the daemon, it's very similar:
 
  DBIC_TRACE=1 ~/bin/localenv bin/netdisco-daemon-fg
+
+You can point at a different database without editing C<deployment.yml>:
+
+ NETDISCO_DBNAME=testdb DBIC_TRACE=1 ~/bin/localenv plackup -R share,lib -p 5001 bin/netdisco-web-fg
+ NETDISCO_DBNAME=testdb DBIC_TRACE=1 ~/bin/localenv bin/netdisco-daemon-fg
+
+It's recommended to delete the "C<~/perl5/lib/perl5/App/Netdisco>"
+directory to avoid accidentally picking up old Netdisco code. For working on
+L<SNMP::Info> you can similarly delete "C<~/perl5/lib/perl5/SNMP/Info*>" and
+then symlink from "C<Info.pm>" and "C<Info>" to your git repo.
 
 Happy hacking!
 
