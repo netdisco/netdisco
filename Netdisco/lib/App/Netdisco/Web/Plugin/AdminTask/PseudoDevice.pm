@@ -19,7 +19,7 @@ sub _sanity_ok {
       and param('dns') !~ m/[[:space:]]/;
 
     my $ip = NetAddr::IP::Lite->new(param('ip'));
-    return 0 unless ($ip and$ip->addr ne '0.0.0.0');
+    return 0 unless ($ip and $ip->addr ne '0.0.0.0');
 
     return 0 unless param('ports')
       and param('ports') =~ m/^[[:digit:]]+$/;

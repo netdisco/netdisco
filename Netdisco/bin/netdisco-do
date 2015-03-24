@@ -159,8 +159,10 @@ unless ($action) {
     return ('error', 'Missing device (-d).') if !defined $device;
     my $old_ip = $device->ip;
 
-    my $new_ip = NetAddr::IP::Lite->new($extra)
-      or return ('error', "Bad host or IP: $extra");
+    my $new_ip = NetAddr::IP::Lite->new($extra);
+    unless ($new_ip and $new_ip->addr ne '0.0.0.0') {
+        return ('error', "Bad host or IP: ".($extra || '0.0.0.0'));
+    }
     my $new_dev = get_device($new_ip->addr);
     unless ($new_dev and not $new_dev->in_storage) {
         return ('error', sprintf "Already know new device: %s.", $device->ip);
@@ -214,7 +216,7 @@ if (not $worker->can( $action )) {
 }
 
 my $net = NetAddr::IP->new($device);
-if ($device and (!$net or $net->num == 0)) {
+if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
     info sprintf '%s: error - Bad host, IP or prefix: %s', $action, $device;
     exit 1;
 }
