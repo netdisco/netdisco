@@ -5,6 +5,10 @@
   * Update development doc to mention cpanm installdeps
   * Update troubleshooting doc to mention four key actions
 
+  [BUG FIXES]
+
+  * [#209] AUTO broken in tasks specification
+
 2.032001 - 2015-03-24
 
   [NEW FEATURES]

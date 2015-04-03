@@ -44,9 +44,8 @@ sub worker_body {
       prctl sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
       my $num_slots = 0;
 
-      $num_slots =
-        MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
-          - $self->{queue}->pending();
+      $num_slots = parse_max_workers( setting('workers')->{tasks} )
+                     - $self->{queue}->pending();
       debug "mgr ($wid): getting potential jobs for $num_slots workers (HP)";
 
       # get some high priority jobs
@@ -62,9 +61,8 @@ sub worker_body {
           $self->{queue}->enqueuep(100, $job);
       }
 
-      $num_slots =
-        MCE::Util::_parse_max_workers( setting('workers')->{tasks} )
-          - $self->{queue}->pending();
+      $num_slots = parse_max_workers( setting('workers')->{tasks} )
+                     - $self->{queue}->pending();
       debug "mgr ($wid): getting potential jobs for $num_slots workers (NP)";
 
       # get some normal priority jobs

@@ -63,9 +63,13 @@ my $queue = MCE::Queue->new;
 setting('workers')->{'no_manager'} = 1
   if setting('workers')->{tasks} eq '0';
 
+# MCE::Util has a limit of ncpu if AUTO is used in max_workers,
+# so we parse the field ourselves.
+my $max_workers = parse_max_workers( setting('workers')->{tasks} ) || 0;
+
 mce_flow {
   task_name => [qw/ scheduler manager poller /],
-  max_workers => [ 1, 1, setting('workers')->{tasks} ],
+  max_workers => [ 1, 1, $max_workers ],
   tmp_dir => $tmp_dir,
   on_post_exit => sub { MCE->restart_worker },
 }, _mk_wkr('Scheduler'), _mk_wkr('Manager'), _mk_wkr('Poller');
