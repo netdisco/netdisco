@@ -38,6 +38,41 @@ Netdisco. Use the C<show> command to troubleshoot this:
 
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e c_id
 
+=head1 Understanding Netdisco Jobs
+
+Please read the section above, if you've not yet done so.
+
+Netdisco has four principal job types:
+
+=over 4
+
+=item discover
+
+Gather information about a Device, including interfaces, vlans, PoE status,
+and chassis components (modules). Also learns about potential new Devices via
+neighbor protocols and adds jobs for their discovery to the queue.
+
+=item macsuck
+
+Gather MAC to port mappings from known Devices reporting Layer 2 capability.
+Wireless client information is also gathered from Devices supporting the
+802.11 MIBs.
+
+=item arpnip
+
+Gather MAC to IP mappings from known Devices reporting layer 3 capability.
+
+=item nbtstat
+
+Poll a Node to obtain its NetBIOS name.
+
+=back
+
+The actions as named above will operate on one device only. Complimentary job
+types C<discoverall>, C<macwalk>, C<arpwalk>, and C<nbtwalk> will enqueue one
+corresponding single-device job for each known device. The Netdisco backend
+daemon will then process the queue (in a random order).
+
 =head1 Run a C<netdisco-do> Task with Debugging
 
 The C<netdisco-do> command has several debug flags which will show what's

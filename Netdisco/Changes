@@ -2,7 +2,8 @@
 
   [ENHANCEMENTS]
 
-  * Update development pod to mention cpanm installdeps
+  * Update development doc to mention cpanm installdeps
+  * Update troubleshooting doc to mention four key actions
 
 2.032001 - 2015-03-24
 
