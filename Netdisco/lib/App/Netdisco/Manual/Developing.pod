@@ -63,7 +63,12 @@ You can point at a different database without editing C<deployment.yml>:
 It's recommended to delete the "C<~/perl5/lib/perl5/App/Netdisco>"
 directory to avoid accidentally picking up old Netdisco code. For working on
 L<SNMP::Info> you can similarly delete "C<~/perl5/lib/perl5/SNMP/Info*>" and
-then symlink from "C<Info.pm>" and "C<Info>" to your git repo.
+then symlink from "C<Info.pm>" and "C<Info>" to your git repo. If you pull
+from upstream and the dependencies have changed, you can install them without
+re-installing Netdisco itself:
+
+ cd netdisco-ng/Netdisco
+ ~/bin/localenv cpanm --installdeps .
 
 Happy hacking!
 
