@@ -9,7 +9,6 @@ use Role::Tiny;
 use namespace::clean;
 
 use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_getsomep jq_lock/;
-use MCE::Util ();
 
 sub worker_begin {
   my $self = shift;
