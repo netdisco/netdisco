@@ -264,6 +264,33 @@ within the L<Developer|App::Netdisco::Manual::Developing> documentation.
 
 Oliver Gorwits <oliver@cpan.org>
 
+=head1 CONTRIBUTORS
+
+Netdisco was created at the University of California, Santa Cruz (UCSC),
+Networking and Technology Services (NTS) department. UCSC continues to support
+the development of Netdisco by providing development servers and beer.
+
+Original development by Max Baker, with significant contributions from Mark
+Boolootian and Jim Warner (through whose ideas Netdisco was born and shaped),
+Bill Fenner, Jeroen van Ingen, Eric Miller, Carlos Vicente, and Brian de Wolf.
+
+Other contributions (large and small) by Mike Hunter (UCB), Brian Wilson
+(NCSU), Bradley Baetz (bbaetz), David Temkin (sig.com), Edson Manners (FSU),
+Dmitry Sergienko (Trifle Co, .ua), Remo Rickli (PSI, Switzerland),
+Jean-Philippe Luiggi (sagem.com), A.L.M Buxey (Loughborough University, UK),
+Kevin Cheek (UMICH), John Bigrow (bnl.gov), George Pavel (llnl.gov), Charles
+Goldsmith (wokka.org), Douglas M.  McKeown (saintmarys.edu), Revital Shvarzman
+(York U, Ontario), Walter Gould (Auburn U), Lindsay Druet and Colin Palmer (U
+of Waikato, Hamilton NZ), Dusty Hall (Auburn U), Jon Monroe (center pointe),
+Alexander Barthel, Bill Anderson, Alexander Hartmaier (t-systems.at), Justin
+Hunter (Arizona State U), Jethro Binks (U of Strathclyde, Glasgow), Jordi
+Guijarro (UAB.es), Sam Stickland (spacething.org),  Stefan Radman (CTBTO.org),
+Clint Wise, Max Kosmach, and Bernhard Augenstein.
+
+We probably forgot some names - sorry about that :-(. Deep gratitude also goes
+to the authors and communities of all the other software that Netdisco is
+built upon.
+
 =head1 COPYRIGHT AND LICENSE
  
 This software is copyright (c) 2012, 2013, 2014, 2015 by The Netdisco Developer Team.
