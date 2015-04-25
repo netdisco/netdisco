@@ -1,3 +1,13 @@
+2.032003 - 2015-04-25
+
+  [ENHANCEMENTS]
+
+  * THANK YOUs
+  
+  [BUG FIXES]
+
+  * [#211] Additional check for undefined SNMP::Info instance
+
 2.032002 - 2015-04-03
 
   [ENHANCEMENTS]

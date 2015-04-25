@@ -145,7 +145,7 @@ sub _try_connect {
         $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
       Module::Load::load $class;
 
-      $info = $class->new(%$snmp_args, %comm_args);
+      $info = $class->new(%$snmp_args, %comm_args) or return;
       $info = ($mode eq 'read' ? _try_read($info, $device, $comm)
                                : _try_write($info, $device, $comm));
 
