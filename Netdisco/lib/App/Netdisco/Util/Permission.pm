@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use Scalar::Util 'blessed';
 use NetAddr::IP::Lite ':lower';
+use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();

@@ -171,17 +171,14 @@ Regular Expression in YAML format which will match the device DNS name, e.g.:
 
 =item *
 
-C<"model:regex"> - matched against the device model
-
-=item *
-
-C<"vendor:regex"> - matched against the device vendor
+C<"property:regex"> - matched against a device property, such as C<model> or C<vendor>
 
 =back
 
-To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
-regular expressions are anchored (that is, they must match the whole string).
-To match no devices we recommend an entry of "C<localhost>" in the setting.
+To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>".
+Property regular expressions are anchored (that is, they must match the whole
+string). To match no devices we recommend an entry of "C<localhost>" in the
+setting.
 
 =cut
 
@@ -225,17 +222,14 @@ Regular Expression in YAML format which will match the device DNS name, e.g.:
 
 =item *
 
-C<"model:regex"> - matched against the device model
-
-=item *
-
-C<"vendor:regex"> - matched against the device vendor
+C<"property:regex"> - matched against a device property, such as C<model> or C<vendor>
 
 =back
 
-To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
-regular expressions are anchored (that is, they must match the whole string).
-To match no devices we recommend an entry of "C<localhost>" in the setting.
+To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>".
+Property regular expressions are anchored (that is, they must match the whole
+string). To match no devices we recommend an entry of "C<localhost>" in the
+setting.
 
 =cut
 
