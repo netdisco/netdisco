@@ -42,60 +42,46 @@ subroutines.
 Returns: C<$device>
 
 Given a Device database object, and a working SNMP connection, check whether
-the database object's IP is the best choice for that device. If not, return
-a new Device database object with the canonical IP.
-
-The Device database object can be a fresh L<DBIx::Class::Row> object which is
-not yet stored to the database.
+the database object's IP is the best choice for that device. If not, update
+the IP and hostname in the device object for the canonical IP.
 
 =cut
 
 sub set_canonical_ip {
   my ($device, $snmp) = @_;
 
-  my $oldip = $device->ip;
-  my $newip = $snmp->root_ip;
+  my $new_ip  = undef;
+  my $old_ip  = $device->ip;
+  my $ospf_ip = $snmp->root_ip;
+  my $revname = ipv4_from_hostname($snmp->name);
 
-  if (defined $newip) {
-      if ($oldip ne $newip) {
-          debug sprintf ' [%s] device - changing root IP to alt IP %s',
-            $oldip, $newip;
-
-          schema('netdisco')->txn_do(sub {
-            if ($device->in_storage) {
-                # remove old device and aliases
-                my $copy = schema('netdisco')->resultset('Device')
-                  ->find({ip => $oldip});
-
-                schema('netdisco')->resultset('Device')
-                  ->search({ ip => $device->ip })->delete({keep_nodes => 1});
-                debug sprintf ' [%s] device - deleted self', $oldip;
-
-                $device = schema('netdisco')->resultset('Device')
-                  ->create({ $copy->get_columns, ip => $newip });
-
-                # make nodes follow device
-                schema('netdisco')->resultset('Node')
-                  ->search({switch => $oldip})
-                  ->update({switch => $newip});
-            }
-            else {
-                $device->set_column(ip => $newip);
-            }
-          });
-      }
+  if (setting('device_identity')) {
   }
-  else {
-      my $revname = ipv4_from_hostname($snmp->name);
-      if (setting('reverse_sysname') and $revname) {
-          debug sprintf ' [%s] device - changing root IP to revname %s',
-            $oldip, $revname;
-          $device->ip($revname);
-      }
+  elsif ((not $new_ip) and setting('reverse_sysname') and $revname) {
+      $new_ip = $revname;
+  }
+  elsif ((not $new_ip) and $ospf_ip) {
+      $new_ip = $ospf_ip;
   }
 
-  # either root_ip is changed or unchanged, but it exists
-  return $device;
+  return unless $new_ip and ($new_ip ne $old_ip);
+
+  if (not $snmp->snmp_connect_ip( $new_ip )) {
+      # should be warning or error?
+      debug sprintf ' [%s] device - cannot change IP to %s - SNMP connect failed',
+        $old_ip, $device->ip;
+      return;
+  }
+
+  schema('netdisco')->txn_do(sub {
+    $device->renumber($new_ip) or return;
+
+    my $hostname = hostname_from_ip($device->ip);
+    $device->update({dns => $hostname});
+
+    debug sprintf ' [%s] device - changed IP to %s (%s)',
+      $old_ip, $device->ip, ($device->dns || '');
+  });
 }
 
 =head2 store_device( $device, $snmp )

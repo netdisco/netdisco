@@ -61,8 +61,8 @@ sub discover {
       return job_error("discover failed: could not SNMP connect to $host");
   }
 
-  $device = set_canonical_ip($device, $snmp);
   store_device($device, $snmp);
+  set_canonical_ip($device, $snmp); # must come after store_device
   store_interfaces($device, $snmp);
   store_wireless($device, $snmp);
   store_vlans($device, $snmp);
