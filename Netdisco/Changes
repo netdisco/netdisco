@@ -3,10 +3,12 @@
   [ENHANCEMENTS]
 
   * THANK YOUs
+  * Allow renumber of device to one of its alias IPs
   
   [BUG FIXES]
 
   * [#211] Additional check for undefined SNMP::Info instance
+  * Re-set hostname on device after renumber
 
 2.032002 - 2015-04-03
 

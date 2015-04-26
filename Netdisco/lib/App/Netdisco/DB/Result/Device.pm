@@ -193,7 +193,7 @@ __PACKAGE__->might_have(
 
 Will update this device and all related database records to use the new IP
 C<$new_ip>. Returns C<undef> if $new_ip seems invalid, otherwise returns the
-Device row object.
+Device row object. Does NOT update the device C<dns> field.
 
 =cut
 

@@ -103,6 +103,7 @@ unless ($action) {
   use App::Netdisco::Util::SNMP ();
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
+  use App::Netdisco::Util::DNS 'hostname_from_ip';
 
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
   with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
@@ -163,14 +164,17 @@ unless ($action) {
     unless ($new_ip and $new_ip->addr ne '0.0.0.0') {
         return ('error', "Bad host or IP: ".($extra || '0.0.0.0'));
     }
+
     my $new_dev = get_device($new_ip->addr);
-    unless ($new_dev and not $new_dev->in_storage) {
-        return ('error', sprintf "Already know new device: %s.", $device->ip);
+    if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
+        return ('error', sprintf "Already know new device as: %s.", $new_dev->ip);
     }
 
     renumber_device($device, $new_dev->ip);
-    return ('done', sprintf 'Renumbered device %s from %s to %s.',
-      $device->ip, $old_ip, $new_dev->ip);
+    my $hostname = hostname_from_ip($device->ip);
+    $device->update({dns => $hostname});
+    return ('done', sprintf 'Renumbered device %s to %s (%s).',
+      $device->ip, $new_dev->ip, ($hostname || ''));
   }
 
   sub psql {
