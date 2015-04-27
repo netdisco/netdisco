@@ -50,21 +50,29 @@ the IP and hostname in the device object for the canonical IP.
 sub set_canonical_ip {
   my ($device, $snmp) = @_;
 
-  my $new_ip  = undef;
   my $old_ip  = $device->ip;
+  my $new_ip  = $old_ip;
   my $ospf_ip = $snmp->root_ip;
   my $revname = ipv4_from_hostname($snmp->name);
 
-  if (setting('device_identity')) {
-  }
-  elsif ((not $new_ip) and setting('reverse_sysname') and $revname) {
-      $new_ip = $revname;
-  }
-  elsif ((not $new_ip) and $ospf_ip) {
+  if ($ospf_ip) {
       $new_ip = $ospf_ip;
   }
 
-  return unless $new_ip and ($new_ip ne $old_ip);
+  if (setting('reverse_sysname') and $revname) {
+      $new_ip = $revname;
+  }
+
+  # check if user has renumbered to an alias
+  if ($new_ip ne $old_ip
+      and $device->device_ips->count({alias => $old_ip})) {
+      $new_ip = $old_ip;
+  }
+
+  if (setting('device_identity')) {
+  }
+
+  return if $new_ip eq $old_ip;
 
   if (not $snmp->snmp_connect_ip( $new_ip )) {
       # should be warning or error?
@@ -101,8 +109,6 @@ sub store_device {
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
-  my $hostname = hostname_from_ip($device->ip);
-  $device->dns($hostname) if $hostname;
   my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
 
   # build device aliases suitable for DBIC
@@ -143,7 +149,7 @@ sub store_device {
   my $vtpdomains = $snmp->vtp_d_name;
   my $vtpdomain;
   if (defined $vtpdomains and scalar values %$vtpdomains) {
-      $device->vtp_domain( (values %$vtpdomains)[-1] );
+      $device->set_column( vtp_domain => (values %$vtpdomains)[-1] );
   }
 
   my @properties = qw/
@@ -156,14 +162,14 @@ sub store_device {
   /;
 
   foreach my $property (@properties) {
-      $device->$property( $snmp->$property );
+      $device->set_column( $property => $snmp->$property );
   }
 
-  $device->model(  Encode::decode('UTF-8', $snmp->model)  );
-  $device->serial( Encode::decode('UTF-8', $snmp->serial) );
+  $device->set_column( model  => Encode::decode('UTF-8', $snmp->model)  );
+  $device->set_column( serial => Encode::decode('UTF-8', $snmp->serial) );
 
-  $device->snmp_class( $snmp->class );
-  $device->last_discover(\'now()');
+  $device->set_column( snmp_class => $snmp->class );
+  $device->set_column( last_discover => \'now()' );
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;

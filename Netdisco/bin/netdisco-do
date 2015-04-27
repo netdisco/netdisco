@@ -103,7 +103,6 @@ unless ($action) {
   use App::Netdisco::Util::SNMP ();
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
-  use App::Netdisco::Util::DNS 'hostname_from_ip';
 
   with 'App::Netdisco::Daemon::Worker::Poller::Device';
   with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
@@ -171,8 +170,6 @@ unless ($action) {
     }
 
     renumber_device($device, $new_dev->ip);
-    my $hostname = hostname_from_ip($device->ip);
-    $device->update({dns => $hostname});
     return ('done', sprintf 'Renumbered device %s to %s (%s).',
       $device->ip, $new_dev->ip, ($hostname || ''));
   }

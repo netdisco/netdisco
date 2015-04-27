@@ -3,6 +3,7 @@ package App::Netdisco::Util::Device;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -115,13 +116,17 @@ sub renumber_device {
 
   my $happy = 0;
   schema('netdisco')->txn_do(sub {
+    $device->renumber($new_ip) or return;
+
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
       event => "Renumbered device from $ip to $new_ip",
     });
 
-    $device->renumber($new_ip);
+    my $hostname = hostname_from_ip($device->ip);
+    $device->update({dns => $hostname});
+
     $happy = 1;
   });
 
