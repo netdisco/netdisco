@@ -117,7 +117,8 @@ sub renumber_device {
 
   my $happy = 0;
   schema('netdisco')->txn_do(sub {
-    $device->renumber($new_ip) or die; # rollback
+    $device->renumber($new_ip)
+      or die "cannot renumber to: $new_ip"; # rollback
 
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
