@@ -82,7 +82,7 @@ sub set_canonical_ip {
   }
 
   schema('netdisco')->txn_do(sub {
-    $device->renumber($new_ip) or return;
+    $device->renumber($new_ip) or die; # rollback
 
     my $hostname = hostname_from_ip($device->ip);
     $device->update({dns => $hostname});

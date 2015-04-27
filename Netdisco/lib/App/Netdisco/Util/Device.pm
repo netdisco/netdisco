@@ -83,6 +83,10 @@ sub delete_device {
 
   my $happy = 0;
   schema('netdisco')->txn_do(sub {
+    # will delete everything related too...
+    schema('netdisco')->resultset('Device')
+      ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
+
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
@@ -90,9 +94,6 @@ sub delete_device {
       details => $log,
     });
 
-    # will delete everything related too...
-    schema('netdisco')->resultset('Device')
-      ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
     $happy = 1;
   });
 
@@ -116,7 +117,7 @@ sub renumber_device {
 
   my $happy = 0;
   schema('netdisco')->txn_do(sub {
-    $device->renumber($new_ip) or return;
+    $device->renumber($new_ip) or die; # rollback
 
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
