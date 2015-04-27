@@ -89,7 +89,7 @@ sub delete_device {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
-      event => ("Delete device ". $device->ip),
+      event => (sprintf "Delete device %s", $device->ip),
       details => $log,
     });
 
@@ -122,7 +122,7 @@ sub renumber_device {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
-      event => "Renumbered device from $ip to $new_ip",
+      event => (sprintf "Renumber device %s to %s", $device->ip, $new_ip),
     });
 
     $happy = 1;

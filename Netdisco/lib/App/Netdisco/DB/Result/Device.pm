@@ -235,10 +235,6 @@ sub renumber {
     ->search({remote_ip => $old_ip})
     ->update({remote_ip => $new_ip});
 
-  $schema->resultset('DeviceIp')
-    ->search({alias => $old_ip})
-    ->update({alias => $new_ip});
-
   $schema->resultset('Admin')
     ->search({device => $old_ip})
     ->update({device => $new_ip});

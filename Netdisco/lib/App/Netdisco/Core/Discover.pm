@@ -63,12 +63,6 @@ sub set_canonical_ip {
       $new_ip = $revname;
   }
 
-  # check if user has renumbered to an alias
-  if ($new_ip ne $old_ip
-      and $device->device_ips->count({alias => $old_ip})) {
-      $new_ip = $old_ip;
-  }
-
   if (setting('device_identity')) {
   }
 

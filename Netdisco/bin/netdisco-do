@@ -169,9 +169,9 @@ unless ($action) {
         return ('error', sprintf "Already know new device as: %s.", $new_dev->ip);
     }
 
-    renumber_device($device, $new_dev->ip);
+    renumber_device($device, $new_ip);
     return ('done', sprintf 'Renumbered device %s to %s (%s).',
-      $device->ip, $new_dev->ip, ($device->dns || ''));
+      $device->ip, $new_ip, ($device->dns || ''));
   }
 
   sub psql {
