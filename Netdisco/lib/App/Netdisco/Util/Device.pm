@@ -89,7 +89,7 @@ sub delete_device {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
-      event => "Delete device ". $device->ip ." ($ip)",
+      event => ("Delete device ". $device->ip),
       details => $log,
     });
 

@@ -140,7 +140,7 @@ sub store_device {
   my $resolved_aliases = hostnames_resolve_async(\@aliases);
 
   # fake one aliases entry for devices not providing ip_index
-  push @$resolved_aliases, { alias => $device->ip, dns => $hostname }
+  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
     if 0 == scalar @aliases;
 
   # VTP Management Domain -- assume only one.
