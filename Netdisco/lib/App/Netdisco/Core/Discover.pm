@@ -85,9 +85,6 @@ sub set_canonical_ip {
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
-    my $hostname = hostname_from_ip($device->ip);
-    $device->update({dns => $hostname});
-
     debug sprintf ' [%s] device - changed IP to %s (%s)',
       $old_ip, $device->ip, ($device->dns || '');
   });

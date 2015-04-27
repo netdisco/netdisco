@@ -6,7 +6,9 @@ package App::Netdisco::DB::Result::Device;
 
 use strict;
 use warnings;
+
 use NetAddr::IP::Lite ':lower';
+use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
@@ -193,7 +195,7 @@ __PACKAGE__->might_have(
 
 Will update this device and all related database records to use the new IP
 C<$new_ip>. Returns C<undef> if $new_ip seems invalid, otherwise returns the
-Device row object. Does NOT update the device C<dns> field.
+Device row object.
 
 =cut
 
@@ -201,8 +203,15 @@ sub renumber {
   my ($device, $ip) = @_;
   my $schema = $device->result_source->schema;
 
-  my $new_ip = NetAddr::IP::Lite->new($ip)
+  my $new_addr = NetAddr::IP::Lite->new($ip)
     or return;
+
+  my $old_ip = $device->ip;
+  my $new_ip = $new_addr->addr;
+
+  return
+    if $new_ip eq '0.0.0.0'
+    or $new_ip eq '127.0.0.1';
 
   foreach my $set (qw/
     DeviceIp
@@ -218,34 +227,38 @@ sub renumber {
     Community
   /) {
     $schema->resultset($set)
-      ->search({ip => $device->ip})
-      ->update({ip => $new_ip->addr});
+      ->search({ip => $old_ip})
+      ->update({ip => $new_ip});
   }
 
   $schema->resultset('DevicePort')
-    ->search({remote_ip => $device->ip})
-    ->update({remote_ip => $new_ip->addr});
+    ->search({remote_ip => $old_ip})
+    ->update({remote_ip => $new_ip});
 
   $schema->resultset('DeviceIp')
-    ->search({alias => $device->ip})
-    ->update({alias => $new_ip->addr});
+    ->search({alias => $old_ip})
+    ->update({alias => $new_ip});
 
   $schema->resultset('Admin')
-    ->search({device => $device->ip})
-    ->update({device => $new_ip->addr});
+    ->search({device => $old_ip})
+    ->update({device => $new_ip});
 
   $schema->resultset('Node')
-    ->search({switch => $device->ip})
-    ->update({switch => $new_ip->addr});
+    ->search({switch => $old_ip})
+    ->update({switch => $new_ip});
 
   $schema->resultset('Topology')
-    ->search({dev1 => $device->ip})
-    ->update({dev1 => $new_ip->addr});
-  $schema->resultset('Topology')
-    ->search({dev2 => $device->ip})
-    ->update({dev2 => $new_ip->addr});
+    ->search({dev1 => $old_ip})
+    ->update({dev1 => $new_ip});
 
-  $device->update({ip => $new_ip->addr});
+  $schema->resultset('Topology')
+    ->search({dev2 => $old_ip})
+    ->update({dev2 => $new_ip});
+
+  $device->update({
+    ip  => $new_ip,
+    dns => hostname_from_ip($new_ip),
+  });
 
   return $device;
 }
