@@ -52,12 +52,7 @@ sub set_canonical_ip {
 
   my $old_ip  = $device->ip;
   my $new_ip  = $old_ip;
-  my $ospf_ip = $snmp->root_ip;
   my $revname = ipv4_from_hostname($snmp->name);
-
-  if ($ospf_ip) {
-      $new_ip = $ospf_ip;
-  }
 
   if (setting('reverse_sysname') and $revname) {
       $new_ip = $revname;

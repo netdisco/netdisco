@@ -36,6 +36,26 @@ but they are backwards compatible.
 
 =back
 
+=head1 2.033000
+
+=head2 General Notices
+
+The algorithm for selecting the canonical IP/name of a device has changed in
+this release. No longer is the OSPF Router ID taken into account. The default
+IP/name of a device will be either the IP specified for manual discovery, or
+the IP reported to a neighbor port during automatic discovery. For the latter
+you can often influence this through device configuration (LLDP advertise...).
+
+Via configuration there are two further settings. C<reverse_sysname> tells
+Netdisco to take the SNMP System Name and do a reverse DNS lookup for the
+canonical IP. The new configuration setting C<device_identity> allows you to
+set rules for picking the canonical interface from a device based on any of
+its properties (model, vendor, OS, OS version, etc).
+
+Typical use would be either to leave Netdisco to use the discovered IP, or use
+C<device_identity> to control the canonical IP/name for classes of device
+based on model/vendor, etc.
+
 =head1 2.032000
 
 =head2 General Notices
