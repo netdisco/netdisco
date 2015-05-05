@@ -8,7 +8,7 @@ use Fcntl qw/:flock :seek/;
 
 use vars qw{$VERSION @ISA $ISCORE};
 BEGIN {
-	$VERSION = '1.14';
+	$VERSION = '1.15';
 	@ISA     = 'Module::Install::Base';
 	$ISCORE  = 1;
 }
