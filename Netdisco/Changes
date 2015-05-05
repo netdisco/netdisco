@@ -9,6 +9,7 @@
 
   * [#211] Additional check for undefined SNMP::Info instance
   * [#212] Discover SQL error on returning multiple rows
+  * [#217] find changed to search to handle missing row in queue
   * Re-set hostname on device after renumber
 
 2.032002 - 2015-04-03

@@ -107,8 +107,12 @@ sub jq_lock {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->find($job->job, {for => 'update'})
+        ->search({job => $job->job}, {for => 'update'})
         ->update({ status => "queued-$fqdn" });
+
+      return unless
+        schema('netdisco')->resultset('Admin')
+          ->count({job => $job->job, status => "queued-$fqdn"});
 
       # remove any duplicate jobs, needed because we have race conditions
       # when queueing jobs of a type for all devices
@@ -119,8 +123,9 @@ sub jq_lock {
         action    => $job->action,
         subaction => $job->subaction,
       }, {for => 'update'})->delete();
+
+      $happy = true;
     });
-    $happy = true;
   }
   catch {
     error $_;
