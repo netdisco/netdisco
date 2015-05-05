@@ -95,7 +95,7 @@ sub jq_userlog {
   return schema('netdisco')->resultset('Admin')->search({
     username => $user,
     finished => { '>' => \"(now() - interval '5 seconds')" },
-  })->with_times->hri->all;
+  })->with_times->all;
 }
 
 sub jq_lock {
