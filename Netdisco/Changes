@@ -1,9 +1,9 @@
-2.032003 - 2015-04-25
+2.032003 - 2015-05-05
 
   [ENHANCEMENTS]
 
   * THANK YOUs
-  * Allow renumber of device to one of its alias IPs
+  * Allow renumber of device to one of its alias IPs in netdisco-do
   * [#216] Ability to enter IP prefix in "Discover" form in web
   
   [BUG FIXES]
