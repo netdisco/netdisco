@@ -5,24 +5,26 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'delete_device';
 
 sub add_job {
     my ($action, $device, $subaction) = @_;
 
-    if ($device) {
-        $device = NetAddr::IP::Lite->new($device);
-        return if ! $device or $device->addr eq '0.0.0.0';
-    }
+    my $net = NetAddr::IP->new($device);
+    return if
+      ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
 
-    jq_insert({
-        ($device ? (device => $device->addr) : ()),
-        action => $action,
-        ($subaction ? (subaction => $subaction) : ()),
-        username => session('logged_in_user'),
-        userip => request->remote_address,
-    });
+    my @hostlist = defined $device ? ($net->hostenum) : (undef);
+
+    jq_insert([map {{
+      ($_ ? (device => $_->addr) : ()),
+      action => $action,
+      ($subaction ? (subaction => $subaction) : ()),
+      username => session('logged_in_user'),
+      userip => request->remote_address,
+    }} @hostlist]);
 
     true;
 }
@@ -45,7 +47,7 @@ foreach my $action (@{ setting('job_prio')->{high} },
 ajax '/ajax/control/admin/delete' => require_role admin => sub {
     send_error('Missing device', 400) unless param('device');
 
-    my $device = NetAddr::IP::Lite->new(param('device'));
+    my $device = NetAddr::IP->new(param('device'));
     send_error('Bad device', 400)
       if ! $device or $device->addr eq '0.0.0.0';
 
