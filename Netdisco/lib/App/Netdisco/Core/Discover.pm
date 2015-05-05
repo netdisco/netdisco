@@ -848,21 +848,30 @@ sub store_neighbors {
           manual_topo => \"false",
       });
 
-      if (defined $portrow->slave_of and
-          my $master = schema('netdisco')->resultset('DevicePort')
-              ->single({ip => $device->ip, port => $portrow->slave_of})) {
+      # update master of our aggregate to be a neighbor of
+      # the master on our peer device (a lot of iffs to get there...).
+      # & cannot use ->neighbor prefetch because this is the port insert!
+      if (defined $portrow->slave_of) {
 
-          if (not ($portrow->is_master or defined $master->slave_of)) {
-              # TODO needs refactoring - this is quite expensive
-              my $peer = schema('netdisco')->resultset('DevicePort')->find({
-                  ip   => $portrow->neighbor->ip,
-                  port => $portrow->remote_port,
-              }) if $portrow->neighbor;
+          my $peer_device = get_device($remote_ip);
+          my $master = schema('netdisco')->resultset('DevicePort')->single({
+            ip => $device->ip,
+            port => $portrow->slave_of
+          });
+
+          if ($peer_device and $peer_device->in_storage and $master
+              and not ($portrow->is_master or defined $master->slave_of)) {
+
+              my $peer_port = schema('netdisco')->resultset('DevicePort')->single({
+                ip   => $peer_device->ip,
+                port => $portrow->remote_port,
+              });
 
               $master->update({
-                  remote_ip => ($peer ? $peer->ip : $remote_ip),
-                  remote_port => ($peer ? $peer->slave_of : undef ),
+                  remote_ip => ($peer_device->ip || $remote_ip),
+                  remote_port => ($peer_port ? $peer_port->slave_of : undef ),
                   is_uplink => \"true",
+                  is_master => \"true",
                   manual_topo => \"false",
               });
           }
