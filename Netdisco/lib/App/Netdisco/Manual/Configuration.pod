@@ -896,14 +896,19 @@ Value: Settings Tree. Default:
    hosts_file: '/etc/hosts'
    no: ['fe80::/64','169.254.0.0/16']
 
-After arpnip, each found IP will have its DNS name resolved. Similarly on
-device discovery, all interface aliases will have their IPs resolved to names.
+Controls the asynchronous DNS resolver used to resolve IP addresses to names
+during arpnip and discovery of device aliases.
 
-This setting controls how many outstanding DNS queries are permitted at any
-time. You can also override this setting using the
-C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment variable. Similarly, the
-location of the Hosts file can be overridden in this config, or using the
-C<PERL_ANYEVENT_HOSTS> environment variable.
+C<max_outstanding> sets the maximum number of outstanding requests for
+asynchronous DNS resolution.  This setting overrides the
+C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment value and the C<AnyEvent>
+library default of 10.
+
+Similarly, the location of the Hosts file can be overridden in this config, or
+using the C<PERL_ANYEVENT_HOSTS> environment variable.
+
+C<no> is a list of IP addresses or CIDR ranges to excluded from DNS
+resolution.  Link local addresses are excluded by default.
 
 =head3 C<store_wireless_clients>
 
@@ -1068,25 +1073,6 @@ workers (which allows you to have a scheduler-only node).
 
 C<sleep_time> is the number of seconds between polling the database to find
 new jobs. This is a balance between responsiveness and database load.
-
-=head3 C<dns>
-
-Value: Settings Tree. Default:
-
- dns:
-   max_outstanding: 250
-   no: ['fe80::/64','169.254.0.0/16']
-
-Controls the asynchronous DNS resolver used to resolve IP addresses to
-names during arpnip and discovery of device aliases.
-
-C<max_outstanding> sets the maximum number of outstanding requests for
-asynchronous DNS resolution.  This setting overrides the
-C<PERL_ANYEVENT_MAX_OUTSTANDING_DNS> environment value and the C<AnyEvent>
-library default of 10.
-
-C<no> is a list of IP addresses or CIDR ranges to excluded from DNS
-resolution.  Link local addresses are excluded by default.
 
 =head3 C<schedule>
 
