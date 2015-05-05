@@ -40,7 +40,7 @@ use Dancer qw/:moose :script/;
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
-use NetAddr::IP ':rfc3021';
+use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Util::Device 'get_device';
 
 use Try::Tiny;
@@ -97,7 +97,7 @@ unless ($action) {
   use Module::Load ();
   use Data::Printer ();
   use Scalar::Util 'blessed';
-  use NetAddr::IP::Lite ':lower';
+  use NetAddr::IP qw/:rfc3021 :lower/;
   use Dancer ':script';
 
   use App::Netdisco::Util::SNMP ();
@@ -159,7 +159,7 @@ unless ($action) {
     return ('error', 'Missing device (-d).') if !defined $device;
     my $old_ip = $device->ip;
 
-    my $new_ip = NetAddr::IP::Lite->new($extra);
+    my $new_ip = NetAddr::IP->new($extra);
     unless ($new_ip and $new_ip->addr ne '0.0.0.0') {
         return ('error', "Bad host or IP: ".($extra || '0.0.0.0'));
     }
