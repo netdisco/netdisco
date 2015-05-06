@@ -143,6 +143,8 @@ lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 lib/App/Netdisco/DB/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 lib/App/Netdisco/Environment.pm
+lib/App/Netdisco/GenericDB.pm
+lib/App/Netdisco/GenericDB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/JobQueue.pm
 lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/Manual/BSDInstall.pod

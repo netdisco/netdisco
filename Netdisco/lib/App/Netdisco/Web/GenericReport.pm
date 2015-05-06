@@ -26,7 +26,9 @@ foreach my $report (@{setting('reports')}) {
       # TODO: this should be done by creating a new Virtual Result class on
       # the fly (package...) and then calling DBIC register_class on it.
 
-      my $rs = schema('netdisco')->resultset('Virtual::GenericReport')->result_source;
+      my $schema = ($report->{database} || 'netdisco');
+      my $rs = schema($schema)->resultset('Virtual::GenericReport')->result_source;
+
       $rs->view_definition($report->{query});
       $rs->remove_columns($rs->columns);
       $rs->add_columns( exists $report->{query_columns}
@@ -34,7 +36,7 @@ foreach my $report (@{setting('reports')}) {
         : (map {keys %{$_}} @{$report->{columns}})
       );
 
-      my $set = schema('netdisco')->resultset('Virtual::GenericReport')
+      my $set = schema($schema)->resultset('Virtual::GenericReport')
         ->search(undef, {
           result_class => 'DBIx::Class::ResultClass::HashRefInflator',
           ( (exists $report->{bind_params})

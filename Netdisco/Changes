@@ -1,5 +1,9 @@
 2.032004 -
 
+  [NEW FEATURES]
+
+  * Support for connecting to external databases for custom Reports/Plugins
+
   [ENHANCEMENTS]
 
   * Allow "hidden" option to reports config

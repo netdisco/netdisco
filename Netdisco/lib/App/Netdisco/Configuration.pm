@@ -33,6 +33,13 @@ if (ref {} eq ref setting('database')) {
         schema_class => 'App::Netdisco::DB',
     };
 
+    foreach my $c (@{setting('external_databases')}) {
+        my $schema = delete $c->{tag} or next;
+        next if $schema eq 'netdisco';
+        setting('plugins')->{DBIC}->{$schema} = $c;
+        setting('plugins')->{DBIC}->{$schema}->{schema_class}
+          ||= 'App::Netdisco::GenericDB';
+    }
 }
 
 # defaults for workers

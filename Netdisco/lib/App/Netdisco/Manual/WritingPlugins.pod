@@ -330,6 +330,32 @@ C<port_control>:
 Take care over the subtle differences in syntax, especially the placement of
 the fat comma ("C<< => >>").
 
+=head1 Database Connections
+
+The Netdisco database is available via the C<netdisco> schema key, as below.
+You can also use the C<external_databases> configuration item to set up
+connections to other databases.
+
+ # possibly install another database driver
+ ~netdisco/bin/localenv cpanm --notest DBD::mysql
+ 
+ # deployment.yml
+ external_databases:
+   - tag: externaldb
+     dsn: 'dbi:mysql:dbname=myexternaldb;host=192.0.2.1'
+     user: oliver
+     password: letmein
+ 
+ # plugin code
+ use Dancer::Plugin::DBIC;
+ 
+ schema('netdisco')->resultset('Devices')->search({vendor => 'cisco'});
+ schema('externaldb')->resultset('MyTable')->search({field => 'foobar'});
+
+You'll need to install a L<DBIx::Class> Schema and also set C<schema_class> to
+its name within the C<external_databases> setting, for the second example
+above.
+
 =head1 Templates
 
 All of Netdisco's web page templates are stashed away in its distribution,

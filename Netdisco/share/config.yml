@@ -12,6 +12,7 @@
 log: 'warning'
 logger_format: '[%P] %U %L %m'
 include_paths: []
+external_databases: []
 
 # ------------
 # WEB FRONTEND

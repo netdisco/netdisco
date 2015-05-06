@@ -80,6 +80,27 @@ Additional library paths for the application (both web frontend and backend
 poller daemons). You can also use a colon-separated list in the
 "C<NETDISCO_INC>" environment variable.
 
+=head3 C<external_databases>
+
+Value: List of Database Configuration Hashes. Default: None.
+
+The Plugins and User Reports features of Netdisco can gather data from
+external databases. You need to install the Perl database driver for the
+target database platform, and configure this setting appropriately. For
+example:
+
+ external_databases:
+   - tag: externaldb
+     dsn: 'dbi:Pg:dbname=myexternaldb;host=192.0.2.1'
+     user: oliver
+     password: letmein
+     options:
+       pg_enable_utf8: true
+
+Note that C<tag> is I<required> and maps to the C<database> key if you use the
+Generic Reports feature (see "L</reports>", below), or becomes the Dancer
+database schema name if you program the Plugin directly.
+
 =head2 Web Frontend
 
 =head3 C<domain_suffix>
