@@ -245,8 +245,9 @@ code or HTML templates. For example:
 
  reports:
    - tag: power_inventory
-     category: Device
      label: 'Power Supply Inventory'
+     category: Device
+     hidden: true
      columns:
        - {name: 'Name'}
        - {ps1_type: 'PS1 Type'}
@@ -292,6 +293,10 @@ indenting the query text.
 Section of the Reports menu where this report will appear. See
 L<WritingPlugins|App::Netdisco::Manual::WritingPlugins> for the full list.
 If not supplied, reports appear in a I<My Reports> category.
+
+=head4 C<hidden> (optional)
+
+Set to true to skip inclusion of this report from the Reports menu.
 
 =head4 C<query_columns> (optional)
 

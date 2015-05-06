@@ -18,6 +18,7 @@ foreach my $report (@{setting('reports')}) {
     tag => $r,
     label => $report->{label},
     category => ($report->{category} || 'My Reports'),
+    ($report->{hidden} ? (hidden => true) : ()),
     provides_csv => true,
   });
 
