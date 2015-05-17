@@ -38,7 +38,7 @@ List - Set of things using C<[a, b, c]> on one line or C<-> on separate lines
 
 =item *
 
-Dictionary - Key/Value pairs (like Perl Hash) using C<{key1: val1, key2,
+Dictionary - Key/Value pairs (like Perl Hash) using C<{key1: val1, key2:
 val2}> on one line or C<key: value> on separate lines
 
 =item *
