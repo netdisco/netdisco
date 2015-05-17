@@ -1,141 +1,8 @@
 #!/usr/bin/env perl
 
-# vim: set expandtab tabstop=8 softtabstop=4 shiftwidth=4:
-
-=head1 NAME
-
-netdisco-sshcollector - Collect ARP data for Netdisco from devices without
-full SNMP support
-
-=head1 DESCRIPTION
-
-Collects ARP data for Netdisco from devices without full SNMP support.
-Currently, ARP tables can be retrieved from the following device classes:
-
-=over 4
-
-=item * L<App::Netdisco::SSHCollector::Platform::ACE> - Cisco ACE (Application Control Engine) 
-
-=item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
-
-=item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
-
-=item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
-
-=item * L<App::Netdisco::SSHCollector::Platform::PaloAlto> - PaloAlto devices
-
-=back
-
-The collected arp entries are then directly stored in the netdisco database.
-
-=head1 CONFIGURATION
-
-The following should go into your Netdisco 2 configuration file, "C<<
-~/environments/deployment.yml >>"
-
-=over 4
-
-=item C<sshcollector>
-
-Data is collected from the machines specified in this setting. The format is a
-list of dictionaries. The keys C<ip>, C<user>, C<password>, and C<platform>
-are required.  Optionally the C<hostname> key can be used instead of the
-C<ip>. For example:
-
- sshcollector:
-   - ip: '192.0.2.1'
-     user: oliver
-     password: letmein
-     platform: IOS
-   - hostname: 'core-router.example.com'
-     user: oliver
-     password: letmein
-     platform: IOS
-
-Platform is the final part of the classname to be instantiated to query the
-host, e.g. platform B<ACE> will be queried using
-C<App::Netdisco::SSHCollector::Platform::ACE>.
-
-If the password is "-", public key authentication will be attempted.
-
-=back
-
-=head1 ADDING DEVICES
-
-Additional device classes can be easily integrated just by adding and
-additonal class to the C<App::Netdisco::SSHCollector::Platform> namespace.
-This class must implement an C<arpnip($hostname, $ssh)> method which returns
-an array of hashrefs in the format
-
- @result = ({ ip => IPADDR, mac => MACADDR }, ...) 
-
-The parameter C<$ssh> is an active C<Net::OpenSSH> connection to the host.
-Depending on the target system, it can be queried using simple methods like
-
- my @data = $ssh->capture("show whatever")
-
-or automated via Expect - this is mostly useful for non-Linux appliances which
-don't support command execution via ssh:
-
- my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
- my $expect = Expect->init($pty);
- my $prompt = qr/#/;
- my ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
- $expect->send("terminal length 0\n");
- # etc...
-
-The returned IP and MAC addresses should be in a format that the respective
-B<inetaddr> and B<macaddr> datatypes in PostgreSQL can handle.   
-
-=head1 DEPENDENCIES
-
-=over 4
-
-=item L<App::Netdisco>
-
-=item L<Net::OpenSSH>
-
-=item L<Expect>
-
-=back
-
-=head1 COPYRIGHT AND LICENSE
-
- Copyright (C) 2013 by the Netdisco Project
- All rights reserved.
-
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
-     * Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-     * Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-     * Neither the name of the Netdisco Project nor the
-       names of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE NETDISCO DEVELOPER TEAM BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- Initial Version for Netdisco 1.x
- Copyright (C) 2013 by Christian Ramseyer (ramseyer@netnea.com)
- I hereby grant full ownership of the code to the Netdisco Project
- 
-=cut
-
 use warnings;
 use strict;
 
-our $VERSION = 2.001000;
 our $home;
 
 BEGIN {
@@ -182,6 +49,27 @@ use Data::Printer;
 use Module::Load ();
 use Net::OpenSSH;
 use MCE::Loop Sereal => 1;
+
+use Getopt::Long;
+Getopt::Long::Configure ("bundling");
+
+my ($debug, $sqltrace) = (undef, 0);
+my $result = GetOptions(
+  'debug|D'    => \$debug,
+  'sqltrace|Q+'  => \$sqltrace,
+) or pod2usage(
+  -msg => 'error: bad options',
+  -verbose => 0,
+  -exitval => 1,
+);
+
+my $CONFIG = config();
+$CONFIG->{logger} = 'console';
+$CONFIG->{log} = ($debug ? 'debug' : 'info');
+$ENV{DBIC_TRACE} ||= $sqltrace;
+
+# reconfigure logging to force console output
+Dancer::Logger->init('console', $CONFIG);
 
 #this may be helpful with SSH issues:
 #$Net::OpenSSH::debug = ~0;
@@ -270,5 +158,130 @@ sub store_arpentries {
     }
 }
 
-__END__
+=head1 NAME
 
+netdisco-sshcollector - Collect ARP data for Netdisco from devices without
+full SNMP support
+
+=head1 SYNOPSIS
+
+ # install dependencies:
+ ~netdisco/bin/localenv cpanm --notest Net::OpenSSH Expect
+ 
+ # run manually, or add to cron:
+ ~/bin/netdisco-sshcollector [-DQ]
+
+=head1 DESCRIPTION
+
+Collects ARP data for Netdisco from devices without full SNMP support.
+Currently, ARP tables can be retrieved from the following device classes:
+
+=over 4
+
+=item * L<App::Netdisco::SSHCollector::Platform::ACE> - Cisco ACE
+
+=item * L<App::Netdisco::SSHCollector::Platform::ASA> - Cisco ASA
+
+=item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
+
+=item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
+
+=item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
+
+=item * L<App::Netdisco::SSHCollector::Platform::Linux> - Linux
+
+=item * L<App::Netdisco::SSHCollector::Platform::PaloAlto> - Palo Alto
+
+=back
+
+The collected arp entries are then directly stored in the netdisco database.
+
+=head1 CONFIGURATION
+
+The following should go into your Netdisco 2 configuration file, "C<<
+~/environments/deployment.yml >>"
+
+=over 4
+
+=item C<sshcollector>
+
+Data is collected from the machines specified in this setting. The format is a
+list of dictionaries. The keys C<ip>, C<user>, C<password>, and C<platform>
+are required.  Optionally the C<hostname> key can be used instead of the
+C<ip>. For example:
+
+ sshcollector:
+   - ip: '192.0.2.1'
+     user: oliver
+     password: letmein
+     platform: IOS
+   - hostname: 'core-router.example.com'
+     user: oliver
+     password: letmein
+     platform: IOS
+
+Platform is the final part of the classname to be instantiated to query the
+host, e.g. platform B<ACE> will be queried using
+C<App::Netdisco::SSHCollector::Platform::ACE>.
+
+If the password is "-", public key authentication will be attempted.
+
+=back
+
+=head1 ADDING DEVICES
+
+Additional device classes can be easily integrated just by adding and
+additonal class to the C<App::Netdisco::SSHCollector::Platform> namespace.
+This class must implement an C<arpnip($hostname, $ssh)> method which returns
+an array of hashrefs in the format
+
+ @result = ({ ip => IPADDR, mac => MACADDR }, ...) 
+
+The parameter C<$ssh> is an active C<Net::OpenSSH> connection to the host.
+Depending on the target system, it can be queried using simple methods like
+
+ my @data = $ssh->capture("show whatever")
+
+or automated via Expect - this is mostly useful for non-Linux appliances which
+don't support command execution via ssh:
+
+ my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
+ my $expect = Expect->init($pty);
+ my $prompt = qr/#/;
+ my ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
+ $expect->send("terminal length 0\n");
+ # etc...
+
+The returned IP and MAC addresses should be in a format that the respective
+B<inetaddr> and B<macaddr> datatypes in PostgreSQL can handle.   
+
+=head1 DEBUG LEVELS
+
+The flags "C<-DQ>" can be specified, multiple times, and enable the following
+items in order:
+
+=over 4
+
+=item C<-D>
+
+Netdisco debug log level
+
+=item C<-Q>
+
+L<DBIx::Class> trace enabled
+
+=back
+
+=head1 DEPENDENCIES
+
+=over 4
+
+=item L<App::Netdisco>
+
+=item L<Net::OpenSSH>
+
+=item L<Expect>
+
+=back
+ 
+=cut

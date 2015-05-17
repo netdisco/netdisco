@@ -455,7 +455,7 @@ L<SNMP> (net-snmp) trace level (1, 2 or 3).
 
 =item C<-Q>
 
-L<DBIx::Class> trace enabled.
+L<DBIx::Class> trace enabled
 
 =back
 
