@@ -1,4 +1,4 @@
-2.032004 -
+2.032004 - 2015-05-17
 
   [NEW FEATURES]
 
@@ -6,7 +6,7 @@
 
   [ENHANCEMENTS]
 
-  * Allow "hidden" option to reports config
+  * Allow "hidden" option (from menu) in Custom Reports config
   * Improve documentation for netdisco-sshcollector
 
   [BUG FIXES]
