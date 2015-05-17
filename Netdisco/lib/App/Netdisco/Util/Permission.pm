@@ -30,9 +30,40 @@ subroutines.
 Given an IP address, returns true if any of the items in C<< \@config >>
 matches that address, otherwise returns false.
 
-Normally you use C<check_no> and C<check_only>, passing the name of the
+Normally you use C<check_device_no> and C<check_device_only>, passing the name of the
 configuration setting to load. This helper instead requires not the name of
 the setting, but its value.
+
+There are several options for what C<< \@config >> can contain:
+
+=over 4
+
+=item *
+
+Hostname, IP address, IP prefix
+
+=item *
+
+IP address range, using a hyphen and no whitespace
+
+=item *
+
+Regular Expression in YAML format (no enforced anchors) which will match the
+device DNS name (using a fresh DNS lookup, so works on new discovery), e.g.:
+
+ - !!perl/regexp ^sep0.*$
+
+=item *
+
+C<"property:regex"> - matched against a device property, such as C<model> or
+C<vendor> (with enforced begin/end regex anchors)
+
+=back
+
+To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>".
+Property regular expressions are anchored (that is, they must match the whole
+string). To match no devices we recommend an entry of "C<localhost>" in the
+setting.
 
 =cut
 

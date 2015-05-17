@@ -150,38 +150,10 @@ sub match_devicetype {
 
 Given the IP address of a device, returns true if the configuration setting
 C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_no> also returns false.
+is undefined or empty, then C<check_device_no> also returns false.
 
- print "rejected!" if check_no($ip, 'discover_no');
-
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-IP address range, using a hyphen and no whitespace
-
-=item *
-
-Regular Expression in YAML format which will match the device DNS name, e.g.:
-
- - !!perl/regexp ^sep0.*$
-
-=item *
-
-C<"property:regex"> - matched against a device property, such as C<model> or C<vendor>
-
-=back
-
-To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>".
-Property regular expressions are anchored (that is, they must match the whole
-string). To match no devices we recommend an entry of "C<localhost>" in the
-setting.
+See L<App::Netdisco::Util::Permission/check_acl> for details of what
+C<$setting_name> can contain.
 
 =cut
 
@@ -194,45 +166,17 @@ sub check_device_no {
   my $config = setting($setting_name) || [];
   return 0 if not scalar @$config;
 
-  return check_acl($device->ip, $config);
+  return check_acl($device, $config);
 }
 
 =head2 check_device_only( $ip, $setting_name )
 
 Given the IP address of a device, returns true if the configuration setting
 C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_only> also returns true.
+is undefined or empty, then C<check_device_only> also returns true.
 
- print "rejected!" unless check_only($ip, 'discover_only');
-
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-IP address range, using a hyphen and no whitespace
-
-=item *
-
-Regular Expression in YAML format which will match the device DNS name, e.g.:
-
- - !!perl/regexp ^sep0.*$
-
-=item *
-
-C<"property:regex"> - matched against a device property, such as C<model> or C<vendor>
-
-=back
-
-To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>".
-Property regular expressions are anchored (that is, they must match the whole
-string). To match no devices we recommend an entry of "C<localhost>" in the
-setting.
+See L<App::Netdisco::Util::Permission/check_acl> for details of what
+C<$setting_name> can contain.
 
 =cut
 
@@ -243,7 +187,7 @@ sub check_device_only {
   my $config = setting($setting_name) || [];
   return 1 if not scalar @$config;
 
-  return check_acl($device->ip, $config);
+  return check_acl($device, $config);
 }
 
 =head2 is_discoverable( $ip, $device_type? )

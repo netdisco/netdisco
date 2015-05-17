@@ -8,6 +8,10 @@
 
   * Allow "hidden" option to reports config
 
+  [BUG FIXES]
+
+  * [#230] Config ACL using device property:regex
+
 2.032003 - 2015-05-05
 
   [ENHANCEMENTS]
