@@ -268,7 +268,6 @@ code or HTML templates. For example:
    - tag: power_inventory
      label: 'Power Supply Inventory'
      category: Device
-     hidden: true
      columns:
        - {name: 'Name'}
        - {ps1_type: 'PS1 Type'}
@@ -318,6 +317,12 @@ If not supplied, reports appear in a I<My Reports> category.
 =head4 C<hidden> (optional)
 
 Set to true to skip inclusion of this report from the Reports menu.
+
+=head4 C<database> (optional)
+
+The database "tag" used in C<external_databases> so that you can query another
+database (even in another database server) and display the results in a
+Netdisco report.
 
 =head4 C<query_columns> (optional)
 

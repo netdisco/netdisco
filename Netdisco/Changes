@@ -24,7 +24,7 @@
   [ENHANCEMENTS]
 
   * THANK YOUs
-  * Allow renumber of device to one of its alias IPs in netdisco-do
+  * [#197] Allow renumber of device to one of its alias IPs in netdisco-do
   * [#216] Ability to enter IP prefix in "Discover" form in web
   
   [BUG FIXES]

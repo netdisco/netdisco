@@ -287,13 +287,15 @@ Hunter (Arizona State U), Jethro Binks (U of Strathclyde, Glasgow), Jordi
 Guijarro (UAB.es), Sam Stickland (spacething.org),  Stefan Radman (CTBTO.org),
 Clint Wise, Max Kosmach, and Bernhard Augenstein.
 
-We probably forgot some names - sorry about that :-(. Deep gratitude also goes
+We probably forgot some names - sorry about that :-(.
+
+Deep gratitude also goes
 to the authors and communities of all the other software that Netdisco is
 built upon.
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2012, 2013, 2014, 2015 by The Netdisco Developer Team.
+This software is copyright (c) 2012-2015 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
