@@ -7,11 +7,11 @@ build_requires:
   ExtUtils::MakeMaker: 6.59
   Test::More: 0.88
 configure_requires:
-  DBIx::Class: '0.082801'
+  DBIx::Class: 0.082801
   ExtUtils::MakeMaker: 6.59
 distribution_type: module
 dynamic_config: 1
-generated_by: 'Module::Install version 1.15'
+generated_by: 'Module::Install version 1.06'
 license: bsd
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -39,7 +39,7 @@ requires:
   DBIx::Class: 0.08281
   DBIx::Class::Helpers: 2.024
   Daemon::Control: 0.001006
-  Dancer: '1.3132'
+  Dancer: 1.3132
   Dancer::Plugin::Auth::Extensible: 0.3
   Dancer::Plugin::DBIC: 0.2001
   Dancer::Plugin::Passphrase: 2.0.1
@@ -69,10 +69,11 @@ requires:
   Plack::Middleware::ReverseProxy: 0.15
   Role::Tiny: 1.002005
   SNMP::Info: 3.27
-  SQL::Translator: '0.11018'
+  SQL::Translator: 0.11018
   Sereal: 0
   Socket6: 0.23
   Starman: 0.4008
+  Sys::Proctitle: 0
   Template: 2.24
   Template::Plugin::CSV: 0.04
   Template::Plugin::Number::Format: 1.02
@@ -92,4 +93,4 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: '2.032004'
+version: 2.032005
