@@ -8,6 +8,5 @@
   [% mylist.push(row.dns) %]
   [% mylist.push(row.time_last) %]
   [% CSV.dump(mylist) %]
+
 [% END %]
-
-

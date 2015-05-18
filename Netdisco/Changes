@@ -1,3 +1,9 @@
+2.032005 - 2015-05-18
+
+  [BUG FIXES]
+
+  * Fix newlines in IP Inventory CSV output
+
 2.032004 - 2015-05-17
 
   [NEW FEATURES]
