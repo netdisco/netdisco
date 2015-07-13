@@ -1,3 +1,9 @@
+2.032006 - 
+
+  [BUG FIXES]
+
+  * [#234] Cisco voice vlan conflicts with same number normal vlan on DB INSERT
+
 2.032005 - 2015-05-18
 
   [BUG FIXES]

@@ -428,7 +428,8 @@ sub store_vlans {
   my $interfaces        = $snmp->interfaces;
 
   # build device port vlans suitable for DBIC
-  my @portvlans;
+  my @portvlans = ();
+  my %port_vseen = ();
   foreach my $entry (keys %$i_vlan_membership) {
       my $port = $interfaces->{$entry};
       next unless defined $port;
@@ -436,6 +437,8 @@ sub store_vlans {
       my $type = $i_vlan_type->{$entry};
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
+          next if ++$port_vseen{$vlan} > 1;
+
           my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
           push @portvlans, {
               port => $port,
