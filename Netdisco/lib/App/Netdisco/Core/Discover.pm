@@ -139,6 +139,9 @@ sub store_device {
       $device->set_column( vtp_domain => (values %$vtpdomains)[-1] );
   }
 
+  my $hostname = hostname_from_ip($device->ip);
+  $device->set_column( dns => $hostname ) if $hostname;
+
   my @properties = qw/
     snmp_ver
     description uptime contact name location

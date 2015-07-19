@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * [#234] Cisco voice vlan conflicts with same number normal vlan on DB INSERT
+  * [#xxx] Lost Device DNS setting in previous refactor
 
 2.032005 - 2015-05-18
 
