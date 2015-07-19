@@ -4,6 +4,7 @@
 
   * [#234] Cisco voice vlan conflicts with same number normal vlan on DB INSERT
   * [#xxx] Lost Device DNS setting in previous refactor
+  * Syntax error in DB version 8 deployment script (S. Xu)
 
 2.032005 - 2015-05-18
 

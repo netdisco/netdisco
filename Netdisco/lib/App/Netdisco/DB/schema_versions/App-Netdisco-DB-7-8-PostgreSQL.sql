@@ -22,7 +22,7 @@ ALTER TABLE device_port_ssid ADD bssid macaddr;
 ALTER TABLE node ADD vlan text DEFAULT '0';
 
 ALTER TABLE node DROP CONSTRAINT node_pkey;
-ALTER TABLE node ADD PRIMARY KEY key (mac, switch, port, vlan);
+ALTER TABLE node ADD PRIMARY KEY (mac, switch, port, vlan);
 
 -- Add "ssid" column to node_wireless table
 ALTER TABLE node_wireless ADD ssid text DEFAULT '';
