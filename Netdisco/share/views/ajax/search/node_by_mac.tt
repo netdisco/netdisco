@@ -51,6 +51,7 @@
         [% IF node.device.dns AND node.device_port AND node.device_port.name %]
           ([% node.device.dns | html_entity %] - [% node.device_port.name | html_entity %])
         [% END %]
+            on vlan [% node.vlan %]
       </td>
       [% IF params.stamps %]
       <td>[% node.time_first_stamp | html_entity %]</td>

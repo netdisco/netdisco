@@ -1,5 +1,9 @@
 2.032007 - 2015-0
 
+  [ENHANCEMENTS]
+
+  * [#244] Node search results doesn't include "(on vlan X)" (R. Kerr)
+
   [BUG FIXES]
 
   * Skip VLANs undef or zero (reported by Brian van Baekel)
