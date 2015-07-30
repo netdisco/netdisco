@@ -416,6 +416,7 @@ sub store_vlans {
   my @devicevlans;
   foreach my $entry (keys %$v_name) {
       my $vlan = $v_index->{$entry};
+      next unless defined $vlan and $vlan;
       ++$v_seen{$vlan};
 
       push @devicevlans, {
@@ -440,6 +441,7 @@ sub store_vlans {
       my $type = $i_vlan_type->{$entry};
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
+          next unless defined $vlan and $vlan;
           next if ++$port_vseen{$vlan} > 1;
 
           my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";

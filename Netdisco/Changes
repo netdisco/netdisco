@@ -1,3 +1,9 @@
+2.032007 - 2015-0
+
+  [BUG FIXES]
+
+  * Skip VLANs undef or zero (reported by Brian van Baekel)
+
 2.032006 - 2015-07-18
 
   [BUG FIXES]
