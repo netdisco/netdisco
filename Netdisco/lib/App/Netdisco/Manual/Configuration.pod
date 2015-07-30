@@ -571,6 +571,24 @@ this you usually configure a common context prefix, with Netdisco's default
 being "C<vlan->" (i.e. C<vlan-1>, C<vlan-2>, etc). Add the C<context_prefix>
 key to a stanza to override this.
 
+Note that multiple SNMP v2 community strings need to be in separate named
+stanza, as below. However for simple v2 configurations you can use the
+C<community> shorthand:
+
+snmp_auth:
+  - tag: 'default_v2_readonly1'
+    community: 'read1'
+    read: true
+    write: false
+  - tag: 'default_v2_readonly2'
+    community: 'read2'
+    read: true
+    write: false
+ 
+ # or...
+ 
+ community: ['read1', 'read2']
+
 =head3 C<get_community>
 
 Value: String. Default none.
