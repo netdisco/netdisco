@@ -45,7 +45,7 @@
       </td>
       <td>Switch Port</td>
       <td class="nd_center-cell">
-            <a href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on">
+            <a href="[% device_ports %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on&prefer=port">
             [% node.switch | html_entity %] - [% node.port | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT node.active %]
         [% IF node.device.dns AND node.device_port AND node.device_port.name %]

@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Skip VLANs undef or zero (reported by Brian van Baekel)
+  * [#243] Node search results do not include &prefer=port (R. Kerr)
 
 2.032006 - 2015-07-18
 
