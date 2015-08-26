@@ -48,12 +48,13 @@ hook 'before' => sub {
 
   # view settings for port connected devices
   var('connected_properties' => [
-    { name => 'n_age',      label => 'Age Stamp',     default => ''   },
-    { name => 'n_ip',       label => 'IP Address',    default => 'on' },
-    { name => 'n_netbios',  label => 'NetBIOS',       default => 'on' },
-    { name => 'n_ssid',     label => 'SSID',          default => 'on' },
-    { name => 'n_vendor',   label => 'Vendor',        default => ''   },
-    { name => 'n_archived', label => 'Archived Data', default => ''   },
+    { name => 'n_age',      label => 'Age Stamp',      default => ''   },
+    { name => 'n_ip4',      label => 'IPv4 Addresses', default => 'on' },
+    { name => 'n_ip6',      label => 'IPv6 Addresses', default => 'on' },
+    { name => 'n_netbios',  label => 'NetBIOS',        default => 'on' },
+    { name => 'n_ssid',     label => 'SSID',           default => 'on' },
+    { name => 'n_vendor',   label => 'Vendor',         default => ''   },
+    { name => 'n_archived', label => 'Archived Data',  default => ''   },
   ]);
 
   return unless (request->path eq uri_for('/device')->path

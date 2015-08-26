@@ -136,25 +136,29 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # what kind of nodes are we interested in?
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
-    $nodes_name .= '_with_age' if param('c_nodes') and param('n_age');
-    $set = $set->search_rs({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "ips.ip"] })
-      if param('c_nodes');
+    $nodes_name .= '_with_age' if param('n_age');
 
-    # retrieve active/all connected nodes, if asked for
-    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'ips'}] })
-      if param('c_nodes');
+    if (param('c_nodes')) {
+        my $ips = ((param('n_ip4') and param('n_ip6')) ? 'ips'
+                  : param('n_ip4') ? 'ip4s'
+                  : 'ip6s');
 
-    # retrieve wireless SSIDs, if asked for
-    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'wireless'}] })
-      if param('c_nodes') && param('n_ssid');
+        # retrieve active/all connected nodes, if asked for
+        $set = $set->search_rs({}, { prefetch => [{$nodes_name => $ips}] });
+        $set = $set->search_rs({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "${ips}.ip"] });
 
-    # retrieve NetBIOS, if asked for
-    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'netbios'}] })
-      if param('c_nodes') && param('n_netbios');
+        # retrieve wireless SSIDs, if asked for
+        $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'wireless'}] })
+          if param('n_ssid');
 
-    # retrieve vendor, if asked for
-    $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'oui'}] })
-      if param('c_nodes') && param('n_vendor');
+        # retrieve NetBIOS, if asked for
+        $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'netbios'}] })
+          if param('n_netbios');
+
+        # retrieve vendor, if asked for
+        $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'oui'}] })
+          if param('n_vendor');
+    }
 
     # retrieve SSID, if asked for
     $set = $set->search({}, { prefetch => 'ssid' }) if param('c_ssid');

@@ -112,6 +112,24 @@ the current Node's.
 __PACKAGE__->has_many( ips => 'App::Netdisco::DB::Result::NodeIp',
   { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
 
+=head2 ip4s
+
+Same as C<ips> but for IPv4 only.
+
+=cut
+
+__PACKAGE__->has_many( ip4s => 'App::Netdisco::DB::Result::Virtual::NodeIp4',
+  { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
+
+=head2 ip6s
+
+Same as C<ips> but for IPv6 only.
+
+=cut
+
+__PACKAGE__->has_many( ip6s => 'App::Netdisco::DB::Result::Virtual::NodeIp6',
+  { 'foreign.mac' => 'self.mac', 'foreign.active' => 'self.active' } );
+
 =head2 netbios
 
 Returns the C<node_nbt> entry associated with this Node if one exists. That
