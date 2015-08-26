@@ -5,6 +5,10 @@
   * Expose the created, last login and note fields for User managment
   * Add IRC channel to package metadata
 
+  [BUG FIXES]
+
+  * Reduce suggested LDAP logging to level 0 (J. Sonstroem)
+
 2.032007 - 2015-07-30
 
   [ENHANCEMENTS]

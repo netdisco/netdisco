@@ -171,7 +171,7 @@ authentication will be used for their login.
      - 'ad.example.com'
    user_string: 'MYDOMAIN\%USER%'
    opts:
-     debug: 3
+     debug: 0
 
 There are several options within this setting:
 
