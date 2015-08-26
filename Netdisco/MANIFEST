@@ -79,6 +79,8 @@ lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
+lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm
+lib/App/Netdisco/DB/Result/Virtual/NodeIp6.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
@@ -322,6 +324,7 @@ share/views/ajax/admintask/undiscoveredneighbors.tt
 share/views/ajax/admintask/undiscoveredneighbors_csv.tt
 share/views/ajax/admintask/userlog.tt
 share/views/ajax/admintask/users.tt
+share/views/ajax/admintask/users_csv.tt
 share/views/ajax/datatabledefaults.tt
 share/views/ajax/device/addresses.tt
 share/views/ajax/device/addresses_csv.tt
