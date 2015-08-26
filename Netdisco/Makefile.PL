@@ -98,6 +98,7 @@ resources
   homepage => 'http://netdisco.org/',
   bugtracker => 'https://sourceforge.net/p/netdisco/netdisco2/',
   repository => 'git://git.code.sf.net/p/netdisco/netdisco-ng',
-  MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users';
+  MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users',
+  IRC => 'irc://irc.freenode.org/#netdisco';
 
 WriteAll;

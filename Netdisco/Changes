@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Expose the created, last login and note fields for User managment
+  * Add IRC channel to package metadata
 
 2.032007 - 2015-07-30
 
