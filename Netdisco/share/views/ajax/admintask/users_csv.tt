@@ -1,0 +1,18 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Full Name' 'Username'
+              'LDAP Auth' 'Port Control' 'Administrator' 'Created'
+              'Last Login' 'Note']) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.fullname) %]
+  [% mylist.push(row.username) %]
+  [% mylist.push(row.ldap) %]
+  [% mylist.push(row.port_control) %]
+  [% mylist.push(row.admin) %]
+  [% mylist.push(row.created) %]
+  [% mylist.push(row.last_seen) %]
+  [% mylist.push(row.note) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

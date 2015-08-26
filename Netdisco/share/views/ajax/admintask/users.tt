@@ -7,6 +7,9 @@
       <th class="nd_center-cell">LDAP Auth</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
+      <th class="nd_center-cell">Created</th>
+      <th class="nd_center-cell">Last Login</th>
+      <th class="nd_center-cell">Note</th>
       <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
@@ -18,13 +21,16 @@
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="ldap"></td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="port_control"></td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
+      <td class="nd_center-cell"></td>
+      <td class="nd_center-cell"></td>
+      <td class="nd_center-cell"><input data-form="add" name="note" type="text"></td>
       <td class="nd_center-cell">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
 
     [% SET count = 0 %]
-    [% WHILE (row = results.next) %]
+    [% FOREACH row IN results %]
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell">
@@ -44,6 +50,11 @@
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="admin" type="checkbox" [% 'checked="checked"' IF row.admin %]>
+      </td>
+      <td class="nd_center-cell">[% row.created   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.last_seen | html_entity %]</td>
+      <td class="nd_center-cell">
+        <input data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
       </td>
 
       <td class="nd_center-cell">
@@ -80,11 +91,11 @@ $(document).ready(function() {
   $('#data-table').dataTable({
     "columnDefs": [ 
       {
-        "targets": [ 2, 3, 4, 5, 6 ],
+        "targets": [ 2, 3, 4, 5, 6, 7, 8, 9 ],
         "searchable": false
       },
       {
-        "targets": [ 0, 1, 2, 3, 4, 5, 6 ],
+        "targets": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
         "orderable": false
       }
     ],

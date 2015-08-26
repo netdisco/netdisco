@@ -50,6 +50,10 @@ post '/login' => sub {
           details => param('return_url'),
         });
 
+        schema('netdisco')->resultset('User')
+          ->find( session('logged_in_user') )
+          ->update({ last_on => \'now()' });
+
         return if request->is_ajax;
         redirect param('return_url');
     }

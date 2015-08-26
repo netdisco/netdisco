@@ -12,6 +12,7 @@ use Digest::MD5 ();
 register_admin_task({
   tag => 'users',
   label => 'User Management',
+  provides_csv => 1,
 });
 
 sub _sanity_ok {
@@ -42,6 +43,7 @@ ajax '/ajax/control/admin/users/add' => require_role admin => sub {
           ldap => (param('ldap') ? \'true' : \'false'),
           port_control => (param('port_control') ? \'true' : \'false'),
           admin => (param('admin') ? \'true' : \'false'),
+          note => param('note'),
         });
     });
 };
@@ -71,18 +73,34 @@ ajax '/ajax/control/admin/users/update' => require_role admin => sub {
         ldap => (param('ldap') ? \'true' : \'false'),
         port_control => (param('port_control') ? \'true' : \'false'),
         admin => (param('admin') ? \'true' : \'false'),
+        note => param('note'),
       });
     });
 };
 
-ajax '/ajax/content/admin/users' => require_role admin => sub {
-    my $set = schema('netdisco')->resultset('User')
-      ->search(undef, { order_by => [qw/fullname username/]});
+get '/ajax/content/admin/users' => require_role admin => sub {
+    my @results = schema('netdisco')->resultset('User')
+      ->search(undef, {
+        '+columns' => {
+          created   => \"to_char(creation, 'YYYY-MM-DD HH24:MI')",
+          last_seen => \"to_char(last_on,  'YYYY-MM-DD HH24:MI')",
+        },
+        order_by => [qw/fullname username/]
+      })->hri->all;
 
-    content_type('text/html');
-    template 'ajax/admintask/users.tt', {
-      results => $set,
-    }, { layout => undef };
+    return unless scalar @results;
+
+    if ( request->is_ajax ) {
+        template 'ajax/admintask/users.tt',
+            { results => \@results, },
+            { layout  => undef };
+    }
+    else {
+        header( 'Content-Type' => 'text/comma-separated-values' );
+        template 'ajax/admintask/users_csv.tt',
+            { results => \@results, },
+            { layout  => undef };
+    }
 };
 
 true;
