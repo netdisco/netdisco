@@ -190,7 +190,7 @@ sub deploy_oui {
       @lines = File::Slurp::read_file($ARGV[0], err_mode => 'quiet');
   }
   else {
-      my $url = 'http://standards.ieee.org/develop/regauth/oui/oui.txt';
+      my $url = 'http://standards-oui.ieee.org/oui.txt';
       my $resp = HTTP::Tiny->new->get($url);
       @lines = split /\n/, $resp->{content};
   }
