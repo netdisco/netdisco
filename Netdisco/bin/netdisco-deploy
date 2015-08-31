@@ -103,7 +103,7 @@ exit(0) unless $bool;
 
 say '';
 $bool = $term->ask_yn(
-  prompt => 'Would you like to deploy or upgrade your database schema?', default => 'n',
+  prompt => 'Would you like to deploy the database schema?', default => 'n',
 );
 deploy_db() if $bool;
 
