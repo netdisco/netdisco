@@ -433,8 +433,8 @@ sub store_vlans {
 
   # build device port vlans suitable for DBIC
   my @portvlans = ();
-  my %port_vseen = ();
   foreach my $entry (keys %$i_vlan_membership) {
+      my %port_vseen = ();
       my $port = $interfaces->{$entry};
       next unless defined $port;
 
