@@ -1,0 +1,10 @@
+
+            <div class="clearfix nd_netmap-sidebar">
+              <em class="muted nd_sidebar-label">Filter by VLAN:</em><br/>
+              <input id="nd_port-query" placeholder="" type="number"
+                name="vlan" value="[% params.vlan | html_entity %]" type="text"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="VLAN"/>
+            </div>
+            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
+                <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Ports</button>
+

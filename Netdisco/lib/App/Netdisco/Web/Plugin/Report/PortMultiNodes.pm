@@ -17,6 +17,8 @@ register_report(
 get '/ajax/content/report/portmultinodes' => require_login sub {
     my @results = schema('netdisco')->resultset('Device')->search(
         {   'ports.remote_ip' => undef,
+            (param('vlan') ?
+              ('ports.vlan' => param('vlan'), 'nodes.vlan' => param('vlan')) : ()),
             'nodes.active'    => 1,
             'wireless.port'   => undef
         },
