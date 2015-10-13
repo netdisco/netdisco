@@ -413,6 +413,7 @@ share/views/sidebar/report/netbios.tt
 share/views/sidebar/report/nodesdiscovered.tt
 share/views/sidebar/report/nodevendor.tt
 share/views/sidebar/report/portlog.tt
+share/views/sidebar/report/portmultinodes.tt
 share/views/sidebar/report/portssid.tt
 share/views/sidebar/report/subnets.tt
 share/views/sidebar/search/device.tt
