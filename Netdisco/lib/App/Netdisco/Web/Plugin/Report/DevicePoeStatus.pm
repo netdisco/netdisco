@@ -15,7 +15,7 @@ register_report(
     }
 );
 
-get '/ajax/content/report/devicepoestatus/data' => require_role admin => sub {
+get '/ajax/content/report/devicepoestatus/data' => require_login sub {
     send_error( 'Missing parameter', 400 )
         unless ( param('draw') && param('draw') =~ /\d+/ );
 

@@ -15,19 +15,14 @@ register_report(
     }
 );
 
-get '/ajax/content/report/apradiochannelpower/data' => require_role admin =>
-    sub {
+get '/ajax/content/report/apradiochannelpower/data' => require_login sub {
     send_error( 'Missing parameter', 400 )
         unless ( param('draw') && param('draw') =~ /\d+/ );
 
     my $rs = schema('netdisco')->resultset('Virtual::ApRadioChannelPower');
-
     my $exp_params = expand_hash( scalar params );
-
     my $recordsTotal = $rs->count;
-
     my @data = $rs->get_datatables_data($exp_params)->hri->all;
-
     my $recordsFiltered = $rs->get_datatables_filtered_count($exp_params);
 
     content_type 'application/json';
@@ -46,7 +41,6 @@ get '/ajax/content/report/apradiochannelpower' => require_login sub {
         template 'ajax/report/apradiochannelpower.tt', {},
             { layout => undef };
     }
-
     else {
         my @results
             = schema('netdisco')->resultset('Virtual::ApRadioChannelPower')

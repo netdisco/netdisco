@@ -4,6 +4,10 @@
 
   * Filter by VLAN in Pors with Multiple Nodes report
 
+  [BUG FIXES]
+
+  * Non-admin reports require admin login
+
 2.033002 - 2015-09-29
 
   [ENHANCEMENTS]
