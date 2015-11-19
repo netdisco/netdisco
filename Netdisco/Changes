@@ -1,3 +1,9 @@
+2.033005
+
+  [BUG FIXES]
+
+  * [#255] undefined host error in netdisco-do psql
+
 2.033004 - 2015-11-16
 
   [BUG FIXES]

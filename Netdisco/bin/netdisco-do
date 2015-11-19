@@ -184,7 +184,7 @@ unless ($action) {
     my $pass = setting('database')->{pass};
 
     my $portnum = undef;
-    if ($host =~ m/([^;]+);port=(\d+)/) {
+    if ($host and $host =~ m/([^;]+);port=(\d+)/) {
         $host = $1;
         $portnum = $2;
     }
