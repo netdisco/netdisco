@@ -452,6 +452,13 @@ When showing Device Ports, Netdisco calculates first an average number of
 VLANs across all device ports. If this is above this configurable threshold,
 the VLAN Membership is I<not> shown (regardless of Display Columns setting.
 
+=head3 C<login_logo>
+
+Value: String. Default: none.
+
+Set to the URL of an image file which will be displayed alongside the C<Log
+In> form.
+
 =head2 Netdisco Core
 
 =head3 C<mibhome>

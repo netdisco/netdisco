@@ -41,6 +41,9 @@
             <input id='loginuser' placeholder="Username" class="span2" name="username" type="text" required="required"/>
             <input placeholder="Password" class="span2" name="password" type="password" required="required"/>
             <button type="submit" class="btn btn-info">Log In</button>
+            [% IF settings.login_logo %]
+            <img src="[% settings.login_logo %]" alt="Login Logo" />
+            [% END %]
           </div>
           [% IF params.return_url %]
           <input type="hidden" name="return_url" value="[% params.return_url | html_entity %]"/>

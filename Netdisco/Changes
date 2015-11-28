@@ -1,5 +1,9 @@
 2.033005
 
+  [NEW FEATURES]
+
+  * Login Logo image can be configured to appear alongisde the Log In form
+
   [BUG FIXES]
 
   * [#255] undefined host error in netdisco-do psql
