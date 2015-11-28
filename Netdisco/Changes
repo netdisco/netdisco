@@ -7,6 +7,7 @@
   [BUG FIXES]
 
   * [#255] undefined host error in netdisco-do psql
+  * [#250] Linux SSHColletor cannot handle uppercase MACs
 
 2.033004 - 2015-11-16
 

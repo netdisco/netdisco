@@ -62,7 +62,7 @@ sub arpnip {
     my @lines = split(m/\n/, $before);
 
     # 192.168.1.1 ether 00:b6:aa:f5:bb:6e C eth1
-    my $linereg = qr/([0-9\.]+)\s+ether\s+([a-f0-9:]+)/;
+    my $linereg = qr/([0-9\.]+)\s+ether\s+([a-fA-F0-9:]+)/;
 
     foreach my $line (@lines) {
         if ($line =~ $linereg) {
