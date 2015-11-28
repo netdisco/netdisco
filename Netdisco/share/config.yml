@@ -105,6 +105,7 @@ port_control_reasons:
   resolved:    'Issue Resolved'
 check_userlog: true
 devport_vlan_limit: 150
+login_logo: ""
 
 # -------------
 # NETDISCO CORE
