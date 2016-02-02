@@ -65,20 +65,20 @@
       <td>[% d.description | html_entity | html_line_break %]</td>
     </tr>
     [% IF settings._extra_device_details.size %]
+    [% FOREACH config IN settings._extra_device_details %]
     <tr>
-        [% FOREACH config IN settings._extra_device_details %]
-        <td>
-            [% config.label %]
-        </td>
-        <td>
-            [% TRY %]
-            [% INCLUDE "plugin/${config.name}/device_details.tt" %]
-            [% CATCH %]
-            <!-- dummy content required by Template Toolkit TRY -->
-            [% END %]
-        </td>
-        [% END %]
+      <td>
+          [% config.label %]
+      </td>
+      <td>
+          [% TRY %]
+          [% INCLUDE "plugin/${config.name}/device_details.tt" %]
+          [% CATCH %]
+          <!-- dummy content required by Template Toolkit TRY -->
+          [% END %]
+      </td>
     </tr>
+    [% END %]
     [% END %]
     <tr>
       <td>Administration</td>
