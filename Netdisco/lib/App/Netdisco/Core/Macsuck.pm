@@ -374,7 +374,10 @@ sub _walk_fwtable {
           if ($neigh_cannot_macsuck) {
               debug sprintf
                 ' [%s] macsuck %s - port %s neighbor %s without macsuck support',
-                $device->ip, $mac, $port, $device_port->neighbor->ip;
+                $device->ip, $mac, $port,
+                (eval { $device_port->neighbor->ip }
+                 || ($device_port->remote_ip
+                     || $device_port->remote_id || '?'));
               # continue!!
           }
           elsif (my $neighbor = $device_port->neighbor) {
