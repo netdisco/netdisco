@@ -40,7 +40,9 @@ sub discover {
   my ($self, $job) = @_;
 
   my $device = get_device($job->device)
-    or job_error("discover failed: unable to interpret device parameter");
+    or return job_error(
+      "discover failed: unable to interpret device parameter: "
+      . ($job->device || "''"));
   my $host = $device->ip;
 
   if ($device->ip eq '0.0.0.0') {
