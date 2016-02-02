@@ -25,25 +25,25 @@ $(document).ready(function() {
                 "data": 'port_count',
                 "searchable": false,
                 "render": function(data, type, row, meta) {
-                    return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }, {
                 "data": 'ports_in_use',
                 "searchable": false,
                 "render": function(data, type, row, meta) {
-                    return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }, {
                 "data": 'ports_shutdown',
                 "searchable": false,
                 "render": function(data, type, row, meta) {
-                    return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }, {
                 "data": 'ports_free',
                 "searchable": false,
                 "render": function(data, type, row, meta) {
-                    return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 }
             }
         ],

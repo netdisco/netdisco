@@ -10,6 +10,7 @@
   * [#250] Linux SSHColletor cannot handle uppercase MACs
   * Return from device discover if device is unknown
   * Safely continue macsuck if neighbor cannot be resolved
+  * [#261] String replace failed in reports (M. Kosmach)
 
 2.033004 - 2015-11-16
 

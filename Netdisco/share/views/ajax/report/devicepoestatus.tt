@@ -102,49 +102,49 @@ $(document).ready(function() {
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'poe_capable_ports',
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'poe_powered_ports',
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'poe_disabled_ports',
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'poe_errored_ports',
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'poe_power_committed',
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'poe_power_delivering',
         "className": "nd_center-cell",
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }
     ],

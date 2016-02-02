@@ -29,13 +29,13 @@ $(document).ready(function() {
         "data": 'dcount',
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }, {
         "data": 'pcount',
         "searchable": false,
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }
     ],

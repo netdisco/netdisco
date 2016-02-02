@@ -80,7 +80,7 @@ $(document).ready(function() {
       }, {
         "data": 'count',
         "render": function(data, type, row, meta) {
-          return data.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
       }
     ],
