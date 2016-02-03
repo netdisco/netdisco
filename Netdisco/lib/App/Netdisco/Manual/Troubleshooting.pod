@@ -145,4 +145,10 @@ The LLDP configuration should look like:
    interface all;
  }
 
+=head1 Report Cisco 37xx as Single Device Instead of Stacked
+
+Add this to your 37xx config:
+
+ no snmp-server sysobjectid type stack-oid
+
 =cut
