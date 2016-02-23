@@ -760,9 +760,8 @@ sub store_neighbors {
               # on default vlan for HP switches remote_ip looks like
               # "myswitchname(012345-012345)"
               if (!defined $neigh) {
-                  (my $tmpid = $remote_id) =~ s/.([0-9a-f]{6})-([0-9a-f]{6})./$1$2/;
+                  (my $tmpid = $remote_id) =~ s/.*\(([0-9a-f]{6})-([0-9a-f]{6})\).*/$1$2/;
                   my $mac = NetAddr::MAC->new(mac => $tmpid);
-
                   if ($mac and not $mac->errstr) {
                       info sprintf
                         '[%s] neigh - found neighbor %s by MAC %s',
