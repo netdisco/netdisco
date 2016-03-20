@@ -1,8 +1,13 @@
-2.033006
+2.033006 - 2016-03-20
 
   [ENHANCEMENTS]
 
   * Toubleshooting tip for Cisco 37xx single item
+  * Update MCE dependency
+
+  [BUG FIXES]
+
+  * Fix regexp for HP switches
 
 2.033005 - 2016-02-02
 
