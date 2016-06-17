@@ -151,4 +151,9 @@ Add this to your 37xx config:
 
  no snmp-server sysobjectid type stack-oid
 
+=head1 Running under C<systemd>
+
+On C<systemd>-based systems please see L<our Systemd
+guide|App::Netdisco::Manual::Systemd>.
+
 =cut
