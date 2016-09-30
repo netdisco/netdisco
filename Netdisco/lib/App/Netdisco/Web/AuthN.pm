@@ -9,11 +9,15 @@ hook 'before' => sub {
       ? request->uri : uri_for('/inventory')->path);
 
     if (! session('logged_in_user') && request->path ne uri_for('/login')->path) {
-        if (setting('trust_x_remote_user') and scalar request->header('X-REMOTE_USER')) {
+        if (setting('trust_x_remote_user')
+          and scalar request->header('X-REMOTE_USER')
+          and length scalar request->header('X-REMOTE_USER')) {
             session(logged_in_user => scalar request->header('X-REMOTE_USER'));
             session(logged_in_user_realm => 'users');
         }
-        elsif (setting('trust_remote_user') and $ENV{REMOTE_USER}) {
+        elsif (setting('trust_remote_user')
+          and defined $ENV{REMOTE_USER}
+          and length  $ENV{REMOTE_USER}) {
             session(logged_in_user => $ENV{REMOTE_USER});
             session(logged_in_user_realm => 'users');
         }

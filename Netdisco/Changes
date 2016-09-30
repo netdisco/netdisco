@@ -5,6 +5,10 @@
   * Add systemd guide
   * Add environment variable for https reverse proxy (B. Marshall)
 
+  [BUG FIXES]
+
+  * Improve security of REMOTE_USER handling (B. Marshall)
+
 2.033006 - 2016-03-20
 
   [ENHANCEMENTS]
