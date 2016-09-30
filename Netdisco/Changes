@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Add systemd guide
+  * Add environment variable for https reverse proxy (B. Marshall)
 
 2.033006 - 2016-03-20
 

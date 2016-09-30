@@ -159,6 +159,9 @@ to Netdisco in the C<X-REMOTE_USER> HTTP Header. For example with Apache:
  RequestHeader unset X-REMOTE_USER
  RequestHeader set X-REMOTE_USER "%{REMOTE_USER}e" env=REMOTE_USER
 
+When running securely (https), replace C<< "%{REMOTE_USER}e" >> with C<<
+"%{REMOTE_USER}s" >>.
+
 =head3 C<ldap>
 
 Value: Settings Tree. Default: None.
