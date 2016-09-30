@@ -2,8 +2,9 @@
 
   [ENHANCEMENTS]
 
-  * Add systemd guide
-  * Add environment variable for https reverse proxy (B. Marshall)
+  * systemd deployment guide
+  * document env var for https reverse proxy (B. Marshall)
+  * FreeBSD sshcollector support (H. Teulahti)
 
   [BUG FIXES]
 
