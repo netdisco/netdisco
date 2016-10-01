@@ -58,8 +58,9 @@ See the demo at: L<http://netdisco2-demo.herokuapp.com/>
 If you have any trouble getting installed or running, check out the
 L<Deployment|App::Netdisco::Manual::Deployment> and
 L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> notes, or speak to
-someone in the C<#netdisco> IRC channel (on freenode).  Before installing or
-upgrading please always review the latest L<Release
+someone in the C<#netdisco@freenode> IRC channel, or on the L<community email
+list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.  Before
+installing or upgrading please always review the latest L<Release
 Notes|App::Netdisco::Manual::ReleaseNotes>.
 
 =head1 Dependencies

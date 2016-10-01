@@ -8,9 +8,10 @@
   [ENHANCEMENTS]
 
   * systemd deployment guide
-  * document env var for https reverse proxy (B. Marshall)
+  * Document env var for https reverse proxy (B. Marshall)
   * [#279] Web sessions use cookies instead of files on disk (M. Johnson)
-  * strip realm from username (B. Marshall)
+  * Strip realm from username (B. Marshall)
+  * Mention netdisco-users mail list in docs (C. Goldsmith)
 
   [BUG FIXES]
 
