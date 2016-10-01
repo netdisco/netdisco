@@ -27,9 +27,6 @@ use App::Netdisco;
 use Dancer;
 warning sprintf "App::Netdisco %s web", ($App::Netdisco::VERSION || 'HEAD');
 
-my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
-set(session_dir => dir($home, 'netdisco-web-sessions')->stringify);
-
 set plack_middlewares => [
   ['Plack::Middleware::ReverseProxy'],
   [ Expires => (

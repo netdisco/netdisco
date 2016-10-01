@@ -23,6 +23,7 @@ requires 'Dancer' => '1.3132';
 requires 'Dancer::Plugin::DBIC' => 0.2001;
 requires 'Dancer::Plugin::Auth::Extensible' => 0.30;
 requires 'Dancer::Plugin::Passphrase' => '2.0.1';
+requires 'Dancer::Session::Cookie' => '0.27';
 requires 'File::ShareDir' => 1.03;
 requires 'File::Slurp' => 9999.19;
 requires 'Guard' => 1.022;

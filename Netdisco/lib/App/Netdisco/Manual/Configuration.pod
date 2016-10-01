@@ -1217,10 +1217,10 @@ you're doing.
 
 =head3 C<session>
 
-Value: String. Default: C<YAML>.
+Value: String. Default: C<cookie>.
 
-How to handle web sessions. Default is to store on disk so they can be shared
-between multiple web server processes (although it's slower).
+How to handle web sessions. Default is to store in an encrypted cookie
+using a key stored in the database by C<netdisco-deploy>.
 
 =head3 C<template>
 

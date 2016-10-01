@@ -125,6 +125,7 @@ sub _make_password {
   }
 }
 
+# set up initial admin user
 my $users = schema('netdisco')->resultset('User');
 if ($users->search({-bool => 'admin'})->count == 0) {
     say '';
@@ -148,6 +149,12 @@ if ($users->search({-bool => 'admin'})->count == 0) {
     say 'New user created.';
     print color 'reset';
 }
+
+# set initial dancer web session cookie key
+schema('netdisco')->resultset('Session')->find_or_create(
+  {id => 'dancer_session_cookie_key', a_session => \'md5(random()::text)'},
+  {key => 'primary'},
+);
 
 say '';
 $bool = $term->ask_yn(

@@ -308,7 +308,8 @@ plugins:
       users:
         provider: 'App::Netdisco::Web::Auth::Provider::DBIC'
         schema_name: 'netdisco'
-session: 'YAML'
+session: 'cookie'
+session_cookie_key: 'this_will_be_overridden_on_webapp_startup'
 template: 'netdisco_template_toolkit'
 route_cache: true
 appname: 'Netdisco'

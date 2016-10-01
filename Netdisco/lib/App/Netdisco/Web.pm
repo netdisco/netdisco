@@ -56,6 +56,13 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
 push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
      setting('views');
 
+# load cookie key from database
+setting('session_cookie_key' => undef);
+my $sessions = schema('netdisco')->resultset('Session');
+my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
+setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
+Dancer::Session::Cookie::init(session);
+
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 

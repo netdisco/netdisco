@@ -5,6 +5,7 @@
   * systemd deployment guide
   * document env var for https reverse proxy (B. Marshall)
   * FreeBSD sshcollector support (H. Teulahti)
+  * [#279] Web sessions use cookies instead of files on disk (M. Johnson)
 
   [BUG FIXES]
 

@@ -70,6 +70,10 @@ foreach my $file ($pid_file, $log_file) {
     chown $uid, $gid, $file;
 }
 
+# clean old web sessions
+my $sdir = dir($home, 'netdisco-web-sessions')->stringify;
+unlink glob file($sdir, '*');
+
 Daemon::Control->new({
   name => 'Netdisco Web',
   program  => \&restarter,
