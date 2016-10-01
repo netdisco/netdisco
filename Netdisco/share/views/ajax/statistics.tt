@@ -19,7 +19,7 @@
               <th>v[% schema_ver | html_entity %]</th>
             </tr>
             <tr>
-              <th><a href="http://http://perldancer.org/">Dancer</a></th>
+              <th><a href="http://perldancer.org/">Dancer</a></th>
               <th>[% dancer_version | html_entity %]</th>
             </tr>
             <tr>

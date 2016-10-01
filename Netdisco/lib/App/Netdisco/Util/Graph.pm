@@ -69,7 +69,7 @@ sub graph {
     my $G = make_graph();
 
     unless (defined $G){
-        print "graph() - make_graph() failed.  Try running with debug (-D).";
+        print "graph() - make_graph() failed.  Try running with debug (-D).\n";
         return;
     }
 
