@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * FreeBSD sshcollector support (H. Teulahti)
+  * Check Point VSX sshcollector support (M. Kosmach)
   * Allow port name to be changed on pseudo devices
 
   [ENHANCEMENTS]
