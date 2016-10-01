@@ -12,13 +12,17 @@ hook 'before' => sub {
         if (setting('trust_x_remote_user')
           and scalar request->header('X-REMOTE_USER')
           and length scalar request->header('X-REMOTE_USER')) {
-            session(logged_in_user => scalar request->header('X-REMOTE_USER'));
+
+            (my $user = scalar request->header('X-REMOTE_USER')) =~ s/@[^@]*$//;
+            session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }
         elsif (setting('trust_remote_user')
           and defined $ENV{REMOTE_USER}
           and length  $ENV{REMOTE_USER}) {
-            session(logged_in_user => $ENV{REMOTE_USER});
+
+            (my $user = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
+            session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }
         elsif (setting('no_auth')) {
