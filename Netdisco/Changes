@@ -10,6 +10,7 @@
   [BUG FIXES]
 
   * Improve security of REMOTE_USER handling (B. Marshall)
+  * portcontrol jobs using device object instance instead of IP address
 
 2.033006 - 2016-03-20
 

@@ -63,7 +63,8 @@ sub _set_port_generic {
   my ($job, $slot, $column) = @_;
   $column ||= $slot;
 
-  my $ip = $job->device;
+  my $device = $job->device;
+  my $ip = $device->ip;
   my $pn = $job->port;
   my $data = $job->subaction;
 
