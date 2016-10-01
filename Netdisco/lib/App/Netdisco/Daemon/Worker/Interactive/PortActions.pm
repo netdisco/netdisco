@@ -2,6 +2,7 @@ package App::Netdisco::Daemon::Worker::Interactive::PortActions;
 
 use App::Netdisco::Util::Port ':all';
 use App::Netdisco::Util::SNMP 'snmp_connect_rw';
+use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Daemon::Util ':all';
 
 use Role::Tiny;
@@ -63,7 +64,7 @@ sub _set_port_generic {
   my ($job, $slot, $column) = @_;
   $column ||= $slot;
 
-  my $device = $job->device;
+  my $device = get_device($job->device);
   my $ip = $device->ip;
   my $pn = $job->port;
   my $data = $job->subaction;
@@ -116,7 +117,8 @@ sub power {
   return job_error("Cannot alter port: $reconfig_check")
     if $reconfig_check;
 
-  my $ip = $job->device;
+  my $device = get_device($job->device);
+  my $ip = $device->ip;
   my $pn = $job->port;
 
   # munge data

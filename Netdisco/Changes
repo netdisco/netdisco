@@ -1,16 +1,20 @@
 2.034000
 
+  [NEW FEATURES]
+
+  * FreeBSD sshcollector support (H. Teulahti)
+  * Allow port name to be changed on pseudo devices
+
   [ENHANCEMENTS]
 
   * systemd deployment guide
   * document env var for https reverse proxy (B. Marshall)
-  * FreeBSD sshcollector support (H. Teulahti)
   * [#279] Web sessions use cookies instead of files on disk (M. Johnson)
 
   [BUG FIXES]
 
   * Improve security of REMOTE_USER handling (B. Marshall)
-  * portcontrol jobs using device object instance instead of IP address
+  * portcontrol and power jobs using device instance instead of IP address
 
 2.033006 - 2016-03-20
 
