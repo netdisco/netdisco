@@ -71,27 +71,29 @@ sub _set_port_generic {
   my $port = get_port($ip, $pn)
     or return job_error("Unknown port name [$pn] on device [$ip]");
 
-  # snmp connect using rw community
-  my $info = snmp_connect_rw($ip)
-    or return job_error("Failed to connect to device [$ip] to control port");
+  if ($device->vendor ne 'netdisco') {
+      # snmp connect using rw community
+      my $info = snmp_connect_rw($ip)
+        or return job_error("Failed to connect to device [$ip] to control port");
 
-  my $iid = get_iid($info, $port)
-    or return job_error("Failed to get port ID for [$pn] from [$ip]");
+      my $iid = get_iid($info, $port)
+        or return job_error("Failed to get port ID for [$pn] from [$ip]");
 
-  my $method = 'set_i_'. $slot;
-  my $rv = $info->$method($data, $iid);
+      my $method = 'set_i_'. $slot;
+      my $rv = $info->$method($data, $iid);
 
-  if (!defined $rv) {
-      return job_error(sprintf 'Failed to set [%s] %s to [%s] on [%s]: %s',
-                    $pn, $slot, $data, $ip, ($info->error || ''));
-  }
+      if (!defined $rv) {
+          return job_error(sprintf 'Failed to set [%s] %s to [%s] on [%s]: %s',
+                        $pn, $slot, $data, $ip, ($info->error || ''));
+      }
 
-  # confirm the set happened
-  $info->clear_cache;
-  my $check_method = 'i_'. $slot;
-  my $state = ($info->$check_method($iid) || '');
-  if (ref {} ne ref $state or $state->{$iid} ne $data) {
-      return job_error("Verify of [$pn] $slot failed on [$ip]");
+      # confirm the set happened
+      $info->clear_cache;
+      my $check_method = 'i_'. $slot;
+      my $state = ($info->$check_method($iid) || '');
+      if (ref {} ne ref $state or $state->{$iid} ne $data) {
+          return job_error("Verify of [$pn] $slot failed on [$ip]");
+      }
   }
 
   # update netdisco DB
