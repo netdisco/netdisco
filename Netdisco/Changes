@@ -15,12 +15,13 @@
   * Mention netdisco-users mail list in docs (C. Goldsmith)
   * Avoid pathological delete mac for millions of nodes (S. Xu)
   * Documentation fixes (S. Elipot)
-  * [#265] Default sort for Nodes discovered through LLDP/CDP
+  * [#265] Default sort for Nodes discovered through LLDP/CDP (mzac)
 
   [BUG FIXES]
 
   * Improve security of REMOTE_USER handling (B. Marshall)
   * portcontrol and power jobs using device instance instead of IP address
+  * [#266] netdisco subnet utiiization report div by zero (V. Puchkov)
 
 2.033006 - 2016-03-20
 
