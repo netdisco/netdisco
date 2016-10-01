@@ -15,6 +15,7 @@
   * Mention netdisco-users mail list in docs (C. Goldsmith)
   * Avoid pathological delete mac for millions of nodes (S. Xu)
   * Documentation fixes (S. Elipot)
+  * [#265] Default sort for Nodes discovered through LLDP/CDP
 
   [BUG FIXES]
 

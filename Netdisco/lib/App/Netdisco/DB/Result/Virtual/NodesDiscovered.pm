@@ -34,6 +34,7 @@ WHERE d.ip = p.ip
        AND q.ip = a.ip
        AND q.port = p.remote_port)
   AND (p.remote_id IS NOT NULL OR p.remote_type IS NOT NULL)
+  ORDER BY d.name, p.port
 ENDSQL
 );
 
