@@ -12,6 +12,7 @@
   * [#279] Web sessions use cookies instead of files on disk (M. Johnson)
   * Strip realm from username (B. Marshall)
   * Mention netdisco-users mail list in docs (C. Goldsmith)
+  * Avoid pathological delete mac for millions of nodes (S. Xu)
 
   [BUG FIXES]
 

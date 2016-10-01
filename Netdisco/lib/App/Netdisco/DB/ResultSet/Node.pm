@@ -115,21 +115,21 @@ sub delete {
         NodeIp
         NodeNbt
       /) {
-          $schema->resultset($set)->search({
-            '-and' => [
-              'me.mac' => { '-in' => $nodes->as_query },
-              'me.mac' => { '-in' => $schema->resultset($set)->search({
-                    -bool => 'nodes.active',
-                  },
-                  {
-                    columns => 'mac',
-                    join => 'nodes',
-                    group_by => 'me.mac',
-                    having => \[ 'count(nodes.mac) = 0' ],
-                  })->as_query,
-              },
-            ],
-          })->delete;
+        $schema->resultset($set)->search({
+          'me.mac' => { '-in' => $schema->resultset($set)->search({
+              '-and' => [
+                -bool => 'nodes.active',
+                'me.mac' => { '-in' => $nodes->as_query }
+              ]
+            },
+            {
+              columns => 'mac',
+              join => 'nodes',
+              group_by => 'me.mac',
+              having => \[ 'count(nodes.mac) = 0' ],
+            })->as_query,
+          },
+        })->delete;
       }
 
       foreach my $set (qw/
