@@ -8,12 +8,18 @@ hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
       ? request->uri : uri_for('/inventory')->path);
 
+    # from the internals of Dancer::Plugin::Auth::Extensible
+    my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
+
     if (! session('logged_in_user') && request->path ne uri_for('/login')->path) {
         if (setting('trust_x_remote_user')
           and scalar request->header('X-REMOTE_USER')
           and length scalar request->header('X-REMOTE_USER')) {
 
             (my $user = scalar request->header('X-REMOTE_USER')) =~ s/@[^@]*$//;
+            return if setting('validate_remote_user')
+              and not $provider->get_user_details($user);
+
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }
@@ -22,6 +28,9 @@ hook 'before' => sub {
           and length  $ENV{REMOTE_USER}) {
 
             (my $user = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
+            return if setting('validate_remote_user')
+              and not $provider->get_user_details($user);
+
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }

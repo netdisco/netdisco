@@ -1,3 +1,9 @@
+2.034001
+
+  [NEW FEATURES]
+
+  * Add validate_remote_user setting to check proxied users are known
+
 2.034000 - 2016-10-03
 
   [NEW FEATURES]

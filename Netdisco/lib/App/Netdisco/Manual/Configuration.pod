@@ -162,6 +162,19 @@ to Netdisco in the C<X-REMOTE_USER> HTTP Header. For example with Apache:
 When running securely (https), replace C<< "%{REMOTE_USER}e" >> with C<<
 "%{REMOTE_USER}s" >>.
 
+=head3 C<validate_remote_user>
+
+Value: Boolean. Default: C<false>.
+
+Enable this to check that remote users (usernames that come from a frontend
+proxy server) also exist in the Netdisco Users database. No password check is
+made.
+
+This can be useful when you have web login or single sign-on on the frontend
+web server, but also want to limit to a set of known users in Netdisco. You
+can still load those users into the database in Netdisco and enable this
+setting to check any proxied access can be mapped to a known user.
+
 =head3 C<ldap>
 
 Value: Settings Tree. Default: None.

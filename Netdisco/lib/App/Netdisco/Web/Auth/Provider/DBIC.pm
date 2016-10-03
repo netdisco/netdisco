@@ -42,7 +42,8 @@ sub get_user_details {
 
     # each of these settings permits no user in the database
     # so create a pseudo user entry instead
-    if (not $user and (setting('trust_remote_user')
+    if (not $user and not setting('validate_remote_user')
+                  and (setting('trust_remote_user')
                     or setting('trust_x_remote_user')
                     or setting('no_auth'))) {
         $user = $database->resultset($users_table)
