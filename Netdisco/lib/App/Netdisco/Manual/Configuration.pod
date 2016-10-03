@@ -598,18 +598,13 @@ Note that multiple SNMP v2 community strings need to be in separate named
 stanza, as below. However for simple v2 configurations you can use the
 C<community> shorthand:
 
-snmp_auth:
-  - tag: 'default_v2_readonly1'
-    community: 'read1'
-    read: true
-    write: false
-  - tag: 'default_v2_readonly2'
-    community: 'read2'
-    read: true
-    write: false
- 
+ snmp_auth:
+   - tag: 'default_v2_readonly1'
+     community: 'read1'
+   - tag: 'default_v2_readonly2'
+     community: 'read2'
+  
  # or...
- 
  community: ['read1', 'read2']
 
 =head3 C<get_community>
