@@ -591,7 +591,8 @@ sub delete {
 
   $schema->resultset('Community')->search({
     ip => { '-in' => $devices->as_query },
-    snmp_auth_tag => undef,
+    snmp_auth_tag_read  => undef,
+    snmp_auth_tag_write => undef,
   })->delete;
 
   $schema->resultset('Community')->search(

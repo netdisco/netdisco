@@ -4,6 +4,10 @@
 
   * Add validate_remote_user setting to check proxied users are known
 
+  [BUG FIXES]
+
+  * Remove some odd behaviour of cached SNMP config hints (L. Ferguson)
+
 2.034000 - 2016-10-03
 
   [NEW FEATURES]

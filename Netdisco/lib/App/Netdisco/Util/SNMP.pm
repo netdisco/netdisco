@@ -191,7 +191,7 @@ sub _try_read {
 
   # regardless of device in storage, save the hint
   $device->update_or_create_related('community',
-    {snmp_auth_tag => $comm->{tag}}) if $comm->{tag};
+    {snmp_auth_tag_read => $comm->{tag}}) if $comm->{tag};
 
   return $info;
 }
@@ -209,7 +209,7 @@ sub _try_write {
 
   # one of these two cols must be set
   $device->update_or_create_related('community', {
-    ($comm->{tag} ? (snmp_auth_tag => $comm->{tag}) : ()),
+    ($comm->{tag} ? (snmp_auth_tag_write => $comm->{tag}) : ()),
     ($comm->{community} ? (snmp_comm_rw => $comm->{community}) : ()),
   });
 
@@ -258,9 +258,11 @@ sub _get_mibdirs_content {
 sub _build_communities {
   my ($device, $mode) = @_;
   $mode ||= 'read';
+  my $seen_tags = {}; # for cleaning community table
 
   my $config = (setting('snmp_auth') || []);
-  my $stored_tag = eval { $device->community->snmp_auth_tag };
+  my $tag_name = 'snmp_auth_tag_'. $mode;
+  my $stored_tag = eval { $device->community->$tag_name };
   my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
   my @communities = ();
 
@@ -289,6 +291,7 @@ sub _build_communities {
 
       # defaults
       $stanza->{tag} ||= $tag;
+      ++$seen_tags->{ $stanza->{tag} };
       $stanza->{read} = 1 if !exists $stanza->{read};
       $stanza->{only} ||= ['any'];
       $stanza->{only} = [$stanza->{only}] if ref '' eq ref $stanza->{only};
@@ -298,7 +301,8 @@ sub _build_communities {
            and !exists $stanza->{community};
 
       if ($stanza->{$mode} and check_acl($device->ip, $stanza->{only})) {
-          if ($stored_tag and $stored_tag eq $stanza->{tag}) {
+          if ($device->in_storage and
+            $stored_tag and $stored_tag eq $stanza->{tag}) {
               # last known-good by tag
               unshift @communities, $stanza
           }
@@ -306,6 +310,11 @@ sub _build_communities {
               push @communities, $stanza
           }
       }
+  }
+
+  # clean the community table of obsolete tags
+  if ($stored_tag and !exists $seen_tags->{ $stored_tag }) {
+      eval { $device->community->update({$tag_name => undef}) };
   }
 
   # legacy config (note: read strings tried before write)
@@ -340,7 +349,7 @@ sub _get_external_community {
       $cmd =~ s/\%HOST\%/$host/egi;
       $cmd =~ s/\%IP\%/$ip/egi;
 
-      my $result = `$cmd`;
+      my $result = `$cmd`; # BACKTICKS
       return () unless defined $result and length $result;
 
       my @lines = split (m/\n/, $result);
@@ -383,7 +392,7 @@ sub snmp_comm_reindex {
       my @comms = _build_communities($device, 'read');
       foreach my $c (@comms) {
           next unless $c->{tag}
-            and $c->{tag} eq (eval { $device->community->snmp_auth_tag } || '');
+            and $c->{tag} eq (eval { $device->community->snmp_auth_tag_read } || '');
           $prefix = $c->{context_prefix} and last;
       }
       $prefix ||= 'vlan-';
