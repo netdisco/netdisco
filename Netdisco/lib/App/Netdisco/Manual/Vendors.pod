@@ -1,0 +1,50 @@
+=head1 NAME
+
+App::Netdisco::Manual::Vendors - Tips and Tricks for Vendor Platforms
+
+=head1 Neighbor Relations on Juniper EX
+
+The LLDP configuration should look like:
+
+ lldp {
+   management-address 10.0.0.1;
+   port-id-subtype interface-name;
+   interface all;
+ }
+
+=head1 Report Cisco 37xx as Single Device Instead of Stacked
+
+Add this to your 37xx config:
+
+ no snmp-server sysobjectid type stack-oid
+
+=head1 Linux SNMP Service (Agent)
+
+Install the C<snmpd> (SNMP agent) and C<lldpd> (neighbor discovery) packages.
+
+Edit the C</etc/snmp/snmpd.conf> file:
+
+ # AGENT BEHAVIOUR
+ # comment out: agentAddress udp:127.0.0.1:161
+ agentAddress udp:161,udp6:[::1]:161
+ 
+ # ACCESS CONTROL
+ rocommunity <your-secret> <management-device-IP/net>
+ 
+ # SYSTEM INFORMATION
+ sysServices 76
+ # (default is 72, 74 is layer2 bridge/switch, 76 for layer3 router/gateway)
+
+If running a firewall, allow SNMP traffic in on UDP port 161.
+
+Edit the C</etc/default/lldpd> file:
+
+ DAEMON_ARGS="-k -x -l -m <Mgmt-IP>"
+ # <Mgmt-IP> is the IP to advertise for Netdisco to connect
+
+Restart C<snmpd> and C<lldpd> services when you have configured them.
+
+This assumes you're using LLDP on your network. If you use CDP then the
+C<lldpd> daemon can support that protocol - see the manual page for details.
+
+=cut

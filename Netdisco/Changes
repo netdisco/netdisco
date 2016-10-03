@@ -4,6 +4,10 @@
 
   * Add validate_remote_user setting to check proxied users are known
 
+  [ENHANCEMENTS]
+
+  * Add Linux SNMP, LLDP setup docs (S. Hobson)
+
   [BUG FIXES]
 
   * Remove some odd behaviour of cached SNMP config hints (L. Ferguson)

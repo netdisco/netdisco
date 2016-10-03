@@ -9,8 +9,11 @@ The Netdisco applications will generate RC scripts suitable for Linux systems:
  bin/netdisco-web get_init_file
  bin/netdisco-daemon get_init_file
 
-If you'd like to send a patch for BSD, please submit it against the
-L<Daemon::Control> distribution.
+On C<systemd>-based systems please see L<our systemd
+guide|App::Netdisco::Manual::Systemd>.
+
+On BSD systems please see L<our BSD tips|App::Netdisco::Manual::BSDInstall>,
+and submit patches against the L<Daemon::Control> distribution.
 
 =head1 Enable MD5 authentication to PostgreSQL
 

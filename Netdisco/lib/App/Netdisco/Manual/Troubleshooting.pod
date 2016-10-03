@@ -73,6 +73,12 @@ types C<discoverall>, C<macwalk>, C<arpwalk>, and C<nbtwalk> will enqueue one
 corresponding single-device job for each known device. The Netdisco backend
 daemon will then process the queue (in a random order).
 
+=head1 My Device details look all wrong!
+
+See the tips at L<Vendors Guide|App::Netdisco::Manual::Vendors>, or else
+contact the L<community email
+list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
+
 =head1 Run a C<netdisco-do> Task with Debugging
 
 The C<netdisco-do> command has several debug flags which will show what's
@@ -145,26 +151,5 @@ can become "stuck" on the wrong one, as it caches the last-known-good
 community string to improve performance. To work around this, delete the
 device (either in the web GUI or using C<netdisco-do> at the command line),
 and then re-discover it.
-
-=head1 Neighbor Relations on Juniper EX
-
-The LLDP configuration should look like:
-
- lldp {
-   management-address 10.0.0.1;
-   port-id-subtype interface-name;
-   interface all;
- }
-
-=head1 Report Cisco 37xx as Single Device Instead of Stacked
-
-Add this to your 37xx config:
-
- no snmp-server sysobjectid type stack-oid
-
-=head1 Running under C<systemd>
-
-On C<systemd>-based systems please see L<our Systemd
-guide|App::Netdisco::Manual::Systemd>.
 
 =cut
