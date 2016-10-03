@@ -135,6 +135,17 @@ A side panel appears in the web page with debug information. Be sure to turn
 this off when you're done (stop and start without the environment variable)
 otherwise secrets could be leaked to end users.
 
+=head1 Change the SNMP commnuity string for a Device
+
+If you change the SNMP community string in use on a Device, and update
+Netdisco's configuration to match, then everything will continue to work fine.
+
+However, if the Device happens to support two community strings then Netdisco
+can become "stuck" on the wrong one, as it caches the last-known-good
+community string to improve performance. To work around this, delete the
+device (either in the web GUI or using C<netdisco-do> at the command line),
+and then re-discover it.
+
 =head1 Neighbor Relations on Juniper EX
 
 The LLDP configuration should look like:
