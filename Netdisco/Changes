@@ -23,6 +23,7 @@
   * portcontrol and power jobs using device instance instead of IP address
   * [#266] netdisco subnet utiiization report div by zero (V. Puchkov)
   * Missing display name for device when device has no DNS
+  * [#270] ports search vlan column not populated in CSV output
 
 2.033006 - 2016-03-20
 
