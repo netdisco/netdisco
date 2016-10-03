@@ -157,10 +157,10 @@ hook 'before_template' => sub {
 
 get '/device' => require_login sub {
     my $q = param('q');
-    my $schema = schema('netdisco')->resultset('Device');
+    my $devices = schema('netdisco')->resultset('Device');
 
     # we are passed either dns or ip
-    my $dev = $schema->search({
+    my $dev = $devices->search({
         -or => [
             \[ 'host(me.ip) = ?' => [ bind_value => $q ] ],
             'me.dns' => $q,
@@ -174,11 +174,11 @@ get '/device' => require_login sub {
     # if passed dns, need to check for duplicates
     # and use only ip for q param, if there are duplicates.
     my $first = $dev->first;
-    my $others = ($schema->search({dns => $first->dns})->count() - 1);
+    my $others = ($devices->search({dns => $first->dns})->count() - 1);
 
     params->{'tab'} ||= 'details';
     template 'device', {
-      display_name => ($others ? $first->ip : $first->dns),
+      display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
       device => params->{'tab'},
     };
 };
