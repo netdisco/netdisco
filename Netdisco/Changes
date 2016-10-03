@@ -1,4 +1,4 @@
-2.034000
+2.034000 - 2016-10-03
 
   [NEW FEATURES]
 
@@ -21,7 +21,7 @@
 
   * Improve security of REMOTE_USER handling (B. Marshall)
   * portcontrol and power jobs using device instance instead of IP address
-  * [#266] netdisco subnet utiiization report div by zero (V. Puchkov)
+  * [#266] netdisco subnet utilization report div by zero (V. Puchkov)
   * Missing display name for device when device has no DNS
   * [#270] ports search vlan column not populated in CSV output
 
