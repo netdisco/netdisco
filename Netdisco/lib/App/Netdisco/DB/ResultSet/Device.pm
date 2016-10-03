@@ -583,21 +583,12 @@ sub delete {
     DeviceVlan
     DevicePower
     DeviceModule
+    Community
   /) {
       $schema->resultset($set)->search(
         { ip => { '-in' => $devices->as_query } },
       )->delete;
   }
-
-  $schema->resultset('Community')->search({
-    ip => { '-in' => $devices->as_query },
-    snmp_auth_tag_read  => undef,
-    snmp_auth_tag_write => undef,
-  })->delete;
-
-  $schema->resultset('Community')->search(
-    { ip => { '-in' => $devices->as_query } },
-  )->update({snmp_comm_rw => undef});
 
   $schema->resultset('Admin')->search({
     device => { '-in' => $devices->as_query },

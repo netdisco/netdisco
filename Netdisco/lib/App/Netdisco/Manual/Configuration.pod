@@ -609,8 +609,7 @@ C<community> shorthand instead:
 
 Netdisco caches both the successful SNMPv2 read and write community strings,
 as well as the C<tag> names if available. This allows for faster operations
-once a connection has already been made to a device. When you delete a device,
-the community strings are removed but the C<tag> hints remain, for future use.
+once a connection has previously been made to a device.
 
 =head3 C<get_community>
 
