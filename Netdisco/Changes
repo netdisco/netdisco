@@ -7,6 +7,7 @@
   [ENHANCEMENTS]
 
   * Add Linux SNMP, LLDP setup docs (S. Hobson)
+  * Add note on SLES 11 SP4 install workaround (C. Ramseyer)
 
   [BUG FIXES]
 

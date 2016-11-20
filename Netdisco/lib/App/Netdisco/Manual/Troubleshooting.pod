@@ -152,4 +152,10 @@ community string to improve performance. To work around this, delete the
 device (either in the web GUI or using C<netdisco-do> at the command line),
 and then re-discover it.
 
+=head1 Installation on SLES 11 SP4
+
+Try running the following command for installation:
+
+ curl -L http://cpanmin.us/ | CFLAGS="-DPERL_ARGS_ASSERT_CROAK_XS_USAGE" perl - --notest --local-lib ~/perl5 App::Netdisco
+
 =cut
