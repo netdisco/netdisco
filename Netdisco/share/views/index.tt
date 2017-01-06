@@ -23,7 +23,7 @@
       <div class="alert fade in">
         <a class="close" data-dismiss="alert">×</a>
         Sorry, page not found.&nbsp;
-          <a href="http://sourceforge.net/p/netdisco/bugs/" target="_blank"><i class="icon-bug"></i>&nbsp;Report a Bug?</a>
+          <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="icon-bug"></i>&nbsp;Report a Bug?</a>
       </div>
       [% END %]
       [% IF settings.suggest_guest AND NOT session.logged_in_user %]

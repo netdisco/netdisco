@@ -11,7 +11,7 @@ configure_requires:
   ExtUtils::MakeMaker: 6.59
 distribution_type: module
 dynamic_config: 1
-generated_by: 'Module::Install version 1.16'
+generated_by: 'Module::Install version 1.17'
 license: bsd
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -74,6 +74,7 @@ requires:
   Sereal: 0
   Socket6: 0.23
   Starman: 0.4008
+  Sys::Proctitle: 0
   Template: 2.24
   Template::Plugin::CSV: 0.04
   Template::Plugin::Number::Format: 1.02
@@ -90,8 +91,8 @@ requires:
 resources:
   IRC: irc://irc.freenode.org/#netdisco
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
-  bugtracker: https://sourceforge.net/p/netdisco/netdisco2/
+  bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
-  repository: git://git.code.sf.net/p/netdisco/netdisco-ng
-version: '2.034001'
+  repository: git@github.com:netdisco/netdisco.git
+version: '2.034002'

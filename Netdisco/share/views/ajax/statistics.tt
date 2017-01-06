@@ -35,7 +35,7 @@
               </th>
             </tr>
             <tr>
-              <th><a href="http://snmp-info.sourceforge.net/">SNMP::Info</a></th>
+              <th><a href="https://github.com/netdisco/snmp-info">SNMP::Info</a></th>
               <th>[% snmpinfo_ver | html_entity %]</th>
             </tr>
             <tr>

@@ -97,8 +97,8 @@ install_script 'bin/netdisco-sshcollector';
 
 resources
   homepage => 'http://netdisco.org/',
-  bugtracker => 'https://sourceforge.net/p/netdisco/netdisco2/',
-  repository => 'git://git.code.sf.net/p/netdisco/netdisco-ng',
+  bugtracker => 'https://github.com/netdisco/netdisco/issues',
+  repository => 'git@github.com:netdisco/netdisco.git',
   MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users',
   IRC => 'irc://irc.freenode.org/#netdisco';
 
