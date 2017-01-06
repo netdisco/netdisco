@@ -8,7 +8,7 @@ use Module::Install::Base ();
 
 use vars qw{$VERSION @ISA $ISCORE};
 BEGIN {
-	$VERSION = '1.16';
+	$VERSION = '1.17';
 	@ISA     = 'Module::Install::Base';
 	$ISCORE  = 1;
 }
@@ -121,6 +121,15 @@ END_C
 # Can we locate a (the) C compiler
 sub can_cc {
 	my $self   = shift;
+
+	if ($^O eq 'VMS') {
+		require ExtUtils::CBuilder;
+		my $builder = ExtUtils::CBuilder->new(
+		quiet => 1,
+		);
+		return $builder->have_compiler;
+	}
+
 	my @chunks = split(/ /, $Config::Config{cc}) or return;
 
 	# $Config{cc} may contain args; try to find out the program part
@@ -151,4 +160,4 @@ if ( $^O eq 'cygwin' ) {
 
 __END__
 
-#line 236
+#line 245
