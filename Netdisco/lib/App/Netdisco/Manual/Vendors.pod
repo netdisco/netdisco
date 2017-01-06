@@ -18,6 +18,32 @@ Add this to your 37xx config:
 
  no snmp-server sysobjectid type stack-oid
 
+=head1 SNMPv3 Support on Cisco IOS
+
+To access per-VLAN MAC address tables we use SNMPv3 contexts. In Cisco IOS
+the access control is per-context so for each context (VLAN) you need to permit
+access from the poller.
+
+You should already have something like the following to enable SNMPv3 from Netdisco at 192.0.2.1:
+
+ snmp-server view myv3view iso included
+ snmp-server group myv3group v3 priv read myv3view
+ snmp-server user myv3user myv3group v3 auth md5 PASSWORD priv des PASSWORD
+ snmp-server host 192.0.2.1 version 3 auth myv3user
+
+Then set the authorization:
+
+ snmp-server group myv3group v3 auth
+ snmp-server group myv3group v3 auth context vlan- match prefix
+
+If the second command above is rejected, you have an older version of IOS and must
+enter a statement for each active VLAN on the device:
+
+ snmp-server group myv3group v3 priv context vlan-1
+ snmp-server group myv3group v3 priv context vlan-2
+ snmp-server group myv3group v3 priv context vlan-3
+ ... etc
+
 =head1 Linux SNMP Service (Agent)
 
 Install the C<snmpd> (SNMP agent) and C<lldpd> (neighbor discovery) packages.
