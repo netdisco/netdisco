@@ -1,5 +1,5 @@
 <!--- Provide a general summary of the issue in the Title above -->
-<!--- Help on text formatting: https://guides.github.com/features/mastering-markdown/#examples -->
+<!--- https://guides.github.com/features/mastering-markdown/#examples -->
 
 ## Expected Behavior
 <!--- If you're describing a bug, tell us what should happen -->
@@ -27,5 +27,5 @@
 
 ## Your Environment
 <!--- Include as many relevant details about the environment you experienced the bug in -->
-* Netdisco version used:
-* SNMP::Info version used:
+* Netdisco version used: 
+* SNMP::Info version used: 
