@@ -4,6 +4,8 @@ name     'App-Netdisco';
 license  'bsd';
 all_from 'lib/App/Netdisco.pm';
 
+include     'Module::AutoInstall';
+
 test_requires 'Test::More' => 0.88;
 test_requires 'Env::Path' => 0;
 
@@ -101,5 +103,7 @@ resources
   repository => 'git@github.com:netdisco/netdisco.git',
   MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users',
   IRC => 'irc://irc.freenode.org/#netdisco';
+
+installdeps_target;
 
 WriteAll;
