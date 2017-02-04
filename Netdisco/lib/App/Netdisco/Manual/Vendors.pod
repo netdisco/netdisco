@@ -18,6 +18,40 @@ Add this to your 37xx config:
 
  no snmp-server sysobjectid type stack-oid
 
+=head1 SNMP Support on Huawei Quidway and CloudEngine
+
+Where C<mycommunity> is your community string. Note C<iso> means I<everything>
+is visible to readers!
+
+ snmp-agent mib-view included all iso
+ snmp-agent community read cipher mycommunity mib-view all
+ snmp-agent packet max-size 17940
+ snmp-agent extend error-code enable
+
+=head1 SNMP Support on Linksys and Cisco Linksys
+
+Where C<mycommunity> is your community string. Note this results in I<everything>
+being visible to readers!
+
+ snmp-server view test iso included
+ snmp-server view test system included      
+ snmp-server view test interfaces included
+ snmp-server view test ip included
+ snmp-server view test icmp included
+ snmp-server view test tcp included
+ snmp-server view test udp included
+ snmp-server view test transmission included
+ snmp-server view test snmp included
+ snmp-server view test rmon included
+ snmp-server view test dot1dBridge included
+ snmp-server view test ifMIB included
+ snmp-server view test dns included
+ snmp-server view test radiusMIB included
+ snmp-server view test traceRouteMIB included
+ snmp-server view test powerEthernetMIB included
+ snmp-server community mycommunity ro view test
+
+
 =head1 SNMPv3 Support on Cisco IOS
 
 To access per-VLAN MAC address tables we use SNMPv3 contexts. In Cisco IOS
