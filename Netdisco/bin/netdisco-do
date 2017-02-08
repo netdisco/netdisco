@@ -358,7 +358,7 @@ action on a specific port, set the C<-p> parameter.
 
 =head2 graph
 
-Generate GrapgViz graphs for the largest cluster of devices.
+Generate GraphViz graphs for the largest cluster of devices.
 
 You'll need to install the L<Graph::Undirected> and L<GraphViz> Perl modules,
 and possibly also the C<graphviz> utility for your operating system. Also
