@@ -8,6 +8,8 @@ This document is compiled from suggestions and comments on the Netdisco mail
 lists. We're grateful for the help, and if you have any additions please do
 let the project staff know.
 
+You could also look at the following guide for FreeBSD 11: L<http://www.davidbolton.com/?p=681>
+
 =head1 Ports Installs
 
 =over 4
