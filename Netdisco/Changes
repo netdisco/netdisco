@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * #27 add SNMP tips for Huawei, CloudEngine, Linksys (stoatwblr)
+  * Add GAIA Embedded SSH collector (not the same as VSX, apparently)
 
   [BUG FIXES]
 

@@ -178,6 +178,8 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =over 4
 
+=item * L<App::Netdisco::SSHCollector::Platform::GAIAEmbedded> - Check Point GAIA Embedded
+
 =item * L<App::Netdisco::SSHCollector::Platform::CPVSX> - Check Point VSX
 
 =item * L<App::Netdisco::SSHCollector::Platform::ACE> - Cisco ACE
