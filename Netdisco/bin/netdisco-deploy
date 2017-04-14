@@ -107,55 +107,6 @@ $bool = $term->ask_yn(
 );
 deploy_db() if $bool;
 
-if (not setting('safe_password_store')) {
-    say '';
-    print color 'bold red';
-    say '*** WARNING: Weak password hashes are being stored in the database! ***';
-    say '*** WARNING: Please add "safe_password_store: true" to your ~/environments/deployment.yml file. ***';
-    print color 'reset';
-}
-
-sub _make_password {
-  my $pass = (shift || passphrase->generate_random);
-  if (setting('safe_password_store')) {
-      return passphrase($pass)->generate;
-  }
-  else {
-      return Digest::MD5::md5_hex($pass),
-  }
-}
-
-# set up initial admin user
-my $users = schema('netdisco')->resultset('User');
-if ($users->search({-bool => 'admin'})->count == 0) {
-    say '';
-    print color 'bold green';
-    say 'We need to create a user for inital login. This user will be a full Administrator.';
-    say 'Afterwards, you can go to Admin -> User Management to manage users.';
-    print color 'reset';
-    say '';
-
-    my $name = $term->get_reply(prompt => 'Username: ');
-    my $pass = $term->get_reply(prompt => 'Password: ');
-
-    $users->create({
-      username => $name,
-      password => _make_password($pass),
-      admin => 'true',
-      port_control => 'true',
-    });
-
-    print color 'bold blue';
-    say 'New user created.';
-    print color 'reset';
-}
-
-# set initial dancer web session cookie key
-schema('netdisco')->resultset('Session')->find_or_create(
-  {id => 'dancer_session_cookie_key', a_session => \'md5(random()::text)'},
-  {key => 'primary'},
-);
-
 say '';
 $bool = $term->ask_yn(
   prompt => 'Download and update vendor MAC prefixes (OUI data)?', default => 'n',
@@ -185,6 +136,55 @@ sub deploy_db {
   print color 'bold blue';
   say 'DB schema update complete.';
   print color 'reset';
+
+  if (not setting('safe_password_store')) {
+      say '';
+      print color 'bold red';
+      say '*** WARNING: Weak password hashes are being stored in the database! ***';
+      say '*** WARNING: Please add "safe_password_store: true" to your ~/environments/deployment.yml file. ***';
+      print color 'reset';
+  }
+
+  sub _make_password {
+    my $pass = (shift || passphrase->generate_random);
+    if (setting('safe_password_store')) {
+        return passphrase($pass)->generate;
+    }
+    else {
+        return Digest::MD5::md5_hex($pass),
+    }
+  }
+
+  # set up initial admin user
+  my $users = schema('netdisco')->resultset('User');
+  if ($users->search({-bool => 'admin'})->count == 0) {
+      say '';
+      print color 'bold green';
+      say 'We need to create a user for inital login. This user will be a full Administrator.';
+      say 'Afterwards, you can go to Admin -> User Management to manage users.';
+      print color 'reset';
+      say '';
+
+      my $name = $term->get_reply(prompt => 'Username: ');
+      my $pass = $term->get_reply(prompt => 'Password: ');
+
+      $users->create({
+        username => $name,
+        password => _make_password($pass),
+        admin => 'true',
+        port_control => 'true',
+      });
+
+      print color 'bold blue';
+      say 'New user created.';
+      print color 'reset';
+  }
+
+  # set initial dancer web session cookie key
+  schema('netdisco')->resultset('Session')->find_or_create(
+    {id => 'dancer_session_cookie_key', a_session => \'md5(random()::text)'},
+    {key => 'primary'},
+  );
 }
 
 sub deploy_oui {
