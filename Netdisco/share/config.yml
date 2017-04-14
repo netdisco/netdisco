@@ -199,6 +199,7 @@ wap_ouis: []
 workers:
   tasks: 'AUTO * 2'
   sleep_time: 1
+  min_runtime: 0
   queue: PostgreSQL
 
 dns:

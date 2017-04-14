@@ -1132,6 +1132,7 @@ Value: Settings Tree. Default:
  workers:
    tasks: 'AUTO * 2'
    sleep_time: 1
+   min_runtime: 0
 
 Control the activity of the backend daemon with this configuration setting.
 
@@ -1144,6 +1145,10 @@ workers (which allows you to have a scheduler-only node).
 
 C<sleep_time> is the number of seconds between polling the database to find
 new jobs. This is a balance between responsiveness and database load.
+
+C<min_runtime> allows you to set a time that each worker will sleep before
+recycling and starting another job. Some users report this needs to be set
+to avoid a 'runaway worker' bug. It can take a fractional number of seconds.
 
 =head3 C<schedule>
 

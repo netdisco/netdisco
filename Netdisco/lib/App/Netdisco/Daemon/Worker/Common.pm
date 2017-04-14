@@ -8,6 +8,7 @@ use App::Netdisco::Util::Daemon;
 use Role::Tiny;
 use namespace::clean;
 
+use Time::HiRes 'sleep';
 use App::Netdisco::JobQueue qw/jq_defer jq_complete/;
 
 sub worker_begin { (shift)->{started} = time }
@@ -40,6 +41,7 @@ sub worker_body {
       };
 
       $self->close_job($job);
+      sleep( setting('workers')->{'min_runtime'} || 0 );
       $self->exit(0); # recycle worker
   }
 }
