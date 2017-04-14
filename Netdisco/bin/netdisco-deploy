@@ -54,6 +54,7 @@ use File::Slurp ();
 use HTTP::Tiny;
 use Digest::MD5;
 use Try::Tiny;
+use File::Path ();
 use Encode;
 
 =head1 NAME
@@ -265,31 +266,50 @@ sub shorten {
     # Deviating from make-manuf for HP
     $manuf =~ s/Hewlett[-]?Packard/Hp/;
 
-  # Truncate all names to a reasonable length, say, 8 characters.
-  # If the string contains UTF-8, this may be substantially more than 8 bytes.
+    # Truncate all names to a reasonable length, say, 8 characters.
+    # If the string contains UTF-8, this may be substantially more than 8 bytes.
     $manuf = substr( $manuf, 0, 8 );
 
     return encode( "utf8", $manuf );
 }
 
 sub deploy_mibs {
-  my $mibhome = dir(shift);
+  my $mibhome = dir(shift); # /path/to/netdisco-mibs
+  my $fail = 0;
 
-  my $url = 'http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz';
-  my $file = file($home, 'netdisco-mibs-snapshot.tar.gz');
-  my $resp = HTTP::Tiny->new->mirror($url, $file);
+  my $latest = 'https://github.com/netdisco/netdisco-mibs/releases/latest';
+  my $resp = HTTP::Tiny->new->get($latest);
 
-  if ($resp->{success}) {
+  if (exists $resp->{redirects} and $resp->{url} =~ m/([0-9.]+)$/) {
+    my $ver = $1;
+    my $url = 'https://codeload.github.com/netdisco/netdisco-mibs/tar.gz/'. $ver;
+    my $file = file($home, 'netdisco-mibs-latest.tar.gz');
+    $resp = HTTP::Tiny->new->mirror($url, $file);
+
+    if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');
       $ae->extract(to => $mibhome->parent->stringify);
-      unlink $file;
 
-      print color 'bold blue';
-      say 'MIBs update complete.';
+      my $from = file($mibhome->parent->stringify, "netdisco-mibs-$ver");
+      my $to = file($mibhome->parent->stringify, 'netdisco-mibs');
+
+      if (-d $from) {
+        File::Path::remove_tree($to, { verbose => 0 });
+        File::Copy::move($from, $to);
+      }
+      unlink $file;
+    }
+    else { ++$fail }
+  }
+  else { ++$fail }
+
+  if ($fail) {
+    print color 'bold red';
+    say 'MIB download failed!';
   }
   else {
-      print color 'bold red';
-      say 'MIB download failed!';
+    print color 'bold blue';
+    say 'MIBs update complete.';
   }
 
   print color 'reset';
