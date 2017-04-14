@@ -10,3 +10,6 @@ MYMETA.*
 MANIFEST.*
 *.komodo*
 Makefile*
+Build
+_build
+blib

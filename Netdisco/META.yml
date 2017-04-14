@@ -1,0 +1,437 @@
+---
+abstract: 'An open source web-based network management tool.'
+author:
+  - 'Oliver Gorwits <oliver@cpan.org>'
+build_requires:
+  Env::Path: '0'
+  Test::More: '0.88'
+configure_requires:
+  DBIx::Class: '0.082810'
+  Module::Build: '0.42'
+dynamic_config: 1
+generated_by: 'Module::Build version 0.4222, CPAN::Meta::Converter version 2.143240'
+license: bsd
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: App-Netdisco
+provides:
+  App::Netdisco:
+    file: lib/App/Netdisco.pm
+    version: '2.034003'
+  App::Netdisco::AnyEvent::Nbtstat:
+    file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
+  App::Netdisco::Configuration:
+    file: lib/App/Netdisco/Configuration.pm
+  App::Netdisco::Core::Arpnip:
+    file: lib/App/Netdisco/Core/Arpnip.pm
+  App::Netdisco::Core::Discover:
+    file: lib/App/Netdisco/Core/Discover.pm
+  App::Netdisco::Core::Macsuck:
+    file: lib/App/Netdisco/Core/Macsuck.pm
+  App::Netdisco::Core::Nbtstat:
+    file: lib/App/Netdisco/Core/Nbtstat.pm
+  App::Netdisco::DB:
+    file: lib/App/Netdisco/DB.pm
+  App::Netdisco::DB::ExplicitLocking:
+    file: lib/App/Netdisco/DB/ExplicitLocking.pm
+  App::Netdisco::DB::Result::Admin:
+    file: lib/App/Netdisco/DB/Result/Admin.pm
+  App::Netdisco::DB::Result::Community:
+    file: lib/App/Netdisco/DB/Result/Community.pm
+  App::Netdisco::DB::Result::Device:
+    file: lib/App/Netdisco/DB/Result/Device.pm
+  App::Netdisco::DB::Result::DeviceIp:
+    file: lib/App/Netdisco/DB/Result/DeviceIp.pm
+  App::Netdisco::DB::Result::DeviceModule:
+    file: lib/App/Netdisco/DB/Result/DeviceModule.pm
+  App::Netdisco::DB::Result::DevicePort:
+    file: lib/App/Netdisco/DB/Result/DevicePort.pm
+  App::Netdisco::DB::Result::DevicePortLog:
+    file: lib/App/Netdisco/DB/Result/DevicePortLog.pm
+  App::Netdisco::DB::Result::DevicePortPower:
+    file: lib/App/Netdisco/DB/Result/DevicePortPower.pm
+  App::Netdisco::DB::Result::DevicePortSsid:
+    file: lib/App/Netdisco/DB/Result/DevicePortSsid.pm
+  App::Netdisco::DB::Result::DevicePortVlan:
+    file: lib/App/Netdisco/DB/Result/DevicePortVlan.pm
+  App::Netdisco::DB::Result::DevicePortWireless:
+    file: lib/App/Netdisco/DB/Result/DevicePortWireless.pm
+  App::Netdisco::DB::Result::DevicePower:
+    file: lib/App/Netdisco/DB/Result/DevicePower.pm
+  App::Netdisco::DB::Result::DeviceRoute:
+    file: lib/App/Netdisco/DB/Result/DeviceRoute.pm
+  App::Netdisco::DB::Result::DeviceVlan:
+    file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
+  App::Netdisco::DB::Result::Log:
+    file: lib/App/Netdisco/DB/Result/Log.pm
+  App::Netdisco::DB::Result::Node:
+    file: lib/App/Netdisco/DB/Result/Node.pm
+  App::Netdisco::DB::Result::NodeIp:
+    file: lib/App/Netdisco/DB/Result/NodeIp.pm
+  App::Netdisco::DB::Result::NodeMonitor:
+    file: lib/App/Netdisco/DB/Result/NodeMonitor.pm
+  App::Netdisco::DB::Result::NodeNbt:
+    file: lib/App/Netdisco/DB/Result/NodeNbt.pm
+  App::Netdisco::DB::Result::NodeWireless:
+    file: lib/App/Netdisco/DB/Result/NodeWireless.pm
+  App::Netdisco::DB::Result::Oui:
+    file: lib/App/Netdisco/DB/Result/Oui.pm
+  App::Netdisco::DB::Result::Process:
+    file: lib/App/Netdisco/DB/Result/Process.pm
+  App::Netdisco::DB::Result::Session:
+    file: lib/App/Netdisco/DB/Result/Session.pm
+  App::Netdisco::DB::Result::Subnet:
+    file: lib/App/Netdisco/DB/Result/Subnet.pm
+  App::Netdisco::DB::Result::Topology:
+    file: lib/App/Netdisco/DB/Result/Topology.pm
+  App::Netdisco::DB::Result::User:
+    file: lib/App/Netdisco/DB/Result/User.pm
+  App::Netdisco::DB::Result::UserLog:
+    file: lib/App/Netdisco/DB/Result/UserLog.pm
+  App::Netdisco::DB::Result::Virtual::ActiveNode:
+    file: lib/App/Netdisco/DB/Result/Virtual/ActiveNode.pm
+  App::Netdisco::DB::Result::Virtual::ActiveNodeWithAge:
+    file: lib/App/Netdisco/DB/Result/Virtual/ActiveNodeWithAge.pm
+  App::Netdisco::DB::Result::Virtual::ApRadioChannelPower:
+    file: lib/App/Netdisco/DB/Result/Virtual/ApRadioChannelPower.pm
+  App::Netdisco::DB::Result::Virtual::CidrIps:
+    file: lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
+  App::Netdisco::DB::Result::Virtual::DeviceDnsMismatch:
+    file: lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm
+  App::Netdisco::DB::Result::Virtual::DeviceLinks:
+    file: lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
+  App::Netdisco::DB::Result::Virtual::DevicePoeStatus:
+    file: lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
+  App::Netdisco::DB::Result::Virtual::DuplexMismatch:
+    file: lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
+  App::Netdisco::DB::Result::Virtual::GenericReport:
+    file: lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
+  App::Netdisco::DB::Result::Virtual::NodeIp4:
+    file: lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm
+  App::Netdisco::DB::Result::Virtual::NodeIp6:
+    file: lib/App/Netdisco/DB/Result/Virtual/NodeIp6.pm
+  App::Netdisco::DB::Result::Virtual::NodeMonitor:
+    file: lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
+  App::Netdisco::DB::Result::Virtual::NodeWithAge:
+    file: lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
+  App::Netdisco::DB::Result::Virtual::NodesDiscovered:
+    file: lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
+  App::Netdisco::DB::Result::Virtual::OrphanedDevices:
+    file: lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
+  App::Netdisco::DB::Result::Virtual::PollerPerformance:
+    file: lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
+  App::Netdisco::DB::Result::Virtual::PortUtilization:
+    file: lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
+  App::Netdisco::DB::Result::Virtual::SlowDevices:
+    file: lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
+  App::Netdisco::DB::Result::Virtual::SubnetUtilization:
+    file: lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm
+  App::Netdisco::DB::Result::Virtual::UnDirEdgesAgg:
+    file: lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm
+  App::Netdisco::DB::Result::Virtual::UndiscoveredNeighbors:
+    file: lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm
+  App::Netdisco::DB::Result::Virtual::UserRole:
+    file: lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
+  App::Netdisco::DB::ResultSet:
+    file: lib/App/Netdisco/DB/ResultSet.pm
+  App::Netdisco::DB::ResultSet::Admin:
+    file: lib/App/Netdisco/DB/ResultSet/Admin.pm
+  App::Netdisco::DB::ResultSet::Device:
+    file: lib/App/Netdisco/DB/ResultSet/Device.pm
+  App::Netdisco::DB::ResultSet::DeviceModule:
+    file: lib/App/Netdisco/DB/ResultSet/DeviceModule.pm
+  App::Netdisco::DB::ResultSet::DevicePort:
+    file: lib/App/Netdisco/DB/ResultSet/DevicePort.pm
+  App::Netdisco::DB::ResultSet::DevicePortLog:
+    file: lib/App/Netdisco/DB/ResultSet/DevicePortLog.pm
+  App::Netdisco::DB::ResultSet::DevicePortSsid:
+    file: lib/App/Netdisco/DB/ResultSet/DevicePortSsid.pm
+  App::Netdisco::DB::ResultSet::DevicePower:
+    file: lib/App/Netdisco/DB/ResultSet/DevicePower.pm
+  App::Netdisco::DB::ResultSet::Node:
+    file: lib/App/Netdisco/DB/ResultSet/Node.pm
+  App::Netdisco::DB::ResultSet::NodeIp:
+    file: lib/App/Netdisco/DB/ResultSet/NodeIp.pm
+  App::Netdisco::DB::ResultSet::NodeNbt:
+    file: lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
+  App::Netdisco::DB::ResultSet::NodeWireless:
+    file: lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
+  App::Netdisco::DB::ResultSet::Subnet:
+    file: lib/App/Netdisco/DB/ResultSet/Subnet.pm
+  App::Netdisco::Daemon::Job:
+    file: lib/App/Netdisco/Daemon/Job.pm
+  App::Netdisco::Daemon::Util:
+    file: lib/App/Netdisco/Daemon/Util.pm
+  App::Netdisco::Daemon::Worker::Common:
+    file: lib/App/Netdisco/Daemon/Worker/Common.pm
+  App::Netdisco::Daemon::Worker::Interactive::DeviceActions:
+    file: lib/App/Netdisco/Daemon/Worker/Interactive/DeviceActions.pm
+  App::Netdisco::Daemon::Worker::Interactive::PortActions:
+    file: lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm
+  App::Netdisco::Daemon::Worker::Manager:
+    file: lib/App/Netdisco/Daemon/Worker/Manager.pm
+  App::Netdisco::Daemon::Worker::Poller:
+    file: lib/App/Netdisco/Daemon/Worker/Poller.pm
+  App::Netdisco::Daemon::Worker::Poller::Arpnip:
+    file: lib/App/Netdisco/Daemon/Worker/Poller/Arpnip.pm
+  App::Netdisco::Daemon::Worker::Poller::Common:
+    file: lib/App/Netdisco/Daemon/Worker/Poller/Common.pm
+  App::Netdisco::Daemon::Worker::Poller::Device:
+    file: lib/App/Netdisco/Daemon/Worker/Poller/Device.pm
+  App::Netdisco::Daemon::Worker::Poller::Expiry:
+    file: lib/App/Netdisco/Daemon/Worker/Poller/Expiry.pm
+  App::Netdisco::Daemon::Worker::Poller::Macsuck:
+    file: lib/App/Netdisco/Daemon/Worker/Poller/Macsuck.pm
+  App::Netdisco::Daemon::Worker::Poller::Nbtstat:
+    file: lib/App/Netdisco/Daemon/Worker/Poller/Nbtstat.pm
+  App::Netdisco::Daemon::Worker::Scheduler:
+    file: lib/App/Netdisco/Daemon/Worker/Scheduler.pm
+  App::Netdisco::Environment:
+    file: lib/App/Netdisco/Environment.pm
+  App::Netdisco::GenericDB:
+    file: lib/App/Netdisco/GenericDB.pm
+  App::Netdisco::GenericDB::Result::Virtual::GenericReport:
+    file: lib/App/Netdisco/GenericDB/Result/Virtual/GenericReport.pm
+  App::Netdisco::JobQueue:
+    file: lib/App/Netdisco/JobQueue.pm
+  App::Netdisco::JobQueue::PostgreSQL:
+    file: lib/App/Netdisco/JobQueue/PostgreSQL.pm
+  App::Netdisco::SSHCollector::Platform::ACE:
+    file: lib/App/Netdisco/SSHCollector/Platform/ACE.pm
+  App::Netdisco::SSHCollector::Platform::ASA:
+    file: lib/App/Netdisco/SSHCollector/Platform/ASA.pm
+  App::Netdisco::SSHCollector::Platform::BigIP:
+    file: lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
+  App::Netdisco::SSHCollector::Platform::CPVSX:
+    file: lib/App/Netdisco/SSHCollector/Platform/CPVSX.pm
+  App::Netdisco::SSHCollector::Platform::FreeBSD:
+    file: lib/App/Netdisco/SSHCollector/Platform/FreeBSD.pm
+  App::Netdisco::SSHCollector::Platform::GAIAEmbedded:
+    file: lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
+  App::Netdisco::SSHCollector::Platform::IOS:
+    file: lib/App/Netdisco/SSHCollector/Platform/IOS.pm
+  App::Netdisco::SSHCollector::Platform::IOSXR:
+    file: lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
+  App::Netdisco::SSHCollector::Platform::Linux:
+    file: lib/App/Netdisco/SSHCollector/Platform/Linux.pm
+  App::Netdisco::SSHCollector::Platform::PaloAlto:
+    file: lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
+  App::Netdisco::Util::DNS:
+    file: lib/App/Netdisco/Util/DNS.pm
+  App::Netdisco::Util::Daemon:
+    file: lib/App/Netdisco/Util/Daemon.pm
+  App::Netdisco::Util::Device:
+    file: lib/App/Netdisco/Util/Device.pm
+  App::Netdisco::Util::ExpandParams:
+    file: lib/App/Netdisco/Util/ExpandParams.pm
+  App::Netdisco::Util::Graph:
+    file: lib/App/Netdisco/Util/Graph.pm
+  App::Netdisco::Util::Node:
+    file: lib/App/Netdisco/Util/Node.pm
+  App::Netdisco::Util::NodeMonitor:
+    file: lib/App/Netdisco/Util/NodeMonitor.pm
+  App::Netdisco::Util::Noop:
+    file: lib/App/Netdisco/Util/Noop.pm
+  App::Netdisco::Util::Permission:
+    file: lib/App/Netdisco/Util/Permission.pm
+  App::Netdisco::Util::Port:
+    file: lib/App/Netdisco/Util/Port.pm
+  App::Netdisco::Util::PortMAC:
+    file: lib/App/Netdisco/Util/PortMAC.pm
+  App::Netdisco::Util::SNMP:
+    file: lib/App/Netdisco/Util/SNMP.pm
+  App::Netdisco::Util::Web:
+    file: lib/App/Netdisco/Util/Web.pm
+  App::Netdisco::Web:
+    file: lib/App/Netdisco/Web.pm
+  App::Netdisco::Web::AdminTask:
+    file: lib/App/Netdisco/Web/AdminTask.pm
+  App::Netdisco::Web::Auth::Provider::DBIC:
+    file: lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
+  App::Netdisco::Web::AuthN:
+    file: lib/App/Netdisco/Web/AuthN.pm
+  App::Netdisco::Web::Device:
+    file: lib/App/Netdisco/Web/Device.pm
+  App::Netdisco::Web::GenericReport:
+    file: lib/App/Netdisco/Web/GenericReport.pm
+  App::Netdisco::Web::Password:
+    file: lib/App/Netdisco/Web/Password.pm
+  App::Netdisco::Web::Plugin:
+    file: lib/App/Netdisco/Web/Plugin.pm
+  App::Netdisco::Web::Plugin::AdminTask::JobQueue:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
+  App::Netdisco::Web::Plugin::AdminTask::NodeMonitor:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/NodeMonitor.pm
+  App::Netdisco::Web::Plugin::AdminTask::OrphanedDevices:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/OrphanedDevices.pm
+  App::Netdisco::Web::Plugin::AdminTask::PollerPerformance:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
+  App::Netdisco::Web::Plugin::AdminTask::PseudoDevice:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
+  App::Netdisco::Web::Plugin::AdminTask::SlowDevices:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
+  App::Netdisco::Web::Plugin::AdminTask::Topology:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
+  App::Netdisco::Web::Plugin::AdminTask::UndiscoveredNeighbors:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/UndiscoveredNeighbors.pm
+  App::Netdisco::Web::Plugin::AdminTask::UserLog:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/UserLog.pm
+  App::Netdisco::Web::Plugin::AdminTask::Users:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/Users.pm
+  App::Netdisco::Web::Plugin::Device::Addresses:
+    file: lib/App/Netdisco/Web/Plugin/Device/Addresses.pm
+  App::Netdisco::Web::Plugin::Device::Details:
+    file: lib/App/Netdisco/Web/Plugin/Device/Details.pm
+  App::Netdisco::Web::Plugin::Device::Modules:
+    file: lib/App/Netdisco/Web/Plugin/Device/Modules.pm
+  App::Netdisco::Web::Plugin::Device::Neighbors:
+    file: lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
+  App::Netdisco::Web::Plugin::Device::Ports:
+    file: lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+  App::Netdisco::Web::Plugin::Inventory:
+    file: lib/App/Netdisco/Web/Plugin/Inventory.pm
+  App::Netdisco::Web::Plugin::Report::ApChannelDist:
+    file: lib/App/Netdisco/Web/Plugin/Report/ApChannelDist.pm
+  App::Netdisco::Web::Plugin::Report::ApClients:
+    file: lib/App/Netdisco/Web/Plugin/Report/ApClients.pm
+  App::Netdisco::Web::Plugin::Report::ApRadioChannelPower:
+    file: lib/App/Netdisco/Web/Plugin/Report/ApRadioChannelPower.pm
+  App::Netdisco::Web::Plugin::Report::DeviceAddrNoDNS:
+    file: lib/App/Netdisco/Web/Plugin/Report/DeviceAddrNoDNS.pm
+  App::Netdisco::Web::Plugin::Report::DeviceByLocation:
+    file: lib/App/Netdisco/Web/Plugin/Report/DeviceByLocation.pm
+  App::Netdisco::Web::Plugin::Report::DeviceDnsMismatch:
+    file: lib/App/Netdisco/Web/Plugin/Report/DeviceDnsMismatch.pm
+  App::Netdisco::Web::Plugin::Report::DevicePoeStatus:
+    file: lib/App/Netdisco/Web/Plugin/Report/DevicePoeStatus.pm
+  App::Netdisco::Web::Plugin::Report::DuplexMismatch:
+    file: lib/App/Netdisco/Web/Plugin/Report/DuplexMismatch.pm
+  App::Netdisco::Web::Plugin::Report::HalfDuplex:
+    file: lib/App/Netdisco/Web/Plugin/Report/HalfDuplex.pm
+  App::Netdisco::Web::Plugin::Report::InventoryByModelByOS:
+    file: lib/App/Netdisco/Web/Plugin/Report/InventoryByModelByOS.pm
+  App::Netdisco::Web::Plugin::Report::IpInventory:
+    file: lib/App/Netdisco/Web/Plugin/Report/IpInventory.pm
+  App::Netdisco::Web::Plugin::Report::ModuleInventory:
+    file: lib/App/Netdisco/Web/Plugin/Report/ModuleInventory.pm
+  App::Netdisco::Web::Plugin::Report::Netbios:
+    file: lib/App/Netdisco/Web/Plugin/Report/Netbios.pm
+  App::Netdisco::Web::Plugin::Report::NodeMultiIPs:
+    file: lib/App/Netdisco/Web/Plugin/Report/NodeMultiIPs.pm
+  App::Netdisco::Web::Plugin::Report::NodeVendor:
+    file: lib/App/Netdisco/Web/Plugin/Report/NodeVendor.pm
+  App::Netdisco::Web::Plugin::Report::NodesDiscovered:
+    file: lib/App/Netdisco/Web/Plugin/Report/NodesDiscovered.pm
+  App::Netdisco::Web::Plugin::Report::PortAdminDown:
+    file: lib/App/Netdisco/Web/Plugin/Report/PortAdminDown.pm
+  App::Netdisco::Web::Plugin::Report::PortBlocking:
+    file: lib/App/Netdisco/Web/Plugin/Report/PortBlocking.pm
+  App::Netdisco::Web::Plugin::Report::PortLog:
+    file: lib/App/Netdisco/Web/Plugin/Report/PortLog.pm
+  App::Netdisco::Web::Plugin::Report::PortMultiNodes:
+    file: lib/App/Netdisco/Web/Plugin/Report/PortMultiNodes.pm
+  App::Netdisco::Web::Plugin::Report::PortSsid:
+    file: lib/App/Netdisco/Web/Plugin/Report/PortSsid.pm
+  App::Netdisco::Web::Plugin::Report::PortUtilization:
+    file: lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
+  App::Netdisco::Web::Plugin::Report::SsidInventory:
+    file: lib/App/Netdisco/Web/Plugin/Report/SsidInventory.pm
+  App::Netdisco::Web::Plugin::Report::SubnetUtilization:
+    file: lib/App/Netdisco/Web/Plugin/Report/SubnetUtilization.pm
+  App::Netdisco::Web::Plugin::Report::VlanInventory:
+    file: lib/App/Netdisco/Web/Plugin/Report/VlanInventory.pm
+  App::Netdisco::Web::Plugin::Search::Device:
+    file: lib/App/Netdisco/Web/Plugin/Search/Device.pm
+  App::Netdisco::Web::Plugin::Search::Node:
+    file: lib/App/Netdisco/Web/Plugin/Search/Node.pm
+  App::Netdisco::Web::Plugin::Search::Port:
+    file: lib/App/Netdisco/Web/Plugin/Search/Port.pm
+  App::Netdisco::Web::Plugin::Search::VLAN:
+    file: lib/App/Netdisco/Web/Plugin/Search/VLAN.pm
+  App::Netdisco::Web::PortControl:
+    file: lib/App/Netdisco/Web/PortControl.pm
+  App::Netdisco::Web::Report:
+    file: lib/App/Netdisco/Web/Report.pm
+  App::Netdisco::Web::Search:
+    file: lib/App/Netdisco/Web/Search.pm
+  App::Netdisco::Web::Static:
+    file: lib/App/Netdisco/Web/Static.pm
+  App::Netdisco::Web::Statistics:
+    file: lib/App/Netdisco/Web/Statistics.pm
+  App::Netdisco::Web::TypeAhead:
+    file: lib/App/Netdisco/Web/TypeAhead.pm
+  Dancer::Template::NetdiscoTemplateToolkit:
+    file: lib/Dancer/Template/NetdiscoTemplateToolkit.pm
+recommends:
+  Expect: '0'
+  Graph: '0'
+  GraphViz: '0'
+  Net::OpenSSH: '0'
+requires:
+  Algorithm::Cron: '0.07'
+  AnyEvent: '7.05'
+  AnyEvent::DNS::EtcHosts: '0'
+  App::cpanminus: '1.6108'
+  App::local::lib::helper: '0.07'
+  Archive::Extract: '0'
+  CGI::Expand: '2.05'
+  DBD::Pg: '0'
+  DBIx::Class: '0.082810'
+  DBIx::Class::Helpers: '2.024000'
+  Daemon::Control: '0.001006'
+  Dancer: '1.3132'
+  Dancer::Plugin::Auth::Extensible: '0.30'
+  Dancer::Plugin::DBIC: '0.2001'
+  Dancer::Plugin::Passphrase: v2.0.1
+  Dancer::Session::Cookie: '0.27'
+  Data::Printer: '0'
+  File::ShareDir: '1.03'
+  File::Slurper: '0.009'
+  Guard: '1.022'
+  HTML::Parser: '3.70'
+  HTTP::Tiny: '0.029'
+  JSON: '2.90'
+  JSON::XS: '3.01'
+  List::MoreUtils: '0.33'
+  MCE: '1.703'
+  MIME::Base64: '3.13'
+  Module::Find: '0.12'
+  Module::Load: '0.32'
+  Moo: '1.001000'
+  Net::DNS: '0.72'
+  Net::Domain: '1.23'
+  Net::LDAP: '0'
+  NetAddr::IP: '4.068'
+  NetAddr::MAC: '0.93'
+  Opcode: '1.07'
+  Path::Class: '0.32'
+  Plack: '1.0023'
+  Plack::Middleware::Expires: '0.03'
+  Plack::Middleware::ReverseProxy: '0.15'
+  Role::Tiny: '1.002005'
+  SNMP::Info: '3.34'
+  SQL::Translator: '0.11018'
+  Sereal: '0'
+  Socket6: '0.23'
+  Starman: '0.4008'
+  Template: '2.24'
+  Template::Plugin::CSV: '0.04'
+  Template::Plugin::Number::Format: '1.02'
+  Term::ReadLine: '0'
+  Term::UI: '0'
+  Try::Tiny: '0'
+  URI: '0'
+  URL::Encode: '0.01'
+  YAML: '0.84'
+  YAML::XS: '0.41'
+  namespace::clean: '0.24'
+  version: '0.9902'
+resources:
+  IRC: irc://irc.freenode.org/#netdisco
+  MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
+  bugtracker: https://github.com/netdisco/netdisco/issues
+  homepage: http://netdisco.org/
+  license: http://opensource.org/licenses/bsd-license.php
+  repository: https://github.com/netdisco/netdisco
+version: '2.034003'

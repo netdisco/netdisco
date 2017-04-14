@@ -9,17 +9,8 @@ bin/netdisco-rancid-export
 bin/netdisco-sshcollector
 bin/netdisco-web
 bin/netdisco-web-fg
+Build.PL
 Changes
-inc/Module/Install.pm
-inc/Module/Install/Base.pm
-inc/Module/Install/Can.pm
-inc/Module/Install/Fetch.pm
-inc/Module/Install/Makefile.pm
-inc/Module/Install/Metadata.pm
-inc/Module/Install/Scripts.pm
-inc/Module/Install/Share.pm
-inc/Module/Install/Win32.pm
-inc/Module/Install/WriteAll.pm
 lib/App/Netdisco.pm
 lib/App/Netdisco/AnyEvent/Nbtstat.pm
 lib/App/Netdisco/Configuration.pm
@@ -164,6 +155,7 @@ lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
 lib/App/Netdisco/SSHCollector/Platform/CPVSX.pm
 lib/App/Netdisco/SSHCollector/Platform/FreeBSD.pm
+lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
 lib/App/Netdisco/SSHCollector/Platform/IOS.pm
 lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
 lib/App/Netdisco/SSHCollector/Platform/Linux.pm
@@ -242,9 +234,7 @@ lib/App/Netdisco/Web/Statistics.pm
 lib/App/Netdisco/Web/TypeAhead.pm
 lib/Dancer/Template/NetdiscoTemplateToolkit.pm
 LICENCE
-Makefile.PL
 MANIFEST			This list of files
-META.yml
 share/config.yml
 share/environments/deployment.yml
 share/public/500.html
@@ -429,3 +419,5 @@ t/11-portsort.t
 t/html/portsort.html
 t/js/qunit-tap.js
 t/js/run_qunit.js
+META.yml
+META.json
