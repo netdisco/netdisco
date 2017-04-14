@@ -50,7 +50,7 @@ use Term::ANSIColor;
 
 use Archive::Extract;
 $Archive::Extract::PREFER_BIN = 1;
-use File::Slurp ();
+use File::Slurper 'read_lines';
 use HTTP::Tiny;
 use Digest::MD5;
 use Try::Tiny;
@@ -195,7 +195,7 @@ sub deploy_oui {
   my %data = ();
 
   if (@ARGV) {
-      @lines = File::Slurp::read_file($ARGV[0], err_mode => 'quiet');
+      @lines = File::Slurper::read_lines($ARGV[0]);
   }
   else {
       my $url = 'https://raw.githubusercontent.com/netdisco/upstream-sources/master/ieee/oui.txt';

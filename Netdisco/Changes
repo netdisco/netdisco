@@ -10,6 +10,7 @@
   [BUG FIXES]
 
   * #296 Fix occasional empty macsuck when run in daemon
+  * use File::Slurper instead of File::Slurp to better handle UTF8 in oui.txt
 
 2.034002 - 2017-01-06
 
