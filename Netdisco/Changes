@@ -5,6 +5,7 @@
   * #27 add SNMP tips for Huawei, CloudEngine, Linksys (stoatwblr)
   * Add GAIA Embedded SSH collector (not the same as VSX, apparently)
   * Add another community FreeBSD install guide
+  * Move to Github hosted IEEE OUI data
 
   [BUG FIXES]
 

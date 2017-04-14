@@ -197,7 +197,7 @@ sub deploy_oui {
       @lines = File::Slurp::read_file($ARGV[0], err_mode => 'quiet');
   }
   else {
-      my $url = 'http://standards-oui.ieee.org/oui.txt';
+      my $url = 'https://raw.githubusercontent.com/netdisco/upstream-sources/master/ieee/oui.txt';
       my $resp = HTTP::Tiny->new->get($url);
       @lines = split /\n/, $resp->{content};
   }
