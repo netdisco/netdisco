@@ -283,6 +283,8 @@ The following fields are inspected for a match:
 
 =item serial
 
+=item module serials (exact)
+
 =item location
 
 =item name
@@ -303,6 +305,7 @@ sub search_fuzzy {
     die "missing param to search_fuzzy\n"
       unless $q;
     $q = "\%$q\%" if $q !~ m/\%/;
+    (my $qc = $q) =~ s/\%//g;
 
     # basic IP check is a string match
     my $ip_clause = [
@@ -311,7 +314,6 @@ sub search_fuzzy {
     ];
 
     # but also allow prefix search
-    (my $qc = $q) =~ s/\%//g;
     if (my $ip = NetAddr::IP::Lite->new($qc)) {
         $ip_clause = [
             'me.ip'  => { '<<=' => $ip->cidr },
@@ -327,6 +329,10 @@ sub search_fuzzy {
           'me.location' => { '-ilike' => $q },
           'me.name'     => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
+          'me.ip' => { '-in' =>
+            $rs->search({ 'modules.serial' => $qc },
+                        { join => 'modules', columns => 'ip' })->as_query()
+          },
           -or => [
             'me.dns'      => { '-ilike' => $q },
             'device_ips.dns' => { '-ilike' => $q },
