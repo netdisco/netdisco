@@ -188,6 +188,8 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
 
+=item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
+
 =item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
 
 =item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
