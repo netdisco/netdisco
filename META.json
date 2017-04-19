@@ -98,7 +98,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.035000"
+         "version" : "2.035001"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -119,7 +119,8 @@
          "file" : "lib/App/Netdisco/Core/Nbtstat.pm"
       },
       "App::Netdisco::DB" : {
-         "file" : "lib/App/Netdisco/DB.pm"
+         "file" : "lib/App/Netdisco/DB.pm",
+         "version" : "41"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -635,5 +636,5 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.035000"
+   "version" : "2.035001"
 }
