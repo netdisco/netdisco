@@ -159,6 +159,7 @@ lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
 lib/App/Netdisco/SSHCollector/Platform/IOS.pm
 lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
 lib/App/Netdisco/SSHCollector/Platform/Linux.pm
+lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/Util/Daemon.pm
 lib/App/Netdisco/Util/Device.pm
@@ -235,6 +236,8 @@ lib/App/Netdisco/Web/TypeAhead.pm
 lib/Dancer/Template/NetdiscoTemplateToolkit.pm
 LICENCE
 MANIFEST			This list of files
+META.json
+META.yml
 share/config.yml
 share/environments/deployment.yml
 share/public/500.html
@@ -419,5 +422,3 @@ t/11-portsort.t
 t/html/portsort.html
 t/js/qunit-tap.js
 t/js/run_qunit.js
-META.yml
-META.json
