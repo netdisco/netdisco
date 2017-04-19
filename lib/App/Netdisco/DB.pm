@@ -11,8 +11,7 @@ __PACKAGE__->load_namespaces(
 );
 
 our # try to hide from kwalitee
-  $VERSION # try harder
-    = 41; # schema version used for upgrades, keep as integer
+  $VERSION = 41; # schema version used for upgrades, keep as integer
 
 use Path::Class;
 use File::Basename;
