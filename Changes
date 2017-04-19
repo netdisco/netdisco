@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * #302 Device searching now searches on module serial numbers
+  * #298 NXOS SSHCollector and note in docs about VRFs
 
 2.034003 - 2017-04-14
 

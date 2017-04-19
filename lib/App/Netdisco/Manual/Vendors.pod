@@ -12,6 +12,14 @@ The LLDP configuration should look like:
    interface all;
  }
 
+=head1 VRFs and NXOS
+
+Netdsico at this time does not support VRFs. In particular, overlapping IP
+address spaces will not be shown in the interface.
+
+However if you're running Cisco NXOS and do not have overlapping IP address
+space, then you can use the NXOS SSHCollector profile for that platform.
+
 =head1 Report Cisco 37xx as Single Device Instead of Stacked
 
 Add this to your 37xx config:
