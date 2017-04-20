@@ -55,6 +55,7 @@ use HTTP::Tiny;
 use Digest::MD5;
 use Try::Tiny;
 use File::Path ();
+use File::Copy ();
 use Encode;
 
 =head1 NAME
