@@ -144,7 +144,7 @@ sub store_device {
 
   my @properties = qw/
     snmp_ver
-    description uptime contact name location
+    description uptime name
     layers ports mac
     ps1_type ps2_type ps1_status ps2_status
     fan slots
@@ -157,6 +157,9 @@ sub store_device {
 
   $device->set_column( model  => Encode::decode('UTF-8', $snmp->model)  );
   $device->set_column( serial => Encode::decode('UTF-8', $snmp->serial) );
+  $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
+  $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
+
 
   $device->set_column( snmp_class => $snmp->class );
   $device->set_column( last_discover => \'now()' );
