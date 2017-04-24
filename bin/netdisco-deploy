@@ -281,7 +281,7 @@ sub deploy_mibs {
   my $latest = 'https://github.com/netdisco/netdisco-mibs/releases/latest';
   my $resp = HTTP::Tiny->new->get($latest);
 
-  if (exists $resp->{redirects} and $resp->{url} =~ m/([0-9.]+)$/) {
+  if ($resp->{url} =~ m/([0-9.]+)$/) {
     my $ver = $1;
     my $url = 'https://codeload.github.com/netdisco/netdisco-mibs/tar.gz/'. $ver;
     my $file = file($home, 'netdisco-mibs-latest.tar.gz');

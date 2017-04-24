@@ -1,3 +1,10 @@
+2.035003 - 2017-04-24
+
+  [BUG FIXES]
+
+  * Add IO::Socket::SSL requirement for OUI/MIB download
+  * Fix for MIB download through an HTTP proxy
+
 2.035002 - 2017-04-24
 
   [BUG FIXES]
