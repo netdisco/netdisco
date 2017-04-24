@@ -5,6 +5,7 @@ use Module::Build;
 Module::Build->new(
   module_name => 'App::Netdisco',
   license     => 'bsd',
+  dynamic_config => 1,
   configure_requires => {
     'DBIx::Class' => '0.082810',
     'Module::Build' => '0.42',
