@@ -1,3 +1,9 @@
+2.035002 - 2017-04-24
+
+  [BUG FIXES]
+
+  * Fix DB schema files location with Module::Build
+
 2.035001 - 2017-04-19
 
   [ENHANCEMENTS]
