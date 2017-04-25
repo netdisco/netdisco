@@ -75,7 +75,6 @@
             "Sereal" : "0",
             "Socket6" : "0.23",
             "Starman" : "0.4008",
-            "Sys::Proctitle" : "0",
             "Template" : "2.24",
             "Template::Plugin::CSV" : "0.04",
             "Template::Plugin::Number::Format" : "1.02",
@@ -100,7 +99,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.035003"
+         "version" : "2.035004"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -638,6 +637,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.035003",
-   "x_serialization_backend" : "JSON::PP version 2.27300"
+   "version" : "2.035004",
+   "x_serialization_backend" : "JSON::PP version 2.27400"
 }
