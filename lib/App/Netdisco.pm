@@ -51,7 +51,7 @@ properties.
 
 =item *
 
-See the demo at: L<http://netdisco2-demo.herokuapp.com/>
+See the demo at: L<https://netdisco2-demo.herokuapp.com/>
 
 =back
 
@@ -126,7 +126,7 @@ install Netdisco and its dependencies into the C<netdisco> user's home area
 (C<~netdisco/perl5>):
 
  su - netdisco
- curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
+ curl -L https://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
 
 Link some of the newly installed apps into a handy location:
 

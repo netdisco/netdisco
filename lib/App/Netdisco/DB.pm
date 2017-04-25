@@ -17,7 +17,7 @@ use Path::Class;
 use File::ShareDir 'dist_dir';
 
 our $schema_versions_dir = Path::Class::Dir->new( dist_dir('App-Netdisco') )
-  ->subdir("DB", "schema_versions")->stringify;
+  ->subdir('schema_versions')->stringify;
 
 __PACKAGE__->load_components(qw/
   Schema::Versioned

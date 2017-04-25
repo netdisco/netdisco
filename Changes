@@ -1,3 +1,9 @@
+2.035004 - 2017-04-25
+
+  [BUG FIXES]
+
+  * Fix for relocated DB schema files
+
 2.035003 - 2017-04-24
 
   [BUG FIXES]
