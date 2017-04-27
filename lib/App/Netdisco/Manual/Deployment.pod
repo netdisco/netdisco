@@ -56,22 +56,25 @@ install off-line. You should download the following two files:
 
 =item *
 
-http://standards.ieee.org/develop/regauth/oui/oui.txt
+https://raw.githubusercontent.com/netdisco/upstream-sources/master/ieee/oui.txt
 
 =item *
 
-http://downloads.sourceforge.net/project/netdisco/netdisco-mibs/latest-snapshot/netdisco-mibs-snapshot.tar.gz
+https://github.com/netdisco/netdisco-mibs/releases/latest (download link is on the page)
 
 =back
 
 Run the C<netdisco-deploy> script but pass the OUI file name as a parameter on
-the command line:
+the command line, for example:
 
  ~/bin/netdisco-deploy ./oui.txt
 
 Then answer yes to questions, even though you're not connected to the
-Internet. For the MIBs you can simply extract the downloaded archive to the
-home directory of Netdisco.
+Internet.
+
+For the MIBs you can simply extract the downloaded archive to the home
+directory of Netdisco, and change the name of the directory to
+C<netdisco-mibs>.
 
 =head1 Relocating the Installation
 
