@@ -71,11 +71,11 @@ L<DBD::Pg>, L<SNMP>, and a compiler using your operating system packages.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev build-essential
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel make automake gcc
 
 On BSD systems please see L<our BSD tips|App::Netdisco::Manual::BSDInstall>.
 

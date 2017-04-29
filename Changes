@@ -1,3 +1,9 @@
+2.035006 - 2017-04-29
+
+  [BUG FIXES]
+
+  * Add SSL development library to OS base requirements install doc
+
 2.035005 - 2017-04-29
 
   [NEW FEATURES]

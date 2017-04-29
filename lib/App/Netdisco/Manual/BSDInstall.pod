@@ -30,6 +30,10 @@ C<postgresqlXX-server>
 
 C<net-snmp> (should install the Perl binding C<SNMP.pm>)
 
+=item *
+
+C<openssl>
+
 =back
 
 =head1 Additional Steps
