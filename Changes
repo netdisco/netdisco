@@ -4,6 +4,10 @@
 
   * New report for Port VLAN Mismatches (M. Bernstein)
 
+  [ENHANCEMENTS]
+
+  * Add note to docs about reinstall after OS upgrade
+
   [BUG FIXES]
 
   * Do not attempt to UTF-8 decode OUI retrieved by curl/wget

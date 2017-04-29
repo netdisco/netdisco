@@ -79,6 +79,21 @@ See the tips at L<Vendors Guide|App::Netdisco::Manual::Vendors>, or else
 contact the L<community email
 list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
 
+=head1 After OS update or upgrade, Netdisco fails
+
+If you upgrade the operating system then your system libraries will change and
+Netdisco needs to be rebuilt (specifically, C library bindings).
+
+The safest way to do this is set up a new user and follow the same install
+instructions, connecting to the same database. Stop the web and backend daemon
+for the old user, and start them for the new user. Then delete the old user
+account.
+
+Alternatively, if you do not mind the downtime: stop the web and backend
+daemons then delete the C<~netdisco/perl5> directory and reinstall from
+scratch. The configuration file, database, and MIBs can all be reused
+in-place.
+
 =head1 Run a C<netdisco-do> Task with Debugging
 
 The C<netdisco-do> command has several debug flags which will show what's
