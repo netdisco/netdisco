@@ -99,7 +99,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.035004"
+         "version" : "2.035005"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -257,6 +257,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::PortUtilization" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::PortVLANMismatch" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/PortVLANMismatch.pm"
       },
       "App::Netdisco::DB::Result::Virtual::SlowDevices" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm"
@@ -579,6 +582,9 @@
       "App::Netdisco::Web::Plugin::Report::PortUtilization" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm"
       },
+      "App::Netdisco::Web::Plugin::Report::PortVLANMismatch" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/Report/PortVLANMismatch.pm"
+      },
       "App::Netdisco::Web::Plugin::Report::SsidInventory" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Report/SsidInventory.pm"
       },
@@ -637,6 +643,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.035004",
+   "version" : "2.035005",
    "x_serialization_backend" : "JSON::PP version 2.27400"
 }

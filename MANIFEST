@@ -78,6 +78,7 @@ lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
+lib/App/Netdisco/DB/Result/Virtual/PortVLANMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm
@@ -180,6 +181,7 @@ lib/App/Netdisco/Web/Plugin/Report/PortLog.pm
 lib/App/Netdisco/Web/Plugin/Report/PortMultiNodes.pm
 lib/App/Netdisco/Web/Plugin/Report/PortSsid.pm
 lib/App/Netdisco/Web/Plugin/Report/PortUtilization.pm
+lib/App/Netdisco/Web/Plugin/Report/PortVLANMismatch.pm
 lib/App/Netdisco/Web/Plugin/Report/SsidInventory.pm
 lib/App/Netdisco/Web/Plugin/Report/SubnetUtilization.pm
 lib/App/Netdisco/Web/Plugin/Report/VlanInventory.pm
@@ -375,6 +377,7 @@ share/views/ajax/report/portssid.tt
 share/views/ajax/report/portssid_csv.tt
 share/views/ajax/report/portutilization.tt
 share/views/ajax/report/portutilization_csv.tt
+share/views/ajax/report/portvlanmismatch.tt
 share/views/ajax/report/subnets.tt
 share/views/ajax/report/subnets_csv.tt
 share/views/ajax/report/vlaninventory.tt
