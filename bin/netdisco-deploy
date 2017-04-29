@@ -245,7 +245,7 @@ sub deploy_oui {
 sub shorten {
     my $manuf = shift;
 
-    $manuf = decode "utf8", $manuf, Encode::FB_CROAK;
+    $manuf = decode("utf8", $manuf, Encode::FB_CROAK) unless @ARGV;
     $manuf = " " . $manuf . " ";
 
     # Remove any punctuation

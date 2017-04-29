@@ -1,8 +1,12 @@
-2.035005 - 
+2.035005 - 2017-04-29
 
   [NEW FEATURES]
 
   * New report for Port VLAN Mismatches (M. Bernstein)
+
+  [BUG FIXES]
+
+  * Do not attempt to UTF-8 decode OUI retrieved by curl/wget
 
 2.035004 - 2017-04-25
 
