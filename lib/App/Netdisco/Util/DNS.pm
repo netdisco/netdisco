@@ -2,8 +2,8 @@ package App::Netdisco::Util::DNS;
 
 use strict;
 use warnings;
-
 use Dancer ':script';
+
 use Net::DNS;
 use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
