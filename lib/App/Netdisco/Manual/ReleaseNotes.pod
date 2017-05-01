@@ -36,27 +36,6 @@ but they are backwards compatible.
 
 =back
 
-=head1 2.035007
-
-=head2 General Notices
-
-This release builds a Perl SSL interface which requires OpenSSL development
-files (headers) on your system.
-
-On Ubuntu/Debian:
-
- root:~# apt-get install libssl-dev
-
-On Fedora/Red-Hat:
-
- root:~# yum install openssl-devel
-
-On BSD these headers are usually installed with the openssl port itself.
-
-Netdisco will otherwise fail to upgrade/install (it will fail building
-L<IO::Socket::SSL> or L<Net::SSLeay>). If you get stuck or confused, you are
-looking for the package including the file C<openssl/err.h>.
-
 =head1 2.034000
 
 =head2 General Notices
