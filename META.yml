@@ -6,7 +6,7 @@ build_requires:
   Env::Path: '0'
   Test::More: '0.88'
 configure_requires:
-  DBIx::Class: '0.082810'
+  Alien::OpenSSL: '0.09'
   Module::Build: '0.42'
 dynamic_config: 1
 generated_by: 'Module::Build version 0.4222, CPAN::Meta::Converter version 2.150010'

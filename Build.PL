@@ -2,16 +2,21 @@ use strict;
 use warnings;
 use Module::Build;
 
+use Alien::OpenSSL;
+my $cflags = Alien::OpenSSL->cflags;
+my $ldflags = Alien::OpenSSL->libs;
+
 Module::Build->new(
   module_name => 'App::Netdisco',
   license     => 'bsd',
   dynamic_config => 1,
+  extra_compiler_flags => $cflags,  # OpenSSL
+  extra_linker_flags   => $ldflags, # OpenSSL
   configure_requires => {
-    'DBIx::Class' => '0.082810',
-    'Module::Build' => '0.42',
+    'Module::Build'  => '0.42',
+    'Alien::OpenSSL' => '0.09',
   },
-  build_requires => {
-  },
+  build_requires => {},
   requires => {
     'Algorithm::Cron' => '0.07',
     'AnyEvent' => '7.05',

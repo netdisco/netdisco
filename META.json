@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "DBIx::Class" : "0.082810",
+            "Alien::OpenSSL" : "0.09",
             "Module::Build" : "0.42"
          }
       },
