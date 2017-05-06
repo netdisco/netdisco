@@ -51,14 +51,14 @@ directory
 You might also want to set C<check_userlog> to C<false> in your config to
 quieten some of the web client callbacks.
 
-For the daemon, it's very similar:
+For the backend daemon, it's very similar:
 
- DBIC_TRACE=1 ~/bin/localenv bin/netdisco-daemon-fg
+ DBIC_TRACE=1 ~/bin/localenv bin/netdisco-backend-fg
 
 You can point at a different database without editing C<deployment.yml>:
 
  NETDISCO_DBNAME=testdb DBIC_TRACE=1 ~/bin/localenv plackup -R share,lib -p 5001 bin/netdisco-web-fg
- NETDISCO_DBNAME=testdb DBIC_TRACE=1 ~/bin/localenv bin/netdisco-daemon-fg
+ NETDISCO_DBNAME=testdb DBIC_TRACE=1 ~/bin/localenv bin/netdisco-backend-fg
 
 It's recommended to delete the "C<~/perl5/lib/perl5/App/Netdisco>"
 directory to avoid accidentally picking up old Netdisco code. For working on
@@ -398,7 +398,7 @@ database connection management features mentioned above.
 
 The job daemon is backwards compatible with the old Netdisco database job
 requests table. All code for the job daemon lives under the
-L<App::Netdisco::Daemon> namespace and like the rest of Netdisco is broken
+L<App::Netdisco::Backend> namespace and like the rest of Netdisco is broken
 down into manageable chunks.
 
 =head2 Running the Job Daemon
@@ -407,10 +407,10 @@ Like the web application, the job daemon is fully self contained and runs via
 two simple scripts shipped with the distribution - one for foreground and one
 for background execution (see the user docs for instructions).
 
-The C<netdisco-daemon> script uses L<Daemon::Control> to daemonize so you can
+The C<netdisco-backend> script uses L<Daemon::Control> to daemonize so you can
 fire-and-forget the Netdisco job daemon without much trouble at all. This
-script in turn calls C<netdisco-daemon-fg> which is the real application, that
-runs in the foreground if called on its own.
+script in turn calls C<netdisco-backend-fg> which is the real application,
+that runs in the foreground if called on its own.
 
 =head2 Daemon Engineering
 

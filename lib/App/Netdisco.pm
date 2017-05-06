@@ -134,10 +134,10 @@ Link some of the newly installed apps into a handy location:
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
 Test the installation by running the following command, which should only
-produce a status message (it's just a test - you'll start the daemon properly,
-later on):
+produce a status message (it's just a test - you'll start the daemons
+properly, later on):
 
- ~/bin/netdisco-daemon status
+ ~/bin/netdisco-backend status
 
 =head1 Configuration
 
@@ -167,8 +167,8 @@ details.
 
 The database either needs configuring if new, or updating from the current
 release of Netdisco (1.x). You also need vendor MAC address prefixes (OUI
-data) and some MIBs if you want to run the daemon. The following script will
-take care of all this for you:
+data) and some MIBs if you want to run the backend daemon. The following
+script will take care of all this for you:
 
  ~/bin/netdisco-deploy
 
@@ -185,7 +185,7 @@ Run the following command to start the web-app server as a backgrounded daemon
 
 Run the following command to start the job control daemon (port control, etc):
 
- ~/bin/netdisco-daemon start
+ ~/bin/netdisco-backend start
 
 You should take care not to run this Netdisco daemon and the Netdisco 1.x
 daemon at the same time. Similarly, if you use the device discovery with
@@ -207,6 +207,7 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
+ ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
  
  # apply database schema updates
  ~/bin/netdisco-deploy
@@ -215,7 +216,7 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
  ~/bin/netdisco-web restart
  
  # restart job daemon (if you use it)
- ~/bin/netdisco-daemon restart
+ ~/bin/netdisco-backend restart
 
 =head1 Tips and Tricks
 

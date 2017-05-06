@@ -64,7 +64,7 @@ discover_no_type:
   - '(?i)phone'
   - '(?i)(?:wap|wireless)'
 
-# number of SNMP workers to run in parallel (in netdisco-daemon).
+# number of SNMP workers to run in parallel (in netdisco-backend).
 # the default is twice the number of CPU cores. increase this if
 # your system has few cores and the schedule is taking too long.
 # ```````````````````````````````````````````````````````````````

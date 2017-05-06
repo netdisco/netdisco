@@ -89,6 +89,8 @@ Module::Build->new(
     'bin/netdisco-db-deploy',
     'bin/netdisco-deploy',
     'bin/netdisco-do',
+    'bin/netdisco-backend-fg',
+    'bin/netdisco-backend',
     'bin/netdisco-daemon-fg',
     'bin/netdisco-daemon',
     'bin/netdisco-web-fg',

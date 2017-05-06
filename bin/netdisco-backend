@@ -46,21 +46,21 @@ use File::Copy;
 use App::Netdisco::Environment;
 my $config = ($ENV{PLACK_ENV} || $ENV{DANCER_ENVIRONMENT}) .'.yml';
 
-my $netdisco = file($FindBin::RealBin, 'netdisco-daemon-fg');
+my $netdisco = file($FindBin::RealBin, 'netdisco-backend-fg');
 my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
 my $log_dir = dir($home, 'logs');
 mkdir $log_dir if ! -d $log_dir;
-my $log_file = file($log_dir, 'netdisco-daemon.log');
+my $log_file = file($log_dir, 'netdisco-backend.log');
 
 my $uid = (stat($netdisco->stringify))[4] || 0;
 my $gid = (stat($netdisco->stringify))[5] || 0;
 
 Daemon::Control->new({
-  name => 'Netdisco Daemon',
+  name => 'Netdisco Backend',
   program  => \&restarter,
   program_args => [@args],
-  pid_file => file($home, 'netdisco-daemon.pid'),
+  pid_file => file($home, 'netdisco-backend.pid'),
   stderr_file => $log_file,
   stdout_file => $log_file,
   redirect_before_fork => 0,
@@ -72,7 +72,7 @@ my $child = 0;
 
 sub restarter {
   my ($daemon, @program_args) = @_;
-  $0 = 'netdisco-daemon';
+  $0 = 'netdisco-backend';
 
   $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;
@@ -171,7 +171,7 @@ sub rotate_logs {
 
 =head1 NAME
 
-netdisco-daemon - Job Control Daemon for Netdisco
+netdisco-backend - Job Control Daemon for Netdisco
 
 =head1 SEE ALSO
 

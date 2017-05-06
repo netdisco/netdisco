@@ -1,9 +1,9 @@
-package App::Netdisco::Daemon::Worker::Common;
+package App::Netdisco::Backend::Worker::Common;
 
 use Dancer qw/:moose :syntax :script/;
 
 use Try::Tiny;
-use App::Netdisco::Util::Daemon;
+use App::Netdisco::Util::Backend;
 
 use Role::Tiny;
 use namespace::clean;
@@ -18,7 +18,7 @@ sub worker_body {
   my $wid = $self->wid;
 
   while (1) {
-      prctl sprintf 'netdisco-daemon: worker #%s poller: idle', $wid;
+      prctl sprintf 'netdisco-backend: worker #%s poller: idle', $wid;
 
       my $job = $self->{queue}->dequeue(1);
       next unless defined $job;
@@ -26,7 +26,7 @@ sub worker_body {
 
       try {
           $job->started(scalar localtime);
-          prctl sprintf 'netdisco-daemon: worker #%s poller: working on #%s: %s',
+          prctl sprintf 'netdisco-backend: worker #%s poller: working on #%s: %s',
             $wid, $job->job, $job->summary;
           info sprintf "pol (%s): starting %s job(%s) at %s",
             $wid, $action, $job->job, $job->started;
@@ -50,7 +50,7 @@ sub close_job {
   my ($self, $job) = @_;
   my $now  = scalar localtime;
 
-  prctl sprintf 'netdisco-daemon: worker #%s poller: wrapping up %s #%s: %s',
+  prctl sprintf 'netdisco-backend: worker #%s poller: wrapping up %s #%s: %s',
     $self->wid, $job->action, $job->job, $job->status;
   info sprintf "pol (%s): wrapping up %s job(%s) - status %s at %s",
     $self->wid, $job->action, $job->job, $job->status, $now;
