@@ -35,6 +35,22 @@ deploy script for App::Netdisco will make some schema changes to the database,
 but they are backwards compatible.
 
 =back
+=head1 2.036000
+
+=head2 Health Advice
+
+In this release the apps C<netdisco-daemon> and C<netdisco-daemon-fg> have
+been renamed to C<netdisco-backend> and C<netdisco-backend-fg> respectively.
+
+This better reflects the function of the two programs. If you still have
+scripts using C<netdisco-daemon> or C<netdisco-daemon-fg> commands, they
+should continue to work, as these apps still exist and simply exec() to the
+new scripts on start.
+
+However, it would be best if you replace any custom management config to
+point to the new app names, going forward. Remember to do this on upgrade:
+
+ ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
 =head1 2.035007
 
