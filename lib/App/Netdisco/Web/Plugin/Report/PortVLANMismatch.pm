@@ -25,7 +25,7 @@ get '/ajax/content/report/portvlanmismatch' => require_login sub {
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/portvlanmismatch.tt', { results => \@results, },
+        template 'ajax/report/portvlanmismatch_csv.tt', { results => \@results, },
             { layout => undef };
     }
 };
