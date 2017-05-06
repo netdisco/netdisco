@@ -70,17 +70,15 @@ regualr expressions (which you can achieve with nonmatching lookahead).
 To match any device, use "C<any>". To match no devices we suggest using
 "C<broadcast>" in the list.
 
-Device property regular expressions are anchored (that is, they must match the
-whole string). Device name regexp are not anchored.
-
-Default operation is to return true if I<any> of the items matches. To enforce
-requirement that I<all> items match, include "C<op:and>" anywhere in the list.
-
 =cut
 
 sub check_acl {
   my ($thing, $config) = @_;
-  my $real_ip = (blessed $thing ? $thing->ip : $thing);
+  my $real_ip = (
+    (blessed $thing and $thing->can('ip')) ? $thing->ip : (
+      (blessed $thing and $thing->can('addr')) ? $thing->addr : $thing ));
+  return 0 if blessed $real_ip; # class we do not understand
+
   my $addr = NetAddr::IP::Lite->new($real_ip);
   my $name = hostname_from_ip($addr->addr) || '!!NO_HOSTNAME!!';
   my $all  = (scalar grep {m/^op:and$/} @$config);
