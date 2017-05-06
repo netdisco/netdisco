@@ -11,7 +11,8 @@
 
 log: 'warning'
 logger_format: '[%P] %U %L %m'
-include_paths: []
+include_paths:  []
+template_paths: []
 external_databases: []
 
 # ------------

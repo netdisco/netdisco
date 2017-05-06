@@ -1,5 +1,14 @@
 2.036000 - 
 
+  [NEW FEATURES]
+
+  * template_paths config to allow easier override of web templates
+  * new ACL features including AND and negation
+
+  [ENHANCEMENTTS]
+
+  * renamed netdisco-daemon to netdisco-backend (and *-fg too)
+
   [BUG FIXES]
 
   * Add SSL development library to Release Notes

@@ -130,7 +130,18 @@ Value: List. Default: Empty List.
 
 Additional library paths for the application (both web frontend and backend
 poller daemons). You can also use a colon-separated list in the
-"C<NETDISCO_INC>" environment variable.
+"C<NETDISCO_INC>" environment variable which makes code available even earlier
+in the app startup sequence.
+
+=head3 C<template_paths>
+
+Value: List. Default: Empty List.
+
+Additional paths for L<Template::Toolkit> templates. Files in these paths will
+be loaded before (and hence override) any templates built in to Netdisco.
+
+If you do want to copy and override a built in web template, then create the
+directories necessary (such as "ajax" or "sidebar") in this path.
 
 =head3 C<external_databases>
 

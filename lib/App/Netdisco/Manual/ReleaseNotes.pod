@@ -52,8 +52,6 @@ point to the new app names, going forward. Remember to do this on upgrade:
 
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
-=head1 2.035007
-
 =head2 General Notices
 
 This release builds a Perl SSL interface which requires OpenSSL development
