@@ -129,29 +129,8 @@ is undefined or empty, then C<check_node_no> also returns false.
 
  print "rejected!" if check_node_no($ip, 'nbtstat_no');
 
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-IP address range, using a hyphen and no whitespace
-
-=item *
-
-Regular Expression in YAML format which will match the node DNS name, e.g.:
-
- - !!perl/regexp ^sep0.*$
-
-=back
-
-To simply match all nodes, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
-regular expressions are anchored (that is, they must match the whole string).
-To match no nodes we recommend an entry of "C<localhost>" in the setting.
+There are several options for what C<$setting_name> can contain. See
+L<App::Netdisco::Util::Permission> for the details.
 
 =cut
 
@@ -172,29 +151,8 @@ is undefined or empty, then C<check_node_only> also returns true.
 
  print "rejected!" unless check_node_only($ip, 'nbtstat_only');
 
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-IP address range, using a hyphen and no whitespace
-
-=item *
-
-Regular Expression in YAML format which will match the node DNS name, e.g.:
-
- - !!perl/regexp ^sep0.*$
-
-=back
-
-To simply match all nodes, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
-regular expressions are anchored (that is, they must match the whole string).
-To match no nodes we recommend an entry of "C<localhost>" in the setting.
+There are several options for what C<$setting_name> can contain. See
+L<App::Netdisco::Util::Permission> for the details.
 
 =cut
 

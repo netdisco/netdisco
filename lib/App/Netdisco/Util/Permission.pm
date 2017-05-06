@@ -32,10 +32,6 @@ Given a Device or IP address, compares it to the items in C<< \@config >>
 then returns true or false. You can control whether any item must match or
 all must match, and items can be negated to invert the match logic.
 
-Normally you use C<< *_no >> and C<< *_only >> settings, passing the name of
-the configuration setting to load. This helper instead requires not the name
-of the setting, but its value (a list of network or device identifiers).
-
 There are several options for what C<< \@config >> can contain:
 
 =over 4
@@ -62,8 +58,8 @@ C<vendor> (with enforced begin/end regexp anchors).
 
 =item *
 
-"C<op:and>" to require all items to match (or not if negated) the provided IP
-or device. Note that this includes IP address version mismatches (v4-v6).
+"C<op:and>" to require all items to match (or not match) the provided IP or
+device. Note that this includes IP address version mismatches (v4-v6).
 
 =back
 
