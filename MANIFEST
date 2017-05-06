@@ -420,8 +420,9 @@ share/views/sidebar/report/subnets.tt
 share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
-t/10-sort_port.t
-t/11-portsort.t
-t/html/portsort.html
-t/js/qunit-tap.js
-t/js/run_qunit.js
+xt/10-sort_port.t
+xt/11-portsort.t
+xt/20-checkacl.t
+xt/html/portsort.html
+xt/js/qunit-tap.js
+xt/js/run_qunit.js
