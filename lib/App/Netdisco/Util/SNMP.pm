@@ -300,7 +300,7 @@ sub _build_communities {
         if not $stanza->{tag}
            and !exists $stanza->{community};
 
-      if ($stanza->{$mode} and check_acl($device->ip, $stanza->{only})) {
+      if ($stanza->{$mode} and check_acl($device, $stanza->{only})) {
           if ($device->in_storage and
             $stored_tag and $stored_tag eq $stanza->{tag}) {
               # last known-good by tag
