@@ -1,10 +1,10 @@
-package App::Netdisco::Daemon::Worker::Poller::Common;
+package App::Netdisco::Backend::Worker::Poller::Common;
 
 use Dancer qw/:moose :syntax :script/;
 
 use App::Netdisco::Util::SNMP 'snmp_connect';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Daemon::Util ':all';
+use App::Netdisco::Backend::Util ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 
 use Dancer::Plugin::DBIC 'schema';

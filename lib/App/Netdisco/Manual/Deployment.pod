@@ -7,7 +7,7 @@ App::Netdisco::Manual::Deployment - Tips and Tricks for Deployment
 The Netdisco applications will generate RC scripts suitable for Linux systems:
 
  bin/netdisco-web get_init_file
- bin/netdisco-daemon get_init_file
+ bin/netdisco-backend get_init_file
 
 On C<systemd>-based systems please see L<our systemd
 guide|App::Netdisco::Manual::Systemd>.

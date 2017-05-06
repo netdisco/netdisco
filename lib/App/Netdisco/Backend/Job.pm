@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Job;
+package App::Netdisco::Backend::Job;
 
 use Moo;
 use namespace::clean;

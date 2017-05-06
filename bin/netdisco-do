@@ -35,7 +35,7 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
-use App::Netdisco::Daemon::Job;
+use App::Netdisco::Backend::Job;
 use Dancer qw/:moose :script/;
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
@@ -104,13 +104,13 @@ unless ($action) {
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
 
-  with 'App::Netdisco::Daemon::Worker::Poller::Device';
-  with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
-  with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
-  with 'App::Netdisco::Daemon::Worker::Poller::Nbtstat';
-  with 'App::Netdisco::Daemon::Worker::Poller::Expiry';
-  with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
-  with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
+  with 'App::Netdisco::Backend::Worker::Poller::Device';
+  with 'App::Netdisco::Backend::Worker::Poller::Arpnip';
+  with 'App::Netdisco::Backend::Worker::Poller::Macsuck';
+  with 'App::Netdisco::Backend::Worker::Poller::Nbtstat';
+  with 'App::Netdisco::Backend::Worker::Poller::Expiry';
+  with 'App::Netdisco::Backend::Worker::Interactive::DeviceActions';
+  with 'App::Netdisco::Backend::Worker::Interactive::PortActions';
 
   eval { Module::Load::load 'App::Netdisco::Util::Graph' };
   sub graph {
@@ -233,7 +233,7 @@ foreach my $host (@hostlist) {
     }
 
     # what job are we asked to do?
-    my $job = App::Netdisco::Daemon::Job->new({
+    my $job = App::Netdisco::Backend::Job->new({
       job => 0,
       action => $action,
       device => $dev,

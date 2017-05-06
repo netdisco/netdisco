@@ -3,7 +3,7 @@ package App::Netdisco::JobQueue::PostgreSQL;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Daemon::Job;
+use App::Netdisco::Backend::Job;
 use Net::Domain 'hostfqdn';
 use Module::Load ();
 use Try::Tiny;
@@ -38,7 +38,7 @@ sub _getsome {
 
   my @returned = ();
   while (my $job = $rs->next) {
-      push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
+      push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
   }
   return @returned;
 }
@@ -68,7 +68,7 @@ sub jq_locked {
     ->search({status => "queued-$fqdn"});
 
   while (my $job = $rs->next) {
-      push @returned, App::Netdisco::Daemon::Job->new({ $job->get_columns });
+      push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
   }
   return @returned;
 }

@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Worker::Poller::Nbtstat;
+package App::Netdisco::Backend::Worker::Poller::Nbtstat;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Core::Nbtstat qw/nbtstat_resolve_async store_nbt/;
 use App::Netdisco::Util::Node 'is_nbtstatable';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
-use App::Netdisco::Daemon::Util ':all';
+use App::Netdisco::Backend::Util ':all';
 
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
@@ -14,7 +14,7 @@ use Time::HiRes 'gettimeofday';
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::Worker::Poller::Common';
+with 'App::Netdisco::Backend::Worker::Poller::Common';
 
 sub nbtstat_action { \&do_nbtstat }
 sub nbtstat_filter { \&is_nbtstatable }

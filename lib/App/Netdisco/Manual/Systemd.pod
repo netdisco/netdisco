@@ -10,21 +10,21 @@ instructions apply to your local installation and use at your own risk.
 
 =head1 Files
 
-=head2 C<< /etc/systemd/system/netdisco-daemon.service >>
+=head2 C<< /etc/systemd/system/netdisco-backend.service >>
 
 This should be set mode 644 and owned by user and group C<root>.
 
   [Unit]
-  Description=Netdisco Daemon Service
-  AssertFileIsExecutable=/home/netdisco/bin/netdisco-daemon
+  Description=Netdisco Backend Service
+  AssertFileIsExecutable=/home/netdisco/bin/netdisco-backend
   After=syslog.target network-online.target
   
   [Service]
   Type=forking
   User=netdisco
   Group=netdisco
-  ExecStart=/home/netdisco/bin/netdisco-daemon start
-  ExecStop=/home/netdisco/bin/netdisco-daemon stop
+  ExecStart=/home/netdisco/bin/netdisco-backend start
+  ExecStop=/home/netdisco/bin/netdisco-backend stop
   Restart=on-failure
   RestartSec=60
   
@@ -38,7 +38,7 @@ This should be set mode 644 and owned by user and group C<root>.
   [Unit]
   Description=Netdisco Web Service
   AssertFileIsExecutable=/home/netdisco/bin/netdisco-web
-  After=syslog.target network-online.target netdisco-daemon.service
+  After=syslog.target network-online.target netdisco-backend.service
   
   [Service]
   Type=forking
@@ -56,15 +56,15 @@ This should be set mode 644 and owned by user and group C<root>.
 
 To enable Netdisco in systemd:
 
- systemctl enable netdisco-daemon.service
+ systemctl enable netdisco-backend.service
  systemctl enable netdisco-web.service
 
 To start Netdisco:
 
- systemctl start netdisco-daemon.service
+ systemctl start netdisco-backend.service
  systemctl start netdisco-web.service
 
-May also need to run C<systemctl daemon-reload> depending on the order you do
-these steps.
+May also need to run C<systemctl netdisco-backend reload> depending on the
+order you do these steps.
 
 =cut

@@ -1,9 +1,9 @@
-package App::Netdisco::Daemon::Worker::Interactive::PortActions;
+package App::Netdisco::Backend::Worker::Interactive::PortActions;
 
 use App::Netdisco::Util::Port ':all';
 use App::Netdisco::Util::SNMP 'snmp_connect_rw';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Daemon::Util ':all';
+use App::Netdisco::Backend::Util ':all';
 
 use Role::Tiny;
 use namespace::clean;

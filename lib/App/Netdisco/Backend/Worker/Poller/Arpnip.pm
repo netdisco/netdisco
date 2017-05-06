@@ -1,4 +1,4 @@
-package App::Netdisco::Daemon::Worker::Poller::Arpnip;
+package App::Netdisco::Backend::Worker::Poller::Arpnip;
 
 use App::Netdisco::Core::Arpnip 'do_arpnip';
 use App::Netdisco::Util::Device 'is_arpnipable';
@@ -6,7 +6,7 @@ use App::Netdisco::Util::Device 'is_arpnipable';
 use Role::Tiny;
 use namespace::clean;
 
-with 'App::Netdisco::Daemon::Worker::Poller::Common';
+with 'App::Netdisco::Backend::Worker::Poller::Common';
 
 sub arpnip_action { \&do_arpnip }
 sub arpnip_filter { \&is_arpnipable }

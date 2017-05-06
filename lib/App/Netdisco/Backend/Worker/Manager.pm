@@ -1,9 +1,9 @@
-package App::Netdisco::Daemon::Worker::Manager;
+package App::Netdisco::Backend::Worker::Manager;
 
 use Dancer qw/:moose :syntax :script/;
 
 use List::Util 'sum';
-use App::Netdisco::Util::Daemon;
+use App::Netdisco::Util::Backend;
 
 use Role::Tiny;
 use namespace::clean;
@@ -35,12 +35,12 @@ sub worker_body {
   my $wid = $self->wid;
 
   if (setting('workers')->{'no_manager'}) {
-      prctl sprintf 'netdisco-daemon: worker #%s manager: inactive', $wid;
+      prctl sprintf 'netdisco-backend: worker #%s manager: inactive', $wid;
       return debug "mgr ($wid): no need for manager... quitting"
   }
 
   while (1) {
-      prctl sprintf 'netdisco-daemon: worker #%s manager: gathering', $wid;
+      prctl sprintf 'netdisco-backend: worker #%s manager: gathering', $wid;
       my $num_slots = 0;
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
@@ -78,7 +78,7 @@ sub worker_body {
       }
 
       debug "mgr ($wid): sleeping now...";
-      prctl sprintf 'netdisco-daemon: worker #%s manager: idle', $wid;
+      prctl sprintf 'netdisco-backend: worker #%s manager: idle', $wid;
       sleep( setting('workers')->{sleep_time} || 1 );
   }
 }

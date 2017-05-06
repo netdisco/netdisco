@@ -1,9 +1,9 @@
-package App::Netdisco::Daemon::Worker::Poller::Expiry;
+package App::Netdisco::Backend::Worker::Poller::Expiry;
 
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Daemon::Util ':all';
+use App::Netdisco::Backend::Util ':all';
 
 use Role::Tiny;
 use namespace::clean;

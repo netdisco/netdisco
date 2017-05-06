@@ -1,9 +1,9 @@
-package App::Netdisco::Daemon::Util;
+package App::Netdisco::Backend::Util;
 
 use strict;
 use warnings;
 
-# support utilities for Daemon Actions
+# support utilities for Backend Actions
 
 use base 'Exporter';
 our @EXPORT = ();

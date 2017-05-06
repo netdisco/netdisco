@@ -104,6 +104,48 @@
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
       },
+      "App::Netdisco::Backend::Job" : {
+         "file" : "lib/App/Netdisco/Backend/Job.pm"
+      },
+      "App::Netdisco::Backend::Util" : {
+         "file" : "lib/App/Netdisco/Backend/Util.pm"
+      },
+      "App::Netdisco::Backend::Worker::Common" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Common.pm"
+      },
+      "App::Netdisco::Backend::Worker::Interactive::DeviceActions" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Interactive/DeviceActions.pm"
+      },
+      "App::Netdisco::Backend::Worker::Interactive::PortActions" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Interactive/PortActions.pm"
+      },
+      "App::Netdisco::Backend::Worker::Manager" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Manager.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller::Arpnip" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller/Arpnip.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller::Common" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller/Common.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller::Device" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller/Device.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller::Expiry" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller/Expiry.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller::Macsuck" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller/Macsuck.pm"
+      },
+      "App::Netdisco::Backend::Worker::Poller::Nbtstat" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Poller/Nbtstat.pm"
+      },
+      "App::Netdisco::Backend::Worker::Scheduler" : {
+         "file" : "lib/App/Netdisco/Backend/Worker/Scheduler.pm"
+      },
       "App::Netdisco::Configuration" : {
          "file" : "lib/App/Netdisco/Configuration.pm"
       },
@@ -315,48 +357,6 @@
       "App::Netdisco::DB::ResultSet::Subnet" : {
          "file" : "lib/App/Netdisco/DB/ResultSet/Subnet.pm"
       },
-      "App::Netdisco::Daemon::Job" : {
-         "file" : "lib/App/Netdisco/Daemon/Job.pm"
-      },
-      "App::Netdisco::Daemon::Util" : {
-         "file" : "lib/App/Netdisco/Daemon/Util.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Common" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Common.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Interactive::DeviceActions" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Interactive/DeviceActions.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Interactive::PortActions" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Interactive/PortActions.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Manager" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Manager.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller::Arpnip" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller/Arpnip.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller::Common" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller/Common.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller::Device" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller/Device.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller::Expiry" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller/Expiry.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller::Macsuck" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller/Macsuck.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Poller::Nbtstat" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Poller/Nbtstat.pm"
-      },
-      "App::Netdisco::Daemon::Worker::Scheduler" : {
-         "file" : "lib/App/Netdisco/Daemon/Worker/Scheduler.pm"
-      },
       "App::Netdisco::Environment" : {
          "file" : "lib/App/Netdisco/Environment.pm"
       },
@@ -405,11 +405,11 @@
       "App::Netdisco::SSHCollector::Platform::PaloAlto" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm"
       },
+      "App::Netdisco::Util::Backend" : {
+         "file" : "lib/App/Netdisco/Util/Backend.pm"
+      },
       "App::Netdisco::Util::DNS" : {
          "file" : "lib/App/Netdisco/Util/DNS.pm"
-      },
-      "App::Netdisco::Util::Daemon" : {
-         "file" : "lib/App/Netdisco/Util/Daemon.pm"
       },
       "App::Netdisco::Util::Device" : {
          "file" : "lib/App/Netdisco/Util/Device.pm"
