@@ -1,4 +1,4 @@
-package App::Netdisco::Util::Daemon;
+package App::Netdisco::Util::Backend;
 
 use strict;
 use warnings;
