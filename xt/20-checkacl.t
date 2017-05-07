@@ -93,11 +93,17 @@ ok(check_acl('127.0.0.1',[@conf[9,0,20]]), 'AND: !prefix, name');
 ok(check_acl('127.0.0.1',[@conf[7,11,0,20]]), 'AND: !prefix, !range, name');
 ok(check_acl('127.0.0.1',[@conf[9,13,16,0,20]]), 'AND: !prefix, !range, !regexp, name');
 
+# group ref
 is(check_acl('192.0.2.1',[$conf[22]]), 1, '!missing group ref');
 is(check_acl('192.0.2.1',[$conf[21]]), 0, 'failed missing group ref');
 setting('host_groups')->{'groupreftest'} = ['192.0.2.1'];
 is(check_acl('192.0.2.1',[$conf[21]]), 1, 'group ref');
 is(check_acl('192.0.2.1',[$conf[22]]), 0, 'failed !missing group ref');
+
+# scalar promoted to list
+ok(check_acl('localhost',$conf[0]), 'scalar promoted');
+ok(check_acl('localhost',$conf[1]), 'not scalar promoted');
+is(check_acl('www.microsoft.com',$conf[0]),  0, 'failed scalar promoted');
 
 # device property
 # negated device property
