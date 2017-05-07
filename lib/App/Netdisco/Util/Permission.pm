@@ -26,7 +26,7 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl( $ip, \@config )
+=head2 check_acl( $ip, \@config | $configitem )
 
 Given a Device or IP address, compares it to the items in C<< \@config >>
 then returns true or false. You can control whether any item must match or
@@ -58,6 +58,11 @@ C<vendor> (with enforced begin/end regexp anchors).
 
 =item *
 
+"C<group:grpname>" to refer to a named access control list that is in the
+C<host_groups> configuration (C<grpname> is the group name).
+
+=item *
+
 "C<op:and>" to require all items to match (or not match) the provided IP or
 device. Note that this includes IP address version mismatches (v4-v6).
 
@@ -74,11 +79,14 @@ To match any device, use "C<any>". To match no devices we suggest using
 
 sub check_acl {
   my ($thing, $config) = @_;
+  return 0 unless defined $thing and defined $config;
+
   my $real_ip = (
     (blessed $thing and $thing->can('ip')) ? $thing->ip : (
       (blessed $thing and $thing->can('addr')) ? $thing->addr : $thing ));
   return 0 if blessed $real_ip; # class we do not understand
 
+  $config  = [$config] if ref [] ne ref $config;
   my $addr = NetAddr::IP::Lite->new($real_ip);
   my $name = hostname_from_ip($addr->addr) || '!!NO_HOSTNAME!!';
   my $all  = (scalar grep {m/^op:and$/} @$config);
@@ -98,7 +106,20 @@ sub check_acl {
 
       my $neg = ($item =~ s/^!//);
 
-      if ($item =~ m/^([^:]+)\s*:\s*([^:]+)$/) {
+      if ($item =~ m/^group:(.+)$/) {
+          my $group = $1;
+          setting('host_groups')->{$group} ||= [];
+
+          if ($neg xor check_acl($thing, setting('host_groups')->{$group})) {
+            return 1 if not $all;
+          }
+          else {
+            return 0 if $all;
+          }
+          next INLIST;
+      }
+
+      if ($item =~ m/^([^:]+):([^:]+)$/) {
           my $prop  = $1;
           my $match = $2;
 

@@ -4,8 +4,11 @@ use strict; use warnings FATAL => 'all';
 use Test::More 1.302083;
 
 BEGIN {
+  use_ok( 'App::Netdisco::Configuration', 'check_acl' );
   use_ok( 'App::Netdisco::Util::Permission', 'check_acl' );
 }
+
+use Dancer qw/:script !pass/;
 
 my @conf = (
   # +ve match       -ve match
@@ -22,7 +25,9 @@ my @conf = (
   qr/(?!:www.example.com)/, '!127.0.0.0/29', # 16,17
   '!127.0.0.1-10', qr/(?!:localhost)/,       # 18,19
 
-  'op:and', # 20
+  'op:and',    # 20
+  'group:groupreftest',  # 21
+  '!group:groupreftest', # 22
 );
 
 # name, ipv4, ipv6, v4 prefix, v6 prefix
@@ -87,6 +92,12 @@ is(check_acl('127.0.0.1',[@conf[6,10,15,0,20]]), 0, 'failed AND: prefix, range, 
 ok(check_acl('127.0.0.1',[@conf[9,0,20]]), 'AND: !prefix, name');
 ok(check_acl('127.0.0.1',[@conf[7,11,0,20]]), 'AND: !prefix, !range, name');
 ok(check_acl('127.0.0.1',[@conf[9,13,16,0,20]]), 'AND: !prefix, !range, !regexp, name');
+
+is(check_acl('192.0.2.1',[$conf[22]]), 1, '!missing group ref');
+is(check_acl('192.0.2.1',[$conf[21]]), 0, 'failed missing group ref');
+setting('host_groups')->{'groupreftest'} = ['192.0.2.1'];
+is(check_acl('192.0.2.1',[$conf[21]]), 1, 'group ref');
+is(check_acl('192.0.2.1',[$conf[22]]), 0, 'failed !missing group ref');
 
 # device property
 # negated device property
