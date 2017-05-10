@@ -156,7 +156,7 @@ sub hostnames_resolve_async {
 =head2 no_resolve( $ip )
 
 Given an IP address, returns true if excluded from DNS resolution by the
-C<dns_no> configuration directive, otherwise returns false.
+"C<< dns -> no >>" configuration directive, otherwise returns false.
 
 =cut
 

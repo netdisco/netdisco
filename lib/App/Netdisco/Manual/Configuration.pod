@@ -61,7 +61,7 @@ colon character).
 
 Access Control Lists (ACLs) appear in many places in the configuration file,
 used to select or exclude devices or hosts for certain settings. ACLs are a
-YAML list of items, which can contain:
+single item or YAML list of items, which can contain:
 
 =over 4
 
@@ -632,8 +632,7 @@ configuration.
      community: s3kr1t
      read: false
      write: true
-     only:
-       - 2001:db8::/32
+     only: '2001:db8::/32'
 
 For SNMPv1 and SNMPv2, only the C<community> key is required.  Unlike the
 global C<community>/C<community_rw> setting, this is not a list but a single
@@ -641,7 +640,8 @@ item. To emulate their list behaviour, have multiple entries at the top
 C<snmp_auth> level, as in the example below.
 
 You can add C<read> and/or C<write> restrictions, and an IP restriction using
-C<only>. Giving the stanza a C<tag> name is optional, but recommended.
+C<only> (see L</"ACCESS CONTROL LISTS">. Giving the stanza a C<tag> name is
+optional, but recommended.
 
 For SNMPv3 the C<tag> and C<user> keys are required. You can add C<read>
 and/or C<write> restrictions, and an IP restriction using C<only>. Providing
@@ -708,7 +708,8 @@ devices. For more fine-grained control see the C<bulkwalk_no> setting.
 
 =head3 C<bulkwalk_no>
 
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
 
 IP addresses in the list will use C<GETNEXT> (and not C<BULKWALK>).  See
 L</"ACCESS CONTROL LISTS"> for what you can use here.
@@ -770,7 +771,8 @@ Number of times to retry connecting to a device before giving up.
 
 =head3 C<discover_no>
 
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
 
 IP addresses in the list will not be visited during device discovery.  See
 L</"ACCESS CONTROL LISTS"> for what you can use here.
@@ -778,7 +780,8 @@ L</"ACCESS CONTROL LISTS"> for what you can use here.
 
 =head3 C<discover_only>
 
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
 
 If present, device discovery will be limited to IP addresses matching entries
 in this list. See L</"ACCESS CONTROL LISTS"> for what you can use here.
@@ -812,7 +815,8 @@ CONTROL LISTS"> for what you can use here.
 
 =head3 C<macsuck_only>
 
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
 
 If present, macsuck will be limited to IP addresses matching entries in this
 list.  See L</"ACCESS CONTROL LISTS"> for what you can use here.
@@ -850,7 +854,8 @@ Similar to C<macsuck_no_vlan>, but allows specifying the device root
 
 =head3 C<macsuck_unsupported>
 
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
 
 Similar to C<macsuck_no>, but instead of skipping nodes on this device, they
 are allowed to gather on the upstream device port. Useful for devices which
@@ -894,7 +899,8 @@ CONTROL LISTS"> for what you can use here.
 
 =head3 C<arpnip_only>
 
-Value: List of Network Identifiers or Device Properties. Default: Empty List.
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
 
 If present, arpnip will be limited to IP addresses matching entries in this
 list.  See L</"ACCESS CONTROL LISTS"> for what you can use here.
@@ -915,7 +921,7 @@ CONTROL LISTS"> for what you can use here.
 
 =head3 C<nbtstat_only>
 
-Value: List of Network Identifiers. Default: Empty List.
+Value: Single item or list of Network Identifiers. Default: Empty List.
 
 If present, nbtstat will be limited to IP addresses matching entries in this
 list.  See L</"ACCESS CONTROL LISTS"> for what you can use here.
@@ -1006,8 +1012,9 @@ library default of 10.
 Similarly, the location of the Hosts file can be overridden in this config, or
 using the C<PERL_ANYEVENT_HOSTS> environment variable.
 
-C<no> is a list of IP addresses or CIDR ranges to excluded from DNS
-resolution.  Link local addresses are excluded by default.
+C<no> is a single item or list of IP addresses or CIDR ranges to excluded from
+DNS resolution (see L</"ACCESS CONTROL LISTS">). Link local addresses are
+excluded as in the defaults shown above.
 
 =head3 C<store_wireless_clients>
 
