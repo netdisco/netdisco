@@ -2,7 +2,7 @@ package App::Netdisco::Util::Device;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -11,8 +11,6 @@ our @EXPORT_OK = qw/
   delete_device
   renumber_device
   match_devicetype
-  check_device_no
-  check_device_only
   is_discoverable
   is_arpnipable
   is_macsuckable
@@ -146,50 +144,6 @@ sub match_devicetype {
                         @{setting($setting_name) || []});
 }
 
-=head2 check_device_no( $ip, $setting_name )
-
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_device_no> also returns false.
-
-See L<App::Netdisco::Util::Permission/check_acl> for details of what
-C<$setting_name> can contain.
-
-=cut
-
-sub check_device_no {
-  my ($ip, $setting_name) = @_;
-
-  return 0 unless $ip and $setting_name;
-  my $device = get_device($ip) or return 0;
-
-  my $config = setting($setting_name) || [];
-  return 0 if not scalar @$config;
-
-  return check_acl($device, $config);
-}
-
-=head2 check_device_only( $ip, $setting_name )
-
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_device_only> also returns true.
-
-See L<App::Netdisco::Util::Permission/check_acl> for details of what
-C<$setting_name> can contain.
-
-=cut
-
-sub check_device_only {
-  my ($ip, $setting_name) = @_;
-  my $device = get_device($ip) or return 0;
-
-  my $config = setting($setting_name) || [];
-  return 1 if not scalar @$config;
-
-  return check_acl($device, $config);
-}
-
 =head2 is_discoverable( $ip, $device_type? )
 
 Given an IP address, returns C<true> if Netdisco on this host is permitted by
@@ -216,10 +170,10 @@ sub is_discoverable {
   }
 
   return _bail_msg("is_discoverable: device matched discover_no")
-    if check_device_no($device, 'discover_no');
+    if check_acl_no($device, 'discover_no');
 
   return _bail_msg("is_discoverable: device failed to match discover_only")
-    unless check_device_only($device, 'discover_only');
+    unless check_acl_only($device, 'discover_only');
 
   # cannot check last_discover for as yet undiscovered devices :-)
   return 1 if not $device->in_storage;
@@ -250,10 +204,10 @@ sub is_arpnipable {
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_arpnipable: device matched arpnip_no")
-    if check_device_no($device, 'arpnip_no');
+    if check_acl_no($device, 'arpnip_no');
 
   return _bail_msg("is_arpnipable: device failed to match arpnip_only")
-    unless check_device_only($device, 'arpnip_only');
+    unless check_acl_only($device, 'arpnip_only');
 
   return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
     if not $device->in_storage;
@@ -284,10 +238,10 @@ sub is_macsuckable {
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_macsuckable: device matched macsuck_no")
-    if check_device_no($device, 'macsuck_no');
+    if check_acl_no($device, 'macsuck_no');
 
   return _bail_msg("is_macsuckable: device failed to match macsuck_only")
-    unless check_device_only($device, 'macsuck_only');
+    unless check_acl_only($device, 'macsuck_only');
 
   return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")
     if not $device->in_storage;

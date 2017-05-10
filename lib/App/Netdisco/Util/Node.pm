@@ -4,14 +4,12 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::MAC;
-use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   check_mac
-  check_node_no
-  check_node_only
   is_nbtstatable
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -121,50 +119,6 @@ sub check_mac {
   return $node;
 }
 
-=head2 check_node_no( $ip, $setting_name )
-
-Given the IP address of a node, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_node_no> also returns false.
-
- print "rejected!" if check_node_no($ip, 'nbtstat_no');
-
-There are several options for what C<$setting_name> can contain. See
-L<App::Netdisco::Util::Permission> for the details.
-
-=cut
-
-sub check_node_no {
-  my ($ip, $setting_name) = @_;
-
-  my $config = setting($setting_name) || [];
-  return 0 if not scalar @$config;
-
-  return check_acl($ip, $config);
-}
-
-=head2 check_node_only( $ip, $setting_name )
-
-Given the IP address of a node, returns true if the configuration setting
-C<$setting_name> matches that node, else returns false. If the setting
-is undefined or empty, then C<check_node_only> also returns true.
-
- print "rejected!" unless check_node_only($ip, 'nbtstat_only');
-
-There are several options for what C<$setting_name> can contain. See
-L<App::Netdisco::Util::Permission> for the details.
-
-=cut
-
-sub check_node_only {
-  my ($ip, $setting_name) = @_;
-
-  my $config = setting($setting_name) || [];
-  return 1 if not scalar @$config;
-
-  return check_acl($ip, $config);
-}
-
 =head2 is_nbtstatable( $ip )
 
 Given an IP address, returns C<true> if Netdisco on this host is permitted by
@@ -180,9 +134,9 @@ Returns false if the host is not permitted to nbtstat the target node.
 sub is_nbtstatable {
   my $ip = shift;
 
-  return if check_node_no($ip, 'nbtstat_no');
+  return if check_acl_no($ip, 'nbtstat_no');
 
-  return unless check_node_only($ip, 'nbtstat_only');
+  return unless check_acl_only($ip, 'nbtstat_only');
 
   return 1;
 }

@@ -10,7 +10,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/check_acl/;
+our @EXPORT_OK = qw/check_acl check_acl_no check_acl_only/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -26,54 +26,52 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl( $ip, \@config | $configitem )
+=head2 check_acl_no( $ip | $device, $setting_name )
 
-Given a Device or IP address, compares it to the items in C<< \@config >>
-then returns true or false. You can control whether any item must match or
-all must match, and items can be negated to invert the match logic.
+Given the IP address of a device, returns true if the configuration setting
+C<$setting_name> matches that device, else returns false. If the setting is
+undefined or empty, then C<check_acl_no> also returns false.
 
-There are several options for what C<< \@config >> can contain:
+See L<App::Netdisco::Manual::Configuration> for details of what
+C<$setting_name> can contain.
 
-=over 4
+=cut
 
-=item *
+sub check_acl_no {
+  my ($thing, $setting_name) = @_;
+  return 0 unless $thing and $setting_name;
+  return check_acl($thing, setting($setting_name));
+}
 
-Hostname, IP address, IP prefix (subnet)
+=head2 check_acl_only( $ip | $device, $setting_name )
 
-=item *
+Given the IP address of a device, returns true if the configuration setting
+C<$setting_name> matches that device, else returns false. If the setting is
+undefined or empty, then C<check_acl_only> also returns true.
 
-IP address range, using a hyphen on the last octet/hextet, and no whitespace
+See L<App::Netdisco::Manual::Configuration> for details of what
+C<$setting_name> can contain.
 
-=item *
+=cut
 
-Regular expression in YAML format (no enforced anchors) which will match the
-device DNS name (using a fresh DNS lookup, so works on new discovery), e.g.:
+sub check_acl_only {
+  my ($thing, $setting_name) = @_;
+  return 0 unless $thing and $setting_name;
+  # logic to make an empty config be equivalent to 'any' (i.e. a match)
+  my $config = setting($setting_name);
+  return 1 if not $config # undef or empty string
+              or ((ref [] eq ref $config) and not scalar @$config);
+  return check_acl($thing, $config);
+}
 
- - !!perl/regexp ^sep0.*$
+=head2 check_acl( $ip | $device, $configitem | \@config )
 
-=item *
+Given a Device or IP address, compares it to the items in C<< \@config >> then
+returns true or false. You can control whether any item must match or all must
+match, and items can be negated to invert the match logic.
 
-"C<property:regexp>" - matched against a device property, such as C<model> or
-C<vendor> (with enforced begin/end regexp anchors).
-
-=item *
-
-"C<group:grpname>" to refer to a named access control list that is in the
-C<host_groups> configuration (C<grpname> is the group name).
-
-=item *
-
-"C<op:and>" to require all items to match (or not match) the provided IP or
-device. Note that this includes IP address version mismatches (v4-v6).
-
-=back
-
-To negate any entry, prefix it with "C<!>", for example "C<!192.0.2.0/29>". In
-that case, the item must I<not> match the device. This does not apply to
-regular expressions (which you can achieve with nonmatching lookahead).
-
-To match any device, use "C<any>". To match no devices we suggest using
-"C<broadcast>" in the list.
+There are several options for what C<< \@config >> can contain. See
+L<App::Netdisco::Manual::Configuration> for the details.
 
 =cut
 

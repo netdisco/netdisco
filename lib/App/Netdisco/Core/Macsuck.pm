@@ -3,8 +3,9 @@ package App::Netdisco::Core::Macsuck;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::PortMAC 'get_port_macs';
-use App::Netdisco::Util::Device qw/check_device_no match_devicetype/;
+use App::Netdisco::Util::Device 'match_devicetype';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Time::HiRes 'gettimeofday';
@@ -367,7 +368,7 @@ sub _walk_fwtable {
       # do not expose MAC address tables via SNMP. relies on prefetched
       # neighbors otherwise it would kill the DB with device lookups.
       my $neigh_cannot_macsuck = eval { # can fail
-          check_device_no($device_port->neighbor, 'macsuck_unsupported') ||
+          check_acl_no($device_port->neighbor, 'macsuck_unsupported') ||
           match_devicetype($device_port->remote_type, 'macsuck_unsupported_type') };
 
       if ($device_port->is_uplink) {
