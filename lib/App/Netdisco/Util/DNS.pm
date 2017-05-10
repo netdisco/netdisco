@@ -8,6 +8,8 @@ use Net::DNS;
 use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
 
+use App::Netdisco::Util::Permission 'check_acl';
+
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
@@ -118,7 +120,8 @@ addresses which resolved.
 =cut
 
 sub hostnames_resolve_async {
-  my $ips = shift;
+  my $ips  = shift;
+  my $skip = setting('dns')->{'no'};
 
   # Set up the condvar
   my $done = AE::cv;
@@ -126,7 +129,7 @@ sub hostnames_resolve_async {
 
   IP: foreach my $hash_ref (@$ips) {
     my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
-    next IP if no_resolve($ip);
+    next IP if check_acl($ip, $skip);
 
     # check /etc/hosts file and short-circuit if found
     foreach my $name (reverse sort keys %HOSTS) {
@@ -153,31 +156,4 @@ sub hostnames_resolve_async {
   return $ips;
 }
 
-=head2 no_resolve( $ip )
-
-Given an IP address, returns true if excluded from DNS resolution by the
-"C<< dns -> no >>" configuration directive, otherwise returns false.
-
-=cut
-
-sub no_resolve {
-    my $ip = shift;
-
-    my $config = setting('dns')->{no} || [];
-    return 0 if not scalar @$config;
-
-    my $addr = NetAddr::IP::Lite->new($ip)
-      or return 1;
-
-    foreach my $item (@$config) {
-        my $c_ip = NetAddr::IP::Lite->new($item)
-            or next;
-        next unless $c_ip->bits == $addr->bits;
-
-        return 1 if ($c_ip->contains($addr));
-    }
-    return 0;
-}
-
 1;
-

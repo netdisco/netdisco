@@ -86,13 +86,14 @@ sub check_acl {
 
   $config  = [$config] if ref [] ne ref $config;
   my $addr = NetAddr::IP::Lite->new($real_ip);
-  my $name = hostname_from_ip($addr->addr) || '!!NO_HOSTNAME!!';
   my $all  = (scalar grep {m/^op:and$/} @$config);
+  my $name = undef; # only look up once, and only if qr// is used
 
   INLIST: foreach my $item (@$config) {
       next INLIST if $item eq 'op:and';
 
       if (ref qr// eq ref $item) {
+          $name = ($name || hostname_from_ip($addr->addr) || '!!none!!');
           if ($name =~ $item) {
             return 1 if not $all;
           }
