@@ -116,6 +116,7 @@ login_logo: ""
 # mibhome is discovered from environment
 # mibdirs defaults to contents of mibhome
 host_groups: {}
+device_identity: {}
 community: ['public']
 community_rw: ['private']
 snmp_auth: []

@@ -50,15 +50,31 @@ the IP and hostname in the device object for the canonical IP.
 sub set_canonical_ip {
   my ($device, $snmp) = @_;
 
-  my $old_ip  = $device->ip;
-  my $new_ip  = $old_ip;
-  my $revname = ipv4_from_hostname($snmp->name);
+  my $old_ip = $device->ip;
+  my $new_ip = $old_ip;
+  my $revofname = ipv4_from_hostname($snmp->name);
 
-  if (setting('reverse_sysname') and $revname) {
-      $new_ip = $revname;
+  if (setting('reverse_sysname') and $revofname) {
+      $new_ip = $revofname;
   }
 
-  if (setting('device_identity')) {
+  if (ref {} eq ref setting('device_identity')) {
+      my $idmap  = setting('device_identity') || {};
+      my $devips = $device->device_ips->order_by('alias');
+
+      ALIAS: while (my $alias = $devips->next) {
+          foreach my $this (keys %$idmap) {
+              $anded_this = [(ref $this ? @$this : $this), 'op:and'];
+
+              if (check_acl($device, $anded_this)
+                    and check_acl($alias, $idmap->{$this})
+                    and $alias->alias ne $old_ip) {
+
+                  $new_ip = $alias->alias;
+                  last ALIAS;
+              }
+          }
+      }
   }
 
   return if $new_ip eq $old_ip;
