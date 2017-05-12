@@ -39,7 +39,7 @@ C<$setting_name> can contain.
 
 sub check_acl_no {
   my ($thing, $setting_name) = @_;
-  return 0 unless $thing and $setting_name;
+  return 1 unless $thing and $setting_name;
   return check_acl($thing, setting($setting_name));
 }
 
