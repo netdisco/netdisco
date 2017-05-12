@@ -26,10 +26,10 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl_no( $ip | $device, $setting_name )
+=head2 check_acl_no( $ip | $instance, $setting_name )
 
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting is
+Given an IP address or object instance, returns true if the configuration
+setting C<$setting_name> matches, else returns false. If the setting is
 undefined or empty, then C<check_acl_no> also returns false.
 
 See L<App::Netdisco::Manual::Configuration> for details of what
@@ -43,10 +43,10 @@ sub check_acl_no {
   return check_acl($thing, setting($setting_name));
 }
 
-=head2 check_acl_only( $ip | $device, $setting_name )
+=head2 check_acl_only( $ip | $instance, $setting_name )
 
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting is
+Given an IP address or object instance, returns true if the configuration
+setting C<$setting_name> matches, else returns false. If the setting is
 undefined or empty, then C<check_acl_only> also returns true.
 
 See L<App::Netdisco::Manual::Configuration> for details of what
@@ -64,11 +64,14 @@ sub check_acl_only {
   return check_acl($thing, $config);
 }
 
-=head2 check_acl( $ip | $device, $configitem | \@config )
+=head2 check_acl( $ip | $instance, $configitem | \@config )
 
-Given a Device or IP address, compares it to the items in C<< \@config >> then
-returns true or false. You can control whether any item must match or all must
-match, and items can be negated to invert the match logic.
+Given an IP address or object instance, compares it to the items in C<<
+\@config >> then returns true or false. You can control whether any item must
+match or all must match, and items can be negated to invert the match logic.
+
+Accepts instances of classes representing Netdisco Devices, Netdisco Device
+IPs, and L<NetAddr::IP> family objects.
 
 There are several options for what C<< \@config >> can contain. See
 L<App::Netdisco::Manual::Configuration> for the details.
@@ -79,13 +82,16 @@ sub check_acl {
   my ($thing, $config) = @_;
   return 0 unless defined $thing and defined $config;
 
-  my $real_ip = (
-    (blessed $thing and $thing->can('ip')) ? $thing->ip : (
-      (blessed $thing and $thing->can('addr')) ? $thing->addr : $thing ));
+  my $real_ip = $thing;
+  if (blessed $thing) {
+    $real_ip = ($thing->can('alias') ? $thing->alias : (
+      $thing->can('ip') ? $thing->ip : (
+        $thing->can('addr') ? $thing->addr : $thing )));
+  }
   return 0 if blessed $real_ip; # class we do not understand
 
   $config  = [$config] if ref [] ne ref $config;
-  my $addr = NetAddr::IP::Lite->new($real_ip);
+  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
   my $all  = (scalar grep {m/^op:and$/} @$config);
   my $name = undef; # only look up once, and only if qr// is used
 
@@ -122,11 +128,11 @@ sub check_acl {
           my $prop  = $1;
           my $match = $2;
 
-          # if not in storage, we can't do much with device properties
-          next INLIST unless blessed $thing and $thing->in_storage;
+          # if not an object, we can't do much with properties
+          next INLIST unless blessed $thing;
 
           # lazy version of vendor: and model:
-          if ($neg xor ($thing->can($prop) and defined $thing->$prop
+          if ($neg xor ($thing->can($prop) and defined eval { $thing->$prop }
               and $thing->$prop =~ m/^$match$/)) {
             return 1 if not $all;
           }
