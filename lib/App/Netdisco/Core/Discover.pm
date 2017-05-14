@@ -58,18 +58,20 @@ sub set_canonical_ip {
       $new_ip = $revofname;
   }
 
-  if (ref {} eq ref setting('device_identity')) {
-      my $idmap  = setting('device_identity') || {};
+  if (ref {} eq ref setting('device_identity')
+        and scalar keys %{ setting('device_identity') }) {
+      my $idmap  = setting('device_identity');
       my $devips = $device->device_ips->order_by('alias');
 
       ALIAS: while (my $alias = $devips->next) {
+          next if $alias->alias eq $old_ip;
+
           foreach my $this (keys %$idmap) {
               $anded_this = [(ref $this ? @$this : $this), 'op:and'];
 
+              # lhs of device_identity matches device, rhs matches device_ip
               if (check_acl($device, $anded_this)
-                    and check_acl($alias, $idmap->{$this})
-                    and $alias->alias ne $old_ip) {
-
+                    and check_acl($alias, $idmap->{$this})) {
                   $new_ip = $alias->alias;
                   last ALIAS;
               }
