@@ -3,9 +3,16 @@ package App::Netdisco::Configuration;
 use App::Netdisco::Environment;
 use Dancer ':script';
 
+use Path::Class 'dir';
+
 BEGIN {
-  # stuff useful locations into @INC
-  unshift @INC, @{ (setting('include_paths') || []) };
+  if (setting('include_paths') and ref [] eq ref setting('include_paths')) {
+    # stuff useful locations into @INC
+    push @{setting('include_paths')},
+         dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'nd-site-local', 'lib')->stringify
+      if (setting('site_local_files'));
+    unshift @INC, @{setting('include_paths')};
+  }
 }
 
 # set up database schema config from simple config vars

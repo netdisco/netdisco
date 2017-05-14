@@ -143,6 +143,21 @@ be loaded before (and hence override) any templates built in to Netdisco.
 If you do want to copy and override a built in web template, then create the
 directories necessary (such as "ajax" or "sidebar") in this path.
 
+Note that templates may need to have a further "C<views>" subdirectory
+created.
+
+=head3 C<site_local_files>
+
+Value: Boolean. Default: false.
+
+A shortcut for using C<include_paths> and C<template_paths>. Setting this to
+true will push C<< $home/nd-site-local/{lib,share} >> into those settings,
+respectively. You can then put Perl code in C</lib> and templates in C</share>
+within the C<nd-site-local> directory (you have to create this yourself).
+
+Note that templates may need to have a further "C<views>" subdirectory
+created.
+
 =head3 C<external_databases>
 
 Value: List of Database Configuration Hashes. Default: None.

@@ -13,6 +13,7 @@ log: 'warning'
 logger_format: '[%P] %U %L %m'
 include_paths:  []
 template_paths: []
+site_local_files: false
 external_databases: []
 
 # ------------
