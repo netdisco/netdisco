@@ -8,6 +8,7 @@
   [ENHANCEMENTTS]
 
   * renamed netdisco-daemon to netdisco-backend (and *-fg too)
+  * topology import script runs discover for each device (M. Bauer)
 
   [BUG FIXES]
 

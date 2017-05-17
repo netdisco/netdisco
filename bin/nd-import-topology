@@ -37,7 +37,9 @@ use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'get_device';
+
 use NetAddr::IP::Lite ':lower';
 use Try::Tiny;
 
@@ -63,7 +65,8 @@ The file syntax must be like so:
    link:left-port,right-device,right-port
 
 The devices can be either host names or IPs. Data will be imported even if the
-devices are currently unknown to Netdisco.
+devices are currently unknown to Netdisco. All imported devices will have a
+C<discover> job queued for them.
 
 =cut
 
@@ -115,6 +118,11 @@ while (my $line = <DEVS>) {
 
         $dev = get_device($ip->addr)->ip;
         print " Set device: $dev\n";
+
+        jq_insert({
+          action => 'discover',
+          device => $dev,
+        });
     }
 }
 
