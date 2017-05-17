@@ -1,9 +1,12 @@
-2.036000 - 
+2.035999_001 - 2017-05-17
 
   [NEW FEATURES]
 
-  * template_paths config to allow easier override of web templates
   * new ACL features including AND and negation
+  * named ACLs which can be used in other ACLs or *_only/*_no settings
+  * template_paths setting to allow very easy override of code and templates
+  * site_local_files setting for easy lib/template override (TODO: docs)
+  * support for device identity steering via device_identity (TODO: docs)
 
   [ENHANCEMENTTS]
 
@@ -14,6 +17,7 @@
 
   * Add SSL development library to Release Notes
   * #309 missing Device Port VLAN Mismatch CSV template
+  * fail safe on an empty *_no ACL
 
 2.035006 - 2017-04-29
 
