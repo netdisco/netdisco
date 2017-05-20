@@ -67,7 +67,7 @@ sub set_canonical_ip {
           next if $alias->alias eq $old_ip;
 
           foreach my $this (keys %$idmap) {
-              $anded_this = [(ref $this ? @$this : $this), 'op:and'];
+              my $anded_this = [(ref $this ? @$this : $this), 'op:and'];
 
               # lhs of device_identity matches device, rhs matches device_ip
               if (check_acl($device, $anded_this)
