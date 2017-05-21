@@ -116,14 +116,14 @@ sub finished_stamp  { return (shift)->get_column('finished_stamp')  }
 
 =head1 RELATIONSHIPS
 
-=head2 ignored
+=head2 skipped
 
-Retuns the set of C<device_ignore> entries which may apply to this job. They
+Retuns the set of C<device_skip> entries which may apply to this job. They
 match the device IP and job action, and may refer to one or more backends.
 
 =cut
 
-__PACKAGE__->has_many( ignored => 'App::Netdisco::DB::Result::DeviceIgnore',
+__PACKAGE__->has_many( skipped => 'App::Netdisco::DB::Result::DeviceSkip',
    { 'foreign.device' => 'self.device', 'foreign.action' => 'self.action' },
 );
 

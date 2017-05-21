@@ -35,9 +35,9 @@ sub _getsome {
 
   my $rs = $jobs->search({
     status => 'queued',
-    device => { '-not_in' => $jobs->correlate('ignored')->search({
+    device => { '-not_in' => $jobs->correlate('skipped')->search({
       backend => $fqdn,
-      -or => [{ failures => { '>=', 10 } },{ '-bool' => 'ignore' }],
+      -or => [{ failures => { '>=', 10 } },{ '-bool' => 'skipover' }],
     }, { columns => 'device' })->as_query },
     %$where,
   }, { order_by => 'random()', rows => $num_slots });
