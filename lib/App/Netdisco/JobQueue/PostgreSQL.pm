@@ -30,11 +30,17 @@ sub _getsome {
   return () if ((!defined $num_slots) or ($num_slots < 1));
   return () if ((!defined $where) or (ref {} ne ref $where));
 
-  my $rs = schema('netdisco')->resultset('Admin')
-    ->search(
-      { status => 'queued', %$where },
-      { order_by => 'random()', rows => $num_slots },
-    );
+  my $fqdn = hostfqdn || 'localhost';
+  my $jobs = schema('netdisco')->resultset('Admin');
+
+  my $rs = $jobs->search({
+    status => 'queued',
+    device => { '-not_in' => $jobs->correlate('ignored')->search({
+      backend => $fqdn,
+      -or => [{ failures => { '>=', 10 } },{ '-bool' => 'ignore' }],
+    }, { columns => 'device' })->as_query },
+    %$where,
+  }, { order_by => 'random()', rows => $num_slots });
 
   my @returned = ();
   while (my $job = $rs->next) {
