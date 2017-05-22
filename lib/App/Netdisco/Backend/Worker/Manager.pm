@@ -8,7 +8,8 @@ use App::Netdisco::Util::Backend;
 use Role::Tiny;
 use namespace::clean;
 
-use App::Netdisco::JobQueue qw/jq_locked jq_getsome jq_getsomep jq_lock/;
+use App::Netdisco::JobQueue
+  qw/jq_locked jq_getsome jq_getsomep jq_lock jq_prime_skiplist/;
 
 sub worker_begin {
   my $self = shift;
@@ -18,6 +19,9 @@ sub worker_begin {
     if setting('workers')->{'no_manager'};
 
   debug "entering Manager ($wid) worker_begin()";
+
+  # rebuild device skip hints
+  jq_prime_skiplist;
 
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";

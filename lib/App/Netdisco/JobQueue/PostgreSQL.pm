@@ -3,7 +3,11 @@ package App::Netdisco::JobQueue::PostgreSQL;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Util::Device
+  qw/is_discoverable is_macsuckable is_arpnipable/;
 use App::Netdisco::Backend::Job;
+
+
 use Net::Domain 'hostfqdn';
 use Module::Load ();
 use Try::Tiny;
@@ -15,6 +19,7 @@ our @EXPORT_OK = qw/
   jq_getsomep
   jq_locked
   jq_queued
+  jq_prime_skiplist
   jq_log
   jq_userlog
   jq_lock
@@ -87,6 +92,48 @@ sub jq_queued {
     action => $job_type,
     status => { -like => 'queued%' },
   })->get_column('device')->all;
+}
+
+sub jq_prime_skiplist {
+  my $fqdn = hostfqdn || 'localhost';
+  my $rs = schema('netdisco')->resultset('DeviceSkip');
+  my @d_actions = ('discover', @{ setting('job_prio')->{high} });
+
+  schema('netdisco')->txn_do(sub {
+    my @devices = schema('netdisco')->resultset('Device')->all;
+    $rs->search({ backend => $fqdn })->delete;
+
+    foreach my $action (@d_actions) {
+      $rs->populate([
+        map {{
+          backend => $fqdn,
+          device  => $_->ip,
+          action  => $action,
+          skipover => \'true',
+        }} grep { not is_discoverable($_) } @devices
+      ]);
+    }
+
+    foreach my $action (qw/macsuck nbtstat/) {
+      $rs->populate([
+        map {{
+          backend => $fqdn,
+          device  => $_->ip,
+          action  => $action,
+          skipover => \'true',
+        }} grep { not is_macsuckable($_) } @devices
+      ]);
+    }
+
+    $rs->populate([
+      map {{
+        backend => $fqdn,
+        device  => $_->ip,
+        action  => 'arpnip',
+        skipover => \'true',
+      }} grep { not is_arpnipable($_) } @devices
+    ]);
+  });
 }
 
 sub jq_log {
