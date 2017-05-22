@@ -1,7 +1,7 @@
 package App::Netdisco::Backend::Worker::Poller::Macsuck;
 
 use App::Netdisco::Core::Macsuck 'do_macsuck';
-use App::Netdisco::Util::Device 'is_macsuckable';
+use App::Netdisco::Util::Device 'is_macsuckable_now';
 
 use Role::Tiny;
 use namespace::clean;
@@ -9,7 +9,7 @@ use namespace::clean;
 with 'App::Netdisco::Backend::Worker::Poller::Common';
 
 sub macsuck_action { \&do_macsuck }
-sub macsuck_filter { \&is_macsuckable }
+sub macsuck_filter { \&is_macsuckable_now }
 sub macsuck_layer { 2 }
 
 sub macwalk { (shift)->_walk_body('macsuck', @_) }
