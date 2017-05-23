@@ -54,7 +54,6 @@ sub discover {
       return job_done("discover skipped: $host is pseudo-device");
   }
 
-  # failsafe, should not be needed with skip checks
   unless (is_discoverable_now($device)) {
       return job_defer("discover deferred: $host is not discoverable");
   }
