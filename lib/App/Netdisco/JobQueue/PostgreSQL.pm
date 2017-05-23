@@ -41,7 +41,9 @@ sub _getsome {
   my $jobs = schema('netdisco')->resultset('Admin');
   my $rs = $jobs->search({
     status => 'queued',
-    device => { '-not_in' => $jobs->skipped->columns('device')->as_query },
+    device => { '-not_in' =>
+      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'})
+           ->columns('device')->as_query },
     %$where,
   }, { order_by => 'random()', rows => $num_slots });
 

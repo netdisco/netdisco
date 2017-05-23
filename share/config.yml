@@ -71,6 +71,7 @@ web_plugins:
   - AdminTask::SlowDevices
   - AdminTask::UndiscoveredNeighbors
   - AdminTask::OrphanedDevices
+  - AdminTask::TimedOutDevices
   - AdminTask::UserLog
   - AdminTask::Users
   - Search::Device
@@ -205,6 +206,7 @@ workers:
   tasks: 'AUTO * 2'
   sleep_time: 1
   min_runtime: 0
+  max_deferrals: 10
   queue: PostgreSQL
 
 dns:
