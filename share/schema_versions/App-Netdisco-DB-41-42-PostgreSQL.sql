@@ -5,7 +5,6 @@ CREATE TABLE "device_skip" (
   "device" inet NOT NULL,
   "actionset" text[] DEFAULT '{}',
   "deferrals" integer DEFAULT 0,
-  "skipover" boolean DEFAULT false,
   PRIMARY KEY ("backend", "device")
 );
 
