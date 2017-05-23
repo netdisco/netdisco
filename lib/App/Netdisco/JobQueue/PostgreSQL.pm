@@ -151,7 +151,7 @@ sub jq_lock {
       backend => $fqdn, device => $job->device,
     },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
 
-    return false;
+    return false if scalar grep {$_ eq $job->action} @badactions;
   }
 
   # lock db row and update to show job has been picked
