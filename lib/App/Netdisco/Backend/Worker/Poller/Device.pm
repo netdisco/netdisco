@@ -55,7 +55,7 @@ sub discover {
   }
 
   # failsafe, should not be needed with skip checks
-  unless (is_discoverable_now($device->ip)) {
+  unless (is_discoverable_now($device)) {
       return job_defer("discover deferred: $host is not discoverable");
   }
 

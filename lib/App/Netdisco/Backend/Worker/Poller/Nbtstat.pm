@@ -30,7 +30,7 @@ sub nbtstat  {
   my $host = $device->ip;
 
   # failsafe, should not be needed with skip checks
-  unless (is_macsuckable($device->ip)) {
+  unless (is_macsuckable($device)) {
       return job_defer("nbtstat deferred: $host is not macsuckable");
   }
 
