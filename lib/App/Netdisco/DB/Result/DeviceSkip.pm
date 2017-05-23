@@ -49,7 +49,7 @@ sub add_to_actionset {
   my ($row, @badactions) = @_;
   return unless $row->in_storage;
   return unless scalar @badactions;
-  return $row->update({ actionset =>
+  return $row->update({ skipover => \'true', actionset =>
     [ sort (List::MoreUtils::uniq( @{ $row->actionset || [] }, @badactions )) ]
   });
 }
