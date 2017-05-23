@@ -13,7 +13,7 @@ __PACKAGE__->add_columns(
   { data_type => "inet", is_nullable => 0 },
   "action",
   { data_type => "text", is_nullable => 0 },
-  "failures",
+  "deferrals",
   { data_type => "integer", is_nullable => 1, default_value => '0' },
   "skipover",
   { data_type => "boolean", is_nullable => 1, default_value => \'false' },

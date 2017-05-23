@@ -42,7 +42,7 @@ sub _getsome {
     status => 'queued',
     device => { '-not_in' => $jobs->correlate('skipped')->search({
       backend => $fqdn,
-      -or => [{ failures => { '>=', 10 } },{ '-bool' => 'skipover' }],
+      -or => [{ deferrals => { '>=', 10 } },{ '-bool' => 'skipover' }],
     }, { columns => 'device' })->as_query },
     %$where,
   }, { order_by => 'random()', rows => $num_slots });
