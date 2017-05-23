@@ -58,6 +58,7 @@ sub _single_body {
   my $filter_method = $job_type .'_filter';
   my $job_filter = $self->$filter_method;
 
+  # failsafe, should not be needed with skip checks
   unless ($job_filter->($device->ip)) {
       return job_defer("$job_type deferred: $host is not ${job_type}able");
   }
