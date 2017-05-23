@@ -56,6 +56,28 @@ __PACKAGE__->set_primary_key("job");
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
+=head1 RELATIONSHIPS
+
+=head2 skipped
+
+Retuns the set of C<device_skip> entries which may apply to this job. They
+match the device IP and job action, and may refer to one or more backends.
+
+=cut
+
+__PACKAGE__->has_many( skipped => 'App::Netdisco::DB::Result::DeviceSkip',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.device"
+        => { -ident => "$args->{self_alias}.device" },
+      "$args->{foreign_alias}.actionset"
+        => { '@>' => \"string_to_array($args->{self_alias}.action,'')" },
+    };
+  },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
+
 =head1 METHODS
 
 =head2 summary
@@ -113,18 +135,5 @@ between the date stamp and time stamp. That is:
 =cut
 
 sub finished_stamp  { return (shift)->get_column('finished_stamp')  }
-
-=head1 RELATIONSHIPS
-
-=head2 skipped
-
-Retuns the set of C<device_skip> entries which may apply to this job. They
-match the device IP and job action, and may refer to one or more backends.
-
-=cut
-
-__PACKAGE__->has_many( skipped => 'App::Netdisco::DB::Result::DeviceSkip',
-   { 'foreign.device' => 'self.device', 'foreign.action' => 'self.action' },
-);
 
 1;
