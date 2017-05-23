@@ -30,14 +30,15 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+# this can take a few seconds - only do it once
+our $fqdn = hostfqdn || 'localhost';
+
 sub _getsome {
   my ($num_slots, $where) = @_;
   return () if ((!defined $num_slots) or ($num_slots < 1));
   return () if ((!defined $where) or (ref {} ne ref $where));
 
-  my $fqdn = hostfqdn || 'localhost';
   my $jobs = schema('netdisco')->resultset('Admin');
-
   my $rs = $jobs->search({
     status => 'queued',
     device => { '-not_in' => $jobs->skipped->columns('device')->as_query },
@@ -69,7 +70,6 @@ sub jq_getsomep {
 }
 
 sub jq_locked {
-  my $fqdn = hostfqdn || 'localhost';
   my @returned = ();
 
   my $rs = schema('netdisco')->resultset('Admin')
@@ -110,7 +110,6 @@ sub _get_denied_actions {
 }
 
 sub jq_prime_skiplist {
-  my $fqdn = hostfqdn || 'localhost';
   my @devices = schema('netdisco')->resultset('Device')->all;
   my $rs = schema('netdisco')->resultset('DeviceSkip');
   my %actionset = ();
@@ -134,7 +133,6 @@ sub jq_prime_skiplist {
 
 sub jq_lock {
   my $job = shift;
-  my $fqdn = hostfqdn || 'localhost';
   my $happy = false;
 
   # need to handle device discovered since backend daemon started
@@ -183,7 +181,6 @@ sub jq_lock {
 
 sub jq_defer {
   my $job = shift;
-  my $fqdn = hostfqdn || 'localhost';
   my $happy = false;
 
   # note this taints all actions on the device. for example if both
