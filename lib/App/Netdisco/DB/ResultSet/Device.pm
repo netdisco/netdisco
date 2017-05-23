@@ -596,9 +596,14 @@ sub delete {
       )->delete;
   }
 
-  $schema->resultset('Admin')->search({
-    device => { '-in' => $devices->as_query },
-  })->delete;
+  foreach my $set (qw/
+    Admin
+    DeviceSkip
+  /) {
+      $schema->resultset($set)->search(
+        { device => { '-in' => $devices->as_query } },
+      )->delete;
+  }
 
   $schema->resultset('Topology')->search({
     -or => [
