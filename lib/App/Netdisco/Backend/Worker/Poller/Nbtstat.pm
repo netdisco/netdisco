@@ -29,8 +29,7 @@ sub nbtstat  {
     or job_error("nbtstat failed: unable to interpret device parameter");
   my $host = $device->ip;
 
-  # failsafe, should not be needed with skip checks
-  unless (is_macsuckable($device->ip)) {
+  unless (is_macsuckable($device)) {
       return job_defer("nbtstat deferred: $host is not macsuckable");
   }
 

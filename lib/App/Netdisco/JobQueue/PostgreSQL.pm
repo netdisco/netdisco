@@ -145,8 +145,6 @@ sub jq_lock {
   # and the skiplist was primed. these should be checked against
   # the various acls and have device_skip entry added if needed,
   # and return false if it should have been skipped.
-  # this is also why it's probably unnecessary to check is_* within
-  # jobs, but we do that as well, just to be sure.
   my @badactions = _get_denied_actions($job->device);
   if (scalar @badactions) {
     schema('netdisco')->resultset('DeviceSkip')->find_or_create({
