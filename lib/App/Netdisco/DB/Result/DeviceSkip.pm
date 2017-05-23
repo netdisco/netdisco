@@ -50,7 +50,7 @@ sub add_to_actionset {
   return unless $row->in_storage;
   return unless scalar @badactions;
   return $row->update({ actionset =>
-    [ sort (List::MoreUtils::uniq( @{ $row->actionset }, @badactions )) ]
+    [ sort (List::MoreUtils::uniq( @{ $row->actionset || [] }, @badactions )) ]
   });
 }
 
