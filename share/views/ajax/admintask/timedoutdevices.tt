@@ -6,6 +6,7 @@
     <tr>
       <th class="nd_center-cell">Poller Host</th>
       <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Failed Connections</th>
     </tr>
   </thead>
   </tbody>
@@ -14,6 +15,7 @@
       <td class="nd_center-cell">[% row.backend | html_entity %]</td>
       <td class="nd_center-cell"><a class="nd_linkcell"
         href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
+      <td class="nd_center-cell">[% row.deferrals | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>
