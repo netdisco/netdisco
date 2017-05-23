@@ -60,7 +60,7 @@ sub discover {
 
   my $snmp = snmp_connect($device);
   if (!defined $snmp) {
-      return job_error("discover failed: could not SNMP connect to $host");
+      return job_defer("discover failed: could not SNMP connect to $host");
   }
 
   store_device($device, $snmp);
