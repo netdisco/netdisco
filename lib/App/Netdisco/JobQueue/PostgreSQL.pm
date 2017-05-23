@@ -189,11 +189,16 @@ sub jq_lock {
 
 sub jq_defer {
   my $job = shift;
+  my $fqdn = hostfqdn || 'localhost';
   my $happy = false;
 
   try {
-    # lock db row and update to show job is available
     schema('netdisco')->txn_do(sub {
+      schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+        backend => $fqdn, device => $job->device, action => $job->action,
+      },{ key => 'device_skip_pkey' })->increment_deferrals;
+
+      # lock db row and update to show job is available
       schema('netdisco')->resultset('Admin')
         ->find($job->job, {for => 'update'})
         ->update({ status => 'queued', started => undef });
