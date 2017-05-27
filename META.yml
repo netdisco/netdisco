@@ -18,7 +18,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: 2.035999_001
+    version: 2.035999_002
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -61,7 +61,7 @@ provides:
     file: lib/App/Netdisco/Core/Nbtstat.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '41'
+    version: '42'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -90,6 +90,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/DevicePower.pm
   App::Netdisco::DB::Result::DeviceRoute:
     file: lib/App/Netdisco/DB/Result/DeviceRoute.pm
+  App::Netdisco::DB::Result::DeviceSkip:
+    file: lib/App/Netdisco/DB/Result/DeviceSkip.pm
   App::Netdisco::DB::Result::DeviceVlan:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
   App::Netdisco::DB::Result::Log:
@@ -276,6 +278,8 @@ provides:
     file: lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
   App::Netdisco::Web::Plugin::AdminTask::SlowDevices:
     file: lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
+  App::Netdisco::Web::Plugin::AdminTask::TimedOutDevices:
+    file: lib/App/Netdisco/Web/Plugin/AdminTask/TimedOutDevices.pm
   App::Netdisco::Web::Plugin::AdminTask::Topology:
     file: lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
   App::Netdisco::Web::Plugin::AdminTask::UndiscoveredNeighbors:
@@ -442,5 +446,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: 2.035999_001
+version: 2.035999_002
 x_serialization_backend: 'CPAN::Meta::YAML version 0.011'

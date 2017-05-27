@@ -49,6 +49,7 @@ lib/App/Netdisco/DB/Result/DevicePortVlan.pm
 lib/App/Netdisco/DB/Result/DevicePortWireless.pm
 lib/App/Netdisco/DB/Result/DevicePower.pm
 lib/App/Netdisco/DB/Result/DeviceRoute.pm
+lib/App/Netdisco/DB/Result/DeviceSkip.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
 lib/App/Netdisco/DB/Result/Log.pm
 lib/App/Netdisco/DB/Result/Node.pm
@@ -151,6 +152,7 @@ lib/App/Netdisco/Web/Plugin/AdminTask/OrphanedDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/TimedOutDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/UndiscoveredNeighbors.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/UserLog.pm
@@ -308,6 +310,7 @@ share/schema_versions/App-Netdisco-DB-38-39-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-39-40-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-40-41-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-41-42-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
@@ -321,6 +324,7 @@ share/views/ajax/admintask/orphaned_csv.tt
 share/views/ajax/admintask/performance.tt
 share/views/ajax/admintask/pseudodevice.tt
 share/views/ajax/admintask/slowdevices.tt
+share/views/ajax/admintask/timedoutdevices.tt
 share/views/ajax/admintask/topology.tt
 share/views/ajax/admintask/undiscoveredneighbors.tt
 share/views/ajax/admintask/undiscoveredneighbors_csv.tt
