@@ -7,8 +7,6 @@ App::Netdisco::Manual::Configuration - How to Configure Netdisco
 The configuration files for Netdisco come with all options set to sensible
 default values, and just a few that you must initially set yourself.
 
-=head2 YAML GUIDANCE
-
 There are two configuration files: C<config.yml> (which lives inside Netdisco)
 and C<deployment.yml> (which usually lives in C<${HOME}/environments>).
 
@@ -16,6 +14,8 @@ The C<config.yml> file includes defaults for every setting, and should be left
 alone.  Any time you want to set an option, use only the C<deployment.yml>
 file. The two are merged when Netdisco starts, with your settings in
 C<deployment.yml> overriding the defaults from C<config.yml>.
+
+=head2 YAML GUIDANCE
 
 The configuration file format for Netdisco is YAML. This is easy for humans to
 edit, but you should take care with whitespace and avoid TAB characters. YAML
@@ -67,11 +67,17 @@ single item or YAML list of items, which can contain:
 
 =item *
 
-Hostname, IP address, IP prefix (i.e. subnet)
+Hostname, IP address, IP prefix (i.e. subnet), such as:
+
+ - hostname.example.com
+ - 192.0.2.1
+ - '2001:db8::/32'
 
 =item *
 
-IP address range, using a hyphen on the last octet/hextet, and no whitespace
+IP address range, using a hyphen on the last octet/hextet, and no whitespace:
+
+ - 192.0.2.1-10
 
 =item *
 
@@ -85,6 +91,14 @@ device DNS name (using a fresh DNS lookup, so works on new discovery), e.g.:
 "C<property:regexp>" - matched against a device property, such as C<model> or
 C<vendor> (with enforced begin/end regexp anchors).
 
+ - vendor:cisco
+
+=item *
+
+"C<group:groupname>" to reference the "C<groupname>" group within the
+C<host_groups> setting. This is a way to either include ACLs in other ACLs, or
+re-use ACLs.
+
 =item *
 
 "C<op:and>" to require all items to match (or not match) the provided IP or
@@ -92,13 +106,18 @@ device. Note that this includes IP address version mismatches (v4-v6).
 
 =back
 
-To negate any item in an ACL, prefix it with "C<!>", for example
-"C<!192.0.2.0/29>". In that case, the item must I<not> match the device. This
-does not apply to regular expressions (which you can achieve with nonmatching
-lookahead).
+To negate any item in an ACL (except YAML regexp), prefix with "C<!>", for
+example "C<!192.0.2.0/29>". In that case the test will be that the ACL entry
+does I<not> match the device or IP being assessed. Note, however, that the
+first match in an ACL wins (because the default mode is "OR"), so take care
+over the order of items, or include "C<op:and>" in the ACL if appropriate.
 
-To match any device, use "C<any>". To match no devices we suggest using
-"C<broadcast>" in the list (or "C<!any>" may work).
+To match any device, use "C<any>". To match no devices use "C<!any>".
+
+Configuration settings in Netdisco that take an Access Control List (most of
+the "C<*_no>" and "C<*_only>" settings, and "C<only>" settings) can accept
+either a YAML list of the above items, or merely a single item. This is useful
+if you create a C<host_groups> entry and wish to reference that as the ACL.
 
 =head1 SUPPORTED SETTINGS
 
@@ -611,16 +630,15 @@ or to set SNMPv3 authentication, see C<snmp_auth>, below.
 
 Value: List of Settings Trees. Default: Empty List.
 
-This setting is used for SNMPv3 authentication configuration, and also
-provides an alternative fine-grained control for SNMPv1 and SNMPv2 community
-strings. You provide a list of authentication stanzas, and Netdisco will try
-each in turn, then cache the one which works for a device.
+This setting configures authenticaiton for all SNMP versions, and provides an
+alternative fine-grained control for SNMPv1 and SNMPv2 community strings. You
+provide a list of authentication "I<stanza>", and Netdisco will try each in
+turn, then cache the one which works for a device.
 
-Each stanza can be restricted for use only on specific IP prefixes (subnets),
-and also limited to read (get) and/or write (set) operations. By default, a
-stanza is enabled for all device IPs, for read access only. The "tag" of a
-stanza is simply a friendly name used by Netdisco to refer to the
-configuration.
+Each stanza can be restricted for use only on specific devices, and also
+limited to read (get) and/or write (set) operations. By default, a stanza is
+enabled for all device IPs, for read access only. The "tag" of a stanza is
+simply a friendly name used by Netdisco when referring to the configuration.
 
  snmp_auth:
    - community: public
@@ -651,8 +669,8 @@ configuration.
 
 For SNMPv1 and SNMPv2, only the C<community> key is required.  Unlike the
 global C<community>/C<community_rw> setting, this is not a list but a single
-item. To emulate their list behaviour, have multiple entries at the top
-C<snmp_auth> level, as in the example below.
+item. That is, to configure multiple community strings, have one stanza per
+community, as in the examples above and below.
 
 You can add C<read> and/or C<write> restrictions, and an IP restriction using
 C<only> (see L</"ACCESS CONTROL LISTS">. Giving the stanza a C<tag> name is
@@ -663,18 +681,26 @@ and/or C<write> restrictions, and an IP restriction using C<only>. Providing
 an C<auth> section enables the authentication security level. Providing a
 C<priv> section enables the message encryption security level.
 
-As per Net-SNMP, the default SNMPv3 authentication security method is MD5, and
-the default encryption protocol is DES, with AES or AES256 being common
-alternatives. Note that you cannot have C<priv> without C<auth>.
+The default SNMPv3 authentication security method is MD5, and the default
+encryption protocol is DES, with AES or AES256 being common alternatives. Note
+that you cannot have C<priv> without C<auth>.
 
 On some device platforms SNMPv3 contexts are used to macsuck each VLAN. For
-this you usually configure a common context prefix, with Netdisco's default
+this you usually configure a common context "prefix", with Netdisco's default
 being "C<vlan->" (i.e. C<vlan-1>, C<vlan-2>, etc). Add the C<context_prefix>
-key to a stanza to override this.
+key to a stanza to override this default.
 
-Note that multiple SNMP v2 community strings need to be in separate named
-stanza, as below. However for simple v2 configurations you can use the
-C<community> shorthand instead:
+Netdisco caches both the successful SNMPv2 read and write community strings,
+as well as the C<tag> names if available. This allows for faster operations
+once a connection has previously been made to a device.
+
+If you have SNMP connect failures, or notice that devices are not appearing in
+Netdisco, take a look at the "SNMP Connect Failures" Admin Report, and also
+the C<max_deferrals> setting, below.
+
+Finally, a reminder that multiple SNMPv2 community strings need to be in
+separate named stanza, as below. However for simple v2 configurations you can
+revert to the "C<community>" setting, instead:
 
  snmp_auth:
    - tag: 'default_v2_readonly1'
@@ -684,10 +710,6 @@ C<community> shorthand instead:
   
  # or...
  community: ['read1', 'read2']
-
-Netdisco caches both the successful SNMPv2 read and write community strings,
-as well as the C<tag> names if available. This allows for faster operations
-once a connection has previously been made to a device.
 
 =head3 C<get_community>
 
@@ -1183,6 +1205,7 @@ Value: Settings Tree. Default:
    tasks: 'AUTO * 2'
    sleep_time: 1
    min_runtime: 0
+   max_deferrals: 10
 
 Control the activity of the backend daemon with this configuration setting.
 
@@ -1199,6 +1222,10 @@ new jobs. This is a balance between responsiveness and database load.
 C<min_runtime> allows you to set a time that each worker will sleep before
 recycling and starting another job. Some users report this needs to be set
 to avoid a 'runaway worker' bug. It can take a fractional number of seconds.
+
+C<max_deferrals> is the number of times an SNMP connect failure can occur
+before the device is no longer polled. The setting and counters are local to
+each poller backend. To reset device counters, restart the backend daemon.
 
 =head3 C<schedule>
 
