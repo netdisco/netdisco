@@ -66,12 +66,10 @@ sub set_canonical_ip {
       ALIAS: while (my $alias = $devips->next) {
           next if $alias->alias eq $old_ip;
 
-          foreach my $this (keys %$idmap) {
-              my $anded_this = [(ref $this ? @$this : $this), 'op:and'];
-
+          foreach my $key (keys %$idmap) {
               # lhs of device_identity matches device, rhs matches device_ip
-              if (check_acl($device, $anded_this)
-                    and check_acl($alias, $idmap->{$this})) {
+              if (check_acl($device, $key)
+                    and check_acl($alias, $idmap->{$key})) {
                   $new_ip = $alias->alias;
                   last ALIAS;
               }
