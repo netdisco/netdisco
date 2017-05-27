@@ -95,7 +95,7 @@ C<vendor> (with enforced begin/end regexp anchors).
 
 =item *
 
-"C<group:groupname>" to reference the "C<groupname>" group within the
+"C<group:groupname>" to reference the "C<groupname>" group from the
 C<host_groups> setting. This is a way to either include ACLs in other ACLs, or
 re-use ACLs.
 
@@ -177,7 +177,7 @@ need to have a further "C<views>" subdirectory created within "C<share>".
 
 =head3 C<external_databases>
 
-Value: List of Database Configuration Hashes. Default: None.
+Value: List of Database Configuration dictionaries. Default: None.
 
 The Plugins and User Reports features of Netdisco can gather data from
 external databases. You need to install the Perl database driver for the
@@ -322,8 +322,9 @@ Proxy user password. Ignored if proxy user defined as anonymous.
 
 =head4 C<opts>
 
-Hash of options to add to the connect string. Normally only needed if server
-does not support LDAPv3, or to enable debugging as in the example above.
+Dictionary of options to add to the connect string. Normally only needed if
+server does not support LDAPv3, or to enable debugging as in the example
+above.
 
 =head4 C<tls_opts>
 
@@ -370,7 +371,7 @@ C<web_plugins> setting.
 
 =head3 C<reports>
 
-Value: List of Reports Hashes. Default: None.
+Value: List of Reports dictionaries. Default: None.
 
 Use this configuration to add reports to Netdisco without writing any Perl
 code or HTML templates. For example:
@@ -409,8 +410,8 @@ Title for the Report.
 
 =head4 C<columns>
 
-List of single-key Hashes which map database column (field) name to table
-heading.
+List of single-key dictionaries which map database column (field) name to
+table heading.
 
 =head4 C<query>
 
@@ -529,7 +530,7 @@ network.
 
 =head3 C<port_control_reasons>
 
-Value: Hash of Strings. Default:
+Value: Dictionary of Strings. Default:
 
  port_control_reasons:
    address:     'Address Allocation Abuse'
@@ -571,6 +572,37 @@ Set to the URL of an image file which will be displayed alongside the C<Log
 In> form.
 
 =head2 Netdisco Core
+
+=head3 C<host_groups>
+
+Value: Dictionary of Access Control Lists. Default: None.
+
+Several configuration settings in Netdisco make use of L</"ACCESS CONTROL
+LISTS"> to identify lists of devices or hosts. Examples are the C<*_no>
+settings such as C<discover_no>, the C<*_only> settings such as C<macsuck_no>,
+and some "C<only>" settings which appear in C<snmp_auth> and C<dns>
+configuration.
+
+The C<host_groups> setting allows for naming of groups which are then
+referenced in settings or even within other groups, to include the values.
+Each item in the dictionary has the name of the group for the key, and the ACL
+for its value. Note that ACLs may be single items, or lists. For example:
+
+ host_groups:
+   problem_switches: badhost.example.com
+   friendly_devices:
+     - 192.0.2.0/24
+     - 'group:problem_switches'
+ 
+ macsuck_no: 'group:problem_switches'
+ discover_only:
+   - 'group:friendly_devices'
+   - '2001:db8::/32'
+
+As you can see, a host group is referenced by prefixing its name with
+"C<group:>" and enclosing in quotes (because the colon character is part of
+YAML syntax too). Host groups may be used in any setting that mentions support
+for L</"ACCESS CONTROL LISTS">.
 
 =head3 C<mibhome>
 
