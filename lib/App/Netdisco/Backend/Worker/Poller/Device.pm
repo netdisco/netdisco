@@ -3,7 +3,7 @@ package App::Netdisco::Backend::Worker::Poller::Device;
 use Dancer qw/:moose :syntax :script/;
 
 use App::Netdisco::Util::SNMP 'snmp_connect';
-use App::Netdisco::Util::Device qw/get_device is_discoverable/;
+use App::Netdisco::Util::Device qw/get_device is_discoverable_now/;
 use App::Netdisco::Core::Discover ':all';
 use App::Netdisco::Backend::Util ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
@@ -54,13 +54,13 @@ sub discover {
       return job_done("discover skipped: $host is pseudo-device");
   }
 
-  unless (is_discoverable($device->ip)) {
+  unless (is_discoverable_now($device)) {
       return job_defer("discover deferred: $host is not discoverable");
   }
 
   my $snmp = snmp_connect($device);
   if (!defined $snmp) {
-      return job_error("discover failed: could not SNMP connect to $host");
+      return job_defer("discover failed: could not SNMP connect to $host");
   }
 
   store_device($device, $snmp);

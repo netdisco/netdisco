@@ -75,7 +75,7 @@ sub _set_port_generic {
   if ($device->vendor ne 'netdisco') {
       # snmp connect using rw community
       my $info = snmp_connect_rw($ip)
-        or return job_error("Failed to connect to device [$ip] to control port");
+        or return job_defer("Failed to connect to device [$ip] to control port");
 
       my $iid = get_iid($info, $port)
         or return job_error("Failed to get port ID for [$pn] from [$ip]");
@@ -128,7 +128,7 @@ sub power {
 
   # snmp connect using rw community
   my $info = snmp_connect_rw($ip)
-    or return job_error("Failed to connect to device [$ip] to control port");
+    or return job_defer("Failed to connect to device [$ip] to control power");
 
   my $powerid = get_powerid($info, $port)
     or return job_error("Failed to get power ID for [$pn] from [$ip]");

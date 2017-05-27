@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Core::Nbtstat qw/nbtstat_resolve_async store_nbt/;
 use App::Netdisco::Util::Node 'is_nbtstatable';
-use App::Netdisco::Util::Device qw/get_device is_discoverable/;
+use App::Netdisco::Util::Device qw/get_device is_macsuckable/;
 use App::Netdisco::Backend::Util ':all';
 
 use NetAddr::IP::Lite ':lower';
@@ -29,8 +29,8 @@ sub nbtstat  {
     or job_error("nbtstat failed: unable to interpret device parameter");
   my $host = $device->ip;
 
-  unless (is_discoverable($device->ip)) {
-      return job_defer("nbtstat deferred: $host is not discoverable");
+  unless (is_macsuckable($device)) {
+      return job_defer("nbtstat deferred: $host is not macsuckable");
   }
 
   # get list of nodes on device

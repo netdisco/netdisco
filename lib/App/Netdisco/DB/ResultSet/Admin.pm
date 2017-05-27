@@ -4,11 +4,33 @@ use base 'App::Netdisco::DB::ResultSet';
 use strict;
 use warnings;
 
+use Net::Domain 'hostfqdn';
+
 __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::ExplicitLocking
 /);
 
 =head1 ADDITIONAL METHODS
+
+=head2 skipped
+
+Retuns a correlated subquery for the set of C<device_skip> entries that apply
+to some jobs. They match the device IP, current backend, and job action.
+
+Pass the C<backend> FQDN (or the current host will be used as a default), and
+the C<max_deferrals> (or 10 will be used as the default).
+
+=cut
+
+sub skipped {
+  my ($rs, $backend, $max_deferrals) = @_;
+  $backend ||= (hostfqdn || 'localhost');
+  $max_deferrals ||= 10;
+
+  return $rs->correlate('device_skips')->search(undef, {
+    bind => [[deferrals => $max_deferrals], [backend => $backend]],
+  });
+}
 
 =head2 with_times
 

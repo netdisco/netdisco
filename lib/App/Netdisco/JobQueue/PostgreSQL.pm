@@ -3,7 +3,11 @@ package App::Netdisco::JobQueue::PostgreSQL;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Util::Device
+  qw/is_discoverable is_macsuckable is_arpnipable/;
 use App::Netdisco::Backend::Job;
+
+
 use Net::Domain 'hostfqdn';
 use Module::Load ();
 use Try::Tiny;
@@ -15,26 +19,35 @@ our @EXPORT_OK = qw/
   jq_getsomep
   jq_locked
   jq_queued
-  jq_log
-  jq_userlog
+  jq_prime_skiplist
   jq_lock
   jq_defer
   jq_complete
+  jq_log
+  jq_userlog
   jq_insert
   jq_delete
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
+
+# this can take a few seconds - only do it once
+our $fqdn = undef;
 
 sub _getsome {
   my ($num_slots, $where) = @_;
   return () if ((!defined $num_slots) or ($num_slots < 1));
   return () if ((!defined $where) or (ref {} ne ref $where));
 
-  my $rs = schema('netdisco')->resultset('Admin')
-    ->search(
-      { status => 'queued', %$where },
-      { order_by => 'random()', rows => $num_slots },
-    );
+  my $fqdn ||= (hostfqdn || 'localhost');
+  my $jobs = schema('netdisco')->resultset('Admin');
+
+  my $rs = $jobs->search({
+    status => 'queued',
+    device => { '-not_in' =>
+      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'})
+           ->columns('device')->as_query },
+    %$where,
+  }, { order_by => 'random()', rows => $num_slots });
 
   my @returned = ();
   while (my $job = $rs->next) {
@@ -61,7 +74,7 @@ sub jq_getsomep {
 }
 
 sub jq_locked {
-  my $fqdn = hostfqdn || 'localhost';
+  my $fqdn ||= (hostfqdn || 'localhost');
   my @returned = ();
 
   my $rs = schema('netdisco')->resultset('Admin')
@@ -83,25 +96,64 @@ sub jq_queued {
   })->get_column('device')->all;
 }
 
-sub jq_log {
-  return schema('netdisco')->resultset('Admin')->search({}, {
-    order_by => { -desc => [qw/entered device action/] },
-    rows => 50,
-  })->with_times->hri->all;
+# given a device, tests if any of the primary acls applies
+# returns a list of job actions to be denied/skipped on this host.
+sub _get_denied_actions {
+  my $device = shift;
+  my @badactions = ();
+
+  push @badactions, ('discover', @{ setting('job_prio')->{high} })
+    if not is_discoverable($device);
+
+  push @badactions, (qw/macsuck nbtstat/)
+    if not is_macsuckable($device);
+
+  push @badactions, 'arpnip'
+    if not is_arpnipable($device);
+
+  return @badactions;
 }
 
-sub jq_userlog {
-  my $user = shift;
-  return schema('netdisco')->resultset('Admin')->search({
-    username => $user,
-    finished => { '>' => \"(now() - interval '5 seconds')" },
-  })->with_times->all;
+sub jq_prime_skiplist {
+  my $fqdn ||= (hostfqdn || 'localhost');
+  my @devices = schema('netdisco')->resultset('Device')->all;
+  my $rs = schema('netdisco')->resultset('DeviceSkip');
+  my %actionset = ();
+
+  foreach my $d (@devices) {
+    my @badactions = _get_denied_actions($d);
+    $actionset{$d->ip} = \@badactions if scalar @badactions;
+  }
+
+  schema('netdisco')->txn_do(sub {
+    $rs->search({ backend => $fqdn })->delete;
+    $rs->populate([
+      map {{
+        backend => $fqdn,
+        device  => $_,
+        actionset => $actionset{$_},
+      }} keys %actionset
+    ]);
+  });
 }
 
 sub jq_lock {
   my $job = shift;
-  my $fqdn = hostfqdn || 'localhost';
+  my $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
+
+  # need to handle device discovered since backend daemon started
+  # and the skiplist was primed. these should be checked against
+  # the various acls and have device_skip entry added if needed,
+  # and return false if it should have been skipped.
+  my @badactions = _get_denied_actions($job->device);
+  if (scalar @badactions) {
+    schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+      backend => $fqdn, device => $job->device,
+    },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
+
+    return false if scalar grep {$_ eq $job->action} @badactions;
+  }
 
   # lock db row and update to show job has been picked
   try {
@@ -136,11 +188,23 @@ sub jq_lock {
 
 sub jq_defer {
   my $job = shift;
+  my $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
+  # note this taints all actions on the device. for example if both
+  # macsuck and arpnip are allowed, but macsuck fails 10 times, then
+  # arpnip (and every other action) will be prevented on the device.
+
+  # seeing as defer is only triggered by an SNMP connect failure, this
+  # behaviour seems reasonable, to me (or desirable, perhaps).
+
   try {
-    # lock db row and update to show job is available
     schema('netdisco')->txn_do(sub {
+      schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+        backend => $fqdn, device => $job->device,
+      },{ key => 'device_skip_pkey' })->increment_deferrals;
+
+      # lock db row and update to show job is available
       schema('netdisco')->resultset('Admin')
         ->find($job->job, {for => 'update'})
         ->update({ status => 'queued', started => undef });
@@ -176,6 +240,21 @@ sub jq_complete {
   };
 
   return $happy;
+}
+
+sub jq_log {
+  return schema('netdisco')->resultset('Admin')->search({}, {
+    order_by => { -desc => [qw/entered device action/] },
+    rows => 50,
+  })->with_times->hri->all;
+}
+
+sub jq_userlog {
+  my $user = shift;
+  return schema('netdisco')->resultset('Admin')->search({
+    username => $user,
+    finished => { '>' => \"(now() - interval '5 seconds')" },
+  })->with_times->all;
 }
 
 sub jq_insert {

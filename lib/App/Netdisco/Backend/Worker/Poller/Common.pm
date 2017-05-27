@@ -64,7 +64,7 @@ sub _single_body {
 
   my $snmp = snmp_connect($device);
   if (!defined $snmp) {
-      return job_error("$job_type failed: could not SNMP connect to $host");
+      return job_defer("$job_type failed: could not SNMP connect to $host");
   }
 
   unless ($snmp->has_layer( $job_layer )) {
