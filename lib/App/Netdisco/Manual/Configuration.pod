@@ -159,23 +159,21 @@ Value: List. Default: Empty List.
 Additional paths for L<Template::Toolkit> templates. Files in these paths will
 be loaded before (and hence override) any templates built in to Netdisco.
 
-If you do want to copy and override a built in web template, then create the
-directories necessary (such as "ajax" or "sidebar") in this path.
-
-Note that templates may need to have a further "C<views>" subdirectory
-created.
+If you want to copy and override a built in web template, then create the
+directories necessary (such as "ajax" or "sidebar") in this path.  Note that
+templates may need to have a further "C<views>" subdirectory created.
 
 =head3 C<site_local_files>
 
 Value: Boolean. Default: false.
 
 A shortcut for using C<include_paths> and C<template_paths>. Setting this to
-true will push C<< $home/nd-site-local/{lib,share} >> into those settings,
-respectively. You can then put Perl code in C</lib> and templates in C</share>
-within the C<nd-site-local> directory (you have to create this yourself).
+true will push C<< $ENV{NETDISCO_HOME}/nd-site-local/{lib,share} >> into those
+settings, respectively. You can then put Perl code in C</lib> and templates in
+C</share> within the C<nd-site-local> directory.
 
-Note that templates may need to have a further "C<views>" subdirectory
-created.
+Note that you still need to create the directories yourself, and templates may
+need to have a further "C<views>" subdirectory created within "C<share>".
 
 =head3 C<external_databases>
 

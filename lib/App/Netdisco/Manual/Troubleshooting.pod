@@ -79,6 +79,13 @@ See the tips at L<Vendors Guide|App::Netdisco::Manual::Vendors>, or else
 contact the L<community email
 list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
 
+=head1 Devices are not being discovered
+
+Besides reading the whole of this manual page for general tips, take a look at
+the "SNMP Connect Failures" report under the Admin menu. Any devices listed
+have had multiple SNMP connect failures, indicating a possible configuration
+error on the device or in Netdisco's configuration.
+
 =head1 After OS update or upgrade, Netdisco fails
 
 If you upgrade the operating system then your system libraries will change and

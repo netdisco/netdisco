@@ -118,8 +118,8 @@ the name of the registration helper sub:
 =head1 Reports
 
 Report components contain pre-canned searches which the user community have
-found to be useful. Before you go further, it might be the case that you can
-generate the report without any Perl or HTML: see the L<Reports
+found to be useful. Before you go further, it might be the case that Netdisco
+can generate the report for you without any Perl or HTML: see the L<Reports
 Configuration|App::Netdisco::Manual::Configuration/reports> for details.
 
 Otherwise, the typical implementation is very similar to one of the Search
@@ -267,9 +267,11 @@ To register the column call the following helper routine:
    default  => 'on',   # or undef
  });
 
-App::Netdisco searches for one Template::Toolkit file in the regular template
-include paths (see also C<register_template_path>, below). The template must
-be called "C<device_port_column.tt>" on disk and live in the directory:
+App::Netdisco searches for Template::Toolkit files in the regular template
+include paths: either its internal locations, or those configured with the
+C<site_local_files> setting or the C<register_template_path> helper (see
+below). The template must be called "C<device_port_column.tt>" on disk and
+live in the directory:
 
  plugin/myportcolumnplugin/device_port_column.tt
 
@@ -293,9 +295,11 @@ To register the column call the following helper routine:
    label => 'My Device Details Heading',
  });
 
-App::Netdisco searches for one Template::Toolkit file in the regular template
-include paths (see also C<register_template_path>, below). The template must
-be called "C<device_details.tt>" on disk and live in the directory:
+App::Netdisco searches for Template::Toolkit files in the regular template
+include paths: either its internal locations, or those configured with the
+C<site_local_files> setting or the C<register_template_path> helper (see
+below). The template must be called "C<device_port_column.tt>" on disk and
+live in the directory:
 
  plugin/mydevicedetailsplugin/device_details.tt
 
@@ -363,7 +367,15 @@ probably installed in your system's or user's Perl directory. It's not
 recommended that you mess about with those files.
 
 So in order to replace a template with your own version, or to reference a
-template file of your own in your plugin, you need a new path:
+template file of your own in your plugin, you need a new path.
+
+If you don't plan on redistributing the plugin via CPAN, then configuring the
+"C<site_local_files>" setting to be true will enable "C</nd-site-local/lib>"
+for Perl code and "C</nd-site-local/share>" for tmplates in your Netdisco home
+location. You will need to create these directories.
+
+Alternatively, shipping templates within a CPAN distribution, the following
+code would be appropriate:
 
  package App::Netdisco::Web::Plugin::Search::MyNewFeature
   
@@ -429,11 +441,14 @@ current page with some additional parameters, for example:
 A simple mechanism exists for loading additional Javascript and CSS documents.
 This is done in the C<< <head> >> section of the web page.
 
-Within a Template include path (see C<register_template_path>, above) create a
-directory called "C<plugin>" and within that another directory named after
-your plugin (e.g. "C<mynewfeature>"). The Javascript and/or CSS files must
-then be named "C<mynewfeature.js>" and "C<mynewfeature.css>" respectively.
-For example:
+Netdisco searches all template include paths, both those built into the
+application and those configured in your plugin(s) with "C<site_local_files>"
+or C<register_template_path>.
+
+Within the template location, create a directory called "C<plugin>" and within
+that another directory named after your plugin (e.g. "C<mynewfeature>"). The
+Javascript and/or CSS files must then be named "C<mynewfeature.js>" and
+"C<mynewfeature.css>" respectively. For example:
 
   plugin/mynewfeature/mynewfeature.js
   plugin/mynewfeature/mynewfeature.css
@@ -443,10 +458,6 @@ helper routines:
 
   register_javascript('mynewfeature');
   register_css('mynewfeature');
-
-Note that this searches all template include paths, both those built into the
-application and those configured in your plugin(s) with
-C<register_template_path>.
 
 =head1 Naming and File Location
 
@@ -467,16 +478,25 @@ abbreviated form "X::MyPluginName" which is then expanded to the full package.
 
 =head2 File Location
 
-If writing your own plugins, Netdisco supports a local include path which is
-usually C<~/site_plugins> (or C<${NETDISCO_HOME}/site_plugins>).
+If writing your own plugins that are not for redistribution or packaging on
+CPAN, Netdisco can enable local include paths for Perl, templates, and static
+content such as javascript and images.
 
-This means if your plugin is called
+Configuring the "C<site_local_files>" to be "true" enables:
+
+ # perl code
+ $ENV{NETDISCO_HOME}/nd-site-local/lib
+ 
+ # templates and static content
+ $ENV{NETDISCO_HOME}/nd-site-local/share
+
+Note that you still need to create the directories yourself, and templates may
+need to have a further "C<views>" subdirectory created within "C<share>".
+
+As an example, if your plugin is called
 "App::NetdiscoX::Web::Plugin::MyPluginName" then it could live at:
 
- ~/site_plugins/App/NetdiscoX/Web/Plugin/MyPluginName.pm
-
-This feature should make development of new plugins or maintenance of local
-plugins much more straighforward.
+ ~netdisco/nd-site-local/lib/App/NetdiscoX/Web/Plugin/MyPluginName.pm
 
 =head1 Plugin Configuration
 
