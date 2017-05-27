@@ -103,8 +103,6 @@ looking for the package including the file C<openssl/err.h>.
 
 =head1 2.034000
 
-=head2 General Notices
-
 This release changes the way the application tracks web sessions for logged-in
 users, from on-disk files, to encrypted browser cookies. As a result, on
 upgrade (after running C<netdisco-deploy> and restarting C<netdisco-web>), all
@@ -115,19 +113,13 @@ on disk are purged.
 
 =head1 2.032003
 
-=head2 General Notices
-
 The algorithm for selecting the canonical IP/name of a device has changed in
 this release. No longer is the OSPF Router ID taken into account. The default
 IP/name of a device will be either the IP specified for manual discovery, or
 the IP reported to a neighbor port during automatic discovery. For the latter
 you can often influence this through device configuration (LLDP advertise...).
 
-=cut
-
 =head1 2.032000
-
-=head2 General Notices
 
 The identification of IP Phone hansets and Wireless APs is now configurable,
 using the CDP/LLDP information from the device. See
@@ -140,16 +132,12 @@ L<documentation|App::Netdisco::Manual::Configuration> for:
 
 =head1 2.031006
 
-=head2 General Notices
-
 When displaying device ports, Netdisco will now avoid showing VLAN Membership
 if it looks like there are a large number of VLANs on many ports. This is an
 average of the VLANs per port, configurable in C<devport_vlan_limit>. The
 default is 150.
 
 =head1 2.031005
-
-=head2 General Notices
 
 The C<netdisco-do> command's C<delete> option now uses the C<-p> parameter to
 set node archive mode (previously it was a hack on C<-e>). For example:
@@ -176,8 +164,6 @@ installation, in a safe way) using the following command:
 
 =head1 2.031002
 
-=head2 General Notices
-
 Netdisco web and backend daemons will now rotate their log files
 ("C<~netdisco/logs/netdisco-{web,daemon}.log>"). This happens when they reach
 about 10MB in size and seven historical log files will be maintained in the
@@ -193,16 +179,12 @@ incomplete, pending a review of how to handle authorization to the feature.
 
 =head1 2.029014
 
-=head2 General Notices
-
 The node archiving behaviour of Netdisco 2 has until now been accidentally
 different to that in Netdisco 1. This has now been fixed. See the new
 "C<node_freshness>" configuration setting if you wish to revert or tune this
 behaviour.
 
 =head1 2.029010
-
-=head2 General Notices
 
 When upgrading you will encounter a current incompatibility between Netdisco
 and one of its components. To work around this, issue the following command:
@@ -211,16 +193,12 @@ and one of its components. To work around this, issue the following command:
 
 =head1 2.029008
 
-=head2 General Notices
-
 When upgrading you will encounter a current incompatibility between Netdisco
 and one of its components. To work around this, issue the following command:
 
  ~/bin/localenv cpanm --notest --force Dancer@1.3126
 
 =head1 2.029002
-
-=head2 General Notices
 
 The backend polling daemon has been rewritten and as a result your
 configuration can be simplified. Some keys have also been renamed. Our advice
@@ -286,8 +264,6 @@ configuration will continue to work, but we recommend you now rename this key
 in your configuration anyway.
 
 =head1 2.025001
-
-=head2 General Notices
 
 The Web and Backend daemons (C<netdisco-web> and C<netdisco-daemon>
 respectively) will now watch your C<deployment.yml> configuration file, and
@@ -364,14 +340,10 @@ L<Deployment|App::Netdisco::Manual::Deployment> documentation for details.
 
 =head1 2.020000
 
-=head2 General Notices
-
 If you were using the C<X::Observium> plugin, you'll now need to install
 the separate distribution L<App::NetdiscoX::Web::Plugin::Observium>.
 
 =head1 2.019000
-
-=head2 General Notices
 
 This release fixes a number of issues with the poller, and is a recommended
 upgrade.
@@ -386,13 +358,9 @@ experience.
 
 =head1 2.018000
 
-=head2 General Notices
-
 The previous mentioned bug in Macsuck is now fixed.
 
 =head1 2.017000
-
-=head2 General Notices
 
 There is a bug in Macsuck whereby in rare circumstances some invalid SQL is
 generated. The root cause is known but we want to take more time to get the
@@ -404,14 +372,10 @@ option is only used by Netdisco Developers.
 
 =head1 2.016000
 
-=head2 General Notices
-
 The dangerous action log messages are now saved to the database. In a future
 version there will be a way to display them in the web interface.
 
 =head1 2.015000
-
-=head2 Health Advice
 
 Some of the "dangerous action" confirmation dialogs offer to take a log
 message (e.g. Port Control, Device Delete). Currently the log messages are
@@ -419,21 +383,15 @@ B<not saved>. This feature will be added in the next release.
 
 =head1 2.014000
 
-=head2 General Notices
-
 The backend poller daemon is now considered stable. You can uncomment the
 C<housekeeping> section of the example configuration and thereby enable
 regular device (re-)discovery, arpnip and macsuck.
 
 =head1 2.013000
 
-=head2 General Notices
-
 You can now configure LDAP authentication for users.
 
 =head1 2.012000
-
-=head2 Security Notices
 
 The read-write SNMP community is now stored in the database, when used for the
 first time on a device. If you don't want the web frontend to be able to
@@ -455,13 +413,9 @@ frontend user cannot SELECT from the C<community> DB table.
 
 =head1 2.011000
 
-=head2 General Notices
-
 Users can be managed through the web interface (by admins only).
 
 =head1 2.010000
-
-=head2 General Notices
 
 You can now simplify database configuration to just the following, instead of
 the more verbose C<plugins/DBIC> setting which was there before:
