@@ -661,6 +661,9 @@ very specific matching on devices, use a host group of several properties
 together with the "C<op:and>" modifier to require that all items in the list
 match the device (as in the example above).
 
+Note also that whatever interface you select as canonical for the device must
+be reachable by SNMP. This is tested and the renumber aborted if not possible.
+
 =head3 C<mibhome>
 
 Value: Directory. Default: C<${HOME}/netdisco-mibs>.

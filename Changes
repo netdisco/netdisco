@@ -1,12 +1,12 @@
-2.035999_001 - 2017-05-17
+2.035999_002 - 2017-05-27
 
   [NEW FEATURES]
 
-  * new ACL features including AND and negation
-  * named ACLs which can be used in other ACLs or *_only/*_no settings
-  * template_paths setting to allow very easy override of code and templates
-  * site_local_files setting for easy lib/template override (TODO: docs)
-  * support for device identity steering via device_identity (TODO: docs)
+  * site_local_files setting for easy lib/template/static-file override
+  * support for device identity steering via device_identity
+  * new ACL features: AND and negation
+  * named host groups which can be used in other ACLs or *_only/*_no settings
+  * template_paths setting to allow very easy override of templates
 
   [ENHANCEMENTTS]
 
