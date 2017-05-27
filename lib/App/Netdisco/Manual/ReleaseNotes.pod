@@ -62,7 +62,7 @@ job for each new device it imports.
 
 A new setting C<site_local_files> is a shorthand for confguring paths in which
 to install local Perl, template, javascript, and images files for overriding
-or enhancing Netdisco. See L<App::Netdisco::Manual::Configuration> for
+or enhancing Netdisco.
 details.
 
 =item *
@@ -81,6 +81,12 @@ an ACL.
 
 The new setting C<device_identity> allows configuring rules to select the
 interface to use as a canonical (friendly) identity of a device in Netdisco.
+
+=item *
+
+Netdisco now tracks SNMP connect failures and after several attempts will no
+longer try to connect to devices (default: 10). See the C<max_deferrals>
+configuration setting, and the "SNMP Connect Failures" admin report.
 
 =item *
 
