@@ -18,16 +18,17 @@ Retuns a correlated subquery for the set of C<device_skip> entries that apply
 to some jobs. They match the device IP, current backend, and job action.
 
 Pass the C<backend> FQDN (or the current host will be used as a default), and
-the C<max_deferrals> (or 10 will be used as the default).
+the C<max_deferrals> (option disabled if 0/undef value is passed).
 
 =cut
 
 sub skipped {
   my ($rs, $backend, $max_deferrals) = @_;
   $backend ||= (hostfqdn || 'localhost');
-  $max_deferrals ||= 10;
+  $max_deferrals ||= 10_000_000; # not really 'disabled'
 
   return $rs->correlate('device_skips')->search(undef, {
+    # NOTE: bind param list order is significant
     bind => [[deferrals => $max_deferrals], [backend => $backend]],
   });
 }

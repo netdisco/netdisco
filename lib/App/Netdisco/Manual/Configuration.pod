@@ -1315,7 +1315,8 @@ to avoid a 'runaway worker' bug. It can take a fractional number of seconds.
 
 C<max_deferrals> is the number of times an SNMP connect failure can occur
 before the device is no longer polled. The setting and counters are local to
-each poller backend. To reset device counters, restart the backend daemon.
+each poller backend. To reset device counters, restart the backend daemon. To
+disable this feature configure the setting with a value of zero.
 
 =head3 C<schedule>
 
