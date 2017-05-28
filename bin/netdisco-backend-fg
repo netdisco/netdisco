@@ -37,7 +37,7 @@ use App::Netdisco::Backend::Worker::Interactive::PortActions ();
 use App::Netdisco::Backend::Worker::Manager ();
 use App::Netdisco::Backend::Worker::Poller::Arpnip ();
 use App::Netdisco::Backend::Worker::Poller::Common ();
-use App::Netdisco::Backend::Worker::Poller::Device ();
+use App::Netdisco::Backend::Worker::Poller::Discover ();
 use App::Netdisco::Backend::Worker::Poller::Expiry ();
 use App::Netdisco::Backend::Worker::Poller::Macsuck ();
 use App::Netdisco::Backend::Worker::Poller::Nbtstat ();

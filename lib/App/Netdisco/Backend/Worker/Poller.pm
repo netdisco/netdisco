@@ -7,7 +7,7 @@ use namespace::clean;
 with 'App::Netdisco::Backend::Worker::Common';
 
 # add dispatch methods for poller tasks
-with 'App::Netdisco::Backend::Worker::Poller::Device',
+with 'App::Netdisco::Backend::Worker::Poller::Discover',
      'App::Netdisco::Backend::Worker::Poller::Arpnip',
      'App::Netdisco::Backend::Worker::Poller::Macsuck',
      'App::Netdisco::Backend::Worker::Poller::Nbtstat',

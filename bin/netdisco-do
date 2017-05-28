@@ -104,7 +104,7 @@ unless ($action) {
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
 
-  with 'App::Netdisco::Backend::Worker::Poller::Device';
+  with 'App::Netdisco::Backend::Worker::Poller::Discover';
   with 'App::Netdisco::Backend::Worker::Poller::Arpnip';
   with 'App::Netdisco::Backend::Worker::Poller::Macsuck';
   with 'App::Netdisco::Backend::Worker::Poller::Nbtstat';
