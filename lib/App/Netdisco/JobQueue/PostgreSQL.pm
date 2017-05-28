@@ -38,7 +38,7 @@ sub _getsome {
   return () if ((!defined $num_slots) or ($num_slots < 1));
   return () if ((!defined $where) or (ref {} ne ref $where));
 
-  my $fqdn ||= (hostfqdn || 'localhost');
+  $fqdn ||= (hostfqdn || 'localhost');
   my $jobs = schema('netdisco')->resultset('Admin');
 
   my $rs = $jobs->search({
@@ -74,7 +74,7 @@ sub jq_getsomep {
 }
 
 sub jq_locked {
-  my $fqdn ||= (hostfqdn || 'localhost');
+  $fqdn ||= (hostfqdn || 'localhost');
   my @returned = ();
 
   my $rs = schema('netdisco')->resultset('Admin')
@@ -115,7 +115,7 @@ sub _get_denied_actions {
 }
 
 sub jq_prime_skiplist {
-  my $fqdn ||= (hostfqdn || 'localhost');
+  $fqdn ||= (hostfqdn || 'localhost');
   my @devices = schema('netdisco')->resultset('Device')->all;
   my $rs = schema('netdisco')->resultset('DeviceSkip');
   my %actionset = ();
@@ -139,7 +139,7 @@ sub jq_prime_skiplist {
 
 sub jq_lock {
   my $job = shift;
-  my $fqdn ||= (hostfqdn || 'localhost');
+  $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
   # need to handle device discovered since backend daemon started
@@ -188,7 +188,7 @@ sub jq_lock {
 
 sub jq_defer {
   my $job = shift;
-  my $fqdn ||= (hostfqdn || 'localhost');
+  $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
   # note this taints all actions on the device. for example if both
