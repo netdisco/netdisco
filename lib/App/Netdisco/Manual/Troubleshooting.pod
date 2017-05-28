@@ -86,6 +86,13 @@ the "SNMP Connect Failures" report under the Admin menu. Any devices listed
 have had multiple SNMP connect failures, indicating a possible configuration
 error on the device or in Netdisco's configuration.
 
+=head1 Devices have the wrong names
+
+Netdisco uses neighbor protocols to discover devices and will use as the
+default identity for a device the interface IP advertised over those neighbor
+protocols. You can use the C<device_identity> configuration setting to steer
+Netdisco towards using a different interface for the canonical device name.
+
 =head1 After OS update or upgrade, Netdisco fails
 
 If you upgrade the operating system then your system libraries will change and

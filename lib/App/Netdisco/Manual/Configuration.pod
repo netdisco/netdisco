@@ -38,7 +38,7 @@ e.g.:
  community: ['public', 'another']
  
  discover_no:
-   - '192.0.2.0/24'
+   - 192.0.2.0/24
    - '2001:db8::/32'
 
 =item *
@@ -88,11 +88,11 @@ device DNS name (using a fresh DNS lookup, so works on new discovery), e.g.:
 
 =item *
 
-"C<property:regexp>" - matched against a device property, such as C<model> or
+"C<property:regexp>" to match against a device property, such as C<model> or
 C<vendor> (with enforced begin/end regexp anchors). When matching a device's
-interface (see C<device_identity>), "C<port:regexp>" is also an option.
+interface, "C<port:regexp>" is also an option (see C<device_identity>).
 
- - vendor:cisco
+ - 'vendor:cisco'
 
 =item *
 
@@ -111,7 +111,7 @@ To negate any item in an ACL (except YAML regexp), prefix with "C<!>", for
 example "C<!192.0.2.0/29>". In that case the test will be that the ACL entry
 does I<not> match the device or IP being assessed. Note, however, that the
 first match in an ACL wins (because the default mode is "OR"), so take care
-over the order of items, or include "C<op:and>" in the ACL if appropriate.
+with the order of items or include "C<op:and>" in the ACL if appropriate.
 
 To match any device, use "C<any>". To match no devices use "C<!any>".
 
@@ -607,17 +607,17 @@ for L</"ACCESS CONTROL LISTS">.
 
 =head3 C<device_identity>
 
-Value: Dictionary of Access Control Lists. Default: None.
+Value: List of Access Control List mappings. Default: None.
 
 This setting allows you to control the canonical name or identity of devices
 in Netdisco. For example if Netdisco discovers devices and uses the "wrong"
 interface to identfy them (thereby confusing users) you can correct that here.
 
-The C<device_identity> setting is a dictionary where the key should match a
-device as Netdisco knows it, and the value should match one of the device's
-interfaces to use as its new canonical identity. Both keys and values are
-Access Control Lists as described in L</"ACCESS CONTROL LISTS"> (but with
-additional features, see below).
+The C<device_identity> setting is a list of dictionaries. For each dictionary,
+the key is an Access Control List matching a device and the value is another
+Access Control List matching one of the device's interfaces to use as the
+device canonical identity. The format of Access Control Lists is described in
+L</"ACCESS CONTROL LISTS">.
 
 In general, because the key of a dictionary must be a simple text string, you
 can use hostname, IP prefix, device properties, and group references to match
@@ -631,25 +631,25 @@ placed in a C<host_groups> entry and referenced by name. For example:
      - 'model:.*(?i:DCS7508).*'
  
  device_identity:
-   'group:backbone_devices':
-     - !!perl/regexp ^.*\.backbone\.example\.com$
-     - '172.16.20.0/24'
-   'vendor:cisco': '192.0.2.0/24'
+   - 'group:backbone_devices':
+       - !!perl/regexp ^.*\.backbone\.example\.com$
+       - '172.16.20.0/24'
+   - 'vendor:cisco': '192.0.2.0/24'
 
 During "discover" jobs, Netdisco will find all entries in C<device_identity>
-where the I<key> matches the device. For those entries, the device's interface
-IPs are put in ascending order, and then tested against the C<device_identity>
-I<value> in turn. If any interface matches, then the device is renumbered to
-use that interface as its new identity and the process stops.
+where the I<key> matches the device in some way. For those entries, the
+device's interface IPs are put in ascending order, and then tested in turn
+against the entry's I<value>. If any interface matches, then the device is
+renumbered to use that interface as its new identity and the process stops.
 
 When using an Access Control List for the value (interface selection), as well
 as the options described in L</"ACCESS CONTROL LISTS"> you can use
 "C<port:regexp>" to match an interface's port name. For example to renumber
-all Arista devices to the IP and host name of their Vlan1 interface (if they
+all Arista devices to the IP and host name of their Mgmt1 interface (if they
 have one), you could use:
 
  device_identity:
-   'vendor:arista': 'port:(?i)vlan1'
+   - 'vendor:arista': 'port:(?i)mgmt1'
 
 Once a device is renumbered, its new identity is "sticky". That is, you could
 remove the C<device_identity> configuration and the next "discover" job will
