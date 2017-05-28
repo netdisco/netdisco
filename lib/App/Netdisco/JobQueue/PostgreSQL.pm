@@ -19,7 +19,7 @@ our @EXPORT_OK = qw/
   jq_getsomep
   jq_locked
   jq_queued
-  jq_prime_skiplist
+  jq_warm_thrusters
   jq_lock
   jq_defer
   jq_complete
@@ -114,7 +114,7 @@ sub _get_denied_actions {
   return @badactions;
 }
 
-sub jq_prime_skiplist {
+sub jq_warm_thrusters {
   $fqdn ||= (hostfqdn || 'localhost');
   my @devices = schema('netdisco')->resultset('Device')->all;
   my $rs = schema('netdisco')->resultset('DeviceSkip');

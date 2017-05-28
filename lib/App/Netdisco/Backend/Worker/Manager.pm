@@ -9,7 +9,7 @@ use Role::Tiny;
 use namespace::clean;
 
 use App::Netdisco::JobQueue
-  qw/jq_locked jq_getsome jq_getsomep jq_lock jq_prime_skiplist/;
+  qw/jq_locked jq_getsome jq_getsomep jq_lock jq_warm_thrusters/;
 
 sub worker_begin {
   my $self = shift;
@@ -20,8 +20,8 @@ sub worker_begin {
 
   debug "entering Manager ($wid) worker_begin()";
 
-  # rebuild device skip hints
-  jq_prime_skiplist;
+  # job queue initialisation
+  jq_warm_thrusters;
 
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";
