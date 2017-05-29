@@ -66,6 +66,12 @@ if (exists setting('workers')->{interactives}
 setting('dns')->{hosts_file} ||= '/etc/hosts';
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
 
+# support unordered dictionary as if it were a single item list
+if (ref {} eq ref setting('device_identity')) {
+  config->{'device_identity'} = [ setting('device_identity') ];
+}
+else { config->{'device_identity'} ||= [] }
+
 # legacy config item names
 
 config->{'devport_vlan_limit'} =

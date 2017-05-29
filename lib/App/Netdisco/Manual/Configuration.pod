@@ -607,16 +607,16 @@ for L</"ACCESS CONTROL LISTS">.
 
 =head3 C<device_identity>
 
-Value: List of Access Control List mappings. Default: None.
+Value: Dictionary of Access Control List mappings. Default: None.
 
 This setting allows you to control the canonical name or identity of devices
 in Netdisco. For example if Netdisco discovers devices and uses the "wrong"
 interface to identfy them (thereby confusing users) you can correct that here.
 
-The C<device_identity> setting is a list of dictionaries. For each dictionary,
-the key is an Access Control List matching a device and the value is another
-Access Control List matching one of the device's interfaces to use as the
-device canonical identity. The format of Access Control Lists is described in
+The C<device_identity> setting is a dictionary where each key is an Access
+Control List matching a device and the corresponding value is another Access
+Control List matching one of the device's interfaces to use as the device
+canonical identity. The format of Access Control Lists is described in
 L</"ACCESS CONTROL LISTS">.
 
 In general, because the key of a dictionary must be a simple text string, you
@@ -631,10 +631,10 @@ placed in a C<host_groups> entry and referenced by name. For example:
      - 'model:.*(?i:DCS7508).*'
  
  device_identity:
-   - 'group:backbone_devices':
-       - !!perl/regexp ^.*\.backbone\.example\.com$
-       - '172.16.20.0/24'
-   - 'vendor:cisco': '192.0.2.0/24'
+   'group:backbone_devices':
+     - !!perl/regexp ^.*\.backbone\.example\.com$
+     - '172.16.20.0/24'
+   'vendor:cisco': '192.0.2.0/24'
 
 During "discover" jobs, Netdisco will find all entries in C<device_identity>
 where the I<key> matches the device in some way. For those entries, the
@@ -649,7 +649,7 @@ all Arista devices to the IP and host name of their Mgmt1 interface (if they
 have one), you could use:
 
  device_identity:
-   - 'vendor:arista': 'port:(?i)mgmt1'
+   'vendor:arista': 'port:(?i)mgmt1'
 
 Once a device is renumbered, its new identity is "sticky". That is, you could
 remove the C<device_identity> configuration and the next "discover" job will
@@ -662,7 +662,18 @@ together with the "C<op:and>" modifier to require that all items in the list
 match the device (as in the example above).
 
 Note also that whatever interface you select as canonical for the device must
-be reachable by SNMP. This is tested and the renumber aborted if not possible.
+be reachable by SNMP. A failed connection to a matching interfaces does not
+abort the whole process - other interfaces are still teted.
+
+Netdisco will evaluate clauses in C<device_identity> in a random order. If you
+need to control this sequence, pass a list of single-key dictionaries instead
+of one multi-key dictionary. The above example could then become:
+
+ device_identity:
+   - 'group:backbone_devices':
+       - !!perl/regexp ^.*\.backbone\.example\.com$
+       - '172.16.20.0/24'
+   - 'vendor:cisco': '192.0.2.0/24'
 
 =head3 C<mibhome>
 
