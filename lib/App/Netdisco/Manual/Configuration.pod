@@ -662,11 +662,10 @@ together with the "C<op:and>" modifier to require that all items in the list
 match the device (as in the example above).
 
 Note also that whatever interface you select as canonical for the device must
-be reachable by SNMP. A failed connection to a matching interfaces does not
-abort the whole process - other interfaces are still teted.
+be reachable by SNMP. Interfaces where an SNMP connection fails are ignored.
 
-Netdisco will evaluate clauses in C<device_identity> in a random order. If you
-need to control this sequence, pass a list of single-key dictionaries instead
+Netdisco will not evaluate clauses in C<device_identity> in any order. If you
+need to control the sequence, pass a list of single-key dictionaries instead
 of one multi-key dictionary. The above example could then become:
 
  device_identity:
