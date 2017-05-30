@@ -16,7 +16,7 @@ register_admin_task({
 ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
     my @set = schema('netdisco')->resultset('DeviceSkip')->search({
       deferrals => { '>' => 0 }
-    },{ rows => 30, order_by =>
+    },{ rows => 50, order_by =>
       [{ -desc => 'deferrals' }, { -asc => [qw/device backend/] }]
     })->hri->all;
 
