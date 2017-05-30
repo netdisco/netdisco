@@ -207,7 +207,7 @@ Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
- ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
+ ln -sf ~/perl5/bin/{localenv,netdisco-*} ~/bin/
  
  # apply database schema updates
  ~/bin/netdisco-deploy
