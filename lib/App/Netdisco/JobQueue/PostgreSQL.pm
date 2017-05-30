@@ -203,9 +203,11 @@ sub jq_defer {
 
   try {
     schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-        backend => $fqdn, device => $job->device,
-      },{ key => 'device_skip_pkey' })->increment_deferrals;
+      if ($job->device) {
+        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+          backend => $fqdn, device => $job->device,
+        },{ key => 'device_skip_pkey' })->increment_deferrals;
+      }
 
       # lock db row and update to show job is available
       schema('netdisco')->resultset('Admin')
