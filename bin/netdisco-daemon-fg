@@ -3,17 +3,17 @@
 use strict;
 use warnings;
 
-use File::Spec;
-use Cwd 'realpath';
-
 use FindBin;
 FindBin::again();
 
-my $backend =
-  File::Spec->catfile(
-    (File::Spec->splitpath(
-      realpath(File::Spec->catfile( $FindBin::RealBin, $FindBin::RealScript ))
-    ))[1],
-  'netdisco-backend-fg');
+use File::Spec;
+use Path::Class;
+use Cwd 'realpath';
 
+my $me = realpath(File::Spec->catfile($FindBin::RealBin, $FindBin::RealScript));
+my $uid = (stat($me))[4] || 0;
+my $home = ($ENV{NETDISCO_HOME} || (getpwuid($uid))[7] || $ENV{HOME});
+
+my $backend =
+  File::Spec->catfile((File::Spec->splitpath( $me ))[1], 'netdisco-backend-fg');
 exec {$backend} 'netdisco-backend-fg', @ARGV;
