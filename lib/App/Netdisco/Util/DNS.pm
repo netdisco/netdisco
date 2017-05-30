@@ -111,8 +111,8 @@ This method uses a fully asynchronous and high-performance pure-perl stub
 resolver C<AnyEvent::DNS>.
 
 Given a reference to an array of hashes will resolve the C<IPv4> or C<IPv6>
-address in the C<ip> or C<alias> key of each hash into its hostname which
-will be inserted in the C<dns> key of the hash.
+address in the C<ip>, C<alias>, or C<device> key of each hash into its
+hostname which will be inserted in the C<dns> key of the hash.
 
 Returns the supplied reference to an array of hashes with dns values for
 addresses which resolved.
@@ -128,7 +128,7 @@ sub hostnames_resolve_async {
   $done->begin( sub { shift->send } );
 
   IP: foreach my $hash_ref (@$ips) {
-    my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
+    my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'} || $hash_ref->{'device'};
     next IP if App::Netdisco::Util::Permission::check_acl_no($ip, $skip);
 
     # check /etc/hosts file and short-circuit if found
