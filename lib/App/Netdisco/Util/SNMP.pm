@@ -2,7 +2,7 @@ package App::Netdisco::Util::SNMP;
 
 use Dancer qw/:syntax :script/;
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl/;
+use App::Netdisco::Util::Permission ':all';
 
 use SNMP::Info;
 use Try::Tiny;
@@ -300,7 +300,7 @@ sub _build_communities {
         if not $stanza->{tag}
            and !exists $stanza->{community};
 
-      if ($stanza->{$mode} and check_acl($device, $stanza->{only})) {
+      if ($stanza->{$mode} and check_acl_only($device, $stanza->{only})) {
           if ($device->in_storage and
             $stored_tag and $stored_tag eq $stanza->{tag}) {
               # last known-good by tag

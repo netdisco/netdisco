@@ -9,7 +9,7 @@ configure_requires:
   DBIx::Class: '0.082810'
   Module::Build: '0.42'
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4222, CPAN::Meta::Converter version 2.150010'
+generated_by: 'Module::Build version 0.4222, CPAN::Meta::Converter version 2.150005'
 license: bsd
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -18,7 +18,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: 2.035999_003
+    version: 2.035999_006
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -427,6 +427,7 @@ requires:
   Sereal: '0'
   Socket6: '0.23'
   Starman: '0.4008'
+  Sys::Proctitle: '0'
   Template: '2.24'
   Template::Plugin::CSV: '0.04'
   Template::Plugin::Number::Format: '1.02'
@@ -446,5 +447,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: 2.035999_003
-x_serialization_backend: 'CPAN::Meta::YAML version 0.011'
+version: 2.035999_006
+x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

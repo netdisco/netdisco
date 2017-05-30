@@ -239,7 +239,7 @@ Returns false if the host is not permitted to arpnip the target device.
 =cut
 
 sub is_arpnipable_now {
-  my $ip = shift;
+  my ($ip) = @_;
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
@@ -290,7 +290,7 @@ Returns false if the host is not permitted to macsuck the target device.
 =cut
 
 sub is_macsuckable_now {
-  my $ip = shift;
+  my ($ip) = @_;
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")

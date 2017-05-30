@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device
   qw/get_device match_devicetype is_discoverable/;
+use App::Netdisco::Util::Permission 'check_acl_only';
 use App::Netdisco::Util::DNS ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use NetAddr::IP::Lite ':lower';
@@ -76,8 +77,8 @@ sub set_canonical_ip {
 
         foreach my $key (sort keys %$map) {
           # lhs matches device, rhs matches device_ip
-          if (check_acl($device, $key)
-                and check_acl($alias, $map->{$key})) {
+          if (check_acl_only($device, $key)
+                and check_acl_only($alias, $map->{$key})) {
 
             if ($snmp->snmp_connect_ip( $alias->alias )) {
               $new_ip = $alias->alias;

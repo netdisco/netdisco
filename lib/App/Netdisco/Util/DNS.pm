@@ -8,7 +8,7 @@ use Net::DNS;
 use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
 
-use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::Permission;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -129,7 +129,7 @@ sub hostnames_resolve_async {
 
   IP: foreach my $hash_ref (@$ips) {
     my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
-    next IP if check_acl($ip, $skip);
+    next IP if App::Netdisco::Util::Permission::check_acl_no($ip, $skip);
 
     # check /etc/hosts file and short-circuit if found
     foreach my $name (reverse sort keys %HOSTS) {

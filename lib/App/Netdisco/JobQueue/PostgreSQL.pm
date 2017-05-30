@@ -101,6 +101,7 @@ sub jq_queued {
 sub _get_denied_actions {
   my $device = shift;
   my @badactions = ();
+  return @badactions unless $device;
 
   push @badactions, ('discover', @{ setting('job_prio')->{high} })
     if not is_discoverable($device);
@@ -142,17 +143,19 @@ sub jq_lock {
   $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
-  # need to handle device discovered since backend daemon started
-  # and the skiplist was primed. these should be checked against
-  # the various acls and have device_skip entry added if needed,
-  # and return false if it should have been skipped.
-  my @badactions = _get_denied_actions($job->device);
-  if (scalar @badactions) {
-    schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-      backend => $fqdn, device => $job->device,
-    },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
+  if ($job->device) {
+    # need to handle device discovered since backend daemon started
+    # and the skiplist was primed. these should be checked against
+    # the various acls and have device_skip entry added if needed,
+    # and return false if it should have been skipped.
+    my @badactions = _get_denied_actions($job->device);
+    if (scalar @badactions) {
+      schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+        backend => $fqdn, device => $job->device,
+      },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
 
-    return false if scalar grep {$_ eq $job->action} @badactions;
+      return false if scalar grep {$_ eq $job->action} @badactions;
+    }
   }
 
   # lock db row and update to show job has been picked
@@ -200,9 +203,11 @@ sub jq_defer {
 
   try {
     schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-        backend => $fqdn, device => $job->device,
-      },{ key => 'device_skip_pkey' })->increment_deferrals;
+      if ($job->device) {
+        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+          backend => $fqdn, device => $job->device,
+        },{ key => 'device_skip_pkey' })->increment_deferrals;
+      }
 
       # lock db row and update to show job is available
       schema('netdisco')->resultset('Admin')

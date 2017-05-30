@@ -73,7 +73,7 @@ foreach my $d (@devices) {
   my $old = $d->get_column( 'old' );
   my $devgroup = 'other';
   foreach my $g (keys %$groups) {
-    if (check_acl( $d, $groups->{$g} )) {
+    if (check_acl_only( $d, $groups->{$g} )) {
       $devgroup = $g;
       last;
     }
