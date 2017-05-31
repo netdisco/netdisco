@@ -56,11 +56,15 @@ my $log_file = file($log_dir, 'netdisco-backend.log');
 my $uid = (stat($netdisco->stringify))[4] || 0;
 my $gid = (stat($netdisco->stringify))[5] || 0;
 
+my $old_pid = file($home, 'netdisco-daemon.pid');
+my $new_pid = file($home, 'netdisco-backend.pid');
+if (-f $old_pid) { File::Copy::move( $old_pid, $new_pid ) }
+
 Daemon::Control->new({
   name => 'Netdisco Backend',
   program  => \&restarter,
   program_args => [@args],
-  pid_file => file($home, 'netdisco-backend.pid'),
+  pid_file => $new_pid,
   stderr_file => $log_file,
   stdout_file => $log_file,
   redirect_before_fork => 0,
