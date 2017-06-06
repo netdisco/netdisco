@@ -16,11 +16,11 @@ register_admin_task({
 ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
     my @set = schema('netdisco')->resultset('DeviceSkip')->search({
       deferrals => { '>' => 0 }
-    },{ rows => 50, order_by =>
+    },{ rows => (setting('dns')->{max_outstanding} || 50), order_by =>
       [{ -desc => 'deferrals' }, { -asc => [qw/device backend/] }]
     })->hri->all;
 
-    my $results = hostnames_resolve_async(\@set);
+    my $results = hostnames_resolve_async(\@set, [2,2,2]);
 
     content_type('text/html');
     template 'ajax/admintask/timedoutdevices.tt', {
