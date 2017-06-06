@@ -225,11 +225,23 @@ sub jq_defer {
 
 sub jq_complete {
   my $job = shift;
+  $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
   # lock db row and update to show job is done/error
+
+  # now that SNMP connect failures are deferrals and not errors, any complete
+  # status, whether success or failure, indicates an SNMP connect. reset the
+  # connection failures counter to forget oabout occasional connect glitches.
+
   try {
     schema('netdisco')->txn_do(sub {
+      if ($job->device) {
+        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+          backend => $fqdn, device => $job->device,
+        },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
+      }
+
       schema('netdisco')->resultset('Admin')
         ->find($job->job, {for => 'update'})->update({
           status => $job->status,
