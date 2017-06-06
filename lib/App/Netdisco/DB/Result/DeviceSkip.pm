@@ -14,9 +14,11 @@ __PACKAGE__->add_columns(
   "device",
   { data_type => "inet", is_nullable => 0 },
   "actionset",
-  { data_type => "text[]", is_nullable => 0, default_value => '{}' },
+  { data_type => "text[]", is_nullable => 1, default_value => '{}' },
   "deferrals",
   { data_type => "integer", is_nullable => 1, default_value => '0' },
+  "last_defer",
+  { data_type => "timestamp", is_nullable => 1 },
 );
 
 __PACKAGE__->set_primary_key("backend", "device");
@@ -36,7 +38,10 @@ There is a race in the update, but this is not worrying for now.
 sub increment_deferrals {
   my $row = shift;
   return unless $row->in_storage;
-  return $row->update({ deferrals => (($row->deferrals || 0) + 1) });
+  return $row->update({
+    deferrals => (($row->deferrals || 0) + 1),
+    last_defer => \'now()',
+  });
 }
 
 =head2 add_to_actionset

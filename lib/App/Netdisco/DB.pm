@@ -11,7 +11,7 @@ __PACKAGE__->load_namespaces(
 );
 
 our # try to hide from kwalitee
-  $VERSION = 42; # schema version used for upgrades, keep as integer
+  $VERSION = 43; # schema version used for upgrades, keep as integer
 
 use Path::Class;
 use File::ShareDir 'dist_dir';
