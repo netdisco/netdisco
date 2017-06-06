@@ -19,8 +19,9 @@ sub discoverall {
   my ($self, $job) = @_;
 
   my %queued = map {$_ => 1} jq_queued('discover');
-  my @devices = schema('netdisco')->resultset('Device')
-    ->get_column('ip')->all;
+  my @devices = schema('netdisco')->resultset('Device')->search({
+    -or => [ 'vendor' => undef, 'vendor' => { '!=' => 'netdisco' }],
+  })->get_column('ip')->all;
   my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
   jq_insert([

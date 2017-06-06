@@ -20,6 +20,7 @@
   * add SSL development library to Release Notes
   * #309 missing Device Port VLAN Mismatch CSV template
   * fail safe on an empty *_no ACL
+  * do not select pseudo devices for poller jobs
 
 2.035006 - 2017-04-29
 

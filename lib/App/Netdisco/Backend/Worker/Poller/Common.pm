@@ -21,8 +21,9 @@ sub _walk_body {
   my $job_layer = $self->$layer_method;
 
   my %queued = map {$_ => 1} jq_queued($job_type);
-  my @devices = schema('netdisco')->resultset('Device')
-    ->has_layer($job_layer)->get_column('ip')->all;
+  my @devices = schema('netdisco')->resultset('Device')->search({
+    -or => [ 'vendor' => undef, 'vendor' => { '!=' => 'netdisco' }],
+  })->has_layer($job_layer)->get_column('ip')->all;
   my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
   jq_insert([

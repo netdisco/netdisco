@@ -15,6 +15,7 @@ sub expire {
   if (setting('expire_devices') and setting('expire_devices') > 0) {
       schema('netdisco')->txn_do(sub {
         schema('netdisco')->resultset('Device')->search({
+          -or => [ 'vendor' => undef, 'vendor' => { '!=' => 'netdisco' }],
           last_discover => \[q/< (now() - ?::interval)/,
               (setting('expire_devices') * 86400)],
         })->delete();
