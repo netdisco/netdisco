@@ -27,7 +27,12 @@ sub skipped {
   $backend ||= (hostfqdn || 'localhost');
   $max_deferrals ||= 10_000_000; # not really 'disabled'
 
-  return $rs->correlate('device_skips')->search(undef, {
+  return $rs->correlate('device_skips')->search({
+    -or => [
+      last_defer => undef,
+      last_defer => { '<=', \q{(LOCALTIMESTAMP - INTERVAL '7 days')} },
+    ],
+  },{
     # NOTE: bind param list order is significant
     bind => [[deferrals => $max_deferrals], [backend => $backend]],
   });
