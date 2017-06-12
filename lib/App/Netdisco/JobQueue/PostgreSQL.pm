@@ -38,8 +38,15 @@ sub _getsome {
   return () if ((!defined $num_slots) or ($num_slots < 1));
   return () if ((!defined $where) or (ref {} ne ref $where));
 
-  my $rs = schema('netdisco')->resultset('Admin')->search({
-    status => 'queued', %$where,
+  $fqdn ||= (hostfqdn || 'localhost');
+  my $jobs = schema('netdisco')->resultset('Admin');
+
+  my $rs = $jobs->search({
+    status => 'queued',
+    device => { '-not_in' =>
+      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'})
+           ->columns('device')->as_query },
+    %$where,
   }, { order_by => 'random()', rows => $num_slots });
 
   my @returned = ();
@@ -50,15 +57,9 @@ sub _getsome {
 }
 
 sub jq_getsome {
-  my $jobs = schema('netdisco')->resultset('Admin');
-  $fqdn ||= (hostfqdn || 'localhost');
-
-  return _getsome(shift, {
-    action => { -in => setting('job_prio')->{'normal'} },
-    device => { -not_in =>
-      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'})
-           ->columns('device')->as_query },
-  });
+  return _getsome(shift,
+    { action => { -in => setting('job_prio')->{'normal'} } }
+  );
 }
 
 sub jq_getsomep {
