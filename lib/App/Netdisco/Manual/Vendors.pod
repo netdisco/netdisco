@@ -20,9 +20,9 @@ address spaces will not be shown in the interface.
 However if you're running Cisco NXOS and do not have overlapping IP address
 space, then you can use the NXOS SSHCollector profile for that platform.
 
-=head1 Report Cisco 37xx as Single Device Instead of Stacked
+=head1 Report Cisco as Single Device Instead of Stacked (37xx/29xx/etc)
 
-Add this to your 37xx config:
+Add this to your device config:
 
  no snmp-server sysobjectid type stack-oid
 
