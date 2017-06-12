@@ -44,7 +44,8 @@ sub _getsome {
   my $rs = $jobs->search({
     status => 'queued',
     device => { '-not_in' =>
-      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'})
+      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'},
+                            setting('workers')->{'retry_after'})
            ->columns('device')->as_query },
     %$where,
   }, { order_by => 'random()', rows => $num_slots });

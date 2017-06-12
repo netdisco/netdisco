@@ -207,6 +207,7 @@ workers:
   sleep_time: 1
   min_runtime: 0
   max_deferrals: 10
+  retry_after: '7 days'
   queue: PostgreSQL
 
 dns:

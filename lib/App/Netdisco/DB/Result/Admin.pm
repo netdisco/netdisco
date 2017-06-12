@@ -58,14 +58,14 @@ __PACKAGE__->set_primary_key("job");
 
 =head1 RELATIONSHIPS
 
-=head2 device_skips( $backend?, $max_deferrals? )
+=head2 device_skips( $backend?, $max_deferrals?, $retry_after? )
 
 Retuns the set of C<device_skip> entries which apply to this job. They match
 the device IP, current backend, and job action.
 
 You probably want to use the ResultSet method C<skipped> which completes this
-query with a C<backend> host and C<max_deferrals> parameters (or sensible
-defaults).
+query with a C<backend> host, C<max_deferrals>, and C<retry_after> parameters
+(or sensible defaults).
 
 =cut
 
@@ -77,9 +77,13 @@ __PACKAGE__->has_many( device_skips => 'App::Netdisco::DB::Result::DeviceSkip',
       "$args->{foreign_alias}.device"
         => { -ident => "$args->{self_alias}.device" },
       -or => [
-        { "$args->{foreign_alias}.actionset"
-            => { '@>' => \"string_to_array($args->{self_alias}.action,'')" } },
-        { "$args->{foreign_alias}.deferrals" => { '>=' => \'?' } },
+        "$args->{foreign_alias}.actionset"
+            => { '@>' => \"string_to_array($args->{self_alias}.action,'')" },
+        -and => [
+            "$args->{foreign_alias}.deferrals"  => { '>=' => \'?' },
+            "$args->{foreign_alias}.last_defer" =>
+                { '>', \'(LOCALTIMESTAMP - ?::interval)' },
+        ],
       ],
     };
   },

@@ -1307,6 +1307,7 @@ Value: Settings Tree. Default:
    sleep_time: 1
    min_runtime: 0
    max_deferrals: 10
+   retry_after: '7 days'
 
 Control the activity of the backend daemon with this configuration setting.
 
@@ -1328,6 +1329,9 @@ C<max_deferrals> is the number of times an SNMP connect failure can occur
 before the device is no longer polled. The setting and counters are local to
 each poller backend. To reset device counters, restart the backend daemon. To
 disable this feature configure the setting with a value of zero.
+
+C<retry_after> is the time when each job is retried once, even when
+permanently deferred. The default is each job retried once per week.
 
 =head3 C<schedule>
 

@@ -12,29 +12,26 @@ __PACKAGE__->load_components(qw/
 
 =head1 ADDITIONAL METHODS
 
-=head2 skipped
+=head2 skipped( $backend?, $max_deferrals?, $retry_after? )
 
 Retuns a correlated subquery for the set of C<device_skip> entries that apply
 to some jobs. They match the device IP, current backend, and job action.
 
-Pass the C<backend> FQDN (or the current host will be used as a default), and
-the C<max_deferrals> (option disabled if 0/undef value is passed).
+Pass the C<backend> FQDN (or the current host will be used as a default), the
+C<max_deferrals> (option disabled if 0/undef value is passed), and
+C<retry_after> when devices will be retried once (default 7 days).
 
 =cut
 
 sub skipped {
-  my ($rs, $backend, $max_deferrals) = @_;
+  my ($rs, $backend, $max_deferrals, $retry) = @_;
   $backend ||= (hostfqdn || 'localhost');
   $max_deferrals ||= 10_000_000; # not really 'disabled'
+  $retry ||= '7 days';
 
-  return $rs->correlate('device_skips')->search({
-    -or => [
-      last_defer => undef,
-      last_defer => { '<=', \q{(LOCALTIMESTAMP - INTERVAL '7 days')} },
-    ],
-  },{
+  return $rs->correlate('device_skips')->search(undef,{
     # NOTE: bind param list order is significant
-    bind => [[deferrals => $max_deferrals], [backend => $backend]],
+    bind => [[deferrals => $max_deferrals], [last_defer => $retry], [backend => $backend]],
   });
 }
 
