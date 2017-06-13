@@ -22,8 +22,14 @@ BEGIN {
 
 use App::Netdisco;
 use Dancer qw/:moose :script/;
+
 BEGIN {
   warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
+
+  # this can take a few seconds - only do it once
+  use Net::Domain 'hostfqdn';
+  info 'resolving backend hostname...';
+  setting('workers')->{'backend'} ||= (hostfqdn || 'fqdn-undefined');
 }
 
 use App::Netdisco::Util::Backend;

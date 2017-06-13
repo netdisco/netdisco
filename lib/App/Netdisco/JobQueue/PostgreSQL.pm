@@ -7,8 +7,6 @@ use App::Netdisco::Util::Device
   qw/is_discoverable is_macsuckable is_arpnipable/;
 use App::Netdisco::Backend::Job;
 
-
-use Net::Domain 'hostfqdn';
 use Module::Load ();
 use Try::Tiny;
 
@@ -30,22 +28,18 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-# this can take a few seconds - only do it once
-our $fqdn = undef;
-
 sub _getsome {
   my ($num_slots, $where) = @_;
   return () if ((!defined $num_slots) or ($num_slots < 1));
   return () if ((!defined $where) or (ref {} ne ref $where));
 
-  $fqdn ||= (hostfqdn || 'localhost');
   my $jobs = schema('netdisco')->resultset('Admin');
-
   my $rs = $jobs->search({
     status => 'queued',
     device => { '-not_in' =>
-      $jobs->skipped($fqdn, setting('workers')->{'max_deferrals'},
-                            setting('workers')->{'retry_after'})
+      $jobs->skipped(setting('workers')->{'backend'},
+                     setting('workers')->{'max_deferrals'},
+                     setting('workers')->{'retry_after'})
            ->columns('device')->as_query },
     %$where,
   }, { order_by => 'random()', rows => $num_slots });
@@ -75,11 +69,9 @@ sub jq_getsomep {
 }
 
 sub jq_locked {
-  $fqdn ||= (hostfqdn || 'localhost');
   my @returned = ();
-
   my $rs = schema('netdisco')->resultset('Admin')
-    ->search({status => "queued-$fqdn"});
+    ->search({ status => ('queued-'. setting('workers')->{'backend'}) });
 
   while (my $job = $rs->next) {
       push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
@@ -117,7 +109,6 @@ sub _get_denied_actions {
 }
 
 sub jq_warm_thrusters {
-  $fqdn ||= (hostfqdn || 'localhost');
   my @devices = schema('netdisco')->resultset('Device')->all;
   my $rs = schema('netdisco')->resultset('DeviceSkip');
   my %actionset = ();
@@ -128,10 +119,10 @@ sub jq_warm_thrusters {
   }
 
   schema('netdisco')->txn_do(sub {
-    $rs->search({ backend => $fqdn })->delete;
+    $rs->search({ backend => setting('workers')->{'backend'} })->delete;
     $rs->populate([
       map {{
-        backend => $fqdn,
+        backend => setting('workers')->{'backend'},
         device  => $_,
         actionset => $actionset{$_},
       }} keys %actionset
@@ -141,7 +132,6 @@ sub jq_warm_thrusters {
 
 sub jq_lock {
   my $job = shift;
-  $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
   if ($job->device) {
@@ -152,7 +142,7 @@ sub jq_lock {
     my @badactions = _get_denied_actions($job->device);
     if (scalar @badactions) {
       schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-        backend => $fqdn, device => $job->device,
+        backend => setting('workers')->{'backend'}, device => $job->device,
       },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
 
       return false if scalar grep {$_ eq $job->action} @badactions;
@@ -163,12 +153,13 @@ sub jq_lock {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->search({job => $job->job}, {for => 'update'})
-        ->update({ status => "queued-$fqdn" });
+        ->search({ job => $job->job }, { for => 'update' })
+        ->update({ status => ('queued-'. setting('workers')->{'backend'}) });
 
       return unless
         schema('netdisco')->resultset('Admin')
-          ->count({job => $job->job, status => "queued-$fqdn"});
+          ->count({ job => $job->job,
+                    status => ('queued-'. setting('workers')->{'backend'}) });
 
       # remove any duplicate jobs, needed because we have race conditions
       # when queueing jobs of a type for all devices
@@ -192,7 +183,6 @@ sub jq_lock {
 
 sub jq_defer {
   my $job = shift;
-  $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
   # note this taints all actions on the device. for example if both
@@ -206,7 +196,7 @@ sub jq_defer {
     schema('netdisco')->txn_do(sub {
       if ($job->device) {
         schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-          backend => $fqdn, device => $job->device,
+          backend => setting('workers')->{'backend'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->increment_deferrals;
       }
 
@@ -226,7 +216,6 @@ sub jq_defer {
 
 sub jq_complete {
   my $job = shift;
-  $fqdn ||= (hostfqdn || 'localhost');
   my $happy = false;
 
   # lock db row and update to show job is done/error
@@ -239,7 +228,7 @@ sub jq_complete {
     schema('netdisco')->txn_do(sub {
       if ($job->device) {
         schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-          backend => $fqdn, device => $job->device,
+          backend => setting('workers')->{'backend'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
       }
 
