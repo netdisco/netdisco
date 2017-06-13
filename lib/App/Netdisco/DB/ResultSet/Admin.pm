@@ -19,7 +19,7 @@ to some jobs. They match the device IP, current backend, and job action.
 
 Pass the C<backend> FQDN (or the current host will be used as a default), the
 C<max_deferrals> (option disabled if 0/undef value is passed), and
-C<retry_after> when devices will be retried once (default 7 days).
+C<retry_after> when devices will be retried once (disabled if 0/undef passed).
 
 =cut
 
@@ -27,7 +27,7 @@ sub skipped {
   my ($rs, $backend, $max_deferrals, $retry) = @_;
   $backend ||= (hostfqdn || 'localhost');
   $max_deferrals ||= 10_000_000; # not really 'disabled'
-  $retry ||= '7 days';
+  $retry ||= '100 years'; # not really 'disabled'
 
   return $rs->correlate('device_skips')->search(undef,{
     # NOTE: bind param list order is significant
