@@ -31,6 +31,19 @@ the database service):
  # TYPE  DATABASE  USER  ADDRESS       METHOD
  host    all       all   127.0.0.1/32  md5
 
+=head1 Run multiple poller daemons
+
+A common scenario is that the network is split into security domains (or
+zones) and one Netdisco poller daemon cannot see all devices.
+
+You can run multiple pollers, as long as they all connect back to the same
+PostgreSQL database. Use the C<discover_only>, C<macsuck_only>, C<arpnip_only>
+configuration settings (or their C<*_no> variants) to control which devices
+are "seen" by each poller. You can also include only the necessary minimum
+SNMP community/authentication settings in each poller's configuration.
+
+Of course you will also need to start the web server somewhere, as well.
+
 =head1 Connect to PostgreSQL database on non-standard port
 
 The standard port for PostgreSQL is 5432. To connect on a different port you

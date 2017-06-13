@@ -14,6 +14,7 @@
   * renamed netdisco-daemon to netdisco-backend (and *-fg too)
   * topology import script runs discover for each device (M. Bauer)
   * avoid lock/defer of jobs deined by *_no ACL settings
+  * add documentation note on running multiple backend pollers
 
   [BUG FIXES]
 
