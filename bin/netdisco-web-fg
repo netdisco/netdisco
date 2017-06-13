@@ -25,7 +25,9 @@ BEGIN {
 
 use App::Netdisco;
 use Dancer;
-warning sprintf "App::Netdisco %s web", ($App::Netdisco::VERSION || 'HEAD');
+BEGIN {
+  warning sprintf "App::Netdisco %s web", ($App::Netdisco::VERSION || 'HEAD');
+}
 
 set plack_middlewares => [
   ['Plack::Middleware::ReverseProxy'],

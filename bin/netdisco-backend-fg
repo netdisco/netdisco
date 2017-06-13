@@ -22,7 +22,9 @@ BEGIN {
 
 use App::Netdisco;
 use Dancer qw/:moose :script/;
-warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
+BEGIN {
+  warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
+}
 
 use App::Netdisco::Util::Backend;
 use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
