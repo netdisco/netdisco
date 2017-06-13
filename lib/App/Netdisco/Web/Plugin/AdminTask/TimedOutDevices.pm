@@ -20,6 +20,10 @@ ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
       [{ -desc => 'deferrals' }, { -asc => [qw/device backend/] }]
     })->hri->all;
 
+    foreach my $row (@set) {
+      next unless defined $row->{last_defer};
+      $row->{last_defer} =~ s/\.\d+//;
+    }
     my $results = hostnames_resolve_async(\@set, [2,2,2]);
 
     content_type('text/html');

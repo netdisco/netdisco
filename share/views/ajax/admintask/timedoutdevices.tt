@@ -8,6 +8,7 @@
       <th class="nd_center-cell">Device</th>
       <th class="nd_center-cell">Device DNS</th>
       <th class="nd_center-cell">Failed Connections</th>
+      <th class="nd_center-cell">Last Retry</th>
     </tr>
   </thead>
   </tbody>
@@ -18,6 +19,7 @@
         href="[% uri_for('/search') %]?tab=node&q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.dns | html_entity %]</td>
       <td class="nd_center-cell">[% row.deferrals | html_entity %]</td>
+      <td class="nd_center-cell">[% row.last_defer | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>
