@@ -72,6 +72,20 @@ if (ref {} eq ref setting('device_identity')) {
 }
 else { config->{'device_identity'} ||= [] }
 
+# copy devices_no and devices_only into others
+foreach my $name (qw/devices_no devices_only
+                    discover_no macsuck_no arpnip_no nbtstat_no
+                    discover_only macsuck_only arpnip_only nbtstat_only/) {
+  config->{$name} ||= [];
+  config->{$name} = [setting($name)] if ref [] ne ref setting($name);
+}
+foreach my $name (qw/discover_no macsuck_no arpnip_no nbtstat_no/) {
+  push @{setting($name)}, @{ setting('devices_no') };
+}
+foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
+  push @{setting($name)}, @{ setting('devices_only') };
+}
+
 # legacy config item names
 
 config->{'devport_vlan_limit'} =

@@ -907,6 +907,26 @@ Value: Number. Default: 2.
 
 Number of times to retry connecting to a device before giving up.
 
+=head3 C<devices_no>
+
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
+
+The value will be copied into C<discover_no>, C<macsuck_no>, C<arpnip_no>, and
+C<nbtstat_no>, so is a shorthand way to restrict backend workers to avoid
+these device targets. See L</"ACCESS CONTROL LISTS"> for what you can use
+here.
+
+=head3 C<devices_only>
+
+Value: Single item or list of Network Identifiers or Device Properties.
+Default: Empty List.
+
+The value will be copied into C<discover_only>, C<macsuck_only>,
+C<arpnip_only>, and C<nbtstat_only>, so is a shorthand way to restrict backend
+workers to only specified device targets. See L</"ACCESS CONTROL LISTS"> for
+what you can use here.
+
 =head3 C<discover_no>
 
 Value: Single item or list of Network Identifiers or Device Properties.

@@ -2,12 +2,13 @@
 
   [NEW FEATURES]
 
-  * site_local_files setting for easy lib/template/static-file override
-  * support for device identity steering via device_identity
+  * support for device identity steering via device_identity setting
+  * devices_no and devices_only settings allow global worker restriction
+  * named host groups which can be used in *_only/*_no settings and other ACLs
   * new ACL features: AND and negation
-  * named host groups which can be used in other ACLs or *_only/*_no settings
+  * new report SNMP Connect Failures (workers track and ignore bad devices)
+  * site_local_files setting for easy lib/template/static-file override
   * template_paths setting to allow very easy override of templates
-  * new report SNMP Connect Failures
 
   [ENHANCEMENTTS]
 

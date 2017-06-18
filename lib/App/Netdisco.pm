@@ -203,19 +203,20 @@ the full installation instructions, above. This process is for upgrading
 version 2.x only.
 
 Before upgrading please review the latest L<Release
-Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
+Notes|App::Netdisco::Manual::ReleaseNotes>. Then the process below should be
+run for each installation:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
  ln -sf ~/perl5/bin/{localenv,netdisco-*} ~/bin/
  
- # apply database schema updates
+ # apply database schema updates, update MIBs and Vendor MACs
  ~/bin/netdisco-deploy
  
- # restart web service
+ # restart web service (if you run it)
  ~/bin/netdisco-web restart
  
- # restart job daemon (if you use it)
+ # restart job daemon (if you run it)
  ~/bin/netdisco-backend restart
 
 =head1 Tips and Tricks

@@ -56,6 +56,11 @@ interface to use as a canonical (friendly) identity of a device in Netdisco.
 
 =item *
 
+The new settings C<devices_no> and C<devices_only> are shorthand for setting
+C<discover_*>, C<macsuck_*>, C<arpnip_*>, and C<nbtstat_*> at once.
+
+=item *
+
 A new setting C<site_local_files> is a shorthand for confguring paths in which
 to install local Perl, template, javascript, and images files for overriding
 or enhancing Netdisco.
@@ -63,20 +68,20 @@ details.
 
 =item *
 
-Netdisco now tracks SNMP connect failures and after several attempts will no
-longer try to connect to devices (default: 10). See the C<max_deferrals>
-configuration setting, and the "SNMP Connect Failures" admin report.
-
-=item *
-
-The topology import script (C<nd-import-topology>) will now queue a "discover"
-job for each new device it imports.
+Netdisco now tracks SNMP connect failures and after 10 failed attempts will
+pause trying to connect, for one week (see the C<max_deferrals> and
+C<retry_after> settings). See also the "SNMP Connect Failures" admin report.
 
 =item *
 
 Documentation and support for access control lists has been overhauled. Most
 "C<*_no>", "C<*_only>", and "C<only>" settings will accept ACLs as single
 items or lists. ACLs now support negation and OR/AND modifier options.
+
+=item *
+
+The topology import script (C<nd-import-topology>) will now queue a "discover"
+job for each new device it imports.
 
 =item *
 
