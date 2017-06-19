@@ -99,7 +99,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.035999_009"
+         "version" : "2.035999_010"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -649,6 +649,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.035999_009",
+   "version" : "2.035999_010",
    "x_serialization_backend" : "JSON::PP version 2.27400"
 }
