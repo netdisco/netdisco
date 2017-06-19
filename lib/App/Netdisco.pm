@@ -44,8 +44,8 @@ B<Pretty pictures> of your network
 =back
 
 L<App::Netdisco> provides a web frontend with built-in web server, and a
-backend daemon to handle interactive requests such as changing port or device
-properties.
+backend daemon to gather information from your network, and handle
+interactive requests such as changing port or device properties.
 
 =over 4
 
@@ -55,13 +55,16 @@ See the demo at: L<https://netdisco2-demo.herokuapp.com/>
 
 =back
 
-If you have any trouble getting installed or running, check out the
-L<Deployment|App::Netdisco::Manual::Deployment> and
-L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> notes, or speak to
-someone in the C<#netdisco@freenode> IRC channel, or on the L<community email
-list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.  Before
-installing or upgrading please always review the latest L<Release
-Notes|App::Netdisco::Manual::ReleaseNotes>.
+We have several other pages with tips for
+L<alternate deployment scenarios|App::Netdisco::Manual::Deployment>,
+L<understanding and troubleshooting Netdisco|App::Netdisco::Manual::Troubleshooting>,
+L<tips and tricks for specific platforms|App::Netdisco::Manual::Vendors>,
+and L<all the configuration options|App::Netdisco::Manual::Configuration>.
+
+You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
+the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
+Before installing or upgrading please always review the latest
+L<Release Notes|App::Netdisco::Manual::ReleaseNotes>.
 
 =head1 Dependencies
 
