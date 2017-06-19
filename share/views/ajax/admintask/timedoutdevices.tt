@@ -9,6 +9,7 @@
       <th class="nd_center-cell">Device DNS</th>
       <th class="nd_center-cell">Failed Connections</th>
       <th class="nd_center-cell">Last Retry</th>
+      <th class="nd_center-cell">Try Again</th>
     </tr>
   </thead>
   </tbody>
@@ -20,6 +21,13 @@
       <td class="nd_center-cell">[% row.dns | html_entity %]</td>
       <td class="nd_center-cell">[% row.deferrals | html_entity %]</td>
       <td class="nd_center-cell">[% row.last_defer | html_entity %]</td>
+      <td class="nd_center-cell">
+        <input data-form="del" name="backend" type="hidden" value="[% row.backend | html_entity %]">
+        <input data-form="del" name="device"  type="hidden" value="[% row.device  | html_entity %]">
+        <button class="btn nd_adminbutton" name="del" type="submit">
+          <i class="icon-repeat text-success"></i>
+        </button>
+      </td>
     </tr>
     [% END %]
   </tbody>

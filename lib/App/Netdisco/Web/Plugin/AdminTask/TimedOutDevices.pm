@@ -13,6 +13,15 @@ register_admin_task({
   label => 'SNMP Connect Failures',
 });
 
+ajax '/ajax/control/admin/timedoutdevices/del' => require_role admin => sub {
+    send_error('Missing backend', 400) unless param('backend');
+    send_error('Missing device',  400) unless param('device');
+
+    schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+      backend => param('backend'), device => param('device'),
+    },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
+};
+
 ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
     my @set = schema('netdisco')->resultset('DeviceSkip')->search({
       deferrals => { '>' => 0 }
