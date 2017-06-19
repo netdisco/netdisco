@@ -49,6 +49,7 @@ use Data::Printer;
 use Module::Load ();
 use Net::OpenSSH;
 use MCE::Loop Sereal => 1;
+use Pod::Usage 'pod2usage';
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
