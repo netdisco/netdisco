@@ -40,7 +40,7 @@ C<$setting_name> can contain.
 sub check_acl_no {
   my ($thing, $setting_name) = @_;
   return 1 unless $thing and $setting_name;
-  return check_acl($thing, setting($setting_name));
+  return check_acl($thing, (setting($setting_name) || $setting_name));
 }
 
 =head2 check_acl_only( $ip | $instance, $setting_name )
@@ -58,7 +58,7 @@ sub check_acl_only {
   my ($thing, $setting_name) = @_;
   return 0 unless $thing and $setting_name;
   # logic to make an empty config be equivalent to 'any' (i.e. a match)
-  my $config = setting($setting_name);
+  my $config = (setting($setting_name) || $setting_name);
   return 1 if not $config # undef or empty string
               or ((ref [] eq ref $config) and not scalar @$config);
   return check_acl($thing, $config);

@@ -1,3 +1,9 @@
+2.036001 - 2017-06-22
+
+  [BUG FIXES]
+
+  * fix ACL content accepted by check_acl_*
+
 2.036000 - 2017-06-22
 
   [NEW FEATURES]
