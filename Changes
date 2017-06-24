@@ -8,6 +8,7 @@
 
   * #320 DNS subroutines are redefined
   * #318 ACLs with RegExp are very slow - aggressive resolver timeouts
+  * #317 when renumbering on discover, delete likely duplicate devices
 
 2.036001 - 2017-06-22
 

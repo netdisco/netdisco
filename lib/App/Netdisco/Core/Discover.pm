@@ -98,6 +98,12 @@ sub set_canonical_ip {
   return if $new_ip eq $old_ip;
 
   schema('netdisco')->txn_do(sub {
+    # delete target device with the same vendor and serial number
+    schema('netdisco')->resultset('Device')->search({
+      ip => $new_ip, vendor => $device->vendor, serial => $device->serial,
+    })->delete;
+
+    # if target device exists then this will die
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
