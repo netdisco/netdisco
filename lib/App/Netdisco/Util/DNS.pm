@@ -25,16 +25,31 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 hostname_from_ip( $ip )
+=head2 hostname_from_ip( $ip, \%opts? )
 
 Given an IP address (either IPv4 or IPv6), return the canonical hostname.
+
+C<< %opts >> can override the various timeouts available in
+L<Net::DNS::Resolver>:
+
+=over 4
+
+=item C<tcp_timeout>: 120 (seconds)
+
+=item C<udp_timeout>: 30 (seconds)
+
+=item C<retry>: 4 (attempts)
+
+=item C<retrans>: 5 (timeout)
+
+=back
 
 Returns C<undef> if no PTR record exists for the IP.
 
 =cut
 
 sub hostname_from_ip {
-  my $ip = shift;
+  my ($ip, $opts) = @_;
   return unless $ip;
   my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
 
@@ -45,7 +60,11 @@ sub hostname_from_ip {
       }
   }
 
-  my $res   = Net::DNS::Resolver->new;
+  my $res = Net::DNS::Resolver->new;
+  $res->tcp_timeout($opts->{tcp_timeout} || 120);
+  $res->udp_timeout($opts->{udp_timeout} || 30);
+  $res->retry($opts->{retry} || 4);
+  $res->retrans($opts->{retrans} || 5);
   my $query = $res->search($ip);
 
   if ($query) {
