@@ -71,6 +71,7 @@ web_plugins:
   - AdminTask::SlowDevices
   - AdminTask::UndiscoveredNeighbors
   - AdminTask::OrphanedDevices
+  - AdminTask::DuplicateDevices
   - AdminTask::TimedOutDevices
   - AdminTask::UserLog
   - AdminTask::Users
