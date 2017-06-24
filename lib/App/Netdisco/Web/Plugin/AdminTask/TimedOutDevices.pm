@@ -33,7 +33,7 @@ ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
       next unless defined $row->{last_defer};
       $row->{last_defer} =~ s/\.\d+//;
     }
-    my $results = hostnames_resolve_async(\@set, [2,2,2]);
+    my $results = hostnames_resolve_async(\@set, [2]);
 
     content_type('text/html');
     template 'ajax/admintask/timedoutdevices.tt', {
