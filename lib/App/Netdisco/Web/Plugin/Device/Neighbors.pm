@@ -66,9 +66,10 @@ get '/ajax/data/device/netmap' => require_login sub {
 
     my @devices = schema('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-      columns => ['ip', 'dns'],
+      columns => ['ip', 'dns', 'name'],
     })->all;
-    var(devices => { map { $_->{ip} => $_->{dns} } @devices });
+    var(devices => { map { $_->{ip} => lc($_->{dns} || $_->{name} || '') }
+                         @devices });
 
     var(links => {});
     my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
