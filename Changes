@@ -10,7 +10,8 @@
   * #320 DNS subroutines are redefined
   * #318 ACLs with RegExp are very slow - aggressive resolver timeouts
   * #317 #265 #311 when renumbering on discover, delete likely duplicate devices
-  * #316 Neighbor map should fall back to device sysname after dns
+  * #316 neighbor map should fall back to device sysname after dns
+  * #310 multiple LLDP management addresses
 
 2.036001 - 2017-06-22
 

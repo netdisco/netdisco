@@ -829,39 +829,33 @@ sub store_neighbors {
           }
       }
 
-      # hack for devices seeing multiple neighbors on the port
-      if (ref [] eq ref $remote_ip) {
-          debug sprintf
-            ' [%s] neigh - port %s has multiple neighbors, setting remote as self',
-            $device->ip, $port;
-
-          foreach my $n (@$remote_ip) {
-              debug sprintf
-                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                $device->ip, $n, ($remote_type || ''), $port;
-              push @to_discover, [$n, $remote_type];
-          }
-
-          # set self as remote IP to suppress any further work
-          $remote_ip = $device->ip;
-          $remote_port = $port;
-      }
-      else {
-          # what we came here to do.... discover the neighbor
+      # what we came here to do.... discover the neighbor(s)
+      foreach my $n ((ref $remote_ip) ? @$remote_ip : ($remote_ip)) {
           debug sprintf
             ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-            $device->ip, $remote_ip, ($remote_type || ''), $port;
-          push @to_discover, [$remote_ip, $remote_type];
+            $device->ip, $n, ($remote_type || ''), $port;
+          push @to_discover, [$n, $remote_type];
+      }
 
-          $remote_port = $c_port->{$entry};
-          if (defined $remote_port) {
-              # clean weird characters
-              $remote_port =~ s/[^\d\/\.,()\w:-]+//gi;
-          }
-          else {
-              info sprintf ' [%s] neigh - no remote port found for port %s at %s',
-                $device->ip, $port, $remote_ip;
-          }
+      # devices seeing multiple neighbors on the port
+      # pick the highest IP for the neighbor, which results in preferring IPv6
+      if (ref [] eq ref $remote_ip) {
+          debug sprintf
+            ' [%s] neigh - port %s has multiple neighbors, picking highest',
+            $device->ip, $port;
+
+          $remote_ip = [reverse sort {NetAddr::IP::Lite->new($a)
+                          <=> NetAddr::IP::Lite->new($b)} @$remote_ip]->[0];
+      }
+
+      $remote_port = $c_port->{$entry};
+      if (defined $remote_port) {
+          # clean weird characters
+          $remote_port =~ s/[^\d\/\.,()\w:-]+//gi;
+      }
+      else {
+          info sprintf ' [%s] neigh - no remote port found for port %s at %s',
+            $device->ip, $port, $remote_ip;
       }
 
       $portrow->update({
