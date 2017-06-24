@@ -26,31 +26,39 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl_no( $ip | $instance, $setting_name )
+=head2 check_acl_no( $ip | $instance, $setting_name | $acl_entry | \@acl )
 
 Given an IP address or object instance, returns true if the configuration
 setting C<$setting_name> matches, else returns false. If the setting is
 undefined or empty, then C<check_acl_no> also returns false.
 
-See L<App::Netdisco::Manual::Configuration> for details of what
-C<$setting_name> can contain.
+If C<$setting_name> is a valid setting, then it will be resolved to the access
+control list, else we assume you passed an ACL entry or ACL.
+
+See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
+contain.
 
 =cut
 
 sub check_acl_no {
   my ($thing, $setting_name) = @_;
   return 1 unless $thing and $setting_name;
-  return check_acl($thing, (setting($setting_name) || $setting_name));
+  my $config = (exists config->{"$setting_name"} ? setting($setting_name)
+                                                 : $setting_name);
+  return check_acl($thing, $config);
 }
 
-=head2 check_acl_only( $ip | $instance, $setting_name )
+=head2 check_acl_only( $ip | $instance, $setting_name | $acl_entry | \@acl )
 
 Given an IP address or object instance, returns true if the configuration
 setting C<$setting_name> matches, else returns false. If the setting is
 undefined or empty, then C<check_acl_only> also returns true.
 
-See L<App::Netdisco::Manual::Configuration> for details of what
-C<$setting_name> can contain.
+If C<$setting_name> is a valid setting, then it will be resolved to the access
+control list, else we assume you passed an ACL entry or ACL.
+
+See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
+contain.
 
 =cut
 
@@ -58,22 +66,23 @@ sub check_acl_only {
   my ($thing, $setting_name) = @_;
   return 0 unless $thing and $setting_name;
   # logic to make an empty config be equivalent to 'any' (i.e. a match)
-  my $config = (setting($setting_name) || $setting_name);
+  my $config = (exists config->{"$setting_name"} ? setting($setting_name)
+                                                 : $setting_name);
   return 1 if not $config # undef or empty string
               or ((ref [] eq ref $config) and not scalar @$config);
   return check_acl($thing, $config);
 }
 
-=head2 check_acl( $ip | $instance, $configitem | \@config )
+=head2 check_acl( $ip | $instance, $acl_entry | \@acl )
 
-Given an IP address or object instance, compares it to the items in C<<
-\@config >> then returns true or false. You can control whether any item must
-match or all must match, and items can be negated to invert the match logic.
+Given an IP address or object instance, compares it to the items in C<< \@acl
+>> then returns true or false. You can control whether any item must match or
+all must match, and items can be negated to invert the match logic.
 
 Accepts instances of classes representing Netdisco Devices, Netdisco Device
 IPs, and L<NetAddr::IP> family objects.
 
-There are several options for what C<< \@config >> can contain. See
+There are several options for what C<< \@acl >> may contain. See
 L<App::Netdisco::Manual::Configuration> for the details.
 
 =cut

@@ -1,4 +1,8 @@
-2.036001 - TESTING
+2.036002 - TESTING
+
+  [ENHANCEMENTS]
+
+  * #319 better fix for acceping ACL names or values in check_acl_*
 
   [BUG FIXES]
 
