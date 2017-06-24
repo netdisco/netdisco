@@ -853,20 +853,6 @@ sub store_neighbors {
             $device->ip, $remote_ip, ($remote_type || ''), $port;
           push @to_discover, [$remote_ip, $remote_type];
 
-          # further device type discovery using MAC OUI
-          # only works once device is fully discovered (so we have a MAC addr)
-          my $neigh = get_device($remote_ip);
-          if (blessed $neigh and $neigh->in_storage and $neigh->mac) {
-              if (match_devicetype($neigh->mac, 'phone_ouis')) {
-                  $remote_type = 'IP Phone: '. $remote_type
-                    if $remote_type !~ /ip.phone/i;
-              }
-              elsif (match_devicetype($neigh->mac, 'wap_ouis')) {
-                  $remote_type = 'AP: '. $remote_type
-                    if $remote_type !~ /^AP: /;
-              }
-          }
-
           $remote_port = $c_port->{$entry};
           if (defined $remote_port) {
               # clean weird characters

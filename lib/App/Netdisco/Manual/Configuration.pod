@@ -1260,18 +1260,6 @@ To find the received Platforms on an upstream device, run this command:
 
  ~netdisco/bin/netdisco-do show -d <IP-of-device> -e c_platform
 
-=head3 C<phone_ouis>
-
-Value: List of Strings. Default: Empty List.
-
-If you can't get C<phone_capabilities> or C<phone_platforms> to match, as a
-last ditch attempt you can match on the MAC address of the device (if it has
-one). This is a set of regular expressions matched against the whole MAC
-address (not only the OUI portion) in IEEE format. For example:
-
- phone_ouis:
-   - '^a4:0c:c3'
-
 =head3 C<wap_capabilities>
 
 Value: List of Strings. Default:
@@ -1303,18 +1291,6 @@ discovery protocols such as CDP/FDP/LLDP. Netdisco uses this to display a
 To find the received Platforms on an upstream device, run this command:
 
  ~netdisco/bin/netdisco-do show -d <IP-of-device> -e c_platform
-
-=head3 C<wap_ouis>
-
-Value: List of Strings. Default: Empty List.
-
-If you can't get C<wap_capabilities> or C<wap_platforms> to match, as a last
-ditch attempt you can match on the MAC address of the device (if it has one).
-This is a set of regular expressions matched against the whole MAC address
-(not only the OUI portion) in IEEE format. For example:
-
- wap_ouis:
-   - '^a4:0c:c3'
 
 =head2 Backend Daemon
 
@@ -1472,6 +1448,14 @@ These settings are from Netdisco 1.x but are yet to be supported in Netdisco
 2. If you really need the feature, please let the developers know.
 
 =over 4
+
+=item *
+
+C<phone_ouis>
+
+=item *
+
+C<wap_ouis>
 
 =item *
 
