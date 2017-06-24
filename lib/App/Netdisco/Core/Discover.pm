@@ -835,13 +835,11 @@ sub store_neighbors {
             ' [%s] neigh - port %s has multiple neighbors, setting remote as self',
             $device->ip, $port;
 
-          if (wantarray) {
-              foreach my $n (@$remote_ip) {
-                  debug sprintf
-                    ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                    $device->ip, $n, ($remote_type || ''), $port;
-                  push @to_discover, [$n, $remote_type];
-              }
+          foreach my $n (@$remote_ip) {
+              debug sprintf
+                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+                $device->ip, $n, ($remote_type || ''), $port;
+              push @to_discover, [$n, $remote_type];
           }
 
           # set self as remote IP to suppress any further work
@@ -850,12 +848,10 @@ sub store_neighbors {
       }
       else {
           # what we came here to do.... discover the neighbor
-          if (wantarray) {
-              debug sprintf
-                ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-                $device->ip, $remote_ip, ($remote_type || ''), $port;
-              push @to_discover, [$remote_ip, $remote_type];
-          }
+          debug sprintf
+            ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+            $device->ip, $remote_ip, ($remote_type || ''), $port;
+          push @to_discover, [$remote_ip, $remote_type];
 
           # further device type discovery using MAC OUI
           # only works once device is fully discovered (so we have a MAC addr)
