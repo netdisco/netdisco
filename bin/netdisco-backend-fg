@@ -29,7 +29,7 @@ BEGIN {
   # this can take a few seconds - only do it once
   use Net::Domain 'hostfqdn';
   info 'resolving backend hostname...';
-  setting('workers')->{'backend'} ||= (hostfqdn || 'fqdn-undefined');
+  setting('workers')->{'BACKEND'} ||= (hostfqdn || 'fqdn-undefined');
 }
 
 use App::Netdisco::Util::Backend;

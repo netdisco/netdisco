@@ -37,7 +37,7 @@ sub _getsome {
   my $rs = $jobs->search({
     status => 'queued',
     device => { '-not_in' =>
-      $jobs->skipped(setting('workers')->{'backend'},
+      $jobs->skipped(setting('workers')->{'BACKEND'},
                      setting('workers')->{'max_deferrals'},
                      setting('workers')->{'retry_after'})
            ->columns('device')->as_query },
@@ -71,7 +71,7 @@ sub jq_getsomep {
 sub jq_locked {
   my @returned = ();
   my $rs = schema('netdisco')->resultset('Admin')
-    ->search({ status => ('queued-'. setting('workers')->{'backend'}) });
+    ->search({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
 
   while (my $job = $rs->next) {
       push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
@@ -119,10 +119,10 @@ sub jq_warm_thrusters {
   }
 
   schema('netdisco')->txn_do(sub {
-    $rs->search({ backend => setting('workers')->{'backend'} })->delete;
+    $rs->search({ backend => setting('workers')->{'BACKEND'} })->delete;
     $rs->populate([
       map {{
-        backend => setting('workers')->{'backend'},
+        backend => setting('workers')->{'BACKEND'},
         device  => $_,
         actionset => $actionset{$_},
       }} keys %actionset
@@ -142,7 +142,7 @@ sub jq_lock {
     my @badactions = _get_denied_actions($job->device);
     if (scalar @badactions) {
       schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-        backend => setting('workers')->{'backend'}, device => $job->device,
+        backend => setting('workers')->{'BACKEND'}, device => $job->device,
       },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
 
       return false if scalar grep {$_ eq $job->action} @badactions;
@@ -154,12 +154,12 @@ sub jq_lock {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
         ->search({ job => $job->job }, { for => 'update' })
-        ->update({ status => ('queued-'. setting('workers')->{'backend'}) });
+        ->update({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
 
       return unless
         schema('netdisco')->resultset('Admin')
           ->count({ job => $job->job,
-                    status => ('queued-'. setting('workers')->{'backend'}) });
+                    status => ('queued-'. setting('workers')->{'BACKEND'}) });
 
       # remove any duplicate jobs, needed because we have race conditions
       # when queueing jobs of a type for all devices
@@ -196,7 +196,7 @@ sub jq_defer {
     schema('netdisco')->txn_do(sub {
       if ($job->device) {
         schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-          backend => setting('workers')->{'backend'}, device => $job->device,
+          backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->increment_deferrals;
       }
 
@@ -228,7 +228,7 @@ sub jq_complete {
     schema('netdisco')->txn_do(sub {
       if ($job->device) {
         schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-          backend => setting('workers')->{'backend'}, device => $job->device,
+          backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
       }
 
