@@ -4,6 +4,7 @@
 
   * #319 better fix for acceping ACL names or values in check_acl_*
   * #311 added duplicate devices report with option to delete
+  * #263 discover neighbors advertising ipv6 management addresses
 
   [BUG FIXES]
 
@@ -11,7 +12,7 @@
   * #318 ACLs with RegExp are very slow - aggressive resolver timeouts
   * #317 #265 #311 when renumbering on discover, delete likely duplicate devices
   * #316 neighbor map should fall back to device sysname after dns
-  * #310 multiple LLDP management addresses
+  * #310 allow multiple LLDP management addresses
 
 2.036001 - 2017-06-22
 

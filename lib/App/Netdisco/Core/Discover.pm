@@ -710,7 +710,15 @@ sub store_neighbors {
   _set_manual_topology($device, $snmp);
 
   my $c_ip = $snmp->c_ip;
-  unless ($snmp->hasCDP or scalar keys %$c_ip) {
+  my %c_ipv6 = %{ ($snmp->can('hasLLDP') and $snmp->hasLLDP)
+    ? $snmp->lldp_ipv6 : {} };
+
+  # remove keys with undef values, as c_ip does
+  delete @c_ipv6{ grep { not defined $c_ipv6{$_} } keys %c_ipv6 };
+  # now combine them, v6 wins
+  $c_ip = { %$c_ip, %c_ipv6 };
+
+  unless (($snmp->can('hasCDP') and $snmp->hasCDP) or scalar keys %$c_ip) {
       debug sprintf ' [%s] neigh - CDP/LLDP not enabled!', $device->ip;
       return @to_discover;
   }
