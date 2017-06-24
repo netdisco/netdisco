@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::DNS 'hostnames_resolve_async';
+use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
 register_admin_task({
   tag => 'timedoutdevices',

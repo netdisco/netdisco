@@ -4,7 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Node 'check_mac';
-use App::Netdisco::Util::DNS ':all';
+use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
 use NetAddr::MAC ();

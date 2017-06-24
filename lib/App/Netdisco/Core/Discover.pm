@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Device
   qw/get_device match_devicetype is_discoverable/;
 use App::Netdisco::Util::Permission 'check_acl_only';
+use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::DNS ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use NetAddr::IP::Lite ':lower';

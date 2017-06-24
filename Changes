@@ -1,3 +1,9 @@
+2.036001 - TESTING
+
+  [BUG FIXES]
+
+  * #320 DNS subroutines are redefined
+
 2.036001 - 2017-06-22
 
   [BUG FIXES]
