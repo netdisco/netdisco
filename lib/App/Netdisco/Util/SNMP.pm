@@ -302,6 +302,9 @@ sub _build_communities {
       $stanza->{no}   = [$stanza->{no}] if ref '' eq ref $stanza->{no};
       $stanza->{only} = [$stanza->{only}] if ref '' eq ref $stanza->{only};
 
+      die "error: config: snmpv2 community in snmp_auth must be single item, not list\n"
+        if ref $stanza->{community};
+
       die "error: config: snmpv3 stanza in snmp_auth must have a tag\n"
         if not $stanza->{tag}
            and !exists $stanza->{community};
