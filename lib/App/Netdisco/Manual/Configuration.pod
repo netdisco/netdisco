@@ -762,6 +762,7 @@ simply a friendly name used by Netdisco when referring to the configuration.
      only:
        - 192.0.2.0/30
        - 172.20.10.0/24
+     no: '172.20.10.1'
    - tag: v2aclexample
      community: s3kr1t
      read: false
@@ -773,14 +774,16 @@ global C<community>/C<community_rw> setting, this is not a list but a single
 item. That is, to configure multiple community strings, have one stanza per
 community, as in the examples above and below.
 
-You can add C<read> and/or C<write> restrictions, and an IP restriction using
-C<only> (see L</"ACCESS CONTROL LISTS">. Giving the stanza a C<tag> name is
-optional, but recommended.
+For any version of SNMP you can add C<read> and/or C<write> booleans to
+control operations for that stanza, and IP restrictions using C<only> and
+C<no> (see L</"ACCESS CONTROL LISTS"> for what you can use here).
 
-For SNMPv3 the C<tag> and C<user> keys are required. You can add C<read>
-and/or C<write> restrictions, and an IP restriction using C<only>. Providing
-an C<auth> section enables the authentication security level. Providing a
-C<priv> section enables the message encryption security level.
+For SNMPv3 the C<tag> and C<user> keys are required. Providing an C<auth>
+section enables the authentication security level, providing a C<priv> section
+enables the message encryption security level. When configuring multiple
+SNMPv3 stanza please use C<only> and/or C<no> ACLs for each, otherwise only
+the first stanza is ever used (this is a limitation in the underlying L<SNMP>
+library).
 
 The default SNMPv3 authentication security method is MD5, and the default
 encryption protocol is DES, with AES or AES256 being common alternatives. Note
@@ -793,7 +796,7 @@ key to a stanza to override this default.
 
 Netdisco caches both the successful SNMPv2 read and write community strings,
 as well as the C<tag> names if available. This allows for faster operations
-once a connection has previously been made to a device.
+once a connection has previously been made to a device. Tags are recommended.
 
 If you have SNMP connect failures, or notice that devices are not appearing in
 Netdisco, take a look at the "SNMP Connect Failures" Admin Report, and also

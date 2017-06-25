@@ -5,6 +5,7 @@
   * #319 better fix for acceping ACL names or values in check_acl_*
   * #311 added duplicate devices report with option to delete
   * #263 discover neighbors advertising ipv6 management addresses
+  * #286 support only/no ACLs for snmp_auth stanza, update docs
 
   [BUG FIXES]
 

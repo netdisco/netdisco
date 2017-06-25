@@ -117,9 +117,9 @@ example:
 
  ~netdisco/bin/netdisco-do discover -d 192.0.2.1 -DIQ
 
-You will see that SNMPv2 community strings are hidden by default, to make the
-output safe for sending to Netdisco developers. To show the community string,
-set the C<SHOW_COMMUNITY> environment variable:
+You will see that SNMP community strings and users are hidden by default, to
+make the output safe for sending to Netdisco developers. To show the community
+string and SNMPv3 protocols, set the C<SHOW_COMMUNITY> environment variable:
 
  SHOW_COMMUNITY=1 ~netdisco/bin/netdisco-do discover -d 192.0.2.1 -DIQ
 

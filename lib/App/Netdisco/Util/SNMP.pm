@@ -136,9 +136,13 @@ sub _snmp_connect_generic {
 sub _try_connect {
   my ($device, $class, $comm, $mode, $snmp_args, $reclass) = @_;
   my %comm_args = _mk_info_commargs($comm);
-  my $debug_comm = ( $comm->{community}
-      ? $ENV{SHOW_COMMUNITY} ? $comm->{community} : '<hidden>'
-      : "v3user:$comm->{user}" );
+  my $debug_comm = '<hidden>';
+  if ($ENV{SHOW_COMMUNITY}) {
+    $debug_comm = ($comm->{community} ||
+      (sprintf 'v3:%s:%s/%s', ($comm->{user},
+                              ($comm->{auth}->{proto} || 'noAuth'),
+                              ($comm->{priv}->{proto} || 'noPriv'))) );
+  }
   my $info = undef;
 
   try {
@@ -293,14 +297,17 @@ sub _build_communities {
       $stanza->{tag} ||= $tag;
       ++$seen_tags->{ $stanza->{tag} };
       $stanza->{read} = 1 if !exists $stanza->{read};
+      $stanza->{no}   ||= [];
       $stanza->{only} ||= ['any'];
+      $stanza->{no}   = [$stanza->{no}] if ref '' eq ref $stanza->{no};
       $stanza->{only} = [$stanza->{only}] if ref '' eq ref $stanza->{only};
 
       die "error: config: snmpv3 stanza in snmp_auth must have a tag\n"
         if not $stanza->{tag}
            and !exists $stanza->{community};
 
-      if ($stanza->{$mode} and check_acl_only($device, $stanza->{only})) {
+      if ($stanza->{$mode} and check_acl_only($device, $stanza->{only})
+            and not check_acl_no($device, $stanza->{no})) {
           if ($device->in_storage and
             $stored_tag and $stored_tag eq $stanza->{tag}) {
               # last known-good by tag
