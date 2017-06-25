@@ -709,17 +709,8 @@ sub store_neighbors {
   # first allow any manually configured topology to be set
   _set_manual_topology($device, $snmp);
 
-  my $c_ip = $snmp->c_ip;
-  my %c_ipv6 = %{ ($snmp->can('hasLLDP') and $snmp->hasLLDP)
-    ? $snmp->lldp_ipv6 : {} };
-
-  # remove keys with undef values, as c_ip does
-  delete @c_ipv6{ grep { not defined $c_ipv6{$_} } keys %c_ipv6 };
-  # now combine them, v6 wins
-  $c_ip = { %$c_ip, %c_ipv6 };
-
-  unless (($snmp->can('hasCDP') and $snmp->hasCDP) or scalar keys %$c_ip) {
-      debug sprintf ' [%s] neigh - CDP/LLDP not enabled!', $device->ip;
+  if (!defined $snmp->has_topo) {
+      debug sprintf ' [%s] neigh - neighbor protocols are not enabled', $device->ip;
       return @to_discover;
   }
 
@@ -729,6 +720,16 @@ sub store_neighbors {
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
   my $c_cap      = $snmp->c_cap;
+
+  # v4 and v6 neighbor tables
+  my $c_ip = ($snmp->c_ip || {});
+  my %c_ipv6 = %{ ($snmp->can('hasLLDP') and $snmp->hasLLDP)
+    ? ($snmp->lldp_ipv6 || {}) : {} };
+
+  # remove keys with undef values, as c_ip does
+  delete @c_ipv6{ grep { not defined $c_ipv6{$_} } keys %c_ipv6 };
+  # now combine them, v6 wins
+  $c_ip = { %$c_ip, %c_ipv6 };
 
   foreach my $entry (sort (List::MoreUtils::uniq( (keys %$c_ip), (keys %$c_cap) ))) {
       if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
