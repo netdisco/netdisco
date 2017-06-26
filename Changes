@@ -14,6 +14,7 @@
   * #317 #265 #311 when renumbering on discover, delete likely duplicate devices
   * #316 neighbor map should fall back to device sysname after dns
   * #310 allow multiple LLDP management addresses
+  * support NETDISCO_DBNAME in "netdisco-do psql"
 
 2.036001 - 2017-06-22
 
