@@ -138,14 +138,14 @@ get '/ajax/content/device/ports' => require_login sub {
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
     $nodes_name .= '_with_age' if param('n_age');
 
-    if (param('c_nodes')) {
-        my $ips = ((param('n_ip4') and param('n_ip6')) ? 'ips'
-                  : param('n_ip4') ? 'ip4s'
-                  : 'ip6s');
+    my $ips_name = ((param('n_ip4') and param('n_ip6')) ? 'ips'
+                   : param('n_ip4') ? 'ip4s'
+                   : 'ip6s');
 
+    if (param('c_nodes')) {
         # retrieve active/all connected nodes, if asked for
-        $set = $set->search_rs({}, { prefetch => [{$nodes_name => $ips}] });
-        $set = $set->search_rs({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "${ips}.ip"] });
+        $set = $set->search_rs({}, { prefetch => [{$nodes_name => $ips_name}] });
+        $set = $set->search_rs({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "${ips_name}.ip"] });
 
         # retrieve wireless SSIDs, if asked for
         $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'wireless'}] })
@@ -175,6 +175,7 @@ get '/ajax/content/device/ports' => require_login sub {
         template 'ajax/device/ports.tt', {
           results => $results,
           nodes => $nodes_name,
+          ips   => $ips_name,
           device => $device,
           vmember_ok => $vmember_ok,
         }, { layout => undef };

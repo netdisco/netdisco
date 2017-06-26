@@ -331,19 +331,8 @@
             )
           [% END %]
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
-          [% IF params.n_ip4 %]
-            [% FOREACH ip IN node.ip4s %]
-            <br/>&nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
-              [% SET dns = ip.dns %]
-              [% IF dns %]
-              <a href="[% search_node %]&q=[% ip.ip | uri %]">[% dns %] ([% ip.ip | html_entity %])</a>
-              [% ELSE %]
-              <a href="[% search_node %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
-              [% END %]
-            [% END %]
-          [% END %]
-          [% IF params.n_ip6 %]
-            [% FOREACH ip IN node.ip6s %]
+          [% IF params.n_ip4 OR params.n_ip6 %]
+            [% FOREACH ip IN node.$ips %]
             <br/>&nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]

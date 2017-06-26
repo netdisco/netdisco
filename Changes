@@ -6,6 +6,7 @@
   * #311 added duplicate devices report with option to delete
   * #263 discover neighbors advertising ipv6 management addresses
   * #286 support only/no ACLs for snmp_auth stanza, update docs
+  * support NETDISCO_DBNAME in "netdisco-do psql"
 
   [BUG FIXES]
 
@@ -14,7 +15,7 @@
   * #317 #265 #311 when renumbering on discover, delete likely duplicate devices
   * #316 neighbor map should fall back to device sysname after dns
   * #310 allow multiple LLDP management addresses
-  * support NETDISCO_DBNAME in "netdisco-do psql"
+  * fix bug on device port view (speed-up) to avoid DB query on every node
 
 2.036001 - 2017-06-22
 
