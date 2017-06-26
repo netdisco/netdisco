@@ -10,6 +10,7 @@
 
   [BUG FIXES]
 
+  * #231 fix docs to stop old daemon and start new backend worker
   * #320 DNS subroutines are redefined
   * #318 ACLs with RegExp are very slow - aggressive resolver timeouts
   * #317 #265 #311 when renumbering on discover, delete likely duplicate devices

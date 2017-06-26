@@ -91,6 +91,8 @@ The old commands will still work but we recommend packagers to use the new
 names to remain consistent with documentation. Run the following on upgrade:
 
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
+ ~/bin/netdisco-daemon stop
+ ~/bin/netdisco-backend restart
 
 =item *
 
