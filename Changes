@@ -1,4 +1,4 @@
-2.036002 - TESTING
+2.036002 - 2017-06-26
 
   [ENHANCEMENTS]
 
@@ -7,6 +7,8 @@
   * #263 discover neighbors advertising ipv6 management addresses
   * #286 support only/no ACLs for snmp_auth stanza, update docs
   * support NETDISCO_DBNAME in "netdisco-do psql"
+  * die with message when snmp_auth community is (mis-)configured as a list
+  * faster DNS lookups for SNMP Timeouts Report entries
 
   [BUG FIXES]
 

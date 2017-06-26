@@ -75,7 +75,6 @@
             "Sereal" : "0",
             "Socket6" : "0.23",
             "Starman" : "0.4008",
-            "Sys::Proctitle" : "0",
             "Template" : "2.24",
             "Template::Plugin::CSV" : "0.04",
             "Template::Plugin::Number::Format" : "1.02",
@@ -100,7 +99,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.036001"
+         "version" : "2.036002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -421,6 +420,9 @@
       "App::Netdisco::Util::ExpandParams" : {
          "file" : "lib/App/Netdisco/Util/ExpandParams.pm"
       },
+      "App::Netdisco::Util::FastResolver" : {
+         "file" : "lib/App/Netdisco/Util/FastResolver.pm"
+      },
       "App::Netdisco::Util::Graph" : {
          "file" : "lib/App/Netdisco/Util/Graph.pm"
       },
@@ -471,6 +473,9 @@
       },
       "App::Netdisco::Web::Plugin" : {
          "file" : "lib/App/Netdisco/Web/Plugin.pm"
+      },
+      "App::Netdisco::Web::Plugin::AdminTask::DuplicateDevices" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/DuplicateDevices.pm"
       },
       "App::Netdisco::Web::Plugin::AdminTask::JobQueue" : {
          "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm"
@@ -650,6 +655,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.036001",
-   "x_serialization_backend" : "JSON::PP version 2.27300"
+   "version" : "2.036002",
+   "x_serialization_backend" : "JSON::PP version 2.27400"
 }

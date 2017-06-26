@@ -21,12 +21,7 @@ migrating from Netdisco 1.x:
 
 You can run both Netdisco 1.x and App::Netdisco web frontends at the same
 time, using the same database (if "C<safe_password_store>" is set to
-"C<false>").
-
-=item *
-
-Only enable the backend daemon and discovery jobs from I<either> Netdisco 1.x
-I<or> App::Netdisco.
+"C<false>" in the config file).
 
 =item *
 
@@ -34,7 +29,47 @@ You can share a single database between Netdisco 1.x and App::Netdisco. The
 deploy script for App::Netdisco will make some schema changes to the database,
 but they are backwards compatible.
 
+=item *
+
+Only enable the backend daemon and discovery jobs from I<either> Netdisco 1.x
+I<or> App::Netdisco.
+
 =back
+
+=head1 2.036002
+
+This is a bug fix release since 2.036000. Please also read the 2.036000
+release notes below, in full. Notable changes:
+
+=over 4
+
+=item *
+
+Device Port report is much faster when displaying nodes
+
+=item *
+
+C<netdisco-do psql> now supports C<NETDISCO_DBNAME> environment variable
+
+=item *
+
+C<snmp_auth> configuration now supports C<only> and C<no> ACLs per stanza
+
+=item *
+
+New Duplicate Devices Report in case you get these appearing
+
+=item *
+
+Neighbor L2 topology map will show sysName if DNS is not available
+
+=item *
+
+Speed up ACLs featuring regualr expressions
+
+=back
+
+Plus lots more mentioned in the Changes file.
 
 =head1 2.036000
 
