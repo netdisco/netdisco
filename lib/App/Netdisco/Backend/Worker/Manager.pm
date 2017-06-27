@@ -39,12 +39,12 @@ sub worker_body {
   my $wid = $self->wid;
 
   if (setting('workers')->{'no_manager'}) {
-      prctl sprintf 'netdisco-backend: worker #%s manager: inactive', $wid;
+      prctl sprintf 'nd2: #%s mgr: inactive', $wid;
       return debug "mgr ($wid): no need for manager... quitting"
   }
 
   while (1) {
-      prctl sprintf 'netdisco-backend: worker #%s manager: gathering', $wid;
+      prctl sprintf 'nd2: #%s mgr: gathering', $wid;
       my $num_slots = 0;
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
@@ -82,7 +82,7 @@ sub worker_body {
       }
 
       debug "mgr ($wid): sleeping now...";
-      prctl sprintf 'netdisco-backend: worker #%s manager: idle', $wid;
+      prctl sprintf 'nd2: #%s mgr: idle', $wid;
       sleep( setting('workers')->{sleep_time} || 1 );
   }
 }

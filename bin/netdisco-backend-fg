@@ -59,7 +59,7 @@ my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));
 mkdir $tmp_dir if ! -d $tmp_dir;
 
 # process-table text
-prctl 'netdisco-backend: master';
+prctl 'nd2: master';
 
 # shared local job queue
 my $queue = MCE::Queue->new;
@@ -85,7 +85,7 @@ sub _mk_wkr {
     my $self = shift;
     $self->{queue} = $queue;
 
-    prctl sprintf 'netdisco-backend: worker #%s %s: init', MCE->wid, lc($role);
+    prctl sprintf 'nd2: #%s %s: init', MCE->wid, lc($role);
     info sprintf 'applying role %s to worker %s', $role, MCE->wid;
 
     # post-fork, become manager, scheduler, poller, etc
