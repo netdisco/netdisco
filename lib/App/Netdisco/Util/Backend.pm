@@ -5,20 +5,10 @@ use warnings;
 
 use MCE::Util ();
 
-# make sure this is already done elsewhere
-use if $^O eq 'linux', 'Sys::Proctitle';
-
 use base 'Exporter';
 our @EXPORT = qw/prctl parse_max_workers/;
 
-sub prctl {
-  if ($^O eq 'linux') {
-      Sys::Proctitle::setproctitle(shift);
-  }
-  else {
-      $0 = shift;
-  }
-}
+sub prctl { $0 = shift }
 
 sub parse_max_workers {
   my $max = shift;

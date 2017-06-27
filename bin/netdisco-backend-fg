@@ -7,9 +7,6 @@ use FindBin;
 FindBin::again();
 use Path::Class 'dir';
 
-# get a segfault if we load this later
-use if $^O eq 'linux', 'Sys::Proctitle';
-
 BEGIN {
   # stuff useful locations into @INC
   unshift @INC,

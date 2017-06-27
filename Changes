@@ -1,3 +1,9 @@
+2.036003 - TESTING
+
+  [BUG FIXES]
+
+  * #322 cease use of Sys::Proctitle
+
 2.036002 - 2017-06-26
 
   [ENHANCEMENTS]
