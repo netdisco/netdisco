@@ -49,6 +49,9 @@ if (ref {} eq ref setting('database')) {
     }
 }
 
+# always set this
+$ENV{DBIC_TRACE_PROFILE} = 'console';
+
 # defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';
 if (exists setting('workers')->{interactives}
@@ -65,6 +68,11 @@ if (exists setting('workers')->{interactives}
 # force skipped DNS resolution, if unset
 setting('dns')->{hosts_file} ||= '/etc/hosts';
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
+
+# set max outstanding requests for AnyEvent::DNS
+$ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
+  = setting('dns')->{max_outstanding} || 50;
+$ENV{'PERL_ANYEVENT_HOSTS'} = setting('dns')->{hosts_file};
 
 # load /etc/hosts
 setting('dns')->{'ETCHOSTS'} = {};
@@ -126,14 +134,5 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
         %{ setting('reports')->{$_} }
     }} keys %{ setting('reports') } ];
 }
-
-# set max outstanding requests for AnyEvent::DNS
-$ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'}
-  = setting('dns')->{max_outstanding} || 50;
-$ENV{'PERL_ANYEVENT_HOSTS'}
-  = setting('dns')->{hosts_file} || '/etc/hosts';
-
-# always set this
-$ENV{DBIC_TRACE_PROFILE} = 'console';
 
 true;

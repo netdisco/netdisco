@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * #322 cease use of Sys::Proctitle
+  * queiten PERL_ANYEVENT_HOSTS undef error
 
 2.036002 - 2017-06-26
 
