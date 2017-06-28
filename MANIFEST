@@ -60,6 +60,7 @@ lib/App/Netdisco/DB/Result/NodeWireless.pm
 lib/App/Netdisco/DB/Result/Oui.pm
 lib/App/Netdisco/DB/Result/Process.pm
 lib/App/Netdisco/DB/Result/Session.pm
+lib/App/Netdisco/DB/Result/Statistics.pm
 lib/App/Netdisco/DB/Result/Subnet.pm
 lib/App/Netdisco/DB/Result/Topology.pm
 lib/App/Netdisco/DB/Result/User.pm
@@ -314,6 +315,7 @@ share/schema_versions/App-Netdisco-DB-4-5-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-40-41-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-41-42-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-42-43-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-43-44-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql

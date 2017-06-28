@@ -1,12 +1,13 @@
-2.036003 - TESTING
+2.036003 - 2017-06-28
 
   [NEW FEATURES]
+
   * #15 record device and node statistics once a day
 
   [BUG FIXES]
 
   * #322 cease use of Sys::Proctitle
-  * queiten PERL_ANYEVENT_HOSTS undef error
+  * quieten PERL_ANYEVENT_HOSTS undef error
 
 2.036002 - 2017-06-26
 
