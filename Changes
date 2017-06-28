@@ -1,5 +1,8 @@
 2.036003 - TESTING
 
+  [NEW FEATURES]
+  * #15 record device and node statistics once a day
+
   [BUG FIXES]
 
   * #322 cease use of Sys::Proctitle

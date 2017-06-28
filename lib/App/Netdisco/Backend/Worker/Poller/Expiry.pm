@@ -3,6 +3,7 @@ package App::Netdisco::Backend::Worker::Poller::Expiry;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use Time::Piece;
 use App::Netdisco::Backend::Util ':all';
 
 use Role::Tiny;
@@ -50,7 +51,50 @@ sub expire {
       });
   }
 
-  return job_done("Checked expiry for all Devices and Nodes");
+  # now update stats
+  my $schema = schema('netdisco');
+  eval { require SNMP::Info };
+  my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
+
+  # TODO: (when we have the capabilities table?)
+  #  $stats{waps} = sql_scalar('device',['COUNT(*)'], {"model"=>"AIR%"});
+
+  $schema->txn_do(sub {
+    $schema->resultset('Statistics')->update_or_create({
+      day => localtime->ymd,
+
+      device_count =>
+        $schema->resultset('Device')->count_rs->as_query,
+      device_ip_count =>
+        $schema->resultset('DeviceIp')->count_rs->as_query,
+      device_link_count =>
+        $schema->resultset('Virtual::DeviceLinks')
+          ->count_rs({'me.left_ip' => {'>', \'me.right_ip'}})->as_query,
+      device_port_count =>
+        $schema->resultset('DevicePort')->count_rs->as_query,
+      device_port_up_count =>
+        $schema->resultset('DevicePort')->count_rs({up => 'up'})->as_query,
+      ip_table_count =>
+        $schema->resultset('NodeIp')->count_rs->as_query,
+      ip_count =>
+        $schema->resultset('NodeIp')->search(undef,
+          {columns => 'ip', distinct => 1})->count_rs->as_query,
+      node_table_count =>
+        $schema->resultset('Node')->count_rs->as_query,
+      node_count =>
+        $schema->resultset('Node')->search(undef,
+          {columns => 'mac', distinct => 1})->count_rs->as_query,
+
+      netdisco_ver => $App::Netdisco::VERSION,
+      snmpinfo_ver => $snmpinfo_ver,
+      schema_ver   => $schema->schema_version,
+      perl_ver     => $],
+      pg_ver       => $schema->storage->dbh->{pg_server_version},
+
+    }, { key => 'primary' });
+  });
+
+  return job_done("Checked expiry and updated stats");
 }
 
 # expire nodes for a specific device
