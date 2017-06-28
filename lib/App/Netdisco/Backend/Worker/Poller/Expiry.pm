@@ -85,7 +85,7 @@ sub expire {
         $schema->resultset('Node')->search(undef,
           {columns => 'mac', distinct => 1})->count_rs->as_query,
 
-      netdisco_ver => $App::Netdisco::VERSION,
+      netdisco_ver => pretty_version($App::Netdisco::VERSION, 3),
       snmpinfo_ver => $snmpinfo_ver,
       schema_ver   => $schema->schema_version,
       perl_ver     => pretty_version($], 3),
@@ -105,7 +105,8 @@ sub pretty_version {
   $version =~ s/\.//g;
   $version = (join '.', reverse map {scalar reverse}
     unpack("(A${seglen})*", reverse $version));
-  $version =~ s/\.0+/\./g;
+  $version =~ s/\.000/.0/g;
+  $version =~ s/\.0+([1-9]+)/.$1/g;
   return $version;
 }
 
