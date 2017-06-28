@@ -1,6 +1,38 @@
 [% USE Number.Format %]
     <div class="row">
+    [% IF stats.day %]
       <div class="span5 offset1">
+      <h4>Statistics for this installation</h4>
+        <table class="table table-condensed">
+          <thead>
+            <tr>
+              <th>[% stats.device_count | format_number %] devices
+                  with [% stats.device_ip_count | format_number %] IPs
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>[% stats.device_port_count | format_number %] interfaces
+                  of which [% stats.device_port_up_count | format_number %] are up
+              </th>
+            </tr>
+            <tr>
+              <th>[% stats.device_link_count| format_number %] layer 2 links between devices</th>
+            </tr>
+            <tr>
+              <th>[% stats.node_table_count | format_number %] nodes of which [% stats.node_active_count | format_number %] are active</th>
+            </tr>
+            <tr>
+              <th>[% stats.ip_table_count | format_number %] IPs of which [% stats.ip_active_count | format_number %] are active</th>
+            </tr>
+            <tr>
+              <th>Statistics last generated on [% stats.day %]</th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="span4 offset1">
       <h4>Built using Open Source</h4>
         <table class="table table-condensed">
           <thead>
@@ -12,66 +44,29 @@
           <tbody>
             <tr>
               <th><b><a href="http://netdisco.org">App::Netdisco</a></b></th>
-              <th>[% disco_ver | html_entity %]</th>
-            </tr>
-            <tr>
-              <th><a href="https://metacpan.org/module/netdisco-db-deploy">DB Schema</a></th>
-              <th>v[% schema_ver | html_entity %]</th>
-            </tr>
-            <tr>
-              <th><a href="http://perldancer.org/">Dancer</a></th>
-              <th>[% dancer_version | html_entity %]</th>
-            </tr>
-            <tr>
-              <th><a href="http://getbootstrap.com">Bootstrap</a></th>
-              <th>[%# Can't determine magically %] 2.3.1</th>
-            </tr>
-            <tr>
-              <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
-              <th>
-                [% db_version| html_entity %].<br />
-                &nbsp;DBI [% dbi_ver | html_entity %],
-                DBD::Pg [% dbdpg_ver | html_entity %]
-              </th>
+              <th>[% stats.netdisco_ver | html_entity %]</th>
             </tr>
             <tr>
               <th><a href="https://github.com/netdisco/snmp-info">SNMP::Info</a></th>
-              <th>[% snmpinfo_ver | html_entity %]</th>
+              <th>[% stats.snmpinfo_ver | html_entity %]</th>
+            </tr>
+            <tr>
+              <th><a href="https://metacpan.org/module/netdisco-db-deploy">DB Schema</a></th>
+              <th>[% stats.schema_ver | html_entity %]</th>
+            </tr>
+            <tr>
+              <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
+              <th>[% stats.pg_ver | html_entity %]</th>
+              </th>
             </tr>
             <tr>
               <th><a href="http://www.perl.org">Perl</a></th>
-              <th>[% perl_version | html_entity %]</th>
+              <th>[% stats.perl_ver | html_entity %]</th>
             </tr>
           </tbody>
         </table>
       </div>
-      <div class="span4 offset1">
-      <h4>Statistics for this installation</h4>
-        <table class="table table-condensed">
-          <thead>
-            <tr>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>[% device_count | format_number %] devices with [% device_port_count | format_number %] interfaces
-                  using [% device_count + device_ip_count | format_number %] IPs</th>
-            </tr>
-            <tr>
-              <th>[% device_links | format_number %] layer 2 links between devices</th>
-            </tr>
-            <tr>
-              <th>[% node_count | format_number %] nodes in [% node_table_count | format_number %] entries</th>
-            </tr>
-            <tr>
-              <th>[% ip_count | format_number %] IPs in [% ip_table_count | format_number %] entries</th>
-            </tr>
-            <tr>
-              <th>Statistics took [% process_time %] seconds to process.</th>
-            </tr>
-            <tr><th></th></tr>
-          </tbody>
-        </table>
-      </div>
+    [% ELSE %]
+      <div class="span4 alert alert-info">Statistics will be available tomorrow.</div>
+    [% END %]
     </div>

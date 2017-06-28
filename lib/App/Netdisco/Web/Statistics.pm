@@ -9,7 +9,7 @@ get '/ajax/content/statistics' => require_login sub {
     my $stats = schema('netdisco')->resultset('Statistics')
       ->search(undef, { order_by => { -desc => 'day' }, rows => 1 });
 
-    $stats = ($stats->count ? $stats->first->hri : undef);
+    $stats = ($stats->count ? $stats->first : undef);
 
     var( nav => 'statistics' );
     template 'ajax/statistics.tt',
