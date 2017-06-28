@@ -21,10 +21,10 @@
               <th>[% stats.device_link_count| format_number %] layer 2 links between devices</th>
             </tr>
             <tr>
-              <th>[% stats.node_table_count | format_number %] nodes of which [% stats.node_active_count | format_number %] are active</th>
+              <th>[% stats.node_table_count | format_number %] nodes logged, of which [% stats.node_active_count | format_number %] are active</th>
             </tr>
             <tr>
-              <th>[% stats.ip_table_count | format_number %] IPs of which [% stats.ip_active_count | format_number %] are active</th>
+              <th>[% stats.ip_table_count | format_number %] IPs logged, of which [% stats.ip_active_count | format_number %] are active</th>
             </tr>
             <tr>
               <th>Statistics last generated on [% stats.day %]</th>

@@ -24,13 +24,9 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "ip_active_count",
   { data_type => "integer", is_nullable => 0 },
-  "ip_count",
-  { data_type => "integer", is_nullable => 0 },
   "node_table_count",
   { data_type => "integer", is_nullable => 0 },
   "node_active_count",
-  { data_type => "integer", is_nullable => 0 },
-  "node_count",
   { data_type => "integer", is_nullable => 0 },
 
   "netdisco_ver",

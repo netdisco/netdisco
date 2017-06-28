@@ -10,10 +10,8 @@ CREATE TABLE "statistics" (
   "device_port_up_count" integer NOT NULL,
   "ip_table_count" integer NOT NULL,
   "ip_active_count" integer NOT NULL,
-  "ip_count" integer NOT NULL,
   "node_table_count" integer NOT NULL,
   "node_active_count" integer NOT NULL,
-  "node_count" integer NOT NULL,
 
   "netdisco_ver" text,
   "snmpinfo_ver" text,
