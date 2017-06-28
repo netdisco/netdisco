@@ -88,13 +88,25 @@ sub expire {
       netdisco_ver => $App::Netdisco::VERSION,
       snmpinfo_ver => $snmpinfo_ver,
       schema_ver   => $schema->schema_version,
-      perl_ver     => $],
-      pg_ver       => $schema->storage->dbh->{pg_server_version},
+      perl_ver     => pretty_version($], 3),
+      pg_ver       =>
+        pretty_version($schema->storage->dbh->{pg_server_version}, 2),
 
     }, { key => 'primary' });
   });
 
   return job_done("Checked expiry and updated stats");
+}
+
+# take perl or pg versions and make pretty
+sub pretty_version {
+  my ($version, $seglen) = @_;
+  return unless $version and $seglen;
+  $version =~ s/\.//g;
+  $version = (join '.', reverse map {scalar reverse}
+    unpack("(A${seglen})*", reverse $version));
+  $version =~ s/\.0+/\./g;
+  return $version;
 }
 
 # expire nodes for a specific device
