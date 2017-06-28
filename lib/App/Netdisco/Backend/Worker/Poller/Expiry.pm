@@ -76,11 +76,17 @@ sub expire {
         $schema->resultset('DevicePort')->count_rs({up => 'up'})->as_query,
       ip_table_count =>
         $schema->resultset('NodeIp')->count_rs->as_query,
+      ip_active_count =>
+        $schema->resultset('NodeIp')->search({-bool => 'active'},
+          {columns => 'ip', distinct => 1})->count_rs->as_query,
       ip_count =>
         $schema->resultset('NodeIp')->search(undef,
           {columns => 'ip', distinct => 1})->count_rs->as_query,
       node_table_count =>
         $schema->resultset('Node')->count_rs->as_query,
+      node_active_count =>
+        $schema->resultset('Node')->search({-bool => 'active'},
+          {columns => 'mac', distinct => 1})->count_rs->as_query,
       node_count =>
         $schema->resultset('Node')->search(undef,
           {columns => 'mac', distinct => 1})->count_rs->as_query,
