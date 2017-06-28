@@ -108,6 +108,7 @@ sub expire {
 sub pretty_version {
   my ($version, $seglen) = @_;
   return unless $version and $seglen;
+  return $version if $version !~ m/^[0-9.]+$/;
   $version =~ s/\.//g;
   $version = (join '.', reverse map {scalar reverse}
     unpack("(A${seglen})*", reverse $version));
