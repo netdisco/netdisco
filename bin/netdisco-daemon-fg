@@ -7,7 +7,6 @@ use FindBin;
 FindBin::again();
 
 use File::Spec;
-use Path::Class;
 use Cwd 'realpath';
 
 my $me = realpath(File::Spec->catfile($FindBin::RealBin, $FindBin::RealScript));
