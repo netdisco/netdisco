@@ -30,11 +30,10 @@ itself via a neighbor protocol will Netdisco treat it as a Device. This can
 account for undesired behaviour, such as treating a server (Node) as a Device,
 or vice versa only recognising a switch (Device) as a Node.
 
-To prevent avoid discovery of any target as a Device, use the C<discover_no>,
-C<discover_no_type>, or C<discover_only> configuration settings. If you don't
-see links between Devices in Netdisco, it might be because they're not running
-a neighbor protocol, or for some reason not reporting the relationships to
-Netdisco. Use the C<show> command to troubleshoot this:
+To prevent discovery of devices, use the C<devices_no> configuration setting.
+If you don't see links between Devices in Netdisco, it might be because
+they're not running a neighbor protocol, or for some reason not reporting the
+relationships to Netdisco. Use the C<show> command to troubleshoot this:
 
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e c_id
 
