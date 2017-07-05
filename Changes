@@ -8,6 +8,7 @@
   [BUG FIXES]
 
   * #315 missing Pod::Usage dependency
+  * clean POD in SSHCollector platforms
 
 2.036004 - 2017-07-02
 
