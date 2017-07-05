@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * #323 c_ip only ever returns one IP per value
+  * get IPv6 neighbors via sshcollector from Cisco ASA (G. Rappenecker)
 
   [BUG FIXES]
 

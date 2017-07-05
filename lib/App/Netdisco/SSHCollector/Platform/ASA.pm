@@ -7,7 +7,7 @@ App::Netdisco::SSHCollector::Platform::ASA
 
 =head1 DESCRIPTION
 
-Collect ARP entries from Cisco ASA devices.
+Collect IPv4 ARP and IPv6 neighbor entries from Cisco ASA devices.
 
 You will need the following configuration for the user to automatically enter
 C<enable> status after login:
@@ -39,10 +39,12 @@ use Moo;
 
 =item B<arpnip($host, $ssh)>
 
-Retrieve ARP entries from device. C<$host> is the hostname or IP address
-of the device. C<$ssh> is a Net::OpenSSH connection to the device.
+Retrieve ARP and neighbor entries from device. C<$host> is the hostname or IP
+address of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
 Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
+
+=back
 
 =cut
 
@@ -91,6 +93,24 @@ sub arpnip {
             push @arpentries, { mac => $mac, ip => $ip };
         }
     }
+
+    # start ipv6
+    $expect->send("show ipv6 neighbor\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect(60, -re, $prompt);
+
+    @lines = split(m/\n/, $before);
+
+    # IPv6 age MAC state ifname
+    $linereg = qr/([0-9a-fA-F\:]+)\s+[0-9]+\s
+                     ([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})/x;
+
+    foreach my $line (@lines) {
+        if ($line =~ $linereg) {
+            my ($ip, $mac) = ($1, $2);
+            push @arpentries, { mac => $mac, ip => $ip };
+        }
+    }
+    # end ipv6
 
     $expect->send("exit\n");
     $expect->soft_close();
