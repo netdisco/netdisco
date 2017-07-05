@@ -54,6 +54,7 @@ Module::Build->new(
     'Plack' => '1.0023',
     'Plack::Middleware::Expires' => '0.03',
     'Plack::Middleware::ReverseProxy' => '0.15',
+    'Pod::Usage' => 0,
     'Role::Tiny' => '1.002005',
     'Sereal' => '0',
     'Socket6' => '0.23',

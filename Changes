@@ -4,6 +4,10 @@
 
   * #323 c_ip only ever returns one IP per value
 
+  [BUG FIXES]
+
+  * #315 missing Pod::Usage dependency
+
 2.036004 - 2017-07-02
 
   [BUG FIXES]
