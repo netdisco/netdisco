@@ -748,6 +748,12 @@ sub store_neighbors {
           next;
       }
 
+      if (ref $c_ip->{$entry}) {
+          error sprintf ' [%s] neigh - Error! port %s has multiple neighbors - skipping',
+            $device->ip, $port;
+          next;
+      }
+
       my $remote_ip   = $c_ip->{$entry};
       my $remote_ipad = NetAddr::IP::Lite->new($remote_ip);
       my $remote_port = undef;
@@ -838,24 +844,11 @@ sub store_neighbors {
           }
       }
 
-      # what we came here to do.... discover the neighbor(s)
-      foreach my $n ((ref $remote_ip) ? @$remote_ip : ($remote_ip)) {
-          debug sprintf
-            ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-            $device->ip, $n, ($remote_type || ''), $port;
-          push @to_discover, [$n, $remote_type];
-      }
-
-      # devices seeing multiple neighbors on the port
-      # pick the highest IP for the neighbor, which results in preferring IPv6
-      if (ref [] eq ref $remote_ip) {
-          debug sprintf
-            ' [%s] neigh - port %s has multiple neighbors, picking highest',
-            $device->ip, $port;
-
-          $remote_ip = [reverse sort {NetAddr::IP::Lite->new($a)
-                          <=> NetAddr::IP::Lite->new($b)} @$remote_ip]->[0];
-      }
+      # what we came here to do.... discover the neighbor
+      debug sprintf
+        ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
+        $device->ip, $remote_ip, ($remote_type || ''), $port;
+      push @to_discover, [$remote_ip, $remote_type];
 
       $remote_port = $c_port->{$entry};
       if (defined $remote_port) {

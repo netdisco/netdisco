@@ -1,3 +1,9 @@
+2.036005 - TESTING
+
+  [ENHANCEMENTS]
+
+  * #323 c_ip only ever returns one IP per value
+
 2.036004 - 2017-07-02
 
   [BUG FIXES]
