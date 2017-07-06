@@ -166,7 +166,7 @@ Have a quick read of the other settings to make sure you're happy, then move
 on. See L<Configuration|App::Netdisco::Manual::Configuration> for further
 details.
 
-=head1 Bootstrap
+=head1 Initialisation
 
 The database either needs configuring if new, or updating from the current
 release of Netdisco (1.x). You also need vendor MAC address prefixes (OUI
@@ -194,10 +194,20 @@ You should take care not to run this Netdisco daemon and the Netdisco 1.x
 daemon at the same time. Similarly, if you use the device discovery with
 Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
 
-For further documentation on deployment, see
-L<Deployment|App::Netdisco::Manual::Deployment>. If you think Netdisco isn't
-behaving correctly, see also the
-L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> page.
+Whenever you upgrade your operating system, you should also delete the
+C<~netdisco/perl5> directory and re-run the C<curl> command above, to update
+Netdisco's C library bindings.
+
+We have several other pages with tips for
+L<alternate deployment scenarios|App::Netdisco::Manual::Deployment>,
+L<understanding and troubleshooting Netdisco|App::Netdisco::Manual::Troubleshooting>,
+L<tips and tricks for specific platforms|App::Netdisco::Manual::Vendors>,
+and L<all the configuration options|App::Netdisco::Manual::Configuration>.
+
+You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
+the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
+Before installing or upgrading please always review the latest
+L<Release Notes|App::Netdisco::Manual::ReleaseNotes>.
 
 =head1 Upgrading from 2.x
 
