@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Documentation note on OS upgrade
+  * #324 use a (better) host group for internal localnet filter
 
 2.036005 - 2017-07-05
 

@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Node 'check_mac';
+use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
@@ -153,14 +154,12 @@ sub _gather_subnets {
   my @subnets = ();
 
   my $ip_netmask = $snmp->ip_netmask;
-  my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
-
   foreach my $entry (keys %$ip_netmask) {
       my $ip = NetAddr::IP::Lite->new($entry);
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if $ip->within($localnet);
+      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $netmask = $ip_netmask->{$addr};

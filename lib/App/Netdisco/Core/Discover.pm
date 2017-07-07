@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device
   qw/get_device match_devicetype is_discoverable/;
-use App::Netdisco::Util::Permission 'check_acl_only';
+use App::Netdisco::Util::Permission qw/check_acl_only check_acl_no/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::DNS ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
@@ -129,8 +129,6 @@ sub store_device {
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
-  my $localnet = NetAddr::IP::Lite->new('127.0.0.0/8');
-
   # build device aliases suitable for DBIC
   my @aliases;
   foreach my $entry (keys %$ip_index) {
@@ -139,7 +137,7 @@ sub store_device {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if $ip->within($localnet);
+      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};
@@ -755,7 +753,6 @@ sub store_neighbors {
       }
 
       my $remote_ip   = $c_ip->{$entry};
-      my $remote_ipad = NetAddr::IP::Lite->new($remote_ip);
       my $remote_port = undef;
       my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
@@ -791,7 +788,7 @@ sub store_neighbors {
       # useable remote IP...
 
       if ($remote_ip eq '0.0.0.0' or
-          $remote_ipad->within(NetAddr::IP::Lite->new('127.0.0.0/8'))) {
+          check_acl_no($remote_ip, 'group:__LOCAL_ADDRESSES__')) {
 
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');
