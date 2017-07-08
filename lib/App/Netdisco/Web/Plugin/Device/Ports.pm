@@ -185,6 +185,7 @@ get '/ajax/content/device/ports' => require_login sub {
         template 'ajax/device/ports_csv.tt', {
           results => $results,
           nodes => $nodes_name,
+          ips   => $ips_name,
           device => $device,
         }, { layout => undef };
     }

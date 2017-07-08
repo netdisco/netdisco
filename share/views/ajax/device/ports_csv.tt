@@ -190,30 +190,15 @@
         [% mynode.push('') %]
         [% SET has_ips = 0 %]
 
-        [% IF params.n_ip4 %]
-          [% FOREACH ip IN node.ip4s %]
-            [% SET has_ips = 1 %]
+        [% FOREACH ip IN node.$ips %]
+          [% SET has_ips = 1 %]
 
-            [% CALL mynode.splice(-3, 1, ip.ip) %] 
-            [% CALL mynode.splice(-2, 1, ip.dns) %] 
-            [% CALL mynode.splice(-1, 1, (ip.active ? 'No' : 'Yes')) %] 
+          [% CALL mynode.splice(-3, 1, ip.ip) %] 
+          [% CALL mynode.splice(-2, 1, ip.dns) %] 
+          [% CALL mynode.splice(-1, 1, (ip.active ? 'No' : 'Yes')) %] 
 
-            [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
-            [% CSV.dump(myport) %]
-          [% END %]
-        [% END %]
-
-        [% IF params.n_ip6 %]
-          [% FOREACH ip IN node.ip6s %]
-            [% SET has_ips = 1 %]
-
-            [% CALL mynode.splice(-3, 1, ip.ip) %] 
-            [% CALL mynode.splice(-2, 1, ip.dns) %] 
-            [% CALL mynode.splice(-1, 1, (ip.active ? 'No' : 'Yes')) %] 
-
-            [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
-            [% CSV.dump(myport) %]
-          [% END %]
+          [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
+          [% CSV.dump(myport) %]
         [% END %]
 
         [% CSV.dump(myport) IF NOT has_ips %]
