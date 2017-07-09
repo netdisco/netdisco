@@ -6,6 +6,10 @@
   * #324 use a (better) host group for internal localnet filter
   * #325 significant speed-up to Device > Ports tab (thx to T. Teräs)
 
+  [BUG FIXES]
+
+  * fix port neighbors being identified as macsuck_unsupported
+
 2.036005 - 2017-07-05
 
   [ENHANCEMENTS]

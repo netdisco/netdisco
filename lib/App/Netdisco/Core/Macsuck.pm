@@ -368,7 +368,7 @@ sub _walk_fwtable {
       # do not expose MAC address tables via SNMP. relies on prefetched
       # neighbors otherwise it would kill the DB with device lookups.
       my $neigh_cannot_macsuck = eval { # can fail
-          check_acl_no($device_port->neighbor, 'macsuck_unsupported') ||
+          check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
           match_devicetype($device_port->remote_type, 'macsuck_unsupported_type') };
 
       if ($device_port->is_uplink) {
