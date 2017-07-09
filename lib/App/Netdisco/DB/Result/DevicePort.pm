@@ -229,7 +229,7 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
           "$args->{foreign_alias}.alias" => { '=' =>
             $args->{self_resultsource}->schema->resultset('DeviceIp')
               ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
-                       {rows => 1, columns => 'alias', alias => 'devipsub'})->as_query }
+                       {rows => 1, columns => 'ip', alias => 'devipsub'})->as_query }
       };
   },
   { join_type => 'LEFT' },
