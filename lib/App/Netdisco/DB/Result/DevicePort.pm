@@ -91,24 +91,9 @@ __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 Returns the set of C<device_port_vlan> entries associated with this Port.
 These will be both tagged and untagged. Use this relation in search conditions.
 
-See also C<all_port_vlans>.
-
 =cut
 
 __PACKAGE__->has_many( port_vlans => 'App::Netdisco::DB::Result::DevicePortVlan',
-  { 'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port' } );
-
-=head2 all_port_vlans
-
-Returns the set of C<device_port_vlan> entries associated with this Port.
-These will be both tagged and untagged. Use this relation when prefetching related
-C<device_port_vlan> rows.
-
-See also C<port_vlans>.
-
-=cut
-
-__PACKAGE__->has_many( all_port_vlans => 'App::Netdisco::DB::Result::DevicePortVlan',
   { 'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port' } );
 
 =head2 nodes / active_nodes / nodes_with_age / active_nodes_with_age
@@ -241,10 +226,10 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
   sub {
       my $args = shift;
       return {
-          "$args->{foreign_alias}.ip" => { '=' =>
+          "$args->{foreign_alias}.alias" => { '=' =>
             $args->{self_resultsource}->schema->resultset('DeviceIp')
               ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
-                       {rows => 1, columns => 'ip', alias => 'devipsub'})->as_query }
+                       {rows => 1, columns => 'alias', alias => 'devipsub'})->as_query }
       };
   },
   { join_type => 'LEFT' },
@@ -252,7 +237,7 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
 
 =head2 vlans
 
-As compared to C<port_vlans>, this relationship returns a set of VLAN
+As compared to C<port_vlans>, this relationship returns a set of Device VLAN
 row objects for the VLANs on the given port, which might be more useful if you
 want to find out details such as the VLAN name.
 
@@ -260,7 +245,7 @@ See also C<vlan_count>.
 
 =cut
 
-__PACKAGE__->many_to_many( vlans => 'all_port_vlans', 'vlan' );
+__PACKAGE__->many_to_many( vlans => 'port_vlans', 'vlan' );
 
 
 =head2 oui

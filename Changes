@@ -4,6 +4,7 @@
 
   * Documentation note on OS upgrade
   * #324 use a (better) host group for internal localnet filter
+  * #325 significant speed-up to Device > Ports tab (thx to T. Teräs)
 
 2.036005 - 2017-07-05
 

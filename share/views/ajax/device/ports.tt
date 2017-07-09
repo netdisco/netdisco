@@ -19,11 +19,12 @@
   </thead>
   <tbody>
     [% FOREACH row IN results %]
+    [% SET portname = row.port %]
     <tr>
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove"></i>
-        [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND row.vlan_count < 2 %]
+        [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
         <i class="icon-fullscreen text-info"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="icon-arrow-down text-success"></i>
@@ -190,27 +191,23 @@
 
       [% IF params.c_vmember %]
       <td>
-        [% IF vmember_ok %]
-          [% IF row.vlan_count %]
+        [% IF vlans.$portname.vlan_count <= settings.devport_vlan_limit %]
           [% SET output = '' %]
-          [% SET vlanlist = [] %]
-          [% FOREACH vlan IN row.all_port_vlans %][% vlanlist.push(vlan.get_column('vlan')) %][% END %]
-          [% FOREACH vlan IN vlanlist.nsort %]
+          [% FOREACH vlan IN vlans.$portname.vlan_set.nsort %]
             [% SET output = output _
               '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan _ '">' _ vlan _ '</a>' %]
             [% SET output = output _ ', ' IF NOT loop.last %]
           [% END %]
-          [% IF row.vlan_count > 10 %] [%# TODO make this a settable variable %]
-            [% SET output = '<div class="nd_vlan-total">(' _ row.vlan_count
+          [% IF vlans.$portname.vlan_count > 10 %] [%# TODO make this a settable variable %]
+            [% SET output = '<div class="nd_vlan-total">(' _ vlans.$portname.vlan_count
               _ ')</div><span class="nd_linkcell nd_collapse-vlans">
                 <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
                 <div class="nd_collapsing nd_collapse-pre-hidden">' _ output %]
             [% SET output = output _ '</div>' %]
           [% END %]
           [% output %]
-          [% END %]
         [% ELSE %]
-        <i class="icon-asterisk"></i> (too many to list)
+        <i class="icon-asterisk text-warning"></i> ([% vlans.$portname.vlan_count %] is too many to list)
         [% END %]
       </td>
       [% END %]
@@ -264,18 +261,18 @@
       [% IF params.c_nodes OR params.c_neighbors %]
       <td>
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
-          [% IF row.neighbor %]
+          [% IF row.get_column('neighbor_ip') %]
             <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
             [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
               <i class="icon-phone"></i>&nbsp;
             [% ELSIF row.remote_type AND row.remote_type.match('^AP:\s') %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
-            <a href="[% uri_for('/device', self_options) %]&q=[% row.neighbor.ip | uri %]">
-                [% row.neighbor.dns.remove(settings.domain_suffix) || row.neighbor.ip | html_entity %]</a>
+            <a href="[% uri_for('/device', self_options) %]&q=[% row.get_column('neighbor_ip') | uri %]">
+                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
             [% IF row.remote_port %]
                 -
-                <a href="[% uri_for('/device', self_options) %]&q=[% row.neighbor.ip | uri %]&f=[% row.remote_port | uri %]&prefer=port">
+                <a href="[% uri_for('/device', self_options) %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
                     [% row.remote_port | html_entity %]</a>
             [% END %]
             <br/>

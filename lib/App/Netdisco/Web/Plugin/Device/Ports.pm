@@ -113,7 +113,32 @@ get '/ajax/content/device/ports' => require_login sub {
         $set = $set->search({-or => \@combi});
     }
 
-    # get aggregate master status
+    # so far only the basic device_port data
+    # now begin to join tables depending on the selected columns/options
+
+    # get vlans on the port
+    # leave this query dormant (lazy) unless c_vmember is set
+    my $vlans = $set->search({}, {
+      select => [
+        'port',
+        { array_agg => 'port_vlans.vlan', -as => 'vlan_set'   },
+        { count     => 'port_vlans.vlan', -as => 'vlan_count' },
+      ],
+      join => 'port_vlans',
+      group_by => 'me.port',
+    });
+
+    if (param('c_vmember')) {
+        $vlans = { map {(
+          $_->port => {
+            # DBIC smart enough to work out this should be an arrayref :)
+            vlan_set   => $_->get_column('vlan_set'),
+            vlan_count => $_->get_column('vlan_count'),
+          },
+        )} $vlans->all };
+    }
+
+    # get aggregate master status (self join)
     $set = $set->search({}, {
       'join' => 'agg_master',
       '+select' => [qw/agg_master.up_admin agg_master.up/],
@@ -122,17 +147,6 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # make sure query asks for formatted timestamps when needed
     $set = $set->with_times if param('c_lastchange');
-
-    # get vlans on the port, if there aren't too many
-    my $port_cnt = $device->ports->count() || 1;
-    my $vlan_cnt = $device->port_vlans->count() || 1;
-    my $vmember_ok =
-      (($vlan_cnt / $port_cnt) <= setting('devport_vlan_limit'));
-
-    if ($vmember_ok) {
-        $set = $set->search_rs({}, { prefetch => 'all_port_vlans' })->with_vlan_count
-          if param('c_vmember');
-    }
 
     # what kind of nodes are we interested in?
     my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
@@ -144,28 +158,35 @@ get '/ajax/content/device/ports' => require_login sub {
 
     if (param('c_nodes')) {
         # retrieve active/all connected nodes, if asked for
-        $set = $set->search_rs({}, { prefetch => [{$nodes_name => $ips_name}] });
-        $set = $set->search_rs({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "${ips_name}.ip"] });
+        $set = $set->search({}, { prefetch => [{$nodes_name => $ips_name}] });
+        $set = $set->search({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "${ips_name}.ip"] });
 
         # retrieve wireless SSIDs, if asked for
-        $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'wireless'}] })
+        $set = $set->search({}, { prefetch => [{$nodes_name => 'wireless'}] })
           if param('n_ssid');
 
         # retrieve NetBIOS, if asked for
-        $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'netbios'}] })
+        $set = $set->search({}, { prefetch => [{$nodes_name => 'netbios'}] })
           if param('n_netbios');
 
         # retrieve vendor, if asked for
-        $set = $set->search_rs({}, { prefetch => [{$nodes_name => 'oui'}] })
+        $set = $set->search({}, { prefetch => [{$nodes_name => 'oui'}] })
           if param('n_vendor');
     }
 
     # retrieve SSID, if asked for
-    $set = $set->search({}, { prefetch => 'ssid' }) if param('c_ssid');
+    $set = $set->search({}, { prefetch => 'ssid' })
+      if param('c_ssid');
 
     # retrieve neighbor devices, if asked for
-    $set = $set->search_rs({}, { prefetch => [{neighbor_alias => 'device'}] })
-      if param('c_neighbors');
+    #$set = $set->search({}, { prefetch => [{neighbor_alias => 'device'}] })
+    #  if param('c_neighbors');
+    # retrieve neighbor devices, if asked for
+    $set = $set->search({}, {
+      join => 'neighbor_alias',
+      '+select' => ['neighbor_alias.ip', 'neighbor_alias.dns'],
+      '+as'     => ['neighbor_ip', 'neighbor_dns'],
+    }) if param('c_neighbors');
 
     # sort ports (empty set would be a 'no records' msg)
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
@@ -177,7 +198,7 @@ get '/ajax/content/device/ports' => require_login sub {
           nodes => $nodes_name,
           ips   => $ips_name,
           device => $device,
-          vmember_ok => $vmember_ok,
+          vlans  => $vlans,
         }, { layout => undef };
     }
     else {
@@ -187,6 +208,7 @@ get '/ajax/content/device/ports' => require_login sub {
           nodes => $nodes_name,
           ips   => $ips_name,
           device => $device,
+          vlans  => $vlans,
         }, { layout => undef };
     }
 };
