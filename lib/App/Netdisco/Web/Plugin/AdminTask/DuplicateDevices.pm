@@ -12,12 +12,6 @@ register_admin_task({
   label => 'Duplicate Devices',
 });
 
-ajax '/ajax/control/admin/duplicatedevices/delete' => require_role admin => sub {
-    my $ip = NetAddr::IP::Lite->new(param('ip'));
-    send_error('Bad Request', 400) unless ($ip and $ip->addr ne '0.0.0.0');
-    forward '/ajax/control/admin/delete', { device => param('ip') };
-};
-
 ajax '/ajax/content/admin/duplicatedevices' => require_role admin => sub {
     my @set = schema('netdisco')->resultset('Device')->search({
       serial => { '-in' => schema('netdisco')->resultset('Device')->search({

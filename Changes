@@ -1,3 +1,9 @@
+2.036007 - 2017-07-12
+
+  [BUG FIXES]
+
+  * fix bugs with Pseudo and Duplicate Device delete (causing web crash)
+
 2.036006 - 2017-07-09
 
   [ENHANCEMENTS]

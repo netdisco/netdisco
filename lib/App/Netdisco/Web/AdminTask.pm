@@ -44,7 +44,7 @@ foreach my $action (@{ setting('job_prio')->{high} },
     };
 }
 
-ajax '/ajax/control/admin/delete' => require_role admin => sub {
+ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role admin => sub {
     send_error('Missing device', 400) unless param('device');
 
     my $device = NetAddr::IP->new(param('device'));

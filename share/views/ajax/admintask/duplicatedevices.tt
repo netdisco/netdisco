@@ -56,7 +56,7 @@
               <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="archive">
               <h4 class="nd_unbolden">Archive Nodes</h4>
             </label>
-            <input type="hidden" data-form="delete" value="[% row.ip | html_entity %]" name="ip"/>
+            <input type="hidden" data-form="delete" value="[% row.ip | html_entity %]" name="device"/>
           </div>
           <div class="modal-footer">
             <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
