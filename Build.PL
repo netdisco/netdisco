@@ -40,7 +40,6 @@ Module::Build->new(
     'JSON::XS' => '3.01',
     'List::MoreUtils' => '0.33',
     'MIME::Base64' => '3.13',
-    'Module::Find' => '0.12',
     'Module::Load' => '0.32',
     'Moo' => '1.001000',
     'MCE' => '1.703',

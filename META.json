@@ -56,7 +56,6 @@
             "List::MoreUtils" : "0.33",
             "MCE" : "1.703",
             "MIME::Base64" : "3.13",
-            "Module::Find" : "0.12",
             "Module::Load" : "0.32",
             "Moo" : "1.001000",
             "Net::DNS" : "0.72",
