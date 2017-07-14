@@ -96,7 +96,7 @@ sub search_aliases {
       {
         order_by => [qw/ me.dns me.ip /],
         join => 'device_ips',
-        group_by => 'me.ip',
+        distinct => 1,
       }
     );
 }

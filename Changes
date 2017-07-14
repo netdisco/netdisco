@@ -1,3 +1,9 @@
+2.036008 - 2017-07-14
+
+  [BUG FIXES]
+
+  * revert change to Device ResultSet which breaks search_for_device()
+
 2.036007 - 2017-07-12
 
   [BUG FIXES]
