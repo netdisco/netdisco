@@ -126,7 +126,7 @@ host_groups:
 device_identity: []
 community: ['public']
 community_rw: ['private']
-snmp_auth: []
+device_auth: []
 get_community: ""
 bulkwalk_off: false
 bulkwalk_no: []

@@ -581,7 +581,7 @@ Value: Dictionary of Access Control Lists. Default: None.
 Several configuration settings in Netdisco make use of L</"ACCESS CONTROL
 LISTS"> to identify lists of devices or hosts. Examples are the C<*_no>
 settings such as C<discover_no>, the C<*_only> settings such as C<macsuck_no>,
-and some "C<only>" settings which appear in C<snmp_auth> and C<dns>
+and some "C<only>" settings which appear in C<device_auth> and C<dns>
 configuration.
 
 The C<host_groups> setting allows for naming of groups which are then
@@ -711,7 +711,7 @@ Each is tried in turn when polling the device, and then the working community
 string will be cached in the database.
 
 For fine-grained control over which communities are tried for which devices,
-or to set SNMPv3 authentication, see C<snmp_auth>, below.
+or to set SNMPv3 authentication, see C<device_auth>, below.
 
 =head3 C<community_rw>
 
@@ -725,13 +725,13 @@ is tried in turn when writing to the device, and then the working community
 string will be cached in the database.
 
 For fine-grained control over which communities are tried for which devices,
-or to set SNMPv3 authentication, see C<snmp_auth>, below.
+or to set SNMPv3 authentication, see C<device_auth>, below.
 
-=head3 C<snmp_auth>
+=head3 C<device_auth>
 
 Value: List of Settings Trees. Default: Empty List.
 
-This setting configures authenticaiton for all SNMP versions, and provides an
+This setting configures authenticaiton for all polling, and provides an
 alternative fine-grained control for SNMPv1 and SNMPv2 community strings. You
 provide a list of authentication "I<stanza>", and Netdisco will try each in
 turn, then cache the one which works for a device.
@@ -741,7 +741,7 @@ limited to read (get) and/or write (set) operations. By default, a stanza is
 enabled for all device IPs, for read access only. The "tag" of a stanza is
 simply a friendly name used by Netdisco when referring to the configuration.
 
- snmp_auth:
+ device_auth:
    - community: public
    - community: publictwo
    - community: mycommunity
@@ -757,26 +757,23 @@ simply a friendly name used by Netdisco when referring to the configuration.
      priv:
        pass: netdiscokey2
        proto: DES
-   - tag: v3aclexample
-     user: netdisco2
+   - tag: aclexample
+     community: s3kr1t
+     read: false
+     write: true
      only:
        - 192.0.2.0/30
        - 172.20.10.0/24
      no: '172.20.10.1'
-   - tag: v2aclexample
-     community: s3kr1t
-     read: false
-     write: true
-     only: '2001:db8::/32'
 
 For SNMPv1 and SNMPv2, only the C<community> key is required.  Unlike the
 global C<community>/C<community_rw> setting, this is not a list but a single
-item. That is, to configure multiple community strings, have one stanza per
+item. Therefore, to configure multiple community strings, have one stanza per
 community, as in the examples above and below.
 
-For any version of SNMP you can add C<read> and/or C<write> booleans to
-control operations for that stanza, and IP restrictions using C<only> and
-C<no> (see L</"ACCESS CONTROL LISTS"> for what you can use here).
+For any sanza you can add C<read> and/or C<write> booleans to control whether
+it is used for get and/or set operations, and IP restrictions using C<only>
+and C<no> (see L</"ACCESS CONTROL LISTS"> for what you can use here).
 
 For SNMPv3 the C<tag> and C<user> keys are required. Providing an C<auth>
 section enables the authentication security level, providing a C<priv> section
@@ -794,6 +791,26 @@ this you usually configure a common context "prefix", with Netdisco's default
 being "C<vlan->" (i.e. C<vlan-1>, C<vlan-2>, etc). Add the C<context_prefix>
 key to a stanza to override this default.
 
+For other authentication mechanisms (HTTP, SSH, etc), C<tag> is also required.
+Each transport will have different settings, but usually a C<username> and
+C<password> are required, and optionally some other settings. See the
+transport or driver documentation pages for further details. For example:
+
+ device_auth:
+   - tag: ye_olde_snmp
+     community: public
+   - tag: sshcollector
+     only: 'group:sshcollectordevices'
+     driver: cli 
+     method: arpnip_nodes
+     username: foo
+     password: bar
+   - tag: netconf_devices
+     only: 'vendor:juniper'
+     driver: netconf
+     username: oliver
+     password: letmein
+
 Netdisco caches both the successful SNMPv2 read and write community strings,
 as well as the C<tag> names if available. This allows for faster operations
 once a connection has previously been made to a device. Tags are recommended.
@@ -806,7 +823,7 @@ Finally, a reminder that multiple SNMPv2 community strings need to be in
 separate named stanza, as below. However for simple v2 configurations you can
 revert to the "C<community>" setting, instead:
 
- snmp_auth:
+ device_auth:
    - tag: 'default_v2_readonly1'
      community: 'read1'
    - tag: 'default_v2_readonly2'
@@ -822,7 +839,7 @@ Value: String. Default none.
 An external program to run to get the community string for a given device.
 This is useful if, for example, you have you devices already configured in
 another NMS and you want to use that information instead of configuring
-C<snmp_auth>.
+C<device_auth>.
 
 The strings "C<%IP%>" and "C<%HOST%>" are replaced by the IP address and the
 hostname (or IP address if no hostname is known) of the system being
@@ -836,7 +853,7 @@ The command must return output in the following form:
  setCommunity=<comma-separated list of write-communities>
 
 If the community string is not known for the given system, the command should
-return no output and the community strings configured in C<snmp_auth>,
+return no output and the community strings configured in C<device_auth>,
 C<community>, and C<community_rw> will be used instead.
 
 =head3 C<bulkwalk_off>

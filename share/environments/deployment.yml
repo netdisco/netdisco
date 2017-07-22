@@ -30,7 +30,7 @@ safe_password_store: true
 
 # SNMP community string(s)
 # ````````````````````````
-snmp_auth:
+device_auth:
   - tag: 'default_v2_readonly'
     community: 'public'
     read: true
