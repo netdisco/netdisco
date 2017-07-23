@@ -2,12 +2,12 @@ package App::Netdisco::Core::Plugin;
 
 use Dancer ':syntax';
 use Dancer::Plugin;
-use Dancer::Hook;
+use Dancer::Factory::Hook;
 
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use Try::Tiny;
 
-Dancer::Hook->instance->register_hooks_name(
+Dancer::Factory::Hook->instance->install_hooks(
   map {("before_$_", $_, "after_$_")}
       @{ setting('core_phases') }
 );
@@ -24,7 +24,7 @@ register 'register_core_action' => sub {
   return error "bad param to register_core_action"
     unless ref sub {} eq ref $code and ref {} eq ref $args
       and exists $args->{action}
-      and Dancer::Hook->hook_is_registered($args->{action});
+      and Dancer::Factory::Hook->instance->hook_is_registered($args->{action});
 
   my $no   = $args->{no};
   my $only = $args->{only};
@@ -44,6 +44,7 @@ register 'register_core_action' => sub {
     return ($happy ? ($args->{final} ? 1 : 0) : -1);
   };
 
+  # NOTE: using Dancer::Factory::Hook internals
   if ($args->{final} and $args->{action} !~ m/^(?:before|after)_/) {
     unshift @{$store->hooks->{ $args->{action} }}, $hook;
   }

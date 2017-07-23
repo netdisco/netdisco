@@ -801,7 +801,7 @@ transport or driver documentation pages for further details. For example:
      community: public
    - tag: sshcollector
      only: 'group:sshcollectordevices'
-     driver: cli 
+     driver: cli
      method: arpnip_nodes
      username: foo
      password: bar
