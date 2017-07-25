@@ -12,45 +12,46 @@ Dancer::Factory::Hook->instance->install_hooks(
       @{ setting('core_phases') }
 );
 
-# cache hints for working through phases
-set(
-  map {("_phase_before_$_" => {}, "_phase_$_" => {}, "_phase_after_$_" => {})}
-      @{ setting('core_phases') },
-  # TODO: store in here (caller)[0] => $args
-);
+register 'register_core_driver' => sub {
+  my ($self, $args, $code) = @_;
+  return error "bad param to register_core_driver"
+    unless (ref sub {} eq ref $code) and (ref {} eq ref $args)
+      and exists $args->{phase} and exists $args->{driver}
+      and Dancer::Factory::Hook->instance->hook_is_registered($args->{phase});
 
-register 'register_core_action' => sub {
-  my ($self, $code, $args) = @_;
-  return error "bad param to register_core_action"
-    unless ref sub {} eq ref $code and ref {} eq ref $args
-      and exists $args->{action}
-      and Dancer::Factory::Hook->instance->hook_is_registered($args->{action});
-
-  my $no   = $args->{no};
-  my $only = $args->{only};
-  my $store = Dancer::Factory::Hook->instance;
+  my $no   = (exists $args->{no}   ? $args->{no}   : undef);
+  my $only = (exists $args->{only} ? $args->{only} : undef);
+  $args->{plugin} = (caller)[0];
 
   my $hook = sub {
-    my $device = shift or return -1;
-    return 0 if ($no and check_acl_no($device, $no))
-      or ($only and not check_acl_only($device, $only));
+    my ($device, $userconf) = @_;
+    return false unless (ref $device and (ref {} eq ref $userconf));
+
+    # first check internal (args) exclusion/inclusion criteria
+    return false if ($no and check_acl_no($device, $no));
+    return false if ($only and not (exists $userconf->{driver})
+                               and not check_acl_only($device, $only));
+
+    # then check external (userconf) exclusion/inclusion criteria
+    return false if exists $userconf->{phase}
+      and (($userconf->{phase} || '') ne $args->{phase});
+
+    return false if exists $userconf->{driver}
+      and (($userconf->{driver} || '') ne $args->{driver});
+
+    return false if exists $userconf->{plugin}
+      and (($userconf->{plugin} || '') ne $args->{plugin});
 
     my $happy = false;
     try {
-      $code->($args);
+      $code->($device, $args, $userconf);
       $happy = true;
-    };
-
-    return ($happy ? ($args->{final} ? 1 : 0) : -1);
+    }
+    catch { debug $_ };
+    return $happy;
   };
 
-  # NOTE: using Dancer::Factory::Hook internals
-  if ($args->{final} and $args->{action} !~ m/^(?:before|after)_/) {
-    unshift @{$store->hooks->{ $args->{action} }}, $hook;
-  }
-  else {
-    push @{$store->hooks->{ $args->{action} }}, $hook;
-  }
+  Dancer::Factory::Hook->instance->register_hook($args->{phase}, $hook);
 };
 
 register_plugin;
@@ -58,103 +59,66 @@ true;
 
 =head1 NAME
 
-App::Netdisco::Web::Plugin - Netdisco Web UI components
+App::Netdisco::Core::Plugin - Netdisco Backend Drivers
 
 =head1 Introduction
 
-L<App::Netdisco>'s plugin system allows you more control of what Netdisco
-components are displayed in the web interface. Plugins can be distributed
-independently from Netdisco and are a better alternative to source code
-patches.
+L<App::Netdisco>'s plugin system allows users to create backend I<drivers>
+which use different I<transports> to gather information from network devices
+and store in the database.
 
-The following web interface components are implemented as plugins:
+For example, transports might be SNMP, SSH, or HTTPS. Drivers might be
+combining those transports with application protocols such as SNMP, NETCONF
+(OpenConfig with XML), RESTCONF (OpenConfig with JSON), eAPI, or even CLI
+scraping.
 
-=over 4
-
-=item *
-
-Navigation Bar items (e.g. Inventory link)
-
-=item *
-
-Tabs for Search and Device pages
-
-=item *
-
-Reports (pre-canned searches)
-
-=item *
-
-Additional Device Port Columns
-
-=item *
-
-Additional Device Details
-
-=item *
-
-Admin Menu function (job control, manual topology, pseudo devices)
-
-=back
-
-This document explains how to configure which plugins are loaded. See
-L<App::Netdisco::Manual::WritingPlugins> if you want to develop new plugins.
+Drivers can be restricted to certain vendor platforms using familiar ACL
+syntax. They are also attached to specific phases in Netdisco's backend
+operation.
 
 =head1 Application Configuration
 
-Netdisco configuration supports a C<web_plugins> directive along with the
-similar C<extra_web_plugins>. These list, in YAML format, the set of Perl
-module names which are the plugins to be loaded. Each item injects one part of
-the Netdisco web user interface.
-
-You can override these settings to add, change, or remove entries from the
-default lists. Here is an example of the C<web_plugins> list:
-
- web_plugins:
-   - Inventory
-   - Report::DuplexMismatch
-   - Search::Device
-   - Search::Node
-   - Search::Port
-   - Device::Details
-   - Device::Ports
+The C<collector_plugins> and C<extra_collector_plugins> settings list in YAML
+format the set of Perl module names which are the plugins to be loaded.
 
 Any change should go into your local C<deployment.yml> configuration file. If
 you want to view the default settings, see the C<share/config.yml> file in the
 C<App::Netdisco> distribution.
 
+Driver phases are in the C<core_phases> setting and for a given backend
+action, the registered drivers at one or more phases will be executed if they
+apply to the target device. Each phase ("X") also gets a C<before_X> and
+C<after_X> phase added for preparatory or optional work, respectively.
+
 =head1 How to Configure
 
-The C<extra_web_plugins> setting is empty, and used only if you want to add
-new plugins but not change the set enabled by default. If you do want to add
-to or remove from the default set, then create a version of C<web_plugins>
-instead.
+The C<extra_collector_plugins> setting is empty, and used only if you want to
+add new plugins but not change the set enabled by default. If you do want to
+add to or remove from the default set, then create a version of
+C<collector_plugins> instead.
 
-Netdisco prepends "C<App::Netdisco::Web::Plugin::>" to any entry in the list.
-For example, "C<Inventory>" will load the
-C<App::Netdisco::Web::Plugin::Inventory> module.
-
-Such plugin modules can either ship with the App::Netdisco distribution
-itself, or be installed separately. Perl uses the standard C<@INC> path
-searching mechanism to load the plugin modules.
+Netdisco prepends "C<App::Netdisco::Core::Plugin::>" to any entry in the list.
+For example, "C<Discover::WirelessServices::UniFi>" will load the
+C<App::Netdisco::Core::Plugin::Discover::WirelessServices::UniFi> package.
 
 If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
 to load the module as-is, without prepending anything to the name. This allows
-you to have App::Netdiso web UI plugins in other namespaces:
+you to have App::Netdiso web UI plugins in other namespaces.
 
- web_plugins:
-   - Inventory
-   - Search::Device
-   - Device::Details
-   - +My::Other::Netdisco::Web::Component
+Plugin modules can either ship with the App::Netdisco distribution itself, or
+be installed separately. Perl uses the standard C<@INC> path searching
+mechanism to load the plugin modules. See the C<include_paths> and
+C<site_local_files> settings in order to modify C<@INC> for loading local
+plugins.
 
-The order of the entries is significant. Unsurprisingly, the modules are
-loaded in order. Therefore Navigation Bar items appear in the order listed,
-and Tabs appear on the Search and Device pages in the order listed, and so on.
+The order of the entries is significant. Drivers are executed in REVERSE
+order that they appear in the C<extra_collector_plugins> and
+C<collector_plugins> settings.
 
 Finally, you can also prepend module names with "C<X::>", to support the
-"Netdisco extension" namespace. For example, "C<X::Observium>" will load the
-L<App::NetdiscoX::Web::Plugin::Observium> module.
+"Netdisco extension" namespace. For example,
+"C<X::Macsuck::WirelessNodes::UniFi>" will load the
+L<App::NetdiscoX::Core::Plugin::Macsuck::WirelessNodes::UniFi> module.
 
 =cut
 

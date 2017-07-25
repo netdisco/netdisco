@@ -279,16 +279,16 @@ collector_plugins:
   - Arpnip::Subnets::RFC
   - NetBIOS::Nbtstat::RFC
 
-#core_phases:
-#  - discover_properties
-#  - discover_interfaces
-#  - discover_vlans
-#  - discover_wireless
-#  - discover_entities
-#  - macsuck_nodes
-#  - arpnip_nodes
-#  - arpnip_subnets
-#  - netbios_stat
+core_phases:
+  - discover_properties
+  - discover_interfaces
+  - discover_vlans
+  - discover_wireless
+  - discover_entities
+  - macsuck_nodes
+  - arpnip_nodes
+  - arpnip_subnets
+  - netbios_stat
 
 # ---------------
 # GraphViz Export
