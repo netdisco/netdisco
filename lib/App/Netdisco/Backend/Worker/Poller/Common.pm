@@ -2,7 +2,7 @@ package App::Netdisco::Backend::Worker::Poller::Common;
 
 use Dancer qw/:moose :syntax :script/;
 
-use App::Netdisco::Util::SNMP 'snmp_connect';
+use App::Netdisco::Core::Transport::SNMP;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Backend::Util ':all';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
@@ -63,7 +63,7 @@ sub _single_body {
       return job_defer("$job_type deferred: $host is not ${job_type}able");
   }
 
-  my $snmp = snmp_connect($device);
+  my $snmp = App::Netdisco::Core::Transport::SNMP->instance->reader_for($device);
   if (!defined $snmp) {
       return job_defer("$job_type failed: could not SNMP connect to $host");
   }
