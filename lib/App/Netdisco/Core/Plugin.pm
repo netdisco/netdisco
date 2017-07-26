@@ -13,45 +13,45 @@ Dancer::Factory::Hook->instance->install_hooks(
 );
 
 register 'register_core_driver' => sub {
-  my ($self, $args, $code) = @_;
+  my ($self, $driverconf, $code) = @_;
   return error "bad param to register_core_driver"
-    unless (ref sub {} eq ref $code) and (ref {} eq ref $args)
-      and exists $args->{phase} and exists $args->{driver}
-      and Dancer::Factory::Hook->instance->hook_is_registered($args->{phase});
+    unless ((ref sub {} eq ref $code) and (ref {} eq ref $driverconf)
+      and exists $driverconf->{phase} and exists $driverconf->{driver}
+      and Dancer::Factory::Hook->instance->hook_is_registered($driverconf->{phase}));
 
-  my $no   = (exists $args->{no}   ? $args->{no}   : undef);
-  my $only = (exists $args->{only} ? $args->{only} : undef);
-  $args->{plugin} = (caller)[0];
+  my $no   = (exists $driverconf->{no}   ? $driverconf->{no}   : undef);
+  my $only = (exists $driverconf->{only} ? $driverconf->{only} : undef);
+  $driverconf->{plugin} = (caller)[0];
 
   my $hook = sub {
     my ($device, $userconf) = @_;
     return false unless (ref $device and (ref {} eq ref $userconf));
 
-    # first check internal (args) exclusion/inclusion criteria
+    # first check internal (driverconf) exclusion/inclusion criteria
     return false if ($no and check_acl_no($device, $no));
     return false if ($only and not (exists $userconf->{driver})
                                and not check_acl_only($device, $only));
 
     # then check external (userconf) exclusion/inclusion criteria
     return false if exists $userconf->{phase}
-      and (($userconf->{phase} || '') ne $args->{phase});
+      and (($userconf->{phase} || '') ne $driverconf->{phase});
 
     return false if exists $userconf->{driver}
-      and (($userconf->{driver} || '') ne $args->{driver});
+      and (($userconf->{driver} || '') ne $driverconf->{driver});
 
     return false if exists $userconf->{plugin}
-      and (($userconf->{plugin} || '') ne $args->{plugin});
+      and (($userconf->{plugin} || '') ne $driverconf->{plugin});
 
     my $happy = false;
     try {
-      $code->($device, $args, $userconf);
+      $code->($device, $driverconf, $userconf);
       $happy = true;
     }
     catch { debug $_ };
     return $happy;
   };
 
-  Dancer::Factory::Hook->instance->register_hook($args->{phase}, $hook);
+  Dancer::Factory::Hook->instance->register_hook($driverconf->{phase}, $hook);
 };
 
 register_plugin;
@@ -103,7 +103,7 @@ C<App::Netdisco::Core::Plugin::Discover::WirelessServices::UniFi> package.
 
 If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
 to load the module as-is, without prepending anything to the name. This allows
-you to have App::Netdiso web UI plugins in other namespaces.
+you to have App::Netdiso Core plugins in other namespaces.
 
 Plugin modules can either ship with the App::Netdisco distribution itself, or
 be installed separately. Perl uses the standard C<@INC> path searching
