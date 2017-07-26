@@ -26,7 +26,7 @@ App::Netdisco plugins should load the L<App::Netdisco::Web::Plugin> module.
 This exports a set of helper subroutines to register the new UI components.
 Here's the boilerplate code for our example plugin module:
 
- package App::Netdisco::Web::Plugin::MyNewFeature
+ package App::Netdisco::Web::Plugin::MyNewFeature;
  
  use Dancer ':syntax';
  use Dancer::Plugin::DBIC;

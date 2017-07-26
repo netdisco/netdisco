@@ -98,8 +98,8 @@ add to or remove from the default set, then create a version of
 C<collector_plugins> instead.
 
 Netdisco prepends "C<App::Netdisco::Core::Plugin::>" to any entry in the list.
-For example, "C<Discover::WirelessServices::UniFi>" will load the
-C<App::Netdisco::Core::Plugin::Discover::WirelessServices::UniFi> package.
+For example, "C<Discover::Wireless::UniFi>" will load the
+C<App::Netdisco::Core::Plugin::Discover::Wireless::UniFi> package.
 
 If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
 to load the module as-is, without prepending anything to the name. This allows

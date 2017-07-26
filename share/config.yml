@@ -270,7 +270,7 @@ collector_plugins:
   - Discover::BGPNeighbors::RFC
   - Discover::OSPFNeighbors::RFC
   - Discover::VLANs::RFC
-  - Discover::WirelessServices::RFC
+  - Discover::Wireless::RFC
   - Discover::Entities::RFC
   - Macsuck::Nodes::RFC # {platform: any}
   - Macsuck::WirelessNodes::RFC

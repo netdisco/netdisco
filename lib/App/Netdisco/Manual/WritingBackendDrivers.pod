@@ -1,0 +1,171 @@
+=head1 NAME
+
+App::Netdisco::Manual::WritingCorePlugins - Documentation on Backend Driver
+Plugins for Developers
+
+=head1 Introduction
+
+L<App::Netdisco>'s plugin system allows users to create backend I<drivers>
+which use different I<transports> to gather information from network devices
+and store in the database.
+
+For example, transports might be SNMP, SSH, or HTTPS. Drivers might be
+combining those transports with application protocols such as SNMP, NETCONF
+(OpenConfig with XML), RESTCONF (OpenConfig with JSON), eAPI, or even CLI
+scraping.
+
+Drivers can be restricted to certain vendor platforms using familiar ACL
+syntax. They are also attached to specific phases in Netdisco's backend
+operation.
+
+See L<App::Netdisco::Core::Plugin> for more information about core plugins.
+
+=head1 Developing Plugins
+
+A plugin is simply a Perl module which is loaded. Therefore it can do anything
+you like, but most usefully for the App::Netdisco application the module
+will make a connection to a device, gather some data, and store it in
+Netdisco's database.
+
+App::Netdisco plugins should load the L<App::Netdisco::Core::Plugin> module.
+This exports a set of helper subroutines to register the driver. Here's the
+boilerplate code for our example plugin module:
+
+ package App::Netdisco::Core::Plugin::Discover::Wireless::UniFi;
+ 
+ use Dancer ':syntax';
+ use Dancer::Plugin::DBIC;
+ use App::Netdisco::Core::Plugin;
+ 
+ # driver registration code goes here, ** see below **
+ 
+ true;
+
+=head1 Registering a Driver
+
+Use the C<register_core_driver> helper from L<App::Netdisco::Core::Plugin> to
+register a driver:
+
+ register_core_driver( \%driverconf, $coderef );
+
+For example:
+
+ register_core_driver({
+   driver => 'unifiapi',
+   phase  => 'discover_wireless',
+ }, sub { "driver code here" });
+
+An explanation of the C<$driverconf> options is below. The C<$coderef> is the
+main body of your driver. Your driver is run in a L<Try::Tiny> statement to
+catch errors, and passed the following arguments:
+
+ $coderef->($device, $driverconf, $userconf);
+
+The C<$device> is an instance of L<App::Netdisco::DB::Result::Device>; that
+is, a representation of a row in the database. Note that for early discover
+phases this row may not yet exist in the database.
+
+The C<$driverconf> hashref is the set of configuration parameters you used to
+declare the driver (documented below). The C<$userconf> hashref is the
+settings from C<device_auth> that the end-user configured for authentication;
+these are typically specific to the driver and transport in use.
+
+=head2 Required Parameters
+
+You must register drivers with a C<driver> and C<phase> parameter.
+
+The C<driver> is a label associated with a group of drivers and typically
+refers to the combination of transport and application protocol. Examples
+include C<snmp>, C<netconf>, C<restconf>, C<eapi>, and C<cli>. The convention
+is for driver names to be lowercase. Users use the driver name to associate
+authentication configuration settings with the correct drivers.
+
+The C<phase> corresponds to the action run by Netdisco's backend, with the
+addition of wrapping phases for additional windows of execution. The list of
+so-called I<main> phases is below (and you can see the actions these map to):
+
+ core_phases:
+   - discover_properties
+   - discover_interfaces
+   - discover_vlans
+   - discover_wireless
+   - discover_entities
+   - macsuck_nodes
+   - arpnip_nodes
+   - arpnip_subnets
+   - netbios_stat
+
+Each main phase also has C<before> and C<after> phases. For example the
+C<arpnip_nodes> phase will have C<before_arpnip_nodes> and
+C<after_arpnip_nodes> phases available when you register a driver. Note the
+significance of the Return Code, and execution order, of drivers in these
+phases, explained below.
+
+=head2 Optional Parameters
+
+Drivers may have C<only> and C<no> parameters configured which use the
+standard ACL syntax described in
+L<the settings guide|App::Netdisco::Manual::Configuration>. The C<only>
+directive is especially useful as it can restrict a driver to a given device
+platform or operating system (for example Cisco IOS XR, for RESTCONF).
+
+=head2 Driver Execution and Return Code
+
+Drivers are configured as an ordered list (in C<collector_plugins> or
+C<extra_collector_plugins>). For the C<before> and C<after> phases of any
+action, drivers are run in the order loaded. For the main phase of any action
+they are run in REVERSE order. This has the effect that driver plugins loaded
+through C<extra_collector_plugins> will be run I<before> core drivers.
+
+The return code of the driver is ignored for C<before> and C<after> phases,
+but is significant for the main phase of the action. During this phase if any
+driver returns a true value then the main phase is deemed to have been
+satisfied and Netdsico will move on to any C<after> driver plugins.
+
+Remember that a driver is only run if it matches the hardware platform of the
+target device and the user's configuration, and is not also excluded by the
+user's configuration.
+
+=head1 Database Connections
+
+The Netdisco database is available via the C<netdisco> schema key, as below.
+You can also use the C<external_databases> configuration item to set up
+connections to other databases.
+
+ # plugin code
+ use Dancer::Plugin::DBIC;
+ schema('netdisco')->resultset('Devices')->search({vendor => 'cisco'});
+
+=head1 Naming and File Location
+
+There are several options for how you name, distribute and install your
+App::Netdisco plugin.
+
+=head2 Namespaces
+
+As mentioned in L<App::Netdisco::Core::Plugin>, official Netdisco plugins live
+in the C<App::Netdisco::Core::Plugin::> namespace. You can use this namespace
+and submit the product to the Netdisco developer team for consideration for
+inclusion in the official distribution.
+
+Alternatively you can release the plugin to CPAN under your own account. In
+that case we request that you instead use the
+C<App::NetdiscoX::Core::Plugin::> namespace (note the "X"). Users can load
+such modules by using the abbreviated form "X::MyPluginName" which is then
+expanded to the full package.
+
+=head2 File Location
+
+If writing your own plugins that are not for redistribution or packaging on
+CPAN, Netdisco can enable a local include path (C<@INC>). Configuring the
+C<site_local_files> setting to be "true" enables:
+
+ $ENV{NETDISCO_HOME}/nd-site-local/lib
+ 
+As an example, if your plugin is called
+"App::NetdiscoX::Core::Plugin::MyPluginName" then it could live at:
+
+ ~netdisco/nd-site-local/lib/App/NetdiscoX/Core/Plugin/MyPluginName.pm
+
+=cut
+
