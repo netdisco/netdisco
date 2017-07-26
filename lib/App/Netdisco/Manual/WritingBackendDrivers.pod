@@ -126,7 +126,32 @@ Remember that a driver is only run if it matches the hardware platform of the
 target device and the user's configuration, and is not also excluded by the
 user's configuration.
 
-=head1 Database Connections
+=head2 Accessing Transports
+
+From your driver you will want to connect to a device to gather data. This is
+done using a transport protocol session (SNMP, SSH, etc). Transports are
+singleton objects instantiated on demand, so they can be shared among a series
+of action phases that are accessing the same device.
+
+See the documentation for each transport to find out how to access it:
+
+=over 4
+
+=item *
+
+L<App::Netdisco::Core::Transport::SNMP>
+
+=item *
+
+L<App::Netdisco::Core::Transport::HTTPS>
+
+=item *
+
+L<App::Netdisco::Core::Transport::SSH>
+
+=back
+
+=head2 Database Connections
 
 The Netdisco database is available via the C<netdisco> schema key, as below.
 You can also use the C<external_databases> configuration item to set up
