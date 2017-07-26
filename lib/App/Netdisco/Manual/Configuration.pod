@@ -424,7 +424,7 @@ indenting the query text.
 =head4 C<category> (optional)
 
 Section of the Reports menu where this report will appear. See
-L<WritingPlugins|App::Netdisco::Manual::WritingPlugins> for the full list.
+L<WritingWebPlugins|App::Netdisco::Manual::WritingWebPlugins> for the full list.
 If not supplied, reports appear in a I<My Reports> category.
 
 =head4 C<hidden> (optional)

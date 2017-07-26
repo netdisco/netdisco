@@ -1,6 +1,6 @@
 =head1 NAME
 
-App::Netdisco::Manual::WritingPlugins - Documentation on Plugins for Developers
+App::Netdisco::Manual::WritingWebPlugins - Documentation on Web Plugins for Developers
 
 =head1 Introduction
 

@@ -233,7 +233,8 @@ Admin Menu function (job control, manual topology, pseudo devices)
 =back
 
 This document explains how to configure which plugins are loaded. See
-L<App::Netdisco::Manual::WritingPlugins> if you want to develop new plugins.
+L<App::Netdisco::Manual::WritingWebPlugins> if you want to develop new
+plugins.
 
 =head1 Application Configuration
 
