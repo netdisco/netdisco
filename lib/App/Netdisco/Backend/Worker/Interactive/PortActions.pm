@@ -60,6 +60,26 @@ sub vlan {
   return _set_port_generic($job, 'vlan');
 }
 
+sub voicevlan {
+  my ($self, $job) = @_;
+
+  my $port = get_port($job->device, $job->port)
+    or return job_error(sprintf "Unknown port name [%s] on device [%s]",
+      $job->port, $job->device);
+
+  my $port_reconfig_check = port_reconfig_check($port);
+  return job_error("Cannot alter port: $port_reconfig_check")
+    if $port_reconfig_check;
+
+  my $vlan_reconfig_check = vlan_reconfig_check($port);
+  return job_error("Cannot alter vlan: $vlan_reconfig_check")
+    if $vlan_reconfig_check;
+
+  my @stat = _set_port_generic($job, 'voice_vlan'); # for Cisco trunk
+  return @stat if $stat[0] eq 'done';
+  return _set_port_generic($job, 'voice_vlan');
+}
+
 sub _set_port_generic {
   my ($job, $slot, $column) = @_;
   $column ||= $slot;
