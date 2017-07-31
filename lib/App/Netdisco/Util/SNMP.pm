@@ -25,9 +25,9 @@ subroutines.
 
 =head2 build_communities( $device, $mode )
 
-Takes an established L<SNMP::Info> instance and returns a set of potential
-SNMP community authentication settings that are configured in Netdisco, for
-the given mode (C<read> or C<write>).
+Takes a Netdisco L<Device|App::Netdisco::DB::Result::Device> instance and
+returns a set of potential SNMP community authentication settings that are
+configured in Netdisco, for the given mode ("C<read>" or "C<write>").
 
 =cut
 
