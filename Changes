@@ -2,6 +2,7 @@
 
   [BUG FIXES]
 
+  * #334 DB schema is not upgraded past v40
   * #335 No such device when clicking on device in netmap
 
 2.036008 - 2017-07-14
