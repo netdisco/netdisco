@@ -426,6 +426,13 @@ C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
  ~netdisco/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
 
+=head2 voicevlan
+
+Set the Cisco voice VLAN on a device port. Requires the C<-d> parameter
+(device), C<-p> parameter (port), and C<-e> parameter (voice VLAN number).
+
+ ~netdisco/bin/netdisco-do voicevlan -d 192.0.2.1 -p FastEthernet0/1 -e 89
+
 =head2 power
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
