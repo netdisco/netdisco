@@ -19,9 +19,9 @@ App::Netdisco::Core::Transport::SNMP
 =head1 DESCRIPTION
 
 Singleton for SNMP connections. Returns cached L<SNMP::Info> instance for a
-given device IP, or else undef. Prefix calls to this class with:
+given device IP, or else undef. All methods are class methods, for example:
 
- App::Netdisco::Core::Transport::SNMP->instance()
+ App::Netdisco::Core::Transport::SNMP->reader_for( ... );
 
 =cut
 
@@ -41,8 +41,8 @@ connected to that device. The IP can be any on the device, and the management
 interface will be connected to.
 
 If the device is known to Netdisco and there is a cached SNMP community
-string, this will be tried first, and then other community string(s) from the
-application configuration will be tried.
+string, that community will be tried first, and then other community strings
+from the application configuration will be tried.
 
 If C<$useclass> is provided, it will be used as the L<SNMP::Info> device
 class instead of the class in the Netdisco database.
@@ -52,18 +52,18 @@ Returns C<undef> if the connection fails.
 =cut
 
 sub reader_for {
-  my ($self, $ip, $useclass) = @_;
+  my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
-  return $self->readers->{$device->ip}
-    if exists $self->readers->{$device->ip};
+  my $readers = $class->instance->readers or return undef;
+  return $readers->{$device->ip} if exists $readers->{$device->ip};
   debug sprintf 'snmp reader cache warm: [%s]', $device->ip;
-  return ($self->readers->{$device->ip}
+  return ($readers->{$device->ip}
     = _snmp_connect_generic('read', $device, $useclass));
 }
 
-=head2 writer_for( $ip, $useclass? )
+=head1 writer_for( $ip, $useclass? )
 
-Same as C<reader_for> but uses the read-write community string(s) from the
+Same as C<reader_for> but uses the read-write community strings from the
 application configuration file.
 
 Returns C<undef> if the connection fails.
@@ -71,15 +71,14 @@ Returns C<undef> if the connection fails.
 =cut
 
 sub writer_for {
-  my ($self, $ip, $useclass) = @_;
+  my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
-  return $self->writers->{$device->ip}
-    if exists $self->writers->{$device->ip};
+  my $writers = $class->instance->writers or return undef;
+  return $writers->{$device->ip} if exists $writers->{$device->ip};
   debug sprintf 'snmp writer cache warm: [%s]', $device->ip;
-  return ($self->writers->{$device->ip}
+  return ($writers->{$device->ip}
     = _snmp_connect_generic('write', $device, $useclass));
 }
-
 
 sub _snmp_connect_generic {
   my ($mode, $device, $useclass) = @_;

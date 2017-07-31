@@ -59,7 +59,7 @@ sub discover {
       return job_defer("discover deferred: $host is not discoverable");
   }
 
-  my $snmp = App::Netdisco::Core::Transport::SNMP->instance->reader_for($device);
+  my $snmp = App::Netdisco::Core::Transport::SNMP->reader_for($device);
   if (!defined $snmp) {
       return job_defer("discover failed: could not SNMP connect to $host");
   }

@@ -22,7 +22,7 @@ sub _set_device_generic {
   $data ||= '';
 
   # snmp connect using rw community
-  my $info = App::Netdisco::Core::Transport::SNMP->instance->writer_for($ip)
+  my $info = App::Netdisco::Core::Transport::SNMP->writer_for($ip)
     or return job_defer("Failed to connect to device [$ip] to update $slot");
 
   my $method = 'set_'. $slot;

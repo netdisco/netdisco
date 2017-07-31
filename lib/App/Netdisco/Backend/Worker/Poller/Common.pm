@@ -63,7 +63,7 @@ sub _single_body {
       return job_defer("$job_type deferred: $host is not ${job_type}able");
   }
 
-  my $snmp = App::Netdisco::Core::Transport::SNMP->instance->reader_for($device);
+  my $snmp = App::Netdisco::Core::Transport::SNMP->reader_for($device);
   if (!defined $snmp) {
       return job_defer("$job_type failed: could not SNMP connect to $host");
   }

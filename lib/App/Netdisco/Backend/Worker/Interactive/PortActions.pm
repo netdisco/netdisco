@@ -74,7 +74,7 @@ sub _set_port_generic {
 
   if ($device->vendor ne 'netdisco') {
       # snmp connect using rw community
-      my $info = App::Netdisco::Core::Transport::SNMP->instance->writer_for($ip)
+      my $info = App::Netdisco::Core::Transport::SNMP->writer_for($ip)
         or return job_defer("Failed to connect to device [$ip] to control port");
 
       my $iid = get_iid($info, $port)
@@ -127,7 +127,7 @@ sub power {
   $data = 'false' if $data =~ m/^(off|no|down)$/;
 
   # snmp connect using rw community
-  my $info = App::Netdisco::Core::Transport::SNMP->instance->writer_for($ip)
+  my $info = App::Netdisco::Core::Transport::SNMP->writer_for($ip)
     or return job_defer("Failed to connect to device [$ip] to control power");
 
   my $powerid = get_powerid($info, $port)
