@@ -28,9 +28,9 @@ register 'register_core_driver' => sub {
     return false unless (ref $device and (ref {} eq ref $userconf));
 
     # first check internal (driverconf) exclusion/inclusion criteria
-    return false if ($no and check_acl_no($device, $no));
-    return false if ($only and not (exists $userconf->{driver})
-                               and not check_acl_only($device, $only));
+    return false if ($only and not check_acl_only($device, $only));
+    return false if ($no and (not exists $userconf->{driver})
+                         and check_acl_no($device, $only));
 
     # then check external (userconf) exclusion/inclusion criteria
     return false if exists $userconf->{phase}
