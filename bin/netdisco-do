@@ -241,10 +241,17 @@ foreach my $host (@hostlist) {
       subaction => $extra,
     });
 
+    my $actiontext = (
+      ($job->device ? ('['.$job->device->ip.']') : '') .
+      ($job->action eq 'show' ? ('/'.$job->subaction) : '')
+    );
+
     # do job
     my ($status, $log);
     try {
-        info sprintf '%s: started at %s', $action, scalar localtime;
+
+        info sprintf '%s: %s started at %s',
+          $action, $actiontext, scalar localtime;
         ($status, $log) = $worker->$action($job);
     }
     catch {

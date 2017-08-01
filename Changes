@@ -1,5 +1,9 @@
 2.036009 - 2017-07-31
 
+  [ENHANCEMENTS]
+
+  * #333 Show netdisco-do target device in log message at start
+
   [BUG FIXES]
 
   * #334 DB schema is not upgraded past v40
