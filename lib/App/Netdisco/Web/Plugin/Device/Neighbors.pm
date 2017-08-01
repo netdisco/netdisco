@@ -34,9 +34,8 @@ sub _add_children {
         var('seen')->{$c}++;
         push @legit, $c;
         push @{$ptr}, {
-          name => _get_name($c),
-          fullname => (var('devices')->{$c} || $c),
           ip => $c,
+          name => _get_name($c),
         };
     }
 
@@ -93,8 +92,7 @@ get '/ajax/data/device/netmap' => require_login sub {
 
     my %tree = (
         ip => $start,
-        name => _get_name($start),
-        fullname => (var('devices')->{$start} || $start),
+        name => _get_name($start), # dns or sysname or ip
         children => [],
     );
 
@@ -107,20 +105,13 @@ get '/ajax/data/device/netmap' => require_login sub {
 };
 
 ajax '/ajax/data/device/alldevicelinks' => require_login sub {
-    my @devices = schema('netdisco')->resultset('Device')->search({}, {
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-      columns => ['ip', 'dns'],
-    })->all;
-    var(devices => { map { $_->{ip} => $_->{dns} } @devices });
-
     my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
     my %tree = ();
     while (my $l = $rs->next) {
-        push @{ $tree{ _get_name($l->{left_ip} )} },
-          _get_name($l->{right_ip});
+        push @{ $tree{ $l->{left_ip} } }, $l->{right_ip};
     }
 
     content_type('application/json');

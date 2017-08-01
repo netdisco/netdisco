@@ -45,14 +45,14 @@ function redraw() {
 // save the x,y of an element into the loc dictionary
 function recordLocation(d,i) {
   var rect = this.getBoundingClientRect();
-  loc[d.name] = {
+  loc[d.ip] = {
     'x':  (rect.left + ((rect.right - rect.left) / 2))
     ,'y': (rect.top +  ((rect.bottom - rect.top) / 2))
   };
 }
 
-// convert a device name to a valid CSS class name
-function to_class(name) { return 'nd_' + name.replace(/\./g, "_") }
+// convert a device ip to a valid CSS class name
+function to_class(ip) { return 'nd_' + ip.replace(/[:.]/g, "_") }
 
 // handler for clicking on a circle - redirect to that device's netmap
 function circleClick(d) {
@@ -65,10 +65,10 @@ function circleClick(d) {
 // handler for mouseover on a circle - show that device's real neighbors
 function circleOver(d) {
     $('.link').hide();
-    $('path.' + to_class(d.name)).show();
+    $('path.' + to_class(d.ip)).show();
     $(this).css('cursor', 'pointer');
 
-    $.each(neighbors_data[d.name], function(idx, target) {
+    $.each(neighbors_data[d.ip], function(idx, target) {
       if (! (target in loc)) { return true }
       $('circle.' + to_class(target)).css('fill', '#e96cfa');
     });
@@ -76,13 +76,13 @@ function circleOver(d) {
 
 // handler for mouseout on a circle - hide real neighbours and show treeLinks
 function circleOut(d) {
-    $.each(neighbors_data[d.name], function(idx, target) {
+    $.each(neighbors_data[d.ip], function(idx, target) {
       if (! (target in loc)) { return true }
       $('circle.' + to_class(target)).css('fill', '#fff');
     });
 
     $(this).css('cursor', 'auto');
-    $('path.' + to_class(d.name)).hide();
+    $('path.' + to_class(d.ip)).hide();
     $('.link').show();
 }
 
@@ -121,7 +121,7 @@ $.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
     node.append("circle")
         .attr("r", 4.5)
         // circle has class name of its device, so we can show/hide it
-        .attr("class", function(d) { return to_class(d.name) })
+        .attr("class", function(d) { return to_class(d.ip) })
         // store the x,y of every circle we've just drawn
         .each(recordLocation)
         // handlers for mouse interaction with the circles
@@ -140,8 +140,8 @@ $.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
         .attr("transform", function(d) {
           return d.x < 180 ? "rotate(0)translate(0)" : "rotate(180)translate(0)"; });
 
-    // key (name) of the root node in our locations store
-    var rootname = svg.select(".node").data()[0].name;
+    // key (ip) of the root node in our locations store
+    var rootname = svg.select(".node").data()[0].ip;
     // reformatted neighbors_data for the real neighbor links
     var neighbors = [];
 
@@ -150,19 +150,19 @@ $.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
     $.each(neighbors_data, function(key, val) {
       if (! (key in loc)) { return true }
 
-      $.each(val, function(idx, name) {
-        if (! (name in loc)) { return true }
+      $.each(val, function(idx, ip) {
+        if (! (ip in loc)) { return true }
 
         neighbors.push({
           'source':  {
-            'name': key
+            'ip': key
             ,'x': loc[key]['x']
             ,'y': loc[key]['y']
           }
           ,'target': {
-            'name': name
-            ,'x': loc[name]['x']
-            ,'y': loc[name]['y']
+            'ip': ip
+            ,'x': loc[ip]['x']
+            ,'y': loc[ip]['y']
           }
         });
       });
@@ -174,7 +174,7 @@ $.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
       .enter().insert("path", ".node")
         // add class name of source device, so we can show/hide the link
         // (also "neighbor" class)
-        .attr("class", function(d) { return ("neighbor " + to_class( d.source.name )) })
+        .attr("class", function(d) { return ("neighbor " + to_class( d.source.ip )) })
         .attr("d", neighLink)
         .attr("transform", "translate(-" + loc[rootname]['x'] + ",-" + loc[rootname]['y'] + ")");
   });
