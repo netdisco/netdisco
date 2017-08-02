@@ -22,12 +22,11 @@ See L<App::Netdisco::Core::Plugin> for more information about core plugins.
 
 =head1 Developing Plugins
 
-A plugin is simply a Perl module which is loaded. Therefore it can do anything
-you like, but most usefully for the App::Netdisco application the module
-will make a connection to a device, gather some data, and store it in
-Netdisco's database.
+A plugin is a Perl module which is loaded. Therefore it can do anything you
+like, but the module will make a connection to a device, gather some data, and
+store it in Netdisco's database.
 
-App::Netdisco plugins should load the L<App::Netdisco::Core::Plugin> module.
+App::Netdisco plugins must load the L<App::Netdisco::Core::Plugin> module.
 This exports a set of helper subroutines to register the driver. Here's the
 boilerplate code for our example plugin module:
 
@@ -55,24 +54,21 @@ For example:
    phase  => 'discover_wireless',
  }, sub { "driver code here" });
 
-An explanation of the C<$driverconf> options is below. The C<$coderef> is the
+An explanation of the C<%driverconf> options is below. The C<$coderef> is the
 main body of your driver. Your driver is run in a L<Try::Tiny> statement to
 catch errors, and passed the following arguments:
 
- $coderef->($device, $driverconf, $userconf);
+ $coderef->($device, $driverconf);
 
 The C<$device> is an instance of L<App::Netdisco::DB::Result::Device>; that
 is, a representation of a row in the database. Note that for early discover
-phases this row may not yet exist in the database.
-
-The C<$driverconf> hashref is the set of configuration parameters you used to
-declare the driver (documented below). The C<$userconf> hashref is the
-settings from C<device_auth> that the end-user configured for authentication;
-these are typically specific to the driver and transport in use.
+phases this row may not yet exist in the database.  The C<$driverconf> hashref
+is the set of configuration parameters you used to declare the driver
+(documented below).
 
 =head2 Required Parameters
 
-You must register drivers with a C<driver> and C<phase> parameter.
+You must register drivers with a C<driver> and a C<phase> parameter.
 
 The C<driver> is a label associated with a group of drivers and typically
 refers to the combination of transport and application protocol. Examples
@@ -160,37 +156,6 @@ connections to other databases.
  # plugin code
  use Dancer::Plugin::DBIC;
  schema('netdisco')->resultset('Devices')->search({vendor => 'cisco'});
-
-=head1 Naming and File Location
-
-There are several options for how you name, distribute and install your
-App::Netdisco plugin.
-
-=head2 Namespaces
-
-As mentioned in L<App::Netdisco::Core::Plugin>, official Netdisco plugins live
-in the C<App::Netdisco::Core::Plugin::> namespace. You can use this namespace
-and submit the product to the Netdisco developer team for consideration for
-inclusion in the official distribution.
-
-Alternatively you can release the plugin to CPAN under your own account. In
-that case we request that you instead use the
-C<App::NetdiscoX::Core::Plugin::> namespace (note the "X"). Users can load
-such modules by using the abbreviated form "X::MyPluginName" which is then
-expanded to the full package.
-
-=head2 File Location
-
-If writing your own plugins that are not for redistribution or packaging on
-CPAN, Netdisco can enable a local include path (C<@INC>). Configuring the
-C<site_local_files> setting to be "true" enables:
-
- $ENV{NETDISCO_HOME}/nd-site-local/lib
- 
-As an example, if your plugin is called
-"App::NetdiscoX::Core::Plugin::MyPluginName" then it could live at:
-
- ~netdisco/nd-site-local/lib/App/NetdiscoX/Core/Plugin/MyPluginName.pm
 
 =cut
 

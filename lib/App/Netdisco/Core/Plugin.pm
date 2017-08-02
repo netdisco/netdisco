@@ -5,6 +5,7 @@ use Dancer::Plugin;
 use Dancer::Factory::Hook;
 
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use Scope::Guard;
 use Try::Tiny;
 
 Dancer::Factory::Hook->instance->install_hooks(
@@ -19,32 +20,38 @@ register 'register_core_driver' => sub {
       and exists $driverconf->{phase} and exists $driverconf->{driver}
       and Dancer::Factory::Hook->instance->hook_is_registered($driverconf->{phase}));
 
-  my $no   = (exists $driverconf->{no}   ? $driverconf->{no}   : undef);
-  my $only = (exists $driverconf->{only} ? $driverconf->{only} : undef);
+  # needs to be here for caller() context
   $driverconf->{plugin} = (caller)[0];
 
   my $hook = sub {
-    my ($device, $userconf) = @_;
-    return false unless (ref $device and (ref {} eq ref $userconf));
+    my $device = shift or return false;
 
-    # first check internal (driverconf) exclusion/inclusion criteria
-    return false if ($only and not check_acl_only($device, $only));
-    return false if ($no and (not exists $userconf->{driver})
-                         and check_acl_no($device, $only));
+    my $no   = (exists $driverconf->{no}   ? $driverconf->{no}   : undef);
+    my $only = (exists $driverconf->{only} ? $driverconf->{only} : undef);
 
-    # then check external (userconf) exclusion/inclusion criteria
-    return false if exists $userconf->{phase}
-      and (($userconf->{phase} || '') ne $driverconf->{phase});
+    my @newuserconf = ();
+    my @userconf = @{ setting('device_auth') || [] };
 
-    return false if exists $userconf->{driver}
-      and (($userconf->{driver} || '') ne $driverconf->{driver});
+    # reduce device_auth by driver, plugin, driver's only/no
+    foreach my $stanza (@userconf) {
+      next if $no and check_acl_no($device, $no);
+      next if $only and not check_acl_only($device, $only);
+      next if exists $stanza->{driver}
+        and (($stanza->{driver} || '') ne $driverconf->{driver});
+      next if exists $stanza->{plugin}
+        and (($stanza->{plugin} || '') ne $driverconf->{plugin});
+      push @newuserconf, $stanza;
+    }
 
-    return false if exists $userconf->{plugin}
-      and (($userconf->{plugin} || '') ne $driverconf->{plugin});
+    # back up and restore device_auth
+    return false unless scalar @newuserconf;
+    my $guard = guard { set(device_auth => \@userconf) };
+    set(device_auth => \@newuserconf);
 
+    # run driver
     my $happy = false;
     try {
-      $code->($device, $driverconf, $userconf);
+      $code->($device, $driverconf);
       $happy = true;
     }
     catch { debug $_ };
@@ -109,11 +116,14 @@ Plugin modules can either ship with the App::Netdisco distribution itself, or
 be installed separately. Perl uses the standard C<@INC> path searching
 mechanism to load the plugin modules. See the C<include_paths> and
 C<site_local_files> settings in order to modify C<@INC> for loading local
-plugins.
+plugins. As an example, if your plugin is called
+"App::NetdiscoX::Core::Plugin::MyPluginName" then it could live at:
 
-The order of the entries is significant. Drivers are executed in REVERSE
-order that they appear in the C<extra_collector_plugins> and
-C<collector_plugins> settings.
+ ~netdisco/nd-site-local/lib/App/NetdiscoX/Core/Plugin/MyPluginName.pm
+
+The order of the entries is significant, drivers being executed in the order
+which they appear in C<collector_plugins> and C<extra_collector_plugins>
+(although see L<App::Netdisco::Manual::WritingBackendDrivers> for caveats).
 
 Finally, you can also prepend module names with "C<X::>", to support the
 "Netdisco extension" namespace. For example,

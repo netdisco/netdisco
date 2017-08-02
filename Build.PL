@@ -55,6 +55,7 @@ Module::Build->new(
     'Plack::Middleware::ReverseProxy' => '0.15',
     'Pod::Usage' => 0,
     'Role::Tiny' => '1.002005',
+    'Scope::Guard' => 0,
     'Sereal' => '0',
     'Socket6' => '0.23',
     'Starman' => '0.4008',
