@@ -1,0 +1,181 @@
+=head1 NAME
+
+App::Netdisco::Manual::WritingCoreWorkers - Developer Documentation on Core Plugins
+
+=head1 Introduction
+
+L<App::Netdisco>'s plugin system allows users to write I<workers> to gather
+information from network devices using different I<transports> and store
+results in the database.
+
+For example, transports might be SNMP, SSH, or HTTPS. Workers might be
+combining those transports with application protocols such as SNMP, NETCONF
+(OpenConfig with XML), RESTCONF (OpenConfig with JSON), eAPI, or even CLI
+scraping. The combination of transport and protocol is known as a I<driver>.
+
+Workers can be restricted to certain vendor platforms using familiar ACL
+syntax. They are also attached to specific actions in Netdisco's backend
+operation (discover, macsuck, etc).
+
+See L<App::Netdisco::Core::Plugin> for more information about core plugins.
+
+=head1 Developing Workers
+
+A worker is Perl code which is run. Therefore it can do anything you like, but
+typically it will make a connection to a device, gather some data, and store
+it in Netdisco's database.
+
+App::Netdisco plugins must load the L<App::Netdisco::Core::Plugin> module.
+This exports a helper subroutine to register the worker. Here's the
+boilerplate code for our example plugin module:
+
+ package App::Netdisco::Core::Plugin::Discover::Wireless::UniFi;
+ 
+ use Dancer ':syntax';
+ use App::Netdisco::Core::Plugin;
+ 
+ # worker registration code goes here, ** see below **
+ 
+ true;
+
+=head1 Registering a Worker
+
+Use the C<register_core_worker> helper from L<App::Netdisco::Core::Plugin> to
+register a worker:
+
+ register_core_worker( \%workerconf, $coderef );
+
+For example:
+
+ register_core_worker({
+   driver => 'unifiapi',
+ }, sub { "worker code here" });
+
+An explanation of the C<%workerconf> options is below. The C<$coderef> is the
+main body of your worker. Your worker is run in a L<Try::Tiny> statement to
+catch errors, and passed the following arguments:
+
+ $coderef->($device, $workerconf);
+
+The C<$device> is an instance of L<App::Netdisco::DB::Result::Device> (that
+is, an object representation of a row in the database). Note that for early
+discover phases this row may not yet exist in the database. The C<$workerconf>
+hashref is the set of configuration parameters you used to declare the worker
+(documented below).
+
+=head2 Package Naming Convention
+
+The package name used where the worker is declared is significant. Let's look
+at the boilerplate example again:
+
+ package App::Netdisco::Core::Plugin::Discover::Wireless::UniFi;
+
+Workers registered in this package will be run during the I<discover> backend
+action (that is, during a C<discover> job). You can replace C<Discover> with
+other actions such as C<Macsuck>, C<Arpnip>, C<Expire>, and C<Nbtstat>.
+
+The component after the action is known as the I<phase> (C<Wireless> in this
+example), and is the way to override a Netdisco built-in worker, by using the
+same name (plus an entry in C<$workerconf>, see below). Otherwise you can use
+any valid Perl bareword for the phase.
+
+=head2 Required Parameters
+
+You must register workers with a C<driver> parameter.
+
+The C<driver> is a label associated with a group of workers and typically
+refers to the combination of transport and application protocol. Examples
+include C<snmp>, C<netconf>, C<restconf>, C<eapi>, and C<cli>. The convention
+is for driver names to be lowercase. Use the driver name to associate
+authentication configuration settings with the correct workers.
+
+=head2 Optional Parameters
+
+Workers may have C<only> and C<no> parameters configured which use the
+standard ACL syntax described in L<the settings
+guide|App::Netdisco::Manual::Configuration>. The C<only> directive is
+especially useful as it can restrict a worker to a given device platform or
+operating system (for example Cisco IOS XR for the C<restconf> driver).
+
+The C<hook> parameter tells Netdisco the role that your worker plays in the
+backend action. It can have one of three values:
+
+=over 4
+
+=item before
+
+A worker that is essential to the action and run before any other workers
+within the same action. For example at the start of C<discover> we need to
+gather basic parameters and create a C<device> row in the database. The first
+C<before> worker which succeeds will short-circuit any others (see Return
+Code, below).
+
+=item on
+
+This worker is run alongside others with the same phase, and also
+short-curcuits any other workers in the same phase (see Return Code, below).
+
+=item after
+
+This worker is run alongside others with the same phase. All workers are run,
+regardless of their return code.
+
+=back
+
+=head2 Worker Execution and Return Code
+
+Workers are configured as an ordered list. They are grouped by C<action> and
+C<phase> (as in Package Naming Convention, above).
+
+Workers defined in C<extra_core_plugins> are run before those in
+C<core_plugins> so you have an opportunity to override core workers by
+adding them to C<extra_core_plugins> and setting C<hook> to C<on> in the
+worker configuration.
+
+The return code of the worker is ignored for those configured with hook
+C<after>, but is significant for those configured with C<befoe> or C<on>.
+If any worker returns a true value then the group at that phase is
+deemed to have been satisfied and Netdsico will move on to other worker
+plugins.
+
+Remember that a worker is only run if it matches the hardware platform of the
+target device and the user's configuration, and is not also excluded by the
+user's configuration.
+
+=head2 Accessing Transports
+
+From your worker you will want to connect to a device to gather data. This is
+done using a transport protocol session (SNMP, SSH, etc). Transports are
+singleton objects instantiated on demand, so they can be shared among a set of
+workers that are accessing the same device.
+
+See the documentation for each transport to find out how to access it:
+
+=over 4
+
+=item *
+
+L<App::Netdisco::Core::Transport::SNMP>
+
+=item *
+
+L<App::Netdisco::Core::Transport::HTTPS>
+
+=item *
+
+L<App::Netdisco::Core::Transport::SSH>
+
+=back
+
+=head2 Database Connections
+
+The Netdisco database is available via the C<netdisco> schema key, as below.
+You can also use the C<external_databases> configuration item to set up
+connections to other databases.
+
+ # plugin package
+ use Dancer::Plugin::DBIC;
+ schema('netdisco')->resultset('Devices')->search({vendor => 'cisco'});
+
+=cut
+

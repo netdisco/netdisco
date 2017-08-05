@@ -253,15 +253,15 @@ job_prio:
     - nbtstat
     - expire
 
-extra_collector_plugins:
-  - Discover::ConfigBackup::CLI
-
 # standards go into ::RFC
 # such as: SNMP, NETCONF, RESTCONF
 # others go into new ::DRIVERNAME
 # such as: ::CLI ::eAPI
 
-collector_plugins:
+extra_core_plugins:
+  - Discover::ConfigBackup::CLI
+
+core_plugins:
   - Discover::Properties::RFC
   - Discover::Interfaces::RFC
   - Discover::PortPower::RFC
@@ -272,23 +272,12 @@ collector_plugins:
   - Discover::VLANs::RFC
   - Discover::Wireless::RFC
   - Discover::Entities::RFC
-  - Macsuck::Nodes::RFC # {platform: any}
+  - Macsuck::Nodes::RFC
   - Macsuck::WirelessNodes::RFC
-  - Arpnip::Nodes::CLI # {platform: 'os:iosxr', no: any}
+  - Arpnip::Nodes::CLI
   - Arpnip::Nodes::RFC
   - Arpnip::Subnets::RFC
   - NetBIOS::Nbtstat::RFC
-
-core_phases:
-  - discover_properties
-  - discover_interfaces
-  - discover_vlans
-  - discover_wireless
-  - discover_entities
-  - macsuck_nodes
-  - arpnip_nodes
-  - arpnip_subnets
-  - netbios_stat
 
 # ---------------
 # GraphViz Export
