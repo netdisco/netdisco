@@ -55,13 +55,13 @@ An explanation of the C<%workerconf> options is below. The C<$coderef> is the
 main body of your worker. Your worker is run in a L<Try::Tiny> statement to
 catch errors, and passed the following arguments:
 
- $coderef->($device, $workerconf);
+ $coderef->($job, $workerconf);
 
-The C<$device> is an instance of L<App::Netdisco::DB::Result::Device> (that
-is, an object representation of a row in the database). Note that for early
-discover phases this row may not yet exist in the database. The C<$workerconf>
-hashref is the set of configuration parameters you used to declare the worker
-(documented below).
+The C<$job> is an instance of L<App::Netdisco::Backend::Job>. Note that this
+class has a C<device> slot which may be filled, depending on the action, and
+if the device is not yet discovered then the row will not yet be in storage.
+The C<$workerconf> hashref is the set of configuration parameters you used
+to declare the worker (documented below).
 
 =head2 Package Naming Convention
 

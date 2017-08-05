@@ -26,7 +26,7 @@ register 'register_core_worker' => sub {
     unless $workerconf->{hook} =~ m/^(?:before|on|after)$/;
 
   my $worker = sub {
-    my $device = shift or return false;
+    my $job = shift or return false;
 
     my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
     my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
@@ -36,8 +36,10 @@ register 'register_core_worker' => sub {
 
     # reduce device_auth by driver, plugin, worker's only/no
     foreach my $stanza (@userconf) {
-      next if $no and check_acl_no($device, $no);
-      next if $only and not check_acl_only($device, $only);
+      if (ref $job->device) {
+        next if $no and check_acl_no($job->device->ip, $no);
+        next if $only and not check_acl_only($job->device->ip, $only);
+      }
       next if exists $stanza->{driver}
         and (($stanza->{driver} || '') ne $workerconf->{driver});
       push @newuserconf, $stanza;
@@ -51,7 +53,7 @@ register 'register_core_worker' => sub {
     # run worker
     my $happy = false;
     try {
-      $code->($device, $workerconf);
+      $code->($job, $workerconf);
       $happy = true;
     }
     catch { debug $_ };
