@@ -12,6 +12,12 @@ The LLDP configuration should look like:
    interface all;
  }
 
+=head1 Neighbor Relations on D-Link
+
+Add the following to your devices (changing the port numbers appropriately):
+
+ config lldp ports 1-28 mgt_addr ipv4 enable
+
 =head1 VRFs and NXOS
 
 Netdsico at this time does not support VRFs. In particular, overlapping IP
