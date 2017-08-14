@@ -53,11 +53,11 @@ register 'register_core_worker' => sub {
     # run worker
     my $happy = false;
     try {
-      my @result = $code->($job, $workerconf);
+      $code->($job, $workerconf);
       $happy = true;
     }
     catch { debug $_ };
-    return @result if $happy; # FIXME
+    return $happy;
   };
 
   my $hook = $workerconf->{hook} .'_'. $phase;

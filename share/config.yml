@@ -277,8 +277,7 @@ core_plugins:
   - Arpnip::Nodes::CLI
   - Arpnip::Nodes::RFC
   - Arpnip::Subnets::RFC
-  - Nbtstat::Main::RFC
-  - Expire::Main::RFC
+  - NetBIOS::Nbtstat::RFC
 
 # ---------------
 # GraphViz Export
