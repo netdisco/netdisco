@@ -126,12 +126,17 @@ my $target_version = $schema->schema_version;
 
 # one step at a time, in case user has applied local changes already
 for (my $i = $db_version; $i < $target_version; $i++) {
+    my $next = $i + 1;
     try {
-        $schema->upgrade_single_step($i, $i + 1);
+        $schema->upgrade_single_step($i, $next);
     }
     catch {
         warn "Error: $_"
           if $_ !~ m/(does not exist|already exists)/;
+
+        # set row in dbix_class_schema_versions table
+        $schema->_set_db_version({version => $next})
+          if $schema->get_db_version < $next;
     };
 }
 

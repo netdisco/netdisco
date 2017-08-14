@@ -1,3 +1,26 @@
+2.036010 - 
+
+  [ENHANCEMENTS]
+
+  * Add note on D-Link LLDP config (H. Erasmus)
+
+2.036009 - 2017-08-01
+
+  [ENHANCEMENTS]
+
+  * #333 Show netdisco-do target device in log message at start
+
+  [BUG FIXES]
+
+  * #334 DB schema is not upgraded past v40
+  * #335 No such device when clicking on device in netmap
+
+2.036008 - 2017-07-14
+
+  [BUG FIXES]
+
+  * revert change to Device ResultSet which breaks search_for_device()
+
 2.036007 - 2017-07-12
 
   [BUG FIXES]
