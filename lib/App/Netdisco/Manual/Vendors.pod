@@ -18,6 +18,12 @@ Add the following to your devices (changing the port numbers appropriately):
 
  config lldp ports 1-28 mgt_addr ipv4 enable
 
+or
+
+ config lldp ports 1-28 mgt_addr ipv4 1.2.3.4 enable
+
+Which you use will depend on the device OS version.
+
 =head1 VRFs and NXOS
 
 Netdsico at this time does not support VRFs. In particular, overlapping IP
