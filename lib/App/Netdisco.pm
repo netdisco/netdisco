@@ -222,6 +222,7 @@ run for each installation:
  
  # apply database schema updates, update MIBs and Vendor MACs
  ~/bin/netdisco-deploy
+ ~/bin/netdisco-do stats
  
  # restart web service (if you run it)
  ~/bin/netdisco-web restart

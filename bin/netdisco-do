@@ -124,6 +124,12 @@ unless ($action) {
     return ('done', 'Generated monitor data.');
   }
 
+  use App::Netdisco::Util::Statistics ();
+  sub stats {
+    App::Netdisco::Util::Statistics::update_stats();
+    return ('done', 'Updated statistics.');
+  }
+
   sub show {
     my ($self, $job) = @_;
     my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
@@ -396,6 +402,10 @@ pass an SQL statement in the C<-e> option then it will be executed.
  ~netdisco/bin/netdisco-do psql
  ~netdisco/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
  ~netdisco/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
+
+=head2 stats
+
+Updates Netdisco's statistics on number of devices, nodes, etc, for today.
 
 =head2 location
 
