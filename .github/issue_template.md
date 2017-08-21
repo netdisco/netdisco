@@ -1,10 +1,10 @@
 <!--- Provide a general summary of the issue in the Title above -->
 
-<!-- STOP! If your ticket is about a device not being detected correctly, please open an SNMP::Info ticket -->
-<!-- SNMP::Info: https://github.com/netdisco/snmp-info/issues/new -->
+<!-- stop! If your ticket is about a device not being detected correctly, -->
+<!-- see SNMP::Info: https://github.com/netdisco/snmp-info/issues/new -->
 
-<!-- STOP! If you have new MIBs to submit, please open a netdisco-mibs ticket -->
-<!-- netdisco-mibs: https://github.com/netdisco/netdisco-mibs/issues/new -->
+<!-- stop! If you have new MIBs to submit, -->
+<!-- see netdisco-mibs: https://github.com/netdisco/netdisco-mibs/issues/new -->
 
 <!-- everything else about Netdisco's behaviour is good, here :-D -->
 
