@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Add note on D-Link LLDP config (H. Erasmus)
+  * New "stats" command for netdisco-do to update statistics
 
 2.036009 - 2017-08-01
 
