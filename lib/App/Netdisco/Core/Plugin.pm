@@ -109,6 +109,11 @@ Netdisco prepends "C<App::Netdisco::Core::Plugin::>" to any entry in the list.
 For example, "C<Discover::Wireless::UniFi>" will load the
 C<App::Netdisco::Core::Plugin::Discover::Wireless::UniFi> package.
 
+You can prepend module names with "C<X::>" as shorthand for the "Netdisco
+extension" namespace. For example, "C<X::Macsuck::WirelessNodes::UniFi>" will
+load the L<App::NetdiscoX::Core::Plugin::Macsuck::WirelessNodes::UniFi>
+module.
+
 If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
 to load the module as-is, without prepending anything to the name. This allows
 you to have App::Netdiso Core plugins in other namespaces.
@@ -125,11 +130,6 @@ plugins. As an example, if your plugin is called
 The order of the entries is significant, workers being executed in the order
 which they appear in C<core_plugins> and C<extra_core_plugins> (although see
 L<App::Netdisco::Manual::WritingCoreWorkers> for caveats).
-
-Finally, you can also prepend module names with "C<X::>", to support the
-"Netdisco extension" namespace. For example,
-"C<X::Macsuck::WirelessNodes::UniFi>" will load the
-L<App::NetdiscoX::Core::Plugin::Macsuck::WirelessNodes::UniFi> module.
 
 =cut
 
