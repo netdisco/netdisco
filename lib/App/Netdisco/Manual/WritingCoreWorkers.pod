@@ -55,12 +55,12 @@ An explanation of the C<%workerconf> options is below. The C<$coderef> is the
 main body of your worker. Your worker is run in a L<Try::Tiny> statement to
 catch errors, and passed the following arguments:
 
- $coderef->($job, $workerconf);
+ $coderef->($job, \%workerconf);
 
 The C<$job> is an instance of L<App::Netdisco::Backend::Job>. Note that this
 class has a C<device> slot which may be filled, depending on the action, and
 if the device is not yet discovered then the row will not yet be in storage.
-The C<$workerconf> hashref is the set of configuration parameters you used
+The C<\%workerconf> hashref is the set of configuration parameters you used
 to declare the worker (documented below).
 
 =head2 Package Naming Convention
@@ -76,23 +76,18 @@ other actions such as C<Macsuck>, C<Arpnip>, C<Expire>, and C<Nbtstat>.
 
 The component after the action is known as the I<phase> (C<Wireless> in this
 example), and is the way to override a Netdisco built-in worker, by using the
-same name (plus an entry in C<$workerconf>, see below). Otherwise you can use
+same name (plus an entry in C<%workerconf>, see below). Otherwise you can use
 any valid Perl bareword for the phase.
 
-=head2 Required Parameters
+Workers may also be registered directly to the action (C<Discover>, in this
+example). This is used for very early bootstrapping code (such as first
+inserting a device into the database so it can be used by subsequent phases).
 
-You must register workers with a C<driver> parameter.
+=head2 C<%workerconf> Options
 
-The C<driver> is a label associated with a group of workers and typically
-refers to the combination of transport and application protocol. Examples
-include C<snmp>, C<netconf>, C<restconf>, C<eapi>, and C<cli>. The convention
-is for driver names to be lowercase. Use the driver name to associate
-authentication configuration settings with the correct workers.
+=over 4
 
-A pseudo-driver of C<netdisco> can be used if you won't be connecting to a
-device (such as within the C<Expire> action).
-
-=head2 Optional Parameters
+=item ACL Options
 
 Workers may have C<only> and C<no> parameters configured which use the
 standard ACL syntax described in L<the settings
@@ -100,28 +95,24 @@ guide|App::Netdisco::Manual::Configuration>. The C<only> directive is
 especially useful as it can restrict a worker to a given device platform or
 operating system (for example Cisco IOS XR for the C<restconf> driver).
 
-The C<hook> parameter tells Netdisco the role that your worker plays in the
-backend action. It can have one of three values:
+=item C<driver> (string)
 
-=over 4
+The driver is a label associated with a group of workers and typically refers
+to the combination of transport and application protocol. Examples include
+C<snmp>, C<netconf>, C<restconf>, C<eapi>, and C<cli>. The convention is for
+driver names to be lowercase.
 
-=item before
+Users will bind authentication configuration settings to drivers in their
+configuration. If no driver is specified when registering a worker, it will be
+run for every device and phase (such as during Expire jobs).
 
-A worker that is essential to the action and run before any other workers
-within the same action. For example at the start of C<discover> we need to
-gather basic parameters and create a C<device> row in the database. The first
-C<before> worker which succeeds will short-circuit any others (see Return
-Code, below).
+=item C<primary> (boolean)
 
-=item on
-
-This worker is run alongside others with the same phase, and also
-short-curcuits any other workers in the same phase (see Return Code, below).
-
-=item after
-
-This worker is run alongside others with the same phase. All workers are run,
-regardless of their return code.
+When multiple workers are registered for the same phase, they will all be run.
+However there is a special "I<primary>" slot for each phase in which only one
+worker (the first that succeeds) is used. Most of Netdisco's core worker code
+is registered in this way, so to override it you can use the same package
+namespace and set C<primary> to be C<true>.
 
 =back
 
@@ -131,18 +122,17 @@ Workers are configured as an ordered list. They are grouped by C<action> and
 C<phase> (as in Package Naming Convention, above).
 
 Workers defined in C<extra_core_plugins> are run before those in
-C<core_plugins> so you have an opportunity to override core workers by
-adding them to C<extra_core_plugins> and setting C<hook> to C<on> in the
-worker configuration.
+C<core_plugins> so you have an opportunity to override core workers by adding
+them to C<extra_core_plugins> and setting C<primary> to C<true> in the worker
+configuration.
 
-The return code of the worker is significant for the C<before> and C<on>
-hooks: when the worker returns true, no other hooks are run for that phase.
-The return code is ignored for C<after> hooks, meaning they all run regardless
-of success.
+The return code of the worker is significant for those configured with
+C<primary> as C<true>: when the worker returns true, no other C<primary> hooks
+are run for that phase.
 
 Remember that a worker is only run if it matches the hardware platform of the
 target device and the user's configuration, and is not also excluded by the
-user's configuration.
+user's configuration. This filtering takes place before inspecting C<primary>.
 
 =head2 Accessing Transports
 
@@ -164,44 +154,43 @@ L<App::Netdisco::Core::Transport::SNMP>
 =head2 Review of Terminology
 
 In summary, Worker code is defined in a package namespace specifying the
-Action and Phase, and registered as a plugin with configuration specifying the
-Hook and Driver. Some rules and Access Control Lists determine which Workers
-are permitted to run, and when. Here are more complete definitions:
+Action and Phase, and registered as a plugin with configuration which may
+specify the Driver and whether it is in the Primary slot. Access Control Lists
+determine which Workers are permitted to run, and when. Here are more complete
+definitions:
 
 =over 4
 
 =item C<action>
 
 The highest level grouping of workers, corresponding to a Netdisco command
-such as C<discover> or C<macsuck>. Hooks can be registered at this level to do
-really early bootstrapping work.
+such as C<discover> or C<macsuck>. Workers can be registered at this level to
+do really early bootstrapping work.
 
 =item C<phase>
 
 The next level down from C<action> for grouping workers. Phases have arbitrary
 names and are visited in the order defined in the C<extra_core_plugins>
-setting list, followed by the C<core_plugins> setting list. Hooks are usually
-registered at this level.
-
-=item C<hook> (defaults to C<after>)
-
-The next level down from C<phase> for grouping workers. C<before> hooks
-are run first (for the action and then all its phases). C<on> and C<after>
-hooks run next. The return code of workers may be significant, depending on
-the hook they are registered to.
+setting list, followed by the C<core_plugins> setting list. Workers are
+usually registered at this level.
 
 =item C<worker>
 
 A lump of code you write which does a single clearly defined task. The package
-namespace of the worker identifies the action and optionally the phase. The
-code within is bound to a given hook when registered as a plugin.
+namespace of the worker identifies the action and optionally the phase.
+Workers are typically registered with some configuration settings.
 
 =item C<driver>
 
 A label associated with a group of workers which refers to a combination of
 transport and application protocol used to connect to and communicate with the
-target device. Users may attach authentication configuration to specific
-drivers.
+target device. Users attach authentication configuration to specific drivers.
+
+=item C<primary> (defaults to C<false>)
+
+Indicates that the worker will only be run if no other C<primary> worker for
+this phase has already succeeded. In this way, you can override Netdisco code
+by setting this option and returning true from your worker.
 
 =back
 
