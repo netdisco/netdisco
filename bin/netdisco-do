@@ -101,7 +101,7 @@ unless ($action) {
   use NetAddr::IP qw/:rfc3021 :lower/;
   use Dancer ':script';
 
-  use App::Netdisco::Core::Transport::SNMP;
+  use App::Netdisco::Transport::SNMP;
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
 
@@ -145,7 +145,7 @@ unless ($action) {
         $extra = $class;
         undef $class;
     }
-    my $i = App::Netdisco::Core::Transport::SNMP->reader_for($device, $class);
+    my $i = App::Netdisco::Transport::SNMP->reader_for($device, $class);
     Data::Printer::p($i->$extra);
     return ('done', sprintf "Showed %s response from %s.", $extra, $device->ip);
   }

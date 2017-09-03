@@ -2,7 +2,7 @@ package App::Netdisco::Backend::Worker::Poller::Device;
 
 use Dancer qw/:moose :syntax :script/;
 
-use App::Netdisco::Core::Transport::SNMP;
+use App::Netdisco::Transport::SNMP;
 use App::Netdisco::Util::Device qw/get_device is_discoverable_now/;
 use App::Netdisco::Core::Discover ':all';
 use App::Netdisco::Backend::Util ':all';
@@ -59,7 +59,7 @@ sub discover {
       return job_defer("discover deferred: $host is not discoverable");
   }
 
-  my $snmp = App::Netdisco::Core::Transport::SNMP->reader_for($device);
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device);
   if (!defined $snmp) {
       return job_defer("discover failed: could not SNMP connect to $host");
   }

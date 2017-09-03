@@ -1,4 +1,4 @@
-package App::Netdisco::Core::Plugin;
+package App::Netdisco::Worker::Plugin;
 
 use Dancer ':syntax';
 use Dancer::Plugin;
@@ -9,19 +9,19 @@ use Scope::Guard;
 use Try::Tiny;
 
 # track the phases seen so we can recall them in order
-set( '_nd2core_hooks' => [] );
+set( '_nd2worker_hooks' => [] );
 
-register 'register_core_worker' => sub {
+register 'register_worker' => sub {
   my ($self, $workerconf, $code) = @_;
-  return error "bad param to register_core_worker"
+  return error "bad param to register_worker"
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
   # needs to be here for caller() context
   my ($package, $action, $phase) = ((caller)[0], undef, undef);
-  if ($package =~ m/::(Discover|Arpnip|Macsuck|Expire|Nbtstat)$/) {
+  if ($package =~ m/Plugin::(\w+)$/) {
     $action = lc $1;
   }
-  if ($package =~ m/::(Discover|Arpnip|Macsuck|Expire|Nbtstat)::(\w+)/) {
+  if ($package =~ m/Plugin::(\w+)::(\w+)/) {
     $action = lc $1; $phase = lc $2;
   }
   else { return error "worker Package does not match standard naming" }
@@ -66,12 +66,12 @@ register 'register_core_worker' => sub {
   };
 
   my $primary = ($workerconf->{primary} ? '_primary' : '');
-  my $hook = 'nd2core_'. $action .'_'. $phase . $primary;
+  my $hook = 'nd2worker_'. $action .'_'. $phase . $primary;
 
   if (not Dancer::Factory::Hook->instance->hook_is_registered($hook)) {
     Dancer::Factory::Hook->instance->install_hooks($hook);
     # track just the basic phase names which are used
-    push @{ setting('_nd2core_hooks') }, $hook
+    push @{ setting('_nd2worker_hooks') }, $hook
       if $phase ne '00init' and 0 == length($primary);
   }
 
@@ -83,7 +83,7 @@ true;
 
 =head1 NAME
 
-App::Netdisco::Core::Plugin - Netdisco Core Workers
+App::Netdisco::Worker::Plugin - Netdisco Workers
 
 =head1 Introduction
 
@@ -102,8 +102,8 @@ operation (discover, macsuck, etc).
 
 =head1 Application Configuration
 
-The C<core_plugins> and C<extra_core_plugins> settings list in YAML format the
-set of Perl module names which are the plugins to be loaded.
+The C<worker_plugins> and C<extra_worker_plugins> settings list in YAML format
+the set of Perl module names which are the plugins to be loaded.
 
 Any change should go into your local C<deployment.yml> configuration file. If
 you want to view the default settings, see the C<share/config.yml> file in the
@@ -111,36 +111,36 @@ C<App::Netdisco> distribution.
 
 =head1 How to Configure
 
-The C<extra_core_plugins> setting is empty, and used only if you want to add
+The C<extra_worker_plugins> setting is empty, and used only if you want to add
 new plugins but not change the set enabled by default. If you do want to add
-to or remove from the default set, then create a version of C<core_plugins>
+to or remove from the default set, then create a version of C<worker_plugins>
 instead.
 
-Netdisco prepends "C<App::Netdisco::Core::Plugin::>" to any entry in the list.
-For example, "C<Discover::Wireless::UniFi>" will load the
-C<App::Netdisco::Core::Plugin::Discover::Wireless::UniFi> package.
+Netdisco prepends "C<App::Netdisco::Worker::Plugin::>" to any entry in the
+list.  For example, "C<Discover::Wireless::UniFi>" will load the
+C<App::Netdisco::Worker::Plugin::Discover::Wireless::UniFi> package.
 
 You can prepend module names with "C<X::>" as shorthand for the "Netdisco
 extension" namespace. For example, "C<X::Macsuck::WirelessNodes::UniFi>" will
-load the L<App::NetdiscoX::Core::Plugin::Macsuck::WirelessNodes::UniFi>
+load the L<App::NetdiscoX::Worker::Plugin::Macsuck::WirelessNodes::UniFi>
 module.
 
 If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
 to load the module as-is, without prepending anything to the name. This allows
-you to have App::Netdiso Core plugins in other namespaces.
+you to have App::Netdisco Worker plugins in other namespaces.
 
 Plugin modules can either ship with the App::Netdisco distribution itself, or
 be installed separately. Perl uses the standard C<@INC> path searching
 mechanism to load the plugin modules. See the C<include_paths> and
 C<site_local_files> settings in order to modify C<@INC> for loading local
 plugins. As an example, if your plugin is called
-"App::NetdiscoX::Core::Plugin::MyPluginName" then it could live at:
+"App::NetdiscoX::Worker::Plugin::MyPluginName" then it could live at:
 
- ~netdisco/nd-site-local/lib/App/NetdiscoX/Core/Plugin/MyPluginName.pm
+ ~netdisco/nd-site-local/lib/App/NetdiscoX/Worker/Plugin/MyPluginName.pm
 
 The order of the entries is significant, workers being executed in the order
-which they appear in C<core_plugins> and C<extra_core_plugins> (although see
-L<App::Netdisco::Manual::WritingCoreWorkers> for caveats).
+which they appear in C<worker_plugins> and C<extra_worker_plugins> (although
+see L<App::Netdisco::Manual::WritingWorkers> for caveats).
 
 =cut
 

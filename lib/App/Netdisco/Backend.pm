@@ -6,15 +6,15 @@ use warnings;
 use Module::Load ();
 use Dancer ':syntax';
 
-# load core worker plugins for our workers
+# load worker plugins for our workers
 # NOTE: this package is loaded for all actions whether backend or netdisco-do
 
-sub load_core_plugins {
+sub load_worker_plugins {
   my $plugin_list = shift;
 
   foreach my $plugin (@$plugin_list) {
-    $plugin =~ s/^X::/+App::NetdiscoX::Core::Plugin::/;
-    $plugin = 'App::Netdisco::Core::Plugin::'. $plugin
+    $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
+    $plugin = 'App::Netdisco::Worker::Plugin::'. $plugin
       if $plugin !~ m/^\+/;
     $plugin =~ s/^\+//;
 
@@ -23,7 +23,7 @@ sub load_core_plugins {
   }
 }
 
-load_core_plugins( setting('extra_core_plugins') || [] );
-load_core_plugins( setting('core_plugins') || [] );
+load_worker_plugins( setting('extra_worker_plugins') || [] );
+load_worker_plugins( setting('worker_plugins') || [] );
 
 true;

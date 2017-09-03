@@ -1,4 +1,4 @@
-package App::Netdisco::Core::Transport::SNMP;
+package App::Netdisco::Transport::SNMP;
 
 use Dancer qw/:syntax :script/;
 use App::Netdisco::Util::SNMP 'build_communities';
@@ -14,14 +14,14 @@ use base 'Dancer::Object::Singleton';
 
 =head1 NAME
 
-App::Netdisco::Core::Transport::SNMP
+App::Netdisco::Transport::SNMP
 
 =head1 DESCRIPTION
 
 Singleton for SNMP connections. Returns cached L<SNMP::Info> instance for a
 given device IP, or else undef. All methods are class methods, for example:
 
- App::Netdisco::Core::Transport::SNMP->reader_for( ... );
+ App::Netdisco::Transport::SNMP->reader_for( ... );
 
 =cut
 

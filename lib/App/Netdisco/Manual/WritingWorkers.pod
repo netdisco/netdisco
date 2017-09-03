@@ -1,6 +1,6 @@
 =head1 NAME
 
-App::Netdisco::Manual::WritingCoreWorkers - Developer Documentation on Core Plugins
+App::Netdisco::Manual::WritingWorkers - Developer Documentation on Worker Plugins
 
 =head1 Introduction
 
@@ -17,7 +17,8 @@ Workers can be restricted to certain vendor platforms using familiar ACL
 syntax. They are also attached to specific actions in Netdisco's backend
 operation (discover, macsuck, etc).
 
-See L<App::Netdisco::Core::Plugin> for more information about core plugins.
+See L<App::Netdisco::Worker::Plugin> for more information about worker
+plugins.
 
 =head1 Developing Workers
 
@@ -25,14 +26,14 @@ A worker is Perl code which is run. Therefore it can do anything you like, but
 typically it will make a connection to a device, gather some data, and store
 it in Netdisco's database.
 
-App::Netdisco plugins must load the L<App::Netdisco::Core::Plugin> module.
+App::Netdisco plugins must load the L<App::Netdisco::Worker::Plugin> module.
 This exports a helper subroutine to register the worker. Here's the
 boilerplate code for our example plugin module:
 
- package App::Netdisco::Core::Plugin::Discover::Wireless::UniFi;
+ package App::Netdisco::Worker::Plugin::Discover::Wireless::UniFi;
  
  use Dancer ':syntax';
- use App::Netdisco::Core::Plugin;
+ use App::Netdisco::Worker::Plugin;
  
  # worker registration code goes here, ** see below **
  
@@ -40,14 +41,14 @@ boilerplate code for our example plugin module:
 
 =head1 Registering a Worker
 
-Use the C<register_core_worker> helper from L<App::Netdisco::Core::Plugin> to
+Use the C<register_worker> helper from L<App::Netdisco::Worker::Plugin> to
 register a worker:
 
- register_core_worker( \%workerconf, $coderef );
+ register_worker( \%workerconf, $coderef );
 
 For example:
 
- register_core_worker({
+ register_worker({
    driver => 'unifiapi',
  }, sub { "worker code here" });
 
@@ -68,11 +69,13 @@ to declare the worker (documented below).
 The package name used where the worker is declared is significant. Let's look
 at the boilerplate example again:
 
- package App::Netdisco::Core::Plugin::Discover::Wireless::UniFi;
+ package App::Netdisco::Worker::Plugin::Discover::Wireless::UniFi;
 
-Workers registered in this package will be run during the I<discover> backend
-action (that is, during a C<discover> job). You can replace C<Discover> with
-other actions such as C<Macsuck>, C<Arpnip>, C<Expire>, and C<Nbtstat>.
+The package name B<must> contain C<Plugin::> and the namespace component after
+that becomes the action. For example workers registered in the above package
+will be run during the I<discover> backend action (that is, during a
+C<discover> job). You can replace C<Discover> with other actions such as
+C<Macsuck>, C<Arpnip>, C<Expire>, and C<Nbtstat>, or create your own.
 
 The component after the action is known as the I<phase> (C<Wireless> in this
 example), and is the way to override a Netdisco built-in worker, by using the
@@ -110,8 +113,8 @@ run for every device and phase (such as during Expire jobs).
 
 When multiple workers are registered for the same phase, they will all be run.
 However there is a special "I<primary>" slot for each phase in which only one
-worker (the first that succeeds) is used. Most of Netdisco's core worker code
-is registered in this way, so to override it you can use the same package
+worker (the first that succeeds) is used. Most of Netdisco's built-in worker
+code is registered in this way, so to override it you can use the same package
 namespace and set C<primary> to be C<true>.
 
 =back
@@ -121,10 +124,10 @@ namespace and set C<primary> to be C<true>.
 Workers are configured as an ordered list. They are grouped by C<action> and
 C<phase> (as in Package Naming Convention, above).
 
-Workers defined in C<extra_core_plugins> are run before those in
-C<core_plugins> so you have an opportunity to override core workers by adding
-them to C<extra_core_plugins> and setting C<primary> to C<true> in the worker
-configuration.
+Workers defined in C<extra_worker_plugins> are run before those in
+C<worker_plugins> so you have an opportunity to override built-in workers by
+adding them to C<extra_worker_plugins> and setting C<primary> to C<true> in
+the worker configuration.
 
 The return code of the worker is significant for those configured with
 C<primary> as C<true>: when the worker returns true, no other C<primary> hooks
@@ -147,7 +150,7 @@ See the documentation for each transport to find out how to access it:
 
 =item *
 
-L<App::Netdisco::Core::Transport::SNMP>
+L<App::Netdisco::Transport::SNMP>
 
 =back
 
@@ -170,8 +173,8 @@ do really early bootstrapping work.
 =item C<phase>
 
 The next level down from C<action> for grouping workers. Phases have arbitrary
-names and are visited in the order defined in the C<extra_core_plugins>
-setting list, followed by the C<core_plugins> setting list. Workers are
+names and are visited in the order defined in the C<extra_worker_plugins>
+setting list, followed by the C<worker_plugins> setting list. Workers are
 usually registered at this level.
 
 =item C<worker>

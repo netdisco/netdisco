@@ -258,10 +258,11 @@ job_prio:
 # others go into new ::DRIVERNAME
 # such as: ::CLI ::eAPI
 
-extra_core_plugins:
-  - Discover::ConfigBackup::CLI
+extra_worker_plugins: []
+#  - Discover::ConfigBackup::CLI
 
-core_plugins:
+# FIXME
+worker_plugins:
   - Discover::Properties::RFC
   - Discover::Interfaces::RFC
   - Discover::PortPower::RFC

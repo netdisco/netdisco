@@ -1,4 +1,4 @@
-package App::Netdisco::Backend::Status;
+package App::Netdisco::Worker::Status;
 
 use strict;
 use warnings;
