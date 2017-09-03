@@ -36,4 +36,32 @@ Returns the logical inversion of C<ok>.
 
 sub not_ok { return (not $_[0]->ok) }
 
+=head2 status
+
+Returns text equivalent of C<done>, C<defer>, or C<error>.
+
+=cut
+
+sub status {
+  my $self = shift;
+  return (
+    $self->done ? 'done'
+                : $self->defer ? 'defer'
+                               : 'error';
+  );
+}
+
+=head2 update_job
+
+Updates an L<App::Netdisco::Backend::Job> with status and message.
+
+=cut
+
+sub update_job {
+  my $self = shift;
+  my $job = shift or return;
+  $job->status( $self->status );
+  $job->log( $self->message );
+}
+
 1;

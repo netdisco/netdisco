@@ -254,21 +254,20 @@ foreach my $host (@hostlist) {
     );
 
     # do job
-    my ($status, $log);
     try {
-
         info sprintf '%s: %s started at %s',
           $action, $actiontext, scalar localtime;
-        ($status, $log) = $worker->$action($job);
+        my $status = $worker->$action($job); # TODO
+        $status->update_job($job);
     }
     catch {
-        $status = 'error';
-        $log = "error running job: $_";
+        $job->status('error');
+        $job->log("error running job: $_");
     };
 
     info sprintf '%s: finished at %s', $action, scalar localtime;
-    info sprintf '%s: status %s: %s', $action, $status, $log;
-    $exitstatus = 1 if !defined $status or $status eq 'error';
+    info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
+    $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
 }
 
 exit $exitstatus;

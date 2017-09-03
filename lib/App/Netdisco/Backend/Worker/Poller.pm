@@ -39,9 +39,8 @@ sub worker_body {
             $wid, $job->job, $job->summary;
           info sprintf "pol (%s): starting %s job(%s) at %s",
             $wid, $action, $job->job, $job->started;
-          my ($status, $log) = $self->$action($job);
-          $job->status($status);
-          $job->log($log);
+          my $status = $self->$action($job); # TODO
+          $status->update_job($job);
       }
       catch {
           $job->status('error');
