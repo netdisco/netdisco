@@ -25,6 +25,16 @@ has 'log' => (
 
 =head1 METHODS
 
+=head2 done, error, defer
+
+Shorthand for new() with setting param, accepts log as arg.
+
+=cut
+
+sub done  { return (shift)->new({done  => 1, log => shift}) }
+sub error { return (shift)->new({error => 1, log => shift}) }
+sub defer { return (shift)->new({defer => 1, log => shift}) }
+
 =head2 ok
 
 Returns true if C<done> is true and C<error> and C<defer> have not been set.

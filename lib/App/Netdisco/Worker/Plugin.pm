@@ -67,15 +67,16 @@ register 'register_worker' => sub {
 
   my $primary = ($workerconf->{primary} ? '_primary' : '');
   my $hook = 'nd2worker_'. $action .'_'. $phase . $primary;
+  my $store = Dancer::Factory::Hook->instance();
 
-  if (not Dancer::Factory::Hook->instance->hook_is_registered($hook)) {
-    Dancer::Factory::Hook->instance->install_hooks($hook);
+  if (not $store->hook_is_registered($hook)) {
+    $store->install_hooks($hook);
     # track just the basic phase names which are used
     push @{ setting('_nd2worker_hooks') }, $hook
       if $phase ne '00init' and 0 == length($primary);
   }
 
-  Dancer::Factory::Hook->instance->register_hook($hook, $worker);
+  $store->register_hook($hook, $worker);
 };
 
 register_plugin;

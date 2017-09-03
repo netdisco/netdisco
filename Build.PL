@@ -13,6 +13,9 @@ Module::Build->new(
   build_requires => {
   },
   requires => {
+    'aliased' => '0',
+    'namespace::clean' => '0.24',
+    'version' => '0.9902',
     'Algorithm::Cron' => '0.07',
     'AnyEvent' => '7.05',
     'AnyEvent::DNS::EtcHosts' => '0',
@@ -71,8 +74,6 @@ Module::Build->new(
     'URL::Encode' => '0.01',
     'YAML' => '0.84',
     'YAML::XS' => '0.41',
-    'namespace::clean' => '0.24',
-    'version' => '0.9902',
   },
   recommends => {
     'Graph' => '0',
