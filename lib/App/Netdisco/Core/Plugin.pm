@@ -8,22 +8,27 @@ use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use Scope::Guard;
 use Try::Tiny;
 
+# track the phases seen so we can recall them in order
+set( '_nd2core_hooks' => [] );
+
 register 'register_core_worker' => sub {
   my ($self, $workerconf, $code) = @_;
   return error "bad param to register_core_worker"
-    unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf)
-                                      and exists $workerconf->{driver});
+    unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
   # needs to be here for caller() context
-  my ($package, $phase) = ((caller)[0], undef);
+  my ($package, $action, $phase) = ((caller)[0], undef, undef);
+  if ($package =~ m/::(Discover|Arpnip|Macsuck|Expire|Nbtstat)$/) {
+    $action = lc $1;
+  }
   if ($package =~ m/::(Discover|Arpnip|Macsuck|Expire|Nbtstat)::(\w+)/) {
-    $phase = lc( $1 .'_'. $2 );
+    $action = lc $1; $phase = lc $2;
   }
   else { return error "worker Package does not match standard naming" }
 
-  $workerconf->{hook} ||= 'after';
-  return error "bad hook param to register_core_worker"
-    unless $workerconf->{hook} =~ m/^(?:before|on|after)$/;
+  $workerconf->{action}  = $action;
+  $workerconf->{phase}   = ($phase || '00init');
+  $workerconf->{primary} = $workerconf->{primary};
 
   my $worker = sub {
     my $job = shift or return false;
@@ -34,14 +39,14 @@ register 'register_core_worker' => sub {
     my @newuserconf = ();
     my @userconf = @{ setting('device_auth') || [] };
 
-    # reduce device_auth by driver, plugin, worker's only/no
+    # reduce device_auth by driver, worker's only/no
     foreach my $stanza (@userconf) {
       if (ref $job->device) {
         next if $no and check_acl_no($job->device->ip, $no);
         next if $only and not check_acl_only($job->device->ip, $only);
       }
-      next if exists $stanza->{driver}
-        and (($stanza->{driver} || '') ne $workerconf->{driver});
+      next if exists $stanza->{driver} and exists $workerconf->{driver}
+        and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
       push @newuserconf, $stanza;
     }
 
@@ -60,9 +65,15 @@ register 'register_core_worker' => sub {
     return $happy;
   };
 
-  my $hook = $workerconf->{hook} .'_'. $phase;
-  Dancer::Factory::Hook->instance->install_hooks($hook)
-    unless Dancer::Factory::Hook->instance->hook_is_registered($hook);
+  my $primary = ($workerconf->{primary} ? '_primary' : '');
+  my $hook = 'nd2core_'. $action .'_'. $phase . $primary;
+
+  if (not Dancer::Factory::Hook->instance->hook_is_registered($hook)) {
+    Dancer::Factory::Hook->instance->install_hooks($hook);
+    # track just the basic phase names which are used
+    push @{ setting('_nd2core_hooks') }, $hook
+      if $phase ne '00init' and 0 == length($primary);
+  }
 
   Dancer::Factory::Hook->instance->register_hook($hook, $worker);
 };
