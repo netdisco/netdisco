@@ -12,13 +12,7 @@ use Time::HiRes 'sleep';
 use App::Netdisco::JobQueue qw/jq_defer jq_complete/;
 
 # add dispatch methods for poller tasks
-with 'App::Netdisco::Backend::Worker::Poller::Device',
-     'App::Netdisco::Backend::Worker::Poller::Arpnip',
-     'App::Netdisco::Backend::Worker::Poller::Macsuck',
-     'App::Netdisco::Backend::Worker::Poller::Nbtstat',
-     'App::Netdisco::Backend::Worker::Poller::Expiry',
-     'App::Netdisco::Backend::Worker::Interactive::DeviceActions',
-     'App::Netdisco::Backend::Worker::Interactive::PortActions';
+with 'App::Netdisco::Backend::Runner';
 
 sub worker_begin { (shift)->{started} = time }
 
@@ -31,16 +25,14 @@ sub worker_body {
 
       my $job = $self->{queue}->dequeue(1);
       next unless defined $job;
-      my $action = $job->action;
 
       try {
           $job->started(scalar localtime);
           prctl sprintf 'nd2: #%s poll: #%s: %s',
             $wid, $job->job, $job->summary;
           info sprintf "pol (%s): starting %s job(%s) at %s",
-            $wid, $action, $job->job, $job->started;
-          my $status = $self->$action($job); # TODO
-          $status->update_job($job);
+            $wid, $job->action, $job->job, $job->started;
+          $self->run($job);
       }
       catch {
           $job->status('error');

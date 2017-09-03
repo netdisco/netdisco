@@ -105,13 +105,7 @@ unless ($action) {
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
 
-  with 'App::Netdisco::Backend::Worker::Poller::Device';
-  with 'App::Netdisco::Backend::Worker::Poller::Arpnip';
-  with 'App::Netdisco::Backend::Worker::Poller::Macsuck';
-  with 'App::Netdisco::Backend::Worker::Poller::Nbtstat';
-  with 'App::Netdisco::Backend::Worker::Poller::Expiry';
-  with 'App::Netdisco::Backend::Worker::Interactive::DeviceActions';
-  with 'App::Netdisco::Backend::Worker::Interactive::PortActions';
+  with 'App::Netdisco::Backend::Runner';
 
   eval { Module::Load::load 'App::Netdisco::Util::Graph' };
   sub graph {
@@ -257,8 +251,7 @@ foreach my $host (@hostlist) {
     try {
         info sprintf '%s: %s started at %s',
           $action, $actiontext, scalar localtime;
-        my $status = $worker->$action($job); # TODO
-        $status->update_job($job);
+        $worker->run($job);
     }
     catch {
         $job->status('error');
