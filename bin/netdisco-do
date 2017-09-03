@@ -35,6 +35,7 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
+use App::Netdisco::Backend;
 use App::Netdisco::Backend::Job;
 use Dancer qw/:moose :script/;
 
