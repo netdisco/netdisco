@@ -3,7 +3,7 @@ package App::Netdisco::Backend::Worker::Scheduler;
 use Dancer qw/:moose :syntax :script/;
 
 use Algorithm::Cron;
-use App::Netdisco::Util::Backend;
+use App::Netdisco::Util::MCE;
 
 use Role::Tiny;
 use namespace::clean;

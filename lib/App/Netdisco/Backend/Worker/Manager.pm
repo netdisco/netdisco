@@ -3,7 +3,7 @@ package App::Netdisco::Backend::Worker::Manager;
 use Dancer qw/:moose :syntax :script/;
 
 use List::Util 'sum';
-use App::Netdisco::Util::Backend;
+use App::Netdisco::Util::MCE;
 
 use Role::Tiny;
 use namespace::clean;

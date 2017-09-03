@@ -3,7 +3,7 @@ package App::Netdisco::Backend::Worker::Common;
 use Dancer qw/:moose :syntax :script/;
 
 use Try::Tiny;
-use App::Netdisco::Util::Backend;
+use App::Netdisco::Util::MCE;
 
 use Role::Tiny;
 use namespace::clean;

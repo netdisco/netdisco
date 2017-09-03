@@ -1,4 +1,4 @@
-package App::Netdisco::Util::Backend;
+package App::Netdisco::Util::MCE;
 
 use strict;
 use warnings;
