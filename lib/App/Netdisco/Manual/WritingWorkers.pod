@@ -119,7 +119,7 @@ namespace and set C<primary> to be C<true>.
 
 =back
 
-=head2 Worker Execution and Return Code
+=head1 Worker Execution and Return Code
 
 Workers are configured as an ordered list. They are grouped by C<action> and
 C<phase> (as in Package Naming Convention, above).
@@ -137,7 +137,7 @@ Remember that a worker is only run if it matches the hardware platform of the
 target device and the user's configuration, and is not also excluded by the
 user's configuration. This filtering takes place before inspecting C<primary>.
 
-=head2 Accessing Transports
+=head1 Accessing Transports
 
 From your worker you will want to connect to a device to gather data. This is
 done using a transport protocol session (SNMP, SSH, etc). Transports are
@@ -154,7 +154,7 @@ L<App::Netdisco::Transport::SNMP>
 
 =back
 
-=head2 Review of Terminology
+=head1 Review of Terminology
 
 In summary, Worker code is defined in a package namespace specifying the
 Action and Phase, and registered as a plugin with configuration which may
@@ -197,7 +197,7 @@ by setting this option and returning true from your worker.
 
 =back
 
-=head2 Database Connections
+=head1 Database Connections
 
 The Netdisco database is available via the C<netdisco> schema key, as below.
 You can also use the C<external_databases> configuration item to set up
