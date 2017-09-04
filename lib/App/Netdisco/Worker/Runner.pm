@@ -16,7 +16,8 @@ sub run {
   die 'bad job to run()' unless ref $job eq 'App::Netdisco::Backend::Job';
 
   my $action = $job->action;
-  my @phase_hooks = @{ (setting('_nd2worker_hooks') || []) };
+  my @phase_hooks = grep { m/^nd2worker_${action}_/ }
+                         @{ (setting('_nd2worker_hooks') || []) };
 
   # run 00init primary
   my $status = _run_first("nd2worker_${action}_00init_primary", $job);
@@ -26,12 +27,10 @@ sub run {
   _run_all("nd2worker_${action}_00init", $job);
 
   # run primary
-  _run_first($_.'_primary', $job)
-    for (grep { m/^nd2worker_${action}_/ } @phase_hooks);
+  _run_first($_.'_primary', $job) for (@phase_hooks);
 
   # run each worker
-  _run_all($_, $job)
-    for (grep { m/^nd2worker_${action}_/ } @phase_hooks);
+  _run_all($_, $job) for (@phase_hooks);
 
   return true;
 }
@@ -45,8 +44,16 @@ sub _run_first {
     or return Status->error("no such hook: $hook");
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
-    my $status = $worker->($job);
-    return $status if $status->ok;
+    my $retval = false;
+    try {
+      $retval = $worker->($job);
+    }
+    catch {
+      $retval = Status->error($_);
+    };
+
+    $retval ||= Status->done('no status supplied');
+    return $retval if $retval->ok;
   }
 
   return Status->error('no worker was successful');

@@ -4,9 +4,9 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 use Dancer::Factory::Hook;
 
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use Scope::Guard;
-use Try::Tiny;
+use aliased 'App::Netdisco::Worker::Status';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 # track the phases seen so we can recall them in order
 set( '_nd2worker_hooks' => [] );
@@ -31,7 +31,7 @@ register 'register_worker' => sub {
   $workerconf->{primary} = $workerconf->{primary};
 
   my $worker = sub {
-    my $job = shift or return false;
+    my $job = shift or return Status->error('missing job param');
 
     my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
     my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
@@ -51,18 +51,11 @@ register 'register_worker' => sub {
     }
 
     # back up and restore device_auth
-    return false unless scalar @newuserconf;
     my $guard = guard { set(device_auth => \@userconf) };
     set(device_auth => \@newuserconf);
 
     # run worker
-    my $happy = false;
-    try {
-      $code->($job, $workerconf);
-      $happy = true;
-    }
-    catch { debug $_ };
-    return $happy;
+    return $code->($job, $workerconf);
   };
 
   my $primary = ($workerconf->{primary} ? '_primary' : '');
