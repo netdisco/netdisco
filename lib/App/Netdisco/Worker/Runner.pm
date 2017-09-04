@@ -3,7 +3,7 @@ package App::Netdisco::Worker::Runner;
 use Dancer ':moose :syntax';
 use Dancer::Factory::Hook;
 
-use App::Netdisco::Backend;
+use App::Netdisco::Worker;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
