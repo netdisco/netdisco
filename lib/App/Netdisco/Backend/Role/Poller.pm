@@ -12,7 +12,7 @@ use Time::HiRes 'sleep';
 use App::Netdisco::JobQueue qw/jq_defer jq_complete/;
 
 # add dispatch methods for poller tasks
-with 'App::Netdisco::Backend::Runner';
+with 'App::Netdisco::Worker::Runner';
 
 sub worker_begin { (shift)->{started} = time }
 

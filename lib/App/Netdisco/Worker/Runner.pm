@@ -1,4 +1,4 @@
-package App::Netdisco::Backend::Runner;
+package App::Netdisco::Worker::Runner;
 
 use Dancer ':moose :syntax';
 use Dancer::Factory::Hook;

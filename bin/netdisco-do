@@ -104,7 +104,7 @@ unless ($action) {
   use App::Netdisco::Util::Device
     qw/get_device delete_device renumber_device/;
 
-  with 'App::Netdisco::Backend::Runner';
+  with 'App::Netdisco::Worker::Runner';
 
   eval { Module::Load::load 'App::Netdisco::Util::Graph' };
   sub graph {
