@@ -2,6 +2,8 @@ package App::Netdisco::Backend::Runner;
 
 use Dancer ':moose :syntax';
 use Dancer::Factory::Hook;
+
+use App::Netdisco::Backend;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
