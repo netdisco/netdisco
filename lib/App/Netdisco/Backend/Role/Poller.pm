@@ -1,4 +1,4 @@
-package App::Netdisco::Backend::Worker::Poller;
+package App::Netdisco::Backend::Role::Poller;
 
 use Dancer qw/:moose :syntax :script/;
 

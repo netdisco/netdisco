@@ -1,4 +1,4 @@
-package App::Netdisco::Backend::Worker::Manager;
+package App::Netdisco::Backend::Role::Manager;
 
 use Dancer qw/:moose :syntax :script/;
 

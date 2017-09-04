@@ -74,7 +74,7 @@ sub _mk_wkr {
 
     # post-fork, become manager, scheduler, poller, etc
     Role::Tiny->apply_roles_to_object(
-      $self => "App::Netdisco::Backend::Worker::$role");
+      $self => "App::Netdisco::Backend::Role::$role");
 
     $self->worker_begin if $self->can('worker_begin');
     $self->worker_body;

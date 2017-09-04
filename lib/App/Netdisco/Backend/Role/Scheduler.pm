@@ -1,4 +1,4 @@
-package App::Netdisco::Backend::Worker::Scheduler;
+package App::Netdisco::Backend::Role::Scheduler;
 
 use Dancer qw/:moose :syntax :script/;
 
