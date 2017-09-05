@@ -18,7 +18,7 @@ sub load_worker_plugins {
       if $plugin !~ m/^\+/;
     $plugin =~ s/^\+//;
 
-    debug "loading Netdisco plugin $plugin";
+    $ENV{PLUGIN_LOAD_DEBUG} && debug "loading Netdisco plugin $plugin";
     eval { Module::Load::load $plugin };
   }
 }

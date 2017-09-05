@@ -12,16 +12,16 @@ use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 set( '_nd2worker_hooks' => [] );
 
 register 'register_worker' => sub {
-  my ($self, $workerconf, $code) = @_;
+  my ($self, $workerconf, $code) = plugin_args(@_);
   return error "bad param to register_worker"
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
   # needs to be here for caller() context
   my ($package, $action, $phase) = ((caller)[0], undef, undef);
-  if ($package =~ m/Plugin::(\w+)$/) {
+  if ($package =~ m/::Plugin::(\w+)$/) {
     $action = lc $1;
   }
-  if ($package =~ m/Plugin::(\w+)::(\w+)/) {
+  elsif ($package =~ m/::Plugin::(\w+)::(\w+)/) {
     $action = lc $1; $phase = lc $2;
   }
   else { return error "worker Package does not match standard naming" }
@@ -63,17 +63,18 @@ register 'register_worker' => sub {
   };
 
   my $primary = ($workerconf->{primary} ? '_primary' : '');
-  my $hook = 'nd2worker_'. $action .'_'. $phase . $primary;
+  my $hook = 'nd2worker_'. $action .'_'. $workerconf->{phase} . $primary;
   my $store = Dancer::Factory::Hook->instance();
 
   if (not $store->hook_is_registered($hook)) {
     $store->install_hooks($hook);
     # track just the basic phase names which are used
     push @{ setting('_nd2worker_hooks') }, $hook
-      if $phase ne '00init' and 0 == length($primary);
+      if $workerconf->{phase} ne '00init' and 0 == length($primary);
   }
 
-  $store->register_hook($hook, $worker);
+  # D::Factory::Hook::register_hook() does not work?!
+  hook $hook => $worker;
 };
 
 register_plugin;

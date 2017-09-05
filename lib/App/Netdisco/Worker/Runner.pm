@@ -62,8 +62,12 @@ sub run {
                          @{ (setting('_nd2worker_hooks') || []) };
 
   # run 00init primary
-  $self->run_workers("nd2worker_${action}_00init_primary");
-  return if $self->jobstat->not_ok;
+  my $store = Dancer::Factory::Hook->instance();
+  my $initprimary = "nd2worker_${action}_00init_primary";
+  if (scalar @{ $store->get_hooks_for($initprimary) }) {
+    $self->run_workers($initprimary);
+    return if $self->jobstat->not_ok;
+  }
 
   # run each 00init worker
   $self->run_workers("nd2worker_${action}_00init");
@@ -80,6 +84,7 @@ sub run_workers {
   my $hook = shift or return $self->jobstat->error('missing hook param');
   my $primary = ($hook =~ m/_primary$/);
   my $store = Dancer::Factory::Hook->instance();
+  # debug "entering hook $hook";
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
