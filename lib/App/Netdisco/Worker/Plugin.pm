@@ -50,6 +50,10 @@ register 'register_worker' => sub {
       push @newuserconf, $stanza;
     }
 
+    # per-device action but no device creds available
+    return Status->error('skipped with no device creds')
+      if ref $job->device and 0 == scalar @newuserconf;
+
     # back up and restore device_auth
     my $guard = guard { set(device_auth => \@userconf) };
     set(device_auth => \@newuserconf);
