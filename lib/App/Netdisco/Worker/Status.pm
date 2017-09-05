@@ -7,9 +7,9 @@ use Moo;
 use namespace::clean;
 
 foreach my $slot (qw/
-      done
-      error
-      defer
+      done_slot
+      error_slot
+      defer_slot
     /) {
 
   has $slot => (
@@ -31,17 +31,18 @@ Shorthand for new() with setting param, accepts log as arg.
 
 =cut
 
-sub done  { return (shift)->new({done  => 1, log => shift}) }
-sub error { return (shift)->new({error => 1, log => shift}) }
-sub defer { return (shift)->new({defer => 1, log => shift}) }
+sub done  { return (shift)->new({done_slot  => 1, log => shift}) }
+sub error { return (shift)->new({error_slot => 1, log => shift}) }
+sub defer { return (shift)->new({defer_slot => 1, log => shift}) }
 
-=head2 ok
+=head2 is_ok
 
 Returns true if C<done> is true and C<error> and C<defer> have not been set.
 
 =cut
 
-sub ok { return ($_[0]->done and not $_[0]->error and not $_[0]->defer) }
+sub is_ok { return ($_[0]->done_slot
+  and not $_[0]->error_slot and not $_[0]->defer_slot) }
 
 =head2 not_ok
 
@@ -49,7 +50,7 @@ Returns the logical inversion of C<ok>.
 
 =cut
 
-sub not_ok { return (not $_[0]->ok) }
+sub not_ok { return (not $_[0]->is_ok) }
 
 =head2 status
 
@@ -60,9 +61,9 @@ Returns text equivalent of C<done>, C<defer>, or C<error>.
 sub status {
   my $self = shift;
   return (
-    $self->done ? 'done'
-                : $self->defer ? 'defer'
-                               : 'error';
+    $self->done_slot ? 'done'
+                     : $self->defer_slot ? 'defer'
+                                         : 'error';
   );
 }
 

@@ -53,7 +53,7 @@ sub _run_first {
     };
 
     $retval ||= Status->done('no status supplied');
-    return $retval if $retval->ok;
+    return $retval if $retval->is_ok;
   }
 
   return Status->error('no worker was successful');
