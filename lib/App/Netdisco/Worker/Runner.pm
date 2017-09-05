@@ -22,7 +22,7 @@ has 'jobstat' => (
 
 after 'run', 'run_workers' => sub {
   my $self = shift;
-  $self->jobstat->update_job($self->job);
+  $self->job->update_status($self->jobstat);
 };
 
 # mixin code to run workers loaded via plugins

@@ -55,6 +55,21 @@ sub summary {
 #      ($job->subaction ? (q{'}. $job->subaction .q{'}) : '');
 }
 
+=head2 update_status
+
+Passed an L<App::Netdisco::Worker::Status> will update this job's C<log> and
+C<status> slots.
+
+=cut
+
+sub update_status {
+  my $job = shift;
+  my $status = shift or return;
+  $job->status( $status->status );
+  $job->log( $status->log );
+  return $job;
+}
+
 =head1 ADDITIONAL COLUMNS
 
 =head2 extra

@@ -67,17 +67,4 @@ sub status {
   );
 }
 
-=head2 update_job
-
-Updates an L<App::Netdisco::Backend::Job> with status and log.
-
-=cut
-
-sub update_job {
-  my $self = shift;
-  my $job = shift or return;
-  $job->status( $self->status );
-  $job->log( $self->log );
-}
-
 1;
