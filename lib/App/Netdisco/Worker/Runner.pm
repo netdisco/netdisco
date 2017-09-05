@@ -17,7 +17,7 @@ has 'job' => (
 
 has 'jobstat' => (
   is => 'rw',
-  default => sub { Status->error("no worker was successful") },
+  default => sub { Status->error("no worker for this action was successful") },
 );
 
 after 'run', 'run_workers' => sub {
@@ -27,37 +27,37 @@ after 'run', 'run_workers' => sub {
 
 # mixin code to run workers loaded via plugins
 sub run {
-  my $self = shift;
+  my ($self, $job) = @_;
 
-  $self->job(shift) if scalar @_;
   die 'bad job to run()'
-    unless ref $self->job eq 'App::Netdisco::Backend::Job';
+    unless ref $job eq 'App::Netdisco::Backend::Job';
+  $self->job($job);
 
   my @newuserconf = ();
   my @userconf = @{ setting('device_auth') || [] };
 
   # reduce device_auth by only/no
-  if (ref $self->job->device) {
+  if (ref $job->device) {
     foreach my $stanza (@userconf) {
       my $no   = (exists $stanza->{no}   ? $stanza->{no}   : undef);
       my $only = (exists $stanza->{only} ? $stanza->{only} : undef);
 
-      next if $no and check_acl_no($self->job->device->ip, $no);
-      next if $only and not check_acl_only($self->job->device->ip, $only);
+      next if $no and check_acl_no($job->device->ip, $no);
+      next if $only and not check_acl_only($job->device->ip, $only);
 
       push @newuserconf, $stanza;
     }
   }
 
   # per-device action but no device creds available
-  return $self->jobstat->error('skipped with no device creds')
-    if ref $self->job->device and 0 == scalar @newuserconf;
+  return $self->jobstat->defer('deferred job with no device creds')
+    if ref $job->device and 0 == scalar @newuserconf;
 
   # back up and restore device_auth
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  my $action = $self->job->action;
+  my $action = $job->action;
   my @phase_hooks = grep { m/^nd2worker_${action}_/ }
                          @{ (setting('_nd2worker_hooks') || []) };
 
@@ -78,10 +78,8 @@ sub run {
 sub run_workers {
   my $self = shift;
   my $hook = shift or return $self->jobstat->error('missing hook param');
-
+  my $primary = ($hook =~ m/_primary$/);
   my $store = Dancer::Factory::Hook->instance();
-  $store->hook_is_registered($hook)
-    or return $self->jobstat->error("no such hook: $hook");
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
@@ -91,7 +89,7 @@ sub run_workers {
     }
     catch { $self->jobstat->error($_) };
 
-    last if $hook =~ m/_primary$/ and $self->jobstat->is_ok;
+    last if $primary and $self->jobstat->is_ok;
   }
 }
 
