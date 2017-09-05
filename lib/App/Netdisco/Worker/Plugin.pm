@@ -4,7 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 use Dancer::Factory::Hook;
 
-use Scope::Guard;
+use Scope::Guard 'guard';
 use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 

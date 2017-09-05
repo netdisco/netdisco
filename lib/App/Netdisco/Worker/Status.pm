@@ -63,7 +63,7 @@ sub status {
   return (
     $self->done_slot ? 'done'
                      : $self->defer_slot ? 'defer'
-                                         : 'error';
+                                         : 'error'
   );
 }
 

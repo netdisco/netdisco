@@ -1,6 +1,6 @@
 package App::Netdisco::Worker::Runner;
 
-use Dancer ':moose :syntax';
+use Dancer qw/:moose :syntax/;
 use Dancer::Factory::Hook;
 
 use App::Netdisco::Worker;
