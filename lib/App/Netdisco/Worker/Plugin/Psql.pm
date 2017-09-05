@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 
 use aliased 'App::Netdisco::Worker::Status';
 
-register_worker({} => sub {
+register_worker(sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
 

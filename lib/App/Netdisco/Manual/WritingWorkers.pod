@@ -34,6 +34,7 @@ boilerplate code for our example plugin module:
  
  use Dancer ':syntax';
  use App::Netdisco::Worker::Plugin;
+ use aliased 'App::Netdisco::Worker::Status';
  
  # worker registration code goes here, ** see below **
  
@@ -44,17 +45,19 @@ boilerplate code for our example plugin module:
 Use the C<register_worker> helper from L<App::Netdisco::Worker::Plugin> to
 register a worker:
 
+ register_worker( $coderef );
+ # or
  register_worker( \%workerconf, $coderef );
 
-For example:
+For example (using the second form):
 
  register_worker({
    driver => 'unifiapi',
  }, sub { "worker code here" });
 
-An explanation of the C<%workerconf> options is below. The C<$coderef> is the
-main body of your worker. Your worker is run in a L<Try::Tiny> statement to
-catch errors, and passed the following arguments:
+The C<%workerconf> hashref is optional, and described below. The C<$coderef>
+is the main body of your worker. Your worker is run in a L<Try::Tiny>
+statement to catch errors, and passed the following arguments:
 
  $coderef->($job, \%workerconf);
 
@@ -83,8 +86,10 @@ same name (plus an entry in C<%workerconf>, see below). Otherwise you can use
 any valid Perl bareword for the phase.
 
 Workers may also be registered directly to the action (C<Discover>, in this
-example). This is used for very early bootstrapping code (such as first
-inserting a device into the database so it can be used by subsequent phases).
+example), without any phase. This is used for very early bootstrapping code
+(such as first inserting a device into the database so it can be used by
+subsequent phases) or for very simple, generic actions (such as C<netdisco-do
+psql>).
 
 =head2 C<%workerconf> Options
 
@@ -131,7 +136,15 @@ the worker configuration.
 
 The return code of the worker is significant for those configured with
 C<primary> as C<true>: when the worker returns true, no other C<primary> hooks
-are run for that phase.
+are run for that phase. You should always use the aliased
+L<App::Netdisco::Worker::Status> helper (loaded as in the boilerplate code
+above) when returning a value, such as:
+
+ return Status->done('everything is good');
+ # or
+ return Status->error('something went wrong');
+ # or
+ return Status->defer('this device cannot be processed right now');
 
 Remember that a worker is only run if it matches the hardware platform of the
 target device and the user's configuration, and is not also excluded by the
@@ -153,6 +166,18 @@ See the documentation for each transport to find out how to access it:
 L<App::Netdisco::Transport::SNMP>
 
 =back
+
+=head1 Database Connections
+
+The Netdisco database is available via the C<netdisco> schema key, as below.
+You can also use the C<external_databases> configuration item to set up
+connections to other databases.
+
+ # plugin package
+ use Dancer::Plugin::DBIC;
+ my $set =
+   schema('netdisco')->resultset('Devices')
+                     ->search({vendor => 'cisco'});
 
 =head1 Review of Terminology
 
@@ -196,18 +221,6 @@ this phase has already succeeded. In this way, you can override Netdisco code
 by setting this option and returning true from your worker.
 
 =back
-
-=head1 Database Connections
-
-The Netdisco database is available via the C<netdisco> schema key, as below.
-You can also use the C<external_databases> configuration item to set up
-connections to other databases.
-
- # plugin package
- use Dancer::Plugin::DBIC;
- my $set =
-   schema('netdisco')->resultset('Devices')
-                     ->search({vendor => 'cisco'});
 
 =cut
 

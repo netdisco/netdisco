@@ -12,7 +12,9 @@ use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 set( '_nd2worker_hooks' => [] );
 
 register 'register_worker' => sub {
-  my ($self, $workerconf, $code) = plugin_args(@_);
+  my ($self, $first, $second) = plugin_args(@_);
+  my $workerconf = (ref $first eq 'HASH' ? $first : {});
+  my $code = (ref $first eq 'CODE' ? $first : $second);
   return error "bad param to register_worker"
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
@@ -28,7 +30,7 @@ register 'register_worker' => sub {
 
   $workerconf->{action}  = $action;
   $workerconf->{phase}   = ($phase || '00init');
-  $workerconf->{primary} = $workerconf->{primary};
+  $workerconf->{primary} = ($workerconf->{primary} ? true : false);
 
   my $worker = sub {
     my $job = shift or return Status->error('missing job param');
