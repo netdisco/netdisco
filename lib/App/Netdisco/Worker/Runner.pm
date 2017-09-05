@@ -63,7 +63,7 @@ sub run {
 
   # run 00init primary
   $self->run_workers("nd2worker_${action}_00init_primary");
-  return $self->jobstat if $self->jobstat->not_ok;
+  return if $self->jobstat->not_ok;
 
   # run each 00init worker
   $self->run_workers("nd2worker_${action}_00init");
@@ -73,8 +73,6 @@ sub run {
 
   # run each worker
   $self->run_workers($_) for (@phase_hooks);
-
-  return $self->jobstat;
 }
 
 sub run_workers {
@@ -83,7 +81,7 @@ sub run_workers {
 
   my $store = Dancer::Factory::Hook->instance();
   $store->hook_is_registered($hook)
-    or return Status->error("no such hook: $hook");
+    or return $self->jobstat->error("no such hook: $hook");
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
@@ -91,7 +89,7 @@ sub run_workers {
       # could die or return undef or a scalar or Status or another class
       $self->jobstat($retval) if ref $retval eq 'App::Netdisco::Worker::Status';
     }
-    catch { $self->jobstat->log($_) };
+    catch { $self->jobstat->error($_) };
 
     last if $hook =~ m/_primary$/ and $self->jobstat->is_ok;
   }

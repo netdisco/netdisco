@@ -31,9 +31,18 @@ Shorthand for new() with setting param, accepts log as arg.
 
 =cut
 
-sub done  { return (shift)->new({done_slot  => 1, log => shift}) }
-sub error { return (shift)->new({error_slot => 1, log => shift}) }
-sub defer { return (shift)->new({defer_slot => 1, log => shift}) }
+sub _make_new {
+  my ($self, $log, $slot) = @_;
+  my $new = (ref $self ? $self : $self->new());
+  $new->log($log);
+  $new->$_(0) for (qw/done_slot error_slot defer_slot/);
+  $new->$slot(1);
+  return $new;
+}
+
+sub error { (shift)->_make_new(@_, 'error_slot') }
+sub done  { (shift)->_make_new(@_, 'done_slot')  }
+sub defer { (shift)->_make_new(@_, 'defer_slot') }
 
 =head2 is_ok
 
