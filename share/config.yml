@@ -279,6 +279,13 @@ worker_plugins:
   - Arpnip::Nodes::RFC
   - Arpnip::Subnets::RFC
   - NetBIOS::Nbtstat::RFC
+  - Graph
+  - Stats
+  - Monitor
+  - Delete
+  - Show
+  - Psql
+  - Renumber
 
 # ---------------
 # GraphViz Export

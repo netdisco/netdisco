@@ -35,17 +35,18 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
-use App::Netdisco::Backend::Job;
 use Dancer qw/:moose :script/;
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
-use NetAddr::IP qw/:rfc3021 :lower/;
-use App::Netdisco::Util::Device 'get_device';
-
 use Try::Tiny;
 use Pod::Usage;
 use Scalar::Util 'blessed';
+use NetAddr::IP qw/:rfc3021 :lower/;
+
+use App::Netdisco::Backend::Job;
+use App::Netdisco::Util::Device 'get_device';
+
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
@@ -89,90 +90,11 @@ unless ($action) {
     );
 }
 
-# create worker (placeholder object for the role methods)
+# create worker (placeholder object for the action runner)
 {
   package MyWorker;
-
   use Moo;
-  use Module::Load ();
-  use Data::Printer ();
-  use Scalar::Util 'blessed';
-  use NetAddr::IP qw/:rfc3021 :lower/;
-  use Dancer ':script';
-
-  use App::Netdisco::Transport::SNMP;
-  use App::Netdisco::Util::Device
-    qw/get_device delete_device renumber_device/;
-
   with 'App::Netdisco::Worker::Runner';
-
-  eval { Module::Load::load 'App::Netdisco::Util::Graph' };
-  sub graph {
-    App::Netdisco::Util::Graph::graph();
-    return ('done', 'Generated graph data.');
-  }
-
-  use App::Netdisco::Util::NodeMonitor ();
-  sub monitor {
-    App::Netdisco::Util::NodeMonitor::monitor();
-    return ('done', 'Generated monitor data.');
-  }
-
-  use App::Netdisco::Util::Statistics ();
-  sub stats {
-    App::Netdisco::Util::Statistics::update_stats();
-    return ('done', 'Updated statistics.');
-  }
-
-  sub show {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-
-    $extra ||= 'interfaces'; my $class = undef;
-    ($class, $extra) = split(/::([^:]+)$/, $extra);
-    if ($class and $extra) {
-        $class = 'SNMP::Info::'.$class;
-    }
-    else {
-        $extra = $class;
-        undef $class;
-    }
-    my $i = App::Netdisco::Transport::SNMP->reader_for($device, $class);
-    Data::Printer::p($i->$extra);
-    return ('done', sprintf "Showed %s response from %s.", $extra, $device->ip);
-  }
-
-  sub delete {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-
-    $port = ($port ? 1 : 0);
-    delete_device($device, $port, $extra);
-    return ('done', sprintf "Deleted device %s.", $device->ip);
-  }
-
-  sub renumber {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-    my $old_ip = $device->ip;
-
-    my $new_ip = NetAddr::IP->new($extra);
-    unless ($new_ip and $new_ip->addr ne '0.0.0.0') {
-        return ('error', "Bad host or IP: ".($extra || '0.0.0.0'));
-    }
-
-    my $new_dev = get_device($new_ip->addr);
-    if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
-        return ('error', sprintf "Already know new device as: %s.", $new_dev->ip);
-    }
-
-    renumber_device($device, $new_ip);
-    return ('done', sprintf 'Renumbered device %s to %s (%s).',
-      $device->ip, $new_ip, ($device->dns || ''));
-  }
 }
 my $worker = MyWorker->new();
 
