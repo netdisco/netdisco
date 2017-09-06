@@ -173,48 +173,8 @@ unless ($action) {
     return ('done', sprintf 'Renumbered device %s to %s (%s).',
       $device->ip, $new_ip, ($device->dns || ''));
   }
-
-  sub psql {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-
-    my $name = ($ENV{NETDISCO_DBNAME} || setting('database')->{name} || 'netdisco');
-    my $host = setting('database')->{host};
-    my $user = setting('database')->{user};
-    my $pass = setting('database')->{pass};
-
-    my $portnum = undef;
-    if ($host and $host =~ m/([^;]+);port=(\d+)/) {
-        $host = $1;
-        $portnum = $2;
-    }
-
-    $ENV{PGHOST} = $host if $host;
-    $ENV{PGPORT} = $portnum if defined $portnum;
-    $ENV{PGDATABASE} = $name;
-    $ENV{PGUSER} = $user;
-    $ENV{PGPASSWORD} = $pass;
-    $ENV{PGCLIENTENCODING} = 'UTF8';
-
-    if ($extra) {
-        system('psql', '-c', $extra);
-    }
-    else {
-        system('psql');
-    }
-    return ('done', "psql session closed.");
-  }
 }
 my $worker = MyWorker->new();
-
-# belt and braces check before we go ahead
-if (not $worker->can( $action )) {
-  pod2usage(
-    -msg => (sprintf 'error: %s is not a valid action', $action),
-    -verbose => 2,
-    -exitval => 3,
-  );
-}
 
 my $net = NetAddr::IP->new($device);
 if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
@@ -256,6 +216,14 @@ foreach my $host (@hostlist) {
         $job->status('error');
         $job->log("error running job: $_");
     };
+
+    if ($job->log eq 'no worker for this action was successful') {
+      pod2usage(
+        -msg => (sprintf 'error: %s is not a valid action', $action),
+        -verbose => 2,
+        -exitval => 3,
+      );
+    }
 
     info sprintf '%s: finished at %s', $action, scalar localtime;
     info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
