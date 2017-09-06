@@ -7,10 +7,9 @@ use Module::Load ();
 use Dancer ':syntax';
 
 # load worker plugins for our workers
-# NOTE: this package is loaded for all actions whether backend or netdisco-do
 
 sub load_worker_plugins {
-  my $plugin_list = shift;
+  my ($action, $plugin_list) = @_;
 
   foreach my $plugin (@$plugin_list) {
     $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
@@ -18,12 +17,17 @@ sub load_worker_plugins {
       if $plugin !~ m/^\+/;
     $plugin =~ s/^\+//;
 
-    $ENV{PLUGIN_LOAD_DEBUG} && debug "loading Netdisco plugin $plugin";
-    eval { Module::Load::load $plugin };
+    next unless $plugin =~ m/::Plugin::${action}(?:::|$)/i;
+
+    debug "loading worker plugin $plugin";
+    Module::Load::load $plugin;
   }
 }
 
-load_worker_plugins( setting('extra_worker_plugins') || [] );
-load_worker_plugins( setting('worker_plugins') || [] );
+sub import {
+  my ($class, $action) = @_;
+  load_worker_plugins( $action, setting('extra_worker_plugins') || [] );
+  load_worker_plugins( $action, setting('worker_plugins') || [] );
+}
 
 true;

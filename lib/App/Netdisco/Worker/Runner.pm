@@ -2,12 +2,11 @@ package App::Netdisco::Worker::Runner;
 
 use Dancer qw/:moose :syntax/;
 use Dancer::Factory::Hook;
-
-use App::Netdisco::Worker;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
 use Moo::Role;
+use Module::Load ();
 use Scope::Guard 'guard';
 use namespace::clean;
 
@@ -33,6 +32,9 @@ sub run {
     unless ref $job eq 'App::Netdisco::Backend::Job';
   $self->job($job);
 
+  my $action = $job->action;
+  Module::Load::load 'App::Netdisco::Worker', $action;
+
   my @newuserconf = ();
   my @userconf = @{ setting('device_auth') || [] };
 
@@ -57,7 +59,6 @@ sub run {
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  my $action = $job->action;
   my @phase_hooks = grep { m/^nd2_${action}_/ }
                          @{ (setting('_nd2worker_hooks') || []) };
 
