@@ -65,7 +65,7 @@ register 'register_worker' => sub {
   };
 
   my $primary = ($workerconf->{primary} ? '_primary' : '');
-  my $hook = 'nd2worker_'. $action .'_'. $workerconf->{phase} . $primary;
+  my $hook = 'nd2_'. $action .'_'. $workerconf->{phase} . $primary;
   my $store = Dancer::Factory::Hook->instance();
 
   if (not $store->hook_is_registered($hook)) {

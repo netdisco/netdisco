@@ -58,19 +58,19 @@ sub run {
   set(device_auth => \@newuserconf);
 
   my $action = $job->action;
-  my @phase_hooks = grep { m/^nd2worker_${action}_/ }
+  my @phase_hooks = grep { m/^nd2_${action}_/ }
                          @{ (setting('_nd2worker_hooks') || []) };
 
   # run 00init primary
   my $store = Dancer::Factory::Hook->instance();
-  my $initprimary = "nd2worker_${action}_00init_primary";
+  my $initprimary = "nd2_${action}_00init_primary";
   if (scalar @{ $store->get_hooks_for($initprimary) }) {
     $self->run_workers($initprimary);
     return if $self->jobstat->not_ok;
   }
 
   # run each 00init worker
-  $self->run_workers("nd2worker_${action}_00init");
+  $self->run_workers("nd2_${action}_00init");
 
   # run primary
   $self->run_workers("${_}_primary") for (@phase_hooks);
