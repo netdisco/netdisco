@@ -82,9 +82,11 @@ sub run {
 sub run_workers {
   my $self = shift;
   my $hook = shift or return $self->jobstat->error('missing hook param');
-  my $primary = ($hook =~ m/_primary$/);
   my $store = Dancer::Factory::Hook->instance();
-  # debug "entering hook $hook";
+  my $primary = ($hook =~ m/_primary$/);
+
+  return unless scalar @{ $store->get_hooks_for($hook) };
+  debug "running workers for hook: $hook";
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
