@@ -19,7 +19,7 @@ register_worker({ primary => true }, sub {
   return Status->done("macsuck skipped: $host not yet discovered")
     unless $device->in_storage;
 
-  return Status->done("macsuck skipped: $host is pseudo-device")
+  return Status->defer("macsuck skipped: $host is pseudo-device")
     if $device->vendor and $device->vendor eq 'netdisco';
 
   return Status->defer("macsuck deferred: $host is not macsuckable")

@@ -1,58 +1,29 @@
-package App::Netdisco::Core::Arpnip;
+package App::Netdisco::Worker::Plugin::Arpnip::Nodes;
 
-use Dancer qw/:syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
+use Dancer ':syntax';
+use App::Netdisco::Worker::Plugin;
+use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Node 'check_mac';
-use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
-use NetAddr::IP::Lite ':lower';
+use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use NetAddr::MAC ();
 
-use base 'Exporter';
-our @EXPORT = ();
-our @EXPORT_OK = qw/ do_arpnip store_arp /;
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
+register_worker({ primary => true, driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
 
-=head1 NAME
+  my $device = $job->device;
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or return Status->defer("arpnip failed: could not SNMP connect to $host");
 
-App::Netdisco::Core::Arpnip
-
-=head1 DESCRIPTION
-
-Helper subroutines to support parts of the Netdisco application.
-
-There are no default exports, however the C<:all> tag will export all
-subroutines.
-
-=head1 EXPORT_OK
-
-=head2 do_arpnip( $device, $snmp )
-
-Given a Device database object, and a working SNMP connection, connect to a
-device and discover its ARP cache for IPv4 and Neighbor cache for IPv6.
-
-Will also discover subnets in use on the device and update the Subnets table.
-
-=cut
-
-sub do_arpnip {
-  my ($device, $snmp) = @_;
-
-  unless ($device->in_storage) {
-      debug sprintf ' [%s] arpnip - skipping device not yet discovered', $device->ip;
-      return;
-  }
+  return Status->defer("Skipped arpnip for device $host without layer 3 capability")
+    unless $snmp->has_layer(3);
 
   # get v4 arp table
-  my $v4 = _get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
+  my $v4 = get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
   # get v6 neighbor cache
-  my $v6 = _get_arps($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
-
-  # get directly connected networks
-  my @subnets = _gather_subnets($device, $snmp);
-  # TODO: IPv6 subnets
+  my $v6 = get_arps($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we _can_ if we want add a job at the end to
@@ -68,15 +39,12 @@ sub do_arpnip {
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
     $device->ip, scalar @$v6;
 
-  _store_subnet($_, $now) for @subnets;
-  debug sprintf ' [%s] arpnip - processed %s Subnet entries',
-    $device->ip, scalar @subnets;
-
   $device->update({last_arpnip => \$now});
-}
+  return Status->done('Ended arpnip for '. $device->ip);
+});
 
 # get an arp table (v4 or v6)
-sub _get_arps {
+sub get_arps {
   my ($device, $paddr, $netaddr) = @_;
   my @arps = ();
 
@@ -92,7 +60,7 @@ sub _get_arps {
   }
 
   debug sprintf ' resolving %d ARP entries with max %d outstanding requests',
-      scalar @arps, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+    scalar @arps, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
   my $resolved_ips = hostnames_resolve_async(\@arps);
 
   return $resolved_ips;
@@ -148,44 +116,4 @@ sub store_arp {
   });
 }
 
-# gathers device subnets
-sub _gather_subnets {
-  my ($device, $snmp) = @_;
-  my @subnets = ();
-
-  my $ip_netmask = $snmp->ip_netmask;
-  foreach my $entry (keys %$ip_netmask) {
-      my $ip = NetAddr::IP::Lite->new($entry);
-      my $addr = $ip->addr;
-
-      next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
-      next if setting('ignore_private_nets') and $ip->is_rfc1918;
-
-      my $netmask = $ip_netmask->{$addr};
-      next if $netmask eq '255.255.255.255' or $netmask eq '0.0.0.0';
-
-      my $cidr = NetAddr::IP::Lite->new($addr, $netmask)->network->cidr;
-
-      debug sprintf ' [%s] arpnip - found subnet %s', $device->ip, $cidr;
-      push @subnets, $cidr;
-  }
-
-  return @subnets;
-}
-
-# update subnets with new networks
-sub _store_subnet {
-  my ($subnet, $now) = @_;
-
-  schema('netdisco')->txn_do(sub {
-    schema('netdisco')->resultset('Subnet')->update_or_create(
-    {
-      net => $subnet,
-      last_discover => \$now,
-    },
-    { for => 'update' });
-  });
-}
-
-1;
+true;
