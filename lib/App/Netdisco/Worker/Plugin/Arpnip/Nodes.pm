@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use Dancer::Plugin::DBIC 'schema';
@@ -15,9 +16,9 @@ register_worker({ primary => true, driver => 'snmp' }, sub {
 
   my $device = $job->device;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return Status->defer("arpnip failed: could not SNMP connect to $host");
+    or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
-  return Status->defer("Skipped arpnip for device $host without layer 3 capability")
+  return Status->defer("Skipped arpnip for device $device without layer 3 capability")
     unless $snmp->has_layer(3);
 
   # get v4 arp table

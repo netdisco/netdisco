@@ -10,6 +10,8 @@ use warnings;
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
+use overload '""' => sub { shift->ip }, fallback => 1;
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
