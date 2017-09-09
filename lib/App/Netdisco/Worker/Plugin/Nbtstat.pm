@@ -10,7 +10,7 @@ register_worker({ primary => true }, sub {
   my ($job, $workerconf) = @_;
 
   return Status->error('nbtstat failed: unable to interpret device param')
-    if !defined $job->device;
+    unless defined $job->device;
 
   return Status->defer(sprintf 'nbtstat deferred: %s is not macsuckable', $job->device->ip)
     unless is_macsuckable($job->device);
