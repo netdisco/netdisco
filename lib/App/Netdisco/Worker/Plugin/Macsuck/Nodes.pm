@@ -14,11 +14,15 @@ use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use Scope::Guard 'guard';
 
-register_worker({ primary => true }, sub {
+register_worker({ primary => true, driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device);
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or return Status->defer("macsuck failed: could not SNMP connect to $host");
+
+  return Status->defer("Skipped macsuck for device $host without layer 2 capability")
+    unless $snmp->has_layer(2);
 
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we can if we want add a job at the end to

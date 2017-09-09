@@ -25,13 +25,6 @@ register_worker({ primary => true }, sub {
   return Status->defer("macsuck deferred: $host is not macsuckable")
     unless is_macsuckable_now($device);
 
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device);
-  return Status->defer("macsuck failed: could not SNMP connect to $host")
-    unless defined $snmp;
-
-  return Status->done("Skipped macsuck for device $host without layer 2 capability")
-    unless $snmp->has_layer(2);
-
   return Status->done('Macsuck is able to run.');
 });
 
