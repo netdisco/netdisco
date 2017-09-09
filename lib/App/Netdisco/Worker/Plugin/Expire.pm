@@ -1,17 +1,14 @@
-package App::Netdisco::Backend::Worker::Poller::Expiry;
+package App::Netdisco::Worker::Plugin::Expire;
 
-use Dancer qw/:moose :syntax :script/;
+use Dancer ':syntax';
+use App::Netdisco::Worker::Plugin;
+use aliased 'App::Netdisco::Worker::Status';
+
 use Dancer::Plugin::DBIC 'schema';
-
-use App::Netdisco::Backend::Util ':all';
 use App::Netdisco::Util::Statistics 'update_stats';
 
-use Role::Tiny;
-use namespace::clean;
-
-# expire devices and nodes according to config
-sub expire {
-  my ($self, $job) = @_;
+register_worker({ primary => true }, sub {
+  my ($job, $workerconf) = @_;
 
   if (setting('expire_devices') and setting('expire_devices') > 0) {
       schema('netdisco')->txn_do(sub {
@@ -54,25 +51,7 @@ sub expire {
   # now update stats
   update_stats();
 
-  return job_done("Checked expiry and updated stats");
-}
+  return Status->done('Checked expiry and updated stats');
+});
 
-# expire nodes for a specific device
-sub expirenodes {
-  my ($self, $job) = @_;
-
-  return job_error('Missing device') unless $job->device;
-
-  schema('netdisco')->txn_do(sub {
-    schema('netdisco')->resultset('Node')->search({
-      switch => $job->device->ip,
-      ($job->port ? (port => $job->port) : ()),
-    })->delete(
-      ($job->extra ? () : ({ archive_nodes => 1 }))
-    );
-  });
-
-  return job_done("Expired nodes for ". $job->device->ip);
-}
-
-1;
+true;
