@@ -278,7 +278,9 @@ worker_plugins:
   - Arpnip::Nodes::CLI
   - Arpnip::Nodes::RFC
   - Arpnip::Subnets::RFC
-  - NetBIOS::Nbtstat::RFC
+  - Nbtwalk
+  - Nbtstat
+  - Nbtstat::Core
   - Graph
   - Stats
   - Monitor
@@ -286,6 +288,7 @@ worker_plugins:
   - Show
   - Psql
   - Renumber
+  - Test
 
 # ---------------
 # GraphViz Export

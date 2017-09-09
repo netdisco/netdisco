@@ -1,10 +1,9 @@
-package App::Netdisco::Core::Nbtstat;
+package App::Netdisco::Util::Nbtstat;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Node 'check_mac';
-use NetAddr::IP::Lite ':lower';
 use App::Netdisco::AnyEvent::Nbtstat;
 use Encode;
 
@@ -15,7 +14,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
-App::Netdisco::Core::Nbtstat
+App::Netdisco::Util::Nbtstat
 
 =head1 DESCRIPTION
 
@@ -130,12 +129,12 @@ sub _filter_nbname {
         $mac = $node_ip->mac;
     }
 
-        $hash_ref->{'ip'} = $ip;
-        $hash_ref->{'mac'}    = $mac;
-        $hash_ref->{'nbname'} = Encode::decode('UTF-8', $nbname);
-        $hash_ref->{'domain'} = Encode::decode('UTF-8', $domain);
-        $hash_ref->{'server'} = $server;
-        $hash_ref->{'nbuser'} = Encode::decode('UTF-8', $nbuser);
+    $hash_ref->{'ip'} = $ip;
+    $hash_ref->{'mac'}    = $mac;
+    $hash_ref->{'nbname'} = Encode::decode('UTF-8', $nbname);
+    $hash_ref->{'domain'} = Encode::decode('UTF-8', $domain);
+    $hash_ref->{'server'} = $server;
+    $hash_ref->{'nbuser'} = Encode::decode('UTF-8', $nbuser);
         
     return;
 }
