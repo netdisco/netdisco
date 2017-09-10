@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use Data::Printer ();
 use App::Netdisco::Transport::SNMP;
 
-register_worker({ primary => true }, sub {
+register_worker({ stage => 'init' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
   return Status->error('Missing device (-d).') if !defined $device;

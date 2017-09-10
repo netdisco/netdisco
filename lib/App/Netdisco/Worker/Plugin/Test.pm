@@ -4,16 +4,28 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-register_worker({ primary => true }, sub {
+register_worker({ stage => 'second' }, sub {
   my ($job, $workerconf) = @_;
-  debug 'Test (primary) ran successfully.';
-  return Status->done('Test (primary) ran successfully.');
+  debug 'Test (second) ran successfully.';
+  return Status->done('Test (second) ran successfully.');
 });
 
-register_worker({ primary => false }, sub {
+register_worker({ stage => 'init' }, sub {
   my ($job, $workerconf) = @_;
-  debug 'Test ran successfully.';
-  return Status->done('Test ran successfully.');
+  debug 'Test (init) ran successfully.';
+  return Status->done('Test (init) ran successfully.');
+});
+
+register_worker({ stage => 'first' }, sub {
+  my ($job, $workerconf) = @_;
+  debug 'Test (first) ran successfully.';
+  return Status->done('Test (first) ran successfully.');
+});
+
+register_worker(sub {
+  my ($job, $workerconf) = @_;
+  debug 'Test (undefined) ran successfully.';
+  return Status->done('Test (undefined) ran successfully.');
 });
 
 true;

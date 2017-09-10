@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Dancer::Plugin::DBIC 'schema';
 
-register_worker({ primary => true }, sub {
+register_worker({ stage => 'init' }, sub {
   my ($job, $workerconf) = @_;
 
   return Status->error('nbtstat failed: unable to interpret device param')

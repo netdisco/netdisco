@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission 'check_acl_only';
 use App::Netdisco::Util::DNS 'ipv4_from_hostname';
 use Dancer::Plugin::DBIC 'schema';
 
-register_worker({ primary => false, driver => 'snmp' }, sub {
+register_worker({ stage => 'second', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;

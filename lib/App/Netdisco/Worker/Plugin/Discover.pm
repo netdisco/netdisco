@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device 'is_discoverable_now';
 
-register_worker({ primary => true }, sub {
+register_worker({ stage => 'init' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 

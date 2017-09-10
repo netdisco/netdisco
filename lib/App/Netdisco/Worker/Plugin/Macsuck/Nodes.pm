@@ -14,7 +14,7 @@ use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use Scope::Guard 'guard';
 
-register_worker({ primary => true, driver => 'snmp' }, sub {
+register_worker({ stage => 'init', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;

@@ -10,7 +10,7 @@ use Dancer::Plugin::DBIC 'schema';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
 
-register_worker({ primary => false, driver => 'snmp' }, sub {
+register_worker({ stage => 'second', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;

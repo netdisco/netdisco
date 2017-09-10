@@ -28,9 +28,9 @@ register 'register_worker' => sub {
   }
   else { return error "worker Package does not match standard naming" }
 
-  $workerconf->{action}  = $action;
-  $workerconf->{phase}   = ($phase || '00init');
-  $workerconf->{primary} = ($workerconf->{primary} ? true : false);
+  $workerconf->{action} = $action;
+  $workerconf->{phase}  = ($phase || '');
+  $workerconf->{stage}  = ($workerconf->{stage} || 'second');
 
   my $worker = sub {
     my $job = shift or return Status->error('missing job param');
@@ -64,18 +64,16 @@ register 'register_worker' => sub {
     return $code->($job, $workerconf);
   };
 
-  my $primary = ($workerconf->{primary} ? '_primary' : '');
-  my $hook = 'nd2_'. $action .'_'. $workerconf->{phase} . $primary;
   my $store = Dancer::Factory::Hook->instance();
+  my $hook = 'nd2_'. $action . ($phase ? ('_'. $phase) : '');
 
   if (not $store->hook_is_registered($hook)) {
     $store->install_hooks($hook);
-    # track just the basic phase names which are used
-    push @{ setting('_nd2worker_hooks') }, $hook
-      if $workerconf->{phase} ne '00init' and 0 == length($primary);
+    push @{ setting('_nd2worker_hooks') }, $hook;
   }
 
   # D::Factory::Hook::register_hook() does not work?!
+  $hook = $hook .'_'. $workerconf->{stage};
   hook $hook => $worker;
 };
 

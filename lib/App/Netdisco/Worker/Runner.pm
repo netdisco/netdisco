@@ -59,32 +59,32 @@ sub run {
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
+  my $store = Dancer::Factory::Hook->instance();
   my @phase_hooks = grep { m/^nd2_${action}_/ }
                          @{ (setting('_nd2worker_hooks') || []) };
 
-  # run 00init primary
-  my $store = Dancer::Factory::Hook->instance();
-  my $initprimary = "nd2_${action}_00init_primary";
-  if (scalar @{ $store->get_hooks_for($initprimary) }) {
-    $self->run_workers($initprimary);
-    return if $self->jobstat->not_ok;
+  foreach my $stage (qw/init first second/) {
+    my $hookname = "nd2_${action}_${stage}";
+    next unless scalar @{ $store->get_hooks_for($hookname) };
+    $self->run_workers($hookname);
+    last if $stage eq 'init' and $self->jobstat->not_ok;
   }
 
-  # run each 00init worker
-  $self->run_workers("nd2_${action}_00init");
-
-  # run primary
-  $self->run_workers("${_}_primary") for (@phase_hooks);
-
-  # run each worker
-  $self->run_workers($_) for (@phase_hooks);
+  foreach my $phase (@phase_hooks) {
+    foreach my $stage (qw/init first second/) {
+      my $hookname = "${phase}_${stage}";
+      next unless scalar @{ $store->get_hooks_for($hookname) };
+      $self->run_workers($hookname);
+      last if $stage eq 'init' and $self->jobstat->not_ok;
+    }
+  }
 }
 
 sub run_workers {
   my $self = shift;
   my $hook = shift or return $self->jobstat->error('missing hook param');
   my $store = Dancer::Factory::Hook->instance();
-  my $primary = ($hook =~ m/_primary$/);
+  my $init = ($hook =~ m/_init$/);
 
   return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
@@ -93,11 +93,12 @@ sub run_workers {
     try {
       my $retval = $worker->($self->job);
       # could die or return undef or a scalar or Status or another class
-      $self->jobstat($retval) if ref $retval eq 'App::Netdisco::Worker::Status';
+      $self->jobstat($retval)
+        if $init and ref $retval eq 'App::Netdisco::Worker::Status';
     }
-    catch { $self->jobstat->error($_) };
+    catch { $self->jobstat->error($_) if $init };
 
-    last if $primary and $self->jobstat->is_ok;
+    last if $init and $self->jobstat->is_ok;
   }
 }
 

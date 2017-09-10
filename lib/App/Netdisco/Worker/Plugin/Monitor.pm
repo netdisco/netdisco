@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::NodeMonitor ();
 
-register_worker({ primary => true }, sub {
+register_worker({ stage => 'init' }, sub {
   my ($job, $workerconf) = @_;
   App::Netdisco::Util::NodeMonitor::monitor();
   return Status->done('Generated monitor data.');

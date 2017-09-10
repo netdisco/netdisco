@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Dancer::Plugin::DBIC 'schema';
 
-register_worker({ primary => false }, sub {
+register_worker({ stage => 'second' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 

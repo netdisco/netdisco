@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Statistics 'update_stats';
 
-register_worker({ primary => true }, sub {
+register_worker({ stage => 'init' }, sub {
   my ($job, $workerconf) = @_;
 
   if (setting('expire_devices') and setting('expire_devices') > 0) {
