@@ -63,19 +63,12 @@ sub run {
   my @phase_hooks = grep { m/^nd2_${action}_/ }
                          @{ (setting('_nd2worker_hooks') || []) };
 
-  foreach my $stage (qw/init first second/) {
-    my $hookname = "nd2_${action}_${stage}";
-    next unless scalar @{ $store->get_hooks_for($hookname) };
-    $self->run_workers($hookname);
-    last if $stage eq 'init' and $self->jobstat->not_ok;
-  }
-
-  foreach my $phase (@phase_hooks) {
+  foreach my $phase ("nd2_${action}", @phase_hooks) {
     foreach my $stage (qw/init first second/) {
       my $hookname = "${phase}_${stage}";
       next unless scalar @{ $store->get_hooks_for($hookname) };
       $self->run_workers($hookname);
-      last if $stage eq 'init' and $self->jobstat->not_ok;
+      return if $stage eq 'init' and $self->jobstat->not_ok;
     }
   }
 }
