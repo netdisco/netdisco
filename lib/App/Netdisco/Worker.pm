@@ -4,30 +4,25 @@ use strict;
 use warnings;
 
 use Module::Load ();
+use Module::Find 'findallmod';
 use Dancer ':syntax';
 
-# load worker plugins for our workers
+# load worker plugins for our action
 
-sub load_worker_plugins {
-  my ($action, $plugin_list) = @_;
+sub import {
+  my ($class, $action) = @_;
+  die "missing action\n" unless $action;
 
-  foreach my $plugin (@$plugin_list) {
-    $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
-    $plugin = 'App::Netdisco::Worker::Plugin::'. $plugin
-      if $plugin !~ m/^\+/;
-    $plugin =~ s/^\+//;
+  my @user_plugins = @{ setting('extra_worker_plugins') || [] };
+  my @core_plugins = findallmod 'App::Netdisco::Worker::Plugin';
 
+  foreach my $plugin (@user_plugins, @core_plugins) {
+    $plugin =~ s/^X::/App::NetdiscoX::Worker::Plugin::/;
     next unless $plugin =~ m/::Plugin::${action}(?:::|$)/i;
 
     debug "loading worker plugin $plugin";
     Module::Load::load $plugin;
   }
-}
-
-sub import {
-  my ($class, $action) = @_;
-  load_worker_plugins( $action, setting('extra_worker_plugins') || [] );
-  load_worker_plugins( $action, setting('worker_plugins') || [] );
 }
 
 true;

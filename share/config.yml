@@ -253,42 +253,8 @@ job_prio:
     - nbtstat
     - expire
 
-# standards go into ::RFC
-# such as: SNMP, NETCONF, RESTCONF
-# others go into new ::DRIVERNAME
-# such as: ::CLI ::eAPI
-
 extra_worker_plugins: []
 #  - Discover::ConfigBackup::CLI
-
-# FIXME
-worker_plugins:
-  - Discover::Properties::RFC
-  - Discover::Interfaces::RFC
-  - Discover::PortPower::RFC
-  - Discover::Neighbors::RFC
-  - Discover::NeighborProperties::RFC
-  - Discover::BGPNeighbors::RFC
-  - Discover::OSPFNeighbors::RFC
-  - Discover::VLANs::RFC
-  - Discover::Wireless::RFC
-  - Discover::Entities::RFC
-  - Macsuck::Nodes::RFC
-  - Macsuck::WirelessNodes::RFC
-  - Arpnip::Nodes::CLI
-  - Arpnip::Nodes::RFC
-  - Arpnip::Subnets::RFC
-  - Nbtwalk
-  - Nbtstat
-  - Nbtstat::Core
-  - Graph
-  - Stats
-  - Monitor
-  - Delete
-  - Show
-  - Psql
-  - Renumber
-  - Test
 
 # ---------------
 # GraphViz Export

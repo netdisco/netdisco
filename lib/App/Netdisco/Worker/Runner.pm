@@ -33,7 +33,7 @@ sub run {
   $self->job($job);
 
   my $action = $job->action;
-  Module::Load::load 'App::Netdisco::Worker', $action;
+  Module::Load::load 'App::Netdisco::Worker' => $action;
 
   my @newuserconf = ();
   my @userconf = @{ setting('device_auth') || [] };
