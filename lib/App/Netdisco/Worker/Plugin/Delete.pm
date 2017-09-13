@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device 'delete_device';
 
-register_worker({ stage => 'init' }, sub {
+register_worker({ stage => 'check' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
   return Status->error('Missing device (-d).') if !defined $device;

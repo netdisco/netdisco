@@ -9,7 +9,7 @@ use App::Netdisco::Util::Node 'is_nbtstatable';
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 
-register_worker({ stage => 'init' }, sub {
+register_worker({ stage => 'check' }, sub {
   my ($job, $workerconf) = @_;
   my $host = $job->device->ip;
 

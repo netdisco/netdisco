@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device 'is_macsuckable_now';
 
-register_worker({ stage => 'init' }, sub {
+register_worker({ stage => 'check' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 

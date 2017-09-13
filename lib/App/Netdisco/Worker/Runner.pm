@@ -64,11 +64,11 @@ sub run {
                          @{ (setting('_nd2worker_hooks') || []) };
 
   foreach my $phase ("nd2_${action}", @phase_hooks) {
-    foreach my $stage (qw/init first second/) {
+    foreach my $stage (qw/check first second/) {
       my $hookname = "${phase}_${stage}";
       next unless scalar @{ $store->get_hooks_for($hookname) };
       $self->run_workers($hookname);
-      return if $stage eq 'init' and $self->jobstat->not_ok;
+      return if $stage eq 'check' and $self->jobstat->not_ok;
     }
   }
 }
@@ -77,7 +77,7 @@ sub run_workers {
   my $self = shift;
   my $hook = shift or return $self->jobstat->error('missing hook param');
   my $store = Dancer::Factory::Hook->instance();
-  my $init = ($hook =~ m/_init$/);
+  my $check = ($hook =~ m/_check$/);
 
   return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
@@ -87,11 +87,11 @@ sub run_workers {
       my $retval = $worker->($self->job);
       # could die or return undef or a scalar or Status or another class
       $self->jobstat($retval)
-        if $init and ref $retval eq 'App::Netdisco::Worker::Status';
+        if $check and ref $retval eq 'App::Netdisco::Worker::Status';
     }
-    catch { $self->jobstat->error($_) if $init };
+    catch { $self->jobstat->error($_) if $check };
 
-    last if $init and $self->jobstat->is_ok;
+    last if $check and $self->jobstat->is_ok;
   }
 }
 

@@ -12,7 +12,7 @@ use Dancer::Plugin::DBIC 'schema';
 use NetAddr::IP::Lite ':lower';
 use Encode;
 
-register_worker({ stage => 'init', driver => 'snmp' }, sub {
+register_worker({ stage => 'check', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
