@@ -172,6 +172,7 @@ sub snmp_comm_reindex {
   if ($ver == 3) {
       my $prefix = '';
       my @comms = _build_communities($device, 'read');
+      # find a context prefix configured by the user
       foreach my $c (@comms) {
           next unless $c->{tag}
             and $c->{tag} eq (eval { $device->community->snmp_auth_tag_read } || '');
@@ -182,14 +183,16 @@ sub snmp_comm_reindex {
       debug
         sprintf '[%s] reindexing to "%s%s" (ver: %s, class: %s)',
         $device->ip, $prefix, $vlan, $ver, $snmp->class;
-      $snmp->update(Context => ($prefix . $vlan));
+      $vlan ? $snmp->update(Context => ($prefix . $vlan))
+            : $snmp->update(Context => '');
   }
   else {
       my $comm = $snmp->snmp_comm;
 
       debug sprintf '[%s] reindexing to vlan %s (ver: %s, class: %s)',
         $device->ip, $vlan, $ver, $snmp->class;
-      $snmp->update(Community => $comm . '@' . $vlan);
+      $vlan ? $snmp->update(Community => $comm . '@' . $vlan)
+            : $snmp->update(Community => $comm);
   }
 }
 

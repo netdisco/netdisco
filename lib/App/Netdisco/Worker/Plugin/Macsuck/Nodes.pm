@@ -27,9 +27,6 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
   my $total_nodes = 0;
 
-  # do this before we start messing with the snmp community string
-  my $guard = guard { }; # FIXME TODO reset snmp community
-
   # cache the device ports to save hitting the database for many single rows
   my $device_ports = {map {($_->port => $_)}
                           $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
@@ -41,10 +38,14 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
 
   # ...then per-vlan if supported
   my @vlan_list = get_vlan_list($device);
-  foreach my $vlan (@vlan_list) {
-    snmp_comm_reindex($snmp, $device, $vlan);
-    my $pv_fwtable = walk_fwtable($device, $interfaces, $port_macs, $device_ports, $vlan);
-    $fwtable = {%$fwtable, %$pv_fwtable};
+  {
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
+    foreach my $vlan (@vlan_list) {
+      snmp_comm_reindex($snmp, $device, $vlan);
+      my $pv_fwtable =
+        walk_fwtable($device, $interfaces, $port_macs, $device_ports, $vlan);
+      $fwtable = {%$fwtable, %$pv_fwtable};
+    }
   }
 
   # now it's time to call store_node for every node discovered
