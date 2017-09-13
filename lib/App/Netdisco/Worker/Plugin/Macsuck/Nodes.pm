@@ -37,13 +37,13 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
   my $interfaces = $snmp->interfaces;
 
   # get forwarding table data via basic snmp connection
-  my $fwtable = walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports);
+  my $fwtable = walk_fwtable($device, $interfaces, $port_macs, $device_ports);
 
   # ...then per-vlan if supported
-  my @vlan_list = get_vlan_list($device, $snmp);
+  my @vlan_list = get_vlan_list($device);
   foreach my $vlan (@vlan_list) {
     snmp_comm_reindex($snmp, $device, $vlan);
-    my $pv_fwtable = walk_fwtable($device, $snmp, $interfaces, $port_macs, $device_ports, $vlan);
+    my $pv_fwtable = walk_fwtable($device, $interfaces, $port_macs, $device_ports, $vlan);
     $fwtable = {%$fwtable, %$pv_fwtable};
   }
 
@@ -148,7 +148,10 @@ sub store_node {
 
 # return a list of vlan numbers which are OK to macsuck on this device
 sub get_vlan_list {
-  my ($device, $snmp) = @_;
+  my $device = shift;
+
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or die "macsuck failed: could not SNMP connect to $device";
 
   return () unless $snmp->cisco_comm_indexing;
 
@@ -260,9 +263,12 @@ sub get_vlan_list {
 # walks the forwarding table (BRIDGE-MIB) for the device and returns a
 # table of node entries.
 sub walk_fwtable {
-  my ($device, $snmp, $interfaces, $port_macs, $device_ports, $comm_vlan) = @_;
+  my ($device, $interfaces, $port_macs, $device_ports, $comm_vlan) = @_;
   my $skiplist = {}; # ports through which we can see another device
   my $cache = {};
+
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or die "macsuck failed: could not SNMP connect to $device";
 
   my $fw_mac   = $snmp->fw_mac;
   my $fw_port  = $snmp->fw_port;

@@ -14,7 +14,7 @@ use List::MoreUtils ();
 use NetAddr::MAC;
 use Encode;
 
-=head2 discover_new_neighbors( $device, $snmp )
+=head2 discover_new_neighbors( )
 
 Given a Device database object, and a working SNMP connection, discover and
 store the device's port neighbors information.
@@ -37,7 +37,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
-  my @to_discover = store_neighbors($device, $snmp);
+  my @to_discover = store_neighbors($device);
 
   # only enqueue if device is not already discovered,
   # discover_* config permits the discovery
@@ -64,7 +64,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
   return Status->done("Ended discover for $device");
 });
 
-=head2 store_neighbors( $device, $snmp )
+=head2 store_neighbors( $device )
 
 returns: C<@to_discover>
 
@@ -82,11 +82,14 @@ A list of discovererd neighbors will be returned as [C<$ip>, C<$type>] tuples.
 =cut
 
 sub store_neighbors {
-  my ($device, $snmp) = @_;
+  my $device = shift;
   my @to_discover = ();
 
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or die "discover failed: could not SNMP connect to $device";
+
   # first allow any manually configured topology to be set
-  set_manual_topology($device, $snmp);
+  set_manual_topology($device);
 
   if (!defined $snmp->has_topo) {
       debug sprintf ' [%s] neigh - neighbor protocols are not enabled', $device->ip;
@@ -283,7 +286,10 @@ sub store_neighbors {
 # take data from the topology table and update remote_ip and remote_port
 # in the devices table. only use root_ips and skip any bad topo entries.
 sub set_manual_topology {
-  my ($device, $snmp) = @_;
+  my $device = shift;
+
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or die "discover failed: could not SNMP connect to $device";
 
   schema('netdisco')->txn_do(sub {
     # clear manual topology flags

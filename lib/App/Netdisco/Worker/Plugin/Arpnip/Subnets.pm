@@ -18,7 +18,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
   # get directly connected networks
-  my @subnets = gather_subnets($device, $snmp);
+  my @subnets = gather_subnets($device);
   # TODO: IPv6 subnets
 
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
@@ -32,8 +32,11 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
 
 # gathers device subnets
 sub gather_subnets {
-  my ($device, $snmp) = @_;
+  my $device = shift;
   my @subnets = ();
+
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or die "arpnip failed: could not SNMP connect to $device";
 
   my $ip_netmask = $snmp->ip_netmask;
   foreach my $entry (keys %$ip_netmask) {
