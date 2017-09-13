@@ -21,9 +21,6 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
-  return Status->defer("Skipped macsuck for device $device without layer 2 capability")
-    unless $snmp->has_layer(2);
-
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we can if we want add a job at the end to
   # select and do something with the updated set (see set archive, below)

@@ -17,7 +17,10 @@ register_worker({ stage => 'check' }, sub {
     unless $device->in_storage;
 
   return Status->defer("macsuck skipped: $device is pseudo-device")
-    if $device->vendor and $device->vendor eq 'netdisco';
+    if $device->is_pseudo;
+
+  return Status->defer("arpnip skipped: $device has no layer 2 capability")
+    unless $device->has_layer(2);
 
   return Status->defer("macsuck deferred: $device is not macsuckable")
     unless is_macsuckable_now($device);

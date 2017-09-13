@@ -18,9 +18,6 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
-  return Status->defer("Skipped arpnip for device $device without layer 3 capability")
-    unless $snmp->has_layer(3);
-
   # get v4 arp table
   my $v4 = get_arps($device, $snmp->at_paddr, $snmp->at_netaddr);
   # get v6 neighbor cache

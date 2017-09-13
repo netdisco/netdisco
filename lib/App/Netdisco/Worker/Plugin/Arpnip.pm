@@ -17,7 +17,10 @@ register_worker({ stage => 'check' }, sub {
     unless $device->in_storage;
 
   return Status->defer("arpnip skipped: $device is pseudo-device")
-    if $device->vendor and $device->vendor eq 'netdisco';
+    if $device->is_pseudo;
+
+  return Status->defer("arpnip skipped: $device has no layer 3 capability")
+    unless $device->has_layer(3);
 
   return Status->defer("arpnip deferred: $device is not arpnipable")
     unless is_arpnipable_now($device);

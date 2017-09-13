@@ -15,9 +15,6 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
-  return Status->defer("Skipped macsuck for device $device without layer 2 capability")
-    unless $snmp->has_layer(2);
-
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   my $cd11_txrate = $snmp->cd11_txrate;

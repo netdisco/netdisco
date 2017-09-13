@@ -17,9 +17,6 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
-  return Status->defer("Skipped arpnip for device $device without layer 3 capability")
-    unless $snmp->has_layer(3);
-
   # get directly connected networks
   my @subnets = gather_subnets($device, $snmp);
   # TODO: IPv6 subnets

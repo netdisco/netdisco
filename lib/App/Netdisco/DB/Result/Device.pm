@@ -193,6 +193,29 @@ __PACKAGE__->might_have(
 
 =head1 ADDITIONAL METHODS
 
+=head2 is_pseudo
+
+Returns true if the vendor of the device is "netdisco".
+
+=cut
+
+sub not_pseudo {
+  my $device = shift;
+  return (defined $device->vendor and $device->vendor eq 'netdisco');
+}
+
+=head2 has_layer( $number )
+
+Returns true if the device provided sysServices and supports the given layer.
+
+=cut
+
+sub has_layer {
+  my ($device, $layer) = @_;
+  return unless $layer and $layer =~ m/^[1-8]$/;
+  return $device->layers and substr($device->layers, (9-$layer), 1) == 1;
+}
+
 =head2 renumber( $new_ip )
 
 Will update this device and all related database records to use the new IP

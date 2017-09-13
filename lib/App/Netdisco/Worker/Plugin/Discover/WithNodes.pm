@@ -14,7 +14,7 @@ register_worker({ stage => 'second' }, sub {
   # arpniped/macsucked, queue those jobs now
   if ($device->in_storage
       and $job->subaction and $job->subaction eq 'with-nodes') {
-    if (!defined $device->last_macsuck) {
+    if (!defined $device->last_macsuck and $device->has_layer(2)) {
       jq_insert({
         device => $device->ip,
         action => 'macsuck',
@@ -23,7 +23,7 @@ register_worker({ stage => 'second' }, sub {
       });
     }
 
-    if (!defined $device->last_arpnip) {
+    if (!defined $device->last_arpnip and $device->has_layer(3)) {
       jq_insert({
         device => $device->ip,
         action => 'arpnip',

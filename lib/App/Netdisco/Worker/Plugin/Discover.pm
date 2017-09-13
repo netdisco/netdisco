@@ -13,15 +13,13 @@ register_worker({ stage => 'check' }, sub {
   return Status->error('discover failed: unable to interpret device param')
     unless defined $device;
 
-  my $host = $device->ip;
-
   return Status->error("discover failed: no device param (need -d ?)")
-    if $host eq '0.0.0.0';
+    if $device->ip eq '0.0.0.0';
 
-  return Status->defer("discover skipped: $host is pseudo-device")
-    if $device->vendor and $device->vendor eq 'netdisco';
+  return Status->defer("discover skipped: $device is pseudo-device")
+    if $device->is_pseudo;
 
-  return Status->defer("discover deferred: $host is not discoverable")
+  return Status->defer("discover deferred: $device is not discoverable")
     unless is_discoverable_now($device);
 
   return Status->done('discover is able to run.');
