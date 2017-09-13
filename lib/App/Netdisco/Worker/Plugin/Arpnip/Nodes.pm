@@ -41,7 +41,7 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
     $device->ip, scalar @$v6;
 
   $device->update({last_arpnip => \$now});
-  return Status->done('Ended arpnip for '. $device->ip);
+  return Status->done("Ended arpnip for $device");
 });
 
 # get an arp table (v4 or v6)

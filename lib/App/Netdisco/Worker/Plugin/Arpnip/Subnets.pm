@@ -30,7 +30,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
   debug sprintf ' [%s] arpnip - processed %s Subnet entries',
     $device->ip, scalar @subnets;
 
-  return Status->done('Ended arpnip for '. $device->ip);
+  return Status->done("Ended arpnip for $device");
 });
 
 # gathers device subnets

@@ -99,7 +99,7 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
       $device->ip, scalar @aliases;
   });
 
-  return Status->done('Ended discover for '. $device->ip);
+  return Status->done("Ended discover for $device");
 });
 
 true;

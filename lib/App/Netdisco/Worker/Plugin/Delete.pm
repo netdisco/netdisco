@@ -13,7 +13,7 @@ register_worker({ stage => 'check' }, sub {
 
   $port = ($port ? 1 : 0);
   delete_device($device, $port, $extra);
-  return Status->done(sprintf "Deleted device %s.", $device->ip);
+  return Status->done("Deleted device: $device");
 });
 
 true;

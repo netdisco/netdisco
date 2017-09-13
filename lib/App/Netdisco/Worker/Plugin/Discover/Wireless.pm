@@ -80,7 +80,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
       $device->ip, scalar @channels;
   });
 
-  return Status->done('Ended discover for '. $device->ip);
+  return Status->done("Ended discover for $device");
 });
 
 true;

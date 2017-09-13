@@ -33,7 +33,7 @@ register_worker({ stage => 'second' }, sub {
     }
   }
 
-  return Status->done('Ended discover for '. $device->ip);
+  return Status->done("Ended discover for $device");
 });
 
 true;

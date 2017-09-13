@@ -59,7 +59,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
     } # ALIAS
   }
 
-  return Status->done('Ended discover for '. $device->ip)
+  return Status->done("Ended discover for $device")
     if $new_ip eq $old_ip;
 
   schema('netdisco')->txn_do(sub {
@@ -76,7 +76,7 @@ register_worker({ stage => 'second', driver => 'snmp' }, sub {
       $old_ip, $device->ip, ($device->dns || '');
   });
 
-  return Status->done('Ended discover for '. $device->ip);
+  return Status->done("Ended discover for $device");
 });
 
 true;

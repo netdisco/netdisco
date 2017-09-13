@@ -94,7 +94,7 @@ register_worker({ stage => 'check', driver => 'snmp' }, sub {
     $device->ip, $archived;
 
   $device->update({last_macsuck => \$now});
-  return Status->done('Ended macsuck for '. $device->ip);
+  return Status->done("Ended macsuck for $device");
 });
 
 =head2 store_node( $ip, $vlan, $port, $mac, $now? )
