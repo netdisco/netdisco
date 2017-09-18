@@ -1,6 +1,7 @@
 package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
+use App::Netdisco::Util::SNMP ();
 use Dancer ':script';
 
 use Path::Class 'dir';
@@ -109,6 +110,9 @@ foreach my $name (qw/discover_no macsuck_no arpnip_no nbtstat_no/) {
 foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
   push @{setting($name)}, @{ setting('devices_only') };
 }
+
+# fix up device_auth (or create it from old settings)
+config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
 
 # legacy config item names
 

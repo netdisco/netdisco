@@ -6,7 +6,7 @@ use App::Netdisco::Util::Permission ':all';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  build_communities snmp_comm_reindex
+  fixup_device_auth build_communities snmp_comm_reindex
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -22,6 +22,69 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 fixup_device_auth
+
+Rebuilds the C<device_auth> config with missing defaults and other fixups for
+config changes over time. Returns a list which can replace C<device_auth>.
+
+=cut
+
+sub fixup_device_auth {
+  my $seen_tags = {}; # for cleaning community table
+  my $config = (setting('device_auth') || []);
+  my @new_stanzas = ();
+
+  # new style snmp config
+  foreach my $stanza (@$config) {
+    # user tagged
+    my $tag = '';
+    if (1 == scalar keys %$stanza) {
+      $tag = (keys %$stanza)[0];
+      $stanza = $stanza->{$tag};
+
+      # corner case: untagged lone community
+      if ($tag eq 'community') {
+          $tag = $stanza;
+          $stanza = {community => $tag};
+      }
+    }
+
+    # defaults
+    $stanza->{tag} ||= $tag;
+    ++$seen_tags->{ $stanza->{tag} };
+    $stanza->{read} = 1 if !exists $stanza->{read};
+    $stanza->{no}   ||= [];
+    $stanza->{only} ||= ['any'];
+
+    die "error: config: snmpv2 community in device_auth must be single item, not list\n"
+      if ref $stanza->{community};
+
+    die "error: config: stanza in device_auth must have a tag\n"
+      if not $stanza->{tag} and exists $stanza->{user};
+
+    push @new_stanzas, $stanza
+  }
+
+  # FIXME: clean the community table of obsolete tags
+  #if ($stored_tag and !exists $seen_tags->{ $stored_tag }) {
+  #  eval { $device->community->update({$tag_name => undef}) };
+  #}
+
+  # legacy config (note: read strings tried before write)
+
+  push @new_stanzas, map {{
+    read => 1,
+    community => $_,
+  }} @{setting('community') || []};
+
+  push @new_stanzas, map {{
+    write => 1,
+    community => $_,
+  }} @{setting('community_rw') || []};
+
+  return @new_stanzas;
+}
 
 =head2 build_communities( $device, $mode )
 
