@@ -8,29 +8,20 @@ use Scope::Guard 'guard';
 use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
-# track the phases seen so we can recall them in order
-set( '_nd2worker_hooks' => [] );
+my $store = Dancer::Factory::Hook->instance();
+foreach my $stage (qw/check early main user/) {
+  $store->install_hooks("nd2_core_${stage}");
+}
 
 register 'register_worker' => sub {
   my ($self, $first, $second) = plugin_args(@_);
+
   my $workerconf = (ref $first eq 'HASH' ? $first : {});
   my $code = (ref $first eq 'CODE' ? $first : $second);
   return error "bad param to register_worker"
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
-  # needs to be here for caller() context
-  my ($package, $action, $phase) = ((caller)[0], undef, undef);
-  if ($package =~ m/::Plugin::(\w+)$/) {
-    $action = lc $1;
-  }
-  elsif ($package =~ m/::Plugin::(\w+)::(\w+)/) {
-    $action = lc $1; $phase = lc $2;
-  }
-  else { return error "worker Package does not match standard naming" }
-
-  $workerconf->{action} = $action;
-  $workerconf->{phase}  = ($phase || '');
-  $workerconf->{stage}  = ($workerconf->{stage} || 'second');
+  $workerconf->{stage} ||= 'user';
 
   my $worker = sub {
     my $job = shift or return Status->error('missing job param');
@@ -64,16 +55,8 @@ register 'register_worker' => sub {
     return $code->($job, $workerconf);
   };
 
-  my $store = Dancer::Factory::Hook->instance();
-  my $hook = 'nd2_'. $action . ($phase ? ('_'. $phase) : '');
-
-  if (not $store->hook_is_registered($hook)) {
-    $store->install_hooks($hook);
-    push @{ setting('_nd2worker_hooks') }, $hook;
-  }
-
   # D::Factory::Hook::register_hook() does not work?!
-  $hook = $hook .'_'. $workerconf->{stage};
+  my $hook = 'nd2_core_'. $workerconf->{stage};
   hook $hook => $worker;
 };
 

@@ -4,10 +4,10 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-register_worker({ stage => 'second' }, sub {
+register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  debug 'Test (second) ran successfully.';
-  return Status->done('Test (second) ran successfully.');
+  debug 'Test (main) ran successfully.';
+  return Status->done('Test (main) ran successfully.');
 });
 
 register_worker({ stage => 'check' }, sub {
@@ -16,10 +16,10 @@ register_worker({ stage => 'check' }, sub {
   return Status->done('Test (check) ran successfully.');
 });
 
-register_worker({ stage => 'first' }, sub {
+register_worker({ stage => 'early' }, sub {
   my ($job, $workerconf) = @_;
-  debug 'Test (first) ran successfully.';
-  return Status->done('Test (first) ran successfully.');
+  debug 'Test (early) ran successfully.';
+  return Status->done('Test (early) ran successfully.');
 });
 
 register_worker(sub {

@@ -30,7 +30,7 @@ immediately queued (subject to the filtering by the C<discover_*> settings).
 
 =cut
 
-register_worker({ stage => 'second', driver => 'snmp' }, sub {
+register_worker({ stage => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;

@@ -59,17 +59,10 @@ sub run {
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  my $store = Dancer::Factory::Hook->instance();
-  my @phase_hooks = grep { m/^nd2_${action}_/ }
-                         @{ (setting('_nd2worker_hooks') || []) };
-
-  foreach my $phase ("nd2_${action}", @phase_hooks) {
-    foreach my $stage (qw/check first second/) {
-      my $hookname = "${phase}_${stage}";
-      next unless scalar @{ $store->get_hooks_for($hookname) };
-      $self->run_workers($hookname);
-      return if $stage eq 'check' and $self->jobstat->not_ok;
-    }
+  foreach my $stage (qw/check early main user/) {
+    my $hookname = "nd2_core_${stage}";
+    $self->run_workers($hookname);
+    return if $stage eq 'check' and $self->jobstat->not_ok;
   }
 }
 
@@ -77,7 +70,7 @@ sub run_workers {
   my $self = shift;
   my $hook = shift or return $self->jobstat->error('missing hook param');
   my $store = Dancer::Factory::Hook->instance();
-  my $check = ($hook =~ m/_check$/);
+  my $check = ($hook eq 'nd2_core_check');
 
   return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
