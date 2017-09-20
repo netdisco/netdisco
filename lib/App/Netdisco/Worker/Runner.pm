@@ -71,6 +71,7 @@ sub run_workers {
   my $hook = shift or return $self->jobstat->error('missing hook param');
   my $store = Dancer::Factory::Hook->instance();
   my $check = ($hook eq 'nd2_core_check');
+  my $main  = ($hook eq 'nd2_core_main');
 
   return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
@@ -80,7 +81,7 @@ sub run_workers {
       my $retval = $worker->($self->job);
       # could die or return undef or a scalar or Status or another class
       $self->jobstat($retval)
-        if $check and ref $retval eq 'App::Netdisco::Worker::Status';
+        if ($check or $main) and ref $retval eq 'App::Netdisco::Worker::Status';
     }
     catch { $self->jobstat->error($_) if $check };
 
