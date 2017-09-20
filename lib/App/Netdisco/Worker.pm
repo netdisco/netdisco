@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Module::Load ();
-use Module::Find 'findallmod';
+use Module::Find qw/findsubmod findallmod/;
 use Dancer ':syntax';
 
 # load worker plugins for our action
@@ -14,9 +14,10 @@ sub import {
   die "missing action\n" unless $action;
 
   my @user_plugins = @{ setting('extra_worker_plugins') || [] };
-  my @core_plugins = findallmod 'App::Netdisco::Worker::Plugin';
+  my @check_plugins = findsubmod 'App::Netdisco::Worker::Plugin';
+  my @phase_plugins = map { findallmod $_ } @check_plugins;
 
-  foreach my $plugin (@user_plugins, @core_plugins) {
+  foreach my $plugin (@user_plugins, @check_plugins, @phase_plugins) {
     $plugin =~ s/^X::/App::NetdiscoX::Worker::Plugin::/;
     next unless $plugin =~ m/::Plugin::${action}(?:::|$)/i;
 
