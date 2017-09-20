@@ -4,6 +4,7 @@ use Dancer qw/:moose :syntax/;
 use Dancer::Factory::Hook;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use Try::Tiny;
 use Moo::Role;
 use Module::Load ();

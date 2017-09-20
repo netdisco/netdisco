@@ -6,7 +6,7 @@ use App::Netdisco::Util::Permission ':all';
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  fixup_device_auth build_communities snmp_comm_reindex
+  fixup_device_auth get_communities snmp_comm_reindex
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -31,8 +31,7 @@ config changes over time. Returns a list which can replace C<device_auth>.
 =cut
 
 sub fixup_device_auth {
-  my $seen_tags = {}; # for cleaning community table
-  my $config = (setting('device_auth') || []);
+  my $config = (setting('device_auth') || setting('snmp_auth') || []);
   my @new_stanzas = ();
 
   # new style snmp config
@@ -52,7 +51,6 @@ sub fixup_device_auth {
 
     # defaults
     $stanza->{tag} ||= $tag;
-    ++$seen_tags->{ $stanza->{tag} };
     $stanza->{read} = 1 if !exists $stanza->{read};
     $stanza->{no}   ||= [];
     $stanza->{only} ||= ['any'];
@@ -66,121 +64,71 @@ sub fixup_device_auth {
     push @new_stanzas, $stanza
   }
 
-  # FIXME: clean the community table of obsolete tags
-  #if ($stored_tag and !exists $seen_tags->{ $stored_tag }) {
-  #  eval { $device->community->update({$tag_name => undef}) };
-  #}
-
-  # legacy config (note: read strings tried before write)
+  # legacy config 
+  # note: read strings tried before write
+  # note: read-write is no longer used for read operations
 
   push @new_stanzas, map {{
-    read => 1,
+    read => 1, write => 0,
+    no => [], only => ['any'],
     community => $_,
   }} @{setting('community') || []};
 
   push @new_stanzas, map {{
-    write => 1,
+    write => 1, read => 0,
+    no => [], only => ['any'],
     community => $_,
   }} @{setting('community_rw') || []};
 
   return @new_stanzas;
 }
 
-=head2 build_communities( $device, $mode )
+=head2 get_communities( $device, $mode )
 
-Takes a Netdisco L<Device|App::Netdisco::DB::Result::Device> instance and
-returns a set of potential SNMP community authentication settings that are
-configured in Netdisco, for the given mode ("C<read>" or "C<write>").
+Takes the current C<device_auth> setting and pushes onto the front of the list
+the last known good SNMP settings used for this mode (C<read> or C<write>).
 
 =cut
 
-sub build_communities {
+sub get_communities {
   my ($device, $mode) = @_;
   $mode ||= 'read';
-  my $seen_tags = {}; # for cleaning community table
 
+  my $seen_tags = {}; # for cleaning community table
   my $config = (setting('device_auth') || []);
-  my $tag_name = 'snmp_auth_tag_'. $mode;
-  my $stored_tag = eval { $device->community->$tag_name };
-  my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
   my @communities = ();
 
-  # try last-known-good read
+  # first of all, use external command if configured
+  push @communities, _get_external_community($device, $mode)
+    if setting('get_community') and length setting('get_community');
+
+  # last known-good by tag
+  my $tag_name = 'snmp_auth_tag_'. $mode;
+  my $stored_tag = eval { $device->community->$tag_name };
+
+  if ($device->in_storage and $stored_tag) {
+    foreach my $stanza (@$config) {
+      if ($stanza->{tag} and $stored_tag eq $stanza->{tag}) {
+        push @communities, $stanza;
+        last;
+      }
+    }
+  }
+
+  # try last-known-good v2 read
   push @communities, {read => 1, community => $device->snmp_comm}
     if defined $device->snmp_comm and $mode eq 'read';
 
-  # try last-known-good write
+  # try last-known-good v2 write
+  my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
   push @communities, {write => 1, community => $snmp_comm_rw}
     if $snmp_comm_rw and $mode eq 'write';
 
-  # new style snmp config
-  foreach my $stanza (@$config) {
-      # user tagged
-      my $tag = '';
-      if (1 == scalar keys %$stanza) {
-          $tag = (keys %$stanza)[0];
-          $stanza = $stanza->{$tag};
-
-          # corner case: untagged lone community
-          if ($tag eq 'community') {
-              $tag = $stanza;
-              $stanza = {community => $tag};
-          }
-      }
-
-      # defaults
-      $stanza->{tag} ||= $tag;
-      ++$seen_tags->{ $stanza->{tag} };
-      $stanza->{read} = 1 if !exists $stanza->{read};
-      $stanza->{no}   ||= [];
-      $stanza->{only} ||= ['any'];
-      $stanza->{no}   = [$stanza->{no}] if ref '' eq ref $stanza->{no};
-      $stanza->{only} = [$stanza->{only}] if ref '' eq ref $stanza->{only};
-
-      die "error: config: snmpv2 community in device_auth must be single item, not list\n"
-        if ref $stanza->{community};
-
-      die "error: config: snmpv3 stanza in device_auth must have a tag\n"
-        if not $stanza->{tag}
-           and !exists $stanza->{community};
-
-      if ($stanza->{$mode} and check_acl_only($device, $stanza->{only})
-            and not check_acl_no($device, $stanza->{no})) {
-          if ($device->in_storage and
-            $stored_tag and $stored_tag eq $stanza->{tag}) {
-              # last known-good by tag
-              unshift @communities, $stanza
-          }
-          else {
-              push @communities, $stanza
-          }
-      }
-  }
-
   # clean the community table of obsolete tags
-  if ($stored_tag and !exists $seen_tags->{ $stored_tag }) {
-      eval { $device->community->update({$tag_name => undef}) };
-  }
+  eval { $device->community->update({$tag_name => undef}) }
+    if not $stored_tag or !exists $seen_tags->{ $stored_tag };
 
-  # legacy config (note: read strings tried before write)
-  if ($mode eq 'read') {
-      push @communities, map {{
-        read => 1,
-        community => $_,
-      }} @{setting('community') || []};
-  }
-  else {
-      push @communities, map {{
-        write => 1,
-        community => $_,
-      }} @{setting('community_rw') || []};
-  }
-
-  # but first of all, use external command if configured
-  unshift @communities, _get_external_community($device, $mode)
-    if setting('get_community') and length setting('get_community');
-
-  return @communities;
+  return ( @communities, @$config );
 }
 
 sub _get_external_community {
@@ -234,7 +182,7 @@ sub snmp_comm_reindex {
 
   if ($ver == 3) {
       my $prefix = '';
-      my @comms = _build_communities($device, 'read');
+      my @comms = get_communities($device, 'read');
       # find a context prefix configured by the user
       foreach my $c (@comms) {
           next unless $c->{tag}

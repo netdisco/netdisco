@@ -1,7 +1,7 @@
 package App::Netdisco::Transport::SNMP;
 
 use Dancer qw/:syntax :script/;
-use App::Netdisco::Util::SNMP 'build_communities';
+use App::Netdisco::Util::SNMP 'get_communities';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission ':all';
 
@@ -115,7 +115,7 @@ sub _snmp_connect_generic {
   }
 
   # get the community string(s)
-  my @communities = build_communities($device, $mode);
+  my @communities = get_communities($device, $mode);
 
   # which SNMP versions to try and in what order
   my @versions =

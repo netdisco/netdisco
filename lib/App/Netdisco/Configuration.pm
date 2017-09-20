@@ -111,7 +111,7 @@ foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
   push @{setting($name)}, @{ setting('devices_only') };
 }
 
-# fix up device_auth (or create it from old settings)
+# fix up device_auth (or create it from old snmp_auth setting)
 config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
 
 # legacy config item names
