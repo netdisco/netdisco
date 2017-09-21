@@ -124,8 +124,8 @@ host_groups:
     - 'fe80::/10'
     - '127.0.0.0/8'
 device_identity: []
-community: ['public']
-community_rw: ['private']
+community: []
+community_rw: []
 snmp_auth: []
 get_community: ""
 bulkwalk_off: false
