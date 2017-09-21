@@ -90,6 +90,17 @@ __PACKAGE__->has_many( device_skips => 'App::Netdisco::DB::Result::DeviceSkip',
   { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
+=head2 target
+
+Returns the single C<device> to which this Job entry was associated.
+
+The JOIN is of type LEFT, in case the C<device> is not in the database.
+
+=cut
+
+__PACKAGE__->belongs_to( target => 'App::Netdisco::DB::Result::Device',
+  { 'foreign.ip' => 'self.device' }, { join_type => 'LEFT' } );
+
 =head1 METHODS
 
 =head2 summary
