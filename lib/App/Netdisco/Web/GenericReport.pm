@@ -28,8 +28,9 @@ foreach my $report (@{setting('reports')}) {
 
       my $schema = ($report->{database} || 'netdisco');
       my $rs = schema($schema)->resultset('Virtual::GenericReport')->result_source;
+      (my $query = $report->{query}) =~ s/;$//;
 
-      $rs->view_definition($report->{query});
+      $rs->view_definition($query);
       $rs->remove_columns($rs->columns);
       $rs->add_columns( exists $report->{query_columns}
         ? @{ $report->{query_columns} }
