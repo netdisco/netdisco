@@ -5,6 +5,7 @@ use Dancer::Factory::Hook;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+
 use Try::Tiny;
 use Moo::Role;
 use Module::Load ();
@@ -29,6 +30,7 @@ after 'run', 'run_workers' => sub {
 sub run {
   my ($self, $job) = @_;
 
+  die 'cannot reuse a worker' if $self->job;
   die 'bad job to run()'
     unless ref $job eq 'App::Netdisco::Backend::Job';
   $self->job($job);
