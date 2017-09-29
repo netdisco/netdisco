@@ -45,8 +45,8 @@ sub run {
       my $no   = (exists $stanza->{no}   ? $stanza->{no}   : undef);
       my $only = (exists $stanza->{only} ? $stanza->{only} : undef);
 
-      next if $no and check_acl_no($job->device->ip, $no);
-      next if $only and not check_acl_only($job->device->ip, $only);
+      next if $no and check_acl_no($job->device, $no);
+      next if $only and not check_acl_only($job->device, $only);
 
       push @newuserconf, $stanza;
     }

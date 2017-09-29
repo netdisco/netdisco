@@ -35,8 +35,8 @@ register 'register_worker' => sub {
     # reduce device_auth by driver, worker's only/no
     foreach my $stanza (@userconf) {
       if (ref $job->device) {
-        next if $no and check_acl_no($job->device->ip, $no);
-        next if $only and not check_acl_only($job->device->ip, $only);
+        next if $no and check_acl_no($job->device, $no);
+        next if $only and not check_acl_only($job->device, $only);
       }
       next if exists $stanza->{driver} and exists $workerconf->{driver}
         and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
