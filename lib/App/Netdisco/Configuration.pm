@@ -60,6 +60,9 @@ if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
   config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
 }
 
+# fix up device_auth (or create it from old snmp_auth and community settings)
+config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
+
 # defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';
 if (exists setting('workers')->{interactives}
@@ -117,9 +120,6 @@ foreach my $name (qw/discover_no macsuck_no arpnip_no nbtstat_no/) {
 foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
   push @{setting($name)}, @{ setting('devices_only') };
 }
-
-# fix up device_auth (or create it from old snmp_auth setting)
-config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
 
 # legacy config item names
 
