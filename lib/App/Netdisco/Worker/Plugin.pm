@@ -48,7 +48,7 @@ register 'register_worker' => sub {
     }
 
     # per-device action but no device creds available
-    return Status->error('skipped with no device creds')
+    return Status->defer('skipped with no device creds')
       if ref $job->device and 0 == scalar @newuserconf;
 
     # back up and restore device_auth
