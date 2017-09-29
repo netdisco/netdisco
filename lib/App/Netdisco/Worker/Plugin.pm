@@ -26,20 +26,24 @@ register 'register_worker' => sub {
   my $worker = sub {
     my $job = shift or return Status->error('missing job param');
 
-    my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
-    my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
+    # worker might be vendor/platform specific
+    if (ref $job->device) {
+      my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
+      my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
+
+      my $defer = Status->defer('worker is not applicable to this device');
+      return $defer if $no and check_acl_no($job->device, $no);
+      return $defer if $only and not check_acl_only($job->device, $only);
+    }
 
     my @newuserconf = ();
     my @userconf = @{ setting('device_auth') || [] };
 
-    # reduce device_auth by driver, worker's only/no
+    # reduce device_auth by driver
     foreach my $stanza (@userconf) {
-      if (ref $job->device) {
-        next if $no and check_acl_no($job->device, $no);
-        next if $only and not check_acl_only($job->device, $only);
-      }
       next if exists $stanza->{driver} and exists $workerconf->{driver}
         and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
+
       push @newuserconf, $stanza;
     }
 
