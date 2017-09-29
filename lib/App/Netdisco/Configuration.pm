@@ -53,6 +53,13 @@ if (ref {} eq ref setting('database')) {
 # always set this
 $ENV{DBIC_TRACE_PROFILE} = 'console';
 
+# if snmp_auth or device_auth not set, add defaults to community{_rw}
+if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
+    or (setting('device_auth') and 0 == scalar @{ setting('device_auth') })) {
+  config->{'community'} = [ @{setting('community')}, 'public' ];
+  config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
+}
+
 # defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';
 if (exists setting('workers')->{interactives}
