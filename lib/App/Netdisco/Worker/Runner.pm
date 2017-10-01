@@ -18,7 +18,7 @@ has 'job' => (
 
 has 'jobstat' => (
   is => 'rw',
-  default => sub { Status->error("no worker for this action was successful") },
+  default => sub { Status->error("check phase did not pass for this action") },
 );
 
 after 'run', 'run_workers' => sub {
@@ -62,33 +62,38 @@ sub run {
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  foreach my $stage (qw/check early main user/) {
-    my $hookname = "nd2_core_${stage}";
-    $self->run_workers($hookname);
-    return if $stage eq 'check' and $self->jobstat->not_ok;
-  }
+  $self->run_workers('nd2_core_check');
+  return if $self->jobstat->not_ok;
+
+  $self->jobstat( Status->error("no worker succeeded during main phase") );
+  $self->run_workers("nd2_core_${_}") for qw/early main user/;
 }
 
 sub run_workers {
   my $self = shift;
   my $hook = shift or return $self->jobstat->error('missing hook param');
   my $store = Dancer::Factory::Hook->instance();
-  my $check = ($hook eq 'nd2_core_check');
-  my $main  = ($hook eq 'nd2_core_main');
+  (my $phase = $hook) =~ s/^nd2_core_//;
 
-  return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
-      my $retval = $worker->($self->job);
       # could die or return undef or a scalar or Status or another class
-      $self->jobstat($retval)
-        if ($check or $main) and ref $retval eq 'App::Netdisco::Worker::Status';
-    }
-    catch { $self->jobstat->error($_) if $check };
+      my $retval = $worker->($self->job);
 
-    last if $check and $self->jobstat->is_ok;
+      # update (save) the status if we're in check or main phases
+      #   check because it's a gatekeeper, main because it's the retval
+      $self->jobstat($retval)
+        if ($phase =~ m/^(?:check|main)$/)
+           and ref $retval eq 'App::Netdisco::Worker::Status'
+           and $self->jobstat->not_ok;
+    }
+    # errors at most phases are ignored
+    catch { $self->jobstat->error($_) if $phase eq 'check' };
+
+    # any successful check is a GO!
+    last if $phase eq 'check' and $self->jobstat->is_ok;
   }
 }
 

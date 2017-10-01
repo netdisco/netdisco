@@ -6,22 +6,39 @@ use warnings;
 use Moo;
 use namespace::clean;
 
-foreach my $slot (qw/
-      done_slot
-      error_slot
-      defer_slot
-    /) {
-
-  has $slot => (
-    is => 'rw',
-    default => 0,
-  );
-}
+has 'status' => (
+  is => 'rw',
+  default => undef,
+  clearer => 1,
+);
 
 has 'log' => (
   is => 'rw',
   default => '',
 );
+
+=head1 INTRODUCTION
+
+The status can be:
+
+=over 4
+
+=item * C<done>
+
+At C<check> phase, indicates the action may continue. At other phases,
+indicates the worker has completed without error or has no work to do.
+
+=item * C<error>
+
+Indicates that there is an error condition. Also used to quit a worker without
+side effects that C<done> and C<defer> have.
+
+=item * C<defer>
+
+Quits a worker. If the final recorded outcome for a device is C<defer> several
+times in a row, then it may be skipped from further jobs.
+
+=back
 
 =head1 METHODS
 
@@ -32,48 +49,32 @@ Shorthand for new() with setting param, accepts log as arg.
 =cut
 
 sub _make_new {
-  my ($self, $log, $slot) = @_;
+  my ($self, $status, $log) = @_;
+  die unless $status;
   my $new = (ref $self ? $self : $self->new());
   $new->log($log);
-  $new->$_(0) for (qw/done_slot error_slot defer_slot/);
-  $new->$slot(1);
+  $new->status($status);
   return $new;
 }
 
-sub error { (shift)->_make_new(@_, 'error_slot') }
-sub done  { (shift)->_make_new(@_, 'done_slot')  }
-sub defer { (shift)->_make_new(@_, 'defer_slot') }
+sub error { (shift)->_make_new('error', @_) }
+sub done  { (shift)->_make_new('done', @_)  }
+sub defer { (shift)->_make_new('defer', @_) }
 
 =head2 is_ok
 
-Returns true if C<done> is true and C<error> and C<defer> have not been set.
+Returns true if status is C<done>.
 
 =cut
 
-sub is_ok { return ($_[0]->done_slot
-  and not $_[0]->error_slot and not $_[0]->defer_slot) }
+sub is_ok { return $_[0]->status eq 'done' }
 
 =head2 not_ok
 
-Returns the logical inversion of C<ok>.
+Returns true if status is C<error> or C<defer>.
 
 =cut
 
 sub not_ok { return (not $_[0]->is_ok) }
-
-=head2 status
-
-Returns text equivalent of C<done>, C<defer>, or C<error>.
-
-=cut
-
-sub status {
-  my $self = shift;
-  return (
-    $self->done_slot ? 'done'
-                     : $self->defer_slot ? 'defer'
-                                         : 'error'
-  );
-}
 
 1;

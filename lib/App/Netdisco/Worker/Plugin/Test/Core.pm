@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
   debug 'Test (main) ran successfully.';
-  return Status->done('Test (main) ran successfully.');
+  return Status->done('Test (main) ran successfully (2).');
 });
 
 register_worker({ stage => 'check' }, sub {
