@@ -75,6 +75,7 @@ sub run_workers {
   my $store = Dancer::Factory::Hook->instance();
   (my $phase = $hook) =~ s/^nd2_core_//;
 
+  return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
