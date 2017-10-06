@@ -7,10 +7,6 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use Dancer::Plugin::DBIC 'schema';
 
-register_worker({ stage => 'check' }, sub {
-  return Status->done('Arpwalk is able to run');
-});
-
 register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
 

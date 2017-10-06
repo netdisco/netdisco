@@ -72,7 +72,7 @@ consistency with other Status class methods but really does nothing.
 
 sub noop {
   debug $_[1] if $_[1];
-  return 1;
+  return true;
 }
 
 =head2 is_ok
