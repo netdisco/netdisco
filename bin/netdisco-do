@@ -139,7 +139,7 @@ foreach my $host (@hostlist) {
         $job->log("error running job: $_");
     };
 
-    if ($job->log eq 'check phase did not pass for this action') {
+    if ($job->log eq 'no worker succeeded during main phase') {
       pod2usage(
         -msg => (sprintf 'error: %s is not a valid action', $action),
         -verbose => 2,
