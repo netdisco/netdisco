@@ -3,6 +3,8 @@ package App::Netdisco::Worker::Status;
 use strict;
 use warnings;
 
+use Dancer qw/:moose :syntax !error/;
+
 use Moo;
 use namespace::clean;
 
@@ -61,6 +63,18 @@ sub error { (shift)->_make_new('error', @_) }
 sub done  { (shift)->_make_new('done', @_)  }
 sub defer { (shift)->_make_new('defer', @_) }
 
+=head2 noop
+
+Simply logs a message at debug level if passed, and returns true. Used for
+consistency with other Status class methods but really does nothing.
+
+=cut
+
+sub noop {
+  debug $_[1] if $_[1];
+  return 1;
+}
+
 =head2 is_ok
 
 Returns true if status is C<done>.
@@ -76,5 +90,17 @@ Returns true if status is C<error> or C<defer>.
 =cut
 
 sub not_ok { return (not $_[0]->is_ok) }
+
+=head2 level
+
+A numeric constant for the status, to allow comparison.
+
+=cut
+
+sub level {
+  my $self = shift;
+  return (($self->status eq 'done') ? 3
+                                    : ($self->status eq 'defer') ? 2 : 1);
+}
 
 1;

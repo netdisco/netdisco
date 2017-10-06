@@ -5,6 +5,10 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 register_worker({ stage => 'check' }, sub {
+  return Status->done('Psql is able to run');
+});
+
+register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
 

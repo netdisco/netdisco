@@ -13,7 +13,7 @@ register_worker({ stage => 'check' }, sub {
   return Status->error('macsuck failed: unable to interpret device param')
     unless defined $device;
 
-  return Status->done("macsuck skipped: $device not yet discovered")
+  return Status->error("macsuck skipped: $device not yet discovered")
     unless $device->in_storage;
 
   return Status->defer("macsuck skipped: $device is pseudo-device")

@@ -19,13 +19,12 @@ register_worker({ stage => 'check' }, sub {
 register_worker({ stage => 'early' }, sub {
   my ($job, $workerconf) = @_;
   debug 'Test (early) ran successfully.';
-  return Status->done('Test (early) ran successfully.');
+  return Status->error('Test (early) ran successfully.');
 });
 
 register_worker(sub {
   my ($job, $workerconf) = @_;
-  debug 'Test (undefined) ran successfully.';
-  return Status->done('Test (undefined) ran successfully.');
+  return Status->noop('Test (undefined) ran successfully.');
 });
 
 true;

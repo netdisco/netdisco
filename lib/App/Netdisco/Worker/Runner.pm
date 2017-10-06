@@ -18,7 +18,7 @@ has 'job' => (
 
 has 'jobstat' => (
   is => 'rw',
-  default => sub { Status->error("check phase did not pass for this action") },
+  default => sub { Status->error('check phase did not pass for this action') },
 );
 
 after 'run', 'run_workers' => sub {
@@ -62,10 +62,12 @@ sub run {
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
+  my $store = Dancer::Factory::Hook->instance();
   $self->run_workers('nd2_core_check');
-  return if $self->jobstat->not_ok;
+  return if scalar @{ $store->get_hooks_for('nd2_core_check') }
+            and $self->jobstat->not_ok;
 
-  $self->jobstat( Status->error("no worker succeeded during main phase") );
+  $self->jobstat( Status->error('no worker succeeded during main phase') );
   $self->run_workers("nd2_core_${_}") for qw/early main user/;
 }
 
@@ -88,7 +90,7 @@ sub run_workers {
       $self->jobstat($retval)
         if ($phase =~ m/^(?:check|main)$/)
            and ref $retval eq 'App::Netdisco::Worker::Status'
-           and $self->jobstat->not_ok;
+           and $retval->level >= $self->jobstat->level;
     }
     # errors at most phases are ignored
     catch { $self->jobstat->error($_) if $phase eq 'check' };

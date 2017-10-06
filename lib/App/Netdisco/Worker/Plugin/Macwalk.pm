@@ -8,6 +8,10 @@ use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use Dancer::Plugin::DBIC 'schema';
 
 register_worker({ stage => 'check' }, sub {
+  return Status->done('Macwalk is able to run');
+});
+
+register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
   my %queued = map {$_ => 1} jq_queued('macsuck');

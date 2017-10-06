@@ -11,7 +11,7 @@ use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use NetAddr::MAC ();
 
-register_worker({ stage => 'check', driver => 'snmp' }, sub {
+register_worker({ stage => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;

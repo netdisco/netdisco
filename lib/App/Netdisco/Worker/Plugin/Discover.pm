@@ -22,7 +22,7 @@ register_worker({ stage => 'check' }, sub {
   return Status->defer("discover deferred: $device is not discoverable")
     unless is_discoverable_now($device);
 
-  return Status->done('discover is able to run.');
+  return Status->done('Discover is able to run.');
 });
 
 true;

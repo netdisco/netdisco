@@ -7,10 +7,13 @@ use aliased 'App::Netdisco::Worker::Status';
 use Dancer::Plugin::DBIC 'schema';
 
 register_worker({ stage => 'check' }, sub {
-  my ($job, $workerconf) = @_;
+  return Status->error('Missing device (-d).')
+    unless defined (shift)->device;
+  return Status->done('ExpireNodes is able to run');
+});
 
-  return Status->error('nbtstat failed: unable to interpret device param')
-    if !defined $job->device;
+register_worker({ stage => 'main' }, sub {
+  my ($job, $workerconf) = @_;
 
   schema('netdisco')->txn_do(sub {
     schema('netdisco')->resultset('Node')->search({

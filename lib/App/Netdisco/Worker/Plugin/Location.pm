@@ -7,9 +7,14 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP;
 
 register_worker({ stage => 'check' }, sub {
+  return Status->error('Missing device (-d).')
+    unless defined (shift)->device;
+  return Status->done('Location is able to run');
+});
+
+register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $data) = map {$job->$_} qw/device extra/;
-  return Status->error('Missing device (-d).') if !defined $device;
 
   # snmp connect using rw community
   my $snmp = App::Netdisco::Transport::SNMP->writer_for($device)

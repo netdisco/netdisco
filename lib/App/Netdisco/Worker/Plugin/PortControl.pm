@@ -9,17 +9,25 @@ use App::Netdisco::Util::Port ':all';
 
 register_worker({ stage => 'check' }, sub {
   my ($job, $workerconf) = @_;
+  return Status->error('Missing device (-d).') unless defined $job->device;
+  return Status->error('Missing port (-p).') unless defined $job->port;
+  return Status->error('Missing status (-e).') unless defined $job->subaction;
+
+  my $port = get_port($job->device, $job->port)
+    or return Status->error(sprintf "Unknown port name [%s] on device %s",
+                              $job->port, $job->device);
+
+  my $vlan_reconfig_check = vlan_reconfig_check($port);
+  return Status->error("Cannot alter vlan: $vlan_reconfig_check")
+    if $vlan_reconfig_check;
+
+  return Status->done('PortControl is able to run');
+});
+
+register_worker({ stage => 'main' }, sub {
+  my ($job, $workerconf) = @_;
   my ($device, $pn) = map {$job->$_} qw/device port/;
-  return Status->error('Missing device (-d).') if !defined $device;
-  return Status->error('Missing port (-p).') if !defined $pn;
-  return Status->error('Missing status (-e).') if !defined $job->subaction;
-
-  my $port = get_port($device, $pn)
-    or return Status->error("Unknown port name [$pn] on device $device");
-
-  my $port_reconfig_check = port_reconfig_check($port);
-  return Status->error("Cannot alter port: $port_reconfig_check")
-    if $port_reconfig_check;
+  my $port = get_port($device, $pn);
 
   # need to remove "-other" which appears for power/portcontrol
   (my $sa = $job->subaction) =~ s/-\w+//;

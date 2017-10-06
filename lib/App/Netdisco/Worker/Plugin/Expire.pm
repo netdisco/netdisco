@@ -8,6 +8,10 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Statistics 'update_stats';
 
 register_worker({ stage => 'check' }, sub {
+  return Status->done('Expire is able to run');
+});
+
+register_worker({ stage => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
   if (setting('expire_devices') and setting('expire_devices') > 0) {
