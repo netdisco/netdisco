@@ -125,7 +125,7 @@ foreach my $host (@hostlist) {
 
     my $actiontext = (
       ($job->device ? ('['.$job->device->ip.']') : '') .
-      ($job->action eq 'show' ? ('/'.$job->subaction) : '')
+      ($job->action eq 'show' ? ('/'. ($job->subaction || 'interfaces')) : '')
     );
 
     # do job

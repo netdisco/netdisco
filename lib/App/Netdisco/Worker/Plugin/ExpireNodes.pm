@@ -8,7 +8,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 register_worker({ stage => 'check' }, sub {
   return Status->error('Missing device (-d).')
-    unless defined (shift)->device;
+    unless defined shift->device;
   return Status->done('ExpireNodes is able to run');
 });
 

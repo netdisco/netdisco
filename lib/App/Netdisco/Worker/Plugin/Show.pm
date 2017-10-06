@@ -9,7 +9,7 @@ use App::Netdisco::Transport::SNMP;
 
 register_worker({ stage => 'check' }, sub {
   return Status->error('Missing device (-d).')
-    unless defined (shift)->device;
+    unless defined shift->device;
   return Status->done('Show is able to run');
 });
 

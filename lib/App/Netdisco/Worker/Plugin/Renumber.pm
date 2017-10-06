@@ -9,7 +9,7 @@ use App::Netdisco::Util::Device qw/get_device renumber_device/;
 
 register_worker({ stage => 'check' }, sub {
   return Status->error('Missing device (-d).')
-    unless defined (shift)->device;
+    unless defined shift->device;
 
   my $new_ip = NetAddr::IP->new($job->extra);
   unless ($new_ip and $new_ip->addr ne '0.0.0.0') {

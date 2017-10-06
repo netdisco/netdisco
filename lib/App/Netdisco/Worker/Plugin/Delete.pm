@@ -8,7 +8,7 @@ use App::Netdisco::Util::Device 'delete_device';
 
 register_worker({ stage => 'check' }, sub {
   return Status->error('Missing device (-d).')
-    unless defined (shift)->device;
+    unless defined shift->device;
   return Status->done('Delete is able to run');
 });
 

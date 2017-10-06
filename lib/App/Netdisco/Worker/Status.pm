@@ -59,9 +59,9 @@ sub _make_new {
   return $new;
 }
 
-sub error { (shift)->_make_new('error', @_) }
-sub done  { (shift)->_make_new('done', @_)  }
-sub defer { (shift)->_make_new('defer', @_) }
+sub error { shift->_make_new('error', @_) }
+sub done  { shift->_make_new('done', @_)  }
+sub defer { shift->_make_new('defer', @_) }
 
 =head2 noop
 
