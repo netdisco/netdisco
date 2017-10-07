@@ -103,9 +103,6 @@ sub run_workers {
       $self->jobstat->error($_) if $phase eq 'check';
       debug $_ if $_;
     };
-
-    # any successful check is a GO!
-    last if $phase eq 'check' and $self->jobstat->is_ok;
   }
 }
 
