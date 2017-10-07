@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
-register_worker({ stage => 'main', driver => 'snmp' }, sub {
+register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;

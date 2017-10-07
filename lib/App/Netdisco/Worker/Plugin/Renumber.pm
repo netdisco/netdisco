@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Util::Device qw/get_device renumber_device/;
 
-register_worker({ stage => 'check' }, sub {
+register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
     unless defined shift->device;
 
@@ -19,7 +19,7 @@ register_worker({ stage => 'check' }, sub {
   return Status->done('Renumber is able to run');
 });
 
-register_worker({ stage => 'main' }, sub {
+register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
 

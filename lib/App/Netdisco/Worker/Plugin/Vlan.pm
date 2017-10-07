@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP;
 use App::Netdisco::Util::Port ':all';
 
-register_worker({ stage => 'check' }, sub {
+register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn, $data) = map {$job->$_} qw/device port extra/;
   return Status->error('Missing device (-d).') if !defined $device;
@@ -28,7 +28,7 @@ register_worker({ stage => 'check' }, sub {
   return Status->done("Check phase for update [$pn] vlan $data done.");
 });
 
-register_worker({ stage => 'main' }, sub {
+register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn, $data) = map {$job->$_} qw/device port extra/;
 
@@ -62,7 +62,7 @@ register_worker({ stage => 'main' }, sub {
   return Status->done("Updated [$pn] pvid on [$device] to [$data]");
 });
 
-register_worker({ stage => 'main' }, sub {
+register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn, $data) = map {$job->$_} qw/device port extra/;
 

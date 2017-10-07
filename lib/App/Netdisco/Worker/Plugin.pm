@@ -9,8 +9,8 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 my $store = Dancer::Factory::Hook->instance();
-foreach my $stage (qw/check early main user/) {
-  $store->install_hooks("nd2_core_${stage}");
+foreach my $phase (qw/check early main user/) {
+  $store->install_hooks("nd2_core_${phase}");
 }
 
 register 'register_worker' => sub {
@@ -21,7 +21,7 @@ register 'register_worker' => sub {
   return error "bad param to register_worker"
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
-  $workerconf->{stage} ||= 'user';
+  $workerconf->{phase} ||= 'user';
 
   my $worker = sub {
     my $job = shift or return Status->error('missing job param');
@@ -60,7 +60,7 @@ register 'register_worker' => sub {
   };
 
   # D::Factory::Hook::register_hook() does not work?!
-  my $hook = 'nd2_core_'. $workerconf->{stage};
+  my $hook = 'nd2_core_'. $workerconf->{phase};
   hook $hook => $worker;
 };
 

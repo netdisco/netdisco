@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device 'is_macsuckable';
 
-register_worker({ stage => 'check' }, sub {
+register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
 
   return Status->error('nbtstat failed: unable to interpret device param')

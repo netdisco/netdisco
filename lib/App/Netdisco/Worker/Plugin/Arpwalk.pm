@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
 use Dancer::Plugin::DBIC 'schema';
 
-register_worker({ stage => 'main' }, sub {
+register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
   my %queued = map {$_ => 1} jq_queued('arpnip');

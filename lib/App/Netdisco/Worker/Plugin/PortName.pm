@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP;
 use App::Netdisco::Util::Port ':all';
 
-register_worker({ stage => 'check' }, sub {
+register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
   return Status->error('Missing device (-d).') unless defined $job->device;
   return Status->error('Missing port (-p).') unless defined $job->port;
@@ -20,7 +20,7 @@ register_worker({ stage => 'check' }, sub {
   return Status->done('PortName is able to run');
 });
 
-register_worker({ stage => 'main' }, sub {
+register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn, $data) = map {$job->$_} qw/device port extra/;
 

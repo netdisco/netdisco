@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 use Encode;
 
-register_worker({ stage => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
