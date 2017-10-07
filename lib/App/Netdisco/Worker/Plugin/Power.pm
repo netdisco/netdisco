@@ -27,7 +27,7 @@ register_worker({ phase => 'check' }, sub {
   return Status->done('Power is able to run');
 });
 
-register_worker({ phase => 'main' }, sub {
+register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn) = map {$job->$_} qw/device port/;
 

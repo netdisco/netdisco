@@ -20,7 +20,7 @@ register_worker({ phase => 'check' }, sub {
   return Status->done('PortName is able to run');
 });
 
-register_worker({ phase => 'main' }, sub {
+register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn, $data) = map {$job->$_} qw/device port extra/;
 
