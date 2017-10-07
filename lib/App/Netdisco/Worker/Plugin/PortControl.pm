@@ -13,11 +13,11 @@ register_worker({ phase => 'check' }, sub {
   return Status->error('Missing port (-p).') unless defined $job->port;
   return Status->error('Missing status (-e).') unless defined $job->subaction;
 
-  my $port = get_port($job->device, $job->port)
+  vars->{'port'} = get_port($job->device, $job->port)
     or return Status->error(sprintf "Unknown port name [%s] on device %s",
                               $job->port, $job->device);
 
-  my $vlan_reconfig_check = vlan_reconfig_check($port);
+  my $vlan_reconfig_check = vlan_reconfig_check(vars->{'port'});
   return Status->error("Cannot alter vlan: $vlan_reconfig_check")
     if $vlan_reconfig_check;
 
@@ -27,7 +27,6 @@ register_worker({ phase => 'check' }, sub {
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn) = map {$job->$_} qw/device port/;
-  my $port = get_port($device, $pn);
 
   # need to remove "-other" which appears for power/portcontrol
   (my $sa = $job->subaction) =~ s/-\w+//;
@@ -35,23 +34,23 @@ register_worker({ phase => 'main' }, sub {
 
   if ($sa eq 'bounce') {
     $job->subaction('down');
-    my $status = _action($job, $port);
+    my $status = _action($job);
     return $status if $status->not_ok;
     $job->subaction('up');
   }
 
-  return _action($job, $port);
+  return _action($job);
 });
 
 sub _action {
-  my ($job, $port) = @_;
+  my $job = shift;
   my ($device, $pn, $data) = map {$job->$_} qw/device port subaction/;
 
   # snmp connect using rw community
   my $snmp = App::Netdisco::Transport::SNMP->writer_for($device)
     or return Status->defer("failed to connect to $device to update up_admin");
 
-  my $iid = get_iid($snmp, $port)
+  my $iid = get_iid($snmp, vars->{'port'})
     or return Status->error("Failed to get port ID for [$pn] from $device");
 
   my $rv = $snmp->set_i_up_admin($data, $iid);
@@ -69,7 +68,7 @@ sub _action {
   }
 
   # update netdisco DB
-  $port->update({up_admin => $data});
+  vars->{'port'}->update({up_admin => $data});
 
   return Status->done("Updated [$pn] up_admin on [$device] to [$data]");
 }

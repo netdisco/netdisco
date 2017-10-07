@@ -13,16 +13,16 @@ register_worker({ phase => 'check' }, sub {
   return Status->error('Missing port (-p).') unless defined $job->port;
   return Status->error('Missing status (-e).') unless defined $job->subaction;
 
-  my $port = get_port($job->device, $job->port)
+  vars->{'port'} = get_port($job->device, $job->port)
     or return Status->error(sprintf "Unknown port name [%s] on device %s",
                               $job->port, $job->device);
 
-  my $vlan_reconfig_check = vlan_reconfig_check($port);
+  my $vlan_reconfig_check = vlan_reconfig_check(vars->{'port'});
   return Status->error("Cannot alter vlan: $vlan_reconfig_check")
     if $vlan_reconfig_check;
 
   return Status->error("No PoE service on port [$pn] on device $device")
-    unless $port->power;
+    unless vars->{'port'}->power;
 
   return Status->done('Power is able to run');
 });
@@ -30,7 +30,6 @@ register_worker({ phase => 'check' }, sub {
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $pn) = map {$job->$_} qw/device port/;
-  my $port = get_port($device, $pn);
 
   # munge data
   (my $data = $job->subaction) =~ s/-\w+//; # remove -other
@@ -41,7 +40,7 @@ register_worker({ phase => 'main' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->writer_for($device)
     or return Status->defer("failed to connect to $device to update vlan");
 
-  my $powerid = get_powerid($snmp, $port)
+  my $powerid = get_powerid($snmp, vars->{'port'})
     or return Status->error("failed to get power ID for [$pn] from $device");
 
   my $rv = $snmp->set_peth_port_admin($data, $powerid);
@@ -59,7 +58,7 @@ register_worker({ phase => 'main' }, sub {
   }
 
   # update netdisco DB
-  $port->power->update({
+  vars->{'port'}->power->update({
     admin => $data,
     status => ($data eq 'false' ? 'disabled' : 'searching'),
   });

@@ -13,7 +13,7 @@ register_worker({ phase => 'check' }, sub {
   return Status->error('Missing port (-p).') unless defined $job->port;
   return Status->error('Missing name (-e).') unless defined $job->subaction;
 
-  my $port = get_port($job->device, $job->port)
+  vars->{'port'} = get_port($job->device, $job->port)
     or return Status->error(sprintf "Unknown port name [%s] on device %s",
                               $job->port, $job->device);
 
@@ -28,9 +28,7 @@ register_worker({ phase => 'main' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->writer_for($device)
     or return Status->defer("failed to connect to $device to update alias");
 
-  my $port = get_port($device, $pn);
-
-  my $iid = get_iid($snmp, $port)
+  my $iid = get_iid($snmp, vars->{'port'})
     or return Status->error("Failed to get port ID for [$pn] from $device");
 
   my $rv = $snmp->set_i_alias($data, $iid);
@@ -48,7 +46,7 @@ register_worker({ phase => 'main' }, sub {
   }
 
   # update netdisco DB
-  $port->update({name => $data});
+  vars->{'port'}->update({name => $data});
 
   return Status->done("Updated [$pn] alias on [$device] to [$data]");
 });
