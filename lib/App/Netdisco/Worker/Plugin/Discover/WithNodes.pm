@@ -12,28 +12,26 @@ register_worker({ phase => 'main' }, sub {
 
   # if requested, and the device has not yet been
   # arpniped/macsucked, queue those jobs now
-  if ($device->in_storage
-      and $job->subaction and $job->subaction eq 'with-nodes') {
-    if (!defined $device->last_macsuck and $device->has_layer(2)) {
-      jq_insert({
-        device => $device->ip,
-        action => 'macsuck',
-        username => $job->username,
-        userip => $job->userip,
-      });
-    }
+  return unless $device->in_storage
+    and $job->subaction and $job->subaction eq 'with-nodes';
 
-    if (!defined $device->last_arpnip and $device->has_layer(3)) {
-      jq_insert({
-        device => $device->ip,
-        action => 'arpnip',
-        username => $job->username,
-        userip => $job->userip,
-      });
-    }
+  if (!defined $device->last_macsuck and $device->has_layer(2)) {
+    jq_insert({
+      device => $device->ip,
+      action => 'macsuck',
+      username => $job->username,
+      userip => $job->userip,
+    });
   }
 
-  return true;
+  if (!defined $device->last_arpnip and $device->has_layer(3)) {
+    jq_insert({
+      device => $device->ip,
+      action => 'arpnip',
+      username => $job->username,
+      userip => $job->userip,
+    });
+  }
 });
 
 true;

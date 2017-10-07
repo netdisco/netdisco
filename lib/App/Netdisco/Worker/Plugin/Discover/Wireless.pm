@@ -11,11 +11,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
+  return unless $device->in_storage;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   my $ssidlist = $snmp->i_ssidlist;
-  return true unless scalar keys %$ssidlist;
+  return unless scalar keys %$ssidlist;
 
   my $interfaces = $snmp->interfaces;
   my $ssidbcast  = $snmp->i_ssidbcast;

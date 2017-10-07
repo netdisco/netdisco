@@ -13,6 +13,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
+  return unless $device->in_storage;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
@@ -59,7 +60,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     } # ALIAS
   }
 
-  return true if $new_ip eq $old_ip;
+  return if $new_ip eq $old_ip;
 
   schema('netdisco')->txn_do(sub {
     # delete target device with the same vendor and serial number

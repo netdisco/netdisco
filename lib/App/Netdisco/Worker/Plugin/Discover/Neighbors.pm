@@ -34,6 +34,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
+  return unless $device->in_storage;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
@@ -60,8 +61,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         subaction => 'with-nodes',
       });
   }
-
-  return true;
 });
 
 =head2 store_neighbors( $device )

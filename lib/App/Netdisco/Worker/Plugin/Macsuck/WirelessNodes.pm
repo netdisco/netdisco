@@ -18,7 +18,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   my $cd11_txrate = $snmp->cd11_txrate;
-  return true unless $cd11_txrate and scalar keys %$cd11_txrate;
+  return unless $cd11_txrate and scalar keys %$cd11_txrate;
 
   if (setting('store_wireless_clients')) {
     debug sprintf ' [%s] macsuck - gathering wireless client info',
@@ -77,8 +77,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         });
     });
   }
-
-  return true;
 });
 
 true;
