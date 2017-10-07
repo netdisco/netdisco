@@ -15,8 +15,7 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   my $ssidlist = $snmp->i_ssidlist;
-  return Status->done("Ended discover for $device")
-    unless scalar keys %$ssidlist;
+  return true unless scalar keys %$ssidlist;
 
   my $interfaces = $snmp->interfaces;
   my $ssidbcast  = $snmp->i_ssidbcast;
@@ -76,11 +75,10 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     debug sprintf ' [%s] wireless - removed %d wireless channels',
       $device->ip, $gone;
     $device->wireless_ports->populate(\@channels);
-    debug sprintf ' [%s] wireless - added %d new wireless channels',
-      $device->ip, scalar @channels;
-  });
 
-  return Status->done("Ended discover for $device");
+    return Status->noop(sprintf ' [%s] wireless - added %d new wireless channels',
+      $device->ip, scalar @channels);
+  });
 });
 
 true;

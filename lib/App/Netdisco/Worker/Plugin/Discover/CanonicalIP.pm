@@ -59,8 +59,7 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     } # ALIAS
   }
 
-  return Status->done("Ended discover for $device")
-    if $new_ip eq $old_ip;
+  return true if $new_ip eq $old_ip;
 
   schema('netdisco')->txn_do(sub {
     # delete target device with the same vendor and serial number
@@ -72,11 +71,9 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
-    debug sprintf ' [%s] device - changed IP to %s (%s)',
-      $old_ip, $device->ip, ($device->dns || '');
+    return Status->noop(sprintf ' [%s] device - changed IP to %s (%s)',
+      $old_ip, $device->ip, ($device->dns || ''));
   });
-
-  return Status->done("Ended discover for $device");
 });
 
 true;

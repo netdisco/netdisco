@@ -33,7 +33,7 @@ register_worker({ stage => 'main' }, sub {
     }
   }
 
-  return Status->done("Ended discover for $device");
+  return true;
 });
 
 true;

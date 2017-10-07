@@ -141,11 +141,10 @@ register_worker({ stage => 'early', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});
     $device->ports->populate([values %interfaces]);
-    debug sprintf ' [%s] interfaces - added %d new interfaces',
-      $device->ip, scalar values %interfaces;
-  });
 
-  return Status->done("Ended discover for $device");
+    return Status->noop(sprintf ' [%s] interfaces - added %d new interfaces',
+      $device->ip, scalar values %interfaces);
+  });
 });
 
 true;

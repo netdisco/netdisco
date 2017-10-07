@@ -40,11 +40,9 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
         });
       });
 
-      debug
+      return Status->noop(
         sprintf ' [%s] modules - 0 chassis components (added one pseudo for chassis)',
-        $device->ip;
-
-      return Status->done("Ended discover for $device");
+        $device->ip);
   }
 
   my $e_descr   = $snmp->e_descr;
@@ -86,11 +84,10 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     debug sprintf ' [%s] modules - removed %d chassis modules',
       $device->ip, $gone;
     $device->modules->populate(\@modules);
-    debug sprintf ' [%s] modules - added %d new chassis modules',
-      $device->ip, scalar @modules;
-  });
 
-  return Status->done("Ended discover for $device");
+    return Status->noop(sprintf ' [%s] modules - added %d new chassis modules',
+      $device->ip, scalar @modules);
+  });
 });
 
 true;

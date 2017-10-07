@@ -61,7 +61,7 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
       });
   }
 
-  return Status->done("Ended discover for $device");
+  return true;
 });
 
 =head2 store_neighbors( $device )

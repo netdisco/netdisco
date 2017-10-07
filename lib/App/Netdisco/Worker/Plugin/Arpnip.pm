@@ -25,7 +25,7 @@ register_worker({ stage => 'check' }, sub {
   return Status->defer("arpnip deferred: $device is not arpnipable")
     unless is_arpnipable_now($device);
 
-  return Status->done('Arpnip is able to run');
+  return Status->done('arpnip is able to run');
 });
 
 true;

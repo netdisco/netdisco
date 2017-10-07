@@ -85,11 +85,10 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     debug sprintf ' [%s] vlans - removed %d port VLANs',
       $device->ip, $gone;
     $device->port_vlans->populate(\@portvlans);
-    debug sprintf ' [%s] vlans - added %d new port VLANs',
-      $device->ip, scalar @portvlans;
-  });
 
-  return Status->done("Ended discover for $device");
+    return Status->noop(sprintf ' [%s] vlans - added %d new port VLANs',
+      $device->ip, scalar @portvlans);
+  });
 });
 
 true;

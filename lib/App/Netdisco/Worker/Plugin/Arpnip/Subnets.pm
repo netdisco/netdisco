@@ -22,12 +22,10 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
   # TODO: IPv6 subnets
 
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
-
   store_subnet($_, $now) for @subnets;
-  debug sprintf ' [%s] arpnip - processed %s Subnet entries',
-    $device->ip, scalar @subnets;
 
-  return Status->done("Ended arpnip for $device");
+  return Status->noop(sprintf ' [%s] arpnip - processed %s Subnet entries',
+    $device->ip, scalar @subnets);
 });
 
 # gathers device subnets

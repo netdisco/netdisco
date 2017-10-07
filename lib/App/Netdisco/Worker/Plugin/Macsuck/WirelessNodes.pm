@@ -18,17 +18,15 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   my $cd11_txrate = $snmp->cd11_txrate;
-  return Status->done("Ended macsuck for $device")
-    unless $cd11_txrate and scalar keys %$cd11_txrate;
+  return true unless $cd11_txrate and scalar keys %$cd11_txrate;
 
   if (setting('store_wireless_clients')) {
     debug sprintf ' [%s] macsuck - gathering wireless client info',
       $device->ip;
   }
   else {
-    debug sprintf ' [%s] macsuck - dot11 info available but skipped due to config',
-      $device->ip;
-    return Status->done("Ended macsuck for $device");
+    return Status->noop(sprintf ' [%s] macsuck - dot11 info available but skipped due to config',
+      $device->ip);
   }
 
   my $cd11_rateset = $snmp->cd11_rateset();
@@ -80,7 +78,7 @@ register_worker({ stage => 'main', driver => 'snmp' }, sub {
     });
   }
 
-  return Status->done("Ended macsuck for $device");
+  return true;
 });
 
 true;
