@@ -86,7 +86,7 @@ sub store_neighbors {
   my @to_discover = ();
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or die "discover failed: could not SNMP connect to $device";
+    or return (); # already checked!
 
   # first allow any manually configured topology to be set
   set_manual_topology($device);
@@ -287,9 +287,7 @@ sub store_neighbors {
 # in the devices table. only use root_ips and skip any bad topo entries.
 sub set_manual_topology {
   my $device = shift;
-
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or die "discover failed: could not SNMP connect to $device";
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device) or return;
 
   schema('netdisco')->txn_do(sub {
     # clear manual topology flags
