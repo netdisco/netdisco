@@ -82,7 +82,6 @@ sub run_workers {
 
   return unless scalar @{ $store->get_hooks_for($hook) };
   debug "running workers for hook: $hook";
-  my $max_level = 0;
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
@@ -90,10 +89,11 @@ sub run_workers {
       my $retval = $worker->($self->job);
 
       if (ref $retval eq 'App::Netdisco::Worker::Status') {
-        # update (save) the status if we're in check or main phases
+        # update (save) the status if we're in check, early, or main phases
         # because these logs can end up in the job queue as status message
         $self->jobstat($retval)
-          if ($phase =~ m/^(?:check|main)$/) and $retval->level >= $max_level;
+          if ($phase =~ m/^(?:check|early|main)$/)
+             and $retval->level >= $self->jobstat->level;
 
         debug $retval->log if $retval->log;
       }
