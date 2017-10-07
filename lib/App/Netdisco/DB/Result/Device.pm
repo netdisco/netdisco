@@ -212,8 +212,8 @@ Returns true if the device provided sysServices and supports the given layer.
 
 sub has_layer {
   my ($device, $layer) = @_;
-  return unless $layer and $layer =~ m/^[1-8]$/;
-  return $device->layers and substr($device->layers, (9-$layer), 1) == 1;
+  return unless $layer and $layer =~ m/^[1-7]$/;
+  return ($device->layers and (substr($device->layers, (8-$layer), 1) == 1));
 }
 
 =head2 renumber( $new_ip )
