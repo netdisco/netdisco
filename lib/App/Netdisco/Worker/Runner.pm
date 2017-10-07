@@ -62,11 +62,14 @@ sub run {
   my $guard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
+  # run check phase
+  # optional - but if there are workers then one MUST return done
   my $store = Dancer::Factory::Hook->instance();
   $self->run_workers('nd2_core_check');
   return if scalar @{ $store->get_hooks_for('nd2_core_check') }
             and $self->jobstat->not_ok;
 
+  # run other phases
   $self->jobstat( Status->error('no worker succeeded during main phase') );
   $self->run_workers("nd2_core_${_}") for qw/early main user/;
 }
@@ -85,15 +88,21 @@ sub run_workers {
       # could die or return undef or a scalar or Status or another class
       my $retval = $worker->($self->job);
 
-      # update (save) the status if we're in check or main phases
-      #   check because it's a gatekeeper, main because it's the retval
-      $self->jobstat($retval)
-        if ($phase =~ m/^(?:check|main)$/)
-           and ref $retval eq 'App::Netdisco::Worker::Status'
-           and $retval->level >= $self->jobstat->level;
+      if (ref $retval eq 'App::Netdisco::Worker::Status') {
+        # update (save) the status if we're in check or main phases
+        # because these logs can end up in the job queue as status message
+        $self->jobstat($retval)
+          if ($phase =~ m/^(?:check|main)$/)
+             and $retval->level >= $self->jobstat->level;
+
+        debug $retval->log if $retval->log;
+      }
     }
     # errors at most phases are ignored
-    catch { $self->jobstat->error($_) if $phase eq 'check' };
+    catch {
+      $self->jobstat->error($_) if $phase eq 'check';
+      debug $_ if $_;
+    };
 
     # any successful check is a GO!
     last if $phase eq 'check' and $self->jobstat->is_ok;
