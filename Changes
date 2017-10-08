@@ -1,9 +1,16 @@
-2.036010 - 
+2.036010 - 2017-10-08
 
   [ENHANCEMENTS]
 
   * Add note on D-Link LLDP config (H. Erasmus)
   * New "stats" command for netdisco-do to update statistics
+  * #342 Job Queue Add Hostname or FQDN
+
+  [BUG FIXES]
+
+  * #253 add some dependencies
+  * #346 custom reports should allow trailing sql semicolon
+  * #331 do not set community{_rw} defaults
 
 2.036009 - 2017-08-01
 
