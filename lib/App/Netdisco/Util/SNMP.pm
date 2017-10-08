@@ -80,6 +80,12 @@ sub fixup_device_auth {
     community => $_,
   }} @{setting('community_rw') || []};
 
+  foreach my $stanza (@new_stanzas) {
+    $stanza->{driver} ||= 'snmp'
+      if exists $stanza->{community}
+         or exists $stanza->{user};
+  }
+
   return @new_stanzas;
 }
 
@@ -109,20 +115,26 @@ sub get_communities {
   if ($device->in_storage and $stored_tag) {
     foreach my $stanza (@$config) {
       if ($stanza->{tag} and $stored_tag eq $stanza->{tag}) {
-        push @communities, $stanza;
+        push @communities, {%$stanza, only => [$device->ip]};
         last;
       }
     }
   }
 
   # try last-known-good v2 read
-  push @communities, {read => 1, community => $device->snmp_comm}
-    if defined $device->snmp_comm and $mode eq 'read';
+  push @communities, {
+    read => 1, write => 0, driver => 'snmp',
+    only => [$device->ip],
+    community => $device->snmp_comm,
+  } if defined $device->snmp_comm and $mode eq 'read';
 
   # try last-known-good v2 write
   my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
-  push @communities, {write => 1, community => $snmp_comm_rw}
-    if $snmp_comm_rw and $mode eq 'write';
+  push @communities, {
+    write => 1, read => 0, driver => 'snmp',
+    only => [$device->ip],
+    community => $snmp_comm_rw,
+  } if $snmp_comm_rw and $mode eq 'write';
 
   # clean the community table of obsolete tags
   eval { $device->community->update({$tag_name => undef}) }
@@ -151,6 +163,7 @@ sub _get_external_community {
               if (length $1 and $mode eq 'read') {
                   return map {{
                     read => 1,
+                    only => [$device->ip],
                     community => $_,
                   }} split(m/\s*,\s*/,$1);
               }
@@ -159,6 +172,7 @@ sub _get_external_community {
               if (length $1 and $mode eq 'write') {
                   return map {{
                     write => 1,
+                    only => [$device->ip],
                     community => $_,
                   }} split(m/\s*,\s*/,$1);
               }
