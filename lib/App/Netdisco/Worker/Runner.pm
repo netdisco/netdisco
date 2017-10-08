@@ -81,7 +81,7 @@ sub run_workers {
   (my $phase = $hook) =~ s/^nd2_core_//;
 
   return unless scalar @{ $store->get_hooks_for($hook) };
-  debug "running workers for hook: $hook";
+  debug "=> running workers for phase: $phase";
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try {
@@ -95,13 +95,13 @@ sub run_workers {
           if ($phase =~ m/^(?:check|early|main)$/)
              and $retval->level >= $self->jobstat->level;
 
-        debug $retval->log if $retval->log;
+        debug ('=> '. $retval->log) if $retval->log;
       }
     }
     # errors at most phases are ignored
     catch {
       $self->jobstat->error($_) if $phase eq 'check';
-      debug $_ if $_;
+      debug "=> $_" if $_;
     };
   }
 }
