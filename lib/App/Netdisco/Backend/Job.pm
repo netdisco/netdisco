@@ -1,7 +1,5 @@
 package App::Netdisco::Backend::Job;
 
-use App::Netdisco::Util::Device 'get_device';
-
 use Moo;
 use namespace::clean;
 
@@ -25,18 +23,6 @@ foreach my $slot (qw/
     is => 'rw',
   );
 }
-
-# $job->device is always a DBIC row
-around BUILDARGS => sub {
-  my ( $orig, $class, @args ) = @_;
-  my $params = $args[0] or return $class->$orig(@args);
-
-  if ((ref {} eq ref $params) and $params->{device}) {
-    $params->{device} = get_device( $params->{device} );
-  }
-
-  return $class->$orig(@args);
-};
 
 =head1 METHODS
 

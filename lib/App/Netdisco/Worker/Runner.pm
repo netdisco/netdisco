@@ -5,6 +5,7 @@ use Dancer::Factory::Hook;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Device 'get_device';
 
 use Try::Tiny;
 use Moo::Role;
@@ -28,6 +29,7 @@ sub run {
     unless ref $job eq 'App::Netdisco::Backend::Job';
 
   $self->job($job);
+  $self->job->device( get_device($job->device) );
   $self->jobstat( Status->error('failed in job init') );
 
   my $action = $job->action;
