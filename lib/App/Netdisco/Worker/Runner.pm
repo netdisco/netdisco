@@ -12,14 +12,7 @@ use Module::Load ();
 use Scope::Guard 'guard';
 use namespace::clean;
 
-has 'job' => (
-  is => 'rw',
-);
-
-has 'jobstat' => (
-  is => 'rw',
-  default => sub { Status->error('check phase did not pass for this action') },
-);
+has ['job', 'jobstat'] => ( is => 'rw' );
 
 after 'run', 'run_workers' => sub {
   my $self = shift;
@@ -33,7 +26,9 @@ sub run {
   die 'cannot reuse a worker' if $self->job;
   die 'bad job to run()'
     unless ref $job eq 'App::Netdisco::Backend::Job';
+
   $self->job($job);
+  $self->jobstat( Status->error('failed in job init') );
 
   my $action = $job->action;
   Module::Load::load 'App::Netdisco::Worker' => $action;
@@ -65,6 +60,7 @@ sub run {
   # run check phase
   # optional - but if there are workers then one MUST return done
   my $store = Dancer::Factory::Hook->instance();
+  $self->jobstat( Status->error('check phase did not pass for this action') );
   $self->run_workers('nd2_core_check');
   return if scalar @{ $store->get_hooks_for('nd2_core_check') }
             and $self->jobstat->not_ok;
@@ -89,19 +85,19 @@ sub run_workers {
       my $retval = $worker->($self->job);
 
       if (ref $retval eq 'App::Netdisco::Worker::Status') {
+        debug ('=> '. $retval->log) if $retval->log;
+
         # update (save) the status if we're in check, early, or main phases
         # because these logs can end up in the job queue as status message
         $self->jobstat($retval)
           if ($phase =~ m/^(?:check|early|main)$/)
              and $retval->level >= $self->jobstat->level;
-
-        debug ('=> '. $retval->log) if $retval->log;
       }
     }
     # errors at most phases are ignored
     catch {
-      $self->jobstat->error($_) if $phase eq 'check';
       debug "=> $_" if $_;
+      $self->jobstat->error($_) if $phase eq 'check';
     };
   }
 }
