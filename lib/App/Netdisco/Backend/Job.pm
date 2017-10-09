@@ -31,7 +31,7 @@ around BUILDARGS => sub {
   my ( $orig, $class, @args ) = @_;
   my $params = $args[0] or return $class->$orig(@args);
 
-  if ((ref {} eq ref $params) and ref $params->{device}) {
+  if ((ref {} eq ref $params) and $params->{device}) {
     $params->{device} = get_device( $params->{device} );
   }
 
