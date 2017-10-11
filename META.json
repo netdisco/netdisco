@@ -101,7 +101,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.036010"
+         "version" : "2.036011"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -452,6 +452,9 @@
       "App::Netdisco::Util::SNMP" : {
          "file" : "lib/App/Netdisco/Util/SNMP.pm"
       },
+      "App::Netdisco::Util::Statistics" : {
+         "file" : "lib/App/Netdisco/Util/Statistics.pm"
+      },
       "App::Netdisco::Util::Web" : {
          "file" : "lib/App/Netdisco/Util/Web.pm"
       },
@@ -660,6 +663,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.036010",
+   "version" : "2.036011",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }

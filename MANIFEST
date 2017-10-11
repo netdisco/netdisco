@@ -139,6 +139,7 @@ lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/SNMP.pm
+lib/App/Netdisco/Util/Statistics.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AdminTask.pm
