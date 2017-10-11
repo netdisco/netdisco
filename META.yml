@@ -18,47 +18,19 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.036011'
+    version: 2.036012_001
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
     file: lib/App/Netdisco/Backend/Job.pm
-  App::Netdisco::Backend::Util:
-    file: lib/App/Netdisco/Backend/Util.pm
-  App::Netdisco::Backend::Worker::Common:
-    file: lib/App/Netdisco/Backend/Worker/Common.pm
-  App::Netdisco::Backend::Worker::Interactive::DeviceActions:
-    file: lib/App/Netdisco/Backend/Worker/Interactive/DeviceActions.pm
-  App::Netdisco::Backend::Worker::Interactive::PortActions:
-    file: lib/App/Netdisco/Backend/Worker/Interactive/PortActions.pm
-  App::Netdisco::Backend::Worker::Manager:
-    file: lib/App/Netdisco/Backend/Worker/Manager.pm
-  App::Netdisco::Backend::Worker::Poller:
-    file: lib/App/Netdisco/Backend/Worker/Poller.pm
-  App::Netdisco::Backend::Worker::Poller::Arpnip:
-    file: lib/App/Netdisco/Backend/Worker/Poller/Arpnip.pm
-  App::Netdisco::Backend::Worker::Poller::Common:
-    file: lib/App/Netdisco/Backend/Worker/Poller/Common.pm
-  App::Netdisco::Backend::Worker::Poller::Device:
-    file: lib/App/Netdisco/Backend/Worker/Poller/Device.pm
-  App::Netdisco::Backend::Worker::Poller::Expiry:
-    file: lib/App/Netdisco/Backend/Worker/Poller/Expiry.pm
-  App::Netdisco::Backend::Worker::Poller::Macsuck:
-    file: lib/App/Netdisco/Backend/Worker/Poller/Macsuck.pm
-  App::Netdisco::Backend::Worker::Poller::Nbtstat:
-    file: lib/App/Netdisco/Backend/Worker/Poller/Nbtstat.pm
-  App::Netdisco::Backend::Worker::Scheduler:
-    file: lib/App/Netdisco/Backend/Worker/Scheduler.pm
+  App::Netdisco::Backend::Role::Manager:
+    file: lib/App/Netdisco/Backend/Role/Manager.pm
+  App::Netdisco::Backend::Role::Poller:
+    file: lib/App/Netdisco/Backend/Role/Poller.pm
+  App::Netdisco::Backend::Role::Scheduler:
+    file: lib/App/Netdisco/Backend/Role/Scheduler.pm
   App::Netdisco::Configuration:
     file: lib/App/Netdisco/Configuration.pm
-  App::Netdisco::Core::Arpnip:
-    file: lib/App/Netdisco/Core/Arpnip.pm
-  App::Netdisco::Core::Discover:
-    file: lib/App/Netdisco/Core/Discover.pm
-  App::Netdisco::Core::Macsuck:
-    file: lib/App/Netdisco/Core/Macsuck.pm
-  App::Netdisco::Core::Nbtstat:
-    file: lib/App/Netdisco/Core/Nbtstat.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
     version: '44'
@@ -226,8 +198,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
   App::Netdisco::SSHCollector::Platform::PaloAlto:
     file: lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
-  App::Netdisco::Util::Backend:
-    file: lib/App/Netdisco/Util/Backend.pm
+  App::Netdisco::Transport::SNMP:
+    file: lib/App/Netdisco/Transport/SNMP.pm
   App::Netdisco::Util::DNS:
     file: lib/App/Netdisco/Util/DNS.pm
   App::Netdisco::Util::Device:
@@ -238,6 +210,10 @@ provides:
     file: lib/App/Netdisco/Util/FastResolver.pm
   App::Netdisco::Util::Graph:
     file: lib/App/Netdisco/Util/Graph.pm
+  App::Netdisco::Util::MCE:
+    file: lib/App/Netdisco/Util/MCE.pm
+  App::Netdisco::Util::Nbtstat:
+    file: lib/App/Netdisco/Util/Nbtstat.pm
   App::Netdisco::Util::Node:
     file: lib/App/Netdisco/Util/Node.pm
   App::Netdisco::Util::NodeMonitor:
@@ -380,6 +356,92 @@ provides:
     file: lib/App/Netdisco/Web/Statistics.pm
   App::Netdisco::Web::TypeAhead:
     file: lib/App/Netdisco/Web/TypeAhead.pm
+  App::Netdisco::Worker:
+    file: lib/App/Netdisco/Worker.pm
+  App::Netdisco::Worker::Plugin:
+    file: lib/App/Netdisco/Worker/Plugin.pm
+  App::Netdisco::Worker::Plugin::Arpnip:
+    file: lib/App/Netdisco/Worker/Plugin/Arpnip.pm
+  App::Netdisco::Worker::Plugin::Arpnip::Nodes:
+    file: lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
+  App::Netdisco::Worker::Plugin::Arpnip::Subnets:
+    file: lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
+  App::Netdisco::Worker::Plugin::Arpwalk:
+    file: lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
+  App::Netdisco::Worker::Plugin::Contact:
+    file: lib/App/Netdisco/Worker/Plugin/Contact.pm
+  App::Netdisco::Worker::Plugin::Delete:
+    file: lib/App/Netdisco/Worker/Plugin/Delete.pm
+  App::Netdisco::Worker::Plugin::Discover:
+    file: lib/App/Netdisco/Worker/Plugin/Discover.pm
+  App::Netdisco::Worker::Plugin::Discover::CanonicalIP:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
+  App::Netdisco::Worker::Plugin::Discover::Entities:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
+  App::Netdisco::Worker::Plugin::Discover::Neighbors:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
+  App::Netdisco::Worker::Plugin::Discover::PortPower:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
+  App::Netdisco::Worker::Plugin::Discover::Properties:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
+  App::Netdisco::Worker::Plugin::Discover::VLANs:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
+  App::Netdisco::Worker::Plugin::Discover::Wireless:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
+  App::Netdisco::Worker::Plugin::Discover::WithNodes:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
+  App::Netdisco::Worker::Plugin::DiscoverAll:
+    file: lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
+  App::Netdisco::Worker::Plugin::Expire:
+    file: lib/App/Netdisco/Worker/Plugin/Expire.pm
+  App::Netdisco::Worker::Plugin::ExpireNodes:
+    file: lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
+  App::Netdisco::Worker::Plugin::Graph:
+    file: lib/App/Netdisco/Worker/Plugin/Graph.pm
+  App::Netdisco::Worker::Plugin::Location:
+    file: lib/App/Netdisco/Worker/Plugin/Location.pm
+  App::Netdisco::Worker::Plugin::Macsuck:
+    file: lib/App/Netdisco/Worker/Plugin/Macsuck.pm
+  App::Netdisco::Worker::Plugin::Macsuck::Nodes:
+    file: lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
+  App::Netdisco::Worker::Plugin::Macsuck::WirelessNodes:
+    file: lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
+  App::Netdisco::Worker::Plugin::Macwalk:
+    file: lib/App/Netdisco/Worker/Plugin/Macwalk.pm
+  App::Netdisco::Worker::Plugin::Monitor:
+    file: lib/App/Netdisco/Worker/Plugin/Monitor.pm
+  App::Netdisco::Worker::Plugin::Nbtstat:
+    file: lib/App/Netdisco/Worker/Plugin/Nbtstat.pm
+  App::Netdisco::Worker::Plugin::Nbtstat::Core:
+    file: lib/App/Netdisco/Worker/Plugin/Nbtstat/Core.pm
+  App::Netdisco::Worker::Plugin::Nbtwalk:
+    file: lib/App/Netdisco/Worker/Plugin/Nbtwalk.pm
+  App::Netdisco::Worker::Plugin::PortControl:
+    file: lib/App/Netdisco/Worker/Plugin/PortControl.pm
+  App::Netdisco::Worker::Plugin::PortName:
+    file: lib/App/Netdisco/Worker/Plugin/PortName.pm
+  App::Netdisco::Worker::Plugin::Power:
+    file: lib/App/Netdisco/Worker/Plugin/Power.pm
+  App::Netdisco::Worker::Plugin::Psql:
+    file: lib/App/Netdisco/Worker/Plugin/Psql.pm
+  App::Netdisco::Worker::Plugin::Renumber:
+    file: lib/App/Netdisco/Worker/Plugin/Renumber.pm
+  App::Netdisco::Worker::Plugin::Show:
+    file: lib/App/Netdisco/Worker/Plugin/Show.pm
+  App::Netdisco::Worker::Plugin::Stats:
+    file: lib/App/Netdisco/Worker/Plugin/Stats.pm
+  App::Netdisco::Worker::Plugin::Test:
+    file: lib/App/Netdisco/Worker/Plugin/Test.pm
+  App::Netdisco::Worker::Plugin::Test::Core:
+    file: lib/App/Netdisco/Worker/Plugin/Test/Core.pm
+  App::Netdisco::Worker::Plugin::Vlan:
+    file: lib/App/Netdisco/Worker/Plugin/Vlan.pm
+  App::Netdisco::Worker::Plugin::Vlan::Native:
+    file: lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
+  App::Netdisco::Worker::Runner:
+    file: lib/App/Netdisco/Worker/Runner.pm
+  App::Netdisco::Worker::Status:
+    file: lib/App/Netdisco/Worker/Status.pm
   Dancer::Template::NetdiscoTemplateToolkit:
     file: lib/Dancer/Template/NetdiscoTemplateToolkit.pm
 recommends:
@@ -416,6 +478,7 @@ requires:
   List::MoreUtils: '0.33'
   MCE: '1.703'
   MIME::Base64: '3.13'
+  Module::Find: '0.13'
   Module::Load: '0.32'
   Moo: '1.001000'
   Net::DNS: '0.72'
@@ -434,6 +497,7 @@ requires:
   Role::Tiny: '1.002005'
   SNMP::Info: '3.37'
   SQL::Translator: '0.11018'
+  Scope::Guard: '0'
   Sereal: '0'
   Socket6: '0.23'
   Starman: '0.4008'
@@ -447,6 +511,7 @@ requires:
   URL::Encode: '0.01'
   YAML: '0.84'
   YAML::XS: '0.41'
+  aliased: '0'
   namespace::clean: '0.24'
   version: '0.9902'
 resources:
@@ -454,7 +519,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/bsd-license.php
+  license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.036011'
+version: 2.036012_001
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
