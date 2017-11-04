@@ -2,16 +2,10 @@ package App::Netdisco::Worker::Plugin;
 
 use Dancer ':syntax';
 use Dancer::Plugin;
-use Dancer::Factory::Hook;
 
 use Scope::Guard 'guard';
 use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
-
-my $store = Dancer::Factory::Hook->instance();
-foreach my $phase (qw/check early main user/) {
-  $store->install_hooks("nd2_core_${phase}");
-}
 
 register 'register_worker' => sub {
   my ($self, $first, $second) = plugin_args(@_);
@@ -21,10 +15,28 @@ register 'register_worker' => sub {
   return error "bad param to register_worker"
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
-  $workerconf->{phase} ||= 'user';
+  my $package = (caller)[0];
+  if ($package =~ m/Plugin::(\w+)(?:::(\w+))?/) {
+    $workerconf->{action}    = lc($1);
+    $workerconf->{namespace} = lc($2) if $2;
+  }
+  return error "failed to parse action in '$package'"
+    unless $workerconf->{action};
+
+  $workerconf->{phase}     ||= 'user';
+  $workerconf->{namespace} ||= '_base_';
+  $workerconf->{priority}  ||= (exists $workerconf->{driver}
+    ? setting('driver_priority')->{$workerconf->{driver}} : 0);
 
   my $worker = sub {
     my $job = shift or return Status->error('missing job param');
+    # use DDP; p $workerconf;
+
+    # once workers at a given priority level in a namespace are successful,
+    # we can skip workers at lower priorities (that is, other drivers)
+    return Status->noop('skipped worker after previous namespace success')
+      if vars->{'last_worker_ok'}
+         and $workerconf->{priority} < vars->{'last_worker_priority'};
 
     # worker might be vendor/platform specific
     if (ref $job->device) {
@@ -39,10 +51,13 @@ register 'register_worker' => sub {
     my @newuserconf = ();
     my @userconf = @{ setting('device_auth') || [] };
 
-    # reduce device_auth by driver
+    # reduce device_auth by driver and action filters
     foreach my $stanza (@userconf) {
       next if exists $stanza->{driver} and exists $workerconf->{driver}
         and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
+
+      next if exists $stanza->{action}
+        and not _find_matchaction($workerconf, lc($stanza->{action}));
 
       push @newuserconf, $stanza;
     }
@@ -59,10 +74,24 @@ register 'register_worker' => sub {
     return $code->($job, $workerconf);
   };
 
-  # D::Factory::Hook::register_hook() does not work?!
-  my $hook = 'nd2_core_'. $workerconf->{phase};
-  hook $hook => $worker;
+  # store the built worker as Worker.pm will build the dispatch order later on
+  push @{ vars->{'workers'}
+              ->{$workerconf->{phase}}
+              ->{$workerconf->{namespace}}
+              ->{$workerconf->{priority}} }, $worker;
 };
+
+sub _find_matchaction {
+  my ($conf, $action) = @_;
+  return true if !defined $action;
+  $action = [$action] if ref [] ne ref $action;
+
+  foreach my $f (@$action) {
+    return true if
+      $f eq $conf->{action} or $f eq "$conf->{action}::$conf->{namespace}";
+  }
+  return false;
+}
 
 register_plugin;
 true;

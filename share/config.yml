@@ -256,6 +256,13 @@ job_prio:
 extra_worker_plugins: []
 #  - Discover::ConfigBackup::CLI
 
+driver_priority:
+  restconf: 500
+  netconf:  400
+  eapi:     300
+  cli:      200
+  snmp:     100
+
 # ---------------
 # GraphViz Export
 # ---------------
