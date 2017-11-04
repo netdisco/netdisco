@@ -112,7 +112,7 @@ combining those transports with application protocols such as SNMP, NETCONF
 scraping. The combination of transport and protocol is known as a I<driver>.
 
 Workers can be restricted to certain vendor platforms using familiar ACL
-syntax. They are also attached to specific phases in Netdisco's backend
+syntax. They are also attached to specific actions in Netdisco's backend
 operation (discover, macsuck, etc).
 
 =head1 Application Configuration
@@ -126,13 +126,13 @@ C<App::Netdisco> distribution.
 
 =head1 How to Configure
 
-The C<extra_worker_plugins> setting is empty, and used only if you want to add
-new plugins but not change the set enabled by default. If you do want to add
+The C<extra_worker_plugins> setting is empty, and used when you want to add
+new plugins and not change the set enabled by default. If you do want to add
 to or remove from the default set, then create a version of C<worker_plugins>
 instead.
 
 Netdisco prepends "C<App::Netdisco::Worker::Plugin::>" to any entry in the
-list.  For example, "C<Discover::Wireless::UniFi>" will load the
+list. For example, "C<Discover::Wireless::UniFi>" will load the
 C<App::Netdisco::Worker::Plugin::Discover::Wireless::UniFi> package.
 
 You can prepend module names with "C<X::>" as shorthand for the "Netdisco
@@ -142,20 +142,23 @@ module.
 
 If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
 to load the module as-is, without prepending anything to the name. This allows
-you to have App::Netdisco Worker plugins in other namespaces.
+you to have worker plugins in any namespace.
 
 Plugin modules can either ship with the App::Netdisco distribution itself, or
 be installed separately. Perl uses the standard C<@INC> path searching
 mechanism to load the plugin modules. See the C<include_paths> and
 C<site_local_files> settings in order to modify C<@INC> for loading local
-plugins. As an example, if your plugin is called
-"App::NetdiscoX::Worker::Plugin::MyPluginName" then it could live at:
+plugins.
+
+As an example, if you set C<site_local_files> to be true, set
+C<extra_worker_plugins> to be C<'X::MyPluginName'> (the plugin package is
+"App::NetdiscoX::Worker::Plugin::MyPluginName") then your plugin lives at:
 
  ~netdisco/nd-site-local/lib/App/NetdiscoX/Worker/Plugin/MyPluginName.pm
 
 The order of the entries is significant, workers being executed in the order
-which they appear in C<worker_plugins> and C<extra_worker_plugins> (although
-see L<App::Netdisco::Manual::WritingWorkers> for caveats).
+which they appear in C<extra_worker_plugins> followed by C<worker_plugins>.
 
+See L<App::Netdisco::Manual::WritingWorkers> for further details.
 =cut
 
