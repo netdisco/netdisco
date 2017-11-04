@@ -39,7 +39,8 @@ sub import {
         vars->{'last_worker_priority'} = 0;
       };
 
-      foreach my $priority (sort {$b <=> $a} keys %{ vars->{'workers'}->{$phase}->{$namespace} }) {
+      foreach my $priority (sort {$b <=> $a}
+                            keys %{ vars->{'workers'}->{$phase}->{$namespace} }) {
 
         # D::Factory::Hook::register_hook() does not work?!
         hook "nd2_core_${phase}" => $_
