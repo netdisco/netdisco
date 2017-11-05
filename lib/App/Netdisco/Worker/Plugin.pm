@@ -32,12 +32,6 @@ register 'register_worker' => sub {
     my $job = shift or return Status->error('missing job param');
     # use DDP; p $workerconf;
 
-    # once workers at a given priority level in a namespace are successful,
-    # we can skip workers at lower priorities (that is, other drivers)
-    return Status->noop('skipped worker after previous namespace success')
-      if vars->{'last_worker_ok'}
-         and $workerconf->{priority} < vars->{'last_worker_priority'};
-
     # worker might be vendor/platform specific
     if (ref $job->device) {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);

@@ -34,21 +34,12 @@ sub import {
     $store->install_hooks("nd2_core_${phase}");
 
     foreach my $namespace (sort keys %{ vars->{'workers'}->{$phase} }) {
-      hook "nd2_core_${phase}" => sub {
-        vars->{'last_worker_ok'} = false;
-        vars->{'last_worker_priority'} = 0;
-      };
-
       foreach my $priority (sort {$b <=> $a}
                             keys %{ vars->{'workers'}->{$phase}->{$namespace} }) {
 
         # D::Factory::Hook::register_hook() does not work?!
         hook "nd2_core_${phase}" => $_
           for @{ vars->{'workers'}->{$phase}->{$namespace}->{$priority} };
-        
-        hook "nd2_core_${phase}" => sub {
-          vars->{'last_worker_priority'} = $priority;
-        };
       }
     }
   }

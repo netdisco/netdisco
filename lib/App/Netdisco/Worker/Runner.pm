@@ -100,12 +100,6 @@ sub run_workers {
     catch {
       debug "=> $_" if $_;
       $self->jobstat->error($_) if $phase eq 'check';
-    }
-    # allow workers to know whether previous worker of a different driver
-    # but the same namespace was successful
-    finally {
-      vars->{'last_worker_ok'} = $self->jobstat->is_ok
-        if not vars->{'last_worker_ok'};
     };
   }
 }
