@@ -13,7 +13,7 @@ has 'status' => (
   default => undef,
 );
 
-has ['log', 'phase', 'namespace', 'priority'] => (
+has 'log' => (
   is => 'rw',
   default => '',
 );

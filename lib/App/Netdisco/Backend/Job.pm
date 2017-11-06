@@ -1,5 +1,6 @@
 package App::Netdisco::Backend::Job;
 
+use Dancer qw/:moose :syntax !error/;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Moo;
@@ -18,11 +19,10 @@ foreach my $slot (qw/
       username
       userip
       log
-      debug
 
-      _phase
-      _namespace
-      _priority
+      _last_phase
+      _last_namespace
+      _last_priority
     /) {
 
   has $slot => (
@@ -63,10 +63,9 @@ sub finalise_status {
 
   # fallback
   $job->status('error');
-  $job->log('failed to succeed at any worker!');
+  $job->log('failed to report from any worker!');
 
-  foreach my $status (@{ $self->_statuslist }) {
-    next unless $status->phase =~ m/^(?:early|main)$/;
+  foreach my $status (@{ $job->_statuslist }) {
     if ($status->level >= $max_level) {
       $job->status( $status->status );
       $job->log( $status->log );
@@ -84,11 +83,10 @@ C<done>.
 
 sub check_passed {
   my $job = shift;
-  foreach my $status (@{ $self->_statuslist }) {
-    next unless $status->phase eq 'check';
-    return 1 if $status->is_ok;
+  foreach my $status (@{ $job->_statuslist }) {
+    return true if $status->is_ok;
   }
-  return 0;
+  return false;
 }
 
 =head2 namespace_passed( \%workerconf )
@@ -101,36 +99,37 @@ all workers of a higher priority level have succeeded.
 sub namespace_passed {
   my ($job, $workerconf) = @_;
 
-  if (defined $job->_namespace
-      and ($workerconf->{phase} eq $job->_phase)
-      and ($workerconf->{namespace} eq $job->_namespace)
-      and ($workerconf->{priority} != $job->_priority)) {
-
-    foreach my $status (@{ $self->_statuslist }) {
-      next unless ($status->phase eq $job->_phase)
-              and ($staus->namespace eq $job->_namespace)
-              and ($status->priority == $job->_priority);
-      return 1 if $status->is_ok;
+  if ($job->_last_namespace) {
+    foreach my $status (@{ $job->_statuslist }) {
+      next unless ($workerconf->{phase} eq $job->_last_phase)
+              and ($workerconf->{namespace} eq $job->_last_namespace)
+              and ($workerconf->{priority} != $job->_last_priority);
+      return true if $status->is_ok;
     }
   }
 
-  $job->_phase( $workerconf->{phase} );
-  $job->_namespace( $workerconf->{namespace} );
-  $job->_priority( $workerconf->{priority} );
-  return 0;
+  # reset the internal status cache when the phase changes
+  $job->_statuslist([]) if $job->_last_phase
+    and $job->_last_phase ne $workerconf->{phase};
+
+  $job->_last_phase( $workerconf->{phase} );
+  $job->_last_namespace( $workerconf->{namespace} );
+  $job->_last_priority( $workerconf->{priority} );
+  return false;
 }
 
 =head2 add_status
 
 Passed an L<App::Netdisco::Worker::Status> will add it to this job's internal
-store.
+status cache.
 
 =cut
 
 sub add_status {
   my ($job, $status) = @_;
   return unless ref $status eq 'App::Netdisco::Worker::Status';
-  push @{ $self->_statuslist }, $status;
+  push @{ $job->_statuslist }, $status;
+  debug $status->log if $status->log;
 }
 
 =head1 ADDITIONAL COLUMNS
@@ -151,4 +150,4 @@ Alias for the C<subaction> column.
 
 sub extra { (shift)->subaction }
 
-1;
+true;

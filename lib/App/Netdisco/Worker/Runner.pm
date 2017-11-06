@@ -51,7 +51,7 @@ sub run {
   my $configguard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  # finalise job status when we exit
+  # finalise job status when we exit XXX FIXME
   my $statusguard = guard { $job->finalise_status };
 
   # run check phase and if there are workers then one MUST be successful
@@ -65,7 +65,7 @@ sub run {
 sub run_workers {
   my $self = shift;
   my $job  = $self->job or die error 'no job in worker job slot';
-  my $hook = shift or return $job->error('missing hook param');
+  my $hook = shift or return $job->error('missing hook param'); # XXX FIXME
 
   my $store = Dancer::Factory::Hook->instance();
   (my $phase = $hook) =~ s/^nd2_core_//;
