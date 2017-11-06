@@ -4,7 +4,6 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 use Scope::Guard 'guard';
-use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 register 'register_worker' => sub {
@@ -29,43 +28,47 @@ register 'register_worker' => sub {
     ? setting('driver_priority')->{$workerconf->{driver}} : 0);
 
   my $worker = sub {
-    my $job = shift or return Status->error('missing job param');
+    my $job = shift or die 'missing job param';
     # use DDP; p $workerconf;
+
+    # update job's record of namespace and priority
+    # check to see if this namespace has already passed at higher priority
+    return if $job->namespace_passed($workerconf);
+
+    my @newuserconf = ();
+    my @userconf = @{ setting('device_auth') || [] };
 
     # worker might be vendor/platform specific
     if (ref $job->device) {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
 
-      my $defer = Status->defer('worker is not applicable to this device');
-      return $defer if $no and check_acl_no($job->device, $no);
-      return $defer if $only and not check_acl_only($job->device, $only);
+      return $job->defer('worker is not applicable to this device')
+        if ($no and check_acl_no($job->device, $no))
+           or ($only and not check_acl_only($job->device, $only));
+
+      # reduce device_auth by driver and action filters
+      foreach my $stanza (@userconf) {
+        next if exists $stanza->{driver} and exists $workerconf->{driver}
+          and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
+
+        next if exists $stanza->{action}
+          and not _find_matchaction($workerconf, lc($stanza->{action}));
+
+        push @newuserconf, $stanza;
+      }
+
+      # per-device action but no device creds available
+      return $job->defer('deferred job with no device creds')
+        if 0 == scalar @newuserconf;
     }
-
-    my @newuserconf = ();
-    my @userconf = @{ setting('device_auth') || [] };
-
-    # reduce device_auth by driver and action filters
-    foreach my $stanza (@userconf) {
-      next if exists $stanza->{driver} and exists $workerconf->{driver}
-        and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
-
-      next if exists $stanza->{action}
-        and not _find_matchaction($workerconf, lc($stanza->{action}));
-
-      push @newuserconf, $stanza;
-    }
-
-    # per-device action but no device creds available
-    return Status->defer('skipped with no device creds')
-      if ref $job->device and 0 == scalar @newuserconf;
 
     # back up and restore device_auth
     my $guard = guard { set(device_auth => \@userconf) };
     set(device_auth => \@newuserconf);
 
     # run worker
-    return $code->($job, $workerconf);
+    $code->($job, $workerconf);
   };
 
   # store the built worker as Worker.pm will build the dispatch order later on

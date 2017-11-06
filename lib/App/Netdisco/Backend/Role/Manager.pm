@@ -5,11 +5,11 @@ use Dancer qw/:moose :syntax :script/;
 use List::Util 'sum';
 use App::Netdisco::Util::MCE;
 
-use Role::Tiny;
-use namespace::clean;
-
 use App::Netdisco::JobQueue
   qw/jq_locked jq_getsome jq_getsomep jq_lock jq_warm_thrusters/;
+
+use Role::Tiny;
+use namespace::clean;
 
 sub worker_begin {
   my $self = shift;
@@ -58,7 +58,7 @@ sub worker_body {
           # mark job as running
           next unless jq_lock($job);
           info sprintf "mgr (%s): job %s booked out for this processing node",
-            $wid, $job->job;
+            $wid, $job->id;
 
           # copy job to local queue
           $self->{queue}->enqueuep(100, $job);
@@ -75,7 +75,7 @@ sub worker_body {
           # mark job as running
           next unless jq_lock($job);
           info sprintf "mgr (%s): job %s booked out for this processing node",
-            $wid, $job->job;
+            $wid, $job->id;
 
           # copy job to local queue
           $self->{queue}->enqueue($job);

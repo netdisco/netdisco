@@ -5,10 +5,10 @@ use Dancer qw/:moose :syntax :script/;
 use Algorithm::Cron;
 use App::Netdisco::Util::MCE;
 
+use App::Netdisco::JobQueue qw/jq_insert/;
+
 use Role::Tiny;
 use namespace::clean;
-
-use App::Netdisco::JobQueue qw/jq_insert/;
 
 sub worker_begin {
   my $self = shift;

@@ -2,23 +2,18 @@ package App::Netdisco::Worker::Runner;
 
 use Dancer qw/:moose :syntax/;
 use Dancer::Factory::Hook;
-use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use App::Netdisco::Util::Device 'get_device';
 
 use Try::Tiny;
-use Moo::Role;
 use Module::Load ();
 use Scope::Guard 'guard';
+
+use Moo::Role;
 use namespace::clean;
 
-has ['job', 'jobstat'] => ( is => 'rw' );
-
-after 'run', 'run_workers' => sub {
-  my $self = shift;
-  $self->job->update_status($self->jobstat);
-};
+has 'job' => ( is => 'rw' );
 
 # mixin code to run workers loaded via plugins
 sub run {
@@ -29,11 +24,8 @@ sub run {
     unless ref $job eq 'App::Netdisco::Backend::Job';
 
   $self->job($job);
-  $self->job->device( get_device($job->device) );
-  $self->jobstat( Status->error('failed in job init') );
-
-  my $action = $job->action;
-  Module::Load::load 'App::Netdisco::Worker' => $action;
+  $job->device( get_device($job->device) );
+  Module::Load::load 'App::Netdisco::Worker' => $job->action;
 
   my @newuserconf = ();
   my @userconf = @{ setting('device_auth') || [] };
@@ -49,32 +41,32 @@ sub run {
 
       push @newuserconf, $stanza;
     }
+
+    # per-device action but no device creds available
+    return $job->defer('deferred job with no device creds')
+      if 0 == scalar @newuserconf;
   }
 
-  # per-device action but no device creds available
-  return $self->jobstat->defer('deferred job with no device creds')
-    if ref $job->device and 0 == scalar @newuserconf;
-
   # back up and restore device_auth
-  my $guard = guard { set(device_auth => \@userconf) };
+  my $configguard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  # run check phase
-  # optional - but if there are workers then one MUST return done
-  my $store = Dancer::Factory::Hook->instance();
-  $self->jobstat( Status->error('check phase did not pass for this action') );
+  # finalise job status when we exit
+  my $statusguard = guard { $job->finalise_status };
+
+  # run check phase and if there are workers then one MUST be successful
   $self->run_workers('nd2_core_check');
-  return if scalar @{ $store->get_hooks_for('nd2_core_check') }
-            and $self->jobstat->not_ok;
+  return if not $job->check_passed;
 
   # run other phases
-  $self->jobstat( Status->error('no worker succeeded during main phase') );
   $self->run_workers("nd2_core_${_}") for qw/early main user/;
 }
 
 sub run_workers {
   my $self = shift;
-  my $hook = shift or return $self->jobstat->error('missing hook param');
+  my $job  = $self->job or die error 'no job in worker job slot';
+  my $hook = shift or return $job->error('missing hook param');
+
   my $store = Dancer::Factory::Hook->instance();
   (my $phase = $hook) =~ s/^nd2_core_//;
 
@@ -82,24 +74,10 @@ sub run_workers {
   debug "=> running workers for phase: $phase";
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
-    try {
-      # could die or return undef or a scalar or Status or another class
-      my $retval = $worker->($self->job);
-
-      if (ref $retval eq 'App::Netdisco::Worker::Status') {
-        debug ('=> '. $retval->log) if $retval->log;
-
-        # update (save) the status if we're in check, early, or main phases
-        # because these logs can end up in the job queue as status message
-        $self->jobstat($retval)
-          if ($phase =~ m/^(?:check|early|main)$/)
-             and $retval->level >= $self->jobstat->level;
-      }
-    }
-    # errors at most phases are ignored
+    try { $job->add_status( $worker->($job) ) }
     catch {
       debug "=> $_" if $_;
-      $self->jobstat->error($_) if $phase eq 'check';
+      $job->error($_);
     };
   }
 }

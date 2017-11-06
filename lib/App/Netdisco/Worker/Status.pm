@@ -11,10 +11,9 @@ use namespace::clean;
 has 'status' => (
   is => 'rw',
   default => undef,
-  clearer => 1,
 );
 
-has 'log' => (
+has ['log', 'phase', 'namespace', 'priority'] => (
   is => 'rw',
   default => '',
 );

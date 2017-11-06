@@ -153,12 +153,12 @@ sub jq_lock {
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')
-        ->search({ job => $job->job }, { for => 'update' })
+        ->search({ job => $job->id }, { for => 'update' })
         ->update({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
 
       return unless
         schema('netdisco')->resultset('Admin')
-          ->count({ job => $job->job,
+          ->count({ job => $job->id,
                     status => ('queued-'. setting('workers')->{'BACKEND'}) });
 
       # remove any duplicate jobs, needed because we have race conditions
@@ -202,7 +202,7 @@ sub jq_defer {
 
       # lock db row and update to show job is available
       schema('netdisco')->resultset('Admin')
-        ->find($job->job, {for => 'update'})
+        ->find($job->id, {for => 'update'})
         ->update({ status => 'queued', started => undef });
     });
     $happy = true;
@@ -233,7 +233,7 @@ sub jq_complete {
       }
 
       schema('netdisco')->resultset('Admin')
-        ->find($job->job, {for => 'update'})->update({
+        ->find($job->id, {for => 'update'})->update({
           status => $job->status,
           log    => $job->log,
           started  => $job->started,

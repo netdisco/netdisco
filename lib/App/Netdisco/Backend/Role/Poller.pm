@@ -5,11 +5,11 @@ use Dancer qw/:moose :syntax :script/;
 use Try::Tiny;
 use App::Netdisco::Util::MCE;
 
-use Role::Tiny;
-use namespace::clean;
-
 use Time::HiRes 'sleep';
 use App::Netdisco::JobQueue qw/jq_defer jq_complete/;
+
+use Role::Tiny;
+use namespace::clean;
 
 # add dispatch methods for poller tasks
 with 'App::Netdisco::Worker::Runner';
@@ -29,9 +29,9 @@ sub worker_body {
       try {
           $job->started(scalar localtime);
           prctl sprintf 'nd2: #%s poll: #%s: %s',
-            $wid, $job->job, $job->summary;
+            $wid, $job->id, $job->summary;
           info sprintf "pol (%s): starting %s job(%s) at %s",
-            $wid, $job->action, $job->job, $job->started;
+            $wid, $job->action, $job->id, $job->started;
           $self->run($job);
       }
       catch {
@@ -51,7 +51,7 @@ sub close_job {
   my $now  = scalar localtime;
 
   info sprintf "pol (%s): wrapping up %s job(%s) - status %s at %s",
-    $self->wid, $job->action, $job->job, $job->status, $now;
+    $self->wid, $job->action, $job->id, $job->status, $now;
 
   try {
       if ($job->status eq 'defer') {
