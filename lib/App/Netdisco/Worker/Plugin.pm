@@ -43,7 +43,7 @@ register 'register_worker' => sub {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
 
-      return $job->defer('worker is not applicable to this device')
+      return $job->add_status( Status->defer('worker is not applicable to this device') )
         if ($no and check_acl_no($job->device, $no))
            or ($only and not check_acl_only($job->device, $only));
 
@@ -59,7 +59,7 @@ register 'register_worker' => sub {
       }
 
       # per-device action but no device creds available
-      return $job->defer('deferred job with no device creds')
+      return $job->add_status( Status->defer('deferred job with no device creds') )
         if 0 == scalar @newuserconf;
     }
 

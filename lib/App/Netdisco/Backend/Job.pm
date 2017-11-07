@@ -20,7 +20,7 @@ foreach my $slot (qw/
       userip
       log
 
-      _last_phase
+      _current_phase
       _last_namespace
       _last_priority
     /) {
@@ -66,6 +66,8 @@ sub finalise_status {
   $job->log('failed to report from any worker!');
 
   foreach my $status (@{ $job->_statuslist }) {
+    next unless $status->phase 
+      and $status->phase =~ m/^(?:check|early|main)$/;
     if ($status->level >= $max_level) {
       $job->status( $status->status );
       $job->log( $status->log );
@@ -84,6 +86,7 @@ C<done>.
 sub check_passed {
   my $job = shift;
   foreach my $status (@{ $job->_statuslist }) {
+    next unless $status->phase and $status->phase eq 'check';
     return true if $status->is_ok;
   }
   return false;
@@ -91,8 +94,8 @@ sub check_passed {
 
 =head2 namespace_passed( \%workerconf )
 
-Returns true when, for the namespace specified in the passed configuration,
-all workers of a higher priority level have succeeded.
+Returns true when, for the namespace specified in the passed configuration, a
+worker of a higher priority level has already succeeded.
 
 =cut
 
@@ -101,33 +104,41 @@ sub namespace_passed {
 
   if ($job->_last_namespace) {
     foreach my $status (@{ $job->_statuslist }) {
-      next unless ($workerconf->{phase} eq $job->_last_phase)
+      next unless ($status->phase and $status->phase eq $workerconf->{phase})
               and ($workerconf->{namespace} eq $job->_last_namespace)
-              and ($workerconf->{priority} != $job->_last_priority);
+              and ($workerconf->{priority} > $job->_last_priority);
       return true if $status->is_ok;
     }
   }
 
-  # reset the internal status cache when the phase changes
-  $job->_statuslist([]) if $job->_last_phase
-    and $job->_last_phase ne $workerconf->{phase};
-
-  $job->_last_phase( $workerconf->{phase} );
   $job->_last_namespace( $workerconf->{namespace} );
   $job->_last_priority( $workerconf->{priority} );
   return false;
 }
 
+=head2 enter_phase( $phase )
+
+Pass the name of the phase being entered.
+
+=cut
+
+sub enter_phase {
+  my ($job, $phase) = @_;
+  $job->_current_phase( $phase );
+  debug "=> running workers for phase: $phase";
+}
+
 =head2 add_status
 
 Passed an L<App::Netdisco::Worker::Status> will add it to this job's internal
-status cache.
+status cache. Phase slot of the Status will be set to the current phase.
 
 =cut
 
 sub add_status {
   my ($job, $status) = @_;
   return unless ref $status eq 'App::Netdisco::Worker::Status';
+  $status->phase( $job->_current_phase );
   push @{ $job->_statuslist }, $status;
   debug $status->log if $status->log;
 }

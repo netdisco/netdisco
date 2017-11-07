@@ -5,6 +5,7 @@ use Dancer::Factory::Hook;
 
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use App::Netdisco::Util::Device 'get_device';
+use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
 use Module::Load ();
@@ -43,7 +44,7 @@ sub run {
     }
 
     # per-device action but no device creds available
-    return $job->defer('deferred job with no device creds')
+    return $job->add_status( Status->defer('deferred job with no device creds') )
       if 0 == scalar @newuserconf;
   }
 
@@ -51,7 +52,7 @@ sub run {
   my $configguard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  # finalise job status when we exit XXX FIXME
+  # finalise job status when we exit
   my $statusguard = guard { $job->finalise_status };
 
   # run check phase and if there are workers then one MUST be successful
@@ -65,19 +66,20 @@ sub run {
 sub run_workers {
   my $self = shift;
   my $job  = $self->job or die error 'no job in worker job slot';
-  my $hook = shift or return $job->error('missing hook param'); # XXX FIXME
+  my $hook = shift
+    or return $job->add_status( Status->error('missing hook param') );
 
   my $store = Dancer::Factory::Hook->instance();
   (my $phase = $hook) =~ s/^nd2_core_//;
 
   return unless scalar @{ $store->get_hooks_for($hook) };
-  debug "=> running workers for phase: $phase";
+  $job->enter_phase($phase);
 
   foreach my $worker (@{ $store->get_hooks_for($hook) }) {
     try { $job->add_status( $worker->($job) ) }
     catch {
       debug "=> $_" if $_;
-      $job->error($_);
+      $job->add_status( Status->error($_) );
     };
   }
 }
