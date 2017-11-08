@@ -60,6 +60,7 @@ Find the best status and log it into the job's C<status> and C<log> slots.
 sub finalise_status {
   my $job = shift;
   my $max_level = Status->error()->level;
+  # use DDP; p $job->_statuslist;
 
   # fallback
   $job->status('error');
@@ -85,6 +86,8 @@ C<done>.
 
 sub check_passed {
   my $job = shift;
+  return true if 0 == scalar @{ $job->_statuslist };
+
   foreach my $status (@{ $job->_statuslist }) {
     next unless $status->phase and $status->phase eq 'check';
     return true if $status->is_ok;

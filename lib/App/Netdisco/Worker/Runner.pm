@@ -3,8 +3,8 @@ package App::Netdisco::Worker::Runner;
 use Dancer qw/:moose :syntax/;
 use Dancer::Factory::Hook;
 
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;

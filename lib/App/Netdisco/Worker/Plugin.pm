@@ -3,8 +3,10 @@ package App::Netdisco::Worker::Plugin;
 use Dancer ':syntax';
 use Dancer::Plugin;
 
-use Scope::Guard 'guard';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use aliased 'App::Netdisco::Worker::Status';
+
+use Scope::Guard 'guard';
 
 register 'register_worker' => sub {
   my ($self, $first, $second) = plugin_args(@_);
@@ -25,7 +27,7 @@ register 'register_worker' => sub {
   $workerconf->{phase}     ||= 'user';
   $workerconf->{namespace} ||= '_base_';
   $workerconf->{priority}  ||= (exists $workerconf->{driver}
-    ? setting('driver_priority')->{$workerconf->{driver}} : 0);
+    ? (setting('driver_priority')->{$workerconf->{driver}} || 0) : 0);
 
   my $worker = sub {
     my $job = shift or die 'missing job param';
@@ -66,6 +68,7 @@ register 'register_worker' => sub {
     # back up and restore device_auth
     my $guard = guard { set(device_auth => \@userconf) };
     set(device_auth => \@newuserconf);
+    # use DDP; p @newuserconf;
 
     # run worker
     $code->($job, $workerconf);
