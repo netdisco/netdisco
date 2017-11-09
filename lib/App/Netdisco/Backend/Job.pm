@@ -55,21 +55,30 @@ sub summary {
 
 Find the best status and log it into the job's C<status> and C<log> slots.
 
+The process is to track back from the last worker, ignoring user workers, and
+find the best status (out of done, defer, error) within the last phase run.
+
 =cut
 
 sub finalise_status {
   my $job = shift;
-  my $max_level = Status->error()->level;
   # use DDP; p $job->_statuslist;
 
   # fallback
   $job->status('error');
   $job->log('failed to report from any worker!');
 
-  foreach my $status (@{ $job->_statuslist }) {
+  my $phase = undef;
+  my $max_level = Status->error()->level;
+
+  foreach my $status (reverse @{ $job->_statuslist }) {
     next unless $status->phase 
       and $status->phase =~ m/^(?:check|early|main)$/;
-    if ($status->level >= $max_level) {
+
+    $phase ||= $status->phase;
+    last if $status->phase ne $phase;
+
+    if ($status->level > $max_level) {
       $job->status( $status->status );
       $job->log( $status->log );
       $max_level = $status->level;
@@ -97,7 +106,7 @@ sub check_passed {
 
 =head2 namespace_passed( \%workerconf )
 
-Returns true when, for the namespace specified in the passed configuration, a
+Returns true when, for the namespace specified in the given configuration, a
 worker of a higher priority level has already succeeded.
 
 =cut
@@ -109,7 +118,7 @@ sub namespace_passed {
     foreach my $status (@{ $job->_statuslist }) {
       next unless ($status->phase and $status->phase eq $workerconf->{phase})
               and ($workerconf->{namespace} eq $job->_last_namespace)
-              and ($workerconf->{priority} > $job->_last_priority);
+              and ($workerconf->{priority} < $job->_last_priority);
       return true if $status->is_ok;
     }
   }
@@ -127,8 +136,12 @@ Pass the name of the phase being entered.
 
 sub enter_phase {
   my ($job, $phase) = @_;
+
   $job->_current_phase( $phase );
   debug "=> running workers for phase: $phase";
+
+  $job->_last_namespace( undef );
+  $job->_last_priority( undef );
 }
 
 =head2 add_status

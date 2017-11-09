@@ -45,7 +45,7 @@ register 'register_worker' => sub {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
 
-      return $job->add_status( Status->defer('worker is not applicable to this device') )
+      return $job->add_status( Status->noop('worker not applicable to this device') )
         if ($no and check_acl_no($job->device, $no))
            or ($only and not check_acl_only($job->device, $only));
 
@@ -54,6 +54,7 @@ register 'register_worker' => sub {
         next if exists $stanza->{driver} and exists $workerconf->{driver}
           and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
 
+        # filter here rather than in Runner as runner does not know namespace
         next if exists $stanza->{action}
           and not _find_matchaction($workerconf, lc($stanza->{action}));
 
@@ -61,7 +62,7 @@ register 'register_worker' => sub {
       }
 
       # per-device action but no device creds available
-      return $job->add_status( Status->defer('deferred job with no device creds') )
+      return $job->add_status( Status->noop('worker driver or action not applicable') )
         if 0 == scalar @newuserconf;
     }
 
