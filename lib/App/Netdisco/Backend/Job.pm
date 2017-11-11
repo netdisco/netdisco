@@ -55,8 +55,9 @@ sub summary {
 
 Find the best status and log it into the job's C<status> and C<log> slots.
 
-The process is to track back from the last worker, ignoring user workers, and
-find the best status (out of done, defer, error) within the last phase run.
+The process is to track back from the last worker and find the best status,
+which is C<done> in early or main phases, or else any status in any non-user
+phase.
 
 =cut
 
@@ -68,15 +69,14 @@ sub finalise_status {
   $job->status('error');
   $job->log('failed to report from any worker!');
 
-  my $phase = undef;
   my $max_level = Status->error()->level;
 
   foreach my $status (reverse @{ $job->_statuslist }) {
     next unless $status->phase 
       and $status->phase =~ m/^(?:check|early|main)$/;
 
-    $phase ||= $status->phase;
-    last if $status->phase ne $phase;
+    next if $status->phase eq 'check'
+      and $status->level eq Status->done()->level;
 
     if ($status->level > $max_level) {
       $job->status( $status->status );
@@ -156,7 +156,9 @@ sub add_status {
   return unless ref $status eq 'App::Netdisco::Worker::Status';
   $status->phase( $job->_current_phase );
   push @{ $job->_statuslist }, $status;
-  debug $status->log if $status->log;
+  debug $status->log if $status->log
+    and (($status->phase eq 'check')
+      or ($status->level ne Status->done()->level));
 }
 
 =head1 ADDITIONAL COLUMNS
