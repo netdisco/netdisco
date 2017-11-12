@@ -78,7 +78,7 @@ sub finalise_status {
     next if $status->phase eq 'check'
       and $status->level eq Status->done()->level;
 
-    if ($status->level > $max_level) {
+    if ($status->level >= $max_level) {
       $job->status( $status->status );
       $job->log( $status->log );
       $max_level = $status->level;

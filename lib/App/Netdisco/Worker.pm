@@ -27,19 +27,17 @@ sub import {
   }
 
   # now vars->{workers} is populated, we set the dispatch order
-  my $store = Dancer::Factory::Hook->instance();
+  my $workers = vars->{'workers'}->{$action} || {};
   # use DDP; p vars->{'workers'};
 
   foreach my $phase (qw/check early main user/) {
-    $store->install_hooks("nd2_core_${phase}");
-
-    foreach my $namespace (sort keys %{ vars->{'workers'}->{$phase} }) {
+    foreach my $namespace (sort keys %{ $workers->{$phase} }) {
       foreach my $priority (sort {$b <=> $a}
-                            keys %{ vars->{'workers'}->{$phase}->{$namespace} }) {
+                            keys %{ $workers->{$phase}->{$namespace} }) {
 
         # D::Factory::Hook::register_hook() does not work?!
         hook "nd2_core_${phase}" => $_
-          for @{ vars->{'workers'}->{$phase}->{$namespace}->{$priority} };
+          for @{ $workers->{$phase}->{$namespace}->{$priority} };
       }
     }
   }
