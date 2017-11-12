@@ -72,8 +72,8 @@ sub finalise_status {
   my $max_level = Status->error()->level;
 
   foreach my $status (reverse @{ $job->_statuslist }) {
-    next unless $status->phase 
-      and $status->phase =~ m/^(?:check|early|main)$/;
+    next if $status->phase 
+      and $status->phase !~ m/^(?:check|early|main)$/;
 
     next if $status->phase eq 'check'
       and $status->level eq Status->done()->level;
@@ -154,7 +154,7 @@ status cache. Phase slot of the Status will be set to the current phase.
 sub add_status {
   my ($job, $status) = @_;
   return unless ref $status eq 'App::Netdisco::Worker::Status';
-  $status->phase( $job->_current_phase );
+  $status->phase( $job->_current_phase || '' );
   push @{ $job->_statuslist }, $status;
   debug $status->log if $status->log
     and (($status->phase eq 'check')

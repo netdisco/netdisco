@@ -28,6 +28,9 @@ sub run {
   $job->device( get_device($job->device) );
   Module::Load::load 'App::Netdisco::Worker' => $job->action;
 
+  # finalise job status when we exit
+  my $statusguard = guard { $job->finalise_status };
+
   my @newuserconf = ();
   my @userconf = @{ setting('device_auth') || [] };
 
@@ -51,9 +54,6 @@ sub run {
   # back up and restore device_auth
   my $configguard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
-
-  # finalise job status when we exit
-  my $statusguard = guard { $job->finalise_status };
 
   # run check phase and if there are workers then one MUST be successful
   $self->run_workers('nd2_core_check');

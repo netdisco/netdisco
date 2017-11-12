@@ -23,6 +23,9 @@ Dancer::Logger->init('console', $CONFIG);
   with 'App::Netdisco::Worker::Runner';
 }
 
+# clear user device_auth and set our own
+config->{'device_auth'} = [{driver => 'snmp'}, {driver => 'cli'}];
+
 # TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 my $j1 = do_job('TestOne');
@@ -35,9 +38,59 @@ is($j2->status, 'done', 'status is done');
 is($j2->log, 'OK: CLI driver is successful.',
   'lower priority driver not run if higher is successful');
 
-# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+config->{'device_auth'} = [];
+
+my $j3 = do_job('TestOne');
+is($j3->status, 'defer', 'status is defer');
+is($j3->log, 'deferred job with no device creds',
+  'no matching config for workers');
+
+config->{'device_auth'} = [{driver => 'snmp'}];
+
+my $j4 = do_job('TestThree');
+is($j4->status, 'done', 'status is done');
+is($j4->log, 'OK: SNMP driver is successful.',
+  'respect user config filtering the driver');
+
+config->{'device_auth'} = [
+  {driver => 'snmp', action => 'testthree'},
+  {driver => 'cli',  action => 'foo'},
+];
+
+my $j5 = do_job('TestThree');
+is($j5->status, 'done', 'status is done');
+is($j5->log, 'OK: SNMP driver is successful.',
+  'respect user config filtering the action');
+
+config->{'device_auth'} = [
+  {driver => 'snmp', action => 'testthree::_base_'},
+  {driver => 'cli',  action => 'testthree::foo'},
+];
+
+my $j6 = do_job('TestThree');
+is($j6->status, 'done', 'status is done');
+is($j6->log, 'OK: SNMP driver is successful.',
+  'respect user config filtering the namespace');
+
+config->{'device_auth'} = [{driver => 'snmp'}];
+
+my $j7 = do_job('TestFour');
+is($j7->status, 'done', 'status is done');
+is($j7->log, 'OK: custom driver is successful.',
+  'override an action');
+
+config->{'device_auth'} = [{driver => 'snmp'}];
+
+my $j8 = do_job('TestFive');
+is($j8->status, 'done', 'status is done');
+is((scalar @{$j8->_statuslist}), 2, 'two workers ran');
+is($j8->_last_priority, 100, 'priority is for snmp');
+is($j8->log, 'OK: SNMP driver is successful.',
+  'add to an action');
 
 done_testing;
+
+# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 sub do_job {
   my $pkg = shift;
@@ -46,10 +99,12 @@ sub do_job {
   config->{'extra_worker_plugins'} = ["X::${pkg}"];
 
   # clear out any previous installed hooks
+  # TODO: do this in Worker.pm on every reimport ?
   Dancer::Factory::Hook->init( Dancer::Factory::Hook->instance() );
 
   my $job = App::Netdisco::Backend::Job->new({
     job => 0,
+    device => '192.0.2.1',
     action => lc($pkg),
   });
 
