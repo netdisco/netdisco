@@ -190,6 +190,11 @@ ignore_interfaces:
   - 'Virtual-Template\d+'
   - 'Virtual-Access\d+'
   - '(E|T)\d \d\/\d\/\d'
+  - 'InLoopback0'
+  - 'NULL\d'
+  - 'Register-Tunnel\d'
+  - 'Blade-Aggregation\d'
+  - 'M-GigabitEthernet\d/\d/\d'
 ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
