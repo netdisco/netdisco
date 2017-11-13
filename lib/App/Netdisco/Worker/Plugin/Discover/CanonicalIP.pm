@@ -46,7 +46,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           if (check_acl_only($device, $key)
                 and check_acl_only($alias, $map->{$key})) {
 
-            if ($snmp->snmp_connect_ip( $alias->alias )) {
+            # if ($snmp->snmp_connect_ip( $alias->alias )) { FIXME
+            if (App::Netdisco::Transport::SNMP->reader_for( $alias->alias )) {
               $new_ip = $alias->alias;
               last ALIAS;
             }
