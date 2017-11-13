@@ -62,7 +62,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # build device modules list for DBIC
   my (@modules, %seen_idx);
   foreach my $entry (keys %$e_index) {
-      next if $seen_idx{$entry}++;
+      next if $seen_idx{ $e_index->{$entry} }++;
       push @modules, {
           index  => $e_index->{$entry},
           type   => $e_type->{$entry},
