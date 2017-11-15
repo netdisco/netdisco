@@ -52,8 +52,11 @@ val2} >> on one line or C<key: value> on separate lines, e.g.:
 
 =item *
 
-String - Quoted, just like in Perl (and essential if the item contains the
-colon character).
+String - Optionally quoted, just like in Perl (quotes required if the item
+contains a colon character). For example:
+
+ log: 'debug'
+ expire_devices: 15
 
 =back
 
@@ -645,11 +648,11 @@ renumbered to use that interface as its new identity and the process stops.
 When using an Access Control List for the value (interface selection), as well
 as the options described in L</"ACCESS CONTROL LISTS"> you can use
 "C<port:regexp>" to match an interface's port name. For example to renumber
-all Arista devices to the IP and host name of their Mgmt1 interface (if they
-have one), you could use:
+any device to the IP and host name of its Mgmt1 interface (if it has one), you
+could use:
 
  device_identity:
-   'vendor:arista': 'port:(?i)mgmt1'
+   'any': 'port:(?i)mgmt1'
 
 Once a device is renumbered, its new identity is "sticky". That is, you could
 remove the C<device_identity> configuration and the next "discover" job will

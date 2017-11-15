@@ -188,6 +188,9 @@ sub _get_external_community {
 Takes an established L<SNMP::Info> instance and makes a fresh connection using
 community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
 
+Passing VLAN "C<0>" (zero) will reset the indexing to the basic v2 community
+or v3 empty context.
+
 =cut
 
 sub snmp_comm_reindex {
