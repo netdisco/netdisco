@@ -34,7 +34,7 @@ sub _load_web_plugins {
         if $plugin !~ m/^\+/;
       $plugin =~ s/^\+//;
 
-      $ENV{PLUGIN_LOAD_DEBUG} && debug "loading Netdisco plugin $plugin";
+      $ENV{PLUGIN_LOAD_DEBUG} && debug "loading web plugin $plugin";
       Module::Load::load $plugin;
   }
 }

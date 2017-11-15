@@ -98,10 +98,6 @@ sub do_job {
   # include local plugins
   config->{'extra_worker_plugins'} = ["X::${pkg}"];
 
-  # clear out any previous installed hooks
-  # TODO: do this in Worker.pm on every reimport ?
-  Dancer::Factory::Hook->init( Dancer::Factory::Hook->instance() );
-
   my $job = App::Netdisco::Backend::Job->new({
     job => 0,
     device => '192.0.2.1',

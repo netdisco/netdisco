@@ -1,8 +1,6 @@
 package App::Netdisco::Worker::Runner;
 
 use Dancer qw/:moose :syntax/;
-use Dancer::Factory::Hook;
-
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use aliased 'App::Netdisco::Worker::Status';
@@ -14,6 +12,7 @@ use Scope::Guard 'guard';
 use Moo::Role;
 use namespace::clean;
 
+with 'App::Netdisco::Worker::Loader';
 has 'job' => ( is => 'rw' );
 
 # mixin code to run workers loaded via plugins
@@ -26,7 +25,7 @@ sub run {
 
   $self->job($job);
   $job->device( get_device($job->device) );
-  Module::Load::load 'App::Netdisco::Worker' => $job->action;
+  $self->load_workers();
 
   # finalise job status when we exit
   my $statusguard = guard { $job->finalise_status };
@@ -56,26 +55,25 @@ sub run {
   set(device_auth => \@newuserconf);
 
   # run check phase and if there are workers then one MUST be successful
-  $self->run_workers('nd2_core_check');
+  $self->run_workers('workers_check');
   return if not $job->check_passed;
 
   # run other phases
-  $self->run_workers("nd2_core_${_}") for qw/early main user/;
+  $self->run_workers("workers_${_}") for qw/early main user/;
 }
 
 sub run_workers {
   my $self = shift;
-  my $job  = $self->job or die error 'no job in worker job slot';
-  my $hook = shift
-    or return $job->add_status( Status->error('missing hook param') );
+  my $job = $self->job or die error 'no job in worker job slot';
 
-  my $store = Dancer::Factory::Hook->instance();
-  (my $phase = $hook) =~ s/^nd2_core_//;
+  my $set = shift
+    or return $job->add_status( Status->error('missing set param') );
+  return unless ref $self->$set and $self->$set->get_length();
 
-  return unless scalar @{ $store->get_hooks_for($hook) };
+  (my $phase = $set) =~ s/^workers_//;
   $job->enter_phase($phase);
 
-  foreach my $worker (@{ $store->get_hooks_for($hook) }) {
+  while (my $worker = $self->$set->get_next()) {
     try { $job->add_status( $worker->($job) ) }
     catch {
       debug "=> $_" if $_;

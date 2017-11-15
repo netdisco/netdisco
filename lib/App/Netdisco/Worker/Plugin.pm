@@ -7,9 +7,6 @@ use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use aliased 'App::Netdisco::Worker::Status';
 use Scope::Guard 'guard';
 
-Dancer::Factory::Hook->instance()->install_hooks("nd2_core_${_}")
-  for qw/check early main user/;
-
 register 'register_worker' => sub {
   my ($self, $first, $second) = plugin_args(@_);
 
