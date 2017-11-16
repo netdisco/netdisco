@@ -88,8 +88,7 @@ sub test_connection {
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
   debug sprintf 'snmp reader cache warm: [%s]', $device->ip;
-  return ($readers->{$device->ip}
-    = _snmp_connect_generic('read', $device, $useclass));
+  return ($readers->{$device->ip} = _snmp_connect_generic('read', $device));
 }
 
 =head1 writer_for( $ip, $useclass? )
