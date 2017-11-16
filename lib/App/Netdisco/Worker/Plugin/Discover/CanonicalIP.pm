@@ -22,7 +22,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $revofname = ipv4_from_hostname($snmp->name);
 
   if (setting('reverse_sysname') and $revofname) {
-    if ($snmp->snmp_connect_ip( $new_ip )) {
+    if (App::Netdisco::Transport::SNMP->test_connection( $new_ip )) {
       $new_ip = $revofname;
     }
     else {
@@ -46,8 +46,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           if (check_acl_only($device, $key)
                 and check_acl_only($alias, $map->{$key})) {
 
-            # if ($snmp->snmp_connect_ip( $alias->alias )) { FIXME
-            if (App::Netdisco::Transport::SNMP->reader_for( $alias->alias )) {
+            if (App::Netdisco::Transport::SNMP->test_connection( $alias->alias )) {
               $new_ip = $alias->alias;
               last ALIAS;
             }

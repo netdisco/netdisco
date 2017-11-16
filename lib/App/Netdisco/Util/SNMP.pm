@@ -1,6 +1,7 @@
 package App::Netdisco::Util::SNMP;
 
 use Dancer qw/:syntax :script/;
+use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::Permission ':all';
 
 use base 'Exporter';
@@ -138,7 +139,8 @@ sub get_communities {
 
   # clean the community table of obsolete tags
   eval { $device->community->update({$tag_name => undef}) }
-    if not $stored_tag or !exists $seen_tags->{ $stored_tag };
+    if $device->in_storage
+       and (not $stored_tag or !exists $seen_tags->{ $stored_tag });
 
   return ( @communities, @$config );
 }
@@ -147,7 +149,7 @@ sub _get_external_community {
   my ($device, $mode) = @_;
   my $cmd = setting('get_community');
   my $ip = $device->ip;
-  my $host = $device->dns || $ip;
+  my $host = ($device->dns || hostname_from_ip($ip) || $ip);
 
   if (defined $cmd and length $cmd) {
       # replace variables

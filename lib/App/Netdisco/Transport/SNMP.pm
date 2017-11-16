@@ -1,6 +1,8 @@
 package App::Netdisco::Transport::SNMP;
 
 use Dancer qw/:syntax :script/;
+use Dancer::Plugin::DBIC 'schema';
+
 use App::Netdisco::Util::SNMP 'get_communities';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission ':all';
@@ -9,6 +11,7 @@ use SNMP::Info;
 use Try::Tiny;
 use Module::Load ();
 use Path::Class 'dir';
+use NetAddr::IP::Lite ':lower';
 
 use base 'Dancer::Object::Singleton';
 
@@ -54,6 +57,34 @@ Returns C<undef> if the connection fails.
 sub reader_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
+  my $readers = $class->instance->readers or return undef;
+  return $readers->{$device->ip} if exists $readers->{$device->ip};
+  debug sprintf 'snmp reader cache warm: [%s]', $device->ip;
+  return ($readers->{$device->ip}
+    = _snmp_connect_generic('read', $device, $useclass));
+}
+
+=head1 test_connection( $ip )
+
+Similar to C<reader_for> but will use the literal IP address passed, and does
+not support specifying the device class. The purpose is to test the SNMP
+connectivity to the device before a renumber.
+
+Attempts to have no side effect, however there will be a stored SNMP
+authentication hint (tag) in the database if the connection is successful.
+
+Returns C<undef> if the connection fails.
+
+=cut
+
+sub test_connection {
+  my ($class, $ip) = @_;
+  my $addr = NetAddr::IP::Lite->new($ip) or return undef;
+  # avoid renumbering to localhost loopbacks
+  return undef if $addr->addr eq '0.0.0.0'
+                  or check_acl_no($addr->addr, 'group:__LOCAL_ADDRESSES__');
+  my $device = schema('netdisco')->resultset('Device')
+    ->new_result({ ip => $addr->addr }) or return undef;
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
   debug sprintf 'snmp reader cache warm: [%s]', $device->ip;
