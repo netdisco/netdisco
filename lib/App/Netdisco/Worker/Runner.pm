@@ -68,12 +68,12 @@ sub run_workers {
 
   my $set = shift
     or return $job->add_status( Status->error('missing set param') );
-  return unless ref $self->$set and $self->$set->get_length();
+  return unless ref [] eq ref $self->$set and 0 < scalar @{ $self->$set };
 
   (my $phase = $set) =~ s/^workers_//;
   $job->enter_phase($phase);
 
-  while (my $worker = $self->$set->get_next()) {
+  foreach my $worker (@{ $self->$set }) {
     try { $job->add_status( $worker->($job) ) }
     catch {
       debug "=> $_" if $_;

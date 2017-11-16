@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Module::Load ();
-use Array::Iterator;
 use Dancer qw/:moose :syntax/;
 
 use Moo::Role;
@@ -49,7 +48,7 @@ sub load_workers {
       }
     }
 
-    $self->$pname( Array::Iterator->new({ __array__ => \@wset }) );
+    $self->$pname( \@wset );
   }
 }
 
