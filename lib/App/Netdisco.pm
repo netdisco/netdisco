@@ -53,15 +53,15 @@ See the demo at: L<https://netdisco2-demo.herokuapp.com/>
 =back
 
 We have several other pages with tips for
-L<alternate deployment scenarios|App::Netdisco::Manual::Deployment>,
-L<understanding and troubleshooting Netdisco|App::Netdisco::Manual::Troubleshooting>,
-L<tips and tricks for specific platforms|App::Netdisco::Manual::Vendors>,
-and L<all the configuration options|App::Netdisco::Manual::Configuration>.
+L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
+L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisco/wiki/Troubleshooting>,
+L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
+and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
 
 You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
 the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
 Before installing or upgrading please always review the latest
-L<Release Notes|App::Netdisco::Manual::ReleaseNotes>.
+L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
@@ -77,7 +77,7 @@ On Fedora/Red-Hat:
 
  root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel make automake gcc
 
-On BSD systems please see L<our BSD tips|App::Netdisco::Manual::BSDInstall>.
+On BSD systems please see L<our BSD tips|https://github.com/netdisco/netdisco/wiki/BSD-Install>.
 
 With those installed, please check that your system's clock is correct.
 
@@ -118,8 +118,8 @@ The following is a general guide which works well in most circumstances. It
 assumes you have a user C<netdisco> on your system, that you want to perform
 an on-line installation, and have the application run self-contained from
 within that user's home. There are alternatives: see the
-L<Deployment|App::Netdisco::Manual::Deployment> documentation for further
-details.
+L<Deployment|https://github.com/netdisco/netdisco/wiki/Install-Tips>
+documentation for further details.
 
 To avoid muddying your system, use the following script to download and
 install Netdisco and its dependencies into the C<netdisco> user's home area
@@ -160,7 +160,7 @@ uncomment the C<schedule> setting to enable SNMP data gathering from
 devices (this replaces cron jobs in Netdisco 1).
 
 Have a quick read of the other settings to make sure you're happy, then move
-on. See L<Configuration|App::Netdisco::Manual::Configuration> for further
+on. See L<Configuration|https://github.com/netdisco/netdisco/wiki/Configuration> for further
 details.
 
 =head1 Initialisation
@@ -174,7 +174,7 @@ script will take care of all this for you:
 
 If this is a new installation of Netdisco 2, answer yes to all questions. If
 you wish to deploy without Internet access, see the
-L<Deployment|App::Netdisco::Manual::Deployment> documentation.
+L<Deployment|https://github.com/netdisco/netdisco/wiki/Install-Tips> documentation.
 
 =head1 Startup
 
@@ -196,15 +196,15 @@ C<~netdisco/perl5> directory and re-run the C<curl> command above, to update
 Netdisco's C library bindings.
 
 We have several other pages with tips for
-L<alternate deployment scenarios|App::Netdisco::Manual::Deployment>,
-L<understanding and troubleshooting Netdisco|App::Netdisco::Manual::Troubleshooting>,
-L<tips and tricks for specific platforms|App::Netdisco::Manual::Vendors>,
-and L<all the configuration options|App::Netdisco::Manual::Configuration>.
+L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
+L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisco/wiki/Troubleshooting>,
+L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
+and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
 
 You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
 the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
 Before installing or upgrading please always review the latest
-L<Release Notes|App::Netdisco::Manual::ReleaseNotes>.
+L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
 
@@ -212,9 +212,8 @@ If you're running a version of Netdisco prior to 2.x then you should follow
 the full installation instructions, above. This process is for upgrading
 version 2.x only.
 
-Before upgrading please review the latest L<Release
-Notes|App::Netdisco::Manual::ReleaseNotes>. Then the process below should be
-run for each installation:
+Before upgrading please review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
+Then the process below should be run for each installation:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
@@ -262,18 +261,20 @@ run:
 
 Bundled with this distribution is a L<DBIx::Class> layer for the Netdisco
 database. This abstracts away all the SQL into an elegant, re-usable OO
-interface. See the L<Developer|App::Netdisco::Manual::Developing>
+interface. See the L<Developer|https://github.com/netdisco/netdisco/wiki/Developing>
 documentation for further information.
 
 =head2 Plugins
 
-Netdisco includes a Plugin subsystem for customizing the web user interface.
-See L<App::Netdisco::Web::Plugin> for further information.
+Netdisco includes a Plugin subsystem for customizing the web user interface and backend daemon.
+See L<Web Plugins|https://github.com/netdisco/netdisco/wiki/Web-Plugins>
+and L<Backend Plugins|https://github.com/netdisco/netdisco/wiki/Backend-Plugins>
+for further information.
 
 =head2 Developing
 
 Lots of information about the architecture of this application is contained
-within the L<Developer|App::Netdisco::Manual::Developing> documentation.
+within the L<Developer|https://github.com/netdisco/netdisco/wiki/Developing> documentation.
 
 =head1 AUTHOR
 
