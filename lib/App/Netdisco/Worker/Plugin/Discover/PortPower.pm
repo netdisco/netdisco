@@ -1,0 +1,81 @@
+package App::Netdisco::Worker::Plugin::Discover::PortPower;
+
+use Dancer ':syntax';
+use App::Netdisco::Worker::Plugin;
+use aliased 'App::Netdisco::Worker::Status';
+
+use App::Netdisco::Transport::SNMP ();
+use Dancer::Plugin::DBIC 'schema';
+
+register_worker({ phase => 'main', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
+
+  my $device = $job->device;
+  return unless $device->in_storage;
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or return Status->defer("discover failed: could not SNMP connect to $device");
+
+  my $p_watts  = $snmp->peth_power_watts;
+  my $p_status = $snmp->peth_power_status;
+
+  if (!defined $p_watts) {
+      return Status->noop(sprintf ' [%s] power - 0 power modules', $device->ip);
+  }
+
+  # build device module power info suitable for DBIC
+  my @devicepower;
+  foreach my $entry (keys %$p_watts) {
+      push @devicepower, {
+          module => $entry,
+          power  => $p_watts->{$entry},
+          status => $p_status->{$entry},
+      };
+  }
+
+  my $interfaces = $snmp->interfaces;
+  my $p_ifindex  = $snmp->peth_port_ifindex;
+  my $p_admin    = $snmp->peth_port_admin;
+  my $p_pstatus  = $snmp->peth_port_status;
+  my $p_class    = $snmp->peth_port_class;
+  my $p_power    = $snmp->peth_port_power;
+
+  # build device port power info suitable for DBIC
+  my @portpower;
+  foreach my $entry (keys %$p_ifindex) {
+      my $port = $interfaces->{ $p_ifindex->{$entry} };
+      next unless $port;
+
+      my ($module) = split m/\./, $entry;
+
+      push @portpower, {
+          port   => $port,
+          module => $module,
+          admin  => $p_admin->{$entry},
+          status => $p_pstatus->{$entry},
+          class  => $p_class->{$entry},
+          power  => $p_power->{$entry},
+
+      };
+  }
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->power_modules->delete;
+    debug sprintf ' [%s] power - removed %d power modules',
+      $device->ip, $gone;
+    $device->power_modules->populate(\@devicepower);
+    debug sprintf ' [%s] power - added %d new power modules',
+      $device->ip, scalar @devicepower;
+  });
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->powered_ports->delete;
+    debug sprintf ' [%s] power - removed %d PoE capable ports',
+      $device->ip, $gone;
+    $device->powered_ports->populate(\@portpower);
+
+    return Status->noop(sprintf ' [%s] power - added %d new PoE capable ports',
+      $device->ip, scalar @portpower);
+  });
+});
+
+true;

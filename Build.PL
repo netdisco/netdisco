@@ -13,6 +13,9 @@ Module::Build->new(
   build_requires => {
   },
   requires => {
+    'aliased' => '0',
+    'namespace::clean' => '0.24',
+    'version' => '0.9902',
     'Algorithm::Cron' => '0.07',
     'AnyEvent' => '7.05',
     'AnyEvent::DNS::EtcHosts' => '0',
@@ -40,6 +43,7 @@ Module::Build->new(
     'JSON::XS' => '3.01',
     'List::MoreUtils' => '0.33',
     'MIME::Base64' => '3.13',
+    'Module::Find' => '0.13',
     'Module::Load' => '0.32',
     'Moo' => '1.001000',
     'MCE' => '1.703',
@@ -57,6 +61,7 @@ Module::Build->new(
     'Plack::Middleware::ReverseProxy' => '0.15',
     'Pod::Usage' => 0,
     'Role::Tiny' => '1.002005',
+    'Scope::Guard' => 0,
     'Sereal' => '0',
     'Socket6' => '0.23',
     'Starman' => '0.4008',
@@ -72,8 +77,6 @@ Module::Build->new(
     'URL::Encode' => '0.01',
     'YAML' => '0.84',
     'YAML::XS' => '0.41',
-    'namespace::clean' => '0.24',
-    'version' => '0.9902',
   },
   recommends => {
     'Graph' => '0',

@@ -35,17 +35,18 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
-use App::Netdisco::Backend::Job;
 use Dancer qw/:moose :script/;
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
-use NetAddr::IP qw/:rfc3021 :lower/;
-use App::Netdisco::Util::Device 'get_device';
-
 use Try::Tiny;
 use Pod::Usage;
 use Scalar::Util 'blessed';
+use NetAddr::IP qw/:rfc3021 :lower/;
+
+use App::Netdisco::Backend::Job;
+use App::Netdisco::Util::Device 'get_device';
+
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
@@ -89,138 +90,13 @@ unless ($action) {
     );
 }
 
-# create worker (placeholder object for the role methods)
+# create worker (placeholder object for the action runner)
 {
   package MyWorker;
-
   use Moo;
-  use Module::Load ();
-  use Data::Printer ();
-  use Scalar::Util 'blessed';
-  use NetAddr::IP qw/:rfc3021 :lower/;
-  use Dancer ':script';
-
-  use App::Netdisco::Util::SNMP ();
-  use App::Netdisco::Util::Device
-    qw/get_device delete_device renumber_device/;
-
-  with 'App::Netdisco::Backend::Worker::Poller::Device';
-  with 'App::Netdisco::Backend::Worker::Poller::Arpnip';
-  with 'App::Netdisco::Backend::Worker::Poller::Macsuck';
-  with 'App::Netdisco::Backend::Worker::Poller::Nbtstat';
-  with 'App::Netdisco::Backend::Worker::Poller::Expiry';
-  with 'App::Netdisco::Backend::Worker::Interactive::DeviceActions';
-  with 'App::Netdisco::Backend::Worker::Interactive::PortActions';
-
-  eval { Module::Load::load 'App::Netdisco::Util::Graph' };
-  sub graph {
-    App::Netdisco::Util::Graph::graph();
-    return ('done', 'Generated graph data.');
-  }
-
-  use App::Netdisco::Util::NodeMonitor ();
-  sub monitor {
-    App::Netdisco::Util::NodeMonitor::monitor();
-    return ('done', 'Generated monitor data.');
-  }
-
-  use App::Netdisco::Util::Statistics ();
-  sub stats {
-    App::Netdisco::Util::Statistics::update_stats();
-    return ('done', 'Updated statistics.');
-  }
-
-  sub show {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-
-    $extra ||= 'interfaces'; my $class = undef;
-    ($class, $extra) = split(/::([^:]+)$/, $extra);
-    if ($class and $extra) {
-        $class = 'SNMP::Info::'.$class;
-    }
-    else {
-        $extra = $class;
-        undef $class;
-    }
-    my $i = App::Netdisco::Util::SNMP::snmp_connect($device, $class);
-    Data::Printer::p($i->$extra);
-    return ('done', sprintf "Showed %s response from %s.", $extra, $device->ip);
-  }
-
-  sub delete {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-
-    $port = ($port ? 1 : 0);
-    delete_device($device, $port, $extra);
-    return ('done', sprintf "Deleted device %s.", $device->ip);
-  }
-
-  sub renumber {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-    my $old_ip = $device->ip;
-
-    my $new_ip = NetAddr::IP->new($extra);
-    unless ($new_ip and $new_ip->addr ne '0.0.0.0') {
-        return ('error', "Bad host or IP: ".($extra || '0.0.0.0'));
-    }
-
-    my $new_dev = get_device($new_ip->addr);
-    if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
-        return ('error', sprintf "Already know new device as: %s.", $new_dev->ip);
-    }
-
-    renumber_device($device, $new_ip);
-    return ('done', sprintf 'Renumbered device %s to %s (%s).',
-      $device->ip, $new_ip, ($device->dns || ''));
-  }
-
-  sub psql {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-
-    my $name = ($ENV{NETDISCO_DBNAME} || setting('database')->{name} || 'netdisco');
-    my $host = setting('database')->{host};
-    my $user = setting('database')->{user};
-    my $pass = setting('database')->{pass};
-
-    my $portnum = undef;
-    if ($host and $host =~ m/([^;]+);port=(\d+)/) {
-        $host = $1;
-        $portnum = $2;
-    }
-
-    $ENV{PGHOST} = $host if $host;
-    $ENV{PGPORT} = $portnum if defined $portnum;
-    $ENV{PGDATABASE} = $name;
-    $ENV{PGUSER} = $user;
-    $ENV{PGPASSWORD} = $pass;
-    $ENV{PGCLIENTENCODING} = 'UTF8';
-
-    if ($extra) {
-        system('psql', '-c', $extra);
-    }
-    else {
-        system('psql');
-    }
-    return ('done', "psql session closed.");
-  }
+  with 'App::Netdisco::Worker::Runner';
 }
 my $worker = MyWorker->new();
-
-# belt and braces check before we go ahead
-if (not $worker->can( $action )) {
-  pod2usage(
-    -msg => (sprintf 'error: %s is not a valid action', $action),
-    -verbose => 2,
-    -exitval => 3,
-  );
-}
 
 my $net = NetAddr::IP->new($device);
 if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
@@ -249,25 +125,31 @@ foreach my $host (@hostlist) {
 
     my $actiontext = (
       ($job->device ? ('['.$job->device->ip.']') : '') .
-      ($job->action eq 'show' ? ('/'.$job->subaction) : '')
+      ($job->action eq 'show' ? ('/'. ($job->subaction || 'interfaces')) : '')
     );
 
     # do job
-    my ($status, $log);
     try {
-
         info sprintf '%s: %s started at %s',
           $action, $actiontext, scalar localtime;
-        ($status, $log) = $worker->$action($job);
+        $worker->run($job);
     }
     catch {
-        $status = 'error';
-        $log = "error running job: $_";
+        $job->status('error');
+        $job->log("error running job: $_");
     };
 
+    if ($job->log eq 'no worker succeeded during main phase') {
+      pod2usage(
+        -msg => (sprintf 'error: %s is not a valid action', $action),
+        -verbose => 2,
+        -exitval => 3,
+      );
+    }
+
     info sprintf '%s: finished at %s', $action, scalar localtime;
-    info sprintf '%s: status %s: %s', $action, $status, $log;
-    $exitstatus = 1 if !defined $status or $status eq 'error';
+    info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
+    $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
 }
 
 exit $exitstatus;
@@ -393,6 +275,10 @@ leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
 
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+
+A paramter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
+
+ ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
 
 =head2 psql
 

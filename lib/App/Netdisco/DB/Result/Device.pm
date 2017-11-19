@@ -10,6 +10,8 @@ use warnings;
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
+use overload '""' => sub { shift->ip }, fallback => 1;
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
@@ -190,6 +192,29 @@ __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
 
 =head1 ADDITIONAL METHODS
+
+=head2 is_pseudo
+
+Returns true if the vendor of the device is "netdisco".
+
+=cut
+
+sub is_pseudo {
+  my $device = shift;
+  return (defined $device->vendor and $device->vendor eq 'netdisco');
+}
+
+=head2 has_layer( $number )
+
+Returns true if the device provided sysServices and supports the given layer.
+
+=cut
+
+sub has_layer {
+  my ($device, $layer) = @_;
+  return unless $layer and $layer =~ m/^[1-7]$/;
+  return ($device->layers and (substr($device->layers, (8-$layer), 1) == 1));
+}
 
 =head2 renumber( $new_ip )
 

@@ -190,6 +190,11 @@ ignore_interfaces:
   - 'Virtual-Template\d+'
   - 'Virtual-Access\d+'
   - '(E|T)\d \d\/\d\/\d'
+  - 'InLoopback0'
+  - 'NULL\d'
+  - 'Register-Tunnel\d'
+  - 'Blade-Aggregation\d'
+  - 'M-GigabitEthernet\d/\d/\d'
 ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
@@ -252,6 +257,55 @@ job_prio:
     - nbtwalk
     - nbtstat
     - expire
+
+worker_plugins:
+  - 'Arpnip'
+  - 'Arpnip::Nodes'
+  - 'Arpnip::Subnets'
+  - 'Arpwalk'
+  - 'Contact'
+  - 'Delete'
+  - 'Discover'
+  - 'Discover::CanonicalIP'
+  - 'Discover::Entities'
+  - 'Discover::Neighbors'
+  - 'Discover::PortPower'
+  - 'Discover::Properties'
+  - 'Discover::VLANs'
+  - 'Discover::Wireless'
+  - 'Discover::WithNodes'
+  - 'DiscoverAll'
+  - 'Expire'
+  - 'ExpireNodes'
+  - 'Graph'
+  - 'Location'
+  - 'Macsuck'
+  - 'Macsuck::Nodes'
+  - 'Macsuck::WirelessNodes'
+  - 'Macwalk'
+  - 'Monitor'
+  - 'Nbtstat'
+  - 'Nbtstat::Core'
+  - 'Nbtwalk'
+  - 'PortControl'
+  - 'PortName'
+  - 'Power'
+  - 'Psql'
+  - 'Renumber'
+  - 'Show'
+  - 'Stats'
+  - 'Vlan'
+  - 'Vlan::Core'
+
+extra_worker_plugins: []
+#  - Discover::ConfigBackup::CLI
+
+driver_priority:
+  restconf: 500
+  netconf:  400
+  eapi:     300
+  cli:      200
+  snmp:     100
 
 # ---------------
 # GraphViz Export

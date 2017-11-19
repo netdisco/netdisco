@@ -1,6 +1,7 @@
 package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
+use App::Netdisco::Util::SNMP ();
 use Dancer ':script';
 
 use Path::Class 'dir';
@@ -58,6 +59,9 @@ if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
   config->{'community'} = [ @{setting('community')}, 'public' ];
   config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
 }
+
+# fix up device_auth (or create it from old snmp_auth and community settings)
+config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
 
 # defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';

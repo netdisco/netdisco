@@ -192,12 +192,11 @@ sub is_discoverable_now {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
 
-  if ($device->in_storage) {
-    if ($device->since_last_discover and setting('discover_min_age')
-        and $device->since_last_discover < setting('discover_min_age')) {
+  if ($device->in_storage
+      and $device->since_last_discover and setting('discover_min_age')
+      and $device->since_last_discover < setting('discover_min_age')) {
 
-        return _bail_msg("is_discoverable: time since last discover less than discover_min_age");
-    }
+      return _bail_msg("is_discoverable: time since last discover less than discover_min_age");
   }
 
   return is_discoverable(@_);
@@ -242,10 +241,8 @@ sub is_arpnipable_now {
   my ($ip) = @_;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
-    if not $device->in_storage;
-
-  if ($device->since_last_arpnip and setting('arpnip_min_age')
+  if ($device->in_storage
+      and $device->since_last_arpnip and setting('arpnip_min_age')
       and $device->since_last_arpnip < setting('arpnip_min_age')) {
 
       return _bail_msg("is_arpnipable: time since last arpnip less than arpnip_min_age");
@@ -293,10 +290,8 @@ sub is_macsuckable_now {
   my ($ip) = @_;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")
-    if not $device->in_storage;
-
-  if ($device->since_last_macsuck and setting('macsuck_min_age')
+  if ($device->in_storage
+      and $device->since_last_macsuck and setting('macsuck_min_age')
       and $device->since_last_macsuck < setting('macsuck_min_age')) {
 
       return _bail_msg("is_macsuckable: time since last macsuck less than macsuck_min_age");

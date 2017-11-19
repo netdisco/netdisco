@@ -311,7 +311,7 @@ Every Dancer route handler must have proper role based access control enabled,
 to prevent unauthorized access to Netdisco's data, or admin features. This is
 done with the L<Dancer::Plugin::Auth::Extensible> module. It handles both the
 authentication using Netdisco's database, and then protects each route
-handler. See L<App::Netdisco::Manual::WritingPlugins> for details.
+handler. See L<App::Netdisco::Manual::WritingWebPlugins> for details.
 
 =head2 Templates
 
