@@ -56,7 +56,6 @@
             "List::MoreUtils" : "0.33",
             "MCE" : "1.703",
             "MIME::Base64" : "3.13",
-            "Module::Find" : "0.13",
             "Module::Load" : "0.32",
             "Moo" : "1.001000",
             "Net::DNS" : "0.72",
@@ -104,7 +103,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.036012_001"
+         "version" : "2.036012_002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -611,8 +610,8 @@
       "App::Netdisco::Web::TypeAhead" : {
          "file" : "lib/App/Netdisco/Web/TypeAhead.pm"
       },
-      "App::Netdisco::Worker" : {
-         "file" : "lib/App/Netdisco/Worker.pm"
+      "App::Netdisco::Worker::Loader" : {
+         "file" : "lib/App/Netdisco/Worker/Loader.pm"
       },
       "App::Netdisco::Worker::Plugin" : {
          "file" : "lib/App/Netdisco/Worker/Plugin.pm"
@@ -722,12 +721,6 @@
       "App::Netdisco::Worker::Plugin::Stats" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Stats.pm"
       },
-      "App::Netdisco::Worker::Plugin::Test" : {
-         "file" : "lib/App/Netdisco/Worker/Plugin/Test.pm"
-      },
-      "App::Netdisco::Worker::Plugin::Test::Core" : {
-         "file" : "lib/App/Netdisco/Worker/Plugin/Test/Core.pm"
-      },
       "App::Netdisco::Worker::Plugin::Vlan" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Vlan.pm"
       },
@@ -751,7 +744,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/BSD-3-Clause"
+         "http://opensource.org/licenses/bsd-license.php"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -759,6 +752,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.036012_001",
+   "version" : "2.036012_002",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }

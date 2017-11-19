@@ -92,16 +92,6 @@ lib/App/Netdisco/GenericDB.pm
 lib/App/Netdisco/GenericDB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/JobQueue.pm
 lib/App/Netdisco/JobQueue/PostgreSQL.pm
-lib/App/Netdisco/Manual/BSDInstall.pod
-lib/App/Netdisco/Manual/Configuration.pod
-lib/App/Netdisco/Manual/Deployment.pod
-lib/App/Netdisco/Manual/Developing.pod
-lib/App/Netdisco/Manual/ReleaseNotes.pod
-lib/App/Netdisco/Manual/Systemd.pod
-lib/App/Netdisco/Manual/Troubleshooting.pod
-lib/App/Netdisco/Manual/Vendors.pod
-lib/App/Netdisco/Manual/WritingWebPlugins.pod
-lib/App/Netdisco/Manual/WritingWorkers.pod
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
 lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
@@ -192,7 +182,7 @@ lib/App/Netdisco/Web/Search.pm
 lib/App/Netdisco/Web/Static.pm
 lib/App/Netdisco/Web/Statistics.pm
 lib/App/Netdisco/Web/TypeAhead.pm
-lib/App/Netdisco/Worker.pm
+lib/App/Netdisco/Worker/Loader.pm
 lib/App/Netdisco/Worker/Plugin.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
@@ -229,8 +219,6 @@ lib/App/Netdisco/Worker/Plugin/Psql.pm
 lib/App/Netdisco/Worker/Plugin/Renumber.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
 lib/App/Netdisco/Worker/Plugin/Stats.pm
-lib/App/Netdisco/Worker/Plugin/Test.pm
-lib/App/Netdisco/Worker/Plugin/Test/Core.pm
 lib/App/Netdisco/Worker/Plugin/Vlan.pm
 lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
 lib/App/Netdisco/Worker/Runner.pm
@@ -469,6 +457,12 @@ share/views/sidebar/search/port.tt
 xt/10-sort_port.t
 xt/11-portsort.t
 xt/20-checkacl.t
+xt/30-backend-workers.t
 xt/html/portsort.html
 xt/js/qunit-tap.js
 xt/js/run_qunit.js
+xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
