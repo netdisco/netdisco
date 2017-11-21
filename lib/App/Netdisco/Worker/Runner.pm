@@ -76,7 +76,7 @@ sub run_workers {
   foreach my $worker (@{ $self->$set }) {
     try { $job->add_status( $worker->($job) ) }
     catch {
-      debug "=> $_" if $_;
+      debug "-> $_" if $_;
       $job->add_status( Status->error($_) );
     };
   }
