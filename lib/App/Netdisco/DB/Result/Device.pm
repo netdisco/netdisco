@@ -249,7 +249,6 @@ sub renumber {
     DevicePortSsid
     DevicePortVlan
     DevicePortWireless
-    Community
   /) {
     $schema->resultset($set)
       ->search({ip => $old_ip})
