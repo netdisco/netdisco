@@ -36,6 +36,13 @@ register 'register_worker' => sub {
     # check to see if this namespace has already passed at higher priority
     return if $job->namespace_passed($workerconf);
 
+    # support part-actions via action::namespace
+    if ($job->only_namespace and $workerconf->{phase} ne 'check') {
+      return unless $workerconf->{namespace} eq lc( $job->only_namespace )
+        or (($workerconf->{phase} eq 'early')
+             and ($job->device and not $job->device->in_storage));
+    }
+
     my @newuserconf = ();
     my @userconf = @{ setting('device_auth') || [] };
 

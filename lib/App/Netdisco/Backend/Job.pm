@@ -14,6 +14,7 @@ foreach my $slot (qw/
       device
       port
       action
+      only_namespace
       subaction
       status
       username
@@ -35,6 +36,15 @@ has '_statuslist' => (
   is => 'rw',
   default => sub { [] },
 );
+
+sub BUILD {
+  my ($job, $args) = @_;
+
+  if ($job->action =~ m/^(\w+)::(\w+)$/i) {
+    $job->action($1);
+    $job->only_namespace($2);
+  }
+}
 
 =head1 METHODS
 
