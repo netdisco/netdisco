@@ -72,6 +72,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
+    # is not done in renumber but required otherwise confusing at job end!
+    schema('netdisco')->resultset('Admin')
+      ->find({job => $job->id})->update({device => $new_ip});
+
     return Status->noop(sprintf ' [%s] device - changed IP to %s (%s)',
       $old_ip, $device->ip, ($device->dns || ''));
   });

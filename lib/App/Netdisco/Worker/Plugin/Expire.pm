@@ -6,6 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Statistics 'update_stats';
+use App::Netdisco::DB::ExplicitLocking ':modes';
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
@@ -40,7 +41,7 @@ register_worker({ phase => 'main' }, sub {
   }
 
   if (setting('expire_jobs') and setting('expire_jobs') > 0) {
-      schema('netdisco')->txn_do(sub {
+      schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
         schema('netdisco')->resultset('Admin')->search({
           entered => \[q/< (now() - ?::interval)/,
               (setting('expire_jobs') * 86400)],

@@ -13,11 +13,11 @@ use Try::Tiny;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  jq_warm_thrusters
   jq_getsome
   jq_getsomep
   jq_locked
   jq_queued
-  jq_warm_thrusters
   jq_lock
   jq_defer
   jq_complete
@@ -27,67 +27,6 @@ our @EXPORT_OK = qw/
   jq_delete
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
-
-sub _getsome {
-  my ($num_slots, $where) = @_;
-  return () if ((!defined $num_slots) or ($num_slots < 1));
-  return () if ((!defined $where) or (ref {} ne ref $where));
-
-  my $jobs = schema('netdisco')->resultset('Admin');
-  my $rs = $jobs->search({
-    status => 'queued',
-    device => { '-not_in' =>
-      $jobs->skipped(setting('workers')->{'BACKEND'},
-                     setting('workers')->{'max_deferrals'},
-                     setting('workers')->{'retry_after'})
-           ->columns('device')->as_query },
-    %$where,
-  }, { order_by => 'random()', rows => $num_slots });
-
-  my @returned = ();
-  while (my $job = $rs->next) {
-      push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
-  }
-  return @returned;
-}
-
-sub jq_getsome {
-  return _getsome(shift,
-    { action => { -in => setting('job_prio')->{'normal'} } }
-  );
-}
-
-sub jq_getsomep {
-  return _getsome(shift, {
-    -or => [{
-        username => { '!=' => undef },
-        action => { -in => setting('job_prio')->{'normal'} },
-      },{
-        action => { -in => setting('job_prio')->{'high'} },
-    }],
-  });
-}
-
-sub jq_locked {
-  my @returned = ();
-  my $rs = schema('netdisco')->resultset('Admin')
-    ->search({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
-
-  while (my $job = $rs->next) {
-      push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
-  }
-  return @returned;
-}
-
-sub jq_queued {
-  my $job_type = shift;
-
-  return schema('netdisco')->resultset('Admin')->search({
-    device => { '!=' => undef},
-    action => $job_type,
-    status => { -like => 'queued%' },
-  })->get_column('device')->all;
-}
 
 # given a device, tests if any of the primary acls applies
 # returns a list of job actions to be denied/skipped on this host.
@@ -130,49 +69,126 @@ sub jq_warm_thrusters {
   });
 }
 
+sub _getsome {
+  my ($num_slots, $where) = @_;
+  return () if ((!defined $num_slots) or ($num_slots < 1));
+  return () if ((!defined $where) or (ref {} ne ref $where));
+
+  my $jobs = schema('netdisco')->resultset('Admin');
+  my $rs = $jobs->search({
+    status => 'queued',
+    device => { '-not_in' =>
+      $jobs->skipped(setting('workers')->{'BACKEND'},
+                     setting('workers')->{'max_deferrals'},
+                     setting('workers')->{'retry_after'})
+           ->columns('device')->as_query },
+    %$where,
+  }, { order_by => 'random()', rows => $num_slots });
+
+  my @returned = ();
+  while (my $job = $rs->next) {
+    if ($job->device) {
+      # need to handle device discovered since backend daemon started
+      # and the skiplist was primed. these should be checked against
+      # the various acls and have device_skip entry added if needed,
+      # and return false if it should have been skipped.
+      my @badactions = _get_denied_actions($job->device);
+      if (scalar @badactions) {
+        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+          backend => setting('workers')->{'BACKEND'}, device => $job->device,
+        },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
+
+        # will now not be selected in a future _getsome()
+        next if scalar grep {$_ eq $job->action} @badactions;
+      }
+    }
+
+    # remove any duplicate jobs, incuding possibly this job if there
+    # is already an equivalent job running
+
+    my %job_properties = (
+      action => $job->action,
+      port   => $job->port,
+      subaction => $job->subaction,
+      -or => [
+        { device => $job->device },
+        ($job->device_key ? ({ device_key => $job->device_key }) : ()),
+      ],
+    );
+
+    my $gone = $jobs->search({
+      status => 'queued',
+      -and => [
+        %job_properties,
+        -or => [{
+          job => { '!=' => $job->id },
+        },{
+          job => $job->id,
+          -exists => $jobs->search({
+            status => { -like => 'queued-%' },
+            %job_properties,
+          })->as_query,
+        }],
+      ],
+    }, {for => 'update'})
+        ->update({ status => 'error', log => (sprintf 'duplicate of %s', $job->id) });
+
+    debug sprintf 'getsome: cancelled %s duplicate(s) of job %s', ($gone || 0), $job->id;
+    push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
+  }
+
+  return @returned;
+}
+
+sub jq_getsome {
+  return _getsome(shift,
+    { action => { -in => setting('job_prio')->{'normal'} } }
+  );
+}
+
+sub jq_getsomep {
+  return _getsome(shift, {
+    -or => [{
+        username => { '!=' => undef },
+        action => { -in => setting('job_prio')->{'normal'} },
+      },{
+        action => { -in => setting('job_prio')->{'high'} },
+    }],
+  });
+}
+
+sub jq_locked {
+  my @returned = ();
+  my $rs = schema('netdisco')->resultset('Admin')
+    ->search({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
+
+  while (my $job = $rs->next) {
+      push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
+  }
+  return @returned;
+}
+
+sub jq_queued {
+  my $job_type = shift;
+
+  return schema('netdisco')->resultset('Admin')->search({
+    device => { '!=' => undef},
+    action => $job_type,
+    status => { -like => 'queued%' },
+  })->get_column('device')->all;
+}
+
 sub jq_lock {
   my $job = shift;
   my $happy = false;
 
-  if ($job->device) {
-    # need to handle device discovered since backend daemon started
-    # and the skiplist was primed. these should be checked against
-    # the various acls and have device_skip entry added if needed,
-    # and return false if it should have been skipped.
-    my @badactions = _get_denied_actions($job->device);
-    if (scalar @badactions) {
-      schema('netdisco')->resultset('DeviceSkip')->find_or_create({
-        backend => setting('workers')->{'BACKEND'}, device => $job->device,
-      },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
-
-      return false if scalar grep {$_ eq $job->action} @badactions;
-    }
-  }
-
   # lock db row and update to show job has been picked
   try {
-    schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('Admin')
-        ->search({ job => $job->id }, { for => 'update' })
-        ->update({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
+    my $updated = schema('netdisco')->resultset('Admin')
+      ->search({ job => $job->id, status => 'queued' }, { for => 'update' })
+      ->update({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
 
-      return unless
-        schema('netdisco')->resultset('Admin')
-          ->count({ job => $job->id,
-                    status => ('queued-'. setting('workers')->{'BACKEND'}) });
-
-      # remove any duplicate jobs, needed because we have race conditions
-      # when queueing jobs of a type for all devices
-      schema('netdisco')->resultset('Admin')->search({
-        status    => 'queued',
-        device    => $job->device,
-        port      => $job->port,
-        action    => $job->action,
-        subaction => $job->subaction,
-      }, {for => 'update'})->delete();
-
-      $happy = true;
-    });
+    $happy = true if $updated > 0;
   }
   catch {
     error $_;
@@ -243,6 +259,7 @@ sub jq_complete {
     $happy = true;
   }
   catch {
+    # use DDP; p $job;
     error $_;
   };
 
@@ -274,13 +291,14 @@ sub jq_insert {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')->populate([
         map {{
-            device    => $_->{device},
-            port      => $_->{port},
-            action    => $_->{action},
-            subaction => ($_->{extra} || $_->{subaction}),
-            username  => $_->{username},
-            userip    => $_->{userip},
-            status    => 'queued',
+            device     => $_->{device},
+            device_key => $_->{device_key},
+            port       => $_->{port},
+            action     => $_->{action},
+            subaction  => ($_->{extra} || $_->{subaction}),
+            username   => $_->{username},
+            userip     => $_->{userip},
+            status     => 'queued',
         }} @$jobs
       ]);
     });

@@ -39,11 +39,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   my @to_discover = store_neighbors($device);
+  my %seen_id = ();
 
   # only enqueue if device is not already discovered,
   # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
-      my ($ip, $remote_type) = @$neighbor;
+      my ($ip, $remote_type, $remote_id) = @$neighbor;
+      next if $remote_id and $seen_id{ $remote_id }++;
 
       my $device = get_device($ip);
       next if $device->in_storage;
@@ -55,10 +57,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           next;
       }
 
+      # risk of things going wrong...?
+      # https://quickview.cloudapps.cisco.com/quickview/bug/CSCur12254
+
       jq_insert({
         device => $ip,
         action => 'discover',
         subaction => 'with-nodes',
+        ($remote_id ? (device_key => $remote_id) : ()),
       });
   }
 });
@@ -171,7 +177,7 @@ sub store_neighbors {
       # useable remote IP...
 
       if ($remote_ip eq '0.0.0.0' or
-          check_acl_no($remote_ip, 'group:__LOCAL_ADDRESSES__')) {
+        check_acl_no($remote_ip, 'group:__LOCAL_ADDRESSES__')) {
 
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');
@@ -228,7 +234,7 @@ sub store_neighbors {
       debug sprintf
         ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
         $device->ip, $remote_ip, ($remote_type || ''), $port;
-      push @to_discover, [$remote_ip, $remote_type];
+      push @to_discover, [$remote_ip, $remote_type, $remote_id];
 
       $remote_port = $c_port->{$entry};
       if (defined $remote_port) {

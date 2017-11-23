@@ -19,6 +19,7 @@ foreach my $slot (qw/
       username
       userip
       log
+      device_key
 
       _current_phase
       _last_namespace

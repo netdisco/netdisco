@@ -34,6 +34,16 @@ sub worker_begin {
   }
 }
 
+# creates a 'signature' for each job so that we can check for duplicates ...
+# it happens from time to time due to the distributed nature of the job queue
+# and manager(s) - also kinder to the DB to skip here rather than jq_lock()
+my $memoize = sub {
+  no warnings 'uninitialized';
+  my $job = shift;
+  return join chr(28), map {$job->{$_}}
+    (qw/action port subaction/, ($job->{device_key} ? 'device_key' : 'device'));
+};
+
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
@@ -46,6 +56,7 @@ sub worker_body {
   while (1) {
       prctl sprintf 'nd2: #%s mgr: gathering', $wid;
       my $num_slots = 0;
+      my %seen_job = ();
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
                      - $self->{queue}->pending();
@@ -54,6 +65,7 @@ sub worker_body {
       # get some high priority jobs
       # TODO also check for stale jobs in Netdisco DB
       foreach my $job ( jq_getsomep($num_slots) ) {
+          next if $seen_job{ $memoize->($job) }++;
 
           # mark job as running
           next unless jq_lock($job);
@@ -71,6 +83,7 @@ sub worker_body {
       # get some normal priority jobs
       # TODO also check for stale jobs in Netdisco DB
       foreach my $job ( jq_getsome($num_slots) ) {
+          next if $seen_job{ $memoize->($job) }++;
 
           # mark job as running
           next unless jq_lock($job);
@@ -80,6 +93,11 @@ sub worker_body {
           # copy job to local queue
           $self->{queue}->enqueue($job);
       }
+
+      #if (scalar grep {$_ > 1} values %seen_job) {
+      #  debug 'WARNING: saw duplicate jobs after getsome()';
+      #  use DDP; debug p %seen_job;
+      #}
 
       debug "mgr ($wid): sleeping now...";
       prctl sprintf 'nd2: #%s mgr: idle', $wid;

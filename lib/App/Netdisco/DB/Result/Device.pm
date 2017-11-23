@@ -238,6 +238,7 @@ sub renumber {
     if $new_ip eq '0.0.0.0'
     or $new_ip eq '127.0.0.1';
 
+  # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
     DeviceIp
     DeviceModule
@@ -258,10 +259,6 @@ sub renumber {
   $schema->resultset('DevicePort')
     ->search({remote_ip => $old_ip})
     ->update({remote_ip => $new_ip});
-
-  $schema->resultset('Admin')
-    ->search({device => $old_ip})
-    ->update({device => $new_ip});
 
   $schema->resultset('Node')
     ->search({switch => $old_ip})
