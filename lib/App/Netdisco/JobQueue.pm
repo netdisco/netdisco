@@ -9,16 +9,15 @@ Module::Load::load
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  jq_warm_thrusters
   jq_getsome
-  jq_getsomep
   jq_locked
   jq_queued
-  jq_warm_thrusters
-  jq_log
-  jq_userlog
   jq_lock
   jq_defer
   jq_complete
+  jq_log
+  jq_userlog
   jq_insert
   jq_delete
 /;
@@ -42,10 +41,6 @@ subroutines.
 Returns a list of randomly selected queued jobs. Default is to return one job,
 unless C<$num> is provided. Jobs are returned as objects which implement the
 Netdisco job instance interface (see below).
-
-=head2 jq_getsomep( $num? )
-
-Same as C<jq_getsome> but for high priority jobs.
 
 =head2 jq_locked()
 

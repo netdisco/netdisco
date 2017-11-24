@@ -15,7 +15,6 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   jq_warm_thrusters
   jq_getsome
-  jq_getsomep
   jq_locked
   jq_queued
   jq_lock
@@ -69,23 +68,49 @@ sub jq_warm_thrusters {
   });
 }
 
-sub _getsome {
-  my ($num_slots, $where) = @_;
-  return () if ((!defined $num_slots) or ($num_slots < 1));
-  return () if ((!defined $where) or (ref {} ne ref $where));
+sub jq_getsome {
+  my $num_slots = shift;
+  return () unless $num_slots and $num_slots > 0;
 
   my $jobs = schema('netdisco')->resultset('Admin');
-  my $rs = $jobs->search({
+  my @returned = ();
+
+  my %jobsearch = (
     status => 'queued',
     device => { '-not_in' =>
       $jobs->skipped(setting('workers')->{'BACKEND'},
                      setting('workers')->{'max_deferrals'},
                      setting('workers')->{'retry_after'})
            ->columns('device')->as_query },
-    %$where,
-  }, { order_by => 'random()', rows => $num_slots });
+  );
+  my %randoms = (order_by => 'random()', rows => $num_slots );
 
-  my @returned = ();
+  my $hiprio = $jobs->search({
+    %jobsearch,
+    -or => [{
+        username => { '!=' => undef },
+        action => { -in => setting('job_prio')->{'normal'} },
+      },{
+        action => { -in => setting('job_prio')->{'high'} },
+    }],
+  }, {
+    %randoms,
+    '+select' => [\'100 as job_priority'], '+as' => ['me.job_priority'],
+  });
+
+  my $loprio = $jobs->search({
+    %jobsearch,
+    action => { -in => setting('job_prio')->{'normal'} },
+  }, {
+    %randoms,
+    '+select' => [\'0 as job_priority'], '+as' => ['me.job_priority'],
+  });
+
+  my $rs = $hiprio->union($loprio)->search(undef, {
+    order_by => { '-desc' => 'job_priority' },
+    rows => $num_slots,
+  });
+
   while (my $job = $rs->next) {
     if ($job->device) {
       # need to handle device discovered since backend daemon started
@@ -138,23 +163,6 @@ sub _getsome {
   }
 
   return @returned;
-}
-
-sub jq_getsome {
-  return _getsome(shift,
-    { action => { -in => setting('job_prio')->{'normal'} } }
-  );
-}
-
-sub jq_getsomep {
-  return _getsome(shift, {
-    -or => [{
-        username => { '!=' => undef },
-        action => { -in => setting('job_prio')->{'normal'} },
-      },{
-        action => { -in => setting('job_prio')->{'high'} },
-    }],
-  });
 }
 
 sub jq_locked {

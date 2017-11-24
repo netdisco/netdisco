@@ -6,7 +6,7 @@ use warnings;
 use base 'DBIx::Class::ResultSet';
 
 __PACKAGE__->load_components(qw/
-  Helper::ResultSet::SetOperations
+  +App::Netdisco::DB::SetOperations
   Helper::ResultSet::Shortcut
   Helper::ResultSet::CorrelateRelationship
 /);

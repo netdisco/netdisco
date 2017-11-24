@@ -6,7 +6,7 @@ use List::Util 'sum';
 use App::Netdisco::Util::MCE;
 
 use App::Netdisco::JobQueue
-  qw/jq_locked jq_getsome jq_getsomep jq_lock jq_warm_thrusters/;
+  qw/jq_locked jq_getsome jq_lock jq_warm_thrusters/;
 
 use Role::Tiny;
 use namespace::clean;
@@ -60,28 +60,8 @@ sub worker_body {
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
                      - $self->{queue}->pending();
-      debug "mgr ($wid): getting potential jobs for $num_slots workers (HP)";
+      debug "mgr ($wid): getting potential jobs for $num_slots workers";
 
-      # get some high priority jobs
-      # TODO also check for stale jobs in Netdisco DB
-      foreach my $job ( jq_getsomep($num_slots) ) {
-          next if $seen_job{ $memoize->($job) }++;
-
-          # mark job as running
-          next unless jq_lock($job);
-          info sprintf "mgr (%s): job %s booked out for this processing node",
-            $wid, $job->id;
-
-          # copy job to local queue
-          $self->{queue}->enqueuep(100, $job);
-      }
-
-      $num_slots = parse_max_workers( setting('workers')->{tasks} )
-                     - $self->{queue}->pending();
-      debug "mgr ($wid): getting potential jobs for $num_slots workers (NP)";
-
-      # get some normal priority jobs
-      # TODO also check for stale jobs in Netdisco DB
       foreach my $job ( jq_getsome($num_slots) ) {
           next if $seen_job{ $memoize->($job) }++;
 
@@ -91,7 +71,7 @@ sub worker_body {
             $wid, $job->id;
 
           # copy job to local queue
-          $self->{queue}->enqueue($job);
+          $self->{queue}->enqueuep($job->job_priority, $job);
       }
 
       #if (scalar grep {$_ > 1} values %seen_job) {

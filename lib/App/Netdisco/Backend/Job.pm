@@ -21,6 +21,7 @@ foreach my $slot (qw/
       userip
       log
       device_key
+      job_priority
 
       _current_phase
       _last_namespace
