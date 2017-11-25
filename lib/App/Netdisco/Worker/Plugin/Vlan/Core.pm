@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Vlan::Native;
+package App::Netdisco::Worker::Plugin::Vlan::Core;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
@@ -18,7 +18,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   vars->{'iid'} = get_iid($snmp, vars->{'port'})
     or return Status->error("Failed to get port ID for [$pn] from $device");
 
-  return Status->noop("Vlan set can continue.");
+  return Status->info("Vlan set can continue.");
 });
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {

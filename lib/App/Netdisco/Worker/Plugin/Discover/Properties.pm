@@ -237,7 +237,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
     $device->update_or_insert(undef, {for => 'update'});
     $device->ports->populate([values %interfaces]);
 
-    return Status->noop(sprintf ' [%s] interfaces - added %d new interfaces',
+    return Status->info(sprintf ' [%s] interfaces - added %d new interfaces',
       $device->ip, scalar values %interfaces);
   });
 });

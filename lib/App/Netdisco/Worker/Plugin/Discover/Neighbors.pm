@@ -67,6 +67,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         ($remote_id ? (device_key => $remote_id) : ()),
       });
   }
+
+  return Status->info(sprintf ' [%s] neigh - processed %s neighbors',
+       $device->ip, scalar @to_discover);
 });
 
 =head2 store_neighbors( $device )

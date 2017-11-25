@@ -87,7 +87,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->port_vlans->populate(\@portvlans);
 
-    return Status->noop(sprintf ' [%s] vlans - added %d new port VLANs',
+    return Status->info(sprintf ' [%s] vlans - added %d new port VLANs',
       $device->ip, scalar @portvlans);
   });
 });

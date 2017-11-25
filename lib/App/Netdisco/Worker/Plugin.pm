@@ -51,7 +51,7 @@ register 'register_worker' => sub {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
 
-      return $job->add_status( Status->noop('worker not applicable to this device') )
+      return $job->add_status( Status->info('worker not applicable to this device') )
         if ($no and check_acl_no($job->device, $no))
            or ($only and not check_acl_only($job->device, $only));
 
@@ -68,7 +68,7 @@ register 'register_worker' => sub {
       }
 
       # per-device action but no device creds available
-      return $job->add_status( Status->noop('worker driver or action not applicable') )
+      return $job->add_status( Status->info('worker driver or action not applicable') )
         if 0 == scalar @newuserconf;
     }
 

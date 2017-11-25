@@ -77,7 +77,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->wireless_ports->populate(\@channels);
 
-    return Status->noop(sprintf ' [%s] wireless - added %d new wireless channels',
+    return Status->info(sprintf ' [%s] wireless - added %d new wireless channels',
       $device->ip, scalar @channels);
   });
 });

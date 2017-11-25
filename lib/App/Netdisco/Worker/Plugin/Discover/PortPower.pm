@@ -19,7 +19,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $p_status = $snmp->peth_power_status;
 
   if (!defined $p_watts) {
-      return Status->noop(sprintf ' [%s] power - 0 power modules', $device->ip);
+      return Status->info(sprintf ' [%s] power - 0 power modules', $device->ip);
   }
 
   # build device module power info suitable for DBIC
@@ -73,7 +73,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->powered_ports->populate(\@portpower);
 
-    return Status->noop(sprintf ' [%s] power - added %d new PoE capable ports',
+    return Status->info(sprintf ' [%s] power - added %d new PoE capable ports',
       $device->ip, scalar @portpower);
   });
 });

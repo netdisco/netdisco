@@ -49,13 +49,13 @@ sub BUILD {
 
 =head1 METHODS
 
-=head2 summary
+=head2 display_name
 
 An attempt to make a meaningful written statement about the job.
 
 =cut
 
-sub summary {
+sub display_name {
   my $job = shift;
   return join ' ',
     $job->action,
@@ -87,8 +87,8 @@ sub finalise_status {
     next if $status->phase 
       and $status->phase !~ m/^(?:check|early|main)$/;
 
-    next if $status->phase eq 'check'
-      and $status->level eq Status->done()->level;
+    # done() from check phase should not be the action's done()
+    next if $status->phase eq 'check' and $status->is_ok;
 
     if ($status->level >= $max_level) {
       $job->status( $status->status );
@@ -110,8 +110,8 @@ sub check_passed {
   return true if 0 == scalar @{ $job->_statuslist };
 
   foreach my $status (@{ $job->_statuslist }) {
-    next unless $status->phase and $status->phase eq 'check';
-    return true if $status->is_ok;
+    return true if
+      (($status->phase eq 'check') and $status->is_ok);
   }
   return false;
 }
@@ -128,7 +128,7 @@ sub namespace_passed {
 
   if ($job->_last_namespace) {
     foreach my $status (@{ $job->_statuslist }) {
-      next unless ($status->phase and $status->phase eq $workerconf->{phase})
+      next unless ($status->phase eq $workerconf->{phase})
               and ($workerconf->{namespace} eq $job->_last_namespace)
               and ($workerconf->{priority} < $job->_last_priority);
       return true if $status->is_ok;
@@ -169,8 +169,7 @@ sub add_status {
   $status->phase( $job->_current_phase || '' );
   push @{ $job->_statuslist }, $status;
   debug $status->log if $status->log
-    and (($status->phase eq 'check')
-      or ($status->level ne Status->done()->level));
+    and (($status->phase eq 'check') or $status->not_ok);
 }
 
 =head1 ADDITIONAL COLUMNS

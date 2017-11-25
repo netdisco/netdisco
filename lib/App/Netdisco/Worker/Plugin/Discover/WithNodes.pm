@@ -33,6 +33,8 @@ register_worker({ phase => 'main' }, sub {
       userip => $job->userip,
     });
   }
+
+  return Status->info("Queued macsuck and arpnip for $device.");
 });
 
 true;

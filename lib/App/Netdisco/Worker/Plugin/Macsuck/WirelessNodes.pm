@@ -20,14 +20,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $cd11_txrate = $snmp->cd11_txrate;
   return unless $cd11_txrate and scalar keys %$cd11_txrate;
 
-  if (setting('store_wireless_clients')) {
-    debug sprintf ' [%s] macsuck - gathering wireless client info',
-      $device->ip;
-  }
-  else {
-    return Status->noop(sprintf ' [%s] macsuck - dot11 info available but skipped due to config',
-      $device->ip);
-  }
+  return Status->info(sprintf ' [%s] macsuck - dot11 info available but skipped due to config',
+    $device->ip) unless setting('store_wireless_clients');
 
   my $cd11_rateset = $snmp->cd11_rateset();
   my $cd11_uptime  = $snmp->cd11_uptime();
@@ -77,6 +71,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         });
     });
   }
+
+  return Status->info(sprintf ' [%s] macsuck - processed %s wireless nodes',
+    $device->ip, scalar keys %{ $cd11_txrate });
 });
 
 true;

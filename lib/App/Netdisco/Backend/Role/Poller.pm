@@ -29,7 +29,7 @@ sub worker_body {
       try {
           $job->started(scalar localtime);
           prctl sprintf 'nd2: #%s poll: #%s: %s',
-            $wid, $job->id, $job->summary;
+            $wid, $job->id, $job->display_name;
           info sprintf "pol (%s): starting %s job(%s) at %s",
             $wid, $job->action, $job->id, $job->started;
           $self->run($job);

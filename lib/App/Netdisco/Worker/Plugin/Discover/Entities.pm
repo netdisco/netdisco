@@ -41,7 +41,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         });
       });
 
-      return Status->noop(
+      return Status->info(
         sprintf ' [%s] modules - 0 chassis components (added one pseudo for chassis)',
         $device->ip);
   }
@@ -87,7 +87,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->modules->populate(\@modules);
 
-    return Status->noop(sprintf ' [%s] modules - added %d new chassis modules',
+    return Status->info(sprintf ' [%s] modules - added %d new chassis modules',
       $device->ip, scalar @modules);
   });
 });

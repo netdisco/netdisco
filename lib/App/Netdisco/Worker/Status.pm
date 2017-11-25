@@ -3,7 +3,7 @@ package App::Netdisco::Worker::Status;
 use strict;
 use warnings;
 
-use Dancer qw/:moose :syntax !error/;
+use Dancer qw/:moose :syntax !error !info/;
 
 use Moo;
 use namespace::clean;
@@ -26,24 +26,29 @@ The status can be:
 
 =item * C<done>
 
-At C<check> phase, indicates the action may continue. At other phases,
-indicates the worker has completed without error or has no work to do.
+success and this could be the outcome of the action
 
-=item * C<error>
+=item * C<info>
 
-Indicates that there is an error condition. Also used to quit a worker without
-side effects that C<done> and C<defer> have.
+success and notable but not the main goal of the action
 
 =item * C<defer>
 
-Quits a worker. If the final recorded outcome for a device is C<defer> several
-times in a row, then it may be skipped from further jobs.
+failed to connect, should increment defer counters
+
+=item * C<error>
+
+had a problem and was unsuccessful
+
+=item * C<()>
+
+skipped the worker for some reason but not fatal
 
 =back
 
 =head1 METHODS
 
-=head2 done, error, defer
+=head2 done, info, defer, error
 
 Shorthand for new() with setting param, accepts log as arg.
 
@@ -58,21 +63,10 @@ sub _make_new {
   return $new;
 }
 
-sub error { shift->_make_new('error', @_) }
 sub done  { shift->_make_new('done', @_)  }
+sub info  { shift->_make_new('info', @_)  }
 sub defer { shift->_make_new('defer', @_) }
-
-=head2 noop
-
-Simply logs a message at debug level if passed, and returns true. Used for
-consistency with other Status class methods but really does nothing.
-
-=cut
-
-sub noop {
-  debug $_[1] if $_[1];
-  return true;
-}
+sub error { shift->_make_new('error', @_) }
 
 =head2 is_ok
 
@@ -84,7 +78,7 @@ sub is_ok { return $_[0]->status eq 'done' }
 
 =head2 not_ok
 
-Returns true if status is C<error> or C<defer>.
+Returns true if status is C<error>, C<defer>, or C<info>.
 
 =cut
 
@@ -98,8 +92,9 @@ A numeric constant for the status, to allow comparison.
 
 sub level {
   my $self = shift;
-  return (($self->status eq 'done') ? 3
-                                    : ($self->status eq 'defer') ? 2 : 1);
+  return (($self->status eq 'done')  ? 4
+        : ($self->status eq 'info')  ? 3
+        : ($self->status eq 'defer') ? 2 : 1);
 }
 
 1;

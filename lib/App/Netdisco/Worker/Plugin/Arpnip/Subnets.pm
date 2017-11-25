@@ -24,7 +24,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
   store_subnet($_, $now) for @subnets;
 
-  return Status->noop(sprintf ' [%s] arpnip - processed %s Subnet entries',
+  return Status->info(sprintf ' [%s] arpnip - processed %s Subnet entries',
     $device->ip, scalar @subnets);
 });
 
