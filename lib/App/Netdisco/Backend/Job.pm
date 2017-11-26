@@ -174,6 +174,10 @@ sub add_status {
 
 =head1 ADDITIONAL COLUMNS
 
+Columns which exist in this class but are not in
+L<App::Netdisco::DB::Result::Admin> class.
+
+
 =head2 id
 
 Alias for the C<job> column.
@@ -185,6 +189,20 @@ sub id { (shift)->job }
 =head2 extra
 
 Alias for the C<subaction> column.
+
+=head2 only_namespace
+
+Action command from the user can be an action name or the action name plus one
+child namespace in the form: "C<action::child>". This slot stores the C<child>
+component of the command so that C<action> is backwards compatible with
+Netdisco.
+
+=head2 job_priority
+
+When selecting jobs from the database, some types of job are higher priority -
+usually those submitted in the web interface by a user, and those making
+changes (writing to) the device. This slot stores a number which is the
+priority of the job and is used by L<MCE> when managing its job queue.
 
 =cut
 

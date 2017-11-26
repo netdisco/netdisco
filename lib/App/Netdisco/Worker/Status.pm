@@ -26,23 +26,27 @@ The status can be:
 
 =item * C<done>
 
-success and this could be the outcome of the action
+Indicates a state of success and a log message which may be used as the
+outcome for the action.
 
 =item * C<info>
 
-success and notable but not the main goal of the action
+The worker has completed successfully and a debug log will be issued, but the
+outcome is not the main goal of the action.
 
 =item * C<defer>
 
-failed to connect, should increment defer counters
+Issued when the worker has failed to connect to the remote device, or is not
+permitted to connect (through user config).
 
 =item * C<error>
 
-had a problem and was unsuccessful
+Something went wrong which should not normally be the case.
 
 =item * C<()>
 
-skipped the worker for some reason but not fatal
+This is not really a status. The worker can return any value not an instance
+of this class to indicate a "pass", or non-error conclusion.
 
 =back
 
