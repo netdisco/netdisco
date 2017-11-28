@@ -153,15 +153,13 @@ connection parameters to match those for your local system (that is, the
 C<name>, C<user> and C<pass>).
 
 In the same file uncomment and edit the C<domain_suffix> setting to be
-appropriate for your local site.
-
-Change the C<community> string setting if your site has different values, and
-uncomment the C<schedule> setting to enable SNMP data gathering from
-devices (this replaces cron jobs in Netdisco 1).
+appropriate for your local site. Change the C<community> string setting if
+your site has different values.
 
 Have a quick read of the other settings to make sure you're happy, then move
-on. See L<Configuration|https://github.com/netdisco/netdisco/wiki/Configuration> for further
-details.
+on. See
+L<Configuration|https://github.com/netdisco/netdisco/wiki/Configuration> for
+further details.
 
 =head1 Initialisation
 
