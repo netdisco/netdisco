@@ -29,7 +29,7 @@ sub load_workers {
     $plugin =~ s/^\+//;
 
     next unless $plugin =~ m/::Plugin::${action}(?:::|$)/i;
-    $ENV{PLUGIN_LOAD_DEBUG} && debug "loading worker plugin $plugin";
+    $ENV{ND2_LOG_PLUGINS} && debug "loading worker plugin $plugin";
     Module::Load::load $plugin;
   }
 

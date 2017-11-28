@@ -34,7 +34,7 @@ sub _load_web_plugins {
         if $plugin !~ m/^\+/;
       $plugin =~ s/^\+//;
 
-      $ENV{PLUGIN_LOAD_DEBUG} && debug "loading web plugin $plugin";
+      $ENV{ND2_LOG_PLUGINS} && debug "loading web plugin $plugin";
       Module::Load::load $plugin;
   }
 }
