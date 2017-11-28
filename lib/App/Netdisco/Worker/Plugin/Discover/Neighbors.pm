@@ -45,14 +45,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
       my ($ip, $remote_type, $remote_id) = @$neighbor;
-      next if $remote_id and $seen_id{ $remote_id }++;
+      if ($remote_id and $seen_id{ $remote_id }++) {
+          debug sprintf
+            ' queue - skip: %s with ID [%s] already queued from %s',
+            $ip, $remote_id, $device->ip;
+          next;
+      }
 
       my $device = get_device($ip);
       next if $device->in_storage;
 
       if (not is_discoverable($device, $remote_type)) {
           debug sprintf
-            ' queue - %s, type [%s] excluded by discover_* config',
+            ' queue - skip: %s of type [%s] excluded by discover_* config',
             $ip, ($remote_type || '');
           next;
       }
