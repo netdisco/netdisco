@@ -18,7 +18,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: 2.036012_002
+    version: 2.036012_003
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -33,7 +33,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '44'
+    version: '45'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -166,6 +166,8 @@ provides:
     file: lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
   App::Netdisco::DB::ResultSet::Subnet:
     file: lib/App/Netdisco/DB/ResultSet/Subnet.pm
+  App::Netdisco::DB::SetOperations:
+    file: lib/App/Netdisco/DB/SetOperations.pm
   App::Netdisco::Environment:
     file: lib/App/Netdisco/Environment.pm
   App::Netdisco::GenericDB:
@@ -432,7 +434,7 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Stats.pm
   App::Netdisco::Worker::Plugin::Vlan:
     file: lib/App/Netdisco/Worker/Plugin/Vlan.pm
-  App::Netdisco::Worker::Plugin::Vlan::Native:
+  App::Netdisco::Worker::Plugin::Vlan::Core:
     file: lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
   App::Netdisco::Worker::Runner:
     file: lib/App/Netdisco/Worker/Runner.pm
@@ -490,7 +492,7 @@ requires:
   Plack::Middleware::ReverseProxy: '0.15'
   Pod::Usage: '0'
   Role::Tiny: '1.002005'
-  SNMP::Info: '3.37'
+  SNMP::Info: '3.38'
   SQL::Translator: '0.11018'
   Scope::Guard: '0'
   Sereal: '0'
@@ -516,5 +518,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: 2.036012_002
+version: 2.036012_003
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

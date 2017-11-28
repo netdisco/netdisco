@@ -1,12 +1,16 @@
-2.036012_002 - EXPERIMENTAL RELEASE
+2.036012_003 - EXPERIMENTAL RELEASE
 
   [NEW FEATURES]
 
   * Backend worker plugins: https://github.com/netdisco/netdisco/wiki/Backend-Plugins
+  * ND2_SINGLE_WORKER environment variable to force one backend worker
 
   [ENHANCEMENTS]
 
   * Move most documentation to https://github.com/netdisco/netdisco/wiki
+  * Deduplicate neighbors based on lldpRemChassisId
+  * Scheduler config does not need to be uncommented
+  * More efficient polling of the job queue
 
 2.036011 - 2017-10-09
 
