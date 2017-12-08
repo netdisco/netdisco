@@ -10,5 +10,23 @@
                 <span class="nd_searchcheckbox uneditable-input">Partial Match</span>
               </label>
             </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="port_uplink"
+                  name="uplink"[% ' checked="checked"' IF params.uplink %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="port_uplink">
+                <span class="nd_searchcheckbox uneditable-input">Uplinks</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="port_ethernet"
+                  name="ethernet"[% ' checked="checked"' IF params.ethernet %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="port_ethernet">
+                <span class="nd_searchcheckbox uneditable-input">Ethernet Only</span>
+              </label>
+            </div>
             <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
               <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Ports</button>

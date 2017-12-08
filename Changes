@@ -12,6 +12,10 @@
   * Scheduler config does not need to be uncommented
   * More efficient polling of the job queue
 
+  [BUG FIXES]
+
+  * Specific search from titlebar uses default sidebar settings
+
 2.036011 - 2017-10-09
 
   [BUG FIXES]

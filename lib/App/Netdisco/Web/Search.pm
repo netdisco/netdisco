@@ -15,24 +15,24 @@ hook 'before' => sub {
     { name => 'deviceports', label => 'Device Ports', default => 'on' },
   ]);
 
+  # view settings for port options
+  var('port_options' => [
+    { name => 'ethernet', label => 'Ethernet Only', default => 'on' },
+  ]);
+
   # view settings for device options
   var('device_options' => [
     { name => 'matchall', label => 'Match All Options', default => 'on' },
   ]);
 
-  return unless (request->path eq uri_for('/search')->path
-      or index(request->path, uri_for('/ajax/content/search')->path) == 0);
+  return unless param('firstsearch') and
+    (request->path eq uri_for('/search')->path
+    or index(request->path, uri_for('/ajax/content/search')->path) == 0);
 
-  foreach my $col (@{ var('node_options') }) {
-      next unless $col->{default} eq 'on';
-      params->{$col->{name}} = 'checked'
-        if not param('tab') or param('tab') ne 'node';
-  }
-
-  foreach my $col (@{ var('device_options') }) {
-      next unless $col->{default} eq 'on';
-      params->{$col->{name}} = 'checked'
-        if not param('tab') or param('tab') ne 'device';
+  foreach my $col (@{ var('node_options')   },
+                   @{ var('port_options')   },
+                   @{ var('device_options') }) {
+      params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
   }
 };
 

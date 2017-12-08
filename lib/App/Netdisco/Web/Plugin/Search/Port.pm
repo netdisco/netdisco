@@ -18,33 +18,48 @@ get '/ajax/content/search/port' => require_login sub {
     if ( $q =~ m/^\d+$/ ) {
         $rs
             = schema('netdisco')->resultset('DevicePort')
-            ->columns( [qw/ ip port name descr /] )->search(
-            { "port_vlans.vlan" => $q },
-            {   '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
+            ->columns( [qw/ ip port name up up_admin speed /] )->search({
+              "port_vlans.vlan" => $q,
+              ( param('uplink') ? () : (-or => [
+                {-not_bool => "me.is_uplink"},
+                {"me.is_uplink" => undef},
+              ]) ),
+              ( param('ethernet') ? ("me.type" => 'ethernetCsmacd') : () ),
+            },{ '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
                 join       => [qw/ port_vlans device /]
             }
-            );
+            )->with_times;
     }
     else {
         my ( $likeval, $likeclause ) = sql_match($q);
 
         $rs
             = schema('netdisco')->resultset('DevicePort')
-            ->columns( [qw/ ip port name descr /] )->search(
-            {   -or => [
-                    { "me.name" => ( param('partial') ? $likeclause : $q ) },
-                    (   length $q == 17
-                        ? { "me.mac" => $q }
-                        : \[ 'me.mac::text ILIKE ?', $likeval ]
-                    ),
+                                ->columns( [qw/ ip port name up up_admin speed /] )
+                                ->search({
+              -and => [
+                -or => [
+                  { "me.name" => ( param('partial') ? $likeclause : $q ) },
+                  (   length $q == 17
+                      ? { "me.mac" => $q }
+                      : \[ 'me.mac::text ILIKE ?', $likeval ]
+                  ),
+                  ( param('uplink') ? (
                     { "me.remote_id"   => $likeclause },
                     { "me.remote_type" => $likeclause },
-                ]
+                  ) : () ),
+                ],
+                ( param('uplink') ? () : (-or => [
+                  {-not_bool => "me.is_uplink"},
+                  {"me.is_uplink" => undef},
+                ]) ),
+                ( param('ethernet') ? ("me.type" => 'ethernetCsmacd') : () ),
+              ]
             },
             {   '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
                 join       => [qw/ port_vlans device /]
             }
-            );
+            )->with_times;
     }
 
     my @results = $rs->hri->all;
