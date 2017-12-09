@@ -44,8 +44,18 @@ device_auth:
 # OTHER INTERESTING SETTINGS WHERE THE DEFAULTS ARE PROBABLY OKAY
 # ---------------------------------------------------------------
 
-# this is the schedule for automatically keeping netdisco up-to-date
-# ``````````````````````````````````````````````````````````````````
+# do not discover IP Phones or Wireless Access Points.
+# usually these are visible as device neighbors but don't support
+# SNMP, which just clogs up the job queue.
+# ```````````````````````````````````````````````````````````````
+#discover_no_type:
+#  - '(?i)phone'
+#  - '(?i)(?:wap|wireless)'
+
+# this is the schedule for automatically keeping netdisco up-to-date;
+# these are good defaults, so only uncomment if needing to change.
+# (or set "schedule: null" if you wish to disable the scheduler)
+# ````````````````````````````````````````````````````````````````````
 #schedule:
 #  discoverall:
 #    when: '5 7 * * *'
@@ -59,14 +69,6 @@ device_auth:
 #    when: '0 8,13,21 * * *'
 #  expire:
 #    when: '30 23 * * *'
-
-# do not discover IP Phones or Wireless Access Points.
-# usually these are visible as device neighbors but don't support
-# SNMP, which just clogs up the job queue.
-# ```````````````````````````````````````````````````````````````
-#discover_no_type:
-#  - '(?i)phone'
-#  - '(?i)(?:wap|wireless)'
 
 # number of SNMP workers to run in parallel (in netdisco-backend).
 # the default is twice the number of CPU cores. increase this if
