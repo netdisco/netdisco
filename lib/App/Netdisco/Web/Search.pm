@@ -8,50 +8,8 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::Util::Web 'sql_match';
 use NetAddr::MAC ();
 
-hook 'before' => sub {
-  # view settings for node options
-  var('node_options' => [
-    { name => 'stamps',      label => 'Time Stamps',  default => 'on' },
-    { name => 'deviceports', label => 'Device Ports', default => 'on' },
-  ]);
-
-  # view settings for port options
-  var('port_options' => [
-    { name => 'ethernet', label => 'Ethernet Only', default => 'on' },
-  ]);
-
-  # view settings for device options
-  var('device_options' => [
-    { name => 'matchall', label => 'Match All Options', default => 'on' },
-  ]);
-
-  return unless param('firstsearch') and
-    (request->path eq uri_for('/search')->path
-    or index(request->path, uri_for('/ajax/content/search')->path) == 0);
-
-  foreach my $col (@{ var('node_options')   },
-                   @{ var('port_options')   },
-                   @{ var('device_options') }) {
-      params->{$col->{name}} = 'checked' if $col->{default} eq 'on';
-  }
-};
-
 hook 'before_template' => sub {
   my $tokens = shift;
-
-  # new searches will use these defaults in their sidebars
-  $tokens->{search_node}   = uri_for('/search', {tab => 'node'});
-  $tokens->{search_device} = uri_for('/search', {tab => 'device'});
-
-  foreach my $col (@{ var('node_options') }) {
-      next unless $col->{default} eq 'on';
-      $tokens->{search_node}->query_param($col->{name}, 'checked');
-  }
-
-  foreach my $col (@{ var('device_options') }) {
-      next unless $col->{default} eq 'on';
-      $tokens->{search_device}->query_param($col->{name}, 'checked');
-  }
 
   return unless (request->path eq uri_for('/search')->path
       or index(request->path, uri_for('/ajax/content/search')->path) == 0);

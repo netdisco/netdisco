@@ -71,6 +71,24 @@ Dancer::Session::Cookie::init(session);
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 
+hook 'before' => sub {
+  my $key = request->path;
+  if (param('tab') and ($key !~ m/ajax/)) {
+      $key .= ('/' . param('tab'));
+  }
+  $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
+  vars->{'sidebar_key'} = $key;
+
+  return unless param('firstsearch')
+            and exists setting('sidebar_defaults')->{$key};
+
+  # new searches will use these defaults in their sidebars
+  my %params = %{ setting('sidebar_defaults')->{$key} };
+  foreach my $p (keys %params) {
+      params->{$p} = $params{$p} if $params{$p};
+  }
+};
+
 # this hook should be loaded _after_ all plugins
 hook 'before_template' => sub {
     my $tokens = shift;
@@ -92,9 +110,34 @@ hook 'before_template' => sub {
     $tokens->{table_showrecordsmenu} =
       to_json( setting('table_showrecordsmenu') );
 
+    # linked searches will use these defaults in their sidebars
+    foreach my $sidebar_key (keys %{ setting('sidebar_defaults') }) {
+        my ($mode, $report) = ($sidebar_key =~ m/(\w+)_(\w+)/);
+        if ($mode =~ m/^search$/) {
+            $tokens->{$sidebar_key} = uri_for("/$mode", {tab => $report});
+        }
+        elsif ($mode =~ m/^report$/) {
+            $tokens->{$sidebar_key} = uri_for("/$mode/$report");
+        }
+
+        if (exists setting('sidebar_defaults')->{$sidebar_key}) {
+            foreach my $col (keys %{ setting('sidebar_defaults')->{$sidebar_key} }) {
+                if (var('sidebar_key') eq $sidebar_key) {
+                    $tokens->{$sidebar_key}->query_param($col, params->{$col})
+                      if params->{$col};
+                }
+                else {
+                    $tokens->{$sidebar_key}->query_param($col,
+                      setting('sidebar_defaults')->{$sidebar_key}->{$col});
+                }
+            }
+        }
+
+        $tokens->{$sidebar_key} = $tokens->{$sidebar_key}->path_query;
+    }
+
     # fix Plugin Template Variables to be only path+query
-    $tokens->{$_} = $tokens->{$_}->path_query
-      for qw/search_node search_device device_ports/;
+    $tokens->{device_ports} = $tokens->{device_ports}->path_query;
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

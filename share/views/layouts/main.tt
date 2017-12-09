@@ -86,7 +86,7 @@
               <ul class="dropdown-menu">
               [% FOREACH item IN settings._reports_menu.$category %]
                 [% NEXT IF settings._reports.$item.hidden %]
-                <li><a href="[% uri_for('/report/' _ item) %]">[% settings._reports.$item.label | html_entity %]</a></li>
+                <li><a href="[% uri_for('/report/' _ item) %]?firstsearch=on">[% settings._reports.$item.label | html_entity %]</a></li>
               [% END %]
               </ul>
             </li>

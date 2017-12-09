@@ -85,6 +85,25 @@ web_plugins:
   - Device::Neighbors
   - Device::Addresses
 extra_web_plugins: []
+sidebar_defaults:
+  search_node:
+    stamps:      checked
+    deviceports: checked
+    show_vendor: null
+    archived:    null
+    partial:     null
+    age_invert:  null
+    daterange:   null
+    mac_format:  IEEE
+  search_port:
+    partial:     null
+    uplink:      null
+    ethernet:    checked
+  search_device:
+    matchall:    checked
+  report_moduleinventory:
+    fruonly:     checked
+    matchall:    checked
 jobqueue_refresh: 10
 safe_password_store: true
 reports: []
