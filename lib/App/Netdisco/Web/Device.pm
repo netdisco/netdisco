@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use URI ();
 use Storable 'dclone';
 use Scope::Guard 'guard';
 use URL::Encode 'url_params_mixed';
@@ -50,20 +51,22 @@ hook 'before' => sub {
       push @{ vars->{'guards'} },
            guard { setting('sidebar_defaults')->{'device_ports'} = $defaults };
 
-      foreach my $key (keys %{ setting('sidebar_defaults')->{'device_ports'} }) {
-        next unless defined $cdata->{$key}
-          and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
+      foreach my $key (keys %{ $defaults }) {
         setting('sidebar_defaults')->{'device_ports'}->{$key}->{'default'}
           = $cdata->{$key};
       }
     }
   }
+};
 
-  return unless (request->path eq uri_for('/device')->path
-    or index(request->path, uri_for('/ajax/content/device')->path) == 0);
+hook 'before_template' => sub {
+  return unless var('sidebar_key') and (var('sidebar_key') eq 'device_ports');
 
-# TODO set cookie
-#  if (param('reset') or not param('tab') or param('tab') ne 'ports') {
+  my $uri = URI->new();
+  foreach my $key (keys %{ setting('sidebar_defaults')->{'device_ports'} }) {
+    $uri->query_param($key => params->{$key}) if params->{$key};
+  }
+  cookie('nd_ports-form' => $uri->query(), expires => '365 days');
 };
 
 get '/device' => require_login sub {

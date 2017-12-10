@@ -81,11 +81,14 @@ hook 'before' => sub {
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
   vars->{'sidebar_key'} = $key;
 
+  # search or report from navbar can ignore params
+  return if param('firstsearch');
+
   my $defaults = dclone (setting('sidebar_defaults')->{$key} or return);
   push @{ vars->{'guards'} },
        guard { setting('sidebar_defaults')->{$key} = $defaults };
 
-  # new searches will use these defaults in their sidebars
+  # otherwise update defaults to contain the passed url params
   setting('sidebar_defaults')->{$key}->{$_}->{'default'} = params->{$_}
     for keys %{ $defaults };
 };
@@ -126,6 +129,7 @@ hook 'before_template' => sub {
                 $tokens->{$sidebar_key}->query_param($col,
                   setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'});
 
+                # used by the sidebar templates when first rendering
                 $tokens->{"${sidebar_key}_defaults"}->{$col}
                   = setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'};
             }

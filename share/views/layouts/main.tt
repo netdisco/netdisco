@@ -86,7 +86,7 @@
               <ul class="dropdown-menu">
               [% FOREACH item IN settings._reports_menu.$category %]
                 [% NEXT IF settings._reports.$item.hidden %]
-                <li><a href="[% uri_for('/report/' _ item) %]">[% settings._reports.$item.label | html_entity %]</a></li>
+                <li><a href="[% uri_for('/report/' _ item) %]?firstsearch=on">[% settings._reports.$item.label | html_entity %]</a></li>
               [% END %]
               </ul>
             </li>
@@ -138,6 +138,7 @@
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
         <input placeholder="Find Anything" class="search-query span3"
           id="nq" name="q" value="[% display_name %]" type="text" autocomplete="off"/>
+        <input name="firstsearch" type="hidden" value="on">
         <div class="btn-group nd_navbar-search-group">
           <button class="btn btn-inverse nd_navbar-search-icon">
             <span style="font-size: 18px;">
