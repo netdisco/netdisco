@@ -96,15 +96,13 @@
         </span>
       [% END %]
       [% END %]
-        <a class="nd_this-port-only nd_port-only-first" href="[% uri_for('/device',
-            self_options) %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
+        <a class="nd_this-port-only nd_port-only-first" href="[% device_ports %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
           [% IF row.is_master %]
             <small><i class="icon-group muted"></i></small>&nbsp;
           [% END %]
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
-          <a class="nd_this-port-only" href="[% uri_for('/device',
-              self_options) %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
+          <a class="nd_this-port-only" href="[% device_ports %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
           [% row.slave_of | html_entity %]</a>
         [% END %]
       </td>
@@ -268,11 +266,11 @@
             [% ELSIF row.remote_type AND row.remote_type.match('^AP:\s') %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
-            <a href="[% uri_for('/device', self_options) %]&q=[% row.get_column('neighbor_ip') | uri %]">
+            <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]">
                 [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
             [% IF row.remote_port %]
                 -
-                <a href="[% uri_for('/device', self_options) %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
+                <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
                     [% row.remote_port | html_entity %]</a>
             [% END %]
             <br/>

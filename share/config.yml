@@ -87,23 +87,56 @@ web_plugins:
 extra_web_plugins: []
 sidebar_defaults:
   search_node:
-    stamps:      checked
-    deviceports: checked
-    show_vendor: null
-    archived:    null
-    partial:     null
-    age_invert:  null
-    daterange:   null
-    mac_format:  IEEE
+    stamps:      {default: checked }
+    deviceports: {default: checked }
+    show_vendor: {default: null }
+    archived:    {default: null }
+    partial:     {default: null }
+    age_invert:  {default: null }
+    daterange:   {default: null }
+    mac_format:  {default: IEEE }
   search_port:
-    partial:     null
-    uplink:      null
-    ethernet:    checked
+    partial:     {default: null }
+    uplink:      {default: null }
+    ethernet:    {default: checked }
   search_device:
-    matchall:    checked
+    matchall:    {default: checked }
+  device_ports:
+    c_admin:      { label: 'Port Controls', default: null, idx: 0 }
+    c_port:       { label: 'Port', default: checked, idx: 1 }
+    c_descr:      { label: 'Description', default: null, idx: 2 }
+    c_comment:    { label: 'Last Comment', default: null, idx: 3 }
+    c_type:       { label: 'Type', default: null, idx: 4 }
+    c_duplex:     { label: 'Duplex', default: null, idx: 5 }
+    c_lastchange: { label: 'Last Change', default: null, idx: 6 }
+    c_name:       { label: 'Name', default: checked, idx: 7 }
+    c_speed:      { label: 'Speed', default: null, idx: 8 }
+    c_mac:        { label: 'Port MAC', default: null, idx: 9 }
+    c_mtu:        { label: 'MTU', default: null, idx: 10 }
+    c_pvid:       { label: 'Native VLAN', default: checked, idx: 11 }
+    c_vmember:    { label: 'VLAN Membership', default: checked, idx: 12 }
+    c_power:      { label: 'PoE', default: null, idx: 13 }
+    c_ssid:       { label: 'SSID', default: null, idx: 14 }
+    c_nodes:      { label: 'Connected Nodes', default: null, idx: 15 }
+    c_neighbors:  { label: 'Connected Devices', default: checked, idx: 16 }
+    c_stp:        { label: 'Spanning Tree', default: null, idx: 17 }
+    c_up:         { label: 'Status', default: null, idx: 18 }
+    n_age:        { label: 'Age Stamp', default: null, idx: 0 }
+    n_ip4:        { label: 'IPv4 Addresses', default: checked, idx: 1 }
+    n_ip6:        { label: 'IPv6 Addresses', default: checked, idx: 2 }
+    n_netbios:    { label: 'NetBIOS Name', default: checked, idx: 3 }
+    n_ssid:       { label: 'SSID', default: checked, idx: 4 }
+    n_vendor:     { label: 'Vendor', default: null, idx: 5 }
+    n_archived:   { label: 'Archived Data', default: null, idx: 6 }
+    age_num:      { default: 3 }
+    age_unit:     { default: months }
+    mac_format:   { default: IEEE }
   report_moduleinventory:
-    fruonly:     checked
-    matchall:    checked
+    fruonly:     {default: checked }
+    matchall:    {default: checked }
+device_port_col_idx_left: 0
+device_port_col_idx_mid: 2
+device_port_col_idx_right: -1
 jobqueue_refresh: 10
 safe_password_store: true
 reports: []

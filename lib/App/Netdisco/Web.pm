@@ -85,7 +85,7 @@ hook 'before' => sub {
   # new searches will use these defaults in their sidebars
   my %params = %{ setting('sidebar_defaults')->{$key} };
   foreach my $p (keys %params) {
-      params->{$p} = $params{$p} if $params{$p};
+      params->{$p} = $params{$p}->{'default'} if $params{$p}->{'default'};
   }
 };
 
@@ -113,7 +113,7 @@ hook 'before_template' => sub {
     # linked searches will use these defaults in their sidebars
     foreach my $sidebar_key (keys %{ setting('sidebar_defaults') }) {
         my ($mode, $report) = ($sidebar_key =~ m/(\w+)_(\w+)/);
-        if ($mode =~ m/^search$/) {
+        if ($mode =~ m/^(?:search|device)$/) {
             $tokens->{$sidebar_key} = uri_for("/$mode", {tab => $report});
         }
         elsif ($mode =~ m/^report$/) {
@@ -128,16 +128,18 @@ hook 'before_template' => sub {
                 }
                 else {
                     $tokens->{$sidebar_key}->query_param($col,
-                      setting('sidebar_defaults')->{$sidebar_key}->{$col});
+                      setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'});
                 }
             }
         }
 
+        # fix Plugin Template Variables to be only path+query
         $tokens->{$sidebar_key} = $tokens->{$sidebar_key}->path_query;
     }
 
-    # fix Plugin Template Variables to be only path+query
-    $tokens->{device_ports} = $tokens->{device_ports}->path_query;
+    # helper from NetAddr::MAC for the MAC formatting
+    $tokens->{mac_format_call} = 'as_'. lc(params->{'mac_format'})
+      if params->{'mac_format'};
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;
