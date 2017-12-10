@@ -23,7 +23,9 @@ get '/ajax/content/device/ports' => require_login sub {
     # refine by ports if requested
     my $f = param('f');
     if ($f) {
-        if (($prefer eq 'vlan') or not $prefer and $f =~ m/^\d+$/) {
+        if (($prefer eq 'vlan') or (not $prefer and $f =~ m/^\d+$/)) {
+            return unless $f =~ m/^\d+$/;
+
             if (param('invert')) {
                 $set = $set->search({
                   'me.vlan' => { '!=' => $f },

@@ -15,6 +15,7 @@
   [BUG FIXES]
 
   * Specific search from titlebar uses default sidebar settings
+  * Fix Device Ports search for VLAN prefer with non-numeric value
 
 2.036011 - 2017-10-09
 
