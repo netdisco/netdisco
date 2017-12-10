@@ -14,63 +14,33 @@ ajax '/ajax/content/device/netmap' => require_login sub {
     template 'ajax/device/netmap.tt', {}, { layout => undef };
 };
 
-sub _get_name {
-    my $ip = shift;
-    my $domain = quotemeta( setting('domain_suffix') || '' );
-
-    (my $dns = (var('devices')->{$ip} || '')) =~ s/$domain$//;
-    return ($dns || $ip);
-}
-
-sub _add_children {
-    my ($ptr, $childs, $step, $limit) = @_;
-
-    return $step if $limit and $step > $limit;
-    my @legit = ();
-    my $max = $step;
-
-    foreach my $c (@$childs) {
-        next if exists var('seen')->{$c};
-        var('seen')->{$c}++;
-        push @legit, $c;
-        push @{$ptr}, {
-          ip => $c,
-          name => _get_name($c),
-        };
-    }
-
-    for (my $i = 0; $i < @legit; $i++) {
-        $ptr->[$i]->{children} = [];
-        my $nm = _add_children($ptr->[$i]->{children}, var('links')->{$legit[$i]},
-          ($step + 1), $limit);
-        $max = $nm if $nm > $max;
-    }
-
-    return $max;
-}
-
-# d3 seems not to use proper ajax semantics, so get instead of ajax
-get '/ajax/data/device/netmap' => require_login sub {
+ajax '/ajax/data/device/alldevicelinks' => require_login sub {
     my $q = param('q');
+    my %data = ( nodes => [], links => [] );
 
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
-    my $depth = (param('depth') || 8);
-    undef $depth if (defined $depth and $depth !~ m/^\d+$/);
-
-    my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($q) or send_error('Bad device', 400);
-    my $start = $device->ip;
-
     my @devices = schema('netdisco')->resultset('Device')->search({}, {
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
       columns => ['ip', 'dns', 'name'],
+      '+select' => [\'row_number() over()'], '+as' => ['row_number'],
     })->all;
-    var(devices => { map { $_->{ip} => lc($_->{dns} || $_->{name} || '') }
-                         @devices });
 
-    var(links => {});
+    my %id_for = ();
+    my $domain = quotemeta( setting('domain_suffix') || '' );
+    foreach my $device (@devices) {
+      $id_for{$device->{ip}} = $device->{'row_number'};
+      (my $name = ($device->{dns} || lc($device->{name}) || $device->{ip})) =~ s/$domain$//;
+
+      push @{$data{'nodes'}}, {
+        ID => $device->{row_number},
+        SIZEVALUE => 3000,
+        COLORVALUE => 10,
+        LABEL => $name,
+      };
+    }
+
     my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
       columns => [qw/left_ip right_ip/],
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
@@ -86,36 +56,14 @@ get '/ajax/data/device/netmap' => require_login sub {
     }
 
     while (my $l = $rs->next) {
-        var('links')->{ $l->{left_ip} } ||= [];
-        push @{ var('links')->{ $l->{left_ip} } }, $l->{right_ip};
-    }
-
-    my %tree = (
-        ip => $start,
-        name => _get_name($start), # dns or sysname or ip
-        children => [],
-    );
-
-    var(seen => {$start => 1});
-    my $max = _add_children($tree{children}, var('links')->{$start}, 1, $depth);
-    $tree{scale} = $max;
-
-    content_type('application/json');
-    to_json(\%tree);
-};
-
-ajax '/ajax/data/device/alldevicelinks' => require_login sub {
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-    });
-
-    my %tree = ();
-    while (my $l = $rs->next) {
-        push @{ $tree{ $l->{left_ip} } }, $l->{right_ip};
+      push @{$data{'links'}}, {
+        FROMID => $id_for{$l->{left_ip}},
+        TOID   => $id_for{$l->{right_ip}},
+      };
     }
 
     content_type('application/json');
-    to_json(\%tree);
+    to_json({data => \%data});
 };
 
 true;
