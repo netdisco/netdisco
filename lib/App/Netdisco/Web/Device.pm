@@ -4,6 +4,9 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+
+use Storable 'dclone';
+use Scope::Guard 'guard';
 use URL::Encode 'url_params_mixed';
 
 hook 'before' => sub {
@@ -14,6 +17,7 @@ hook 'before' => sub {
     map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
     grep { $_ =~ m/^c_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} };
 
+  # this could be done at app startup?
   splice @port_columns, setting('device_port_col_idx_left'), 0,
     grep {$_->{position} eq 'left'}  @{ setting('_extra_device_port_cols') };
   splice @port_columns, setting('device_port_col_idx_mid'), 0,
@@ -21,11 +25,11 @@ hook 'before' => sub {
   splice @port_columns, setting('device_port_col_idx_right'), 0,
     grep {$_->{position} eq 'right'} @{ setting('_extra_device_port_cols') };
 
-  var('port_columns' => \@port_columns);
-
-  # need to update sidebar_defaults so code scanning params sees plugin cols
+  # update sidebar_defaults so code scanning params sees new plugin cols
   setting('sidebar_defaults')->{'device_ports'}->{ $_->{name} } = $_
     for @port_columns;
+
+  var('port_columns' => \@port_columns);
 
   # build view settings for port connected nodes and devices
   var('connected_properties' => [
@@ -34,17 +38,18 @@ hook 'before' => sub {
     grep { $_ =~ m/^n_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
   ]);
 
-  return unless (request->path eq uri_for('/device')->path
-    or index(request->path, uri_for('/ajax/content/device')->path) == 0);
-
   # override ports form defaults with cookie settings
   if (param('reset')) {
     cookie('nd_ports-form' => '', expires => '-1 day');
   }
   elsif (my $cookie = cookie('nd_ports-form')) {
     my $cdata = url_params_mixed($cookie);
+    my $defaults = eval { dclone setting('sidebar_defaults')->{'device_ports'} };
 
-    if ($cdata and (ref {} eq ref $cdata)) {
+    if ($cdata and (ref {} eq ref $cdata) and $defaults) {
+      push @{ vars->{'guards'} },
+           guard { setting('sidebar_defaults')->{'device_ports'} = $defaults };
+
       foreach my $key (keys %{ setting('sidebar_defaults')->{'device_ports'} }) {
         next unless defined $cdata->{$key}
           and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
@@ -54,6 +59,10 @@ hook 'before' => sub {
     }
   }
 
+  return unless (request->path eq uri_for('/device')->path
+    or index(request->path, uri_for('/ajax/content/device')->path) == 0);
+
+  # force always setting params manually
   params->{'firstsearch'} = 'on';
 # TODO set cookie
 #  if (param('reset') or not param('tab') or param('tab') ne 'ports') {

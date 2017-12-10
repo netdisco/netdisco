@@ -11,6 +11,8 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
+use Storable 'dclone';
+use Scope::Guard 'guard';
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
 use App::Netdisco::Web::AuthN;
@@ -79,14 +81,13 @@ hook 'before' => sub {
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
   vars->{'sidebar_key'} = $key;
 
-  return unless param('firstsearch')
-            and exists setting('sidebar_defaults')->{$key};
+  my $defaults = dclone (setting('sidebar_defaults')->{$key} or return);
+  push @{ vars->{'guards'} },
+       guard { setting('sidebar_defaults')->{$key} = $defaults };
 
   # new searches will use these defaults in their sidebars
-  my %params = %{ setting('sidebar_defaults')->{$key} };
-  foreach my $p (keys %params) {
-      params->{$p} = $params{$p}->{'default'} if $params{$p}->{'default'};
-  }
+  setting('sidebar_defaults')->{$key}->{$_}->{'default'} = params->{$_}
+    for keys %{ $defaults };
 };
 
 # this hook should be loaded _after_ all plugins
@@ -120,16 +121,13 @@ hook 'before_template' => sub {
             $tokens->{$sidebar_key} = uri_for("/$mode/$report");
         }
 
-        if (exists setting('sidebar_defaults')->{$sidebar_key}) {
+        if (defined setting('sidebar_defaults')->{$sidebar_key}) {
             foreach my $col (keys %{ setting('sidebar_defaults')->{$sidebar_key} }) {
-                if (var('sidebar_key') eq $sidebar_key) {
-                    $tokens->{$sidebar_key}->query_param($col, params->{$col})
-                      if params->{$col};
-                }
-                else {
-                    $tokens->{$sidebar_key}->query_param($col,
-                      setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'});
-                }
+                $tokens->{$sidebar_key}->query_param($col,
+                  setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'});
+
+                $tokens->{"${sidebar_key}_defaults"}->{$col}
+                  = setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'};
             }
         }
 
