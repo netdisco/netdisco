@@ -60,11 +60,12 @@ hook 'before' => sub {
 };
 
 hook 'before_template' => sub {
-  return unless var('sidebar_key') and (var('sidebar_key') eq 'device_ports');
+  return if param('reset')
+    or not var('sidebar_key') or (var('sidebar_key') ne 'device_ports');
 
   my $uri = URI->new();
   foreach my $key (keys %{ setting('sidebar_defaults')->{'device_ports'} }) {
-    $uri->query_param($key => params->{$key}) if params->{$key};
+    $uri->query_param($key => param($key)) if exists params->{$key};
   }
   cookie('nd_ports-form' => $uri->query(), expires => '365 days');
 };

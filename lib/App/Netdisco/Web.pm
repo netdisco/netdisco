@@ -89,7 +89,7 @@ hook 'before' => sub {
        guard { setting('sidebar_defaults')->{$key} = $defaults };
 
   # otherwise update defaults to contain the passed url params
-  setting('sidebar_defaults')->{$key}->{$_}->{'default'} = params->{$_}
+  setting('sidebar_defaults')->{$key}->{$_}->{'default'} = param($_)
     for keys %{ $defaults };
 };
 
@@ -140,8 +140,8 @@ hook 'before_template' => sub {
     }
 
     # helper from NetAddr::MAC for the MAC formatting
-    $tokens->{mac_format_call} = 'as_'. lc(params->{'mac_format'})
-      if params->{'mac_format'};
+    $tokens->{mac_format_call} = 'as_'. lc(param('mac_format'))
+      if param('mac_format');
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

@@ -1,11 +1,11 @@
 <i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
-  <div class="nd_sidebar nd_sidebar-pinned">
+  <div class="nd_sidebar">
     <div class="well">
       <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
+      <i class="nd_sidebar-pin icon-pushpin"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
       <a id="nd_sidebar-reset-link" href="#">
         <i class="nd_sidebar-reset icon-undo"
