@@ -62,8 +62,6 @@ hook 'before' => sub {
   return unless (request->path eq uri_for('/device')->path
     or index(request->path, uri_for('/ajax/content/device')->path) == 0);
 
-  # force always setting params manually
-  params->{'firstsearch'} = 'on';
 # TODO set cookie
 #  if (param('reset') or not param('tab') or param('tab') ne 'ports') {
 };
