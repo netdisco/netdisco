@@ -3,7 +3,7 @@
   <thead>
     <tr>
       <th></th>
-      [% FOREACH item IN vars.port_columns %]
+      [% FOREACH item IN settings.port_columns %]
       [% NEXT IF item.name == 'c_admin' %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]

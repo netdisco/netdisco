@@ -6,6 +6,7 @@ use Dancer::Plugin;
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use aliased 'App::Netdisco::Worker::Status';
 use Scope::Guard 'guard';
+use Storable 'dclone';
 
 register 'register_worker' => sub {
   my ($self, $first, $second) = plugin_args(@_);
@@ -47,7 +48,7 @@ register 'register_worker' => sub {
     }
 
     my @newuserconf = ();
-    my @userconf = @{ setting('device_auth') || [] };
+    my @userconf = @{ dclone (setting('device_auth') || []) };
 
     # worker might be vendor/platform specific
     if (ref $job->device) {
@@ -67,7 +68,7 @@ register 'register_worker' => sub {
         next if exists $stanza->{action}
           and not _find_matchaction($workerconf, lc($stanza->{action}));
 
-        push @newuserconf, $stanza;
+        push @newuserconf, dclone $stanza;
       }
 
       # per-device action but no device creds available

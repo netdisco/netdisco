@@ -57,7 +57,7 @@
                 </label></span>
               <div id="nd_columns" class="collapse in">
                 <ul class="nd_inputs-list unstyled">
-                  [% FOREACH item IN vars.port_columns %]
+                  [% FOREACH item IN settings.port_columns %]
                   [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
                   <li>
                     <label class="checkbox">
@@ -85,12 +85,12 @@
                     <em class="muted">Mark as Free if Down for:</em><br/>
                     <select id="nd_days-select" name="age_num">
                       [% FOREACH count IN [1..32] %]
-                      <option[% ' selected="selected"' IF device_ports_defaults.age_num == count %]>[% count %]</option>
+                      <option[% ' selected="selected"' IF sidebar_defaults.age_num == count %]>[% count %]</option>
                       [% END %]
                     </select>
                     <select id="nd_age-select" name="age_unit">
                       [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
-                      <option[% ' selected="selected"' IF device_ports_defaults.age_unit == unit %]>[% unit %]</option>
+                      <option[% ' selected="selected"' IF sidebar_defaults.age_unit == unit %]>[% unit %]</option>
                       [% END %]
                     </select>
                   </li>
@@ -126,11 +126,11 @@
                     <em class="muted">MAC address format:</em><br/>
                     <select id="nd_mac-format" name="mac_format">
                       [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                      <option[% ' selected="selected"' IF device_ports_defaults.mac_format == format %]>[% format %]</option>
+                      <option[% ' selected="selected"' IF sidebar_defaults.mac_format == format %]>[% format %]</option>
                       [% END %]
                     </select>
                   </li>
-                  [% FOREACH item IN vars.connected_properties %]
+                  [% FOREACH item IN settings.connected_properties %]
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"
