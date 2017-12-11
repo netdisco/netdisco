@@ -1,0 +1,197 @@
+.net_gobrechts_d3_force,
+.net_gobrechts_d3_force_customize,
+.net_gobrechts_d3_force_customize td,
+.net_gobrechts_d3_force_tooltip {
+    box-sizing: content-box;
+    font-family: Arial, Helvetica, Sans Serif;
+    font-size: 10px;
+    background-color: #fff
+}
+.net_gobrechts_d3_force.border {
+    border: 1px solid silver;
+    border-radius: 5px;
+}
+.net_gobrechts_d3_force circle.highlighted {
+    stroke: #555;
+    stroke-width: 2px;
+    stroke-opacity: 1.0;
+}
+.net_gobrechts_d3_force circle.selected {
+    stroke: #555;
+    stroke-width: 4px;
+    stroke-dasharray: 4 2;
+    stroke-opacity: 1.0;
+}
+.net_gobrechts_d3_force text.label,
+.net_gobrechts_d3_force text.labelCircular {
+    fill: black;
+    font-size: 10px;
+    letter-spacing: 0;
+    pointer-events: none;
+}
+.net_gobrechts_d3_force text.label{
+    text-anchor: middle;
+}
+.net_gobrechts_d3_force text.highlighted {
+    font-size: 12px;
+    font-weight: bold;
+}
+.net_gobrechts_d3_force text.link {
+    font-size: 12px;
+    fill: blue;
+    cursor: pointer;
+}
+.net_gobrechts_d3_force line.link,
+.net_gobrechts_d3_force path.link {
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 1.5px;
+    stroke-opacity: 0.8;
+}
+.net_gobrechts_d3_force line.dotted,
+.net_gobrechts_d3_force path.dotted {
+    stroke-dasharray: .01 3;
+    stroke-linecap: round;
+}
+.net_gobrechts_d3_force line.dashed,
+.net_gobrechts_d3_force path.dashed {
+    stroke-dasharray: 4 2;
+}
+.net_gobrechts_d3_force line.highlighted,
+.net_gobrechts_d3_force path.highlighted {
+    stroke: #555 !important;
+    stroke-opacity: 1.0;
+}
+.net_gobrechts_d3_force marker.normal {
+    stroke: none;
+    fill: #bbb;
+}
+.net_gobrechts_d3_force marker.highlighted {
+    stroke: none;
+    fill: #555;
+}
+.net_gobrechts_d3_force .graphOverlay,
+.net_gobrechts_d3_force .graphOverlaySizeHelper {
+    fill: none;
+    pointer-events: all;
+}
+.net_gobrechts_d3_force .lasso path {
+    stroke: #505050;
+    stroke-width: 2px;
+}
+.net_gobrechts_d3_force .lasso .drawn {
+    fill-opacity: 0.05 ;
+}
+.net_gobrechts_d3_force .lasso .loop_close {
+    fill: none;
+    stroke-dasharray: 4,4;
+}
+.net_gobrechts_d3_force .lasso .origin {
+    fill: #3399FF;
+    fill-opacity: 0.5;
+}
+.net_gobrechts_d3_force .loading rect {
+    fill: black;
+    fill-opacity: 0.2;
+}
+.net_gobrechts_d3_force .loading text {
+    fill: white;
+    font-size: 36px;
+    text-anchor: middle;
+}
+.net_gobrechts_d3_force_tooltip {
+    position: absolute;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: silver;
+    opacity: 0.9;
+    width: 150px;
+    overflow: auto;
+    font-size: 12px;
+    z-index: 100000;
+    pointer-events: none;
+    display: none;
+}
+.net_gobrechts_d3_force_customize {
+    border: 1px solid silver;
+    border-radius: 5px;
+    font-size: 12px;
+    position: absolute;
+    padding: 5px;
+    background-color:white;
+    box-shadow: 1px 1px 6px #666;
+    z-index: 200000;
+}
+.net_gobrechts_d3_force_customize .drag {
+    border: 1px dashed silver;
+    border-radius: 3px;
+    display: block;
+    cursor: move;
+    font-weight: bold;
+    height: 24px;
+    margin-bottom: 5px;
+}
+.net_gobrechts_d3_force_customize .title {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+.net_gobrechts_d3_force_customize .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.net_gobrechts_d3_force_customize table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: none;
+    margin:0;
+    padding:0;
+}
+.net_gobrechts_d3_force_customize tr.hidden {
+    display: none;
+}
+.net_gobrechts_d3_force_customize td {
+    padding: 1px;
+    font-size: 12px;
+    vertical-align: middle;
+    border: none;
+}
+.net_gobrechts_d3_force_customize .label {
+    text-align: right;
+}
+.net_gobrechts_d3_force_customize .warning {
+    background-color: orange;
+}
+.net_gobrechts_d3_force_customize input,
+.net_gobrechts_d3_force_customize select,
+.net_gobrechts_d3_force_customize textarea,
+.net_gobrechts_d3_force_customize a {
+    border: 1px solid silver;
+    margin: 0;
+    padding: 0;
+    height: auto;
+}
+.net_gobrechts_d3_force_customize a {
+    border: 1px solid transparent;
+    color: blue;
+    text-decoration: none;
+    cursor: pointer;
+}
+.net_gobrechts_d3_force_customize input:focus,
+.net_gobrechts_d3_force_customize select:focus,
+.net_gobrechts_d3_force_customize textarea:focus,
+.net_gobrechts_d3_force_customize a:focus {
+    outline: none !important;
+    border: 1px solid blue !important;
+    background-color: yellow !important;
+    box-shadow: none !important;
+}
+.net_gobrechts_d3_force_customize textarea {
+    font-size: 10px !important;
+    padding: 2px;
+    width: 160px;
+    height: 85px;
+    background-color: white;
+    color: black;
+}

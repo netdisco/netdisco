@@ -1,184 +1,28 @@
 <script>
 
-var winHeight = window.innerHeight;
-var winWidth  = window.innerWidth;
-
-// links in the initial tree drawing use this generator
-var treeLink = d3.svg.diagonal.radial()
-    .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
-
-// actual device neighbor links use this generator
-var neighLink = d3.svg.diagonal.radial();
-
-// store x,y for all circles on the map
-var loc = {};
-// store actual links between all nodes
-var neighbors_data = {};
-
-// main SVG background, with support for pan/zoom
-var svg = d3.select("#netmap_pane").append("svg")
-    .attr("width", winWidth - 50)
-    .attr("height", winHeight - 100)
-    .attr("pointer-events", "all")
-  .append('g')
-    .call(d3.behavior.zoom().on("zoom", redraw))
-  .append("g")
-    .attr("transform", "translate(" + winHeight / 2 + "," + winHeight / 2 + ")");
-
-// this is the image background
-// XXX there must be a way to discover the radial tree's size?
-svg.append('rect')
-    .attr("x", (0 - (winHeight * 2)))
-    .attr('width', "400%")
-    .attr("y", (0 - (winHeight * 2)))
-    .attr('height', "400%")
-    .attr('fill', 'white');
-
-// handle pan and zoom
-function redraw() {
-  svg.attr("transform",
-    "translate(" + d3.event.translate + ")"
-    + "scale(" + d3.event.scale + ")"
-    + "translate(" + (winHeight / 2) + "," + (winHeight / 2) + ")");
-}
-
-// save the x,y of an element into the loc dictionary
-function recordLocation(d,i) {
-  var rect = this.getBoundingClientRect();
-  loc[d.ip] = {
-    'x':  (rect.left + ((rect.right - rect.left) / 2))
-    ,'y': (rect.top +  ((rect.bottom - rect.top) / 2))
-  };
-}
-
-// convert a device ip to a valid CSS class name
-function to_class(ip) { return 'nd_' + ip.replace(/[:.]/g, "_") }
-
-// handler for clicking on a circle - redirect to that device's netmap
-function circleClick(d) {
-    window.location = '[% uri_for('/device') %]?tab=netmap'
-                      + '&q=' + d.ip
-                      + '&depth=[% params.depth | uri %]'
-                      + '&vlan=[% params.vlan | uri %]';
-}
-
-// handler for mouseover on a circle - show that device's real neighbors
-function circleOver(d) {
-    $('.link').hide();
-    $('path.' + to_class(d.ip)).show();
-    $(this).css('cursor', 'pointer');
-
-    $.each(neighbors_data[d.ip], function(idx, target) {
-      if (! (target in loc)) { return true }
-      $('circle.' + to_class(target)).css('fill', '#e96cfa');
-    });
-}
-
-// handler for mouseout on a circle - hide real neighbours and show treeLinks
-function circleOut(d) {
-    $.each(neighbors_data[d.ip], function(idx, target) {
-      if (! (target in loc)) { return true }
-      $('circle.' + to_class(target)).css('fill', '#fff');
-    });
-
-    $(this).css('cursor', 'auto');
-    $('path.' + to_class(d.ip)).hide();
-    $('.link').show();
-}
-
 // load all device connections into neighbors_data dictionary
-$.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
-  neighbors_data = data;
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', function(data) {
+  function resizeGraphContainer() {
+      setTimeout(function(){
+          var graph = jQuery('#netmap_pane');
+          var toc = jQuery('#dw__toc');
+          netmap_pane.width(
+              parseInt(graph.parent().css('width')) -
+              ( toc.css('float') === 'right' && parseInt(toc.css('height')) > 30 ? parseInt(toc.css('width')) : 0 )
+          ).resume();
+      }, 500)
+  }
 
-  // draw the tree
-  d3.json("[% uri_for('/ajax/data/device/netmap') %]?"
-          + '&q=[% params.q | uri %]'
-          + '&depth=[% params.depth | uri %]'
-          + '&vlan=[% params.vlan | uri %]', function(error, root) {
-    var tree = d3.layout.tree()
-        // magic number "8" for scaling (network depth). seems to make things look right for me.
-        .size([360, (winHeight / 8 * (root['scale'] || 0))])
-        .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
-
-    var nodes = tree.nodes(root),
-        links = tree.links(nodes);
-
-    var link = svg.selectAll(".link")
-        .data(links)
-      .enter().append("path")
-        .attr("class", "link")
-        .attr("d", treeLink);
-
-    var node = svg.selectAll(".node")
-        .data(nodes)
-      .enter().append("g")
-        .attr("class", "node")
-        .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; });
-
-    // begin to draw...
-    d3.select("#nd_waiting").remove();
-
-    node.append("circle")
-        .attr("r", 4.5)
-        // circle has class name of its device, so we can show/hide it
-        .attr("class", function(d) { return to_class(d.ip) })
-        // store the x,y of every circle we've just drawn
-        .each(recordLocation)
-        // handlers for mouse interaction with the circles
-        .on("click", circleClick)
-        .on("mouseover", circleOver)
-        .on("mouseout", circleOut);
-
-    node.append("text")
-        .attr("dy", ".31em")
-        .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-        .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-        .text(function(d) { return d.name; });
-
-    // reorient text on the root node
-    svg.select(".node")
-        .attr("transform", function(d) {
-          return d.x < 180 ? "rotate(0)translate(0)" : "rotate(180)translate(0)"; });
-
-    // key (ip) of the root node in our locations store
-    var rootname = svg.select(".node").data()[0].ip;
-    // reformatted neighbors_data for the real neighbor links
-    var neighbors = [];
-
-    // need to build neighbors array only after we have built loc dictionary,
-    // after drawing the circles and storing their x,y
-    $.each(neighbors_data, function(key, val) {
-      if (! (key in loc)) { return true }
-
-      $.each(val, function(idx, ip) {
-        if (! (ip in loc)) { return true }
-
-        neighbors.push({
-          'source':  {
-            'ip': key
-            ,'x': loc[key]['x']
-            ,'y': loc[key]['y']
-          }
-          ,'target': {
-            'ip': ip
-            ,'x': loc[ip]['x']
-            ,'y': loc[ip]['y']
-          }
-        });
-      });
-    });
-
-    // insert Netdisco neighbor links below circles but above tree links
-    svg.selectAll(".neighbor")
-        .data(neighbors)
-      .enter().insert("path", ".node")
-        // add class name of source device, so we can show/hide the link
-        // (also "neighbor" class)
-        .attr("class", function(d) { return ("neighbor " + to_class( d.source.ip )) })
-        .attr("d", neighLink)
-        .attr("transform", "translate(-" + loc[rootname]['x'] + ",-" + loc[rootname]['y'] + ")");
+  jQuery(document).ready(function() {
+      window.netmap_pane = netGobrechtsD3Force('netmap_pane')
+          .debug(true)
+          // .lassoMode(true)
+          .start(data);
+      jQuery(window).on("resize", resizeGraphContainer);
+      // jQuery('#dw__toc h3').on("click", resizeGraphContainer);
+      $('#nd_waiting').hide();
+      resizeGraphContainer();
   });
-
 }); // jquery getJSON for all connections
 
 // vim: ft=javascript

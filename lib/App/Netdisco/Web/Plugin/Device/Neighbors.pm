@@ -14,7 +14,7 @@ ajax '/ajax/content/device/netmap' => require_login sub {
     template 'ajax/device/netmap.tt', {}, { layout => undef };
 };
 
-ajax '/ajax/data/device/alldevicelinks' => require_login sub {
+ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my %data = ( nodes => [], links => [] );
 
