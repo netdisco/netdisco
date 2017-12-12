@@ -89,7 +89,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="matchall"
-                  name="matchall"[% ' checked="checked"' IF search_device_defaults.matchall %]/>
+                  name="matchall"[% ' checked="checked"' IF vars.sidebar_defaults.search_device.matchall %]/>
               </label>
               <label class="nd_checkboxlabel" for="matchall">
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>

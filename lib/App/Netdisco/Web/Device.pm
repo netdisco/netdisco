@@ -6,66 +6,41 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use URI ();
-use Storable 'dclone';
-use Scope::Guard 'guard';
 use URL::Encode 'url_params_mixed';
 
-hook 'before' => sub {
+# build view settings for port connected nodes and devices
+set('connected_properties' => [
+  sort { $a->{idx} <=> $b->{idx} }
+  map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
+  grep { $_ =~ m/^n_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
+]);
 
-  # build list of port detail columns
-  my @port_columns =
-    sort { $a->{idx} <=> $b->{idx} }
-    map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
-    grep { $_ =~ m/^c_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} };
-
-  # this could be done at app startup?
-  splice @port_columns, setting('device_port_col_idx_left'), 0,
-    grep {$_->{position} eq 'left'}  @{ setting('_extra_device_port_cols') };
-  splice @port_columns, setting('device_port_col_idx_mid'), 0,
-    grep {$_->{position} eq 'mid'}   @{ setting('_extra_device_port_cols') };
-  splice @port_columns, setting('device_port_col_idx_right'), 0,
-    grep {$_->{position} eq 'right'} @{ setting('_extra_device_port_cols') };
-
-  # update sidebar_defaults so code scanning params sees new plugin cols
-  setting('sidebar_defaults')->{'device_ports'}->{ $_->{name} } = $_
-    for @port_columns;
-
-  var('port_columns' => \@port_columns);
-
-  # build view settings for port connected nodes and devices
-  var('connected_properties' => [
-    sort { $a->{idx} <=> $b->{idx} }
-    map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
-    grep { $_ =~ m/^n_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
-  ]);
+hook 'before_template' => sub {
+  my $defaults = var('sidebar_defaults')->{'device_ports'}
+    or return;
 
   # override ports form defaults with cookie settings
+  # always do this so that embedded links to device ports page have user prefs
   if (param('reset')) {
     cookie('nd_ports-form' => '', expires => '-1 day');
   }
   elsif (my $cookie = cookie('nd_ports-form')) {
     my $cdata = url_params_mixed($cookie);
-    my $defaults = eval { dclone setting('sidebar_defaults')->{'device_ports'} };
 
-    if ($cdata and (ref {} eq ref $cdata) and $defaults) {
-      push @{ vars->{'guards'} },
-           guard { setting('sidebar_defaults')->{'device_ports'} = $defaults };
-
+    if ($cdata and (ref {} eq ref $cdata)) {
       foreach my $key (keys %{ $defaults }) {
-        setting('sidebar_defaults')->{'device_ports'}->{$key}->{'default'}
-          = $cdata->{$key};
+        $defaults->{$key} = $cdata->{$key};
       }
     }
   }
-};
 
-hook 'before_template' => sub {
   return if param('reset')
     or not var('sidebar_key') or (var('sidebar_key') ne 'device_ports');
 
+  # update cookie from params we just recieved in form submit
   my $uri = URI->new();
-  foreach my $key (keys %{ setting('sidebar_defaults')->{'device_ports'} }) {
-    $uri->query_param($key => param($key)) if exists params->{$key};
+  foreach my $key (keys %{ $defaults }) {
+    $uri->query_param($key => param($key));
   }
   cookie('nd_ports-form' => $uri->query(), expires => '365 days');
 };

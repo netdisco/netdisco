@@ -2,7 +2,7 @@
 
 [% SET headers = [] %]
 [% SET c_nodes_pos = -1 %]
-[% FOREACH item IN vars.port_columns %]
+[% FOREACH item IN settings.port_columns %]
   [% NEXT IF item.name == 'c_admin' %]
   [% NEXT UNLESS params.${item.name} %]
 

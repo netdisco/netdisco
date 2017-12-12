@@ -11,8 +11,6 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
-use Storable 'dclone';
-use Scope::Guard 'guard';
 use App::Netdisco::Util::Web 'interval_to_daterange';
 
 use App::Netdisco::Web::AuthN;
@@ -73,24 +71,80 @@ Dancer::Session::Cookie::init(session);
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 
+# build list of port detail columns
+{
+  my @port_columns =
+    sort { $a->{idx} <=> $b->{idx} }
+    map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
+    grep { $_ =~ m/^c_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} };
+
+  splice @port_columns, setting('device_port_col_idx_left'), 0,
+    grep {$_->{position} eq 'left'}  @{ setting('_extra_device_port_cols') };
+  splice @port_columns, setting('device_port_col_idx_mid'), 0,
+    grep {$_->{position} eq 'mid'}   @{ setting('_extra_device_port_cols') };
+  splice @port_columns, setting('device_port_col_idx_right'), 0,
+    grep {$_->{position} eq 'right'} @{ setting('_extra_device_port_cols') };
+
+  set('port_columns' => \@port_columns);
+
+  # update sidebar_defaults so hooks scanning params see new plugin cols
+  setting('sidebar_defaults')->{'device_ports'}->{ $_->{name} } = $_
+    for @port_columns;
+}
+
 hook 'before' => sub {
   my $key = request->path;
   if (param('tab') and ($key !~ m/ajax/)) {
       $key .= ('/' . param('tab'));
   }
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
-  vars->{'sidebar_key'} = $key;
+  var(sidebar_key => $key);
 
-  # search or report from navbar can ignore params
-  return if param('firstsearch');
+  # copy sidebar defaults into vars so we can mess about with it
+  foreach my $sidebar (keys %{setting('sidebar_defaults')}) {
+    vars->{'sidebar_defaults'}->{$sidebar} = { map {
+      ($_ => setting('sidebar_defaults')->{$sidebar}->{$_}->{'default'})
+    } keys %{setting('sidebar_defaults')->{$sidebar}} };
+  }
+};
 
-  my $defaults = dclone (setting('sidebar_defaults')->{$key} or return);
-  push @{ vars->{'guards'} },
-       guard { setting('sidebar_defaults')->{$key} = $defaults };
+hook 'before_template' => sub {
+  # search or report from navbar, or reset of sidebar, can ignore params
+  return if param('firstsearch')
+    or var('sidebar_key') !~ m/^\w+_\w+$/;
 
-  # otherwise update defaults to contain the passed url params
-  setting('sidebar_defaults')->{$key}->{$_}->{'default'} = param($_)
-    for keys %{ $defaults };
+  # update defaults to contain the passed url params
+  # (this follows initial copy from config.yml, then cookie restore)
+  var('sidebar_defaults')->{var('sidebar_key')}->{$_} = param($_)
+    for keys %{ var('sidebar_defaults')->{var('sidebar_key')} || {} };
+};
+
+hook 'before_template' => sub {
+    my $tokens = shift;
+    return unless var('sidebar_key') =~ m/^\w+_\w+$/;
+
+    # linked searches will use these default url path params
+    foreach my $sidebar_key (keys %{ var('sidebar_defaults') }) {
+        my ($mode, $report) = ($sidebar_key =~ m/(\w+)_(\w+)/);
+        if ($mode =~ m/^(?:search|device)$/) {
+            $tokens->{$sidebar_key} = uri_for("/$mode", {tab => $report});
+        }
+        elsif ($mode =~ m/^report$/) {
+            $tokens->{$sidebar_key} = uri_for("/$mode/$report");
+        }
+
+        foreach my $col (keys %{ var('sidebar_defaults')->{$sidebar_key} }) {
+            $tokens->{$sidebar_key}->query_param($col,
+              var('sidebar_defaults')->{$sidebar_key}->{$col});
+        }
+
+        # fix Plugin Template Variables to be only path+query
+        $tokens->{$sidebar_key} = $tokens->{$sidebar_key}->path_query;
+    }
+
+    # helper from NetAddr::MAC for the MAC formatting
+    $tokens->{mac_format_call} = 'as_'. lc(param('mac_format'))
+      if param('mac_format');
 };
 
 # this hook should be loaded _after_ all plugins
@@ -113,35 +167,6 @@ hook 'before_template' => sub {
     # data structure for DataTables records per page menu
     $tokens->{table_showrecordsmenu} =
       to_json( setting('table_showrecordsmenu') );
-
-    # linked searches will use these defaults in their sidebars
-    foreach my $sidebar_key (keys %{ setting('sidebar_defaults') }) {
-        my ($mode, $report) = ($sidebar_key =~ m/(\w+)_(\w+)/);
-        if ($mode =~ m/^(?:search|device)$/) {
-            $tokens->{$sidebar_key} = uri_for("/$mode", {tab => $report});
-        }
-        elsif ($mode =~ m/^report$/) {
-            $tokens->{$sidebar_key} = uri_for("/$mode/$report");
-        }
-
-        if (defined setting('sidebar_defaults')->{$sidebar_key}) {
-            foreach my $col (keys %{ setting('sidebar_defaults')->{$sidebar_key} }) {
-                $tokens->{$sidebar_key}->query_param($col,
-                  setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'});
-
-                # used by the sidebar templates when first rendering
-                $tokens->{"${sidebar_key}_defaults"}->{$col}
-                  = setting('sidebar_defaults')->{$sidebar_key}->{$col}->{'default'};
-            }
-        }
-
-        # fix Plugin Template Variables to be only path+query
-        $tokens->{$sidebar_key} = $tokens->{$sidebar_key}->path_query;
-    }
-
-    # helper from NetAddr::MAC for the MAC formatting
-    $tokens->{mac_format_call} = 'as_'. lc(param('mac_format'))
-      if param('mac_format');
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

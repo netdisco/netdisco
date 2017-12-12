@@ -8,6 +8,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use Try::Tiny;
 use Module::Load ();
 use Scope::Guard 'guard';
+use Storable 'dclone';
 
 use Moo::Role;
 use namespace::clean;
@@ -31,7 +32,7 @@ sub run {
   my $statusguard = guard { $job->finalise_status };
 
   my @newuserconf = ();
-  my @userconf = @{ setting('device_auth') || [] };
+  my @userconf = @{ dclone (setting('device_auth') || []) };
 
   # reduce device_auth by only/no
   if (ref $job->device) {
@@ -42,7 +43,7 @@ sub run {
       next if $no and check_acl_no($job->device, $no);
       next if $only and not check_acl_only($job->device, $only);
 
-      push @newuserconf, $stanza;
+      push @newuserconf, dclone $stanza;
     }
 
     # per-device action but no device creds available
