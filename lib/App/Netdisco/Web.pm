@@ -110,7 +110,8 @@ hook 'before' => sub {
 
 hook 'before_template' => sub {
   # search or report from navbar, or reset of sidebar, can ignore params
-  return if param('firstsearch');
+  return if param('firstsearch')
+    or var('sidebar_key') !~ m/^\w+_\w+$/;
 
   # update defaults to contain the passed url params
   # (this follows initial copy from config.yml, then cookie restore)
@@ -118,30 +119,9 @@ hook 'before_template' => sub {
     for keys %{ var('sidebar_defaults')->{var('sidebar_key')} || {} };
 };
 
-# this hook should be loaded _after_ all plugins
 hook 'before_template' => sub {
     my $tokens = shift;
-
-    # allow portable static content
-    $tokens->{uri_base} = request->base->path
-        if request->base->path ne '/';
-
-    # allow portable dynamic content
-    $tokens->{uri_for} = sub { uri_for(@_)->path_query };
-
-    # access to logged in user's roles
-    $tokens->{user_has_role}  = sub { user_has_role(@_) };
-
-    # create date ranges from within templates
-    $tokens->{to_daterange}  = sub { interval_to_daterange(@_) };
-
-    # data structure for DataTables records per page menu
-    $tokens->{table_showrecordsmenu} =
-      to_json( setting('table_showrecordsmenu') );
-
-    # defaults for the current sidebar form fields
-    $tokens->{sidebar_defaults} =
-      var('sidebar_defaults')->{var('sidebar_key')};
+    return unless var('sidebar_key') =~ m/^\w+_\w+$/;
 
     # linked searches will use these default url path params
     foreach my $sidebar_key (keys %{ var('sidebar_defaults') }) {
@@ -165,6 +145,28 @@ hook 'before_template' => sub {
     # helper from NetAddr::MAC for the MAC formatting
     $tokens->{mac_format_call} = 'as_'. lc(param('mac_format'))
       if param('mac_format');
+};
+
+# this hook should be loaded _after_ all plugins
+hook 'before_template' => sub {
+    my $tokens = shift;
+
+    # allow portable static content
+    $tokens->{uri_base} = request->base->path
+        if request->base->path ne '/';
+
+    # allow portable dynamic content
+    $tokens->{uri_for} = sub { uri_for(@_)->path_query };
+
+    # access to logged in user's roles
+    $tokens->{user_has_role}  = sub { user_has_role(@_) };
+
+    # create date ranges from within templates
+    $tokens->{to_daterange}  = sub { interval_to_daterange(@_) };
+
+    # data structure for DataTables records per page menu
+    $tokens->{table_showrecordsmenu} =
+      to_json( setting('table_showrecordsmenu') );
 
     # allow very long lists of ports
     $Template::Directive::WHILE_MAX = 10_000;

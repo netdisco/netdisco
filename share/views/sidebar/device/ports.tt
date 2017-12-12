@@ -62,7 +62,7 @@
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"
-                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF item.default %] />
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% IF item.name == 'c_admin' %]
                         <span class="label label-info">[% item.label | html_entity %]</span>
                       [% ELSE %]
@@ -85,12 +85,12 @@
                     <em class="muted">Mark as Free if Down for:</em><br/>
                     <select id="nd_days-select" name="age_num">
                       [% FOREACH count IN [1..32] %]
-                      <option[% ' selected="selected"' IF sidebar_defaults.age_num == count %]>[% count %]</option>
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count %]</option>
                       [% END %]
                     </select>
                     <select id="nd_age-select" name="age_unit">
                       [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
-                      <option[% ' selected="selected"' IF sidebar_defaults.age_unit == unit %]>[% unit %]</option>
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_unit == unit %]>[% unit %]</option>
                       [% END %]
                     </select>
                   </li>
@@ -126,7 +126,7 @@
                     <em class="muted">MAC address format:</em><br/>
                     <select id="nd_mac-format" name="mac_format">
                       [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                      <option[% ' selected="selected"' IF sidebar_defaults.mac_format == format %]>[% format %]</option>
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format %]</option>
                       [% END %]
                     </select>
                   </li>
@@ -134,7 +134,7 @@
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"
-                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF item.default %] />
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% item.label | html_entity %]
                     </label>
                   </li>

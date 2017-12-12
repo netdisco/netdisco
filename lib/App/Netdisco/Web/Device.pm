@@ -16,6 +16,9 @@ set('connected_properties' => [
 ]);
 
 hook 'before_template' => sub {
+  my $defaults = var('sidebar_defaults')->{'device_ports'}
+    or return;
+
   # override ports form defaults with cookie settings
   # always do this so that embedded links to device ports page have user prefs
   if (param('reset')) {
@@ -23,9 +26,8 @@ hook 'before_template' => sub {
   }
   elsif (my $cookie = cookie('nd_ports-form')) {
     my $cdata = url_params_mixed($cookie);
-    my $defaults = var('sidebar_defaults')->{'device_ports'};
 
-    if ($cdata and (ref {} eq ref $cdata) and $defaults) {
+    if ($cdata and (ref {} eq ref $cdata)) {
       foreach my $key (keys %{ $defaults }) {
         $defaults->{$key} = $cdata->{$key};
       }
@@ -37,8 +39,8 @@ hook 'before_template' => sub {
 
   # update cookie from params we just recieved in form submit
   my $uri = URI->new();
-  foreach my $key (keys %{ var('sidebar_defaults')->{'device_ports'} }) {
-    $uri->query_param($key => param($key)) if exists params->{$key};
+  foreach my $key (keys %{ $defaults }) {
+    $uri->query_param($key => param($key));
   }
   cookie('nd_ports-form' => $uri->query(), expires => '365 days');
 };

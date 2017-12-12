@@ -4,7 +4,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="stamps"
-                  name="stamps"[% ' checked="checked"' IF sidebar_defaults.stamps %]/>
+                  name="stamps"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.stamps %]/>
               </label>
               <label class="nd_checkboxlabel" for="stamps">
                 <span class="nd_searchcheckbox uneditable-input">Time Stamps</span>
@@ -13,7 +13,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="deviceports"
-                  name="deviceports"[% ' checked="checked"' IF sidebar_defaults.deviceports %]/>
+                  name="deviceports"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.deviceports %]/>
               </label>
               <label class="nd_checkboxlabel" for="deviceports">
                 <span class="nd_searchcheckbox uneditable-input">Device Ports</span>
@@ -22,7 +22,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="show_vendor"
-                  name="show_vendor"[% ' checked="checked"' IF sidebar_defaults.show_vendor %]/>
+                  name="show_vendor"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.show_vendor %]/>
               </label>
               <label class="nd_checkboxlabel" for="show_vendor">
                 <span class="nd_searchcheckbox uneditable-input">Vendor</span>
@@ -31,7 +31,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="archived"
-                  name="archived"[% ' checked="checked"' IF sidebar_defaults.archived %]/>
+                  name="archived"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.archived %]/>
               </label>
               <label class="nd_checkboxlabel" for="archived">
                 <span class="nd_searchcheckbox uneditable-input">
@@ -41,7 +41,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on nd_sidebar-legend">
                 <input type="checkbox" id="node_partial"
-                  name="partial"[% ' checked="checked"' IF sidebar_defaults.partial %]/>
+                  name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.partial %]/>
               </label>
               <label class="nd_checkboxlabel" for="node_partial">
                 <span class="nd_searchcheckbox uneditable-input">Partial Match</span>
@@ -52,20 +52,20 @@
               <div class="clearfix input-prepend">
                 <label class="add-on">
                   <input type="checkbox" id="age_invert"
-                    name="age_invert"[% ' checked="checked"' IF sidebar_defaults.age_invert %]/>
+                    name="age_invert"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.age_invert %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="age_invert">
                   <span class="nd_searchcheckbox uneditable-input">Not within...</span>
                 </label>
               </div>
               <input class="nd_side-input" id="daterange"
-                type="text" name="daterange" value="[% sidebar_defaults.daterange | html_entity %]"/>
+                type="text" name="daterange" value="[% vars.sidebar_defaults.search_node.daterange | html_entity %]"/>
             </div>
             <div class="clearfix">
               <em class="muted">MAC address format:</em><br/>
               <select id="nd_node-mac-format" name="mac_format">
                 [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                <option[% ' selected="selected"' IF sidebar_defaults.mac_format == format %]>[% format %]</option>
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.search_node.mac_format == format %]>[% format %]</option>
                 [% END %]
               </select>
             </div>
