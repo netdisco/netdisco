@@ -25,17 +25,21 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
           .showSelfLinks(true)
           .showLoadingIndicatorOnAjaxCall(true)
           .minZoomFactor(0.1)
-          .maxZoomFactor(10)
-          .start(data);
+          .maxZoomFactor(10);
+
+      // center on our selected device
+      netmap_pane.inspect().main.force.on('end.centernode', function() {
+        var node = netmap_pane.nodeDataById( data['data']['centernode'] );
+        netmap_pane.zoomSmooth(node.x, node.y, node.radius * 200);
+        netmap_pane.inspect().main.force.on('end.centernode', null);
+      });
 
       jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
       jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
       jQuery(window).on("resize", resizeGraphContainer);
-      resizeGraphContainer();
 
-      // sort-of center on our selected device
-      var node = netmap_pane.nodeDataById( data['data']['centernode'] );
-      netmap_pane.zoom(node.x, node.y, 850);
+      resizeGraphContainer();
+      netmap_pane.start(data);
   });
 });
 
