@@ -1,31 +1,43 @@
 <script>
 
-// load all device connections into neighbors_data dictionary
-$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', function(data) {
+// custom resize function as there is no event to fire and we need
+// to react to the sidebar.
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(data) {
   function resizeGraphContainer() {
       setTimeout(function(){
           var graph = jQuery('#netmap_pane');
-          var toc = jQuery('#dw__toc');
-          netmap_pane.width(
-              parseInt(graph.parent().css('width')) -
-              ( toc.css('float') === 'right' && parseInt(toc.css('height')) > 30 ? parseInt(toc.css('width')) : 0 )
-          ).resume();
+          netmap_pane.width( parseInt(graph.parent().css('width')) ).resume();
+          netmap_pane.height( window.innerHeight - 100 ).resume();
       }, 500)
   }
 
   jQuery(document).ready(function() {
       window.netmap_pane = netGobrechtsD3Force('netmap_pane')
           .debug(true)
-          // .lassoMode(true)
+          .lassoMode(true)
+          .nodeEventToOpenLink('click')
+          .nodeLinkTarget('none')
+          .labelDistance(2)
+          .charge(-850)
+          .zoomMode(true)
+          .preventLabelOverlappingOnForceEnd(true)
+          .showLinkDirection(false)
+          .showSelfLinks(true)
+          .showLoadingIndicatorOnAjaxCall(true)
+          .minZoomFactor(0.1)
+          .maxZoomFactor(10)
           .start(data);
+
+      jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
+      jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
       jQuery(window).on("resize", resizeGraphContainer);
-      // jQuery('#dw__toc h3').on("click", resizeGraphContainer);
-      $('#nd_waiting').hide();
       resizeGraphContainer();
+
+      // sort-of center on our selected device
+      var node = netmap_pane.nodeDataById( data['data']['centernode'] );
+      netmap_pane.zoom(node.x, node.y, 850);
   });
-}); // jquery getJSON for all connections
+});
 
 // vim: ft=javascript
 </script>
-
-<div id="nd_waiting" class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>

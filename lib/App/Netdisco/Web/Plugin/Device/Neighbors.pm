@@ -16,7 +16,8 @@ ajax '/ajax/content/device/netmap' => require_login sub {
 
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
-    my %data = ( nodes => [], links => [] );
+    my $qdev = schema('netdisco')->resultset('Device')
+      ->search_for_device($q) or send_error('Bad device', 400);
 
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
@@ -28,7 +29,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     })->all;
 
     my %id_for = ();
+    my %data = ( nodes => [], links => [] );
     my $domain = quotemeta( setting('domain_suffix') || '' );
+
     foreach my $device (@devices) {
       $id_for{$device->{ip}} = $device->{'row_number'};
       (my $name = ($device->{dns} || lc($device->{name}) || $device->{ip})) =~ s/$domain$//;
@@ -39,6 +42,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         COLORVALUE => 10,
         LABEL => $name,
       };
+
+      $data{'centernode'} = $device->{row_number}
+        if $qdev and $qdev->in_storage and $device->{ip} eq $qdev->ip;
     }
 
     my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
