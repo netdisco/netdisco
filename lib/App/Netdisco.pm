@@ -219,13 +219,11 @@ Then the process below should be run for each installation:
  
  # apply database schema updates, update MIBs and Vendor MACs
  ~/bin/netdisco-deploy
- ~/bin/netdisco-do stats
  
  # restart web service (if you run it)
  ~/bin/netdisco-web restart
  
- # stop old daemon and start new backend worker (wherever you run them)
- ~/bin/netdisco-daemon stop
+ # restart the backend workers (wherever you run them)
  ~/bin/netdisco-backend restart
 
 =head1 Tips and Tricks

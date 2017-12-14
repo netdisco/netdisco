@@ -139,6 +139,11 @@ sub deploy_db {
   say 'DB schema update complete.';
   print color 'reset';
 
+  system 'netdisco-do stats >/dev/null 2>&1';
+  print color 'bold blue';
+  say 'Statistics updated.';
+  print color 'reset';
+
   if (not setting('safe_password_store')) {
       say '';
       print color 'bold red';

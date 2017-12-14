@@ -1,5 +1,11 @@
 2.037000 - 2017-12-14
 
+  [ENHANCEMENTS]
+
+  * Also update stats on running netdisco-deploy
+
+2.037000 - 2017-12-14
+
   [NEW FEATURES]
 
   * Backend worker plugins: https://github.com/netdisco/netdisco/wiki/Backend-Plugins
