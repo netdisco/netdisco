@@ -18,11 +18,6 @@ database:
 # RECOMMENDED SETTINGS
 # --------------------
 
-# will be stripped from fqdn when displayed in the web UI
-# also, do not forget the leading dot.
-# ```````````````````````````````````````````````````````
-#domain_suffix: '.example.com'
-
 # SNMP community string(s)
 # ````````````````````````
 device_auth:
@@ -34,6 +29,11 @@ device_auth:
 #    community: 'private'
 #    read: false
 #    write: true
+
+# will be stripped from fqdn when displayed in the web UI
+# also, do not forget the leading dot.
+# ```````````````````````````````````````````````````````
+#domain_suffix: '.example.com'
 
 
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
