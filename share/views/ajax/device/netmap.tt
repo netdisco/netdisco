@@ -2,7 +2,7 @@
 
 // custom resize function as there is no event to fire and we need
 // to react to the sidebar.
-$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(data) {
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(mapdata) {
 
   function resizeGraphContainer() {
     setTimeout(function(){
@@ -27,25 +27,20 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
       .minZoomFactor(0.1)
       .maxZoomFactor(10);
 
-    // stop force
-    netmap_pane.inspect().main.force.stop();
-
     // center on our selected device
     netmap_pane.inspect().main.force.on('end.centernode', function() {
-      var node = netmap_pane.nodeDataById( data['data']['centernode'] );
+      var node = netmap_pane.nodeDataById( mapdata['v3']['centernode'] );
       netmap_pane.zoomSmooth(node.x, node.y, node.radius * 200);
       netmap_pane.inspect().main.force.on('end.centernode', null);
     });
 
-    // disable the default ticker  
-    netmap_pane.inspect().main.force.on('tick', function() {} );
-
-    // now start, but without a ticker
-    netmap_pane.start(data);
+    jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
+    jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
+    jQuery(window).on("resize", resizeGraphContainer);
 
     var worker = new Worker( 'http://localhost:5000/javascripts/worker.js' );
-    console.log(netmap_pane.inspect().main.force);
-    worker.postMessage({force: netmap_pane.inspect().main.force});
+
+    worker.postMessage(mapdata['v4']);
     worker.onmessage = function(event) {
       switch (event.data.type) {
         case "tick": return ticked(event.data);
@@ -55,18 +50,23 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
 
     function ticked(data) {
       var progress = data.progress;
-      console.log(100 * progress + "%");
+      // console.log( 100 * progress + "%" );
       //meter.style.width = 100 * progress + "%";
     }
 
     function ended(data) {
-      console.log( data );
-    }
+      var newnodes = data.nodes.map(function(node) {
+        var index = node['index'];
+        var x = mapdata['v3']['nodes'][index];
+        x['x'] = node['x'];
+        x['y'] = node['y'];
+        return x;
+      });
 
-  //  jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
-  //  jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
-  //  jQuery(window).on("resize", resizeGraphContainer);
-  //  resizeGraphContainer();
+      var netmapdata = {'data': {'nodes': newnodes, 'links': mapdata['v3']['links']}};
+      netmap_pane.start(netmapdata);
+      resizeGraphContainer();
+    }
 
   });
 });

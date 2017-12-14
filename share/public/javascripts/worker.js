@@ -1,12 +1,24 @@
-importScripts( 'http://localhost:5000/javascripts/d3-3.5.6.js' );
+importScripts("https://d3js.org/d3-collection.v1.min.js");
+importScripts("https://d3js.org/d3-dispatch.v1.min.js");
+importScripts("https://d3js.org/d3-quadtree.v1.min.js");
+importScripts("https://d3js.org/d3-timer.v1.min.js");
+importScripts("https://d3js.org/d3-force.v1.min.js");
 
 onmessage = function(event) {
-  var force = event.data.force;
+  var nodes = event.data.nodes,
+      links = event.data.links;
 
-  for (var i = 0, n = Math.ceil(Math.log(0.001) / Math.log(1 - (1 - Math.pow(0.001, 1 / 300)))); i < n; ++i) {
+  var simulation = d3.forceSimulation(nodes)
+      .force("charge", d3.forceManyBody())
+      .force("link", d3.forceLink(links).distance(20).strength(1))
+      .force("x", d3.forceX())
+      .force("y", d3.forceY())
+      .stop();
+
+  for (var i = 0, n = Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())); i < n; ++i) {
     postMessage({type: "tick", progress: i / n});
-    force.tick();
+    simulation.tick();
   }
 
-  postMessage({type: "end", force: force});
+  postMessage({type: "end", nodes: nodes, links: links});
 };
