@@ -42,6 +42,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         SIZEVALUE => 3000,
         COLORVALUE => 10,
         LABEL => $name,
+        fixed => true,
       };
       push @{$v4data{'nodes'}}, { index => ($device->{row_number} - 1) };
 

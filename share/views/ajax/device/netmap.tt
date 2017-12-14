@@ -13,19 +13,26 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
   }
 
   jQuery(document).ready(function() {
-    window.netmap_pane = netGobrechtsD3Force()
+    window.netmap_pane = netGobrechtsD3Force('netmap_pane')
       .debug(true)
       .lassoMode(true)
       .nodeEventToOpenLink('click')
       .nodeLinkTarget('none')
       .labelDistance(2)
-      .charge(-850)
       .zoomMode(true)
-      .preventLabelOverlappingOnForceEnd(true)
       .showLinkDirection(false)
+      .preventLabelOverlappingOnForceEnd(true)
       .showSelfLinks(true)
       .minZoomFactor(0.1)
       .maxZoomFactor(10);
+
+    var ticker = netmap_pane.inspect().main.force.tick;
+    netmap_pane.inspect().main.force.tick = (function(forceTick) {
+      return function() {
+        forceTick();
+        return true;
+      }
+    }(netmap_pane.inspect().main.force.tick));
 
     // center on our selected device
     netmap_pane.inspect().main.force.on('end.centernode', function() {
@@ -39,7 +46,6 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
     jQuery(window).on("resize", resizeGraphContainer);
 
     var worker = new Worker( 'http://localhost:5000/javascripts/worker.js' );
-
     worker.postMessage(mapdata['v4']);
     worker.onmessage = function(event) {
       switch (event.data.type) {
@@ -55,20 +61,26 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
     }
 
     function ended(data) {
-      var newnodes = data.nodes.map(function(node) {
-        var index = node['index'];
-        var x = mapdata['v3']['nodes'][index];
-        x['x'] = node['x'];
-        x['y'] = node['y'];
-        return x;
-      });
-
-      var netmapdata = {'data': {'nodes': newnodes, 'links': mapdata['v3']['links']}};
+      var netmapdata = {'data': {
+        'nodes': data.nodes.map(function(node) {
+          var index = node['index'];
+          var x = mapdata['v3']['nodes'][index];
+          x['x'] = node['x'];
+          x['y'] = node['y'];
+          return x;
+        }),
+        'links': mapdata['v3']['links']
+      }};
       netmap_pane.start(netmapdata);
       resizeGraphContainer();
+      netmap_pane.inspect().main.force.alpha(0.005).tick();
+      netmap_pane.inspect().main.force.stop();
+      netmap_pane.inspect().main.force.tick = ticker;
+      var node = netmap_pane.nodeDataById( mapdata['v3']['centernode'] );
+      netmap_pane.zoomSmooth(node.x, node.y, node.radius * 200);
     }
-
   });
+
 });
 
 // vim: ft=javascript
