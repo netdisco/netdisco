@@ -166,10 +166,6 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 This program allows you to run any Netdisco poller job from the command-line.
 
-The C<-d> option will accept a hostname (that can be resolved to an IP with
-DNS), an IP address, or IP prefix (subnets in CIDR format). It can be any
-interface on the device known to Netdisco.
-
 =head1 ACTIONS
 
 Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
@@ -180,9 +176,9 @@ For any action, if you wish to run one of its individual worker stages, then
 pass C<action::stage> as the first argument to C<netdisco-do>, for example
 C<discover::neighbors>.
 
-Any action taking a C<device> parameter can be passed either a hostname or IP,
-or an IP prefix (subnet) which will cause C<netdisco-do> to run the action for
-all addresses in that range.
+Any action taking a C<device> parameter can be passed either a hostname or IP
+of any interface on a known or unknown device, or an IP prefix (subnet) which
+will cause C<netdisco-do> to run the action for all addresses in that range.
 
 =head2 discover
 
