@@ -1,4 +1,4 @@
-2.036012_003 - EXPERIMENTAL RELEASE
+2.037000 - 2017-12-14
 
   [NEW FEATURES]
 
@@ -11,6 +11,7 @@
   * Deduplicate neighbors based on lldpRemChassisId
   * Scheduler config does not need to be uncommented
   * More efficient polling of the job queue
+  * Better Port search options and results presentation
 
   [BUG FIXES]
 

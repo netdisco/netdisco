@@ -78,6 +78,7 @@
             "Sereal" : "0",
             "Socket6" : "0.23",
             "Starman" : "0.4008",
+            "Storable" : "0",
             "Template" : "2.24",
             "Template::Plugin::CSV" : "0.04",
             "Template::Plugin::Number::Format" : "1.02",
@@ -85,7 +86,8 @@
             "Term::UI" : "0",
             "Try::Tiny" : "0",
             "URI" : "0",
-            "URL::Encode" : "0.01",
+            "URL::Encode" : "0.03",
+            "URL::Encode::XS" : "0",
             "YAML" : "0.84",
             "YAML::XS" : "0.41",
             "aliased" : "0",
@@ -103,7 +105,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.036012_003"
+         "version" : "2.037000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -740,7 +742,7 @@
          "file" : "lib/Dancer/Template/NetdiscoTemplateToolkit.pm"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/netdisco/netdisco/issues"
@@ -755,6 +757,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.036012_003",
+   "version" : "2.037000",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }
