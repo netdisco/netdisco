@@ -131,6 +131,7 @@ sidebar_defaults:
     age_num:      { default: 3 }
     age_unit:     { default: months }
     mac_format:   { default: IEEE }
+    neigh_id:     { default: null }
   report_moduleinventory:
     fruonly:     {default: checked }
     matchall:    {default: checked }
