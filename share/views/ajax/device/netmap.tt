@@ -72,12 +72,10 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
         'links': mapdata['v3']['links']
       }};
       netmap_pane.start(netmapdata);
-      resizeGraphContainer();
       netmap_pane.inspect().main.force.alpha(0.005).tick();
       netmap_pane.inspect().main.force.stop();
       netmap_pane.inspect().main.force.tick = ticker;
-      var node = netmap_pane.nodeDataById( mapdata['v3']['centernode'] );
-      netmap_pane.zoomSmooth(node.x, node.y, node.radius * 200);
+      resizeGraphContainer();
     }
   });
 
