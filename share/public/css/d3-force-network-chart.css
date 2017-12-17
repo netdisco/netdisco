@@ -38,7 +38,7 @@
 }
 .net_gobrechts_d3_force text.link {
     font-size: 12px;
-    fill: blue;
+    fill: #2a7ae2;
     cursor: pointer;
 }
 .net_gobrechts_d3_force line.link,
@@ -174,7 +174,7 @@
 }
 .net_gobrechts_d3_force_customize a {
     border: 1px solid transparent;
-    color: blue;
+    color: #2a7ae2;
     text-decoration: none;
     cursor: pointer;
 }
@@ -183,8 +183,8 @@
 .net_gobrechts_d3_force_customize textarea:focus,
 .net_gobrechts_d3_force_customize a:focus {
     outline: none !important;
-    border: 1px solid blue !important;
-    background-color: yellow !important;
+    border: 1px solid #2a7ae2 !important;
+    background-color: #ffff99 !important;
     box-shadow: none !important;
 }
 .net_gobrechts_d3_force_customize textarea {

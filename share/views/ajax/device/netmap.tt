@@ -6,119 +6,52 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
 
   function resizeGraphContainer() {
     setTimeout(function(){
-      var graph = jQuery('#netmap_pane');
-      netmap_pane.width( parseInt(graph.parent().css('width')) ).resume();
-      netmap_pane.height( window.innerHeight - 100 ).resume();
+      var netmap_pane = jQuery('#netmap_pane');
+      graph.width( parseInt(netmap_pane.parent().css('width')) ).resume();
+      graph.height( window.innerHeight - 100 ).resume();
     }, 500)
   }
 
   jQuery(document).ready(function() {
-    var canvas = document.querySelector("canvas"),
-        context = canvas.getContext("2d"),
-        width = canvas.width,
-        height = canvas.height;
+    window.graph = netGobrechtsD3Force('netmap_pane')
+      .debug(true)
+      .lassoMode(true)
+      .nodeEventToOpenLink('click')
+      .nodeLinkTarget('none')
+      .labelDistance(2)
+      .zoomMode(true)
+      .pinMode(true)
+      .showLinkDirection(false)
+      .preventLabelOverlappingOnForceEnd(true)
+      // .zoomToFitOnForceEnd(true)
+      .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
+      .height( window.innerHeight - 100 )
+      .showSelfLinks(true)
+      .minZoomFactor(0.1)
+      .maxZoomFactor(10);
 
-//    window.netmap_pane = netGobrechtsD3Force('netmap_pane')
-//      .debug(true)
-//      .lassoMode(true)
-//      .nodeEventToOpenLink('click')
-//      .nodeLinkTarget('none')
-//      .labelDistance(2)
-//      .zoomMode(true)
-//      .showLinkDirection(false)
-//      .preventLabelOverlappingOnForceEnd(true)
-//      .showSelfLinks(true)
-//      .minZoomFactor(0.1)
-//      .maxZoomFactor(10);
-//
-//    var ticker = netmap_pane.inspect().main.force.tick;
-//    netmap_pane.inspect().main.force.tick = (function(forceTick) {
-//      return function() {
-//        forceTick();
-//        return true;
-//      }
-//    }(netmap_pane.inspect().main.force.tick));
-//
-//    // center on our selected device
-//    netmap_pane.inspect().main.force.on('end.centernode', function() {
-//      var node = netmap_pane.nodeDataById( mapdata['v3']['centernode'] );
-//      netmap_pane.zoomSmooth(node.x, node.y, node.radius * 200);
-//      netmap_pane.inspect().main.force.on('end.centernode', null);
+    jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
+    jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
+    jQuery(window).on("resize", resizeGraphContainer);
+
+    var netmapdata = {'data': {
+      'nodes': mapdata['v4']['nodes'].map(function(node) {
+        var index = node['index'];
+        return mapdata['v3']['nodes'][index];
+      }),
+      'links': mapdata['v3']['links']
+    }};
+    graph.start(netmapdata);
+
+    // center on our selected device
+//    graph.inspect().main.force.on('end.centernode', function() {
+//      var node = graph.nodeDataById( mapdata['v3']['centernode'] );
+//      graph.zoomSmooth(node.x, node.y, node.radius * 200);
+//      graph.inspect().main.force.on('end.centernode', null);
 //    });
-//
-//    jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
-//    jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
-//    jQuery(window).on("resize", resizeGraphContainer);
-
-    var worker = new Worker( 'http://localhost:5000/javascripts/worker.js' );
-    worker.postMessage(mapdata['v4']);
-    worker.onmessage = function(event) {
-      switch (event.data.type) {
-        case "tick": return ticked(event.data);
-        case "end": return ended(event.data);
-      }
-    };
-
-    function ticked(data) {
-      var progress = data.progress;
-      // console.log( 100 * progress + "%" );
-      //meter.style.width = 100 * progress + "%";
-    }
-
-//    function ended(data) {
-//      var netmapdata = {'data': {
-//        'nodes': data.nodes.map(function(node) {
-//          var index = node['index'];
-//          var x = mapdata['v3']['nodes'][index];
-//          x['x'] = node['x'];
-//          x['y'] = node['y'];
-//          return x;
-//        }),
-//        'links': mapdata['v3']['links']
-//      }};
-//      netmap_pane.start(netmapdata);
-//      netmap_pane.inspect().main.force.alpha(0.005).tick();
-//      netmap_pane.inspect().main.force.stop();
-//      netmap_pane.inspect().main.force.tick = ticker;
-//      resizeGraphContainer();
-//    }
-
-    function ended(data) {
-      var nodes = data.nodes,
-          links = data.links;
-
-      context.clearRect(0, 0, width, height);
-      context.save();
-      context.translate(width / 2, height / 2);
-
-      context.beginPath();
-      links.forEach(drawLink);
-      context.strokeStyle = "#aaa";
-      context.stroke();
-
-      context.beginPath();
-      nodes.forEach(drawNode);
-      context.fill();
-      context.strokeStyle = "#fff";
-      context.stroke();
-
-      context.restore();
-    }
-
-    function drawLink(d) {
-      context.moveTo(d.source.x, d.source.y);
-      context.lineTo(d.target.x, d.target.y);
-    }
-
-    function drawNode(d) {
-      context.moveTo(d.x + 3, d.y);
-      context.arc(d.x, d.y, 3, 0, 2 * Math.PI);
-    }
   });
 
 });
 
 // vim: ft=javascript
 </script>
-
-<canvas width="960" height="960"></canvas>

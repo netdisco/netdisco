@@ -42,7 +42,6 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         SIZEVALUE => 3000,
         COLORVALUE => 10,
         LABEL => $name,
-        fixed => true,
       };
       push @{$v4data{'nodes'}}, { index => ($device->{row_number} - 1) };
 
@@ -68,7 +67,6 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       push @{$v3data{'links'}}, {
         FROMID => $id_for{$l->{left_ip}},
         TOID   => $id_for{$l->{right_ip}},
-        fixed  => 1,
       };
       push @{$v4data{'links'}}, {
         source => ($id_for{$l->{left_ip}} - 1),
