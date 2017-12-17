@@ -5,11 +5,10 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Node 'check_mac';
+use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
-use NetAddr::MAC ();
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -62,56 +61,6 @@ sub get_arps {
   my $resolved_ips = hostnames_resolve_async(\@arps);
 
   return $resolved_ips;
-}
-
-=head2 store_arp( \%host, $now? )
-
-Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
-and DNS host name. Host details are provided in a Hash ref:
-
- {
-    ip   => '192.0.2.1',
-    node => '00:11:22:33:44:55',
-    dns  => 'myhost.example.com',
- }
-
-The C<dns> entry is optional. The update will mark old entries for this IP as
-no longer C<active>.
-
-Optionally a literal string can be passed in the second argument for the
-C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
-
-=cut
-
-sub store_arp {
-  my ($hash_ref, $now) = @_;
-  $now ||= 'now()';
-  my $ip   = $hash_ref->{'ip'};
-  my $mac  = NetAddr::MAC->new($hash_ref->{'node'});
-  my $name = $hash_ref->{'dns'};
-
-  return if !defined $mac or $mac->errstr;
-
-  schema('netdisco')->txn_do(sub {
-    my $current = schema('netdisco')->resultset('NodeIp')
-      ->search(
-        { ip => $ip, -bool => 'active'},
-        { columns => [qw/mac ip/] })->update({active => \'false'});
-
-    schema('netdisco')->resultset('NodeIp')
-      ->update_or_create(
-      {
-        mac => $mac->as_ieee,
-        ip => $ip,
-        dns => $name,
-        active => \'true',
-        time_last => \$now,
-      },
-      {
-        key => 'primary',
-        for => 'update',
-      });
-  });
 }
 
 true;

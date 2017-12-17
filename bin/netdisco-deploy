@@ -40,6 +40,7 @@ use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Passphrase;
+use App::Netdisco::Util::Statistics ();
 
 info "App::Netdisco $App::Netdisco::VERSION loaded.";
 
@@ -137,6 +138,11 @@ sub deploy_db {
   system 'netdisco-db-deploy';
   print color 'bold blue';
   say 'DB schema update complete.';
+  print color 'reset';
+
+  App::Netdisco::Util::Statistics::update_stats();
+  print color 'bold blue';
+  say 'Statistics updated.';
   print color 'reset';
 
   if (not setting('safe_password_store')) {

@@ -40,8 +40,7 @@ BEGIN {
 }
 
 use App::Netdisco;
-use App::Netdisco::Core::Arpnip 'store_arp';
-use App::Netdisco::Util::Node 'check_mac';
+use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use Dancer ':script';
 
