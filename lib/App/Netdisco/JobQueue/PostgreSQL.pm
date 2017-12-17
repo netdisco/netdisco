@@ -87,12 +87,10 @@ sub jq_getsome {
 
   my $hiprio = $jobs->search({
     %jobsearch,
-    -or => [{
-        username => { '!=' => undef },
-        action => { -in => setting('job_prio')->{'normal'} },
-      },{
-        action => { -in => setting('job_prio')->{'high'} },
-    }],
+    -or => [
+      { username => { '!=' => undef } },
+      { action => { -in => setting('job_prio')->{'high'} } },
+    ],
   }, {
     %randoms,
     '+select' => [\'100 as job_priority'], '+as' => ['me.job_priority'],
@@ -100,7 +98,7 @@ sub jq_getsome {
 
   my $loprio = $jobs->search({
     %jobsearch,
-    action => { -in => setting('job_prio')->{'normal'} },
+    action => { -not_in => setting('job_prio')->{'high'} },
   }, {
     %randoms,
     '+select' => [\'0 as job_priority'], '+as' => ['me.job_priority'],

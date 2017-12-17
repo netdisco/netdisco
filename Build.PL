@@ -65,7 +65,7 @@ Module::Build->new(
     'Socket6' => '0.23',
     'Starman' => '0.4008',
     'Storable' => 0,
-    'SNMP::Info' => '3.38',
+    'SNMP::Info' => '3.39',
     'SQL::Translator' => '0.11018',
     'Template' => '2.24',
     'Template::Plugin::CSV' => '0.04',
