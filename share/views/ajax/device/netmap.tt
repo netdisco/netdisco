@@ -16,13 +16,15 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
     window.graph = netGobrechtsD3Force('netmap_pane')
       .debug(true)
       .lassoMode(true)
+      .dragMode(true)
       .nodeEventToOpenLink('click')
       .nodeLinkTarget('none')
       .labelDistance(2)
       .zoomMode(true)
       .pinMode(true)
+      .nodeEventToStopPinMode('none')
       .showLinkDirection(false)
-      .preventLabelOverlappingOnForceEnd(true)
+      // .preventLabelOverlappingOnForceEnd(true)
       // .zoomToFitOnForceEnd(true)
       .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
       .height( window.innerHeight - 100 )
@@ -34,6 +36,45 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
     jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
     jQuery(window).on("resize", resizeGraphContainer);
 
+    graph.inspect().main.force.on('end.setupfornetdisco', function() {
+      graph.inspect().main.nodes.each(function(n) { n.fixed = true });
+
+      graph.inspect().main.nodes.on('mouseup.dragall', function() {
+        graph.inspect().main.nodes.each(function(n) {
+          delete n['startX'];
+          delete n['startY'];
+          delete n['moving'];
+        });
+      });
+
+      graph.inspect().main.nodes.on('mousedown.dragall', function(orig) {
+        orig['startX'] = orig.x;
+        orig['startY'] = orig.y;
+        orig['moving'] = true;
+      });
+
+      graph.inspect().main.nodes.on('mousemove.dragall', function(orig) {
+        var evt = window.event;
+        if (!("buttons" in evt) || (evt.buttons !== 1) || !("moving" in orig)) { return }
+
+        var dx = (orig.x - orig['startX']),
+            dy = (orig.y - orig['startY']);
+        orig['startX'] += dx;
+        orig['startY'] += dy;
+
+        graph.inspect().main.nodes
+          .filter(function(n) { return (n.selected && (n.index !== orig.index)) })
+          .each(function(n) {
+              graph.inspect().main.force.stop();
+              n.x += dx; n.y += dy;
+              n.px += dx; n.py += dy;
+              graph.inspect().main.force.resume();
+          });
+      });
+
+      graph.inspect().main.force.on('end.setupfornetdisco', null);
+    });
+
     var netmapdata = {'data': {
       'nodes': mapdata['v4']['nodes'].map(function(node) {
         var index = node['index'];
@@ -41,7 +82,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
       }),
       'links': mapdata['v3']['links']
     }};
-    graph.start(netmapdata);
+    graph.start();
 
     // center on our selected device
 //    graph.inspect().main.force.on('end.centernode', function() {
