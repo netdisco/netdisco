@@ -30,7 +30,8 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
       .height( window.innerHeight - 100 )
       .showSelfLinks(true)
       .minZoomFactor(0.1)
-      .maxZoomFactor(10);
+      .maxZoomFactor(10)
+      .charge(-550);
 
     jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
     jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
@@ -38,37 +39,37 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
 
     graph.inspect().main.force.on('end.setupfornetdisco', function() {
       graph.inspect().main.nodes.each(function(n) { n.fixed = true });
+      graph['nd2'] = {};
+      graph['nd2']['dragging'] = false;
 
-      graph.inspect().main.nodes.on('mouseup.dragall', function() {
-        graph.inspect().main.nodes.each(function(n) {
-          delete n['startX'];
-          delete n['startY'];
-          delete n['moving'];
-        });
+      graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
+        graph['nd2']['dragging'] = false;
       });
 
-      graph.inspect().main.nodes.on('mousedown.dragall', function(orig) {
-        orig['startX'] = orig.x;
-        orig['startY'] = orig.y;
-        orig['moving'] = true;
+      graph.inspect().main.nodes.on('mousedown.dragall', function(n) {
+        if (this.nodeName !== 'circle') { return }
+        graph['nd2']['dragging'] = true;
+        graph['nd2']['dragStartX'] = n.x;
+        graph['nd2']['dragStartY'] = n.y;
+        graph['nd2']['draggedNode'] = n.index;
       });
 
-      graph.inspect().main.nodes.on('mousemove.dragall', function(orig) {
+      graph.inspect().main.nodes.on('mousemove.dragall', function(draggedNode) {
         var evt = window.event;
-        if (!("buttons" in evt) || (evt.buttons !== 1) || !("moving" in orig)) { return }
+        if (!("buttons" in evt) || (evt.buttons !== 1)) { return }
+        if (!(graph['nd2']['dragging']) || !(graph['nd2']['draggedNode'])) { return }
+        if (draggedNode.index !== graph['nd2']['draggedNode']) { return }
 
-        var dx = (orig.x - orig['startX']),
-            dy = (orig.y - orig['startY']);
-        orig['startX'] += dx;
-        orig['startY'] += dy;
+        var dx = (draggedNode.x - graph['nd2']['dragStartX']),
+            dy = (draggedNode.y - graph['nd2']['dragStartY']);
+        graph['nd2']['dragStartX'] += dx;
+        graph['nd2']['dragStartY'] += dy;
 
         graph.inspect().main.nodes
-          .filter(function(n) { return (n.selected && (n.index !== orig.index)) })
+          .filter(function(n) { return (n.selected && (n.index !== draggedNode.index)) })
           .each(function(n) {
-              graph.inspect().main.force.stop();
               n.x += dx; n.y += dy;
               n.px += dx; n.py += dy;
-              graph.inspect().main.force.resume();
           });
       });
 
