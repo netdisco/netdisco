@@ -14,6 +14,12 @@ ajax '/ajax/content/device/netmap' => require_login sub {
     template 'ajax/device/netmap.tt', {}, { layout => undef };
 };
 
+# TODO
+ajax '/ajax/data/device/netmappositions' => require_login sub {
+    my $x = from_json param('positions');
+    use DDP; p $x;
+};
+
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my $qdev = schema('netdisco')->resultset('Device')

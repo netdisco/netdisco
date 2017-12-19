@@ -1,9 +1,9 @@
 <script>
 
-// custom resize function as there is no event to fire and we need
-// to react to the sidebar.
 $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(mapdata) {
 
+  // custom resize function as there is no event to fire and we need
+  // to react to the sidebar.
   function resizeGraphContainer() {
     setTimeout(function(){
       var netmap_pane = jQuery('#netmap_pane');
@@ -39,9 +39,15 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
 
     graph.inspect().main.force.on('end.setupfornetdisco', function() {
       graph.inspect().main.nodes.each(function(n) { n.fixed = true });
+
+      // FIXME
+      $.post(
+        '[% uri_for('/ajax/data/device/netmappositions') %]'
+        ,'positions=' + JSON.stringify(graph.positions())
+      );
+
       graph['nd2'] = {};
       graph['nd2']['dragging'] = false;
-
       graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
         graph['nd2']['dragging'] = false;
       });
