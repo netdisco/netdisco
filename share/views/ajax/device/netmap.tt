@@ -1,20 +1,39 @@
 <script>
 
-$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(mapdata) {
-
-  // custom resize function as there is no event to fire and we need
-  // to react to the sidebar.
-  function resizeGraphContainer() {
-    setTimeout(function(){
-      var netmap_pane = jQuery('#netmap_pane');
-      graph.width( parseInt(netmap_pane.parent().css('width')) ).resume();
-      graph.height( window.innerHeight - 100 ).resume();
-    }, 500)
+function requestFullScreen(elt) {
+  // console.log("Requesting fullscreen for", elt);
+  if (elt.requestFullscreen) {
+    elt.requestFullscreen();
+  } else if (elt.msRequestFullscreen) {
+    elt.msRequestFullscreen();
+  } else if (elt.mozRequestFullScreen) {
+    elt.mozRequestFullScreen();
+  } else if (elt.webkitRequestFullscreen) {
+    elt.webkitRequestFullscreen();
+  } else {
+    // console.error("Fullscreen not available");
   }
+}
+
+$(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
+  resizeGraphContainer();
+});
+
+// custom resize function as there is no event to fire and we need
+// to react to the sidebar.
+function resizeGraphContainer() {
+  setTimeout(function(){
+    var netmap_pane = jQuery('#netmap_pane');
+    graph.width( parseInt(netmap_pane.parent().css('width')) ).resume();
+    graph.height( window.innerHeight - 100 ).resume();
+  }, 500)
+}
+
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(mapdata) {
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
-      .debug(true)
+      // .debug(true)
       .lassoMode(true)
       .dragMode(true)
       .nodeEventToOpenLink('click')
@@ -91,6 +110,19 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
       'links': mapdata['v3']['links']
     }};
     graph.start(netmapdata);
+
+    graph.inspect().dom.svg
+         .append("svg:text")
+         .attr("id", "nd2_fullscreen_netmap")
+         .attr("class", "link")
+         .attr("x", (graph.width() - 17))
+         .attr("y", 17)
+         .attr("text-anchor", "start")
+         .attr("font-family", "FontAwesome")
+         .text(function() { return '\uf0b2' })
+         .on("click", function() {
+           requestFullScreen(document.getElementById('netmap_pane'));
+         });
 
     // center on our selected device
 //    graph.inspect().main.force.on('end.centernode', function() {
