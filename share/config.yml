@@ -172,6 +172,8 @@ login_logo: ""
 # mibhome is discovered from environment
 # mibdirs defaults to contents of mibhome
 host_groups:
+  __ANY__:
+    - 'any'
   __LOCAL_ADDRESSES__:
     - '::1'
     - 'fe80::/10'
