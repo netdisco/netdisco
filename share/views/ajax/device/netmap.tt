@@ -33,12 +33,13 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
-      // .debug(true)
+      .debug(true)
       .lassoMode(true)
       .dragMode(true)
       .nodeEventToOpenLink('click')
       .nodeLinkTarget('none')
       .labelDistance(2)
+      .linkDistance(120)
       .zoomMode(true)
       .pinMode(true)
       .nodeEventToStopPinMode('none')
@@ -50,7 +51,8 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
       .showSelfLinks(true)
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
-      .charge(-550);
+      .charge(-550)
+      .gravity(0.3);
 
     jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
     jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
