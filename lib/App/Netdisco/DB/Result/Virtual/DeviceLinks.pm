@@ -18,12 +18,10 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
                  device_port.remote_ip, device_port.remote_port
            FROM device_port
           WHERE device_port.remote_port IS NOT NULL ) dp
-   LEFT JOIN device_ip di ON dp.remote_ip = di.alias
-   LEFT JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)
-  WHERE di.ip IS NOT NULL
-    AND dp2.ip IS NOT NULL
-    AND dp.ip <= dp2.ip
-  ORDER BY dp.ip
+   INNER JOIN device_ip di ON dp.remote_ip = di.alias
+   INNER JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)
+ WHERE dp.ip <= dp2.ip
+ ORDER BY dp.ip
 ENDSQL
 );
 
