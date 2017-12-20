@@ -345,6 +345,14 @@
           [% END %]
         [% END %]
         [% END %]
+        [% IF user_can_port_control AND params.c_admin %]
+        <a class="nd_log-icon"
+          href="[% uri_for('/admin/topology') %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
+          <i class="icon-bolt"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Manual Topology"></i>
+        [% END %]
+        </a>
       </td>
       [% END %]
 
