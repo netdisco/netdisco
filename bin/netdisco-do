@@ -341,6 +341,11 @@ Set the PoE on/off status on a device port. Requires the C<-d> parameter
  ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
  ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
+=head2 dumpconfig
+
+Will dump the loaded and parsed configuration for the application. Pass a
+specific configuration setting name to the C<-e> parameter to dump only that.
+
 =head1 DEBUG LEVELS
 
 The flags "C<-DISQ>" can be specified, multiple times, and enable the
