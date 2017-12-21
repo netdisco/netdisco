@@ -201,6 +201,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
 lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
 lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
+lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
 lib/App/Netdisco/Worker/Plugin/Expire.pm
 lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
 lib/App/Netdisco/Worker/Plugin/Graph.pm

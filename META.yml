@@ -18,7 +18,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.037003'
+    version: '2.037004'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -394,6 +394,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
   App::Netdisco::Worker::Plugin::DiscoverAll:
     file: lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
+  App::Netdisco::Worker::Plugin::DumpConfig:
+    file: lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
   App::Netdisco::Worker::Plugin::Expire:
     file: lib/App/Netdisco/Worker/Plugin/Expire.pm
   App::Netdisco::Worker::Plugin::ExpireNodes:
@@ -518,7 +520,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/BSD-3-Clause
+  license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.037003'
+version: '2.037004'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
