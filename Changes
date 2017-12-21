@@ -1,3 +1,9 @@
+2.037004 - 2017-12-21
+
+  [BUG FIXES]
+
+  * Allow default schedule items to be skipped by setting to 'null'
+
 2.037003 - 2017-12-18
 
   [BUG FIXES]

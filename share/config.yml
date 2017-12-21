@@ -332,6 +332,7 @@ worker_plugins:
   - 'Discover::Wireless'
   - 'Discover::WithNodes'
   - 'DiscoverAll'
+  - 'DumpConfig'
   - 'Expire'
   - 'ExpireNodes'
   - 'Graph'
