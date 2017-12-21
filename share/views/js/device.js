@@ -95,6 +95,11 @@
         }
     });
 
+    // refresh tooltips when the datatables table is updated
+    $('#ports_pane').on('draw.dt', function() {
+        $("[rel=tooltip]").tooltip({live: true});
+    });
+
     // activity for admin tasks in device details
     $('#details_pane').on('click', '.nd_adminbutton', function(event) {
       // stop form from submitting normally
