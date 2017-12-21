@@ -52,6 +52,52 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
+    my $mapshow = (param('mapshow') || 'groups');
+    if (not $qdev or not $qdev->in_storage
+        or (defined $mapshow and $mapshow !~ m/^(?:neighbors|groups)$/)) {
+      $mapshow = 'groups';
+    }
+
+    my %id_for = ();
+    my %ok_dev = ();
+    my %v3data = ( nodes => {}, links => [] );
+    my %v4data = ( nodes => [], links => [] );
+    my $domain = quotemeta( setting('domain_suffix') || '' );
+
+    # LINKS
+
+    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
+      columns => [qw/left_ip right_ip/],
+      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+    });
+
+    if ($vlan) {
+        $rs = $rs->search({
+          -or => [
+            { 'left_vlans.vlan' => $vlan },
+            { 'right_vlans.vlan' => $vlan },
+          ],
+        }, {
+          join => [qw/left_vlans right_vlans/],
+        });
+    }
+
+    my @links = $rs->all; # because we have to run this twice
+    foreach my $l (@links) {
+      next if (($mapshow eq 'neighbors')
+        and (($l->{left_ip} ne $qdev->ip) and ($l->{right_ip} ne $qdev->ip)));
+
+      push @{$v3data{'links'}}, {
+        FROMID => $l->{left_ip},
+        TOID   => $l->{right_ip},
+      };
+
+      ++$ok_dev{$l->{left_ip}};
+      ++$ok_dev{$l->{right_ip}};
+    }
+
+    # DEVICES (NODES)
+
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
       device_groups => \[ '= ?', [device_groups => [sort (List::MoreUtils::uniq( '__ANY__' )) ]] ]});
     my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
@@ -62,12 +108,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       '+select' => [\'row_number() over()'], '+as' => ['row_number'],
     })->all;
 
-    my %id_for = ();
-    my %v3data = ( nodes => {}, links => [] );
-    my %v4data = ( nodes => [], links => [] );
-    my $domain = quotemeta( setting('domain_suffix') || '' );
-
     foreach my $device (@devices) {
+      next unless $ok_dev{$device->{ip}}; # vlan filter's effect
+
       $id_for{$device->{ip}} = $device->{'row_number'};
       (my $name = ($device->{dns} || lc($device->{name}) || $device->{ip})) =~ s/$domain$//;
 
@@ -94,25 +137,11 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       push @{$v4data{'nodes'}}, { index => ($device->{row_number} - 1) };
     }
 
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
-      columns => [qw/left_ip right_ip/],
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-    });
+    # go back and do v4 links now we have row IDs
+    foreach my $l (@links) {
+      next if (($mapshow eq 'neighbors')
+        and (($l->{left_ip} ne $qdev->ip) and ($l->{right_ip} ne $qdev->ip)));
 
-    if ($vlan) {
-        $rs = $rs->search({
-          'left_vlans.vlan' => $vlan,
-          'right_vlans.vlan' => $vlan,
-        }, {
-          join => [qw/left_vlans right_vlans/],
-        });
-    }
-
-    while (my $l = $rs->next) {
-      push @{$v3data{'links'}}, {
-        FROMID => $l->{left_ip},
-        TOID   => $l->{right_ip},
-      };
       push @{$v4data{'links'}}, {
         source => ($id_for{$l->{left_ip}} - 1),
         target => ($id_for{$l->{right_ip}} - 1),

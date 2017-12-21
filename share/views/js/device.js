@@ -100,6 +100,37 @@
         $("[rel=tooltip]").tooltip({live: true});
     });
 
+    // netmap pin/release controls
+    $('#nd_netmap-releaseall').on('click', function(event) {
+      event.preventDefault();
+      graph.releaseFixedNodes().resume();
+    });
+    $('#nd_netmap-releaseonly').on('click', function(event) {
+      event.preventDefault();
+      graph.inspect().main.nodes
+        .filter(function(n) { return n.selected })
+        .each(function(n) { n.fixed = false });
+      graph.resume();
+    });
+    $('#nd_netmap-pinonly').on('click', function(event) {
+      event.preventDefault();
+      graph.inspect().main.nodes
+        .filter(function(n) { return n.selected })
+        .each(function(n) { n.fixed = true });
+    });
+    $('#nd_netmap-save').on('click', function(event) {
+      event.preventDefault();
+      $.post(
+        '[% uri_for('/ajax/data/device/netmappositions') %]'
+        ,'positions=' + JSON.stringify(graph.positions())
+      );
+    });
+    $('#nd_netmap-zoomtodevice').on('click', function(event) {
+      event.preventDefault();
+      var node = graph.nodeDataById( graph['nd2']['centernode'] );
+      graph.zoomSmooth(node.x, node.y, node.radius * 100);
+    });
+
     // activity for admin tasks in device details
     $('#details_pane').on('click', '.nd_adminbutton', function(event) {
       // stop form from submitting normally

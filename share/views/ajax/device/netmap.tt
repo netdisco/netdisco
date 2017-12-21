@@ -29,11 +29,15 @@ function resizeGraphContainer() {
   }, 500)
 }
 
-$.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, function(mapdata) {
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]',{
+    q: '[% params.q %]'
+    ,vlan: '[% params.vlan %]'
+    ,mapshow: '[% params.mapshow %]'
+    }, function(mapdata) {
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
-      .debug(true)
+      // .debug(true)
       .lassoMode(true)
       .dragMode(true)
       .nodeEventToOpenLink('click')
@@ -58,6 +62,10 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
     jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
     jQuery(window).on("resize", resizeGraphContainer);
 
+    graph['nd2'] = {};
+    graph['nd2']['centernode'] = mapdata['v3']['centernode'];
+    graph['nd2']['dragging'] = false;
+
     graph.inspect().main.force.on('end.setupfornetdisco', function() {
       graph.inspect().main.nodes.each(function(n) { n.fixed = true });
 
@@ -68,8 +76,6 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
         );
       }
 
-      graph['nd2'] = {};
-      graph['nd2']['dragging'] = false;
       graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
         graph['nd2']['dragging'] = false;
       });
@@ -125,13 +131,6 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]', {q: '[% params.q %]'}, fu
          .on("click", function() {
            requestFullScreen(document.getElementById('netmap_pane'));
          });
-
-    // center on our selected device
-//    graph.inspect().main.force.on('end.centernode', function() {
-//      var node = graph.nodeDataById( mapdata['v3']['centernode'] );
-//      graph.zoomSmooth(node.x, node.y, node.radius * 200);
-//      graph.inspect().main.force.on('end.centernode', null);
-//    });
   });
 
 });

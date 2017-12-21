@@ -432,9 +432,14 @@ td > form.nd_inline-form {
   margin-bottom: 12px;
 }
 
-/* Flabels in netmap sidebar (not in a collapser) */
+/* labels in netmap sidebar (not in a collapser) */
 .nd_sidebar-label {
   margin-left: 7px;
+}
+
+/* bootstrap switch toggles */
+.bootstrap-switch {
+  margin-left: -4px;
 }
 
 /* fixup for prepended checkbox in sidebar */

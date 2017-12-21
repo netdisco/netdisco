@@ -50,11 +50,9 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->has_many('left_vlans', 'App::Netdisco::DB::Result::DevicePortVlan',
-  { 'foreign.ip' => 'self.left_ip', 'foreign.port' => 'self.left_port' },
-  { join_type => 'INNER' } );
+  { 'foreign.ip' => 'self.left_ip', 'foreign.port' => 'self.left_port' });
 
 __PACKAGE__->has_many('right_vlans', 'App::Netdisco::DB::Result::DevicePortVlan',
-  { 'foreign.ip' => 'self.right_ip', 'foreign.port' => 'self.right_port' },
-  { join_type => 'INNER' } );
+  { 'foreign.ip' => 'self.right_ip', 'foreign.port' => 'self.right_port' });
 
 1;
