@@ -18,7 +18,7 @@
 <!--  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.cookie.js"></script> -->
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap-switch.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap2-toggle.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/underscore.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.qtip.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/d3.min.js"></script>
@@ -50,7 +50,8 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap-switch.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap2-toggle.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/awesome-bootstrap-checkbox.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/jquery.qtip.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/smoothness/jquery-ui.custom.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>

@@ -122,7 +122,7 @@
       event.preventDefault();
       $.post(
         '[% uri_for('/ajax/data/device/netmappositions') %]'
-        ,'positions=' + JSON.stringify(graph.positions())
+        ,'vlan=[% params.vlan %]&positions=' + JSON.stringify(graph.positions())
       );
     });
     $('#nd_netmap-zoomtodevice').on('click', function(event) {

@@ -20,6 +20,9 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     my $positions = from_json($p) or send_error('Bad positions', 400);
     send_error('Bad positions', 400) unless ref [] eq ref $positions;
 
+    my $vlan = param('vlan');
+    undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
+
     my %clean = ();
     POSITION: foreach my $pos (@$positions) {
       next unless ref {} eq ref $pos;
@@ -32,13 +35,15 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
 
     return unless scalar keys %clean;
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
-      device_groups => \[ '= ?', [device_groups => [sort (List::MoreUtils::uniq( '__ANY__' )) ]] ]});
+      device_groups => \[ '= ?', [device_groups => [sort (List::MoreUtils::uniq( '__ANY__' )) ]] ],
+      vlan => ($vlan || 0)});
     if ($posrow) {
       $posrow->update({ positions => to_json(\%clean) });
     }
     else {
       schema('netdisco')->resultset('NetmapPositions')->create({
         device_groups => [sort (List::MoreUtils::uniq( '__ANY__' )) ],
+        vlan => ($vlan || 0),
         positions => to_json(\%clean),
       });
     }
@@ -99,7 +104,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # DEVICES (NODES)
 
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
-      device_groups => \[ '= ?', [device_groups => [sort (List::MoreUtils::uniq( '__ANY__' )) ]] ]});
+      device_groups => \[ '= ?', [device_groups => [sort (List::MoreUtils::uniq( '__ANY__' )) ]] ],
+      vlan => ($vlan || 0)});
     my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
 
     my @devices = schema('netdisco')->resultset('Device')->search({}, {

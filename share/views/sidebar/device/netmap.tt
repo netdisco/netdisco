@@ -8,6 +8,25 @@
               </ul>
             </div>
 
+            <div class="clearfix nd_netmap-sidebar">
+            <div class="checkbox pull-left">
+              <label>
+                <input type="checkbox" name="showips" id="nd_showips"
+                  data-toggle="toggle" data-size="small" data-width="30"
+                  data-on="Show" data-off=" " data-onstyle="success">
+                &nbsp;Management IPs
+              </label>
+            </div>
+            <div class="checkbox pull-left">
+              <label>
+                <input type="checkbox" name="showspeed" id="nd_showspeed"
+                  data-toggle="toggle" data-size="small" data-width="30"
+                  data-on="Show" data-off=" " data-onstyle="success">
+                &nbsp;Link Speed
+              </label>
+            </div>
+            </div>
+
             <button id="nd_netmap-releaseall" class="btn btn-info">
                 <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
             Release All</button>
@@ -24,71 +43,74 @@
                 <i class="icon-save icon-large pull-left nd_navbar-icon"></i>
             Save Positions</button>
 
-            <div class="clearfix nd_netmap-sidebar">
-              <em class="muted nd_sidebar-label">Show only Devices:</em><br/>
-            </div>
-            <input class="nd_bs-sw" type="radio" name="mapshow" value="neighbors"
-              data-on-text="" data-off-text="" data-size="small"
-              data-on-color="success" data-off-color="default"
-              data-label-text="Neighbors" data-handle-width="74" data-label-width="90">
-            <input class="nd_bs-sw" type="radio" name="mapshow" value="groups" checked
-              data-on-text="" data-off-text="" data-size="small"
-              data-on-color="success" data-off-color="default"
-              data-label-text="Groups" data-handle-width="74" data-label-width="90">
-
-            <div class="clearfix">
-              <select class="nd_side-select" size="[% devgrp_list.size > 5 ? 5 : devgrp_list.size %]"
-                multiple="on" name="devgrp"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Device Groups"/>
-                [% FOREACH opt IN devgrp_list %]
-                <option[% ' selected="selected"' IF os_lkp.exists(opt) %]>[% opt | html_entity %]</option>
-                [% END %]
-                <option value="__ALL__" selected="selected">All Devices</option>
-              </select>
-            </div>
-
-            <input class="nd_bs-sw" type="checkbox" data-label-text="Mgmt IPs"
-              data-on-text="Show" data-off-text="Hide" data-size="small" disabled="true"
-              data-handle-width="74" data-label-width="90">
-
-            <input class="nd_bs-sw" type="checkbox" data-label-text="Link Speed"
-              data-on-text="Show" data-off-text="Hide" data-size="small" disabled="true"
-              data-handle-width="74" data-label-width="90">
-
-            <div class="clearfix nd_netmap-sidebar">
-              <em class="muted nd_sidebar-label">Filter by VLAN:</em><br/>
-              <input id="nd_port-query" placeholder="" type="number"
-                name="vlan" value="[% params.vlan | html_entity %]" type="text"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="VLAN"/>
-            </div>
-
-            <div class="clearfix input-prepend">
-              <label class="add-on">
-                <input type="checkbox" id="colorgroups"
-                  name="colorgroups"[% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.colorgroups %]/>
-              </label>
-              <label class="nd_checkboxlabel" for="colorgroups">
-                <span class="nd_searchcheckbox uneditable-input">Color Groups</span>
-              </label>
-            </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
-                <input type="checkbox" id="dynamicsize" disabled
-                  name="dynamicsize"[% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
-              </label>
-              <label class="nd_checkboxlabel" for="dynamicsize">
-                <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
-              </label>
-            </div>
-
             <button id="nd_netmap-zoomtodevice" class="btn btn-info">
                 <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
             Zoom to this Device</button>
 
+            <hr class="nd_sidebar-hr"/>
+
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-all" value="all">
+                <label for="nd_mapshow-all">All Devices</label>
+            </div>
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-neighbors" value="neighbors" checked>
+                <label for="nd_mapshow-neighbors">Neighbors Only</label>
+            </div>
+
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-only"
+                [% 'disabled' IF NOT devgrp_list.size %] value="only">
+                <label for="nd_mapshow-only">Host Groups</label>
+            </div>
+
+            [% IF devgrp_list.size %]
+            <div class="clearfix">
+              <select class="nd_side-select" size="[% devgrp_list.size > 5 ? 5 : devgrp_list.size %]"
+                multiple="on" name="devgrp"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+                [% FOREACH opt IN devgrp_list %]
+                <option[% ' selected="selected"' IF os_lkp.exists(opt) %]>[% opt | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            [% END %]
+
+            <div class="clearfix nd_netmap-sidebar">
+
+              [% IF devgrp_list.size %]
+              <div class="clearfix input-prepend">
+                <label class="add-on">
+                  <input type="checkbox" id="colorgroups"
+                    name="colorgroups"[% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.colorgroups %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="colorgroups">
+                  <span class="nd_searchcheckbox uneditable-input">Color Groups</span>
+                </label>
+              </div>
+              [% END %]
+
+              <div id="nd_vlan-label" class="control-group">
+                  <div class="controls">
+                  <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
+                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="number"
+                      value="[% params.vlan | html_entity %]" type="text"/>
+                  </label>
+                </div>
+              </div>
+
+              <div class="clearfix input-prepend">
+                <label class="add-on">
+                  <input type="checkbox" id="dynamicsize" disabled
+                    name="dynamicsize"[% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
+                </label>
+                <label class="nd_checkboxlabel" for="dynamicsize">
+                  <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
+                </label>
+              </div>
+
+            </div>
+
             <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
                 <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i>
             Redraw Map</button>
-
-            <script type="text/javascript">
-              $('.nd_bs-sw').bootstrapSwitch();
-            </script>

@@ -72,7 +72,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]',{
       if (mapdata['v3']['newnodes']) {
         $.post(
           '[% uri_for('/ajax/data/device/netmappositions') %]'
-          ,'positions=' + JSON.stringify(graph.positions())
+          ,'vlan=[% params.vlan %]&positions=' + JSON.stringify(graph.positions())
         );
       }
 
