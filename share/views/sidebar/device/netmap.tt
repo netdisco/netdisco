@@ -85,7 +85,7 @@
               <div id="nd_vlan-label" class="control-group">
                   <div class="controls">
                   <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
-                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="number"
+                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
                       value="[% params.vlan | html_entity %]" type="text"/>
                   </label>
                 </div>

@@ -454,7 +454,7 @@ td > form.nd_inline-form {
   vertical-align: text-bottom;
 }
 #nd_vlan-entry {
-  width: 57px;
+  width: 56px;
 }
 
 /* fixup for prepended checkbox in sidebar */
@@ -634,8 +634,8 @@ form .clearfix.success input {
 }
 
 .nd_netmap-sidebar {
-  /* margin-top: 7px; */
-  margin-left: -9px;
+  margin-top: 0px;
+  margin-left: -8px;
 }
 
 .nd_netmap-sidebar > .input-prepend {
