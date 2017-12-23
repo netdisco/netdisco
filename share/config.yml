@@ -133,6 +133,7 @@ sidebar_defaults:
     mac_format:   { default: IEEE }
     neigh_id:     { default: null }
   device_netmap:
+    mapshow:     { default: neighbors }
     colorgroups: { default: checked }
   report_moduleinventory:
     fruonly:     { default: checked }
@@ -180,6 +181,7 @@ host_groups:
     - '::1'
     - 'fe80::/10'
     - '127.0.0.0/8'
+host_group_displaynames: {}
 device_identity: []
 community: []
 community_rw: []

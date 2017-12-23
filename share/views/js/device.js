@@ -120,9 +120,10 @@
     });
     $('#nd_netmap-save').on('click', function(event) {
       event.preventDefault();
+      // if user enters vlan but does not submit this will save wrong data
       $.post(
         '[% uri_for('/ajax/data/device/netmappositions') %]'
-        ,'vlan=[% params.vlan %]&positions=' + JSON.stringify(graph.positions())
+        ,'vlan=' + $('#nd_vlan-entry').val() + '&positions=' + JSON.stringify(graph.positions())
       );
     });
     $('#nd_netmap-zoomtodevice').on('click', function(event) {

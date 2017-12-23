@@ -16,6 +16,7 @@ set('connected_properties' => [
 ]);
 
 hook 'before_template' => sub {
+  my $tokens = shift;
   my $defaults = var('sidebar_defaults')->{'device_ports'}
     or return;
 
@@ -32,6 +33,13 @@ hook 'before_template' => sub {
         $defaults->{$key} = $cdata->{$key};
       }
     }
+  }
+
+  # used in the device search sidebar template to set selected items
+  foreach my $opt (qw/devgrp/) {
+      my $p = (ref [] eq ref param($opt) ? param($opt)
+                                          : (param($opt) ? [param($opt)] : []));
+      $tokens->{"${opt}_lkp"} = { map { $_ => 1 } @$p };
   }
 
   return if param('reset')
@@ -69,6 +77,7 @@ get '/device' => require_login sub {
     params->{'tab'} ||= 'details';
     template 'device', {
       display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
+      devgrp_list => setting('host_group_displaynames'),
       device => params->{'tab'},
     };
 };
