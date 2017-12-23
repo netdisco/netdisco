@@ -29,11 +29,7 @@ function resizeGraphContainer() {
   }, 500)
 }
 
-$.getJSON('[% uri_for('/ajax/data/device/netmap') %]',{
-    q: '[% params.q %]'
-    ,vlan: '[% params.vlan %]'
-    ,mapshow: '[% params.mapshow %]'
-    }, function(mapdata) {
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(mapdata) {
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')

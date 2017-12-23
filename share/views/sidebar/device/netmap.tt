@@ -64,7 +64,7 @@
                 <input type="radio" name="mapshow" id="nd_mapshow-only"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'only' %]
                 [% 'disabled' IF NOT devgrp_list.size %] value="only">
-                <label for="nd_mapshow-only">Host Groups</label>
+                <label for="nd_mapshow-only">Host Groups[% ':' IF devgrp_list.size %]</label>
             </div>
 
             [% IF devgrp_list.size %]
@@ -81,6 +81,15 @@
             [% END %]
 
             <div class="clearfix nd_netmap-sidebar">
+
+              <div id="nd_vlan-label" class="control-group">
+                  <div class="controls">
+                  <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
+                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="number"
+                      value="[% params.vlan | html_entity %]" type="text"/>
+                  </label>
+                </div>
+              </div>
 
               [% IF devgrp_list.size %]
               <div class="clearfix input-prepend">
@@ -102,15 +111,6 @@
                 <label class="nd_checkboxlabel" for="dynamicsize">
                   <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
                 </label>
-              </div>
-
-              <div id="nd_vlan-label" class="control-group">
-                  <div class="controls">
-                  <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
-                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="number"
-                      value="[% params.vlan | html_entity %]" type="text"/>
-                  </label>
-                </div>
               </div>
 
             </div>

@@ -49,7 +49,10 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
 };
 
+# q
+# vlan
 # mapshow=all,neighbors,only
+
 # devgrp[]
 # colorgroups
 # dynamicsize
