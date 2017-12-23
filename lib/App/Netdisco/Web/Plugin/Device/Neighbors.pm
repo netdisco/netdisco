@@ -49,6 +49,11 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
 };
 
+# mapshow=all,neighbors,only
+# devgrp[]
+# colorgroups
+# dynamicsize
+
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my $qdev = schema('netdisco')->resultset('Device')
@@ -57,11 +62,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
-    my $mapshow = (param('mapshow') || 'groups');
-    if (not $qdev or not $qdev->in_storage
-        or (defined $mapshow and $mapshow !~ m/^(?:neighbors|groups)$/)) {
-      $mapshow = 'groups';
-    }
+    my $mapshow = (param('mapshow') || 'neighbors');
+    $mapshow = 'neighbors' if $mapshow !~ m/^(?:all|neighbors|only)$/;
+    $mapshow = 'all' unless $qdev->in_storage;
 
     my %id_for = ();
     my %ok_dev = ();
@@ -123,7 +126,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       $v3data{nodes}->{ ($device->{row_number} - 1) } = {
         ID => $device->{ip},
         SIZEVALUE => 3000,
-        COLORVALUE => 10,
+        (param('colorgroups') ? (COLORVALUE => 10) : ()),
         LABEL => $name,
       };
 

@@ -50,7 +50,8 @@
             <hr class="nd_sidebar-hr"/>
 
             <div class="radio radio-success">
-                <input type="radio" name="mapshow" id="nd_mapshow-all" value="all">
+                <input type="radio" name="mapshow" id="nd_mapshow-all"
+                [% 'checked' IF params.mapshow == 'all' %] value="all">
                 <label for="nd_mapshow-all">All Devices</label>
             </div>
             <div class="radio radio-success">

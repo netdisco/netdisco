@@ -37,7 +37,8 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]',{
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
-      // .debug(true)
+      .debug(true)
+      [% '.showLegend(false)' IF NOT params.colorgroups %]
       .lassoMode(true)
       .dragMode(true)
       .nodeEventToOpenLink('click')
@@ -75,6 +76,9 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]',{
           ,'vlan=[% params.vlan %]&positions=' + JSON.stringify(graph.positions())
         );
       }
+      // else {
+      //   graph.zoomToFit();
+      // }
 
       graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
         graph['nd2']['dragging'] = false;
