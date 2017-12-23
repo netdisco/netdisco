@@ -74,7 +74,12 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     # LINKS
 
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
+    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({
+      ($mapshow eq 'neighbors' ? ( -or => [
+          { left_ip  => $qdev->ip },
+          { right_ip => $qdev->ip },
+      ]) : ())
+    }, {
       columns => [qw/left_ip right_ip/],
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
