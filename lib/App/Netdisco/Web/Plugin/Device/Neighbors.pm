@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use List::Util 'first';
 use List::MoreUtils ();
 use App::Netdisco::Util::Permission 'check_acl_only';
 use App::Netdisco::Web::Plugin;
@@ -117,20 +118,22 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       '+select' => [\'row_number() over()'], '+as' => ['row_number'],
     });
 
-    NODE: while (my $device = $devices->next) {
+    # list of groups selected by user and passed in param
+    my $devgrp = (ref [] eq ref param('devgrp') ? param('devgrp') : [param('devgrp')]);
+    # list of groups validated as real host groups and named host groups
+    my @hgrplist = grep { exists setting('host_group_displaynames')->{$_} }
+                   grep { exists setting('host_groups')->{$_} }
+                   grep { defined } @{ $devgrp };
+
+    DEVICE: while (my $device = $devices->next) {
       # if in neighbors or vlan mode then use %ok_dev to filter
-      next NODE if (($mapshow eq 'neighbors') or $vlan)
+      next DEVICE if (($mapshow eq 'neighbors') or $vlan)
         and (not $ok_dev{$device->ip});
 
       # if in only mode then use ACLs to filter
-      if ($mapshow eq 'only') {
-        my $devgrp = (ref [] eq ref param('devgrp') ? param('devgrp') : [param('devgrp')]);
-        next NODE unless scalar grep { check_acl_only($device, $_) }
-                                grep { defined }
-                                 map { setting('host_groups')->{$_} }
-                                grep { defined }
-                                    @{ $devgrp };
-      }
+      my $first_hgrp =
+        first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
+      next DEVICE if $mapshow eq 'only' and not $first_hgrp;
 
       $id_for{$device->ip} = $device->get_column('row_number');
       (my $name = ($device->dns || lc($device->name) || $device->ip)) =~ s/$domain$//;
@@ -138,7 +141,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       $v3data{nodes}->{ ($device->get_column('row_number') - 1) } = {
         ID => $device->ip,
         SIZEVALUE => 3000,
-        (param('colorgroups') ? (COLORVALUE => 10) : ()),
+        (param('colorgroups') ?
+          (COLORVALUE => ($first_hgrp ? setting('host_group_displaynames')->{$first_hgrp} : 'Other')) : ()),
         LABEL => $name,
       };
 

@@ -45,6 +45,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .pinMode(true)
       .nodeEventToStopPinMode('none')
       .showLinkDirection(false)
+      .colorScheme('color20')
       // .preventLabelOverlappingOnForceEnd(true)
       // .zoomToFitOnForceEnd(true)
       .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
