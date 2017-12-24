@@ -60,7 +60,12 @@
                 <label for="nd_mapshow-neighbors">Neighbors Only</label>
             </div>
 
+            [% IF devgrp_list.size %]
             <div class="radio radio-success">
+            [% ELSE %]
+            <div class="radio radio-success tooltip-wrapper"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="No Named Groups Defined">
+            [% END %]
                 <input type="radio" name="mapshow" id="nd_mapshow-only"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'only' %]
                 [% 'disabled' IF NOT devgrp_list.size %] value="only">

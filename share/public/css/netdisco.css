@@ -445,6 +445,15 @@ td > form.nd_inline-form {
   margin-left: 7px;
 }
 
+/* to allow display of tooltip on a disabled control
+   http://jsfiddle.net/cSSUA/209/ */
+.tooltip-wrapper {
+  display: inline-block;
+}
+.tooltip-wrapper .input[disabled] {
+  pointer-events: none;
+}
+
 /* vlan entry box for netmap */
 #nd_vlan-label {
   margin-left: 5px;
