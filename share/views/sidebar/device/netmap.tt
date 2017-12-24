@@ -70,7 +70,7 @@
             [% IF devgrp_list.size %]
             <div class="clearfix">
               <select class="nd_side-select" size="[% devgrp_list.size > 5 ? 5 : devgrp_list.size %]"
-                multiple="on" name="devgrp"
+                multiple="on" name="devgrp" id="nd_devgrp-select"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
                 [% FOREACH opt IN devgrp_list.pairs %]
                 <option[% ' selected="selected"' IF devgrp_lkp.exists(opt.key) %]

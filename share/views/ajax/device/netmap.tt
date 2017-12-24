@@ -70,12 +70,11 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       if (mapdata['v3']['newnodes']) {
         $.post(
           '[% uri_for('/ajax/data/device/netmappositions') %]'
-          ,'vlan=[% params.vlan %]&positions=' + JSON.stringify(graph.positions())
+          ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
+            + '&positions=' + JSON.stringify(graph.positions())
         );
       }
-      // else {
-      //   graph.zoomToFit();
-      // }
+      // else { graph.zoomToFit() }
 
       graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
         graph['nd2']['dragging'] = false;
