@@ -135,6 +135,7 @@ sidebar_defaults:
   device_netmap:
     mapshow:     { default: neighbors }
     colorgroups: { default: checked }
+    dynamicsize: { default: null }
   report_moduleinventory:
     fruonly:     { default: checked }
     matchall:    { default: checked }

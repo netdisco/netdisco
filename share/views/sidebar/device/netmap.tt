@@ -69,7 +69,7 @@
                 <input type="radio" name="mapshow" id="nd_mapshow-only"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'only' %]
                 [% 'disabled' IF NOT devgrp_list.size %] value="only">
-                <label for="nd_mapshow-only">Host Groups[% ':' IF devgrp_list.size %]</label>
+                <label for="nd_mapshow-only">Host Groups</label>
             </div>
 
             [% IF devgrp_list.size %]
@@ -110,8 +110,8 @@
 
               <div class="clearfix input-prepend">
                 <label class="add-on">
-                  <input type="checkbox" id="dynamicsize" name="dynamicsize" disabled
-                    [% 'checked="checked"' IF params.dynamicsize %]/>
+                  <input type="checkbox" id="dynamicsize" name="dynamicsize"
+                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="dynamicsize">
                   <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>

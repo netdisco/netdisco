@@ -51,6 +51,8 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
       .height( window.innerHeight - 100 )
       .showSelfLinks(true)
+      .minNodeRadius(6)
+      .maxNodeRadius(20)
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
       .charge(-550)
@@ -133,8 +135,12 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
 
     if ('[% params.mapshow %]' == 'neighbors') {
       setTimeout(function() {
-        var node = graph.nodeDataById( graph['nd2']['centernode'] );
-        graph.zoomSmooth(node.x, node.y, node.radius * 100);
+        if ('[% params.dynamicsize %]' == 'on') {
+          graph.zoomToFit();
+        } else {
+          var node = graph.nodeDataById( graph['nd2']['centernode'] );
+          graph.zoomSmooth(node.x, node.y, node.radius * 100);
+        }
       }, 1000);
     }
   });

@@ -11,10 +11,8 @@ __PACKAGE__->table('device_links');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
  SELECT dp.ip AS left_ip, dp.port AS left_port, dp.name AS left_descr,
-        dp.speed AS speed,
         dp2.ip AS right_ip, dp2.port AS right_port, dp2.name AS right_descr
    FROM ( SELECT device_port.ip, device_port.port, device_port.name,
-                 device_port.speed,
                  device_port.remote_ip, device_port.remote_port
            FROM device_port
           WHERE device_port.remote_port IS NOT NULL ) dp
@@ -33,9 +31,6 @@ __PACKAGE__->add_columns(
     data_type => 'text',
   },
   'left_descr' => {
-    data_type => 'text',
-  },
-  'speed' => {
     data_type => 'text',
   },
   'right_ip' => {

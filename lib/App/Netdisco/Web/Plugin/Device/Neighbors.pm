@@ -64,8 +64,6 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
 };
 
-# dynamicsize
-
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my $qdev = schema('netdisco')->resultset('Device')
@@ -136,7 +134,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     my $devices = schema('netdisco')->resultset('Device')->search({}, {
       columns => ['ip', 'dns', 'name'],
-      '+select' => [\'row_number() over()'], '+as' => ['row_number'],
+      '+select' => [\'row_number() over()', \'floor(log(throughput.total))'],
+      '+as' => ['row_number', 'log'],
+      join => 'throughput',
     });
 
     DEVICE: while (my $device = $devices->next) {
@@ -150,11 +150,12 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       next DEVICE if $mapshow eq 'only' and not $first_hgrp;
 
       $id_for{$device->ip} = $device->get_column('row_number');
-      (my $name = ($device->dns || lc($device->name) || $device->ip)) =~ s/$domain$//;
+      (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;
 
       $v3data{nodes}->{ ($device->get_column('row_number') - 1) } = {
         ID => $device->ip,
-        SIZEVALUE => 3000,
+        SIZEVALUE => (param('dynamicsize') ?
+          (($device->get_column('log') || 1) * 1000) : 3000),
         (param('colorgroups') ?
           (COLORVALUE => ($first_hgrp ? setting('host_group_displaynames')->{$first_hgrp} : 'Other')) : ()),
         LABEL => $name,
