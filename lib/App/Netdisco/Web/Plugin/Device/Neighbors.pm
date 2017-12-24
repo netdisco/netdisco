@@ -161,7 +161,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         LABEL => $name,
       };
 
-      if (exists $pos_for->{$device->ip}) {
+      if ($mapshow ne 'neighbors' and exists $pos_for->{$device->ip}) {
         my $node = $v3data{nodes}->{ ($device->get_column('row_number') - 1) };
         $node->{'fixed'} = 1;
         $node->{'x'} = $pos_for->{$device->ip}->{'x'};
