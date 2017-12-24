@@ -131,8 +131,12 @@
     });
     $("input[name='mapshow']").change(function() {
       var newval = $("input[name='mapshow']:checked").val();
-      $('#nd_netmap-save').prop('disabled',
-        ((newval == 'neighbors') ? true : false));
+      if (newval == 'neighbors') {
+        $('#nd_netmap-save').prop('disabled', true).removeClass('btn-info');
+      }
+      else {
+        $('#nd_netmap-save').prop('disabled', false).addClass('btn-info');
+      }
     });
     $('#nd_netmap-zoomtodevice').on('click', function(event) {
       event.preventDefault();
