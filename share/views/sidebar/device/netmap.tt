@@ -39,7 +39,7 @@
                 <i class="icon-lock icon-large pull-left nd_navbar-icon"></i>
             Pin Selected</button>
 
-            <button id="nd_netmap-save" class="btn btn-info">
+            <button id="nd_netmap-save" class="btn" disabled>
                 <i class="icon-save icon-large pull-left nd_navbar-icon"></i>
             Save Positions</button>
 
