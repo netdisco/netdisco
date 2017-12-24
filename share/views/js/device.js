@@ -23,6 +23,8 @@
     $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});
     $("[rel=popover]").popover({live: true});
+
+    $("input[name='mapshow']").trigger('change');
   }
 
   // on load, establish global delegations for now and future
@@ -126,6 +128,11 @@
         ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
           + '&positions=' + JSON.stringify(graph.positions())
       );
+    });
+    $("input[name='mapshow']").change(function() {
+      var newval = $("input[name='mapshow']:checked").val();
+      $('#nd_netmap-save').prop('disabled',
+        ((newval == 'neighbors') ? true : false));
     });
     $('#nd_netmap-zoomtodevice').on('click', function(event) {
       event.preventDefault();
