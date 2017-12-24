@@ -67,14 +67,13 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
     graph.inspect().main.force.on('end.setupfornetdisco', function() {
       graph.inspect().main.nodes.each(function(n) { n.fixed = true });
 
-      if (mapdata['v3']['newnodes']) {
+      if (mapdata['v3']['newnodes'] && ('[% params.mapshow %]' != 'neighbors')) {
         $.post(
           '[% uri_for('/ajax/data/device/netmappositions') %]'
           ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
             + '&positions=' + JSON.stringify(graph.positions())
         );
       }
-      // else { graph.zoomToFit() }
 
       graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
         graph['nd2']['dragging'] = false;
@@ -131,6 +130,13 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
          .on("click", function() {
            requestFullScreen(document.getElementById('netmap_pane'));
          });
+
+    if ('[% params.mapshow %]' == 'neighbors') {
+      setTimeout(function() {
+        var node = graph.nodeDataById( graph['nd2']['centernode'] );
+        graph.zoomSmooth(node.x, node.y, node.radius * 100);
+      }, 1000);
+    }
   });
 
 });
