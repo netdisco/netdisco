@@ -26,7 +26,44 @@ function resizeGraphContainer() {
     var netmap_pane = jQuery('#netmap_pane');
     graph.width( parseInt(netmap_pane.parent().css('width')) ).resume();
     graph.height( window.innerHeight - 100 ).resume();
+    d3.select("#nd2_netmap-spinner-container").attr("transform",
+      "translate(" + (graph.width() - 16) + "," + (graph.height() - 16) + ")")
   }, 500)
+}
+
+$('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
+$('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
+$(window).on("resize", resizeGraphContainer);
+
+var radius = 12;
+var tau = 2 * Math.PI;
+
+var arc = d3.svg.arc()
+  .innerRadius(radius * 0.5)
+  .outerRadius(radius * 0.9)
+  .startAngle(0)
+  .endAngle(0.33 * tau);
+
+var arc2 = d3.svg.arc()
+  .innerRadius(radius * 0.5)
+  .outerRadius(radius * 0.9)
+  .startAngle(0)
+  .endAngle(tau);
+
+function spin(selection, duration) {
+  duration = duration || 1500;
+  if (! graph.inspect().status.forceRunning) {
+    d3.select('#nd2_netmap-spinner').style('fill', '#CCFFCC').attr('d', arc2);
+    return;
+  }
+  d3.select('#nd2_netmap-spinner').style('fill', '#FFE4B5').attr('d', arc);
+  selection.transition()
+    .ease("linear")
+    .duration(duration)
+    .attrTween("transform", function() {
+        return d3.interpolateString("rotate(0)", "rotate(360)");
+    });
+  setTimeout(function() { spin(selection, duration); }, duration);
 }
 
 $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(mapdata) {
@@ -57,10 +94,6 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .maxZoomFactor(10)
       .charge(-550)
       .gravity(0.3);
-
-    jQuery('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
-    jQuery('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
-    jQuery(window).on("resize", resizeGraphContainer);
 
     graph['nd2'] = {};
     graph['nd2']['centernode'] = mapdata['v3']['centernode'];
@@ -108,8 +141,32 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
           });
       });
 
+      graph.inspect().main.force.on('start.nd2spinner', function() {
+        d3.select("#nd2_netmap-spinner").call(spin);
+      });
+
       graph.inspect().main.force.on('end.setupfornetdisco', null);
     });
+
+    graph.inspect().dom.svg
+      .append("svg:text")
+      .attr("id", "nd2_fullscreen_netmap")
+      .attr("class", "link")
+      .attr("x", (graph.width() - 17))
+      .attr("y", 17)
+      .attr("text-anchor", "start")
+      .attr("font-family", "FontAwesome")
+      .text(function() { return '\uf0b2' })
+      .on("click", function() {
+        requestFullScreen(document.getElementById('netmap_pane'));
+      });
+
+    graph.inspect().dom.svg
+      .append("g")
+      .attr("id", "nd2_netmap-spinner-container")
+      .attr("transform", "translate(" + (graph.width() - 16) + "," + (graph.height() - 16) + ")")
+      .append("path")
+      .attr("id", "nd2_netmap-spinner");
 
     var netmapdata = {'data': {
       'nodes': mapdata['v4']['nodes'].map(function(node) {
@@ -119,19 +176,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       'links': mapdata['v3']['links']
     }};
     graph.start(netmapdata);
-
-    graph.inspect().dom.svg
-         .append("svg:text")
-         .attr("id", "nd2_fullscreen_netmap")
-         .attr("class", "link")
-         .attr("x", (graph.width() - 17))
-         .attr("y", 17)
-         .attr("text-anchor", "start")
-         .attr("font-family", "FontAwesome")
-         .text(function() { return '\uf0b2' })
-         .on("click", function() {
-           requestFullScreen(document.getElementById('netmap_pane'));
-         });
+    d3.select("#nd2_netmap-spinner").call(spin);
 
     if ('[% params.mapshow %]' == 'neighbors') {
       setTimeout(function() {
