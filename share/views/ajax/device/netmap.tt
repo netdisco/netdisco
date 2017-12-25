@@ -83,8 +83,10 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .nodeEventToStopPinMode('none')
       .showLinkDirection(false)
       .colorScheme('color20')
-      // .preventLabelOverlappingOnForceEnd(true)
-      // .zoomToFitOnForceEnd(true)
+      .preventLabelOverlappingOnForceEnd(
+        (mapdata['v3']['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
+        ? true : false
+      )
       .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
       .height( window.innerHeight - 100 )
       .showSelfLinks(true)
