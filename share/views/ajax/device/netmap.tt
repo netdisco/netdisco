@@ -27,7 +27,7 @@ function resizeGraphContainer() {
     graph.width( parseInt(netmap_pane.parent().css('width')) ).resume();
     graph.height( window.innerHeight - 100 ).resume();
     d3.select("#nd2_netmap-spinner-container").attr("transform",
-      "translate(" + (graph.width() - 16) + "," + (graph.height() - 16) + ")")
+      "translate(" + (graph.width() - 15) + "," + (graph.height() - 15) + ")")
   }, 500)
 }
 
@@ -97,7 +97,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .maxNodeRadius(14)
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
-      .charge(-900)
+      .charge(-550)
       .gravity(0.3);
 
     graph['nd2'] = {};
@@ -169,7 +169,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
     graph.inspect().dom.svg
       .append("g")
       .attr("id", "nd2_netmap-spinner-container")
-      .attr("transform", "translate(" + (graph.width() - 16) + "," + (graph.height() - 16) + ")")
+      .attr("transform", "translate(" + (graph.width() - 15) + "," + (graph.height() - 15) + ")")
       .append("path")
       .attr("id", "nd2_netmap-spinner");
 

@@ -1524,8 +1524,9 @@ function netGobrechtsD3Force(domContainerId, options, apexPluginId, apexPageItem
         if (!v.status.customize &&
             (v.conf.debug || document.querySelector("#apex-dev-toolbar") || document.querySelector("#apexDevToolbar"))
         ) {
-            if (document.querySelector("#" + v.dom.containerId + " svg text.link") === null) {
+            if (document.querySelector("#d3-force-customize-link") === null) {
                 v.dom.svg.append("svg:text")
+                    .attr("id", "d3-force-customize-link")
                     .attr("class", "link")
                     .attr("x", 5)
                     .attr("y", 15)
@@ -1540,7 +1541,7 @@ function netGobrechtsD3Force(domContainerId, options, apexPluginId, apexPageItem
 
     // remove customize link
     v.tools.removeCustomizeLink = function() {
-        v.dom.svg.select("#" + v.dom.containerId + " svg text.link").remove();
+        v.dom.svg.select("#d3-force-customize-link").remove();
     };
 
     // dragability for customizing container
