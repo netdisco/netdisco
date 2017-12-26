@@ -115,15 +115,11 @@
             n['LABEL'] = n['ORIG_LABEL'] + ' ' + n['ID'];
           }
         });
-        graph.wrapLabels(true).preventLabelOverlappingOnForceEnd(true).start();
+        graph.wrapLabels(true).start();
       } else {
         graph.inspect().main.nodes.each(function(n) {
           n['LABEL'] = n['ORIG_LABEL'];
         });
-        graph.preventLabelOverlappingOnForceEnd(
-          ($("input[name='mapshow']:checked").val() == 'neighbors')
-          ? true : false
-        );
         graph.wrapLabels(false).start();
       }
     });
