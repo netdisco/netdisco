@@ -158,7 +158,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
           (($device->get_column('log') || 1) * 1000) : 3000),
         (param('colorgroups') ?
           (COLORVALUE => ($first_hgrp ? setting('host_group_displaynames')->{$first_hgrp} : 'Other')) : ()),
-        LABEL => $name,
+        LABEL => (param('showips')
+          ? (($name eq $device->ip) ? $name : ($name .' '. $device->ip)) : $name),
+        ORIG_LABEL => $name,
       };
 
       if ($mapshow ne 'neighbors' and exists $pos_for->{$device->ip}) {

@@ -40,13 +40,13 @@ var tau = 2 * Math.PI;
 
 var arc = d3.svg.arc()
   .innerRadius(radius * 0.5)
-  .outerRadius(radius * 0.9)
+  .outerRadius(radius * 0.8)
   .startAngle(0)
   .endAngle(0.33 * tau);
 
 var arc2 = d3.svg.arc()
   .innerRadius(radius * 0.5)
-  .outerRadius(radius * 0.9)
+  .outerRadius(radius * 0.8)
   .startAngle(0)
   .endAngle(tau);
 
@@ -70,11 +70,12 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
-      .debug(true)
+      // .debug(true)
       [% '.showLegend(false)' IF NOT params.colorgroups %]
+      .wrapLabels(true)
       .lassoMode(true)
       .dragMode(true)
-      .nodeEventToOpenLink('click')
+      .nodeEventToOpenLink('dblclick')
       .nodeLinkTarget('none')
       .labelDistance(2)
       .linkDistance(120)
@@ -90,11 +91,13 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
       .height( window.innerHeight - 100 )
       .showSelfLinks(true)
+      .showTooltips(true)
+      .tooltipPosition('svgTopLeft')
       .minNodeRadius(4)
       .maxNodeRadius(14)
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
-      .charge(-550)
+      .charge(-900)
       .gravity(0.3);
 
     graph['nd2'] = {};
@@ -158,7 +161,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .attr("y", 17)
       .attr("text-anchor", "start")
       .attr("font-family", "FontAwesome")
-      .text(function() { return '\uf0b2' })
+      .text(function() { return '\uf065' })
       .on("click", function() {
         requestFullScreen(document.getElementById('netmap_pane'));
       });

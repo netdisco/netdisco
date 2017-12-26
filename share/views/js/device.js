@@ -24,6 +24,7 @@
     $("[rel=tooltip]").tooltip({live: true});
     $("[rel=popover]").popover({live: true});
 
+    // positions save not available in netmap neighbors view
     if ($("input[name='mapshow']:checked").val() == 'neighbors') {
       $('#nd_netmap-save').prop('disabled', true).removeClass('btn-info');
     } else {
@@ -104,6 +105,27 @@
     // refresh tooltips when the datatables table is updated
     $('#ports_pane').on('draw.dt', function() {
         $("[rel=tooltip]").tooltip({live: true});
+    });
+
+    // netmap show controls
+    $('#nd_showips').change(function() {
+      if ($(this).prop('checked')) {
+        graph.inspect().main.nodes.each(function(n) {
+          if (n['ORIG_LABEL'] != n['ID']) {
+            n['LABEL'] = n['ORIG_LABEL'] + ' ' + n['ID'];
+          }
+        });
+        graph.wrapLabels(true).preventLabelOverlappingOnForceEnd(true).start();
+      } else {
+        graph.inspect().main.nodes.each(function(n) {
+          n['LABEL'] = n['ORIG_LABEL'];
+        });
+        graph.preventLabelOverlappingOnForceEnd(
+          ($("input[name='mapshow']:checked").val() == 'neighbors')
+          ? true : false
+        );
+        graph.wrapLabels(false).start();
+      }
     });
 
     // netmap pin/release controls

@@ -466,6 +466,12 @@ td > form.nd_inline-form {
   width: 56px;
 }
 
+/* netmap maximise icon */
+#nd2_fullscreen_netmap {
+  fill: black;
+  font-size: 15px;
+}
+
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
   width: 121px;

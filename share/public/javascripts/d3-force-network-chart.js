@@ -3560,7 +3560,7 @@ function netGobrechtsD3Force(domContainerId, options, apexPluginId, apexPageItem
             v.status.wrapLabelsOnNextTick = true;
         }
         if (v.status.graphStarted) {
-            v.main.labels.attr("lines", null);
+            v.main.labels.each(function() { d3.select(this).attr("lines", null) });
             v.tools.createCustomizeWizardIfNotRendering();
         }
         return graph;
@@ -3582,8 +3582,8 @@ function netGobrechtsD3Force(domContainerId, options, apexPluginId, apexPageItem
             return v.conf.wrappedLabelWidth;
         }
         v.conf.wrappedLabelWidth = value;
-        if (v.conf.wrapLabels) {
-            v.main.labels.attr("lines", null);
+        if (v.conf.wrapLabels && v.main.labels) {
+            v.main.labels.each(function() { d3.select(this).attr("lines", null) });
             v.status.wrapLabelsOnNextTick = true;
         }
         if (v.status.graphStarted) {
@@ -3612,7 +3612,7 @@ function netGobrechtsD3Force(domContainerId, options, apexPluginId, apexPageItem
             v.status.wrapLabelsOnNextTick = true;
         }
         if (v.status.graphStarted) {
-            v.main.labels.attr("lines", null);
+            v.main.labels.each(function() { d3.select(this).attr("lines", null) });
             v.tools.createCustomizeWizardIfNotRendering();
         }
         return graph;
