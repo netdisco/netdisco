@@ -71,32 +71,32 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
       // .debug(true)
-      [% '.showLegend(false)' IF NOT params.colorgroups %]
+      .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
+      .height( window.innerHeight - 100 )
+      .showSelfLinks(true)
       .wrapLabels(true)
       .lassoMode(true)
       .dragMode(true)
-      .nodeEventToOpenLink('dblclick')
-      .nodeLinkTarget('none')
-      .labelDistance(2)
-      .linkDistance(120)
       .zoomMode(true)
       .pinMode(true)
-      .nodeEventToStopPinMode('none')
+      [% '.showLegend(false)' IF NOT params.colorgroups %]
       .showLinkDirection(false)
       .colorScheme('color20')
       .preventLabelOverlappingOnForceEnd(
         (mapdata['v3']['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
         ? true : false
       )
-      .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
-      .height( window.innerHeight - 100 )
-      .showSelfLinks(true)
+      .nodeEventToStopPinMode('none')
       .showTooltips(true)
       .tooltipPosition('svgTopLeft')
+      .nodeEventToOpenLink('dblclick')
+      .nodeLinkTarget('none')
       .minNodeRadius(4)
       .maxNodeRadius(14)
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
+      .labelDistance(2)
+      .linkDistance(120)
       .charge(-550)
       .gravity(0.3);
 
