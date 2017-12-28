@@ -98,7 +98,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
           { right_ip => $qdev->ip },
       ]) : ())
     }, {
-      columns => [qw/left_ip right_ip/],
+      columns => [qw/left_ip speed right_ip/],
+      '+select' => [\'row_number() over()'],
+      '+as' => ['row_number'],
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
@@ -118,6 +120,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       push @{$v3data{'links'}}, {
         FROMID => $l->{left_ip},
         TOID   => $l->{right_ip},
+        SPEED  => $l->{speed},
+        ID     => $l->{row_number},
       };
 
       ++$ok_dev{$l->{left_ip}};
