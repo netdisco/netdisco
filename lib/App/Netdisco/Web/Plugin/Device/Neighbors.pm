@@ -98,7 +98,6 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       ]) : ())
     }, {
       columns => [qw/left_ip speed right_ip/],
-      '+select' => [\'row_number() over()'], '+as' => ['row_number'],
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
@@ -118,7 +117,6 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         FROMID => $link->{left_ip},
         TOID   => $link->{right_ip},
         SPEED  => $link->{speed},
-        ID     => $link->{row_number},
       };
 
       ++$ok_dev{$link->{left_ip}};
