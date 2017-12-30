@@ -84,28 +84,26 @@ ajax '/ajax/data/device/netmap' => require_login sub {
                    grep { exists setting('host_groups')->{$_} }
                    grep { defined } @{ $devgrp };
 
-    my %id_for = ();
     my %ok_dev = ();
-    my %v3data = ( nodes => {}, links => [] );
-    my %v4data = ( nodes => [], links => [] );
+    my %metadata = ();
+    my %data = ( nodes => [], links => [] );
     my $domain = quotemeta( setting('domain_suffix') || '' );
 
     # LINKS
 
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({
+    my $links = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({
       ($mapshow eq 'neighbors' ? ( -or => [
           { left_ip  => $qdev->ip },
           { right_ip => $qdev->ip },
       ]) : ())
     }, {
       columns => [qw/left_ip speed right_ip/],
-      '+select' => [\'row_number() over()'],
-      '+as' => ['row_number'],
+      '+select' => [\'row_number() over()'], '+as' => ['row_number'],
       result_class => 'DBIx::Class::ResultClass::HashRefInflator',
     });
 
     if ($vlan) {
-        $rs = $rs->search({
+        $links = $links->search({
           -or => [
             { 'left_vlans.vlan' => $vlan },
             { 'right_vlans.vlan' => $vlan },
@@ -115,17 +113,16 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         });
     }
 
-    my @links = $rs->all; # because we have to run this twice
-    foreach my $l (@links) {
-      push @{$v3data{'links'}}, {
-        FROMID => $l->{left_ip},
-        TOID   => $l->{right_ip},
-        SPEED  => $l->{speed},
-        ID     => $l->{row_number},
+    while (my $link = $links->next) {
+      push @{$data{'links'}}, {
+        FROMID => $link->{left_ip},
+        TOID   => $link->{right_ip},
+        SPEED  => $link->{speed},
+        ID     => $link->{row_number},
       };
 
-      ++$ok_dev{$l->{left_ip}};
-      ++$ok_dev{$l->{right_ip}};
+      ++$ok_dev{$link->{left_ip}};
+      ++$ok_dev{$link->{right_ip}};
     }
 
     # DEVICES (NODES)
@@ -138,8 +135,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     my $devices = schema('netdisco')->resultset('Device')->search({}, {
       columns => ['ip', 'dns', 'name'],
-      '+select' => [\'row_number() over()', \'floor(log(throughput.total))'],
-      '+as' => ['row_number', 'log'],
+      '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
       join => 'throughput',
     });
 
@@ -153,10 +149,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
       next DEVICE if $mapshow eq 'only' and not $first_hgrp;
 
-      $id_for{$device->ip} = $device->get_column('row_number');
       (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;
-
-      $v3data{nodes}->{ ($device->get_column('row_number') - 1) } = {
+      my $node = {
         ID => $device->ip,
         SIZEVALUE => (param('dynamicsize') ?
           (($device->get_column('log') || 1) * 1000) : 3000),
@@ -168,32 +162,21 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       };
 
       if ($mapshow ne 'neighbors' and exists $pos_for->{$device->ip}) {
-        my $node = $v3data{nodes}->{ ($device->get_column('row_number') - 1) };
         $node->{'fixed'} = 1;
         $node->{'x'} = $pos_for->{$device->ip}->{'x'};
         $node->{'y'} = $pos_for->{$device->ip}->{'y'};
       }
       else {
-        ++$v3data{'newnodes'};
+        ++$metadata{'newnodes'};
       }
 
-      $v3data{'centernode'} = $device->ip
+      push @{$data{'nodes'}}, $node;
+      $metadata{'centernode'} = $device->ip
         if $qdev and $qdev->in_storage and $device->ip eq $qdev->ip;
-
-      push @{$v4data{'nodes'}}, { index => ($device->get_column('row_number') - 1) };
-    }
-
-    # go back and do v4 links now we have row IDs
-    foreach my $l (@links) {
-      next unless $id_for{$l->{left_ip}} and $id_for{$l->{right_ip}};
-      push @{$v4data{'links'}}, {
-        source => ($id_for{$l->{left_ip}} - 1),
-        target => ($id_for{$l->{right_ip}} - 1),
-      };
     }
 
     content_type('application/json');
-    to_json({ v3 => \%v3data, v4 => \%v4data});
+    to_json({ data => \%data, %metadata });
 };
 
 true;
