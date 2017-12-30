@@ -153,9 +153,25 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       graph.inspect().main.force.on('end.setupfornetdisco', null);
     });
 
+    graph.inspect().main.force.on('tick.movelinklabel', function() {
+      graph.inspect().dom.svg.selectAll('text.nd_netmap-linklabel')
+        .attr('x', function(d) {
+          var text = d3.select(this);
+          var sx = graph.nodeDataById(text.attr('data-source')).x;
+          var tx = graph.nodeDataById(text.attr('data-target')).x;
+          return ((sx + tx) / 2);
+        })
+        .attr('y', function(d) {
+          var text = d3.select(this);
+          var sy = graph.nodeDataById(text.attr('data-source')).y;
+          var ty = graph.nodeDataById(text.attr('data-target')).y;
+          return ((sy + ty) / 2);
+        });
+    });
+
     graph.inspect().dom.svg
       .append("svg:text")
-      .attr("id", "nd2_fullscreen_netmap")
+      .attr("id", "nd2_fullscreen-netmap")
       .attr("class", "link")
       .attr("x", (graph.width() - 17))
       .attr("y", 17)
@@ -183,6 +199,21 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
     graph.start(netmapdata);
     d3.select("#nd2_netmap-spinner").call(spin);
 
+    graph.inspect().main.links.each(function(l) {
+      var link = d3.select(this);
+      var data = link.datum();
+      graph.inspect().dom.svg.select('g.graph')
+        .append('svg:text')
+        .attr('class', 'nd_netmap-linklabel')
+        .attr('x', function(d) { return data.source.x; })
+        .attr('y', function(d) { return data.source.y; })
+        .attr('data-source', function(d) { return data.source.ID; })
+        .attr('data-target', function(d) { return data.target.ID; })
+        .attr('text-anchor', 'middle')
+        [% ".attr('fill', 'black')" IF params.showspeed %]
+        .text(function(d) { return data.SPEED; });
+    });
+
     if ('[% params.mapshow %]' == 'neighbors') {
       setTimeout(function() {
         if ('[% params.dynamicsize %]' == 'on') {
@@ -191,7 +222,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
           var node = graph.nodeDataById( graph['nd2']['centernode'] );
           graph.zoomSmooth(node.x, node.y, node.radius * 100);
         }
-      }, 1000);
+      }, 1500);
     }
   });
 

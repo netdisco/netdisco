@@ -467,9 +467,15 @@ td > form.nd_inline-form {
 }
 
 /* netmap maximise icon */
-#nd2_fullscreen_netmap {
+#nd2_fullscreen-netmap {
   fill: black;
   font-size: 15px;
+}
+
+/* netmap link labels */
+.nd_netmap-linklabel {
+  pointer-events: none;
+  font-weight: bold;
 }
 
 /* fixup for prepended checkbox in sidebar */

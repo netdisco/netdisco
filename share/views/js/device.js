@@ -123,6 +123,11 @@
         graph.wrapLabels(false).start();
       }
     });
+    $('#nd_showspeed').change(function() {
+      $('.nd_netmap-linklabel').css('fill',
+        ($(this).prop('checked') ? 'black' : 'none')
+      );
+    });
 
     // netmap pin/release controls
     $('#nd_netmap-releaseall').on('click', function(event) {
