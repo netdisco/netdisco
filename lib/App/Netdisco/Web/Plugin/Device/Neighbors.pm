@@ -93,6 +93,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
                    grep { defined } @{ $devgrp };
 
     my %ok_dev = ();
+    my %logvals = ();
     my %metadata = ();
     my %data = ( nodes => [], links => [] );
     my $domain = quotemeta( setting('domain_suffix') || '' );
@@ -152,7 +153,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
       next DEVICE if $mapshow eq 'only' and not $first_hgrp;
 
+      ++$logvals{ $device->get_column('log') || 1 };
       (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;
+
       my $node = {
         ID => $device->ip,
         SIZEVALUE => (param('dynamicsize') ?
@@ -177,6 +180,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       $metadata{'centernode'} = $device->ip
         if $qdev and $qdev->in_storage and $device->ip eq $qdev->ip;
     }
+
+    # to help get a sensible range of node sizes
+    $metadata{'numsizes'} = scalar keys %logvals;
 
     content_type('application/json');
     to_json({ data => \%data, %metadata });

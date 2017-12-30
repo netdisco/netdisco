@@ -30,7 +30,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .nodeEventToOpenLink('dblclick')
       .nodeLinkTarget('none')
       .minNodeRadius(4)
-      .maxNodeRadius(12)
+      .maxNodeRadius(4 + (mapdata['numsizes'] || 0))
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
       .labelDistance(2)
