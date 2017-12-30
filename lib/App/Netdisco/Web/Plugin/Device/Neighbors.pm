@@ -72,6 +72,17 @@ sub to_speed {
   return $speed;
 }
 
+sub make_node_infostring {
+  my $node = shift or return '';
+  my $fmt = ('Serial: <b>%s</b><br>Vendor/Model: <b>%s / %s</b><br>'
+    .'OS/Version: <b>%s / %s</b><br>Uptime: <b>%s</b><br>'
+    .'Location: <b>%s</b><br>Contact: <b>%s</b>');
+  return sprintf $fmt,
+    map {defined $_ ? $_ : ''}
+    map {$node->$_}
+        (qw/serial vendor model os os_ver uptime_age location contact/);
+}
+
 sub make_link_infostring {
   my $link = shift or return '';
 
@@ -80,12 +91,12 @@ sub make_link_infostring {
   (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
 
   if ($link->{aggports} == 1) {
-    return sprintf '<strong>%s:%s</strong> (%s)<br><strong>%s:%s</strong> (%s)',
+    return sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
       $left_name, $link->{left_port}->[0], $link->{left_descr}->[0],
       $right_name, $link->{right_port}->[0], $link->{right_descr}->[0];
   }
   else {
-    return sprintf '<strong>%s:(%s)</strong><br><strong>%s:(%s)</strong>',
+    return sprintf '<b>%s:(%s)</b><br><b>%s:(%s)</b>',
       $left_name, join(',', @{$link->{left_port}}),
       $right_name, join(',', @{$link->{right_port}});
   }
@@ -158,10 +169,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
 
     my $devices = schema('netdisco')->resultset('Device')->search({}, {
-      columns => ['ip', 'dns', 'name'],
       '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
       join => 'throughput',
-    });
+    })->with_times;
 
     DEVICE: while (my $device = $devices->next) {
       # if in neighbors or vlan mode then use %ok_dev to filter
@@ -185,6 +195,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         LABEL => (param('showips')
           ? (($name eq $device->ip) ? $name : ($name .' '. $device->ip)) : $name),
         ORIG_LABEL => $name,
+        INFOSTRING => make_node_infostring($device),
       };
 
       if ($mapshow ne 'neighbors' and exists $pos_for->{$device->ip}) {
