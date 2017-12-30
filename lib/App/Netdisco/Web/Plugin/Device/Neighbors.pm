@@ -72,6 +72,25 @@ sub to_speed {
   return $speed;
 }
 
+sub make_link_infostring {
+  my $link = shift or return '';
+
+  my $domain = quotemeta( setting('domain_suffix') || '' );
+  (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
+  (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
+
+  if ($link->{aggports} == 1) {
+    return sprintf '<strong>%s:%s</strong> (%s)<br><strong>%s:%s</strong> (%s)',
+      $left_name, $link->{left_port}->[0], $link->{left_descr}->[0],
+      $right_name, $link->{right_port}->[0], $link->{right_descr}->[0];
+  }
+  else {
+    return sprintf '<strong>%s:(%s)</strong><br><strong>%s:(%s)</strong>',
+      $left_name, join(',', @{$link->{left_port}}),
+      $right_name, join(',', @{$link->{right_port}});
+  }
+}
+
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my $qdev = schema('netdisco')->resultset('Device')
@@ -122,6 +141,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       push @{$data{'links'}}, {
         FROMID => $link->{left_ip},
         TOID   => $link->{right_ip},
+        INFOSTRING => make_link_infostring($link),
         SPEED  => to_speed($link->{aggspeed}),
       };
 

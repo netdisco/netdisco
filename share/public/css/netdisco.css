@@ -478,6 +478,11 @@ td > form.nd_inline-form {
   font-weight: bold;
 }
 
+/* netmap tooltip box */
+#netmap_pane_tooltip {
+  width: unset;
+}
+
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
   width: 121px;

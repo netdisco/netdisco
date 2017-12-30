@@ -598,7 +598,8 @@ function netGobrechtsD3Force(domContainerId, options, apexPluginId, apexPageItem
                 .attr("id", v.dom.containerId);
         } else {
             v.dom.container = d3.select("#" + v.dom.containerId);
-            d3.selectAll("#" + v.dom.containerId + "_tooltip, #" + v.dom.containerId + "_customizing").remove();
+            d3.selectAll("#" + v.dom.containerId + "_customizing").remove();
+            // d3.selectAll("#" + v.dom.containerId + "_tooltip").remove();
         }
 
         // create SVG element, if not existing (if we have an APEX context, it is already created from the APEX plugin )
