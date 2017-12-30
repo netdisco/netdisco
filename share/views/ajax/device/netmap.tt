@@ -1,22 +1,39 @@
 <script>
 
+function isFullScreen() {
+  return (document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement);
+}
+
 function requestFullScreen(elt) {
-  // console.log("Requesting fullscreen for", elt);
-  if (elt.requestFullscreen) {
-    elt.requestFullscreen();
-  } else if (elt.msRequestFullscreen) {
-    elt.msRequestFullscreen();
-  } else if (elt.mozRequestFullScreen) {
-    elt.mozRequestFullScreen();
-  } else if (elt.webkitRequestFullscreen) {
-    elt.webkitRequestFullscreen();
-  } else {
-    // console.error("Fullscreen not available");
+  if (isFullScreen()) {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+  else {
+    if (elt.requestFullscreen) {
+      elt.requestFullscreen();
+    } else if (elt.msRequestFullscreen) {
+      elt.msRequestFullscreen();
+    } else if (elt.mozRequestFullScreen) {
+      elt.mozRequestFullScreen();
+    } else if (elt.webkitRequestFullscreen) {
+      elt.webkitRequestFullscreen();
+    }
   }
 }
 
 $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
   resizeGraphContainer();
+  $('#nd2_fullscreen-netmap').text(function() {
+      return (isFullScreen() ? '\uf066' : '\uf065');
+  });
 });
 
 // custom resize function as there is no event to fire and we need
@@ -92,7 +109,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .nodeEventToOpenLink('dblclick')
       .nodeLinkTarget('none')
       .minNodeRadius(4)
-      .maxNodeRadius(14)
+      .maxNodeRadius(12)
       .minZoomFactor(0.1)
       .maxZoomFactor(10)
       .labelDistance(2)
@@ -220,7 +237,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
           graph.zoomToFit();
         } else {
           var node = graph.nodeDataById( graph['nd2']['centernode'] );
-          graph.zoomSmooth(node.x, node.y, node.radius * 100);
+          graph.zoomSmooth(node.x, node.y, node.radius * 125);
         }
       }, 1500);
     }
