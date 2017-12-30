@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use SNMP::Info ();
 use List::Util 'first';
 use List::MoreUtils ();
 use App::Netdisco::Util::Permission 'check_acl_only';
@@ -64,6 +65,13 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
 };
 
+sub to_speed {
+  my $speed = shift or return '';
+  $speed = SNMP::Info::munge_highspeed($speed);
+  $speed =~ s/(?:\s|bps)//g;
+  return $speed;
+}
+
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my $qdev = schema('netdisco')->resultset('Device')
@@ -96,10 +104,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
           { left_ip  => $qdev->ip },
           { right_ip => $qdev->ip },
       ]) : ())
-    }, {
-      columns => [qw/left_ip speed right_ip/],
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-    });
+    }, { result_class => 'DBIx::Class::ResultClass::HashRefInflator' });
 
     if ($vlan) {
         $links = $links->search({
@@ -116,7 +121,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       push @{$data{'links'}}, {
         FROMID => $link->{left_ip},
         TOID   => $link->{right_ip},
-        SPEED  => $link->{speed},
+        SPEED  => to_speed($link->{aggspeed}),
       };
 
       ++$ok_dev{$link->{left_ip}};
