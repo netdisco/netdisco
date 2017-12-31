@@ -76,9 +76,9 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       d3.select("#nd2_netmap-spinner").call(spin);
     });
 
-    // *****************************************************
-    // *********** link labels which track links ***********
-    // *****************************************************
+    // ****************************************************
+    // *********** link labels that track links ***********
+    // ****************************************************
 
     graph.inspect().main.force.on('tick.movelinklabel', function() {
       graph.inspect().dom.svg.selectAll('text.nd_netmap-linklabel')
