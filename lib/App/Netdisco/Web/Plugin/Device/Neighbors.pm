@@ -191,11 +191,17 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         SIZEVALUE => (param('dynamicsize') ?
           (($device->get_column('log') || 1) * 1000) : 3000),
         (param('colorgroups') ?
-          (COLORVALUE => ($first_hgrp ? setting('host_group_displaynames')->{$first_hgrp} : 'Other')) : ()),
+          (COLORVALUE => ($first_hgrp ? setting('host_group_displaynames')->{$first_hgrp}
+                                      : 'Other')) : ()),
         LABEL => (param('showips')
           ? (($name eq $device->ip) ? $name : ($name .' '. $device->ip)) : $name),
         ORIG_LABEL => $name,
         INFOSTRING => make_node_infostring($device),
+        LINK => uri_for('/device', {
+          tab => 'netmap',
+          q => $device->ip,
+          firstsearch => 'on',
+        })->path_query,
       };
 
       if ($mapshow ne 'neighbors' and exists $pos_for->{$device->ip}) {
