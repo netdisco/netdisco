@@ -20,7 +20,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .pinMode(true)
       [% '.showLegend(false)' IF NOT params.colorgroups %]
       .showLinkDirection(false)
-      .colorScheme('color20')
+      .colorScheme('color10')
       .preventLabelOverlappingOnForceEnd(
         (mapdata['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
         ? true : false
