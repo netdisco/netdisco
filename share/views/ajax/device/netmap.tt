@@ -49,10 +49,10 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
 
     graph.inspect().dom.svg
       .append("g")
-      .attr("id", "nd2_fullscreen-netmap-container")
+      .attr("id", "nd2_netmap-fullscreen-container")
       .attr("transform", "translate(" + (graph.width() - 17) + ",17)")
       .append("svg:text")
-      .attr("id", "nd2_fullscreen-netmap")
+      .attr("id", "nd2_netmap-fullscreen")
       .attr("class", "link")
       .attr("text-anchor", "start")
       .attr("font-family", "FontAwesome")
@@ -260,7 +260,7 @@ function requestFullScreen(elt) {
 
 $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
   resizeGraphContainer();
-  $('#nd2_fullscreen-netmap').text(function() {
+  $('#nd2_netmap-fullscreen').text(function() {
     return (isFullScreen() ? '\uf066' : '\uf065');
   });
 });
@@ -274,7 +274,7 @@ function resizeGraphContainer() {
     graph.height( window.innerHeight - 100 ).resume();
     d3.select("#nd2_netmap-spinner-container").attr("transform",
       "translate(" + (graph.width() - 15) + "," + (graph.height() - 15) + ")");
-    d3.select("#nd2_fullscreen-netmap-container").attr("transform",
+    d3.select("#nd2_netmap-fullscreen-container").attr("transform",
       "translate(" + (graph.width() - 17) + ",17)");
   }, 500)
 }
