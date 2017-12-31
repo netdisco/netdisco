@@ -188,7 +188,7 @@ host_group_displaynames: {}
 device_identity: []
 community: []
 community_rw: []
-snmp_auth: []
+device_auth: []
 get_community: ""
 bulkwalk_off: false
 bulkwalk_no: []
