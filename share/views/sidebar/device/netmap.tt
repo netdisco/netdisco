@@ -3,9 +3,8 @@
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix nd_netmap-sidebar">
               <ul class="muted nd_netmap-sidebar-help">
-                <li>Click and drag to pan</li>
-                <li>Scroll to zoom</li>
-                <li><a href="https://github.com/netdisco/netdisco/wiki/NetworkMap" target="_blank">Full Instructions
+                <li>Tip: shift-drag to lasso</li>
+                <li><a href="https://github.com/netdisco/netdisco/wiki/NetworkMap" target="_blank">User Guide
                   <i class="icon-external-link"></i></a></li>
               </ul>
             </div>
