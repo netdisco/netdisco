@@ -159,7 +159,7 @@
     $('#nd_netmap-zoomtodevice').on('click', function(event) {
       event.preventDefault();
       var node = graph.nodeDataById( graph['nd2']['centernode'] );
-      graph.zoomSmooth(node.x, node.y, node.radius * 100);
+      graph.zoomSmooth(node.x, node.y, node.radius * 125);
     });
 
     // activity for admin tasks in device details
