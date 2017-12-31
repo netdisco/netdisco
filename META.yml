@@ -18,7 +18,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.037005'
+    version: '2.038000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -33,7 +33,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '45'
+    version: '46'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -68,6 +68,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
   App::Netdisco::DB::Result::Log:
     file: lib/App/Netdisco/DB/Result/Log.pm
+  App::Netdisco::DB::Result::NetmapPositions:
+    file: lib/App/Netdisco/DB/Result/NetmapPositions.pm
   App::Netdisco::DB::Result::Node:
     file: lib/App/Netdisco/DB/Result/Node.pm
   App::Netdisco::DB::Result::NodeIp:
@@ -108,6 +110,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
   App::Netdisco::DB::Result::Virtual::DevicePoeStatus:
     file: lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
+  App::Netdisco::DB::Result::Virtual::DevicePortSpeed:
+    file: lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
   App::Netdisco::DB::Result::Virtual::DuplexMismatch:
     file: lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
   App::Netdisco::DB::Result::Virtual::GenericReport:
@@ -522,5 +526,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.037005'
+version: '2.038000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

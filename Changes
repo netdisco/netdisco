@@ -1,3 +1,18 @@
+2.038000 - 2017-12-31
+
+  [NEW FEATURES]
+
+  * New implementation of the Network Map (Device Neighbors tab)
+
+  [ENHANCEMENTS]
+
+  * Icon in device ports results to quickly set Manual Toplogy on any port
+  * New host_group_displaynames setting to give friendly aliases to host groups
+
+  [BUG FIXES]
+
+  * tooltips for icons in device ports view now work when paging in results
+
 2.037005 - 2017-12-22
 
   [BUG FIXES]
