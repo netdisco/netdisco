@@ -47,8 +47,7 @@ sub update_stats {
       device_ip_count =>
         $schema->resultset('DeviceIp')->count_rs->as_query,
       device_link_count =>
-        $schema->resultset('Virtual::DeviceLinks')
-          ->count_rs({'me.left_ip' => {'>', \'me.right_ip'}})->as_query,
+        $schema->resultset('Virtual::DeviceLinks')->count_rs->as_query,
       device_port_count =>
         $schema->resultset('DevicePort')->count_rs->as_query,
       device_port_up_count =>

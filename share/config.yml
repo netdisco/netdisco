@@ -87,20 +87,20 @@ web_plugins:
 extra_web_plugins: []
 sidebar_defaults:
   search_node:
-    stamps:      {default: checked }
-    deviceports: {default: checked }
-    show_vendor: {default: null }
-    archived:    {default: null }
-    partial:     {default: null }
-    age_invert:  {default: null }
-    daterange:   {default: null }
-    mac_format:  {default: IEEE }
+    stamps:      { default: checked }
+    deviceports: { default: checked }
+    show_vendor: { default: null }
+    archived:    { default: null }
+    partial:     { default: null }
+    age_invert:  { default: null }
+    daterange:   { default: null }
+    mac_format:  { default: IEEE }
   search_port:
-    partial:     {default: null }
-    uplink:      {default: null }
-    ethernet:    {default: checked }
+    partial:     { default: null }
+    uplink:      { default: null }
+    ethernet:    { default: checked }
   search_device:
-    matchall:    {default: checked }
+    matchall:    { default: checked }
   device_ports:
     c_admin:      { label: 'Port Controls', default: null, idx: 0 }
     c_port:       { label: 'Port', default: checked, idx: 1 }
@@ -132,9 +132,15 @@ sidebar_defaults:
     age_unit:     { default: months }
     mac_format:   { default: IEEE }
     neigh_id:     { default: null }
+  device_netmap:
+    showips:     { default: null }
+    showspeed:   { default: null }
+    mapshow:     { default: neighbors }
+    colorgroups: { default: checked }
+    dynamicsize: { default: null }
   report_moduleinventory:
-    fruonly:     {default: checked }
-    matchall:    {default: checked }
+    fruonly:     { default: checked }
+    matchall:    { default: checked }
 device_port_col_idx_left: 0
 device_port_col_idx_mid: 2
 device_port_col_idx_right: -1
@@ -172,10 +178,13 @@ login_logo: ""
 # mibhome is discovered from environment
 # mibdirs defaults to contents of mibhome
 host_groups:
+  __ANY__:
+    - 'any'
   __LOCAL_ADDRESSES__:
     - '::1'
     - 'fe80::/10'
     - '127.0.0.0/8'
+host_group_displaynames: {}
 device_identity: []
 community: []
 community_rw: []

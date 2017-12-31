@@ -5,6 +5,10 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use SNMP::Info ();
+use List::Util 'first';
+use List::MoreUtils ();
+use App::Netdisco::Util::Permission 'check_acl_only';
 use App::Netdisco::Web::Plugin;
 
 register_device_tab({ tag => 'netmap', label => 'Neighbors' });
@@ -14,108 +18,211 @@ ajax '/ajax/content/device/netmap' => require_login sub {
     template 'ajax/device/netmap.tt', {}, { layout => undef };
 };
 
-sub _get_name {
-    my $ip = shift;
-    my $domain = quotemeta( setting('domain_suffix') || '' );
-
-    (my $dns = (var('devices')->{$ip} || '')) =~ s/$domain$//;
-    return ($dns || $ip);
-}
-
-sub _add_children {
-    my ($ptr, $childs, $step, $limit) = @_;
-
-    return $step if $limit and $step > $limit;
-    my @legit = ();
-    my $max = $step;
-
-    foreach my $c (@$childs) {
-        next if exists var('seen')->{$c};
-        var('seen')->{$c}++;
-        push @legit, $c;
-        push @{$ptr}, {
-          ip => $c,
-          name => _get_name($c),
-        };
-    }
-
-    for (my $i = 0; $i < @legit; $i++) {
-        $ptr->[$i]->{children} = [];
-        my $nm = _add_children($ptr->[$i]->{children}, var('links')->{$legit[$i]},
-          ($step + 1), $limit);
-        $max = $nm if $nm > $max;
-    }
-
-    return $max;
-}
-
-# d3 seems not to use proper ajax semantics, so get instead of ajax
-get '/ajax/data/device/netmap' => require_login sub {
-    my $q = param('q');
+ajax '/ajax/data/device/netmappositions' => require_login sub {
+    my $p = param('positions') or send_error('Missing positions', 400);
+    my $positions = from_json($p) or send_error('Bad positions', 400);
+    send_error('Bad positions', 400) unless ref [] eq ref $positions;
 
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
-    my $depth = (param('depth') || 8);
-    undef $depth if (defined $depth and $depth !~ m/^\d+$/);
+    my $mapshow = param('mapshow');
+    return if !defined $mapshow or $mapshow !~ m/^(?:all|only)$/;
 
-    my $device = schema('netdisco')->resultset('Device')
+    # list of groups selected by user and passed in param
+    my $devgrp = (ref [] eq ref param('devgrp') ? param('devgrp') : [param('devgrp')]);
+    # list of groups validated as real host groups and named host groups
+    my @hgrplist = List::MoreUtils::uniq
+                   grep { exists setting('host_group_displaynames')->{$_} }
+                   grep { exists setting('host_groups')->{$_} }
+                   grep { defined } @{ $devgrp };
+    return if $mapshow eq 'only' and 0 == scalar @hgrplist;
+    push(@hgrplist, '__ANY__') if 0 == scalar @hgrplist;
+
+    my %clean = ();
+    POSITION: foreach my $pos (@$positions) {
+      next unless ref {} eq ref $pos;
+      foreach my $k (qw/ID x y/) {
+        next POSITION unless exists $pos->{$k};
+        next POSITION unless $pos->{$k} =~ m/^[[:word:]\.-]+$/;
+      }
+      $clean{$pos->{ID}} = { x => $pos->{x}, y => $pos->{y} };
+    }
+    return unless scalar keys %clean;
+
+    my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
+      device_groups => \[ '= ?', [device_groups => [sort @hgrplist]] ],
+      vlan => ($vlan || 0)});
+    if ($posrow) {
+      $posrow->update({ positions => to_json(\%clean) });
+    }
+    else {
+      schema('netdisco')->resultset('NetmapPositions')->create({
+        device_groups => [sort @hgrplist],
+        vlan => ($vlan || 0),
+        positions => to_json(\%clean),
+      });
+    }
+};
+
+sub to_speed {
+  my $speed = shift or return '';
+  $speed = SNMP::Info::munge_highspeed($speed);
+  $speed =~ s/(?:\s|bps)//g;
+  return $speed;
+}
+
+sub make_node_infostring {
+  my $node = shift or return '';
+  my $fmt = ('Serial: <b>%s</b><br>Vendor/Model: <b>%s / %s</b><br>'
+    .'OS/Version: <b>%s / %s</b><br>Uptime: <b>%s</b><br>'
+    .'Location: <b>%s</b><br>Contact: <b>%s</b>');
+  return sprintf $fmt,
+    map {defined $_ ? $_ : ''}
+    map {$node->$_}
+        (qw/serial vendor model os os_ver uptime_age location contact/);
+}
+
+sub make_link_infostring {
+  my $link = shift or return '';
+
+  my $domain = quotemeta( setting('domain_suffix') || '' );
+  (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
+  (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
+
+  if ($link->{aggports} == 1) {
+    return sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
+      $left_name, $link->{left_port}->[0], $link->{left_descr}->[0],
+      $right_name, $link->{right_port}->[0], $link->{right_descr}->[0];
+  }
+  else {
+    return sprintf '<b>%s:(%s)</b><br><b>%s:(%s)</b>',
+      $left_name, join(',', @{$link->{left_port}}),
+      $right_name, join(',', @{$link->{right_port}});
+  }
+}
+
+ajax '/ajax/data/device/netmap' => require_login sub {
+    my $q = param('q');
+    my $qdev = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
-    my $start = $device->ip;
 
-    my @devices = schema('netdisco')->resultset('Device')->search({}, {
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-      columns => ['ip', 'dns', 'name'],
-    })->all;
-    var(devices => { map { $_->{ip} => lc($_->{dns} || $_->{name} || '') }
-                         @devices });
+    my $vlan = param('vlan');
+    undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
-    var(links => {});
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
-      columns => [qw/left_ip right_ip/],
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-    });
+    my $mapshow = (param('mapshow') || 'neighbors');
+    $mapshow = 'neighbors' if $mapshow !~ m/^(?:all|neighbors|only)$/;
+    $mapshow = 'all' unless $qdev->in_storage;
+
+    # list of groups selected by user and passed in param
+    my $devgrp = (ref [] eq ref param('devgrp') ? param('devgrp') : [param('devgrp')]);
+    # list of groups validated as real host groups and named host groups
+    my @hgrplist = List::MoreUtils::uniq
+                   grep { exists setting('host_group_displaynames')->{$_} }
+                   grep { exists setting('host_groups')->{$_} }
+                   grep { defined } @{ $devgrp };
+
+    my %ok_dev = ();
+    my %logvals = ();
+    my %metadata = ();
+    my %data = ( nodes => [], links => [] );
+    my $domain = quotemeta( setting('domain_suffix') || '' );
+
+    # LINKS
+
+    my $links = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({
+      ($mapshow eq 'neighbors' ? ( -or => [
+          { left_ip  => $qdev->ip },
+          { right_ip => $qdev->ip },
+      ]) : ())
+    }, { result_class => 'DBIx::Class::ResultClass::HashRefInflator' });
 
     if ($vlan) {
-        $rs = $rs->search({
-          'left_vlans.vlan' => $vlan,
-          'right_vlans.vlan' => $vlan,
+        $links = $links->search({
+          -or => [
+            { 'left_vlans.vlan' => $vlan },
+            { 'right_vlans.vlan' => $vlan },
+          ],
         }, {
           join => [qw/left_vlans right_vlans/],
         });
     }
 
-    while (my $l = $rs->next) {
-        var('links')->{ $l->{left_ip} } ||= [];
-        push @{ var('links')->{ $l->{left_ip} } }, $l->{right_ip};
+    while (my $link = $links->next) {
+      push @{$data{'links'}}, {
+        FROMID => $link->{left_ip},
+        TOID   => $link->{right_ip},
+        INFOSTRING => make_link_infostring($link),
+        SPEED  => to_speed($link->{aggspeed}),
+      };
+
+      ++$ok_dev{$link->{left_ip}};
+      ++$ok_dev{$link->{right_ip}};
     }
 
-    my %tree = (
-        ip => $start,
-        name => _get_name($start), # dns or sysname or ip
-        children => [],
-    );
+    # DEVICES (NODES)
 
-    var(seen => {$start => 1});
-    my $max = _add_children($tree{children}, var('links')->{$start}, 1, $depth);
-    $tree{scale} = $max;
+    my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
+      device_groups => \[ '= ?',
+        [device_groups => [$mapshow eq 'all' ? '__ANY__' : (sort @hgrplist)]] ],
+      vlan => ($vlan || 0)});
+    my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
 
-    content_type('application/json');
-    to_json(\%tree);
-};
+    my $devices = schema('netdisco')->resultset('Device')->search({}, {
+      '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
+      join => 'throughput',
+    })->with_times;
 
-ajax '/ajax/data/device/alldevicelinks' => require_login sub {
-    my $rs = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({}, {
-      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-    });
+    DEVICE: while (my $device = $devices->next) {
+      # if in neighbors or vlan mode then use %ok_dev to filter
+      next DEVICE if (($mapshow eq 'neighbors') or $vlan)
+        and (not $ok_dev{$device->ip});
 
-    my %tree = ();
-    while (my $l = $rs->next) {
-        push @{ $tree{ $l->{left_ip} } }, $l->{right_ip};
+      # if in only mode then use ACLs to filter
+      my $first_hgrp =
+        first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
+      next DEVICE if $mapshow eq 'only' and not $first_hgrp;
+
+      ++$logvals{ $device->get_column('log') || 1 };
+      (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;
+
+      my $node = {
+        ID => $device->ip,
+        SIZEVALUE => (param('dynamicsize') ?
+          (($device->get_column('log') || 1) * 1000) : 3000),
+        (param('colorgroups') ?
+          (COLORVALUE => ($first_hgrp ? setting('host_group_displaynames')->{$first_hgrp}
+                                      : 'Other')) : ()),
+        LABEL => (param('showips')
+          ? (($name eq $device->ip) ? $name : ($name .' '. $device->ip)) : $name),
+        ORIG_LABEL => $name,
+        INFOSTRING => make_node_infostring($device),
+        LINK => uri_for('/device', {
+          tab => 'netmap',
+          q => $device->ip,
+          firstsearch => 'on',
+        })->path_query,
+      };
+
+      if ($mapshow ne 'neighbors' and exists $pos_for->{$device->ip}) {
+        $node->{'fixed'} = 1;
+        $node->{'x'} = $pos_for->{$device->ip}->{'x'};
+        $node->{'y'} = $pos_for->{$device->ip}->{'y'};
+      }
+      else {
+        ++$metadata{'newnodes'};
+      }
+
+      push @{$data{'nodes'}}, $node;
+      $metadata{'centernode'} = $device->ip
+        if $qdev and $qdev->in_storage and $device->ip eq $qdev->ip;
     }
 
+    # to help get a sensible range of node sizes
+    $metadata{'numsizes'} = scalar keys %logvals;
+
     content_type('application/json');
-    to_json(\%tree);
+    to_json({ data => \%data, %metadata });
 };
 
 true;

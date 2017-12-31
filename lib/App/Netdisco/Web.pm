@@ -6,6 +6,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use URI ();
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
@@ -128,6 +129,12 @@ hook 'before_template' => sub {
 
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
+
+    # current query string to all resubmit from within ajax template
+    my $queryuri = URI->new();
+    $queryuri->query_param($_ => param($_))
+      for grep {$_ ne 'return_url'} keys %{params()};
+    $tokens->{my_query} = $queryuri->query();
 
     # access to logged in user's roles
     $tokens->{user_has_role}  = sub { user_has_role(@_) };

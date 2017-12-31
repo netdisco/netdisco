@@ -1,187 +1,287 @@
+<div id="netmap_pane_tooltip" class="net_gobrechts_d3_force_tooltip" style="top: 0px; left: 0px;"></div>
 <script>
 
-var winHeight = window.innerHeight;
-var winWidth  = window.innerWidth;
+// ***********************************************
+// ************ retrieve network map *************
+// ***********************************************
 
-// links in the initial tree drawing use this generator
-var treeLink = d3.svg.diagonal.radial()
-    .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(mapdata) {
 
-// actual device neighbor links use this generator
-var neighLink = d3.svg.diagonal.radial();
+  jQuery(document).ready(function() {
+    window.graph = netGobrechtsD3Force('netmap_pane')
+      // .debug(true)
+      .width( parseInt(jQuery('#netmap_pane').parent().css('width')) )
+      .height( window.innerHeight - 100 )
+      .showSelfLinks(true)
+      .wrapLabels(true)
+      .lassoMode(true)
+      .dragMode(true)
+      .zoomMode(true)
+      .pinMode(true)
+      [% '.showLegend(false)' IF NOT params.colorgroups %]
+      .showLinkDirection(false)
+      .colorScheme('color20')
+      .preventLabelOverlappingOnForceEnd(
+        (mapdata['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
+        ? true : false
+      )
+      .nodeEventToStopPinMode('none')
+      .showTooltips(true)
+      .tooltipPosition('svgTopLeft')
+      .nodeEventToOpenLink('dblclick')
+      .nodeLinkTarget('none')
+      .minNodeRadius(4)
+      .maxNodeRadius(4 + (mapdata['numsizes'] || 0))
+      .minZoomFactor(0.1)
+      .maxZoomFactor(10)
+      .labelDistance(2)
+      .linkDistance(120)
+      .charge(-550)
+      .gravity(0.3);
 
-// store x,y for all circles on the map
-var loc = {};
-// store actual links between all nodes
-var neighbors_data = {};
+    graph['nd2'] = {};
+    graph['nd2']['centernode'] = mapdata['centernode'];
+    graph['nd2']['dragging'] = false;
 
-// main SVG background, with support for pan/zoom
-var svg = d3.select("#netmap_pane").append("svg")
-    .attr("width", winWidth - 50)
-    .attr("height", winHeight - 100)
-    .attr("pointer-events", "all")
-  .append('g')
-    .call(d3.behavior.zoom().on("zoom", redraw))
-  .append("g")
-    .attr("transform", "translate(" + winHeight / 2 + "," + winHeight / 2 + ")");
+    // ***************************************
+    // *********** fullscreen icon ***********
+    // ***************************************
 
-// this is the image background
-// XXX there must be a way to discover the radial tree's size?
-svg.append('rect')
-    .attr("x", (0 - (winHeight * 2)))
-    .attr('width', "400%")
-    .attr("y", (0 - (winHeight * 2)))
-    .attr('height', "400%")
-    .attr('fill', 'white');
-
-// handle pan and zoom
-function redraw() {
-  svg.attr("transform",
-    "translate(" + d3.event.translate + ")"
-    + "scale(" + d3.event.scale + ")"
-    + "translate(" + (winHeight / 2) + "," + (winHeight / 2) + ")");
-}
-
-// save the x,y of an element into the loc dictionary
-function recordLocation(d,i) {
-  var rect = this.getBoundingClientRect();
-  loc[d.ip] = {
-    'x':  (rect.left + ((rect.right - rect.left) / 2))
-    ,'y': (rect.top +  ((rect.bottom - rect.top) / 2))
-  };
-}
-
-// convert a device ip to a valid CSS class name
-function to_class(ip) { return 'nd_' + ip.replace(/[:.]/g, "_") }
-
-// handler for clicking on a circle - redirect to that device's netmap
-function circleClick(d) {
-    window.location = '[% uri_for('/device') %]?tab=netmap'
-                      + '&q=' + d.ip
-                      + '&depth=[% params.depth | uri %]'
-                      + '&vlan=[% params.vlan | uri %]';
-}
-
-// handler for mouseover on a circle - show that device's real neighbors
-function circleOver(d) {
-    $('.link').hide();
-    $('path.' + to_class(d.ip)).show();
-    $(this).css('cursor', 'pointer');
-
-    $.each(neighbors_data[d.ip], function(idx, target) {
-      if (! (target in loc)) { return true }
-      $('circle.' + to_class(target)).css('fill', '#e96cfa');
-    });
-}
-
-// handler for mouseout on a circle - hide real neighbours and show treeLinks
-function circleOut(d) {
-    $.each(neighbors_data[d.ip], function(idx, target) {
-      if (! (target in loc)) { return true }
-      $('circle.' + to_class(target)).css('fill', '#fff');
-    });
-
-    $(this).css('cursor', 'auto');
-    $('path.' + to_class(d.ip)).hide();
-    $('.link').show();
-}
-
-// load all device connections into neighbors_data dictionary
-$.getJSON('[% uri_for('/ajax/data/device/alldevicelinks') %]', function(data) {
-  neighbors_data = data;
-
-  // draw the tree
-  d3.json("[% uri_for('/ajax/data/device/netmap') %]?"
-          + '&q=[% params.q | uri %]'
-          + '&depth=[% params.depth | uri %]'
-          + '&vlan=[% params.vlan | uri %]', function(error, root) {
-    var tree = d3.layout.tree()
-        // magic number "8" for scaling (network depth). seems to make things look right for me.
-        .size([360, (winHeight / 8 * (root['scale'] || 0))])
-        .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
-
-    var nodes = tree.nodes(root),
-        links = tree.links(nodes);
-
-    var link = svg.selectAll(".link")
-        .data(links)
-      .enter().append("path")
-        .attr("class", "link")
-        .attr("d", treeLink);
-
-    var node = svg.selectAll(".node")
-        .data(nodes)
-      .enter().append("g")
-        .attr("class", "node")
-        .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; });
-
-    // begin to draw...
-    d3.select("#nd_waiting").remove();
-
-    node.append("circle")
-        .attr("r", 4.5)
-        // circle has class name of its device, so we can show/hide it
-        .attr("class", function(d) { return to_class(d.ip) })
-        // store the x,y of every circle we've just drawn
-        .each(recordLocation)
-        // handlers for mouse interaction with the circles
-        .on("click", circleClick)
-        .on("mouseover", circleOver)
-        .on("mouseout", circleOut);
-
-    node.append("text")
-        .attr("dy", ".31em")
-        .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-        .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-        .text(function(d) { return d.name; });
-
-    // reorient text on the root node
-    svg.select(".node")
-        .attr("transform", function(d) {
-          return d.x < 180 ? "rotate(0)translate(0)" : "rotate(180)translate(0)"; });
-
-    // key (ip) of the root node in our locations store
-    var rootname = svg.select(".node").data()[0].ip;
-    // reformatted neighbors_data for the real neighbor links
-    var neighbors = [];
-
-    // need to build neighbors array only after we have built loc dictionary,
-    // after drawing the circles and storing their x,y
-    $.each(neighbors_data, function(key, val) {
-      if (! (key in loc)) { return true }
-
-      $.each(val, function(idx, ip) {
-        if (! (ip in loc)) { return true }
-
-        neighbors.push({
-          'source':  {
-            'ip': key
-            ,'x': loc[key]['x']
-            ,'y': loc[key]['y']
-          }
-          ,'target': {
-            'ip': ip
-            ,'x': loc[ip]['x']
-            ,'y': loc[ip]['y']
-          }
-        });
+    graph.inspect().dom.svg
+      .append("g")
+      .attr("id", "nd2_fullscreen-netmap-container")
+      .attr("transform", "translate(" + (graph.width() - 17) + ",17)")
+      .append("svg:text")
+      .attr("id", "nd2_fullscreen-netmap")
+      .attr("class", "link")
+      .attr("text-anchor", "start")
+      .attr("font-family", "FontAwesome")
+      .text('\uf065')
+      .on("click", function() {
+        requestFullScreen(document.getElementById('netmap_pane'));
       });
+
+    // **************************************************
+    // *********** force running spinner icon ***********
+    // **************************************************
+
+    graph.inspect().dom.svg
+      .append("g")
+      .attr("id", "nd2_netmap-spinner-container")
+      .attr("transform", "translate(" + (graph.width() - 15) + "," + (graph.height() - 15) + ")")
+      .append("path")
+      .attr("id", "nd2_netmap-spinner");
+
+    graph.inspect().main.force.on('start.nd2spinner', function() {
+      d3.select("#nd2_netmap-spinner").call(spin);
     });
 
-    // insert Netdisco neighbor links below circles but above tree links
-    svg.selectAll(".neighbor")
-        .data(neighbors)
-      .enter().insert("path", ".node")
-        // add class name of source device, so we can show/hide the link
-        // (also "neighbor" class)
-        .attr("class", function(d) { return ("neighbor " + to_class( d.source.ip )) })
-        .attr("d", neighLink)
-        .attr("transform", "translate(-" + loc[rootname]['x'] + ",-" + loc[rootname]['y'] + ")");
-  });
+    // *****************************************************
+    // *********** link labels which track links ***********
+    // *****************************************************
 
-}); // jquery getJSON for all connections
+    graph.inspect().main.force.on('tick.movelinklabel', function() {
+      graph.inspect().dom.svg.selectAll('text.nd_netmap-linklabel')
+        .attr('x', function(d) {
+          var sx = graph.nodeDataById($(this).attr('data-source'));
+          var tx = graph.nodeDataById($(this).attr('data-target'));
+          if (!(sx && tx)) { return 0 }
+          return ((sx.x + tx.x) / 2);
+        })
+        .attr('y', function(d) {
+          var sy = graph.nodeDataById($(this).attr('data-source'));
+          var ty = graph.nodeDataById($(this).attr('data-target'));
+          if (!(sy && ty)) { return 0 }
+          return ((sy.y + ty.y) / 2);
+        });
+    });
+
+    graph.inspect().main.force.on('start.movelinklabel', function() {
+      mapdata['data']['links'].forEach(function(link) {
+        graph.inspect().dom.svg.select('g.graph')
+          .append('svg:text')
+          .attr('class', 'nd_netmap-linklabel')
+          .attr('data-source', link['FROMID'])
+          .attr('data-target', link['TOID'])
+          .attr('text-anchor', 'middle')
+          [% ".attr('fill', 'black')" IF params.showspeed %]
+          .text(link['SPEED']);
+      });
+
+      graph.inspect().main.force.on('start.movelinklabel', null);
+    });
+
+    // **********************************************************
+    // ********* node lasso and group-dragging support **********
+    // **********************************************************
+
+    graph.inspect().main.force.on('start.draggednode', function() {
+      graph.inspect().main.nodes.on('mousedown.dragall', function(n) {
+        if (this.nodeName !== 'circle') { return }
+        graph['nd2']['dragging'] = true;
+        graph['nd2']['dragStartX'] = n.x;
+        graph['nd2']['dragStartY'] = n.y;
+        graph['nd2']['draggedNode'] = n.index;
+        console.log(graph['nd2']);
+      });
+
+      graph.inspect().main.nodes.on('mousemove.dragall', function(draggedNode) {
+        var evt = window.event;
+        if (!("buttons" in evt) || (evt.buttons !== 1)) { return }
+        if (!(graph['nd2']['dragging']) || !(graph['nd2']['draggedNode'])) { return }
+        if (draggedNode.index !== graph['nd2']['draggedNode']) { return }
+
+        var dx = (draggedNode.x - graph['nd2']['dragStartX']),
+            dy = (draggedNode.y - graph['nd2']['dragStartY']);
+        graph['nd2']['dragStartX'] += dx;
+        graph['nd2']['dragStartY'] += dy;
+
+        graph.inspect().main.nodes
+          .filter(function(n) { return (n.selected && (n.index !== draggedNode.index)) })
+          .each(function(n) {
+              n.x += dx; n.y += dy;
+              n.px += dx; n.py += dy;
+          });
+      });
+
+      graph.inspect().main.nodes.on('mouseup.dragall', function(n) {
+        graph['nd2']['dragging'] = false;
+      });
+
+      graph.inspect().main.force.on('start.draggednode', null);
+    });
+
+    // ********************************************************
+    // ********* save new node positions back to DB ***********
+    // ********************************************************
+
+    graph.inspect().main.force.on('end.savepositions', function() {
+      graph.inspect().main.nodes.each(function(n) { n.fixed = true });
+
+      if (mapdata['newnodes'] && ('[% params.mapshow %]' != 'neighbors')) {
+        $.post(
+          '[% uri_for('/ajax/data/device/netmappositions') %]'
+          ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
+            + '&positions=' + JSON.stringify(graph.positions())
+        );
+      }
+
+      graph.inspect().main.force.on('end.savepositions', null);
+    });
+
+    // *****************************
+    // ********* DO IT!! ***********
+    // *****************************
+
+    graph.start(mapdata);
+
+    // about a second after render starts, zoom in a bit
+    if ('[% params.mapshow %]' == 'neighbors') {
+      setTimeout(function() {
+        if ('[% params.dynamicsize %]' == 'on') {
+          graph.zoomToFit();
+        } else {
+          var node = graph.nodeDataById( graph['nd2']['centernode'] );
+          graph.zoomSmooth(node.x, node.y, node.radius * 125);
+        }
+      }, 1500);
+    }
+  }); // document.onReady
+
+}); // getJSON
+
+// ***********************************************
+// ******** force engine status spinner  *********
+// ***********************************************
+
+var radius = 12;
+var tau = 2 * Math.PI;
+
+var arc = d3.svg.arc()
+  .innerRadius(radius * 0.5)
+  .outerRadius(radius * 0.8)
+  .startAngle(0)
+  .endAngle(0.33 * tau);
+
+var circle = d3.svg.arc()
+  .innerRadius(radius * 0.5)
+  .outerRadius(radius * 0.8)
+  .startAngle(0)
+  .endAngle(tau);
+
+function spin(selection, duration) {
+  duration = duration || 1500;
+  if (! graph.inspect().status.forceRunning) {
+    d3.select('#nd2_netmap-spinner').style('fill', '#CCFFCC').attr('d', circle);
+    return;
+  }
+  d3.select('#nd2_netmap-spinner').style('fill', '#FFE4B5').attr('d', arc);
+  selection.transition()
+    .ease("linear")
+    .duration(duration)
+    .attrTween("transform", function() {
+        return d3.interpolateString("rotate(0)", "rotate(360)");
+    });
+  setTimeout(function() { spin(selection, duration); }, duration);
+}
+
+// ***********************************************
+// ************ full screen handling *************
+// ***********************************************
+
+function isFullScreen() {
+  return (document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement);
+}
+
+function requestFullScreen(elt) {
+  if (isFullScreen()) {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+  else {
+    if (elt.requestFullscreen) {
+      elt.requestFullscreen();
+    } else if (elt.msRequestFullscreen) {
+      elt.msRequestFullscreen();
+    } else if (elt.mozRequestFullScreen) {
+      elt.mozRequestFullScreen();
+    } else if (elt.webkitRequestFullscreen) {
+      elt.webkitRequestFullscreen();
+    }
+  }
+}
+
+$(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
+  resizeGraphContainer();
+  $('#nd2_fullscreen-netmap').text(function() {
+    return (isFullScreen() ? '\uf066' : '\uf065');
+  });
+});
+
+// custom resize function as there is no event to fire and we need
+// to react to the sidebar.
+function resizeGraphContainer() {
+  setTimeout(function(){
+    var netmap_pane = jQuery('#netmap_pane');
+    graph.width( parseInt(netmap_pane.parent().css('width')) ).resume();
+    graph.height( window.innerHeight - 100 ).resume();
+    d3.select("#nd2_netmap-spinner-container").attr("transform",
+      "translate(" + (graph.width() - 15) + "," + (graph.height() - 15) + ")");
+    d3.select("#nd2_fullscreen-netmap-container").attr("transform",
+      "translate(" + (graph.width() - 17) + ",17)");
+  }, 500)
+}
+
+$('#nd_sidebar-toggle-img-in').on("click", resizeGraphContainer);
+$('#nd_sidebar-toggle-img-out').on("click", resizeGraphContainer);
+$(window).on("resize", resizeGraphContainer);
 
 // vim: ft=javascript
 </script>
-
-<div id="nd_waiting" class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>
