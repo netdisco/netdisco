@@ -74,13 +74,14 @@ sub to_speed {
 
 sub make_node_infostring {
   my $node = shift or return '';
-  my $fmt = ('Serial: <b>%s</b><br>Vendor/Model: <b>%s / %s</b><br>'
-    .'OS/Version: <b>%s / %s</b><br>Uptime: <b>%s</b><br>'
-    .'Location: <b>%s</b><br>Contact: <b>%s</b>');
-  return sprintf $fmt,
+  my $fmt = ('<b>%s</b> is %s <b>%s %s</b><br>running <b>%s %s</b><br>Serial: <b>%s</b><br>'
+    .'Uptime: <b>%s</b><br>Location: <b>%s</b><br>Contact: <b>%s</b>');
+  return sprintf $fmt, $node->ip,
+    ((($node->vendor || '') =~ m/^[aeiou]/i) ? 'an' : 'a'),
+    ucfirst($node->vendor || ''),
     map {defined $_ ? $_ : ''}
     map {$node->$_}
-        (qw/serial vendor model os os_ver uptime_age location contact/);
+        (qw/model os os_ver serial uptime_age location contact/);
 }
 
 sub make_link_infostring {
