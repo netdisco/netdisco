@@ -8,10 +8,6 @@
 * Inventory your network hardware by model, vendor, software and operating system
 * Pretty pictures of your network
 
-[[[https://raw.githubusercontent.com/netdisco/upstream-sources/master/screenshots/nd2-shot-2.png|alt="Device Search"|width=200px]]](https://raw.githubusercontent.com/netdisco/upstream-sources/master/screenshots/nd2-shot-2.png)
-[[[https://raw.githubusercontent.com/netdisco/upstream-sources/master/screenshots/nd2-shot-1.png|alt="Device Ports and Nodes"|width=200px]]](https://raw.githubusercontent.com/netdisco/upstream-sources/master/screenshots/nd2-shot-1.png)
-[[[https://raw.githubusercontent.com/netdisco/upstream-sources/master/screenshots/nd2-shot-3.png|alt="Device Details"|width=200px]]](https://raw.githubusercontent.com/netdisco/upstream-sources/master/screenshots/nd2-shot-3.png)
-
 See the demo at: [https://netdisco2-demo.herokuapp.com/](https://netdisco2-demo.herokuapp.com/)
 
 ##  Installation
