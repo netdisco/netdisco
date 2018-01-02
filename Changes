@@ -1,3 +1,25 @@
+2.038002 - 2018-01-02
+
+  [ENHANCEMENTS]
+
+  * Use new release filename for netdisco-mibs
+  * Add favicon.ico from https://www.flickr.com/photos/7827976@N05/464520552
+
+  [BUG FIXES]
+
+  * Change name of d3 javascript file to force browser reload
+
+2.038001 - 2018-01-02
+
+  [ENHANCEMENTS]
+
+  * Better tooltip for netmap items
+  * Change to color10 set in netmap
+
+  [BUG FIXES]
+
+  * Allow statistics to be run on an empty database
+
 2.038000 - 2017-12-31
 
   [NEW FEATURES]

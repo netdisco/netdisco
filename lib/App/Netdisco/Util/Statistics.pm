@@ -47,7 +47,10 @@ sub update_stats {
       device_ip_count =>
         $schema->resultset('DeviceIp')->count_rs->as_query,
       device_link_count =>
-        $schema->resultset('Virtual::DeviceLinks')->get_column('aggports')->sum_rs->as_query,
+        $schema->resultset('Virtual::DeviceLinks')->search(undef, {
+            select => [ { coalesce => [ { sum => 'aggports' }, 0 ] } ],
+            as => ['totlinks'],
+        })->get_column('totlinks')->as_query,
       device_port_count =>
         $schema->resultset('DevicePort')->count_rs->as_query,
       device_port_up_count =>
