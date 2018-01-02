@@ -272,6 +272,7 @@ share/public/font/FontAwesome.otf
 share/public/images/crystalclear_mag.png
 share/public/images/diagona_settings.png
 share/public/images/dusseldorf_settings.png
+share/public/images/favicon.ico
 share/public/images/glyphicons_072_bookmark.png
 share/public/images/matte_basic_pin.png
 share/public/images/navbar_disco.png
@@ -286,8 +287,8 @@ share/public/images/tango_sweep.png
 share/public/images/vaga_copy.png
 share/public/javascripts/bootstrap.min.js
 share/public/javascripts/bootstrap2-toggle.min.js
+share/public/javascripts/d3-3.5.17.min.js
 share/public/javascripts/d3-force-network-chart.js
-share/public/javascripts/d3.min.js
 share/public/javascripts/dataTables.bootstrap.js
 share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js
