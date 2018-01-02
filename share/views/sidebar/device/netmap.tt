@@ -4,7 +4,7 @@
             <div class="clearfix nd_netmap-sidebar">
               <ul class="muted nd_netmap-sidebar-help">
                 <li>Tip: shift-drag to lasso</li>
-                <li><a href="https://github.com/netdisco/netdisco/wiki/NetworkMap" target="_blank">User Guide
+                <li><a href="https://github.com/netdisco/netdisco/wiki/Network-Map" target="_blank">User Guide
                   <i class="icon-external-link"></i></a></li>
               </ul>
             </div>
