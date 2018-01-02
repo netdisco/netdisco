@@ -109,6 +109,18 @@ sub delete {
       return 0E0;
   }
   else {
+      foreach my $set (qw/
+        NodeMonitor
+        NodeWireless
+      /) {
+          $schema->resultset($set)->search(
+            { mac => { '-in' => $nodes->as_query }},
+          )->delete;
+      }
+
+      # now let DBIC do its thing
+      my @retval = ($self->next::method());
+
       # for node_ip and node_nbt *only* delete if there are no longer
       # any active nodes referencing the IP or NBT (hence 2nd IN clause).
       foreach my $set (qw/
@@ -132,17 +144,7 @@ sub delete {
         })->delete;
       }
 
-      foreach my $set (qw/
-        NodeMonitor
-        NodeWireless
-      /) {
-          $schema->resultset($set)->search(
-            { mac => { '-in' => $nodes->as_query }},
-          )->delete;
-      }
-
-      # now let DBIC do its thing
-      return $self->next::method();
+      return (wantarray ? @retval : $retval[0]);
   }
 }
 

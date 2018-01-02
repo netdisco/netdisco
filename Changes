@@ -8,6 +8,7 @@
   [BUG FIXES]
 
   * Change name of d3 javascript file to force browser reload
+  * Make expire_nodes and expire_nodes_archive behave correctly
 
 2.038001 - 2018-01-02
 
