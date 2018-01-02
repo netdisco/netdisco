@@ -1,3 +1,13 @@
+2.038002 - 2018-01-02
+
+  [ENHANCEMENTS]
+
+  * Use new release filename for netdisco-mibs
+
+  [BUG FIXES]
+
+  * Change name of d3 javascript file to force browser reload
+
 2.038001 - 2018-01-02
 
   [ENHANCEMENTS]
