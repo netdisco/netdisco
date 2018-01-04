@@ -13,6 +13,7 @@ use Dancer::Plugin::DBIC 'schema';
 use List::MoreUtils ();
 use NetAddr::MAC;
 use Encode;
+use Try::Tiny;
 
 =head2 discover_new_neighbors( )
 
