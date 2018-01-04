@@ -121,25 +121,27 @@ sub delete {
 
       # for node_ip only delete if there are no longer
       # any nodes referencing the IP.
-      my $except = $nodes->search(undef, { '+columns' => 'port' })->as_query;
-      my @except_all = @{$$except};
-      my $except_query = shift @except_all;
+
+      my @mac_restrict_aq     = @{${ $nodes->as_query }};
+      my @macport_restrict_aq = @{${ $nodes->search(undef, { '+columns' => 'port' })->as_query }};
+      my $mac_restrict     = shift @mac_restrict_aq;
+      my $macport_restrict = shift @macport_restrict_aq;
 
       my $deleted = $schema->storage->dbh_do(sub {
         my ($storage, $dbh, @extra) = @_;
-        local $dbh->{TraceLevel} = '1|SQL';
+        local $dbh->{TraceLevel} =
+          ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
         $dbh->do(<<SQL
-WITH nodes_restrict AS ($except_query)
 DELETE FROM node_ip WHERE mac IN (
   SELECT mac FROM node_ip
     LEFT OUTER JOIN (
       SELECT mac, port FROM node
-      EXCEPT (SELECT * FROM nodes_restrict)) exceptions
+      EXCEPT ($macport_restrict)) exceptions
     USING (mac)
-   WHERE node_ip.mac IN (SELECT mac FROM nodes_restrict)
+   WHERE node_ip.mac IN ($mac_restrict)
      AND exceptions.port IS NULL)
 SQL
-        , undef, (map {$_->[1]} @except_all));
+        , undef, (map {$_->[1]} (@macport_restrict_aq, @mac_restrict_aq)));
       });
 
       # now let DBIC do its thing
