@@ -40,6 +40,14 @@ register_worker({ phase => 'main' }, sub {
       });
   }
 
+  # also have to clean up node_ip that have no correspoding node
+  schema('netdisco')->resultset('NodeIp')->search({
+    mac => { -in => schema('netdisco')->resultset('NodeIp')->search(
+      { port => undef },
+      { join => 'nodes', select => [{ distinct => 'me.mac' }], }
+    )->as_query },
+  })->delete;
+
   if (setting('expire_jobs') and setting('expire_jobs') > 0) {
       schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
         schema('netdisco')->resultset('Admin')->search({

@@ -112,39 +112,38 @@ sub delete {
       foreach my $set (qw/
         NodeMonitor
         NodeWireless
+        NodeNbt
       /) {
           $schema->resultset($set)->search(
             { mac => { '-in' => $nodes->as_query }},
           )->delete;
       }
 
+      # for node_ip only delete if there are no longer
+      # any nodes referencing the IP.
+      my $except = $nodes->search(undef, { '+columns' => 'port' })->as_query;
+      my @except_all = @{$$except};
+      my $except_query = shift @except_all;
+
+      my $deleted = $schema->storage->dbh_do(sub {
+        my ($storage, $dbh, @extra) = @_;
+        local $dbh->{TraceLevel} = '1|SQL';
+        $dbh->do(<<SQL
+WITH nodes_restrict AS ($except_query)
+DELETE FROM node_ip WHERE mac IN (
+  SELECT mac FROM node_ip
+    LEFT OUTER JOIN (
+      SELECT mac, port FROM node
+      EXCEPT (SELECT * FROM nodes_restrict)) exceptions
+    USING (mac)
+   WHERE node_ip.mac IN (SELECT mac FROM nodes_restrict)
+     AND exceptions.port IS NULL)
+SQL
+        , undef, (map {$_->[1]} @except_all));
+      });
+
       # now let DBIC do its thing
-      my @retval = ($self->next::method());
-
-      # for node_ip and node_nbt *only* delete if there are no longer
-      # any active nodes referencing the IP or NBT (hence 2nd IN clause).
-      foreach my $set (qw/
-        NodeIp
-        NodeNbt
-      /) {
-        $schema->resultset($set)->search({
-          'me.mac' => { '-in' => $schema->resultset($set)->search({
-              '-and' => [
-                -bool => 'nodes.active',
-                'me.mac' => { '-in' => $nodes->as_query }
-              ]
-            },
-            {
-              columns => 'mac',
-              join => 'nodes',
-              group_by => 'me.mac',
-              having => \[ 'count(nodes.mac) = 0' ],
-            })->as_query,
-          },
-        })->delete;
-      }
-
-      return (wantarray ? @retval : $retval[0]);
+      return $self->next::method();
   }
 }
 
