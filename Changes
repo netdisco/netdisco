@@ -1,4 +1,4 @@
-2.038002_002 - 2018-01-04
+2.038003 - 2018-01-04
 
   [ENHANCEMENTS]
 
@@ -9,6 +9,7 @@
 
   * Change name of d3 javascript file to force browser reload
   * Make expire_nodes and expire_nodes_archive behave correctly
+  * #361 missing dependency in manual topology setup (dgeo)
 
 2.038001 - 2018-01-02
 
