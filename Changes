@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Fix favicon image path to work on non-apex installations
+  * Install correct template path when site_local_files enabled
 
 2.038003 - 2018-01-04
 
