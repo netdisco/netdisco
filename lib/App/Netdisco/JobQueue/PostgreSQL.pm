@@ -129,6 +129,11 @@ sub jq_getsome {
     # remove any duplicate jobs, incuding possibly this job if there
     # is already an equivalent job running
 
+    # note that the self-removal of a job has an unhelpful log: it is
+    # reported as a duplicate of itself! however what's happening is that
+    # netdisco has seen another running job with same params (but the query
+    # cannot see that ID to use it in the message).
+
     my %job_properties = (
       action => $job->action,
       port   => $job->port,
