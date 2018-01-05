@@ -21,10 +21,10 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       [% '.showLegend(false)' IF NOT params.colorgroups %]
       .showLinkDirection(false)
       .colorScheme('color10')
-      .preventLabelOverlappingOnForceEnd(
-        (mapdata['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
-        ? true : false
-      )
+      //.preventLabelOverlappingOnForceEnd(
+      //  (mapdata['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
+      //  ? true : false
+      //)
       .nodeEventToStopPinMode('none')
       .showTooltips(true)
       .tooltipPosition('svgTopLeft')

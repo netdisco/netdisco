@@ -1,5 +1,9 @@
 2.038004 - 2018-01-05
 
+  [ENHANCEMENTS]
+
+  * Disable preventLabelOverlappingOnForceEnd on network neighbor map
+
   [BUG FIXES]
 
   * Fix favicon image path to work on non-apex installations
