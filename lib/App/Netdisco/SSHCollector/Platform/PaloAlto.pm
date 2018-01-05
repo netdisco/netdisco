@@ -45,9 +45,9 @@ sub arpnip{
     my $prompt = qr/> \r?$/;
 
     ($pos, $error, $match, $before, $after) = $expect->expect(20, -re, $prompt);
-    $expect->send("set cli pager off\n");
+    $expect->send("set cli pager off\r\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-    $expect->send("show arp all\n");
+    $expect->send("show arp all\r\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
 
     my @arpentries;
