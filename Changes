@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * Disable preventLabelOverlappingOnForceEnd on network neighbor map
+  * Debug log the neighbor ID to help with problem diagnosis
 
   [BUG FIXES]
 
