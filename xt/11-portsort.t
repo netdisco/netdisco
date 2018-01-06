@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use Env::Path;
 use FindBin qw( $Bin );
 
