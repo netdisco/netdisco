@@ -4,6 +4,7 @@ author:
   - 'Oliver Gorwits <oliver@cpan.org>'
 build_requires:
   Env::Path: '0'
+  Test::File::ShareDir::Dist: '0'
   Test::More: '0.88'
 configure_requires:
   DBIx::Class: '0.082810'
