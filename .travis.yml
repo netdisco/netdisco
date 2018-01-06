@@ -1,6 +1,7 @@
 language: perl
 perl:
    - 'blead'
+   - '5.26'
    - '5.24'
    - '5.22'
    - '5.20'
@@ -27,5 +28,5 @@ before_install:
 # for some reason, travis-perl doesnt work out that it needs to install:
   - cpanm --quiet --notest DBIx::Class::Optional::Dependencies
   - cpanm Test::More
-  - cd Netdisco; perl Makefile.PL; make listalldeps | cpanm --quiet --notest
+#  - cd Netdisco; perl Makefile.PL; make listalldeps | cpanm --quiet --notest
   - eval $(curl https://travis-perl.github.io/init) --auto
