@@ -3,14 +3,16 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use Env::Path;
 use FindBin qw( $Bin );
 
-my $phantomjs = $ENV{ND_PHANTOMJS};
+my @phantomjs = Env::Path->PATH->Whence('phantomjs');
+my $phantomjs = scalar @phantomjs ? $phantomjs[0] : $ENV{ND_PHANTOMJS};
 
-if ( !defined $phantomjs or !-x $phantomjs ) {
+if ( ! defined $phantomjs or !-x $phantomjs ) {
     plan skip_all =>
-        "phantomjs not found, please set ND_PHANTOMJS to the location of the phantomjs executable";
+        "phantomjs not found, please set ND_PHANTOMJS or install phantomjs to the default location";
 }
 else {
     exec( $phantomjs, "$Bin/js/run_qunit.js", "$Bin/html/portsort.html" );
