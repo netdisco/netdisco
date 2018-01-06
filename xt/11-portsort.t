@@ -6,12 +6,11 @@ use Test::More;
 use Env::Path;
 use FindBin qw( $Bin );
 
-my @phantomjs = Env::Path->PATH->Whence('phantomjs');
-my $phantomjs = scalar @phantomjs ? $phantomjs[0] : $ENV{ND_PHANTOMJS};
+my $phantomjs = $ENV{ND_PHANTOMJS};
 
-if ( ! defined $phantomjs or !-x $phantomjs ) {
+if ( !defined $phantomjs or !-x $phantomjs ) {
     plan skip_all =>
-        "phantomjs not found, please set ND_PHANTOMJS or install phantomjs to the default location";
+        "phantomjs not found, please set ND_PHANTOMJS to the location of the phantomjs executable";
 }
 else {
     exec( $phantomjs, "$Bin/js/run_qunit.js", "$Bin/html/portsort.html" );
