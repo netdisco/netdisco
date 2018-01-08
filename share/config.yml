@@ -284,6 +284,9 @@ workers:
   retry_after: '7 days'
   queue: PostgreSQL
 
+# 50 minutes
+jobs_stale_after: 3000
+
 dns:
   max_outstanding: 50
   hosts_file: '/etc/hosts'

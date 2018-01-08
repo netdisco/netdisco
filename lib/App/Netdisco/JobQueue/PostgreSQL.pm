@@ -154,6 +154,7 @@ sub jq_getsome {
           job => $job->id,
           -exists => $jobs->search({
             status => { -like => 'queued-%' },
+            started => \[q/> (now() - ?::interval)/, setting('jobs_stale_after')],
             %job_properties,
           })->as_query,
         }],
@@ -170,8 +171,10 @@ sub jq_getsome {
 
 sub jq_locked {
   my @returned = ();
-  my $rs = schema('netdisco')->resultset('Admin')
-    ->search({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
+  my $rs = schema('netdisco')->resultset('Admin')->search({
+    status  => ('queued-'. setting('workers')->{'BACKEND'}),
+    started => \[q/> (now() - ?::interval)/, setting('jobs_stale_after')],
+  });
 
   while (my $job = $rs->next) {
       push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
@@ -197,7 +200,10 @@ sub jq_lock {
   try {
     my $updated = schema('netdisco')->resultset('Admin')
       ->search({ job => $job->id, status => 'queued' }, { for => 'update' })
-      ->update({ status => ('queued-'. setting('workers')->{'BACKEND'}) });
+      ->update({
+          status  => ('queued-'. setting('workers')->{'BACKEND'}),
+          started => \"now()",
+      });
 
     $happy = true if $updated > 0;
   }

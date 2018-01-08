@@ -1,3 +1,9 @@
+2.038007
+
+  [ENHANCEMENTS]
+
+  * Ignore jobs started over 50 minutes ago (setting: jobs_stale_after)
+
 2.038006
 
   [BUG FIXES]
