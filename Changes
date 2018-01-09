@@ -1,3 +1,9 @@
+2.038008
+
+  [BUG FIXES]
+
+  * Add updated Test::More dependency to get tests passing again.
+
 2.038007
 
   [BUG FIXES]

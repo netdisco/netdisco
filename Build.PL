@@ -86,7 +86,7 @@ Module::Build->new(
     'Expect' => '0',
   },
   test_requires => {
-    'Test::More' => '0.88',
+    'Test::More' => '1.302083',
     'Env::Path'  => '0',
     'Test::File::ShareDir::Dist' => '0',
   },

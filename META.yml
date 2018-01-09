@@ -5,7 +5,7 @@ author:
 build_requires:
   Env::Path: '0'
   Test::File::ShareDir::Dist: '0'
-  Test::More: '0.88'
+  Test::More: '1.302083'
 configure_requires:
   DBIx::Class: '0.082810'
   Module::Build: '0.42'
@@ -19,7 +19,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.038007'
+    version: '2.038008'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -527,5 +527,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.038007'
+version: '2.038008'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
