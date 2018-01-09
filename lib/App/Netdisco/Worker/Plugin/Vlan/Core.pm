@@ -22,6 +22,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 });
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
   return unless defined vars->{'iid'};
   _action($job, 'pvid');
   return _action($job, 'vlan');

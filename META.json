@@ -4,13 +4,13 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4224",
+   "generated_by" : "Module::Build version 0.4222",
    "license" : [
       "bsd"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : 2
+      "version" : "2"
    },
    "name" : "App-Netdisco",
    "prereqs" : {
@@ -98,6 +98,7 @@
       "test" : {
          "requires" : {
             "Env::Path" : "0",
+            "Test::File::ShareDir::Dist" : "0",
             "Test::More" : "0.88"
          }
       }
@@ -105,7 +106,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.037003"
+         "version" : "2.038007"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -127,7 +128,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "45"
+         "version" : "46"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -179,6 +180,9 @@
       },
       "App::Netdisco::DB::Result::Log" : {
          "file" : "lib/App/Netdisco/DB/Result/Log.pm"
+      },
+      "App::Netdisco::DB::Result::NetmapPositions" : {
+         "file" : "lib/App/Netdisco/DB/Result/NetmapPositions.pm"
       },
       "App::Netdisco::DB::Result::Node" : {
          "file" : "lib/App/Netdisco/DB/Result/Node.pm"
@@ -239,6 +243,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::DevicePoeStatus" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::DevicePortSpeed" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm"
       },
       "App::Netdisco::DB::Result::Virtual::DuplexMismatch" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm"
@@ -669,6 +676,9 @@
       "App::Netdisco::Worker::Plugin::DiscoverAll" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm"
       },
+      "App::Netdisco::Worker::Plugin::DumpConfig" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/DumpConfig.pm"
+      },
       "App::Netdisco::Worker::Plugin::Expire" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Expire.pm"
       },
@@ -749,7 +759,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/BSD-3-Clause"
+         "http://opensource.org/licenses/bsd-license.php"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -757,6 +767,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.037003",
-   "x_serialization_backend" : "JSON::PP version 2.94"
+   "version" : "2.038007",
+   "x_serialization_backend" : "JSON::PP version 2.27300"
 }

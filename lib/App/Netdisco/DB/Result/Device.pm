@@ -191,6 +191,15 @@ Returns the row from the community string table, if one exists.
 __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
 
+=head2 throughput
+
+Returns a sum of speeds on all ports on the device.
+
+=cut
+
+__PACKAGE__->has_one(
+    throughput => 'App::Netdisco::DB::Result::Virtual::DevicePortSpeed', 'ip');
+
 =head1 ADDITIONAL METHODS
 
 =head2 is_pseudo

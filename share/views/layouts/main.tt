@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
-  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+  <link rel="shortcut icon" href="[% uri_base %]/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="[% uri_base %]/images/favicon.ico" type="image/x-icon">
   <title>Netdisco</title>
 
   <!-- HTML5 shim, for IE6-8 support of HTML elements -->
@@ -18,9 +19,11 @@
 <!--  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.cookie.js"></script> -->
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap2-toggle.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/underscore.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.qtip.min.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/d3.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/d3-3.5.17.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/d3-force-network-chart.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.floatThead.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/daterangepicker.js"></script>
@@ -48,10 +51,13 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap2-toggle.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/awesome-bootstrap-checkbox.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/jquery.qtip.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/smoothness/jquery-ui.custom.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/d3-force-network-chart.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap-tree.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/daterangepicker-bs2.css"/>

@@ -289,8 +289,8 @@ sub deploy_mibs {
 
   if ($resp->{url} =~ m/([0-9.]+)$/) {
     my $ver = $1;
-    my $url = 'https://codeload.github.com/netdisco/netdisco-mibs/tar.gz/'. $ver;
-    my $file = file($home, 'netdisco-mibs-latest.tar.gz');
+    my $url = "https://github.com/netdisco/netdisco-mibs/releases/download/${ver}/netdisco-mibs.tar.gz";
+    my $file = file($home, 'netdisco-mibs.tar.gz');
     $resp = HTTP::Tiny->new->mirror($url, $file);
 
     if ($resp->{success}) {

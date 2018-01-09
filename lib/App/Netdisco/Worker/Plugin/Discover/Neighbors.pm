@@ -13,6 +13,7 @@ use Dancer::Plugin::DBIC 'schema';
 use List::MoreUtils ();
 use NetAddr::MAC;
 use Encode;
+use Try::Tiny;
 
 =head2 discover_new_neighbors( )
 
@@ -71,6 +72,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         subaction => 'with-nodes',
         ($remote_id ? (device_key => $remote_id) : ()),
       });
+
+      debug sprintf ' queue - queued device %s (ID: [%s])',
+        $ip, ($remote_id || '');
   }
 
   return Status->info(sprintf ' [%s] neigh - processed %s neighbors',
@@ -240,8 +244,8 @@ sub store_neighbors {
 
       # what we came here to do.... discover the neighbor
       debug sprintf
-        ' [%s] neigh - adding neighbor %s, type [%s], on %s to discovery queue',
-        $device->ip, $remote_ip, ($remote_type || ''), $port;
+        ' [%s] neigh - adding neighbor %s, ID [%s], on %s to discovery queue',
+        $device->ip, $remote_ip, ($remote_id || ''), $port;
       push @to_discover, [$remote_ip, $remote_type, $remote_id];
 
       $remote_port = $c_port->{$entry};

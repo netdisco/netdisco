@@ -38,6 +38,7 @@ lib/App/Netdisco/DB/Result/DeviceRoute.pm
 lib/App/Netdisco/DB/Result/DeviceSkip.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
 lib/App/Netdisco/DB/Result/Log.pm
+lib/App/Netdisco/DB/Result/NetmapPositions.pm
 lib/App/Netdisco/DB/Result/Node.pm
 lib/App/Netdisco/DB/Result/NodeIp.pm
 lib/App/Netdisco/DB/Result/NodeMonitor.pm
@@ -58,6 +59,7 @@ lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
+lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm
@@ -201,6 +203,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
 lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
 lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
+lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
 lib/App/Netdisco/Worker/Plugin/Expire.pm
 lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
 lib/App/Netdisco/Worker/Plugin/Graph.pm
@@ -232,8 +235,11 @@ META.yml
 share/config.yml
 share/environments/deployment.yml
 share/public/500.html
+share/public/css/awesome-bootstrap-checkbox.css
 share/public/css/bootstrap-tree.css
 share/public/css/bootstrap.min.css
+share/public/css/bootstrap2-toggle.min.css
+share/public/css/d3-force-network-chart.css
 share/public/css/dataTables.bootstrap.css
 share/public/css/daterangepicker-bs2.css
 share/public/css/font-awesome.min.css
@@ -266,6 +272,7 @@ share/public/font/FontAwesome.otf
 share/public/images/crystalclear_mag.png
 share/public/images/diagona_settings.png
 share/public/images/dusseldorf_settings.png
+share/public/images/favicon.ico
 share/public/images/glyphicons_072_bookmark.png
 share/public/images/matte_basic_pin.png
 share/public/images/navbar_disco.png
@@ -279,7 +286,9 @@ share/public/images/splashyfish_right.png
 share/public/images/tango_sweep.png
 share/public/images/vaga_copy.png
 share/public/javascripts/bootstrap.min.js
-share/public/javascripts/d3.min.js
+share/public/javascripts/bootstrap2-toggle.min.js
+share/public/javascripts/d3-3.5.17.min.js
+share/public/javascripts/d3-force-network-chart.js
 share/public/javascripts/dataTables.bootstrap.js
 share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js
@@ -339,6 +348,7 @@ share/schema_versions/App-Netdisco-DB-41-42-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-42-43-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-43-44-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-44-45-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-45-46-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
@@ -441,6 +451,7 @@ share/views/password.tt
 share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
+share/views/sidebar/admintask/topology.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
 share/views/sidebar/report/generic_report.tt

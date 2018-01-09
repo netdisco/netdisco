@@ -53,13 +53,12 @@ if (ref {} eq ref setting('database')) {
 # always set this
 $ENV{DBIC_TRACE_PROFILE} = 'console';
 
-# if snmp_auth or device_auth not set, add defaults to community{_rw}
+# if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
-    or (setting('device_auth') and 0 == scalar @{ setting('device_auth') })) {
+    and (setting('device_auth') and 0 == scalar @{ setting('device_auth') })) {
   config->{'community'} = [ @{setting('community')}, 'public' ];
   config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
 }
-
 # fix up device_auth (or create it from old snmp_auth and community settings)
 config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
 

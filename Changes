@@ -1,3 +1,88 @@
+2.038007
+
+  [BUG FIXES]
+
+  * Fix for VLAN setting missing a variable declaration
+
+2.038006
+
+  [ENHANCEMENTS]
+
+  * Ignore jobs started over 50 minutes ago (setting: jobs_stale_after)
+
+  [BUG FIXES]
+
+  * Update tests to work again in Travis-CI
+
+2.038005 - 2018-01-05
+
+  [BUG FIXES]
+
+  * Fix for PaloAlto sshcolletor module (P. Soppe)
+
+2.038004 - 2018-01-05
+
+  [ENHANCEMENTS]
+
+  * Disable preventLabelOverlappingOnForceEnd on network neighbor map
+  * Debug log the neighbor ID to help with problem diagnosis
+
+  [BUG FIXES]
+
+  * Fix favicon image path to work on non-apex installations
+  * Install correct template path when site_local_files enabled
+
+2.038003 - 2018-01-04
+
+  [ENHANCEMENTS]
+
+  * Use new release filename for netdisco-mibs
+  * Add favicon.ico from https://www.flickr.com/photos/7827976@N05/464520552
+
+  [BUG FIXES]
+
+  * Change name of d3 javascript file to force browser reload
+  * Make expire_nodes and expire_nodes_archive behave correctly
+  * #361 missing dependency in manual topology setup (dgeo)
+
+2.038001 - 2018-01-02
+
+  [ENHANCEMENTS]
+
+  * Better tooltip for netmap items
+  * Change to color10 set in netmap
+
+  [BUG FIXES]
+
+  * Allow statistics to be run on an empty database
+
+2.038000 - 2017-12-31
+
+  [NEW FEATURES]
+
+  * New implementation of the Network Map (Device Neighbors tab)
+
+  [ENHANCEMENTS]
+
+  * Icon in device ports results to quickly set Manual Toplogy on any port
+  * New host_group_displaynames setting to give friendly aliases to host groups
+
+  [BUG FIXES]
+
+  * tooltips for icons in device ports view now work when paging in results
+
+2.037005 - 2017-12-22
+
+  [BUG FIXES]
+
+  * Alter order of snmp_auth and device_auth config build
+
+2.037004 - 2017-12-21
+
+  [BUG FIXES]
+
+  * Allow default schedule items to be skipped by setting to 'null'
+
 2.037003 - 2017-12-18
 
   [BUG FIXES]

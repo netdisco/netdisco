@@ -2,10 +2,12 @@
 
 use strict; use warnings FATAL => 'all';
 use Test::More 0.88;
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 
 use lib 'xt/lib';
 
 use App::Netdisco;
+use App::Netdisco::DB; # fake device row
 use App::Netdisco::Backend::Job;
 
 use Try::Tiny;
@@ -100,7 +102,7 @@ sub do_job {
 
   my $job = App::Netdisco::Backend::Job->new({
     job => 0,
-    device => '192.0.2.1',
+    device => App::Netdisco::DB->resultset('Device')->new_result({ip => '192.0.2.1'}),
     action => lc($pkg),
   });
 

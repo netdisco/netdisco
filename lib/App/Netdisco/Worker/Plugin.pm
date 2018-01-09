@@ -33,7 +33,7 @@ register 'register_worker' => sub {
     my $job = shift or die 'missing job param';
     # use DDP; p $workerconf;
 
-    $ENV{ND2_LOG_PLUGINS} && debug sprintf '-> run worker %s/%s/%s',
+    debug sprintf '-> run worker %s/%s/%s',
       @$workerconf{qw/phase namespace priority/};
 
     # update job's record of namespace and priority

@@ -23,6 +23,13 @@
     $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});
     $("[rel=popover]").popover({live: true});
+
+    // positions save not available in netmap neighbors view
+    if ($("input[name='mapshow']:checked").val() == 'neighbors') {
+      $('#nd_netmap-save').prop('disabled', true).removeClass('btn-info');
+    } else {
+      $('#nd_netmap-save').prop('disabled', false).addClass('btn-info');
+    }
   }
 
   // on load, establish global delegations for now and future
@@ -93,6 +100,66 @@
         else {
           $(this).html('<div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs');
         }
+    });
+
+    // refresh tooltips when the datatables table is updated
+    $('#ports_pane').on('draw.dt', function() {
+        $("[rel=tooltip]").tooltip({live: true});
+    });
+
+    // netmap show controls
+    $('#nd_showips').change(function() {
+      if ($(this).prop('checked')) {
+        graph.inspect().main.nodes.each(function(n) {
+          if (n['ORIG_LABEL'] != n['ID']) {
+            n['LABEL'] = n['ORIG_LABEL'] + ' ' + n['ID'];
+          }
+        });
+        graph.wrapLabels(true).start();
+      } else {
+        graph.inspect().main.nodes.each(function(n) {
+          n['LABEL'] = n['ORIG_LABEL'];
+        });
+        graph.wrapLabels(false).start();
+      }
+    });
+    $('#nd_showspeed').change(function() {
+      $('.nd_netmap-linklabel').css('fill',
+        ($(this).prop('checked') ? 'black' : 'none')
+      );
+    });
+
+    // netmap pin/release controls
+    $('#nd_netmap-releaseall').on('click', function(event) {
+      event.preventDefault();
+      graph.releaseFixedNodes().resume();
+    });
+    $('#nd_netmap-releaseonly').on('click', function(event) {
+      event.preventDefault();
+      graph.inspect().main.nodes
+        .filter(function(n) { return n.selected })
+        .each(function(n) { n.fixed = false });
+      graph.resume();
+    });
+    $('#nd_netmap-pinonly').on('click', function(event) {
+      event.preventDefault();
+      graph.inspect().main.nodes
+        .filter(function(n) { return n.selected })
+        .each(function(n) { n.fixed = true });
+    });
+    $('#nd_netmap-save').on('click', function(event) {
+      event.preventDefault();
+      // if user enters vlan but does not submit this will save wrong data
+      $.post(
+        '[% uri_for('/ajax/data/device/netmappositions') %]'
+        ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
+          + '&positions=' + JSON.stringify(graph.positions())
+      );
+    });
+    $('#nd_netmap-zoomtodevice').on('click', function(event) {
+      event.preventDefault();
+      var node = graph.nodeDataById( graph['nd2']['centernode'] );
+      graph.zoomSmooth(node.x, node.y, node.radius * 125);
     });
 
     // activity for admin tasks in device details

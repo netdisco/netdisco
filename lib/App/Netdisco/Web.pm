@@ -6,6 +6,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use URI ();
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
@@ -54,9 +55,11 @@ push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
 
 # any template paths in deployment.yml (should override plugins)
 if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
-    push @{setting('template_paths')},
-         dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'nd-site-local', 'share')->stringify
-      if (setting('site_local_files'));
+    if (setting('site_local_files')) {
+      push @{setting('template_paths')},
+         dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'nd-site-local', 'share')->stringify,
+         dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'nd-site-local', 'share', 'views')->stringify;
+    }
     unshift @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
       @{setting('template_paths')};
 }
@@ -128,6 +131,12 @@ hook 'before_template' => sub {
 
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
+
+    # current query string to all resubmit from within ajax template
+    my $queryuri = URI->new();
+    $queryuri->query_param($_ => param($_))
+      for grep {$_ ne 'return_url'} keys %{params()};
+    $tokens->{my_query} = $queryuri->query();
 
     # access to logged in user's roles
     $tokens->{user_has_role}  = sub { user_has_role(@_) };

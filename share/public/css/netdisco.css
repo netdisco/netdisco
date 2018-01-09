@@ -425,6 +425,14 @@ td > form.nd_inline-form {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
+/* horizontal rule */
+.nd_sidebar-hr {
+  color: black;
+  background-color: black;
+  height: 2px;
+  margin: 12px 0px 12px 0px;
+}
+
 /* text in the sidebar */
 .nd_sidebar-title {
   margin-left: 10px;
@@ -432,9 +440,47 @@ td > form.nd_inline-form {
   margin-bottom: 12px;
 }
 
-/* Flabels in netmap sidebar (not in a collapser) */
+/* labels in netmap sidebar (not in a collapser) */
 .nd_sidebar-label {
   margin-left: 7px;
+}
+
+/* to allow display of tooltip on a disabled control
+   http://jsfiddle.net/cSSUA/209/ */
+.tooltip-wrapper {
+  display: inline-block;
+}
+.tooltip-wrapper .input[disabled] {
+  pointer-events: none;
+}
+
+/* vlan entry box for netmap */
+#nd_vlan-label {
+  margin-left: 5px;
+  margin-bottom: -7px;
+}
+#nd_vlan-label-text {
+  vertical-align: text-bottom;
+}
+#nd_vlan-entry {
+  width: 56px;
+}
+
+/* netmap maximise icon */
+#nd2_netmap-fullscreen {
+  fill: black;
+  font-size: 15px;
+}
+
+/* netmap link labels */
+.nd_netmap-linklabel {
+  pointer-events: none;
+  font-weight: bold;
+}
+
+/* netmap tooltip box */
+#netmap_pane_tooltip {
+  width: unset;
 }
 
 /* fixup for prepended checkbox in sidebar */
@@ -614,8 +660,12 @@ form .clearfix.success input {
 }
 
 .nd_netmap-sidebar {
-  margin-top: 7px;
-  margin-left: -9px;
+  margin-top: 0px;
+  margin-left: -8px;
+}
+
+.nd_netmap-sidebar > .input-prepend {
+  margin-left: 5px;
 }
 
 .nd_netmap-sidebar-help {
@@ -629,6 +679,7 @@ form .clearfix.success input {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* D3 SVG */
 
+/*
 .node circle {
   fill: #fff;
   stroke: steelblue;
@@ -651,6 +702,7 @@ form .clearfix.success input {
   stroke-width: 2px;
   display: none;
 }
+*/
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* dataTables */

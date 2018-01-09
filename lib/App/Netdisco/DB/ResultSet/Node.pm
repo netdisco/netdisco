@@ -109,37 +109,40 @@ sub delete {
       return 0E0;
   }
   else {
-      # for node_ip and node_nbt *only* delete if there are no longer
-      # any active nodes referencing the IP or NBT (hence 2nd IN clause).
-      foreach my $set (qw/
-        NodeIp
-        NodeNbt
-      /) {
-        $schema->resultset($set)->search({
-          'me.mac' => { '-in' => $schema->resultset($set)->search({
-              '-and' => [
-                -bool => 'nodes.active',
-                'me.mac' => { '-in' => $nodes->as_query }
-              ]
-            },
-            {
-              columns => 'mac',
-              join => 'nodes',
-              group_by => 'me.mac',
-              having => \[ 'count(nodes.mac) = 0' ],
-            })->as_query,
-          },
-        })->delete;
-      }
-
       foreach my $set (qw/
         NodeMonitor
         NodeWireless
+        NodeNbt
       /) {
           $schema->resultset($set)->search(
             { mac => { '-in' => $nodes->as_query }},
           )->delete;
       }
+
+      # for node_ip only delete if there are no longer
+      # any nodes referencing the IP.
+
+      my @mac_restrict_aq     = @{${ $nodes->as_query }};
+      my @macport_restrict_aq = @{${ $nodes->search(undef, { '+columns' => 'port' })->as_query }};
+      my $mac_restrict     = shift @mac_restrict_aq;
+      my $macport_restrict = shift @macport_restrict_aq;
+
+      my $deleted = $schema->storage->dbh_do(sub {
+        my ($storage, $dbh, @extra) = @_;
+        local $dbh->{TraceLevel} =
+          ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
+        $dbh->do(<<SQL
+DELETE FROM node_ip WHERE mac IN (
+  SELECT mac FROM node_ip
+    LEFT OUTER JOIN (
+      SELECT mac, port FROM node
+      EXCEPT ($macport_restrict)) exceptions
+    USING (mac)
+   WHERE node_ip.mac IN ($mac_restrict)
+     AND exceptions.port IS NULL)
+SQL
+        , undef, (map {$_->[1]} (@macport_restrict_aq, @mac_restrict_aq)));
+      });
 
       # now let DBIC do its thing
       return $self->next::method();

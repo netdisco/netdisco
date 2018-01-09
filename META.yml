@@ -4,12 +4,13 @@ author:
   - 'Oliver Gorwits <oliver@cpan.org>'
 build_requires:
   Env::Path: '0'
+  Test::File::ShareDir::Dist: '0'
   Test::More: '0.88'
 configure_requires:
   DBIx::Class: '0.082810'
   Module::Build: '0.42'
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4224, CPAN::Meta::Converter version 2.150010'
+generated_by: 'Module::Build version 0.4222, CPAN::Meta::Converter version 2.150005'
 license: bsd
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -18,7 +19,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.037003'
+    version: '2.038007'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -33,7 +34,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '45'
+    version: '46'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -68,6 +69,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
   App::Netdisco::DB::Result::Log:
     file: lib/App/Netdisco/DB/Result/Log.pm
+  App::Netdisco::DB::Result::NetmapPositions:
+    file: lib/App/Netdisco/DB/Result/NetmapPositions.pm
   App::Netdisco::DB::Result::Node:
     file: lib/App/Netdisco/DB/Result/Node.pm
   App::Netdisco::DB::Result::NodeIp:
@@ -108,6 +111,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
   App::Netdisco::DB::Result::Virtual::DevicePoeStatus:
     file: lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
+  App::Netdisco::DB::Result::Virtual::DevicePortSpeed:
+    file: lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
   App::Netdisco::DB::Result::Virtual::DuplexMismatch:
     file: lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
   App::Netdisco::DB::Result::Virtual::GenericReport:
@@ -394,6 +399,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
   App::Netdisco::Worker::Plugin::DiscoverAll:
     file: lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
+  App::Netdisco::Worker::Plugin::DumpConfig:
+    file: lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
   App::Netdisco::Worker::Plugin::Expire:
     file: lib/App/Netdisco/Worker/Plugin/Expire.pm
   App::Netdisco::Worker::Plugin::ExpireNodes:
@@ -518,7 +525,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/BSD-3-Clause
+  license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.037003'
+version: '2.038007'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
