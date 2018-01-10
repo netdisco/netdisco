@@ -26,7 +26,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   return unless defined vars->{'iid'};
   _action($job, 'pvid');
   return _action($job, 'vlan');
-}
+});
 
 sub _action {
   my ($job, $slot) = @_;
@@ -57,6 +57,6 @@ sub _action {
   vars->{'port'}->update({$slot => $data});
 
   return Status->done("Updated [$pn] $slot on [$device] to [$data]");
-});
+}
 
 true;

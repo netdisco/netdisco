@@ -1,3 +1,9 @@
+2.038009
+
+  [BUG FIXES]
+
+  * Fix for VLAN setting missing a variable declaration
+
 2.038008
 
   [BUG FIXES]
