@@ -26,3 +26,6 @@ addons:
 before_install:
   - cpanm Test::More
   - eval $(curl https://travis-perl.github.io/init) --auto
+branches:
+  only:
+    - /^2\.\d{6}$/
