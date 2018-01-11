@@ -73,4 +73,4 @@ logs/.*
 .github
 .travis
 README.md
-Dockerfile
+docker
