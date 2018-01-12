@@ -1,5 +1,9 @@
 # vim: ft=Dockerfile
+ARG TAG=master
 FROM debian:stable-slim
+
+LABEL org.netdisco.maintainer="The Netdisco Project"
+LABEL org.netdisco.version=${TAG}
 
 RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
     apt-get -yq update && \

@@ -1,5 +1,9 @@
 # vim: ft=Dockerfile
+ARG TAG=master
 FROM docker.io/postgres:9.6.6-alpine
+
+LABEL org.netdisco.maintainer="The Netdisco Project"
+LABEL org.netdisco.version=${TAG}
 
 RUN apk add --no-cache \
   curl \
