@@ -11,6 +11,6 @@ MANIFEST.*
 *.komodo*
 Makefile*
 Build
-!docker/hooks/*
 _build
 blib
+docker/netdisco

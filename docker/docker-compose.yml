@@ -4,8 +4,6 @@ services:
     image: netdisco-postgresql:latest
     build:
       context: netdisco-postgresql
-      args:
-        - TAG
     volumes:
       - "./netdisco/pgdata:/var/lib/postgresql/data"
 #  netdisco-base:
