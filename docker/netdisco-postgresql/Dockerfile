@@ -6,6 +6,11 @@ RUN apk add --no-cache \
   jq \
   tar
 
+COPY netdisco-db-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/netdisco-db-entrypoint.sh
+
+RUN PGDATA=/var/lib/postgresql/netdisco-pgdata /usr/local/bin/docker-entrypoint.sh postgres --version
+
 WORKDIR /var/lib/postgresql/netdisco-sql
 RUN curl -s https://api.github.com/repos/netdisco/netdisco/tags | \
   jq '.[]|.name|select(test("^\\d+\\.\\d+$"))|"https://api.github.com/repos/netdisco/netdisco/tarball/"+.' | \
@@ -14,12 +19,8 @@ RUN curl -s https://api.github.com/repos/netdisco/netdisco/tags | \
   curl -sLO "https://raw.githubusercontent.com/netdisco/upstream-sources/master/ieee/oui.sql" && \
   curl -sLO "https://raw.githubusercontent.com/netdisco/netdisco/master/lib/App/Netdisco/DB.pm"
 
-RUN PGDATA=/var/lib/postgresql/netdisco-pgdata /usr/local/bin/docker-entrypoint.sh postgres --version
-
-COPY netdisco-db-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/netdisco-db-entrypoint.sh
+VOLUME ["/var/lib/postgresql/data"]
 
 WORKDIR /
-VOLUME ["/var/lib/postgresql/data"]
 ENTRYPOINT ["/usr/local/bin/netdisco-db-entrypoint.sh"]
 CMD ["postgres"]
