@@ -1,0 +1,24 @@
+version: '3.4'
+services:
+  netdisco-postgresql:
+    image: netdisco-postgresql:latest
+    build:
+      context: netdisco-postgresql
+      args:
+        - TAG
+    volumes:
+      - "./netdisco/pgdata:/var/lib/postgresql/data"
+#  netdisco-base:
+#    image: netdisco-base:latest
+#    build:
+#      context: netdisco-base
+#  netdisco-backend:
+#    image: netdisco-backend:latest
+#    build:
+#      context: netdisco-backend
+#    volumes:
+#      - "./netdisco/config:/home/netdisco/environments"
+#    depends_on:
+#      - netdisco-base
+#    links:
+#      - netdisco-postgresql:db
