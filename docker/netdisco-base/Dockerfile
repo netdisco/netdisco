@@ -5,10 +5,8 @@ RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
     apt-get -yq update && \
     apt-get install -yq --no-install-recommends \
       build-essential \
-      ca-certificates \
       cpanminus \
       curl \
-      daemontools-run \
       git \
       jq \
       libdbd-pg-perl \
@@ -23,7 +21,9 @@ RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
 ENV NETDISCO_HOME "/home/netdisco"
 RUN groupadd -r netdisco -g 901 && \
     useradd -u 901 -r -p x -g netdisco -m -d $NETDISCO_HOME -s /bin/bash -c "netdisco user" netdisco
+
 USER netdisco:netdisco
+WORKDIR $NETDISCO_HOME
 
 RUN curl -s https://api.github.com/repos/netdisco/netdisco/tags | \
   jq '.[]|.name|select(test("^\\d+\\.\\d+$"))|"https://github.com/netdisco/netdisco.git@"+.' | \
@@ -35,5 +35,4 @@ RUN mkdir $NETDISCO_HOME/bin && \
 ENV PATH $NETDISCO_HOME/bin:$PATH
 ENV SHELL "/bin/bash"
 
-WORKDIR $NETDISCO_HOME
-CMD bash
+CMD ["bash"]

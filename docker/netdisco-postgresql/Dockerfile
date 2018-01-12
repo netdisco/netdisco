@@ -20,6 +20,6 @@ COPY netdisco-db-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/netdisco-db-entrypoint.sh
 
 WORKDIR /
-VOLUME /var/lib/postgresql/data
+VOLUME ["/var/lib/postgresql/data"]
 ENTRYPOINT ["/usr/local/bin/netdisco-db-entrypoint.sh"]
 CMD ["postgres"]
