@@ -30,8 +30,9 @@ RUN curl -sL https://api.github.com/repos/netdisco/netdisco/tags | \
 
 RUN bash -c 'mkdir ${HOME}/{bin,environments,nd-site-local}'
 RUN bash -c 'ln -sf ${HOME}/perl5/bin/{localenv,netdisco-*} ${HOME}/bin'
-COPY --chown=netdisco:netdisco deployment.yml "${HOME}/environments/"
-COPY --chown=netdisco:netdisco wait_to_start.sh "${HOME}/bin/"
+
+COPY deployment.yml "${HOME}/environments/"
+COPY wait_to_start.sh "${HOME}/bin/"
 
 FROM debian:stable-slim
 
@@ -54,11 +55,9 @@ RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=netdisco-build-image \
-  /etc/passwd /etc/group /etc/shadow /etc/
-
-COPY --from=netdisco-build-image --chown=netdisco:netdisco \
-  /home/netdisco /home/netdisco/
+COPY --from=netdisco-build-image /etc/passwd /etc/group /etc/shadow /etc/
+COPY --from=netdisco-build-image /home/netdisco /home/netdisco/
+RUN chown -R netdisco:netdisco /home/netdisco
 
 VOLUME ["/home/netdisco/environments", "/home/netdisco/nd-site-local"]
 
