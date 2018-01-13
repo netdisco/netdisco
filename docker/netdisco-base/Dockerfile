@@ -9,6 +9,7 @@ RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
     apt-get -yq update && \
     apt-get install -yq --no-install-recommends \
       build-essential \
+      ca-certificates \
       cpanminus \
       curl \
       git \
