@@ -13,5 +13,4 @@ Makefile*
 Build
 _build
 blib
-docker/netdisco
-!docker/netdisco-*/hooks/*
+!docker/hooks/*
