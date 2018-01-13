@@ -16,7 +16,7 @@ RUN chmod +x /usr/local/bin/netdisco-db-entrypoint.sh
 RUN PGDATA=/var/lib/postgresql/netdisco-pgdata /usr/local/bin/docker-entrypoint.sh postgres --version
 
 WORKDIR /var/lib/postgresql/netdisco-sql
-RUN curl -s https://api.github.com/repos/netdisco/netdisco/tags | \
+RUN curl -sL https://api.github.com/repos/netdisco/netdisco/tags | \
   jq '.[]|.name|select(test("^\\d+\\.\\d+$"))|"https://api.github.com/repos/netdisco/netdisco/tarball/"+.' | \
   sort -rg | head -n1 | xargs -n1 curl -sL | \
   tar --wildcards --strip-components=3 -zx '*App-Netdisco-DB-*' && \

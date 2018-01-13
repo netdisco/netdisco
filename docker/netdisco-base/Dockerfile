@@ -28,19 +28,19 @@ RUN groupadd -r netdisco -g 901 && \
     useradd -u 901 -r -p x -g netdisco -m -d $NETDISCO_HOME -s /bin/bash -c "netdisco user" netdisco
 
 USER netdisco:netdisco
-WORKDIR $NETDISCO_HOME
-
-RUN curl -s https://api.github.com/repos/netdisco/netdisco/tags | \
+RUN curl -sL https://api.github.com/repos/netdisco/netdisco/tags | \
   jq '.[]|.name|select(test("^\\d+\\.\\d+$"))|"https://github.com/netdisco/netdisco.git@"+.' | \
   sort -rg | head -n1 | \
   PERL5LIB='.' xargs -n1 cpanm --quiet --notest --local-lib $NETDISCO_HOME/perl5
 
-RUN mkdir $NETDISCO_HOME/bin && \
-  bash -c 'ln -sf $NETDISCO_HOME/perl5/bin/{localenv,netdisco-*} $NETDISCO_HOME/bin/'
+WORKDIR $NETDISCO_HOME/bin
+RUN bash -c 'ln -sf $NETDISCO_HOME/perl5/bin/{localenv,netdisco-*} .'
 ENV PATH $NETDISCO_HOME/bin:$PATH
 ENV SHELL "/bin/bash"
 
+WORKDIR $NETDISCO_HOME/environments
+COPY deployment.yml .
+
 VOLUME ["/home/netdisco/environments", "/home/netdisco/nd-site-local"]
-USER netdisco:netdisco
 WORKDIR $NETDISCO_HOME
 CMD ["bash"]
