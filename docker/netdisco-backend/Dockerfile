@@ -5,9 +5,6 @@ FROM docker.io/netdisco/netdisco:${TAG}-base
 LABEL org.netdisco.maintainer="The Netdisco Project"
 LABEL org.netdisco.version=${TAG}
 
-VOLUME ["/home/netdisco/environments", "/home/netdisco/nd-site-local"]
-
-USER netdisco:netdisco
 WORKDIR $NETDISCO_HOME/netdisco-mibs
 RUN curl -s https://api.github.com/repos/netdisco/netdisco-mibs/tags | \
   jq '.[]|.tarball_url|select(test("tarball/\\d+\\.\\d+$"))' | \

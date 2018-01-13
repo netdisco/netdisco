@@ -39,4 +39,7 @@ RUN mkdir $NETDISCO_HOME/bin && \
 ENV PATH $NETDISCO_HOME/bin:$PATH
 ENV SHELL "/bin/bash"
 
+VOLUME ["/home/netdisco/environments", "/home/netdisco/nd-site-local"]
+USER netdisco:netdisco
+WORKDIR $NETDISCO_HOME
 CMD ["bash"]
