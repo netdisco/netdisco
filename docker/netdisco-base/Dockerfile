@@ -1,9 +1,6 @@
 # vim: ft=Dockerfile
 ARG TAG=master
-FROM debian:stable-slim
-
-LABEL org.netdisco.maintainer="The Netdisco Project"
-LABEL org.netdisco.version=${TAG}
+FROM debian:stable-slim as netdisco-build-image
 
 RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
     apt-get -yq update && \
@@ -19,28 +16,55 @@ RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
       libnet-ldap-perl \
       libsnmp-perl \
       libssl-dev \
-      postgresql-client && \
-    apt-get clean &&  \
-    rm -rf /var/lib/apt/lists/*
+      postgresql-client
 
-ENV NETDISCO_HOME "/home/netdisco"
+ENV HOME "/home/netdisco"
 RUN groupadd -r netdisco -g 901 && \
-    useradd -u 901 -r -p x -g netdisco -m -d $NETDISCO_HOME -s /bin/bash -c "netdisco user" netdisco
+    useradd -u 901 -r -p x -g netdisco -m -d $HOME -s /bin/bash -c "netdisco user" netdisco
 
 USER netdisco:netdisco
 RUN curl -sL https://api.github.com/repos/netdisco/netdisco/tags | \
   jq '.[]|.name|select(test("^\\d+\\.\\d+$"))|"https://github.com/netdisco/netdisco.git@"+.' | \
   sort -rg | head -n1 | \
-  PERL5LIB='.' xargs -n1 cpanm --quiet --notest --local-lib $NETDISCO_HOME/perl5
+  PERL5LIB='.' xargs -n1 cpanm --quiet --notest --local-lib "${HOME}/perl5"
 
-WORKDIR $NETDISCO_HOME/bin
-RUN bash -c 'ln -sf $NETDISCO_HOME/perl5/bin/{localenv,netdisco-*} .'
-ENV PATH $NETDISCO_HOME/bin:$PATH
-ENV SHELL "/bin/bash"
+RUN bash -c 'mkdir ${HOME}/{bin,environments,nd-site-local}'
+RUN bash -c 'ln -sf ${HOME}/perl5/bin/{localenv,netdisco-*} ${HOME}/bin'
+COPY --chown=netdisco:netdisco deployment.yml "${HOME}/environments/"
+COPY --chown=netdisco:netdisco wait_to_start.sh "${HOME}/bin/"
 
-WORKDIR $NETDISCO_HOME/environments
-COPY deployment.yml .
+FROM debian:stable-slim
+
+LABEL org.netdisco.maintainer="The Netdisco Project"
+LABEL org.netdisco.version=${TAG}
+
+RUN bash -c 'mkdir -p /usr/share/man/man{1..8}' && \
+    apt-get -yq update && \
+    apt-get install -yq --no-install-recommends \
+      ca-certificates \
+      cpanminus \
+      curl \
+      jq \
+      libdbd-pg-perl \
+      libio-socket-ssl-perl \
+      libnet-ldap-perl \
+      libsnmp-perl \
+      libssl-dev \
+      postgresql-client && \
+    apt-get clean &&  \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=netdisco-build-image \
+  /etc/passwd /etc/group /etc/shadow /etc/
+
+COPY --from=netdisco-build-image --chown=netdisco:netdisco \
+  /home/netdisco /home/netdisco/
 
 VOLUME ["/home/netdisco/environments", "/home/netdisco/nd-site-local"]
-WORKDIR $NETDISCO_HOME
+
+USER netdisco:netdisco
+WORKDIR /home/netdisco
+ENV PATH "/home/netdisco/bin:$PATH"
+ENV SHELL /bin/bash
+
 CMD ["bash"]
