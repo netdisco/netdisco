@@ -7,14 +7,16 @@ jobs:
       - run:
           name: Call GitHub Releases API
           command: |
-            for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
-              curl -sL -X POST -H "Content-Type: application/json" \
-                -u "$ACCESS_TOKEN" \
-                --data "{\"tag_name\": \"$CIRCLE_TAG\", \
-                         \"target_commitish\": \"master\", \
-                         \"name\": \"Netdisco $CIRCLE_TAG\"}" \
-                $url
-            done
+            if [ ! -z "$CIRCLE_TAG" ]; then
+              for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
+                curl -sL -X POST -H "Content-Type: application/json" \
+                  -u "$ACCESS_TOKEN" \
+                  --data "{\"tag_name\": \"$CIRCLE_TAG\", \
+                           \"target_commitish\": \"master\", \
+                           \"name\": \"Netdisco $CIRCLE_TAG\"}" \
+                  $url
+              done
+            fi
 workflows:
   version: 2
   trigger-netdisco-docker-images-build:
@@ -23,5 +25,5 @@ workflows:
           filters:
             tags:
               only: /^2\.\d{6}/
-            branches:
-              ignore: /.*/
+#            branches:
+#              ignore: /.*/
