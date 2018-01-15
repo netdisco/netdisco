@@ -6,7 +6,7 @@ jobs:
     steps:
       - run:
           name: Call GitHub Releases API
-          command:
+          command: |
             for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
               curl -sL -X POST -H "Content-Type: application/json" \
                 -u "$ACCESS_TOKEN" \
