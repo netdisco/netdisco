@@ -9,6 +9,8 @@ use App::Netdisco::Util::Port ':all';
 
 register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
+  my ($device, $pn) = map {$job->$_} qw/device port/;
+
   return Status->error('Missing device (-d).') unless defined $job->device;
   return Status->error('Missing port (-p).') unless defined $job->port;
   return Status->error('Missing status (-e).') unless defined $job->subaction;

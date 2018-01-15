@@ -1,3 +1,9 @@
+2.038028
+
+  [BUG FIXES]
+
+  * Fix for PoE setting missing a variable declaration (R. Lewis)
+
 2.038009
 
   [BUG FIXES]
