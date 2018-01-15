@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Call GitHub Releases API
           command: |
-            if [ ! -z "$TAG" ]; then
+            . $BASH_ENV && if [ ! -z "$TAG" ]; then
               for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
                 curl -sL -X POST -H "Content-Type: application/json" \
                   -u "$ACCESS_TOKEN" \
