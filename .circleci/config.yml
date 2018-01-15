@@ -5,8 +5,8 @@ jobs:
       - image: ruby:2.4.1
     steps:
       - checkout
-      - run: cd /root/project && echo "export HEAD_TAG=$(git tag -l | grep -E '^2\.\d{6}' | sort -gr | head -n1)" >> $BASH_ENV
-      - run: . $BASH_ENV && cd /root/project && echo "export TAG=$(echo $HEAD_TAG | sed -E 's/\.\d{3}$//')" >> $BASH_ENV
+      - run: cd /root/project && echo "export HEAD_TAG=$(git tag -l | grep -E '^2\.[0-9]{6}' | sort -gr | head -n1)" >> $BASH_ENV
+      - run: . $BASH_ENV && cd /root/project && echo "export TAG=$(echo $HEAD_TAG | sed -E 's/\.[0-9]{3}$//')" >> $BASH_ENV
       - run:
           name: Call GitHub Releases API
           command: |
