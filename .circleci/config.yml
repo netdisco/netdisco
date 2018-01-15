@@ -2,18 +2,21 @@ version: 2
 jobs:
   call-github-api:
     docker:
-      - image: debian:stretch
+      - image: docker:stable-git
     steps:
+      - checkout
+      - run: cd /root/project && echo "export HEAD_TAG=$(git tag -l | grep -E '^2\.\d{6}' | sort -gr | head -n1)" >> $BASH_ENV
+      - run: . $BASH_ENV && cd /root/project && echo "export TAG=$(echo $HEAD_TAG | sed -E 's/\.\d{3}$//')" >> $BASH_ENV
       - run:
           name: Call GitHub Releases API
           command: |
-            if [ ! -z "$CIRCLE_TAG" ]; then
+            if [ ! -z "$TAG" ]; then
               for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
                 curl -sL -X POST -H "Content-Type: application/json" \
                   -u "$ACCESS_TOKEN" \
-                  --data "{\"tag_name\": \"$CIRCLE_TAG\", \
+                  --data "{\"tag_name\": \"$TAG\", \
                            \"target_commitish\": \"master\", \
-                           \"name\": \"Netdisco $CIRCLE_TAG\"}" \
+                           \"name\": \"Netdisco $TAG\"}" \
                   $url
               done
             fi
@@ -22,8 +25,3 @@ workflows:
   trigger-netdisco-docker-images-build:
     jobs:
       - call-github-api:
-          filters:
-            tags:
-              only: /^2\.\d{6}/
-#            branches:
-#              ignore: /.*/
