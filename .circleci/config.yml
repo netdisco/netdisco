@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  call-github-api:
+  build:
     docker:
       - image: docker:stable-git
     steps:
@@ -20,8 +20,3 @@ jobs:
                   $url
               done
             fi
-workflows:
-  version: 2
-  trigger-netdisco-docker-images-build:
-    jobs:
-      - call-github-api:
