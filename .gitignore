@@ -13,4 +13,4 @@ Makefile*
 Build
 _build
 blib
-!docker/hooks/*
+!.docker/hooks/*
