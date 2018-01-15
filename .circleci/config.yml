@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: docker:stable-git
+      - image: ruby:2.4.1
     steps:
       - checkout
       - run: cd /root/project && echo "export HEAD_TAG=$(git tag -l | grep -E '^2\.\d{6}' | sort -gr | head -n1)" >> $BASH_ENV
