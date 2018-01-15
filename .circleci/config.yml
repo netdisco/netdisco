@@ -1,13 +1,27 @@
 version: 2
 jobs:
-  build:
+  call-github-api:
     docker:
       - image: debian:stretch
     steps:
-      - checkout
       - run:
-          name: Greeting
-          command: echo Hello, world.
-      - run:
-          name: Print the Current Time
-          command: date
+          name: Call GitHub Releases API
+          command:
+            for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
+              curl -sL -X POST -H "Content-Type: application/json" \
+                -u "$ACCESS_TOKEN" \
+                --data "{\"tag_name\": \"$CIRCLE_TAG\", \
+                         \"target_commitish\": \"master\", \
+                         \"name\": \"Netdisco $CIRCLE_TAG\"}" \
+                $url
+            done
+workflows:
+  version: 2
+  trigger-netdisco-docker-images-build:
+    jobs:
+      - call-github-api:
+          filters:
+            tags:
+              only: /^2\.\d{6}/
+            branches:
+              ignore: /.*/
