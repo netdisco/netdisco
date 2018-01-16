@@ -70,6 +70,8 @@ logs/.*
 ^MYMETA\.
 #!end included /home/oliver/perl-profiles/dancer/lib/perl5/ExtUtils/MANIFEST.SKIP
 
-.github
-.travis
+\.github
+\.travis\.yml
+\.docker
+\.circleci
 README.md

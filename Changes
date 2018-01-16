@@ -1,3 +1,21 @@
+2.038028
+
+  [BUG FIXES]
+
+  * Fix for PoE setting missing a variable declaration (R. Lewis)
+
+2.038009
+
+  [BUG FIXES]
+
+  * Fix for VLAN setting missing a variable declaration
+
+2.038008
+
+  [BUG FIXES]
+
+  * Add updated Test::More dependency to get tests passing again.
+
 2.038007
 
   [BUG FIXES]
