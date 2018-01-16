@@ -3,14 +3,17 @@ jobs:
   build:
     docker:
       - image: ruby:2.4.1
+    branches:
+      only:
+        - master
     steps:
       - checkout
-      - run: cd /root/project && echo "export HEAD_TAG=$(git tag -l | grep -E '^2\.[0-9]{6}' | sort -gr | head -n1)" >> $BASH_ENV
-      - run: . $BASH_ENV && cd /root/project && echo "export TAG=$(echo $HEAD_TAG | sed -E 's/\.[0-9]{3}$//')" >> $BASH_ENV
       - run:
           name: Call GitHub Releases API
           command: |
-            . $BASH_ENV && if [ ! -z "$TAG" ]; then
+            cd $CIRCLE_WORKING_DIRECTORY
+            TAG=$(git tag -l | grep -E '^2\.[0-9]{6}' | sort -gr | head -n1 | sed -E 's/\.[0-9]{3}$//')
+            if [ ! -z "$TAG" ]; then
               for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do
                 curl -sL -X POST -H "Content-Type: application/json" \
                   -u "$ACCESS_TOKEN" \
