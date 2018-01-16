@@ -1,7 +1,0 @@
-#!/bin/bash
-for url in $(echo $BUILD_TRIGGERS | sed "s/,/ /g"); do
-  curl -sL -X POST -H "Content-Type: application/json" \
-    -u "$ACCESS_TOKEN" \
-    --data "{\"tag_name\": \"$SOURCE_BRANCH\", \"target_commitish\": \"master\", \"name\": \"Netdisco $SOURCE_BRANCH\"}" \
-    $url
-done
