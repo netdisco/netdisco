@@ -72,6 +72,12 @@ if (ref {} eq ref setting('database')) {
 # always set this
 $ENV{DBIC_TRACE_PROFILE} = 'console';
 
+# override from env for docker
+config->{'community'} = ($ENV{NETDISCO_RO_COMMUNITY} ?
+  [split ',', $ENV{NETDISCO_RO_COMMUNITY}] : config->{'community'});
+config->{'community_rw'} = ($ENV{NETDISCO_RW_COMMUNITY} ?
+  [split ',', $ENV{NETDISCO_RW_COMMUNITY}] : config->{'community_rw'});
+
 # if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
     and (setting('device_auth') and 0 == scalar @{ setting('device_auth') })) {
