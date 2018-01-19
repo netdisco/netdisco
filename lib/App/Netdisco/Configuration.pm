@@ -18,6 +18,8 @@ BEGIN {
 
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
+    # override from env for docker
+
     setting('database')->{name} =
       ($ENV{NETDISCO_DB_NAME} || $ENV{NETDISCO_DBNAME} || setting('database')->{name});
 
@@ -110,6 +112,10 @@ setting('dns')->{'ETCHOSTS'} = {};
           @{ $AnyEvent::DNS::EtcHosts::HOSTS{ $_ } } ]
     for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 }
+
+# override from env for docker
+config->{'domain_suffix'} =
+  ($ENV{NETDISCO_DOMAIN} || config->{'domain_suffix'});
 
 # support unordered dictionary as if it were a single item list
 if (ref {} eq ref setting('device_identity')) {
