@@ -18,7 +18,24 @@ BEGIN {
 
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
-    my $name = ($ENV{NETDISCO_DBNAME} || setting('database')->{name} || 'netdisco');
+    setting('database')->{name} =
+      ($ENV{NETDISCO_DB_NAME} || $ENV{NETDISCO_DBNAME} || setting('database')->{name});
+
+    setting('database')->{host} =
+      ($ENV{NETDISCO_DB_HOST} || $ENV{DB_PORT_5432_TCP_ADDR} || setting('database')->{host});
+
+    setting('database')->{host} .=
+      (';'. ($ENV{NETDISCO_DB_PORT} || $ENV{DB_PORT_5432_TCP_PORT}))
+      if (setting('database')->{host} and
+          ($ENV{NETDISCO_DB_PORT} || $ENV{DB_PORT_5432_TCP_PORT}));
+
+    setting('database')->{user} =
+      ($ENV{NETDISCO_DB_USER} || $ENV{DB_ENV_POSTGRES_USER} || setting('database')->{user});
+
+    setting('database')->{pass} =
+      ($ENV{NETDISCO_DB_PASS} || $ENV{DB_ENV_POSTGRES_PASSWORD} || setting('database')->{pass});
+
+    my $name = setting('database')->{name};
     my $host = setting('database')->{host};
     my $user = setting('database')->{user};
     my $pass = setting('database')->{pass};
