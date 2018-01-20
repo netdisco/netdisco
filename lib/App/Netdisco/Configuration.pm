@@ -5,6 +5,7 @@ use App::Netdisco::Util::SNMP ();
 use Dancer ':script';
 
 use Path::Class 'dir';
+use Net::Domain 'hostdomain';
 
 BEGIN {
   if (setting('include_paths') and ref [] eq ref setting('include_paths')) {
@@ -120,8 +121,18 @@ setting('dns')->{'ETCHOSTS'} = {};
 }
 
 # override from env for docker
-config->{'domain_suffix'} =
-  ($ENV{NETDISCO_DOMAIN} || config->{'domain_suffix'});
+if ($ENV{NETDISCO_DOMAIN}) {
+  if ($ENV{NETDISCO_DOMAIN} eq 'discover') {
+    delete $ENV{NETDISCO_DOMAIN};
+    if (! setting('domain_suffix')) {
+      info 'resolving domain name...';
+      config->{'domain_suffix'} = hostdomain;
+    }
+  }
+  else {
+    config->{'domain_suffix'} = $ENV{NETDISCO_DOMAIN};
+  }
+}
 
 # support unordered dictionary as if it were a single item list
 if (ref {} eq ref setting('device_identity')) {
