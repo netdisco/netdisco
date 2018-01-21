@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: ruby:2.4.1
+      - image: circleci/ruby:2.4.1
     branches:
       only:
         - master
