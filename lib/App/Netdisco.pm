@@ -50,6 +50,10 @@ interactive requests such as changing port or device properties.
 
 See the demo at: L<https://netdisco2-demo.herokuapp.com/>
 
+=item *
+
+L<Docker images|https://store.docker.com/community/images/netdisco/netdisco> are also available
+
 =back
 
 We have several other pages with tips for
