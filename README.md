@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/netdisco/netdisco.svg?branch=master)](https://travis-ci.org/netdisco/netdisco)
 [![CPAN version](https://badge.fury.io/pl/App-Netdisco.svg)](https://metacpan.org/pod/App::Netdisco)
 [![Docker Backend Image](https://img.shields.io/microbadger/image-size/netdisco/netdisco/latest-backend.svg?label=backend)](https://store.docker.com/community/images/netdisco/netdisco)
-[![Docker Backend Image](https://img.shields.io/microbadger/image-size/netdisco/netdisco/latest-web.svg?label=frontend)](https://store.docker.com/community/images/netdisco/netdisco)
+[![Docker Frontend Image](https://img.shields.io/microbadger/image-size/netdisco/netdisco/latest-web.svg?label=frontend)](https://store.docker.com/community/images/netdisco/netdisco)
 
 **Netdisco** is a web-based network management tool suitable for small to very large networks. IP and MAC address data is collected into a PostgreSQL database using SNMP, CLI, or device APIs. Some of the things you can do with Netdisco:
 
