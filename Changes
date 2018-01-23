@@ -1,4 +1,4 @@
-2.038031
+2.038031 - 2018-01-23
 
   [ENHANCEMENTS]
 
@@ -9,31 +9,31 @@
 
   * #365 Fix Checkpoint GAIA sshcollector (jcz1)
 
-2.038028
+2.038028 - 2018-01-15
 
   [BUG FIXES]
 
   * Fix for PoE setting missing a variable declaration (R. Lewis)
 
-2.038009
+2.038009 - 2018-01-10
 
   [BUG FIXES]
 
   * Fix for VLAN setting missing a variable declaration
 
-2.038008
+2.038008 - 2018-01-09
 
   [BUG FIXES]
 
   * Add updated Test::More dependency to get tests passing again.
 
-2.038007
+2.038007 - 2018-01-09
 
   [BUG FIXES]
 
   * Fix for VLAN setting missing a variable declaration
 
-2.038006
+2.038006 - 2018-01-08
 
   [ENHANCEMENTS]
 
