@@ -1,3 +1,14 @@
+2.038031
+
+  [ENHANCEMENTS]
+
+  * Add Circle CI integration for building Docker Images
+  * Add support for many environment variables to override config (see wiki)
+
+  [BUG FIXES]
+
+  * #365 Fix Checkpoint GAIA sshcollector (jcz1)
+
 2.038028
 
   [BUG FIXES]
