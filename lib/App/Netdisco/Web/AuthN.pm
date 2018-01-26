@@ -58,6 +58,7 @@ post '/login' => sub {
 
     if ($success) {
         session logged_in_user => param('username');
+        session logged_in_fullname => schema('netdisco')->resultset('User')->find(param('username'))->get_column('fullname');
         session logged_in_user_realm => $realm;
 
         schema('netdisco')->resultset('UserLog')->create({
