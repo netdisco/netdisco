@@ -47,6 +47,16 @@ use File::Copy;
 use App::Netdisco::Environment;
 my $config = ($ENV{PLACK_ENV} || $ENV{DANCER_ENVIRONMENT}) .'.yml';
 
+# make sure there is a config file in place
+my $template_config = file($ENV{DANCER_CONFDIR}, 'environments', $config);
+my $app_config = file($ENV{DANCER_ENVDIR}, $config);
+if (! -e $app_config and -e $template_config) {
+  copy $template_config, $app_config;
+}
+if (! -e $app_config) {
+  die "error: cannot find Netdisco config at $template_config or $app_config\n";
+}
+
 my $netdisco = file($FindBin::RealBin, 'netdisco-web-fg');
 my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 

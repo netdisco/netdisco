@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: ruby:2.4.1
+      - image: circleci/ruby:2.4.1
     branches:
       only:
         - master
@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Call GitHub Releases API
           command: |
-            cd /root/project
+            cd /home/circleci/project
             TAG=$(git tag -l | grep -E '^2\.[0-9]{6}' | sort -gr | head -n1 | sed -E 's/\.[0-9]{3}$//')
             if [ ! -z "$TAG" ]; then
               for url in $(echo $RELEASE_INJECTION | sed "s/,/ /g"); do

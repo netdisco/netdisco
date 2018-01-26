@@ -8,7 +8,7 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
 
-  my $name = ($ENV{NETDISCO_DBNAME} || setting('database')->{name} || 'netdisco');
+  my $name = setting('database')->{name};
   my $host = setting('database')->{host};
   my $user = setting('database')->{user};
   my $pass = setting('database')->{pass};

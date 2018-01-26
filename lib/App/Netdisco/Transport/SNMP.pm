@@ -188,7 +188,7 @@ sub _try_connect {
   my ($device, $class, $comm, $mode, $snmp_args, $reclass) = @_;
   my %comm_args = _mk_info_commargs($comm);
   my $debug_comm = '<hidden>';
-  if ($ENV{SHOW_COMMUNITY}) {
+  if ($ENV{ND2_SHOW_COMMUNITY} || $ENV{SHOW_COMMUNITY}) {
     $debug_comm = ($comm->{community} ||
       (sprintf 'v3:%s:%s/%s', ($comm->{user},
                               ($comm->{auth}->{proto} || 'noAuth'),

@@ -5,6 +5,7 @@ use App::Netdisco::Util::SNMP ();
 use Dancer ':script';
 
 use Path::Class 'dir';
+use Net::Domain 'hostdomain';
 
 BEGIN {
   if (setting('include_paths') and ref [] eq ref setting('include_paths')) {
@@ -18,7 +19,24 @@ BEGIN {
 
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
-    my $name = ($ENV{NETDISCO_DBNAME} || setting('database')->{name} || 'netdisco');
+    # override from env for docker
+
+    setting('database')->{name} =
+      ($ENV{NETDISCO_DB_NAME} || $ENV{NETDISCO_DBNAME} || setting('database')->{name});
+
+    setting('database')->{host} =
+      ($ENV{NETDISCO_DB_HOST} || setting('database')->{host});
+
+    setting('database')->{host} .= (';'. $ENV{NETDISCO_DB_PORT})
+      if (setting('database')->{host} and $ENV{NETDISCO_DB_PORT});
+
+    setting('database')->{user} =
+      ($ENV{NETDISCO_DB_USER} || setting('database')->{user});
+
+    setting('database')->{pass} =
+      ($ENV{NETDISCO_DB_PASS} || setting('database')->{pass});
+
+    my $name = setting('database')->{name};
     my $host = setting('database')->{host};
     my $user = setting('database')->{user};
     my $pass = setting('database')->{pass};
@@ -52,6 +70,12 @@ if (ref {} eq ref setting('database')) {
 
 # always set this
 $ENV{DBIC_TRACE_PROFILE} = 'console';
+
+# override from env for docker
+config->{'community'} = ($ENV{NETDISCO_RO_COMMUNITY} ?
+  [split ',', $ENV{NETDISCO_RO_COMMUNITY}] : config->{'community'});
+config->{'community_rw'} = ($ENV{NETDISCO_RW_COMMUNITY} ?
+  [split ',', $ENV{NETDISCO_RW_COMMUNITY}] : config->{'community_rw'});
 
 # if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
@@ -92,6 +116,20 @@ setting('dns')->{'ETCHOSTS'} = {};
     [ map { [ $_ ? (format_address $_->[0]) : '' ] }
           @{ $AnyEvent::DNS::EtcHosts::HOSTS{ $_ } } ]
     for keys %AnyEvent::DNS::EtcHosts::HOSTS;
+}
+
+# override from env for docker
+if ($ENV{NETDISCO_DOMAIN}) {
+  if ($ENV{NETDISCO_DOMAIN} eq 'discover') {
+    delete $ENV{NETDISCO_DOMAIN};
+    if (! setting('domain_suffix')) {
+      info 'resolving domain name...';
+      config->{'domain_suffix'} = hostdomain;
+    }
+  }
+  else {
+    config->{'domain_suffix'} = $ENV{NETDISCO_DOMAIN};
+  }
 }
 
 # support unordered dictionary as if it were a single item list
