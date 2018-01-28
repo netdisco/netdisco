@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * #363 Show user fullname if available in navbar (earendilfr)
+  * #366 Retrieve VRF interface IPs (earendilfr)
 
 2.038031 - 2018-01-23
 

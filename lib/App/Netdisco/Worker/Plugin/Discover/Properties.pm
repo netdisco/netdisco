@@ -29,9 +29,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my @vrf_list = _get_vrf_list($device, $snmp);
 
   {
-    my $guard = guard { snmp_comm_reindex($snmp, $device, 0, 0) };
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
-      snmp_comm_reindex($snmp, $device, $vrf, 0);
+      snmp_comm_reindex($snmp, $device, $vrf);
       $ip_index = { %$ip_index , %{$snmp->ip_index} };
       $interfaces = { %$interfaces , %{$snmp->interfaces} };
       $ip_netmask = { %$ip_netmask , %{$snmp->ip_netmask} };
@@ -261,7 +261,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 sub _get_vrf_list {
     my ($device, $snmp) = @_;
 
-    return () if !$snmp->cisco_comm_indexing;
+    return () if ! $snmp->cisco_comm_indexing;
 
     my @ok_vrfs = ();
     my $vrf_name = $snmp->vrf_name || {};
@@ -271,12 +271,11 @@ sub _get_vrf_list {
             my $ctx_name = pack("C*",split(/\./,$idx));
             $ctx_name =~ s/.*[^[:print:]]+//;
             debug sprintf(' [%s] Discover VRF %s with SNMP Context %s', $device->ip, $vrf, $ctx_name); 
-            push (@ok_vrfs,$ctx_name);
+            push (@ok_vrfs, $ctx_name);
         }
     }
 
     return @ok_vrfs;
 }
-
 
 true;
