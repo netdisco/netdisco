@@ -8,7 +8,9 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Dancer::Plugin::DBIC 'schema';
+use Scope::Guard 'guard';
 use NetAddr::IP::Lite ':lower';
 use Encode;
 
@@ -22,6 +24,19 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $ip_index   = $snmp->ip_index;
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
+
+  # Get IP Table peer VRF if supported
+  my @vrf_list = _get_vrf_list($device, $snmp);
+
+  {
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0, 0) };
+    foreach my $vrf (@vrf_list) {
+      snmp_comm_reindex($snmp, $device, $vrf, 0);
+      $ip_index = { %$ip_index , %{$snmp->ip_index} };
+      $interfaces = { %$interfaces , %{$snmp->interfaces} };
+      $ip_netmask = { %$ip_netmask , %{$snmp->ip_netmask} };
+    }
+  }
 
   # build device aliases suitable for DBIC
   my @aliases;
@@ -241,5 +256,27 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $device->ip, scalar values %interfaces);
   });
 });
+
+# return a list of VRF which are OK to connect
+sub _get_vrf_list {
+    my ($device, $snmp) = @_;
+
+    return () if !$snmp->cisco_comm_indexing;
+
+    my @ok_vrfs = ();
+    my $vrf_name = $snmp->vrf_name || {};
+
+    while (my ($idx, $vrf) = each(%$vrf_name)) {
+        if ($vrf =~ /^\S+$/) {
+            my $ctx_name = pack("C*",split(/\./,$idx));
+            $ctx_name =~ s/.*[^[:print:]]+//;
+            debug sprintf(' [%s] Discover VRF %s with SNMP Context %s', $device->ip, $vrf, $ctx_name); 
+            push (@ok_vrfs,$ctx_name);
+        }
+    }
+
+    return @ok_vrfs;
+}
+
 
 true;
