@@ -57,7 +57,11 @@ post '/login' => sub {
     );
 
     if ($success) {
+        my $user = schema('netdisco')->resultset('User')
+          ->find( param('username') );
+
         session logged_in_user => param('username');
+        session logged_in_fullname => $user->fullname;
         session logged_in_user_realm => $realm;
 
         schema('netdisco')->resultset('UserLog')->create({
@@ -67,9 +71,7 @@ post '/login' => sub {
           details => param('return_url'),
         });
 
-        schema('netdisco')->resultset('User')
-          ->find( session('logged_in_user') )
-          ->update({ last_on => \'now()' });
+        $user->update({ last_on => \'now()' });
 
         return if request->is_ajax;
         redirect param('return_url');
