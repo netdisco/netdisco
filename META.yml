@@ -19,7 +19,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.038031'
+    version: '2.038032'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -499,7 +499,7 @@ requires:
   Plack::Middleware::ReverseProxy: '0.15'
   Pod::Usage: '0'
   Role::Tiny: '1.002005'
-  SNMP::Info: '3.39'
+  SNMP::Info: '3.40'
   SQL::Translator: '0.11018'
   Scope::Guard: '0'
   Sereal: '0'
@@ -525,7 +525,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/bsd-license.php
+  license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.038031'
+version: '2.038032'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
