@@ -3,6 +3,7 @@ addons:
   apt:
     packages:
       - libsnmp-dev
+      - phantomjs
 branches:
   only:
     - /^2\.\d{6}$/
@@ -12,4 +13,4 @@ script: |
   perl Build.PL && \
   ./Build && \
   PERL_MM_USE_DEFAULT=1 ./Build installdeps --cpan_client 'cpanm --quiet --notest' && \
-  ./Build test --test_files xt/
+  ND_PHANTOMJS=/usr/bin/phantomjs ./Build test --test_files xt/
