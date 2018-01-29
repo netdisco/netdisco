@@ -2,3 +2,4 @@ language: perl
 branches:
   only:
     - /^2\.\d{6}$/
+    - 'master'
