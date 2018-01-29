@@ -1,4 +1,8 @@
 language: perl
+addons:
+  apt:
+    packages:
+      - libsnmp-dev
 branches:
   only:
     - /^2\.\d{6}$/
