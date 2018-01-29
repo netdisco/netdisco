@@ -1,31 +1,4 @@
 language: perl
-perl:
-  - 'blead'
-  - '5.26'
-  - '5.24'
-  - '5.22'
-  - '5.20'
-  - '5.18'
-  - '5.16'
-  - '5.14'
-  - '5.12'
-  - '5.10'
-  - '5.8'
-matrix:
-  allow_failures:
-    - perl: 'blead'
-    - perl: '5.8'
-  fast_finish: true
-  include:
-    - perl: '5.26'
-      env: COVERAGE=1
-addons:
-  apt:
-    packages:
-      - libsnmp-dev
-before_install:
-  - cpanm Test::More
-  - eval $(curl https://travis-perl.github.io/init) --auto
 branches:
   only:
     - /^2\.\d{6}$/
