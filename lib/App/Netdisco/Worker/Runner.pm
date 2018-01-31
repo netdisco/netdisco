@@ -6,9 +6,11 @@ use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
+use Time::HiRes ();
 use Module::Load ();
 use Scope::Guard 'guard';
 use Storable 'dclone';
+use Sys::SigAction 'timeout_call';
 
 use Moo::Role;
 use namespace::clean;
@@ -55,12 +57,30 @@ sub run {
   my $configguard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
-  # run check phase and if there are workers then one MUST be successful
-  $self->run_workers('workers_check');
-  return if not $job->check_passed;
+  my $runner = sub {
+    my ($self, $job) = @_;
 
-  # run other phases
-  $self->run_workers("workers_${_}") for qw/early main user/;
+    # run check phase and if there are workers then one MUST be successful
+    $self->run_workers('workers_check');
+
+    # run other phases
+    if ($job->check_passed) {
+      $self->run_workers("workers_${_}") for qw/early main user/;
+    }
+  };
+
+  my $maxtime = ((defined setting($job->action .'_timeout'))
+    ? setting($job->action .'_timeout') : setting('timeout'));
+  if ($maxtime) {
+    debug sprintf '%s: running with timeout %ss', $job->action, $maxtime;
+    if (timeout_call($maxtime, $runner, ($self, $job))) {
+      debug sprintf '%s: timed out!', $job->action;
+      $job->add_status( Status->error("job timed out after $maxtime sec") );
+    }
+  }
+  else {
+    $runner->($self, $job);
+  }
 }
 
 sub run_workers {

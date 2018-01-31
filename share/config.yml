@@ -199,6 +199,7 @@ snmptimeout: 3000000
 snmpretries: 2
 devices_no: []
 devices_only: []
+timeout: 600
 discover_no: []
 discover_only: []
 discover_no_type:

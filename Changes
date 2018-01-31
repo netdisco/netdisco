@@ -1,5 +1,10 @@
 2.038033 - 2018-01-??
 
+  [NEW FEATURES]
+
+  * #228 timeout setting (default 10min) for backend jobs
+  * #341 timeout setting for all actions ("<actionname>_timeout")
+
   [BUG FIXES]
 
   * #367 buttons in the neighbourmap have an incorrect height
