@@ -50,7 +50,7 @@ use App::Netdisco::Util::Device 'get_device';
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug);
+my ($device, $port, $extra, $debug, $rollback);
 my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
 
 my $result = GetOptions(
@@ -58,6 +58,7 @@ my $result = GetOptions(
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
+  'rollback|R' => \$rollback,
   'infotrace|I+' => \$infotrace,
   'snmptrace|S+' => \$snmptrace,
   'sqltrace|Q+'  => \$sqltrace,
@@ -74,6 +75,7 @@ $CONFIG->{log} = ($debug ? 'debug' : 'info');
 $ENV{INFO_TRACE} ||= $infotrace;
 $ENV{SNMP_TRACE} ||= $snmptrace;
 $ENV{DBIC_TRACE} ||= $sqltrace;
+$ENV{ND2_DB_ROLLBACK} ||= $rollback;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
@@ -160,7 +162,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 SYNOPSIS
 
- ~/bin/netdisco-do <action> [-DISQ] [-d <device> [-p <port>] [-e <extra>]]
+ ~/bin/netdisco-do <action> [-DISQR] [-d <device> [-p <port>] [-e <extra>]]
 
 =head1 DESCRIPTION
 
@@ -346,7 +348,10 @@ Set the PoE on/off status on a device port. Requires the C<-d> parameter
 Will dump the loaded and parsed configuration for the application. Pass a
 specific configuration setting name to the C<-e> parameter to dump only that.
 
-=head1 DEBUG LEVELS
+=head1 DEBUG OPTIONS
+
+The flag "C<-R>" will cause any changes to the database to be rolled back
+at the end of the action.
 
 The flags "C<-DISQ>" can be specified, multiple times, and enable the
 following items in order:

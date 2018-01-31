@@ -4,6 +4,7 @@
 
   * #228 timeout setting (default 10min) for backend jobs
   * #341 timeout setting for all actions ("<actionname>_timeout")
+  * #368 ND2_DB_ROLLBACK environment variable to roll back job updates to DB
 
   [BUG FIXES]
 

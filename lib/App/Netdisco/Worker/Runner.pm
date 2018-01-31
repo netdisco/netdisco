@@ -1,6 +1,7 @@
 package App::Netdisco::Worker::Runner;
 
 use Dancer qw/:moose :syntax/;
+use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use aliased 'App::Netdisco::Worker::Status';
@@ -59,6 +60,9 @@ sub run {
 
   my $runner = sub {
     my ($self, $job) = @_;
+    # roll everything back if we're testing
+    my $txn_guard = $ENV{ND2_DB_ROLLBACK}
+      ? schema('netdisco')->storage->txn_scope_guard : undef;
 
     # run check phase and if there are workers then one MUST be successful
     $self->run_workers('workers_check');
