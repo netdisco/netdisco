@@ -241,7 +241,7 @@ or MAC addreses, VLAN numbers, and so on.
 =head2 Command-Line Device and Port Actions
 
 Most significant Device jobs and Port actions, as well as several
-troubleshooting and housekeeping duties, can be performed at the command-ling
+troubleshooting and housekeeping duties, can be performed at the command-line
 with the L<netdisco-do> program. For example:
 
  ~/bin/netdisco-do -D discover -d 192.0.2.1
@@ -270,6 +270,12 @@ Netdisco includes a Plugin subsystem for customizing the web user interface and 
 See L<Web Plugins|https://github.com/netdisco/netdisco/wiki/Web-Plugins>
 and L<Backend Plugins|https://github.com/netdisco/netdisco/wiki/Backend-Plugins>
 for further information.
+
+=head2 Extensions
+
+Using the Plugins mechanism, it's also easy to write new commands (or actions)
+for Netdisco. For example, an action has been added to L<generate RANCID
+configuration|App::Netdisco::Worker::Plugin::MakeRancidConf>.
 
 =head2 Developing
 
