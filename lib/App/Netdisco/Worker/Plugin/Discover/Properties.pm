@@ -25,16 +25,14 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
-  # Get IP Table peer VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
-
+  # Get IP Table per VRF if supported
   {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
-    foreach my $vrf (@vrf_list) {
+    foreach my $vrf (_get_vrf_list($device, $snmp)) {
       snmp_comm_reindex($snmp, $device, $vrf);
-      $ip_index = { %$ip_index , %{$snmp->ip_index} };
-      $interfaces = { %$interfaces , %{$snmp->interfaces} };
-      $ip_netmask = { %$ip_netmask , %{$snmp->ip_netmask} };
+      $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
+      $interfaces = { %$interfaces, %{$snmp->interfaces} };
+      $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask} };
     }
   }
 
@@ -99,7 +97,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( serial => Encode::decode('UTF-8', $snmp->serial) );
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
-
 
   $device->set_column( snmp_class => $snmp->class );
   $device->set_column( last_discover => \'now()' );
