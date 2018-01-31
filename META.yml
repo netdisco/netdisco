@@ -19,7 +19,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.038033'
+    version: '2.038034'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -417,6 +417,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
   App::Netdisco::Worker::Plugin::Macwalk:
     file: lib/App/Netdisco/Worker/Plugin/Macwalk.pm
+  App::Netdisco::Worker::Plugin::MakeRancidConf:
+    file: lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm
   App::Netdisco::Worker::Plugin::Monitor:
     file: lib/App/Netdisco/Worker/Plugin/Monitor.pm
   App::Netdisco::Worker::Plugin::Nbtstat:
@@ -528,5 +530,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.038033'
+version: '2.038034'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

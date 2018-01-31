@@ -212,6 +212,7 @@ lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
 lib/App/Netdisco/Worker/Plugin/Macwalk.pm
+lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm
 lib/App/Netdisco/Worker/Plugin/Monitor.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat/Core.pm

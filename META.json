@@ -107,7 +107,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.038033"
+         "version" : "2.038034"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -704,6 +704,9 @@
       "App::Netdisco::Worker::Plugin::Macwalk" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Macwalk.pm"
       },
+      "App::Netdisco::Worker::Plugin::MakeRancidConf" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm"
+      },
       "App::Netdisco::Worker::Plugin::Monitor" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Monitor.pm"
       },
@@ -768,6 +771,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.038033",
+   "version" : "2.038034",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }
