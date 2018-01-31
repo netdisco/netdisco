@@ -353,6 +353,7 @@ worker_plugins:
   - 'Macsuck::Nodes'
   - 'Macsuck::WirelessNodes'
   - 'Macwalk'
+  - 'MakeRancidConf'
   - 'Monitor'
   - 'Nbtstat'
   - 'Nbtstat::Core'

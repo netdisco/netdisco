@@ -119,6 +119,13 @@ foreach my $group (keys %$list) {
 
 netdisco-rancid-export - Generate RANCID Group Configuration
 
+=head1 DEPRECATED!
+
+Note! This script is now deprecated and no longer maintained. The replacement
+is built in to Netdisco core, so can be scheduled in the backend, and also has
+more powerful configuration. See
+L<App::Netdisco::Worker::Plugin::MakeRancidConf>.
+
 =head1 CONFIGURATION
 
 This script requires some configuration to be added to your Netdisco
