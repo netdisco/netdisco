@@ -23,6 +23,14 @@ register_worker({ phase => 'main' }, sub {
 
   if (setting('expire_nodes') and setting('expire_nodes') > 0) {
       schema('netdisco')->txn_do(sub {
+        my $freshness = ((defined setting('expire_nodeip_freshness'))
+          ? setting('expire_nodeip_freshness') : setting('expire_nodes'));
+        if ($freshness) {
+          schema('netdisco')->resultset('NodeIp')->search({
+            time_last => \[q/< (now() - ?::interval)/, ($freshness * 86400)],
+          })->delete();
+        }
+
         schema('netdisco')->resultset('Node')->search({
           time_last => \[q/< (now() - ?::interval)/,
               (setting('expire_nodes') * 86400)],
@@ -32,6 +40,14 @@ register_worker({ phase => 'main' }, sub {
 
   if (setting('expire_nodes_archive') and setting('expire_nodes_archive') > 0) {
       schema('netdisco')->txn_do(sub {
+        my $freshness = ((defined setting('expire_nodeip_freshness'))
+          ? setting('expire_nodeip_freshness') : setting('expire_nodes_archive'));
+        if ($freshness) {
+          schema('netdisco')->resultset('NodeIp')->search({
+            time_last => \[q/< (now() - ?::interval)/, ($freshness * 86400)],
+          })->delete();
+        }
+
         schema('netdisco')->resultset('Node')->search({
           -not_bool => 'active',
           time_last => \[q/< (now() - ?::interval)/,

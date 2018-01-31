@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * #367 buttons in the neighbourmap have an incorrect height
+  * #364 expire_nodeip_freshness setting to revert expire to ND1 behavior
 
 2.038032 - 2018-01-28
 
