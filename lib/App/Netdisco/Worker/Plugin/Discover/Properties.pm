@@ -26,9 +26,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $ip_netmask = $snmp->ip_netmask;
 
   # Get IP Table per VRF if supported
-  {
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
-    foreach my $vrf (_get_vrf_list($device, $snmp)) {
+    foreach my $vrf (@vrf_list) {
       snmp_comm_reindex($snmp, $device, $vrf);
       $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
       $interfaces = { %$interfaces, %{$snmp->interfaces} };
