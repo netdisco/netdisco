@@ -197,6 +197,7 @@ nonincreasing: false
 snmpver: 3
 snmptimeout: 3000000
 snmpretries: 2
+snmp_remoteport: {}
 devices_no: []
 devices_only: []
 timeout: 600

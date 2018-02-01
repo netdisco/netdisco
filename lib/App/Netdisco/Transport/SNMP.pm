@@ -12,6 +12,7 @@ use Try::Tiny;
 use Module::Load ();
 use Path::Class 'dir';
 use NetAddr::IP::Lite ':lower';
+use List::Util qw/pairkeys pairfirst/;
 
 use base 'Dancer::Object::Singleton';
 
@@ -130,6 +131,11 @@ sub _snmp_connect_generic {
     Debug => ($ENV{INFO_TRACE} || 0),
     DebugSNMP => ($ENV{SNMP_TRACE} || 0),
   );
+
+  # an override for RemotePort
+  ($snmp_args{RemotePort}) =
+    (pairkeys pairfirst { check_acl_no($device, $b) }
+      %{setting('snmp_remoteport') || {}}) || 161;
 
   # an override for bulkwalk
   $snmp_args{BulkWalk} = 0 if check_acl_no($device, 'bulkwalk_no');

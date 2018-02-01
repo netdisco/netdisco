@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * #332 Autodiscovery via BGP and OSPF peers
+  * snmp_remoteport setting to override port 161 for SNMP targets
 
   [ENHANCEMENTS]
 
