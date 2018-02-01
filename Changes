@@ -9,6 +9,10 @@
 
   * Do not attempt Canonical IP change to non-discoverable IP
 
+  [BUG FIXES]
+
+  * MakeRancidConf was incorrectly parsing its own config
+
 2.038034 - 2018-01-31
 
   [NEW FEATURES]

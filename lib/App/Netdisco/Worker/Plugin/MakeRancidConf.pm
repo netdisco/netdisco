@@ -47,6 +47,11 @@ register_worker({ phase => 'main' }, sub {
       (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{vendormap} })
         || $d->vendor;
 
+    if ($vendor =~ m/(?:enterprises\.|netdisco)/) {
+      debug " skipping $d with unresolved vendor: $vendor";
+      next;
+    }
+
     push @{$routerdb->{$group}},
       (sprintf "%s${delimiter}%s${delimiter}%s", $name, $vendor,
         ($d->get_column('old') ? 'down' : 'up'));
