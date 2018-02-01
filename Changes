@@ -4,6 +4,10 @@
 
   * #332 Autodiscovery via BGP and OSPF peers
 
+  [ENHANCEMENTS]
+
+  * Do not attempt Canonical IP change to non-discoverable IP
+
 2.038034 - 2018-01-31
 
   [NEW FEATURES]
