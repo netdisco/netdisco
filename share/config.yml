@@ -338,6 +338,7 @@ worker_plugins:
   - 'Discover::CanonicalIP'
   - 'Discover::Entities'
   - 'Discover::Neighbors'
+  - 'Discover::Neighbors::Routed'
   - 'Discover::PortPower'
   - 'Discover::Properties'
   - 'Discover::VLANs'
