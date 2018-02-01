@@ -19,9 +19,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $ospf_peers = $snmp->ospf_peers || {};
   my $bgp_peers  = $snmp->bgp_peer_addr || {};
 
-  return Status->info("device $device has no BGP or OSPF peers")
+  return Status->info(" [$device] neigh - no BGP or OSPF peers")
     unless ((scalar values %$ospf_peers) or (scalar values %$bgp_peers));
 
+  my $count = 0;
   foreach my $ip ((values %$ospf_peers), (values %$bgp_peers)) {
     my $peer = get_device($ip);
     next if $peer->in_storage or not is_discoverable($peer);
@@ -32,10 +33,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       subaction => 'with-nodes',
     });
 
-    debug sprintf ' [%s] queued discovery of routing peer %s', $device, $ip;
+    $count++;
+    debug sprintf ' [%s] neigh - queued discovery of peer %s', $device, $ip;
   }
 
-  return Status->info(" [$device] Routing peers added to discover queue.");
+  return Status->info(" [$device] neigh - $count peers added to queue.");
 });
 
 true;
