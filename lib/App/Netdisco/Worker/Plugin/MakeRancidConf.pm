@@ -7,7 +7,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Path::Class;
-use List::Util 'first';
+use List::Util qw/pairkeys pairfirst/;
 use File::Slurper 'write_text';
 use App::Netdisco::Util::Permission 'check_acl_no';
 
@@ -30,8 +30,8 @@ register_worker({ phase => 'main' }, sub {
       \['age(now(), last_discover) > ?::interval', $down_age] },
   });
 
-  $config->{groups}    ||= [{ default => 'any' }];
-  $config->{vendormap} ||= [];
+  $config->{groups}    ||= { default => 'any' };
+  $config->{vendormap} ||= {};
 
   my $routerdb = {};
   while (my $d = $devices->next) {
@@ -40,14 +40,12 @@ register_worker({ phase => 'main' }, sub {
     $name =~ s/$domain_suffix$//
       if check_acl_no($d, $config->{by_hostname});
 
-    my $vmatch =
-      first { check_acl_no($d, (values %$_)[0]) } @{$config->{vendormap}};
-    my $vendor = $vmatch
-      ? (keys %$vmatch)[0] : $d->vendor;
+    my ($group) =
+      pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{groups} };
 
-    my $gmatch =
-      first { check_acl_no($d, (values %$_)[0]) } @{$config->{groups}};
-    my $group = (keys %$gmatch)[0];
+    my ($vendor) =
+      (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{vendormap} })
+        || $d->vendor;
 
     push @{$routerdb->{$group}},
       (sprintf "%s${delimiter}%s${delimiter}%s", $name, $vendor,
