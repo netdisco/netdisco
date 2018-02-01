@@ -197,6 +197,7 @@ lib/App/Netdisco/Worker/Plugin/Discover.pm
 lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
+lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
