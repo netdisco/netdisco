@@ -204,8 +204,9 @@ sub _try_connect {
 
   try {
       debug
-        sprintf '[%s] try_connect with ver: %s, class: %s, comm: %s',
-        $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
+        sprintf '[%s:%s] try_connect with ver: %s, class: %s, comm: %s',
+          $snmp_args->{DestHost}, $snmp_args->{RemotePort},
+          $snmp_args->{Version}, $class, $debug_comm;
       Module::Load::load $class;
 
       $info = $class->new(%$snmp_args, %comm_args) or return;
@@ -216,8 +217,9 @@ sub _try_connect {
       if ($reclass and $info and $info->device_type ne $class) {
           $class = $info->device_type;
           debug
-            sprintf '[%s] try_connect with ver: %s, new class: %s, comm: %s',
-            $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
+            sprintf '[%s:%s] try_connect with ver: %s, new class: %s, comm: %s',
+              $snmp_args->{DestHost}, $snmp_args->{RemotePort},
+              $snmp_args->{Version}, $class, $debug_comm;
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
