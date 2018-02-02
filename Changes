@@ -1,40 +1,20 @@
-2.038035 - 2018-02-01
+2.039000 - 2018-02-02
 
   [NEW FEATURES]
 
   * #332 Autodiscovery via BGP and OSPF peers
-  * snmp_remoteport setting to override port 161 for SNMP targets
-
-  [ENHANCEMENTS]
-
-  * Do not attempt Canonical IP change to non-discoverable IP
-  * Allow netdisco-do show to run when no func is available to handle request
-  * Allow netdisco-do show to run when no func is available to handle request
-  * Allow netdisco-do show to run when no func is available to handle request
-  * Allow netdisco-do show to run when no func is available to handle request
-
-  [BUG FIXES]
-
-  * MakeRancidConf was incorrectly parsing its own config
-
-2.038034 - 2018-01-31
-
-  [NEW FEATURES]
-
   * New MakeRancidConf worker (and makerancidconf action)
-
-2.038033 - 2018-01-31
-
-  [NEW FEATURES]
-
   * #228 timeout setting (default 10min) for backend jobs
   * #341 timeout setting for all actions ("<actionname>_timeout")
   * #368 ND2_DB_ROLLBACK environment variable to roll back job updates to DB
+  * snmp_remoteport setting to override port 161 for SNMP targets
 
   [BUG FIXES]
 
   * #367 buttons in the neighbourmap have an incorrect height
   * #364 expire_nodeip_freshness setting to revert expire to ND1 behavior
+  * Do not attempt Canonical IP change to non-discoverable IP
+  * Allow netdisco-do show to run when no func is available to handle request
 
 2.038032 - 2018-01-28
 
