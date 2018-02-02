@@ -8,6 +8,10 @@
   [ENHANCEMENTS]
 
   * Do not attempt Canonical IP change to non-discoverable IP
+  * Allow netdisco-do show to run when no func is available to handle request
+  * Allow netdisco-do show to run when no func is available to handle request
+  * Allow netdisco-do show to run when no func is available to handle request
+  * Allow netdisco-do show to run when no func is available to handle request
 
   [BUG FIXES]
 

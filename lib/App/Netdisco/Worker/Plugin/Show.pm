@@ -28,7 +28,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   my $i = App::Netdisco::Transport::SNMP->reader_for($device, $class);
-  Data::Printer::p($i->$extra($port));
+  my $result = sub { eval { $i->$extra($port) } || undef };
+  Data::Printer::p( $result->() );
 
   return Status->done(
     sprintf "Showed %s response from %s", $extra, $device->ip);
