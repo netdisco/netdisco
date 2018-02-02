@@ -21,47 +21,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
-  my $ip_index   = $snmp->ip_index;
-  my $interfaces = $snmp->interfaces;
-  my $ip_netmask = $snmp->ip_netmask;
-
-  # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
-  if (scalar @vrf_list) {
-    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
-    foreach my $vrf (@vrf_list) {
-      snmp_comm_reindex($snmp, $device, $vrf);
-      $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
-      $interfaces = { %$interfaces, %{$snmp->interfaces} };
-      $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask} };
-    }
-  }
-
-  # build device aliases suitable for DBIC
-  my @aliases;
-  foreach my $entry (keys %$ip_index) {
-      my $ip = NetAddr::IP::Lite->new($entry)
-        or next;
-      my $addr = $ip->addr;
-
-      next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
-      next if setting('ignore_private_nets') and $ip->is_rfc1918;
-
-      my $iid = $ip_index->{$addr};
-      my $port = $interfaces->{$iid};
-      my $subnet = $ip_netmask->{$addr}
-        ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
-        : undef;
-
-      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
-      push @aliases, {
-          alias => $addr,
-          port => $port,
-          subnet => $subnet,
-          dns => undef,
-      };
-  }
+  my @aliases = ();
+  push @aliases, _get_ipv4_aliases($device, $snmp);
+  push @aliases, _get_ipv6_aliases($device, $snmp);
 
   debug sprintf ' resolving %d aliases with max %d outstanding requests',
       scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
@@ -274,6 +236,105 @@ sub _get_vrf_list {
     }
 
     return @ok_vrfs;
+}
+
+sub _get_ipv4_aliases {
+  my ($device, $snmp) = @_;
+  my @aliases;
+
+  my $ip_index   = $snmp->ip_index;
+  my $interfaces = $snmp->interfaces;
+  my $ip_netmask = $snmp->ip_netmask;
+
+  # Get IP Table per VRF if supported
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  if (scalar @vrf_list) {
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
+    foreach my $vrf (@vrf_list) {
+      snmp_comm_reindex($snmp, $device, $vrf);
+      $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
+      $interfaces = { %$interfaces, %{$snmp->interfaces} };
+      $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask} };
+    }
+  }
+
+  # build device aliases suitable for DBIC
+  foreach my $entry (keys %$ip_index) {
+      my $ip = NetAddr::IP::Lite->new($entry)
+        or next;
+      my $addr = $ip->addr;
+
+      next if $addr eq '0.0.0.0';
+      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+      next if setting('ignore_private_nets') and $ip->is_rfc1918;
+
+      my $iid = $ip_index->{$addr};
+      my $port = $interfaces->{$iid};
+      my $subnet = $ip_netmask->{$addr}
+        ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
+        : undef;
+
+      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
+      push @aliases, {
+          alias => $addr,
+          port => $port,
+          subnet => $subnet,
+          dns => undef,
+      };
+  }
+
+  return @aliases;
+}
+
+sub _get_ipv6_aliases {
+  my ($device, $snmp) = @_;
+  my @aliases;
+
+  my $ipv6_index  = $snmp->ipv6_index;
+  my $ipv6_addr   = $snmp->ipv6_addr;
+  my $ipv6_type   = $snmp->ipv6_type;
+  my $ipv6_pfxlen = $snmp->ipv6_addr_prefixlength;
+  my $interfaces  = $snmp->interfaces;
+
+  # Get IP Table per VRF if supported
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  if (scalar @vrf_list) {
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
+    foreach my $vrf (@vrf_list) {
+      snmp_comm_reindex($snmp, $device, $vrf);
+      $ipv6_index  = { %$ipv6_index,  %{$snmp->ipv6_index} };
+      $ipv6_addr   = { %$ipv6_addr,   %{$snmp->ipv6_addr} };
+      $ipv6_type   = { %$ipv6_type,   %{$snmp->ipv6_type} };
+      $ipv6_pfxlen = { %$ipv6_pfxlen, %{$snmp->ipv6_addr_prefixlength} };
+      $interfaces  = { %$interfaces,  %{$snmp->interfaces} };
+    }
+  }
+
+  # build device aliases suitable for DBIC
+  foreach my $iid (keys %$ipv6_index) {
+      next unless $ipv6_type->{$iid} and $ipv6_type->{$iid} eq 'unicast';
+      my $entry = $ipv6_addr->{$iid} or next;
+      my $ip = NetAddr::IP::Lite->new($entry) or next;
+      my $addr = $ip->addr;
+
+      next if $addr eq '::0';
+      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+
+      my $port   = $interfaces->{ $ipv6_index->{$iid} };
+      my $subnet = $ipv6_pfxlen->{$iid}
+        ? NetAddr::IP::Lite->new($addr .'/'. $ipv6_pfxlen->{$iid})->network->cidr
+        : undef;
+
+      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
+      push @aliases, {
+          alias => $addr,
+          port => $port,
+          subnet => $subnet,
+          dns => undef,
+      };
+  }
+
+  return @aliases;
 }
 
 true;
