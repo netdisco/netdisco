@@ -14,9 +14,18 @@ register_worker({ phase => 'main' }, sub {
   my $pass = setting('database')->{pass};
 
   my $portnum = undef;
-  if ($host and $host =~ m/([^;]+);port=(\d+)/) {
+  if ($host and $host =~ m/([^;]+);(.+)/) {
       $host = $1;
-      $portnum = $2;
+      my $extra = $2;
+      my @opts = split(/;/, $extra);
+      debug sprintf("Host: %s, extra: %s\n", $host, $extra);
+      foreach my $opt (@opts) {
+        if ($opt =~ m/port=(\d+)/) {
+            $portnum = $1;
+        } else {
+            # Unhandled connection option, ignore for now
+        }
+      }
   }
 
   $ENV{PGHOST} = $host if $host;
