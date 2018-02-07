@@ -54,6 +54,7 @@
             "JSON" : "2.90",
             "JSON::XS" : "3.01",
             "List::MoreUtils" : "0.33",
+            "List::Util" : "1.49",
             "MCE" : "1.703",
             "MIME::Base64" : "3.13",
             "Module::Load" : "0.32",
@@ -107,7 +108,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.039001"
+         "version" : "2.039002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -766,7 +767,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/bsd-license.php"
+         "http://opensource.org/licenses/BSD-3-Clause"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -774,6 +775,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.039001",
+   "version" : "2.039002",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }
