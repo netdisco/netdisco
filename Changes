@@ -1,3 +1,11 @@
+2.039002 - 2018-02-07
+
+  [BUG FIXES]
+
+  * Specify version of List::Util required
+  * Allow PostgreSQL config to use additional psql options
+  * Tighten ACL IP Range regexp to avoid matching hostnames with hyphens
+
 2.039001 - 2018-02-02
 
   [ENHANCEMENTS]

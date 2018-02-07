@@ -41,6 +41,7 @@ Module::Build->new(
     'IO::Socket::SSL' => '2.048',
     'JSON' => '2.90',
     'JSON::XS' => '3.01',
+    'List::Util' => '1.49',
     'List::MoreUtils' => '0.33',
     'MIME::Base64' => '3.13',
     'Module::Load' => '0.32',
