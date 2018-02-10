@@ -15,7 +15,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
        LEFT OUTER JOIN device_skip ds
          ON (ds.backend = ? AND admin.device = ds.device
              AND admin.action = ANY (ds.actionset))
-      WHERE ds.device IS NULL
+      WHERE admin.status = 'queued'
+        AND ds.device IS NULL
    ORDER BY random())
 
   SELECT my_jobs.*,
