@@ -87,14 +87,11 @@ sub jq_getsome {
   my $jobs = schema('netdisco')->resultset('Admin');
   my @returned = ();
 
-  my @filter = (
-    setting('job_prio')->{'high'}, setting('workers')->{'max_deferrals'},
-    setting('workers')->{'retry_after'}, setting('workers')->{'BACKEND'},
-    $num_slots,
-  );
   my $tasty = schema('netdisco')->resultset('Virtual::TastyJobs')
     ->search(undef,{ bind => [
-      @filter, @filter, setting('workers')->{'BACKEND'}, $num_slots
+      setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
+      setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
+      setting('workers')->{'retry_after'}, $num_slots,
     ]});
 
   while (my $job = $tasty->next) {

@@ -10,38 +10,33 @@ __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 __PACKAGE__->table('tasty_jobs');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
-  SELECT jobs.*, ds2.deferrals AS num_deferrals
-    FROM (
-      (SELECT me.*, 100 AS job_priority
-         FROM admin me
-        WHERE ( me.username IS NOT NULL OR me.action = ANY (string_to_array(btrim(?, '{"}'), '","')) )
-          AND me.device NOT IN
-              (SELECT ds.device
-                 FROM device_skip ds
-                WHERE ( me.action = ANY (ds.actionset) OR
-                        (ds.deferrals >= ? AND ds.last_defer > ( LOCALTIMESTAMP - ?::interval )) )
-                  AND ds.backend = ? AND ds.device = me.device)
-          AND me.status = 'queued'
-     ORDER BY random()
-        LIMIT ?)
-   UNION
-      (SELECT me.*, 0 AS job_priority
-         FROM admin me
-        WHERE NOT (me.action = ANY (string_to_array(btrim(?, '{"}'), '","')))
-          AND me.device NOT IN
-              (SELECT ds.device
-                 FROM device_skip ds
-                WHERE ( me.action = ANY (ds.actionset) OR
-                        (ds.deferrals >= ? AND ds.last_defer > ( LOCALTIMESTAMP - ?::interval )) )
-                  AND ds.backend = ? AND ds.device = me.device)
-          AND me.status = 'queued'
-     ORDER BY random()
-        LIMIT ?)
-    ) jobs
-    LEFT OUTER JOIN device_skip ds2
-      ON ds2.backend = ? AND ds2.device = jobs.device
-   ORDER BY jobs.job_priority DESC,
-            ds2.deferrals ASC NULLS FIRST
+  WITH my_jobs AS
+    (SELECT admin.* FROM admin
+       LEFT OUTER JOIN device_skip ds
+         ON (ds.backend = ? AND admin.device = ds.device
+             AND admin.action = ANY (ds.actionset))
+      WHERE ds.device IS NULL
+   ORDER BY random())
+
+  SELECT my_jobs.*,
+         CASE WHEN (my_jobs.username IS NOT NULL OR
+                    my_jobs.action = ANY (string_to_array(btrim(?, '{"}'), '","')))
+              THEN 100
+              ELSE 0
+          END AS job_priority
+    FROM my_jobs
+
+    LEFT OUTER JOIN device_skip ds
+      ON (ds.backend = ? AND ds.device = my_jobs.device)
+
+   WHERE my_jobs.username IS NOT NULL
+      OR (ds.deferrals IS NULL AND ds.last_defer IS NULL)
+      OR ds.deferrals < ?
+      OR ds.last_defer <= ( LOCALTIMESTAMP - ?::interval )
+
+   ORDER BY job_priority DESC,
+            ds.deferrals ASC NULLS FIRST,
+            ds.last_defer ASC NULLS LAST
    LIMIT ?
 ENDSQL
 );
@@ -76,8 +71,6 @@ __PACKAGE__->add_columns(
   "device_key",
   { data_type => "text", is_nullable => 1 },
   "job_priority",
-  { data_type => "integer", is_nullable => 1 },
-  "num_deferrals",
   { data_type => "integer", is_nullable => 1 },
 );
 
