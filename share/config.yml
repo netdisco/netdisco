@@ -200,7 +200,6 @@ snmpretries: 2
 snmp_remoteport: {}
 devices_no: []
 devices_only: []
-timeout: 600
 discover_no: []
 discover_only: []
 discover_no_type:
@@ -231,7 +230,7 @@ nbtstat_no: []
 nbtstat_only: []
 nbtstat_max_age: 7
 nbtstat_interval: 0.02
-nbtstat_timeout: 1
+nbtstat_response_timeout: 1
 node_freshness: 0
 expire_devices: 60
 expire_nodes: 90
@@ -281,6 +280,7 @@ wap_platforms:
 
 workers:
   tasks: 'AUTO * 2'
+  timeout: 600
   sleep_time: 1
   min_runtime: 0
   max_deferrals: 10

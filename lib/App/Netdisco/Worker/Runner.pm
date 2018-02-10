@@ -74,7 +74,7 @@ sub run {
   };
 
   my $maxtime = ((defined setting($job->action .'_timeout'))
-    ? setting($job->action .'_timeout') : setting('timeout'));
+    ? setting($job->action .'_timeout') : setting('workers')->{'timeout'});
   if ($maxtime) {
     debug sprintf '%s: running with timeout %ss', $job->action, $maxtime;
     if (timeout_call($maxtime, $runner, ($self, $job))) {

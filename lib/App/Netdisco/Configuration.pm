@@ -176,6 +176,11 @@ if (exists setting('workers')->{interactives}
     delete setting('workers')->{interactives};
 }
 
+# moved the timeout setting
+setting('workers')->{'timeout'} = setting('timeout')
+  if defined setting('timeout')
+     and !defined setting('workers')->{'timeout'};
+
 # schedule expire used to be called expiry
 setting('schedule')->{expire} ||= setting('schedule')->{expiry}
   if setting('schedule') and exists setting('schedule')->{expiry};
