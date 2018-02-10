@@ -166,13 +166,13 @@ sub is_discoverable {
   my $device = get_device($ip) or return 0;
 
   if (match_devicetype($remote_type, 'discover_no_type')) {
-      return _bail_msg("is_discoverable: device matched discover_no_type");
+      return _bail_msg("is_discoverable: $device matched discover_no_type");
   }
 
-  return _bail_msg("is_discoverable: device matched discover_no")
+  return _bail_msg("is_discoverable: $device matched discover_no")
     if check_acl_no($device, 'discover_no');
 
-  return _bail_msg("is_discoverable: device failed to match discover_only")
+  return _bail_msg("is_discoverable: $device failed to match discover_only")
     unless check_acl_only($device, 'discover_only');
 
   return 1;
@@ -196,7 +196,7 @@ sub is_discoverable_now {
       and $device->since_last_discover and setting('discover_min_age')
       and $device->since_last_discover < setting('discover_min_age')) {
 
-      return _bail_msg("is_discoverable: time since last discover less than discover_min_age");
+      return _bail_msg("is_discoverable: $device last discover < discover_min_age");
   }
 
   return is_discoverable(@_);
@@ -218,10 +218,10 @@ sub is_arpnipable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_arpnipable: device matched arpnip_no")
+  return _bail_msg("is_arpnipable: $device matched arpnip_no")
     if check_acl_no($device, 'arpnip_no');
 
-  return _bail_msg("is_arpnipable: device failed to match arpnip_only")
+  return _bail_msg("is_arpnipable: $device failed to match arpnip_only")
     unless check_acl_only($device, 'arpnip_only');
 
   return 1;
@@ -245,7 +245,7 @@ sub is_arpnipable_now {
       and $device->since_last_arpnip and setting('arpnip_min_age')
       and $device->since_last_arpnip < setting('arpnip_min_age')) {
 
-      return _bail_msg("is_arpnipable: time since last arpnip less than arpnip_min_age");
+      return _bail_msg("is_arpnipable: $device last arpnip < arpnip_min_age");
   }
 
   return is_arpnipable(@_);
@@ -267,10 +267,10 @@ sub is_macsuckable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_macsuckable: device matched macsuck_no")
+  return _bail_msg("is_macsuckable: $device matched macsuck_no")
     if check_acl_no($device, 'macsuck_no');
 
-  return _bail_msg("is_macsuckable: device failed to match macsuck_only")
+  return _bail_msg("is_macsuckable: $device failed to match macsuck_only")
     unless check_acl_only($device, 'macsuck_only');
 
   return 1;
@@ -294,7 +294,7 @@ sub is_macsuckable_now {
       and $device->since_last_macsuck and setting('macsuck_min_age')
       and $device->since_last_macsuck < setting('macsuck_min_age')) {
 
-      return _bail_msg("is_macsuckable: time since last macsuck less than macsuck_min_age");
+      return _bail_msg("is_macsuckable: $device last macsuck < macsuck_min_age");
   }
 
   return is_macsuckable(@_);
