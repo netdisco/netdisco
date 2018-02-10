@@ -75,41 +75,17 @@ sub jq_getsome {
   my $jobs = schema('netdisco')->resultset('Admin');
   my @returned = ();
 
-  my %jobsearch = (
-    status => 'queued',
-    device => { '-not_in' =>
-      $jobs->skipped(setting('workers')->{'BACKEND'},
-                     setting('workers')->{'max_deferrals'},
-                     setting('workers')->{'retry_after'})
-           ->columns('device')->as_query },
+  my @filter = (
+    setting('job_prio')->{'high'}, setting('workers')->{'max_deferrals'},
+    setting('workers')->{'retry_after'}, setting('workers')->{'BACKEND'},
+    $num_slots,
   );
-  my %randoms = (order_by => 'random()', rows => $num_slots );
+  my $tasty = schema('netdisco')->resultset('Virtual::TastyJobs')
+    ->search(undef,{ bind => [
+      @filter, @filter, setting('workers')->{'BACKEND'}, $num_slots
+    ]});
 
-  my $hiprio = $jobs->search({
-    %jobsearch,
-    -or => [
-      { username => { '!=' => undef } },
-      { action => { -in => setting('job_prio')->{'high'} } },
-    ],
-  }, {
-    %randoms,
-    '+select' => [\'100 as job_priority'], '+as' => ['me.job_priority'],
-  });
-
-  my $loprio = $jobs->search({
-    %jobsearch,
-    action => { -not_in => setting('job_prio')->{'high'} },
-  }, {
-    %randoms,
-    '+select' => [\'0 as job_priority'], '+as' => ['me.job_priority'],
-  });
-
-  my $rs = $hiprio->union($loprio)->search(undef, {
-    order_by => { '-desc' => 'job_priority' },
-    rows => $num_slots,
-  });
-
-  while (my $job = $rs->next) {
+  while (my $job = $tasty->next) {
     if ($job->device) {
       # need to handle device discovered since backend daemon started
       # and the skiplist was primed. these should be checked against
