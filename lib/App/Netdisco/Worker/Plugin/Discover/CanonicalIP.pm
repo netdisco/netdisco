@@ -81,7 +81,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
     # is not done in renumber but required otherwise confusing at job end!
     schema('netdisco')->resultset('Admin')
-      ->find({job => $job->id})->update({device => $new_ip});
+      ->find({job => $job->id})->update({device => $new_ip}) if $job->id;
 
     return Status->info(sprintf ' [%s] device - changed IP to %s (%s)',
       $old_ip, $device->ip, ($device->dns || ''));
