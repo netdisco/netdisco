@@ -57,14 +57,26 @@ sub jq_warm_thrusters {
   }
 
   schema('netdisco')->txn_do(sub {
-    $rs->search({ backend => setting('workers')->{'BACKEND'} })->delete;
-    $rs->populate([
-      map {{
-        backend => setting('workers')->{'BACKEND'},
-        device  => $_,
-        actionset => $actionset{$_},
-      }} keys %actionset
-    ]);
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+    }, { for => 'update' }, )->update({ actionset => [] });
+
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+      deferrals => { '>' => 0 },
+    }, { for => 'update' }, )->update({ deferrals => \'deferrals - 1' });
+
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+      actionset => { -value => [] },
+      deferrals => 0,
+    })->delete;
+
+    $rs->update_or_create({
+      backend => setting('workers')->{'BACKEND'},
+      device  => $_,
+      actionset => $actionset{$_},
+    }, { key => 'primary' }) for keys %actionset;
   });
 }
 

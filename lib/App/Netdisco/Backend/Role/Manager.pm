@@ -21,6 +21,7 @@ sub worker_begin {
   debug "entering Manager ($wid) worker_begin()";
 
   # job queue initialisation
+  debug "mgr ($wid): building acl hints (please be patient...)";
   jq_warm_thrusters;
 
   # requeue jobs locally
