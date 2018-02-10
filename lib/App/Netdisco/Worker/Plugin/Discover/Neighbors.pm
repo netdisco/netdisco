@@ -40,12 +40,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   my @to_discover = store_neighbors($device);
-  my %seen_id = ();
+  my (%seen_id, %seen_ip) = ((), ());
 
   # only enqueue if device is not already discovered,
   # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
       my ($ip, $remote_type, $remote_id) = @$neighbor;
+      if ($seen_ip{ $ip }++) {
+          debug sprintf
+            ' queue - skip: IP %s is already queued from %s',
+            $ip, $device->ip;
+          next;
+      }
+
       if ($remote_id and $seen_id{ $remote_id }++) {
           debug sprintf
             ' queue - skip: %s with ID [%s] already queued from %s',
