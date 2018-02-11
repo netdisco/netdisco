@@ -78,7 +78,7 @@ sub cancel {
   my ($job, $msg) = @_;
   $msg ||= 'unknown reason for cancelled job';
   $job->is_cancelled(true);
-  return Status->info($msg);
+  return Status->error($msg);
 }
 
 =head2 finalise_status
