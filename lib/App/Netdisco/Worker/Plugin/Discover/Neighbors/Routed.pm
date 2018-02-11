@@ -26,6 +26,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $ip ((values %$ospf_peers), (values %$bgp_peers)) {
     my $peer = get_device($ip);
     next if $peer->in_storage or not is_discoverable($peer);
+    next if vars->{'queued'}->{$ip};
 
     jq_insert({
       device => $ip,
@@ -34,7 +35,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     });
 
     $count++;
-    debug sprintf ' [%s] neigh - queued discovery of peer %s', $device, $ip;
+    debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $ip;
   }
 
   return Status->info(" [$device] neigh - $count peers added to queue.");

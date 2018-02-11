@@ -70,7 +70,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   if ($device->ip ne $db_device->ip) {
     return schema('netdisco')->txn_do(sub {
       $device->delete;
-      return $job->cancel("fresh discover cancelled: $device already known");
+      return $job->cancel("fresh discover cancelled: $device already known as $db_device");
     });
   }
 
