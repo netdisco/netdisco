@@ -37,7 +37,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
    ORDER BY job_priority DESC,
             ds.deferrals ASC NULLS FIRST,
-            ds.last_defer ASC NULLS LAST
+            ds.last_defer ASC NULLS LAST,
+            device_key DESC NULLS LAST
    LIMIT ?
 ENDSQL
 );
