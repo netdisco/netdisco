@@ -69,17 +69,25 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   return if $new_ip eq $old_ip;
 
-  schema('netdisco')->txn_do(sub {
-    # delete target device with the same vendor and serial number
-    schema('netdisco')->resultset('Device')->search({
+  return schema('netdisco')->txn_do(sub {
+    my $existing = schema('netdisco')->resultset('Device')->search({
       ip => $new_ip, vendor => $device->vendor, serial => $device->serial,
-    })->delete;
+    });
+
+    if (($job->subaction eq 'with-nodes') and $existing->count) {
+      $device->delete;
+      return $job->cancel(
+        " [$old_ip] device - cancelling fresh discover: already known as $new_ip");
+    }
+
+    # discover existing device but change IP, need to remove existing device
+    $existing->delete;
 
     # if target device exists then this will die
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
-    # is not done in renumber but required otherwise confusing at job end!
+    # is not done in renumber, but required, otherwise confusing at job end!
     schema('netdisco')->resultset('Admin')
       ->find({job => $job->id})->update({device => $new_ip}) if $job->id;
 

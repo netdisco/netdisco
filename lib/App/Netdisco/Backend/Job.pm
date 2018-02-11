@@ -22,6 +22,7 @@ foreach my $slot (qw/
       log
       device_key
       job_priority
+      is_cancelled
 
       _current_phase
       _last_namespace
@@ -45,6 +46,10 @@ sub BUILD {
     $job->action($1);
     $job->only_namespace($2);
   }
+
+  if (!defined $job->subaction) {
+    $job->subaction('');
+  }
 }
 
 =head1 METHODS
@@ -61,6 +66,19 @@ sub display_name {
     $job->action,
     ($job->device || ''),
     ($job->port || '');
+}
+
+=head2 cancel
+
+Log a status and prevent other stages from runnning.
+
+=cut
+
+sub cancel {
+  my ($job, $msg) = @_;
+  $msg ||= 'unknown reason for cancelled job';
+  $job->is_cancelled(true);
+  return Status->info($msg);
 }
 
 =head2 finalise_status

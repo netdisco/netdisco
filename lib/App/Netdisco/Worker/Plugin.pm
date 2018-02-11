@@ -36,6 +36,8 @@ register 'register_worker' => sub {
     debug sprintf '-> run worker %s/%s/%s',
       @$workerconf{qw/phase namespace priority/};
 
+    return if $job->is_cancelled;
+
     # check to see if this namespace has already passed at higher priority
     # and also update job's record of namespace and priority
     return $job->add_status( Status->info('skip: namespace passed at higher priority') )
