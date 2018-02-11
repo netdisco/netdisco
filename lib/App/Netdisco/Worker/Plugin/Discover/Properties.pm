@@ -7,6 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
+use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Dancer::Plugin::DBIC 'schema';
@@ -20,18 +21,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $device = $job->device;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
-
-  my @aliases = ();
-  push @aliases, _get_ipv4_aliases($device, $snmp);
-  push @aliases, _get_ipv6_aliases($device, $snmp);
-
-  debug sprintf ' resolving %d aliases with max %d outstanding requests',
-      scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
-  my $resolved_aliases = hostnames_resolve_async(\@aliases);
-
-  # fake one aliases entry for devices not providing ip_index
-  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar @aliases;
 
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
@@ -65,16 +54,58 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( last_discover => \'now()' );
 
   schema('netdisco')->txn_do(sub {
+    $device->update_or_insert(undef, {for => 'update'});
+    return Status->done("Ended discover for $device");
+  });
+});
+
+register_worker({ phase => 'early', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
+
+  my $device = $job->device;
+  return unless $device->in_storage;
+  return unless $job->subaction eq 'with-nodes';
+
+  my $db_device = get_device($device->ip);
+  if ($device->ip ne $db_device->ip) {
+    return schema('netdisco')->txn_do(sub {
+      $device->delete;
+      return $job->cancel("fresh discover cancelled: $device already known");
+    });
+  }
+
+  return Status->info(" [$device] device - OK to continue discover");
+});
+
+register_worker({ phase => 'early', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
+
+  my $device = $job->device;
+  return unless $device->in_storage;
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or return Status->defer("discover failed: could not SNMP connect to $device");
+
+  my @aliases = ();
+  push @aliases, _get_ipv4_aliases($device, $snmp);
+  push @aliases, _get_ipv6_aliases($device, $snmp);
+
+  debug sprintf ' resolving %d aliases with max %d outstanding requests',
+      scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+  my $resolved_aliases = hostnames_resolve_async(\@aliases);
+
+  # fake one aliases entry for devices not providing ip_index
+  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
+    if 0 == scalar @aliases;
+
+  schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
     debug sprintf ' [%s] device - removed %d aliases',
       $device->ip, $gone;
-    $device->update_or_insert(undef, {for => 'update'});
     $device->device_ips->populate($resolved_aliases);
-    debug sprintf ' [%s] device - added %d new aliases',
-      $device->ip, scalar @aliases;
-  });
 
-  return Status->done("Ended discover for $device");
+    return Status->info(sprintf ' [%s] aliases - added %d new aliases',
+      $device->ip, scalar @aliases);
+  });
 });
 
 register_worker({ phase => 'early', driver => 'snmp' }, sub {

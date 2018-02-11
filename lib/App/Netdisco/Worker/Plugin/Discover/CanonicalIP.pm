@@ -69,7 +69,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   return if $new_ip eq $old_ip;
 
-  return schema('netdisco')->txn_do(sub {
+  schema('netdisco')->txn_do(sub {
     my $existing = schema('netdisco')->resultset('Device')->search({
       ip => $new_ip, vendor => $device->vendor, serial => $device->serial,
     });
