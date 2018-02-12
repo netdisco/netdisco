@@ -4,6 +4,7 @@
 
   * actions can now cancel themselves
   * timeout setting is moved to within workers setting config
+  * nbtstat_timeout setting is renamed to nbtstat_response_timeout
   * keep (most of the) deferrals count between backend restarts
 
   [BUG FIXES]
