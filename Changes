@@ -1,3 +1,18 @@
+2.039003 - 2018-02-12
+
+  [ENHANCEMENTS]
+
+  * actions can now cancel themselves
+  * timeout setting is moved to within workers setting config
+  * keep (most of the) deferrals count between backend restarts
+
+  [BUG FIXES]
+
+  * routed peers only queue if not also a layer2 neighbor
+  * efficiency improvements in job queue for discovery
+  * allow device autorenumber during discovery to work with netdisco-do
+  * improvements to log messages
+
 2.039002 - 2018-02-07
 
   [BUG FIXES]
