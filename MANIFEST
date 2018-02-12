@@ -73,6 +73,7 @@ lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/PortVLANMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm
+lib/App/Netdisco/DB/Result/Virtual/TastyJobs.pm
 lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm
 lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm
 lib/App/Netdisco/DB/Result/Virtual/UserRole.pm

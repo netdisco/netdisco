@@ -73,7 +73,7 @@
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.42",
+            "SNMP::Info" : "3.44",
             "SQL::Translator" : "0.11018",
             "Scope::Guard" : "0",
             "Sereal" : "0",
@@ -287,6 +287,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::SubnetUtilization" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::TastyJobs" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/TastyJobs.pm"
       },
       "App::Netdisco::DB::Result::Virtual::UnDirEdgesAgg" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm"
@@ -767,7 +770,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/BSD-3-Clause"
+         "http://opensource.org/licenses/bsd-license.php"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -776,5 +779,5 @@
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
    "version" : "2.039002",
-   "x_serialization_backend" : "JSON::PP version 2.94"
+   "x_serialization_backend" : "JSON::PP version 2.97001"
 }
