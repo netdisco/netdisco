@@ -46,10 +46,8 @@ my $settings = setting( 'rancid' );
 my $domain_suffix = setting( 'domain_suffix' ) || '';
 my $delimiter = $settings->{ 'delimiter' } || ':';
 my $down_age = $settings->{ 'down_age' } || '1 day';
-my $rancidconf = $settings->{ 'rancid_conf' } || '/etc/rancid';
 my $rancidhome = $settings->{ 'rancid_home' } || '/var/lib/rancid';
 my $config_vendormap = $settings->{ 'vendormap' } || {};
-my $default_group = $settings->{ 'default_group' } || 'other';
 
 my $by_ip = {};
 foreach my $g (@{$settings->{ 'by_ip' }}) {
@@ -61,33 +59,6 @@ foreach my $g (@{$settings->{ 'by_hostname' }}) {
   $by_hostname->{$g} = 1;
 }
 
-my $allowed_types = {};
-if (-f "$rancidconf/rancid.types.base") {
-    open (my $RANCID_CFG, "<$rancidconf/rancid.types.base") or die("Unable to open rancid config file $rancidconf/rancid.types.base");
-    foreach (<$RANCID_CFG>) {
-        next if (/^(#|$)/);
-        $allowed_types->{$1} = 1 if (/^([-a-z0-9_]+);login;.*$/ && !exists($allowed_types->{$1}));
-    }
-    close ($RANCID_CFG);
-} else {
-    printf(STDERR "Warning, the file $rancidconf/rancid.types.base doesn't exist\n");
-}
-
-if (-f "$rancidconf/rancid.types.conf") {
-    open (my $RANCID_CFG, "<$rancidconf/rancid.types.conf") or die("Unable to open rancid config file $rancidconf/rancid.types.conf");
-    foreach (<$RANCID_CFG>) {
-        next if (/^(#|$)/);
-        $allowed_types->{$1} = 1 if (/^([-a-z0-9_]+);login;.*$/ && !exists($allowed_types->{$1}));
-    }
-    close ($RANCID_CFG);
-} else {
-    printf(STDERR "Warning, the file $rancidconf/rancid.types.conf doesn't exist\n");
-}
-
-if (!scalar keys %$allowed_types) {
-    die("You didn't have any type configured in your RANCiD installation. Please check your configuration");
-}
-
 my @devices = schema('netdisco')->resultset('Device')->search({},
   {
     '+columns' => {
@@ -96,22 +67,14 @@ my @devices = schema('netdisco')->resultset('Device')->search({},
   })->all;
 
 my $groups = $settings->{ 'groups' };
-my $directory = $settings->{ 'directory' } || {};
-my $list = { map {$_ => [] } $default_group, keys $groups };
+my $list = {};
 
 foreach my $d (@devices) {
   my $old = $d->get_column( 'old' );
-  my $devgroup = $default_group;
+  my $devgroup = 'other';
   foreach my $g (keys %$groups) {
     if (check_acl_only( $d, $groups->{$g} )) {
       $devgroup = $g;
-      last;
-    }
-  }
-  $d->{dir} = '';
-  foreach my $dir (keys %$directory) {
-    if (check_acl_only( $d, $directory->{$dir} )) {
-      $d->{dir} = $dir;
       last;
     }
   }
@@ -128,50 +91,26 @@ my %VENDORMAP = (
 
 foreach my $group (keys %$list) {
   open(ROUTER, ">${rancidhome}/${group}/router.db") || die "${rancidhome}/${group}/router.db: $!\n";
-  print(ROUTER "#\n# Router list file for RANCID group $group. Generate automatically by netdisco-rancid-export\n#\n");
-  if ($by_ip->{$group}) {
   foreach my $dev (sort {$a->ip cmp $b->ip} @{$list->{$group}}) {
-      my $vendor = $dev->vendor || '';
-      my $vendormodel = join(':',$dev->vendor,$dev->model);
-      my $name = $dev->ip;
-      if ( $config_vendormap->{$vendor} or $config_vendormap->{$vendormodel} ) {
-        $vendor = $config_vendormap->{$vendormodel} || $config_vendormap->{$vendor};
-      } elsif ( $VENDORMAP{$vendor} or $VENDORMAP{$vendormodel} ) {
+    my $vendor = $dev->vendor;
+    my $vendormodel = join(':',$dev->vendor,$dev->model);
+    my $name;
+    if ( $VENDORMAP{$vendor} or $VENDORMAP{$vendormodel} ) {
       $vendor = $VENDORMAP{$vendormodel} || $VENDORMAP{$vendor};
     }
-
-      if ($name ne '' && $vendor ne '' && exists($allowed_types->{$vendor})) {
-        $name =~ s/$domain_suffix$// if ($by_hostname->{$group});
-        printf(ROUTER "%s$delimiter%s$delimiter%s$delimiter-$delimiter%s\n",
-          $name,
-          $vendor,
-          $dev->get_column( 'old' ) ? "down" : "up",
-          $dev->{dir});
-      } else {
-        printf(STDERR "The device $name didn't have been exported because the type didn't have been found\n");
-      }
+    if ( $config_vendormap->{$vendor} or $config_vendormap->{$vendormodel} ) {
+      $vendor = $config_vendormap->{$vendormodel} || $config_vendormap->{$vendor};
     }
-  } else {
-    foreach my $dev (sort {($a->dns || $a->name) cmp ($b->dns || $b->name)} @{$list->{$group}}) {
-      my $vendor = $dev->vendor || '';
-      my $vendormodel = join(':',$dev->vendor || '',$dev->model || '');
-      my $name = ($dev->dns || $dev->name);
-      if ( $config_vendormap->{$vendor} or $config_vendormap->{$vendormodel} ) {
-        $vendor = $config_vendormap->{$vendormodel} || $config_vendormap->{$vendor};
-      } elsif ( $VENDORMAP{$vendor} or $VENDORMAP{$vendormodel} ) {
-        $vendor = $VENDORMAP{$vendormodel} || $VENDORMAP{$vendor};
-      }
-      if ($name ne '' && $vendor ne '' && exists($allowed_types->{$vendor})) {
-        $name =~ s/$domain_suffix$// if ($by_hostname->{$group});
-        printf(ROUTER "%s$delimiter%s$delimiter%s$delimiter-$delimiter%s\n",
-          $name,
-          $vendor,
-          $dev->get_column( 'old' ) || '' ? "down" : "up",
-          $dev->{dir});
-      } else {
-        printf(STDERR "The device $name didn't have been exported because the type didn't have been found\n");
-      }
+    if ($by_ip->{$group}) {
+      $name = $dev->ip;
+    } else {
+      $name = ($dev->dns || $dev->name);
     }
+    if ($by_hostname->{$group}) {
+      $name =~ s/$domain_suffix$//;
+    }
+    printf ROUTER "%s$delimiter%s$delimiter%s\n", $name, $vendor,
+      $dev->get_column( 'old' ) ? "down" : "up";
   }
   close(ROUTER);
 }
@@ -193,20 +132,15 @@ This script requires some configuration to be added to your Netdisco
 "C<~/environments/deployment.yml>" file, for example:
 
  rancid:
-   rancidconf:   /etc/rancid
    rancid_home:  /var/lib/rancid
    down_age:     '1 day'
    delimiter:    ':'
    by_ip:        [ other ]
    by_hostname:  [ other2 ]
-   default_group: 'other'
    groups:
      switch:     [ 'name:.*[Ss][Ww].*' ]
      rtr:        [ 'name:[rR]tr.*' ]
      ap:         [ 'name:[aA][pP].*' ]
-   directory:
-     site1:      [ 'name:site1-.*' ]
-     site2:      [ 'group:site2' ]
    vendormap:
      "dell":      force10
      "dell:2024": dellnseries
@@ -214,13 +148,6 @@ This script requires some configuration to be added to your Netdisco
 Note that C<netdisco-rancid-export> is not part of the automatic scheduler
 built in to Netdisco. You should run this script via C<cron> just after your
 periodic C<discoverall>.
-
-=head2 C<rancid_conf>
-
-The location where is located the configuration of RANCID. 
-The script use it to check that the type of device exist in RANCID before export.
-
-Default: "C</etc/rancid>".
 
 =head2 C<rancid_home>
 
@@ -252,28 +179,11 @@ vendor, the right hand side (value) should be the RANCID vendor script name.
 You can also set the Netdisco vendor to be "C<vendor:model>" for fine-grained
 control. See the synopsis for an example.
 
-=head2 C<default_group>
-
-The default group where should be inserted a device if it's doesn't match a
-defined group.
-
-Default: "C<other>".
-
 =head2 C<groups>
 
 This dictionary maps RANCID Group names with configuration which will match
 devices in the Netdisco database. The configuration is the same as any of
 Netdisco's "C<*_only>" settings, and accepts IP, prefix, device property.
-
-=head2 C<directory>
-
-This dictionary maps directory where place RANCID configuration with configuration 
-which will match devices in the Netdisco database. The configuration is the
-same as any of Netdisco's "C<*_only>" settings, and accepts IP, prefix, device property.
-
-This functionnality only if you use the RANCID version at this place:
-https://github.com/earendilfr/rancid
-With all other versions, the directory parameter is used as a comment.
 
 =head2 C<by_ip>
 
