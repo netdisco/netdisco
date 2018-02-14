@@ -8,7 +8,6 @@ use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Util::Device qw/get_device renumber_device/;
 
 register_worker({ phase => 'check' }, sub {
-  my ($job, $workerconf) = @_;
   return Status->error('Missing device (-d).')
     unless defined shift->device;
 
