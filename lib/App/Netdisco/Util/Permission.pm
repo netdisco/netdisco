@@ -105,8 +105,9 @@ sub check_acl {
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
 
-  INLIST: foreach my $item (@$config) {
-      next INLIST if $item eq 'op:and';
+  INLIST: foreach (@$config) {
+      my $item = $_;
+      next INLIST if $_ eq 'op:and';
 
       if (ref qr// eq ref $item) {
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
