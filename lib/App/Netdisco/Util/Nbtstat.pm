@@ -42,7 +42,7 @@ service status for addresses which responded.
 sub nbtstat_resolve_async {
     my $ips = shift;
 
-    my $timeout  = setting('nbtstat_timeout')  || 1;
+    my $timeout  = setting('nbtstat_response_timeout')  || 1;
     my $interval = setting('nbtstat_interval') || 0.02;
 
     my $stater = App::Netdisco::AnyEvent::Nbtstat->new(

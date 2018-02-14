@@ -152,7 +152,7 @@ sub check_acl {
           next INLIST;
       }
 
-      if ($item =~ m/([a-f0-9]+)-([a-f0-9]+)$/i) {
+      if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
           my $last  = $2;
 

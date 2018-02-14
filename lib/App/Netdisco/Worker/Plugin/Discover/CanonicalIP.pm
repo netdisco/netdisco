@@ -7,6 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'check_acl_only';
 use App::Netdisco::Util::DNS 'ipv4_from_hostname';
+use App::Netdisco::Util::Device 'is_discoverable';
 use Dancer::Plugin::DBIC 'schema';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
@@ -46,6 +47,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           if (check_acl_only($device, $key)
                 and check_acl_only($alias, $map->{$key})) {
 
+            if (not is_discoverable( $alias->alias )) {
+              debug sprintf ' [%s] device - cannot renumber to %s - not discoverable',
+                $old_ip, $alias->alias;
+              next;
+            }
+
             if (App::Netdisco::Transport::SNMP->test_connection( $alias->alias )) {
               $new_ip = $alias->alias;
               last ALIAS;
@@ -63,18 +70,26 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   return if $new_ip eq $old_ip;
 
   schema('netdisco')->txn_do(sub {
-    # delete target device with the same vendor and serial number
-    schema('netdisco')->resultset('Device')->search({
+    my $existing = schema('netdisco')->resultset('Device')->search({
       ip => $new_ip, vendor => $device->vendor, serial => $device->serial,
-    })->delete;
+    });
+
+    if (($job->subaction eq 'with-nodes') and $existing->count) {
+      $device->delete;
+      return $job->cancel(
+        " [$old_ip] device - cancelling fresh discover: already known as $new_ip");
+    }
+
+    # discover existing device but change IP, need to remove existing device
+    $existing->delete;
 
     # if target device exists then this will die
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
-    # is not done in renumber but required otherwise confusing at job end!
+    # is not done in renumber, but required, otherwise confusing at job end!
     schema('netdisco')->resultset('Admin')
-      ->find({job => $job->id})->update({device => $new_ip});
+      ->find({job => $job->id})->update({device => $new_ip}) if $job->id;
 
     return Status->info(sprintf ' [%s] device - changed IP to %s (%s)',
       $old_ip, $device->ip, ($device->dns || ''));

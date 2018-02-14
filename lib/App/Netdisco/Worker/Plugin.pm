@@ -36,9 +36,12 @@ register 'register_worker' => sub {
     debug sprintf '-> run worker %s/%s/%s',
       @$workerconf{qw/phase namespace priority/};
 
-    # update job's record of namespace and priority
+    return if $job->is_cancelled;
+
     # check to see if this namespace has already passed at higher priority
-    return if $job->namespace_passed($workerconf);
+    # and also update job's record of namespace and priority
+    return $job->add_status( Status->info('skip: namespace passed at higher priority') )
+      if $job->namespace_passed($workerconf);
 
     # support part-actions via action::namespace
     if ($job->only_namespace and $workerconf->{phase} ne 'check') {
@@ -55,7 +58,7 @@ register 'register_worker' => sub {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
 
-      return $job->add_status( Status->info('worker not applicable to this device') )
+      return $job->add_status( Status->info('skip: acls restricted') )
         if ($no and check_acl_no($job->device, $no))
            or ($only and not check_acl_only($job->device, $only));
 
@@ -72,7 +75,7 @@ register 'register_worker' => sub {
       }
 
       # per-device action but no device creds available
-      return $job->add_status( Status->info('worker driver or action not applicable') )
+      return $job->add_status( Status->info('skip: driver or action not applicable') )
         if 0 == scalar @newuserconf;
     }
 

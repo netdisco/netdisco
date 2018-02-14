@@ -54,6 +54,7 @@
             "JSON" : "2.90",
             "JSON::XS" : "3.01",
             "List::MoreUtils" : "0.33",
+            "List::Util" : "1.49",
             "MCE" : "1.703",
             "MIME::Base64" : "3.13",
             "Module::Load" : "0.32",
@@ -72,13 +73,14 @@
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.39",
+            "SNMP::Info" : "3.44",
             "SQL::Translator" : "0.11018",
             "Scope::Guard" : "0",
             "Sereal" : "0",
             "Socket6" : "0.23",
             "Starman" : "0.4008",
             "Storable" : "0",
+            "Sys::SigAction" : "0",
             "Template" : "2.24",
             "Template::Plugin::CSV" : "0.04",
             "Template::Plugin::Number::Format" : "1.02",
@@ -106,7 +108,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.038031"
+         "version" : "2.039003"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -285,6 +287,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::SubnetUtilization" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::TastyJobs" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/TastyJobs.pm"
       },
       "App::Netdisco::DB::Result::Virtual::UnDirEdgesAgg" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm"
@@ -658,6 +663,9 @@
       "App::Netdisco::Worker::Plugin::Discover::Neighbors" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm"
       },
+      "App::Netdisco::Worker::Plugin::Discover::Neighbors::Routed" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover::PortPower" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm"
       },
@@ -702,6 +710,9 @@
       },
       "App::Netdisco::Worker::Plugin::Macwalk" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Macwalk.pm"
+      },
+      "App::Netdisco::Worker::Plugin::MakeRancidConf" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm"
       },
       "App::Netdisco::Worker::Plugin::Monitor" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Monitor.pm"
@@ -767,6 +778,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.038031",
-   "x_serialization_backend" : "JSON::PP version 2.94"
+   "version" : "2.039003",
+   "x_serialization_backend" : "JSON::PP version 2.97001"
 }

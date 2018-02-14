@@ -12,6 +12,7 @@ use Try::Tiny;
 use Module::Load ();
 use Path::Class 'dir';
 use NetAddr::IP::Lite ':lower';
+use List::Util qw/pairkeys pairfirst/;
 
 use base 'Dancer::Object::Singleton';
 
@@ -131,6 +132,11 @@ sub _snmp_connect_generic {
     DebugSNMP => ($ENV{SNMP_TRACE} || 0),
   );
 
+  # an override for RemotePort
+  ($snmp_args{RemotePort}) =
+    (pairkeys pairfirst { check_acl_no($device, $b) }
+      %{setting('snmp_remoteport') || {}}) || 161;
+
   # an override for bulkwalk
   $snmp_args{BulkWalk} = 0 if check_acl_no($device, 'bulkwalk_no');
 
@@ -198,8 +204,9 @@ sub _try_connect {
 
   try {
       debug
-        sprintf '[%s] try_connect with ver: %s, class: %s, comm: %s',
-        $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
+        sprintf '[%s:%s] try_connect with ver: %s, class: %s, comm: %s',
+          $snmp_args->{DestHost}, $snmp_args->{RemotePort},
+          $snmp_args->{Version}, $class, $debug_comm;
       Module::Load::load $class;
 
       $info = $class->new(%$snmp_args, %comm_args) or return;
@@ -210,8 +217,9 @@ sub _try_connect {
       if ($reclass and $info and $info->device_type ne $class) {
           $class = $info->device_type;
           debug
-            sprintf '[%s] try_connect with ver: %s, new class: %s, comm: %s',
-            $snmp_args->{DestHost}, $snmp_args->{Version}, $class, $debug_comm;
+            sprintf '[%s:%s] try_connect with ver: %s, new class: %s, comm: %s',
+              $snmp_args->{DestHost}, $snmp_args->{RemotePort},
+              $snmp_args->{Version}, $class, $debug_comm;
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);

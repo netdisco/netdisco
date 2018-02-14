@@ -57,14 +57,26 @@ sub jq_warm_thrusters {
   }
 
   schema('netdisco')->txn_do(sub {
-    $rs->search({ backend => setting('workers')->{'BACKEND'} })->delete;
-    $rs->populate([
-      map {{
-        backend => setting('workers')->{'BACKEND'},
-        device  => $_,
-        actionset => $actionset{$_},
-      }} keys %actionset
-    ]);
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+    }, { for => 'update' }, )->update({ actionset => [] });
+
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+      deferrals => { '>' => 0 },
+    }, { for => 'update' }, )->update({ deferrals => \'deferrals - 1' });
+
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+      actionset => { -value => [] },
+      deferrals => 0,
+    })->delete;
+
+    $rs->update_or_create({
+      backend => setting('workers')->{'BACKEND'},
+      device  => $_,
+      actionset => $actionset{$_},
+    }, { key => 'primary' }) for keys %actionset;
   });
 }
 
@@ -75,41 +87,14 @@ sub jq_getsome {
   my $jobs = schema('netdisco')->resultset('Admin');
   my @returned = ();
 
-  my %jobsearch = (
-    status => 'queued',
-    device => { '-not_in' =>
-      $jobs->skipped(setting('workers')->{'BACKEND'},
-                     setting('workers')->{'max_deferrals'},
-                     setting('workers')->{'retry_after'})
-           ->columns('device')->as_query },
-  );
-  my %randoms = (order_by => 'random()', rows => $num_slots );
+  my $tasty = schema('netdisco')->resultset('Virtual::TastyJobs')
+    ->search(undef,{ bind => [
+      setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
+      setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
+      setting('workers')->{'retry_after'}, $num_slots,
+    ]});
 
-  my $hiprio = $jobs->search({
-    %jobsearch,
-    -or => [
-      { username => { '!=' => undef } },
-      { action => { -in => setting('job_prio')->{'high'} } },
-    ],
-  }, {
-    %randoms,
-    '+select' => [\'100 as job_priority'], '+as' => ['me.job_priority'],
-  });
-
-  my $loprio = $jobs->search({
-    %jobsearch,
-    action => { -not_in => setting('job_prio')->{'high'} },
-  }, {
-    %randoms,
-    '+select' => [\'0 as job_priority'], '+as' => ['me.job_priority'],
-  });
-
-  my $rs = $hiprio->union($loprio)->search(undef, {
-    order_by => { '-desc' => 'job_priority' },
-    rows => $num_slots,
-  });
-
-  while (my $job = $rs->next) {
+  while (my $job = $tasty->next) {
     if ($job->device) {
       # need to handle device discovered since backend daemon started
       # and the skiplist was primed. these should be checked against

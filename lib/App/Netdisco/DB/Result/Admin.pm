@@ -71,7 +71,7 @@ query with a C<backend> host, C<max_deferrals>, and C<retry_after> parameters
 
 =cut
 
-__PACKAGE__->has_many( device_skips => 'App::Netdisco::DB::Result::DeviceSkip',
+__PACKAGE__->might_have( device_skips => 'App::Netdisco::DB::Result::DeviceSkip',
   sub {
     my $args = shift;
     return {

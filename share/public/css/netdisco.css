@@ -483,6 +483,11 @@ td > form.nd_inline-form {
   width: unset;
 }
 
+/* pretty toggles have no height on first load - bug? */
+div.toggle.btn-small {
+  height: 18px !important;
+}
+
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
   width: 121px;

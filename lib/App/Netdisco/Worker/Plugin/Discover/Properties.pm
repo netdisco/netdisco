@@ -7,8 +7,11 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
+use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Dancer::Plugin::DBIC 'schema';
+use Scope::Guard 'guard';
 use NetAddr::IP::Lite ':lower';
 use Encode;
 
@@ -18,44 +21,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $device = $job->device;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
-
-  my $ip_index   = $snmp->ip_index;
-  my $interfaces = $snmp->interfaces;
-  my $ip_netmask = $snmp->ip_netmask;
-
-  # build device aliases suitable for DBIC
-  my @aliases;
-  foreach my $entry (keys %$ip_index) {
-      my $ip = NetAddr::IP::Lite->new($entry)
-        or next;
-      my $addr = $ip->addr;
-
-      next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
-      next if setting('ignore_private_nets') and $ip->is_rfc1918;
-
-      my $iid = $ip_index->{$addr};
-      my $port = $interfaces->{$iid};
-      my $subnet = $ip_netmask->{$addr}
-        ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
-        : undef;
-
-      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
-      push @aliases, {
-          alias => $addr,
-          port => $port,
-          subnet => $subnet,
-          dns => undef,
-      };
-  }
-
-  debug sprintf ' resolving %d aliases with max %d outstanding requests',
-      scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
-  my $resolved_aliases = hostnames_resolve_async(\@aliases);
-
-  # fake one aliases entry for devices not providing ip_index
-  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar @aliases;
 
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
@@ -85,21 +50,62 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
 
-
   $device->set_column( snmp_class => $snmp->class );
   $device->set_column( last_discover => \'now()' );
+
+  schema('netdisco')->txn_do(sub {
+    $device->update_or_insert(undef, {for => 'update'});
+    return Status->done("Ended discover for $device");
+  });
+});
+
+register_worker({ phase => 'early', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
+
+  my $device = $job->device;
+  return unless $device->in_storage;
+  return unless $job->subaction eq 'with-nodes';
+
+  my $db_device = get_device($device->ip);
+  if ($device->ip ne $db_device->ip) {
+    return schema('netdisco')->txn_do(sub {
+      $device->delete;
+      return $job->cancel("fresh discover cancelled: $device already known as $db_device");
+    });
+  }
+
+  return Status->info(" [$device] device - OK to continue discover");
+});
+
+register_worker({ phase => 'early', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
+
+  my $device = $job->device;
+  return unless $device->in_storage;
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or return Status->defer("discover failed: could not SNMP connect to $device");
+
+  my @aliases = ();
+  push @aliases, _get_ipv4_aliases($device, $snmp);
+  push @aliases, _get_ipv6_aliases($device, $snmp);
+
+  debug sprintf ' resolving %d aliases with max %d outstanding requests',
+      scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+  my $resolved_aliases = hostnames_resolve_async(\@aliases);
+
+  # fake one aliases entry for devices not providing ip_index
+  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
+    if 0 == scalar @aliases;
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
     debug sprintf ' [%s] device - removed %d aliases',
       $device->ip, $gone;
-    $device->update_or_insert(undef, {for => 'update'});
     $device->device_ips->populate($resolved_aliases);
-    debug sprintf ' [%s] device - added %d new aliases',
-      $device->ip, scalar @aliases;
-  });
 
-  return Status->done("Ended discover for $device");
+    return Status->info(sprintf ' [%s] aliases - added %d new aliases',
+      $device->ip, scalar @aliases);
+  });
 });
 
 register_worker({ phase => 'early', driver => 'snmp' }, sub {
@@ -241,5 +247,125 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $device->ip, scalar values %interfaces);
   });
 });
+
+# return a list of VRF which are OK to connect
+sub _get_vrf_list {
+    my ($device, $snmp) = @_;
+
+    return () if ! $snmp->cisco_comm_indexing;
+
+    my @ok_vrfs = ();
+    my $vrf_name = $snmp->vrf_name || {};
+
+    while (my ($idx, $vrf) = each(%$vrf_name)) {
+        if ($vrf =~ /^\S+$/) {
+            my $ctx_name = pack("C*",split(/\./,$idx));
+            $ctx_name =~ s/.*[^[:print:]]+//;
+            debug sprintf(' [%s] Discover VRF %s with SNMP Context %s', $device->ip, $vrf, $ctx_name); 
+            push (@ok_vrfs, $ctx_name);
+        }
+    }
+
+    return @ok_vrfs;
+}
+
+sub _get_ipv4_aliases {
+  my ($device, $snmp) = @_;
+  my @aliases;
+
+  my $ip_index   = $snmp->ip_index;
+  my $interfaces = $snmp->interfaces;
+  my $ip_netmask = $snmp->ip_netmask;
+
+  # Get IP Table per VRF if supported
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  if (scalar @vrf_list) {
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
+    foreach my $vrf (@vrf_list) {
+      snmp_comm_reindex($snmp, $device, $vrf);
+      $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
+      $interfaces = { %$interfaces, %{$snmp->interfaces} };
+      $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask} };
+    }
+  }
+
+  # build device aliases suitable for DBIC
+  foreach my $entry (keys %$ip_index) {
+      my $ip = NetAddr::IP::Lite->new($entry)
+        or next;
+      my $addr = $ip->addr;
+
+      next if $addr eq '0.0.0.0';
+      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+      next if setting('ignore_private_nets') and $ip->is_rfc1918;
+
+      my $iid = $ip_index->{$addr};
+      my $port = $interfaces->{$iid};
+      my $subnet = $ip_netmask->{$addr}
+        ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
+        : undef;
+
+      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
+      push @aliases, {
+          alias => $addr,
+          port => $port,
+          subnet => $subnet,
+          dns => undef,
+      };
+  }
+
+  return @aliases;
+}
+
+sub _get_ipv6_aliases {
+  my ($device, $snmp) = @_;
+  my @aliases;
+
+  my $ipv6_index  = $snmp->ipv6_index;
+  my $ipv6_addr   = $snmp->ipv6_addr;
+  my $ipv6_type   = $snmp->ipv6_type;
+  my $ipv6_pfxlen = $snmp->ipv6_addr_prefixlength;
+  my $interfaces  = $snmp->interfaces;
+
+  # Get IP Table per VRF if supported
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  if (scalar @vrf_list) {
+    my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
+    foreach my $vrf (@vrf_list) {
+      snmp_comm_reindex($snmp, $device, $vrf);
+      $ipv6_index  = { %$ipv6_index,  %{$snmp->ipv6_index} };
+      $ipv6_addr   = { %$ipv6_addr,   %{$snmp->ipv6_addr} };
+      $ipv6_type   = { %$ipv6_type,   %{$snmp->ipv6_type} };
+      $ipv6_pfxlen = { %$ipv6_pfxlen, %{$snmp->ipv6_addr_prefixlength} };
+      $interfaces  = { %$interfaces,  %{$snmp->interfaces} };
+    }
+  }
+
+  # build device aliases suitable for DBIC
+  foreach my $iid (keys %$ipv6_index) {
+      next unless $ipv6_type->{$iid} and $ipv6_type->{$iid} eq 'unicast';
+      my $entry = $ipv6_addr->{$iid} or next;
+      my $ip = NetAddr::IP::Lite->new($entry) or next;
+      my $addr = $ip->addr;
+
+      next if $addr eq '::0';
+      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+
+      my $port   = $interfaces->{ $ipv6_index->{$iid} };
+      my $subnet = $ipv6_pfxlen->{$iid}
+        ? NetAddr::IP::Lite->new($addr .'/'. $ipv6_pfxlen->{$iid})->network->cidr
+        : undef;
+
+      debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
+      push @aliases, {
+          alias => $addr,
+          port => $port,
+          subnet => $subnet,
+          dns => undef,
+      };
+  }
+
+  return @aliases;
+}
 
 true;

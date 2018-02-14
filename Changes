@@ -1,3 +1,58 @@
+2.039003 - 2018-02-12
+
+  [ENHANCEMENTS]
+
+  * actions can now cancel themselves
+  * timeout setting is moved to within workers setting config
+  * nbtstat_timeout setting is renamed to nbtstat_response_timeout
+  * keep (most of the) deferrals count between backend restarts
+
+  [BUG FIXES]
+
+  * routed peers only queue if not also a layer2 neighbor
+  * efficiency improvements in job queue for discovery
+  * allow device autorenumber during discovery to work with netdisco-do
+  * improvements to log messages
+
+2.039002 - 2018-02-07
+
+  [BUG FIXES]
+
+  * Specify version of List::Util required
+  * Allow PostgreSQL config to use additional psql options
+  * Tighten ACL IP Range regexp to avoid matching hostnames with hyphens
+
+2.039001 - 2018-02-02
+
+  [ENHANCEMENTS]
+
+  * #47 gather IPv6 Interface Addresses
+
+2.039000 - 2018-02-02
+
+  [NEW FEATURES]
+
+  * #332 Autodiscovery via BGP and OSPF peers
+  * New MakeRancidConf worker (and makerancidconf action)
+  * #228 timeout setting (default 10min) for backend jobs
+  * #341 timeout setting for all actions ("<actionname>_timeout")
+  * #368 ND2_DB_ROLLBACK environment variable to roll back job updates to DB
+  * snmp_remoteport setting to override port 161 for SNMP targets
+
+  [BUG FIXES]
+
+  * #367 buttons in the neighbourmap have an incorrect height
+  * #364 expire_nodeip_freshness setting to revert expire to ND1 behavior
+  * Do not attempt Canonical IP change to non-discoverable IP
+  * Allow netdisco-do show to run when no func is available to handle request
+
+2.038032 - 2018-01-28
+
+  [ENHANCEMENTS]
+
+  * #363 Show user fullname if available in navbar (earendilfr)
+  * #366 Retrieve VRF interface IPs (earendilfr)
+
 2.038031 - 2018-01-23
 
   [ENHANCEMENTS]

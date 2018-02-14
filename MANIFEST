@@ -73,6 +73,7 @@ lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/PortVLANMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm
+lib/App/Netdisco/DB/Result/Virtual/TastyJobs.pm
 lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm
 lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm
 lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
@@ -197,6 +198,7 @@ lib/App/Netdisco/Worker/Plugin/Discover.pm
 lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
+lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
@@ -212,6 +214,7 @@ lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
 lib/App/Netdisco/Worker/Plugin/Macwalk.pm
+lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm
 lib/App/Netdisco/Worker/Plugin/Monitor.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat/Core.pm

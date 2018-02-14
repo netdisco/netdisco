@@ -19,6 +19,10 @@ register_worker({ phase => 'check' }, sub {
   return Status->defer("discover skipped: $device is pseudo-device")
     if $device->is_pseudo;
 
+  # runner has already called get_device to promote $job->device
+  return $job->cancel("fresh discover cancelled: $device already known")
+    if $device->in_storage and $job->subaction eq 'with-nodes';
+
   return Status->defer("discover deferred: $device is not discoverable")
     unless is_discoverable_now($device);
 

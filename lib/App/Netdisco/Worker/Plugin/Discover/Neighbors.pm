@@ -40,12 +40,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   my @to_discover = store_neighbors($device);
-  my %seen_id = ();
+  my (%seen_id, %seen_ip) = ((), ());
 
   # only enqueue if device is not already discovered,
   # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
       my ($ip, $remote_type, $remote_id) = @$neighbor;
+      if ($seen_ip{ $ip }++) {
+          debug sprintf
+            ' queue - skip: IP %s is already queued from %s',
+            $ip, $device->ip;
+          next;
+      }
+
       if ($remote_id and $seen_id{ $remote_id }++) {
           debug sprintf
             ' queue - skip: %s with ID [%s] already queued from %s',
@@ -53,10 +60,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           next;
       }
 
-      my $device = get_device($ip);
-      next if $device->in_storage;
+      my $newdev = get_device($ip);
+      next if $newdev->in_storage;
 
-      if (not is_discoverable($device, $remote_type)) {
+      if (not is_discoverable($newdev, $remote_type)) {
           debug sprintf
             ' queue - skip: %s of type [%s] excluded by discover_* config',
             $ip, ($remote_type || '');
@@ -73,8 +80,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         ($remote_id ? (device_key => $remote_id) : ()),
       });
 
-      debug sprintf ' queue - queued device %s (ID: [%s])',
-        $ip, ($remote_id || '');
+      vars->{'queued'}->{$ip} = true;
+      debug sprintf ' [%s] queue - queued %s for discovery (ID: [%s])',
+        $device, $ip, ($remote_id || '');
   }
 
   return Status->info(sprintf ' [%s] neigh - processed %s neighbors',
@@ -243,8 +251,7 @@ sub store_neighbors {
       }
 
       # what we came here to do.... discover the neighbor
-      debug sprintf
-        ' [%s] neigh - adding neighbor %s, ID [%s], on %s to discovery queue',
+      debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
         $device->ip, $remote_ip, ($remote_id || ''), $port;
       push @to_discover, [$remote_ip, $remote_type, $remote_id];
 

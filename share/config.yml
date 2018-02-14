@@ -197,6 +197,7 @@ nonincreasing: false
 snmpver: 3
 snmptimeout: 3000000
 snmpretries: 2
+snmp_remoteport: {}
 devices_no: []
 devices_only: []
 discover_no: []
@@ -229,12 +230,13 @@ nbtstat_no: []
 nbtstat_only: []
 nbtstat_max_age: 7
 nbtstat_interval: 0.02
-nbtstat_timeout: 1
+nbtstat_response_timeout: 1
 node_freshness: 0
 expire_devices: 60
 expire_nodes: 90
 expire_nodes_archive: 60
 expire_jobs: 14
+expire_nodeip_freshness: null
 store_wireless_clients: true
 store_modules: true
 ignore_interfaces:
@@ -278,6 +280,7 @@ wap_platforms:
 
 workers:
   tasks: 'AUTO * 2'
+  timeout: 600
   sleep_time: 1
   min_runtime: 0
   max_deferrals: 10
@@ -336,6 +339,7 @@ worker_plugins:
   - 'Discover::CanonicalIP'
   - 'Discover::Entities'
   - 'Discover::Neighbors'
+  - 'Discover::Neighbors::Routed'
   - 'Discover::PortPower'
   - 'Discover::Properties'
   - 'Discover::VLANs'
@@ -351,6 +355,7 @@ worker_plugins:
   - 'Macsuck::Nodes'
   - 'Macsuck::WirelessNodes'
   - 'Macwalk'
+  - 'MakeRancidConf'
   - 'Monitor'
   - 'Nbtstat'
   - 'Nbtstat::Core'

@@ -13,8 +13,7 @@ register_worker({ phase => 'main' }, sub {
 
   # if requested, and the device has not yet been
   # arpniped/macsucked, queue those jobs now
-  return unless $device->in_storage
-    and $job->subaction and $job->subaction eq 'with-nodes';
+  return unless $device->in_storage and $job->subaction eq 'with-nodes';
 
   if (!defined $device->last_macsuck and $device->has_layer(2)) {
     jq_insert({
