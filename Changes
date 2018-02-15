@@ -1,3 +1,9 @@
+2.039004 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #374 fix renumber cli command (earendilfr)
+
 2.039003 - 2018-02-12
 
   [ENHANCEMENTS]
