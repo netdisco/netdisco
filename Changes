@@ -1,3 +1,9 @@
+2.039006 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #374 fix ACL with negation (earendilfr)
+
 2.039005 - 2018-02-15
 
   [BUG FIXES]
