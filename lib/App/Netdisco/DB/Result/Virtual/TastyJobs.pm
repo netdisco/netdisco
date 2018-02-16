@@ -30,9 +30,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     LEFT OUTER JOIN device_skip ds
       ON (ds.backend = ? AND ds.device = my_jobs.device)
 
-   WHERE my_jobs.username IS NOT NULL
+   WHERE ds.deferrals < ?
       OR (ds.deferrals IS NULL AND ds.last_defer IS NULL)
-      OR ds.deferrals < ?
       OR ds.last_defer <= ( LOCALTIMESTAMP - ?::interval )
 
    ORDER BY job_priority DESC,

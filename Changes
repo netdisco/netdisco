@@ -1,3 +1,9 @@
+2.039007 - 2018-02-16
+
+  [ENHANCEMENTS]
+
+  * tune the job picking sql to avoid user jobs ignoring skips
+
 2.039006 - 2018-02-15
 
   [BUG FIXES]
