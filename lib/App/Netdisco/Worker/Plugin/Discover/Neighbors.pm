@@ -11,6 +11,7 @@ use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
 use List::MoreUtils ();
+use NetAddr::IP::Lite ();
 use NetAddr::MAC;
 use Encode;
 use Try::Tiny;
@@ -192,6 +193,8 @@ sub store_neighbors {
       }
 
       next unless $remote_ip;
+      my $r_ip = NetAddr::IP::Lite->new($remote_ip) or next;
+      $remote_ip = $r_ip->addr;
 
       # a bunch of heuristics to search known devices if we don't have a
       # useable remote IP...
