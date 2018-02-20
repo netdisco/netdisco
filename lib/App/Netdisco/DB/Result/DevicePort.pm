@@ -166,6 +166,17 @@ __PACKAGE__->might_have( power => 'App::Netdisco::DB::Result::DevicePortPower', 
   'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
 
+=head2 properties
+
+Returns a row from the C<device_port_properties> table if one refers to this
+device port.
+
+=cut
+
+__PACKAGE__->might_have( properties => 'App::Netdisco::DB::Result::DevicePortProperties', {
+  'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
+});
+
 =head2 ssid
 
 Returns a row from the C<device_port_ssid> table if one refers to this

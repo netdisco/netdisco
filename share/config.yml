@@ -341,6 +341,7 @@ worker_plugins:
   - 'Discover::Neighbors'
   - 'Discover::Neighbors::Routed'
   - 'Discover::PortPower'
+  - 'Discover::PortProperties'
   - 'Discover::Properties'
   - 'Discover::VLANs'
   - 'Discover::Wireless'

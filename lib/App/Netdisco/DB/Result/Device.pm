@@ -171,6 +171,17 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 properties_ports
+
+Returns the set of ports known to have recorded properties
+
+=cut
+
+__PACKAGE__->has_many(
+    properties_ports => 'App::Netdisco::DB::Result::DevicePortProperties',
+    'ip', { join_type => 'RIGHT' }
+);
+
 =head2 powered_ports
 
 Returns the set of ports known to have PoE capability
