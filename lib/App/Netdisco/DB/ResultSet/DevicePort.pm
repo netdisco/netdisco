@@ -154,6 +154,7 @@ sub delete {
 
   foreach my $set (qw/
     DevicePortPower
+    DevicePortProperties
     DevicePortVlan
     DevicePortWireless
     DevicePortSsid

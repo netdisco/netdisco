@@ -175,7 +175,8 @@ device port.
 
 __PACKAGE__->might_have( properties => 'App::Netdisco::DB::Result::DevicePortProperties', {
   'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
-});
+  }, { join_type => 'LEFT OUTER' }
+);
 
 =head2 ssid
 
