@@ -45,12 +45,13 @@ use Scalar::Util 'blessed';
 use NetAddr::IP qw/:rfc3021 :lower/;
 
 use App::Netdisco::Backend::Job;
+use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'get_device';
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug, $rollback);
+my ($device, $port, $extra, $debug, $queue_only, $rollback);
 my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
 
 my $result = GetOptions(
@@ -58,6 +59,7 @@ my $result = GetOptions(
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
+  'queue|q'    => \$queue_only,
   'rollback|R' => \$rollback,
   'infotrace|I+' => \$infotrace,
   'snmptrace|S+' => \$snmptrace,
@@ -117,13 +119,20 @@ foreach my $host (@hostlist) {
     }
 
     # what job are we asked to do?
-    my $job = App::Netdisco::Backend::Job->new({
-      job => 0,
+    my %job_spec = (
       action => $action,
       device => $dev,
       port   => $port,
       subaction => $extra,
-    });
+    );
+
+    if ($queue_only) {
+      jq_insert({ username => ($ENV{USER} || 'netdisco-do'), %job_spec });
+      info sprintf '%s: queued at %s', $action, scalar localtime;
+      next;
+    }
+
+    my $job = App::Netdisco::Backend::Job->new({ job => 0, %job_spec });
 
     my $actiontext = (
       ($job->device ? ('['.$job->device->ip.']') : '') .
@@ -162,7 +171,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 SYNOPSIS
 
- ~/bin/netdisco-do <action> [-DISQR] [-d <device> [-p <port>] [-e <extra>]]
+ ~/bin/netdisco-do <action> [-DISQRq] [-d <device> [-p <port>] [-e <extra>]]
 
 =head1 DESCRIPTION
 
@@ -172,7 +181,11 @@ This program allows you to run any Netdisco poller job from the command-line.
 
 Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
 simply add entries to the Netdisco job queue for other jobs, so won't seem
-to do much when you trigger them.
+to do much when you trigger them. Everything else happens in real-time.
+
+However the flag "C<-q>" will force the queueing of the job, regardless of
+type. This may be useful for cron-driven actions, or for actions working
+across large IP spaces.
 
 For any action, if you wish to run one of its individual worker stages, then
 pass C<action::stage> as the first argument to C<netdisco-do>, for example
