@@ -163,6 +163,10 @@
       <td>[% row.speed | html_entity %]</td>
       [% END %]
 
+      [% IF params.c_error %]
+      <td>[% row.error_disable_cause | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_mac %]
       <td>[% row.mac | html_entity %]</td>
       [% END %]

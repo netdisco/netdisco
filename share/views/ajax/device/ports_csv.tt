@@ -91,6 +91,10 @@
     [% myport.push(row.speed) %]
   [% END %]
 
+  [% IF params.c_error %]
+    [% myport.push(row.error_disable_cause) %]
+  [% END %]
+
   [% IF params.c_mac %]
     [% myport.push(row.mac) %]
   [% END %]

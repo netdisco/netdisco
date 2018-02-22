@@ -111,16 +111,17 @@ sidebar_defaults:
     c_lastchange: { label: 'Last Change', default: null, idx: 6 }
     c_name:       { label: 'Name', default: checked, idx: 7 }
     c_speed:      { label: 'Speed', default: null, idx: 8 }
-    c_mac:        { label: 'Port MAC', default: null, idx: 9 }
-    c_mtu:        { label: 'MTU', default: null, idx: 10 }
-    c_pvid:       { label: 'Native VLAN', default: checked, idx: 11 }
-    c_vmember:    { label: 'VLAN Membership', default: checked, idx: 12 }
-    c_power:      { label: 'PoE', default: null, idx: 13 }
-    c_ssid:       { label: 'SSID', default: null, idx: 14 }
-    c_nodes:      { label: 'Connected Nodes', default: null, idx: 15 }
-    c_neighbors:  { label: 'Connected Devices', default: checked, idx: 16 }
-    c_stp:        { label: 'Spanning Tree', default: null, idx: 17 }
-    c_up:         { label: 'Status', default: null, idx: 18 }
+    c_error:      { label: 'Error Message', default: null, idx: 9 }
+    c_mac:        { label: 'Port MAC', default: null, idx: 10 }
+    c_mtu:        { label: 'MTU', default: null, idx: 11 }
+    c_pvid:       { label: 'Native VLAN', default: checked, idx: 12 }
+    c_vmember:    { label: 'VLAN Membership', default: checked, idx: 13 }
+    c_power:      { label: 'PoE', default: null, idx: 14 }
+    c_ssid:       { label: 'SSID', default: null, idx: 15 }
+    c_nodes:      { label: 'Connected Nodes', default: null, idx: 16 }
+    c_neighbors:  { label: 'Connected Devices', default: checked, idx: 17 }
+    c_stp:        { label: 'Spanning Tree', default: null, idx: 18 }
+    c_up:         { label: 'Status', default: null, idx: 19 }
     n_age:        { label: 'Age Stamp', default: null, idx: 0 }
     n_ip4:        { label: 'IPv4 Addresses', default: checked, idx: 1 }
     n_ip6:        { label: 'IPv6 Addresses', default: checked, idx: 2 }
