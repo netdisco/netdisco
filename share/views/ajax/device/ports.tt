@@ -23,17 +23,17 @@
     <tr>
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
-        <i class="icon-remove"></i>
+        <i class="icon-remove icon-large"></i>
         [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
-        <i class="icon-ban-circle text-info"></i>
+        <i class="icon-ban-circle text-info icon-large"></i>
         [% ELSIF row.error_disable_cause %]
-        <i class="icon-exclamation-sign text-error"></i>
+        <i class="icon-exclamation-sign text-error icon-large"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
-        <i class="icon-arrow-down text-success"></i>
+        <i class="icon-arrow-down text-success icon-large"></i>
         [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
-        <i class="icon-arrow-down text-error"></i>
+        <i class="icon-arrow-down text-error icon-large"></i>
         [% ELSE %]
-        <i class="icon-angle-up text-success"></i>
+        <i class="icon-angle-up text-success icon-large"></i>
         [% END %]
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
@@ -354,7 +354,7 @@
         [% IF user_can_port_control AND params.c_admin %]
         <a class="nd_log-icon"
           href="[% uri_for('/admin/topology') %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
-          <i class="icon-bolt"
+          <i class="icon-link text-warning"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="Manual Topology"></i>
         [% END %]
