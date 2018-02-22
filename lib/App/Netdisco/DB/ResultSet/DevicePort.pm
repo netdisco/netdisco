@@ -104,6 +104,32 @@ sub only_free_ports {
     );
 }
 
+=head2 with_properties
+
+This is a modifier for any C<search()> which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item error_disable_cause
+
+=back
+
+=cut
+
+sub with_properties {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs($cond, $attrs)
+    ->search({},
+      {
+        '+select' => ['properties.error_disable_cause'],
+        '+as' => ['properties_error_disable_cause'],
+        join => 'properties',
+      });
+}
+
 =head2 with_vlan_count
 
 This is a modifier for any C<search()> (including the helpers below) which

@@ -25,7 +25,9 @@
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove"></i>
         [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
-        <i class="icon-fullscreen text-info"></i>
+        <i class="icon-ban-circle text-info"></i>
+        [% ELSIF row.error_disable_cause %]
+        <i class="icon-exclamation-sign text-error"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="icon-arrow-down text-success"></i>
         [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]

@@ -18,7 +18,7 @@ get '/ajax/content/device/ports' => require_login sub {
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
-    my $set = $device->ports;
+    my $set = $device->ports->with_properties;
 
     # refine by ports if requested
     my $f = param('f');

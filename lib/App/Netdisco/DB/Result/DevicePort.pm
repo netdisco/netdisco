@@ -175,8 +175,7 @@ device port.
 
 __PACKAGE__->might_have( properties => 'App::Netdisco::DB::Result::DevicePortProperties', {
   'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
-  }, { join_type => 'LEFT OUTER' }
-);
+});
 
 =head2 ssid
 
@@ -307,6 +306,15 @@ ID assigned to untagged frames received on the port).
 =cut
 
 sub native { return (shift)->vlan }
+
+=head2 error_disable_cause
+
+Returns the textual reason given by the device if the port is in an error
+state, or else `undef` if the port is not in an error state.
+
+=cut
+
+sub error_disable_cause { return (shift)->get_column('properties_error_disable_cause') }
 
 =head2 vlan_count
 
