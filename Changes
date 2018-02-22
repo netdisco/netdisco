@@ -1,3 +1,9 @@
+2.039010 - 
+
+  [NEW FEATURES]
+
+  * support for multiples of the same action in schedule config
+
 2.039009 - 2018-02-22
 
   [NEW FEATURES]
@@ -10,9 +16,12 @@
 
   [ENHANCEMENTS]
 
-  * handle malformed IPs in c_ip results
   * larger port status icons in Device Ports view
   * --quiet mode for netdisco-do
+
+  [BUG FIXES]
+
+  * handle malformed IPs in c_ip results
 
 2.039007 - 2018-02-16
 

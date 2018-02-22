@@ -62,16 +62,17 @@ sub worker_body {
       foreach my $action (keys %{ setting('schedule') }) {
           my $sched = setting('schedule')->{$action}
             or next;
+          my $real_action = ($sched->{action} || $action);
 
           # next occurence of job must be in this minute's window
-          debug sprintf "sched ($wid): $action: win_start: %s, win_end: %s, next: %s",
+          debug sprintf "sched ($wid): $real_action: win_start: %s, win_end: %s, next: %s",
             $win_start, $win_end, $sched->{when}->next_time($win_start);
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
           # queue it!
-          info "sched ($wid): queueing $action job";
+          info "sched ($wid): queueing $real_action job";
           jq_insert({
-            action => $action,
+            action => $real_action,
             device => $sched->{device},
             port   => $sched->{port},
             extra  => $sched->{extra},
