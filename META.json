@@ -73,7 +73,7 @@
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.45",
+            "SNMP::Info" : "3.46",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -109,7 +109,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.039007"
+         "version" : "2.039008"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -131,7 +131,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "46"
+         "version" : "47"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -159,6 +159,9 @@
       },
       "App::Netdisco::DB::Result::DevicePortPower" : {
          "file" : "lib/App/Netdisco/DB/Result/DevicePortPower.pm"
+      },
+      "App::Netdisco::DB::Result::DevicePortProperties" : {
+         "file" : "lib/App/Netdisco/DB/Result/DevicePortProperties.pm"
       },
       "App::Netdisco::DB::Result::DevicePortSsid" : {
          "file" : "lib/App/Netdisco/DB/Result/DevicePortSsid.pm"
@@ -670,6 +673,9 @@
       "App::Netdisco::Worker::Plugin::Discover::PortPower" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm"
       },
+      "App::Netdisco::Worker::Plugin::Discover::PortProperties" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover::Properties" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm"
       },
@@ -779,6 +785,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.039007",
+   "version" : "2.039008",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }
