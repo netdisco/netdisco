@@ -73,6 +73,7 @@ sub worker_body {
           jq_insert({
             action => $action,
             device => $sched->{device},
+            port   => $sched->{port},
             extra  => $sched->{extra},
           });
       }
