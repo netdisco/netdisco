@@ -194,4 +194,7 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
     }} keys %{ setting('reports') } ];
 }
 
+# add system_reports onto reports
+config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
+
 true;
