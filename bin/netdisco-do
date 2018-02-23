@@ -110,30 +110,34 @@ if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
 }
 
 my @hostlist = defined $device ? ($net->hostenum) : (undef);
-my $exitstatus = 0;
+my @job_specs = ();
+my $exitstatus =  0;
 
 foreach my $host (@hostlist) {
-    my $dev = $host ? get_device($host->addr) : undef;
-    if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
-        info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
-        next;
-    }
+  my $dev = $host ? get_device($host->addr) : undef;
+  if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
+    info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
+    next;
+  }
 
-    # what job are we asked to do?
-    my %job_spec = (
-      action => $action,
-      device => $dev,
-      port   => $port,
-      subaction => $extra,
-    );
+  # what job are we asked to do?
+  push @job_specs, {
+    action => $action,
+    device => $dev,
+    port   => $port,
+    subaction => $extra,
+    username => ($ENV{USER} || 'netdisco-do'),
+  };
+}
 
-    if ($queue_only) {
-      jq_insert({ username => ($ENV{USER} || 'netdisco-do'), %job_spec });
-      info sprintf '%s: queued at %s', $action, scalar localtime;
-      next;
-    }
-
-    my $job = App::Netdisco::Backend::Job->new({ job => 0, %job_spec });
+if ($queue_only) {
+  jq_insert( \@job_specs );
+  info sprintf '%s: queued %s jobs at %s',
+    $action, (scalar @job_specs), scalar localtime;
+}
+else {
+  foreach my $spec (@job_specs) {
+    my $job = App::Netdisco::Backend::Job->new({ job => 0, %$spec });
 
     my $actiontext = (
       ($job->device ? ('['.$job->device->ip.']') : '') .
@@ -142,13 +146,13 @@ foreach my $host (@hostlist) {
 
     # do job
     try {
-        info sprintf '%s: %s started at %s',
-          $action, $actiontext, scalar localtime;
-        $worker->run($job);
+      info sprintf '%s: %s started at %s',
+        $action, $actiontext, scalar localtime;
+      $worker->run($job);
     }
     catch {
-        $job->status('error');
-        $job->log("error running job: $_");
+      $job->status('error');
+      $job->log("error running job: $_");
     };
 
     if ($job->log eq 'failed to report from any worker!' and not $job->only_namespace) {
@@ -162,6 +166,7 @@ foreach my $host (@hostlist) {
     info sprintf '%s: finished at %s', $action, scalar localtime;
     info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
     $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
+  }
 }
 
 exit $exitstatus;
