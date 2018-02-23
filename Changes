@@ -8,6 +8,7 @@
   [BUG FIXES]
 
   * avoid skips that go twice past max_deferrals not being reduced
+  * move random() in TastyJobs to where it is more useful
 
 2.039010 - 2018-02-22
 
