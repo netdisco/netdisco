@@ -5,6 +5,10 @@
   * use PG COPY for bulk insert of jobs with prefix
   * support IP prefix enum expansion in scheduler
 
+  [BUG FIXES]
+
+  * avoid skips that go twice past max_deferrals not being reduced
+
 2.039010 - 2018-02-22
 
   [NEW FEATURES]
