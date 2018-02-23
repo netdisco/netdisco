@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * use PG COPY for bulk insert of jobs with prefix
+  * support IP prefix enum expansion in scheduler
 
 2.039010 - 2018-02-22
 
