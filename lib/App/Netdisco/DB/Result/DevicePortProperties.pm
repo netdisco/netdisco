@@ -13,6 +13,18 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "error_disable_cause",
   { data_type => "text", is_nullable => 1 },
+  "remote_is_wap",
+  { data_type => "boolean", is_nullable => 1 },
+  "remote_is_phone",
+  { data_type => "boolean", is_nullable => 1 },
+  "remote_vendor",
+  { data_type => "text", is_nullable => 1 },
+  "remote_os_ver",
+  { data_type => "text", is_nullable => 1 },
+  "remote_model",
+  { data_type => "text", is_nullable => 1 },
+  "remote_serial",
+  { data_type => "text", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("port", "ip");
 
