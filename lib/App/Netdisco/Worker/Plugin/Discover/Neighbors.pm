@@ -5,8 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Device
-  qw/get_device match_devicetype is_discoverable/;
+use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
@@ -127,7 +126,6 @@ sub store_neighbors {
   my $c_port     = $snmp->c_port;
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
-  my $c_cap      = $snmp->c_cap;
 
   # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
@@ -139,7 +137,7 @@ sub store_neighbors {
   # now combine them, v6 wins
   $c_ip = { %$c_ip, %c_ipv6 };
 
-  foreach my $entry (sort (List::MoreUtils::uniq( (keys %$c_ip), (keys %$c_cap) ))) {
+  foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
       if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
@@ -162,35 +160,16 @@ sub store_neighbors {
           next;
       }
 
-      my $remote_ip   = $c_ip->{$entry};
-      my $remote_port = undef;
-      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
-      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
-      my $remote_cap  = $c_cap->{$entry} || [];
-
-      # IP Phone and WAP detection type fixup
-      if (scalar @$remote_cap or $remote_type) {
-          my $phone_flag = grep {match_devicetype($_, 'phone_capabilities')}
-                                @$remote_cap;
-          my $ap_flag    = grep {match_devicetype($_, 'wap_capabilities')}
-                                @$remote_cap;
-
-          if ($phone_flag or match_devicetype($remote_type, 'phone_platforms')) {
-              $remote_type = 'IP Phone: '. $remote_type
-                if $remote_type !~ /ip.phone/i;
-          }
-          elsif ($ap_flag or match_devicetype($remote_type, 'wap_platforms')) {
-              $remote_type = 'AP: '. $remote_type;
-          }
-
-          $portrow->update({remote_type => $remote_type});
-      }
-
       if ($portrow->manual_topo) {
           info sprintf ' [%s] neigh - %s has manually defined topology',
             $device->ip, $port;
           next;
       }
+
+      my $remote_ip   = $c_ip->{$entry};
+      my $remote_port = undef;
+      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
+      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
 
       next unless $remote_ip;
       my $r_ip = NetAddr::IP::Lite->new($remote_ip) or next;
