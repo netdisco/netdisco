@@ -355,6 +355,7 @@ share/schema_versions/App-Netdisco-DB-43-44-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-44-45-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-45-46-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-46-47-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-47-48-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
