@@ -203,7 +203,7 @@ sub store_neighbors {
                   my $mac = NetAddr::MAC->new(mac => $tmpid);
                   if ($mac and not $mac->errstr) {
                       info sprintf
-                        '[%s] neigh - found neighbor %s by MAC %s',
+                        ' [%s] neigh - trying to find neighbor %s by MAC %s',
                         $device->ip, $remote_id, $mac->as_ieee;
                       $neigh = $devices->single({mac => $mac->as_ieee});
                   }
