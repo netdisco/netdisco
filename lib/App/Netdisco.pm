@@ -75,7 +75,7 @@ L<DBD::Pg>, L<SNMP>, and a compiler using your operating system packages.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl build-essential
 
 On Fedora/Red-Hat:
 
