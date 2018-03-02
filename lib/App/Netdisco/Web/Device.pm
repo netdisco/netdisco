@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use URI ();
 use URL::Encode 'url_params_mixed';
+use App::Netdisco::Util::Device 'match_devicetype';
 
 # build view settings for port connected nodes and devices
 set('connected_properties' => [
@@ -17,6 +18,10 @@ set('connected_properties' => [
 
 hook 'before_template' => sub {
   my $tokens = shift;
+
+  # allow checking of discoverability of remote connected device
+  $tokens->{has_snmp} = sub { not match_devicetype(shift, 'discover_no_type') };
+
   my $defaults = var('sidebar_defaults')->{'device_ports'}
     or return;
 

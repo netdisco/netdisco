@@ -274,7 +274,7 @@
             [% END %]
             <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]">
                 [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
-            [% IF row.remote_port %]
+            [% IF row.remote_port and has_snmp(row.remote_type) %]
                 -
                 <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
                     [% row.remote_port | html_entity %]</a>
@@ -288,7 +288,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
-            <i class="icon-unlink text-error"></i>&nbsp;
+            [% '<i class="icon-unlink text-error"></i>&nbsp;' IF has_snmp(row.remote_type) %]
             [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
@@ -296,7 +296,10 @@
             [% END %]
             <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
               [% row.remote_ip | html_entity %]
-              [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
+              [% IF row.remote_port and has_snmp(row.remote_type) %]
+                - [% row.remote_port | html_entity %]
+              [% END %]
+            </a><br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory %]<br/>
             [% END %]
@@ -305,7 +308,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
+            [% '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)' IF has_snmp(row.remote_type) %]
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
