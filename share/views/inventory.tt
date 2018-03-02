@@ -1,5 +1,5 @@
 <div class="container">
-  [% IF models.count %]
+  [% IF platforms.size %]
   <div class="row">
     <div class="span6">
       <h3 class="nd_inventory-table-head">By Platform</h3>
@@ -12,7 +12,7 @@
           </tr>
         </thead>
         <tbody>
-          [% FOREACH platform IN models.all %]
+          [% FOREACH platform IN platforms %]
           [% NEXT UNLESS platform.vendor OR platform.model %]
           <tr>
             <th>
@@ -29,7 +29,7 @@
                   [% platform.model | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
-            <th>[% platform.get_column('count') | html_entity %]</th>
+            <th>[% platform.count | html_entity %]</th>
           </tr>
           [% END %]
         </tbody>
@@ -46,8 +46,8 @@
           </tr>
         </thead>
         <tbody>
-          [% FOREACH release IN releases.all %]
-          [% NEXT UNLESS (release.os OR release.os_ver) %]
+          [% FOREACH release IN releases %]
+          [% NEXT UNLESS release.os OR release.os_ver %]
           <tr>
             <th>
               [% IF release.os %]
@@ -63,7 +63,7 @@
                   [% release.os_ver | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
-            <th>[% release.get_column('count') | html_entity %]</th>
+            <th>[% release.count | html_entity %]</th>
           </tr>
           [% END %]
         </tbody>

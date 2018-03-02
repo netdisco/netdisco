@@ -475,7 +475,7 @@ sub has_layer {
 
 =back
 
-=head2 get_models
+=head2 get_platforms
 
 Returns a sorted list of Device models with the following columns only:
 
@@ -494,15 +494,15 @@ Netdisco database.
 
 =cut
 
-sub get_models {
+sub get_platforms {
   my $rs = shift;
   return $rs->search({}, {
-    select => [ 'vendor', 'model', { count => 'ip' } ],
-    as => [qw/vendor model count/],
+    'columns' => [ 'vendor', 'model' ],
+    '+select' => [{ count => 'ip' }],
+    '+as' => ['count'],
     group_by => [qw/vendor model/],
     order_by => [{-asc => 'vendor'}, {-asc => 'model'}],
-  })
-
+  });
 }
 
 =head2 get_releases
@@ -527,8 +527,9 @@ Netdisco database.
 sub get_releases {
   my $rs = shift;
   return $rs->search({}, {
-    select => [ 'os', 'os_ver', { count => 'ip' } ],
-    as => [qw/os os_ver count/],
+    columns => ['os', 'os_ver'],
+    '+select' => [ { count => 'ip' } ],
+    '+as' => [qw/count/],
     group_by => [qw/os os_ver/],
     order_by => [{-asc => 'os'}, {-asc => 'os_ver'}],
   })
