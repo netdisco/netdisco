@@ -76,6 +76,33 @@
               </div>
             </div>
             <div class="clearfix">
+              <span data-toggle="collapse" data-target="#nd_nodeprops">
+                <label class="nd_collapser">Node Properties
+                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                </label></span>
+              <div id="nd_nodeprops" class="collapse">
+                <ul class="nd_inputs-list unstyled">
+                  <li>
+                    <em class="muted">MAC address format:</em><br/>
+                    <select id="nd_mac-format" name="mac_format">
+                      [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format %]</option>
+                      [% END %]
+                    </select>
+                  </li>
+                  [% FOREACH item IN settings.connected_properties %]
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" id="[% item.name | html_entity %]"
+                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
+                      [% item.label | html_entity %]
+                    </label>
+                  </li>
+                  [% END %]
+                </ul>
+              </div>
+            </div>
+            <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_portprops">
                 <label class="nd_collapser">Port Properties
                 <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
@@ -106,40 +133,6 @@
                       </select>
                     </div>
                   </li>
-                  <li>
-                    <label class="checkbox">
-                      <input type="checkbox" id="neigh_id"
-                        name="neigh_id"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.neigh_id %] />
-                      Connected Device ID
-                    </label>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="clearfix">
-              <span data-toggle="collapse" data-target="#nd_nodeprops">
-                <label class="nd_collapser">Node Properties
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
-                </label></span>
-              <div id="nd_nodeprops" class="collapse">
-                <ul class="nd_inputs-list unstyled">
-                  <li>
-                    <em class="muted">MAC address format:</em><br/>
-                    <select id="nd_mac-format" name="mac_format">
-                      [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format %]</option>
-                      [% END %]
-                    </select>
-                  </li>
-                  [% FOREACH item IN settings.connected_properties %]
-                  <li>
-                    <label class="checkbox">
-                      <input type="checkbox" id="[% item.name | html_entity %]"
-                        name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
-                      [% item.label | html_entity %]
-                    </label>
-                  </li>
-                  [% END %]
                 </ul>
               </div>
             </div>

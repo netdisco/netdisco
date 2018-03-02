@@ -190,6 +190,9 @@ get '/ajax/content/device/ports' => require_login sub {
       '+as'     => ['neighbor_ip', 'neighbor_dns'],
     }) if param('c_neighbors');
 
+    # also get remote LLDP inventory if asked for
+    $set = $set->with_remote_inventory if param('n_inventory');
+
     # sort ports (empty set would be a 'no records' msg)
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
     return unless scalar @$results;

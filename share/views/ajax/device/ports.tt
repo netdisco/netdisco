@@ -267,9 +267,9 @@
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.get_column('neighbor_ip') %]
             <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
-            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+            [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
-            [% ELSIF row.remote_type AND row.remote_type.match('^AP:\s') %]
+            [% ELSIF row.remote_is_wap %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]">
@@ -280,21 +280,27 @@
                     [% row.remote_port | html_entity %]</a>
             [% END %]
             <br/>
-            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
+            [% IF params.n_inventory and row.remote_inventory %]
+              [% row.remote_inventory %]<br/>
+            [% END %]
+            [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
             <i class="icon-unlink text-error"></i>&nbsp;
-            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+            [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
-            [% ELSIF row.remote_type AND row.remote_type.match('^AP:\s') %]
+            [% ELSIF row.remote_is_wap %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
               [% row.remote_ip | html_entity %]
               [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
-            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
+            [% IF params.n_inventory and row.remote_inventory %]
+              [% row.remote_inventory %]<br/>
+            [% END %]
+            [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
@@ -306,10 +312,9 @@
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
-          [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+          [% IF row.remote_is_phone %]
             <i class="icon-phone"></i>&nbsp;
-          [% ELSIF node.wireless.defined
-                   OR (row.remote_type AND row.remote_type.match('^AP:\s')) %]
+          [% ELSIF node.wireless.defined OR row.remote_is_wap %]
             <i class="icon-signal"></i>&nbsp;
           [% END %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">

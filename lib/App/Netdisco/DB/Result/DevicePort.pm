@@ -314,7 +314,44 @@ state, or else `undef` if the port is not in an error state.
 
 =cut
 
-sub error_disable_cause { return (shift)->get_column('properties_error_disable_cause') }
+sub error_disable_cause { return (shift)->get_column('error_disable_cause') }
+
+=head2 remote_is_wap
+
+Returns true if the remote LLDP neighbor has reported Wireless Access Point
+capability.
+
+=cut
+
+sub remote_is_wap { return (shift)->get_column('remote_is_wap') }
+
+=head2 remote_is_phone
+
+Returns true if the remote LLDP neighbor has reported Telephone capability.
+
+=cut
+
+sub remote_is_phone { return (shift)->get_column('remote_is_phone') }
+
+=head2 remote_inventory
+
+Returns a synthesized description of the remote LLDP device if inventory
+information was given, including vendor, model, OS version, and serial number.
+
+=cut
+
+sub remote_inventory {
+  my $port = shift;
+  my $os_ver = ($port->get_column('remote_os_ver')
+    ? ('running '. $port->get_column('remote_os_ver')) : '');
+  my $serial = ($port->get_column('remote_serial')
+    ? ('('. $port->get_column('remote_serial') .')') : '');
+
+  my $retval = join ' ', ($port->get_column('remote_vendor') || ''),
+    ($port->get_column('remote_model') || ''), $serial, $os_ver;
+
+  return (($retval =~ m/[[:alnum:]]/) ? $retval : '');
+}
 
 =head2 vlan_count
 
