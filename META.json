@@ -73,7 +73,7 @@
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.47",
+            "SNMP::Info" : "3.49",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -109,7 +109,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.039013"
+         "version" : "2.039014"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -785,6 +785,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.039013",
+   "version" : "2.039014",
    "x_serialization_backend" : "JSON::PP version 2.97001"
 }
