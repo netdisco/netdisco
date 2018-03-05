@@ -54,7 +54,7 @@ __PACKAGE__->add_columns(
     data_type => '[text]',
   },
   'aggspeed' => {
-    data_type => 'integer',
+    data_type => 'bigint',
   },
   'aggports' => {
     data_type => 'integer',
