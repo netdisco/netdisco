@@ -1,3 +1,9 @@
+2.039015 - 
+
+  [BUG FIXES]
+
+  * #370 Missing Map Links due to inability to parse port speeds
+
 2.039014 - 2018-03-03
 
   [BUG FIXES]

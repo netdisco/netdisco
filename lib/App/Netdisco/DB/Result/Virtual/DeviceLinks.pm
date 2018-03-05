@@ -17,16 +17,13 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
  SELECT dp.ip AS left_ip, ld.dns AS left_dns, ld.name AS left_name,
         array_agg(dp.port) AS left_port, array_agg(dp.name) AS left_descr,
-        sum(btrim(dp.speed, ' MGTbps')::float
-          * (CASE btrim(dp.speed, ' 0123456789.')
-               WHEN 'Gbps' THEN 1000
-               WHEN 'Tbps' THEN 1000000
-               ELSE 1 END)) AS aggspeed,
+        sum( COALESCE(dpp.raw_speed,0) ) as aggspeed,
         count(*) AS aggports,
         dp2.ip AS right_ip, rd.dns AS right_dns, rd.name AS right_name,
         array_agg(dp2.port) AS right_port, array_agg(dp2.name) AS right_descr
 
  FROM device_port dp
+ LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
  INNER JOIN device ld ON dp.ip = ld.ip
  INNER JOIN device_ip di ON dp.remote_ip = di.alias
  INNER JOIN device rd ON di.ip = rd.ip
@@ -34,7 +31,6 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
  WHERE dp.remote_port IS NOT NULL
    AND dp.type = 'ethernetCsmacd'
-   AND dp.speed LIKE '%bps'
    AND dp.ip <= dp2.ip
  GROUP BY left_ip, left_dns, left_name, right_ip, right_dns, right_name
  ORDER BY dp.ip

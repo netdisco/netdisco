@@ -67,9 +67,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
 
 sub to_speed {
   my $speed = shift or return '';
-  $speed = SNMP::Info::munge_highspeed($speed);
-  $speed =~ s/(?:\s|bps)//g;
-  return $speed;
+  return SNMP::Info::munge_highspeed($speed / 1_000_000);
 }
 
 sub make_node_infostring {

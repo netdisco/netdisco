@@ -19,13 +19,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   my $interfaces = $snmp->interfaces || {};
+  my %properties = ();
+
+  my $raw_speed = $snmp->i_speed_raw || {};
+
+  foreach my $idx (keys %$raw_speed) {
+    my $port = $interfaces->{$idx} or next;
+    $properties{ $port }->{raw_speed} = $raw_speed->{$idx};
+  }
+
   my $err_cause = $snmp->i_err_disable_cause || {};
 
-  my %properties = ();
   foreach my $idx (keys %$err_cause) {
-    my $port = $interfaces->{$idx};
-    next unless $port;
-
+    my $port = $interfaces->{$idx} or next;
     $properties{ $port }->{error_disable_cause} = $err_cause->{$idx};
   }
 
@@ -40,8 +46,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $rem_serial = $snmp->lldp_rem_serial || {};
 
   foreach my $idx (keys %$c_if) {
-    my $port = $interfaces->{ $c_if->{$idx} };
-    next unless $port;
+    my $port = $interfaces->{ $c_if->{$idx} } or next;
 
     my $remote_cap  = $c_cap->{$idx} || [];
     my $remote_type = Encode::decode('UTF-8', $c_platform->{$idx} || '');
