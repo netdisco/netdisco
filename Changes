@@ -1,8 +1,9 @@
-2.039015 - 
+2.039015 - 2018-03-05
 
   [BUG FIXES]
 
   * #370 Missing Map Links due to inability to parse port speeds
+  * strip whitespace from device model on HP
 
 2.039014 - 2018-03-03
 
