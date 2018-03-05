@@ -45,7 +45,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $device->set_column( $property => $snmp->$property );
   }
 
-  $device->set_column( model  => Encode::decode('UTF-8', $snmp->model)  );
+  (my $model = Encode::decode('UTF-8', ($snmp->model || ''))) =~ s/\s+$//;
+  $device->set_column( model => $model  );
   $device->set_column( serial => Encode::decode('UTF-8', $snmp->serial) );
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
