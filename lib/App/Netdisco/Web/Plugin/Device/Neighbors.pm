@@ -122,8 +122,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
                    grep { defined } @{ $hgroup };
 
     # list of locations selected by user and passed in param
-    my $locgrp = (ref [] eq ref param('locgrp') ? param('locgrp') : [param('locgrp')]);
-    my @lgrplist = List::MoreUtils::uniq grep { defined } @{ $locgrp };
+    my $lgroup = (ref [] eq ref param('lgroup') ? param('lgroup') : [param('lgroup')]);
+    my @lgrplist = List::MoreUtils::uniq grep { defined } @{ $lgroup };
 
     my %ok_dev = ();
     my %logvals = ();

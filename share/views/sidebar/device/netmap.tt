@@ -60,7 +60,7 @@
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-neighbors"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'neighbors' %] value="neighbors">
-                <label for="nd_mapshow-neighbors">Neighbors Only</label>
+                <label for="nd_mapshow-neighbors">Only Neighbors</label>
             </div>
 
             [% IF hgroup_list.size %]
@@ -72,7 +72,7 @@
                 <input type="radio" name="mapshow" id="nd_mapshow-hgroup"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'hgroup' %]
                 [% 'disabled' IF NOT hgroup_list.size %] value="hgroup">
-                <label for="nd_mapshow-hgroup">Host Groups</label>
+                <label for="nd_mapshow-hgroup">Only Host Groups</label>
             </div>
 
             [% IF hgroup_list.size %]
@@ -83,6 +83,31 @@
                 [% FOREACH opt IN hgroup_list.pairs %]
                 <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                   value="[% opt.key %]">[% opt.value | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            [% END %]
+
+            [% IF location_list.size %]
+            <div class="radio radio-success">
+            [% ELSE %]
+            <div class="radio radio-success tooltip-wrapper"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="No Locations Found">
+            [% END %]
+                <input type="radio" name="mapshow" id="nd_mapshow-location"
+                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'location' %]
+                [% 'disabled' IF NOT location_list.size %] value="location">
+                <label for="nd_mapshow-lgroup">Only Locations</label>
+            </div>
+
+            [% IF location_list.size %]
+            <div class="clearfix">
+              <select class="nd_side-select" size="[% location_list.size > 5 ? 5 : location_list.size %]"
+                multiple="on" name="lgroup" id="nd_lgroup-select"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+                [% FOREACH loc IN location_list %]
+                <option[% ' selected="selected"' IF location_lkp.exists(loc) %]
+                  value="[% loc %]">[% loc | html_entity %]</option>
                 [% END %]
               </select>
             </div>
