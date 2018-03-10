@@ -152,7 +152,7 @@
       // if user enters vlan but does not submit this will save wrong data
       $.post(
         '[% uri_for('/ajax/data/device/netmappositions') %]'
-        ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
+        ,$("#nd_vlan-entry, #nd_hgroup-select, input[name='mapshow']").serialize()
           + '&positions=' + JSON.stringify(graph.positions())
       );
     });

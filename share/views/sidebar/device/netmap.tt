@@ -63,25 +63,25 @@
                 <label for="nd_mapshow-neighbors">Neighbors Only</label>
             </div>
 
-            [% IF devgrp_list.size %]
+            [% IF hgroup_list.size %]
             <div class="radio radio-success">
             [% ELSE %]
             <div class="radio radio-success tooltip-wrapper"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="No Named Groups Defined">
             [% END %]
-                <input type="radio" name="mapshow" id="nd_mapshow-only"
-                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'only' %]
-                [% 'disabled' IF NOT devgrp_list.size %] value="only">
-                <label for="nd_mapshow-only">Host Groups</label>
+                <input type="radio" name="mapshow" id="nd_mapshow-hgroup"
+                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'hgroup' %]
+                [% 'disabled' IF NOT hgroup_list.size %] value="hgroup">
+                <label for="nd_mapshow-hgroup">Host Groups</label>
             </div>
 
-            [% IF devgrp_list.size %]
+            [% IF hgroup_list.size %]
             <div class="clearfix">
-              <select class="nd_side-select" size="[% devgrp_list.size > 5 ? 5 : devgrp_list.size %]"
-                multiple="on" name="devgrp" id="nd_devgrp-select"
+              <select class="nd_side-select" size="[% hgroup_list.size > 5 ? 5 : hgroup_list.size %]"
+                multiple="on" name="hgroup" id="nd_hgroup-select"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
-                [% FOREACH opt IN devgrp_list.pairs %]
-                <option[% ' selected="selected"' IF devgrp_lkp.exists(opt.key) %]
+                [% FOREACH opt IN hgroup_list.pairs %]
+                <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                   value="[% opt.key %]">[% opt.value | html_entity %]</option>
                 [% END %]
               </select>
@@ -99,7 +99,7 @@
                 </div>
               </div>
 
-              [% IF devgrp_list.size %]
+              [% IF hgroup_list.size %]
               <div class="clearfix input-prepend">
                 <label class="add-on">
                   <input type="checkbox" id="colorgroups" name="colorgroups"

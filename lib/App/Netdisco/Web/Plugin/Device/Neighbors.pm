@@ -27,16 +27,16 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
     my $mapshow = param('mapshow');
-    return if !defined $mapshow or $mapshow !~ m/^(?:all|only)$/;
+    return if !defined $mapshow or $mapshow !~ m/^(?:all|hgroup)$/;
 
     # list of groups selected by user and passed in param
-    my $devgrp = (ref [] eq ref param('devgrp') ? param('devgrp') : [param('devgrp')]);
+    my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
     # list of groups validated as real host groups and named host groups
     my @hgrplist = List::MoreUtils::uniq
                    grep { exists setting('host_group_displaynames')->{$_} }
                    grep { exists setting('host_groups')->{$_} }
-                   grep { defined } @{ $devgrp };
-    return if $mapshow eq 'only' and 0 == scalar @hgrplist;
+                   grep { defined } @{ $hgroup };
+    return if $mapshow eq 'hgroup' and 0 == scalar @hgrplist;
     push(@hgrplist, '__ANY__') if 0 == scalar @hgrplist;
 
     my %clean = ();
@@ -110,16 +110,20 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
     my $mapshow = (param('mapshow') || 'neighbors');
-    $mapshow = 'neighbors' if $mapshow !~ m/^(?:all|neighbors|only)$/;
+    $mapshow = 'neighbors' if $mapshow !~ m/^(?:all|neighbors|location|hgroup)$/;
     $mapshow = 'all' unless $qdev->in_storage;
 
     # list of groups selected by user and passed in param
-    my $devgrp = (ref [] eq ref param('devgrp') ? param('devgrp') : [param('devgrp')]);
+    my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
     # list of groups validated as real host groups and named host groups
     my @hgrplist = List::MoreUtils::uniq
                    grep { exists setting('host_group_displaynames')->{$_} }
                    grep { exists setting('host_groups')->{$_} }
-                   grep { defined } @{ $devgrp };
+                   grep { defined } @{ $hgroup };
+
+    # list of locations selected by user and passed in param
+    my $locgrp = (ref [] eq ref param('locgrp') ? param('locgrp') : [param('locgrp')]);
+    my @lgrplist = List::MoreUtils::uniq grep { defined } @{ $locgrp };
 
     my %ok_dev = ();
     my %logvals = ();
@@ -177,10 +181,14 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       next DEVICE if (($mapshow eq 'neighbors') or $vlan)
         and (not $ok_dev{$device->ip});
 
-      # if in only mode then use ACLs to filter
+      # if in locations mode then filter
+      next DEVICE if $mapshow eq 'location' and ((!defined $device->location)
+        or (0 == scalar grep {$_ eq $device->location} @lgrplist));
+
+      # if in host group mode then use ACLs to filter
       my $first_hgrp =
         first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
-      next DEVICE if $mapshow eq 'only' and not $first_hgrp;
+      next DEVICE if $mapshow eq 'hgroup' and not $first_hgrp;
 
       ++$logvals{ $device->get_column('log') || 1 };
       (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;

@@ -161,7 +161,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       if (mapdata['newnodes'] && ('[% params.mapshow %]' != 'neighbors')) {
         $.post(
           '[% uri_for('/ajax/data/device/netmappositions') %]'
-          ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
+          ,$("#nd_vlan-entry, #nd_hgroup-select, input[name='mapshow']").serialize()
             + '&positions=' + JSON.stringify(graph.positions())
         );
       }
