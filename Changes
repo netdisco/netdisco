@@ -2,13 +2,17 @@
 
   [NEW FEATURES]
 
-  * Node Montior is now included in Admin menu
   * #48 Node Monitor supports matching on OUI
-  * #31 Configurable Free Time in Port Utilization Report
+  * #31 configurable Free Time in Port Utilization Report
 
   [ENHANCEMENTS]
 
-  * #24 Show device age in device search view
+  * #24 show device age in device search view
+  * Node Montior is now included in Admin menu
+
+  [BUG FIXES]
+
+  * #274 errors in IP Inventory report
 
 2.039015 - 2018-03-05
 
