@@ -9,6 +9,7 @@
 
   * #24 show device age in device search view
   * Node Montior is now included in Admin menu
+  * neighbor map dynamic size is enabled by default
 
   [BUG FIXES]
 
