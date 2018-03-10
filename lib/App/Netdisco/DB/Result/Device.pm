@@ -332,6 +332,19 @@ The format is in "X days/months/years" style, similar to:
 
 sub uptime_age  { return (shift)->get_column('uptime_age')  }
 
+=head2 first_seen_stamp
+
+Formatted version of the C<creation> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub first_seen_stamp  { return (shift)->get_column('first_seen_stamp')  }
+
 =head2 last_discover_stamp
 
 Formatted version of the C<last_discover> field, accurate to the minute.

@@ -6,6 +6,10 @@
   * #48 Node Monitor supports matching on OUI
   * #31 Configurable Free Time in Port Utilization Report
 
+  [ENHANCEMENTS]
+
+  * #24 Show device age in device search view
+
 2.039015 - 2018-03-05
 
   [BUG FIXES]

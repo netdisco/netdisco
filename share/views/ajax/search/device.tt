@@ -2,13 +2,13 @@
   <thead>
     <tr>
       <th>Device</th>
-      <th>Contact</th>
       <th>Location</th>
       <th>System Name</th>
       <th>Model</th>
       <th>OS Version</th>
       <th>Management IP</th>
       <th>Serial</th>
+      <th>First Seen</th>
       <th>Last Discovered</th>
     </tr>
   </thead>
@@ -23,11 +23,6 @@ $(document).ready(function() {
         "data": 'ip',
         "render": function(data, type, row, meta) {
           return '<a href="[% uri_for('/device') %]?q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.name || row.ip) + '</a>';
-        }
-      }, {
-        "data": 'contact',
-        "render": function(data, type, row, meta) {
-          return he.encode(data || '');
         }
       }, {
         "data": 'location',
@@ -56,6 +51,11 @@ $(document).ready(function() {
         }
       }, {
         "data": 'serial',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'first_seen_stamp',
         "render": function(data, type, row, meta) {
           return he.encode(data || '');
         }
