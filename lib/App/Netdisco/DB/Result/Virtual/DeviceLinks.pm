@@ -17,7 +17,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
  SELECT dp.ip AS left_ip, ld.dns AS left_dns, ld.name AS left_name,
         array_agg(dp.port) AS left_port, array_agg(dp.name) AS left_descr,
-        sum( COALESCE(dpp.raw_speed,1) ) as aggspeed,
+        sum( COALESCE(dpp.raw_speed,0) ) as aggspeed,
         count(*) AS aggports,
         dp2.ip AS right_ip, rd.dns AS right_dns, rd.name AS right_name,
         array_agg(dp2.port) AS right_port, array_agg(dp2.name) AS right_descr
