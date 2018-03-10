@@ -178,12 +178,12 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
     // about a second after render starts, zoom in a bit
     if ('[% params.mapshow %]' == 'neighbors') {
       setTimeout(function() {
-        if ('[% params.dynamicsize %]' == 'on') {
-          graph.zoomToFit();
-        } else {
+        //if ('[% params.dynamicsize %]' == 'on') {
+        //  graph.zoomToFit();
+        //} else {
           var node = graph.nodeDataById( graph['nd2']['centernode'] );
           graph.zoomSmooth(node.x, node.y, node.radius * 125);
-        }
+        //}
       }, 1500);
     }
   }); // document.onReady
