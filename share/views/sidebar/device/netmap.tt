@@ -94,7 +94,7 @@
             <div class="radio radio-success tooltip-wrapper"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="No Locations Found">
             [% END %]
-                <input type="radio" name="mapshow" id="nd_mapshow-location"
+                <input type="radio" name="mapshow" id="nd_mapshow-lgroup"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'location' %]
                 [% 'disabled' IF NOT location_list.size %] value="location">
                 <label for="nd_mapshow-lgroup">Only Locations</label>
