@@ -1,0 +1,19 @@
+
+            <p class="nd_sidebar-title"><em>Port Utilization</em></p>
+            <div class="clearfix">
+              <em class="muted">Mark as Free if Down for:</em><br/>
+              <select id="nd_days-select" name="age_num">
+                [% FOREACH count IN [1..31] %]
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.report_portutilization.age_num == count %]>[% count %]</option>
+                [% END %]
+              </select>
+              <select id="nd_age-select" name="age_unit">
+                [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.report_portutilization.age_unit == unit %]>[% unit %]</option>
+                [% END %]
+              </select>
+            </div>
+
+            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
+             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Run Report</button>
+

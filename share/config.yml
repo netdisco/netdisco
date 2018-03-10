@@ -144,6 +144,9 @@ sidebar_defaults:
   report_moduleinventory:
     fruonly:     { default: checked }
     matchall:    { default: checked }
+  report_portutilization:
+    age_num:      { default: 3 }
+    age_unit:     { default: months }
 device_port_col_idx_left: 0
 device_port_col_idx_mid: 2
 device_port_col_idx_right: -1

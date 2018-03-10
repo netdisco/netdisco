@@ -112,7 +112,7 @@
                   <li>
                     <em class="muted">Mark as Free if Down for:</em><br/>
                     <select id="nd_days-select" name="age_num">
-                      [% FOREACH count IN [1..32] %]
+                      [% FOREACH count IN [1..31] %]
                       <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count %]</option>
                       [% END %]
                     </select>

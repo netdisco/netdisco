@@ -11,10 +11,15 @@ __PACKAGE__->table('port_utilization');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
  SELECT d.dns AS dns, d.ip as ip,
-     sum(CASE WHEN (dp.type != 'propVirtual') THEN 1 ELSE 0 END) as port_count,
-     sum(CASE WHEN (dp.type != 'propVirtual' AND dp.up_admin = 'up' AND dp.up = 'up') THEN 1 ELSE 0 END) as ports_in_use,
-     sum(CASE WHEN (dp.type != 'propVirtual' AND dp.up_admin != 'up') THEN 1 ELSE 0 END) as ports_shutdown,
-     sum(CASE WHEN (dp.type != 'propVirtual' AND dp.up_admin = 'up' AND dp.up != 'up') THEN 1 ELSE 0 END) as ports_free
+     sum(CASE WHEN (dp.type != 'propVirtual') THEN 1
+              ELSE 0 END) as port_count,
+     sum(CASE WHEN (dp.type != 'propVirtual' AND dp.up_admin = 'up' AND dp.up = 'up') THEN 1
+              ELSE 0 END) as ports_in_use,
+     sum(CASE WHEN (dp.type != 'propVirtual' AND dp.up_admin != 'up') THEN 1
+              ELSE 0 END) as ports_shutdown,
+     sum(CASE WHEN (dp.type != 'propVirtual' AND dp.up_admin = 'up' AND dp.up != 'up'
+                    AND ( age(now(), to_timestamp(extract(epoch from d.last_discover) - (d.uptime - dp.lastchange)/100)) > ?::interval  )) THEN 1
+              ELSE 0 END) as ports_free
    FROM device d LEFT JOIN device_port dp
      ON d.ip = dp.ip
    GROUP BY d.dns, d.ip
