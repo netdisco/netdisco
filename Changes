@@ -13,6 +13,7 @@
   [BUG FIXES]
 
   * #274 errors in IP Inventory report
+  * dynamic size in neighbor map should use device_port_properties
 
 2.039015 - 2018-03-05
 

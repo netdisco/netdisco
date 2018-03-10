@@ -11,12 +11,9 @@ __PACKAGE__->table('device_port_speed');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   SELECT ip,
-         sum(btrim(speed, ' MGTbps')::float *
-           (CASE btrim(speed, ' 0123456789.')
-            WHEN 'Gbps' THEN 1000
-            WHEN 'Tbps' THEN 1000000
-            ELSE 1 END)) AS total
+         sum( COALESCE(dpp.raw_speed,1) ) as total
   FROM device_port
+  LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
   WHERE type = 'ethernetCsmacd'
     AND speed LIKE '%bps'
   GROUP BY ip
