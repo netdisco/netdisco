@@ -9,46 +9,54 @@
               </ul>
             </div>
 
-            <div class="clearfix nd_netmap-sidebar">
-            <div class="checkbox pull-left">
-              <label>
-                <input type="checkbox" name="showips" id="nd_showips"
-                  [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
-                  data-toggle="toggle" data-size="small" data-width="30"
-                  data-on="Show" data-off=" " data-onstyle="success">
-                <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IPs</span>
-              </label>
+            <div class="clearfix control-group nd_netmap-sidebar">
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="showips" id="nd_showips"
+                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="Show" data-off=" " data-onstyle="success">
+                  <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IPs</span>
+                </label>
+              </div>
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="showspeed" id="nd_showspeed"
+                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="Show" data-off=" " data-onstyle="success">
+                  <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
+                </label>
+              </div>
             </div>
-            <div class="checkbox pull-left">
-              <label>
-                <input type="checkbox" name="showspeed" id="nd_showspeed"
-                  [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
-                  data-toggle="toggle" data-size="small" data-width="30"
-                  data-on="Show" data-off=" " data-onstyle="success">
-                <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
-              </label>
-            </div>
-            </div>
 
-            <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
-            All</button>
+            <label><span id="">Positions: </span>
+              <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small" disabled>
+                  <i class="icon-save icon-large pull-left nd_navbar-icon"></i> Save</button>
+            </label>
 
-            <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
-            Selected</button>
-
-            <button id="nd_netmap-pinonly" class="btn btn-small btn-info">
-                <i class="icon-lock icon-large pull-left nd_navbar-icon"></i>
-            Pin Selected</button>
-
-            <button id="nd_netmap-save" class="btn btn-small" disabled>
-                <i class="icon-save icon-large pull-left nd_navbar-icon"></i>
-            Save Positions</button>
-
-            <button id="nd_netmap-zoomtodevice" class="btn btn-small btn-info">
-                <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
-            Zoom to this Device</button>
+            <table margin="0" border="0" class="nd_netmap-pin-controls">
+            <tr>
+              <td class="nd_netmap-pin-controls-top-row">
+                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+              </td>
+              <td class="nd_netmap-pin-controls-top-row">
+                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-lock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> All</button>
+              </td>
+              <td>
+                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Device</button>
+              </td>
+            </tr>
+            </table>
 
             <hr class="nd_sidebar-hr"/>
 
@@ -79,7 +87,7 @@
             </select>
             [% END %]
             [% IF location_list.size %]
-            <select class="nd_side-select" size="[% location_list.size > 5 ? 5 : location_list.size %]"
+            <select class="nd_side-select" size="[% location_list.size > 4 ? 4 : location_list.size %]"
               multiple="on" name="lgroup" id="nd_lgroup-select"
               rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
               [% FOREACH loc IN location_list %]

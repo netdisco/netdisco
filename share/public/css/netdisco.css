@@ -13,7 +13,8 @@ body {
 /* used for icons in sidebar search buttons */
 .nd_navbar-icon {
   vertical-align: sub;
-  margin-top: 4px;
+  margin-top: 4px !important;
+  margin-right: 7px !important;
   cursor: pointer;
 }
 
@@ -601,6 +602,18 @@ div.toggle.btn-small {
 }
 
 /* sidebar submit button width and spacing */
+
+.nd_netmap-pin-controls {
+  text-align: center;
+}
+
+.nd_netmap-pin-controls button {
+  width: 100%;
+}
+
+.nd_netmap-pin-controls-top-row {
+  padding-bottom: 5px;
+}
 
 /* when the sidebar submit button DOES NOT HAVE a dropdown */
 .nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop):not(.nd_sidebar-btn-netmap) {
