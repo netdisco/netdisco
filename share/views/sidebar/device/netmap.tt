@@ -104,7 +104,7 @@
             <div class="clearfix">
               <select class="nd_side-select" size="[% location_list.size > 5 ? 5 : location_list.size %]"
                 multiple="on" name="lgroup" id="nd_lgroup-select"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
                 [% FOREACH loc IN location_list %]
                 <option[% ' selected="selected"' IF location_lkp.exists(loc) %]
                   value="[% loc %]">[% loc | html_entity %]</option>
