@@ -65,6 +65,7 @@ web_plugins:
   - Report::SubnetUtilization
   - Report::PortLog
   - AdminTask::JobQueue
+  - AdminTask::NodeMonitor
   - AdminTask::Topology
   - AdminTask::PollerPerformance
   - AdminTask::PseudoDevice
@@ -376,7 +377,7 @@ worker_plugins:
   - 'Macsuck::WirelessNodes'
   - 'Macwalk'
   - 'MakeRancidConf'
-  - 'Monitor'
+  - 'NodeMonitor'
   - 'Nbtstat'
   - 'Nbtstat::Core'
   - 'Nbtwalk'

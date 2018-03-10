@@ -12,6 +12,8 @@ __PACKAGE__->table("node_monitor");
 __PACKAGE__->add_columns(
   "mac",
   { data_type => "macaddr", is_nullable => 0 },
+  "matchoui",
+  { data_type => "boolean", is_nullable => 1 },
   "active",
   { data_type => "boolean", is_nullable => 1 },
   "why",

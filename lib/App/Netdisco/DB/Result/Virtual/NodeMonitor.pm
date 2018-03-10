@@ -16,7 +16,7 @@ SELECT nm.why, nm.cc, trim(trailing '.' from trim(trailing '0123456789' from dat
        d.name, d.location,
        dp.name AS portname
 FROM node_monitor nm, node n, device d, device_port dp
-WHERE nm.mac = n.mac
+WHERE ((nm.mac = n.mac) OR (nm.matchoui AND (substring(nm.mac::text from 1 for 8) = n.oui)))
   AND nm.active
   AND nm.cc IS NOT NULL
   AND d.ip = n.switch

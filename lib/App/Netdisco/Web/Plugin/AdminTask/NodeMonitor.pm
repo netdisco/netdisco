@@ -28,6 +28,7 @@ ajax '/ajax/control/admin/nodemonitor/add' => require_role admin => sub {
       my $monitor = schema('netdisco')->resultset('NodeMonitor')
         ->create({
           mac => param('mac'),
+          matchoui => (param('matchoui') ? \'true' : \'false'),
           active => (param('active') ? \'true' : \'false'),
           why => param('why'),
           cc => param('cc'),
@@ -54,6 +55,7 @@ ajax '/ajax/control/admin/nodemonitor/update' => require_role admin => sub {
 
       $monitor->update({
         mac => param('mac'),
+        matchoui => (param('matchoui') ? \'true' : \'false'),
         active => (param('active') ? \'true' : \'false'),
         why => param('why'),
         cc => param('cc'),
