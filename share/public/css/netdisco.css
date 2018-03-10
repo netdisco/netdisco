@@ -462,8 +462,11 @@ td > form.nd_inline-form {
 #nd_vlan-label-text {
   vertical-align: text-bottom;
 }
+#nd_colorby-label-text {
+  vertical-align: text-bottom;
+}
 #nd_vlan-entry {
-  width: 56px;
+  width: 53px;
 }
 
 /* netmap maximise icon */
@@ -600,7 +603,7 @@ div.toggle.btn-small {
 /* sidebar submit button width and spacing */
 
 /* when the sidebar submit button DOES NOT HAVE a dropdown */
-.nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop) {
+.nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop):not(.nd_sidebar-btn-netmap) {
   margin-top: 9px;
   margin-left: -3px;
   width: 165px;

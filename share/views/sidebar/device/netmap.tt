@@ -30,23 +30,23 @@
             </div>
             </div>
 
-            <button id="nd_netmap-releaseall" class="btn btn-info">
+            <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
                 <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
-            Release All</button>
+            All</button>
 
-            <button id="nd_netmap-releaseonly" class="btn btn-info">
+            <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
                 <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
-            Release Selected</button>
+            Selected</button>
 
-            <button id="nd_netmap-pinonly" class="btn btn-info">
+            <button id="nd_netmap-pinonly" class="btn btn-small btn-info">
                 <i class="icon-lock icon-large pull-left nd_navbar-icon"></i>
             Pin Selected</button>
 
-            <button id="nd_netmap-save" class="btn" disabled>
+            <button id="nd_netmap-save" class="btn btn-small" disabled>
                 <i class="icon-save icon-large pull-left nd_navbar-icon"></i>
             Save Positions</button>
 
-            <button id="nd_netmap-zoomtodevice" class="btn btn-info">
+            <button id="nd_netmap-zoomtodevice" class="btn btn-small btn-info">
                 <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
             Zoom to this Device</button>
 
@@ -63,77 +63,74 @@
                 <label for="nd_mapshow-neighbors">Only Neighbors</label>
             </div>
 
-            [% IF hgroup_list.size %]
-            <div class="radio radio-success">
-            [% ELSE %]
-            <div class="radio radio-success tooltip-wrapper"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="No Named Groups Defined">
-            [% END %]
-                <input type="radio" name="mapshow" id="nd_mapshow-hgroup"
-                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'hgroup' %]
-                [% 'disabled' IF NOT hgroup_list.size %] value="hgroup">
-                <label for="nd_mapshow-hgroup">Only Host Groups</label>
-            </div>
+            <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
+              <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
+                value="[% params.vlan | html_entity %]" type="text"/>
+            </label>
 
             [% IF hgroup_list.size %]
-            <div class="clearfix">
-              <select class="nd_side-select" size="[% hgroup_list.size > 5 ? 5 : hgroup_list.size %]"
-                multiple="on" name="hgroup" id="nd_hgroup-select"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
-                [% FOREACH opt IN hgroup_list.pairs %]
-                <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
-                  value="[% opt.key %]">[% opt.value | html_entity %]</option>
-                [% END %]
-              </select>
-            </div>
+            <select class="nd_side-select" size="[% hgroup_list.size > 5 ? 5 : hgroup_list.size %]"
+              multiple="on" name="hgroup" id="nd_hgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+              [% FOREACH opt IN hgroup_list.pairs %]
+              <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
+                value="[% opt.key %]">[% opt.value | html_entity %]</option>
+              [% END %]
+            </select>
             [% END %]
-
             [% IF location_list.size %]
-            <div class="radio radio-success">
-            [% ELSE %]
-            <div class="radio radio-success tooltip-wrapper"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="No Locations Found">
-            [% END %]
-                <input type="radio" name="mapshow" id="nd_mapshow-lgroup"
-                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'location' %]
-                [% 'disabled' IF NOT location_list.size %] value="location">
-                <label for="nd_mapshow-lgroup">Only Locations</label>
-            </div>
-
-            [% IF location_list.size %]
-            <div class="clearfix">
-              <select class="nd_side-select" size="[% location_list.size > 5 ? 5 : location_list.size %]"
-                multiple="on" name="lgroup" id="nd_lgroup-select"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
-                [% FOREACH loc IN location_list %]
-                <option[% ' selected="selected"' IF location_lkp.exists(loc) %]
-                  value="[% loc %]">[% loc | html_entity %]</option>
-                [% END %]
-              </select>
-            </div>
+            <select class="nd_side-select" size="[% location_list.size > 5 ? 5 : location_list.size %]"
+              multiple="on" name="lgroup" id="nd_lgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
+              [% FOREACH loc IN location_list %]
+              <option[% ' selected="selected"' IF location_lkp.exists(loc) %]
+                value="[% loc %]">[% loc | html_entity %]</option>
+              [% END %]
+            </select>
             [% END %]
 
             <div class="clearfix nd_netmap-sidebar">
 
-              <div id="nd_vlan-label" class="control-group">
-                  <div class="controls">
-                  <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
-                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
-                      value="[% params.vlan | html_entity %]" type="text"/>
-                  </label>
-                </div>
-              </div>
-
-              [% IF hgroup_list.size %]
-              <div class="clearfix input-prepend">
-                <label class="add-on">
-                  <input type="checkbox" id="colorgroups" name="colorgroups"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.colorgroups %]/>
-                </label>
-                <label class="nd_checkboxlabel" for="colorgroups">
-                  <span class="nd_searchcheckbox uneditable-input">Color Groups</span>
-                </label>
-              </div>
+              [% IF hgroup_list.size OR location_list.size %]
+              <table margin="0" border="0" class="nd_sidebar-label control-group">
+              <tr>
+                <td id="nd_colorby-label-text">Color by:</td>
+                <td>
+                  <div class="radio radio-success">
+                      <input type="radio" name="colorby" id="nd_colorby-off"
+                      [% 'checked' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]
+                      value="off">
+                      <label for="nd_colorby-off">Off</label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                [% IF NOT (hgroup_list.size AND location_list.size) %]
+                <td>
+                </td>
+                [% END %]
+                [% IF hgroup_list.size %]
+                <td>
+                  <div class="radio radio-success">
+                      <input type="radio" name="colorby" id="nd_colorby-hgroup"
+                      [% 'checked' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]
+                      value="hgroup">
+                      <label for="nd_colorby-hgroup">Group</label>
+                  </div>
+                </td>
+                [% END %]
+                [% IF location_list.size %]
+                <td>
+                  <div class="radio radio-success">
+                      <input type="radio" name="colorby" id="nd_colorby-lgroup"
+                      [% 'checked' IF vars.sidebar_defaults.device_netmap.colorby == 'location' %]
+                      value="location">
+                      <label for="nd_colorby-lgroup">Location</label>
+                  </div>
+                </td>
+                [% END %]
+              </tr>
+              </table>
               [% END %]
 
               <div class="clearfix input-prepend">
