@@ -99,49 +99,21 @@
 
             <div class="clearfix nd_netmap-sidebar">
 
-              [% IF hgroup_list.size OR location_list.size %]
-              <table margin="0" border="0" class="nd_sidebar-label control-group">
-              <tr>
-                <td id="nd_colorby-label-text">Color by:</td>
-                <td>
-                  <div class="radio radio-success">
-                      <input type="radio" name="colorby" id="nd_colorby-off"
-                      [% 'checked' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]
-                      value="off">
-                      <label for="nd_colorby-off">Off</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                [% IF NOT (hgroup_list.size AND location_list.size) %]
-                <td>
-                </td>
-                [% END %]
-                [% IF hgroup_list.size %]
-                <td>
-                  <div class="radio radio-success">
-                      <input type="radio" name="colorby" id="nd_colorby-hgroup"
-                      [% 'checked' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]
-                      value="hgroup">
-                      <label for="nd_colorby-hgroup">Group</label>
-                  </div>
-                </td>
-                [% END %]
-                [% IF location_list.size %]
-                <td>
-                  <div class="radio radio-success">
-                      <input type="radio" name="colorby" id="nd_colorby-lgroup"
-                      [% 'checked' IF vars.sidebar_defaults.device_netmap.colorby == 'location' %]
-                      value="location">
-                      <label for="nd_colorby-lgroup">Location</label>
-                  </div>
-                </td>
-                [% END %]
-              </tr>
-              </table>
-              [% END %]
-
               <div class="clearfix input-prepend">
+                [% IF hgroup_list.size OR location_list.size %]
+                <label><span id="nd_colorby-label-text">Color by: </span>
+                  <select id="nd_colorby" name="colorby">
+                    <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]>Off</option>
+                    [% IF hgroup_list.size %]
+                    <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]>Group</option>
+                    [% END %]
+                    [% IF location_list.size %]
+                    <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'location' %]>Location</option>
+                    [% END %]
+                  </select>
+                </label>
+                [% END %]
+
                 <label class="add-on">
                   <input type="checkbox" id="dynamicsize" name="dynamicsize"
                     [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>

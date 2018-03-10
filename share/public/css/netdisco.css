@@ -463,9 +463,6 @@ td > form.nd_inline-form {
 #nd_vlan-label-text {
   vertical-align: text-bottom;
 }
-#nd_colorby-label-text {
-  vertical-align: text-bottom;
-}
 #nd_vlan-entry {
   width: 53px;
 }
@@ -613,6 +610,14 @@ div.toggle.btn-small {
 
 .nd_netmap-pin-controls-top-row {
   padding-bottom: 5px;
+}
+
+#nd_colorby {
+  width: 107px;
+}
+#nd_colorby-label-text {
+  vertical-align: bottom;
+  line-height: 2;
 }
 
 /* when the sidebar submit button DOES NOT HAVE a dropdown */
