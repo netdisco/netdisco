@@ -95,8 +95,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $resolved_aliases = hostnames_resolve_async(\@aliases);
 
   # fake one aliases entry for devices not providing ip_index
+  # or if we're discovering on an IP not listed in ip_index
   push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar @aliases;
+    if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
