@@ -86,12 +86,12 @@
               [% END %]
             </select>
             [% END %]
-            [% IF location_list.size %]
-            <select class="nd_side-select" size="[% location_list.size > 4 ? 4 : location_list.size %]"
+            [% IF lgroup_list.size %]
+            <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
               multiple="on" name="lgroup" id="nd_lgroup-select"
               rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
-              [% FOREACH loc IN location_list %]
-              <option[% ' selected="selected"' IF location_lkp.exists(loc) %]
+              [% FOREACH loc IN lgroup_list %]
+              <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
                 value="[% loc %]">[% loc | html_entity %]</option>
               [% END %]
             </select>
@@ -99,16 +99,21 @@
 
             <div class="clearfix nd_netmap-sidebar">
 
-              [% IF hgroup_list.size OR location_list.size %]
+              [% IF hgroup_list.size OR lgroup_list.size %]
               <div class="clearfix input-prepend">
               <label><span id="nd_colorby-label-text">Color by: </span>
                 <select id="nd_colorby" name="colorby">
-                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]>Off</option>
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]
+                    value="off">Off</option>
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'speed' %]
+                    value="speed">Throughput</option>
                   [% IF hgroup_list.size %]
-                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]>Group</option>
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]
+                    value="hgroup">Host Group</option>
                   [% END %]
-                  [% IF location_list.size %]
-                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'location' %]>Location</option>
+                  [% IF lgroup_list.size %]
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'lgroup' %]
+                    value="lgroup">Location</option>
                   [% END %]
                 </select>
               </label>

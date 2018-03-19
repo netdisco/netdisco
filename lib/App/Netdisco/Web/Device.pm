@@ -41,7 +41,7 @@ hook 'before_template' => sub {
   }
 
   # used in the device search sidebar template to set selected items
-  foreach my $opt (qw/hgroup location/) {
+  foreach my $opt (qw/hgroup lgroup/) {
       my $p = (ref [] eq ref param($opt) ? param($opt)
                                           : (param($opt) ? [param($opt)] : []));
       $tokens->{"${opt}_lkp"} = { map { $_ => 1 } @$p };
@@ -82,7 +82,7 @@ get '/device' => require_login sub {
     params->{'tab'} ||= 'details';
     template 'device', {
       display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
-      location_list => [ schema('netdisco')->resultset('Device')->get_distinct_col('location') ],
+      lgroup_list => [ schema('netdisco')->resultset('Device')->get_distinct_col('location') ],
       hgroup_list => setting('host_group_displaynames'),
       device => params->{'tab'},
     };

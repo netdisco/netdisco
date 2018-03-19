@@ -139,8 +139,7 @@ sidebar_defaults:
     showips:     { default: null }
     showspeed:   { default: null }
     mapshow:     { default: neighbors }
-    colorby:     { default: location }
-    colorgroups: { default: checked }
+    colorby:     { default: speed }
     dynamicsize: { default: checked }
   report_moduleinventory:
     fruonly:     { default: checked }

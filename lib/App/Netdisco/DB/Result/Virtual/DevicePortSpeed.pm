@@ -14,8 +14,9 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
          sum( COALESCE(dpp.raw_speed,1) ) as total
   FROM device_port
   LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
-  WHERE type = 'ethernetCsmacd'
-    AND speed LIKE '%bps'
+  WHERE type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$'
+    AND port !~* 'vlan'
+    AND name !~* 'vlan'
   GROUP BY ip
   ORDER BY total DESC
 ENDSQL

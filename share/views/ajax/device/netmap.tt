@@ -18,7 +18,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .dragMode(true)
       .zoomMode(true)
       .pinMode(true)
-      [% '.showLegend(false)' IF NOT params.colorgroups %]
+      [% '.showLegend(false)' UNLESS (params.colorby == 'hgroup' OR params.colorby == 'lgroup') %]
       .showLinkDirection(false)
       .colorScheme('color10')
       //.preventLabelOverlappingOnForceEnd(
