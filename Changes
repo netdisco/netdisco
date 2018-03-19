@@ -1,20 +1,24 @@
-2.039016 - 2018-
+2.039016 - 2018-03-19
 
   [NEW FEATURES]
 
   * #48 Node Monitor supports matching on OUI
   * #31 configurable Free Time in Port Utilization Report
+  * improvements to network map, location filtering and auto saving
 
   [ENHANCEMENTS]
 
   * #24 show device age in device search view
   * Node Montior is now included in Admin menu
-  * neighbor map dynamic size is enabled by default
+  * rebuild Stats is now included in Admin menu
+  * always add interface alias for discovered IP
+  * checking for malformed IPs in c_ip results
 
   [BUG FIXES]
 
   * #274 errors in IP Inventory report
   * dynamic size in neighbor map should use device_port_properties
+  * #381 LLDP port name is space compressed
 
 2.039015 - 2018-03-05
 
