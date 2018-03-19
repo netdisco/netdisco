@@ -247,7 +247,7 @@ sub store_neighbors {
       $remote_port = $c_port->{$entry};
       if (defined $remote_port) {
           # clean weird characters
-          $remote_port =~ s/[^\d\/\.,()\w:-]+//gi;
+          $remote_port =~ s/[^\d\/\.,()\w:- ]+//gi;
       }
       else {
           info sprintf ' [%s] neigh - no remote port found for port %s at %s',
