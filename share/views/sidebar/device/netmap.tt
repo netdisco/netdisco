@@ -99,21 +99,23 @@
 
             <div class="clearfix nd_netmap-sidebar">
 
+              [% IF hgroup_list.size OR location_list.size %]
               <div class="clearfix input-prepend">
-                [% IF hgroup_list.size OR location_list.size %]
-                <label><span id="nd_colorby-label-text">Color by: </span>
-                  <select id="nd_colorby" name="colorby">
-                    <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]>Off</option>
-                    [% IF hgroup_list.size %]
-                    <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]>Group</option>
-                    [% END %]
-                    [% IF location_list.size %]
-                    <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'location' %]>Location</option>
-                    [% END %]
-                  </select>
-                </label>
-                [% END %]
+              <label><span id="nd_colorby-label-text">Color by: </span>
+                <select id="nd_colorby" name="colorby">
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]>Off</option>
+                  [% IF hgroup_list.size %]
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]>Group</option>
+                  [% END %]
+                  [% IF location_list.size %]
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'location' %]>Location</option>
+                  [% END %]
+                </select>
+              </label>
+              </div>
+              [% END %]
 
+              <div class="clearfix input-prepend">
                 <label class="add-on">
                   <input type="checkbox" id="dynamicsize" name="dynamicsize"
                     [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
