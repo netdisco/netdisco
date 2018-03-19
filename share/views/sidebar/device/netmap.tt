@@ -30,11 +30,6 @@
               </div>
             </div>
 
-            <label><span id="">Positions: </span>
-              <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small" disabled>
-                  <i class="icon-save icon-large pull-left nd_navbar-icon"></i> Save</button>
-            </label>
-
             <table margin="0" border="0" class="nd_netmap-pin-controls">
             <tr>
               <td class="nd_netmap-pin-controls-top-row">

@@ -23,13 +23,6 @@
     $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});
     $("[rel=popover]").popover({live: true});
-
-    // positions save not available in netmap neighbors view
-    if ($("input[name='mapshow']:checked").val() == 'neighbors') {
-      $('#nd_netmap-save').prop('disabled', true).removeClass('btn-info');
-    } else {
-      $('#nd_netmap-save').prop('disabled', false).addClass('btn-info');
-    }
   }
 
   // on load, establish global delegations for now and future
@@ -146,15 +139,6 @@
       graph.inspect().main.nodes
         .filter(function(n) { return n.selected })
         .each(function(n) { n.fixed = true });
-    });
-    $('#nd_netmap-save').on('click', function(event) {
-      event.preventDefault();
-      // if user enters vlan but does not submit this will save wrong data
-      $.post(
-        '[% uri_for('/ajax/data/device/netmappositions') %]'
-        ,$("#nd_vlan-entry, #nd_hgroup-select, input[name='mapshow']").serialize()
-          + '&positions=' + JSON.stringify(graph.positions())
-      );
     });
     $('#nd_netmap-zoomtodevice').on('click', function(event) {
       event.preventDefault();
