@@ -19,6 +19,10 @@ ajax '/ajax/content/device/netmap' => require_login sub {
 };
 
 ajax '/ajax/data/device/netmappositions' => require_login sub {
+    my $q = param('q');
+    my $qdev = schema('netdisco')->resultset('Device')
+      ->search_for_device($q) or send_error('Bad device', 400);
+
     my $p = param('positions') or send_error('Missing positions', 400);
     my $positions = from_json($p) or send_error('Bad positions', 400);
     send_error('Bad positions', 400) unless ref [] eq ref $positions;
@@ -27,7 +31,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
     my $mapshow = param('mapshow');
-    return if !defined $mapshow or $mapshow !~ m/^(?:all|hgroup)$/;
+    return if !defined $mapshow or $mapshow !~ m/^(?:all|neighbors)$/;
 
     # list of groups selected by user and passed in param
     my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
@@ -36,8 +40,10 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
                    grep { exists setting('host_group_displaynames')->{$_} }
                    grep { exists setting('host_groups')->{$_} }
                    grep { defined } @{ $hgroup };
-    return if $mapshow eq 'hgroup' and 0 == scalar @hgrplist;
-    push(@hgrplist, '__ANY__') if 0 == scalar @hgrplist;
+
+    # list of locations selected by user and passed in param
+    my $lgroup = (ref [] eq ref param('lgroup') ? param('lgroup') : [param('lgroup')]);
+    my @lgrplist = List::MoreUtils::uniq grep { defined } @{ $lgroup };
 
     my %clean = ();
     POSITION: foreach my $pos (@$positions) {
@@ -51,14 +57,20 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     return unless scalar keys %clean;
 
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
+      device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
-      vlan => ($vlan || 0)});
+      locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
+      vlan => ($vlan || 0),
+    });
+
     if ($posrow) {
       $posrow->update({ positions => to_json(\%clean) });
     }
     else {
       schema('netdisco')->resultset('NetmapPositions')->create({
+        device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
         host_groups => [sort @hgrplist],
+        locations   => [sort @lgrplist],
         vlan => ($vlan || 0),
         positions => to_json(\%clean),
       });
@@ -167,9 +179,11 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # DEVICES (NODES)
 
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
-      host_groups => \[ '= ?',
-        [host_groups => [$mapshow eq 'all' ? '__ANY__' : (sort @hgrplist)]] ],
-      vlan => ($vlan || 0)});
+      device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
+      host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
+      locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
+      vlan => ($vlan || 0),
+    });
     my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
 
     my $devices = schema('netdisco')->resultset('Device')->search({}, {

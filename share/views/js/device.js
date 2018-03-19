@@ -145,6 +145,10 @@
       var node = graph.nodeDataById( graph['nd2']['centernode'] );
       graph.zoomSmooth(node.x, node.y, node.radius * 125);
     });
+    $('#nd_netmap-save').on('click', function(event) {
+      event.preventDefault();
+      saveMapPositions();
+    });
 
     // activity for admin tasks in device details
     $('#details_pane').on('click', '.nd_adminbutton', function(event) {
