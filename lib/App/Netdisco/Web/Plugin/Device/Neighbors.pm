@@ -51,14 +51,14 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     return unless scalar keys %clean;
 
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
-      device_groups => \[ '= ?', [device_groups => [sort @hgrplist]] ],
+      host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       vlan => ($vlan || 0)});
     if ($posrow) {
       $posrow->update({ positions => to_json(\%clean) });
     }
     else {
       schema('netdisco')->resultset('NetmapPositions')->create({
-        device_groups => [sort @hgrplist],
+        host_groups => [sort @hgrplist],
         vlan => ($vlan || 0),
         positions => to_json(\%clean),
       });
@@ -167,8 +167,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # DEVICES (NODES)
 
     my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
-      device_groups => \[ '= ?',
-        [device_groups => [$mapshow eq 'all' ? '__ANY__' : (sort @hgrplist)]] ],
+      host_groups => \[ '= ?',
+        [host_groups => [$mapshow eq 'all' ? '__ANY__' : (sort @hgrplist)]] ],
       vlan => ($vlan || 0)});
     my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
 
