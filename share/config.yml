@@ -351,6 +351,7 @@ job_prio:
     - nbtwalk
     - nbtstat
     - expire
+    - stats
 
 worker_plugins:
   - 'Arpnip'
