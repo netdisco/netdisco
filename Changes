@@ -1,3 +1,9 @@
+2.039017 - 2018-03-20
+
+  [BUG FIXES]
+
+  * #382 invaid regexp syntax
+
 2.039016 - 2018-03-19
 
   [NEW FEATURES]
