@@ -1,3 +1,9 @@
+2.039018 - 2018-03-
+
+  [ENHANCEMENTS]
+
+  * #371 usernames are case insensitive but case preserving
+
 2.039017 - 2018-03-20
 
   [BUG FIXES]
