@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * #371 usernames are case insensitive but case preserving
+  * #12 store Cisco PortFast status in device_port_properties:faststart
 
 2.039017 - 2018-03-20
 

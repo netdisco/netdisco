@@ -67,7 +67,7 @@ Module::Build->new(
     'Starman' => '0.4008',
     'Storable' => '0',
     'Sys::SigAction' => '0',
-    'SNMP::Info' => '3.52',
+    'SNMP::Info' => '3.53',
     'SQL::Abstract' => '1.85',
     'SQL::Translator' => '0.11024',
     'Template' => '2.24',

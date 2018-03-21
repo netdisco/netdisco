@@ -35,6 +35,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{error_disable_cause} = $err_cause->{$idx};
   }
 
+  my $faststart = $snmp->i_faststart_enabled || {};
+
+  foreach my $idx (keys %$faststart) {
+    my $port = $interfaces->{$idx} or next;
+    $properties{ $port }->{faststart} = $faststart->{$idx};
+  }
+
   my $c_if  = $snmp->c_if  || {};
   my $c_cap = $snmp->c_cap || {};
   my $c_platform = $snmp->c_platform || {};
