@@ -14,11 +14,11 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
          sum( COALESCE(dpp.raw_speed,1) ) as total
   FROM device_port
   LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
-  WHERE type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$'
-    AND port !~* 'vlan'
-    AND name !~* 'vlan'
+  WHERE port !~* 'vlan'
+    AND (type IS NULL OR type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
+    AND (name IS NULL OR name !~* 'vlan')
   GROUP BY ip
-  ORDER BY total DESC
+  ORDER BY total DESC, ip ASC
 ENDSQL
 );
 

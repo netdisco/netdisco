@@ -8,6 +8,7 @@
   [BUG FIXES]
 
   * access to manual topology for admins without port_control role
+  * network map working with pseudo devices
 
 2.039017 - 2018-03-20
 

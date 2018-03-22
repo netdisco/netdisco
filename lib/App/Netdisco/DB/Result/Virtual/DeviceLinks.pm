@@ -30,9 +30,9 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
  INNER JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)
 
  WHERE dp.remote_port IS NOT NULL
-   AND dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$'
    AND dp.port !~* 'vlan'
-   AND dp.name !~* 'vlan'
+   AND (dp.type IS NULL OR dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
+   AND (dp.name IS NULL OR dp.name !~* 'vlan')
    AND dp.ip <= dp2.ip
  GROUP BY left_ip, left_dns, left_name, right_ip, right_dns, right_name
  ORDER BY dp.ip
