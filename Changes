@@ -5,6 +5,10 @@
   * #371 usernames are case insensitive but case preserving
   * #12 store Cisco PortFast status in device_port_properties:faststart
 
+  [BUG FIXES]
+
+  * access to manual topology for admins without port_control role
+
 2.039017 - 2018-03-20
 
   [BUG FIXES]

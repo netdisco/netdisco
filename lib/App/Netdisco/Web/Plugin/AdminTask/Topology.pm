@@ -29,7 +29,7 @@ sub _sanity_ok {
     return 1;
 }
 
-ajax '/ajax/control/admin/topology/add' => require_role port_control => sub {
+ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_control)] => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     my $device = schema('netdisco')->resultset('Topology')
@@ -78,7 +78,7 @@ ajax '/ajax/control/admin/topology/add' => require_role port_control => sub {
     };
 };
 
-ajax '/ajax/control/admin/topology/del' => require_role port_control => sub {
+ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_control)] => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -129,7 +129,7 @@ ajax '/ajax/control/admin/topology/del' => require_role port_control => sub {
     };
 };
 
-ajax '/ajax/content/admin/topology' => require_role port_control => sub {
+ajax '/ajax/content/admin/topology' => require_any_role [qw(admin port_control)] => sub {
     my $set = schema('netdisco')->resultset('Topology')
       ->search({},{order_by => [qw/dev1 dev2 port1/]});
 

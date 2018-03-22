@@ -7,7 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue qw/jq_insert jq_userlog/;
 
-ajax '/ajax/portcontrol' => require_role port_control => sub {
+ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
     send_error('No device/port/field', 400)
       unless param('device') and (param('port') or param('field'));
 
