@@ -1,3 +1,9 @@
+2.039019 - 2018-03-23
+
+  [BUG FIXES]
+
+  * fix device search SQL error (reported by bhuddah)
+
 2.039018 - 2018-03-22
 
   [ENHANCEMENTS]
