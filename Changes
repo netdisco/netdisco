@@ -4,6 +4,10 @@
 
   * better link speed names on network map
 
+  [BUG FIXES]
+
+  * fix case insensitive username match for LDAP
+
 2.039019 - 2018-03-23
 
   [BUG FIXES]

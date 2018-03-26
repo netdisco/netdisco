@@ -58,7 +58,7 @@ post '/login' => sub {
 
     if ($success) {
         my $user = schema('netdisco')->resultset('User')
-          ->find({ username => { -ilike => param('username') } });
+          ->find({ username => { -ilike => quotemeta(param('username')) } });
 
         session logged_in_user => $user->username;
         session logged_in_fullname => $user->fullname;
