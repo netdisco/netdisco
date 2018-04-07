@@ -11,7 +11,7 @@ __PACKAGE__->table('device_port_speed');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   SELECT ip,
-         sum( COALESCE(dpp.raw_speed,1) ) as total
+         GREATEST(1, sum( COALESCE(dpp.raw_speed,1) )) as total
   FROM device_port
   LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
   WHERE port !~* 'vlan'
