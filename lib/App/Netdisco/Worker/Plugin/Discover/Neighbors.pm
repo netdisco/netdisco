@@ -253,14 +253,14 @@ sub store_neighbors {
           # attempt to resolve port name when it is given wrong
           # https://github.com/netdisco/netdisco/issues/380
           if ($peer_device and $peer_device->in_storage) {
-              my $peer_port = schema('netdisco')->resultset('DevicePort')->single({
+              my $peer_port = schema('netdisco')->resultset('DevicePort')->search({
                 ip   => $peer_device->ip,
                 port => [
                   {'=', $remote_port},
                   {'-ilike', normalize_port($remote_port)},
                   {'-ilike', ('%'.quotemeta($remote_port))},
                 ],
-              });
+              }, { rows => 1 })->single();
               if ($peer_port and ($peer_port->port ne $remote_port)) {
                   info sprintf ' [%s] neigh - changing remote port on %s from %s to %s',
                     $device->ip, $port, $remote_port, $peer_port->port;
