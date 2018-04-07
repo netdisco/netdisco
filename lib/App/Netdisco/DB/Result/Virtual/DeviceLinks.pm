@@ -19,21 +19,21 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
         array_agg(dp.port) AS left_port, array_agg(dp.name) AS left_descr,
         sum( COALESCE(dpp.raw_speed,0) ) as aggspeed,
         count(*) AS aggports,
-        dp2.ip AS right_ip, rd.dns AS right_dns, rd.name AS right_name,
-        array_agg(dp2.port) AS right_port, array_agg(dp2.name) AS right_descr
+        di.ip AS right_ip, rd.dns AS right_dns, rd.name AS right_name,
+        array_agg(dp.remote_port) AS right_port, array_agg(dp2.name) AS right_descr
 
  FROM device_port dp
  LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
  INNER JOIN device ld ON dp.ip = ld.ip
  INNER JOIN device_ip di ON dp.remote_ip = di.alias
  INNER JOIN device rd ON di.ip = rd.ip
- INNER JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)
+ LEFT OUTER JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)
 
  WHERE dp.remote_port IS NOT NULL
    AND dp.port !~* 'vlan'
    AND (dp.type IS NULL OR dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
    AND (dp.name IS NULL OR dp.name !~* 'vlan')
-   AND dp.ip <= dp2.ip
+   AND dp.ip <= di.ip
  GROUP BY left_ip, left_dns, left_name, right_ip, right_dns, right_name
  ORDER BY dp.ip
 ENDSQL
