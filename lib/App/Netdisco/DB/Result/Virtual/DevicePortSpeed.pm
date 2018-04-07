@@ -17,6 +17,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   WHERE port !~* 'vlan'
     AND (type IS NULL OR type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
     AND (name IS NULL OR name !~* 'vlan')
+    AND (is_master = 'false' OR slave_of IS NOT NULL)
   GROUP BY ip
   ORDER BY total DESC, ip ASC
 ENDSQL
