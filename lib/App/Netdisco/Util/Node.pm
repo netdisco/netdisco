@@ -65,6 +65,8 @@ MAC address does not belong to an interface on any known Device
 
 sub check_mac {
   my ($device, $node, $port_macs) = @_;
+  return 0 if !$device or !$node;
+
   my $mac = NetAddr::MAC->new(mac => $node);
   my $devip = (ref $device ? $device->ip : '');
   $port_macs ||= {};
