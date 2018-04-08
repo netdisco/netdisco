@@ -103,6 +103,8 @@ sub make_link_infostring {
   (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
 
   if ($link->{aggports} == 1) {
+    $link->{left_descr}->[0]  ||= 'no description';
+    $link->{right_descr}->[0] ||= 'no description';
     return sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
       $left_name, $link->{left_port}->[0], $link->{left_descr}->[0],
       $right_name, $link->{right_port}->[0], $link->{right_descr}->[0];
