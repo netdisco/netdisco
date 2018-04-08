@@ -33,6 +33,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
    AND dp.port !~* 'vlan'
    AND (dp.type IS NULL OR dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
    AND (dp.name IS NULL OR dp.name !~* 'vlan')
+   AND (dp.is_master = 'false' OR dp.slave_of IS NOT NULL)
    AND dp.ip <= di.ip
  GROUP BY left_ip, left_dns, left_name, right_ip, right_dns, right_name
  ORDER BY dp.ip
