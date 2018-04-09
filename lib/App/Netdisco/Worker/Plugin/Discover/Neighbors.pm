@@ -259,7 +259,8 @@ sub store_neighbors {
                 ip   => $peer_device->ip,
                 port => [
                   {'=', $remote_port},
-                  {'-ilike', normalize_port($remote_port)},
+                  {'-ilike', long_port($remote_port)},
+                  {'-ilike', short_port($remote_port)},
                   {'-ilike', ('%'.quotemeta($remote_port))},
                 ],
               }, { rows => 1 })->single();
@@ -308,7 +309,13 @@ sub store_neighbors {
   return @to_discover;
 }
 
-sub normalize_port {
+sub long_port {
+  my $port = shift or return '';
+  $port =~ s/^([a-z]{2})([^a-z].+)$/$1%$2/i;
+  return $port;
+}
+
+sub short_port {
   my $port = shift or return '';
   my ($start, $end) = ('', '');
   if ($port =~ m/^([a-z]{2})/i) { $start = $1 }
