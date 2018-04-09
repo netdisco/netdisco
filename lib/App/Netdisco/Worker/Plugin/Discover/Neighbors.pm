@@ -261,7 +261,7 @@ sub store_neighbors {
                   {'=', $remote_port},
                   {'-ilike', long_port($remote_port)},
                   {'-ilike', short_port($remote_port)},
-                  {'-ilike', ('%'.quotemeta($remote_port))},
+                  {'-ilike', ('%'. $remote_port)},
                 ],
               }, { rows => 1 })->single();
               if ($peer_port and ($peer_port->port ne $remote_port)) {
@@ -311,7 +311,7 @@ sub store_neighbors {
 
 sub long_port {
   my $port = shift or return '';
-  $port =~ s/^([a-z]{2})([^a-z].+)$/$1%$2/i;
+  $port =~ s/^([a-z]{2})(\d.+)$/$1%$2/i;
   return $port;
 }
 
