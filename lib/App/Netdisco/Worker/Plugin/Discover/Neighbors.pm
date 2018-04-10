@@ -238,6 +238,7 @@ sub store_neighbors {
 
       # OK, remote IP seems sane
       $remote_ip = $r_netaddr->addr;
+      my $peer_device = get_device($remote_ip);
 
       # what we came here to do.... discover the neighbor
       debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
@@ -245,9 +246,6 @@ sub store_neighbors {
       push @to_discover, [$remote_ip, $remote_type, $remote_id];
 
       $remote_port = $c_port->{$entry};
-      my $peer_device = get_device($remote_ip);
-      my $peer_port = undef;
-
       if (defined $remote_port) {
           # clean weird characters
           $remote_port =~ s/[^\d\s\/\.,()\w:-]+//gi;
@@ -255,7 +253,7 @@ sub store_neighbors {
           # attempt to resolve port name when it is given wrong
           # https://github.com/netdisco/netdisco/issues/380
           if ($peer_device and $peer_device->in_storage) {
-              $peer_port = schema('netdisco')->resultset('DevicePort')->search({
+              my $peer_port = schema('netdisco')->resultset('DevicePort')->search({
                 ip   => $peer_device->ip,
                 port => [
                   {'=', $remote_port},
@@ -291,6 +289,11 @@ sub store_neighbors {
           my $master = schema('netdisco')->resultset('DevicePort')->single({
             ip => $device->ip,
             port => $portrow->slave_of
+          });
+
+          my $peer_port = schema('netdisco')->resultset('DevicePort')->single({
+            ip   => $peer_device->ip,
+            port => $portrow->remote_port,
           });
 
           if ($master and not ($portrow->is_master or defined $master->slave_of)) {
