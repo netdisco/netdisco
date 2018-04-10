@@ -312,8 +312,8 @@ sub normalize_port {
   my $port = shift or return '';
   my ($start, $end) = ('', '');
   if ($port =~ m/^([a-z]{2})/i) { $start = $1 }
-  if ($port =~ m/[a-z]([^a-z]+)$/i) { $end = $1 }
-  return (($start && $end) ? "${start}${end}" : $port);
+  ($end = $port) =~ s/^\D+//;
+  return (quotemeta($start) .'%'. quotemeta($end));
 }
 
 # take data from the topology table and update remote_ip and remote_port
