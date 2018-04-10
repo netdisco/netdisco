@@ -1,4 +1,4 @@
-2.039021 - 2018-04-
+2.039021 - 2018-04-10
 
   [BUG FIXES]
 
@@ -6,6 +6,7 @@
   * #390 cannot take logarithm of zero (C. Stromsoe)
   * protect against undef mac (l.e. ferguson)
   * do not include logical aggregate masters in netmap/speed calc
+  * try to match remote port in netmap against port, name, and descr
 
 2.039020 - 2018-03-26
 

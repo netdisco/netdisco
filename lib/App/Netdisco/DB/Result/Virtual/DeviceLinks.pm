@@ -27,7 +27,11 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
  INNER JOIN device ld ON dp.ip = ld.ip
  INNER JOIN device_ip di ON dp.remote_ip = di.alias
  INNER JOIN device rd ON di.ip = rd.ip
- LEFT OUTER JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)
+ LEFT OUTER JOIN device_port dp2
+   ON (di.ip = dp2.ip
+       AND ((dp.remote_port = dp2.port)
+            OR (dp.remote_port = dp2.name)
+            OR (dp.remote_port = dp2.descr)))
 
  WHERE dp.remote_port IS NOT NULL
    AND dp.port !~* 'vlan'
