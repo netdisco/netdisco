@@ -53,6 +53,7 @@ Module::Build->new(
     'NetAddr::MAC' => '0.93',
     'NetAddr::IP' => '4.068',
     'Opcode' => '1.07',
+    'Package::DeprecationManager' => '0',
     'Path::Class' => '0.32',
     'Plack' => '1.0023',
     'Plack::Handler::Twiggy' => '0',

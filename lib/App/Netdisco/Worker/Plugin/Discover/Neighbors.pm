@@ -288,13 +288,26 @@ sub store_neighbors {
       # update master of our aggregate to be a neighbor of
       # the master on our peer device (a lot of iffs to get there...).
       # & cannot use ->neighbor prefetch because this is the port insert!
-      if ($peer_device and $peer_device->in_storage and defined $portrow->slave_of) {
+      if (defined $portrow->slave_of) {
+
+          my $peer_device = get_device($remote_ip);
           my $master = schema('netdisco')->resultset('DevicePort')->single({
             ip => $device->ip,
             port => $portrow->slave_of
           });
 
+<<<<<<< HEAD
           if ($master and not ($portrow->is_master or defined $master->slave_of)) {
+=======
+          if ($peer_device and $peer_device->in_storage and $master
+              and not ($portrow->is_master or defined $master->slave_of)) {
+
+              my $peer_port = schema('netdisco')->resultset('DevicePort')->single({
+                ip   => $peer_device->ip,
+                port => $portrow->remote_port,
+              });
+
+>>>>>>> master
               $master->update({
                   remote_ip => ($peer_device->ip || $remote_ip),
                   remote_port => ($peer_port ? $peer_port->slave_of : undef ),
@@ -309,6 +322,7 @@ sub store_neighbors {
   return @to_discover;
 }
 
+<<<<<<< HEAD
 sub long_port {
   my $port = shift or return '';
   $port =~ s/^([a-z]{2})(\d.+)$/$1%$2/i;
@@ -323,6 +337,8 @@ sub short_port {
   return (($start && $end) ? "${start}${end}" : $port);
 }
 
+=======
+>>>>>>> master
 # take data from the topology table and update remote_ip and remote_port
 # in the devices table. only use root_ips and skip any bad topo entries.
 sub set_manual_topology {
