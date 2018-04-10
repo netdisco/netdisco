@@ -238,7 +238,6 @@ sub store_neighbors {
 
       # OK, remote IP seems sane
       $remote_ip = $r_netaddr->addr;
-      my $peer_device = get_device($remote_ip);
 
       # what we came here to do.... discover the neighbor
       debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
@@ -249,24 +248,6 @@ sub store_neighbors {
       if (defined $remote_port) {
           # clean weird characters
           $remote_port =~ s/[^\d\s\/\.,()\w:-]+//gi;
-
-          # attempt to resolve port name when it is given wrong
-          # https://github.com/netdisco/netdisco/issues/380
-          if ($peer_device and $peer_device->in_storage) {
-              my $peer_port = schema('netdisco')->resultset('DevicePort')->search({
-                ip   => $peer_device->ip,
-                port => [
-                  {'=', $remote_port},
-                  {'-ilike', normalize_port($remote_port)},
-                  {'-ilike', ('%'.quotemeta($remote_port))},
-                ],
-              }, { rows => 1 })->single();
-              if ($peer_port and ($peer_port->port ne $remote_port)) {
-                  info sprintf ' [%s] neigh - changing remote port on %s from %s to %s',
-                    $device->ip, $port, $remote_port, $peer_port->port;
-                  $remote_port = $peer_port->port;
-              }
-          }
       }
       else {
           info sprintf ' [%s] neigh - no remote port found for port %s at %s',
@@ -285,18 +266,22 @@ sub store_neighbors {
       # update master of our aggregate to be a neighbor of
       # the master on our peer device (a lot of iffs to get there...).
       # & cannot use ->neighbor prefetch because this is the port insert!
-      if ($peer_device and $peer_device->in_storage and defined $portrow->slave_of) {
+      if (defined $portrow->slave_of) {
+
+          my $peer_device = get_device($remote_ip);
           my $master = schema('netdisco')->resultset('DevicePort')->single({
             ip => $device->ip,
             port => $portrow->slave_of
           });
 
-          my $peer_port = schema('netdisco')->resultset('DevicePort')->single({
-            ip   => $peer_device->ip,
-            port => $portrow->remote_port,
-          });
+          if ($peer_device and $peer_device->in_storage and $master
+              and not ($portrow->is_master or defined $master->slave_of)) {
 
-          if ($master and not ($portrow->is_master or defined $master->slave_of)) {
+              my $peer_port = schema('netdisco')->resultset('DevicePort')->single({
+                ip   => $peer_device->ip,
+                port => $portrow->remote_port,
+              });
+
               $master->update({
                   remote_ip => ($peer_device->ip || $remote_ip),
                   remote_port => ($peer_port ? $peer_port->slave_of : undef ),
@@ -309,14 +294,6 @@ sub store_neighbors {
   }
 
   return @to_discover;
-}
-
-sub normalize_port {
-  my $port = shift or return '';
-  my ($start, $end) = ('', '');
-  if ($port =~ m/^([a-z]{2})/i) { $start = $1 }
-  ($end = $port) =~ s/^\D+//;
-  return (quotemeta($start) .'%'. quotemeta($end));
 }
 
 # take data from the topology table and update remote_ip and remote_port
