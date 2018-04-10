@@ -311,7 +311,6 @@ sub store_neighbors {
   return @to_discover;
 }
 
-<<<<<<< HEAD
 sub long_port {
   my $port = shift or return '';
   $port =~ s/^([a-z]{2})(\d.+)$/$1%$2/i;
@@ -326,8 +325,6 @@ sub short_port {
   return (($start && $end) ? "${start}${end}" : $port);
 }
 
-=======
->>>>>>> master
 # take data from the topology table and update remote_ip and remote_port
 # in the devices table. only use root_ips and skip any bad topo entries.
 sub set_manual_topology {
