@@ -116,7 +116,7 @@ sub _filter_nbname {
 
     my $mac = $node_status->{'mac_address'} || '';
 
-    unless ( check_mac( $ip, $mac ) ) {
+    unless ( check_mac( $mac, $ip ) ) {
 
         # Just assume it's the last MAC we saw this IP at.
         my $node_ip = schema('netdisco')->resultset('NodeIp')

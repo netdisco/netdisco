@@ -15,9 +15,9 @@ register_admin_task({
 
 sub _sanity_ok {
     return 0 unless param('mac')
-      and check_mac(undef, param('mac'));
+      and check_mac(param('mac'));
 
-    params->{mac} = check_mac(undef, param('mac'));
+    params->{mac} = check_mac(param('mac'));
     return 1;
 }
 

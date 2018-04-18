@@ -143,7 +143,7 @@ sub store_arpentries {
 
     foreach my $arpentry ( @$arpentries ) {
         # skip broadcast/vrrp/hsrp and other wierdos
-        next unless check_mac( undef, $arpentry->{mac} );
+        next unless check_mac( $arpentry->{mac} );
 
         debug sprintf '  arpnip - stored entry: %s / %s',
             $arpentry->{mac}, $arpentry->{ip};
