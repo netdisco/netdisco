@@ -2,6 +2,7 @@
 
   [BUG FIXES]
 
+  * #393 avoid 'modification of readonly variable' error in netmap
   * clean up check_mac() interface (ml-cms)
 
 2.039021 - 2018-04-10

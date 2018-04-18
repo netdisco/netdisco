@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use SNMP::Info ();
+use Storable 'dclone';
 use List::Util 'first';
 use List::MoreUtils ();
 use App::Netdisco::Util::Permission 'check_acl_only';
@@ -96,7 +97,8 @@ sub make_node_infostring {
 }
 
 sub make_link_infostring {
-  my $link = shift or return '';
+  my $linkarg = shift or return '';
+  my $link = dclone $link;
 
   my $domain = quotemeta( setting('domain_suffix') || '' );
   (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
