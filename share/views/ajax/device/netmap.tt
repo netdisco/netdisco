@@ -157,6 +157,9 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
 
     graph.start(mapdata);
 
+    // trigger update of router labels (to reflect sidebar setting)
+    $('#nd_showips').trigger('change');
+
     // about a second after render starts, zoom in a bit
     if ('[% params.mapshow %]' == 'neighbors') {
       setTimeout(function() {
@@ -261,6 +264,10 @@ $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', fu
     return (isFullScreen() ? '\uf066' : '\uf065');
   });
 });
+
+// **************************************************
+// ************ react to sidebar in/out *************
+// **************************************************
 
 // custom resize function as there is no event to fire and we need
 // to react to the sidebar.

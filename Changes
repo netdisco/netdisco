@@ -5,6 +5,7 @@
   * #392 fix heuristic neighbour detection
   * #393 avoid 'modification of readonly variable' error in netmap
   * #398 user submitted jobs are run regardless of max deferrals
+  * #394 enabled "Management IPs" hides after "Redraw Map"
   * clean up check_mac() interface (ml-cms)
 
 2.039021 - 2018-04-10
