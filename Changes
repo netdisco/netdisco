@@ -2,6 +2,7 @@
 
   [BUG FIXES]
 
+  * #392 fix heuristic neighbour detection
   * #393 avoid 'modification of readonly variable' error in netmap
   * clean up check_mac() interface (ml-cms)
 

@@ -174,6 +174,12 @@ sub store_neighbors {
       next unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
 
+      if ($r_netaddr and ($r_netaddr->addr ne $remote_ip)) {
+        info sprintf ' [%s] neigh - discrepancy in IP on %s: using %s instead of %s',
+          $device->ip, $port, $r_netaddr->addr, $remote_ip;
+        $remote_ip = $r_netaddr->addr;
+      }
+
       # a bunch of heuristics to search known devices if we don't have a
       # useable remote IP...
 
@@ -230,14 +236,6 @@ sub store_neighbors {
               next;
           }
       }
-
-      if ($r_netaddr->addr ne $remote_ip) {
-        info sprintf ' [%s] neigh - discrepancy in IP on %s: using %s instead of %s',
-          $device->ip, $port, $r_netaddr->addr, $remote_ip;
-      }
-
-      # OK, remote IP seems sane
-      $remote_ip = $r_netaddr->addr;
 
       # what we came here to do.... discover the neighbor
       debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
