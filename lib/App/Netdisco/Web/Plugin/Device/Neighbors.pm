@@ -98,7 +98,7 @@ sub make_node_infostring {
 
 sub make_link_infostring {
   my $linkarg = shift or return '';
-  my $link = dclone $link;
+  my $link = dclone $linkarg;
 
   my $domain = quotemeta( setting('domain_suffix') || '' );
   (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
