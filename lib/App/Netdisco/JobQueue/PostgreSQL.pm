@@ -241,7 +241,7 @@ sub jq_complete {
 
   # now that SNMP connect failures are deferrals and not errors, any complete
   # status, whether success or failure, indicates an SNMP connect. reset the
-  # connection failures counter to forget oabout occasional connect glitches.
+  # connection failures counter to forget about occasional connect glitches.
 
   try {
     schema('netdisco')->txn_do(sub {

@@ -29,7 +29,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     LEFT OUTER JOIN device_skip ds
       ON (ds.backend = ? AND ds.device = my_jobs.device)
 
-   WHERE ds.deferrals < ?
+   WHERE ((ds.deferrals < ?) OR my_jobs.username IS NOT NULL)
       OR (ds.deferrals IS NULL AND ds.last_defer IS NULL)
       OR ds.last_defer <= ( LOCALTIMESTAMP - ?::interval )
 
