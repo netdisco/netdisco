@@ -16,7 +16,7 @@
                     [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="Show" data-off=" " data-onstyle="success">
-                  <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IPs</span>
+                  <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
                 </label>
               </div>
               <div class="checkbox pull-left">
