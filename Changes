@@ -1,4 +1,4 @@
-2.039022
+2.039023 - 2018-04-19
 
   [NEW FEATURES]
 
@@ -6,6 +6,7 @@
 
   [BUG FIXES]
 
+  * #393 (redux) avoid 'modification of readonly variable' error in netmap
   * #394 (redux) enabled "Management IPs" hides after "Redraw Map"
 
 2.039022 - 2018-04-18
@@ -22,8 +23,10 @@
 
   [BUG FIXES]
 
+  * #388 searching for 0.x.x.x returns Internal Server Error (C. Neuhaus)
   * #389 build/upgrade issues (EL6)
   * #390 cannot take logarithm of zero (C. Stromsoe)
+  * #391 fix sshcollector errors when devices are empty
   * protect against undef mac (l.e. ferguson)
   * do not include logical aggregate masters in netmap/speed calc
   * try to match remote port in netmap against port, name, and descr
