@@ -6,7 +6,6 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use SNMP::Info ();
-use Storable 'dclone';
 use List::Util 'first';
 use List::MoreUtils ();
 use App::Netdisco::Util::Permission 'check_acl_only';
@@ -97,19 +96,18 @@ sub make_node_infostring {
 }
 
 sub make_link_infostring {
-  my $linkarg = shift or return '';
-  my $link = dclone $linkarg;
+  my $link = shift or return '';
 
   my $domain = quotemeta( setting('domain_suffix') || '' );
   (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
   (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
 
   if ($link->{aggports} == 1) {
-    $link->{left_descr}->[0]  ||= 'no description';
-    $link->{right_descr}->[0] ||= 'no description';
     return sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
-      $left_name, $link->{left_port}->[0], $link->{left_descr}->[0],
-      $right_name, $link->{right_port}->[0], $link->{right_descr}->[0];
+      $left_name, $link->{left_port}->[0],
+      ($link->{left_descr}->[0] || 'no description'),
+      $right_name, $link->{right_port}->[0],
+      ($link->{right_descr}->[0] || 'no description');
   }
   else {
     return sprintf '<b>%s:(%s)</b><br><b>%s:(%s)</b>',
