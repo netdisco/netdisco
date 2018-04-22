@@ -1,3 +1,15 @@
+2.039024 - 2018-04-22
+
+  [ENHANCEMENTS]
+
+  * #395 new landing page with Find Anything form
+  * #400 add defanged_admin setting to support safe Heroku deployment
+
+  [BUG FIXES]
+
+  * #404 fix using 0 to disable max_deferrals and retry_after
+  * #380 port searches should check descr field, not name, for "vlan"
+
 2.039023 - 2018-04-19
 
   [NEW FEATURES]
