@@ -193,6 +193,7 @@ port_control_reasons:
 check_userlog: true
 devport_vlan_limit: 150
 login_logo: ""
+defanged_admin: 'admin'
 
 # -------------
 # NETDISCO CORE
