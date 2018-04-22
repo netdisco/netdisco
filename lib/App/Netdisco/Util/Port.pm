@@ -195,7 +195,7 @@ sub get_powerid {
 Returns true if the C<$port> L<DBIx::Class> object represents a vlan
 subinterface.
 
-This uses simple checks on the port I<type> and I<name>, and therefore might
+This uses simple checks on the port I<type> and I<descr>, and therefore might
 sometimes returns a false-negative result.
 
 =cut
@@ -206,7 +206,7 @@ sub is_vlan_interface {
   my $is_vlan  = (($port->type and
     $port->type =~ /^(53|propVirtual|l2vlan|l3ipvlan|135|136|137)$/i)
     or ($port->port and $port->port =~ /vlan/i)
-    or ($port->name and $port->name =~ /vlan/i)) ? 1 : 0;
+    or ($port->descr and $port->descr =~ /vlan/i)) ? 1 : 0;
 
   return $is_vlan;
 }
