@@ -24,7 +24,7 @@ C<retry_after> when devices will be retried once (disabled if 0/undef passed).
 sub skipped {
   my ($rs, $backend, $max_deferrals, $retry) = @_;
   $backend ||= 'fqdn-undefined';
-  $max_deferrals ||= 10_000_000; # not really 'disabled'
+  $max_deferrals ||= (2**30); # not really 'disabled'
   $retry ||= '100 years'; # not really 'disabled'
 
   return $rs->correlate('device_skips')->search(undef,{
