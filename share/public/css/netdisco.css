@@ -623,7 +623,7 @@ div.toggle.btn-small {
 /* when the sidebar submit button DOES NOT HAVE a dropdown */
 .nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop):not(.nd_sidebar-btn-netmap) {
   margin-top: 9px;
-  margin-left: -3px;
+  margin-left: -2px;
   width: 165px;
 }
 

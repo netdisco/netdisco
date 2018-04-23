@@ -226,10 +226,14 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       next DEVICE if ((scalar @lgrplist) and ((!defined $device->location)
         or (0 == scalar grep {$_ eq $device->location} @lgrplist)));
 
-      # if host groups piked then use ACLs to filter
+      # if host groups picked then use ACLs to filter
       my $first_hgrp =
         first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
       next DEVICE if ((scalar @hgrplist) and (not $first_hgrp));
+
+      # now reset first_hgroup to be the group matching the device, if any
+      $first_hgrp = first { check_acl_only($device, setting('host_groups')->{$_}) }
+                          keys %{ setting('host_group_displaynames') || {} };
 
       ++$logvals{ $device->get_column('log') || 1 };
       (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;
