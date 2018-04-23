@@ -5,7 +5,6 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-use SNMP::Info ();
 use List::Util 'first';
 use List::MoreUtils ();
 use App::Netdisco::Util::Permission 'check_acl_only';
@@ -77,9 +76,33 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
 };
 
+# copied from SNMP::Info to avoid introducing dependency to web frontend
+sub munge_highspeed {
+    my $speed = shift;
+    my $fmt   = "%d Mbps";
+
+    if ( $speed > 9999999 ) {
+        $fmt = "%d Tbps";
+        $speed /= 1000000;
+    }
+    elsif ( $speed > 999999 ) {
+        $fmt = "%.1f Tbps";
+        $speed /= 1000000.0;
+    }
+    elsif ( $speed > 9999 ) {
+        $fmt = "%d Gbps";
+        $speed /= 1000;
+    }
+    elsif ( $speed > 999 ) {
+        $fmt = "%.1f Gbps";
+        $speed /= 1000.0;
+    }
+    return sprintf( $fmt, $speed );
+}
+
 sub to_speed {
   my $speed = shift or return '';
-  ($speed = SNMP::Info::munge_highspeed($speed / 1_000_000)) =~ s/(?:\.0 |bps$)//g;
+  ($speed = munge_highspeed($speed / 1_000_000)) =~ s/(?:\.0 |bps$)//g;
   return $speed;
 }
 
