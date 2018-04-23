@@ -105,7 +105,8 @@ sub check_acl {
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
 
-  INLIST: foreach my $item (@$config) {
+  INLIST: foreach (@$config) {
+      my $item = $_; # must copy so that we can modify safely
       next INLIST if $item eq 'op:and';
 
       if (ref qr// eq ref $item) {

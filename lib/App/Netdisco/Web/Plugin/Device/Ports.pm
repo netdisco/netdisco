@@ -18,7 +18,7 @@ get '/ajax/content/device/ports' => require_login sub {
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
-    my $set = $device->ports;
+    my $set = $device->ports->with_properties;
 
     # refine by ports if requested
     my $f = param('f');
@@ -189,6 +189,9 @@ get '/ajax/content/device/ports' => require_login sub {
       '+select' => ['neighbor_alias.ip', 'neighbor_alias.dns'],
       '+as'     => ['neighbor_ip', 'neighbor_dns'],
     }) if param('c_neighbors');
+
+    # also get remote LLDP inventory if asked for
+    $set = $set->with_remote_inventory if param('n_inventory');
 
     # sort ports (empty set would be a 'no records' msg)
     my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];

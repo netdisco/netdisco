@@ -9,46 +9,54 @@
               </ul>
             </div>
 
-            <div class="clearfix nd_netmap-sidebar">
-            <div class="checkbox pull-left">
-              <label>
-                <input type="checkbox" name="showips" id="nd_showips"
-                  [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
-                  data-toggle="toggle" data-size="small" data-width="30"
-                  data-on="Show" data-off=" " data-onstyle="success">
-                <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IPs</span>
-              </label>
+            <div class="clearfix control-group nd_netmap-sidebar">
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="showips" id="nd_showips"
+                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="Show" data-off=" " data-onstyle="success">
+                  <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
+                </label>
+              </div>
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="showspeed" id="nd_showspeed"
+                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="Show" data-off=" " data-onstyle="success">
+                  <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
+                </label>
+              </div>
             </div>
-            <div class="checkbox pull-left">
-              <label>
-                <input type="checkbox" name="showspeed" id="nd_showspeed"
-                  [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
-                  data-toggle="toggle" data-size="small" data-width="30"
-                  data-on="Show" data-off=" " data-onstyle="success">
-                <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
-              </label>
-            </div>
-            </div>
 
-            <button id="nd_netmap-releaseall" class="btn btn-info">
-                <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
-            Release All</button>
+            <label><span id="">Positions: </span>
+                  <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                  <i class="icon-save icon-large pull-left nd_navbar-icon"></i> Save</button>
+            </label>
 
-            <button id="nd_netmap-releaseonly" class="btn btn-info">
-                <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i>
-            Release Selected</button>
-
-            <button id="nd_netmap-pinonly" class="btn btn-info">
-                <i class="icon-lock icon-large pull-left nd_navbar-icon"></i>
-            Pin Selected</button>
-
-            <button id="nd_netmap-save" class="btn" disabled>
-                <i class="icon-save icon-large pull-left nd_navbar-icon"></i>
-            Save Positions</button>
-
-            <button id="nd_netmap-zoomtodevice" class="btn btn-info">
-                <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
-            Zoom to this Device</button>
+            <table margin="0" border="0" class="nd_netmap-pin-controls">
+            <tr>
+              <td class="nd_netmap-pin-controls-top-row">
+                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+              </td>
+              <td class="nd_netmap-pin-controls-top-row">
+                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-lock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> All</button>
+              </td>
+              <td>
+                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Device</button>
+              </td>
+            </tr>
+            </table>
 
             <hr class="nd_sidebar-hr"/>
 
@@ -60,54 +68,55 @@
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-neighbors"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'neighbors' %] value="neighbors">
-                <label for="nd_mapshow-neighbors">Neighbors Only</label>
+                <label for="nd_mapshow-neighbors">Only Neighbors</label>
             </div>
 
-            [% IF devgrp_list.size %]
-            <div class="radio radio-success">
-            [% ELSE %]
-            <div class="radio radio-success tooltip-wrapper"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="No Named Groups Defined">
+            <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
+              <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
+                value="[% params.vlan | html_entity %]" type="text"/>
+            </label>
+
+            [% IF hgroup_list.size %]
+            <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
+              multiple="on" name="hgroup" id="nd_hgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+              [% FOREACH opt IN hgroup_list.pairs %]
+              <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
+                value="[% opt.key %]">[% opt.value | html_entity %]</option>
+              [% END %]
+            </select>
             [% END %]
-                <input type="radio" name="mapshow" id="nd_mapshow-only"
-                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'only' %]
-                [% 'disabled' IF NOT devgrp_list.size %] value="only">
-                <label for="nd_mapshow-only">Host Groups</label>
-            </div>
-
-            [% IF devgrp_list.size %]
-            <div class="clearfix">
-              <select class="nd_side-select" size="[% devgrp_list.size > 5 ? 5 : devgrp_list.size %]"
-                multiple="on" name="devgrp" id="nd_devgrp-select"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
-                [% FOREACH opt IN devgrp_list.pairs %]
-                <option[% ' selected="selected"' IF devgrp_lkp.exists(opt.key) %]
-                  value="[% opt.key %]">[% opt.value | html_entity %]</option>
-                [% END %]
-              </select>
-            </div>
+            [% IF lgroup_list.size %]
+            <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
+              multiple="on" name="lgroup" id="nd_lgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
+              [% FOREACH loc IN lgroup_list %]
+              <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
+                value="[% loc %]">[% loc | html_entity %]</option>
+              [% END %]
+            </select>
             [% END %]
 
             <div class="clearfix nd_netmap-sidebar">
 
-              <div id="nd_vlan-label" class="control-group">
-                  <div class="controls">
-                  <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
-                    <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
-                      value="[% params.vlan | html_entity %]" type="text"/>
-                  </label>
-                </div>
-              </div>
-
-              [% IF devgrp_list.size %]
+              [% IF hgroup_list.size OR lgroup_list.size %]
               <div class="clearfix input-prepend">
-                <label class="add-on">
-                  <input type="checkbox" id="colorgroups" name="colorgroups"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.colorgroups %]/>
-                </label>
-                <label class="nd_checkboxlabel" for="colorgroups">
-                  <span class="nd_searchcheckbox uneditable-input">Color Groups</span>
-                </label>
+              <label><span id="nd_colorby-label-text">Color by: </span>
+                <select id="nd_colorby" name="colorby">
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]
+                    value="off">Off</option>
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'speed' %]
+                    value="speed">Throughput</option>
+                  [% IF hgroup_list.size %]
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'hgroup' %]
+                    value="hgroup">Host Group</option>
+                  [% END %]
+                  [% IF lgroup_list.size %]
+                  <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'lgroup' %]
+                    value="lgroup">Location</option>
+                  [% END %]
+                </select>
+              </label>
               </div>
               [% END %]
 

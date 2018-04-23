@@ -23,15 +23,17 @@
     <tr>
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
-        <i class="icon-remove"></i>
+        <i class="icon-remove icon-large"></i>
         [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
-        <i class="icon-fullscreen text-info"></i>
+        <i class="icon-ban-circle text-info icon-large"></i>
+        [% ELSIF row.error_disable_cause %]
+        <i class="icon-exclamation-sign text-error icon-large"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
-        <i class="icon-arrow-down text-success"></i>
+        <i class="icon-arrow-down text-success icon-large"></i>
         [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
-        <i class="icon-arrow-down text-error"></i>
+        <i class="icon-arrow-down text-error icon-large"></i>
         [% ELSE %]
-        <i class="icon-angle-up text-success"></i>
+        <i class="icon-angle-up text-success icon-large"></i>
         [% END %]
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
@@ -161,6 +163,10 @@
       <td>[% row.speed | html_entity %]</td>
       [% END %]
 
+      [% IF params.c_error %]
+      <td>[% row.error_disable_cause | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_mac %]
       <td>[% row.mac | html_entity %]</td>
       [% END %]
@@ -261,51 +267,55 @@
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.get_column('neighbor_ip') %]
             <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
-            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+            [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
-            [% ELSIF row.remote_type AND row.remote_type.match('^AP:\s') %]
+            [% ELSIF row.remote_is_wap %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]">
                 [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
-            [% IF row.remote_port %]
+            [% IF row.remote_port and has_snmp(row.remote_type) %]
                 -
                 <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
                     [% row.remote_port | html_entity %]</a>
             [% END %]
             <br/>
-            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
+            [% IF params.n_inventory and row.remote_inventory %]
+              [% row.remote_inventory %]<br/>
+            [% END %]
+            [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
-            <i class="icon-unlink text-error"></i>&nbsp;
-            [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
+            [% '<i class="icon-unlink text-error"></i>&nbsp;' IF has_snmp(row.remote_type) %]
+            [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
-            [% ELSIF row.remote_type AND row.remote_type.match('^AP:\s') %]
+            [% ELSIF row.remote_is_wap %]
               <i class="icon-signal"></i>&nbsp;
             [% END %]
             <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
               [% row.remote_ip | html_entity %]
-              [% ' - ' IF row.remote_port %][% row.remote_port | html_entity %]</a><br/>
-            [% IF params.neigh_id and (row.remote_id or row.remote_type) %]
+              [% IF row.remote_port and has_snmp(row.remote_type) %]
+                - [% row.remote_port | html_entity %]
+              [% END %]
+            </a><br/>
+            [% IF params.n_inventory and row.remote_inventory %]
+              [% row.remote_inventory %]<br/>
+            [% END %]
+            [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
+            [% '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)' IF has_snmp(row.remote_type) %]
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
         [% FOREACH node IN row.$nodes %]
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
-          [% IF row.remote_type AND row.remote_type.match('(?i)ip.phone') %]
-            <i class="icon-phone"></i>&nbsp;
-          [% ELSIF node.wireless.defined
-                   OR (row.remote_type AND row.remote_type.match('^AP:\s')) %]
-            <i class="icon-signal"></i>&nbsp;
-          [% END %]
+          [% '<i class="icon-signal"></i>&nbsp;' IF node.wireless.defined %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
@@ -348,7 +358,7 @@
         [% IF user_can_port_control AND params.c_admin %]
         <a class="nd_log-icon"
           href="[% uri_for('/admin/topology') %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
-          <i class="icon-bolt"
+          <i class="icon-link text-warning"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="Manual Topology"></i>
         [% END %]

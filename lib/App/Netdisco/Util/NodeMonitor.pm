@@ -15,6 +15,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 sub _email {
   my ($to, $subject, $body) = @_;
+  return unless $to;
   my $domain = setting('domain_suffix') || 'localhost';
   $domain =~ s/^\.//;
 
@@ -31,7 +32,7 @@ sub monitor {
   my $monitor = schema('netdisco')->resultset('Virtual::NodeMonitor');
 
   while (my $entry = $monitor->next) {
-      my $body = <<"end_body";
+    my $body = <<"end_body";
 ........ n e t d i s c o .........
   Node    : @{[$entry->mac]} (@{[$entry->why]})
   When    : @{[$entry->date]}
@@ -41,11 +42,13 @@ sub monitor {
 
 end_body
 
-      _email(
-        $entry->cc,
-        "Saw mac @{[$entry->mac]} (@{[$entry->why]}) on @{[$entry->name]} @{[$entry->port]}",
-        $body
-      );
+    debug sprintf ' monitor - reporting on %s at %s:%s',
+      $entry->mac, $entry->name, $entry->port;
+    _email(
+      $entry->cc,
+      "Saw mac @{[$entry->mac]} (@{[$entry->why]}) on @{[$entry->name]} @{[$entry->port]}",
+      $body
+    );
   }
 }
 

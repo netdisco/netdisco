@@ -50,6 +50,25 @@
           [% END %]
         </form>
         [% ELSE %]
+          <p></p> <p></p>
+          <form class="" method="get" action="[% uri_for('/search') %]">
+            <div class="form-horizontal">
+              <input placeholder="Find Anything" class="span4" id="nqbody" name="q" type="text" autocomplete="off"/>
+              <input name="firstsearch" type="hidden" value="on">
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="caret"></span>&nbsp;
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
+                  <li><a class="nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
+                  <li><a class="nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
+                  <li><a class="nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
+                </ul>
+              </div>
+            </div>
+          </form>
           [% IF user_has_role('admin') %]
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') %]">
             <div class="form-horizontal">
@@ -87,7 +106,7 @@
 [% IF session.logged_in_user %]
 <script type="text/javascript">
   var stats_loaded = 0;
-  $('#nq').focus(); // set focus to navbar search
+  $('#nqbody').focus(); // set focus to main search
   $('#loginuser').focus(); // set focus to login, if it's there
 
   $('.collapse').on('show', function() {

@@ -30,6 +30,7 @@ lib/App/Netdisco/DB/Result/DeviceModule.pm
 lib/App/Netdisco/DB/Result/DevicePort.pm
 lib/App/Netdisco/DB/Result/DevicePortLog.pm
 lib/App/Netdisco/DB/Result/DevicePortPower.pm
+lib/App/Netdisco/DB/Result/DevicePortProperties.pm
 lib/App/Netdisco/DB/Result/DevicePortSsid.pm
 lib/App/Netdisco/DB/Result/DevicePortVlan.pm
 lib/App/Netdisco/DB/Result/DevicePortWireless.pm
@@ -200,6 +201,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
+lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
@@ -215,10 +217,10 @@ lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
 lib/App/Netdisco/Worker/Plugin/Macwalk.pm
 lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm
-lib/App/Netdisco/Worker/Plugin/Monitor.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat/Core.pm
 lib/App/Netdisco/Worker/Plugin/Nbtwalk.pm
+lib/App/Netdisco/Worker/Plugin/NodeMonitor.pm
 lib/App/Netdisco/Worker/Plugin/PortControl.pm
 lib/App/Netdisco/Worker/Plugin/PortName.pm
 lib/App/Netdisco/Worker/Plugin/Power.pm
@@ -352,7 +354,13 @@ share/schema_versions/App-Netdisco-DB-42-43-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-43-44-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-44-45-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-45-46-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-46-47-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-47-48-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-48-49-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-49-50-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-50-51-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-51-52-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
@@ -466,6 +474,7 @@ share/views/sidebar/report/nodevendor.tt
 share/views/sidebar/report/portlog.tt
 share/views/sidebar/report/portmultinodes.tt
 share/views/sidebar/report/portssid.tt
+share/views/sidebar/report/portutilization.tt
 share/views/sidebar/report/subnets.tt
 share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt

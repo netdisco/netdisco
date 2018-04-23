@@ -13,7 +13,8 @@ body {
 /* used for icons in sidebar search buttons */
 .nd_navbar-icon {
   vertical-align: sub;
-  margin-top: 4px;
+  margin-top: 4px !important;
+  margin-right: 7px !important;
   cursor: pointer;
 }
 
@@ -463,7 +464,7 @@ td > form.nd_inline-form {
   vertical-align: text-bottom;
 }
 #nd_vlan-entry {
-  width: 56px;
+  width: 45px;
 }
 
 /* netmap maximise icon */
@@ -599,8 +600,28 @@ div.toggle.btn-small {
 
 /* sidebar submit button width and spacing */
 
+.nd_netmap-pin-controls {
+  text-align: center;
+}
+
+.nd_netmap-pin-controls button {
+  width: 100%;
+}
+
+.nd_netmap-pin-controls-top-row {
+  padding-bottom: 5px;
+}
+
+#nd_colorby {
+  width: 107px;
+}
+#nd_colorby-label-text {
+  vertical-align: bottom;
+  line-height: 2;
+}
+
 /* when the sidebar submit button DOES NOT HAVE a dropdown */
-.nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop) {
+.nd_sidebar button:not(.nd_sidebar-btn-drop):not(.nd_sidebar-btn-drop-drop):not(.nd_sidebar-btn-netmap) {
   margin-top: 9px;
   margin-left: -3px;
   width: 165px;
@@ -666,7 +687,7 @@ form .clearfix.success input {
 
 .nd_netmap-sidebar {
   margin-top: 0px;
-  margin-left: -8px;
+  margin-left: -5px;
 }
 
 .nd_netmap-sidebar > .input-prepend {

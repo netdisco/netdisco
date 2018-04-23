@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.039003';
+our $VERSION = '2.039024';
 use App::Netdisco::Configuration;
 
 =head1 NAME
@@ -75,7 +75,7 @@ L<DBD::Pg>, L<SNMP>, and a compiler using your operating system packages.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl build-essential
 
 On Fedora/Red-Hat:
 

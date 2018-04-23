@@ -76,6 +76,7 @@ Dancer::Logger->init('console', $CONFIG);
 
 MCE::Loop::init { chunk_size => 1 };
 my %stats;
+$stats{entry} = 0;
 
 exit main();
 
@@ -130,13 +131,11 @@ sub process {
     my $arpentries = [ $device->arpnip($hostlabel, $ssh, $args) ];
 
     # debug p $arpentries;
-    if (scalar @$arpentries) {
-        hostnames_resolve_async($arpentries);
-        return [$hostlabel, $arpentries];
-    }
-    else {
+    if (not scalar @$arpentries) {
         warning "WARNING: no entries received from <$hostlabel>";
     }
+    hostnames_resolve_async($arpentries);
+    return [$hostlabel, $arpentries];
 }
 
 sub store_arpentries {
@@ -144,7 +143,7 @@ sub store_arpentries {
 
     foreach my $arpentry ( @$arpentries ) {
         # skip broadcast/vrrp/hsrp and other wierdos
-        next unless check_mac( undef, $arpentry->{mac} );
+        next unless check_mac( $arpentry->{mac} );
 
         debug sprintf '  arpnip - stored entry: %s / %s',
             $arpentry->{mac}, $arpentry->{ip};

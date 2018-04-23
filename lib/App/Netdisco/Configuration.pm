@@ -181,6 +181,11 @@ setting('workers')->{'timeout'} = setting('timeout')
   if defined setting('timeout')
      and !defined setting('workers')->{'timeout'};
 
+# 0 for workers max_deferrals and retry_after is like disabling
+# but we need to fake it with special values
+setting('workers')->{'max_deferrals'} ||= (2**30);
+setting('workers')->{'retry_after'}   ||= '100 years';
+
 # schedule expire used to be called expiry
 setting('schedule')->{expire} ||= setting('schedule')->{expiry}
   if setting('schedule') and exists setting('schedule')->{expiry};
@@ -193,5 +198,8 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
         %{ setting('reports')->{$_} }
     }} keys %{ setting('reports') } ];
 }
+
+# add system_reports onto reports
+config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 
 true;

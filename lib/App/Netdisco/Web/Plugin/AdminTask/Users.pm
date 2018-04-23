@@ -31,7 +31,7 @@ sub _make_password {
   }
 }
 
-ajax '/ajax/control/admin/users/add' => require_role admin => sub {
+ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -48,7 +48,7 @@ ajax '/ajax/control/admin/users/add' => require_role admin => sub {
     });
 };
 
-ajax '/ajax/control/admin/users/del' => require_role admin => sub {
+ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {
@@ -57,7 +57,7 @@ ajax '/ajax/control/admin/users/del' => require_role admin => sub {
     });
 };
 
-ajax '/ajax/control/admin/users/update' => require_role admin => sub {
+ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
     schema('netdisco')->txn_do(sub {

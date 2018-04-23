@@ -61,10 +61,11 @@ sub jq_warm_thrusters {
       backend => setting('workers')->{'BACKEND'},
     }, { for => 'update' }, )->update({ actionset => [] });
 
+    my $deferrals = setting('workers')->{'max_deferrals'} - 1;
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
-      deferrals => { '>' => 0 },
-    }, { for => 'update' }, )->update({ deferrals => \'deferrals - 1' });
+      deferrals => { '>' => $deferrals },
+    }, { for => 'update' }, )->update({ deferrals => $deferrals });
 
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
@@ -240,7 +241,7 @@ sub jq_complete {
 
   # now that SNMP connect failures are deferrals and not errors, any complete
   # status, whether success or failure, indicates an SNMP connect. reset the
-  # connection failures counter to forget oabout occasional connect glitches.
+  # connection failures counter to forget about occasional connect glitches.
 
   try {
     schema('netdisco')->txn_do(sub {

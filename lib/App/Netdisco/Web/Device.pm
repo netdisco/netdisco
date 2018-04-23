@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use URI ();
 use URL::Encode 'url_params_mixed';
+use App::Netdisco::Util::Device 'match_devicetype';
 
 # build view settings for port connected nodes and devices
 set('connected_properties' => [
@@ -17,6 +18,10 @@ set('connected_properties' => [
 
 hook 'before_template' => sub {
   my $tokens = shift;
+
+  # allow checking of discoverability of remote connected device
+  $tokens->{has_snmp} = sub { not match_devicetype(shift, 'discover_no_type') };
+
   my $defaults = var('sidebar_defaults')->{'device_ports'}
     or return;
 
@@ -36,7 +41,7 @@ hook 'before_template' => sub {
   }
 
   # used in the device search sidebar template to set selected items
-  foreach my $opt (qw/devgrp/) {
+  foreach my $opt (qw/hgroup lgroup/) {
       my $p = (ref [] eq ref param($opt) ? param($opt)
                                           : (param($opt) ? [param($opt)] : []));
       $tokens->{"${opt}_lkp"} = { map { $_ => 1 } @$p };
@@ -77,7 +82,8 @@ get '/device' => require_login sub {
     params->{'tab'} ||= 'details';
     template 'device', {
       display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
-      devgrp_list => setting('host_group_displaynames'),
+      lgroup_list => [ schema('netdisco')->resultset('Device')->get_distinct_col('location') ],
+      hgroup_list => setting('host_group_displaynames'),
       device => params->{'tab'},
     };
 };

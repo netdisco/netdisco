@@ -18,7 +18,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .dragMode(true)
       .zoomMode(true)
       .pinMode(true)
-      [% '.showLegend(false)' IF NOT params.colorgroups %]
+      [% '.showLegend(false)' UNLESS (params.colorby == 'hgroup' OR params.colorby == 'lgroup') %]
       .showLinkDirection(false)
       .colorScheme('color10')
       //.preventLabelOverlappingOnForceEnd(
@@ -151,24 +151,6 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       graph.inspect().main.force.on('start.draggednode', null);
     });
 
-    // ********************************************************
-    // ********* save new node positions back to DB ***********
-    // ********************************************************
-
-    graph.inspect().main.force.on('end.savepositions', function() {
-      graph.inspect().main.nodes.each(function(n) { n.fixed = true });
-
-      if (mapdata['newnodes'] && ('[% params.mapshow %]' != 'neighbors')) {
-        $.post(
-          '[% uri_for('/ajax/data/device/netmappositions') %]'
-          ,$("#nd_vlan-entry, #nd_devgrp-select, input[name='mapshow']").serialize()
-            + '&positions=' + JSON.stringify(graph.positions())
-        );
-      }
-
-      graph.inspect().main.force.on('end.savepositions', null);
-    });
-
     // *****************************
     // ********* DO IT!! ***********
     // *****************************
@@ -178,12 +160,12 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
     // about a second after render starts, zoom in a bit
     if ('[% params.mapshow %]' == 'neighbors') {
       setTimeout(function() {
-        if ('[% params.dynamicsize %]' == 'on') {
-          graph.zoomToFit();
-        } else {
+        //if ('[% params.dynamicsize %]' == 'on') {
+        //  graph.zoomToFit();
+        //} else {
           var node = graph.nodeDataById( graph['nd2']['centernode'] );
           graph.zoomSmooth(node.x, node.y, node.radius * 125);
-        }
+        //}
       }, 1500);
     }
   }); // document.onReady
@@ -213,6 +195,7 @@ function spin(selection, duration) {
   duration = duration || 1500;
   if (! graph.inspect().status.forceRunning) {
     d3.select('#nd2_netmap-spinner').style('fill', '#CCFFCC').attr('d', circle);
+    saveMapPositions();
     return;
   }
   d3.select('#nd2_netmap-spinner').style('fill', '#FFE4B5').attr('d', arc);
@@ -223,6 +206,20 @@ function spin(selection, duration) {
         return d3.interpolateString("rotate(0)", "rotate(360)");
     });
   setTimeout(function() { spin(selection, duration); }, duration);
+}
+
+// ********************************************************
+// ********* save new node positions back to DB ***********
+// ********************************************************
+
+function saveMapPositions() {
+  graph.inspect().main.nodes.each(function(n) { n.fixed = true });
+  $.post(
+    '[% uri_for('/ajax/data/device/netmappositions') %]'
+    ,$("#nd_vlan-entry, #nd_hgroup-select, #nd_lgroup-select, input[name='q'], input[name='mapshow']").serialize()
+      + '&positions=' + JSON.stringify(graph.positions())
+  );
+  toastr.success('Saved map positions.');
 }
 
 // ***********************************************
@@ -264,6 +261,10 @@ $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', fu
     return (isFullScreen() ? '\uf066' : '\uf065');
   });
 });
+
+// **************************************************
+// ************ react to sidebar in/out *************
+// **************************************************
 
 // custom resize function as there is no event to fire and we need
 // to react to the sidebar.

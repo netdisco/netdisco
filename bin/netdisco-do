@@ -37,20 +37,19 @@ BEGIN {
 use App::Netdisco;
 use Dancer qw/:moose :script/;
 
-info "App::Netdisco version $App::Netdisco::VERSION loaded.";
-
 use Try::Tiny;
 use Pod::Usage;
 use Scalar::Util 'blessed';
 use NetAddr::IP qw/:rfc3021 :lower/;
 
 use App::Netdisco::Backend::Job;
+use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'get_device';
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug, $rollback);
+my ($device, $port, $extra, $debug, $quiet, $queue_only, $rollback);
 my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
 
 my $result = GetOptions(
@@ -58,6 +57,8 @@ my $result = GetOptions(
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
+  'enqueue'    => \$queue_only,
+  'quiet'      => \$quiet,
   'rollback|R' => \$rollback,
   'infotrace|I+' => \$infotrace,
   'snmptrace|S+' => \$snmptrace,
@@ -70,7 +71,7 @@ my $result = GetOptions(
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
-$CONFIG->{log} = ($debug ? 'debug' : 'info');
+$CONFIG->{log} = ($debug ? 'debug' : ($quiet ? 'error' : 'info'));
 
 $ENV{INFO_TRACE} ||= $infotrace;
 $ENV{SNMP_TRACE} ||= $snmptrace;
@@ -79,6 +80,8 @@ $ENV{ND2_DB_ROLLBACK} ||= $rollback;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
+
+info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
 # get requested action
 (my $action = shift @ARGV) =~ s/^set_//
@@ -107,23 +110,34 @@ if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
 }
 
 my @hostlist = defined $device ? ($net->hostenum) : (undef);
-my $exitstatus = 0;
+my @job_specs = ();
+my $exitstatus =  0;
 
 foreach my $host (@hostlist) {
-    my $dev = $host ? get_device($host->addr) : undef;
-    if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
-        info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
-        next;
-    }
+  my $dev = $host ? get_device($host->addr) : undef;
+  if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
+    info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
+    next;
+  }
 
-    # what job are we asked to do?
-    my $job = App::Netdisco::Backend::Job->new({
-      job => 0,
-      action => $action,
-      device => $dev,
-      port   => $port,
-      subaction => $extra,
-    });
+  # what job are we asked to do?
+  push @job_specs, {
+    action => $action,
+    device => $dev,
+    port   => $port,
+    subaction => $extra,
+    username => ($ENV{USER} || 'netdisco-do'),
+  };
+}
+
+if ($queue_only) {
+  jq_insert( \@job_specs );
+  info sprintf '%s: queued %s jobs at %s',
+    $action, (scalar @job_specs), scalar localtime;
+}
+else {
+  foreach my $spec (@job_specs) {
+    my $job = App::Netdisco::Backend::Job->new({ job => 0, %$spec });
 
     my $actiontext = (
       ($job->device ? ('['.$job->device->ip.']') : '') .
@@ -132,13 +146,13 @@ foreach my $host (@hostlist) {
 
     # do job
     try {
-        info sprintf '%s: %s started at %s',
-          $action, $actiontext, scalar localtime;
-        $worker->run($job);
+      info sprintf '%s: %s started at %s',
+        $action, $actiontext, scalar localtime;
+      $worker->run($job);
     }
     catch {
-        $job->status('error');
-        $job->log("error running job: $_");
+      $job->status('error');
+      $job->log("error running job: $_");
     };
 
     if ($job->log eq 'failed to report from any worker!' and not $job->only_namespace) {
@@ -152,6 +166,7 @@ foreach my $host (@hostlist) {
     info sprintf '%s: finished at %s', $action, scalar localtime;
     info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
     $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
+  }
 }
 
 exit $exitstatus;
@@ -162,7 +177,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 SYNOPSIS
 
- ~/bin/netdisco-do <action> [-DISQR] [-d <device> [-p <port>] [-e <extra>]]
+ ~/bin/netdisco-do <action> [-DISQR] [--enqueue] [--quiet] [-d <device> [-p <port>] [-e <extra>]]
 
 =head1 DESCRIPTION
 
@@ -172,7 +187,11 @@ This program allows you to run any Netdisco poller job from the command-line.
 
 Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
 simply add entries to the Netdisco job queue for other jobs, so won't seem
-to do much when you trigger them.
+to do much when you trigger them. Everything else happens in real-time.
+
+However the "C<--enqueue>" option will force the queueing of the job,
+regardless of type. This may be useful for cron-driven actions, or for actions
+working across large IP spaces.
 
 For any action, if you wish to run one of its individual worker stages, then
 pass C<action::stage> as the first argument to C<netdisco-do>, for example

@@ -3,6 +3,7 @@
     <tr>
       <th class="nd_center-cell">Date Added</th>
       <th class="nd_center-cell">MAC Address</th>
+      <th class="nd_center-cell">Match OUI</th>
       <th class="nd_center-cell">Enabled</th>
       <th class="nd_center-cell">Reason</th>
       <th class="nd_center-cell">Email</th>
@@ -13,6 +14,7 @@
     <tr>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"><input data-form="add" name="mac" type="text"></td>
+      <td class="nd_center-cell"><input data-form="add" name="matchoui" type="checkbox"></td>
       <td class="nd_center-cell"><input data-form="add" name="active" type="checkbox" checked></td>
       <td class="nd_center-cell"><input data-form="add" name="why" type="text"></td>
       <td class="nd_center-cell"><input data-form="add" name="cc"  type="email"></td>
@@ -28,6 +30,9 @@
       <td class="nd_center-cell">[% row.date | html_entity %]</td>
       <td class="nd_center-cell">
         <input data-form="update" name="mac" type="text" value="[% row.mac | html_entity %]">
+      </td>
+      <td class="nd_center-cell">
+        <input data-form="update" name="matchoui" type="checkbox" [% 'checked="checked"' IF row.matchoui %]>
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="active" type="checkbox" [% 'checked="checked"' IF row.active %]>
@@ -73,11 +78,11 @@ $(document).ready(function() {
   $('#data-table').dataTable({
     "columnDefs": [ 
       {
-        "targets": [ 0, 2, 5 ],
+        "targets": [ 0, 2, 3, 6 ],
         "searchable": false
       },
       {
-        "targets": [ 0, 2, 5 ],
+        "targets": [ 0, 2, 3, 6 ],
         "orderable": false
       }
     ],

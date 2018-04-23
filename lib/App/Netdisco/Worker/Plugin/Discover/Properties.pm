@@ -45,7 +45,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $device->set_column( $property => $snmp->$property );
   }
 
-  $device->set_column( model  => Encode::decode('UTF-8', $snmp->model)  );
+  (my $model = Encode::decode('UTF-8', ($snmp->model || ''))) =~ s/\s+$//;
+  $device->set_column( model => $model  );
   $device->set_column( serial => Encode::decode('UTF-8', $snmp->serial) );
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
@@ -94,8 +95,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $resolved_aliases = hostnames_resolve_async(\@aliases);
 
   # fake one aliases entry for devices not providing ip_index
+  # or if we're discovering on an IP not listed in ip_index
   push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar @aliases;
+    if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;

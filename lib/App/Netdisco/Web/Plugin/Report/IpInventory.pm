@@ -19,7 +19,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     # Default to something simple with no results to prevent
     # "Search failed!" error
-    my $subnet = param('subnet') || '0.0.0.0/32';
+    (my $subnet = (param('subnet') || '0.0.0.0/32')) =~ s/\s//g;
     $subnet = NetAddr::IP::Lite->new($subnet);
     $subnet = NetAddr::IP::Lite->new('0.0.0.0/32')
       if (! $subnet) or ($subnet->addr eq '0.0.0.0');
@@ -41,7 +41,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         {   join   => 'device',
             select => [
                 'alias AS ip',
-                \'NULL as mac',
+                \'NULL::macaddr as mac',
                 'creation AS time_first',
                 'device.last_discover AS time_last',
                 'dns',

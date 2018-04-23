@@ -1,3 +1,190 @@
+2.039024 - 2018-04-22
+
+  [ENHANCEMENTS]
+
+  * #395 new landing page with Find Anything form
+  * #400 add defanged_admin setting to support safe Heroku deployment
+
+  [BUG FIXES]
+
+  * #404 fix using 0 to disable max_deferrals and retry_after
+  * #380 port searches should check descr field, not name, for "vlan"
+
+2.039023 - 2018-04-19
+
+  [NEW FEATURES]
+
+  * #401 Autodiscovery via EIGRP peers
+
+  [BUG FIXES]
+
+  * #393 (redux) avoid 'modification of readonly variable' error in netmap
+  * #394 (redux) enabled "Management IPs" hides after "Redraw Map"
+
+2.039022 - 2018-04-18
+
+  [BUG FIXES]
+
+  * #392 fix heuristic neighbour detection
+  * #393 avoid 'modification of readonly variable' error in netmap
+  * #398 user submitted jobs are run regardless of max deferrals
+  * #394 enabled "Management IPs" hides after "Redraw Map"
+  * clean up check_mac() interface (ml-cms)
+
+2.039021 - 2018-04-10
+
+  [BUG FIXES]
+
+  * #388 searching for 0.x.x.x returns Internal Server Error (C. Neuhaus)
+  * #389 build/upgrade issues (EL6)
+  * #390 cannot take logarithm of zero (C. Stromsoe)
+  * #391 fix sshcollector errors when devices are empty
+  * protect against undef mac (l.e. ferguson)
+  * do not include logical aggregate masters in netmap/speed calc
+  * try to match remote port in netmap against port, name, and descr
+
+2.039020 - 2018-03-26
+
+  [ENHANCEMENTS]
+
+  * better link speed names on network map
+
+  [BUG FIXES]
+
+  * fix case insensitive username match for LDAP
+
+2.039019 - 2018-03-23
+
+  [BUG FIXES]
+
+  * fix device search SQL error (reported by bhuddah)
+
+2.039018 - 2018-03-22
+
+  [ENHANCEMENTS]
+
+  * #371 usernames are case insensitive but case preserving
+  * #12 store Cisco PortFast status in device_port_properties:faststart
+
+  [BUG FIXES]
+
+  * access to manual topology for admins without port_control role
+  * network map working with pseudo devices
+
+2.039017 - 2018-03-20
+
+  [BUG FIXES]
+
+  * #382 invaid regexp syntax
+
+2.039016 - 2018-03-19
+
+  [NEW FEATURES]
+
+  * #48 Node Monitor supports matching on OUI
+  * #31 configurable Free Time in Port Utilization Report
+  * improvements to network map, location filtering and auto saving
+
+  [ENHANCEMENTS]
+
+  * #24 show device age in device search view
+  * Node Montior is now included in Admin menu
+  * rebuild Stats is now included in Admin menu
+  * always add interface alias for discovered IP
+  * checking for malformed IPs in c_ip results
+
+  [BUG FIXES]
+
+  * #274 errors in IP Inventory report
+  * dynamic size in neighbor map should use device_port_properties
+  * #381 LLDP port name is space compressed
+
+2.039015 - 2018-03-05
+
+  [BUG FIXES]
+
+  * #370 Missing Map Links due to inability to parse port speeds
+  * strip whitespace from device model on HP
+
+2.039014 - 2018-03-03
+
+  [BUG FIXES]
+
+  * #372 fix inventory doesn't work with only one device
+
+2.039013 - 2018-03-02
+
+  [ENHANCEMENTS]
+
+  * #379 avoid displaying phone or wap icon alongside nodes
+
+2.039012 - 2018-03-02
+
+  [NEW FEATURES]
+
+  * #36 gather and display LLDP Remote Inventory data
+
+2.039011 - 2018-02-25
+
+  [ENHANCEMENTS]
+
+  * use PG COPY for bulk insert of jobs with prefix
+  * support IP prefix enum expansion in scheduler
+
+  [BUG FIXES]
+
+  * avoid skips that go twice past max_deferrals not being reduced
+  * move random() in TastyJobs to where it is more useful
+
+2.039010 - 2018-02-22
+
+  [NEW FEATURES]
+
+  * support for multiples of the same action in schedule config
+
+2.039009 - 2018-02-22
+
+  [NEW FEATURES]
+
+  * Port Properties DB table to gather and store port error disable
+  * show errored ports in Device Port view, and errored ports report
+  * support system_reports config to allow easier build-in reports
+  * support for "queue only" submission of jobs to netdisco-do using --enqueue
+  * support for job params (device, port, extra) in schedule config
+
+  [ENHANCEMENTS]
+
+  * larger port status icons in Device Ports view
+  * --quiet mode for netdisco-do
+
+  [BUG FIXES]
+
+  * handle malformed IPs in c_ip results
+
+2.039007 - 2018-02-16
+
+  [ENHANCEMENTS]
+
+  * tune the job picking sql to avoid user jobs ignoring skips
+
+2.039006 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #374 fix ACL with negation (earendilfr)
+
+2.039005 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #375 dependency requirement for DBIx::Class
+
+2.039004 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #374 fix renumber cli command (earendilfr)
+
 2.039003 - 2018-02-12
 
   [ENHANCEMENTS]

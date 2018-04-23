@@ -36,7 +36,7 @@ sub get_user_details {
 
     my $user = try {
       $database->resultset($users_table)->find({
-          $username_column => $username
+          $username_column => { -ilike => quotemeta($username) },
       });
     };
 

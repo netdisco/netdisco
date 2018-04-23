@@ -12,7 +12,7 @@ __PACKAGE__->table('cidr_ips');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
 SELECT host(network (prefix) + sub.int)::inet AS ip,
-       NULL AS mac,
+       NULL::macaddr AS mac,
        NULL::text AS dns,
        NULL::timestamp AS time_first,
        NULL::timestamp AS time_last,

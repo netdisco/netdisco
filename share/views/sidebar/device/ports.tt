@@ -36,7 +36,8 @@
                   <li><i class="icon-li icon-arrow-down text-error"></i>&nbsp; Link Down</li>
                   <li><i class="icon-li icon-arrow-down text-success"></i>&nbsp; Port Free</li>
                   <li><i class="icon-li icon-remove"></i>&nbsp; Admin Disabled</li>
-                  <li><i class="icon-li icon-fullscreen text-info"></i>&nbsp; Blocking</li>
+                  <li><i class="icon-li icon-exclamation-sign text-error"></i>&nbsp; Error Disabled</li>
+                  <li><i class="icon-li icon-ban-circle text-info"></i>&nbsp; Blocking</li>
                   <li><i class="icon-li icon-link text-warning"></i>&nbsp; Manual Topology</li>
                   <li><i class="icon-li icon-link"></i>&nbsp; Neighbor Device</li>
                   <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Inacessible</li>
@@ -75,47 +76,6 @@
               </div>
             </div>
             <div class="clearfix">
-              <span data-toggle="collapse" data-target="#nd_portprops">
-                <label class="nd_collapser">Port Properties
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
-                </label></span>
-              <div id="nd_portprops" class="collapse">
-                <ul class="nd_inputs-list unstyled">
-                  <li>
-                    <em class="muted">Mark as Free if Down for:</em><br/>
-                    <select id="nd_days-select" name="age_num">
-                      [% FOREACH count IN [1..32] %]
-                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count %]</option>
-                      [% END %]
-                    </select>
-                    <select id="nd_age-select" name="age_unit">
-                      [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
-                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_unit == unit %]>[% unit %]</option>
-                      [% END %]
-                    </select>
-                  </li>
-                  <li>
-                    <em class="muted">Show Ports with Status:</em><br/>
-                    <div class="clearfix">
-                      <select id="nd_port-state-select" size="4" multiple="on" name="port_state"/>
-                        <option selected="selected" value="up">Link Up</option>
-                        <option selected="selected" value="free">Port Free</option>
-                        <option selected="selected" value="down">Link Down</option>
-                        <option selected="selected" value="shut">Admin Disabled</option>
-                      </select>
-                    </div>
-                  </li>
-                  <li>
-                    <label class="checkbox">
-                      <input type="checkbox" id="neigh_id"
-                        name="neigh_id"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.neigh_id %] />
-                      Connected Device ID
-                    </label>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_nodeprops">
                 <label class="nd_collapser">Node Properties
                 <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
@@ -139,6 +99,40 @@
                     </label>
                   </li>
                   [% END %]
+                </ul>
+              </div>
+            </div>
+            <div class="clearfix">
+              <span data-toggle="collapse" data-target="#nd_portprops">
+                <label class="nd_collapser">Port Properties
+                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                </label></span>
+              <div id="nd_portprops" class="collapse">
+                <ul class="nd_inputs-list unstyled">
+                  <li>
+                    <em class="muted">Mark as Free if Down for:</em><br/>
+                    <select id="nd_days-select" name="age_num">
+                      [% FOREACH count IN [1..31] %]
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count %]</option>
+                      [% END %]
+                    </select>
+                    <select id="nd_age-select" name="age_unit">
+                      [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_unit == unit %]>[% unit %]</option>
+                      [% END %]
+                    </select>
+                  </li>
+                  <li>
+                    <em class="muted">Show Ports with Status:</em><br/>
+                    <div class="clearfix">
+                      <select id="nd_port-state-select" size="4" multiple="on" name="port_state"/>
+                        <option selected="selected" value="up">Link Up</option>
+                        <option selected="selected" value="free">Port Free</option>
+                        <option selected="selected" value="down">Link Down</option>
+                        <option selected="selected" value="shut">Admin Disabled</option>
+                      </select>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>

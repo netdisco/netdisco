@@ -2,9 +2,9 @@ package App::Netdisco::Backend::Role::Scheduler;
 
 use Dancer qw/:moose :syntax :script/;
 
+use NetAddr::IP;
 use Algorithm::Cron;
 use App::Netdisco::Util::MCE;
-
 use App::Netdisco::JobQueue qw/jq_insert/;
 
 use Role::Tiny;
@@ -60,21 +60,34 @@ sub worker_body {
 
       # if any job is due, add it to the queue
       foreach my $action (keys %{ setting('schedule') }) {
-          my $sched = setting('schedule')->{$action}
-            or next;
+          my $sched = setting('schedule')->{$action} or next;
+          my $real_action = ($sched->{action} || $action);
 
           # next occurence of job must be in this minute's window
-          debug sprintf "sched ($wid): $action: win_start: %s, win_end: %s, next: %s",
+          debug sprintf "sched ($wid): $real_action: win_start: %s, win_end: %s, next: %s",
             $win_start, $win_end, $sched->{when}->next_time($win_start);
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
-          # queue it!
-          info "sched ($wid): queueing $action job";
-          jq_insert({
-            action => $action,
-            device => $sched->{device},
-            extra  => $sched->{extra},
-          });
+          my $net = NetAddr::IP->new($sched->{device});
+          next if ($sched->{device}
+            and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
+
+          my @hostlist = map { (ref $_) ? $_->addr : undef }
+            (defined $sched->{device} ? ($net->hostenum) : (undef));
+          my @job_specs = ();
+
+          foreach my $host (@hostlist) {
+            push @job_specs, {
+              action => $real_action,
+              device => $host,
+              port   => $sched->{port},
+              subaction => $sched->{extra},
+            };
+          }
+
+          info sprintf 'sched (%s): queueing %s %s jobs',
+            $wid, (scalar @job_specs), $real_action;
+          jq_insert( \@job_specs );
       }
   }
 }

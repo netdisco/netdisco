@@ -36,8 +36,8 @@
             "Archive::Extract" : "0",
             "CGI::Expand" : "2.05",
             "DBD::Pg" : "0",
-            "DBIx::Class" : "0.082810",
-            "DBIx::Class::Helpers" : "2.024000",
+            "DBIx::Class" : "0.082841",
+            "DBIx::Class::Helpers" : "2.033004",
             "Daemon::Control" : "0.001006",
             "Dancer" : "1.3132",
             "Dancer::Plugin::Auth::Extensible" : "0.30",
@@ -65,6 +65,7 @@
             "NetAddr::IP" : "4.068",
             "NetAddr::MAC" : "0.93",
             "Opcode" : "1.07",
+            "Package::DeprecationManager" : "0",
             "Path::Class" : "0.32",
             "Plack" : "1.0023",
             "Plack::Handler::Twiggy" : "0",
@@ -73,8 +74,9 @@
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.44",
-            "SQL::Translator" : "0.11018",
+            "SNMP::Info" : "3.56",
+            "SQL::Abstract" : "1.85",
+            "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
             "Sereal" : "0",
             "Socket6" : "0.23",
@@ -108,7 +110,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.039003"
+         "version" : "2.039024"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -130,7 +132,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "46"
+         "version" : "52"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -158,6 +160,9 @@
       },
       "App::Netdisco::DB::Result::DevicePortPower" : {
          "file" : "lib/App/Netdisco/DB/Result/DevicePortPower.pm"
+      },
+      "App::Netdisco::DB::Result::DevicePortProperties" : {
+         "file" : "lib/App/Netdisco/DB/Result/DevicePortProperties.pm"
       },
       "App::Netdisco::DB::Result::DevicePortSsid" : {
          "file" : "lib/App/Netdisco/DB/Result/DevicePortSsid.pm"
@@ -669,6 +674,9 @@
       "App::Netdisco::Worker::Plugin::Discover::PortPower" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm"
       },
+      "App::Netdisco::Worker::Plugin::Discover::PortProperties" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover::Properties" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm"
       },
@@ -714,9 +722,6 @@
       "App::Netdisco::Worker::Plugin::MakeRancidConf" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm"
       },
-      "App::Netdisco::Worker::Plugin::Monitor" : {
-         "file" : "lib/App/Netdisco/Worker/Plugin/Monitor.pm"
-      },
       "App::Netdisco::Worker::Plugin::Nbtstat" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Nbtstat.pm"
       },
@@ -725,6 +730,9 @@
       },
       "App::Netdisco::Worker::Plugin::Nbtwalk" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Nbtwalk.pm"
+      },
+      "App::Netdisco::Worker::Plugin::NodeMonitor" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/NodeMonitor.pm"
       },
       "App::Netdisco::Worker::Plugin::PortControl" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/PortControl.pm"
@@ -770,7 +778,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/bsd-license.php"
+         "http://opensource.org/licenses/BSD-3-Clause"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -778,6 +786,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.039003",
-   "x_serialization_backend" : "JSON::PP version 2.97001"
+   "version" : "2.039024",
+   "x_serialization_backend" : "JSON::PP version 2.94"
 }

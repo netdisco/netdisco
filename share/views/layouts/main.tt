@@ -130,6 +130,11 @@
               <button type="submit" class="btn btn-link nd_btn-link">Run Expire Job</button>
             </form>
           </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/stats') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Update Statistics</button>
+            </form>
+          </li>
           [% IF settings._admin_tasks.size %]
             <li class="divider"></li>
             [% FOREACH ai IN settings._admin_order %]
@@ -148,8 +153,7 @@
         <div class="btn-group nd_navbar-search-group">
           <button class="btn btn-inverse nd_navbar-search-icon">
             <span style="font-size: 18px;">
-              <i id="navsearchgo" class="icon-search"
-                rel="tooltip" data-placement="bottom" data-offset="5" data-title="New Search" data-container="body"></i>
+              <i id="navsearchgo" class="icon-search"></i>
             </span>
           </button>
           <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">

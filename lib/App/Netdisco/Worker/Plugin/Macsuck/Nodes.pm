@@ -281,7 +281,7 @@ sub walk_fwtable {
 
   while (my ($idx, $mac) = each %$fw_mac) {
       my $bp_id = $fw_port->{$idx};
-      next unless check_mac($device, $mac);
+      next unless check_mac($mac, $device);
 
       unless (defined $bp_id) {
           debug sprintf

@@ -28,11 +28,10 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_mac( $device, $node, $port_macs? )
+=head2 check_mac( $node, $device?, $port_macs? )
 
-Given a Device database object and a MAC address, perform various sanity
-checks which need to be done before writing an ARP/Neighbor entry to the
-database storage.
+Given a MAC address, perform various sanity checks which need to be done
+before writing an ARP/Neighbor entry to the database storage.
 
 Returns false, and might log a debug level message, if the checks fail.
 
@@ -50,6 +49,8 @@ MAC address is not all-zero, broadcast, CLIP, VRRP or HSRP
 
 =back
 
+Optionally pass a Device instance or IP to use in logging.
+
 Optionally pass a cached set of Device port MAC addresses as the third
 argument, in which case an additional check is added:
 
@@ -64,9 +65,11 @@ MAC address does not belong to an interface on any known Device
 =cut
 
 sub check_mac {
-  my ($device, $node, $port_macs) = @_;
+  my ($node, $port_macs, $device) = @_;
+  return 0 if !$node;
+
   my $mac = NetAddr::MAC->new(mac => $node);
-  my $devip = (ref $device ? $device->ip : '');
+  my $devip = ($device ? (ref $device ? $device->ip : $device) : '');
   $port_macs ||= {};
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)

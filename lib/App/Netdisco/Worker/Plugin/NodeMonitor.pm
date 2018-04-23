@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Monitor;
+package App::Netdisco::Worker::Plugin::NodeMonitor;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;

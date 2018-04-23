@@ -16,11 +16,21 @@ will add the following additional synthesized columns to the result set:
 
 =item uptime_age
 
+=item first_seen_stamp
+
 =item last_discover_stamp
 
 =item last_macsuck_stamp
 
 =item last_arpnip_stamp
+
+=item since_first_seen
+
+=item since_last_discover
+
+=item since_last_macsuck
+
+=item since_last_arpnip
 
 =back
 
@@ -36,9 +46,11 @@ sub with_times {
         '+columns' => {
           uptime_age => \("replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', "
             ."timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')"),
+          first_seen_stamp    => \"to_char(me.creation, 'YYYY-MM-DD HH24:MI')",
           last_discover_stamp => \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
           last_macsuck_stamp  => \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
           last_arpnip_stamp   => \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
+          since_first_seen    => \"extract(epoch from (age(now(), me.creation)))",
           since_last_discover => \"extract(epoch from (age(now(), last_discover)))",
           since_last_macsuck  => \"extract(epoch from (age(now(), last_macsuck)))",
           since_last_arpnip   => \"extract(epoch from (age(now(), last_arpnip)))",
@@ -475,7 +487,7 @@ sub has_layer {
 
 =back
 
-=head2 get_models
+=head2 get_platforms
 
 Returns a sorted list of Device models with the following columns only:
 
@@ -494,15 +506,15 @@ Netdisco database.
 
 =cut
 
-sub get_models {
+sub get_platforms {
   my $rs = shift;
   return $rs->search({}, {
-    select => [ 'vendor', 'model', { count => 'ip' } ],
-    as => [qw/vendor model count/],
+    'columns' => [ 'vendor', 'model' ],
+    '+select' => [{ count => 'ip' }],
+    '+as' => ['count'],
     group_by => [qw/vendor model/],
     order_by => [{-asc => 'vendor'}, {-asc => 'model'}],
-  })
-
+  });
 }
 
 =head2 get_releases
@@ -527,8 +539,9 @@ Netdisco database.
 sub get_releases {
   my $rs = shift;
   return $rs->search({}, {
-    select => [ 'os', 'os_ver', { count => 'ip' } ],
-    as => [qw/os os_ver count/],
+    columns => ['os', 'os_ver'],
+    '+select' => [ { count => 'ip' } ],
+    '+as' => [qw/count/],
     group_by => [qw/os os_ver/],
     order_by => [{-asc => 'os'}, {-asc => 'os_ver'}],
   })

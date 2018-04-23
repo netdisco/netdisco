@@ -48,7 +48,7 @@ sub get_arps {
   while (my ($arp, $node) = each %$paddr) {
       my $ip = $netaddr->{$arp};
       next unless defined $ip;
-      next unless check_mac($device, $node);
+      next unless check_mac($node, $device);
       push @arps, {
         node => $node,
         ip   => $ip,
