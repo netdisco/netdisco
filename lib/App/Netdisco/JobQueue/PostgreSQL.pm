@@ -270,11 +270,13 @@ sub jq_complete {
 }
 
 sub jq_log {
-  return schema('netdisco')->resultset('Admin')->search({}, {
-    prefetch => 'target',
-    order_by => { -desc => [qw/entered device action/] },
+  my $filter = shift;
+  return schema('netdisco')->resultset('Virtual::JobQueue')->search({}, {
+    join => 'target',
+    '+columns' => ['target.dns','target.ip'],
+    bind => [ setting('job_prio')->{'high'}, $filter, $filter ],
     rows => 50,
-  })->with_times->hri->all;
+  })->hri->all;
 }
 
 sub jq_userlog {

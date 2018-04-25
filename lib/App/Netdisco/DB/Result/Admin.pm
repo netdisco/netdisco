@@ -161,4 +161,12 @@ between the date stamp and time stamp. That is:
 
 sub finished_stamp  { return (shift)->get_column('finished_stamp')  }
 
+=head2 duration
+
+Formatted version of the C<duration> field, accurate to the minute.
+
+=cut
+
+sub duration  { return (shift)->get_column('duration')  }
+
 1;

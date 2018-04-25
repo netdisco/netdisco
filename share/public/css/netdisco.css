@@ -454,6 +454,10 @@ td > form.nd_inline-form {
 .tooltip-wrapper .input[disabled] {
   pointer-events: none;
 }
+.tooltip-inner {
+  max-width: none;
+  white-space: nowrap;
+}
 
 /* vlan entry box for netmap */
 #nd_vlan-label {

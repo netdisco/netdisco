@@ -71,8 +71,10 @@
       ,minLength: 0
     });
 
-    // activate modals
+    // activate modals, tooltips and popovers
     $('.nd_modal').modal({show: false});
+    $("[rel=tooltip]").tooltip({live: true});
+    $("[rel=popover]").popover({live: true});
   }
 
   // on load, establish global delegations for now and future

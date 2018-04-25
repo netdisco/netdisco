@@ -5,14 +5,12 @@
   <thead>
     <tr>
       <th class="nd_center-cell">Entered</th>
-      <th class="nd_center-cell">Action</th>
-      <th class="nd_center-cell">Status</th>
-      <th class="nd_center-cell">Device</th>
-      <th class="nd_center-cell">Port</th>
-      <th class="nd_center-cell">Param</th>
       <th class="nd_center-cell">User</th>
-      <th class="nd_center-cell">Started</th>
-      <th class="nd_center-cell">Finished</th>
+      <th class="nd_center-cell">Action</th>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Parameters</th>
+      <th class="nd_center-cell">Status</th>
+      <th class="nd_center-cell">Duration</th>
       <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
@@ -25,16 +23,12 @@
       data-content="<pre>[% row.log | html_entity %]</pre>"
     >
       <td class="nd_center-cell">[% row.entered_stamp | html_entity %]</td>
+      <td class="nd_center-cell">[% row.username | html_entity %]</td>
       <td class="nd_center-cell">
         [% FOREACH word IN row.action.split('_') %]
         [% word.ucfirst | html_entity %]&nbsp;
         [% END %]
       </td>
-      [% IF row.status.search('^queued-') %]
-      <td class="nd_center-cell">Running on &quot;[% row.status.remove('^queued-') | html_entity %]&quot;</td>
-      [% ELSE %]
-      <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
-      [% END %]
       <td class="nd_center-cell">
         [% IF row.action == 'discover' AND row.status == 'error' %]
         <a href="[% uri_for('/') %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
@@ -42,11 +36,29 @@
         <a href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
         [% END %]
       </td>
-      <td class="nd_center-cell">[% row.port | html_entity %]</td>
-      <td class="nd_center-cell">[% row.subaction | html_entity %]</td>
-      <td class="nd_center-cell">[% row.username | html_entity %]</td>
-      <td class="nd_center-cell">[% row.started_stamp | html_entity %]</td>
-      <td class="nd_center-cell">[% row.finished_stamp | html_entity %]</td>
+      <td class="nd_center-cell">[% row.port | html_entity %][% ', ' IF row.port AND row.subaction %][% row.subaction | html_entity %]</td>
+
+      [% IF row.status.search('^queued-') %]
+      <td class="nd_center-cell">Running on &quot;[% row.status.remove('^queued-') | html_entity %]&quot;</td>
+      [% ELSIF row.status == 'queued' %]
+      <td class="nd_center-cell">
+        <i class="icon-ban-circle icon-large [% row.qstat.badacl ? 'text-error' : 'text-success' %]"
+          rel="tooltip" data-placement="bottom" data-offset="5" data-title="[% row.qstat.acl.join('<br>') %]"
+          data-container="body" data-html="true"></i>
+      &nbsp;
+        <i class="icon-time icon-large [% row.qstat.last_defer ? 'text-error' : 'text-success' %]"
+          rel="tooltip" data-placement="bottom" data-offset="5" data-title="[% row.qstat.next.join('<br>') %]"
+          data-container="body" data-html="true"></i>
+      &nbsp;
+        <i class="icon-bolt icon-large [% row.qstat.last_defer ? 'text-error' : 'text-success' %]"
+          rel="tooltip" data-placement="bottom" data-offset="5" data-title="[% row.qstat.fails.join('<br>') %]"
+          data-container="body" data-html="true"></i>
+      </td>
+      [% ELSE %]
+      <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
+      [% END %]
+
+      <td class="nd_center-cell">[% row.duration | html_entity %]</td>
       <td class="nd_center-cell">
         <input data-form="del" name="job" type="hidden" value="[% row.job | html_entity %]">
         <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
