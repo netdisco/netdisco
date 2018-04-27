@@ -316,11 +316,20 @@
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
           [% '<i class="icon-signal"></i>&nbsp;' IF node.wireless.defined %]
+          [% IF settings.phone_macvendor %]
+            [% FOREACH vendor IN settings.phone_macvendor %]
+              [% vendor = vendor.replace('-',':') %]
+              [% IF row.remote_is_phone AND node.net_mac.$mac_format_call.match(vendor.lower) %]
+                <i class="icon-phone"></i>&nbsp;
+                [% LAST %]
+              [% END %]
+            [% END %]
+          [% END %]
           <a href="[% search_node %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
             (on vlan [% node.vlan | html_entity %])
-          [% END %]            
+          [% END %]
           [% IF params.n_ssid AND node.wireless.defined %]
             (SSID:
             [% FOREACH wlan IN node.wireless %]
