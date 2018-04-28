@@ -1,5 +1,10 @@
 2.039026 - 2018-04-28
 
+  [ENHANCEMENTS]
+
+  * #396 dump sshcollector stderr into null (B. De Wolf)
+  * #397 improve Palo Alto SSH Collector support (B. De Wolf)
+
   [BUG FIXES]
 
   * do not enqueue the same routed peer more than once
