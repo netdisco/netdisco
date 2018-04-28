@@ -97,6 +97,7 @@ sub main {
                 password => $host->{password},
                 timeout => 30,
                 async => 0,
+                default_stderr_file => '/dev/null',
                 master_opts => [
                     -o => "StrictHostKeyChecking=no",
                     -o => "BatchMode=no"
