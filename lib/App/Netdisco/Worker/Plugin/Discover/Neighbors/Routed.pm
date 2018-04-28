@@ -38,6 +38,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     });
 
     $count++;
+    vars->{'queued'}->{$ip} += 1;
     debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $ip;
   }
 

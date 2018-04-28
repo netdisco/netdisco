@@ -1,8 +1,16 @@
+2.039026 - 2018-04-
+
+  [BUG FIXES]
+
+  * do not enqueue the same routed peer more than once
+
 2.039025 - 2018-04-27
 
   [BUG FIXES]
 
   * require version 3.57 of SNMP::Info with critical bug fix
+  * make netmap Color By Host Group work with no groups selected
+  * avoid SNMP::Info dependency in web frontend
 
 2.039024 - 2018-04-22
 
