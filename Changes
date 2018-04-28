@@ -1,8 +1,9 @@
-2.039026 - 2018-04-
+2.039026 - 2018-04-28
 
   [BUG FIXES]
 
   * do not enqueue the same routed peer more than once
+  * #406 error in check_mac() params causing NBTStat failure
 
 2.039025 - 2018-04-27
 
