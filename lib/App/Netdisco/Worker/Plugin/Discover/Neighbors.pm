@@ -138,6 +138,16 @@ sub store_neighbors {
   $c_ip = { %$c_ip, %c_ipv6 };
 
   foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
+=pod
+SNMP::INFO c_ip method returns for specific agents a zero instead of the value returned by c_if method:
+- iso.0.8802.1.1.2.1.4.2.1.4."0.414.20".1.4.192.168.200.29 using LLDP RemManAdrIfId, here neighbor 192.168.200.29 on port 414.20 (c_ip method)
+- iso.0.8802.1.1.2.1.4.1.1.7."15315603.414.20" using LLDP RemPortId, same switch (c_if method).
+So $c_if->{$entry} and $interfaces->{ $c_if->{$entry}} will never exist.
+
+To avoid this problem, we can try to find correct RemPortId into c_if hash reference for a discovered neighbor if relevant key returned by c_ip hash reference begins with a zero.
+If found, we use this exact RemPortId as RemManAdrIfId in each c_* method needing this data.
+If not found, we use the initial value.
+=cut
       my $entry_if = $entry;
       if ($entry_if =~ /^0\./){
 	       $entry_if =~ s/^0\.//g;
@@ -147,7 +157,7 @@ sub store_neighbors {
             }
          }
       }
-      if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry_if} }) {
+      if (!defined $c_if->{$entry_if} or !defined $interfaces->{ $c_if->{$entry_if} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
           next;
