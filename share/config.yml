@@ -285,6 +285,8 @@ ignore_interfaces:
   - 'Register-Tunnel\d'
   - 'Blade-Aggregation\d'
   - 'M-GigabitEthernet\d/\d/\d'
+  - 'Ethernet(?:-| )QOS Packet Schedu?ler'
+  - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
 ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
