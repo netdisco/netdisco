@@ -138,13 +138,22 @@ sub store_neighbors {
   $c_ip = { %$c_ip, %c_ipv6 };
 
   foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
-      if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
+      my $entry_if = $entry;
+      if ($entry_if =~ /^0\./){
+	       $entry_if =~ s/^0\.//g;
+	       foreach my $temp (keys %$c_if){
+	          if ( $temp =~ /$entry_if/ ){
+              $entry_if = $temp;
+            }
+         }
+      }
+      if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry_if} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
           next;
       }
 
-      my $port = $interfaces->{ $c_if->{$entry} };
+      my $port = $interfaces->{ $c_if->{$entry_if} };
       my $portrow = schema('netdisco')->resultset('DevicePort')
           ->single({ip => $device->ip, port => $port});
 
@@ -168,8 +177,8 @@ sub store_neighbors {
 
       my $remote_ip   = $c_ip->{$entry};
       my $remote_port = undef;
-      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
-      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry_if} || '');
+      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry_if});
 
       next unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
@@ -242,7 +251,7 @@ sub store_neighbors {
         $device->ip, $remote_ip, ($remote_id || ''), $port;
       push @to_discover, [$remote_ip, $remote_type, $remote_id];
 
-      $remote_port = $c_port->{$entry};
+      $remote_port = $c_port->{$entry_if};
       if (defined $remote_port) {
           # clean weird characters
           $remote_port =~ s/[^\d\s\/\.,()\w:-]+//gi;
