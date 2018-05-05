@@ -21,7 +21,8 @@ register_worker({ phase => 'check' }, sub {
 
   # runner has already called get_device to promote $job->device
   return $job->cancel("fresh discover cancelled: $device already known")
-    if $device->in_storage and $job->subaction eq 'with-nodes';
+    if $device->in_storage
+       and ($job->subaction eq 'with-nodes' and not $job->username);
 
   return Status->defer("discover deferred: $device is not discoverable")
     unless is_discoverable_now($device);
