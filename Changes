@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * #413 manual retrigger of discovery does not work
+  * #411 store_modules: false is ignored
 
 2.039027 - 2018-04-28
 

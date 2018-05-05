@@ -8,39 +8,49 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 use Encode;
 
+my $clean = sub {
+  my $device = shift;
+
+  my $gone = $device->modules->delete;
+  debug sprintf ' [%s] modules - removed %d chassis modules',
+    $device->ip, $gone;
+
+  $device->modules->update_or_create({
+    ip => $device->ip,
+    index => 1,
+    parent => 0,
+    name => 'chassis',
+    class => 'chassis',
+    pos => -1,
+    # too verbose and link doesn't work anyway
+    # description => $device->description,
+    sw_ver => $device->os_ver,
+    serial => $device->serial,
+    model => $device->model,
+    fru => \'false',
+    last_discover => \'now()',
+  });
+};
+
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
   return unless $device->in_storage;
+
+  if (not setting('store_modules')) {
+      schema('netdisco')->txn_do($clean, $device);
+      return Status->info(
+        sprintf ' [%s] modules - store_modules is disabled (added one pseudo for chassis)',
+        $device->ip);
+  }
+
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
-
   my $e_index = $snmp->e_index;
 
   if (!defined $e_index) {
-      schema('netdisco')->txn_do(sub {
-        my $gone = $device->modules->delete;
-        debug sprintf ' [%s] modules - removed %d chassis modules',
-          $device->ip, $gone;
-
-        $device->modules->update_or_create({
-          ip => $device->ip,
-          index => 1,
-          parent => 0,
-          name => 'chassis',
-          class => 'chassis',
-          pos => -1,
-          # too verbose and link doesn't work anyway
-          # description => $device->description,
-          sw_ver => $device->os_ver,
-          serial => $device->serial,
-          model => $device->model,
-          fru => \'false',
-          last_discover => \'now()',
-        });
-      });
-
+      schema('netdisco')->txn_do($clean, $device);
       return Status->info(
         sprintf ' [%s] modules - 0 chassis components (added one pseudo for chassis)',
         $device->ip);
