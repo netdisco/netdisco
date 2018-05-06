@@ -138,13 +138,32 @@ sub store_neighbors {
   $c_ip = { %$c_ip, %c_ipv6 };
 
   foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
-      if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
+=pod
+SNMP::INFO c_ip method returns for specific agents a zero instead of the value returned by c_if method:
+- iso.0.8802.1.1.2.1.4.2.1.4."0.414.20".1.4.192.168.200.29 using LLDP RemManAdrIfId, here neighbor 192.168.200.29 on port 414.20 (c_ip method)
+- iso.0.8802.1.1.2.1.4.1.1.7."15315603.414.20" using LLDP RemPortId, same switch (c_if method).
+So $c_if->{$entry} and $interfaces->{ $c_if->{$entry}} will never exist.
+
+To avoid this problem, we can try to find correct RemPortId into c_if hash reference for a discovered neighbor if relevant key returned by c_ip hash reference begins with a zero.
+If found, we use this exact RemPortId as RemManAdrIfId in each c_* method needing this data.
+If not found, we use the initial value.
+=cut
+      my $entry_if = $entry;
+      if ($entry_if =~ /^0\./){
+	       $entry_if =~ s/^0\.//g;
+	       foreach my $temp (keys %$c_if){
+	          if ( $temp =~ /$entry_if/ ){
+              $entry_if = $temp;
+            }
+         }
+      }
+      if (!defined $c_if->{$entry_if} or !defined $interfaces->{ $c_if->{$entry_if} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
           next;
       }
 
-      my $port = $interfaces->{ $c_if->{$entry} };
+      my $port = $interfaces->{ $c_if->{$entry_if} };
       my $portrow = schema('netdisco')->resultset('DevicePort')
           ->single({ip => $device->ip, port => $port});
 
@@ -168,8 +187,8 @@ sub store_neighbors {
 
       my $remote_ip   = $c_ip->{$entry};
       my $remote_port = undef;
-      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
-      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry_if} || '');
+      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry_if});
 
       next unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
@@ -242,7 +261,7 @@ sub store_neighbors {
         $device->ip, $remote_ip, ($remote_id || ''), $port;
       push @to_discover, [$remote_ip, $remote_type, $remote_id];
 
-      $remote_port = $c_port->{$entry};
+      $remote_port = $c_port->{$entry_if};
       if (defined $remote_port) {
           # clean weird characters
           $remote_port =~ s/[^\d\s\/\.,()\w:-]+//gi;

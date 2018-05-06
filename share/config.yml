@@ -158,11 +158,11 @@ system_reports:
     label: 'Error Disabled Ports'
     category: Port
     columns:
-    - { ip: Device } 
-    - { dns: DNS } 
-    - { port: Port } 
-    - { name: Description } 
-    - { reason: Reason } 
+    - { ip: Device }
+    - { dns: DNS }
+    - { port: Port }
+    - { name: Description }
+    - { reason: Reason }
     query: |
       SELECT dp.ip, d.dns, dp.port, dp.name, properties.error_disable_cause AS reason
         FROM device_port dp
@@ -291,6 +291,10 @@ ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
   - '(?i:phone)'
+phone_macvendor:
+  - '00:00:00'
+  - '01-AB-FF'
+  - 'ab:2e:00'
 phone_platforms:
   - '(?i:mitel.5\d{3})'
 wap_capabilities:
