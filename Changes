@@ -6,6 +6,10 @@
   * #410 improvements to Undiscovered Neighbors report
   * device port search will match on Description as well as Port
 
+  [BUG FIXES]
+
+  * #414 clicking discover button with empty field causes crash
+
 2.039028 - 2018-05-05
 
   [BUG FIXES]

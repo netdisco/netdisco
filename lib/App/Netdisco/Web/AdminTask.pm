@@ -16,7 +16,7 @@ sub add_job {
     return if
       ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
 
-    my @hostlist = defined $device ? ($net->hostenum) : (undef);
+    my @hostlist = $device ? ($net->hostenum) : (undef);
 
     jq_insert([map {{
       ($_ ? (device => $_->addr) : ()),
