@@ -91,6 +91,7 @@ lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
 lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
 lib/App/Netdisco/DB/ResultSet/Subnet.pm
+lib/App/Netdisco/DB/SchemaVersioned.pm
 lib/App/Netdisco/DB/SetOperations.pm
 lib/App/Netdisco/Environment.pm
 lib/App/Netdisco/GenericDB.pm
@@ -361,6 +362,7 @@ share/schema_versions/App-Netdisco-DB-49-50-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-50-51-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-51-52-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-52-53-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
