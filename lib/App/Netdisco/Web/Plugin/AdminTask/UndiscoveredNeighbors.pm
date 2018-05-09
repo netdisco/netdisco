@@ -18,29 +18,28 @@ register_admin_task(
 
 get '/ajax/content/admin/undiscoveredneighbors' => require_role admin => sub {
     my @results
-        = schema('netdisco')->resultset('Virtual::UndiscoveredNeighbors')
-        ->order_by('ip')->hri->all;
+        = schema('netdisco')->resultset('Virtual::UndiscoveredNeighbors')->hri->all;
     return unless scalar @results;
 
     # Don't include devices excluded from discovery by config
-    # but only if the number of devices is small, as it triggers a
-    # SELECT per device to check.
-    if (scalar @results < 50) {
-        @results
-            = grep { is_discoverable( $_->{'remote_ip'}, $_->{'remote_type'} ) }
-            @results;
+    my @discoverable_results = ();
+    foreach my $r (@results) {
+      # create a new row object to avoid hitting the DB in get_device()
+      my $dev = schema('netdisco')->resultset('Device')->new({ip => $r->{remote_ip}});
+      next unless is_discoverable( $dev, $r->{remote_type} );
+      push @discoverable_results, $r;
     }
-    return unless scalar @results;
+    return unless scalar @discoverable_results;
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/undiscoveredneighbors.tt',
-            { results => \@results, },
+            { results => \@discoverable_results, },
             { layout  => undef };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/admintask/undiscoveredneighbors_csv.tt',
-            { results => \@results, },
+            { results => \@discoverable_results, },
             { layout  => undef };
     }
 };

@@ -1,3 +1,17 @@
+2.040000 - 2018-05
+
+  [ENHANCEMENTS]
+
+  * #408 improvements to MakeRancidConf (earendilfr)
+  * #410 improvements to Undiscovered Neighbors report
+  * device port search will match on Description as well as Port
+  * issue DB schema statements each within savepoints
+
+  [BUG FIXES]
+
+  * #414 clicking discover button with empty field causes crash
+  * #415 neighbors map display is blank
+
 2.039028 - 2018-05-05
 
   [BUG FIXES]
