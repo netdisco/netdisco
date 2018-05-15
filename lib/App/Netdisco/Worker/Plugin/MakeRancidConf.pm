@@ -90,7 +90,7 @@ register_worker({ phase => 'main' }, sub {
     mkdir dir($rancidhome, $group)->stringify;
     my $content = "#\n# Router list file for RANCID group $group.\n";
     $content .= "# Generate automatically by App::Netdisco::Worker::Plugin::MakeRancidConf\n#\n";
-    $content .= join "\n", @{$routerdb->{$group}};
+    $content .= join "\n", sort @{$routerdb->{$group}};
     write_text(file($rancidhome, $group, 'router.db')->stringify, "${content}\n");
   }
 
