@@ -49,6 +49,8 @@ register_worker({ phase => 'main' }, sub {
   $config->{groups}    ||= { default => 'any' };
   $config->{vendormap} ||= {};
   $config->{excluded}  ||= {};
+  $config->{by_ip}       ||= {};
+  $config->{by_hostname} ||= {};
 
   my $routerdb = {};
   while (my $d = $devices->next) {
