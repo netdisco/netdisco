@@ -112,6 +112,11 @@ my @hostlist = defined $device ? ($net->hostenum) : (undef);
 my @job_specs = ();
 my $exitstatus =  0;
 
+if (scalar @hostlist > 512) {
+    info sprintf '%s: aborted - unwise to attempt %s jobs at once', $action, (scalar @hostlist);
+    exit 1;
+}
+
 foreach my $host (@hostlist) {
   my $dev = $host ? get_device($host->addr) : undef;
   if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
