@@ -101,7 +101,6 @@ unless ($action) {
   use Moo;
   with 'App::Netdisco::Worker::Runner';
 }
-my $worker = MyWorker->new();
 
 my $net = NetAddr::IP->new($device);
 if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
@@ -137,6 +136,7 @@ if ($queue_only) {
 }
 else {
   foreach my $spec (@job_specs) {
+    my $worker = MyWorker->new();
     my $job = App::Netdisco::Backend::Job->new({ job => 0, %$spec });
 
     my $actiontext = (
