@@ -176,26 +176,31 @@ script will take care of all this for you:
 
 If this is a new installation of Netdisco 2, answer yes to all questions. If
 you wish to deploy without Internet access, see the
-L<Deployment|https://github.com/netdisco/netdisco/wiki/Install-Tips> documentation.
+L<Deployment|https://github.com/netdisco/netdisco/wiki/Install-Tips>
+documentation.
 
 =head1 Startup
 
-Run the following command to start the web-app server as a backgrounded daemon
-(listening on port 5000):
+Run the following command to start the web-app server as a background process:
 
  ~/bin/netdisco-web start
 
-Run the following command to start the job control daemon (port control, etc):
+The web app listens on port 5000 (for example C<< http://localhost:5000/ >> or
+C<< http://yourhost.example.com:5000/ >>).
+
+Run the following command to start the job control daemon (device polling,
+port control, etc):
 
  ~/bin/netdisco-backend start
 
-You should take care not to run this Netdisco daemon and the Netdisco 1.x
-daemon at the same time. Similarly, if you use the device discovery with
-Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
-
-Whenever you upgrade your operating system, you should also delete the
+I<note:> Whenever you upgrade your operating system, you should delete the
 C<~netdisco/perl5> directory and re-run the C<curl> command above, to update
 Netdisco's C library bindings.
+
+I<also note:> You should take care not to run C<< netdisco-backend >> and the
+Netdisco 1.x daemon at the same time. Similarly, if you use the device
+discovery with Netdisco 2, disable your system's cron jobs for the Netdisco
+1.x poller.
 
 We have several other pages with tips for
 L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
