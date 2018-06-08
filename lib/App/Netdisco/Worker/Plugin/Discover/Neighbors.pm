@@ -175,7 +175,7 @@ sub store_neighbors {
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
 
       if ($r_netaddr and ($r_netaddr->addr ne $remote_ip)) {
-        info sprintf ' [%s] neigh - discrepancy in IP on %s: using %s instead of %s',
+        info sprintf ' [%s] neigh - IP on %s: using %s as canonical form of %s',
           $device->ip, $port, $r_netaddr->addr, $remote_ip;
         $remote_ip = $r_netaddr->addr;
       }
