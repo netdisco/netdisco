@@ -19,8 +19,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
         AND ds.device IS NULL)
 
   SELECT my_jobs.*,
-         CASE WHEN ( (my_jobs.username IS NOT NULL AND (ds.deferrals = 0
-                                                        OR ds.last_defer IS NULL
+         CASE WHEN ( (my_jobs.username IS NOT NULL AND ((ds.deferrals IS NULL AND ds.last_defer IS NULL)
                                                         OR my_jobs.entered > ds.last_defer))
                     OR (my_jobs.action = ANY (string_to_array(btrim(?, '{"}'), '","'))) )
               THEN 100
@@ -31,9 +30,9 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     LEFT OUTER JOIN device_skip ds
       ON (ds.backend = ? AND ds.device = my_jobs.device)
 
-   WHERE ((ds.deferrals < ?) OR (my_jobs.username IS NOT NULL AND (ds.deferrals = 0
-                                                                   OR ds.last_defer IS NULL
-                                                                   OR my_jobs.entered > ds.last_defer)))
+   WHERE ds.deferrals < ?
+      OR (my_jobs.username IS NOT NULL AND (ds.last_defer IS NULL
+                                            OR my_jobs.entered > ds.last_defer))
       OR (ds.deferrals IS NULL AND ds.last_defer IS NULL)
       OR ds.last_defer <= ( LOCALTIMESTAMP - ?::interval )
 
