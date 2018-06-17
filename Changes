@@ -1,3 +1,16 @@
+2.039031 - 2018-06-17
+
+  [ENHANCEMENTS]
+
+  * limit cli max hosts in prefix to 512
+  * update docs to clarify the web app home location
+  * #419 clarify log message for discrepancy in IP
+
+  [BUG FIXES]
+
+  * jobs with username are only allowed one attempt to unskip
+  * fix bug in reuse of $worker for prefix actions
+
 2.039030 - 2018-05-09
 
   [ENHANCEMENTS]
