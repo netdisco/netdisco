@@ -291,6 +291,7 @@ ignore_interfaces:
   - 'M-GigabitEthernet\d/\d/\d'
   - 'Ethernet(?:-| )QOS Packet Schedu?ler'
   - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
+  - 'ii\d\/\d\/\d+'
 ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
