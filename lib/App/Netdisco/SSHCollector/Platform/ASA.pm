@@ -78,6 +78,10 @@ sub arpnip {
     $prompt = qr/#/;
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
 
+    $expect->send("show names\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect(60, -re, $prompt);
+    my @names = split(m/\n/, $before);
+
     $expect->send("terminal pager 2147483647\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(5, -re, $prompt);
 
@@ -94,7 +98,18 @@ sub arpnip {
     foreach my $line (@lines) {
         if ($line =~ $linereg) {
             my ($ip, $mac) = ($1, $2);
-            push @arpentries, { mac => $mac, ip => $ip };
+            if ($ip !~ m/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/) {
+                foreach my $name (@names) {
+                    if ($name =~ qr/name\s([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\s([\w-]*)/x) {
+                        if ($ip eq $2) {
+                            $ip = $1;
+                        }
+                    }
+                }
+            }
+            if ($ip =~ m/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/) {
+                push @arpentries, { mac => $mac, ip => $ip };
+            }
         }
     }
 
