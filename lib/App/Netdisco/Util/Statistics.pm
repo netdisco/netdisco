@@ -3,7 +3,7 @@ package App::Netdisco::Util::Statistics;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use Time::Piece; # for OO localtime
+use Time::Piece; # for OO gmtime
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -40,7 +40,7 @@ sub update_stats {
 
   $schema->txn_do(sub {
     $schema->resultset('Statistics')->update_or_create({
-      day => localtime->ymd,
+      day => gmtime->ymd,
 
       device_count =>
         $schema->resultset('Device')->count_rs->as_query,

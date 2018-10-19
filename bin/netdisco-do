@@ -137,7 +137,7 @@ foreach my $host (@hostlist) {
 if ($queue_only) {
   jq_insert( \@job_specs );
   info sprintf '%s: queued %s jobs at %s',
-    $action, (scalar @job_specs), scalar localtime;
+    $action, (scalar @job_specs), scalar gmtime;
 }
 else {
   foreach my $spec (@job_specs) {
@@ -152,7 +152,7 @@ else {
     # do job
     try {
       info sprintf '%s: %s started at %s',
-        $action, $actiontext, scalar localtime;
+        $action, $actiontext, scalar gmtime;
       $worker->run($job);
     }
     catch {
@@ -168,7 +168,7 @@ else {
       );
     }
 
-    info sprintf '%s: finished at %s', $action, scalar localtime;
+    info sprintf '%s: finished at %s', $action, scalar gmtime;
     info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
     $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
   }

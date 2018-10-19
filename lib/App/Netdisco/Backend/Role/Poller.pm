@@ -27,7 +27,7 @@ sub worker_body {
       next unless defined $job;
 
       try {
-          $job->started(scalar localtime);
+          $job->started(scalar gmtime);
           prctl sprintf 'nd2: #%s poll: #%s: %s',
             $wid, $job->id, $job->display_name;
           info sprintf "pol (%s): starting %s job(%s) at %s",
@@ -48,7 +48,7 @@ sub worker_body {
 
 sub close_job {
   my ($self, $job) = @_;
-  my $now  = scalar localtime;
+  my $now  = scalar gmtime;
 
   info sprintf "pol (%s): wrapping up %s job(%s) - status %s at %s",
     $self->wid, $job->action, $job->id, $job->status, $now;
