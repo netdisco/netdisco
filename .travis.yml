@@ -4,6 +4,8 @@ addons:
     packages:
       - libsnmp-dev
       - phantomjs
+  hosts:
+    - localhost
 branches:
   only:
     - /^2\.\d{6}$/
