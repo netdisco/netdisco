@@ -239,6 +239,10 @@ macsuck_no_vlan:
   - 'token-ring-default'
   - 'fddinet-default'
   - 'trnet-default'
+  - 'fcoe-vsan-4048'
+  - 'SAM-vlan-boot'
+  - 'SAM-vlan-appliance-management'
+  - 'SAM-vlan-management'
 macsuck_no_devicevlan: []
 macsuck_unsupported: []
 macsuck_unsupported_type: []
@@ -287,6 +291,7 @@ ignore_interfaces:
   - 'M-GigabitEthernet\d/\d/\d'
   - 'Ethernet(?:-| )QOS Packet Schedu?ler'
   - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
+  - 'ii\d\/\d\/\d+'
 ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
