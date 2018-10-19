@@ -1,3 +1,20 @@
+2.039032 - 2018-10-19
+
+  [ENHANCEMENTS]
+
+  * #433 add status note when updating stats in netdisco-deploy - jrbinks
+  * #434 shuffle input array for sshcollector - stromsoe
+  * #438 add some more interface names to ignore
+  * #439 add expire_userlog with default 365 days
+  * #443 attempt to handle IPs and Names in show arp output - darknicht66
+
+  [BUG FIXES]
+
+  * #427 fix NodeVendor.pm to show distinct MACs - slofunk
+  * #431 sshcollector calls die() even if all the work is not done - stromsoe
+  * #435 netdisco-deploy allows blank admin password
+  * fix error in ignore_interfaces regexp - inphobia
+
 2.039031 - 2018-06-17
 
   [ENHANCEMENTS]
