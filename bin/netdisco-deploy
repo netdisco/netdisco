@@ -174,9 +174,7 @@ sub deploy_db {
       print color 'reset';
       say '';
 
-      my $name = $term->get_reply(prompt => 'Username: ');
-      my $pass = $term->get_reply(prompt => 'Password: ');
-
+      my ($name, $pass) = get_userpass($term);
       $users->create({
         username => $name,
         password => _make_password($pass),
@@ -194,6 +192,19 @@ sub deploy_db {
     {id => 'dancer_session_cookie_key', a_session => \'md5(random()::text)'},
     {key => 'primary'},
   );
+}
+
+sub get_userpass {
+  my $term = shift;
+  my $name = $term->get_reply(prompt => 'Username: ');
+  my $pass = $term->get_reply(prompt => 'Password: ');
+
+  unless ($name and $pass) {
+    say 'username and password cannot be empty, please try again.';
+    ($name, $pass) = get_userpass($term);
+  }
+
+  return ($name, $pass);
 }
 
 sub deploy_oui {
