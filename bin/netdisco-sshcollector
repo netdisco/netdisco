@@ -83,6 +83,10 @@ exit main();
 sub main {
     my @input = @{ setting('sshcollector') };
 
+    #one-line Fisher-Yates from https://www.perlmonks.org/index.pl?node=Array%20One-Liners
+    my ($i,$j) = (0);
+    @input[-$i,$j] = @input[$j,-$i] while $j = rand(@input - $i), ++$i < @input;
+
     my @mce_result = mce_loop {
         my ($mce, $chunk_ref, $chunk_id) = @_;
         my $host = $chunk_ref->[0];
