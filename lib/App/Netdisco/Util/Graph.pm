@@ -62,7 +62,7 @@ Creates netmap of network.
 sub graph {
     my %CONFIG = %{ setting('graph') };
 
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime();
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
     my $month = sprintf("%d%02d",$year+1900,$mon+1);
 
     info "graph() - Creating Graphs";
