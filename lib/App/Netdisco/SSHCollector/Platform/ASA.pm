@@ -88,7 +88,7 @@ sub arpnip {
     my @lines = split(m/\n/, $before);
 
     # ifname 192.0.2.1 0011.2233.4455 123
-    my $linereg = qr/[A-z0-9\-\.]+\s([0-9\.]+)\s
+    my $linereg = qr/[A-z0-9\-\.]+\s([A-z0-9\-\.]+)\s
                      ([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})/x;
 
     foreach my $line (@lines) {
