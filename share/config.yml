@@ -264,6 +264,7 @@ expire_devices: 60
 expire_nodes: 90
 expire_nodes_archive: 60
 expire_jobs: 14
+expire_userlog: 365
 expire_nodeip_freshness: null
 store_wireless_clients: true
 store_modules: true

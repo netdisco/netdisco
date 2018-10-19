@@ -73,6 +73,15 @@ register_worker({ phase => 'main' }, sub {
       });
   }
 
+  if (setting('expire_userlog') and setting('expire_userlog') > 0) {
+      schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
+        schema('netdisco')->resultset('UserLog')->search({
+          creation => \[q/< (now() - ?::interval)/,
+              (setting('expire_userlog') * 86400)],
+        })->delete();
+      });
+  }
+
   # now update stats
   update_stats();
 
