@@ -47,7 +47,11 @@ sub arpnip{
 
     debug "$hostlabel $$ arpnip()";
 
-    my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
+    my ($pty, $pid) = $ssh->open2pty;
+    unless ($pty) {
+        debug "unable to run remote command [$hostlabel] " . $ssh->error;
+        return ();
+    }
     my $expect = Expect->init($pty);
 
     my ($pos, $error, $match, $before, $after);

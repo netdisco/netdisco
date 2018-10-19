@@ -257,7 +257,11 @@ Depending on the target system, it can be queried using simple methods like
 or automated via Expect - this is mostly useful for non-Linux appliances which
 don't support command execution via ssh:
 
- my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
+ my ($pty, $pid) = $ssh->open2pty;
+ unless ($pty) {
+   debug "unable to run remote command [$hostlabel] " . $ssh->error;
+   return ();
+ }
  my $expect = Expect->init($pty);
  my $prompt = qr/#/;
  my ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
