@@ -140,9 +140,10 @@ sub deploy_db {
   say 'DB schema update complete.';
   print color 'reset';
 
-  App::Netdisco::Util::Statistics::update_stats();
   print color 'bold blue';
-  say 'Statistics updated.';
+  print 'Updating statistics... ';
+  App::Netdisco::Util::Statistics::update_stats();
+  say 'done.';
   print color 'reset';
 
   if (not setting('safe_password_store')) {
