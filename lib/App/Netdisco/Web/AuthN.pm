@@ -4,6 +4,8 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use MIME::Base64;
+
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
       ? request->uri : uri_for('/inventory')->path);
@@ -51,10 +53,19 @@ get qr{^/(?:login(?:/denied)?)?} => sub {
 
 # override default login_handler so we can log access in the database
 post '/login' => sub {
-    my $mode = (request->is_ajax ? 'API' : 'Web');
-    my ($success, $realm) = authenticate_user(
-        param('username'), param('password')
-    );
+    my $mode = (request->is_ajax ? 'WebData'
+                                 : request->header('Authorization') ? 'API'
+                                                                    : 'WebUI');
+
+    # get authN data from request (HTTP BasicAuth or URL params)
+    my $authheader = request->header('Authorization');
+    my ($u, $p) = (param('username'), param('password'));
+    if (defined $authheader and $authheader =~ /^Basic (.*)$/) {
+        ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
+    }
+
+    # test authN
+    my ($success, $realm) = authenticate_user( $u, $p );
 
     if ($success) {
         my $user = schema('netdisco')->resultset('User')
@@ -70,10 +81,22 @@ post '/login' => sub {
           event => "Login ($mode)",
           details => param('return_url'),
         });
-
         $user->update({ last_on => \'now()' });
 
-        return if request->is_ajax;
+        return if $mode eq 'WebData';
+
+        # if API return a token and record its lifetime
+        if ($mode eq 'API') {
+            if (! $user->token_from or ! $user->token or
+                $user->token_from < (time - setting('api_token_lifetime'))) {
+              $user->update({
+                token_from => time,
+                token => \'md5(random()::text)',
+              });
+            }
+            return 'token:'. $user->token;
+        }
+
         redirect param('return_url');
     }
     else {
@@ -86,7 +109,7 @@ post '/login' => sub {
           details => param('return_url'),
         });
 
-        if (request->is_ajax) {
+        if ($mode ne 'WebUI') {
             status('unauthorized');
         }
         else {

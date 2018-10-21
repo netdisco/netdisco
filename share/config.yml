@@ -26,6 +26,7 @@ suggest_guest: false
 navbar_autocomplete: true
 trust_remote_user: false
 trust_x_remote_user: false
+api_token_lifetime: 3600
 #ldap:
 #  servers: []
 #  user_string: 'MYDOMAIN\%USER%'
