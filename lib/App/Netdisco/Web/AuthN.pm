@@ -36,6 +36,14 @@ hook 'before' => sub {
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }
+        elsif (setting('api_token_lifetime')
+          and index(request->path,uri_for('/api/')->path) == 0) {
+
+            my $user = $provider->validate_api_token(param('token'))
+              or return;
+            session(logged_in_user => $user);
+            session(logged_in_user_realm => 'users');
+        }
         elsif (setting('no_auth')) {
             session(logged_in_user => 'guest');
             session(logged_in_user_realm => 'users');
@@ -56,16 +64,16 @@ post '/login' => sub {
     my $mode = (request->is_ajax ? 'WebData'
                                  : request->header('Authorization') ? 'API'
                                                                     : 'WebUI');
-
     # get authN data from request (HTTP BasicAuth or URL params)
     my $authheader = request->header('Authorization');
-    my ($u, $p) = (param('username'), param('password'));
     if (defined $authheader and $authheader =~ /^Basic (.*)$/) {
-        ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
+        my ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
+        params->{username} = $u;
+        params->{password} = $p;
     }
 
     # test authN
-    my ($success, $realm) = authenticate_user( $u, $p );
+    my ($success, $realm) = authenticate_user(param('username'),param('password'));
 
     if ($success) {
         my $user = schema('netdisco')->resultset('User')
@@ -92,7 +100,7 @@ post '/login' => sub {
               $user->update({
                 token_from => time,
                 token => \'md5(random()::text)',
-              });
+              })->discard_changes();
             }
             return 'token:'. $user->token;
         }

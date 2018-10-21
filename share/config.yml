@@ -400,6 +400,7 @@ worker_plugins:
   - 'Power'
   - 'Psql'
   - 'Renumber'
+  - 'SetUserToken'
   - 'Show'
   - 'Stats'
   - 'Vlan'
