@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+use Dancer::Plugin::Swagger;
 
 use URI ();
 use Socket6 (); # to ensure dependency is met
@@ -212,4 +213,5 @@ any qr{.*} => sub {
   };
 }
 
+swagger_auto_discover;
 true;

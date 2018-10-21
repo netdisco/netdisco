@@ -22,7 +22,7 @@ sub api_array_json {
     return (\@results);
 };
 
-ajax '/api/node/search' => require_login sub {
+get '/api/node/search' => require_login sub {
     my $para = params;
     my $search = {};
     # Generate a hashref of search terms. 
@@ -35,17 +35,17 @@ ajax '/api/node/search' => require_login sub {
     try {
        @ips = schema('netdisco')->resultset('Node')->search($search);
     };
-    return api_array_json(\@ips);
+    return to_json api_array_json(\@ips);
 };
 
-ajax '/api/node/:node/:method' => require_login sub {
+get '/api/node/:node/:method' => require_login sub {
     my $node = params->{node};
     my $method = params->{method};
     # Make sure $node is actually a mac address in the proper format.
     # TODO change to NetAddr::MAC
     if (!($node =~ m/([0-9a-f]{2}:){5}([0-9a-f]{2})/)){
         status 400;
-        return ({ error => "Not a MAC Address. Address must follow the format aa:bb:cc:dd:ee:ff." });
+        return to_json { error => "Not a MAC Address. Address must follow the format aa:bb:cc:dd:ee:ff." };
     }
     try {
         my @nodesearch = schema('netdisco')->resultset('Node')->search({ mac => $node});
@@ -56,20 +56,20 @@ ajax '/api/node/:node/:method' => require_login sub {
         # Dancer's JSON serializer doesn't like the objects
         if (ref($node) =~ m/ResultSet/) {
             my @nodes = $node->all;
-            return api_array_json(\@nodes);
+            return to_json api_array_json(\@nodes);
         }
         else {
             my $nodes = $node;
-            return $nodes->{_column_data};
+            return to_json $nodes->{_column_data};
         }
     } catch {
         my ($exception) = @_;
         if ($exception =~ m/Can\'t call method "$method" on an undefined value/) {
             status 404;
-            return ({ error => "MAC Address not found."});
+            return to_json { error => "MAC Address not found."};
         }
         status 400;
-        return ({ error => "Invalid collection $method." });
+        return to_json { error => "Invalid collection $method." };
     };
 };
 

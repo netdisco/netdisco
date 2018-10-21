@@ -479,6 +479,11 @@ engines:
     INCLUDE_PATH: []
 layout: 'main'
 plugins:
+plugins:
+  Swagger:
+     main_api_module: 'App::Netdisco'
+     auto_discover_skip:
+       - qr#^/(?!api/)\w+#
   Auth::Extensible:
     no_api_change_warning: true
     no_default_pages: true

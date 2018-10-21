@@ -37,9 +37,11 @@ hook 'before' => sub {
             session(logged_in_user_realm => 'users');
         }
         elsif (setting('api_token_lifetime')
-          and index(request->path,uri_for('/api/')->path) == 0) {
+          and (index(request->path,uri_for('/api/')->path) == 0
+           or request->path eq uri_for('/swagger.json')->path)) {
 
-            my $user = $provider->validate_api_token(param('token'))
+            my $token = request->header('X-API-Key') || param('api_key');
+            my $user = $provider->validate_api_token($token)
               or return;
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
@@ -102,7 +104,7 @@ post '/login' => sub {
                 token => \'md5(random()::text)',
               })->discard_changes();
             }
-            return 'token:'. $user->token;
+            return 'api_key:'. $user->token;
         }
 
         redirect param('return_url');

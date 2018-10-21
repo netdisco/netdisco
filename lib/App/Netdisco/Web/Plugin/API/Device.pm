@@ -22,12 +22,12 @@ sub api_array_json {
     return (\@results);
 };
 
-ajax '/api/device/all' => require_login sub {
+get '/api/device/all' => require_login sub {
     my @devices=schema('netdisco')->resultset('Device')->all;
-    return api_array_json(\@devices);
+    return to_json api_array_json(\@devices);
 };
 
-ajax '/api/device/search' => sub {
+get '/api/device/search' => sub {
     my $para = params;
     my $search = {};
     foreach my $param (keys %{$para}) {
@@ -39,35 +39,35 @@ ajax '/api/device/search' => sub {
     try {
        @devices=schema('netdisco')->resultset('Device')->search($search);
     };
-    return api_array_json(\@devices);
+    return to_json api_array_json(\@devices);
 };
 
-ajax '/api/device/:device' => require_login sub {
+get '/api/device/:device' => require_login sub {
     my $dev = params->{device};
     print "$dev\n";
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($dev) or send_error('Bad Device', 404);
-    return $device->{_column_data};
+    return to_json $device->{_column_data};
 };
 
-ajax '/api/device/:device/modules' => require_login sub {
+get'/api/device/:device/modules' => require_login sub {
     my $dev = params->{device};
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($dev) or send_error('Bad Device', 404);
     my @modules = $device->modules;
-    return api_array_json(\@modules);
+    return to_json api_array_json(\@modules);
 
 };
 
-ajax '/api/device/:device/vlans' => require_login sub {
+get '/api/device/:device/vlans' => require_login sub {
     my $dev = params->{device};
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($dev) or send_error('Bad Device', 404);
     my @vlans = $device->vlans;
-    return api_array_json(\@vlans);
+    return to_json api_array_json(\@vlans);
 };
 
-ajax '/api/device/:device/ports' => require_login sub {
+get '/api/device/:device/ports' => require_login sub {
     my $dev = params->{device};
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($dev);
@@ -88,34 +88,34 @@ ajax '/api/device/:device/ports' => require_login sub {
         $c->{vlans}=\@pvlans;
         push @results, $c;
     }
-    return \@results;
+    return to_json \@results;
 };
 
-ajax qr{/api/device/(?<ip>.*)/port/(?<port>.*)/nodes$} => require_login sub {
+get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/nodes$} => require_login sub {
     my $param = captures;
     my @ports = schema('netdisco')->resultset('Device')
       ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
     my @nodes = $ports[0]->nodes;
-    return api_array_json(\@nodes);
+    return to_json api_array_json(\@nodes);
 };
 
-ajax qr{/api/device/(?<ip>.*)/port/(?<port>.*)/neighbor$} => require_login sub {
+get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/neighbor$} => require_login sub {
     my $param = captures;
     my @ports = schema('netdisco')->resultset('Device')
       ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
     my @neighbors = $ports[0]->neighbor;
-    return api_array_json(\@neighbors);
+    return to_json api_array_json(\@neighbors);
 };
 
-ajax qr{/api/device/(?<ip>.*)/port/(?<port>.*)/power$} => require_login sub {
+get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/power$} => require_login sub {
     my $param = captures;
     my @ports = schema('netdisco')->resultset('Device')
       ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
     my @neighbors = $ports[0]->power;
-    return api_array_json(\@neighbors);
+    return to_json api_array_json(\@neighbors);
 };
 
-ajax qr{/api/device/(?<ip>.*)/port/(?<port>.*)} => require_login sub {
+get qr{/api/device/(?<ip>.*)/port/(?<port>.*)} => require_login sub {
     my $param = captures;
     my $port;
     try {
@@ -130,9 +130,9 @@ ajax qr{/api/device/(?<ip>.*)/port/(?<port>.*)} => require_login sub {
         $port->{vlans} = \@pvlans;
     };
 
-    return $port if defined $port;
+    return to_json $port if defined $port;
     status 404;
-    return { message => "Port not found" };
+    return to_json { message => "Port not found" };
 };
 
 true;
