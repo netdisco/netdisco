@@ -6,133 +6,143 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::DBIC;
 
+use Dancer::Exception qw(:all);
+
 use App::Netdisco::Web::Plugin;
 
-sub api_array_json {
-    my $items = shift;
-    my @results;
-    foreach my $item (@{$items}) {
-        my $c = {};
-        my $columns = $item->{_column_data};
-        foreach my $col (keys %{$columns}) {
-            $c->{$col} = $columns->{$col};
+sub parse_search_params {
+    my $params = shift;
+    my $search = {};
+    my $partial = $params->{partial} || 0; 
+    foreach my $param (keys %{$params}) {
+        if ($param ne 'return_url' and $param ne 'partial') {
+            if ($partial == 1) { 
+                $search->{"text(".$param.")"} = { like => '%'.$params->{$param}.'%'};
+            }
+            else {
+                $search->{$param} = $params->{$param};
+            }
         }
-        push @results, $c;
     }
-    return (\@results);
+    return $search;
+}
+sub format_data {
+    my $items = shift;
+
+    header( 'Content-Type' => 'application/json');
+    my $results = {};
+    if (ref($items) =~ m/ResultSet/) {
+        my @hashes;
+        foreach my $item ($items->all) {
+            my $c = {};
+            my $columns = $item->{_column_data};
+            foreach my $col (keys %{$columns}) {
+                $c->{$col} = $columns->{$col};
+            }
+            push @hashes, $c;
+        }
+        $results->{data} = \@hashes;
+    }
+    elsif (ref($items) =~ m/Result/) {
+        $results->{data} = $items->{_column_data};
+    }
+    else {
+        $results->{data} = $items;
+    }
+    return to_json $results;
 };
 
-get '/api/device/all' => require_login sub {
-    my @devices=schema('netdisco')->resultset('Device')->all;
-    return to_json api_array_json(\@devices);
+sub format_error {
+    my $status = shift;
+    my $message = shift;
+    header( 'Content-Type' => 'application/json');
+    status $status;
+    return to_json { error => $message };
+}
+
+get '/api/device/all' => sub {
+    my $devices=schema('netdisco')->resultset('Device')->all;
+    return format_data($devices);
+};
+
+post '/api/device/discover' => sub {
+    my $devices = from_json( request->body );
+    ## NOT IMPLEMENTED YET
+
+};
+
+get '/api/device/searchports' => sub {
+    my $para = params;
+    my $search = {};
+    $search = parse_search_params($para);
+    my $devices;
+    try {
+       $devices=schema('netdisco')->resultset('DevicePort')->search($search);
+    };
+    return format_data($devices);
 };
 
 get '/api/device/search' => sub {
     my $para = params;
-    my $search = {};
-    foreach my $param (keys %{$para}) {
-        if ($param ne 'return_url') {
-            $search->{$param} = $para->{$param};
-        }
-    }
-    my @devices;
+    my $search = parse_search_params($para);
+    my $devices;
     try {
-       @devices=schema('netdisco')->resultset('Device')->search($search);
+       $devices=schema('netdisco')->resultset('Device')->search($search);
     };
-    return to_json api_array_json(\@devices);
+    return format_data($devices);
 };
 
-get '/api/device/:device' => require_login sub {
-    my $dev = params->{device};
-    print "$dev\n";
-    my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($dev) or send_error('Bad Device', 404);
-    return to_json $device->{_column_data};
-};
-
-get'/api/device/:device/modules' => require_login sub {
+get '/api/device/:device' => sub {
     my $dev = params->{device};
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($dev) or send_error('Bad Device', 404);
-    my @modules = $device->modules;
-    return to_json api_array_json(\@modules);
-
+    return format_data($device);
 };
 
-get '/api/device/:device/vlans' => require_login sub {
+get '/api/device/:device/:method' => sub {
     my $dev = params->{device};
-    my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($dev) or send_error('Bad Device', 404);
-    my @vlans = $device->vlans;
-    return to_json api_array_json(\@vlans);
-};
-
-get '/api/device/:device/ports' => require_login sub {
-    my $dev = params->{device};
-    my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($dev);
-    my @ports = $device->ports->all;
-    my @results;
-    foreach my $item (@ports) {
-        my $c = {};
-        my $columns = $item->{_column_data};
-        foreach my $col (keys %{$columns}) {
-            $c->{$col} = $columns->{$col};
+    my $method = params->{method};
+    try {
+        my $device = schema('netdisco')->resultset('Device')->search_for_device($dev);
+        my $results = $device->$method;
+        return {} if not defined $results;
+        return format_data($results);
+    } catch {
+        my ($exception) = @_;
+        if ($exception =~ m/Can\'t call method "$method" on an undefined value/) {
+            return format_error(404,"Device not found.");
         }
-        my @vlans = $item->vlans->all ;
-        my @pvlans;
-        my @vl = $item->port_vlans;
-        foreach my $item (@vlans) {
-            push @pvlans, $item->{_column_data}->{vlan};
+        return format_error(400,"Invalid collection $method.");
+    };
+
+};
+get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/(?<method>[-_a-z]+)$} => sub {
+    my $param =captures;
+    my $method = $$param{method};
+    try {
+        my $port = schema('netdisco')->resultset('DevicePort')->find({ip=>$$param{ip}, port => $$param{port}});
+
+        my $results = $port->$method;
+        return {} if not defined $results;
+        return format_data($results);
+    } catch {
+        my ($exception) = @_;
+        if ($exception =~ m/Can\'t call method "$method" on an undefined value/) {
+            return format_error(404,"Port not found.");
         }
-        $c->{vlans}=\@pvlans;
-        push @results, $c;
-    }
-    return to_json \@results;
+        return format_error(400, "Invalid collection $method.");
+    };
 };
 
-get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/nodes$} => require_login sub {
-    my $param = captures;
-    my @ports = schema('netdisco')->resultset('Device')
-      ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
-    my @nodes = $ports[0]->nodes;
-    return to_json api_array_json(\@nodes);
-};
-
-get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/neighbor$} => require_login sub {
-    my $param = captures;
-    my @ports = schema('netdisco')->resultset('Device')
-      ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
-    my @neighbors = $ports[0]->neighbor;
-    return to_json api_array_json(\@neighbors);
-};
-
-get qr{/api/device/(?<ip>.*)/port/(?<port>.*)/power$} => require_login sub {
-    my $param = captures;
-    my @ports = schema('netdisco')->resultset('Device')
-      ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
-    my @neighbors = $ports[0]->power;
-    return to_json api_array_json(\@neighbors);
-};
-
-get qr{/api/device/(?<ip>.*)/port/(?<port>.*)} => require_login sub {
-    my $param = captures;
+get qr{/api/device/(?<ip>.*)/port/(?<port>.*)} => sub {
+    my $param =captures;
     my $port;
     try {
-        my @ports = schema('netdisco')->resultset('Device')
-          ->search_for_device($$param{ip})->ports->search({port => $$param{port}});
-        my @vlans = $ports[0]->vlans->all ;
-        my @pvlans;
-        foreach my $item (@vlans) {
-            push @pvlans, $item->{_column_data}->{vlan};
-        }
-        $port = @{api_array_json(\@ports)}[0];
-        $port->{vlans} = \@pvlans;
-    };
-
-    return to_json $port if defined $port;
-    status 404;
-    return to_json { message => "Port not found" };
+        $port = schema('netdisco')->resultset('DevicePort')->find({ip=>$$param{ip}, port => $$param{port}});
+        return format_data($port);
+    } catch {
+        return format_error("Port not found.");
+    }
 };
 
 true;
