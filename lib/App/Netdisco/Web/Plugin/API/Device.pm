@@ -102,6 +102,9 @@ get '/api/device/:device' => sub {
 get '/api/device/:device/:method' => sub {
     my $dev = params->{device};
     my $method = params->{method};
+    if (! ($method =~ m/[-_a-z]/)) {
+        return format_error(400,"Invalid collection $method.");
+    }
     try {
         my $device = schema('netdisco')->resultset('Device')->search_for_device($dev);
         my $results = $device->$method;
@@ -139,9 +142,10 @@ get qr{/api/device/(?<ip>.*)/port/(?<port>.*)} => sub {
     my $port;
     try {
         $port = schema('netdisco')->resultset('DevicePort')->find({ip=>$$param{ip}, port => $$param{port}});
+        return format_error(404, "Port not found.") if not defined $port;
         return format_data($port);
     } catch {
-        return format_error("Port not found.");
+        return format_error(404, "Port not found.");
     }
 };
 
