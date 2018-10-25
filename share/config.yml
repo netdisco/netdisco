@@ -40,6 +40,7 @@ path: '/'
 web_plugins:
   - Inventory
   - API::Node
+  - API::NodeIP
   - API::Device
   - Report::PortVLANMismatch
   - Report::PortAdminDown
