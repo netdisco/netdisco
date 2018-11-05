@@ -127,7 +127,7 @@ documentation for further details.
 
 To avoid muddying your system, use the following script to download and
 install Netdisco and its dependencies into the C<netdisco> user's home area
-(C<~netdisco/perl5>):
+(C<~/perl5>):
 
  su - netdisco
  curl -L https://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
@@ -194,7 +194,7 @@ port control, etc):
  ~/bin/netdisco-backend start
 
 I<note:> Whenever you upgrade your operating system, you should delete the
-C<~netdisco/perl5> directory and re-run the C<curl> command above, to update
+C<~/perl5> directory and re-run the C<curl> command above, to update
 Netdisco's C library bindings.
 
 I<also note:> You should take care not to run C<< netdisco-backend >> and the
