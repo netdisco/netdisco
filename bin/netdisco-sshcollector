@@ -170,7 +170,7 @@ full SNMP support
 =head1 SYNOPSIS
 
  # install dependencies:
- ~netdisco/bin/localenv cpanm --notest Net::OpenSSH Expect
+ ~/bin/localenv cpanm --notest Net::OpenSSH Expect
  
  # run manually, or add to cron:
  ~/bin/netdisco-sshcollector [-DQ]

@@ -50,7 +50,7 @@ netdisco-db-deploy - Database deployment for Netdisco
 
 This script upgrades or initialises a Netdisco database schema.
 
- ~netdisco/bin/netdisco-db-deploy [--redeploy-all]
+ ~/bin/netdisco-db-deploy [--redeploy-all]
 
 This script connects to the database and runs without user interaction. If
 there's no Nedisco schema, it is deployed. If there's an unversioned schema
