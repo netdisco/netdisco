@@ -68,6 +68,8 @@ register_worker({ phase => 'main' }, sub {
 
 true;
 
+=encoding utf8
+
 =head1 NAME
 
 MakeRancidConf - Generate RANCID Configuration
