@@ -281,6 +281,7 @@ ignore_interfaces:
   - 'BRI\S+-Bearer Channel'
   - 'BRI\S+-Physical'
   - 'BRI\S+-Signalling'
+  - 'BRI\S+-Signaling'
   - 'Embedded-Service-Engine\d+\/\d+'
   - 'Virtual-Template\d+'
   - 'Virtual-Access\d+'
