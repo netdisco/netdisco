@@ -102,7 +102,7 @@ get '/ajax/content/report/nodevendor' => require_login sub {
         $rs = $rs->search(
             { },
             {   join     => 'oui',
-                select   => [ 'oui.abbrev', { count => 'me.mac' } ],
+                select   => [ 'oui.abbrev', { count => {distinct => 'me.mac'}} ],
                 as       => [qw/ vendor count /],
                 group_by => [qw/ oui.abbrev /]
             }

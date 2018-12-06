@@ -1,3 +1,665 @@
+2.039033 - 2018-10-19
+
+  [BUG FIXES]
+
+  * #446 fix typo in NodeVendor report - rflor
+
+2.039032 - 2018-10-19
+
+  [ENHANCEMENTS]
+
+  * #433 add status note when updating stats in netdisco-deploy - jrbinks
+  * #434 shuffle input array for sshcollector - stromsoe
+  * #438 add some more interface names to ignore
+  * #439 add expire_userlog with default 365 days
+  * #443 attempt to handle IPs and Names in show arp output - darknicht66
+
+  [BUG FIXES]
+
+  * #427 fix NodeVendor.pm to show distinct MACs - slofunk
+  * #431 sshcollector calls die() even if all the work is not done - stromsoe
+  * #435 netdisco-deploy allows blank admin password
+  * fix error in ignore_interfaces regexp - inphobia
+
+2.039031 - 2018-06-17
+
+  [ENHANCEMENTS]
+
+  * limit cli max hosts in prefix to 512
+  * update docs to clarify the web app home location
+  * #419 clarify log message for discrepancy in IP
+
+  [BUG FIXES]
+
+  * jobs with username are only allowed one attempt to unskip
+  * fix bug in reuse of $worker for prefix actions
+
+2.039030 - 2018-05-09
+
+  [ENHANCEMENTS]
+
+  * bump SNMP::Info dependency
+
+2.039029 - 2018-05-09
+
+  [ENHANCEMENTS]
+
+  * #408 improvements to MakeRancidConf (earendilfr)
+  * #410 improvements to Undiscovered Neighbors report
+  * device port search will match on Description as well as Port
+  * issue DB schema statements each within savepoints
+
+  [BUG FIXES]
+
+  * #414 clicking discover button with empty field causes crash
+  * #415 neighbors map display is blank after upgrade
+
+2.039028 - 2018-05-05
+
+  [BUG FIXES]
+
+  * #413 manual retrigger of discovery does not work
+  * #411 store_modules: false is ignored
+
+2.039027 - 2018-04-28
+
+  [BUG FIXES]
+
+  * #405 Inventory reports default to all time to fix missing IPs
+
+2.039026 - 2018-04-28
+
+  [ENHANCEMENTS]
+
+  * #396 dump sshcollector stderr into null (B. De Wolf)
+  * #397 improve Palo Alto SSH Collector support (B. De Wolf)
+
+  [BUG FIXES]
+
+  * do not enqueue the same routed peer more than once
+  * #406 error in check_mac() params causing NBTStat failure
+
+2.039025 - 2018-04-27
+
+  [BUG FIXES]
+
+  * require version 3.57 of SNMP::Info with critical bug fix
+  * make netmap Color By Host Group work with no groups selected
+  * avoid SNMP::Info dependency in web frontend
+
+2.039024 - 2018-04-22
+
+  [ENHANCEMENTS]
+
+  * #395 new landing page with Find Anything form
+  * #400 add defanged_admin setting to support safe Heroku deployment
+
+  [BUG FIXES]
+
+  * #404 fix using 0 to disable max_deferrals and retry_after
+  * #380 port searches should check descr field, not name, for "vlan"
+
+2.039023 - 2018-04-19
+
+  [NEW FEATURES]
+
+  * #401 Autodiscovery via EIGRP peers
+
+  [BUG FIXES]
+
+  * #393 (redux) avoid 'modification of readonly variable' error in netmap
+  * #394 (redux) enabled "Management IPs" hides after "Redraw Map"
+
+2.039022 - 2018-04-18
+
+  [BUG FIXES]
+
+  * #392 fix heuristic neighbour detection
+  * #393 avoid 'modification of readonly variable' error in netmap
+  * #398 user submitted jobs are run regardless of max deferrals
+  * #394 enabled "Management IPs" hides after "Redraw Map"
+  * clean up check_mac() interface (ml-cms)
+
+2.039021 - 2018-04-10
+
+  [BUG FIXES]
+
+  * #388 searching for 0.x.x.x returns Internal Server Error (C. Neuhaus)
+  * #389 build/upgrade issues (EL6)
+  * #390 cannot take logarithm of zero (C. Stromsoe)
+  * #391 fix sshcollector errors when devices are empty
+  * protect against undef mac (l.e. ferguson)
+  * do not include logical aggregate masters in netmap/speed calc
+  * try to match remote port in netmap against port, name, and descr
+
+2.039020 - 2018-03-26
+
+  [ENHANCEMENTS]
+
+  * better link speed names on network map
+
+  [BUG FIXES]
+
+  * fix case insensitive username match for LDAP
+
+2.039019 - 2018-03-23
+
+  [BUG FIXES]
+
+  * fix device search SQL error (reported by bhuddah)
+
+2.039018 - 2018-03-22
+
+  [ENHANCEMENTS]
+
+  * #371 usernames are case insensitive but case preserving
+  * #12 store Cisco PortFast status in device_port_properties:faststart
+
+  [BUG FIXES]
+
+  * access to manual topology for admins without port_control role
+  * network map working with pseudo devices
+
+2.039017 - 2018-03-20
+
+  [BUG FIXES]
+
+  * #382 invaid regexp syntax
+
+2.039016 - 2018-03-19
+
+  [NEW FEATURES]
+
+  * #48 Node Monitor supports matching on OUI
+  * #31 configurable Free Time in Port Utilization Report
+  * improvements to network map, location filtering and auto saving
+
+  [ENHANCEMENTS]
+
+  * #24 show device age in device search view
+  * Node Montior is now included in Admin menu
+  * rebuild Stats is now included in Admin menu
+  * always add interface alias for discovered IP
+  * checking for malformed IPs in c_ip results
+
+  [BUG FIXES]
+
+  * #274 errors in IP Inventory report
+  * dynamic size in neighbor map should use device_port_properties
+  * #381 LLDP port name is space compressed
+
+2.039015 - 2018-03-05
+
+  [BUG FIXES]
+
+  * #370 Missing Map Links due to inability to parse port speeds
+  * strip whitespace from device model on HP
+
+2.039014 - 2018-03-03
+
+  [BUG FIXES]
+
+  * #372 fix inventory doesn't work with only one device
+
+2.039013 - 2018-03-02
+
+  [ENHANCEMENTS]
+
+  * #379 avoid displaying phone or wap icon alongside nodes
+
+2.039012 - 2018-03-02
+
+  [NEW FEATURES]
+
+  * #36 gather and display LLDP Remote Inventory data
+
+2.039011 - 2018-02-25
+
+  [ENHANCEMENTS]
+
+  * use PG COPY for bulk insert of jobs with prefix
+  * support IP prefix enum expansion in scheduler
+
+  [BUG FIXES]
+
+  * avoid skips that go twice past max_deferrals not being reduced
+  * move random() in TastyJobs to where it is more useful
+
+2.039010 - 2018-02-22
+
+  [NEW FEATURES]
+
+  * support for multiples of the same action in schedule config
+
+2.039009 - 2018-02-22
+
+  [NEW FEATURES]
+
+  * Port Properties DB table to gather and store port error disable
+  * show errored ports in Device Port view, and errored ports report
+  * support system_reports config to allow easier build-in reports
+  * support for "queue only" submission of jobs to netdisco-do using --enqueue
+  * support for job params (device, port, extra) in schedule config
+
+  [ENHANCEMENTS]
+
+  * larger port status icons in Device Ports view
+  * --quiet mode for netdisco-do
+
+  [BUG FIXES]
+
+  * handle malformed IPs in c_ip results
+
+2.039007 - 2018-02-16
+
+  [ENHANCEMENTS]
+
+  * tune the job picking sql to avoid user jobs ignoring skips
+
+2.039006 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #374 fix ACL with negation (earendilfr)
+
+2.039005 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #375 dependency requirement for DBIx::Class
+
+2.039004 - 2018-02-15
+
+  [BUG FIXES]
+
+  * #374 fix renumber cli command (earendilfr)
+
+2.039003 - 2018-02-12
+
+  [ENHANCEMENTS]
+
+  * actions can now cancel themselves
+  * timeout setting is moved to within workers setting config
+  * nbtstat_timeout setting is renamed to nbtstat_response_timeout
+  * keep (most of the) deferrals count between backend restarts
+
+  [BUG FIXES]
+
+  * routed peers only queue if not also a layer2 neighbor
+  * efficiency improvements in job queue for discovery
+  * allow device autorenumber during discovery to work with netdisco-do
+  * improvements to log messages
+
+2.039002 - 2018-02-07
+
+  [BUG FIXES]
+
+  * Specify version of List::Util required
+  * Allow PostgreSQL config to use additional psql options
+  * Tighten ACL IP Range regexp to avoid matching hostnames with hyphens
+
+2.039001 - 2018-02-02
+
+  [ENHANCEMENTS]
+
+  * #47 gather IPv6 Interface Addresses
+
+2.039000 - 2018-02-02
+
+  [NEW FEATURES]
+
+  * #332 Autodiscovery via BGP and OSPF peers
+  * New MakeRancidConf worker (and makerancidconf action)
+  * #228 timeout setting (default 10min) for backend jobs
+  * #341 timeout setting for all actions ("<actionname>_timeout")
+  * #368 ND2_DB_ROLLBACK environment variable to roll back job updates to DB
+  * snmp_remoteport setting to override port 161 for SNMP targets
+
+  [BUG FIXES]
+
+  * #367 buttons in the neighbourmap have an incorrect height
+  * #364 expire_nodeip_freshness setting to revert expire to ND1 behavior
+  * Do not attempt Canonical IP change to non-discoverable IP
+  * Allow netdisco-do show to run when no func is available to handle request
+
+2.038032 - 2018-01-28
+
+  [ENHANCEMENTS]
+
+  * #363 Show user fullname if available in navbar (earendilfr)
+  * #366 Retrieve VRF interface IPs (earendilfr)
+
+2.038031 - 2018-01-23
+
+  [ENHANCEMENTS]
+
+  * Add Circle CI integration for building Docker Images
+  * Add support for many environment variables to override config (see wiki)
+
+  [BUG FIXES]
+
+  * #365 Fix Checkpoint GAIA sshcollector (jcz1)
+
+2.038028 - 2018-01-15
+
+  [BUG FIXES]
+
+  * Fix for PoE setting missing a variable declaration (R. Lewis)
+
+2.038009 - 2018-01-10
+
+  [BUG FIXES]
+
+  * Fix for VLAN setting missing a variable declaration
+
+2.038008 - 2018-01-09
+
+  [BUG FIXES]
+
+  * Add updated Test::More dependency to get tests passing again.
+
+2.038007 - 2018-01-09
+
+  [BUG FIXES]
+
+  * Fix for VLAN setting missing a variable declaration
+
+2.038006 - 2018-01-08
+
+  [ENHANCEMENTS]
+
+  * Ignore jobs started over 50 minutes ago (setting: jobs_stale_after)
+
+  [BUG FIXES]
+
+  * Update tests to work again in Travis-CI
+
+2.038005 - 2018-01-05
+
+  [BUG FIXES]
+
+  * Fix for PaloAlto sshcolletor module (P. Soppe)
+
+2.038004 - 2018-01-05
+
+  [ENHANCEMENTS]
+
+  * Disable preventLabelOverlappingOnForceEnd on network neighbor map
+  * Debug log the neighbor ID to help with problem diagnosis
+
+  [BUG FIXES]
+
+  * Fix favicon image path to work on non-apex installations
+  * Install correct template path when site_local_files enabled
+
+2.038003 - 2018-01-04
+
+  [ENHANCEMENTS]
+
+  * Use new release filename for netdisco-mibs
+  * Add favicon.ico from https://www.flickr.com/photos/7827976@N05/464520552
+
+  [BUG FIXES]
+
+  * Change name of d3 javascript file to force browser reload
+  * Make expire_nodes and expire_nodes_archive behave correctly
+  * #361 missing dependency in manual topology setup (dgeo)
+
+2.038001 - 2018-01-02
+
+  [ENHANCEMENTS]
+
+  * Better tooltip for netmap items
+  * Change to color10 set in netmap
+
+  [BUG FIXES]
+
+  * Allow statistics to be run on an empty database
+
+2.038000 - 2017-12-31
+
+  [NEW FEATURES]
+
+  * New implementation of the Network Map (Device Neighbors tab)
+
+  [ENHANCEMENTS]
+
+  * Icon in device ports results to quickly set Manual Toplogy on any port
+  * New host_group_displaynames setting to give friendly aliases to host groups
+
+  [BUG FIXES]
+
+  * tooltips for icons in device ports view now work when paging in results
+
+2.037005 - 2017-12-22
+
+  [BUG FIXES]
+
+  * Alter order of snmp_auth and device_auth config build
+
+2.037004 - 2017-12-21
+
+  [BUG FIXES]
+
+  * Allow default schedule items to be skipped by setting to 'null'
+
+2.037003 - 2017-12-18
+
+  [BUG FIXES]
+
+  * Fix Connected Device ID in Device Ports sidebar
+
+2.037002 - 2017-12-17
+
+  [ENHANCEMENTS]
+
+  * Include Connected Device ID in Device Ports sidebar cookie
+  * Improve netdisco-do docs
+
+2.037001 - 2017-12-14
+
+  [ENHANCEMENTS]
+
+  * Also update stats on running netdisco-deploy
+
+2.037000 - 2017-12-14
+
+  [NEW FEATURES]
+
+  * Backend worker plugins: https://github.com/netdisco/netdisco/wiki/Backend-Plugins
+  * ND2_SINGLE_WORKER environment variable to force one backend worker
+
+  [ENHANCEMENTS]
+
+  * Move most documentation to https://github.com/netdisco/netdisco/wiki
+  * Deduplicate neighbors based on lldpRemChassisId
+  * Scheduler config does not need to be uncommented
+  * More efficient polling of the job queue
+  * Better Port search options and results presentation
+
+  [BUG FIXES]
+
+  * Specific search from titlebar uses default sidebar settings
+  * Fix Device Ports search for VLAN prefer with non-numeric value
+  * #249 sidebar selections are not remembered (also #328)
+
+2.036011 - 2017-10-09
+
+  [BUG FIXES]
+
+  * Shipping manifest
+
+2.036010 - 2017-10-08
+
+  [ENHANCEMENTS]
+
+  * Add note on D-Link LLDP config (H. Erasmus)
+  * New "stats" command for netdisco-do to update statistics
+  * #342 Job Queue Add Hostname or FQDN
+
+  [BUG FIXES]
+
+  * #253 add some dependencies
+  * #346 custom reports should allow trailing sql semicolon
+  * #331 do not set community{_rw} defaults
+
+2.036009 - 2017-08-01
+
+  [ENHANCEMENTS]
+
+  * #333 Show netdisco-do target device in log message at start
+
+  [BUG FIXES]
+
+  * #334 DB schema is not upgraded past v40
+  * #335 No such device when clicking on device in netmap
+
+2.036008 - 2017-07-14
+
+  [BUG FIXES]
+
+  * revert change to Device ResultSet which breaks search_for_device()
+
+2.036007 - 2017-07-12
+
+  [BUG FIXES]
+
+  * fix bugs with Pseudo and Duplicate Device delete (causing web crash)
+
+2.036006 - 2017-07-09
+
+  [ENHANCEMENTS]
+
+  * Documentation note on OS upgrade
+  * #324 use a (better) host group for internal localnet filter
+  * #325 significant speed-up to Device > Ports tab (thx to T. Teräs)
+
+  [BUG FIXES]
+
+  * fix port neighbors being identified as macsuck_unsupported
+
+2.036005 - 2017-07-05
+
+  [ENHANCEMENTS]
+
+  * #323 c_ip only ever returns one IP per value
+  * get IPv6 neighbors via sshcollector from Cisco ASA (G. Rappenecker)
+
+  [BUG FIXES]
+
+  * #315 missing Pod::Usage dependency
+  * clean POD in SSHCollector platforms
+
+2.036004 - 2017-07-02
+
+  [BUG FIXES]
+
+  * remove Path::Class dependency from netdisco-daemon scripts
+
+2.036003 - 2017-06-28
+
+  [NEW FEATURES]
+
+  * #15 record device and node statistics once a day
+
+  [BUG FIXES]
+
+  * #322 cease use of Sys::Proctitle
+  * quieten PERL_ANYEVENT_HOSTS undef error
+
+2.036002 - 2017-06-26
+
+  [ENHANCEMENTS]
+
+  * #319 better fix for acceping ACL names or values in check_acl_*
+  * #311 added duplicate devices report with option to delete
+  * #263 discover neighbors advertising ipv6 management addresses
+  * #286 support only/no ACLs for snmp_auth stanza, update docs
+  * support NETDISCO_DBNAME in "netdisco-do psql"
+  * die with message when snmp_auth community is (mis-)configured as a list
+  * faster DNS lookups for SNMP Timeouts Report entries
+
+  [BUG FIXES]
+
+  * #231 fix docs to stop old daemon and start new backend worker
+  * #320 DNS subroutines are redefined
+  * #318 ACLs with RegExp are very slow - aggressive resolver timeouts
+  * #317 #265 #311 when renumbering on discover, delete likely duplicate devices
+  * #316 neighbor map should fall back to device sysname after dns
+  * #310 allow multiple LLDP management addresses
+  * fix bug on device port view (speed-up) to avoid DB query on every node
+
+2.036001 - 2017-06-22
+
+  [BUG FIXES]
+
+  * fix ACL content accepted by check_acl_*
+
+2.036000 - 2017-06-22
+
+  [NEW FEATURES]
+
+  * support for device identity steering via device_identity setting
+  * devices_no and devices_only settings allow global worker restriction
+  * named host groups which can be used in *_only/*_no settings and other ACLs
+  * new ACL features: AND and negation
+  * new report SNMP Connect Failures (workers track and ignore bad devices)
+  * site_local_files setting for easy lib/template/static-file override
+  * template_paths setting to allow very easy override of templates
+
+  [ENHANCEMENTTS]
+
+  * renamed netdisco-daemon to netdisco-backend (and *-fg too)
+  * topology import script runs discover for each device (M. Bauer)
+  * avoid lock/defer of jobs deined by *_no ACL settings
+  * add documentation note on running multiple backend pollers
+
+  [BUG FIXES]
+
+  * add SSL development library to Release Notes
+  * #309 missing Device Port VLAN Mismatch CSV template
+  * fail safe on an empty *_no ACL
+  * do not select pseudo devices for poller jobs
+
+2.035006 - 2017-04-29
+
+  [BUG FIXES]
+
+  * Add SSL development library to OS base requirements install doc
+
+2.035005 - 2017-04-29
+
+  [NEW FEATURES]
+
+  * New report for Port VLAN Mismatches (M. Bernstein)
+
+  [ENHANCEMENTS]
+
+  * Add note to docs about reinstall after OS upgrade
+
+  [BUG FIXES]
+
+  * Do not attempt to UTF-8 decode OUI retrieved by curl/wget
+
+2.035004 - 2017-04-25
+
+  [BUG FIXES]
+
+  * Fix for relocated DB schema files
+
+2.035003 - 2017-04-24
+
+  [BUG FIXES]
+
+  * Add IO::Socket::SSL requirement for OUI/MIB download
+  * Fix for MIB download through an HTTP proxy
+
+2.035002 - 2017-04-24
+
+  [BUG FIXES]
+
+  * Fix DB schema files location with Module::Build
+
 2.035001 - 2017-04-19
 
   [ENHANCEMENTS]

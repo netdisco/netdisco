@@ -40,6 +40,7 @@ use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Passphrase;
+use App::Netdisco::Util::Statistics ();
 
 info "App::Netdisco $App::Netdisco::VERSION loaded.";
 
@@ -139,6 +140,12 @@ sub deploy_db {
   say 'DB schema update complete.';
   print color 'reset';
 
+  print color 'bold blue';
+  print 'Updating statistics... ';
+  App::Netdisco::Util::Statistics::update_stats();
+  say 'done.';
+  print color 'reset';
+
   if (not setting('safe_password_store')) {
       say '';
       print color 'bold red';
@@ -167,9 +174,7 @@ sub deploy_db {
       print color 'reset';
       say '';
 
-      my $name = $term->get_reply(prompt => 'Username: ');
-      my $pass = $term->get_reply(prompt => 'Password: ');
-
+      my ($name, $pass) = get_userpass($term);
       $users->create({
         username => $name,
         password => _make_password($pass),
@@ -187,6 +192,19 @@ sub deploy_db {
     {id => 'dancer_session_cookie_key', a_session => \'md5(random()::text)'},
     {key => 'primary'},
   );
+}
+
+sub get_userpass {
+  my $term = shift;
+  my $name = $term->get_reply(prompt => 'Username: ');
+  my $pass = $term->get_reply(prompt => 'Password: ');
+
+  unless ($name and $pass) {
+    say 'username and password cannot be empty, please try again.';
+    ($name, $pass) = get_userpass($term);
+  }
+
+  return ($name, $pass);
 }
 
 sub deploy_oui {
@@ -245,7 +263,7 @@ sub deploy_oui {
 sub shorten {
     my $manuf = shift;
 
-    $manuf = decode "utf8", $manuf, Encode::FB_CROAK;
+    $manuf = decode("utf8", $manuf, Encode::FB_CROAK) unless @ARGV;
     $manuf = " " . $manuf . " ";
 
     # Remove any punctuation
@@ -281,10 +299,10 @@ sub deploy_mibs {
   my $latest = 'https://github.com/netdisco/netdisco-mibs/releases/latest';
   my $resp = HTTP::Tiny->new->get($latest);
 
-  if (exists $resp->{redirects} and $resp->{url} =~ m/([0-9.]+)$/) {
+  if ($resp->{url} =~ m/([0-9.]+)$/) {
     my $ver = $1;
-    my $url = 'https://codeload.github.com/netdisco/netdisco-mibs/tar.gz/'. $ver;
-    my $file = file($home, 'netdisco-mibs-latest.tar.gz');
+    my $url = "https://github.com/netdisco/netdisco-mibs/releases/download/${ver}/netdisco-mibs.tar.gz";
+    my $file = file($home, 'netdisco-mibs.tar.gz');
     $resp = HTTP::Tiny->new->mirror($url, $file);
 
     if ($resp->{success}) {

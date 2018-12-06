@@ -16,7 +16,7 @@ sub add_job {
     return if
       ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
 
-    my @hostlist = defined $device ? ($net->hostenum) : (undef);
+    my @hostlist = $device ? ($net->hostenum) : (undef);
 
     jq_insert([map {{
       ($_ ? (device => $_->addr) : ()),
@@ -44,7 +44,7 @@ foreach my $action (@{ setting('job_prio')->{high} },
     };
 }
 
-ajax '/ajax/control/admin/delete' => require_role admin => sub {
+ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_admin') => sub {
     send_error('Missing device', 400) unless param('device');
 
     my $device = NetAddr::IP->new(param('device'));

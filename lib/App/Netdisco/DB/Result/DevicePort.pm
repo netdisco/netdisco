@@ -91,24 +91,9 @@ __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 Returns the set of C<device_port_vlan> entries associated with this Port.
 These will be both tagged and untagged. Use this relation in search conditions.
 
-See also C<all_port_vlans>.
-
 =cut
 
 __PACKAGE__->has_many( port_vlans => 'App::Netdisco::DB::Result::DevicePortVlan',
-  { 'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port' } );
-
-=head2 all_port_vlans
-
-Returns the set of C<device_port_vlan> entries associated with this Port.
-These will be both tagged and untagged. Use this relation when prefetching related
-C<device_port_vlan> rows.
-
-See also C<port_vlans>.
-
-=cut
-
-__PACKAGE__->has_many( all_port_vlans => 'App::Netdisco::DB::Result::DevicePortVlan',
   { 'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port' } );
 
 =head2 nodes / active_nodes / nodes_with_age / active_nodes_with_age
@@ -181,6 +166,17 @@ __PACKAGE__->might_have( power => 'App::Netdisco::DB::Result::DevicePortPower', 
   'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
 
+=head2 properties
+
+Returns a row from the C<device_port_properties> table if one refers to this
+device port.
+
+=cut
+
+__PACKAGE__->might_have( properties => 'App::Netdisco::DB::Result::DevicePortProperties', {
+  'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
+});
+
 =head2 ssid
 
 Returns a row from the C<device_port_ssid> table if one refers to this
@@ -241,7 +237,7 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
   sub {
       my $args = shift;
       return {
-          "$args->{foreign_alias}.ip" => { '=' =>
+          "$args->{foreign_alias}.alias" => { '=' =>
             $args->{self_resultsource}->schema->resultset('DeviceIp')
               ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
                        {rows => 1, columns => 'ip', alias => 'devipsub'})->as_query }
@@ -252,7 +248,7 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
 
 =head2 vlans
 
-As compared to C<port_vlans>, this relationship returns a set of VLAN
+As compared to C<port_vlans>, this relationship returns a set of Device VLAN
 row objects for the VLANs on the given port, which might be more useful if you
 want to find out details such as the VLAN name.
 
@@ -260,7 +256,7 @@ See also C<vlan_count>.
 
 =cut
 
-__PACKAGE__->many_to_many( vlans => 'all_port_vlans', 'vlan' );
+__PACKAGE__->many_to_many( vlans => 'port_vlans', 'vlan' );
 
 
 =head2 oui
@@ -310,6 +306,52 @@ ID assigned to untagged frames received on the port).
 =cut
 
 sub native { return (shift)->vlan }
+
+=head2 error_disable_cause
+
+Returns the textual reason given by the device if the port is in an error
+state, or else `undef` if the port is not in an error state.
+
+=cut
+
+sub error_disable_cause { return (shift)->get_column('error_disable_cause') }
+
+=head2 remote_is_wap
+
+Returns true if the remote LLDP neighbor has reported Wireless Access Point
+capability.
+
+=cut
+
+sub remote_is_wap { return (shift)->get_column('remote_is_wap') }
+
+=head2 remote_is_phone
+
+Returns true if the remote LLDP neighbor has reported Telephone capability.
+
+=cut
+
+sub remote_is_phone { return (shift)->get_column('remote_is_phone') }
+
+=head2 remote_inventory
+
+Returns a synthesized description of the remote LLDP device if inventory
+information was given, including vendor, model, OS version, and serial number.
+
+=cut
+
+sub remote_inventory {
+  my $port = shift;
+  my $os_ver = ($port->get_column('remote_os_ver')
+    ? ('running '. $port->get_column('remote_os_ver')) : '');
+  my $serial = ($port->get_column('remote_serial')
+    ? ('('. $port->get_column('remote_serial') .')') : '');
+
+  my $retval = join ' ', ($port->get_column('remote_vendor') || ''),
+    ($port->get_column('remote_model') || ''), $serial, $os_ver;
+
+  return (($retval =~ m/[[:alnum:]]/) ? $retval : '');
+}
 
 =head2 vlan_count
 

@@ -1,7 +1,8 @@
 package App::Netdisco::Util::Permission;
 
+use strict;
+use warnings;
 use Dancer qw/:syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 use Scalar::Util 'blessed';
 use NetAddr::IP::Lite ':lower';
@@ -9,7 +10,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/check_acl/;
+our @EXPORT_OK = qw/check_acl check_acl_no check_acl_only/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -25,82 +26,139 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl( $ip, \@config )
+=head2 check_acl_no( $ip | $instance, $setting_name | $acl_entry | \@acl )
 
-Given an IP address, returns true if any of the items in C<< \@config >>
-matches that address, otherwise returns false.
+Given an IP address or object instance, returns true if the configuration
+setting C<$setting_name> matches, else returns false. If the setting is
+undefined or empty, then C<check_acl_no> also returns false.
 
-Normally you use C<check_device_no> and C<check_device_only>, passing the name of the
-configuration setting to load. This helper instead requires not the name of
-the setting, but its value.
+If C<$setting_name> is a valid setting, then it will be resolved to the access
+control list, else we assume you passed an ACL entry or ACL.
 
-There are several options for what C<< \@config >> can contain:
+See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
+contain.
 
-=over 4
+=cut
 
-=item *
+sub check_acl_no {
+  my ($thing, $setting_name) = @_;
+  return 1 unless $thing and $setting_name;
+  my $config = (exists config->{"$setting_name"} ? setting($setting_name)
+                                                 : $setting_name);
+  return check_acl($thing, $config);
+}
 
-Hostname, IP address, IP prefix
+=head2 check_acl_only( $ip | $instance, $setting_name | $acl_entry | \@acl )
 
-=item *
+Given an IP address or object instance, returns true if the configuration
+setting C<$setting_name> matches, else returns false. If the setting is
+undefined or empty, then C<check_acl_only> also returns true.
 
-IP address range, using a hyphen and no whitespace
+If C<$setting_name> is a valid setting, then it will be resolved to the access
+control list, else we assume you passed an ACL entry or ACL.
 
-=item *
+See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
+contain.
 
-Regular Expression in YAML format (no enforced anchors) which will match the
-device DNS name (using a fresh DNS lookup, so works on new discovery), e.g.:
+=cut
 
- - !!perl/regexp ^sep0.*$
+sub check_acl_only {
+  my ($thing, $setting_name) = @_;
+  return 0 unless $thing and $setting_name;
+  # logic to make an empty config be equivalent to 'any' (i.e. a match)
+  my $config = (exists config->{"$setting_name"} ? setting($setting_name)
+                                                 : $setting_name);
+  return 1 if not $config # undef or empty string
+              or ((ref [] eq ref $config) and not scalar @$config);
+  return check_acl($thing, $config);
+}
 
-=item *
+=head2 check_acl( $ip | $instance, $acl_entry | \@acl )
 
-C<"property:regex"> - matched against a device property, such as C<model> or
-C<vendor> (with enforced begin/end regex anchors)
+Given an IP address or object instance, compares it to the items in C<< \@acl
+>> then returns true or false. You can control whether any item must match or
+all must match, and items can be negated to invert the match logic.
 
-=back
+Accepts instances of classes representing Netdisco Devices, Netdisco Device
+IPs, and L<NetAddr::IP> family objects.
 
-To simply match all devices, use "C<any>" or IP Prefix "C<0.0.0.0/0>".
-Property regular expressions are anchored (that is, they must match the whole
-string). To match no devices we recommend an entry of "C<localhost>" in the
-setting.
+There are several options for what C<< \@acl >> may contain. See
+L<App::Netdisco::Manual::Configuration> for the details.
 
 =cut
 
 sub check_acl {
   my ($thing, $config) = @_;
-  my $real_ip = (blessed $thing ? $thing->ip : $thing);
-  my $addr = NetAddr::IP::Lite->new($real_ip);
+  return 0 unless defined $thing and defined $config;
 
-  foreach my $item (@$config) {
+  my $real_ip = $thing;
+  if (blessed $thing) {
+    $real_ip = ($thing->can('alias') ? $thing->alias : (
+      $thing->can('ip') ? $thing->ip : (
+        $thing->can('addr') ? $thing->addr : $thing )));
+  }
+  return 0 if blessed $real_ip; # class we do not understand
+
+  $config  = [$config] if ref [] ne ref $config;
+  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
+  my $all  = (scalar grep {m/^op:and$/} @$config);
+  my $name = undef; # only look up once, and only if qr// is used
+  my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
+
+  INLIST: foreach (@$config) {
+      my $item = $_; # must copy so that we can modify safely
+      next INLIST if $item eq 'op:and';
+
       if (ref qr// eq ref $item) {
-          my $name = hostname_from_ip($addr->addr) or next;
-          return 1 if $name =~ $item;
-          next;
+          $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
+          if ($name =~ $item) {
+            return 1 if not $all;
+          }
+          else {
+            return 0 if $all;
+          }
+          next INLIST;
       }
 
-      if ($item =~ m/^([^:]+)\s*:\s*([^:]+)$/) {
+      my $neg = ($item =~ s/^!//);
+
+      if ($item =~ m/^group:(.+)$/) {
+          my $group = $1;
+          setting('host_groups')->{$group} ||= [];
+
+          if ($neg xor check_acl($thing, setting('host_groups')->{$group})) {
+            return 1 if not $all;
+          }
+          else {
+            return 0 if $all;
+          }
+          next INLIST;
+      }
+
+      if ($item =~ m/^([^:]+):([^:]+)$/) {
           my $prop  = $1;
           my $match = $2;
 
-          # if not in storage, we can't do much with device properties
-          next unless blessed $thing and $thing->in_storage;
+          # if not an object, we can't do much with properties
+          next INLIST unless blessed $thing;
 
           # lazy version of vendor: and model:
-          if ($thing->can($prop) and defined $thing->$prop
-              and $thing->$prop =~ m/^$match$/) {
-              return 1;
+          if ($neg xor ($thing->can($prop) and defined eval { $thing->$prop }
+              and $thing->$prop =~ m/^$match$/)) {
+            return 1 if not $all;
           }
-
-          next;
+          else {
+            return 0 if $all;
+          }
+          next INLIST;
       }
 
-      if ($item =~ m/([a-f0-9]+)-([a-f0-9]+)$/i) {
+      if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
           my $last  = $2;
 
           if ($item =~ m/:/) {
-              next unless $addr->bits == 128;
+              next INLIST if $addr->bits != 128 and not $all;
 
               $first = hex $first;
               $last  = hex $last;
@@ -109,31 +167,46 @@ sub check_acl {
               foreach my $part ($first .. $last) {
                   my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
                     or next;
-                  return 1 if $ip == $addr;
+                  if ($neg xor ($ip == $addr)) {
+                    return 1 if not $all;
+                    next INLIST;
+                  }
               }
+              return 0 if (not $neg and $all);
+              return 1 if ($neg and not $all);
           }
           else {
-              next unless $addr->bits == 32;
+              next INLIST if $addr->bits != 32 and not $all;
 
               (my $header = $item) =~ s/\.[^.]+$/./;
               foreach my $part ($first .. $last) {
                   my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
                     or next;
-                  return 1 if $ip == $addr;
+                  if ($neg xor ($ip == $addr)) {
+                    return 1 if not $all;
+                    next INLIST;
+                  }
               }
+              return 0 if (not $neg and $all);
+              return 1 if ($neg and not $all);
           }
-
-          next;
+          next INLIST;
       }
 
       my $ip = NetAddr::IP::Lite->new($item)
-        or next;
-      next unless $ip->bits == $addr->bits;
+        or next INLIST;
+      next INLIST if $ip->bits != $addr->bits and not $all;
 
-      return 1 if $ip->contains($addr);
+      if ($neg xor ($ip->contains($addr))) {
+        return 1 if not $all;
+      }
+      else {
+        return 0 if $all;
+      }
+      next INLIST;
   }
 
-  return 0;
+  return ($all ? 1 : 0);
 }
 
 1;

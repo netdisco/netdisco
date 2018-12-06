@@ -73,7 +73,7 @@ foreach my $d (@devices) {
   my $old = $d->get_column( 'old' );
   my $devgroup = 'other';
   foreach my $g (keys %$groups) {
-    if (check_acl( $d, $groups->{$g} )) {
+    if (check_acl_only( $d, $groups->{$g} )) {
       $devgroup = $g;
       last;
     }
@@ -118,6 +118,13 @@ foreach my $group (keys %$list) {
 =head1 NAME
 
 netdisco-rancid-export - Generate RANCID Group Configuration
+
+=head1 DEPRECATED!
+
+Note! This script is now deprecated and no longer maintained. The replacement
+is built in to Netdisco core, so can be scheduled in the backend, and also has
+more powerful configuration. See
+L<App::Netdisco::Worker::Plugin::MakeRancidConf>.
 
 =head1 CONFIGURATION
 

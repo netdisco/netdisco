@@ -2,7 +2,7 @@ package App::Netdisco::Util::Device;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -11,11 +11,9 @@ our @EXPORT_OK = qw/
   delete_device
   renumber_device
   match_devicetype
-  check_device_no
-  check_device_only
-  is_discoverable
-  is_arpnipable
-  is_macsuckable
+  is_discoverable is_discoverable_now
+  is_arpnipable   is_arpnipable_now
+  is_macsuckable  is_macsuckable_now
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -146,49 +144,7 @@ sub match_devicetype {
                         @{setting($setting_name) || []});
 }
 
-=head2 check_device_no( $ip, $setting_name )
-
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_device_no> also returns false.
-
-See L<App::Netdisco::Util::Permission/check_acl> for details of what
-C<$setting_name> can contain.
-
-=cut
-
-sub check_device_no {
-  my ($ip, $setting_name) = @_;
-
-  return 0 unless $ip and $setting_name;
-  my $device = get_device($ip) or return 0;
-
-  my $config = setting($setting_name) || [];
-  return 0 if not scalar @$config;
-
-  return check_acl($device, $config);
-}
-
-=head2 check_device_only( $ip, $setting_name )
-
-Given the IP address of a device, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_device_only> also returns true.
-
-See L<App::Netdisco::Util::Permission/check_acl> for details of what
-C<$setting_name> can contain.
-
-=cut
-
-sub check_device_only {
-  my ($ip, $setting_name) = @_;
-  my $device = get_device($ip) or return 0;
-
-  my $config = setting($setting_name) || [];
-  return 1 if not scalar @$config;
-
-  return check_acl($device, $config);
-}
+sub _bail_msg { debug $_[0]; return 0; }
 
 =head2 is_discoverable( $ip, $device_type? )
 
@@ -205,32 +161,45 @@ Returns false if the host is not permitted to discover the target device.
 
 =cut
 
-sub _bail_msg { debug $_[0]; return 0; }
-
 sub is_discoverable {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
 
   if (match_devicetype($remote_type, 'discover_no_type')) {
-      return _bail_msg("is_discoverable: device matched discover_no_type");
+      return _bail_msg("is_discoverable: $device matched discover_no_type");
   }
 
-  return _bail_msg("is_discoverable: device matched discover_no")
-    if check_device_no($device, 'discover_no');
+  return _bail_msg("is_discoverable: $device matched discover_no")
+    if check_acl_no($device, 'discover_no');
 
-  return _bail_msg("is_discoverable: device failed to match discover_only")
-    unless check_device_only($device, 'discover_only');
-
-  # cannot check last_discover for as yet undiscovered devices :-)
-  return 1 if not $device->in_storage;
-
-  if ($device->since_last_discover and setting('discover_min_age')
-      and $device->since_last_discover < setting('discover_min_age')) {
-
-      return _bail_msg("is_discoverable: time since last discover less than discover_min_age");
-  }
+  return _bail_msg("is_discoverable: $device failed to match discover_only")
+    unless check_acl_only($device, 'discover_only');
 
   return 1;
+}
+
+=head2 is_discoverable_now( $ip, $device_type? )
+
+Same as C<is_discoverable>, but also checks the last_discover field if the
+device is in storage, and returns false if that host has been too recently
+discovered.
+
+Returns false if the host is not permitted to discover the target device.
+
+=cut
+
+sub is_discoverable_now {
+  my ($ip, $remote_type) = @_;
+  my $device = get_device($ip) or return 0;
+
+  if ($device->in_storage
+      and $device->since_last_discover and setting('discover_min_age')
+      and $device->since_last_discover < setting('discover_min_age')) {
+
+      return _bail_msg("is_discoverable: $device last discover < discover_min_age");
+  }
+
+  return is_discoverable(@_);
 }
 
 =head2 is_arpnipable( $ip )
@@ -249,22 +218,37 @@ sub is_arpnipable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_arpnipable: device matched arpnip_no")
-    if check_device_no($device, 'arpnip_no');
+  return _bail_msg("is_arpnipable: $device matched arpnip_no")
+    if check_acl_no($device, 'arpnip_no');
 
-  return _bail_msg("is_arpnipable: device failed to match arpnip_only")
-    unless check_device_only($device, 'arpnip_only');
-
-  return _bail_msg("is_arpnipable: cannot arpnip an undiscovered device")
-    if not $device->in_storage;
-
-  if ($device->since_last_arpnip and setting('arpnip_min_age')
-      and $device->since_last_arpnip < setting('arpnip_min_age')) {
-
-      return _bail_msg("is_arpnipable: time since last arpnip less than arpnip_min_age");
-  }
+  return _bail_msg("is_arpnipable: $device failed to match arpnip_only")
+    unless check_acl_only($device, 'arpnip_only');
 
   return 1;
+}
+
+=head2 is_arpnipable_now( $ip )
+
+Same as C<is_arpnipable>, but also checks the last_arpnip field if the
+device is in storage, and returns false if that host has been too recently
+arpnipped.
+
+Returns false if the host is not permitted to arpnip the target device.
+
+=cut
+
+sub is_arpnipable_now {
+  my ($ip) = @_;
+  my $device = get_device($ip) or return 0;
+
+  if ($device->in_storage
+      and $device->since_last_arpnip and setting('arpnip_min_age')
+      and $device->since_last_arpnip < setting('arpnip_min_age')) {
+
+      return _bail_msg("is_arpnipable: $device last arpnip < arpnip_min_age");
+  }
+
+  return is_arpnipable(@_);
 }
 
 =head2 is_macsuckable( $ip )
@@ -283,22 +267,37 @@ sub is_macsuckable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_macsuckable: device matched macsuck_no")
-    if check_device_no($device, 'macsuck_no');
+  return _bail_msg("is_macsuckable: $device matched macsuck_no")
+    if check_acl_no($device, 'macsuck_no');
 
-  return _bail_msg("is_macsuckable: device failed to match macsuck_only")
-    unless check_device_only($device, 'macsuck_only');
-
-  return _bail_msg("is_macsuckable: cannot macsuck an undiscovered device")
-    if not $device->in_storage;
-
-  if ($device->since_last_macsuck and setting('macsuck_min_age')
-      and $device->since_last_macsuck < setting('macsuck_min_age')) {
-
-      return _bail_msg("is_macsuckable: time since last macsuck less than macsuck_min_age");
-  }
+  return _bail_msg("is_macsuckable: $device failed to match macsuck_only")
+    unless check_acl_only($device, 'macsuck_only');
 
   return 1;
+}
+
+=head2 is_macsuckable_now( $ip )
+
+Same as C<is_macsuckable>, but also checks the last_macsuck field if the
+device is in storage, and returns false if that host has been too recently
+macsucked.
+
+Returns false if the host is not permitted to macsuck the target device.
+
+=cut
+
+sub is_macsuckable_now {
+  my ($ip) = @_;
+  my $device = get_device($ip) or return 0;
+
+  if ($device->in_storage
+      and $device->since_last_macsuck and setting('macsuck_min_age')
+      and $device->since_last_macsuck < setting('macsuck_min_age')) {
+
+      return _bail_msg("is_macsuckable: $device last macsuck < macsuck_min_age");
+  }
+
+  return is_macsuckable(@_);
 }
 
 1;

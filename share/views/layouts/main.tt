@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
-  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+  <link rel="shortcut icon" href="[% uri_base %]/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="[% uri_base %]/images/favicon.ico" type="image/x-icon">
   <title>Netdisco</title>
 
   <!-- HTML5 shim, for IE6-8 support of HTML elements -->
@@ -15,12 +16,14 @@
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-ui.custom.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-history.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.cookie.js"></script>
+<!--  <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.cookie.js"></script> -->
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/bootstrap2-toggle.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/underscore.min.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.qtip.min.js"></script>
-  <script type="text/javascript" src="[% uri_base %]/javascripts/d3.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/d3-3.5.17.min.js"></script>
+  <script type="text/javascript" src="[% uri_base %]/javascripts/d3-force-network-chart.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/toastr.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery.floatThead.js"></script>
   <script type="text/javascript" src="[% uri_base %]/javascripts/daterangepicker.js"></script>
@@ -48,10 +51,13 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/bootstrap2-toggle.min.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/awesome-bootstrap-checkbox.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/jquery.qtip.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/smoothness/jquery-ui.custom.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>
+  <link rel="stylesheet" href="[% uri_base %]/css/d3-force-network-chart.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/bootstrap-tree.css"/>
   <link rel="stylesheet" href="[% uri_base %]/css/daterangepicker-bs2.css"/>
@@ -86,7 +92,7 @@
               <ul class="dropdown-menu">
               [% FOREACH item IN settings._reports_menu.$category %]
                 [% NEXT IF settings._reports.$item.hidden %]
-                <li><a href="[% uri_for('/report/' _ item) %]">[% settings._reports.$item.label | html_entity %]</a></li>
+                <li><a href="[% uri_for('/report/' _ item) %]?firstsearch=on">[% settings._reports.$item.label | html_entity %]</a></li>
               [% END %]
               </ul>
             </li>
@@ -124,6 +130,11 @@
               <button type="submit" class="btn btn-link nd_btn-link">Run Expire Job</button>
             </form>
           </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="[% uri_for('/admin/stats') %]">
+              <button type="submit" class="btn btn-link nd_btn-link">Update Statistics</button>
+            </form>
+          </li>
           [% IF settings._admin_tasks.size %]
             <li class="divider"></li>
             [% FOREACH ai IN settings._admin_order %]
@@ -138,11 +149,11 @@
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') %]">
         <input placeholder="Find Anything" class="search-query span3"
           id="nq" name="q" value="[% display_name %]" type="text" autocomplete="off"/>
+        <input name="firstsearch" type="hidden" value="on">
         <div class="btn-group nd_navbar-search-group">
           <button class="btn btn-inverse nd_navbar-search-icon">
             <span style="font-size: 18px;">
-              <i id="navsearchgo" class="icon-search"
-                rel="tooltip" data-placement="bottom" data-offset="5" data-title="New Search" data-container="body"></i>
+              <i id="navsearchgo" class="icon-search"></i>
             </span>
           </button>
           <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
@@ -167,7 +178,7 @@
           [% ELSE %]
             <i class="icon-user"></i>
           [% END %]&nbsp;
-            [% session.logged_in_user | html_entity %] <b class="caret"></b>
+            [% session.logged_in_fullname || session.logged_in_user | html_entity %] <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
           [% IF NOT user_has_role('ldap') %]

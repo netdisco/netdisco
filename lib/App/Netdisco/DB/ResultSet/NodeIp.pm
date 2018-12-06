@@ -205,6 +205,8 @@ NodeIp table of nodes with addresses of the supplied IP version.
 
 The C<version> parameter must be an integer either 4 or 6.
 
+=back
+
 =cut
 
 sub ip_version {

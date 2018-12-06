@@ -4,11 +4,8 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.035001';
+our $VERSION = '2.039033';
 use App::Netdisco::Configuration;
-
-use Module::Find ();
-Module::Find::usesub 'App::NetdiscoE::Init';
 
 =head1 NAME
 
@@ -44,24 +41,31 @@ B<Pretty pictures> of your network
 =back
 
 L<App::Netdisco> provides a web frontend with built-in web server, and a
-backend daemon to handle interactive requests such as changing port or device
-properties.
+backend daemon to gather information from your network, and handle
+interactive requests such as changing port or device properties.
 
 =over 4
 
 =item *
 
-See the demo at: L<http://netdisco2-demo.herokuapp.com/>
+See the demo at: L<https://netdisco2-demo.herokuapp.com/>
+
+=item *
+
+L<Docker images|https://store.docker.com/community/images/netdisco/netdisco> are also available
 
 =back
 
-If you have any trouble getting installed or running, check out the
-L<Deployment|App::Netdisco::Manual::Deployment> and
-L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> notes, or speak to
-someone in the C<#netdisco@freenode> IRC channel, or on the L<community email
-list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.  Before
-installing or upgrading please always review the latest L<Release
-Notes|App::Netdisco::Manual::ReleaseNotes>.
+We have several other pages with tips for
+L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
+L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisco/wiki/Troubleshooting>,
+L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
+and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
+
+You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
+the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
+Before installing or upgrading please always review the latest
+L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
@@ -71,13 +75,13 @@ L<DBD::Pg>, L<SNMP>, and a compiler using your operating system packages.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl build-essential
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel make automake gcc
 
-On BSD systems please see L<our BSD tips|App::Netdisco::Manual::BSDInstall>.
+On BSD systems please see L<our BSD tips|https://github.com/netdisco/netdisco/wiki/BSD-Install>.
 
 With those installed, please check that your system's clock is correct.
 
@@ -118,15 +122,15 @@ The following is a general guide which works well in most circumstances. It
 assumes you have a user C<netdisco> on your system, that you want to perform
 an on-line installation, and have the application run self-contained from
 within that user's home. There are alternatives: see the
-L<Deployment|App::Netdisco::Manual::Deployment> documentation for further
-details.
+L<Deployment|https://github.com/netdisco/netdisco/wiki/Install-Tips>
+documentation for further details.
 
 To avoid muddying your system, use the following script to download and
 install Netdisco and its dependencies into the C<netdisco> user's home area
-(C<~netdisco/perl5>):
+(C<~/perl5>):
 
  su - netdisco
- curl -L http://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
+ curl -L https://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
 
 Link some of the newly installed apps into a handy location:
 
@@ -134,10 +138,10 @@ Link some of the newly installed apps into a handy location:
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
 Test the installation by running the following command, which should only
-produce a status message (it's just a test - you'll start the daemon properly,
-later on):
+produce a status message (it's just a test - you'll start the daemons
+properly, later on):
 
- ~/bin/netdisco-daemon status
+ ~/bin/netdisco-backend status
 
 =head1 Configuration
 
@@ -153,48 +157,61 @@ connection parameters to match those for your local system (that is, the
 C<name>, C<user> and C<pass>).
 
 In the same file uncomment and edit the C<domain_suffix> setting to be
-appropriate for your local site.
-
-Change the C<community> string setting if your site has different values, and
-uncomment the C<schedule> setting to enable SNMP data gathering from
-devices (this replaces cron jobs in Netdisco 1).
+appropriate for your local site. Change the C<community> string setting if
+your site has different values.
 
 Have a quick read of the other settings to make sure you're happy, then move
-on. See L<Configuration|App::Netdisco::Manual::Configuration> for further
-details.
+on. See
+L<Configuration|https://github.com/netdisco/netdisco/wiki/Configuration> for
+further details.
 
-=head1 Bootstrap
+=head1 Initialisation
 
 The database either needs configuring if new, or updating from the current
 release of Netdisco (1.x). You also need vendor MAC address prefixes (OUI
-data) and some MIBs if you want to run the daemon. The following script will
-take care of all this for you:
+data) and some MIBs if you want to run the backend daemon. The following
+script will take care of all this for you:
 
  ~/bin/netdisco-deploy
 
 If this is a new installation of Netdisco 2, answer yes to all questions. If
 you wish to deploy without Internet access, see the
-L<Deployment|App::Netdisco::Manual::Deployment> documentation.
+L<Deployment|https://github.com/netdisco/netdisco/wiki/Install-Tips>
+documentation.
 
 =head1 Startup
 
-Run the following command to start the web-app server as a backgrounded daemon
-(listening on port 5000):
+Run the following command to start the web-app server as a background process:
 
  ~/bin/netdisco-web start
 
-Run the following command to start the job control daemon (port control, etc):
+The web app listens on port 5000 (for example C<< http://localhost:5000/ >> or
+C<< http://yourhost.example.com:5000/ >>).
 
- ~/bin/netdisco-daemon start
+Run the following command to start the job control daemon (device polling,
+port control, etc):
 
-You should take care not to run this Netdisco daemon and the Netdisco 1.x
-daemon at the same time. Similarly, if you use the device discovery with
-Netdisco 2, disable your system's cron jobs for the Netdisco 1.x poller.
+ ~/bin/netdisco-backend start
 
-For further documentation on deployment, see
-L<Deployment|App::Netdisco::Manual::Deployment>. If you think Netdisco isn't
-behaving correctly, see also the
-L<Troubleshooting|App::Netdisco::Manual::Troubleshooting> page.
+I<note:> Whenever you upgrade your operating system, you should delete the
+C<~/perl5> directory and re-run the C<curl> command above, to update
+Netdisco's C library bindings.
+
+I<also note:> You should take care not to run C<< netdisco-backend >> and the
+Netdisco 1.x daemon at the same time. Similarly, if you use the device
+discovery with Netdisco 2, disable your system's cron jobs for the Netdisco
+1.x poller.
+
+We have several other pages with tips for
+L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
+L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisco/wiki/Troubleshooting>,
+L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
+and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
+
+You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
+the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
+Before installing or upgrading please always review the latest
+L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
 
@@ -202,20 +219,21 @@ If you're running a version of Netdisco prior to 2.x then you should follow
 the full installation instructions, above. This process is for upgrading
 version 2.x only.
 
-Before upgrading please review the latest L<Release
-Notes|App::Netdisco::Manual::ReleaseNotes>. Then, the process is as follows:
+Before upgrading please review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
+Then the process below should be run for each installation:
 
  # upgrade Netdisco
  ~/bin/localenv cpanm --notest App::Netdisco
+ ln -sf ~/perl5/bin/{localenv,netdisco-*} ~/bin/
  
- # apply database schema updates
+ # apply database schema updates, update MIBs and Vendor MACs
  ~/bin/netdisco-deploy
  
- # restart web service
+ # restart web service (if you run it)
  ~/bin/netdisco-web restart
  
- # restart job daemon (if you use it)
- ~/bin/netdisco-daemon restart
+ # restart the backend workers (wherever you run them)
+ ~/bin/netdisco-backend restart
 
 =head1 Tips and Tricks
 
@@ -228,7 +246,7 @@ or MAC addreses, VLAN numbers, and so on.
 =head2 Command-Line Device and Port Actions
 
 Most significant Device jobs and Port actions, as well as several
-troubleshooting and housekeeping duties, can be performed at the command-ling
+troubleshooting and housekeeping duties, can be performed at the command-line
 with the L<netdisco-do> program. For example:
 
  ~/bin/netdisco-do -D discover -d 192.0.2.1
@@ -248,18 +266,26 @@ run:
 
 Bundled with this distribution is a L<DBIx::Class> layer for the Netdisco
 database. This abstracts away all the SQL into an elegant, re-usable OO
-interface. See the L<Developer|App::Netdisco::Manual::Developing>
+interface. See the L<Developer|https://github.com/netdisco/netdisco/wiki/Developing>
 documentation for further information.
 
 =head2 Plugins
 
-Netdisco includes a Plugin subsystem for customizing the web user interface.
-See L<App::Netdisco::Web::Plugin> for further information.
+Netdisco includes a Plugin subsystem for customizing the web user interface and backend daemon.
+See L<Web Plugins|https://github.com/netdisco/netdisco/wiki/Web-Plugins>
+and L<Backend Plugins|https://github.com/netdisco/netdisco/wiki/Backend-Plugins>
+for further information.
+
+=head2 Extensions
+
+Using the Plugins mechanism, it's also easy to write new commands (or actions)
+for Netdisco. For example, an action has been added to L<generate RANCID
+configuration|App::Netdisco::Worker::Plugin::MakeRancidConf>.
 
 =head2 Developing
 
 Lots of information about the architecture of this application is contained
-within the L<Developer|App::Netdisco::Manual::Developing> documentation.
+within the L<Developer|https://github.com/netdisco/netdisco/wiki/Developing> documentation.
 
 =head1 AUTHOR
 
@@ -296,7 +322,7 @@ built upon.
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2012-2015 by The Netdisco Developer Team.
+This software is copyright (c) 2011-2018 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:

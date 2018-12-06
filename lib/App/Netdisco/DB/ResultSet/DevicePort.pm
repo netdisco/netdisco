@@ -104,6 +104,82 @@ sub only_free_ports {
     );
 }
 
+=head2 with_properties
+
+This is a modifier for any C<search()> which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item error_disable_cause
+
+=item remote_is_wap (boolean)
+
+=item remote_is_phone (boolean)
+
+=back
+
+=cut
+
+sub with_properties {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs($cond, $attrs)
+    ->search({},
+      {
+        '+select' => [qw/
+          properties.error_disable_cause
+          properties.remote_is_wap
+          properties.remote_is_phone
+        /],
+        '+as' => [qw/
+          error_disable_cause
+          remote_is_wap remote_is_phone
+        /],
+        join => 'properties',
+      });
+}
+
+=head2 with_remote_inventory
+
+This is a modifier for any C<search()> which
+will add the following additional synthesized columns to the result set:
+
+=over 4
+
+=item remote_vendor
+
+=item remote_model
+
+=item remote_os_ver
+
+=item remote_serial
+
+=back
+
+=cut
+
+sub with_remote_inventory {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs($cond, $attrs)
+    ->search({},
+      {
+        '+select' => [qw/
+          properties.remote_vendor
+          properties.remote_model
+          properties.remote_os_ver
+          properties.remote_serial
+        /],
+        '+as' => [qw/
+          remote_vendor remote_model remote_os_ver remote_serial
+        /],
+        join => 'properties',
+      });
+}
+
 =head2 with_vlan_count
 
 This is a modifier for any C<search()> (including the helpers below) which
@@ -154,6 +230,7 @@ sub delete {
 
   foreach my $set (qw/
     DevicePortPower
+    DevicePortProperties
     DevicePortVlan
     DevicePortWireless
     DevicePortSsid

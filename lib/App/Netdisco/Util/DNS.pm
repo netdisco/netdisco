@@ -2,30 +2,15 @@ package App::Netdisco::Util::DNS;
 
 use strict;
 use warnings;
-
 use Dancer ':script';
+
 use Net::DNS;
-use AnyEvent::DNS;
 use NetAddr::IP::Lite ':lower';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/
-  hostname_from_ip hostnames_resolve_async ipv4_from_hostname
-/;
+our @EXPORT_OK = qw/hostname_from_ip ipv4_from_hostname/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
-
-# AE::DNS::EtcHosts only works for A/AAAA/SRV, but we want PTR.
-# this loads+parses /etc/hosts file using AE. dirty hack.
-use AnyEvent::Socket 'format_address';
-use AnyEvent::DNS::EtcHosts;
-AnyEvent::DNS::EtcHosts::_load_hosts_unless(sub{},AE::cv);
-no AnyEvent::DNS::EtcHosts; # unimport
-
-our %HOSTS = ();
-$HOSTS{$_} = [ map { [ $_ ? (format_address $_->[0]) : '' ] }
-                    @{$AnyEvent::DNS::EtcHosts::HOSTS{$_}} ]
-  for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 
 =head1 NAME
 
@@ -40,26 +25,46 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 hostname_from_ip( $ip )
+=head2 hostname_from_ip( $ip, \%opts? )
 
 Given an IP address (either IPv4 or IPv6), return the canonical hostname.
+
+C<< %opts >> can override the various timeouts available in
+L<Net::DNS::Resolver>:
+
+=over 4
+
+=item C<tcp_timeout>: 120 (seconds)
+
+=item C<udp_timeout>: 30 (seconds)
+
+=item C<retry>: 4 (attempts)
+
+=item C<retrans>: 5 (timeout)
+
+=back
 
 Returns C<undef> if no PTR record exists for the IP.
 
 =cut
 
 sub hostname_from_ip {
-  my $ip = shift;
+  my ($ip, $opts) = @_;
   return unless $ip;
+  my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
 
   # check /etc/hosts file and short-circuit if found
-  foreach my $name (reverse sort keys %HOSTS) {
-      if ($HOSTS{$name}->[0]->[0] eq $ip) {
+  foreach my $name (reverse sort keys %$ETCHOSTS) {
+      if ($ETCHOSTS->{$name}->[0]->[0] eq $ip) {
           return $name;
       }
   }
 
-  my $res   = Net::DNS::Resolver->new;
+  my $res = Net::DNS::Resolver->new;
+  $res->tcp_timeout($opts->{tcp_timeout} || 120);
+  $res->udp_timeout($opts->{udp_timeout} || 30);
+  $res->retry($opts->{retry} || 4);
+  $res->retrans($opts->{retrans} || 5);
   my $query = $res->search($ip);
 
   if ($query) {
@@ -83,10 +88,11 @@ Returns C<undef> if no A record exists for the name.
 sub ipv4_from_hostname {
   my $name = shift;
   return unless $name;
+  my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
 
   # check /etc/hosts file and short-circuit if found
-  if (exists $HOSTS{$name} and $HOSTS{$name}->[0]->[0]) {
-      my $ip = NetAddr::IP::Lite->new($HOSTS{$name}->[0]->[0]);
+  if (exists $ETCHOSTS->{$name} and $ETCHOSTS->{$name}->[0]->[0]) {
+      my $ip = NetAddr::IP::Lite->new($ETCHOSTS->{$name}->[0]->[0]);
       return $ip->addr if $ip and $ip->bits == 32;
   }
 
@@ -103,81 +109,4 @@ sub ipv4_from_hostname {
   return undef;
 }
 
-=head2 hostnames_resolve_async( $ips )
-
-This method uses a fully asynchronous and high-performance pure-perl stub
-resolver C<AnyEvent::DNS>.
-
-Given a reference to an array of hashes will resolve the C<IPv4> or C<IPv6>
-address in the C<ip> or C<alias> key of each hash into its hostname which
-will be inserted in the C<dns> key of the hash.
-
-Returns the supplied reference to an array of hashes with dns values for
-addresses which resolved.
-
-=cut
-
-sub hostnames_resolve_async {
-  my $ips = shift;
-
-  # Set up the condvar
-  my $done = AE::cv;
-  $done->begin( sub { shift->send } );
-
-  IP: foreach my $hash_ref (@$ips) {
-    my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'};
-    next IP if no_resolve($ip);
-
-    # check /etc/hosts file and short-circuit if found
-    foreach my $name (reverse sort keys %HOSTS) {
-        if ($HOSTS{$name}->[0]->[0] eq $ip) {
-            $hash_ref->{'dns'} = $name;
-            next IP;
-        }
-    }
-
-    $done->begin;
-    AnyEvent::DNS::reverse_lookup $ip,
-            sub { $hash_ref->{'dns'} = shift; $done->end; };
-  }
-
-  # Decrement the cv counter to cancel out the send declaration
-  $done->end;
-
-  # Wait for the resolver to perform all resolutions
-  $done->recv;
-  
-  # Remove reference to resolver so that we close sockets
-  undef $AnyEvent::DNS::RESOLVER if $AnyEvent::DNS::RESOLVER;
-
-  return $ips;
-}
-
-=head2 no_resolve( $ip )
-
-Given an IP address, returns true if excluded from DNS resolution by the
-C<dns_no> configuration directive, otherwise returns false.
-
-=cut
-
-sub no_resolve {
-    my $ip = shift;
-
-    my $config = setting('dns')->{no} || [];
-    return 0 if not scalar @$config;
-
-    my $addr = NetAddr::IP::Lite->new($ip)
-      or return 1;
-
-    foreach my $item (@$config) {
-        my $c_ip = NetAddr::IP::Lite->new($item)
-            or next;
-        next unless $c_ip->bits == $addr->bits;
-
-        return 1 if ($c_ip->contains($addr));
-    }
-    return 0;
-}
-
 1;
-

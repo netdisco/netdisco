@@ -16,28 +16,6 @@ register_report(
     }
 );
 
-hook 'before' => sub {
-    return
-        unless (
-        request->path eq uri_for('/report/moduleinventory')->path
-        or index( request->path,
-            uri_for('/ajax/content/report/moduleinventory')->path ) == 0
-        );
-
-    # view settings
-    var('module_options' => [
-            {   name    => 'fruonly',
-                label   => 'FRU Only',
-                default => 'on'
-            },
-            {   name    => 'matchall',
-                label   => 'Match All Options',
-                default => 'on'
-            },
-        ]
-    );
-};
-
 hook 'before_template' => sub {
     my $tokens = shift;
 

@@ -17,15 +17,6 @@ get '/report/*' => require_login sub {
     elsif ( $tag eq 'moduleinventory' ) {
         $class_list = [ schema('netdisco')->resultset('DeviceModule')
                 ->get_distinct_col('class') ];
-
-        # this is a bit fragile... three params currently
-        my %params = request->params();
-        if (3 == scalar keys %params) {
-            foreach my $col ( @{ var('module_options') } ) {
-                next unless $col->{default} eq 'on';
-                $params{ $col->{name} } = 'checked';
-            }
-        }
     }
     elsif ( $tag eq 'portssid' ) {
         $ssid_list = [ schema('netdisco')->resultset('DevicePortSsid')

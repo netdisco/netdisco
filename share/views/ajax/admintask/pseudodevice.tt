@@ -45,13 +45,11 @@
               <p class="text-info">
                 Pseudo-device &quot;[% row.dns | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
             </blockquote>
-            <input data-form="del" name="dns" type="hidden" value="[% row.dns | html_entity %]">
-            <input data-form="del" name="ip" type="hidden" value="[% row.ip | html_entity %]">
-            <input data-form="del" name="ports" type="hidden" value="[% row.port_count | html_entity %]">
+            <input data-form="delete" name="device" type="hidden" value="[% row.ip | html_entity %]">
           </div>
           <div class="modal-footer">
             <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

@@ -13,14 +13,13 @@ register_navbar_item({
 });
 
 get '/inventory' => require_login sub {
-    my $models = schema('netdisco')->resultset('Device')->get_models();
+    my $platforms = schema('netdisco')->resultset('Device')->get_platforms();
     my $releases = schema('netdisco')->resultset('Device')->get_releases();
 
     var(nav => 'inventory');
-
     template 'inventory', {
-      models => $models,
-      releases => $releases,
+      platforms => [$platforms->hri->all],
+      releases => [$releases->hri->all],
     };
 };
 

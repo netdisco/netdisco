@@ -1,0 +1,14 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Left Device' 'Left Port' 'Left VLANs' 'Right Device', 'Right Port', 'Right VLANs' ]) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.left_device) %]
+  [% mylist.push(row.left_port) %]
+  [% mylist.push(row.left_vlans) %]
+  [% mylist.push(row.right_device) %]
+  [% mylist.push(row.right_port) %]
+  [% mylist.push(row.right_vlans) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

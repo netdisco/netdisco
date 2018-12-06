@@ -4,10 +4,28 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="port_partial"
-                  name="partial"[% ' checked="checked"' IF params.partial %]/>
+                  name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.partial %]/>
               </label>
               <label class="nd_checkboxlabel" for="port_partial">
                 <span class="nd_searchcheckbox uneditable-input">Partial Match</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="port_uplink"
+                  name="uplink"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.uplink %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="port_uplink">
+                <span class="nd_searchcheckbox uneditable-input">Uplinks</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="port_ethernet"
+                  name="ethernet"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.ethernet %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="port_ethernet">
+                <span class="nd_searchcheckbox uneditable-input">Ethernet Only</span>
               </label>
             </div>
             <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">

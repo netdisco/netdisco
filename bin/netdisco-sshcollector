@@ -40,15 +40,15 @@ BEGIN {
 }
 
 use App::Netdisco;
-use App::Netdisco::Core::Arpnip 'store_arp';
-use App::Netdisco::Util::Node 'check_mac';
-use App::Netdisco::Util::DNS 'hostnames_resolve_async';
+use App::Netdisco::Util::Node qw/check_mac store_arp/;
+use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use Dancer ':script';
 
 use Data::Printer;
 use Module::Load ();
 use Net::OpenSSH;
 use MCE::Loop Sereal => 1;
+use Pod::Usage 'pod2usage';
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
@@ -76,11 +76,16 @@ Dancer::Logger->init('console', $CONFIG);
 
 MCE::Loop::init { chunk_size => 1 };
 my %stats;
+$stats{entry} = 0;
 
 exit main();
 
 sub main {
     my @input = @{ setting('sshcollector') };
+
+    #one-line Fisher-Yates from https://www.perlmonks.org/index.pl?node=Array%20One-Liners
+    my ($i,$j) = (0);
+    @input[-$i,$j] = @input[$j,-$i] while $j = rand(@input - $i), ++$i < @input;
 
     my @mce_result = mce_loop {
         my ($mce, $chunk_ref, $chunk_id) = @_;
@@ -96,6 +101,7 @@ sub main {
                 password => $host->{password},
                 timeout => 30,
                 async => 0,
+                default_stderr_file => '/dev/null',
                 master_opts => [
                     -o => "StrictHostKeyChecking=no",
                     -o => "BatchMode=no"
@@ -130,13 +136,11 @@ sub process {
     my $arpentries = [ $device->arpnip($hostlabel, $ssh, $args) ];
 
     # debug p $arpentries;
-    if (scalar @$arpentries) {
-        hostnames_resolve_async($arpentries);
-        return [$hostlabel, $arpentries];
-    }
-    else {
+    if (not scalar @$arpentries) {
         warning "WARNING: no entries received from <$hostlabel>";
     }
+    hostnames_resolve_async($arpentries);
+    return [$hostlabel, $arpentries];
 }
 
 sub store_arpentries {
@@ -144,7 +148,7 @@ sub store_arpentries {
 
     foreach my $arpentry ( @$arpentries ) {
         # skip broadcast/vrrp/hsrp and other wierdos
-        next unless check_mac( undef, $arpentry->{mac} );
+        next unless check_mac( $arpentry->{mac} );
 
         debug sprintf '  arpnip - stored entry: %s / %s',
             $arpentry->{mac}, $arpentry->{ip};
@@ -166,7 +170,7 @@ full SNMP support
 =head1 SYNOPSIS
 
  # install dependencies:
- ~netdisco/bin/localenv cpanm --notest Net::OpenSSH Expect
+ ~/bin/localenv cpanm --notest Net::OpenSSH Expect
  
  # run manually, or add to cron:
  ~/bin/netdisco-sshcollector [-DQ]
@@ -253,7 +257,11 @@ Depending on the target system, it can be queried using simple methods like
 or automated via Expect - this is mostly useful for non-Linux appliances which
 don't support command execution via ssh:
 
- my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
+ my ($pty, $pid) = $ssh->open2pty;
+ unless ($pty) {
+   debug "unable to run remote command [$hostlabel] " . $ssh->error;
+   return ();
+ }
  my $expect = Expect->init($pty);
  my $prompt = qr/#/;
  my ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);

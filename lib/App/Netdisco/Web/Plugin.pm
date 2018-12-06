@@ -30,7 +30,7 @@ register 'register_template_path' => sub {
       return error "bad template path to register_template_paths";
   }
 
-  push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
+  unshift @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
        dir($path, 'views')->stringify;
 };
 
@@ -232,64 +232,7 @@ Admin Menu function (job control, manual topology, pseudo devices)
 
 =back
 
-This document explains how to configure which plugins are loaded. See
-L<App::Netdisco::Manual::WritingPlugins> if you want to develop new plugins.
-
-=head1 Application Configuration
-
-Netdisco configuration supports a C<web_plugins> directive along with the
-similar C<extra_web_plugins>. These list, in YAML format, the set of Perl
-module names which are the plugins to be loaded. Each item injects one part of
-the Netdisco web user interface.
-
-You can override these settings to add, change, or remove entries from the
-default lists. Here is an example of the C<web_plugins> list:
-
- web_plugins:
-   - Inventory
-   - Report::DuplexMismatch
-   - Search::Device
-   - Search::Node
-   - Search::Port
-   - Device::Details
-   - Device::Ports
-
-Any change should go into your local C<deployment.yml> configuration file. If
-you want to view the default settings, see the C<share/config.yml> file in the
-C<App::Netdisco> distribution.
-
-=head1 How to Configure
-
-The C<extra_web_plugins> setting is empty, and used only if you want to add
-new plugins but not change the set enabled by default. If you do want to add
-to or remove from the default set, then create a version of C<web_plugins>
-instead.
-
-Netdisco prepends "C<App::Netdisco::Web::Plugin::>" to any entry in the list.
-For example, "C<Inventory>" will load the
-C<App::Netdisco::Web::Plugin::Inventory> module.
-
-Such plugin modules can either ship with the App::Netdisco distribution
-itself, or be installed separately. Perl uses the standard C<@INC> path
-searching mechanism to load the plugin modules.
-
-If an entry in the list starts with a "C<+>" (plus) sign then Netdisco attemps
-to load the module as-is, without prepending anything to the name. This allows
-you to have App::Netdiso web UI plugins in other namespaces:
-
- web_plugins:
-   - Inventory
-   - Search::Device
-   - Device::Details
-   - +My::Other::Netdisco::Web::Component
-
-The order of the entries is significant. Unsurprisingly, the modules are
-loaded in order. Therefore Navigation Bar items appear in the order listed,
-and Tabs appear on the Search and Device pages in the order listed, and so on.
-
-Finally, you can also prepend module names with "C<X::>", to support the
-"Netdisco extension" namespace. For example, "C<X::Observium>" will load the
-L<App::NetdiscoX::Web::Plugin::Observium> module.
+See L<https://github.com/netdisco/netdisco/wiki/Web-Plugins> for details.
 
 =cut
 

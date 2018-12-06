@@ -9,15 +9,15 @@ Module::Load::load
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  jq_warm_thrusters
   jq_getsome
-  jq_getsomep
   jq_locked
   jq_queued
-  jq_log
-  jq_userlog
   jq_lock
   jq_defer
   jq_complete
+  jq_log
+  jq_userlog
   jq_insert
   jq_delete
 /;
@@ -42,10 +42,6 @@ Returns a list of randomly selected queued jobs. Default is to return one job,
 unless C<$num> is provided. Jobs are returned as objects which implement the
 Netdisco job instance interface (see below).
 
-=head2 jq_getsomep( $num? )
-
-Same as C<jq_getsome> but for high priority jobs.
-
 =head2 jq_locked()
 
 Returns the list of jobs currently booked out to this processing node (denoted
@@ -56,6 +52,10 @@ Netdisco job instance interface (see below).
 
 Returns a list of IP addresses of devices which currently have a job of the
 given C<$job_type> queued (e.g. C<discover>, C<arpnip>, etc).
+
+=head2 jq_warm_thrusters()
+
+Performs initialisation of the Job Queue backend.
 
 =head2 jq_log()
 

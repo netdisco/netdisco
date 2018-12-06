@@ -41,6 +41,8 @@ of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
 Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
 
+=back
+
 =cut
 
 sub arpnip {
@@ -48,7 +50,11 @@ sub arpnip {
 
     debug "$hostlabel $$ arpnip()";
 
-    my ($pty, $pid) = $ssh->open2pty or die "unable to run remote command";
+    my ($pty, $pid) = $ssh->open2pty;
+    unless ($pty) {
+        debug "unable to run remote command [$hostlabel] " . $ssh->error;
+        return ();
+    }
     my $expect = Expect->init($pty);
 
     my ($pos, $error, $match, $before, $after);
@@ -64,7 +70,8 @@ sub arpnip {
     my @lines = split(m/\n/, $before);
 
 #   ? (192.168.17.178) at 5C:F9:DD:71:1F:08 [ether] on LAN1
-    my $linereg = qr/\?\s+\(([0-9\.]+)\)\s+at\s+([a-fA-F0-9:]+)/;
+# https://github.com/netdisco/netdisco/issues/365
+    my $linereg = qr/([0-9.]+)\s+ether\s+([a-fA-F0-9:]+).+/;
     foreach my $line (@lines) {
         if ($line =~ $linereg) {
             my ($ip, $mac) = ($1, $2);

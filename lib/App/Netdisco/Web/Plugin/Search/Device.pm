@@ -19,7 +19,7 @@ get '/ajax/content/search/device' => require_login sub {
 
     if ($has_opt) {
         $rs = schema('netdisco')->resultset('Device')->columns(
-            [   "ip",       "dns",   "name",   "contact",
+            [   "ip",       "dns",   "name",
                 "location", "model", "os_ver", "serial"
             ]
         )->with_times->search_by_field( scalar params );
@@ -29,7 +29,7 @@ get '/ajax/content/search/device' => require_login sub {
         send_error( 'Missing query', 400 ) unless $q;
 
         $rs = schema('netdisco')->resultset('Device')->columns(
-            [   "ip",       "dns",   "name",   "contact",
+            [   "ip",       "dns",   "name",
                 "location", "model", "os_ver", "serial"
             ]
         )->with_times->search_fuzzy($q);

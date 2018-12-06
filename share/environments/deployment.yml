@@ -18,19 +18,9 @@ database:
 # RECOMMENDED SETTINGS
 # --------------------
 
-# set to false if you MUST maintain backwards compatibility
-# with Netdisco 1.x web frontend.
-# `````````````````````````````````````````````````````````
-safe_password_store: true
-
-# will be stripped from fqdn when displayed in the web UI
-# also, do not forget the leading dot.
-# ```````````````````````````````````````````````````````
-#domain_suffix: '.example.com'
-
 # SNMP community string(s)
 # ````````````````````````
-snmp_auth:
+device_auth:
   - tag: 'default_v2_readonly'
     community: 'public'
     read: true
@@ -40,8 +30,32 @@ snmp_auth:
 #    read: false
 #    write: true
 
-# this is the schedule for automatically keeping netdisco up-to-date
-# ``````````````````````````````````````````````````````````````````
+# will be stripped from fqdn when displayed in the web UI
+# also, do not forget the leading dot.
+# ```````````````````````````````````````````````````````
+#domain_suffix: '.example.com'
+
+
+# ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
+# ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
+
+
+# ---------------------------------------------------------------
+# OTHER INTERESTING SETTINGS WHERE THE DEFAULTS ARE PROBABLY OKAY
+# ---------------------------------------------------------------
+
+# do not discover IP Phones or Wireless Access Points.
+# usually these are visible as device neighbors but don't support
+# SNMP, which just clogs up the job queue.
+# ```````````````````````````````````````````````````````````````
+#discover_no_type:
+#  - '(?i)phone'
+#  - '(?i)(?:wap|wireless)'
+
+# this is the schedule for automatically keeping netdisco up-to-date;
+# these are good defaults, so only uncomment if needing to change.
+# (or set "schedule: null" if you wish to disable the scheduler)
+# ````````````````````````````````````````````````````````````````````
 #schedule:
 #  discoverall:
 #    when: '5 7 * * *'
@@ -54,17 +68,9 @@ snmp_auth:
 #  nbtwalk:
 #    when: '0 8,13,21 * * *'
 #  expire:
-#    when: '20 23 * * *'
+#    when: '30 23 * * *'
 
-# do not discover IP Phones or Wireless Access Points.
-# usually these are visible as device neighbors but don't support
-# SNMP, which just clogs up the job queue.
-# ```````````````````````````````````````````````````````````````
-discover_no_type:
-  - '(?i)phone'
-  - '(?i)(?:wap|wireless)'
-
-# number of SNMP workers to run in parallel (in netdisco-daemon).
+# number of SNMP workers to run in parallel (in netdisco-backend).
 # the default is twice the number of CPU cores. increase this if
 # your system has few cores and the schedule is taking too long.
 # ```````````````````````````````````````````````````````````````
@@ -80,4 +86,9 @@ discover_no_type:
 # create a user called "guest" if you want to assign port/admin rights.
 # `````````````````````````````````````````````````````````````````````
 #no_auth: false
+
+# set to false if you MUST maintain backwards compatibility
+# with Netdisco 1.x web frontend.
+# `````````````````````````````````````````````````````````
+#safe_password_store: true
 

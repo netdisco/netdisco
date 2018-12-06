@@ -2,7 +2,7 @@
 
 [% SET headers = [] %]
 [% SET c_nodes_pos = -1 %]
-[% FOREACH item IN vars.port_columns %]
+[% FOREACH item IN settings.port_columns %]
   [% NEXT IF item.name == 'c_admin' %]
   [% NEXT UNLESS params.${item.name} %]
 
@@ -91,6 +91,10 @@
     [% myport.push(row.speed) %]
   [% END %]
 
+  [% IF params.c_error %]
+    [% myport.push(row.error_disable_cause) %]
+  [% END %]
+
   [% IF params.c_mac %]
     [% myport.push(row.mac) %]
   [% END %]
@@ -104,18 +108,13 @@
   [% END %]
 
   [% IF params.c_vmember %]
-    [% IF row.vlan_count %]
-      [% SET output = '' %]
-      [% SET vlanlist = [] %]
-      [% FOREACH vlan IN row.all_port_vlans %][% vlanlist.push(vlan.get_column('vlan')) %][% END %]
-      [% FOREACH vlan IN vlanlist.nsort %]
-        [% SET output = output _ ',' IF NOT loop.first %]
-        [% SET output = output _ vlan %]
-      [% END %]
-      [% myport.push(output) %]
-    [% ELSE %]
-      [% myport.push('') %]
+    [% SET portname = row.port %]
+    [% SET output = '' %]
+    [% FOREACH vlan IN vlans.$portname.vlan_set.nsort %]
+      [% SET output = output _ ',' IF NOT loop.first %]
+      [% SET output = output _ vlan %]
     [% END %]
+    [% myport.push(output) %]
   [% END %]
 
   [% IF params.c_power %]
@@ -139,9 +138,9 @@
 
   [% IF params.c_neighbors %]
     [% IF (row.remote_ip OR row.is_uplink) %]
-      [% IF row.neighbor %]
-        [% myport.push( row.neighbor.ip ) %]
-        [% myport.push( row.neighbor.dns.remove(settings.domain_suffix) ) %]
+      [% IF row.get_column('neighbor_ip') %]
+        [% myport.push( row.get_column('neighbor_ip') ) %]
+        [% myport.push( row.get_column('neighbor_dns').remove(settings.domain_suffix) ) %]
       [% ELSIF row.remote_ip AND row.remote_port %]
         [% myport.push( row.remote_ip ) %]
         [% myport.push('') %]
@@ -190,30 +189,15 @@
         [% mynode.push('') %]
         [% SET has_ips = 0 %]
 
-        [% IF params.n_ip4 %]
-          [% FOREACH ip IN node.ip4s %]
-            [% SET has_ips = 1 %]
+        [% FOREACH ip IN node.$ips %]
+          [% SET has_ips = 1 %]
 
-            [% CALL mynode.splice(-3, 1, ip.ip) %] 
-            [% CALL mynode.splice(-2, 1, ip.dns) %] 
-            [% CALL mynode.splice(-1, 1, (ip.active ? 'No' : 'Yes')) %] 
+          [% CALL mynode.splice(-3, 1, ip.ip) %] 
+          [% CALL mynode.splice(-2, 1, ip.dns) %] 
+          [% CALL mynode.splice(-1, 1, (ip.active ? 'No' : 'Yes')) %] 
 
-            [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
-            [% CSV.dump(myport) %]
-          [% END %]
-        [% END %]
-
-        [% IF params.n_ip6 %]
-          [% FOREACH ip IN node.ip6s %]
-            [% SET has_ips = 1 %]
-
-            [% CALL mynode.splice(-3, 1, ip.ip) %] 
-            [% CALL mynode.splice(-2, 1, ip.dns) %] 
-            [% CALL mynode.splice(-1, 1, (ip.active ? 'No' : 'Yes')) %] 
-
-            [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
-            [% CSV.dump(myport) %]
-          [% END %]
+          [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
+          [% CSV.dump(myport) %]
         [% END %]
 
         [% CSV.dump(myport) IF NOT has_ips %]

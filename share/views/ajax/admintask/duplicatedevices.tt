@@ -1,0 +1,79 @@
+[% IF NOT results.size %]
+<div class="span4 alert alert-info">No duplicate devices found.</div>
+[% ELSE %]
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Device IP</th>
+      <th class="nd_center-cell">Contact</th>
+      <th class="nd_center-cell">Location</th>
+      <th class="nd_center-cell">System Name</th>
+      <th class="nd_center-cell">Model</th>
+      <th class="nd_center-cell">OS Version</th>
+      <th class="nd_center-cell">Serial</th>
+      <th class="nd_center-cell">Last Discovered</th>
+      <th class="nd_center-cell">Delete</th>
+    </tr>
+  </thead>
+  </tbody>
+    [% SET count = 0 %]
+    [% FOREACH row IN results %]
+    [% SET count = count + 1 %]
+    <tr>
+      <td class="nd_center-cell"><a class="nd_linkcell"
+        href="[% uri_for('/device') %]?tab=details&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+        [% row.dns | html_entity %]</td>
+      <td class="nd_center-cell">[% row.contact  | html_entity %]</td>
+      <td class="nd_center-cell">[% row.location | html_entity %]</td>
+      <td class="nd_center-cell">[% row.name     | html_entity %]</td>
+      <td class="nd_center-cell">[% row.model    | html_entity %]</td>
+      <td class="nd_center-cell">[% row.os_ver   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.serial   | html_entity %]</td>
+      <td class="nd_center-cell">[% row.last_discover_stamp | html_entity %]</td>
+
+      <td class="nd_center-cell">
+        <button class="btn btn-danger btn-small"
+          data-toggle="modal" data-target="#nd_devdel-[% count %]" type="button">
+          <i class="icon-trash text-danger"></i>
+        </button>
+
+        <div id="nd_devdel-[% count %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% count %]" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="nd_devdel-label-[% count %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
+          </div>
+          <div class="modal-body">
+            <blockquote>
+              <ul>
+                <li><p>This action is immediate and not reversible</p></li>
+                <li><p>All associated Nodes may be removed from the database</p></li>
+              </ul>
+            </blockquote>
+            <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
+              placeholder="Enter a log message" name="log"></textarea>
+            <label class="checkbox" style="display: block">
+              <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="archive">
+              <h4 class="nd_unbolden">Archive Nodes</h4>
+            </label>
+            <input type="hidden" data-form="delete" value="[% row.ip | html_entity %]" name="device"/>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+[% END %]
+
+<script>
+$(document).ready(function() {
+  $('#data-table').dataTable({
+[% INCLUDE 'ajax/datatabledefaults.tt' -%]
+  } );
+} );
+</script>

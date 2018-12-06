@@ -5,8 +5,11 @@ use warnings;
 
 use base 'DBIx::Class::ResultSet';
 
-__PACKAGE__->load_components(
-    qw{Helper::ResultSet::SetOperations Helper::ResultSet::Shortcut});
+__PACKAGE__->load_components(qw/
+  +App::Netdisco::DB::SetOperations
+  Helper::ResultSet::Shortcut
+  Helper::ResultSet::CorrelateRelationship
+/);
 
 =head1 ADDITIONAL METHODS
 

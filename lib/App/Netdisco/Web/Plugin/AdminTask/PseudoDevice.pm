@@ -54,11 +54,6 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
     });
 };
 
-ajax '/ajax/control/admin/pseudodevice/del' => require_role admin => sub {
-    send_error('Bad Request', 400) unless _sanity_ok();
-    forward '/ajax/control/admin/delete', { device => param('ip') };
-};
-
 ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 

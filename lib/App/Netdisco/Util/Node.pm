@@ -4,15 +4,14 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::MAC;
-use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   check_mac
-  check_node_no
-  check_node_only
   is_nbtstatable
+  store_arp
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -29,11 +28,10 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_mac( $device, $node, $port_macs? )
+=head2 check_mac( $node, $device?, $port_macs? )
 
-Given a Device database object and a MAC address, perform various sanity
-checks which need to be done before writing an ARP/Neighbor entry to the
-database storage.
+Given a MAC address, perform various sanity checks which need to be done
+before writing an ARP/Neighbor entry to the database storage.
 
 Returns false, and might log a debug level message, if the checks fail.
 
@@ -51,6 +49,8 @@ MAC address is not all-zero, broadcast, CLIP, VRRP or HSRP
 
 =back
 
+Optionally pass a Device instance or IP to use in logging.
+
 Optionally pass a cached set of Device port MAC addresses as the third
 argument, in which case an additional check is added:
 
@@ -65,9 +65,11 @@ MAC address does not belong to an interface on any known Device
 =cut
 
 sub check_mac {
-  my ($device, $node, $port_macs) = @_;
+  my ($node, $device, $port_macs) = @_;
+  return 0 if !$node;
+
   my $mac = NetAddr::MAC->new(mac => $node);
-  my $devip = (ref $device ? $device->ip : '');
+  my $devip = ($device ? (ref $device ? $device->ip : $device) : '');
   $port_macs ||= {};
 
   # incomplete MAC addresses (BayRS frame relay DLCI, etc)
@@ -121,92 +123,6 @@ sub check_mac {
   return $node;
 }
 
-=head2 check_node_no( $ip, $setting_name )
-
-Given the IP address of a node, returns true if the configuration setting
-C<$setting_name> matches that device, else returns false. If the setting
-is undefined or empty, then C<check_node_no> also returns false.
-
- print "rejected!" if check_node_no($ip, 'nbtstat_no');
-
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-IP address range, using a hyphen and no whitespace
-
-=item *
-
-Regular Expression in YAML format which will match the node DNS name, e.g.:
-
- - !!perl/regexp ^sep0.*$
-
-=back
-
-To simply match all nodes, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
-regular expressions are anchored (that is, they must match the whole string).
-To match no nodes we recommend an entry of "C<localhost>" in the setting.
-
-=cut
-
-sub check_node_no {
-  my ($ip, $setting_name) = @_;
-
-  my $config = setting($setting_name) || [];
-  return 0 if not scalar @$config;
-
-  return check_acl($ip, $config);
-}
-
-=head2 check_node_only( $ip, $setting_name )
-
-Given the IP address of a node, returns true if the configuration setting
-C<$setting_name> matches that node, else returns false. If the setting
-is undefined or empty, then C<check_node_only> also returns true.
-
- print "rejected!" unless check_node_only($ip, 'nbtstat_only');
-
-There are several options for what C<$setting_name> can contain:
-
-=over 4
-
-=item *
-
-Hostname, IP address, IP prefix
-
-=item *
-
-IP address range, using a hyphen and no whitespace
-
-=item *
-
-Regular Expression in YAML format which will match the node DNS name, e.g.:
-
- - !!perl/regexp ^sep0.*$
-
-=back
-
-To simply match all nodes, use "C<any>" or IP Prefix "C<0.0.0.0/0>". All
-regular expressions are anchored (that is, they must match the whole string).
-To match no nodes we recommend an entry of "C<localhost>" in the setting.
-
-=cut
-
-sub check_node_only {
-  my ($ip, $setting_name) = @_;
-
-  my $config = setting($setting_name) || [];
-  return 1 if not scalar @$config;
-
-  return check_acl($ip, $config);
-}
-
 =head2 is_nbtstatable( $ip )
 
 Given an IP address, returns C<true> if Netdisco on this host is permitted by
@@ -222,11 +138,61 @@ Returns false if the host is not permitted to nbtstat the target node.
 sub is_nbtstatable {
   my $ip = shift;
 
-  return if check_node_no($ip, 'nbtstat_no');
+  return if check_acl_no($ip, 'nbtstat_no');
 
-  return unless check_node_only($ip, 'nbtstat_only');
+  return unless check_acl_only($ip, 'nbtstat_only');
 
   return 1;
+}
+
+=head2 store_arp( \%host, $now? )
+
+Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
+and DNS host name. Host details are provided in a Hash ref:
+
+ {
+    ip   => '192.0.2.1',
+    node => '00:11:22:33:44:55',
+    dns  => 'myhost.example.com',
+ }
+
+The C<dns> entry is optional. The update will mark old entries for this IP as
+no longer C<active>.
+
+Optionally a literal string can be passed in the second argument for the
+C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
+
+=cut
+
+sub store_arp {
+  my ($hash_ref, $now) = @_;
+  $now ||= 'now()';
+  my $ip   = $hash_ref->{'ip'};
+  my $mac  = NetAddr::MAC->new($hash_ref->{'node'});
+  my $name = $hash_ref->{'dns'};
+
+  return if !defined $mac or $mac->errstr;
+
+  schema('netdisco')->txn_do(sub {
+    my $current = schema('netdisco')->resultset('NodeIp')
+      ->search(
+        { ip => $ip, -bool => 'active'},
+        { columns => [qw/mac ip/] })->update({active => \'false'});
+
+    schema('netdisco')->resultset('NodeIp')
+      ->update_or_create(
+      {
+        mac => $mac->as_ieee,
+        ip => $ip,
+        dns => $name,
+        active => \'true',
+        time_last => \$now,
+      },
+      {
+        key => 'primary',
+        for => 'update',
+      });
+  });
 }
 
 1;

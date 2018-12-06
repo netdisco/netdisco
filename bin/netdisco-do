@@ -35,21 +35,21 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
-use App::Netdisco::Daemon::Job;
 use Dancer qw/:moose :script/;
-
-info "App::Netdisco version $App::Netdisco::VERSION loaded.";
-
-use NetAddr::IP qw/:rfc3021 :lower/;
-use App::Netdisco::Util::Device 'get_device';
 
 use Try::Tiny;
 use Pod::Usage;
 use Scalar::Util 'blessed';
+use NetAddr::IP qw/:rfc3021 :lower/;
+
+use App::Netdisco::Backend::Job;
+use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::Util::Device 'get_device';
+
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug);
+my ($device, $port, $extra, $debug, $quiet, $queue_only, $rollback);
 my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
 
 my $result = GetOptions(
@@ -57,6 +57,9 @@ my $result = GetOptions(
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
+  'enqueue'    => \$queue_only,
+  'quiet'      => \$quiet,
+  'rollback|R' => \$rollback,
   'infotrace|I+' => \$infotrace,
   'snmptrace|S+' => \$snmptrace,
   'sqltrace|Q+'  => \$sqltrace,
@@ -68,14 +71,17 @@ my $result = GetOptions(
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
-$CONFIG->{log} = ($debug ? 'debug' : 'info');
+$CONFIG->{log} = ($debug ? 'debug' : ($quiet ? 'error' : 'info'));
 
 $ENV{INFO_TRACE} ||= $infotrace;
 $ENV{SNMP_TRACE} ||= $snmptrace;
 $ENV{DBIC_TRACE} ||= $sqltrace;
+$ENV{ND2_DB_ROLLBACK} ||= $rollback;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
+
+info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
 # get requested action
 (my $action = shift @ARGV) =~ s/^set_//
@@ -89,131 +95,11 @@ unless ($action) {
     );
 }
 
-# create worker (placeholder object for the role methods)
+# create worker (placeholder object for the action runner)
 {
   package MyWorker;
-
   use Moo;
-  use Module::Load ();
-  use Data::Printer ();
-  use Scalar::Util 'blessed';
-  use NetAddr::IP qw/:rfc3021 :lower/;
-  use Dancer ':script';
-
-  use App::Netdisco::Util::SNMP ();
-  use App::Netdisco::Util::Device
-    qw/get_device delete_device renumber_device/;
-
-  with 'App::Netdisco::Daemon::Worker::Poller::Device';
-  with 'App::Netdisco::Daemon::Worker::Poller::Arpnip';
-  with 'App::Netdisco::Daemon::Worker::Poller::Macsuck';
-  with 'App::Netdisco::Daemon::Worker::Poller::Nbtstat';
-  with 'App::Netdisco::Daemon::Worker::Poller::Expiry';
-  with 'App::Netdisco::Daemon::Worker::Interactive::DeviceActions';
-  with 'App::Netdisco::Daemon::Worker::Interactive::PortActions';
-
-  eval { Module::Load::load 'App::Netdisco::Util::Graph' };
-  sub graph {
-    App::Netdisco::Util::Graph::graph();
-    return ('done', 'Generated graph data.');
-  }
-
-  use App::Netdisco::Util::NodeMonitor ();
-  sub monitor {
-    App::Netdisco::Util::NodeMonitor::monitor();
-    return ('done', 'Generated monitor data.');
-  }
-
-  sub show {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-
-    $extra ||= 'interfaces'; my $class = undef;
-    ($class, $extra) = split(/::([^:]+)$/, $extra);
-    if ($class and $extra) {
-        $class = 'SNMP::Info::'.$class;
-    }
-    else {
-        $extra = $class;
-        undef $class;
-    }
-    my $i = App::Netdisco::Util::SNMP::snmp_connect($device, $class);
-    Data::Printer::p($i->$extra);
-    return ('done', sprintf "Showed %s response from %s.", $extra, $device->ip);
-  }
-
-  sub delete {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-
-    $port = ($port ? 1 : 0);
-    delete_device($device, $port, $extra);
-    return ('done', sprintf "Deleted device %s.", $device->ip);
-  }
-
-  sub renumber {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-    return ('error', 'Missing device (-d).') if !defined $device;
-    my $old_ip = $device->ip;
-
-    my $new_ip = NetAddr::IP->new($extra);
-    unless ($new_ip and $new_ip->addr ne '0.0.0.0') {
-        return ('error', "Bad host or IP: ".($extra || '0.0.0.0'));
-    }
-
-    my $new_dev = get_device($new_ip->addr);
-    if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
-        return ('error', sprintf "Already know new device as: %s.", $new_dev->ip);
-    }
-
-    renumber_device($device, $new_ip);
-    return ('done', sprintf 'Renumbered device %s to %s (%s).',
-      $device->ip, $new_ip, ($device->dns || ''));
-  }
-
-  sub psql {
-    my ($self, $job) = @_;
-    my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
-
-    my $name = (setting('database')->{name} || 'netdisco');
-    my $host = setting('database')->{host};
-    my $user = setting('database')->{user};
-    my $pass = setting('database')->{pass};
-
-    my $portnum = undef;
-    if ($host and $host =~ m/([^;]+);port=(\d+)/) {
-        $host = $1;
-        $portnum = $2;
-    }
-
-    $ENV{PGHOST} = $host if $host;
-    $ENV{PGPORT} = $portnum if defined $portnum;
-    $ENV{PGDATABASE} = $name;
-    $ENV{PGUSER} = $user;
-    $ENV{PGPASSWORD} = $pass;
-    $ENV{PGCLIENTENCODING} = 'UTF8';
-
-    if ($extra) {
-        system('psql', '-c', $extra);
-    }
-    else {
-        system('psql');
-    }
-    return ('done', "psql session closed.");
-  }
-}
-my $worker = MyWorker->new();
-
-# belt and braces check before we go ahead
-if (not $worker->can( $action )) {
-  pod2usage(
-    -msg => (sprintf 'error: %s is not a valid action', $action),
-    -verbose => 2,
-    -exitval => 3,
-  );
+  with 'App::Netdisco::Worker::Runner';
 }
 
 my $net = NetAddr::IP->new($device);
@@ -223,38 +109,69 @@ if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
 }
 
 my @hostlist = defined $device ? ($net->hostenum) : (undef);
-my $exitstatus = 0;
+my @job_specs = ();
+my $exitstatus =  0;
+
+if (scalar @hostlist > 512) {
+    info sprintf '%s: aborted - unwise to attempt %s jobs at once', $action, (scalar @hostlist);
+    exit 1;
+}
 
 foreach my $host (@hostlist) {
-    my $dev = $host ? get_device($host->addr) : undef;
-    if ($dev and not (blessed $dev and $dev->in_storage) and $action ne 'discover') {
-        info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
-        next;
-    }
+  my $dev = $host ? get_device($host->addr) : undef;
+  if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
+    info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
+    next;
+  }
 
-    # what job are we asked to do?
-    my $job = App::Netdisco::Daemon::Job->new({
-      job => 0,
-      action => $action,
-      device => $dev,
-      port   => $port,
-      subaction => $extra,
-    });
+  # what job are we asked to do?
+  push @job_specs, {
+    action => $action,
+    device => $dev,
+    port   => $port,
+    subaction => $extra,
+    username => ($ENV{USER} || 'netdisco-do'),
+  };
+}
+
+if ($queue_only) {
+  jq_insert( \@job_specs );
+  info sprintf '%s: queued %s jobs at %s',
+    $action, (scalar @job_specs), scalar localtime;
+}
+else {
+  foreach my $spec (@job_specs) {
+    my $worker = MyWorker->new();
+    my $job = App::Netdisco::Backend::Job->new({ job => 0, %$spec });
+
+    my $actiontext = (
+      ($job->device ? ('['.$job->device->ip.']') : '') .
+      ($job->action eq 'show' ? ('/'. ($job->subaction || 'interfaces')) : '')
+    );
 
     # do job
-    my ($status, $log);
     try {
-        info sprintf '%s: started at %s', $action, scalar localtime;
-        ($status, $log) = $worker->$action($job);
+      info sprintf '%s: %s started at %s',
+        $action, $actiontext, scalar localtime;
+      $worker->run($job);
     }
     catch {
-        $status = 'error';
-        $log = "error running job: $_";
+      $job->status('error');
+      $job->log("error running job: $_");
     };
 
+    if ($job->log eq 'failed to report from any worker!' and not $job->only_namespace) {
+      pod2usage(
+        -msg => (sprintf 'error: %s is not a valid action', $action),
+        -verbose => 2,
+        -exitval => 3,
+      );
+    }
+
     info sprintf '%s: finished at %s', $action, scalar localtime;
-    info sprintf '%s: status %s: %s', $action, $status, $log;
-    $exitstatus = 1 if !defined $status or $status eq 'error';
+    info sprintf '%s: status %s: %s', $action, $job->status, $job->log;
+    $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
+  }
 }
 
 exit $exitstatus;
@@ -265,51 +182,59 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 SYNOPSIS
 
- ~/bin/netdisco-do <action> [-DISQ] [-d <device> [-p <port>] [-e <extra>]]
+ ~/bin/netdisco-do <action> [-DISQR] [--enqueue] [--quiet] [-d <device> [-p <port>] [-e <extra>]]
 
 =head1 DESCRIPTION
 
 This program allows you to run any Netdisco poller job from the command-line.
 
-The C<-d> option will accept a hostname (that can be resolved to an IP with
-DNS), an IP address, or IP prefix (subnets in CIDR format). It can be any
-interface on the device known to Netdisco.
+=head1 ACTIONS
 
 Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
 simply add entries to the Netdisco job queue for other jobs, so won't seem
-to do much when you trigger them.
+to do much when you trigger them. Everything else happens in real-time.
 
-=head1 ACTIONS
+However the "C<--enqueue>" option will force the queueing of the job,
+regardless of type. This may be useful for cron-driven actions, or for actions
+working across large IP spaces.
+
+For any action, if you wish to run one of its individual worker stages, then
+pass C<action::stage> as the first argument to C<netdisco-do>, for example
+C<discover::neighbors>.
+
+Any action taking a C<device> parameter can be passed either a hostname or IP
+of any interface on a known or unknown device, or an IP prefix (subnet) which
+will cause C<netdisco-do> to run the action for all addresses in that range.
 
 =head2 discover
 
 Run a discover on the device (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do discover -d 192.0.2.1
+ ~/bin/netdisco-do discover -d 192.0.2.1
 
 =head2 discoverall
 
-Run a discover for all known devices.
+Queue a discover for all known devices.
 
 =head2 macsuck
 
 Run a macsuck on the device (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do macsuck -d 192.0.2.1
+ ~/bin/netdisco-do macsuck -d 192.0.2.1
 
 =head2 macwalk
 
-Run a macsuck for all known devices.
+Queue a macsuck for all known devices.
 
 =head2 arpnip
 
 Run an arpnip on the device (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do arpnip -d 192.0.2.1
+ ~/bin/netdisco-do arpnip -d 192.0.2.1
 
 =head2 arpwalk
 
-Run an arpnip for all known devices.
+Queue an arpnip for all known devices.
 
 =head2 delete
 
@@ -318,9 +243,9 @@ the C<-e> parameter. Optionally request for associated nodes to be archived
 (rather than deleted) by setting the C<-p> parameter to "C<yes>" (mnemonic:
 B<p>reserve).
 
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
+ ~/bin/netdisco-do delete -d 192.0.2.1
+ ~/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
+ ~/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
 
 =head2 renumber
 
@@ -331,17 +256,17 @@ log and node information will also be updated to refer to the new device.
 Note that I<no> check is made as to whether the new IP is reachable for future
 polling.
 
- ~netdisco/bin/netdisco-do renumber -d 192.0.2.1 -e 192.0.2.254
+ ~/bin/netdisco-do renumber -d 192.0.2.1 -e 192.0.2.254
 
 =head2 nbtstat
 
 Run an nbtstat on the node (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do nbtstat -d 192.0.2.2
+ ~/bin/netdisco-do nbtstat -d 192.0.2.2
 
 =head2 nbtwalk
 
-Run an nbtstat for all known nodes.
+Queue an nbtstat for all known nodes.
 
 =head2 expire
 
@@ -353,8 +278,8 @@ Archive nodes on the specified device. If you want to delete nodes, set the
 C<-e> parameter to "C<no>" (mnemonic: B<e>xpire). If you want to perform the
 action on a specific port, set the C<-p> parameter.
 
- ~netdisco/bin/netdisco-do expirenodes -d 192.0.2.1
- ~netdisco/bin/netdisco-do expirenodes -d 192.0.2.1 -p FastEthernet0/1 -e no
+ ~/bin/netdisco-do expirenodes -d 192.0.2.1
+ ~/bin/netdisco-do expirenodes -d 192.0.2.1 -p FastEthernet0/1 -e no
 
 =head2 graph
 
@@ -364,9 +289,9 @@ You'll need to install the L<Graph::Undirected> and L<GraphViz> Perl modules,
 and possibly also the C<graphviz> utility for your operating system. Also
 create a directory for the output files.
 
- mkdir ~netdisco/graph
- ~netdisco/bin/localenv cpanm Graph::Undirected
- ~netdisco/bin/localenv cpanm GraphViz
+ mkdir ~/graph
+ ~/bin/localenv cpanm Graph::Undirected
+ ~/bin/localenv cpanm GraphViz
 
 =head2 show
 
@@ -378,63 +303,79 @@ If you wish to test with a device class other than that discovered, prefix the
 leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
 "C<Layer2::HP::uptime>".
 
- ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
- ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+
+A paramter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
+
+ ~/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
 
 =head2 psql
 
 Start an interactive terminal with the Netdisco PostgreSQL database. If you
 pass an SQL statement in the C<-e> option then it will be executed.
 
- ~netdisco/bin/netdisco-do psql
- ~netdisco/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
- ~netdisco/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
+ ~/bin/netdisco-do psql
+ ~/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
+ ~/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
+
+=head2 stats
+
+Updates Netdisco's statistics on number of devices, nodes, etc, for today.
 
 =head2 location
 
 Set the SNMP location field on the device (specified with C<-d>). Pass the
 location string in the C<-e> extra parameter.
 
- ~netdisco/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
+ ~/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
 
 =head2 contact
 
 Set the SNMP contact field on the device (specified with C<-d>). Pass the
 contact name in the C<-e> extra parameter.
 
- ~netdisco/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
+ ~/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
 
 =head2 portname
 
 Set the description on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (description).
 
- ~netdisco/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
+ ~/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
 
 =head2 portcontrol
 
 Set the up/down status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
 
- ~netdisco/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
- ~netdisco/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
+ ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
+ ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
 
 =head2 vlan
 
 Set the native VLAN on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
- ~netdisco/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
+ ~/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
 
 =head2 power
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("on" or "off").
 
- ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
- ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
+ ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
+ ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
-=head1 DEBUG LEVELS
+=head2 dumpconfig
+
+Will dump the loaded and parsed configuration for the application. Pass a
+specific configuration setting name to the C<-e> parameter to dump only that.
+
+=head1 DEBUG OPTIONS
+
+The flag "C<-R>" will cause any changes to the database to be rolled back
+at the end of the action.
 
 The flags "C<-DISQ>" can be specified, multiple times, and enable the
 following items in order:

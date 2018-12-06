@@ -193,12 +193,18 @@ Takes an interval in days, weeks, months, or years in a format like '7 days'
 and returns a date range in the format 'YYYY-MM-DD to YYYY-MM-DD' by
 subtracting the interval from the current date.
 
+If C<$interval> is not passed, epoch zero (1970-01-01) is used as the start.
+
 =cut
 
 sub interval_to_daterange {
     my $interval = shift;
 
-    return unless $interval =~ m/^(?:\d+)\s+(?:day|week|month|year)s?$/;
+    unless ($interval
+        and $interval =~ m/^(?:\d+)\s+(?:day|week|month|year)s?$/) {
+
+        return "1970-01-01 to " . Time::Piece->new->ymd;
+    }
 
     my %const = (
         day   => ONE_DAY,

@@ -10,6 +10,8 @@ use warnings;
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
+use overload '""' => sub { shift->ip }, fallback => 1;
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
@@ -169,6 +171,17 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 properties_ports
+
+Returns the set of ports known to have recorded properties
+
+=cut
+
+__PACKAGE__->has_many(
+    properties_ports => 'App::Netdisco::DB::Result::DevicePortProperties',
+    'ip', { join_type => 'RIGHT' }
+);
+
 =head2 powered_ports
 
 Returns the set of ports known to have PoE capability
@@ -189,7 +202,39 @@ Returns the row from the community string table, if one exists.
 __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
 
+=head2 throughput
+
+Returns a sum of speeds on all ports on the device.
+
+=cut
+
+__PACKAGE__->has_one(
+    throughput => 'App::Netdisco::DB::Result::Virtual::DevicePortSpeed', 'ip');
+
 =head1 ADDITIONAL METHODS
+
+=head2 is_pseudo
+
+Returns true if the vendor of the device is "netdisco".
+
+=cut
+
+sub is_pseudo {
+  my $device = shift;
+  return (defined $device->vendor and $device->vendor eq 'netdisco');
+}
+
+=head2 has_layer( $number )
+
+Returns true if the device provided sysServices and supports the given layer.
+
+=cut
+
+sub has_layer {
+  my ($device, $layer) = @_;
+  return unless $layer and $layer =~ m/^[1-7]$/;
+  return ($device->layers and (substr($device->layers, (8-$layer), 1) == 1));
+}
 
 =head2 renumber( $new_ip )
 
@@ -213,6 +258,7 @@ sub renumber {
     if $new_ip eq '0.0.0.0'
     or $new_ip eq '127.0.0.1';
 
+  # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
     DeviceIp
     DeviceModule
@@ -224,7 +270,6 @@ sub renumber {
     DevicePortSsid
     DevicePortVlan
     DevicePortWireless
-    Community
   /) {
     $schema->resultset($set)
       ->search({ip => $old_ip})
@@ -234,10 +279,6 @@ sub renumber {
   $schema->resultset('DevicePort')
     ->search({remote_ip => $old_ip})
     ->update({remote_ip => $new_ip});
-
-  $schema->resultset('Admin')
-    ->search({device => $old_ip})
-    ->update({device => $new_ip});
 
   $schema->resultset('Node')
     ->search({switch => $old_ip})
@@ -290,6 +331,19 @@ The format is in "X days/months/years" style, similar to:
 =cut
 
 sub uptime_age  { return (shift)->get_column('uptime_age')  }
+
+=head2 first_seen_stamp
+
+Formatted version of the C<creation> field, accurate to the minute.
+
+The format is somewhat like ISO 8601 or RFC3339 but without the middle C<T>
+between the date stamp and time stamp. That is:
+
+ 2012-02-06 12:49
+
+=cut
+
+sub first_seen_stamp  { return (shift)->get_column('first_seen_stamp')  }
 
 =head2 last_discover_stamp
 

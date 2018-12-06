@@ -8,50 +8,8 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::Util::Web 'sql_match';
 use NetAddr::MAC ();
 
-hook 'before' => sub {
-  # view settings for node options
-  var('node_options' => [
-    { name => 'stamps',      label => 'Time Stamps',  default => 'on' },
-    { name => 'deviceports', label => 'Device Ports', default => 'on' },
-  ]);
-
-  # view settings for device options
-  var('device_options' => [
-    { name => 'matchall', label => 'Match All Options', default => 'on' },
-  ]);
-
-  return unless (request->path eq uri_for('/search')->path
-      or index(request->path, uri_for('/ajax/content/search')->path) == 0);
-
-  foreach my $col (@{ var('node_options') }) {
-      next unless $col->{default} eq 'on';
-      params->{$col->{name}} = 'checked'
-        if not param('tab') or param('tab') ne 'node';
-  }
-
-  foreach my $col (@{ var('device_options') }) {
-      next unless $col->{default} eq 'on';
-      params->{$col->{name}} = 'checked'
-        if not param('tab') or param('tab') ne 'device';
-  }
-};
-
 hook 'before_template' => sub {
   my $tokens = shift;
-
-  # new searches will use these defaults in their sidebars
-  $tokens->{search_node}   = uri_for('/search', {tab => 'node'});
-  $tokens->{search_device} = uri_for('/search', {tab => 'device'});
-
-  foreach my $col (@{ var('node_options') }) {
-      next unless $col->{default} eq 'on';
-      $tokens->{search_node}->query_param($col->{name}, 'checked');
-  }
-
-  foreach my $col (@{ var('device_options') }) {
-      next unless $col->{default} eq 'on';
-      $tokens->{search_device}->query_param($col->{name}, 'checked');
-  }
 
   return unless (request->path eq uri_for('/search')->path
       or index(request->path, uri_for('/ajax/content/search')->path) == 0);
@@ -81,6 +39,7 @@ get '/search' => require_login sub {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
             my ($likeval, $likeclause) = sql_match($q);
             my $mac = NetAddr::MAC->new($q);
+            undef $mac if ($mac and $mac->as_ieee and ($mac->as_ieee eq '00:00:00:00'));
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {

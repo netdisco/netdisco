@@ -4,155 +4,58 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+
+use URI ();
 use URL::Encode 'url_params_mixed';
+use App::Netdisco::Util::Device 'match_devicetype';
 
-hook 'before' => sub {
-  my @default_port_columns_left = (
-    { name => 'c_admin',       label => 'Port Controls',     default => ''   },
-    { name => 'c_port',        label => 'Port',              default => 'on' },
-  );
-
-  my @default_port_columns_right = (
-    { name => 'c_descr',       label => 'Description',       default => ''   },
-    { name => 'c_comment',     label => 'Last Comment',      default => ''   },
-    { name => 'c_type',        label => 'Type',              default => ''   },
-    { name => 'c_duplex',      label => 'Duplex',            default => ''   },
-    { name => 'c_lastchange',  label => 'Last Change',       default => ''   },
-    { name => 'c_name',        label => 'Name',              default => 'on' },
-    { name => 'c_speed',       label => 'Speed',             default => ''   },
-    { name => 'c_mac',         label => 'Port MAC',          default => ''   },
-    { name => 'c_mtu',         label => 'MTU',               default => ''   },
-    { name => 'c_pvid',        label => 'Native VLAN',       default => 'on' },
-    { name => 'c_vmember',     label => 'VLAN Membership',   default => 'on' },
-    { name => 'c_power',       label => 'PoE',               default => ''   },
-    { name => 'c_ssid',        label => 'SSID',              default => ''   },
-    { name => 'c_nodes',       label => 'Connected Nodes',   default => ''   },
-    { name => 'c_neighbors',   label => 'Connected Devices', default => 'on' },
-    { name => 'c_stp',         label => 'Spanning Tree',     default => ''   },
-    { name => 'c_up',          label => 'Status',            default => ''   },
-  );
-
-  # build list of port detail columns
-  my @port_columns = ();
-
-  push @port_columns,
-    grep {$_->{position} eq 'left'} @{ setting('_extra_device_port_cols') };
-  push @port_columns, @default_port_columns_left;
-  push @port_columns,
-    grep {$_->{position} eq 'mid'} @{ setting('_extra_device_port_cols') };
-  push @port_columns, @default_port_columns_right;
-  push @port_columns,
-    grep {$_->{position} eq 'right'} @{ setting('_extra_device_port_cols') };
-
-  var('port_columns' => \@port_columns);
-
-  # view settings for port connected devices
-  var('connected_properties' => [
-    { name => 'n_age',      label => 'Age Stamp',      default => ''   },
-    { name => 'n_ip4',      label => 'IPv4 Addresses', default => 'on' },
-    { name => 'n_ip6',      label => 'IPv6 Addresses', default => 'on' },
-    { name => 'n_netbios',  label => 'NetBIOS',        default => 'on' },
-    { name => 'n_ssid',     label => 'SSID',           default => 'on' },
-    { name => 'n_vendor',   label => 'Vendor',         default => ''   },
-    { name => 'n_archived', label => 'Archived Data',  default => ''   },
-  ]);
-
-  return unless (request->path eq uri_for('/device')->path
-    or index(request->path, uri_for('/ajax/content/device')->path) == 0);
-
-  # override ports form defaults with cookie settings
-
-  my $cookie = (cookie('nd_ports-form') || '');
-  my $cdata = url_params_mixed($cookie);
-
-  if ($cdata and ref {} eq ref $cdata and not param('reset')) {
-      foreach my $item (@{ var('port_columns') }) {
-          my $key = $item->{name};
-          next unless defined $cdata->{$key}
-            and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
-          $item->{default} = $cdata->{$key};
-      }
-
-      foreach my $item (@{ var('connected_properties') }) {
-          my $key = $item->{name};
-          next unless defined $cdata->{$key}
-            and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
-          $item->{default} = $cdata->{$key};
-      }
-
-      foreach my $key (qw/age_num age_unit mac_format/) {
-          params->{$key} ||= $cdata->{$key}
-            if defined $cdata->{$key}
-               and $cdata->{$key} =~ m/^[[:alnum:]_]+$/;
-      }
-  }
-
-  # copy ports form defaults into request query params if this is
-  # a redirect from within the application (tab param is not set)
-
-  if (param('reset') or not param('tab') or param('tab') ne 'ports') {
-      foreach my $col (@{ var('port_columns') }) {
-          delete params->{$col->{name}};
-          params->{$col->{name}} = 'checked'
-            if $col->{default} eq 'on';
-      }
-
-      foreach my $col (@{ var('connected_properties') }) {
-          delete params->{$col->{name}};
-          params->{$col->{name}} = 'checked'
-            if $col->{default} eq 'on';
-      }
-
-      # not stored in the cookie
-      params->{'age_num'} ||= 3;
-      params->{'age_unit'} ||= 'months';
-      params->{'mac_format'} ||= 'IEEE';
-
-      if (param('reset')) {
-          params->{'age_num'} = 3;
-          params->{'age_unit'} = 'months';
-          params->{'mac_format'} = 'IEEE';
-
-          # nuke the port params cookie
-          cookie('nd_ports-form' => '', expires => '-1 day');
-      }
-  }
-};
+# build view settings for port connected nodes and devices
+set('connected_properties' => [
+  sort { $a->{idx} <=> $b->{idx} }
+  map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
+  grep { $_ =~ m/^n_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
+]);
 
 hook 'before_template' => sub {
   my $tokens = shift;
 
-  # new searches will use these defaults in their sidebars
-  $tokens->{device_ports} = uri_for('/device', { tab => 'ports' });
+  # allow checking of discoverability of remote connected device
+  $tokens->{has_snmp} = sub { not match_devicetype(shift, 'discover_no_type') };
 
-  # copy ports form defaults into helper values for building template links
+  my $defaults = var('sidebar_defaults')->{'device_ports'}
+    or return;
 
-  foreach my $key (qw/age_num age_unit mac_format/) {
-      $tokens->{device_ports}->query_param($key, params->{$key});
+  # override ports form defaults with cookie settings
+  # always do this so that embedded links to device ports page have user prefs
+  if (param('reset')) {
+    cookie('nd_ports-form' => '', expires => '-1 day');
+  }
+  elsif (my $cookie = cookie('nd_ports-form')) {
+    my $cdata = url_params_mixed($cookie);
+
+    if ($cdata and (ref {} eq ref $cdata)) {
+      foreach my $key (keys %{ $defaults }) {
+        $defaults->{$key} = $cdata->{$key};
+      }
+    }
   }
 
-  $tokens->{mac_format_call} = 'as_'. lc(params->{'mac_format'})
-    if params->{'mac_format'};
-
-  foreach my $col (@{ var('port_columns') }) {
-      next unless $col->{default} eq 'on';
-      $tokens->{device_ports}->query_param($col->{name}, 'checked');
+  # used in the device search sidebar template to set selected items
+  foreach my $opt (qw/hgroup lgroup/) {
+      my $p = (ref [] eq ref param($opt) ? param($opt)
+                                          : (param($opt) ? [param($opt)] : []));
+      $tokens->{"${opt}_lkp"} = { map { $_ => 1 } @$p };
   }
 
-  foreach my $col (@{ var('connected_properties') }) {
-      next unless $col->{default} eq 'on';
-      $tokens->{device_ports}->query_param($col->{name}, 'checked');
+  return if param('reset')
+    or not var('sidebar_key') or (var('sidebar_key') ne 'device_ports');
+
+  # update cookie from params we just recieved in form submit
+  my $uri = URI->new();
+  foreach my $key (keys %{ $defaults }) {
+    $uri->query_param($key => param($key));
   }
-
-  return unless (request->path eq uri_for('/device')->path
-    or index(request->path, uri_for('/ajax/content/device')->path) == 0);
-
-  # for templates to link to same page with modified query but same options
-  my $self_uri = uri_for(request->path, scalar params);
-  $self_uri->query_param_delete('q');
-  $self_uri->query_param_delete('f');
-  $self_uri->query_param_delete('prefer');
-  $tokens->{self_options} = $self_uri->query_form_hash;
+  cookie('nd_ports-form' => $uri->query(), expires => '365 days');
 };
 
 get '/device' => require_login sub {
@@ -179,6 +82,8 @@ get '/device' => require_login sub {
     params->{'tab'} ||= 'details';
     template 'device', {
       display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
+      lgroup_list => [ schema('netdisco')->resultset('Device')->get_distinct_col('location') ],
+      hgroup_list => setting('host_group_displaynames'),
       device => params->{'tab'},
     };
 };

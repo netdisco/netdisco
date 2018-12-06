@@ -36,7 +36,10 @@ of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
 Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
 
+=back
+
 =cut
+
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
 

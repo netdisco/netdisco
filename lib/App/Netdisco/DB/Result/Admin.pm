@@ -46,6 +46,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "debug",
   { data_type => "boolean", is_nullable => 1 },
+  "device_key",
+  { data_type => "text", is_nullable => 1 },
 );
 
 
@@ -56,15 +58,60 @@ __PACKAGE__->set_primary_key("job");
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
+=head1 RELATIONSHIPS
+
+=head2 device_skips( $backend?, $max_deferrals?, $retry_after? )
+
+Retuns the set of C<device_skip> entries which apply to this job. They match
+the device IP, current backend, and job action.
+
+You probably want to use the ResultSet method C<skipped> which completes this
+query with a C<backend> host, C<max_deferrals>, and C<retry_after> parameters
+(or sensible defaults).
+
+=cut
+
+__PACKAGE__->might_have( device_skips => 'App::Netdisco::DB::Result::DeviceSkip',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.backend" => { '=' => \'?' },
+      "$args->{foreign_alias}.device"
+        => { -ident => "$args->{self_alias}.device" },
+      -or => [
+        "$args->{foreign_alias}.actionset"
+            => { '@>' => \"string_to_array($args->{self_alias}.action,'')" },
+        -and => [
+            "$args->{foreign_alias}.deferrals"  => { '>=' => \'?' },
+            "$args->{foreign_alias}.last_defer" =>
+                { '>', \'(LOCALTIMESTAMP - ?::interval)' },
+        ],
+      ],
+    };
+  },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
+
+=head2 target
+
+Returns the single C<device> to which this Job entry was associated.
+
+The JOIN is of type LEFT, in case the C<device> is not in the database.
+
+=cut
+
+__PACKAGE__->belongs_to( target => 'App::Netdisco::DB::Result::Device',
+  { 'foreign.ip' => 'self.device' }, { join_type => 'LEFT' } );
+
 =head1 METHODS
 
-=head2 summary
+=head2 display_name
 
 An attempt to make a meaningful statement about the job.
 
 =cut
 
-sub summary {
+sub display_name {
     my $job = shift;
     return join ' ',
       $job->action,

@@ -1,0 +1,98 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin;
+FindBin::again();
+use Path::Class 'dir';
+
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+
+  unshift @INC,
+    split m/:/, ($ENV{NETDISCO_INC} || '');
+}
+
+use App::Netdisco;
+use Dancer qw/:moose :script/;
+
+BEGIN {
+  warning sprintf "App::Netdisco %s backend", ($App::Netdisco::VERSION || 'HEAD');
+
+  # this can take a few seconds - only do it once
+  use Net::Domain 'hostfqdn';
+  info 'resolving backend hostname...';
+  setting('workers')->{'BACKEND'} ||= (hostfqdn || 'fqdn-undefined');
+}
+
+use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
+use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
+use Role::Tiny::With;
+
+use MCE::Signal '-setpgrp';
+use MCE::Flow Sereal => 1;
+use MCE::Queue;
+
+# set temporary MCE files' location in home directory
+my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+my $tmp_dir = ($ENV{NETDISCO_TEMP} || dir($home, 'tmp'));
+mkdir $tmp_dir if ! -d $tmp_dir;
+
+# process-table text
+prctl 'nd2: master';
+
+# shared local job queue
+my $queue = MCE::Queue->new;
+
+# support a scheduler-only node
+setting('workers')->{'no_manager'} = 1
+  if setting('workers')->{tasks} eq '0';
+
+# MCE::Util has a limit of ncpu if AUTO is used in max_workers,
+# so we parse the field ourselves.
+my $max_workers = parse_max_workers( setting('workers')->{tasks} ) || 0;
+
+mce_flow {
+  task_name => [qw/ scheduler manager poller /],
+  max_workers => [ 1, 1, $max_workers ],
+  tmp_dir => $tmp_dir,
+  on_post_exit => sub { MCE->restart_worker },
+}, _mk_wkr('Scheduler'), _mk_wkr('Manager'), _mk_wkr('Poller');
+
+sub _mk_wkr {
+  my $role = shift;
+  return sub {
+    my $self = shift;
+    $self->{queue} = $queue;
+
+    prctl sprintf 'nd2: #%s %s: init', MCE->wid, lc($role);
+    info sprintf 'applying role %s to worker %s', $role, MCE->wid;
+
+    # post-fork, become manager, scheduler, poller, etc
+    Role::Tiny->apply_roles_to_object(
+      $self => "App::Netdisco::Backend::Role::$role");
+
+    $self->worker_begin if $self->can('worker_begin');
+    $self->worker_body;
+  };
+}
+
+=head1 NAME
+
+netdisco-backend-fg - Job Control for Netdisco
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<App::Netdisco>
+
+=back
+
+=cut

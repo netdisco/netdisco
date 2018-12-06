@@ -1,31 +1,29 @@
 <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
     <tr>
-      <th>Observing Device</th>
+      <th>Observing Interface</th>
       <th>Undiscovered Neighbor</th> 
-      <th class="nd_center-cell">Last Discovery Attempt</th>
-      <th class="nd_center-cell">Last Discovery Log</th>
+      <th>Neighbor ID</th> 
+      <th nowrap>Last Discovery</th>
     </tr>
   </thead>
   </tbody>
     [% FOREACH row IN results %]
+    [% NEXT IF NOT row.remote_ip %]
     <tr>
-      <td><a href="[% device_ports %]&q=[% row.ip | uri %]&f=[% row.port | uri %]">
-               [% row.dns || row.name || row.ip | html_entity %] ( [% row.port | html_entity %] ) </a></td>
-      <td>
-        [% IF row.remote_ip %]
-        <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
-          [% row.remote_ip | html_entity %]
-        </a> ([% row.remote_port | html_entity %])
-        [% '<br />' IF row.remote_id or row.remote_type %]
-        [% ' id: '_ row.remote_id IF row.remote_id %]
-        [% ' type: '_ row.remote_type IF row.remote_type %]
-        [% ELSE %]
-        Known Device's MAC Address seen on this Port during Macsuck
-        [% END %]
+      <td nowrap><a href="[% device_ports %]&q=[% row.ip | uri %]">
+              [% row.dns || row.name || row.ip | html_entity %]</a><br>
+          <a href="[% device_ports %]&q=[% row.ip | uri %]&f=[% row.port | uri %]">
+              [% row.port | html_entity %]</a>
+          [% IF row.port_description %]<br>[% row.port_description | html_entity %][% END %]
+          [% IF row.comment %]<br>&quot;<em>[% row.comment | html_entity %]</em>&quot;[% END %]
       </td>
-      <td class="nd_center-cell">[% row.finished | html_entity %]</td>
-      <td class="nd_center-cell">[% row.log | html_entity %]</td>
+      <td nowrap><a href="[% search_node %]&q=[% row.remote_ip | uri %]">
+          [% row.remote_ip | html_entity %]</a><br>
+          [% row.remote_port | html_entity %]</td>
+      <td>[% row.remote_id | html_entity %]<br>
+          [% row.remote_type | remove('(?:(?:C|c)opyright\s+)?\(c\).*') | remove('Technical Support: http://.*') | html_entity | html_line_break %]</td>
+      <td nowrap>[% row.finished | html_entity %]<br>[% row.log | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>

@@ -167,7 +167,7 @@ $(document).ready(function() {
   $('.nd_field-clear-icon').hide();
 
   // activate typeahead on the main search box, for device names only
-  $('#nq').typeahead({
+  $('#nq,#nqbody').typeahead({
     source: function (query, process) {
       return $.get( uri_base + '/ajax/data/devicename/typeahead', { query: query }, function (data) {
         return process(data);
@@ -186,6 +186,13 @@ $(document).ready(function() {
   });
   $('.nd_navsearchgo-specific').click(function(event) {
     event.preventDefault();
+    if ($('#nqbody').val()) {
+      $(this).parents('form').append(
+        $(document.createElement('input')).attr('type', 'hidden')
+                                          .attr('name', 'tab')
+                                          .attr('value', $(this).data('tab'))
+      ).submit();
+    }
     if ($('#nq').val()) {
       $(this).parents('form').append(
         $(document.createElement('input')).attr('type', 'hidden')
