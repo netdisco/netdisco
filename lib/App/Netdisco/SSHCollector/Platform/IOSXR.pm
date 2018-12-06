@@ -36,6 +36,11 @@ Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
+    # IOSXR show commands seem to depend on an available STDIN
+    unless (-t STDIN){
+        open STDIN, "<", "/dev/zero" or warn "Failed to fake stdin: $!";
+    }
+
     debug "$hostlabel $$ arpnip()";
     my @data = $ssh->capture("show arp vrf all");
 
