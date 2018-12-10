@@ -56,7 +56,7 @@ Getopt::Long::Configure ("bundling");
 my ($debug, $sqltrace, $device, $opensshdebug, $workers) = (undef, 0, undef, undef, "auto");
 my $result = GetOptions(
   'debug|D' => \$debug,
-  'sqltrace|Q+' => \$sqltrace,
+  'sqltrace|Q' => \$sqltrace,
   'device|d=s' => \$device,
   'opensshdebug|O' => \$opensshdebug,
   'workers|w=i' => \$workers,
@@ -292,7 +292,7 @@ Netdisco debug log level
 
 =item C<-Q>
 
-L<DBIx::Class> trace enabled. Can be specified multiple times.
+L<DBIx::Class> trace enabled.
 
 =item C<-O>
 
