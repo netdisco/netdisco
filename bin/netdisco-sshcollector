@@ -88,7 +88,8 @@ sub main {
     my @input = @{ setting('sshcollector') };
 
     if ($device){
-        @input = grep{ ($_->{hostname} && $_->{hostname} eq $device) || ($_->{ip} && $_->{ip} eq $device) } @input; 
+        @input = grep{ ($_->{hostname} && $_->{hostname} eq $device) 
+            || ($_->{ip} && $_->{ip} eq $device) } @input; 
     }
 
     #one-line Fisher-Yates from https://www.perlmonks.org/index.pl?node=Array%20One-Liners
@@ -116,7 +117,12 @@ sub main {
                 ],
             );
 
-            MCE->gather( process($hostlabel, $ssh, $host) );
+           
+            if ($ssh->error){ 
+                warning "WARNING: Couldn't connect to <$hostlabel> - " . $ssh->error;
+            }else{
+                MCE->gather( process($hostlabel, $ssh, $host) );
+            }
         }
     } \@input;
 
