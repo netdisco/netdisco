@@ -306,7 +306,7 @@ leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
  ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
 
-A paramter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
+A parameter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
 
  ~/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
 
