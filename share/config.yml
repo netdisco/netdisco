@@ -322,6 +322,7 @@ workers:
 
 # 50 minutes
 jobs_stale_after: 3000
+jobs_qdepth: 50
 
 dns:
   max_outstanding: 50
