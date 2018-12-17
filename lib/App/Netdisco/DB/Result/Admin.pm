@@ -62,7 +62,7 @@ __PACKAGE__->set_primary_key("job");
 
 =head2 device_skips( $backend?, $max_deferrals?, $retry_after? )
 
-Retuns the set of C<device_skip> entries which apply to this job. They match
+Returns the set of C<device_skip> entries which apply to this job. They match
 the device IP, current backend, and job action.
 
 You probably want to use the ResultSet method C<skipped> which completes this
@@ -122,7 +122,7 @@ sub display_name {
 
 =head1 ADDITIONAL COLUMNS
 
-=head2 entererd_stamp
+=head2 entered_stamp
 
 Formatted version of the C<entered> field, accurate to the minute.
 
