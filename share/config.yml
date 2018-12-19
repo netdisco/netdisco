@@ -85,6 +85,7 @@ web_plugins:
   - Device::Modules
   - Device::Neighbors
   - Device::Addresses
+  - Device::Vlans
 extra_web_plugins: []
 sidebar_defaults:
   search_node:
