@@ -30,8 +30,6 @@ function portSort (a, b) {
         // octal regex
         ore = /^0/,
         // convert all to strings and trim()
-        if (typeof a == 'null') { a = ''; }
-        if (typeof b == 'null') { b = ''; }
         x = a.toString().replace(sre, '') || '',
         y = b.toString().replace(sre, '') || '';
 
