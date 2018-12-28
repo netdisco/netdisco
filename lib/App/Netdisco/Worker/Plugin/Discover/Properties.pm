@@ -181,6 +181,13 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           next;
       }
 
+      # Skip interfaces which are 'notPresent' and match the notpresent type filter
+      if (defined $i_up->{$entry} and defined $i_type->{$entry} and $i_up->{$entry} eq 'notPresent' and (scalar grep {$i_type->{$entry} =~ m/^$_$/} @{setting('ignore_notpresent_types') || []}) ) {
+          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s) (config:ignore_notpresent_types)',
+            $device->ip, $entry, $port, $i_up->{$entry};
+          next;
+      }
+
       my $lc = $i_lastchange->{$entry} || 0;
       if (not $dev_uptime_wrapped and $lc > $dev_uptime) {
           info sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
@@ -263,7 +270,7 @@ sub _get_vrf_list {
         if ($vrf =~ /^\S+$/) {
             my $ctx_name = pack("C*",split(/\./,$idx));
             $ctx_name =~ s/.*[^[:print:]]+//;
-            debug sprintf(' [%s] Discover VRF %s with SNMP Context %s', $device->ip, $vrf, $ctx_name); 
+            debug sprintf(' [%s] Discover VRF %s with SNMP Context %s', $device->ip, $vrf, $ctx_name);
             push (@ok_vrfs, $ctx_name);
         }
     }
