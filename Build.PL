@@ -11,6 +11,9 @@ Module::Build->new(
     'Module::Build' => '0.42',
   },
   build_requires => {
+    'ExtUtils::Config' => '0',
+    'ExtUtils::Helpers' => '0',
+    'ExtUtils::InstallPaths' => '0',
   },
   requires => {
     'aliased' => '0',
