@@ -59,8 +59,9 @@ Performs initialisation of the Job Queue backend.
 
 =head2 jq_log()
 
-Returns a list of the most recent 50 jobs in the queue. Jobs are returned as
-objects which implement the Netdisco job instance interface (see below).
+Returns a list of the most recent jobs as defined in C<jobs_qdepth> from the
+queue. Jobs are returned as objects which implement the Netdisco job instance
+interface (see below).
 
 =head2 jq_userlog( $user )
 

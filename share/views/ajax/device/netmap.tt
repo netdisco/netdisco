@@ -216,7 +216,7 @@ function saveMapPositions() {
   graph.inspect().main.nodes.each(function(n) { n.fixed = true });
   $.post(
     '[% uri_for('/ajax/data/device/netmappositions') %]'
-    ,$("#nd_vlan-entry, #nd_hgroup-select, #nd_lgroup-select, input[name='q'], input[name='mapshow']").serialize()
+    ,$("#nd_vlan-entry, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
       + '&positions=' + JSON.stringify(graph.positions())
   );
   toastr.success('Saved map positions.');

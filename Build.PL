@@ -11,6 +11,9 @@ Module::Build->new(
     'Module::Build' => '0.42',
   },
   build_requires => {
+    'ExtUtils::Config' => '0',
+    'ExtUtils::Helpers' => '0',
+    'ExtUtils::InstallPaths' => '0',
   },
   requires => {
     'aliased' => '0',
@@ -68,7 +71,7 @@ Module::Build->new(
     'Starman' => '0.4008',
     'Storable' => '0',
     'Sys::SigAction' => '0',
-    'SNMP::Info' => '3.61',
+    'SNMP::Info' => '3.64',
     'SQL::Abstract' => '1.85',
     'SQL::Translator' => '0.11024',
     'Template' => '2.24',
