@@ -2,7 +2,9 @@
 # NETDISCO 2 CONFIGURATION FILE
 #
 # Settings in this file override share/config.yml
-# See App::Netdisco::Manual::Configuration for more info.
+#
+# https://github.com/netdisco/netdisco/wiki/Configuration has
+# in depth explanations about each setting.
 
 # ------------------
 # ESSENTIAL SETTINGS
