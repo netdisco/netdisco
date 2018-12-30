@@ -1,4 +1,15 @@
-2.040001 - 2018-12-xx
+2.040001 - 2018-12-30
+
+  [ENHANCEMENTS]
+
+  * #471 OSPF neighbor discovey will try Router ID as well as Peer ID
+  * update dependency to SNMP::Info 3.64
+
+  [BUG FIXES]
+
+  * #422 fix for Network Map positions not saving (onlinehupe)
+  * fix portsort tests to work with PhantomJS 2.x
+  * some documentation fixes (inphobia)
 
 2.040000 - 2018-12-28
 
