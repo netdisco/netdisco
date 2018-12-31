@@ -20,8 +20,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   SELECT username, 'ldap' AS role FROM users
     WHERE ldap
   UNION
-  SELECT username, 'api', AS role FROM users
-    WHERE token AND token_from
+  SELECT username, 'api' AS role FROM users
+    WHERE token IS NOT NULL AND token_from IS NOT NULL
 ENDSQL
 );
 

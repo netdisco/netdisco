@@ -25,6 +25,9 @@ swagger_path {
       description => 'All parameters will be searched for case insensitively in their values',
     },
   ],
+  responses => {
+    default => { description => 'A row from the node_ip table' },
+  },
 },
 get '/api/nodeip/search' => require_role api => sub {
     my $para = params;

@@ -12,11 +12,11 @@ our @EXPORT = qw/
 sub parse_search_params {
     my $params = shift;
     my $search = {};
-    my $partial = $params->{partial} || 0;
+    my $partial = $params->{partial} || false;
 
     foreach my $param (keys %{$params}) {
         if ($param ne 'return_url' and $param ne 'partial') {
-            if ($partial == 1) { 
+            if ($partial eq 'true') {
                 $search->{"text(".$param.")"} = { -ilike => '%'.$params->{$param}.'%'};
             }
             else {
