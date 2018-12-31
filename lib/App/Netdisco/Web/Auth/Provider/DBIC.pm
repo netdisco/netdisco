@@ -64,6 +64,7 @@ sub validate_api_token {
     my $users_table  = $settings->{users_resultset}    || 'User';
     my $token_column = $settings->{users_token_column} || 'token';
 
+    $token =~ s/^Apikey //i or return;
     my $user = try {
       $database->resultset($users_table)->find({ $token_column => $token });
     };
