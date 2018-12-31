@@ -219,5 +219,4 @@ any qr{.*} => sub {
   };
 }
 
-swagger_auto_discover;
 true;
