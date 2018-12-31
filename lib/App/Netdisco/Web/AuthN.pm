@@ -59,7 +59,16 @@ hook 'before' => sub {
 };
 
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    template 'index', { return_url => param('return_url') };
+    if (param('return_url') and param('return_url') =~ m{^/api/}) {
+      status 403;
+      return to_json {
+        error => 'not authorized',
+        return_url => param('return_url'),
+      };
+    }
+    else {
+      template 'index', { return_url => param('return_url') };
+    }
 };
 
 # override default login_handler so we can log access in the database
