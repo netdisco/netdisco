@@ -72,6 +72,15 @@ my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
 setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
 Dancer::Session::Cookie::init(session);
 
+# setup for swagger API
+my $swagger = Dancer::Plugin::Swagger->instance->doc;
+$swagger->{schemes} = ['http','https'];
+$swagger->{consumes} = 'application/json';
+$swagger->{produces} = 'application/json';
+$swagger->{securityDefinitions} = { APIKeyHeader =>
+  { type => 'apiKey', name => 'Authorization', in => 'header' } };
+$swagger->{security} = [ { APIKeyHeader => [] } ];
+
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 
