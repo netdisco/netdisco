@@ -210,7 +210,7 @@ will cause C<netdisco-do> to run the action for all addresses in that range.
 
 Run a discover on the device (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do discover -d 192.0.2.1
+ ~/bin/netdisco-do discover -d 192.0.2.1
 
 =head2 discoverall
 
@@ -220,7 +220,7 @@ Queue a discover for all known devices.
 
 Run a macsuck on the device (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do macsuck -d 192.0.2.1
+ ~/bin/netdisco-do macsuck -d 192.0.2.1
 
 =head2 macwalk
 
@@ -230,7 +230,7 @@ Queue a macsuck for all known devices.
 
 Run an arpnip on the device (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do arpnip -d 192.0.2.1
+ ~/bin/netdisco-do arpnip -d 192.0.2.1
 
 =head2 arpwalk
 
@@ -243,9 +243,9 @@ the C<-e> parameter. Optionally request for associated nodes to be archived
 (rather than deleted) by setting the C<-p> parameter to "C<yes>" (mnemonic:
 B<p>reserve).
 
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
- ~netdisco/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
+ ~/bin/netdisco-do delete -d 192.0.2.1
+ ~/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
+ ~/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
 
 =head2 renumber
 
@@ -256,13 +256,13 @@ log and node information will also be updated to refer to the new device.
 Note that I<no> check is made as to whether the new IP is reachable for future
 polling.
 
- ~netdisco/bin/netdisco-do renumber -d 192.0.2.1 -e 192.0.2.254
+ ~/bin/netdisco-do renumber -d 192.0.2.1 -e 192.0.2.254
 
 =head2 nbtstat
 
 Run an nbtstat on the node (specified with C<-d>).
 
- ~netdisco/bin/netdisco-do nbtstat -d 192.0.2.2
+ ~/bin/netdisco-do nbtstat -d 192.0.2.2
 
 =head2 nbtwalk
 
@@ -278,8 +278,8 @@ Archive nodes on the specified device. If you want to delete nodes, set the
 C<-e> parameter to "C<no>" (mnemonic: B<e>xpire). If you want to perform the
 action on a specific port, set the C<-p> parameter.
 
- ~netdisco/bin/netdisco-do expirenodes -d 192.0.2.1
- ~netdisco/bin/netdisco-do expirenodes -d 192.0.2.1 -p FastEthernet0/1 -e no
+ ~/bin/netdisco-do expirenodes -d 192.0.2.1
+ ~/bin/netdisco-do expirenodes -d 192.0.2.1 -p FastEthernet0/1 -e no
 
 =head2 graph
 
@@ -289,9 +289,9 @@ You'll need to install the L<Graph::Undirected> and L<GraphViz> Perl modules,
 and possibly also the C<graphviz> utility for your operating system. Also
 create a directory for the output files.
 
- mkdir ~netdisco/graph
- ~netdisco/bin/localenv cpanm Graph::Undirected
- ~netdisco/bin/localenv cpanm GraphViz
+ mkdir ~/graph
+ ~/bin/localenv cpanm Graph::Undirected
+ ~/bin/localenv cpanm GraphViz
 
 =head2 show
 
@@ -303,21 +303,21 @@ If you wish to test with a device class other than that discovered, prefix the
 leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
 "C<Layer2::HP::uptime>".
 
- ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e interfaces
- ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
 
-A paramter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
+A parameter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
 
- ~netdisco/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
+ ~/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
 
 =head2 psql
 
 Start an interactive terminal with the Netdisco PostgreSQL database. If you
 pass an SQL statement in the C<-e> option then it will be executed.
 
- ~netdisco/bin/netdisco-do psql
- ~netdisco/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
- ~netdisco/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
+ ~/bin/netdisco-do psql
+ ~/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
+ ~/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
 
 =head2 stats
 
@@ -328,44 +328,44 @@ Updates Netdisco's statistics on number of devices, nodes, etc, for today.
 Set the SNMP location field on the device (specified with C<-d>). Pass the
 location string in the C<-e> extra parameter.
 
- ~netdisco/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
+ ~/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
 
 =head2 contact
 
 Set the SNMP contact field on the device (specified with C<-d>). Pass the
 contact name in the C<-e> extra parameter.
 
- ~netdisco/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
+ ~/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
 
 =head2 portname
 
 Set the description on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (description).
 
- ~netdisco/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
+ ~/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
 
 =head2 portcontrol
 
 Set the up/down status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
 
- ~netdisco/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
- ~netdisco/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
+ ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
+ ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
 
 =head2 vlan
 
 Set the native VLAN on a device port. Requires the C<-d> parameter (device),
 C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
- ~netdisco/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
+ ~/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
 
 =head2 power
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("on" or "off").
 
- ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
- ~netdisco/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
+ ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
+ ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
 =head2 dumpconfig
 

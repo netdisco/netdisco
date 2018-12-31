@@ -1,3 +1,4 @@
+var system = require('system');
 /**
  * Wait until the test condition is true or a timeout occurs. Useful for waiting
  * on a server response or for a ui change (fadeIn, etc.) to occur.
@@ -34,7 +35,7 @@ function waitFor(testFx, onReady, timeOutMillis) {
 };
 
 
-if (phantom.args.length === 0 || phantom.args.length > 2) {
+if (system.args.length === 0 || system.args.length > 2) {
     console.log('Usage: run-qunit.js URL');
     phantom.exit(1);
 }
@@ -46,7 +47,7 @@ page.onConsoleMessage = function(msg) {
     console.log(msg);
 };
 
-page.open(phantom.args[0], function(status){
+page.open(system.args[1], function(status){
     if (status !== "success") {
         console.log("Unable to access network");
         phantom.exit(1);

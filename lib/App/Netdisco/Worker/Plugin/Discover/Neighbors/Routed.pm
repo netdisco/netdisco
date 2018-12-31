@@ -16,17 +16,18 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
-  my $ospf_peers  = $snmp->ospf_peers || {};
-  my $bgp_peers   = $snmp->bgp_peer_addr || {};
-  my $eigrp_peers = $snmp->eigrp_peers || {};
+  my $ospf_peers   = $snmp->ospf_peers || {};
+  my $ospf_routers = $snmp->ospf_peer_id || {};
+  my $bgp_peers    = $snmp->bgp_peer_addr || {};
+  my $eigrp_peers  = $snmp->eigrp_peers || {};
 
   return Status->info(" [$device] neigh - no BGP, OSPF, or EIGRP peers")
     unless ((scalar values %$ospf_peers) or (scalar values %$bgp_peers)
             or (scalar values %$eigrp_peers));
 
   my $count = 0;
-  foreach my $ip ((values %$ospf_peers), (values %$bgp_peers),
-                  (values %$eigrp_peers)) {
+  foreach my $ip ((values %$ospf_peers), (values %$ospf_routers),
+                  (values %$bgp_peers), (values %$eigrp_peers)) {
     my $peer = get_device($ip);
     next if $peer->in_storage or not is_discoverable($peer);
     next if vars->{'queued'}->{$ip};
