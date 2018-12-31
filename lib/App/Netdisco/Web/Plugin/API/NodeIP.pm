@@ -1,19 +1,32 @@
 package App::Netdisco::Web::Plugin::API::NodeIP;
 
 use Dancer ':syntax';
-use Dancer::Plugin::Auth::Extensible;
-
 use Dancer::Plugin::DBIC 'schema';
-
+use Dancer::Plugin::Auth::Extensible;
 use Dancer::Exception qw(:all);
+use Dancer::Plugin::Swagger;
+
+use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::API;
 
 use NetAddr::IP::Lite;
 
-use App::Netdisco::Web::Plugin;
-
-use App::Netdisco::Web::Plugin::API::Util;
-
-get '/api/nodeip/search' => sub {
+swagger_path {
+  description => 'Search for a Node to IP mapping (ARP entry)',
+  parameters => [
+    mac => 'MAC address',
+    ip => 'IP address',
+    dns => 'FQDN of the node',
+    active => { type => 'boolean', description => 'Whether the entry is still fresh', },
+    time_first => 'When first seen',
+    time_last => 'When last seen',
+    partial => {
+      type => 'boolean',
+      description => 'All parameters will be searched for case insensitively in their values',
+    },
+  ],
+},
+get '/api/nodeip/search' => require_role api => sub {
     my $para = params;
     my $search = parse_search_params($para);
     my $ips;

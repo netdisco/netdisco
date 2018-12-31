@@ -17,7 +17,7 @@ sub parse_search_params {
     foreach my $param (keys %{$params}) {
         if ($param ne 'return_url' and $param ne 'partial') {
             if ($partial == 1) { 
-                $search->{"text(".$param.")"} = { like => '%'.$params->{$param}.'%'};
+                $search->{"text(".$param.")"} = { -ilike => '%'.$params->{$param}.'%'};
             }
             else {
                 $search->{$param} = $params->{$param};
