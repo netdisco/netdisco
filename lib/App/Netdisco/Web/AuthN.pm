@@ -40,9 +40,10 @@ hook 'before' => sub {
           and (index(request->path,uri_for('/api/')->path) == 0
            or request->path eq uri_for('/swagger.json')->path)) {
 
-            my $token = request->header('X-API-Key') || param('api_key');
+            my $token = request->header('Authorization');
             my $user = $provider->validate_api_token($token)
               or return;
+
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }
@@ -68,7 +69,7 @@ post '/login' => sub {
                                                                     : 'WebUI');
     # get authN data from request (HTTP BasicAuth or URL params)
     my $authheader = request->header('Authorization');
-    if (defined $authheader and $authheader =~ /^Basic (.*)$/) {
+    if (defined $authheader and $authheader =~ /^Basic (.*)$/i) {
         my ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
         params->{username} = $u;
         params->{password} = $p;
@@ -97,13 +98,10 @@ post '/login' => sub {
 
         # if API return a token and record its lifetime
         if ($mode eq 'API') {
-            if (! $user->token_from or ! $user->token or
-                $user->token_from < (time - setting('api_token_lifetime'))) {
-              $user->update({
-                token_from => time,
-                token => \'md5(random()::text)',
-              })->discard_changes();
-            }
+            $user->update({
+              token_from => time,
+              token => \'md5(random()::text)',
+            })->discard_changes();
             return 'api_key:'. $user->token;
         }
 
