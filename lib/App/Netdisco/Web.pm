@@ -184,6 +184,12 @@ hook 'before_template' => sub {
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
 
+    # workaround for Swagger plugin weird response body
+    if (request->path eq '/swagger.json') {
+        $r->content( to_json( $r->content ) );
+        header('Content-Type' => 'application/json');
+    }
+
     if ($r->content_type and $r->content_type eq 'text/comma-separated-values') {
         my @newlines = ();
         my @lines = split m/\n/, $r->content;

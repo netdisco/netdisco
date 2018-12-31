@@ -490,8 +490,7 @@ layout: 'main'
 plugins:
   Swagger:
      main_api_module: 'App::Netdisco'
-     auto_discover_skip:
-       - qr#^/(?!api/)\w+#
+     ui_url: '/swagger-ui'
   Auth::Extensible:
     no_api_change_warning: true
     no_default_pages: true
