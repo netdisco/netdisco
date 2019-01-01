@@ -16,6 +16,7 @@ hook 'before' => sub {
 
     if (! session('logged_in_user')
         and request->path ne uri_for('/login')->path
+        and request->path ne uri_for('/logout')->path
         and request->path ne uri_for('/swagger.json')->path
         and index(request->path, uri_for('/swagger-ui')->path) != 0) {
 
@@ -162,7 +163,21 @@ Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
   ->{post}->{security}->[0]->{BasicAuth} = [];
 
 # we override the default login_handler, so logout has to be handled as well
-any ['get', 'post'] => '/logout' => sub {
+swagger_path {
+  description => 'Destroy user API Key and session cookie',
+  parameters => [],
+  responses => { default => { examples => { 'application/json' => {} } } },
+},
+get '/logout' => sub {
+    # clear out API token
+    my $user = schema('netdisco')->resultset('User')
+      ->find({ username => session('logged_in_user')});
+    $user->update({token => undef, token_from => undef})->discard_changes()
+      if $user and $user->in_storage;
+
+    # invalidate session cookie
+    session->destroy;
+
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => request->remote_address,
@@ -170,8 +185,12 @@ any ['get', 'post'] => '/logout' => sub {
       details => '',
     });
 
-    session->destroy;
-    redirect uri_for('/inventory')->path;
+    if (request->header('Accept') =~ m/(?:json|javascript)/i) {
+      return to_json {};
+    }
+    else {
+      redirect uri_for('/inventory')->path;
+    }
 };
 
 true;
