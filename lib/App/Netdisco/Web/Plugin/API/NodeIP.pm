@@ -3,27 +3,21 @@ package App::Netdisco::Web::Plugin::API::NodeIP;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Auth::Extensible;
-use Dancer::Exception qw(:all);
 use Dancer::Plugin::Swagger;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::API;
+use App::Netdisco::Util::API ':all';
 
 use NetAddr::IP::Lite;
 
 swagger_path {
-  description => 'Search for a Node to IP mapping (ARP entry)',
+  description => 'Search for a Node to IP mapping (v4 ARP or v6 Neighbor entry)',
   tags => ['NodeIPs'],
   parameters => [
-    mac => 'MAC address',
-    ip => 'IP address',
-    dns => 'FQDN of the node',
-    active => { type => 'boolean', description => 'Whether the entry is still fresh', },
-    time_first => 'When first seen',
-    time_last => 'When last seen',
+    resultsource_to_openapi_params('NodeIp'),
     partial => {
       type => 'boolean',
-      description => 'All parameters will be searched for case insensitively in their values',
+      description => 'Parameters can match anywhere in the value, ignoring case',
     },
   ],
   responses => {
@@ -40,6 +34,8 @@ get '/api/nodeip/search' => require_role api => sub {
     return format_data($ips);
 };
 
+# FIXME does not work as you can have more than one IP entry in that table
+# will issue a warning from DBIC
 get '/api/nodeip/:node' => sub {
     my $node = params->{node};
     if (defined NetAddr::IP::Lite->new($node)){
@@ -55,6 +51,8 @@ get '/api/nodeip/:node' => sub {
     }
 };
 
+# FIXME does not work as you can have more than one IP entry in that table
+# will issue a warning from DBIC
 get '/api/nodeip/:node/:method' => sub {
     my $node = params->{node};
     my $method = params->{method};
