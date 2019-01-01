@@ -3,6 +3,7 @@ package App::Netdisco::Web::AuthN;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+use Dancer::Plugin::Swagger;
 
 use MIME::Base64;
 
@@ -13,7 +14,11 @@ hook 'before' => sub {
     # from the internals of Dancer::Plugin::Auth::Extensible
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
-    if (! session('logged_in_user') && request->path ne uri_for('/login')->path) {
+    if (! session('logged_in_user')
+        and request->path ne uri_for('/login')->path
+        and request->path ne uri_for('/swagger.json')->path
+        and index(request->path, uri_for('/swagger-ui')->path) != 0) {
+
         if (setting('trust_x_remote_user')
           and scalar request->header('X-REMOTE_USER')
           and length scalar request->header('X-REMOTE_USER')) {
@@ -37,7 +42,7 @@ hook 'before' => sub {
             session(logged_in_user_realm => 'users');
         }
         elsif (setting('api_token_lifetime')
-          and (index(request->path,uri_for('/api/')->path) == 0
+          and (index(request->path, uri_for('/api/')->path) == 0
            or request->path eq uri_for('/swagger.json')->path)) {
 
             my $token = request->header('Authorization');
@@ -61,7 +66,7 @@ hook 'before' => sub {
 get qr{^/(?:login(?:/denied)?)?} => sub {
     # FIXME not sure this is the right approach
     if (param('return_url') and param('return_url') =~ m{^/api/}) {
-      status('unauthorized')
+      status('unauthorized');
       return to_json {
         error => 'not authorized',
         return_url => param('return_url'),
@@ -73,6 +78,15 @@ get qr{^/(?:login(?:/denied)?)?} => sub {
 };
 
 # override default login_handler so we can log access in the database
+swagger_path {
+  description => 'Obtain an API Key using HTTP BasicAuth',
+  parameters => [],
+  responses => {
+    default => {
+      examples => {
+        'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
+  },
+},
 post '/login' => sub {
     my $mode = (request->is_ajax ? 'WebData'
                                  : request->header('Authorization') ? 'API'
@@ -112,7 +126,7 @@ post '/login' => sub {
               token_from => time,
               token => \'md5(random()::text)',
             })->discard_changes();
-            return 'api_key:'. $user->token;
+            return to_json { api_key => $user->token };
         }
 
         redirect param('return_url');
@@ -127,8 +141,12 @@ post '/login' => sub {
           details => param('return_url'),
         });
 
-        if ($mode ne 'WebUI') {
+        if ($mode eq 'WebData') {
             status('unauthorized');
+        }
+        elsif ($mode ne 'API') {
+            status('unauthorized');
+            return to_json { error => 'authentication failed' };
         }
         else {
             vars->{login_failed}++;
@@ -138,6 +156,10 @@ post '/login' => sub {
         }
     }
 };
+
+# ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
+Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
+  ->{post}->{security}->[0]->{BasicAuth} = [];
 
 # we override the default login_handler, so logout has to be handled as well
 any ['get', 'post'] => '/logout' => sub {

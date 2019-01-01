@@ -77,8 +77,12 @@ my $swagger = Dancer::Plugin::Swagger->instance->doc;
 $swagger->{schemes} = ['http','https'];
 $swagger->{consumes} = 'application/json';
 $swagger->{produces} = 'application/json';
-$swagger->{securityDefinitions} = { APIKeyHeader =>
-  { type => 'apiKey', name => 'Authorization', in => 'header' } };
+$swagger->{securityDefinitions} = {
+  APIKeyHeader =>
+    { type => 'apiKey', name => 'Authorization', in => 'header' },
+  BasicAuth =>
+    { type => 'basic'  },
+};
 $swagger->{security} = [ { APIKeyHeader => [] } ];
 
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
