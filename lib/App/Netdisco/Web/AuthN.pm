@@ -81,6 +81,7 @@ get qr{^/(?:login(?:/denied)?)?} => sub {
 # override default login_handler so we can log access in the database
 swagger_path {
   description => 'Obtain an API Key using HTTP BasicAuth',
+  tags => ['Global'],
   parameters => [],
   responses => {
     default => {
@@ -165,6 +166,7 @@ Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
+  tags => ['Global'],
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },

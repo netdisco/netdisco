@@ -77,6 +77,15 @@ my $swagger = Dancer::Plugin::Swagger->instance->doc;
 $swagger->{schemes} = ['http','https'];
 $swagger->{consumes} = 'application/json';
 $swagger->{produces} = 'application/json';
+$swagger->{tags} = [
+  {name => 'Global'},
+  {name => 'Devices',
+    description => 'Operations relating to Devices (switches, routers, etc)'},
+  {name => 'Nodes',
+    description => 'Operations relating to Nodes (end-stations such as printers)'},
+  {name => 'NodeIPs',
+    description => 'Operations relating to MAC-IP mappings (IPv4 ARP and IPv6 Neighbors)'},
+];
 $swagger->{securityDefinitions} = {
   APIKeyHeader =>
     { type => 'apiKey', name => 'Authorization', in => 'header' },

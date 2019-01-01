@@ -13,6 +13,7 @@ use NetAddr::IP::Lite;
 
 swagger_path {
   description => 'Search for a Node to IP mapping (ARP entry)',
+  tags => ['NodeIPs'],
   parameters => [
     mac => 'MAC address',
     ip => 'IP address',
