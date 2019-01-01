@@ -185,7 +185,7 @@ full SNMP support
 
  # install dependencies:
  ~/bin/localenv cpanm --notest Net::OpenSSH Expect
- 
+
  # run manually, or add to cron:
  ~/bin/netdisco-sshcollector [-DQO] [-w <max_workers>] 
 
@@ -209,9 +209,9 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
 
-=item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
-
 =item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
+
+=item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
 
 =item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
 
@@ -227,8 +227,8 @@ The collected arp entries are then directly stored in the netdisco database.
 
 =head1 CONFIGURATION
 
-The following should go into your Netdisco 2 configuration file, "C<<
-~/environments/deployment.yml >>"
+The following should go into your Netdisco configuration file,
+F<~/environments/deployment.yml>.
 
 =over 4
 
@@ -236,7 +236,7 @@ The following should go into your Netdisco 2 configuration file, "C<<
 
 Data is collected from the machines specified in this setting. The format is a
 list of dictionaries. The keys C<ip>, C<user>, C<password>, and C<platform>
-are required.  Optionally the C<hostname> key can be used instead of the
+are required. Optionally the C<hostname> key can be used instead of the
 C<ip>. For example:
 
  sshcollector:
@@ -246,14 +246,16 @@ C<ip>. For example:
      platform: IOS
    - hostname: 'core-router.example.com'
      user: oliver
-     password: letmein
+     password:
      platform: IOS
 
 Platform is the final part of the classname to be instantiated to query the
 host, e.g. platform B<ACE> will be queried using
 C<App::Netdisco::SSHCollector::Platform::ACE>.
 
-If the password is "-", public key authentication will be attempted.
+If the password is blank, public key authentication will be attempted with the
+default key for the netdisco user. Password protected keys are currently not
+supported.
 
 =back
 
@@ -294,7 +296,7 @@ B<inetaddr> and B<macaddr> datatypes in PostgreSQL can handle.
 
 =item C<-D>
 
-Netdisco debug log level
+Netdisco debug log level.
 
 =item C<-Q>
 
@@ -302,7 +304,7 @@ L<DBIx::Class> trace enabled.
 
 =item C<-O>
 
-L<Net::OpenSSH> trace enabled
+L<Net::OpenSSH> trace enabled.
 
 =item C<-w>
 
@@ -310,9 +312,8 @@ Set maximum parallel workers for L<MCE::Loop>. The default is B<auto>.
 
 =item C<-d device>
 
-Only run for a single device. Takes an IP or hostname, must exactly match the value 
-in the config file. 
-
+Only run for a single device. Takes an IP or hostname, must exactly match the
+value in the config file.
 
 =back
 
@@ -326,6 +327,8 @@ in the config file.
 
 =item L<Expect>
 
+=item L<http://www.openssh.com/>
+
 =back
- 
+
 =cut
