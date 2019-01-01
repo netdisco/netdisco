@@ -188,16 +188,20 @@ hook 'before_template' => sub {
     $Template::Stash::PRIVATE = undef;
 };
 
-# remove empty lines from CSV response
-# this makes writing templates much more straightforward!
+# workaround for Swagger plugin weird response body
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
 
-    # workaround for Swagger plugin weird response body
     if (request->path eq '/swagger.json') {
         $r->content( to_json( $r->content ) );
         header('Content-Type' => 'application/json');
     }
+};
+
+# remove empty lines from CSV response
+# this makes writing templates much more straightforward!
+hook 'after' => sub {
+    my $r = shift; # a Dancer::Response
 
     if ($r->content_type and $r->content_type eq 'text/comma-separated-values') {
         my @newlines = ();

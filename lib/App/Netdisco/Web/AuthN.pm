@@ -59,8 +59,9 @@ hook 'before' => sub {
 };
 
 get qr{^/(?:login(?:/denied)?)?} => sub {
+    # FIXME not sure this is the right approach
     if (param('return_url') and param('return_url') =~ m{^/api/}) {
-      status 403;
+      status('unauthorized')
       return to_json {
         error => 'not authorized',
         return_url => param('return_url'),
