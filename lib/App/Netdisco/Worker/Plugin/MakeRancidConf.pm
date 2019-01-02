@@ -21,11 +21,11 @@ register_worker({ phase => 'main' }, sub {
   my $default_group = $config->{default_group} || 'default';
 
   my $rancidconf = $config->{rancid_conf} || '/etc/rancid';
-  my $rancidhome = $config->{rancid_home}
+  my $rancidcvsroot = $config->{rancid_cvsroot}
     || dir($ENV{NETDISCO_HOME}, 'rancid')->stringify;
-  mkdir $rancidhome if ! -d $rancidhome;
-  return Status->error("cannot create or see rancid home: $rancidhome")
-    if ! -d $rancidhome;
+  mkdir $rancidcvsroot if ! -d $rancidcvsroot;
+  return Status->error("cannot create or see rancid cvsroot: $rancidcvsroot")
+    if ! -d $rancidcvsroot;
 
   my $allowed_types = {};
   foreach my $type (qw/base conf/) {
@@ -87,11 +87,11 @@ register_worker({ phase => 'main' }, sub {
   }
 
   foreach my $group (keys %$routerdb) {
-    mkdir dir($rancidhome, $group)->stringify;
+    mkdir dir($rancidcvsroot, $group)->stringify;
     my $content = "#\n# Router list file for RANCID group $group.\n";
     $content .= "# Generate automatically by App::Netdisco::Worker::Plugin::MakeRancidConf\n#\n";
     $content .= join "\n", sort @{$routerdb->{$group}};
-    write_text(file($rancidhome, $group, 'router.db')->stringify, "${content}\n");
+    write_text(file($rancidcvsroot, $group, 'router.db')->stringify, "${content}\n");
   }
 
   return Status->done('Wrote RANCID configuration.');
@@ -130,7 +130,7 @@ Here is a complete example of the configuration, which must be called
 C<rancid>. All keys are optional:
 
  rancid:
-   rancid_home:     "$ENV{NETDISCO_HOME}/rancid" # default
+   rancid_cvsroot:  '$ENV{NETDISCO_HOME}/rancid' # default
    rancid_conf:     '/etc/rancid'                # default
    down_age:        '1 day'                      # default
    delimiter:       ';'                          # default
@@ -147,8 +147,8 @@ C<rancid>. All keys are optional:
    by_ip:           'host_group7_acl'
    by_hostname:     'host_group8_acl'
 
-Note that the default home for writing files is not F</var/lib/rancid> so
-you may wish to set this in C<rancid_home>, (especially if migrating from the old
+Note that the default directory for writing files is not F</var/lib/rancid> so
+you may wish to set this in C<rancid_cvsroot>, (especially if migrating from the old
 C<netdisco-rancid-export> script).
 
 Any values above that are a Host Group ACL will take either a single item or
@@ -168,10 +168,11 @@ and then refer to named entries in that, for example:
 
 =head2 C<rancid_conf>
 
-The location where RANCID is installed. It will be used to check the existance
-of vendor parameter before the export of the device to the RANCID configuration.
+The location where the RANCID configuration (F<rancid.types.base> and 
+F<rancid.types.conf>) is installed. It will be used to check the existance
+of device type parameters before exporting the devices to the RANCID configuration.
 
-=head2 C<rancid_home>
+=head2 C<rancid_cvsroot>
 
 The location to write RANCID group configuration files into. A subdirectory
 for each group will be created.
