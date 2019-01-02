@@ -26,7 +26,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
             or (scalar values %$bgp_peers) or (scalar values %$eigrp_peers));
 
   my $count = 0;
-  foreach my $ip ((values %$ospf_peers), (values %ospf_routers),
+  foreach my $ip ((values %$ospf_peers), (values %$ospf_routers),
                   (values %$bgp_peers), (values %$eigrp_peers)) {
     my $peer = get_device($ip);
     next if $peer->in_storage or not is_discoverable($peer);
