@@ -17,6 +17,7 @@ Module::Build->new(
   },
   requires => {
     'aliased' => '0',
+    'autovivification' => '0',
     'namespace::clean' => '0.24',
     'version' => '0.9902',
     'Algorithm::Cron' => '0.07',
