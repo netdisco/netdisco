@@ -110,10 +110,13 @@ MakeRancidConf - Generate RANCID Configuration
 This worker will generate a RANCID configuration for all devices in Netdisco.
 
 Optionally you can provide configuration to control the output, however the
-defaults are sane, and will create one RANCID group called "C<default>" which
-contains all devices. Those devices not discovered successfully within the
-past day will be marked as "down" for RANCID to skip. Configuration is saved
-to the "rancid" subdirectory of Netdisco's home folder.
+defaults are sane for RANCID versions 3.x and will create one RANCID group
+called "C<default>" which contains all devices. Those devices not discovered
+successfully within the past day will be marked as "down" for RANCID to skip.
+Configuration is saved to the F<~/rancid> subdirectory of Netdisco's home folder.
+
+Note that this only generates the router.db files, you will still need to
+configure RANCID's F<.cloginrc> and schedule C<rancid-run> to run.
 
 You could run this worker at 09:05 each day using the following configuration:
 
@@ -157,7 +160,7 @@ and then refer to named entries in that, for example:
  host_groups:
    coredevices: '192.0.2.0/24'
    edgedevices: '172.16.0.0/16'
- 
+
  rancid:
    groups:
      core_devices: 'group:coredevices'
@@ -165,8 +168,8 @@ and then refer to named entries in that, for example:
 
 =head2 C<rancid_conf>
 
-The location where is installed RANCID. It will be used to check the existing of vendor parameter
-before the export of the device in RANCID configuration.
+The location where RANCID is installed. It will be used to check the existance
+of vendor parameter before the export of the device to the RANCID configuration.
 
 =head2 C<rancid_home>
 
@@ -180,12 +183,12 @@ jobs on your network. Devices which have not been discovered within this time
 will be marked as "C<down>" to RANCID.
 
 The format is any time interval known and understood by PostgreSQL, such as at
-L<https://www.postgresql.org/docs/8.4/static/functions-datetime.html>.
+L<https://www.postgresql.org/docs/10/static/functions-datetime.html>.
 
 =head2 C<delimiter>
 
 Set this to the delimiter character if needed to be different from the
-default.
+default, the default is C<;>.
 
 =head2 C<default_group>
 
@@ -193,14 +196,15 @@ Put devices into this group if they do not match other groups defined.
 
 =head2 C<excluded>
 
-This dictionary define a list of device that you do not wish to export to RANCID configuration.
+This dictionary defines a list of devices that you do not wish to export to
+RANCID configuration.
 
 The value should be a L<Netdisco ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices in the Netdisco database.
 
 =head2 C<groups>
 
-This dictionary maps RANCID Group names with configuration which will match
+This dictionary maps RANCID group names with configuration which will match
 devices in the Netdisco database.
 
 The left hand side (key) should be the RANCID group name, the right hand side
@@ -210,10 +214,10 @@ to select devices in the Netdisco database.
 
 =head2 C<vendormap>
 
-If the device Vendor in Netdisco is not the same as the RANCID vendor script,
-configure a mapping here.
+If the device vendor in Netdisco is not the same as the RANCID vendor script or
+device type, configure a mapping here.
 
-The left hand side (key) should be the RANCID vendor, the right hand side
+The left hand side (key) should be the RANCID device type, the right hand side
 (value) should be a L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices in the Netdisco database.
@@ -223,13 +227,13 @@ to select devices in the Netdisco database.
 L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices which will be written to the RANCID config as an IP address,
-instead of the DNS FQDN or SNMP host name.
+instead of the DNS FQDN or SNMP hostname.
 
 =head2 C<by_hostname>
 
 L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
-to select devices which will have the unqualified host name written to the
+to select devices which will have the unqualified hostname written to the
 RANCID config. This is done simply by stripping the C<domain_suffix>
 configuration setting from the device FQDN.
 
