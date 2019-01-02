@@ -21,10 +21,20 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $interfaces = $snmp->interfaces || {};
   my %properties = ();
 
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
+
   my $raw_speed = $snmp->i_speed_raw || {};
 
   foreach my $idx (keys %$raw_speed) {
     my $port = $interfaces->{$idx} or next;
+    if (!defined $device_ports->{$port}) {
+        info sprintf ' [%s] properties/speed - local port %s not in database!',
+          $device->ip, $port;
+        next;
+    }
+
     $properties{ $port }->{raw_speed} = $raw_speed->{$idx};
   }
 
@@ -32,6 +42,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   foreach my $idx (keys %$err_cause) {
     my $port = $interfaces->{$idx} or next;
+    if (!defined $device_ports->{$port}) {
+        info sprintf ' [%s] properties/errdis - local port %s not in database!',
+          $device->ip, $port;
+        next;
+    }
+
     $properties{ $port }->{error_disable_cause} = $err_cause->{$idx};
   }
 
@@ -39,6 +55,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   foreach my $idx (keys %$faststart) {
     my $port = $interfaces->{$idx} or next;
+    if (!defined $device_ports->{$port}) {
+        info sprintf ' [%s] properties/faststart - local port %s not in database!',
+          $device->ip, $port;
+        next;
+    }
+
     $properties{ $port }->{faststart} = $faststart->{$idx};
   }
 
@@ -54,6 +76,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   foreach my $idx (keys %$c_if) {
     my $port = $interfaces->{ $c_if->{$idx} } or next;
+    if (!defined $device_ports->{$port}) {
+        info sprintf ' [%s] properties/lldpcap - local port %s not in database!',
+          $device->ip, $port;
+        next;
+    }
 
     my $remote_cap  = $c_cap->{$idx} || [];
     my $remote_type = Encode::decode('UTF-8', $c_platform->{$idx} || '');
