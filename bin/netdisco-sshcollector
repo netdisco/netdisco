@@ -53,10 +53,13 @@ use Pod::Usage 'pod2usage';
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($debug, $sqltrace) = (undef, 0);
+my ($debug, $sqltrace, $device, $opensshdebug, $workers) = (undef, 0, undef, undef, "auto");
 my $result = GetOptions(
-  'debug|D'    => \$debug,
-  'sqltrace|Q+'  => \$sqltrace,
+  'debug|D' => \$debug,
+  'sqltrace|Q' => \$sqltrace,
+  'device|d=s' => \$device,
+  'opensshdebug|O' => \$opensshdebug,
+  'workers|w=i' => \$workers,
 ) or pod2usage(
   -msg => 'error: bad options',
   -verbose => 0,
@@ -71,10 +74,11 @@ $ENV{DBIC_TRACE} ||= $sqltrace;
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
 
-#this may be helpful with SSH issues:
-#$Net::OpenSSH::debug = ~0;
+if ($opensshdebug){
+    $Net::OpenSSH::debug = ~0;
+}
 
-MCE::Loop::init { chunk_size => 1 };
+MCE::Loop::init { chunk_size => 1, max_workers => $workers };
 my %stats;
 $stats{entry} = 0;
 
@@ -82,6 +86,11 @@ exit main();
 
 sub main {
     my @input = @{ setting('sshcollector') };
+
+    if ($device){
+        @input = grep{ ($_->{hostname} && $_->{hostname} eq $device) 
+            || ($_->{ip} && $_->{ip} eq $device) } @input; 
+    }
 
     #one-line Fisher-Yates from https://www.perlmonks.org/index.pl?node=Array%20One-Liners
     my ($i,$j) = (0);
@@ -108,7 +117,12 @@ sub main {
                 ],
             );
 
-            MCE->gather( process($hostlabel, $ssh, $host) );
+           
+            if ($ssh->error){ 
+                warning "WARNING: Couldn't connect to <$hostlabel> - " . $ssh->error;
+            }else{
+                MCE->gather( process($hostlabel, $ssh, $host) );
+            }
         }
     } \@input;
 
@@ -171,9 +185,12 @@ full SNMP support
 
  # install dependencies:
  ~/bin/localenv cpanm --notest Net::OpenSSH Expect
- 
+
  # run manually, or add to cron:
- ~/bin/netdisco-sshcollector [-DQ]
+ ~/bin/netdisco-sshcollector [-DQO] [-w <max_workers>] 
+
+ # limit run to a single device defined in the config
+ ~/bin/netdisco-sshcollector [-DQO] [-w <max_workers>] -d <device> 
 
 =head1 DESCRIPTION
 
@@ -192,9 +209,9 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
 
-=item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
-
 =item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
+
+=item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
 
 =item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
 
@@ -210,8 +227,8 @@ The collected arp entries are then directly stored in the netdisco database.
 
 =head1 CONFIGURATION
 
-The following should go into your Netdisco 2 configuration file, "C<<
-~/environments/deployment.yml >>"
+The following should go into your Netdisco configuration file,
+F<~/environments/deployment.yml>.
 
 =over 4
 
@@ -219,7 +236,7 @@ The following should go into your Netdisco 2 configuration file, "C<<
 
 Data is collected from the machines specified in this setting. The format is a
 list of dictionaries. The keys C<ip>, C<user>, C<password>, and C<platform>
-are required.  Optionally the C<hostname> key can be used instead of the
+are required. Optionally the C<hostname> key can be used instead of the
 C<ip>. For example:
 
  sshcollector:
@@ -229,14 +246,16 @@ C<ip>. For example:
      platform: IOS
    - hostname: 'core-router.example.com'
      user: oliver
-     password: letmein
+     password:
      platform: IOS
 
 Platform is the final part of the classname to be instantiated to query the
 host, e.g. platform B<ACE> will be queried using
 C<App::Netdisco::SSHCollector::Platform::ACE>.
 
-If the password is "-", public key authentication will be attempted.
+If the password is blank, public key authentication will be attempted with the
+default key for the netdisco user. Password protected keys are currently not
+supported.
 
 =back
 
@@ -271,20 +290,30 @@ don't support command execution via ssh:
 The returned IP and MAC addresses should be in a format that the respective
 B<inetaddr> and B<macaddr> datatypes in PostgreSQL can handle.   
 
-=head1 DEBUG LEVELS
-
-The flags "C<-DQ>" can be specified, multiple times, and enable the following
-items in order:
+=head1 COMMAND LINE OPTIONS
 
 =over 4
 
 =item C<-D>
 
-Netdisco debug log level
+Netdisco debug log level.
 
 =item C<-Q>
 
-L<DBIx::Class> trace enabled
+L<DBIx::Class> trace enabled.
+
+=item C<-O>
+
+L<Net::OpenSSH> trace enabled.
+
+=item C<-w>
+
+Set maximum parallel workers for L<MCE::Loop>. The default is B<auto>. 
+
+=item C<-d device>
+
+Only run for a single device. Takes an IP or hostname, must exactly match the
+value in the config file.
 
 =back
 
@@ -298,6 +327,8 @@ L<DBIx::Class> trace enabled
 
 =item L<Expect>
 
+=item L<http://www.openssh.com/>
+
 =back
- 
+
 =cut

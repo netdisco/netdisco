@@ -1,3 +1,40 @@
+2.040002 - 2018-12-30
+
+  [BUG FIXES]
+
+  * correction for git sync
+
+2.040001 - 2018-12-30
+
+  [ENHANCEMENTS]
+
+  * #471 OSPF neighbor discovey will try Router ID as well as Peer ID
+  * update dependency to SNMP::Info 3.64
+
+  [BUG FIXES]
+
+  * #422 fix for Network Map positions not saving (onlinehupe)
+  * fix portsort tests to work with PhantomJS 2.x
+  * some documentation fixes (inphobia)
+
+2.040000 - 2018-12-28
+
+  [NEW FEATURES]
+
+  * #464 ignore_notpresent_types config to ignore notPresent interfaces (inphobia, nic)
+  * #469 jobs_qdepth config to set length of job queue in web view (inphobia)
+
+  [ENHANCEMENTS]
+
+  * #459 additional interface type to ignore (inphobia)
+  * #460 several improvements to netdisco-sshcollector (rc9000)
+
+  [BUG FIXES]
+
+  * #456 fix POD error (manwar)
+  * #461 provide stdin to sshcollector (rc9000)
+  * #467 documentation fixes (inphobia)
+
 2.039033 - 2018-10-19
 
   [BUG FIXES]

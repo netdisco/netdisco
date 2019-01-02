@@ -18,7 +18,12 @@ script: |
   ND_PHANTOMJS=/usr/bin/phantomjs ./Build test --test_files xt/
 notifications:
   irc:
-    on_success: change
+    on_success: always
     on_failure: always
     channels:
       - 'chat.freenode.net#netdisco'
+  email:
+    on_success: always
+    on_failure: always
+    recipients:
+      - 'netdisco-ng-commit@lists.sourceforge.net'

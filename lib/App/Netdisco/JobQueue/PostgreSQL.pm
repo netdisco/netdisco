@@ -273,7 +273,7 @@ sub jq_log {
   return schema('netdisco')->resultset('Admin')->search({}, {
     prefetch => 'target',
     order_by => { -desc => [qw/entered device action/] },
-    rows => 50,
+    rows     => (setting('jobs_qdepth') || 50),
   })->with_times->hri->all;
 }
 
