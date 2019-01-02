@@ -1,5 +1,8 @@
 package App::Netdisco::Worker::Plugin::MakeRancidConf;
 
+use strict;
+use warnings;
+
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
@@ -24,21 +27,22 @@ register_worker({ phase => 'main' }, sub {
   my $rancidcvsroot = $config->{rancid_cvsroot}
     || dir($ENV{NETDISCO_HOME}, 'rancid')->stringify;
   mkdir $rancidcvsroot if ! -d $rancidcvsroot;
-  return Status->error("cannot create or see rancid cvsroot: $rancidcvsroot")
+  return Status->error("cannot create or access rancid cvsroot: $rancidcvsroot")
     if ! -d $rancidcvsroot;
 
   my $allowed_types = {};
   foreach my $type (qw/base conf/) {
     my $type_file = file($rancidconf, "rancid.types.$type")->stringify;
+    debug sprintf("trying rancid configuration file %s\n", $type_file);
     next unless -f $type_file;
     my @lines = read_lines($type_file);
     foreach my $line (@lines) {
       next if $line =~ m/^(?:\#|\$)/;
-      $allowed_types->{$1} += 1 if $line =~ m/^([-a-z0-9_]+);login;.*$/;
+      $allowed_types->{$1} += 1 if $line =~ m/^([a-z0-9_\-]+);login;.*$/;
     }
   }
   
-  return Status->error("You didn't have any type configured in your RANCiD installation.")
+  return Status->error("You didn't have any device types configured in your RANCiD installation.")
     if ! scalar keys %$allowed_types;
 
   my $devices = schema('netdisco')->resultset('Device')->search(undef, {
@@ -124,6 +128,10 @@ You could run this worker at 09:05 each day using the following configuration:
    makerancidconf:
      when: '5 9 * * *'
 
+Since MakeRancidConf is a worker module it can also be run via C<netdisco-do>:
+
+ netdisco-do makerancidconf
+
 =head1 CONFIGURATION
 
 Here is a complete example of the configuration, which must be called
@@ -151,8 +159,8 @@ Note that the default directory for writing files is not F</var/lib/rancid> so
 you may wish to set this in C<rancid_cvsroot>, (especially if migrating from the old
 C<netdisco-rancid-export> script).
 
-Any values above that are a Host Group ACL will take either a single item or
-a list of Network Identifiers or Device Properties. See the L<ACL
+Any values above that are a host group ACL will take either a single item or
+a list of network identifiers or device properties. See the L<ACL
 documentation|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 wiki page for full details. We advise you to use the C<host_groups> setting
 and then refer to named entries in that, for example:
@@ -160,22 +168,31 @@ and then refer to named entries in that, for example:
  host_groups:
    coredevices: '192.0.2.0/24'
    edgedevices: '172.16.0.0/16'
+   grp-nxos:    'os:nx-os'
 
  rancid:
    groups:
      core_devices: 'group:coredevices'
      edge_devices: 'group:edgedevices'
+   vendormap:
+     cisco-nx:     'group:grp-nxos'
+   by_ip:          'any'
+
+Do not forget that RANCID also needs configuring when adding a new group,
+such as scheduling the group to run, adding it to F<rancid.conf>, setting up the
+email config and creating the repository with C<rancid-cvs>.
 
 =head2 C<rancid_conf>
 
 The location where the RANCID configuration (F<rancid.types.base> and 
 F<rancid.types.conf>) is installed. It will be used to check the existance
-of device type parameters before exporting the devices to the RANCID configuration.
+of device types before exporting the devices to the RANCID configuration. if no match
+is found the device will not be added to rancid.
 
 =head2 C<rancid_cvsroot>
 
-The location to write RANCID group configuration files into. A subdirectory
-for each group will be created.
+The location to write RANCID group configuration files (F<router.db>) into. A
+subdirectory for each group will be created.
 
 =head2 C<down_age>
 
@@ -188,12 +205,12 @@ L<https://www.postgresql.org/docs/10/static/functions-datetime.html>.
 
 =head2 C<delimiter>
 
-Set this to the delimiter character if needed to be different from the
-default, the default is C<;>.
+Set this to the delimiter character for your F<router.db> entries if needed to
+be different from the default, the default is C<;>.
 
 =head2 C<default_group>
 
-Put devices into this group if they do not match other groups defined.
+Put devices into this group if they do not match any other groups defined.
 
 =head2 C<excluded>
 
@@ -222,6 +239,17 @@ The left hand side (key) should be the RANCID device type, the right hand side
 (value) should be a L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices in the Netdisco database.
+
+Note that vendors might have a large array of operating systems which require
+different RANCID modules. Mapping operating systems to RANCID device types is
+a good solution to use the correct device type. Example:
+
+ host_groups:
+   grp-ciscosb:   'os:ros'
+
+ rancid:
+   vendormap:
+     cisco-sb:    'group:grp-ciscosb'
 
 =head2 C<by_ip>
 
