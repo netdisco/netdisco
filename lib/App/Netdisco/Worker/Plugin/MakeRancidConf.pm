@@ -42,7 +42,7 @@ register_worker({ phase => 'main' }, sub {
     }
   }
   
-  return Status->error("You didn't have any device types configured in your RANCiD installation.")
+  return Status->error("You didn't have any device types configured in your rancid installation.")
     if ! scalar keys %$allowed_types;
 
   my $devices = schema('netdisco')->resultset('Device')->search(undef, {
@@ -81,7 +81,7 @@ register_worker({ phase => 'main' }, sub {
       debug " skipping $d with unresolved vendor: $vendor";
       next;
     } elsif (scalar keys %$allowed_types and !exists($allowed_types->{$vendor})) {
-      debug " skipping $d: $vendor doesn't exist in RANCiD's vendor list";
+      debug " skipping $d: $vendor doesn't exist in rancid's vendor list";
       next;
     }
 
@@ -92,13 +92,13 @@ register_worker({ phase => 'main' }, sub {
 
   foreach my $group (keys %$routerdb) {
     mkdir dir($rancidcvsroot, $group)->stringify;
-    my $content = "#\n# Router list file for RANCID group $group.\n";
+    my $content = "#\n# Router list file for rancid group $group.\n";
     $content .= "# Generate automatically by App::Netdisco::Worker::Plugin::MakeRancidConf\n#\n";
     $content .= join "\n", sort @{$routerdb->{$group}};
     write_text(file($rancidcvsroot, $group, 'router.db')->stringify, "${content}\n");
   }
 
-  return Status->done('Wrote RANCID configuration.');
+  return Status->done('Wrote rancid configuration.');
 });
 
 true;
@@ -107,20 +107,20 @@ true;
 
 =head1 NAME
 
-MakeRancidConf - Generate RANCID Configuration
+MakeRancidConf - Generate rancid Configuration
 
 =head1 INTRODUCTION
 
-This worker will generate a RANCID configuration for all devices in Netdisco.
+This worker will generate a rancid configuration for all devices in Netdisco.
 
 Optionally you can provide configuration to control the output, however the
-defaults are sane for RANCID versions 3.x and will create one RANCID group
+defaults are sane for rancid versions 3.x and will create one rancid group
 called C<default> which contains all devices. Those devices not discovered
-successfully within the past day will be marked as C<down> for RANCID to skip.
+successfully within the past day will be marked as C<down> for rancid to skip.
 Configuration is saved to the F<~/rancid> subdirectory of Netdisco's home folder.
 
 Note that this only generates the router.db files, you will still need to
-configure RANCID's F<.cloginrc> and schedule C<rancid-run> to run.
+configure rancid's F<.cloginrc> and schedule C<rancid-run> to run.
 
 You could run this worker at 09:05 each day using the following configuration:
 
@@ -178,27 +178,27 @@ and then refer to named entries in that, for example:
      cisco-nx:     'group:grp-nxos'
    by_ip:          'any'
 
-Do not forget that RANCID also needs configuring when adding a new group,
+Do not forget that rancid also needs configuring when adding a new group,
 such as scheduling the group to run, adding it to F<rancid.conf>, setting up the
 email config and creating the repository with C<rancid-cvs>.
 
 =head2 C<rancid_conf>
 
-The location where the RANCID configuration (F<rancid.types.base> and 
+The location where the rancid configuration (F<rancid.types.base> and
 F<rancid.types.conf>) is installed. It will be used to check the existance
-of device types before exporting the devices to the RANCID configuration. if no match
+of device types before exporting the devices to the rancid configuration. if no match
 is found the device will not be added to rancid.
 
 =head2 C<rancid_cvsroot>
 
-The location to write RANCID group configuration files (F<router.db>) into. A
+The location to write rancid group configuration files (F<router.db>) into. A
 subdirectory for each group will be created.
 
 =head2 C<down_age>
 
 This should be the same or greater than the interval between regular discover
 jobs on your network. Devices which have not been discovered within this time
-will be marked as C<down> to RANCID.
+will be marked as C<down> to rancid.
 
 The format is any time interval known and understood by PostgreSQL, such as at
 L<https://www.postgresql.org/docs/10/static/functions-datetime.html>.
@@ -215,33 +215,33 @@ Put devices into this group if they do not match any other groups defined.
 =head2 C<excluded>
 
 This dictionary defines a list of devices that you do not wish to export to
-RANCID configuration.
+rancid configuration.
 
 The value should be a L<Netdisco ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices in the Netdisco database.
 
 =head2 C<groups>
 
-This dictionary maps RANCID group names with configuration which will match
+This dictionary maps rancid group names with configuration which will match
 devices in the Netdisco database.
 
-The left hand side (key) should be the RANCID group name, the right hand side
+The left hand side (key) should be the rancid group name, the right hand side
 (value) should be a L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices in the Netdisco database.
 
 =head2 C<vendormap>
 
-If the device vendor in Netdisco is not the same as the RANCID vendor script or
+If the device vendor in Netdisco is not the same as the rancid vendor script or
 device type, configure a mapping here.
 
-The left hand side (key) should be the RANCID device type, the right hand side
+The left hand side (key) should be the rancid device type, the right hand side
 (value) should be a L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices in the Netdisco database.
 
 Note that vendors might have a large array of operating systems which require
-different RANCID modules. Mapping operating systems to RANCID device types is
+different rancid modules. Mapping operating systems to rancid device types is
 a good solution to use the correct device type. Example:
 
  host_groups:
@@ -255,7 +255,7 @@ a good solution to use the correct device type. Example:
 
 L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
-to select devices which will be written to the RANCID config as an IP address,
+to select devices which will be written to the rancid config as an IP address,
 instead of the DNS FQDN or SNMP hostname.
 
 =head2 C<by_hostname>
@@ -263,7 +263,7 @@ instead of the DNS FQDN or SNMP hostname.
 L<Netdisco
 ACL|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 to select devices which will have the unqualified hostname written to the
-RANCID config. This is done simply by stripping the C<domain_suffix>
+rancid config. This is done simply by stripping the C<domain_suffix>
 configuration setting from the device FQDN.
 
 =head1 SEE ALSO
