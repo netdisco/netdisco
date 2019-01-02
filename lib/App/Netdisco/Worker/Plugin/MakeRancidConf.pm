@@ -112,7 +112,7 @@ This worker will generate a RANCID configuration for all devices in Netdisco.
 Optionally you can provide configuration to control the output, however the
 defaults are sane for RANCID versions 3.x and will create one RANCID group
 called C<default> which contains all devices. Those devices not discovered
-successfully within the past day will be marked as "down" for RANCID to skip.
+successfully within the past day will be marked as C<down> for RANCID to skip.
 Configuration is saved to the F<~/rancid> subdirectory of Netdisco's home folder.
 
 Note that this only generates the router.db files, you will still need to
@@ -127,7 +127,7 @@ You could run this worker at 09:05 each day using the following configuration:
 =head1 CONFIGURATION
 
 Here is a complete example of the configuration, which must be called
-"C<rancid>". All keys are optional:
+C<rancid>. All keys are optional:
 
  rancid:
    rancid_home:     "$ENV{NETDISCO_HOME}/rancid" # default
@@ -147,12 +147,12 @@ Here is a complete example of the configuration, which must be called
    by_ip:           'host_group7_acl'
    by_hostname:     'host_group8_acl'
 
-Note that the default home for writing files is not C</var/lib/rancid> so
+Note that the default home for writing files is not F</var/lib/rancid> so
 you may wish to set this in C<rancid_home>, (especially if migrating from the old
 C<netdisco-rancid-export> script).
 
 Any values above that are a Host Group ACL will take either a single item or
-list of Network Identifiers or Device Properties. See the L<ACL
+a list of Network Identifiers or Device Properties. See the L<ACL
 documentation|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 wiki page for full details. We advise you to use the C<host_groups> setting
 and then refer to named entries in that, for example:
@@ -173,14 +173,14 @@ of vendor parameter before the export of the device to the RANCID configuration.
 
 =head2 C<rancid_home>
 
-The location to write RANCID Group configuration files into. A subdirectory
-for each Group will be created.
+The location to write RANCID group configuration files into. A subdirectory
+for each group will be created.
 
 =head2 C<down_age>
 
 This should be the same or greater than the interval between regular discover
 jobs on your network. Devices which have not been discovered within this time
-will be marked as "C<down>" to RANCID.
+will be marked as C<down> to RANCID.
 
 The format is any time interval known and understood by PostgreSQL, such as at
 L<https://www.postgresql.org/docs/10/static/functions-datetime.html>.
