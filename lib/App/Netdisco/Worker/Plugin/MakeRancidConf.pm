@@ -111,7 +111,7 @@ This worker will generate a RANCID configuration for all devices in Netdisco.
 
 Optionally you can provide configuration to control the output, however the
 defaults are sane for RANCID versions 3.x and will create one RANCID group
-called "C<default>" which contains all devices. Those devices not discovered
+called C<default> which contains all devices. Those devices not discovered
 successfully within the past day will be marked as "down" for RANCID to skip.
 Configuration is saved to the F<~/rancid> subdirectory of Netdisco's home folder.
 
@@ -147,14 +147,14 @@ Here is a complete example of the configuration, which must be called
    by_ip:           'host_group7_acl'
    by_hostname:     'host_group8_acl'
 
-Note that the default home for writing files is not "C</var/lib/rancid>" so
+Note that the default home for writing files is not C</var/lib/rancid> so
 you may wish to set this in C<rancid_home>, (especially if migrating from the old
 C<netdisco-rancid-export> script).
 
 Any values above that are a Host Group ACL will take either a single item or
 list of Network Identifiers or Device Properties. See the L<ACL
 documentation|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
-wiki page for full details. We advise you to use the "C<host_groups>" setting
+wiki page for full details. We advise you to use the C<host_groups> setting
 and then refer to named entries in that, for example:
 
  host_groups:
