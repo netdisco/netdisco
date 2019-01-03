@@ -7,11 +7,6 @@
   <link rel="icon" href="[% uri_base %]/images/favicon.ico" type="image/x-icon">
   <title>Netdisco</title>
 
-  <!-- HTML5 shim, for IE6-8 support of HTML elements -->
-  <!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
-
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-latest.min.js"></script>
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
   <script type="text/javascript" src="[% uri_base %]/javascripts/jquery-ui.custom.min.js"></script>
