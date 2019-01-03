@@ -41,11 +41,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     next unless defined $mac; # avoid null entries
           # there can be more rows in txrate than other tables
 
-    my $txrate  = defined $txrates->[$#$txrates]
+    my $txrate  = (ref $txrates and defined $txrates->[$#$txrates])
       ? int($txrates->[$#$txrates])
       : undef;
 
-    my $maxrate = defined $rates->[$#$rates]
+    my $maxrate = (ref $rates and defined $rates->[$#$rates])
       ? int($rates->[$#$rates])
       : undef;
 
