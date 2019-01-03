@@ -1,5 +1,8 @@
 package App::Netdisco::Web::Plugin::Device::Vlans;
 
+use strict;
+use warnings;
+
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
