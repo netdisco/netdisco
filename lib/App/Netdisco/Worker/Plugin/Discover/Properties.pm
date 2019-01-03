@@ -253,8 +253,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
     $device->ports->populate([values %interfaces]);
 
     # cache for later phases of the discovery
-    vars->{'device_ports'} = { map {($_->port => $_)}
-      $device->ports->search(undef, {columns => 'port'})->all };
+    vars->{'device_ports'} =
+      { map {($_->port => $_)} $device->ports->all };
 
     return Status->info(sprintf ' [%s] interfaces - added %d new interfaces',
       $device->ip, scalar values %interfaces);
