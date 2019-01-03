@@ -608,8 +608,7 @@ sub delete {
     try { $ip ||= $devices->{attrs}->{where}->{ip} };
     try { $ip ||= $devices->{attrs}->{where}->{'me.ip'} };
   }
-  die "cannot find IP address in \$devices query for delete\n"
-    unless $ip;
+  $ip ||= 'netdisco';
 
   foreach my $set (qw/
     DeviceIp
