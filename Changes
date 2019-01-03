@@ -1,3 +1,20 @@
+2.040003 - xxx
+
+  [ENHANCEMENTS]
+
+  * #408 makerancidconf improvements readded with some additional tweaks, somehow it
+    got lost in 2.039029 (earendilfr, inphobia)
+  * #436 make neighbor matching less strict, no longer is it required to match all parameters
+    (port name, device name) exactly before creating a link between devices. (linwood-f)
+
+  [BUG FIXES]
+
+  * #475 all discover plugins should now respect ignore_interfaces, ignore_notpresent_types &
+    ignore_private_nets. as a bonus discovery data is now cached for less db load (ollyg)
+  * #476 also log when plugins delete related tables. (ollyg)
+  * #471 redux ospf discovery will now keep on working instead of stopping after a few runs. (ollyg)
+  * better explain public key auth with netdisco-sshcollector (inphobia)
+
 2.040002 - 2018-12-30
 
   [BUG FIXES]
