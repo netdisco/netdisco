@@ -22,7 +22,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $eigrp_peers  = $snmp->eigrp_peers || {};
 
   return Status->info(" [$device] neigh - no BGP, OSPF, or EIGRP peers")
-    unless ((scalar values %$ospf_peers) or (scalar values %$ospf_peer_id)
+    unless ((scalar values %$ospf_peers) or (scalar values %$ospf_routers)
             or (scalar values %$bgp_peers) or (scalar values %$eigrp_peers));
 
   my $count = 0;
