@@ -8,7 +8,7 @@ use Time::Piece;
 use Time::Seconds;
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sort_port sort_modules sort_vlans interval_to_daterange sql_match
+  sort_port sort_modules interval_to_daterange sql_match
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -148,23 +148,6 @@ sub sort_port {
     }
 
     return $val;
-}
-
-=head2 sort_vlans ( $vlans )
-
-Sort devices modules into tree hierarchy based upon position and parent -
-input arg is module list.
-
-=cut
-
-sub sort_vlans {
-    my $input = shift;
-    my %vlans;
-
-    foreach my $vlan (@$input) {
-        push(@{$vlans{vlan}}, $vlan->vlan);
-    }
-    return \%vlans;
 }
 
 =head2 sort_modules( $modules )
