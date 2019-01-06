@@ -239,8 +239,7 @@ sub delete {
     try { $ip ||= ${ $ports->{attrs}->{where}->{ip}->{'-in'} }->[1]->[1] };
     try { $ip ||= $ports->{attrs}->{where}->{'me.ip'} };
   }
-  die "cannot find IP address in \$ports query for delete\n"
-    unless $ip;
+  $ip ||= 'netdisco';
 
   foreach my $set (qw/
     DevicePortPower

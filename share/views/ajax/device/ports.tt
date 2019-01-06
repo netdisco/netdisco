@@ -12,7 +12,15 @@
           [% th_class = ' class="portsort"' %]
         [% END %]
         <th[% th_class %]>
+          [% IF item.name == 'c_neighbors' %]
+          [% IF params.c_nodes %]
+          Connected Nodes &amp; Devices
+          [% ELSE %]
+          Connected Devices
+          [% END %]
+          [% ELSE %]
           [% item.label | html_entity %]
+          [% END %]
         </th>
       [% END %]
     </tr>
