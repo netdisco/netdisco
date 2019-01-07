@@ -114,6 +114,7 @@ sub store_neighbors {
     or return (); # already checked!
 
   # first allow any manually configured topology to be set
+  # and do this before we cache the rows in vars->{'device_ports'}
   set_manual_topology($device);
 
   if (!defined $snmp->has_topo) {
@@ -128,8 +129,9 @@ sub store_neighbors {
   my $c_platform = $snmp->c_platform;
 
   # cache the device ports to save hitting the database for many single rows
-  my $device_ports = vars->{'device_ports'}
-    || { map {($_->port => $_)} $device->ports->all };
+  vars->{'device_ports'} =
+    { map {($_->port => $_)} $device->ports->reset->all };
+  my $device_ports = vars->{'device_ports'};
 
   # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
@@ -256,14 +258,14 @@ sub store_neighbors {
             $device->ip, $port, $remote_ip;
       }
 
-      $portrow->update({
+      $portrow = $portrow->update({
           remote_ip   => $remote_ip,
           remote_port => $remote_port,
           remote_type => $remote_type,
           remote_id   => $remote_id,
           is_uplink   => \"true",
           manual_topo => \"false",
-      });
+      })->discard_changes();
 
       # update master of our aggregate to be a neighbor of
       # the master on our peer device (a lot of iffs to get there...).
