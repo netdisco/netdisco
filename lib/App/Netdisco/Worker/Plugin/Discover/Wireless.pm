@@ -41,7 +41,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       }
 
       if (!defined $device_ports->{$port}) {
-          info sprintf ' [%s] wireless - local port %s not in database!',
+          debug sprintf ' [%s] wireless - local port %s not in database, check ignored interfaces',
             $device->ip, $port;
           next;
       }
@@ -75,7 +75,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       }
 
       if (!defined $device_ports->{$port}) {
-          info sprintf ' [%s] wireless - local port %s not in database!',
+          debug sprintf ' [%s] wireless - local port %s not in database, check ignored interfaces',
             $device->ip, $port;
           next;
       }

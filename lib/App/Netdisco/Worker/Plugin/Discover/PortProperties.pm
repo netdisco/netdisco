@@ -30,7 +30,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$raw_speed) {
     my $port = $interfaces->{$idx} or next;
     if (!defined $device_ports->{$port}) {
-        info sprintf ' [%s] properties/speed - local port %s not in database!',
+        debug sprintf ' [%s] properties/speed - local port %s not in database, check ignored interfaces',
           $device->ip, $port;
         next;
     }
@@ -43,7 +43,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$err_cause) {
     my $port = $interfaces->{$idx} or next;
     if (!defined $device_ports->{$port}) {
-        info sprintf ' [%s] properties/errdis - local port %s not in database!',
+        debug sprintf ' [%s] properties/errdis - local port %s not in database, check ignored interfaces',
           $device->ip, $port;
         next;
     }
@@ -56,7 +56,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$faststart) {
     my $port = $interfaces->{$idx} or next;
     if (!defined $device_ports->{$port}) {
-        info sprintf ' [%s] properties/faststart - local port %s not in database!',
+        debug sprintf ' [%s] properties/faststart - local port %s not in database, check ignored interfaces',
           $device->ip, $port;
         next;
     }
@@ -77,7 +77,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$c_if) {
     my $port = $interfaces->{ $c_if->{$idx} } or next;
     if (!defined $device_ports->{$port}) {
-        info sprintf ' [%s] properties/lldpcap - local port %s not in database!',
+        debug sprintf ' [%s] properties/lldpcap - local port %s not in database, check ignored interfaces',
           $device->ip, $port;
         next;
     }
@@ -106,12 +106,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->properties_ports->delete;
-    debug sprintf ' [%s] props - removed %d ports with properties',
+    debug sprintf ' [%s] properties - removed %d ports with properties',
       $device->ip, $gone;
     $device->properties_ports->populate(
       [map {{ port => $_, %{ $properties{$_} } }} keys %properties] );
 
-    return Status->info(sprintf ' [%s] props - added %d new port properties',
+    return Status->info(sprintf ' [%s] properties - added %d new port properties',
       $device->ip, scalar keys %properties);
   });
 });
