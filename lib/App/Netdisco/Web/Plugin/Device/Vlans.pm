@@ -10,7 +10,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_device_tab({ tag => 'vlans', label => 'Vlans' });
+register_device_tab({ tag => 'vlans', label => 'Vlans', provides_csv => 1 });
 
 ajax '/ajax/content/device/vlans' => require_login sub {
     my $q = param('q');
@@ -24,6 +24,11 @@ ajax '/ajax/content/device/vlans' => require_login sub {
     if (request->is_ajax) {
       my $json = to_json( \@results );
       template 'ajax/device/vlans.tt', { results => $json },
+        { layout => undef };
+    }
+    else {
+      header( 'Content-Type' => 'text/comma-separated-values' );
+      template 'ajax/device/vlans_csv.tt', { results => \@results },
         { layout => undef };
     }
 };

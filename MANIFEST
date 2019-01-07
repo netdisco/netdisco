@@ -393,6 +393,7 @@ share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/device/ports_csv.tt
 share/views/ajax/device/vlans.tt
+share/views/ajax/device/vlans_csv.tt
 share/views/ajax/report/apchanneldist.tt
 share/views/ajax/report/apchanneldist_csv.tt
 share/views/ajax/report/apclients.tt
