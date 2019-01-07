@@ -4,6 +4,9 @@ use base 'App::Netdisco::DB::ResultSet';
 use strict;
 use warnings;
 
+use Try::Tiny;
+require Dancer::Logger;
+
 __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::ExplicitLocking
 /);
@@ -222,11 +225,21 @@ handle the removal or archiving of nodes.
 
 =cut
 
+sub _plural { (shift || 0) == 1 ? 'entry' : 'entries' };
+
 sub delete {
   my $self = shift;
 
   my $schema = $self->result_source->schema;
   my $ports = $self->search(undef, { columns => 'ip' });
+
+  my $ip = undef;
+  {
+    no autovivification;
+    try { $ip ||= ${ $ports->{attrs}->{where}->{ip}->{'-in'} }->[1]->[1] };
+    try { $ip ||= $ports->{attrs}->{where}->{'me.ip'} };
+  }
+  $ip ||= 'netdisco';
 
   foreach my $set (qw/
     DevicePortPower
@@ -235,9 +248,12 @@ sub delete {
     DevicePortWireless
     DevicePortSsid
   /) {
-      $schema->resultset($set)->search(
+      my $gone = $schema->resultset($set)->search(
         { ip => { '-in' => $ports->as_query }},
       )->delete;
+
+      Dancer::Logger::debug sprintf ' [%s] db/ports - removed %d port %s from %s',
+        $ip, $gone, _plural($gone), $set if defined Dancer::Logger::logger();
   }
 
   $schema->resultset('Node')->search(

@@ -3,7 +3,10 @@ use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
 use warnings;
+
+use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
+require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
 
@@ -591,11 +594,21 @@ handle the removal or archiving of nodes.
 
 =cut
 
+sub _plural { (shift || 0) == 1 ? 'entry' : 'entries' };
+
 sub delete {
   my $self = shift;
 
   my $schema = $self->result_source->schema;
   my $devices = $self->search(undef, { columns => 'ip' });
+
+  my $ip = undef;
+  {
+    no autovivification;
+    try { $ip ||= $devices->{attrs}->{where}->{ip} };
+    try { $ip ||= $devices->{attrs}->{where}->{'me.ip'} };
+  }
+  $ip ||= 'netdisco';
 
   foreach my $set (qw/
     DeviceIp
@@ -604,9 +617,12 @@ sub delete {
     DeviceModule
     Community
   /) {
-      $schema->resultset($set)->search(
+      my $gone = $schema->resultset($set)->search(
         { ip => { '-in' => $devices->as_query } },
       )->delete;
+
+      Dancer::Logger::debug sprintf ' [%s] db/device - removed %d %s from %s',
+        $ip, $gone, _plural($gone), $set if defined Dancer::Logger::logger();
   }
 
   foreach my $set (qw/
@@ -618,12 +634,15 @@ sub delete {
       )->delete;
   }
 
-  $schema->resultset('Topology')->search({
+  my $gone = $schema->resultset('Topology')->search({
     -or => [
       { dev1 => { '-in' => $devices->as_query } },
       { dev2 => { '-in' => $devices->as_query } },
     ],
   })->delete;
+
+  Dancer::Logger::debug sprintf ' [%s] db/device - removed %d manual topology %s',
+    $ip, $gone, _plural($gone) if defined Dancer::Logger::logger();
 
   $schema->resultset('DevicePort')->search(
     { ip => { '-in' => $devices->as_query } },

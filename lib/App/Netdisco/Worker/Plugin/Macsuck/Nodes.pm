@@ -299,6 +299,8 @@ sub walk_fwtable {
           next;
       }
 
+      # WRT #475 this is SAFE because we check against known ports below
+      # but we do need the SNMP interface IDs to get the job done
       my $port = $interfaces->{$iid};
 
       unless (defined $port) {
@@ -318,6 +320,7 @@ sub walk_fwtable {
       # this uses the cached $ports resultset to limit hits on the db
       my $device_port = $device_ports->{$port};
 
+      # WRT #475 ... see? :-)
       unless (defined $device_port) {
           debug sprintf
             ' [%s] macsuck %s - port %s is not in database - skipping.',

@@ -127,6 +127,10 @@ sub store_neighbors {
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
 
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
+
   # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
   my %c_ipv6 = %{ ($snmp->can('hasLLDP') and $snmp->hasLLDP)
@@ -144,9 +148,9 @@ sub store_neighbors {
           next;
       }
 
-      my $port = $interfaces->{ $c_if->{$entry} };
-      my $portrow = schema('netdisco')->resultset('DevicePort')
-          ->single({ip => $device->ip, port => $port});
+      # WRT #475 this is SAFE because we check against known ports below
+      my $port = $interfaces->{ $c_if->{$entry} } or next;
+      my $portrow = $device_ports->{$port};
 
       if (!defined $portrow) {
           info sprintf ' [%s] neigh - local port %s not in database!',
