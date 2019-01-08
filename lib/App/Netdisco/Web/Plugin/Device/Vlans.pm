@@ -17,7 +17,7 @@ ajax '/ajax/content/device/vlans' => require_login sub {
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
-    my @results = $device->vlans->search( {}, { order_by => 'vlan' } )->hri->all;
+    my @results = $device->vlans->search( {}, { order_by => 'me.vlan' } )->hri->all;
 
     return unless scalar @results;
 
