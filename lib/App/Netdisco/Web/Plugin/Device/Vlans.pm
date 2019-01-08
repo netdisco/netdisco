@@ -12,12 +12,12 @@ use App::Netdisco::Web::Plugin;
 
 register_device_tab({ tag => 'vlans', label => 'Vlans', provides_csv => 1 });
 
-ajax '/ajax/content/device/vlans' => require_login sub {
+get '/ajax/content/device/vlans' => require_login sub {
     my $q = param('q');
 
     my $device = schema('netdisco')->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
-    my @results = $device->vlans->search( {}, { order_by => 'me.vlan' } )->hri->all;
+    my @results = $device->vlans->search( {}, { order_by => 'vlan' } )->hri->all;
 
     return unless scalar @results;
 

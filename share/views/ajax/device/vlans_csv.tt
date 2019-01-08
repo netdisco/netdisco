@@ -3,8 +3,8 @@
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
-  [% FOREACH col IN [ row.vlan row.description ] %]
-    [% mylist.push(col) %]
-  [% END %]
+  [% mylist.push(row.vlan) %]
+  [% mylist.push(row.description) %]
   [% CSV.dump(mylist) %]
+
 [% END %]
