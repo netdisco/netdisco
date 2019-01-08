@@ -30,7 +30,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$raw_speed) {
     my $port = $interfaces->{$idx} or next;
     if (!defined $device_ports->{$port}) {
-        debug sprintf ' [%s] properties/speed - local port %s not in database, check ignored interfaces',
+        debug sprintf ' [%s] properties/speed - local port %s already skipped, ignoring',
           $device->ip, $port;
         next;
     }
@@ -43,7 +43,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$err_cause) {
     my $port = $interfaces->{$idx} or next;
     if (!defined $device_ports->{$port}) {
-        debug sprintf ' [%s] properties/errdis - local port %s not in database, check ignored interfaces',
+        debug sprintf ' [%s] properties/errdis - local port %s already skipped, ignoring',
           $device->ip, $port;
         next;
     }
@@ -56,7 +56,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$faststart) {
     my $port = $interfaces->{$idx} or next;
     if (!defined $device_ports->{$port}) {
-        debug sprintf ' [%s] properties/faststart - local port %s not in database, check ignored interfaces',
+        debug sprintf ' [%s] properties/faststart - local port %s already skipped, ignoring',
           $device->ip, $port;
         next;
     }
@@ -77,7 +77,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   foreach my $idx (keys %$c_if) {
     my $port = $interfaces->{ $c_if->{$idx} } or next;
     if (!defined $device_ports->{$port}) {
-        debug sprintf ' [%s] properties/lldpcap - local port %s not in database, check ignored interfaces',
+        debug sprintf ' [%s] properties/lldpcap - local port %s already skipped, ignoring',
           $device->ip, $port;
         next;
     }
