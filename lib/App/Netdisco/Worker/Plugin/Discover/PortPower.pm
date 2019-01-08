@@ -50,7 +50,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my $port = $interfaces->{ $p_ifindex->{$entry} } or next;
 
       if (!defined $device_ports->{$port}) {
-          debug sprintf ' [%s] power - local port %s not in database, check ignored interfaces',
+          debug sprintf ' [%s] power - local port %s already skipped, ignoring',
             $device->ip, $port;
           next;
       }
