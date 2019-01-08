@@ -155,7 +155,7 @@ sub store_neighbors {
       my $portrow = $device_ports->{$port};
 
       if (!defined $portrow) {
-          debug sprintf ' [%s] neigh - local port %s not in database, check ignored interfaces',
+          debug sprintf ' [%s] neigh - local port %s already skipped, ignoring',
             $device->ip, $port;
           next;
       }

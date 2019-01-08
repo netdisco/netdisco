@@ -49,7 +49,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my $port = $interfaces->{$entry} or next;
 
       if (!defined $device_ports->{$port}) {
-          debug sprintf ' [%s] vlans - local port %s not in database, check ignored interfaces',
+          debug sprintf ' [%s] vlans - local port %s already skipped, ignoring',
             $device->ip, $port;
           next;
       }
