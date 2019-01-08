@@ -155,7 +155,7 @@ sub store_neighbors {
       my $portrow = $device_ports->{$port};
 
       if (!defined $portrow) {
-          info sprintf ' [%s] neigh - local port %s not in database!',
+          debug sprintf ' [%s] neigh - local port %s already skipped, ignoring',
             $device->ip, $port;
           next;
       }
@@ -167,7 +167,7 @@ sub store_neighbors {
       }
 
       if ($portrow->manual_topo) {
-          info sprintf ' [%s] neigh - %s has manually defined topology',
+          debug sprintf ' [%s] neigh - %s has manually defined topology',
             $device->ip, $port;
           next;
       }
@@ -181,7 +181,7 @@ sub store_neighbors {
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
 
       if ($r_netaddr and ($r_netaddr->addr ne $remote_ip)) {
-        info sprintf ' [%s] neigh - IP on %s: using %s as canonical form of %s',
+        debug sprintf ' [%s] neigh - IP on %s: using %s as canonical form of %s',
           $device->ip, $port, $r_netaddr->addr, $remote_ip;
         $remote_ip = $r_netaddr->addr;
       }
@@ -195,7 +195,7 @@ sub store_neighbors {
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');
               my $neigh = $devices->single({name => $remote_id});
-              info sprintf
+              debug sprintf
                 ' [%s] neigh - bad address %s on port %s, searching for %s instead',
                 $device->ip, $remote_ip, $port, $remote_id;
 
@@ -213,7 +213,7 @@ sub store_neighbors {
                   (my $tmpid = $remote_id) =~ s/.*\(([0-9a-f]{6})-([0-9a-f]{6})\).*/$1$2/;
                   my $mac = NetAddr::MAC->new(mac => $tmpid);
                   if ($mac and not $mac->errstr) {
-                      info sprintf
+                      debug sprintf
                         ' [%s] neigh - trying to find neighbor %s by MAC %s',
                         $device->ip, $remote_id, $mac->as_ieee;
                       $neigh = $devices->single({mac => $mac->as_ieee});
@@ -227,17 +227,17 @@ sub store_neighbors {
 
               if ($neigh) {
                   $remote_ip = $neigh->ip;
-                  info sprintf ' [%s] neigh - found %s with IP %s',
+                  debug sprintf ' [%s] neigh - found %s with IP %s',
                     $device->ip, $remote_id, $remote_ip;
               }
               else {
-                  info sprintf ' [%s] neigh - could not find %s, skipping',
+                  debug sprintf ' [%s] neigh - could not find %s, skipping',
                     $device->ip, $remote_id;
                   next;
               }
           }
           else {
-              info sprintf ' [%s] neigh - skipping unuseable address %s on port %s',
+              debug sprintf ' [%s] neigh - skipping unuseable address %s on port %s',
                 $device->ip, $remote_ip, $port;
               next;
           }
@@ -254,7 +254,7 @@ sub store_neighbors {
           $remote_port =~ s/[^\d\s\/\.,()\w:-]+//gi;
       }
       else {
-          info sprintf ' [%s] neigh - no remote port found for port %s at %s',
+          debug sprintf ' [%s] neigh - no remote port found for port %s at %s',
             $device->ip, $port, $remote_ip;
       }
 

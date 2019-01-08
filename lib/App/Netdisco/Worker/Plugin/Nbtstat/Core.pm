@@ -47,4 +47,3 @@ register_worker({ phase => 'main' }, sub {
 });
 
 true;
-
