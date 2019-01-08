@@ -58,7 +58,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="fruonly"
-                  name="fruonly"[% ' checked="checked"' IF vars.sidebar_defaults.report_moduleinventory.fruonly %]/>
+                  name="fruonly"[% ' checked="checked"' IF (params.fruonly OR vars.sidebar_defaults.report_moduleinventory.fruonly) %]/>
               </label>
               <label class="nd_checkboxlabel" for="fruonly">
                 <span class="nd_searchcheckbox uneditable-input">FRU Only</span>
@@ -67,7 +67,7 @@
             <div class="clearfix input-prepend">
               <label class="add-on">
                 <input type="checkbox" id="matchall"
-                  name="matchall"[% ' checked="checked"' IF vars.sidebar_defaults.report_moduleinventory.matchall %]/>
+                  name="matchall"[% ' checked="checked"' IF (params.matchall OR vars.sidebar_defaults.report_moduleinventory.matchall) %]/>
               </label>
               <label class="nd_checkboxlabel" for="matchall">
                 <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
