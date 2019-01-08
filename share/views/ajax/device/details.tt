@@ -50,10 +50,12 @@
     </tr>
     <tr>
       <td>OS / Version</td>
-      <td>[% d.os | html_entity %] /
-        <a rel="tooltip" data-placement="top" data-offset="5"
-          data-title="Find Similar Devices"
-          href="[% search_device %]&q=[% d.os_ver | uri %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver | html_entity %]</a>
+      <td>
+        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        href="[% search_device %]&q=[% d.os | uri %]&os=[% d.os | uri %]">[% d.os | html_entity %]</a>
+        /
+        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        href="[% search_device %]&q=[% d.os_ver | uri %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver | html_entity %]</a>
       </td>
     </tr>
     <tr>
