@@ -22,9 +22,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   $extra = pop @values;
   if (scalar(@values)) {
     $class = "SNMP::Info";
-    foreach (@values) {
-      last if ($_ eq '');
-      $class = $class.'::'.$_;
+    foreach my $v (@values) {
+      last if ($v eq '');
+      $class = $class.'::'.$v;
     }
   }
 
