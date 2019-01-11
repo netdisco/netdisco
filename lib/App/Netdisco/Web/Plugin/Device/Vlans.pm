@@ -10,7 +10,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_device_tab({ tag => 'vlans', label => 'Vlans', provides_csv => 1 });
+register_device_tab({ tag => 'vlans', label => 'VLANs', provides_csv => 1 });
 
 get '/ajax/content/device/vlans' => require_login sub {
     my $q = param('q');
