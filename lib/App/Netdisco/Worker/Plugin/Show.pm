@@ -18,13 +18,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
 
   $extra ||= 'interfaces'; my $class = undef;
-  ($class, $extra) = split(/::([^:]+)$/, $extra);
-  if ($class and $extra) {
-      $class = 'SNMP::Info::'.$class;
-  }
-  else {
-      $extra = $class;
-      undef $class;
+  my @values = split /::/, $extra;
+  $extra = pop @values;
+  if (scalar(@values)) {
+    $class = "SNMP::Info";
+    foreach (@values) {
+      last if ($_ eq '');
+      $class = $class.'::'.$_;
+    }
   }
 
   my $i = App::Netdisco::Transport::SNMP->reader_for($device, $class);
