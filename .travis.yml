@@ -2,6 +2,7 @@ language: perl
 addons:
   apt:
     packages:
+      - libexpat-dev
       - libsnmp-dev
       - phantomjs
   hosts:
