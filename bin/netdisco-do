@@ -301,16 +301,30 @@ the leaf (such as C<interfaces> or C<uptime>).
 
 If you wish to test with a device class other than that discovered, prefix the
 leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
-"C<Layer2::HP::uptime>". Using "C<::>" as prefix will test against the base
-"C<SNMP::Info>" class.
+"C<Layer2::HP::uptime>". Using "C<::>" as the start of the prefix will test
+against the base "C<SNMP::Info>" class.
+
+As well, SNMP object names can be used as an argument for "C<-e>", so you can
+use C<ifName> for example, which will use the netdisco-mibs files for
+translations.
+
+All "C<-e>" parameters are case sensitive.
 
  ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
  ~/bin/netdisco-do show -d 192.0.2.1 -e ::interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e ifName
 
-A parameter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
+A parameter may be passed to the C<SNMP::Info> method or SNMP object in the
+"C<-p>" parameter:
 
  ~/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
+ ~/bin/netdisco-do show -d 192.0.2.1 -e ifName -p 2
+
+The "C<-e>" parameter C<specify> will dump the known configuration for the
+specified device.
+
+ ~/bin/netdisco-do show -d 192.0.2.1 -e specify
 
 =head2 psql
 
