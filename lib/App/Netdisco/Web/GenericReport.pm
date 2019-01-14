@@ -9,7 +9,7 @@ use App::Netdisco::Web::Plugin;
 use Path::Class 'file';
 use Safe;
 
-use vars qw/$config @data/;
+our ($config, @data);
 
 foreach my $report (@{setting('reports')}) {
   my $r = $report->{tag};

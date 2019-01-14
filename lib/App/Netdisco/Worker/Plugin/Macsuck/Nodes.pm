@@ -248,7 +248,6 @@ sub get_vlan_list {
 
       # check in use by a port on this device
       if (!$vlans{$vlan} && !setting('macsuck_all_vlans')) {
-
           debug sprintf
             ' [%s] macsuck VLAN %s/%s - not in use by any port - skipping.',
             $device->ip, $vlan, $name;
