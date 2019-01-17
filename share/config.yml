@@ -372,6 +372,7 @@ job_prio:
 worker_plugins:
   - 'Arpnip'
   - 'Arpnip::Nodes'
+  - 'Arpnip::NodesBySSH'
   - 'Arpnip::Subnets'
   - 'Arpwalk'
   - 'Contact'
