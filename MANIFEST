@@ -151,6 +151,7 @@ lib/App/Netdisco/Web/Plugin/Device/Details.pm
 lib/App/Netdisco/Web/Plugin/Device/Modules.pm
 lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+lib/App/Netdisco/Web/Plugin/Device/Vlans.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
 lib/App/Netdisco/Web/Plugin/Report/ApChannelDist.pm
 lib/App/Netdisco/Web/Plugin/Report/ApClients.pm
@@ -391,6 +392,8 @@ share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/device/ports_csv.tt
+share/views/ajax/device/vlans.tt
+share/views/ajax/device/vlans_csv.tt
 share/views/ajax/report/apchanneldist.tt
 share/views/ajax/report/apchanneldist_csv.tt
 share/views/ajax/report/apclients.tt
