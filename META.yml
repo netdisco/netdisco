@@ -22,7 +22,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.040002'
+    version: '2.040003'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -298,6 +298,8 @@ provides:
     file: lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
   App::Netdisco::Web::Plugin::Device::Ports:
     file: lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+  App::Netdisco::Web::Plugin::Device::Vlans:
+    file: lib/App/Netdisco/Web/Plugin/Device/Vlans.pm
   App::Netdisco::Web::Plugin::Inventory:
     file: lib/App/Netdisco/Web/Plugin/Inventory.pm
   App::Netdisco::Web::Plugin::Report::ApChannelDist:
@@ -537,6 +539,7 @@ requires:
   YAML: '0.84'
   YAML::XS: '0.41'
   aliased: '0'
+  autovivification: '0'
   namespace::clean: '0.24'
   version: '0.9902'
 resources:
@@ -546,5 +549,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.040002'
+version: '2.040003'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

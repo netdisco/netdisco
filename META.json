@@ -102,6 +102,7 @@
             "YAML" : "0.84",
             "YAML::XS" : "0.41",
             "aliased" : "0",
+            "autovivification" : "0",
             "namespace::clean" : "0.24",
             "version" : "0.9902"
          }
@@ -117,7 +118,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.040002"
+         "version" : "2.040003"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -531,6 +532,9 @@
       "App::Netdisco::Web::Plugin::Device::Ports" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Device/Ports.pm"
       },
+      "App::Netdisco::Web::Plugin::Device::Vlans" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/Device/Vlans.pm"
+      },
       "App::Netdisco::Web::Plugin::Inventory" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Inventory.pm"
       },
@@ -796,6 +800,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.040002",
+   "version" : "2.040003",
    "x_serialization_backend" : "JSON::PP version 2.97001"
 }
