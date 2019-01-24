@@ -19,9 +19,9 @@ register_worker({ phase => 'check' }, sub {
     or return Status->error(sprintf "Unknown port name [%s] on device %s",
                               $job->port, $job->device);
 
-  my $vlan_reconfig_check = vlan_reconfig_check(vars->{'port'});
-  return Status->error("Cannot alter vlan: $vlan_reconfig_check")
-    if $vlan_reconfig_check;
+  my $port_reconfig_check = port_reconfig_check(vars->{'port'});
+  return Status->error("Cannot alter port: $port_reconfig_check")
+    if $port_reconfig_check;
 
   return Status->error("No PoE service on port [$pn] on device $device")
     unless vars->{'port'}->power;
@@ -40,7 +40,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   # snmp connect using rw community
   my $snmp = App::Netdisco::Transport::SNMP->writer_for($device)
-    or return Status->defer("failed to connect to $device to update vlan");
+    or return Status->defer("failed to connect to $device to set power");
 
   my $powerid = get_powerid($snmp, vars->{'port'})
     or return Status->error("failed to get power ID for [$pn] from $device");
