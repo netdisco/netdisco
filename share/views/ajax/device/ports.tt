@@ -369,8 +369,8 @@
           <i class="icon-link text-warning"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="Manual Topology"></i>
-        [% END %]
         </a>
+        [% END %]
       </td>
       [% END %]
 
