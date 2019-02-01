@@ -5,8 +5,6 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission ':all';
-
-use Try::Tiny;
 use Module::Load ();
 use Path::Class 'dir';
 use NetAddr::IP::Lite ':lower';
@@ -21,10 +19,10 @@ App::Netdisco::Transport::CLI
 
 =head1 DESCRIPTION
 
-Singleton for CLI connections modelled after L<App::Netdisco::Transport::SNMP> but currently with minimal functionality. Returns a L<Net::OpenSSH> instance for a
-given device IP. Limited to device_auth stanzas tagged sshcollector. Always returns a new connection which the caller is supposed to close.
-
- App::Netdisco::Transport::CLI->session_for( ... );
+Singleton for CLI connections modelled after L<App::Netdisco::Transport::SNMP> but currently 
+with minimal functionality. Returns a L<Net::OpenSSH> instance for a given device IP. Limited 
+to device_auth stanzas tagged sshcollector. Always returns a new connection which the caller 
+is supposed to close.
 
 =cut
 
@@ -56,6 +54,13 @@ sub session_for {
   #        - 'lab19.megacorp.za'
   #    username: netdisco
   #    password: hunter2
+  #    ssh_master_opts: 
+  #        - "-o"
+  #        - "StrictHostKeyChecking=no"
+  #        - "-o"
+  #        - "ForwardX11=no"
+  #        - "-i"
+  #        - "my_id_rsa"        
   # 
   # platform: the SSHCollector class
   # platform-specific extra keys:
@@ -65,21 +70,21 @@ sub session_for {
   # Platform/GAIAEmbedded.pm:  my $command = ($args->{arp_command} || 'arp');
   # Platform/Linux.pm:         my $command = ($args->{arp_command} || 'arp');
   #
+  # also -D now toggles openssh::debug
 
-  # TBD Somehow this already seems to return records matching the "only" attribute, how?
-  my $device_auth = [grep { $_->{tag} eq $tag  && $_->{driver} eq "cli" } @{setting('device_auth')}];
-  debug sprintf " [%s] Transport::CLI - device_auth\n[%s]", $device->ip, Dumper($device_auth);
+  my $device_auth = [grep { $_->{tag} eq $tag } @{setting('device_auth')}];
 
-  #foreach my $d (@{$device_auth}) {
-  #  if (check_acl_no($device, $d->{only})){
-  #    debug sprintf " [%s] Transport::CLI - device_auth\n[%s] matches", $device->ip, Dumper($d);
-  #  }else{
-  #    debug sprintf " [%s] Transport::CLI - device_auth\n[%s] ignored", $device->ip, Dumper($d);
-  #  } 
-  #}
-
-  # TBD currently just the first match is returned. How to select the "best match" (e.g. longest mask)
+  # Currently just the first match is used. Warn if there are more.
   my $selected_auth = $device_auth->[0];
+  #debug  sprintf " [%s] Transport::CLI - device_auth: %s", $device->ip, Dumper($selected_auth);
+
+  if (@{$device_auth} > 1){
+    warning sprintf " [%s] Transport::CLI - found %d matching entries in device_auth, using the first one", 
+      $device->ip, scalar @{$device_auth};
+  }
+
+  my @master_opts = qw(-o BatchMode=no);
+  push(@master_opts, @{$selected_auth->{ssh_master_opts}}) if $selected_auth->{ssh_master_opts};
 
   my $ssh = Net::OpenSSH->new(
     $device->ip,
@@ -88,14 +93,17 @@ sub session_for {
     timeout => 30,
     async => 0,
     default_stderr_file => '/dev/null',
-    master_opts => [
-      -o => "StrictHostKeyChecking=no",
-      -o => "BatchMode=no"
-    ],
+    master_opts => \@master_opts
   );
 
+  my $CONFIG = config();
+  $Net::OpenSSH::debug = ~0 if $CONFIG->{log} eq 'debug';
+
   if ($ssh->error){
-    warn sprintf " [%s] Transport::CLI - ssh connection error [%s]", $device->ip, $ssh->error;
+    error sprintf " [%s] Transport::CLI - ssh connection error [%s]", $device->ip, $ssh->error;
+    return undef;
+  }elsif (!$ssh){
+    error sprintf " [%s] Transport::CLI - Net::OpenSSH instantiation error", $device->ip;
     return undef;
   }else{
     return ($ssh, $selected_auth);
