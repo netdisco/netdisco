@@ -62,32 +62,41 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         vlantype => $i_vlan_type->{$entry},
         last_discover => \'now()',
       };
+      next if $v_seen{$i_vlan->{$entry}};
+
+      # also add an unnamed vlan to the device
+      push @devicevlans, {
+        vlan => $i_vlan->{$entry},
+        description => (sprintf "VLAN %d", $i_vlan->{$entry}),
+        last_discover => \'now()',
+      };
+      ++$v_seen{$i_vlan->{$entry}};
     } elsif (defined $i_vlan_membership->{$entry}) {
-      my %port_vseen = ();
       my $type = $i_vlan_type->{$entry};
+      my %port_vseen = ();
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
-          next unless defined $vlan and $vlan;
-          next if ++$port_vseen{$vlan} > 1;
+        next unless defined $vlan and $vlan;
+        next if ++$port_vseen{$vlan} > 1;
 
-          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
-          push @portvlans, {
-              port => $port,
-              vlan => $vlan,
-              native => $native,
-              vlantype => $type,
-              last_discover => \'now()',
-          };
+        my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
+        push @portvlans, {
+          port => $port,
+          vlan => $vlan,
+          native => $native,
+          vlantype => $type,
+          last_discover => \'now()',
+        };
 
-          next if $v_seen{$vlan};
+        next if $v_seen{$vlan};
 
-          # also add an unnamed vlan to the device
-          push @devicevlans, {
-              vlan => $vlan,
-              description => (sprintf "VLAN %d", $vlan),
-              last_discover => \'now()',
-          };
-          ++$v_seen{$vlan};
+        # also add an unnamed vlan to the device
+        push @devicevlans, {
+          vlan => $vlan,
+          description => (sprintf "VLAN %d", $vlan),
+          last_discover => \'now()',
+        };
+        ++$v_seen{$vlan};
       }
     }
   }
