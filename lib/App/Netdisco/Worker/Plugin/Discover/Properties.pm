@@ -229,6 +229,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           type         => $i_type->{$entry},
           vlan         => $i_vlan->{$entry},
           pvid         => $i_vlan->{$entry},
+          ifindex      => $entry,
           is_master    => 'false',
           slave_of     => undef,
           lastchange   => $lc,
