@@ -69,6 +69,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "lastchange",
   { data_type => "bigint", is_nullable => 1 },
+  "ifindex",
+  { data_type => "bigint", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("port", "ip");
 
