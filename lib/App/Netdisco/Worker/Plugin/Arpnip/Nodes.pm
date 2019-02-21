@@ -70,13 +70,21 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
     my ($job, $workerconf) = @_;
 
     my $device = $job->device;
+    my ($ssh, $selected_auth) = App::Netdisco::Transport::CLI->session_for($device->ip, "sshcollector");
 
-    if (get_arps_cli($device)){
+    if (get_arps_cli($device, $ssh, $selected_auth)){
       my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
       $device->update({last_arpnip => \$now});
       my $endmsg = "Ended arpnip cli for $device"; 
-      info sprintf " [%s] arpnip cli - $endmsg", $device->ip;
-      return Status->done($endmsg);
+
+      if ($selected_auth->{'snmp_arpnip_also'}){
+        $endmsg .= ", now running arpnip due to snmp_arpnip_also"; 
+        info sprintf " [%s] arpnip cli - $endmsg", $device->ip;
+        return Status->info($endmsg);
+      }else{
+        info sprintf " [%s] arpnip cli - $endmsg", $device->ip;
+        return Status->done($endmsg);
+      }
     }else{
       Status->defer("arpnip cli failed");
     }
@@ -84,9 +92,8 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
 });
 
 sub get_arps_cli {
-  my ($device) = @_;
+  my ($device, $ssh, $selected_auth) = @_;
 
-  my ($ssh, $selected_auth) = App::Netdisco::Transport::CLI->session_for($device->ip, "sshcollector");
 
   unless ($ssh){
     my $msg = "could not connect to $device with SSH, deferring job"; 

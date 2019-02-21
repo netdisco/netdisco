@@ -9,7 +9,6 @@ use Module::Load ();
 use Path::Class 'dir';
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
-use Data::Dumper;
 
 use base 'Dancer::Object::Singleton';
 
@@ -22,7 +21,7 @@ App::Netdisco::Transport::CLI
 Singleton for CLI connections modelled after L<App::Netdisco::Transport::SNMP> but currently 
 with minimal functionality. Returns a L<Net::OpenSSH> instance for a given device IP. Limited 
 to device_auth stanzas tagged sshcollector. Always returns a new connection which the caller 
-is supposed to close.
+is supposed to close (or it will be closed when going out of scope)
 
 =cut
 
@@ -49,7 +48,7 @@ sub session_for {
   # stanza example:
   #  - tag: sshcollector
   #    driver: cli
-  #    platform: IOS
+  #    platform: NXOS
   #    only:
   #        - 'lab19.megacorp.za'
   #    username: netdisco
@@ -61,6 +60,7 @@ sub session_for {
   #        - "ForwardX11=no"
   #        - "-i"
   #        - "my_id_rsa"        
+  #    snmp_arpnip_also: false
   # 
   # platform: the SSHCollector class
   # platform-specific extra keys:
@@ -76,7 +76,6 @@ sub session_for {
 
   # Currently just the first match is used. Warn if there are more.
   my $selected_auth = $device_auth->[0];
-  #debug  sprintf " [%s] Transport::CLI - device_auth: %s", $device->ip, Dumper($selected_auth);
 
   if (@{$device_auth} > 1){
     warning sprintf " [%s] Transport::CLI - found %d matching entries in device_auth, using the first one", 
