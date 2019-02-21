@@ -44,34 +44,6 @@ sub session_for {
   my ($class, $ip, $tag) = @_;
   my $device = get_device($ip) or return undef;
 
-  # TBD device_auth will need the extra args for sshcollector modules documented/updated
-  # stanza example:
-  #  - tag: sshcollector
-  #    driver: cli
-  #    platform: NXOS
-  #    only:
-  #        - 'lab19.megacorp.za'
-  #    username: netdisco
-  #    password: hunter2
-  #    ssh_master_opts: 
-  #        - "-o"
-  #        - "StrictHostKeyChecking=no"
-  #        - "-o"
-  #        - "ForwardX11=no"
-  #        - "-i"
-  #        - "my_id_rsa"        
-  #    snmp_arpnip_also: false
-  # 
-  # platform: the SSHCollector class
-  # platform-specific extra keys:
-  # Platform/ASA.pm:           $expect->send( $args->{enable_password} ."\n" );
-  # Platform/CPVSX.pm:         $expect->send( $args->{expert_password} ."\n" );
-  # Platform/FreeBSD.pm:       my $command = ($args->{arp_command} || 'arp');
-  # Platform/GAIAEmbedded.pm:  my $command = ($args->{arp_command} || 'arp');
-  # Platform/Linux.pm:         my $command = ($args->{arp_command} || 'arp');
-  #
-  # also -D now toggles openssh::debug
-
   my $device_auth = [grep { $_->{tag} eq $tag } @{setting('device_auth')}];
 
   # Currently just the first match is used. Warn if there are more.
