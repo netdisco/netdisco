@@ -101,6 +101,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{remote_serial} = $rem_serial->{ $idx };
   }
 
+  foreach my $idx (keys %$interfaces) {
+    my $port = $interfaces->{$idx} or next;
+    if (!defined $device_ports->{$port}) {
+        debug sprintf ' [%s] properties/ifindex - local port %s already skipped, ignoring',
+          $device->ip, $port;
+        next;
+    }
+
+    $properties{ $port }->{ifindex} = $idx;
+  }
+
   return Status->info(" [$device] no port properties to record")
     unless scalar keys %properties;
 

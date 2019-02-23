@@ -1,5 +1,5 @@
 BEGIN;
 
-ALTER TABLE device_port ADD COLUMN "ifindex" bigint;
+ALTER TABLE device_port_properties ADD COLUMN "ifindex" bigint;
 
 COMMIT;
