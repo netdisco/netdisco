@@ -58,7 +58,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       push @portvlans, {
         port => $port,
         vlan => $i_vlan->{$entry},
-        native => 'f',
+        native => 't',
         vlantype => $i_vlan_type->{$entry},
         last_discover => \'now()',
       };
