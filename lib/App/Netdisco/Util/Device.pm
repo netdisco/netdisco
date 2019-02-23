@@ -100,8 +100,8 @@ sub delete_device {
 =head2 renumber_device( $current_ip, $new_ip )
 
 Will update all records in Netdisco referring to the device with
-C<$current_ip> to use C<$new_ip> instead, followed by renumbering the device
-iteself.
+C<$current_ip> to use C<$new_ip> instead, followed by renumbering the
+device itself.
 
 Returns true if the transaction completes, else returns false.
 
