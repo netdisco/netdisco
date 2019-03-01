@@ -29,10 +29,8 @@
       },
       "runtime" : {
          "recommends" : {
-            "Expect" : "0",
             "Graph" : "0",
-            "GraphViz" : "0",
-            "Net::OpenSSH" : "0"
+            "GraphViz" : "0"
          },
          "requires" : {
             "Algorithm::Cron" : "0.07",
@@ -52,6 +50,7 @@
             "Dancer::Plugin::Passphrase" : "v2.0.1",
             "Dancer::Session::Cookie" : "0.27",
             "Data::Printer" : "0",
+            "Expect" : "0",
             "File::ShareDir" : "1.03",
             "File::Slurper" : "0.009",
             "Guard" : "1.022",
@@ -69,6 +68,7 @@
             "Net::DNS" : "0.72",
             "Net::Domain" : "1.23",
             "Net::LDAP" : "0",
+            "Net::OpenSSH" : "0",
             "NetAddr::IP" : "4.068",
             "NetAddr::MAC" : "0.93",
             "Opcode" : "1.07",
@@ -81,7 +81,7 @@
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.64",
+            "SNMP::Info" : "3.65",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -405,6 +405,9 @@
       },
       "App::Netdisco::SSHCollector::Platform::PaloAlto" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm"
+      },
+      "App::Netdisco::Transport::CLI" : {
+         "file" : "lib/App/Netdisco/Transport/CLI.pm"
       },
       "App::Netdisco::Transport::SNMP" : {
          "file" : "lib/App/Netdisco/Transport/SNMP.pm"
