@@ -1,3 +1,16 @@
+2.041000 - 2019-02-24
+
+  [ENHANCEMENTS]
+
+  * #490 use new checks for ports having phones
+  * #494 update Cisco ASA ssh collector (stromsoe)
+  * #510 store ifindex in Device Port Properties table (rc9000)
+
+  [BUG FIXES]
+
+  * #492 Port Control uses VLAN config check (inphobia)
+  * #493 HTML tag fix (inphobia)
+
 2.040003 - 2019-01-18
 
   [NEW FEATURES]
