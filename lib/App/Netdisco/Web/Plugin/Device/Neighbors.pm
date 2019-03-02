@@ -179,17 +179,6 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       ]) : ())
     }, { result_class => 'DBIx::Class::ResultClass::HashRefInflator' });
 
-    if ($vlan) {
-        $links = $links->search({
-          -or => [
-            { 'left_vlans.vlan' => $vlan },
-            { 'right_vlans.vlan' => $vlan },
-          ],
-        }, {
-          join => [qw/left_vlans right_vlans/],
-        });
-    }
-
     while (my $link = $links->next) {
       push @{$data{'links'}}, {
         FROMID => $link->{left_ip},
@@ -217,10 +206,18 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       join => 'throughput',
     })->with_times;
 
+    # filter by vlan for all or neighbors only
+    if ($vlan) {
+      $devices = $devices->search(
+        { 'vlans.vlan' => $vlan },
+        { join => 'vlans' }
+      );
+    }
+
     DEVICE: while (my $device = $devices->next) {
-      # if in neighbors or vlan mode then use %ok_dev to filter
+      # if in neighbors mode then use %ok_dev to filter
       next DEVICE if ($device->ip ne $qdev->ip)
-        and (($mapshow eq 'neighbors') or $vlan)
+        and ($mapshow eq 'neighbors')
         and (not $ok_dev{$device->ip}); # showing only neighbors but no link
 
       # if location picked then filter
