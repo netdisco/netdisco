@@ -120,7 +120,7 @@ sub renumber_device {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
-      event => (sprintf "Renumber device %s to %s", $device->ip, $new_ip),
+      event => (sprintf "Renumber device %s to %s", $ip, $new_ip),
     });
 
     $happy = 1;
