@@ -219,8 +219,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     DEVICE: while (my $device = $devices->next) {
       # if in neighbors or vlan mode then use %ok_dev to filter
-      next DEVICE if (($mapshow eq 'neighbors') or $vlan)
-        and (not $ok_dev{$device->ip});
+      next DEVICE if ($device->ip ne $qdev->ip)
+        and (($mapshow eq 'neighbors') or $vlan)
+        and (not $ok_dev{$device->ip}); # showing only neighbors but no link
 
       # if location picked then filter
       next DEVICE if ((scalar @lgrplist) and ((!defined $device->location)
