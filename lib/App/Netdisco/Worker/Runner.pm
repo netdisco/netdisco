@@ -49,9 +49,9 @@ sub run {
       push @newuserconf, dclone $stanza;
     }
 
-    # per-device action but no device creds available
-    return $job->add_status( Status->defer('deferred job with no device creds') )
-      if 0 == scalar @newuserconf;
+    # # per-device action but no device creds available
+    # return $job->add_status( Status->defer('deferred job with no device creds') )
+    #   if 0 == scalar @newuserconf;
   }
 
   # back up and restore device_auth

@@ -278,6 +278,8 @@ sub renumber {
   }
 
   $schema->resultset('DeviceSkip')
+    ->search({device => $new_ip})->delete;
+  $schema->resultset('DeviceSkip')
     ->search({device => $old_ip})
     ->update({device => $new_ip});
 
