@@ -115,7 +115,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     )->as_query;
 
     my $rs;
-    if ( $start && $end ) {
+    if ( $start and $end ) {
         $start = $start . ' 00:00:00';
         $end   = $end . ' 23:59:59';
 
