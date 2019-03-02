@@ -125,18 +125,13 @@ sub make_link_infostring {
   (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
   (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
 
-  if ($link->{aggports} == 1) {
-    return sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
-      $left_name, $link->{left_port}->[0],
-      ($link->{left_descr}->[0] || 'no description'),
-      $right_name, $link->{right_port}->[0],
-      ($link->{right_descr}->[0] || 'no description');
-  }
-  else {
-    return sprintf '<b>%s:(%s)</b><br><b>%s:(%s)</b>',
-      $left_name, join(',', @{$link->{left_port}}),
-      $right_name, join(',', @{$link->{right_port}});
-  }
+  my @zipped = List::MoreUtils::zip6
+    @{$link->{left_port}}, @{$link->{left_descr}},
+    @{$link->{right_port}}, @{$link->{right_descr}};
+
+  return join '<br><br>', map { sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
+    $left_name, $_->[0], ($_->[1] || 'no description'),
+    $right_name, $_->[2], ($_->[3] || 'no description') } @zipped;
 }
 
 ajax '/ajax/data/device/netmap' => require_login sub {
