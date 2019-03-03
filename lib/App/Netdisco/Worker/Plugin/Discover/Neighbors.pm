@@ -169,6 +169,7 @@ sub store_neighbors {
       my $remote_port = undef;
       my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_cap  = $c_cap->{$entry} || [];
 
       next unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
@@ -240,7 +241,7 @@ sub store_neighbors {
       debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
         $device->ip, $remote_ip, ($remote_id || ''), $port;
 
-      if (is_discoverable($remote_ip, $remote_type)) {
+      if (is_discoverable($remote_ip, $remote_type, $remote_cap)) {
           push @to_discover, [$remote_ip, $remote_id];
       }
       else {

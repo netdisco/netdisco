@@ -146,7 +146,7 @@ sub match_to_setting {
 
 sub _bail_msg { debug $_[0]; return 0; }
 
-=head2 is_discoverable( $ip, $device_type? )
+=head2 is_discoverable( $ip, [$device_type, \@device_capabilities]? )
 
 Given an IP address, returns C<true> if Netdisco on this host is permitted by
 the local configuration to discover the device.
@@ -163,14 +163,20 @@ Returns false if the host is not permitted to discover the target device.
 =cut
 
 sub is_discoverable {
-  my ($ip, $remote_type) = @_;
+  my ($ip, $remote_type, $remote_cap) = @_;
   my $device = get_device($ip) or return 0;
+  $remote_type ||= '';
+  $remote_cap  ||= [];
 
   return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
-    if (match_to_setting($remote_type, 'wap_platforms') and not setting('discover_waps'));
+    if ((not setting('discover_waps')) and
+        (match_to_setting($remote_type, 'wap_platforms') or
+         scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap));
 
   return _bail_msg("is_discoverable: $device matches phone_platforms but discover_phones is not enabled")
-    if (match_to_setting($remote_type, 'phone_platforms') and not setting('discover_phones'));
+    if ((not setting('discover_phones')) and
+        (match_to_setting($remote_type, 'phone_platforms') or
+         scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap));
 
   return _bail_msg("is_discoverable: $device matched discover_no_type")
     if (match_to_setting($remote_type, 'discover_no_type'));
