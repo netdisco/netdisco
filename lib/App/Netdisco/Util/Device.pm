@@ -154,8 +154,9 @@ the local configuration to discover the device.
 The configuration items C<discover_no> and C<discover_only> are checked
 against the given IP.
 
-If C<$device_type> is also given, then C<discover_no_type> will also be
-checked.
+If C<$device_type> is also given, then C<discover_no_type> will be checked.
+Also respects C<discover_phones> and C<discover_waps> if either are set to
+false.
 
 Returns false if the host is not permitted to discover the target device.
 
@@ -165,9 +166,14 @@ sub is_discoverable {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
 
-  if (match_to_setting($remote_type, 'discover_no_type')) {
-      return _bail_msg("is_discoverable: $device matched discover_no_type");
-  }
+  return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
+    if (match_to_setting($remote_type, 'wap_platforms') and not setting('discover_waps'));
+
+  return _bail_msg("is_discoverable: $device matches phone_platforms but discover_phones is not enabled")
+    if (match_to_setting($remote_type, 'phone_platforms') and not setting('discover_phones'));
+
+  return _bail_msg("is_discoverable: $device matched discover_no_type")
+    if (match_to_setting($remote_type, 'discover_no_type'));
 
   return _bail_msg("is_discoverable: $device matched discover_no")
     if check_acl_no($device, 'discover_no');
