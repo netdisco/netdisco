@@ -10,7 +10,7 @@ our @EXPORT_OK = qw/
   get_device
   delete_device
   renumber_device
-  match_devicetype
+  match_to_setting
   is_discoverable is_discoverable_now
   is_arpnipable   is_arpnipable_now
   is_macsuckable  is_macsuckable_now
@@ -129,7 +129,7 @@ sub renumber_device {
   return $happy;
 }
 
-=head2 match_devicetype( $type, $setting_name )
+=head2 match_to_setting( $type, $setting_name )
 
 Given a C<$type> (which may be any text value), returns true if any of the
 list of regular expressions in C<$setting_name> is matched, otherwise returns
@@ -137,7 +137,7 @@ false.
 
 =cut
 
-sub match_devicetype {
+sub match_to_setting {
     my ($type, $setting_name) = @_;
     return 0 unless $type and $setting_name;
     return (scalar grep {$type =~ m/$_/}
@@ -165,7 +165,7 @@ sub is_discoverable {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
 
-  if (match_devicetype($remote_type, 'discover_no_type')) {
+  if (match_to_setting($remote_type, 'discover_no_type')) {
       return _bail_msg("is_discoverable: $device matched discover_no_type");
   }
 

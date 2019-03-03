@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::PortMAC 'get_port_macs';
-use App::Netdisco::Util::Device 'match_devicetype';
+use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Dancer::Plugin::DBIC 'schema';
@@ -342,7 +342,7 @@ sub walk_fwtable {
       # neighbors otherwise it would kill the DB with device lookups.
       my $neigh_cannot_macsuck = eval { # can fail
         check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
-        match_devicetype($device_port->remote_type, 'macsuck_unsupported_type') };
+        match_to_setting($device_port->remote_type, 'macsuck_unsupported_type') };
 
       if ($device_port->is_uplink) {
           if ($neigh_cannot_macsuck) {
