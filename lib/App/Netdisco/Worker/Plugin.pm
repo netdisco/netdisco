@@ -74,9 +74,9 @@ register 'register_worker' => sub {
         push @newuserconf, dclone $stanza;
       }
 
-      # # per-device action but no device creds available
-      # return $job->add_status( Status->info('skip: driver or action not applicable') )
-      #   if 0 == scalar @newuserconf;
+      # per-device action but no device creds available
+      return $job->add_status( Status->info('skip: driver or action not applicable') )
+        if 0 == scalar @newuserconf;
     }
 
     # back up and restore device_auth
