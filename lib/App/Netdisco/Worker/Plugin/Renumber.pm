@@ -28,10 +28,10 @@ register_worker({ phase => 'main' }, sub {
   my $old_ip = $device->ip;
   my $new_ip = NetAddr::IP->new($extra);
 
-  #my $new_dev = get_device($new_ip->addr);
-  #if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
-  #    return Status->error(sprintf "Already know new device as: %s.", $new_dev->ip);
-  #}
+  my $new_dev = get_device($new_ip->addr);
+  if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
+      return Status->error(sprintf "Already know new device as: %s.", $new_dev->ip);
+  }
 
   renumber_device($device, $new_ip);
   return Status->done(sprintf 'Renumbered device %s to %s (%s).',
