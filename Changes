@@ -1,3 +1,9 @@
+2.040006 - 2019-03-04
+
+  [BUG FIXES]
+
+  * #527 update List::MoreUtils version requirement
+
 2.040005 - 2019-03-04
 
   [BUG FIXES]
