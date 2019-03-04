@@ -120,6 +120,7 @@ sub store_neighbors {
   my $c_port     = $snmp->c_port;
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
+  my $c_cap      = $snmp->c_cap;
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} =
