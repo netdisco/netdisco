@@ -46,7 +46,7 @@ Module::Build->new(
     'JSON' => '2.90',
     'JSON::XS' => '3.01',
     'List::Util' => '1.49',
-    'List::MoreUtils' => '0.33',
+    'List::MoreUtils' => '0.428',
     'MIME::Base64' => '3.13',
     'Module::Load' => '0.32',
     'Moo' => '1.001000',
