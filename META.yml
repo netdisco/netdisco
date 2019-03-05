@@ -22,7 +22,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.040003'
+    version: '2.040006'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -37,7 +37,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '53'
+    version: '54'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -497,7 +497,7 @@ requires:
   IO::Socket::SSL: '2.048'
   JSON: '2.90'
   JSON::XS: '3.01'
-  List::MoreUtils: '0.33'
+  List::MoreUtils: '0.428'
   List::Util: '1.49'
   MCE: '1.703'
   MIME::Base64: '3.13'
@@ -518,7 +518,7 @@ requires:
   Plack::Middleware::ReverseProxy: '0.15'
   Pod::Usage: '0'
   Role::Tiny: '1.002005'
-  SNMP::Info: '3.64'
+  SNMP::Info: '3.65'
   SQL::Abstract: '1.85'
   SQL::Translator: '0.11024'
   Scope::Guard: '0'
@@ -549,5 +549,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.040003'
+version: '2.040006'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

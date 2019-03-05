@@ -45,7 +45,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # only enqueue if device is not already discovered,
   # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
-      my ($ip, $remote_type, $remote_id) = @$neighbor;
+      my ($ip, $remote_id) = @$neighbor;
       if ($seen_ip{ $ip }++) {
           debug sprintf
             ' queue - skip: IP %s is already queued from %s',
@@ -62,13 +62,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
       my $newdev = get_device($ip);
       next if $newdev->in_storage;
-
-      if (not is_discoverable($newdev, $remote_type)) {
-          debug sprintf
-            ' queue - skip: %s of type [%s] excluded by discover_* config',
-            $ip, ($remote_type || '');
-          next;
-      }
 
       # risk of things going wrong...?
       # https://quickview.cloudapps.cisco.com/quickview/bug/CSCur12254
@@ -127,6 +120,7 @@ sub store_neighbors {
   my $c_port     = $snmp->c_port;
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
+  my $c_cap      = $snmp->c_cap;
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} =
@@ -176,6 +170,7 @@ sub store_neighbors {
       my $remote_port = undef;
       my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_cap  = $c_cap->{$entry} || [];
 
       next unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
@@ -246,7 +241,15 @@ sub store_neighbors {
       # what we came here to do.... discover the neighbor
       debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
         $device->ip, $remote_ip, ($remote_id || ''), $port;
-      push @to_discover, [$remote_ip, $remote_type, $remote_id];
+
+      if (is_discoverable($remote_ip, $remote_type, $remote_cap)) {
+          push @to_discover, [$remote_ip, $remote_id];
+      }
+      else {
+          debug sprintf
+            ' [%s] neigh - skip: %s of type [%s] excluded by discover_* config',
+            $device->ip, $remote_ip, ($remote_type || '');
+      }
 
       $remote_port = $c_port->{$entry};
       if (defined $remote_port) {
