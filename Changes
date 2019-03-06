@@ -1,3 +1,9 @@
+2.040007 - 2019-03-06
+
+  [BUG FIXES]
+
+  * #521-redux Search Node Date Range not working (ollyg)
+
 2.040006 - 2019-03-04
 
   [BUG FIXES]
