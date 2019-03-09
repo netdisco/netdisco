@@ -37,8 +37,8 @@ ajax '/ajax/content/search/node' => require_login sub {
               time_last => [ { '<', $start }, { '>', $end } ]
             ]);
             @wifitimes = (-or => [
-              time_first => [ undef ],
-              time_last => [ { '<', $start }, { '>', $end } ]
+              time_last => [ undef ],
+              time_last => [ { '<', $start }, { '>', $end } ],
             ]);
             @porttimes = (-or => [
               creation => [ undef ],
@@ -57,10 +57,7 @@ ajax '/ajax/content/search/node' => require_login sub {
               ],
             ]);
             @wifitimes = (-or => [
-              -and => [
-                  time_first => undef,
-                  time_last  => undef,
-              ],
+              time_last  => undef,
               -and => [
                   time_last => { '>=', $start },
                   time_last => { '<=', $end },
