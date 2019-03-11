@@ -216,7 +216,7 @@ device_identity: []
 community: []
 community_rw: []
 device_auth: []
-get_community: ""
+get_credentials: ""
 bulkwalk_off: false
 bulkwalk_no: []
 bulkwalk_repeaters: 20
