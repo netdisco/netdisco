@@ -84,6 +84,7 @@ if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
   config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
 }
 # fix up device_auth (or create it from old snmp_auth and community settings)
+# also imports legacy sshcollcetor config
 config->{'device_auth'}
   = [ App::Netdisco::Util::DeviceAuth::fixup_device_auth() ];
 
