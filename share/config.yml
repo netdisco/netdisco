@@ -216,7 +216,7 @@ device_identity: []
 community: []
 community_rw: []
 device_auth: []
-get_community: ""
+get_credentials: ""
 bulkwalk_off: false
 bulkwalk_no: []
 bulkwalk_repeaters: 20
@@ -229,9 +229,9 @@ devices_no: []
 devices_only: []
 discover_no: []
 discover_only: []
-discover_no_type:
-  - '(?i)phone'
-  - '(?i)(?:wap|wireless)'
+discover_no_type: []
+discover_waps: true
+discover_phones: false
 discover_min_age: 0
 macsuck_no: []
 macsuck_only: []

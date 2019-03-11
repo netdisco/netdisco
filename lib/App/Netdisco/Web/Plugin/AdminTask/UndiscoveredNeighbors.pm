@@ -27,6 +27,8 @@ get '/ajax/content/admin/undiscoveredneighbors' => require_role admin => sub {
       # create a new row object to avoid hitting the DB in get_device()
       my $dev = schema('netdisco')->resultset('Device')->new({ip => $r->{remote_ip}});
       next unless is_discoverable( $dev, $r->{remote_type} );
+      next if (not setting('discover_waps')) and $r->{remote_is_wap};
+      next if (not setting('discover_phones')) and $r->{remote_is_phone};
       push @discoverable_results, $r;
     }
     return unless scalar @discoverable_results;

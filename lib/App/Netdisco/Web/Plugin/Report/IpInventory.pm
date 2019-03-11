@@ -110,12 +110,12 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 'ip',     'mac',  'dns',  'time_last', 'time_first',
                 'active', 'node', 'age'
             ],
-            order_by => [{-asc => 'ip'}, {-desc => 'active'}],
+            order_by => [{-asc => 'ip'}, {-desc => 'active'}, {-asc => 'node'}],
         }
     )->as_query;
 
     my $rs;
-    if ( $start && $end ) {
+    if ( $start and $end ) {
         $start = $start . ' 00:00:00';
         $end   = $end . ' 23:59:59';
 

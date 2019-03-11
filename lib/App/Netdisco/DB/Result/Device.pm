@@ -262,19 +262,26 @@ sub renumber {
   foreach my $set (qw/
     DeviceIp
     DeviceModule
-    DevicePower
-    DeviceVlan
     DevicePort
     DevicePortLog
     DevicePortPower
+    DevicePortProperties
     DevicePortSsid
     DevicePortVlan
     DevicePortWireless
+    DevicePower
+    DeviceVlan
   /) {
     $schema->resultset($set)
       ->search({ip => $old_ip})
       ->update({ip => $new_ip});
   }
+
+  $schema->resultset('DeviceSkip')
+    ->search({device => $new_ip})->delete;
+  $schema->resultset('DeviceSkip')
+    ->search({device => $old_ip})
+    ->update({device => $new_ip});
 
   $schema->resultset('DevicePort')
     ->search({remote_ip => $old_ip})

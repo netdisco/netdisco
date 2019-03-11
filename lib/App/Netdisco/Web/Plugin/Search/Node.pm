@@ -27,35 +27,48 @@ ajax '/ajax/content/search/node' => require_login sub {
     my @active = (param('archived') ? () : (-bool => 'active'));
 
     my (@times, @wifitimes, @porttimes);
-    if ($start and $end) {
+    if ( $start and $end ) {
         $start = $start . ' 00:00:00';
         $end   = $end   . ' 23:59:59';
+
         if ($agenot) {
             @times = (-or => [
-              time_first => [ { '<', $start }, undef ],
-              time_last => { '>', $end },
+              time_first => [ undef ],
+              time_last => [ { '<', $start }, { '>', $end } ]
             ]);
             @wifitimes = (-or => [
-              time_last => { '<', $start },
-              time_last => { '>', $end },
+              time_last => [ undef ],
+              time_last => [ { '<', $start }, { '>', $end } ],
             ]);
             @porttimes = (-or => [
-              creation => { '<', $start },
-              creation => { '>', $end },
+              creation => [ undef ],
+              creation => [ { '<', $start }, { '>', $end } ]
             ]);
         }
         else {
-            @times = (-and => [
-              time_first => { '>=', $start },
-              time_last  => { '<=', $end },
+            @times = (-or => [
+              -and => [
+                  time_first => undef,
+                  time_last  => undef,
+              ],
+              -and => [
+                  time_last => { '>=', $start },
+                  time_last => { '<=', $end },
+              ],
             ]);
-            @wifitimes = (-and => [
-              time_last => { '>=', $start },
-              time_last => { '<=', $end },
+            @wifitimes = (-or => [
+              time_last  => undef,
+              -and => [
+                  time_last => { '>=', $start },
+                  time_last => { '<=', $end },
+              ],
             ]);
-            @porttimes = (-and => [
-              creation => { '>=', $start },
-              creation => { '<=', $end },
+            @porttimes = (-or => [
+              creation => undef,
+              -and => [
+                  creation => { '>=', $start },
+                  creation => { '<=', $end },
+              ],
             ]);
         }
     }
