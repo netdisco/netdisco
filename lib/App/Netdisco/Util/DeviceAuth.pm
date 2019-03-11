@@ -119,6 +119,9 @@ sub get_external_credentials {
       foreach my $line (@lines) {
           if ($line =~ m/^community\s*=\s*(.*)\s*$/i) {
               if (length $1 and $mode eq 'read') {
+                  debug sprintf '[%s] external read credentials added',
+                    $device->ip;
+
                   return map {{
                     read => 1,
                     only => [$device->ip],
@@ -128,6 +131,9 @@ sub get_external_credentials {
           }
           elsif ($line =~ m/^setCommunity\s*=\s*(.*)\s*$/i) {
               if (length $1 and $mode eq 'write') {
+                  debug sprintf '[%s] external write credentials added',
+                    $device->ip;
+
                   return map {{
                     write => 1,
                     only => [$device->ip],
@@ -137,7 +143,15 @@ sub get_external_credentials {
           }
           else {
             my $stanza = undef;
-            try { $stanza = from_json( $line ) };
+            try {
+              $stanza = from_json( $line );
+              debug sprintf '[%s] external credentials stanza added',
+                $device->ip;
+            }
+            catch {
+              info sprintf '[%s] error! failed to parse external credentials stanza',
+                $device->ip;
+            };
             return $stanza if ref $stanza;
           }
       }
