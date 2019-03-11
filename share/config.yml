@@ -41,9 +41,6 @@ api_token_lifetime: 3600
 path: '/'
 web_plugins:
   - Inventory
-#  - API::Node
-  - API::NodeIP
-#  - API::Device
   - Report::PortVLANMismatch
   - Report::PortAdminDown
   - Report::PortBlocking
