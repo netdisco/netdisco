@@ -98,7 +98,7 @@ Module::Build->new(
     'Env::Path'  => '0',
     'Test::Compile' => '0',
     'Test::File::ShareDir::Dist' => '0',
-    'NetSNMP::default_store' => '0',
+    'NetSNMP::default_store' => '0'
   },
   script_files => [
     'bin/nd-import-topology',
