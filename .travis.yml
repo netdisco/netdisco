@@ -2,6 +2,7 @@ language: perl
 addons:
   apt:
     packages:
+      - net-snmp
       - libsnmp-dev
       - phantomjs
   hosts:
