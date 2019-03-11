@@ -109,7 +109,6 @@ lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
 lib/App/Netdisco/SSHCollector/Platform/Linux.pm
 lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
-lib/App/Netdisco/Transport/CLI.pm
 lib/App/Netdisco/Transport/SNMP.pm
 lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DNS.pm
@@ -365,6 +364,7 @@ share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-50-51-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-51-52-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-52-53-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-53-54-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql

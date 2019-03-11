@@ -78,17 +78,13 @@ if ($opensshdebug){
     $Net::OpenSSH::debug = ~0;
 }
 
-
 MCE::Loop::init { chunk_size => 1, max_workers => $workers };
 my %stats;
 $stats{entry} = 0;
 
-deprecation_warning();
 exit main();
 
 sub main {
-
-
     my @input = @{ setting('sshcollector') };
 
     if ($device){
@@ -178,15 +174,6 @@ sub store_arpentries {
 
         $stats{entry}++;
     }
-}
-
-sub deprecation_warning {
-    print "\n";
-    warning sprintf "DEPRECATION WARNING\n" .
-                    "This script and the sshcollector setting will be removed in a future release!\n".
-                    "See this document to migrate to the new sshcollector integrated into\n" .
-                    "regular netdisco-do/netdisco-daemon arpnip:\n" .
-                    "https://github.com/netdisco/netdisco/wiki/bin-sshcollector-deprecation\n\n";
 }
 
 =head1 NAME
