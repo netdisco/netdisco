@@ -12,7 +12,15 @@
           [% th_class = ' class="portsort"' %]
         [% END %]
         <th[% th_class %]>
+          [% IF item.name == 'c_neighbors' %]
+          [% IF params.c_nodes %]
+          Connected Nodes &amp; Devices
+          [% ELSE %]
+          Connected Devices
+          [% END %]
+          [% ELSE %]
           [% item.label | html_entity %]
+          [% END %]
         </th>
       [% END %]
     </tr>
@@ -361,8 +369,8 @@
           <i class="icon-link text-warning"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="Manual Topology"></i>
-        [% END %]
         </a>
+        [% END %]
       </td>
       [% END %]
 

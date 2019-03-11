@@ -151,6 +151,7 @@ lib/App/Netdisco/Web/Plugin/Device/Details.pm
 lib/App/Netdisco/Web/Plugin/Device/Modules.pm
 lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+lib/App/Netdisco/Web/Plugin/Device/Vlans.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
 lib/App/Netdisco/Web/Plugin/Report/ApChannelDist.pm
 lib/App/Netdisco/Web/Plugin/Report/ApClients.pm
@@ -363,6 +364,7 @@ share/schema_versions/App-Netdisco-DB-5-6-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-50-51-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-51-52-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-52-53-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-53-54-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
@@ -391,6 +393,8 @@ share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/device/ports_csv.tt
+share/views/ajax/device/vlans.tt
+share/views/ajax/device/vlans_csv.tt
 share/views/ajax/report/apchanneldist.tt
 share/views/ajax/report/apchanneldist_csv.tt
 share/views/ajax/report/apclients.tt

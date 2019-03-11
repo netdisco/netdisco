@@ -57,7 +57,6 @@
             <tr>
               <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
               <th>[% stats.pg_ver | html_entity %]</th>
-              </th>
             </tr>
             <tr>
               <th><a href="http://www.perl.org">Perl</a></th>

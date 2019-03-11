@@ -25,25 +25,6 @@ get '/ajax/content/device/ports' => require_login sub {
     if ($f) {
         if (($prefer eq 'vlan') or (not $prefer and $f =~ m/^\d+$/)) {
             return unless $f =~ m/^\d+$/;
-
-            if (param('invert')) {
-                $set = $set->search({
-                  'me.vlan' => { '!=' => $f },
-                  'port_vlans.vlan' => [
-                    '-or' => { '!=' => $f }, { '=' => undef }
-                  ],
-                }, { join => 'port_vlans' });
-            }
-            else {
-                $set = $set->search({
-                  -or => {
-                    'me.vlan' => $f,
-                    'port_vlans.vlan' => $f,
-                  },
-                }, { join => 'port_vlans' });
-            }
-
-            return unless $set->count;
         }
         else {
             if (param('partial')) {
@@ -120,7 +101,7 @@ get '/ajax/content/device/ports' => require_login sub {
     # now begin to join tables depending on the selected columns/options
 
     # get vlans on the port
-    # leave this query dormant (lazy) unless c_vmember is set
+    # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
     my $vlans = $set->search({}, {
       select => [
         'port',
@@ -131,7 +112,7 @@ get '/ajax/content/device/ports' => require_login sub {
       group_by => 'me.port',
     });
 
-    if (param('c_vmember')) {
+    if (param('c_vmember') or ($prefer eq 'vlan') or (not $prefer and $f =~ m/^\d+$/)) {
         $vlans = { map {(
           $_->port => {
             # DBIC smart enough to work out this should be an arrayref :)
@@ -194,13 +175,37 @@ get '/ajax/content/device/ports' => require_login sub {
     # also get remote LLDP inventory if asked for
     $set = $set->with_remote_inventory if param('n_inventory');
 
-    # sort ports (empty set would be a 'no records' msg)
-    my $results = [ sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all ];
-    return unless scalar @$results;
+    # run query
+    my @results = $set->all;
+
+    # filter for tagged vlan using existing agg query,
+    # which is better than join inflation
+    if (($prefer eq 'vlan') or (not $prefer and $f =~ m/^\d+$/)) {
+      if (param('invert')) {
+        @results = grep {
+            (!defined $_->vlan or $_->vlan ne $f)
+              and
+            (0 == scalar grep {defined and $_ ne $f} @{ $vlans->{$_->port}->{vlan_set} })
+        } @results;
+      }
+      else {
+        @results = grep {
+            ($_->vlan eq $f)
+              or
+            (scalar grep {defined and $_ eq $f} @{ $vlans->{$_->port}->{vlan_set} })
+        } @results;
+      }
+    }
+
+    # sort ports
+    @results = sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } @results;
+
+    # empty set would be a 'no records' msg
+    return unless scalar @results;
 
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
-          results => $results,
+          results => \@results,
           nodes => $nodes_name,
           ips   => $ips_name,
           device => $device,
@@ -210,7 +215,7 @@ get '/ajax/content/device/ports' => require_login sub {
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/device/ports_csv.tt', {
-          results => $results,
+          results => \@results,
           nodes => $nodes_name,
           ips   => $ips_name,
           device => $device,

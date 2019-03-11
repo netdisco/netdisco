@@ -45,7 +45,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # only enqueue if device is not already discovered,
   # discover_* config permits the discovery
   foreach my $neighbor (@to_discover) {
-      my ($ip, $remote_type, $remote_id) = @$neighbor;
+      my ($ip, $remote_id) = @$neighbor;
       if ($seen_ip{ $ip }++) {
           debug sprintf
             ' queue - skip: IP %s is already queued from %s',
@@ -62,13 +62,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
       my $newdev = get_device($ip);
       next if $newdev->in_storage;
-
-      if (not is_discoverable($newdev, $remote_type)) {
-          debug sprintf
-            ' queue - skip: %s of type [%s] excluded by discover_* config',
-            $ip, ($remote_type || '');
-          next;
-      }
 
       # risk of things going wrong...?
       # https://quickview.cloudapps.cisco.com/quickview/bug/CSCur12254
@@ -114,6 +107,7 @@ sub store_neighbors {
     or return (); # already checked!
 
   # first allow any manually configured topology to be set
+  # and do this before we cache the rows in vars->{'device_ports'}
   set_manual_topology($device);
 
   if (!defined $snmp->has_topo) {
@@ -126,6 +120,12 @@ sub store_neighbors {
   my $c_port     = $snmp->c_port;
   my $c_id       = $snmp->c_id;
   my $c_platform = $snmp->c_platform;
+  my $c_cap      = $snmp->c_cap;
+
+  # cache the device ports to save hitting the database for many single rows
+  vars->{'device_ports'} =
+    { map {($_->port => $_)} $device->ports->reset->all };
+  my $device_ports = vars->{'device_ports'};
 
   # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
@@ -144,12 +144,12 @@ sub store_neighbors {
           next;
       }
 
-      my $port = $interfaces->{ $c_if->{$entry} };
-      my $portrow = schema('netdisco')->resultset('DevicePort')
-          ->single({ip => $device->ip, port => $port});
+      # WRT #475 this is SAFE because we check against known ports below
+      my $port = $interfaces->{ $c_if->{$entry} } or next;
+      my $portrow = $device_ports->{$port};
 
       if (!defined $portrow) {
-          info sprintf ' [%s] neigh - local port %s not in database!',
+          debug sprintf ' [%s] neigh - local port %s already skipped, ignoring',
             $device->ip, $port;
           next;
       }
@@ -161,7 +161,7 @@ sub store_neighbors {
       }
 
       if ($portrow->manual_topo) {
-          info sprintf ' [%s] neigh - %s has manually defined topology',
+          debug sprintf ' [%s] neigh - %s has manually defined topology',
             $device->ip, $port;
           next;
       }
@@ -170,12 +170,13 @@ sub store_neighbors {
       my $remote_port = undef;
       my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_cap  = $c_cap->{$entry} || [];
 
       next unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
 
       if ($r_netaddr and ($r_netaddr->addr ne $remote_ip)) {
-        info sprintf ' [%s] neigh - IP on %s: using %s as canonical form of %s',
+        debug sprintf ' [%s] neigh - IP on %s: using %s as canonical form of %s',
           $device->ip, $port, $r_netaddr->addr, $remote_ip;
         $remote_ip = $r_netaddr->addr;
       }
@@ -189,7 +190,7 @@ sub store_neighbors {
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');
               my $neigh = $devices->single({name => $remote_id});
-              info sprintf
+              debug sprintf
                 ' [%s] neigh - bad address %s on port %s, searching for %s instead',
                 $device->ip, $remote_ip, $port, $remote_id;
 
@@ -207,7 +208,7 @@ sub store_neighbors {
                   (my $tmpid = $remote_id) =~ s/.*\(([0-9a-f]{6})-([0-9a-f]{6})\).*/$1$2/;
                   my $mac = NetAddr::MAC->new(mac => $tmpid);
                   if ($mac and not $mac->errstr) {
-                      info sprintf
+                      debug sprintf
                         ' [%s] neigh - trying to find neighbor %s by MAC %s',
                         $device->ip, $remote_id, $mac->as_ieee;
                       $neigh = $devices->single({mac => $mac->as_ieee});
@@ -221,17 +222,17 @@ sub store_neighbors {
 
               if ($neigh) {
                   $remote_ip = $neigh->ip;
-                  info sprintf ' [%s] neigh - found %s with IP %s',
+                  debug sprintf ' [%s] neigh - found %s with IP %s',
                     $device->ip, $remote_id, $remote_ip;
               }
               else {
-                  info sprintf ' [%s] neigh - could not find %s, skipping',
+                  debug sprintf ' [%s] neigh - could not find %s, skipping',
                     $device->ip, $remote_id;
                   next;
               }
           }
           else {
-              info sprintf ' [%s] neigh - skipping unuseable address %s on port %s',
+              debug sprintf ' [%s] neigh - skipping unuseable address %s on port %s',
                 $device->ip, $remote_ip, $port;
               next;
           }
@@ -240,7 +241,15 @@ sub store_neighbors {
       # what we came here to do.... discover the neighbor
       debug sprintf ' [%s] neigh - %s with ID [%s] on %s',
         $device->ip, $remote_ip, ($remote_id || ''), $port;
-      push @to_discover, [$remote_ip, $remote_type, $remote_id];
+
+      if (is_discoverable($remote_ip, $remote_type, $remote_cap)) {
+          push @to_discover, [$remote_ip, $remote_id];
+      }
+      else {
+          debug sprintf
+            ' [%s] neigh - skip: %s of type [%s] excluded by discover_* config',
+            $device->ip, $remote_ip, ($remote_type || '');
+      }
 
       $remote_port = $c_port->{$entry};
       if (defined $remote_port) {
@@ -248,18 +257,18 @@ sub store_neighbors {
           $remote_port =~ s/[^\d\s\/\.,()\w:-]+//gi;
       }
       else {
-          info sprintf ' [%s] neigh - no remote port found for port %s at %s',
+          debug sprintf ' [%s] neigh - no remote port found for port %s at %s',
             $device->ip, $port, $remote_ip;
       }
 
-      $portrow->update({
+      $portrow = $portrow->update({
           remote_ip   => $remote_ip,
           remote_port => $remote_port,
           remote_type => $remote_type,
           remote_id   => $remote_id,
           is_uplink   => \"true",
           manual_topo => \"false",
-      });
+      })->discard_changes();
 
       # update master of our aggregate to be a neighbor of
       # the master on our peer device (a lot of iffs to get there...).

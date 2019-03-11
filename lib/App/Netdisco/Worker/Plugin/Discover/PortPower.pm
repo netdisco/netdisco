@@ -32,6 +32,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       };
   }
 
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
+
   my $interfaces = $snmp->interfaces;
   my $p_ifindex  = $snmp->peth_port_ifindex;
   my $p_admin    = $snmp->peth_port_admin;
@@ -42,11 +46,16 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # build device port power info suitable for DBIC
   my @portpower;
   foreach my $entry (keys %$p_ifindex) {
-      my $port = $interfaces->{ $p_ifindex->{$entry} };
-      next unless $port;
+      # WRT #475 this is SAFE because we check against known ports below
+      my $port = $interfaces->{ $p_ifindex->{$entry} } or next;
+
+      if (!defined $device_ports->{$port}) {
+          debug sprintf ' [%s] power - local port %s already skipped, ignoring',
+            $device->ip, $port;
+          next;
+      }
 
       my ($module) = split m/\./, $entry;
-
       push @portpower, {
           port   => $port,
           module => $module,

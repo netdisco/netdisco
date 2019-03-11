@@ -1,3 +1,76 @@
+2.040007 - 2019-03-06
+
+  [BUG FIXES]
+
+  * #521-redux Search Node Date Range not working (ollyg)
+
+2.040006 - 2019-03-04
+
+  [BUG FIXES]
+
+  * #527 update List::MoreUtils version requirement
+
+2.040005 - 2019-03-04
+
+  [BUG FIXES]
+
+  * #526 fix discover syntax bug
+
+2.040004 - 2019-03-03
+
+  [NEW FEATURES]
+
+  * #510 store ifindex in Device Port Properties table (rc9000)
+  * new discover_waps and discover_phones boolean settings (ollyg)
+
+  [ENHANCEMENTS]
+
+  * #428 Port-Channels now showing in netmap (ollyg)
+  * #490 use new LLDP capability checks for ports having phones (ollyg)
+  * #494 update Cisco ASA ssh collector (stromsoe)
+
+  [BUG FIXES]
+
+  * #492 Port Control incorrectly uses VLAN config check (inphobia)
+  * #493 HTML tag fix (inphobia)
+  * #498 Map with VLAN filter omits unconnected devices (ollyg)
+  * #499 netdisco-do renumber reports wrong ip (inphobia)
+  * #500 no more duplicate entries in vlan filter (ollyg)
+  * #505 renumbering device missed a few tables (ollyg)
+  * #512 fix regression in phone/wap discovery exclusion (ollyg)
+  * #514 ipinventory report returns consistent data (inphobia)
+  * #520 make sure aggports have a master<->slave (ollyg)
+  * #521 Search Node Date Range not working (ollyg)
+  * #522 TypeAhead.pm can reference empty data (inphobia)
+  * fix bug showing no nodes when only one matches in netmap (ollyg)
+
+2.040003 - 2019-01-18
+
+  [NEW FEATURES]
+  
+  * #485 new "VLANs" device tab showing a VLAN report (inphobia)
+
+  [ENHANCEMENTS]
+
+  * #408, #417 & 477 makerancidconf improvements re-added (earendilfr, inphobia)
+  * #420 IP Inventory Node column renamed to IP Address (ollyg)
+  * #420 sidebar defaults for IP Inventory report can be overridden (ollyg)
+  * #424 column name is "Connected Nodes & Devices" when both are shown (ollyg)
+  * #436 make neighbor matching less strict in netmap (linwood-f)
+  * #482 operating system is now a link in device details (inphobia)
+  * #486 allow snmp::info base class in netdisco-do (inphobia)
+
+  [BUG FIXES]
+
+  * #457 make sorting work for adresses when interface was undefined (inphobia)
+  * #471-redux ospf discovery will now keep on working (ollyg)
+  * #474 better explain public key auth with netdisco-sshcollector (inphobia)
+  * #475, #479 all discover plugins should now respect ignore_* for interfaces (ollyg)
+  * #476 debug log when deleting rows from related tables (ollyg)
+  * Fix to catch when txrate on wifi is scalar and not a list
+  * Remove 'use vars' which is deprecated in Perl
+  * Various documentation improvements (inphobia)
+
 2.040002 - 2018-12-30
 
   [BUG FIXES]

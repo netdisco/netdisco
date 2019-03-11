@@ -4,7 +4,7 @@
       <th>Status</th>
       <th>Name</th>
       <th>Port</th>
-      <th>Vlan</th>
+      <th>VLAN</th>
       <th>Speed</th>
       <th>Last Change</th>
     </tr>

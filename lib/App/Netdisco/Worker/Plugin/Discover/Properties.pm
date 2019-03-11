@@ -151,7 +151,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   if (defined $snmp->snmpEngineTime) {
       $dev_uptime_wrapped = int( $snmp->snmpEngineTime * 100 / 2**32 );
       if ($dev_uptime_wrapped > 0) {
-          info sprintf ' [%s] interface - device uptime wrapped %d times - correcting',
+          debug sprintf ' [%s] interfaces - device uptime wrapped %d times - correcting',
             $device->ip, $dev_uptime_wrapped;
           $device->uptime( $dev_uptime + $dev_uptime_wrapped * 2**32 );
       }
@@ -190,7 +190,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
       my $lc = $i_lastchange->{$entry} || 0;
       if (not $dev_uptime_wrapped and $lc > $dev_uptime) {
-          info sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
+          debug sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
             $device->ip, $port;
           $device->uptime( $dev_uptime + 2**32 );
           $dev_uptime_wrapped = 1;
@@ -238,6 +238,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   # must do this after building %interfaces so that we can set is_master
   foreach my $sidx (keys %$agg_ports) {
       my $slave  = $interfaces->{$sidx} or next;
+      next unless defined $agg_ports->{$sidx}; # slave without a master?!
       my $master = $interfaces->{ $agg_ports->{$sidx} } or next;
       next unless exists $interfaces{$slave} and exists $interfaces{$master};
 

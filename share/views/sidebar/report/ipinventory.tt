@@ -46,7 +46,7 @@
                     rel="tooltip" data-placement="left" data-offset="5" data-title="Applies to IPv4 Only">
                   <label class="add-on">
                   <input type="checkbox" id="never"
-                    name="never"[% ' checked="checked"' IF params.never %]/>
+                    name="never"[% ' checked="checked"' IF (params.never OR vars.sidebar_defaults.report_ipinventory.never) %]/>
                   </label>
                   <label class="nd_checkboxlabel" for="never">
                     <span class="nd_searchcheckbox uneditable-input">List IP's Never Seen</span>

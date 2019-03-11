@@ -1,0 +1,10 @@
+[% USE CSV -%]
+[% CSV.dump([ 'VLAN ID' 'VLAN Name' ]) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.vlan) %]
+  [% mylist.push(row.description) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

@@ -49,7 +49,7 @@ ajax '/ajax/data/port/typeahead' => require_login sub {
       if $port;
 
     my $results = [
-      map  {{ label => (sprintf "%s (%s)", $_->port, $_->name), value => $_->port }}
+      map  {{ label => (sprintf "%s (%s)", $_->port, ($_->name || '')), value => $_->port }}
       sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } $set->all
     ];
 

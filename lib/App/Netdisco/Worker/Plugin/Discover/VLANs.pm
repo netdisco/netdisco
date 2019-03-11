@@ -33,6 +33,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       };
   }
 
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
+
   my $i_vlan            = $snmp->i_vlan;
   my $i_vlan_membership = $snmp->i_vlan_membership;
   my $i_vlan_type       = $snmp->i_vlan_type;
@@ -42,8 +46,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my @portvlans = ();
   foreach my $entry (keys %$i_vlan_membership) {
       my %port_vseen = ();
-      my $port = $interfaces->{$entry};
-      next unless defined $port;
+      my $port = $interfaces->{$entry} or next;
+
+      if (!defined $device_ports->{$port}) {
+          debug sprintf ' [%s] vlans - local port %s already skipped, ignoring',
+            $device->ip, $port;
+          next;
+      }
 
       my $type = $i_vlan_type->{$entry};
 

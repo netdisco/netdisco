@@ -105,7 +105,8 @@ sub port_reconfig_check {
 
   # uplink check
   return "forbidden: port [$name] on [$ip] is an uplink"
-    if $port->remote_type and not $has_phone and not setting('portctl_uplinks');
+    if ($port->is_uplink or $port->remote_type)
+        and not $has_phone and not setting('portctl_uplinks');
 
   # phone check
   return "forbidden: port [$name] on [$ip] is a phone"
@@ -215,18 +216,10 @@ sub is_vlan_interface {
 
 Returns true if the C<$port> L<DBIx::Class> object has a phone connected.
 
-This uses a simple check on the I<type> of the remote connected device, and
-therefore might sometimes return a false-negative result.
-
 =cut
 
 sub port_has_phone {
-  my $port = shift;
-
-  my $has_phone = ($port->remote_type
-    and $port->remote_type =~ /ip.phone/i) ? 1 : 0;
-
-  return $has_phone;
+  return (shift)->with_properties->remote_is_phone;
 }
 
 1;

@@ -3,7 +3,10 @@ use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
 use warnings;
+
+use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
+require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
 
@@ -44,16 +47,16 @@ sub with_times {
     ->search({},
       {
         '+columns' => {
-          uptime_age => \("replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', "
+          uptime_age => \("replace(age(timestamp 'epoch' + me.uptime / 100 * interval '1 second', "
             ."timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')"),
           first_seen_stamp    => \"to_char(me.creation, 'YYYY-MM-DD HH24:MI')",
-          last_discover_stamp => \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
-          last_macsuck_stamp  => \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
-          last_arpnip_stamp   => \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
+          last_discover_stamp => \"to_char(me.last_discover, 'YYYY-MM-DD HH24:MI')",
+          last_macsuck_stamp  => \"to_char(me.last_macsuck,  'YYYY-MM-DD HH24:MI')",
+          last_arpnip_stamp   => \"to_char(me.last_arpnip,   'YYYY-MM-DD HH24:MI')",
           since_first_seen    => \"extract(epoch from (age(now(), me.creation)))",
-          since_last_discover => \"extract(epoch from (age(now(), last_discover)))",
-          since_last_macsuck  => \"extract(epoch from (age(now(), last_macsuck)))",
-          since_last_arpnip   => \"extract(epoch from (age(now(), last_arpnip)))",
+          since_last_discover => \"extract(epoch from (age(now(), me.last_discover)))",
+          since_last_macsuck  => \"extract(epoch from (age(now(), me.last_macsuck)))",
+          since_last_arpnip   => \"extract(epoch from (age(now(), me.last_arpnip)))",
         },
       });
 }
@@ -591,11 +594,21 @@ handle the removal or archiving of nodes.
 
 =cut
 
+sub _plural { (shift || 0) == 1 ? 'entry' : 'entries' };
+
 sub delete {
   my $self = shift;
 
   my $schema = $self->result_source->schema;
   my $devices = $self->search(undef, { columns => 'ip' });
+
+  my $ip = undef;
+  {
+    no autovivification;
+    try { $ip ||= $devices->{attrs}->{where}->{ip} };
+    try { $ip ||= $devices->{attrs}->{where}->{'me.ip'} };
+  }
+  $ip ||= 'netdisco';
 
   foreach my $set (qw/
     DeviceIp
@@ -604,9 +617,12 @@ sub delete {
     DeviceModule
     Community
   /) {
-      $schema->resultset($set)->search(
+      my $gone = $schema->resultset($set)->search(
         { ip => { '-in' => $devices->as_query } },
       )->delete;
+
+      Dancer::Logger::debug sprintf ' [%s] db/device - removed %d %s from %s',
+        $ip, $gone, _plural($gone), $set if defined Dancer::Logger::logger();
   }
 
   foreach my $set (qw/
@@ -618,12 +634,15 @@ sub delete {
       )->delete;
   }
 
-  $schema->resultset('Topology')->search({
+  my $gone = $schema->resultset('Topology')->search({
     -or => [
       { dev1 => { '-in' => $devices->as_query } },
       { dev2 => { '-in' => $devices->as_query } },
     ],
   })->delete;
+
+  Dancer::Logger::debug sprintf ' [%s] db/device - removed %d manual topology %s',
+    $ip, $gone, _plural($gone) if defined Dancer::Logger::logger();
 
   $schema->resultset('DevicePort')->search(
     { ip => { '-in' => $devices->as_query } },

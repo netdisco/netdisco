@@ -18,6 +18,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $ssidlist = $snmp->i_ssidlist;
   return unless scalar keys %$ssidlist;
 
+  # cache the device ports to save hitting the database for many single rows
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
+
   my $interfaces = $snmp->interfaces;
   my $ssidbcast  = $snmp->i_ssidbcast;
   my $ssidmac    = $snmp->i_ssidmac;
@@ -33,6 +37,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       if (not $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
             $device->ip, $iid;
+          next;
+      }
+
+      if (!defined $device_ports->{$port}) {
+          debug sprintf ' [%s] wireless - local port %s already skipped, ignoring',
+            $device->ip, $port;
           next;
       }
 
@@ -61,6 +71,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       if (not $port) {
           debug sprintf ' [%s] wireless - ignoring %s (no port mapping)',
             $device->ip, $entry;
+          next;
+      }
+
+      if (!defined $device_ports->{$port}) {
+          debug sprintf ' [%s] wireless - local port %s already skipped, ignoring',
+            $device->ip, $port;
           next;
       }
 
