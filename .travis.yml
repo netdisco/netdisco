@@ -6,10 +6,10 @@ addons:
       - phantomjs
   hosts:
     - localhost
-branches:
-  only:
-    - /^2\.\d{6}$/
-    - 'master'
+#branches:
+#  only:
+#    - /^2\.\d{6}$/
+#    - 'master'
 install: true
 script: |
   perl Build.PL && \
