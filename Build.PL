@@ -96,7 +96,6 @@ Module::Build->new(
   test_requires => {
     'Test::More' => '1.302083',
     'Env::Path'  => '0',
-    'Test::Compile' => '0',
     'Test::File::ShareDir::Dist' => '0',
   },
   script_files => [
