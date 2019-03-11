@@ -7,6 +7,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use URI ();
+use Try::Tiny;
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
@@ -67,7 +68,7 @@ if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
 # load cookie key from database
 setting('session_cookie_key' => undef);
 my $sessions = schema('netdisco')->resultset('Session');
-my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
+my $skey = try { $sessions->find({id => 'dancer_session_cookie_key'}) };
 setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
 Dancer::Session::Cookie::init(session);
 
