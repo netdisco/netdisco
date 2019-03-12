@@ -21,8 +21,8 @@ use Test::Compile;
 
 my $test = Test::Compile->new();
 
-my @plfiles = grep {$_ !~ m/(?:sshcollector|graph)/i} $test->all_pl_files();
-my @pmfiles = grep {$_ !~ m/(?:sshcollector|graph)/i} $test->all_pm_files();
+my @plfiles = grep {$_ !~ m/(?:graph)/i} $test->all_pl_files();
+my @pmfiles = grep {$_ !~ m/(?:graph)/i} $test->all_pm_files();
 
 $test->ok($test->pl_file_compiles($_), "$_ compiles") for @plfiles;
 $test->ok($test->pm_file_compiles($_), "$_ compiles") for @pmfiles;

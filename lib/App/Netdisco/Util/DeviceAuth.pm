@@ -63,7 +63,23 @@ sub fixup_device_auth {
     die "error: config: stanza in device_auth must have a tag\n"
       if not $stanza->{tag} and exists $stanza->{user};
 
-    push @new_stanzas, $stanza
+    push @new_stanzas, $stanza;
+  }
+
+  # import legacy sshcollector configuration
+  my $sshcollector = (setting('sshcollector') || []);
+  foreach my $stanza (@$sshcollector) {
+    # defaults
+    $stanza->{driver} = 'cli';
+    $stanza->{read} = 1;
+    $stanza->{no}   ||= [];
+
+    # fixups
+    $stanza->{only} ||= [ scalar delete $stanza->{ip} ||
+                          scalar delete $stanza->{hostname} ];
+    $stanza->{username} = scalar delete $stanza->{user};
+
+    push @new_stanzas, $stanza;
   }
 
   # legacy config 
