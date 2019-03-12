@@ -4,6 +4,8 @@ use Dancer qw/:syntax :script/;
 
 use App::Netdisco::Util::Device 'get_device';
 use Module::Load ();
+use Net::OpenSSH;
+use Try::Tiny;
 
 use base 'Dancer::Object::Singleton';
 
@@ -43,11 +45,12 @@ Returns C<undef> if the connection fails.
 
   has 'ssh'  => ( is => 'rw' );
   has 'auth' => ( is => 'rw' );
+  has 'host' => ( is => 'rw' );
   has 'platform' => ( is => 'rw' );
 
   sub arpnip {
     my $self = shift;
-    $self->platform->arpnip(@_, $self->ssh, $self->auth);
+    $self->platform->arpnip(@_, $self->host, $self->ssh, $self->auth);
   }
 }
 
@@ -71,7 +74,7 @@ sub session_for {
   push(@master_opts, @{$auth->{ssh_master_opts}})
     if $auth->{ssh_master_opts};
 
-  $Net::OpenSSH::debug = ~0 if setting('log') eq 'debug';
+  $Net::OpenSSH::debug = $ENV{SSH_TRACE};
   my $ssh = Net::OpenSSH->new(
     $device->ip,
     user => $auth->{username},
@@ -102,6 +105,7 @@ sub session_for {
   my $sess = MySession->new(
     ssh  => $ssh,
     auth => $auth,
+    host => $device->ip,
     platform => $platform->new(),
   );
 

@@ -71,7 +71,7 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
       or return Status->defer("arpnip failed: could not SSH connect to $device");
 
     # should be both v4 and v6
-    my $arps = get_arps_cli($device, $cli->arpnip);
+    my $arps = get_arps_cli($device, [$cli->arpnip]);
 
     # update node_ip with ARP and Neighbor Cache entries
     my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
@@ -89,7 +89,7 @@ sub get_arps_cli {
   $entries ||= [];
 
   foreach my $entry (@$entries) {
-    next unless check_mac( $entry->{mac} );
+    next unless check_mac($entry->{mac}, $device);
     push @arps, {
         node => $entry->{mac},
         ip   => $entry->{ip},
