@@ -6,11 +6,12 @@ addons:
       - phantomjs
   hosts:
     - localhost
-#branches:
-#  only:
-#    - /^2\.\d{6}$/
-#    - 'master'
-install: true
+branches:
+  only:
+    - /^2\.\d{6}$/
+    - 'master'
+install:
+  - cpanm --quiet --notest PkgConfig Test::CChecker Alien::zlib::Static Alien::OpenSSL::Static Alien::SNMP
 script: |
   perl Build.PL && \
   ./Build && \
