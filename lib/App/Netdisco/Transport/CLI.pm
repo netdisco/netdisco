@@ -1,14 +1,9 @@
 package App::Netdisco::Transport::CLI;
 
 use Dancer qw/:syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Permission ':all';
 use Module::Load ();
-use Path::Class 'dir';
-use NetAddr::IP::Lite ':lower';
-use List::Util qw/pairkeys pairfirst/;
 
 use base 'Dancer::Object::Singleton';
 
