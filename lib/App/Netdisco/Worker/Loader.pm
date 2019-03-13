@@ -12,7 +12,8 @@ use namespace::clean;
 has [qw/workers_check
         workers_early
         workers_main
-        workers_user/] => ( is => 'rw' );
+        workers_user
+        workers_store/] => ( is => 'rw' );
 
 sub load_workers {
   my $self = shift;
@@ -37,7 +38,7 @@ sub load_workers {
   my $workers = vars->{'workers'}->{$action} || {};
   #use DDP; p vars->{'workers'};
 
-  foreach my $phase (qw/check early main user/) {
+  foreach my $phase (qw/check early main user store/) {
     my $pname = "workers_${phase}";
     my @wset = ();
 
