@@ -70,16 +70,19 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 =head1 Dependencies
 
 Netdisco has several Perl library dependencies which will be automatically
-installed. However it's I<strongly> recommended that you first install
-L<DBD::Pg>, L<SNMP>, and a compiler using your operating system packages.
+installed. However it's required that you first install the following
+operating system packages:
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl curl postgresql build-essential
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel curl postgresql-server postgresql-contrib make automake gcc
+ root:~# postgresql-setup initdb
+ root:~# systemctl start postgresql
+ root:~# systemctl enable postgresql
 
 On BSD systems please see L<our BSD tips|https://github.com/netdisco/netdisco/wiki/BSD-Install>.
 
