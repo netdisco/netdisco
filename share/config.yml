@@ -415,7 +415,6 @@ worker_plugins:
   - 'Vlan::Core'
 
 extra_worker_plugins: []
-#  - Discover::ConfigBackup::CLI
 
 driver_priority:
   restconf: 500

@@ -3,7 +3,7 @@ package App::Netdisco::Worker::Plugin::Arpnip::Nodes;
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
-use App::Netdisco::Transport::CLI ();
+use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
@@ -67,7 +67,7 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
     my ($job, $workerconf) = @_;
 
     my $device = $job->device;
-    my $cli = App::Netdisco::Transport::CLI->session_for($device)
+    my $cli = App::Netdisco::Transport::SSH->session_for($device)
       or return Status->defer("arpnip failed: could not SSH connect to $device");
 
     # should be both v4 and v6
