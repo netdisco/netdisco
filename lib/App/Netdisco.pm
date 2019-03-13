@@ -57,9 +57,9 @@ L<Docker images|https://store.docker.com/community/images/netdisco/netdisco> are
 =back
 
 We have several other pages with tips for
-L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
+L<installation tips|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
 L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisco/wiki/Troubleshooting>,
-L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
+L<notes for specific device vendors|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
 and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
 
 You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
@@ -107,9 +107,11 @@ application:
   
  postgres:~$ createdb -O netdisco netdisco
 
-The default PostgreSQL configuration isn't well tuned for modern server
-hardware. We strongly recommend that you use the C<pgtune> Python program to
-auto-tune your C<postgresql.conf> file:
+You may wish to L<amend the PostgreSQL
+configuration|https://github.com/netdisco/netdisco/wiki/Install-Tips#enable-md5-authentication-to-postgresql>
+so that local connections are working.  The default PostgreSQL configuration
+also needs tuning for modern server hardware. We recommend that you use the
+C<pgtune> Python program to auto-tune your C<postgresql.conf> file:
 
 =over 4
 
