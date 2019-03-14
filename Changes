@@ -3,10 +3,10 @@
   [NEW FEATURES]
 
   * netdisco-sshcollector no longer required - the functionality (arpnip via
-    ssh) will be run within netdisco's core schedule
+    ssh) will be run within netdisco's core schedule (rc9000 and ollyg)
 
   * get_credentials replaces get_community and accepts any device_auth stanza
-    in JSON format
+    in JSON format (ollyg)
 
 2.040007 - 2019-03-06
 

@@ -1,4 +1,4 @@
-package App::Netdisco::Transport::CLI;
+package App::Netdisco::Transport::SSH;
 
 use Dancer qw/:syntax :script/;
 
@@ -11,14 +11,14 @@ use base 'Dancer::Object::Singleton';
 
 =head1 NAME
 
-App::Netdisco::Transport::CLI
+App::Netdisco::Transport::SSH
 
 =head1 DESCRIPTION
 
 Returns an object which has an active SSH connection which can be used
 for some actions such as arpnip.
 
- my $cli = App::Netdisco::Transport::CLI->session_for( ... );
+ my $cli = App::Netdisco::Transport::SSH->session_for( ... );
 
 =cut
 
