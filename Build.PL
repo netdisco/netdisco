@@ -38,6 +38,7 @@ Module::Build->new(
     'Dancer::Plugin::Passphrase' => '2.0.1',
     'Dancer::Plugin::Swagger' => '0',
     'Dancer::Session::Cookie' => '0.27',
+    'Expect' => '0',
     'File::ShareDir' => '1.03',
     'File::Slurper' => '0.009',
     'Guard' => '1.022',
@@ -55,6 +56,7 @@ Module::Build->new(
     'Net::Domain' => '1.23',
     'Net::DNS' => '0.72',
     'Net::LDAP' => '0',
+    'Net::OpenSSH' => '0',
     'NetAddr::MAC' => '0.93',
     'NetAddr::IP' => '4.068',
     'Opcode' => '1.07',
@@ -91,8 +93,6 @@ Module::Build->new(
   recommends => {
     'Graph' => '0',
     'GraphViz' => '0',
-    'Net::OpenSSH' => '0',
-    'Expect' => '0',
   },
   test_requires => {
     'Test::More' => '1.302083',

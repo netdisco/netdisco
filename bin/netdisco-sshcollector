@@ -74,6 +74,9 @@ $ENV{DBIC_TRACE} ||= $sqltrace;
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
 
+# silent exit unless explicitly requested
+exit(0) unless setting('use_legacy_sshcollector');
+
 if ($opensshdebug){
     $Net::OpenSSH::debug = ~0;
 }
