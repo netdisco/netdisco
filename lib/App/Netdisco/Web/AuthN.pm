@@ -43,8 +43,7 @@ hook 'before' => sub {
             session(logged_in_user_realm => 'users');
         }
         elsif (setting('api_token_lifetime')
-          and (index(request->path, uri_for('/api/')->path) == 0
-           or request->path eq uri_for('/swagger.json')->path)) {
+          and request->header('Authorization')) {
 
             my $token = request->header('Authorization');
             my $user = $provider->validate_api_token($token)
@@ -52,6 +51,9 @@ hook 'before' => sub {
 
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
+
+            # you can use Authorization header to get a session cookie,
+            # but the session is not useful for future API calls.
         }
         elsif (setting('no_auth')) {
             session(logged_in_user => 'guest');
@@ -65,8 +67,7 @@ hook 'before' => sub {
 };
 
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    # FIXME not sure this is the right approach
-    if (param('return_url') and param('return_url') =~ m{^/api/}) {
+    if (param('return_url') and request->header('Authorization')) {
       status('unauthorized');
       return to_json {
         error => 'not authorized',
@@ -160,6 +161,7 @@ post '/login' => sub {
 };
 
 # ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
+# must be after the path is declared, above.
 Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
   ->{post}->{security}->[0]->{BasicAuth} = [];
 
