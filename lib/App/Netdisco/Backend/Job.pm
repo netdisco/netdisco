@@ -93,7 +93,7 @@ phase.
 
 sub finalise_status {
   my $job = shift;
-  # use DDP; p $job->_statuslist;
+  # use DDP; p $job->_statuslist;
 
   # fallback
   $job->status('error');
@@ -103,7 +103,7 @@ sub finalise_status {
 
   foreach my $status (reverse @{ $job->_statuslist }) {
     next if $status->phase 
-      and $status->phase !~ m/^(?:check|early|main)$/;
+      and $status->phase !~ m/^(?:check|early|main|store|late)$/;
 
     # done() from check phase should not be the action's done()
     next if $status->phase eq 'check' and $status->is_ok;
