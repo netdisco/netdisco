@@ -219,7 +219,7 @@ Returns true if the C<$port> L<DBIx::Class> object has a phone connected.
 =cut
 
 sub port_has_phone {
-  return (shift)->with_properties->remote_is_phone;
+  return (shift)->properties->remote_is_phone;
 }
 
 1;
