@@ -1,14 +1,42 @@
 package App::Netdisco::Worker::Plugin::Arpnip::Nodes;
 
 use Dancer ':syntax';
+use Dancer::Plugin::DBIC 'schema';
+
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
+
 use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
+
 use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
-use Dancer::Plugin::DBIC 'schema';
+
+use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
+
+register_worker({ phase => 'store' }, sub {
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  # would be possible just to use now() on updated records, but by using this
+  # same value for them all, we _can_ if we want add a job at the end to
+  # select and do something with the updated set (no reason to yet, though)
+  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
+
+  # update node_ip with ARP and Neighbor Cache entries
+
+  store_arp(\%$_, $now) for @{ vars->{'v4arps'} };
+  debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
+    $device->ip, scalar @{ vars->{'v4arps'} };
+
+  store_arp(\%$_, $now) for @{ vars->{'v6arps'} };
+  debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
+    $device->ip, scalar @{ vars->{'v6arps'} };
+
+  $device->update({last_arpnip => \$now});
+  return Status->done("Ended arpnip for $device");
+});
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -17,27 +45,15 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
-  # get v4 arp table
-  my $v4 = get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
-  # get v6 neighbor cache
-  my $v6 = get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  # cache v4 arp table
+  push @{ vars->{'v4arps'} },
+    @{ get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr) };
 
-  # would be possible just to use now() on updated records, but by using this
-  # same value for them all, we _can_ if we want add a job at the end to
-  # select and do something with the updated set (no reason to yet, though)
-  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
+  # cache v6 neighbor cache
+  push @{ vars->{'v6arps'} },
+    @{get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr) };
 
-  # update node_ip with ARP and Neighbor Cache entries
-  store_arp(\%$_, $now) for @$v4;
-  debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
-    $device->ip, scalar @$v4;
-
-  store_arp(\%$_, $now) for @$v6;
-  debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
-    $device->ip, scalar @$v6;
-
-  $device->update({last_arpnip => \$now});
-  return Status->done("Ended arpnip for $device");
+  return Status->info("Gathered arp caches from $device");
 });
 
 # get an arp table (v4 or v6)
@@ -71,16 +87,17 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
       or return Status->defer("arpnip failed: could not SSH connect to $device");
 
     # should be both v4 and v6
-    my $arps = get_arps_cli($device, [$cli->arpnip]);
+    my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
 
-    # update node_ip with ARP and Neighbor Cache entries
-    my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
-    store_arp(\%$_, $now) for @$arps;
-    debug sprintf ' [%s] arpnip - processed %s ARP / IPv6 Neighbor Cache entries',
-      $device->ip, scalar @$arps;
+    # cache v4 arp table
+    push @{ vars->{'v4arps'} },
+      grep { NetAddr::IP::Lite->new($_->{ip})->bits ==  32 } @arps;
 
-    $device->update({last_arpnip => \$now});
-    return Status->done("Ended arpnip for $device");
+    # cache v6 neighbor cache
+    push @{ vars->{'v6arps'} },
+      grep { NetAddr::IP::Lite->new($_->{ip})->bits == 128 } @arps;
+
+    return Status->info("Gathered arp caches from $device");
 });
 
 sub get_arps_cli {
