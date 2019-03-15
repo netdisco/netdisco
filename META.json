@@ -119,7 +119,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.041000"
+         "version" : "2.041001"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -407,11 +407,11 @@
       "App::Netdisco::SSHCollector::Platform::PaloAlto" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm"
       },
-      "App::Netdisco::Transport::CLI" : {
-         "file" : "lib/App/Netdisco/Transport/CLI.pm"
-      },
       "App::Netdisco::Transport::SNMP" : {
          "file" : "lib/App/Netdisco/Transport/SNMP.pm"
+      },
+      "App::Netdisco::Transport::SSH" : {
+         "file" : "lib/App/Netdisco/Transport/SSH.pm"
       },
       "App::Netdisco::Util::DNS" : {
          "file" : "lib/App/Netdisco/Util/DNS.pm"
@@ -792,7 +792,7 @@
          "file" : "lib/Dancer/Template/NetdiscoTemplateToolkit.pm"
       },
       "MySession" : {
-         "file" : "lib/App/Netdisco/Transport/CLI.pm"
+         "file" : "lib/App/Netdisco/Transport/SSH.pm"
       }
    },
    "release_status" : "stable",
@@ -810,6 +810,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.041000",
+   "version" : "2.041001",
    "x_serialization_backend" : "JSON::PP version 2.97001"
 }

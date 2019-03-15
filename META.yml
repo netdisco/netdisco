@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.041000'
+    version: '2.041001'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -215,10 +215,10 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
   App::Netdisco::SSHCollector::Platform::PaloAlto:
     file: lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
-  App::Netdisco::Transport::CLI:
-    file: lib/App/Netdisco/Transport/CLI.pm
   App::Netdisco::Transport::SNMP:
     file: lib/App/Netdisco/Transport/SNMP.pm
+  App::Netdisco::Transport::SSH:
+    file: lib/App/Netdisco/Transport/SSH.pm
   App::Netdisco::Util::DNS:
     file: lib/App/Netdisco/Util/DNS.pm
   App::Netdisco::Util::Device:
@@ -472,7 +472,7 @@ provides:
   Dancer::Template::NetdiscoTemplateToolkit:
     file: lib/Dancer/Template/NetdiscoTemplateToolkit.pm
   MySession:
-    file: lib/App/Netdisco/Transport/CLI.pm
+    file: lib/App/Netdisco/Transport/SSH.pm
 recommends:
   Graph: '0'
   GraphViz: '0'
@@ -556,5 +556,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.041000'
+version: '2.041001'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

@@ -1,3 +1,15 @@
+2.041001 - 2019-03-15
+
+  [ENHANCEMENTS]
+
+  * add "store" and "late" phases to backend workers
+  * documentation updates
+
+  [BUG FIXES]
+
+  * #539 fix an issue with VLAN reindixing for VRFs (earendilfr)
+  * fix device port change check
+
 2.041000 - 2019-03-12
 
   [NEW FEATURES]
