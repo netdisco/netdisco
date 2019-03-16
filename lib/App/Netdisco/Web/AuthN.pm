@@ -7,6 +7,12 @@ use Dancer::Plugin::Swagger;
 
 use MIME::Base64;
 
+sub request_is_api {
+  return (setting('api_token_lifetime')
+    and request->header('Authorization')
+    and request->accept =~ m/(?:json|javascript)/);
+}
+
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
       ? request->uri : uri_for('/inventory')->path);
@@ -42,21 +48,17 @@ hook 'before' => sub {
             session(logged_in_user => $user);
             session(logged_in_user_realm => 'users');
         }
-        elsif (setting('api_token_lifetime')
-          and request->header('Authorization')) {
-
+        elsif (setting('no_auth')) {
+            session(logged_in_user => 'guest');
+            session(logged_in_user_realm => 'users');
+            use DDP; my $s = session; p $s;
+        }
+        elsif (request_is_api()) {
             my $token = request->header('Authorization');
             my $user = $provider->validate_api_token($token)
               or return;
 
             session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-
-            # you can use Authorization header to get a session cookie,
-            # but the session is not useful for future API calls.
-        }
-        elsif (setting('no_auth')) {
-            session(logged_in_user => 'guest');
             session(logged_in_user_realm => 'users');
         }
         else {
@@ -66,8 +68,9 @@ hook 'before' => sub {
     }
 };
 
+# user redirected here (POST -> GET) when login fails
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    if (param('return_url') and request->header('Authorization')) {
+    if (request_is_api()) {
       status('unauthorized');
       return to_json {
         error => 'not authorized',
@@ -91,10 +94,9 @@ swagger_path {
   },
 },
 post '/login' => sub {
-    my $mode = (request->is_ajax ? 'WebData'
-                                 : request->header('Authorization') ? 'API'
-                                                                    : 'WebUI');
-    # get authN data from request (HTTP BasicAuth or URL params)
+    my $mode = (request_is_api() ? 'API' : 'WebUI');
+
+    # get authN data from request (HTTP BasicAuth or Form params)
     my $authheader = request->header('Authorization');
     if (defined $authheader and $authheader =~ /^Basic (.*)$/i) {
         my ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
@@ -102,7 +104,7 @@ post '/login' => sub {
         params->{password} = $p;
     }
 
-    # test authN
+    # validate authN
     my ($success, $realm) = authenticate_user(param('username'),param('password'));
 
     if ($success) {
@@ -121,9 +123,6 @@ post '/login' => sub {
         });
         $user->update({ last_on => \'now()' });
 
-        return if $mode eq 'WebData';
-
-        # if API return a token and record its lifetime
         if ($mode eq 'API') {
             $user->update({
               token_from => time,
@@ -144,10 +143,7 @@ post '/login' => sub {
           details => param('return_url'),
         });
 
-        if ($mode eq 'WebData') {
-            status('unauthorized');
-        }
-        elsif ($mode ne 'API') {
+        if ($mode eq 'API') {
             status('unauthorized');
             return to_json { error => 'authentication failed' };
         }
@@ -189,7 +185,7 @@ get '/logout' => sub {
       details => '',
     });
 
-    if (request->header('Accept') =~ m/(?:json|javascript)/i) {
+    if (request_is_api()) {
       return to_json {};
     }
     else {
