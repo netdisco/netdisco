@@ -51,7 +51,6 @@ hook 'before' => sub {
         elsif (setting('no_auth')) {
             session(logged_in_user => 'guest');
             session(logged_in_user_realm => 'users');
-            use DDP; my $s = session; p $s;
         }
         elsif (request_is_api()) {
             my $token = request->header('Authorization');
