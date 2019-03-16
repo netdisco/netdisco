@@ -146,12 +146,11 @@ post '/login' => sub {
             status('unauthorized');
             return to_json { error => 'authentication failed' };
         }
-        else {
-            vars->{login_failed}++;
-            forward uri_for('/login'),
-              { login_failed => 1, return_url => param('return_url') },
-              { method => 'GET' };
-        }
+
+        vars->{login_failed}++;
+        forward uri_for('/login'),
+          { login_failed => 1, return_url => param('return_url') },
+          { method => 'GET' };
     }
 };
 
@@ -168,6 +167,8 @@ swagger_path {
   responses => { default => { examples => { 'application/json' => {} } } },
 },
 get '/logout' => sub {
+    my $mode = (request_is_api() ? 'API' : 'WebUI');
+
     # clear out API token
     my $user = schema('netdisco')->resultset('User')
       ->find({ username => session('logged_in_user')});
@@ -180,16 +181,15 @@ get '/logout' => sub {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => request->remote_address,
-      event => "Logout",
+      event => "Logout ($mode)",
       details => '',
     });
 
-    if (request_is_api()) {
-      return to_json {};
+    if ($mode eq 'API') {
+        return to_json {};
     }
-    else {
-      redirect uri_for('/inventory')->path;
-    }
+
+    redirect uri_for('/inventory')->path;
 };
 
 true;
