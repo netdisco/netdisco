@@ -11,7 +11,8 @@ register_worker({ phase => 'main' }, sub {
   my $extra = $job->extra;
 
   my $config = config();
-  p ($extra ? $config->{$extra} : $config);
+  my $dump = ($extra ? $config->{$extra} : $config);
+  p $dump;
   return Status->done('Dumped config');
 });
 

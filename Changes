@@ -1,3 +1,25 @@
+2.041001 - 2019-03-15
+
+  [ENHANCEMENTS]
+
+  * add "store" and "late" phases to backend workers
+  * documentation updates
+
+  [BUG FIXES]
+
+  * #539 fix an issue with VLAN reindixing for VRFs (earendilfr)
+  * fix device port change check
+
+2.041000 - 2019-03-12
+
+  [NEW FEATURES]
+
+  * netdisco-sshcollector no longer required - the functionality (arpnip via
+    ssh) will be run within netdisco's core schedule (rc9000 and ollyg)
+
+  * get_credentials replaces get_community and accepts any device_auth stanza
+    in JSON format (ollyg)
+
 2.040007 - 2019-03-06
 
   [BUG FIXES]

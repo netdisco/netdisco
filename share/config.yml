@@ -216,7 +216,8 @@ device_identity: []
 community: []
 community_rw: []
 device_auth: []
-get_community: ""
+use_legacy_sshcollector: false
+get_credentials: ""
 bulkwalk_off: false
 bulkwalk_no: []
 bulkwalk_repeaters: 20
@@ -414,7 +415,6 @@ worker_plugins:
   - 'Vlan::Core'
 
 extra_worker_plugins: []
-#  - Discover::ConfigBackup::CLI
 
 driver_priority:
   restconf: 500

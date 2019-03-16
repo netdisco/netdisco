@@ -66,9 +66,13 @@ if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
 
 # load cookie key from database
 setting('session_cookie_key' => undef);
-my $sessions = schema('netdisco')->resultset('Session');
-my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
-setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
+setting('session_cookie_key' => 'this_is_for_testing_only')
+  if $ENV{HARNESS_ACTIVE};
+eval {
+  my $sessions = schema('netdisco')->resultset('Session');
+  my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
+  setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
+};
 Dancer::Session::Cookie::init(session);
 
 # workaround for https://github.com/PerlDancer/Dancer/issues/935

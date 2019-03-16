@@ -69,7 +69,7 @@ sub run {
 
     # run other phases
     if ($job->check_passed) {
-      $self->run_workers("workers_${_}") for qw/early main user/;
+      $self->run_workers("workers_${_}") for qw/early main user store late/;
     }
   };
 

@@ -25,7 +25,7 @@ App::Netdisco::Transport::SNMP
 Singleton for SNMP connections. Returns cached L<SNMP::Info> instance for a
 given device IP, or else undef. All methods are class methods, for example:
 
- App::Netdisco::Transport::SNMP->reader_for( ... );
+ my $snmp = App::Netdisco::Transport::SNMP->reader_for( ... );
 
 =cut
 
