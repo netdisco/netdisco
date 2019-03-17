@@ -36,6 +36,7 @@ Module::Build->new(
     'Dancer::Plugin::DBIC' => '0.2001',
     'Dancer::Plugin::Auth::Extensible' => '0.30',
     'Dancer::Plugin::Passphrase' => '2.0.1',
+    'Dancer::Plugin::Swagger' => '0',
     'Dancer::Session::Cookie' => '0.27',
     'Expect' => '0',
     'File::ShareDir' => '1.03',

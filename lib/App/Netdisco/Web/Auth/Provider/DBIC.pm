@@ -53,6 +53,28 @@ sub get_user_details {
     return $user;
 }
 
+sub validate_api_token {
+    my ($self, $token) = @_;
+    return unless defined $token;
+
+    my $settings = $self->realm_settings;
+    my $database = schema($settings->{schema_name})
+        or die "No database connection";
+
+    my $users_table  = $settings->{users_resultset}    || 'User';
+    my $token_column = $settings->{users_token_column} || 'token';
+
+    $token =~ s/^Apikey //i; # should be there but swagger-ui doesn't add it
+    my $user = try {
+      $database->resultset($users_table)->find({ $token_column => $token });
+    };
+
+    return $user->username
+      if $user and $user->in_storage and $user->token_from
+        and $user->token_from > (time - setting('api_token_lifetime'));
+    return undef;
+}
+
 sub get_user_roles {
     my ($self, $username) = @_;
     return unless defined $username;

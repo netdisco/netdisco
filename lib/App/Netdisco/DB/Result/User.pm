@@ -14,6 +14,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 50 },
   "password",
   { data_type => "text", is_nullable => 1 },
+  "token",
+  { data_type => "text", is_nullable => 1 },
+  "token_from",
+  { data_type => "integer", is_nullable => 1 },
   "creation",
   {
     data_type     => "timestamp",

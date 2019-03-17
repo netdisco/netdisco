@@ -6,6 +6,7 @@ use Dancer ':script';
 
 use Path::Class 'dir';
 use Net::Domain 'hostdomain';
+use File::ShareDir 'dist_dir';
 
 BEGIN {
   if (setting('include_paths') and ref [] eq ref setting('include_paths')) {
@@ -203,5 +204,9 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
 
 # add system_reports onto reports
 config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
+
+# set swagger ui location
+config->{plugins}->{Swagger}->{ui_dir}
+  = dir(dist_dir('App-Netdisco'), 'swagger-ui')->absolute;
 
 true;
