@@ -13,24 +13,19 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table("node_ip");
 __PACKAGE__->add_columns(
   "mac",
-  { data_type => "macaddr", is_nullable => 0,
-    extra => { descr => 'MAC address' } },
+  { data_type => "macaddr", is_nullable => 0 },
   "ip",
-  { data_type => "inet", is_nullable => 0,
-    extra => { descr => 'IP address' } },
+  { data_type => "inet", is_nullable => 0 },
   "dns",
-  { data_type => "text", is_nullable => 1,
-    extra => { descr => 'FQDN of the node' } },
+  { data_type => "text", is_nullable => 1 },
   "active",
-  { data_type => "boolean", is_nullable => 1,
-    extra => { descr => 'Whether the entry is still "fresh"' } },
+  { data_type => "boolean", is_nullable => 1 },
   "time_first",
   {
     data_type     => "timestamp",
     default_value => \"current_timestamp",
     is_nullable   => 1,
     original      => { default_value => \"now()" },
-    extra => { hide_from_api => 1 },
   },
   "time_last",
   {
@@ -38,7 +33,6 @@ __PACKAGE__->add_columns(
     default_value => \"current_timestamp",
     is_nullable   => 1,
     original      => { default_value => \"now()" },
-    extra => { hide_from_api => 1 },
   },
 );
 __PACKAGE__->set_primary_key("mac", "ip");

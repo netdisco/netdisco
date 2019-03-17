@@ -232,14 +232,6 @@ hook 'after' => sub {
     }
 };
 
-# forward API calls to AJAX route handlers
-any '/api/:type/:identifier/:method' => require_login sub {
-    vars->{'is_api'} = 1;
-    my $target =
-      sprintf '/ajax/content/%s/%s', params->{'type'}, params->{'method'};
-    forward $target, { tab => params->{'method'}, q => params->{'identifier'} };
-};
-
 any qr{.*} => sub {
     var('notfound' => true);
     status 'not_found';
