@@ -52,7 +52,9 @@ hook 'before' => sub {
             session(logged_in_user => 'guest');
             session(logged_in_user_realm => 'users');
         }
-        elsif (request_is_api()) {
+        elsif (request_is_api()
+          and index(request->path, uri_for('/api')->path) == 0) {
+
             my $token = request->header('Authorization');
             my $user = $provider->validate_api_token($token)
               or return;
