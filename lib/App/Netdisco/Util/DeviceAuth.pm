@@ -33,7 +33,7 @@ config changes over time. Returns a list which can replace C<device_auth>.
 =cut
 
 sub fixup_device_auth {
-  my $config = (setting('snmp_auth') || setting('device_auth'));
+  my $config = (setting('device_auth') || setting('snmp_auth'));
   my @new_stanzas = ();
 
   # new style snmp config

@@ -388,6 +388,11 @@ Set the PoE on/off status on a device port. Requires the C<-d> parameter
 Will dump the loaded and parsed configuration for the application. Pass a
 specific configuration setting name to the C<-e> parameter to dump only that.
 
+Some configuration items like device_auth are evaluated against the ACL first.
+Pass a device in C<-d> to display them:
+
+ ~/bin/netdisco-do dumpconfig -d 192.0.2.1 -e device_auth
+
 =head1 DEBUG OPTIONS
 
 The flag "C<-R>" will cause any changes to the database to be rolled back
@@ -415,5 +420,8 @@ L<SNMP> (net-snmp) trace level (1, 2 or 3).
 L<DBIx::Class> trace enabled
 
 =back
+
+In case of issues with the colored output, setting the environment variable 
+C<ANSI_COLORS_DISABLED> can be used to suppress it.
 
 =cut

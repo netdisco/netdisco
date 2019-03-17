@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.041001'
+    version: '2.042000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '54'
+    version: '55'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -457,6 +457,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Psql.pm
   App::Netdisco::Worker::Plugin::Renumber:
     file: lib/App/Netdisco/Worker/Plugin/Renumber.pm
+  App::Netdisco::Worker::Plugin::SetUserToken:
+    file: lib/App/Netdisco/Worker/Plugin/SetUserToken.pm
   App::Netdisco::Worker::Plugin::Show:
     file: lib/App/Netdisco/Worker/Plugin/Show.pm
   App::Netdisco::Worker::Plugin::Stats:
@@ -492,6 +494,7 @@ requires:
   Dancer::Plugin::Auth::Extensible: '0.30'
   Dancer::Plugin::DBIC: '0.2001'
   Dancer::Plugin::Passphrase: v2.0.1
+  Dancer::Plugin::Swagger: '0'
   Dancer::Session::Cookie: '0.27'
   Data::Printer: '0'
   Expect: '0'
@@ -556,5 +559,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.041001'
+version: '2.042000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
