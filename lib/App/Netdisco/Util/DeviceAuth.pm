@@ -3,6 +3,7 @@ package App::Netdisco::Util::DeviceAuth;
 use Dancer qw/:syntax :script/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
+use Storable 'dclone';
 use Try::Tiny;
 
 use base 'Exporter';
@@ -67,8 +68,8 @@ sub fixup_device_auth {
   }
 
   # import legacy sshcollector configuration
-  my $sshcollector = (setting('sshcollector') || []);
-  foreach my $stanza (@$sshcollector) {
+  my @sshcollector = @{ dclone (setting('sshcollector') || []) };
+  foreach my $stanza (@sshcollector) {
     # defaults
     $stanza->{driver} = 'cli';
     $stanza->{read} = 1;
