@@ -16,10 +16,10 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("arpnip skipped: $device not yet discovered")
     unless $device->in_storage;
 
-  return Status->defer("arpnip skipped: $device has no layer 3 capability")
+  return Status->info("arpnip skipped: $device has no layer 3 capability")
     unless $device->has_layer(3);
 
-  return Status->defer("arpnip deferred: $device is not arpnipable")
+  return Status->info("arpnip skipped: $device is not arpnipable")
     unless is_arpnipable_now($device);
 
   return Status->done('arpnip is able to run');
