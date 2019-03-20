@@ -19,6 +19,7 @@ swagger_path {
         { name => 'identifier', in => 'path', required => 1, type => 'string' },
     ],
     responses => { default => { examples => {
+        # TODO document fields returned
         'application/json' => { device => {}, power => {} },
     } } },
 },
