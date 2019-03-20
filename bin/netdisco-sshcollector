@@ -181,8 +181,21 @@ sub store_arpentries {
 
 =head1 NAME
 
-netdisco-sshcollector - Collect ARP data for Netdisco from devices without
-full SNMP support
+netdisco-sshcollector - DEPRECATED!
+
+=head1 DEPRECATION NOTICE
+
+The functionality of this standalone script has been incorporated into Netdisco core.
+
+Please read the deprecation notice if you are using C<netdisco-sshcollector>:
+
+=over 4
+
+=item *
+
+https://github.com/netdisco/netdisco/wiki/sshcollector-Deprecation
+
+=back
 
 =head1 SYNOPSIS
 
