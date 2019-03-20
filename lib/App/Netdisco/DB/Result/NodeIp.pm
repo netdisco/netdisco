@@ -15,30 +15,35 @@ __PACKAGE__->add_columns(
   "mac",
   { data_type => "macaddr", is_nullable => 0,
     extra => { descr => 'MAC address' } },
+
   "ip",
   { data_type => "inet", is_nullable => 0,
     extra => { descr => 'IP address' } },
+
   "dns",
   { data_type => "text", is_nullable => 1,
     extra => { descr => 'FQDN of the node' } },
+
   "active",
   { data_type => "boolean", is_nullable => 1,
     extra => { descr => 'Whether the entry is still "fresh"' } },
+
   "time_first",
   {
     data_type     => "timestamp",
     default_value => \"current_timestamp",
     is_nullable   => 1,
     original      => { default_value => \"now()" },
-    extra => { hide_from_api => 1 },
+    extra => { descr => 'When first seen on the network' },
   },
+
   "time_last",
   {
     data_type     => "timestamp",
     default_value => \"current_timestamp",
     is_nullable   => 1,
     original      => { default_value => \"now()" },
-    extra => { hide_from_api => 1 },
+    extra => { descr => 'When last seen on the network' },
   },
 );
 __PACKAGE__->set_primary_key("mac", "ip");
