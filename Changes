@@ -1,3 +1,13 @@
+2.042002 - 2019-03-20
+
+  [ENHANCEMENTS]
+
+  * allow pseudo devices to arpnip
+
+  [BUG FIXES]
+
+  * the store worker phase will return more accurate status
+
 2.042001 - 2019-03-18
 
   [BUG FIXES]
