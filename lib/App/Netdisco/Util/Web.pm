@@ -1,14 +1,17 @@
 package App::Netdisco::Util::Web;
 
-use strict;
-use warnings;
+use Dancer ':syntax';
 
-use base 'Exporter';
 use Time::Piece;
 use Time::Seconds;
+
+use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sort_port sort_modules interval_to_daterange sql_match
+  request_is_api
+  sort_port sort_modules
+  interval_to_daterange
+  sql_match
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -24,6 +27,18 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 request_is_api
+
+Whether the request should be interpreted as an API call.
+
+=cut
+
+sub request_is_api {
+  return (setting('api_token_lifetime')
+    and request->accept =~ m/(?:json|javascript)/
+    and index(request->path, uri_for('/api')->path) == 0);
+}
 
 =head2 sql_match( $value, $exact? )
 

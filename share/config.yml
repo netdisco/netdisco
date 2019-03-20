@@ -90,6 +90,28 @@ web_plugins:
   - Device::Addresses
   - Device::Vlans
 extra_web_plugins: []
+api_enabled:
+  device:
+    details: true
+    port: false
+    ports: false
+    modules: false
+    addresses: false
+    vlans: false
+  node: false
+  vlan: false
+  report: false
+  admin:
+    topology: false
+    pseudodevice: false
+    user: false
+    report:
+      slowdevices: false
+      performance: false
+      timedoutdevices: false
+      duplicaedevices: false
+      orphaned: false
+      userlog: false
 sidebar_defaults:
   search_node:
     stamps:      { default: checked }

@@ -13,7 +13,8 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
-use App::Netdisco::Util::Web 'interval_to_daterange';
+use App::Netdisco::Util::Web
+  qw/request_is_api interval_to_daterange/;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -82,7 +83,7 @@ $swagger->{schemes} = ['http','https'];
 $swagger->{consumes} = 'application/json';
 $swagger->{produces} = 'application/json';
 $swagger->{tags} = [
-  {name => 'Global'},
+  {name => 'General'},
   {name => 'Devices',
     description => 'Operations relating to Devices (switches, routers, etc)'},
   {name => 'Nodes',
@@ -94,7 +95,7 @@ $swagger->{securityDefinitions} = {
   APIKeyHeader =>
     { type => 'apiKey', name => 'Authorization', in => 'header' },
   BasicAuth =>
-    { type => 'basic'  },
+    { type => 'basic' },
 };
 $swagger->{security} = [ { APIKeyHeader => [] } ];
 
@@ -234,6 +235,9 @@ hook 'after' => sub {
 
 # forward API calls to AJAX route handlers
 any '/api/:type/:identifier/:method' => require_login sub {
+    pass unless setting('api_enabled')
+      ->{ params->{'type'} }->{ params->{'method'} };
+
     vars->{'is_api'} = 1;
     my $target =
       sprintf '/ajax/content/%s/%s', params->{'type'}, params->{'method'};
@@ -241,9 +245,15 @@ any '/api/:type/:identifier/:method' => require_login sub {
 };
 
 any qr{.*} => sub {
-    var('notfound' => true);
-    status 'not_found';
-    template 'index';
+    if (request_is_api()) {
+      status(404);
+      return to_json { error => 'not found' };
+    }
+    else {
+      var('notfound' => true);
+      status 'not_found';
+      template 'index';
+    }
 };
 
 {

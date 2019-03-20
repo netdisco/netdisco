@@ -5,13 +5,8 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
+use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
-
-sub request_is_api {
-  return (setting('api_token_lifetime')
-    and request->header('Authorization')
-    and request->accept =~ m/(?:json|javascript)/);
-}
 
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
@@ -22,7 +17,9 @@ hook 'before' => sub {
 
     if (! session('logged_in_user')
         and request->path ne uri_for('/login')->path
+        and request->path ne uri_for('/api/login')->path
         and request->path ne uri_for('/logout')->path
+        and request->path ne uri_for('/api/logout')->path
         and request->path ne uri_for('/swagger.json')->path
         and index(request->path, uri_for('/swagger-ui')->path) != 0) {
 
@@ -53,7 +50,7 @@ hook 'before' => sub {
             session(logged_in_user_realm => 'users');
         }
         elsif (request_is_api()
-          and index(request->path, uri_for('/api')->path) == 0) {
+          and request->header('Authorization')) {
 
             my $token = request->header('Authorization');
             my $user = $provider->validate_api_token($token)
@@ -85,17 +82,23 @@ get qr{^/(?:login(?:/denied)?)?} => sub {
 
 # override default login_handler so we can log access in the database
 swagger_path {
-  description => 'Obtain an API Key using HTTP BasicAuth',
-  tags => ['Global'],
-  parameters => [],
+  description => 'Obtain an API Key using BasicAuth or parameters',
+  path => '/api/login',
+  tags => ['General'],
+  parameters => [
+      { name => 'username', in => 'formData', required => false, type => 'string' },
+      { name => 'password', in => 'formData', required => false, type => 'string' },
+  ],
   responses => {
     default => {
       examples => {
         'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
   },
 },
-post '/login' => sub {
+post qr{^/(?:api/)?login$} => sub {
     my $mode = (request_is_api() ? 'API' : 'WebUI');
+
+    my $x = params; use DDP; p $x;
 
     # get authN data from request (HTTP BasicAuth or Form params)
     my $authheader = request->header('Authorization');
@@ -158,13 +161,13 @@ post '/login' => sub {
 
 # ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
 # must be after the path is declared, above.
-Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
-  ->{post}->{security}->[0]->{BasicAuth} = [];
+Dancer::Plugin::Swagger->instance->doc->{paths}->{'/api/login'}
+  ->{post}->{security} = [ {}, {BasicAuth => []} ];
 
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
-  tags => ['Global'],
+  tags => ['General'],
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },
