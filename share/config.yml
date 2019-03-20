@@ -92,10 +92,10 @@ web_plugins:
 extra_web_plugins: []
 api_enabled:
   device:
-    details: true
     port: false
     ports: false
     modules: false
+    neighbors: false
     addresses: false
     vlans: false
   node: false

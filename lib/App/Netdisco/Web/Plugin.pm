@@ -3,6 +3,8 @@ package App::Netdisco::Web::Plugin;
 use Dancer ':syntax';
 use Dancer::Plugin;
 
+use App::Netdisco::Util::Web 'request_is_api';
+use Dancer::Plugin::REST 'status_bad_request';
 use Path::Class 'dir';
 
 set(
@@ -22,6 +24,14 @@ set(
 
 # this is what Dancer::Template::TemplateToolkit does by default
 config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} ||= [ setting('views') ];
+
+register 'bang' => sub {
+  if (request_is_api()) {
+      content_type('application/json');
+      status_bad_request(@_);
+  }
+  else { send_error(@_)  }
+};
 
 register 'register_template_path' => sub {
   my ($self, $path) = plugin_args(@_);
