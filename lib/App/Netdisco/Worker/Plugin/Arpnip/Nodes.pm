@@ -35,7 +35,9 @@ register_worker({ phase => 'store' }, sub {
     $device->ip, scalar @{ vars->{'v6arps'} };
 
   $device->update({last_arpnip => \$now});
-  return Status->done("Ended arpnip for $device");
+
+  my $status = $job->best_status;
+  return Status->$status("Ended arpnip for $device");
 });
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
@@ -53,7 +55,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   push @{ vars->{'v6arps'} },
     @{get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr) };
 
-  return Status->info("Gathered arp caches from $device");
+  return Status->done("Gathered arp caches from $device");
 });
 
 # get an arp table (v4 or v6)
@@ -97,7 +99,7 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
     push @{ vars->{'v6arps'} },
       grep { NetAddr::IP::Lite->new($_->{ip})->bits == 128 } @arps;
 
-    return Status->info("Gathered arp caches from $device");
+    return Status->done("Gathered arp caches from $device");
 });
 
 sub get_arps_cli {

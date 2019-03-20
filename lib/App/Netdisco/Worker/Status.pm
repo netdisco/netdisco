@@ -97,8 +97,9 @@ A numeric constant for the status, to allow comparison.
 sub level {
   my $self = shift;
   return (($self->status eq 'done')  ? 4
-        : ($self->status eq 'info')  ? 3
-        : ($self->status eq 'defer') ? 2 : 1);
+        : ($self->status eq 'defer') ? 3
+        : ($self->status eq 'info')  ? 2
+        : ($self->status eq 'error') ? 1 : 0);
 }
 
 1;

@@ -1,3 +1,19 @@
+2.042002 - 2019-03-20
+
+  [ENHANCEMENTS]
+
+  * allow pseudo devices to arpnip
+
+  [BUG FIXES]
+
+  * the store worker phase will return more accurate status
+
+2.042001 - 2019-03-18
+
+  [BUG FIXES]
+
+  * Do not clobber sshcollector config
+
 2.042000 - 2019-03-17
 
   [NEW FEATURES]

@@ -81,13 +81,34 @@ sub cancel {
   return Status->error($msg);
 }
 
+=head2 best_status
+
+Find the best status so far. The process is to track back from the last worker
+and find the highest scoring status, skipping the check phase.
+
+=cut
+
+sub best_status {
+  my $job = shift;
+  my $cur_level = 0;
+  my $cur_status = '';
+
+  foreach my $status (reverse @{ $job->_statuslist }) {
+    next if $status->phase 
+      and $status->phase !~ m/^(?:early|main|store|late)$/;
+
+    if ($status->level >= $cur_level) {
+      $cur_level = $status->level;
+      $cur_status = $status->status;
+    }
+  }
+
+  return $cur_status;
+}
+
 =head2 finalise_status
 
 Find the best status and log it into the job's C<status> and C<log> slots.
-
-The process is to track back from the last worker and find the best status,
-which is C<done> in early or main phases, or else any status in any non-user
-phase.
 
 =cut
 

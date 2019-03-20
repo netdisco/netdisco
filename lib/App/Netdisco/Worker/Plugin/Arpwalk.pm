@@ -11,9 +11,8 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
   my %queued = map {$_ => 1} jq_queued('arpnip');
-  my @devices = schema('netdisco')->resultset('Device')->search({
-    -or => [ 'vendor' => undef, 'vendor' => { '!=' => 'netdisco' }],
-  })->has_layer('3')->get_column('ip')->all;
+  my @devices = schema('netdisco')->resultset('Device')
+    ->has_layer('3')->get_column('ip')->all;
   my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
   jq_insert([
