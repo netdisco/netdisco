@@ -4,7 +4,6 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 use App::Netdisco::Util::Web 'request_is_api';
-use Dancer::Plugin::REST 'status_bad_request';
 use Path::Class 'dir';
 
 set(
@@ -28,7 +27,9 @@ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} ||= [ setting('vi
 register 'bang' => sub {
   if (request_is_api()) {
       content_type('application/json');
-      status_bad_request(@_);
+      set serializer => 'JSON';
+      status $_[1];
+      { error => $_[0] };
   }
   else { send_error(@_)  }
 };

@@ -37,7 +37,7 @@ Whether the request should be interpreted as an API call.
 sub request_is_api {
   return (setting('api_token_lifetime')
     and request->accept =~ m/(?:json|javascript)/
-    and index(request->path, uri_for('/api')->path) == 0);
+    and index(var('orig_path'), uri_for('/api')->path) == 0);
 }
 
 =head2 sql_match( $value, $exact? )

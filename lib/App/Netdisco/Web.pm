@@ -123,6 +123,11 @@ hook after_error_render => sub { setting('layout' => 'main') };
     for @port_columns;
 }
 
+# support for checking if this is an api request even after forward
+hook 'before' => sub {
+  vars->{'orig_path'} = request->path unless request->is_forward;
+};
+
 hook 'before' => sub {
   my $key = request->path;
   if (param('tab') and ($key !~ m/ajax/)) {
