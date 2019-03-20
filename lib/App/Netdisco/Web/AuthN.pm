@@ -167,11 +167,12 @@ Dancer::Plugin::Swagger->instance->doc->{paths}->{'/api/login'}
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
+  path => '/api/logout',
   tags => ['General'],
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },
-get '/logout' => sub {
+get qr{^/(?:api/)?logout$} => sub {
     my $mode = (request_is_api() ? 'API' : 'WebUI');
 
     # clear out API token
@@ -196,5 +197,10 @@ get '/logout' => sub {
 
     redirect uri_for('/inventory')->path;
 };
+
+# ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
+# must be after the path is declared, above.
+Dancer::Plugin::Swagger->instance->doc->{paths}->{'/api/logout'}
+  ->{get}->{security} = [ {}, {APIKeyHeader => []} ];
 
 true;
