@@ -34,8 +34,8 @@ config changes over time. Returns a list which can replace C<device_auth>.
 =cut
 
 sub fixup_device_auth {
-  my $da = dclone setting('device_auth');
-  my $sa = dclone setting('snmp_auth');
+  my $da = dclone (setting('device_auth') || []);
+  my $sa = dclone (setting('snmp_auth')   || []);
 
   die "error: both snmp_auth and device_auth are defined! use only device_auth.\n"
     if scalar @$da and scalar @$sa;
