@@ -12,8 +12,7 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
-use App::Netdisco::Util::Web
-  qw/request_is_api interval_to_daterange/;
+use App::Netdisco::Util::Web 'interval_to_daterange';
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::OpenAPI;
@@ -202,7 +201,7 @@ hook 'after' => sub {
 };
 
 any qr{.*} => sub {
-    if (request_is_api()) {
+    if (request->is_api) {
       status(404);
       return to_json { error => 'not found' };
     }
@@ -221,6 +220,16 @@ any qr{.*} => sub {
       my $response = Dancer::SharedData->response;
       $response->status($status || 302);
       $response->headers('Location' => $destination);
+  };
+
+  # helper for handlers of more than one method type
+  *Dancer::Request::is_api = sub {
+      my $self = shift;
+      vars->{'orig_path'} = request->path unless request->is_forward;
+      my $path = ($self->is_forward ? vars->{'orig_path'} : $self->path);
+      return (setting('api_token_lifetime')
+        and $self->accept =~ m/(?:json|javascript)/
+        and index($path, uri_for('/api')->path) == 0);
   };
 }
 

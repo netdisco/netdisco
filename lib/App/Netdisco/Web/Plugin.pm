@@ -3,7 +3,6 @@ package App::Netdisco::Web::Plugin;
 use Dancer ':syntax';
 use Dancer::Plugin;
 
-use App::Netdisco::Util::Web 'request_is_api';
 use Path::Class 'dir';
 
 set(
@@ -25,7 +24,7 @@ set(
 config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} ||= [ setting('views') ];
 
 register 'bang' => sub {
-  if (request_is_api()) {
+  if (request->is_api) {
       content_type('application/json');
       set serializer => 'JSON';
       status $_[1];

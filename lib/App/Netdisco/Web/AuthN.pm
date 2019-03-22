@@ -5,7 +5,6 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
-use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 
 hook 'before' => sub {
@@ -49,7 +48,7 @@ hook 'before' => sub {
             session(logged_in_user => 'guest');
             session(logged_in_user_realm => 'users');
         }
-        elsif (request_is_api()
+        elsif (request->is_api
           and request->header('Authorization')) {
 
             my $token = request->header('Authorization');
@@ -68,7 +67,7 @@ hook 'before' => sub {
 
 # user redirected here (POST -> GET) when login fails
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    if (request_is_api()) {
+    if (request->is_api) {
       status('unauthorized');
       return to_json {
         error => 'not authorized',
@@ -96,7 +95,7 @@ swagger_path {
   },
 },
 post qr{^/(?:api/)?login$} => sub {
-    my $mode = (request_is_api() ? 'API' : 'WebUI');
+    my $mode = (request->is_api ? 'API' : 'WebUI');
 
     my $x = params; use DDP; p $x;
 
@@ -173,7 +172,7 @@ swagger_path {
   responses => { default => { examples => { 'application/json' => {} } } },
 },
 get qr{^/(?:api/)?logout$} => sub {
-    my $mode = (request_is_api() ? 'API' : 'WebUI');
+    my $mode = (request->is_api ? 'API' : 'WebUI');
 
     # clear out API token
     my $user = schema('netdisco')->resultset('User')

@@ -22,7 +22,6 @@ swagger_path {
     } } },
 },
 get '/api/device/:identifier' => require_login sub {
-    vars->{'is_api'} = 1;
     forward '/ajax/content/device/details',
       { tab => 'details', q => params->{'identifier'} };
 };
@@ -45,7 +44,7 @@ get '/ajax/content/device/details' => require_login sub {
     delete $results[0]->{'snmp_comm'};
     $results[0]->{'power'} = \@power;
 
-    if (vars->{'is_api'}) {
+    if (request->is_api) {
         content_type('application/json');
         to_json { device => $results[0] };
     }

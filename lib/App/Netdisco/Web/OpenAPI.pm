@@ -5,9 +5,6 @@ use Dancer::Plugin::Ajax;
 
 use Dancer::Plugin::Swagger;
 
-use App::Netdisco::Util::Web
-  qw/request_is_api interval_to_daterange/;
-
 # setup for swagger API
 my $swagger = Dancer::Plugin::Swagger->instance->doc;
 $swagger->{schemes} = ['http','https'];
@@ -30,11 +27,6 @@ $swagger->{securityDefinitions} = {
 };
 $swagger->{security} = [ { APIKeyHeader => [] } ];
 
-# support for checking if this is an api request even after forward
-hook 'before' => sub {
-  vars->{'orig_path'} = request->path unless request->is_forward;
-};
-
 # workaround for Swagger plugin weird response body
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
@@ -50,7 +42,6 @@ any '/api/:type/:identifier/:method' => require_login sub {
     pass unless setting('api_enabled')
       ->{ params->{'type'} }->{ params->{'method'} };
 
-    vars->{'is_api'} = 1;
     my $target =
       sprintf '/ajax/content/%s/%s', params->{'type'}, params->{'method'};
     forward $target, { tab => params->{'method'}, q => params->{'identifier'} };
