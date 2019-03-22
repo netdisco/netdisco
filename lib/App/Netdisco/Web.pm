@@ -5,7 +5,6 @@ use Dancer::Plugin::Ajax;
 
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
-use Dancer::Plugin::Swagger;
 
 use URI ();
 use Socket6 (); # to ensure dependency is met
@@ -17,6 +16,7 @@ use App::Netdisco::Util::Web
   qw/request_is_api interval_to_daterange/;
 
 use App::Netdisco::Web::AuthN;
+use App::Netdisco::Web::OpenAPI;
 use App::Netdisco::Web::Static;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
@@ -77,28 +77,6 @@ eval {
 };
 Dancer::Session::Cookie::init(session);
 
-# setup for swagger API
-my $swagger = Dancer::Plugin::Swagger->instance->doc;
-$swagger->{schemes} = ['http','https'];
-$swagger->{consumes} = 'application/json';
-$swagger->{produces} = 'application/json';
-$swagger->{tags} = [
-  {name => 'General'},
-  {name => 'Devices',
-    description => 'Operations relating to Devices (switches, routers, etc)'},
-  {name => 'Nodes',
-    description => 'Operations relating to Nodes (end-stations such as printers)'},
-  {name => 'NodeIPs',
-    description => 'Operations relating to MAC-IP mappings (IPv4 ARP and IPv6 Neighbors)'},
-];
-$swagger->{securityDefinitions} = {
-  APIKeyHeader =>
-    { type => 'apiKey', name => 'Authorization', in => 'header' },
-  BasicAuth =>
-    { type => 'basic' },
-};
-$swagger->{security} = [ { APIKeyHeader => [] } ];
-
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
 
@@ -122,11 +100,6 @@ hook after_error_render => sub { setting('layout' => 'main') };
   setting('sidebar_defaults')->{'device_ports'}->{ $_->{name} } = $_
     for @port_columns;
 }
-
-# support for checking if this is an api request even after forward
-hook 'before' => sub {
-  vars->{'orig_path'} = request->path unless request->is_forward;
-};
 
 hook 'before' => sub {
   my $key = request->path;
@@ -211,16 +184,6 @@ hook 'before_template' => sub {
     $Template::Stash::PRIVATE = undef;
 };
 
-# workaround for Swagger plugin weird response body
-hook 'after' => sub {
-    my $r = shift; # a Dancer::Response
-
-    if (request->path eq '/swagger.json') {
-        $r->content( to_json( $r->content ) );
-        header('Content-Type' => 'application/json');
-    }
-};
-
 # remove empty lines from CSV response
 # this makes writing templates much more straightforward!
 hook 'after' => sub {
@@ -236,17 +199,6 @@ hook 'after' => sub {
 
         $r->content(join "\n", @newlines);
     }
-};
-
-# forward API calls to AJAX route handlers
-any '/api/:type/:identifier/:method' => require_login sub {
-    pass unless setting('api_enabled')
-      ->{ params->{'type'} }->{ params->{'method'} };
-
-    vars->{'is_api'} = 1;
-    my $target =
-      sprintf '/ajax/content/%s/%s', params->{'type'}, params->{'method'};
-    forward $target, { tab => params->{'method'}, q => params->{'identifier'} };
 };
 
 any qr{.*} => sub {
