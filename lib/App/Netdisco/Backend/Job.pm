@@ -94,7 +94,7 @@ sub best_status {
   my $cur_status = '';
 
   foreach my $status (reverse @{ $job->_statuslist }) {
-    next if $status->phase 
+    next if $status->phase
       and $status->phase !~ m/^(?:early|main|store|late)$/;
 
     if ($status->level >= $cur_level) {
@@ -123,7 +123,7 @@ sub finalise_status {
   my $max_level = Status->error()->level;
 
   foreach my $status (reverse @{ $job->_statuslist }) {
-    next if $status->phase 
+    next if $status->phase
       and $status->phase !~ m/^(?:check|early|main|store|late)$/;
 
     # done() from check phase should not be the action's done()

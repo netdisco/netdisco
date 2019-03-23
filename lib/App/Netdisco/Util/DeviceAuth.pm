@@ -89,7 +89,7 @@ sub fixup_device_auth {
     push @new_stanzas, $stanza;
   }
 
-  # legacy config 
+  # legacy config
   # note: read strings tried before write
   # note: read-write is no longer used for read operations
 

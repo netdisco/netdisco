@@ -100,18 +100,18 @@ sub snmp_comm_reindex {
       }
       $prefix ||= 'vlan-';
 
-      if ($vlan =~ /^[0-9]+$/i && $vlan) { 
+      if ($vlan =~ /^[0-9]+$/i && $vlan) {
         debug sprintf '[%s] reindexing to "%s%s" (ver: %s, class: %s)',
         $device->ip, $prefix, $vlan, $ver, $snmp->class;
         $snmp->update(Context => ($prefix . $vlan));
-      } elsif ($vlan =~ /^[a-z0-9]+$/i && $vlan) { 
+      } elsif ($vlan =~ /^[a-z0-9]+$/i && $vlan) {
         debug sprintf '[%s] reindexing to "%s" (ver: %s, class: %s)',
           $device->ip, $vlan, $ver, $snmp->class;
         $snmp->update(Context => ($vlan));
-      } else { 
+      } else {
         debug sprintf '[%s] reindexing without context (ver: %s, class: %s)',
           $device->ip, $ver, $snmp->class;
-        $snmp->update(Context => ''); 
+        $snmp->update(Context => '');
       }
   }
   else {
