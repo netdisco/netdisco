@@ -296,7 +296,7 @@ ignore_interfaces:
   - 'Register-Tunnel\d'
   - 'Blade-Aggregation\d'
   - 'M-GigabitEthernet\d\/\d\/\d'
-  - 'Ethernet(?:-| )QOS Packet Schedu?ler'
+  - 'Ethernet(?:-| )QOS Packet Scheduler'
   - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
   - 'ii\d\/\d\/\d+'
 ignore_notpresent_types:
@@ -312,7 +312,7 @@ phone_platforms:
 wap_capabilities:
   - 'wlanAccessPoint'
 wap_platforms:
-  - '(?i:\bw?ap\b)'
+  - '(?i:\bwap\b)'
   - 'cisco\s+AIR-[L|C]?AP'
   - '-K9W8-'
 
