@@ -12,7 +12,7 @@
       [% END %]
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% WHILE (row = macs.next) %]
     [% IF row.nbname %]
     <tr>

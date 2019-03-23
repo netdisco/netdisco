@@ -11,7 +11,7 @@
       <th class="nd_center-cell">Time Elapsed</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% WHILE (row = results.next) %]
     <tr>
       <td class="nd_center-cell">[% row.action.ucfirst | html_entity %]</td>

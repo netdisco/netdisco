@@ -7,7 +7,7 @@
       <th nowrap>Last Discovery</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% FOREACH row IN results %]
     [% NEXT IF NOT row.remote_ip %]
     <tr>

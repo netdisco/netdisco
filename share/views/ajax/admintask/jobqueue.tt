@@ -16,7 +16,7 @@
       <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% FOREACH row IN results %]
     <tr
       [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]

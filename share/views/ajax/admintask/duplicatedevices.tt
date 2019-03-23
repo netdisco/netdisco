@@ -15,7 +15,7 @@
       <th class="nd_center-cell">Delete</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% SET count = 0 %]
     [% FOREACH row IN results %]
     [% SET count = count + 1 %]
