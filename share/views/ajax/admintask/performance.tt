@@ -12,7 +12,7 @@
       <th class="nd_center-cell">Time Elapsed</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% WHILE (row = results.next) %]
     <tr
       [% IF NOT mac AND row.action == 'macsuck' %]

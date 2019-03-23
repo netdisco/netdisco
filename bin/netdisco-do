@@ -421,7 +421,7 @@ L<DBIx::Class> trace enabled
 
 =back
 
-In case of issues with the colored output, setting the environment variable 
+In case of issues with the colored output, setting the environment variable
 C<ANSI_COLORS_DISABLED> can be used to suppress it.
 
 =cut

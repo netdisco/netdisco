@@ -1,6 +1,6 @@
 [% SET user_can_port_control = user_has_role('port_control') %]
 <table class="table table-condensed table-striped">
-  </tbody>
+  <tbody>
     <tr>
       <td>System Name</td>
       <td>[% d.name %]</td>

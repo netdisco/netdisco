@@ -10,7 +10,7 @@
       <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     <tr>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"><input data-form="add" name="mac" type="text"></td>
