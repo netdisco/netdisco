@@ -95,7 +95,7 @@
     </tr>
     <tr>
       <td>SNMP Class</td>
-      <td><a target="_blank" href="https://metacpan.org/pod/[% d.snmp_class | uri %]">[% d.snmp_class | html_entity %]</td>
+      <td><a target="_blank" href="https://metacpan.org/pod/[% d.snmp_class | uri %]">[% d.snmp_class | html_entity %]</a></td>
     </tr>
     <tr>
       <td>Uptime</td>
