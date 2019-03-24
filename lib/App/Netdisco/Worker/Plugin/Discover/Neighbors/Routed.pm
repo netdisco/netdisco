@@ -19,7 +19,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $ospf_peers   = $snmp->ospf_peers || {};
   my $ospf_routers = $snmp->ospf_peer_id || {};
   my $isis_peers   = $snmp->isis_peers || {};
-  my $isis_routers = $snmp->isis_adj_id || {};
   my $bgp_peers    = $snmp->bgp_peer_addr || {};
   my $eigrp_peers  = $snmp->eigrp_peers || {};
 
