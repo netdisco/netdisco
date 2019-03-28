@@ -1,3 +1,9 @@
+2.042004 - 2019-03-28
+
+  [ENHANCEMENTS]
+
+  * #548 add IS-IS neighbor discovery support (pyro3d)
+
 2.042003 - 2019-03-21
 
   [BUG FIXES]
