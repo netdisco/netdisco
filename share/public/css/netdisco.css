@@ -161,10 +161,14 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #404040;
 }
 
+/* make room for the port log icon */
+.nd_this-port-only {
+  margin-right: 15px;
+}
 /* nudge cell content to the right when port_control controls are enabled */
 .nd_editable-cell > .nd_this-port-only {
   margin-left: 14px;
-  margin-right: 35px;
+  margin-right: 60px;
 }
 .nd_editable-cell > .nd_port-only-first {
   margin-left: 5px;
