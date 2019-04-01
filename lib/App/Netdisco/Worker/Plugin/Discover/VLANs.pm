@@ -18,43 +18,30 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $v_name  = $snmp->v_name;
   my $v_index = $snmp->v_index;
 
-  # build device vlans suitable for DBIC
-  my %v_seen = ();
-  my @devicevlans;
-  foreach my $entry (keys %$v_name) {
-      my $vlan = $v_index->{$entry};
-      next unless defined $vlan and $vlan;
-      ++$v_seen{$vlan};
-
-      push @devicevlans, {
-          vlan => $vlan,
-          description => $v_name->{$entry},
-          last_discover => \'now()',
-      };
-  }
-
   # cache the device ports to save hitting the database for many single rows
   my $device_ports = vars->{'device_ports'}
     || { map {($_->port => $_)} $device->ports->all };
 
   my $i_vlan            = $snmp->i_vlan;
-  my $i_vlan_membership = $snmp->i_vlan_membership;
   my $i_vlan_type       = $snmp->i_vlan_type;
   my $interfaces        = $snmp->interfaces;
+  my $i_vlan_membership          = $snmp->i_vlan_membership;
+  my $i_vlan_membership_untagged = $snmp->i_vlan_membership_untagged;
 
-  # build device port vlans suitable for DBIC
+  my %p_seen = ();
   my @portvlans = ();
-  foreach my $entry (keys %$i_vlan_membership) {
+
+  # build port vlans suitable for DBIC
+  foreach my $entry (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership) {
       my %port_vseen = ();
       my $port = $interfaces->{$entry} or next;
+      my $type = $i_vlan_type->{$entry};
 
       if (!defined $device_ports->{$port}) {
           debug sprintf ' [%s] vlans - local port %s already skipped, ignoring',
             $device->ip, $port;
           next;
       }
-
-      my $type = $i_vlan_type->{$entry};
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
           next unless defined $vlan and $vlan;
@@ -65,30 +52,29 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
               port => $port,
               vlan => $vlan,
               native => $native,
+              egress_tag => 't',
               vlantype => $type,
               last_discover => \'now()',
           };
+          ++$p_seen{$vlan};
+      }
 
-          next if $v_seen{$vlan};
+      foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} }) {
+          next unless defined $vlan and $vlan;
+          next if ++$port_vseen{$vlan} > 1;
 
-          # also add an unnamed vlan to the device
-          push @devicevlans, {
+          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
+          push @portvlans, {
+              port => $port,
               vlan => $vlan,
-              description => (sprintf "VLAN %d", $vlan),
+              native => $native,
+              egress_tag => 'f',
+              vlantype => $type,
               last_discover => \'now()',
           };
-          ++$v_seen{$vlan};
+          ++$p_seen{$vlan};
       }
   }
-
-  schema('netdisco')->txn_do(sub {
-    my $gone = $device->vlans->delete;
-    debug sprintf ' [%s] vlans - removed %d device VLANs',
-      $device->ip, $gone;
-    $device->vlans->populate(\@devicevlans);
-    debug sprintf ' [%s] vlans - added %d new device VLANs',
-      $device->ip, scalar @devicevlans;
-  });
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->port_vlans->delete;
@@ -98,6 +84,41 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
     return Status->info(sprintf ' [%s] vlans - added %d new port VLANs',
       $device->ip, scalar @portvlans);
+  });
+
+  my %d_seen = ();
+  my @devicevlans = ();
+
+  # add unnamed vlans to the device
+  foreach my $entry (keys %$v_name) {
+      my $vlan = $v_index->{$entry};
+      next unless defined $vlan and $vlan;
+      ++$d_seen{$vlan};
+
+      push @devicevlans, {
+          vlan => $vlan,
+          description => $v_name->{$entry},
+          last_discover => \'now()',
+      };
+  }
+
+  # also add unnamed vlans to the device
+  foreach my $vlan (keys %p_seen) {
+      next if $d_seen{$vlan};
+      push @devicevlans, {
+          vlan => $vlan,
+          description => (sprintf "VLAN %d", $vlan),
+          last_discover => \'now()',
+      };
+  }
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->vlans->delete;
+    debug sprintf ' [%s] vlans - removed %d device VLANs',
+      $device->ip, $gone;
+    $device->vlans->populate(\@devicevlans);
+    debug sprintf ' [%s] vlans - added %d new device VLANs',
+      $device->ip, scalar @devicevlans;
   });
 });
 

@@ -18,6 +18,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "native",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
+  "egress_tag",
+  { data_type => "boolean", default_value => \"true",  is_nullable => 0 },
   "creation",
   {
     data_type     => "timestamp",
