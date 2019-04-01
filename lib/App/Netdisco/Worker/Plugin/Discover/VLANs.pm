@@ -43,22 +43,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           next;
       }
 
-      foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
-          next unless defined $vlan and $vlan;
-          next if ++$port_vseen{$vlan} > 1;
-
-          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
-          push @portvlans, {
-              port => $port,
-              vlan => $vlan,
-              native => $native,
-              egress_tag => 't',
-              vlantype => $type,
-              last_discover => \'now()',
-          };
-          ++$p_seen{$vlan};
-      }
-
       foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} }) {
           next unless defined $vlan and $vlan;
           next if ++$port_vseen{$vlan} > 1;
@@ -74,6 +58,23 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           };
           ++$p_seen{$vlan};
       }
+
+      foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
+          next unless defined $vlan and $vlan;
+          next if ++$port_vseen{$vlan} > 1;
+
+          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
+          my $egress = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "f" : "t";
+          push @portvlans, {
+              port => $port,
+              vlan => $vlan,
+              native => $native,
+              egress_tag => $egress,
+              vlantype => $type,
+              last_discover => \'now()',
+          };
+          ++$p_seen{$vlan};
+      }
   }
 
   schema('netdisco')->txn_do(sub {
@@ -82,8 +83,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->port_vlans->populate(\@portvlans);
 
-    return Status->info(sprintf ' [%s] vlans - added %d new port VLANs',
-      $device->ip, scalar @portvlans);
+    debug sprintf ' [%s] vlans - added %d new port VLANs',
+      $device->ip, scalar @portvlans;
   });
 
   my %d_seen = ();
@@ -117,9 +118,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     debug sprintf ' [%s] vlans - removed %d device VLANs',
       $device->ip, $gone;
     $device->vlans->populate(\@devicevlans);
+
     debug sprintf ' [%s] vlans - added %d new device VLANs',
       $device->ip, scalar @devicevlans;
   });
+
+  return Status->info(sprintf ' [%s] vlans - discovered for ports and device',
+    $device->ip);
 });
 
 true;
