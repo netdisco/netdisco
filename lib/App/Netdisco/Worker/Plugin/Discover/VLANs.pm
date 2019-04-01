@@ -33,7 +33,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   # build port vlans suitable for DBIC
   foreach my $entry (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership) {
-      my %port_vseen = ();
+      my %this_port_vlans = ();
       my $port = $interfaces->{$entry} or next;
       my $type = $i_vlan_type->{$entry};
 
@@ -45,7 +45,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
       foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} }) {
           next unless defined $vlan and $vlan;
-          next if ++$port_vseen{$vlan} > 1;
+          next if $this_port_vlans{$vlan};
 
           my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
           push @portvlans, {
@@ -56,12 +56,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
               vlantype => $type,
               last_discover => \'now()',
           };
+
+          ++$this_port_vlans{$vlan};
           ++$p_seen{$vlan};
       }
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
           next unless defined $vlan and $vlan;
-          next if ++$port_vseen{$vlan} > 1;
+          next if $this_port_vlans{$vlan};
 
           my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
           my $egress = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "f" : "t";
@@ -73,6 +75,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
               vlantype => $type,
               last_discover => \'now()',
           };
+
+          ++$this_port_vlans{$vlan};
           ++$p_seen{$vlan};
       }
   }
@@ -90,7 +94,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my %d_seen = ();
   my @devicevlans = ();
 
-  # add unnamed vlans to the device
+  # add named vlans to the device
   foreach my $entry (keys %$v_name) {
       my $vlan = $v_index->{$entry};
       next unless defined $vlan and $vlan;
