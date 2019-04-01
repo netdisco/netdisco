@@ -272,6 +272,7 @@ td > form.nd_inline-form {
 }
 
 .nd_hand-icon {
+  position: relative;
   margin-right: 4px;
 }
 
@@ -282,6 +283,7 @@ td > form.nd_inline-form {
   float: right;
   padding-left: 10px;
   margin-top: 2px;
+  position: relative;
 }
 .nd_log-icon:hover, .nd_log-icon:focus {
   text-decoration: none;
