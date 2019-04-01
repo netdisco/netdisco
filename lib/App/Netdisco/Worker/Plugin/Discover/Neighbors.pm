@@ -314,6 +314,18 @@ sub set_manual_topology {
     schema('netdisco')->resultset('DevicePort')
       ->search({ip => $device->ip})->update({manual_topo => \'false'});
 
+    # clear outdated manual topology links
+    my $old_links = schema('netdisco')->resultset('Topology')->search({
+      -or => [
+        { dev1 => $device->ip,
+          port1 => { '-not_in' => $device->ports->get_column('port')->as_query } },
+        { dev2 => $device->ip,
+          port2 => { '-not_in' => $device->ports->get_column('port')->as_query } },
+      ],
+    })->delete;
+    debug sprintf ' [%s] neigh - removed %d outdated manual topology links',
+      $device->ip, $old_links;
+
     my $topo_links = schema('netdisco')->resultset('Topology')
       ->search({-or => [dev1 => $device->ip, dev2 => $device->ip]});
     debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
