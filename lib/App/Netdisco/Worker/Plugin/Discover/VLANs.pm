@@ -1,11 +1,13 @@
 package App::Netdisco::Worker::Plugin::Discover::VLANs;
 
 use Dancer ':syntax';
-use App::Netdisco::Worker::Plugin;
-use aliased 'App::Netdisco::Worker::Status';
-
-use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
+
+use App::Netdisco::Worker::Plugin;
+use App::Netdisco::Transport::SNMP ();
+
+use aliased 'App::Netdisco::Worker::Status';
+use List::MoreUtils 'uniq';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -22,20 +24,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $device_ports = vars->{'device_ports'}
     || { map {($_->port => $_)} $device->ports->all };
 
-  my $i_vlan            = $snmp->i_vlan;
-  my $i_vlan_type       = $snmp->i_vlan_type;
-  my $interfaces        = $snmp->interfaces;
+  my $i_vlan      = $snmp->i_vlan;
+  my $i_vlan_type = $snmp->i_vlan_type;
+  my $interfaces  = $snmp->interfaces;
   my $i_vlan_membership          = $snmp->i_vlan_membership;
   my $i_vlan_membership_untagged = $snmp->i_vlan_membership_untagged;
 
   my %p_seen = ();
   my @portvlans = ();
+  my @active_ports = (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership);
 
   # build port vlans suitable for DBIC
-  foreach my $entry (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership) {
-      my %this_port_vlans = ();
+  foreach my $entry (sort uniq @active_ports) {
       my $port = $interfaces->{$entry} or next;
-      my $type = $i_vlan_type->{$entry};
 
       if (!defined $device_ports->{$port}) {
           debug sprintf ' [%s] vlans - local port %s already skipped, ignoring',
@@ -43,11 +44,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           next;
       }
 
-      foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} }) {
-          next unless defined $vlan and $vlan;
-          next if $this_port_vlans{$vlan};
+      my %this_port_vlans = ();
+      my $type = $i_vlan_type->{$entry};
 
-          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
+      foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} || [] }) {
+          next if $this_port_vlans{$vlan};
+          my $native = ((defined $i_vlan->{$entry})
+                          and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
+
           push @portvlans, {
               port => $port,
               vlan => $vlan,
@@ -61,17 +65,16 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           ++$p_seen{$vlan};
       }
 
-      foreach my $vlan (@{ $i_vlan_membership->{$entry} }) {
-          next unless defined $vlan and $vlan;
+      foreach my $vlan (@{ $i_vlan_membership->{$entry} || [] }) {
           next if $this_port_vlans{$vlan};
+          my $native = ((defined $i_vlan->{$entry})
+                          and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
 
-          my $native = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "t" : "f";
-          my $egress = ((defined $i_vlan->{$entry}) and ($vlan eq $i_vlan->{$entry})) ? "f" : "t";
           push @portvlans, {
               port => $port,
               vlan => $vlan,
               native => $native,
-              egress_tag => $egress,
+              egress_tag => ($native eq 't' ? 'f' : 't'),
               vlantype => $type,
               last_discover => \'now()',
           };
