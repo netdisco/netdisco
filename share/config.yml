@@ -217,6 +217,7 @@ device_identity: []
 community: []
 community_rw: []
 device_auth: []
+use_legacy_rancidexport: false
 use_legacy_sshcollector: false
 get_credentials: ""
 bulkwalk_off: false
