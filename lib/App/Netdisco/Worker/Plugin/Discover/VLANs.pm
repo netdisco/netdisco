@@ -32,10 +32,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   my %p_seen = ();
   my @portvlans = ();
-  my @active_ports = (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership);
+  my @active_ports = uniq (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership);
 
   # build port vlans suitable for DBIC
-  foreach my $entry (sort uniq @active_ports) {
+  foreach my $entry (@active_ports) {
       my $port = $interfaces->{$entry} or next;
 
       if (!defined $device_ports->{$port}) {
