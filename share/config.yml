@@ -352,6 +352,7 @@ schedule:
     when: '0 8,13,21 * * *'
   expire:
     when: '30 23 * * *'
+  makerancidconf: null
 
 job_prio:
   high:

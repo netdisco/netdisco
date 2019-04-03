@@ -69,6 +69,7 @@ device_auth:
 #    when: '0 8,13,21 * * *'
 #  expire:
 #    when: '30 23 * * *'
+#  makerancidconf: null
 
 # number of SNMP workers to run in parallel (in netdisco-backend).
 # the default is twice the number of CPU cores. increase this if
