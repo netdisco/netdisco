@@ -130,7 +130,11 @@ You could run this worker at 09:05 each day using the following configuration:
 
 Since MakeRancidConf is a worker module it can also be run via C<netdisco-do>:
 
- netdisco-do makerancidconf
+ ~/bin/netdisco-do makerancidconf
+
+Skipped devices and the reason for skipping them can be seen by using C<-D>:
+
+ ~/bin/netdisco-do makerancidconf -D
 
 =head1 CONFIGURATION
 
@@ -186,7 +190,7 @@ email config and creating the repository with C<rancid-cvs>.
 
 The location where the rancid configuration (F<rancid.types.base> and
 F<rancid.types.conf>) is installed. It will be used to check the existance
-of device types before exporting the devices to the rancid configuration. if no match
+of device types before exporting the devices to the rancid configuration. If no match
 is found the device will not be added to rancid.
 
 =head2 C<rancid_cvsroot>
