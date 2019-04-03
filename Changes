@@ -1,3 +1,16 @@
+2.042005 - 2019-04-03
+
+  [ENHANCEMENTS]
+
+  * #528 record egress untagged vlans in device_port_vlan table
+
+  [BUG FIXES]
+
+  * clickability of port log/control icons in port list display (pyro3d)
+  * #549 clean manual topology after device ports change
+  * #551 better error message for both device_auth and snmp_auth
+  * #552 device addresses report has broken column data
+
 2.042004 - 2019-03-28
 
   [ENHANCEMENTS]
