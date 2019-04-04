@@ -42,6 +42,9 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Permission ':all';
 
+# silent exit unless explicitly requested
+exit(0) unless setting('use_legacy_rancidexport');
+
 my $settings = setting( 'rancid' );
 my $domain_suffix = setting( 'domain_suffix' ) || '';
 my $delimiter = $settings->{ 'delimiter' } || ':';
@@ -117,7 +120,7 @@ foreach my $group (keys %$list) {
 
 =head1 NAME
 
-netdisco-rancid-export - Generate RANCID Group Configuration
+netdisco-rancid-export - DEPRECATED!
 
 =head1 DEPRECATED!
 

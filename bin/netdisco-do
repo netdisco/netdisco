@@ -383,6 +383,13 @@ Set the PoE on/off status on a device port. Requires the C<-d> parameter
  ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
  ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
+=head2 makerancidconf
+
+Generates rancid configuration for known devices. See
+L<App::Netdisco::Worker::Plugin::MakeRancidConf> for configuration needs.
+
+ ~/bin/netdisco-do makerancidconf
+
 =head2 dumpconfig
 
 Will dump the loaded and parsed configuration for the application. Pass a

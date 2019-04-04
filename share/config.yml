@@ -217,6 +217,7 @@ device_identity: []
 community: []
 community_rw: []
 device_auth: []
+use_legacy_rancidexport: false
 use_legacy_sshcollector: false
 get_credentials: ""
 bulkwalk_off: false
@@ -351,6 +352,7 @@ schedule:
     when: '0 8,13,21 * * *'
   expire:
     when: '30 23 * * *'
+  makerancidconf: null
 
 job_prio:
   high:
