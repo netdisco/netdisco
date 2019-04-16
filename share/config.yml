@@ -101,7 +101,7 @@ sidebar_defaults:
     daterange:   { default: null }
     mac_format:  { default: IEEE }
   search_port:
-    partial:     { default: null }
+    partial:     { default: checked }
     uplink:      { default: null }
     ethernet:    { default: checked }
   search_device:
