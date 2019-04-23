@@ -49,11 +49,11 @@ use App::Netdisco::Util::Device 'get_device';
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug, $quiet, $queue_only, $rollback);
-my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
+my ($port, $extra, $debug, $quiet, $queue_only, $rollback);
+my ($devices, $infotrace, $snmptrace, $sqltrace) = ([], 0, 0, 0);
 
 my $result = GetOptions(
-  'device|d=s' => \$device,
+  'device|d=s@' => \$devices,
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
@@ -101,14 +101,16 @@ unless ($action) {
   use Moo;
   with 'App::Netdisco::Worker::Runner';
 }
-
-my $net = NetAddr::IP->new($device);
-if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
+my @hostlist = ();
+foreach my $device (@$devices) {
+  my $net = NetAddr::IP->new($device);
+  if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
     info sprintf '%s: error - Bad host, IP or prefix: %s', $action, $device;
     exit 1;
+  }
+  push(@hostlist,$net->hostenum) if defined $device;
 }
 
-my @hostlist = defined $device ? ($net->hostenum) : (undef);
 my @job_specs = ();
 my $exitstatus =  0;
 
@@ -206,11 +208,18 @@ Any action taking a C<device> parameter can be passed either a hostname or IP
 of any interface on a known or unknown device, or an IP prefix (subnet) which
 will cause C<netdisco-do> to run the action for all addresses in that range.
 
+The C<device> parameter can be passed many time. In this case, the devices would
+be take in count one by one.
+
 =head2 discover
 
 Run a discover on the device (specified with C<-d>).
 
  ~/bin/netdisco-do discover -d 192.0.2.1
+
+Run a discover on two different devices (specified with C<-d>).
+
+ ~/bin/netdisco-do discover -d 192.0.2.1 -d 192.15.2.95
 
 =head2 discoverall
 
