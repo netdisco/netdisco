@@ -205,11 +205,11 @@ pass C<action::stage> as the first argument to C<netdisco-do>, for example
 C<discover::neighbors>.
 
 Any action taking a C<device> parameter can be passed either a hostname or IP
-of any interface on a known or unknown device, or an IP prefix (subnet) which
-will cause C<netdisco-do> to run the action for all addresses in that range.
+address of any interface of a known or unknown device, or an IP prefix (subnet)
+which will cause C<netdisco-do> to run the action on all addresses in that range.
 
-The C<device> parameter can be passed many time. In this case, the devices would
-be take in count one by one.
+The C<device> parameter may be passed multiple times. In this case, the devices
+will be handled one by one.
 
 =head2 discover
 
@@ -313,7 +313,7 @@ leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
 "C<Layer2::HP::uptime>". Using "C<::>" as the start of the prefix will test
 against the base "C<SNMP::Info>" class.
 
-As well, SNMP object names can be used as an argument for "C<-e>", so you can
+As well, SNMP OID names can be used as an argument for "C<-e>", so you can
 use C<ifName> for example, which will use the netdisco-mibs files for
 translations.
 
@@ -421,7 +421,7 @@ following items in order:
 
 =item C<-D>
 
-Netdisco debug log level
+Netdisco debug log level.
 
 =item C<-I> or C<-II>
 
@@ -433,7 +433,7 @@ L<SNMP> (net-snmp) trace level (1, 2 or 3).
 
 =item C<-Q>
 
-L<DBIx::Class> trace enabled
+L<DBIx::Class> trace enabled.
 
 =back
 
