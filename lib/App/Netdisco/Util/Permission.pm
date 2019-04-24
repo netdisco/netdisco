@@ -2,12 +2,12 @@ package App::Netdisco::Util::Permission;
 
 use strict;
 use warnings;
-use Dancer qw/:syntax :script/;
+use feature qw(state);
 
+use Dancer qw/:syntax :script/;
 use Scalar::Util 'blessed';
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use feature qw(state);
 use Memoize;
 use Class::Method::Modifiers 'fresh';
 use Digest::MD5 qw(md5_base64);
@@ -78,25 +78,7 @@ sub check_acl_only {
   return check_acl($thing, $config);
 }
 
-sub _construct_netaddr {
 
-  my ($ctrarg) = @_;
-
-  return NetAddr::IP::Lite->new($ctrarg) unless setting('memoize_acl'); 
-
-  state $cache = {};
-  my $hit = 1;
-  if (!$cache->{$ctrarg}){
-    $cache->{$ctrarg} = NetAddr::IP::Lite->new($ctrarg);
-    $hit = 0;
-  }
-
-  my $entries = scalar keys %{$cache}; 
-  #warning sprintf '_construct_netaddr %s hit: %s total entries: %s', 
-  #  $ctrarg, $hit, scalar keys %{$cache} if ($entries % 500 == 0);
-  return $cache->{$ctrarg}; 
-
-}
 
 =head2 check_acl( $ip | $instance, $acl_entry | \@acl )
 
@@ -112,23 +94,7 @@ L<App::Netdisco::Manual::Configuration> for the details.
 
 =cut
 
-sub _real_ip {
-  my ($thing) = @_;
 
-  my $real_ip = $thing;
-  if (blessed $thing) {
-    $real_ip = ($thing->can('alias') ? $thing->alias : (
-      $thing->can('ip') ? $thing->ip : (
-        $thing->can('addr') ? $thing->addr : $thing )));
-  }
-
-  if (blessed $real_ip){
-    return 0;
-  }else{
-    return $real_ip; 
-  }
-
-}
 
 our $check_acl_subref  = sub { 
   my ($thing, $config) = @_;
@@ -248,21 +214,51 @@ our $check_acl_subref  = sub {
 };
 
 if (setting('memoize_acl')){
-
   fresh 'check_acl' => memoize( $check_acl_subref,  
     NORMALIZER => sub { 
        my $stringinput = $_[0] . " " . $_[1]; 
        my $norminput = _real_ip($_[0]) . " " . md5_base64(join(" ", @{$_[1]})); 
-       #warning $stringinput . " ::::-> ". $norminput; 
-       #return $stringinput;
        return $norminput;
     }
   );
-
 } else {
-
   fresh 'check_acl' => $check_acl_subref; 
+}
+
+# Cache the expensive NetAddr::IP constructor if enabled in config
+sub _construct_netaddr {
+  my ($ctrarg) = @_;
+  return NetAddr::IP::Lite->new($ctrarg) unless setting('memoize_acl'); 
+
+  state $cache = {};
+  my $hit = 1;
+  if (!$cache->{$ctrarg}){
+    $cache->{$ctrarg} = NetAddr::IP::Lite->new($ctrarg);
+    $hit = 0;
+  }
+
+  my $entries = scalar keys %{$cache}; 
+  return $cache->{$ctrarg}; 
+}
+
+# Extract the IP from $thing passed to check_acl functions 
+sub _real_ip {
+  my ($thing) = @_;
+
+  my $real_ip = $thing;
+  if (blessed $thing) {
+    $real_ip = ($thing->can('alias') ? $thing->alias : (
+      $thing->can('ip') ? $thing->ip : (
+        $thing->can('addr') ? $thing->addr : $thing )));
+  }
+
+  if (blessed $real_ip){
+    return 0;
+  }else{
+    return $real_ip; 
+  }
 
 }
+
 
 1;
