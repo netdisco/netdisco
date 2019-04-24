@@ -7,6 +7,10 @@ use Dancer qw/:syntax :script/;
 use Scalar::Util 'blessed';
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
+use feature qw(state);
+use Memoize;
+use Class::Method::Modifiers 'fresh';
+use Digest::MD5 qw(md5_base64);
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -62,6 +66,7 @@ contain.
 
 =cut
 
+
 sub check_acl_only {
   my ($thing, $setting_name) = @_;
   return 0 unless $thing and $setting_name;
@@ -71,6 +76,26 @@ sub check_acl_only {
   return 1 if not $config # undef or empty string
               or ((ref [] eq ref $config) and not scalar @$config);
   return check_acl($thing, $config);
+}
+
+sub _construct_netaddr {
+
+  my ($ctrarg) = @_;
+
+  return NetAddr::IP::Lite->new($ctrarg) unless setting('memoize_acl'); 
+
+  state $cache = {};
+  my $hit = 1;
+  if (!$cache->{$ctrarg}){
+    $cache->{$ctrarg} = NetAddr::IP::Lite->new($ctrarg);
+    $hit = 0;
+  }
+
+  my $entries = scalar keys %{$cache}; 
+  #warning sprintf '_construct_netaddr %s hit: %s total entries: %s', 
+  #  $ctrarg, $hit, scalar keys %{$cache} if ($entries % 500 == 0);
+  return $cache->{$ctrarg}; 
+
 }
 
 =head2 check_acl( $ip | $instance, $acl_entry | \@acl )
@@ -87,9 +112,8 @@ L<App::Netdisco::Manual::Configuration> for the details.
 
 =cut
 
-sub check_acl {
-  my ($thing, $config) = @_;
-  return 0 unless defined $thing and defined $config;
+sub _real_ip {
+  my ($thing) = @_;
 
   my $real_ip = $thing;
   if (blessed $thing) {
@@ -97,10 +121,24 @@ sub check_acl {
       $thing->can('ip') ? $thing->ip : (
         $thing->can('addr') ? $thing->addr : $thing )));
   }
-  return 0 if blessed $real_ip; # class we do not understand
+
+  if (blessed $real_ip){
+    return 0;
+  }else{
+    return $real_ip; 
+  }
+
+}
+
+our $check_acl_subref  = sub { 
+  my ($thing, $config) = @_;
+  return 0 unless defined $thing and defined $config;
+
+  my $real_ip = _real_ip($thing);
+  return 0 if $real_ip eq 0; # class we do not understand
 
   $config  = [$config] if ref [] ne ref $config;
-  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
+  my $addr = _construct_netaddr($real_ip) or return 0;
   my $all  = (scalar grep {m/^op:and$/} @$config);
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
@@ -165,7 +203,7 @@ sub check_acl {
 
               (my $header = $item) =~ s/:[^:]+$/:/;
               foreach my $part ($first .. $last) {
-                  my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
+                  my $ip = _construct_netaddr($header . sprintf('%x',$part) . '/128')
                     or next;
                   if ($neg xor ($ip == $addr)) {
                     return 1 if not $all;
@@ -180,7 +218,7 @@ sub check_acl {
 
               (my $header = $item) =~ s/\.[^.]+$/./;
               foreach my $part ($first .. $last) {
-                  my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
+                  my $ip = _construct_netaddr($header . $part . '/32')
                     or next;
                   if ($neg xor ($ip == $addr)) {
                     return 1 if not $all;
@@ -193,7 +231,7 @@ sub check_acl {
           next INLIST;
       }
 
-      my $ip = NetAddr::IP::Lite->new($item)
+      my $ip = _construct_netaddr($item)
         or next INLIST;
       next INLIST if $ip->bits != $addr->bits and not $all;
 
@@ -207,6 +245,24 @@ sub check_acl {
   }
 
   return ($all ? 1 : 0);
+};
+
+if (setting('memoize_acl')){
+
+  fresh 'check_acl' => memoize( $check_acl_subref,  
+    NORMALIZER => sub { 
+       my $stringinput = $_[0] . " " . $_[1]; 
+       my $norminput = _real_ip($_[0]) . " " . md5_base64(join(" ", @{$_[1]})); 
+       #warning $stringinput . " ::::-> ". $norminput; 
+       #return $stringinput;
+       return $norminput;
+    }
+  );
+
+} else {
+
+  fresh 'check_acl' => $check_acl_subref; 
+
 }
 
 1;
