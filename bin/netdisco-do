@@ -119,6 +119,9 @@ if (scalar @hostlist > 512) {
     exit 1;
 }
 
+# some actions do not take a device parameter
+@hostlist = (undef) if 0 == scalar @hostlist;
+
 foreach my $host (@hostlist) {
   my $dev = $host ? get_device($host->addr) : undef;
   if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
@@ -205,11 +208,12 @@ pass C<action::stage> as the first argument to C<netdisco-do>, for example
 C<discover::neighbors>.
 
 Any action taking a C<device> parameter can be passed either a hostname or IP
-address of any interface of a known or unknown device, or an IP prefix (subnet)
-which will cause C<netdisco-do> to run the action on all addresses in that range.
+address of any interface of a known or unknown device, or an IP prefix
+(subnet) which will cause C<netdisco-do> to run the action on all addresses in
+that range.
 
-The C<device> parameter may be passed multiple times. In this case, the devices
-will be handled one by one.
+The C<device> parameter may be passed multiple times. In this case, all
+addresses (after expanding IP Prefixes) will be handled one by one.
 
 =head2 discover
 

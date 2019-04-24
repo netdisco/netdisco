@@ -98,7 +98,7 @@ print color 'reset';
 
 my $term = Term::ReadLine->new('netdisco');
 my $bool = $term->ask_yn(
-  prompt => 'So, is all off the above in place?', default => 'n',
+  prompt => 'So, is all of the above in place?', default => 'n',
 );
 
 exit(0) unless $bool;
