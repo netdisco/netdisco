@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Dancer qw/:syntax :script/;
 
-use Scalar::Util 'blessed';
+use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
@@ -97,19 +97,38 @@ sub check_acl {
       $thing->can('ip') ? $thing->ip : (
         $thing->can('addr') ? $thing->addr : $thing )));
   }
-  return 0 if blessed $real_ip; # class we do not understand
+  return 0 if !defined $real_ip
+    or blessed $real_ip; # class we do not understand
 
   $config  = [$config] if ref [] ne ref $config;
-  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
   my $all  = (scalar grep {m/^op:and$/} @$config);
+  my $addr = undef; # instantiate only once, but lazily as it's expensive
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
+  my $qref = ref qr//;
 
   INLIST: foreach (@$config) {
       my $item = $_; # must copy so that we can modify safely
-      next INLIST if $item eq 'op:and';
+      next INLIST if !defined $item or $item eq 'op:and';
+      my $neg = undef;
 
-      if (ref qr// eq ref $item) {
+      # common case of using plain IP in ACL, so string compare for speed
+      # and also set whether negation in use
+      if (not reftype $item) {
+        $neg = ($item =~ s/^!//);
+
+        if ($item eq $real_ip) {
+          return 1 if not $neg and not $all;
+          return 0 if $neg and $all;
+          next INLIST;
+        }
+      }
+
+      # do this after string compare as it gets expensive
+      $addr = ($addr || NetAddr::IP::Lite->new($real_ip));
+      return 0 unless $addr;
+
+      if ($qref eq ref $item) {
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
           if ($name =~ $item) {
             return 1 if not $all;
@@ -119,8 +138,6 @@ sub check_acl {
           }
           next INLIST;
       }
-
-      my $neg = ($item =~ s/^!//);
 
       if ($item =~ m/^group:(.+)$/) {
           my $group = $1;
