@@ -1,3 +1,11 @@
+2.042007 - 2019-04-28
+
+  [ENHANCEMENTS]
+
+  * #564 allow passing multiple -d (devices) to netdisco-do
+  * #568 use different icon for WAPs from clients
+  * improve check_acl performance for basic IP string compare
+
 2.042006 - 2019-04-16
 
   [ENHANCEMENTS]
