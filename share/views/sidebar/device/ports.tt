@@ -43,6 +43,7 @@
                   <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Inacessible</li>
                   <li><i class="icon-li icon-phone"></i>&nbsp; IP Phone</li>
                   <li><i class="icon-li icon-signal"></i>&nbsp; Wireless Client</li>
+                  <li><i class="icon-li icon-rss"></i>&nbsp; Wireless Access Point</li>
                   <li><i class="icon-li icon-book"></i>&nbsp; Archived Data</li>
                   <li><i class="icon-li icon-group"></i>&nbsp; Link Aggregate</li>
                   [% IF user_has_role('port_control') %]

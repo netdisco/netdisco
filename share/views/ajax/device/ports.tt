@@ -278,7 +278,7 @@
             [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-signal"></i>&nbsp;
+              <i class="icon-rss"></i>&nbsp;
             [% END %]
             <a href="[% device_ports %]&q=[% row.get_column('neighbor_ip') | uri %]">
                 [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
@@ -300,7 +300,7 @@
             [% IF row.remote_is_phone %]
               <i class="icon-phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-signal"></i>&nbsp;
+              <i class="icon-rss"></i>&nbsp;
             [% END %]
             <a href="[% search_node %]&q=[% row.remote_ip | uri %]">
               [% row.remote_ip | html_entity %]
