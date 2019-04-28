@@ -77,9 +77,8 @@ This script will download the latest MAC address vendor prefix data from the
 Internet, and update the OUI table in the database. Hence Internet access is
 required to run the script.
 
-Similarly the latest Netdisco MIB bundle is also downloaded, placed into the
-user's home directory (or C<$ENV{NETDISCO_HOME}>), and Netdisco reconfigured
-for its use.
+Similarly the latest Netdisco MIB bundle is also downloaded and placed into
+the user's home directory (or C<$ENV{NETDISCO_HOME}>).
 
 =cut
 
@@ -99,7 +98,7 @@ print color 'reset';
 
 my $term = Term::ReadLine->new('netdisco');
 my $bool = $term->ask_yn(
-  prompt => 'So, is all the above in place?', default => 'n',
+  prompt => 'So, is all of the above in place?', default => 'n',
 );
 
 exit(0) unless $bool;
@@ -169,7 +168,7 @@ sub deploy_db {
   if ($users->search({-bool => 'admin'})->count == 0) {
       say '';
       print color 'bold green';
-      say 'We need to create a user for inital login. This user will be a full Administrator.';
+      say 'We need to create a user for initial login. This user will be a full Administrator.';
       say 'Afterwards, you can go to Admin -> User Management to manage users.';
       print color 'reset';
       say '';
@@ -274,7 +273,7 @@ sub shorten {
 
     # Remove any "the", "inc", "plc" ...
     $manuf
-        =~ s/\s(the|inc|incorporated|plc||systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
+        =~ s/\s(the|inc|incorporated|plc|systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
 
     # Convert to consistent case
     $manuf =~ s/(\w+)/\u\L$1/g;
