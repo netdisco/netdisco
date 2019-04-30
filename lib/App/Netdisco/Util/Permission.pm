@@ -102,9 +102,9 @@ sub check_acl {
 
   $config  = [$config] if ref [] ne ref $config;
   my $all  = (scalar grep {$_ eq 'op:and'} @$config);
-  my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
 
   # common case of using plain IP in ACL, so string compare for speed
+  my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
   return 1 if $find and not $all;
 
   my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
@@ -115,7 +115,6 @@ sub check_acl {
   INLIST: foreach (@$config) {
       my $item = $_; # must copy so that we can modify safely
       next INLIST if !defined $item or $item eq 'op:and';
-      my $neg = ($item =~ s/^!//);
 
       if ($qref eq ref $item) {
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
@@ -127,6 +126,8 @@ sub check_acl {
           }
           next INLIST;
       }
+
+      my $neg = ($item =~ s/^!//);
 
       if ($item =~ m/^group:(.+)$/) {
           my $group = $1;
