@@ -1,3 +1,9 @@
+2.042008 - 2019-04-30
+
+  [ENHANCEMENTS]
+
+  * improve check_acl performance for basic IP string compare
+
 2.042007 - 2019-04-28
 
   [ENHANCEMENTS]
