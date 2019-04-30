@@ -101,8 +101,13 @@ sub check_acl {
     or blessed $real_ip; # class we do not understand
 
   $config  = [$config] if ref [] ne ref $config;
-  my $all  = (scalar grep {m/^op:and$/} @$config);
-  my $addr = undef; # instantiate only once, but lazily as it's expensive
+  my $all  = (scalar grep {$_ eq 'op:and'} @$config);
+  my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
+
+  # common case of using plain IP in ACL, so string compare for speed
+  return 1 if $find and not $all;
+
+  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
   my $qref = ref qr//;
@@ -110,23 +115,7 @@ sub check_acl {
   INLIST: foreach (@$config) {
       my $item = $_; # must copy so that we can modify safely
       next INLIST if !defined $item or $item eq 'op:and';
-      my $neg = undef;
-
-      # common case of using plain IP in ACL, so string compare for speed
-      # and also set whether negation in use
-      if (not reftype $item) {
-        $neg = ($item =~ s/^!//);
-
-        if ($item eq $real_ip) {
-          return 1 if not $neg and not $all;
-          return 0 if $neg and $all;
-          next INLIST;
-        }
-      }
-
-      # do this after string compare as it gets expensive
-      $addr = ($addr || NetAddr::IP::Lite->new($real_ip));
-      return 0 unless $addr;
+      my $neg = ($item =~ s/^!//);
 
       if ($qref eq ref $item) {
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
