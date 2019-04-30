@@ -1,4 +1,7 @@
 language: perl
+perl:
+  - "5.28"
+  - "5.10"
 addons:
   apt:
     packages:
