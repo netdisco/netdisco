@@ -75,3 +75,6 @@ logs/.*
 \.docker
 \.circleci
 README.md
+
+# ignore intellij project directory
+\B\.idea
