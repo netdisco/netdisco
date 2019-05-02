@@ -14,3 +14,4 @@ Build
 _build
 blib
 !.docker/hooks/*
+.idea
