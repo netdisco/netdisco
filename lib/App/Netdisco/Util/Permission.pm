@@ -35,8 +35,8 @@ undefined or empty, then C<check_acl_no> also returns false.
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
 
-See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
-contain.
+See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
+for details of what C<$acl> may contain.
 
 =cut
 
@@ -57,8 +57,8 @@ undefined or empty, then C<check_acl_only> also returns true.
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
 
-See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
-contain.
+See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
+for details of what C<$acl> may contain.
 
 =cut
 
@@ -83,7 +83,8 @@ Accepts instances of classes representing Netdisco Devices, Netdisco Device
 IPs, and L<NetAddr::IP> family objects.
 
 There are several options for what C<< \@acl >> may contain. See
-L<App::Netdisco::Manual::Configuration> for the details.
+L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
+for the details.
 
 =cut
 
