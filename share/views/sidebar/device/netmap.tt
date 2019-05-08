@@ -13,7 +13,7 @@
               <div class="checkbox pull-left">
                 <label>
                   <input type="checkbox" name="showips" id="nd_showips"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="Show" data-off=" " data-onstyle="success">
                   <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
@@ -22,7 +22,7 @@
               <div class="checkbox pull-left">
                 <label>
                   <input type="checkbox" name="showspeed" id="nd_showspeed"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="Show" data-off=" " data-onstyle="success">
                   <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
