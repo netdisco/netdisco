@@ -32,10 +32,10 @@
         <input data-form="update" name="mac" type="text" value="[% row.mac | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="matchoui" type="checkbox" [% 'checked="checked"' IF row.matchoui %]>
+        <input data-form="update" name="matchoui" type="checkbox" [% ' checked="checked"' IF row.matchoui %]>
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="active" type="checkbox" [% 'checked="checked"' IF row.active %]>
+        <input data-form="update" name="active" type="checkbox" [% ' checked="checked"' IF row.active %]>
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="why" type="text" value="[% row.why | html_entity %]">

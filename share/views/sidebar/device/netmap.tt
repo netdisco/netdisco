@@ -123,7 +123,7 @@
               <div class="clearfix input-prepend">
                 <label class="add-on">
                   <input type="checkbox" id="dynamicsize" name="dynamicsize"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="dynamicsize">
                   <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
