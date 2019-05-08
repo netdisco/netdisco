@@ -78,8 +78,8 @@
 
             [% IF hgroup_list.size %]
             <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
-              multiple="on" name="hgroup" id="nd_hgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+              multiple name="hgroup" id="nd_hgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
               <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                 value="[% opt.key %]">[% opt.value | html_entity %]</option>
@@ -88,8 +88,8 @@
             [% END %]
             [% IF lgroup_list.size %]
             <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
-              multiple="on" name="lgroup" id="nd_lgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
+              multiple name="lgroup" id="nd_lgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations">
               [% FOREACH loc IN lgroup_list %]
               <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
                 value="[% loc %]">[% loc | html_entity %]</option>
