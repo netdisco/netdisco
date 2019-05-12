@@ -43,8 +43,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
-                multiple="on" name="model"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Model"/>
+                multiple name="model"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Model">
                 [% FOREACH opt IN model_list %]
                 <option[% ' selected="selected"' IF model_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
@@ -52,8 +52,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select" size="[% os_list.size > 5 ? 5 : os_list.size %]"
-                multiple="on" name="os"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Operating System"/>
+                multiple name="os"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Operating System">
                 [% FOREACH opt IN os_list %]
                 <option[% ' selected="selected"' IF os_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
@@ -61,8 +61,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
-                multiple="on" name="os_ver"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release"/>
+                multiple name="os_ver"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="OS Release">
                 [% FOREACH opt IN os_ver_list %]
                 <option[% ' selected="selected"' IF os_ver_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
@@ -70,8 +70,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select" size="[% vendor_list.size > 5 ? 5 : vendor_list.size %]"
-                multiple="on" name="vendor"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor"/>
+                multiple name="vendor"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor">
                 [% FOREACH opt IN vendor_list %]
                 <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
@@ -79,8 +79,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select" size="3"
-                multiple="on" name="layers"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Layer"/>
+                multiple name="layers"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Layer">
                 [% FOREACH opt IN [ 1 .. 7 ] %]
                 <option[% ' selected="selected"' IF layers_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]

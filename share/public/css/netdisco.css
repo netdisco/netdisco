@@ -87,7 +87,7 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 /* to be added to qtip-bootstrap class */
 .nd_qtip-unconstrained {
-  min-width: none;
+  min-width: 0;
   max-width: none;
 }
 

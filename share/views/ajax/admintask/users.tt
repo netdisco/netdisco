@@ -43,13 +43,13 @@
         <input data-form="update" name="password" type="password" value="********">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="ldap" type="checkbox" [% 'checked="checked"' IF row.ldap %]>
+        <input data-form="update" name="ldap" type="checkbox" [% ' checked="checked"' IF row.ldap %]>
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="port_control" type="checkbox" [% 'checked="checked"' IF row.port_control %]>
+        <input data-form="update" name="port_control" type="checkbox" [% ' checked="checked"' IF row.port_control %]>
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="admin" type="checkbox" [% 'checked="checked"' IF row.admin %]>
+        <input data-form="update" name="admin" type="checkbox" [% ' checked="checked"' IF row.admin %]>
       </td>
       <td class="nd_center-cell">[% row.created   | html_entity %]</td>
       <td class="nd_center-cell">[% row.last_seen | html_entity %]</td>
