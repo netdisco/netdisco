@@ -36,3 +36,11 @@
 <!--- Include as many relevant details about the environment you experienced the bug in -->
 * Netdisco version used: 
 * SNMP::Info version used: 
+
+## Device information
+<!--- if the issue relates to specific devices their info would be usefull -->
+<!--- do note that the following command might contain sensitive info, you can -->
+<!--- remove this but let us know if you did so -->
+<!--- change 1.1.1.1 in the below example with the problematic device's ip -->
+
+`netdisco-do show -d 1.1.1.1 -e specify -DI`
