@@ -35,7 +35,6 @@ lib/App/Netdisco/DB/Result/DevicePortSsid.pm
 lib/App/Netdisco/DB/Result/DevicePortVlan.pm
 lib/App/Netdisco/DB/Result/DevicePortWireless.pm
 lib/App/Netdisco/DB/Result/DevicePower.pm
-lib/App/Netdisco/DB/Result/DeviceRoute.pm
 lib/App/Netdisco/DB/Result/DeviceSkip.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
 lib/App/Netdisco/DB/Result/Log.pm

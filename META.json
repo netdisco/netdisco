@@ -186,9 +186,6 @@
       "App::Netdisco::DB::Result::DevicePower" : {
          "file" : "lib/App/Netdisco/DB/Result/DevicePower.pm"
       },
-      "App::Netdisco::DB::Result::DeviceRoute" : {
-         "file" : "lib/App/Netdisco/DB/Result/DeviceRoute.pm"
-      },
       "App::Netdisco::DB::Result::DeviceSkip" : {
          "file" : "lib/App/Netdisco/DB/Result/DeviceSkip.pm"
       },
@@ -806,7 +803,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/bsd-license.php"
+         "http://opensource.org/licenses/BSD-3-Clause"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -815,5 +812,5 @@
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
    "version" : "2.042008",
-   "x_serialization_backend" : "JSON::PP version 2.97001"
+   "x_serialization_backend" : "JSON::PP version 4.02"
 }
