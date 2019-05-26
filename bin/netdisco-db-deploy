@@ -57,13 +57,17 @@ there's no Nedisco schema, it is deployed. If there's an unversioned schema
 then versioning is added, and updates applied.  Otherwise only necessary
 updates are applied to an already versioned schema.
 
-Pre-existing requirements are that there be a database table created and a
-user with rights to create tables in that database. Both the table and user
-name must match those configured in your environment YAML file (default
-C<~/environments/deployment.yml>).
+Pre-existing requirements are that there's a working database connection and a
+user with rights to create tables in that database. These settings are defined
+in your environment YAML file (default C<~/environments/deployment.yml>).
 
 If you wish to force the redeployment of all database configuration, pass the
-C<--redeploy-all> argument on the command line.
+C<--redeploy-all> argument on the command line. This will reset your database
+version so the database scripts will run again, but no data will be deleted
+other than what's done via the upgrade scripts.
+
+For more database info see the
+L<netdisco wiki|https://github.com/netdisco/netdisco/wiki/Database-Tips>.
 
 =head1 VERSIONS
 
