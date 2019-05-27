@@ -9,15 +9,18 @@ App::Netdisco::SSHCollector::Platform::CPVSX
 Collect ARP entries from Check Point VSX
 
 This collector uses "C<arp>" as the command for the arp utility on your
-system. Clish "C<show arp>" dows not work correctly in versions prior to R77.30.
+system. Clish "C<show arp>" does not work correctly in versions prior to R77.30.
 Config example:
 
- sshcollector:
-   - ip: '192.0.2.1'
-     user: oliver
-     password: letmein
-     expert_password: letmein2
-     platform: CPVSX
+device_auth:
+  - tag: sshcpvsx
+    driver: cli
+    platform: CPVSX
+    only: '192.0.2.1'
+    username: oliver
+    password: letmein
+    expert_password: letmein2
+
 
 =cut
 
