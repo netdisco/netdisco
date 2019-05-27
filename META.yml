@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '57'
+    version: '58'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -67,8 +67,6 @@ provides:
     file: lib/App/Netdisco/DB/Result/DevicePortWireless.pm
   App::Netdisco::DB::Result::DevicePower:
     file: lib/App/Netdisco/DB/Result/DevicePower.pm
-  App::Netdisco::DB::Result::DeviceRoute:
-    file: lib/App/Netdisco/DB/Result/DeviceRoute.pm
   App::Netdisco::DB::Result::DeviceSkip:
     file: lib/App/Netdisco/DB/Result/DeviceSkip.pm
   App::Netdisco::DB::Result::DeviceVlan:
@@ -557,7 +555,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/bsd-license.php
+  license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
 version: '2.042008'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
