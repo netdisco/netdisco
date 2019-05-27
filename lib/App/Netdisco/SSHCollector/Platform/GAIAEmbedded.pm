@@ -2,7 +2,7 @@ package App::Netdisco::SSHCollector::Platform::GAIAEmbedded;
 
 =head1 NAME
 
-App::Netdisco::SSHCollector::Platform::GAIAembedded
+App::Netdisco::SSHCollector::Platform::GAIAEmbedded
 
 =head1 DESCRIPTION
 
@@ -14,12 +14,14 @@ This collector uses "C<arp>" as the command for the arp utility on your
 system.  If you wish to specify an absolute path, then add an C<arp_command>
 item to your configuration:
 
- sshcollector:
-   - ip: '192.0.2.1'
-     user: netdisco
-     password: letmein
-     platform: GAIAEmbedded
-     arp_command: 'arp'
+device_auth:
+  - tag: sshgaia
+    driver: cli
+    platform: GAIAEmbedded
+    only: '192.0.2.1'
+    username: oliver
+    password: letmein
+    arp_command: 'arp'
 
 =cut
 
