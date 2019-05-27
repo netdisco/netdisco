@@ -68,6 +68,7 @@ Module::Build->new(
     'Plack::Middleware::Expires' => '0.03',
     'Plack::Middleware::ReverseProxy' => '0.15',
     'Pod::Usage' => 0,
+    'Regexp::Common' => 2017060201,
     'Role::Tiny' => '1.002005',
     'Scope::Guard' => 0,
     'Sereal' => '0',

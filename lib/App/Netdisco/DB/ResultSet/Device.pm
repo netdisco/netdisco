@@ -5,7 +5,9 @@ use strict;
 use warnings;
 
 use Try::Tiny;
+use Regexp::Common 'net';
 use NetAddr::IP::Lite ':lower';
+
 require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
@@ -84,7 +86,7 @@ sub search_aliases {
 
     # rough approximation of IP addresses (v4 in v6 not supported).
     # this helps us avoid triggering any DNS.
-    my $by_ip = ($q =~ m{^(?:[.0-9/]+|[:0-9a-f/]+)$}i) ? 1 : 0;
+    my $by_ip = ($q =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})$}i) ? 1 : 0;
 
     my $clause;
     if ($by_ip) {
@@ -132,7 +134,7 @@ Returns only the first result of any found devices
 
 =back
 
-If not matching devices are found, C<undef> is returned.
+If no matching devices are found, C<undef> is returned.
 
 =cut
 
