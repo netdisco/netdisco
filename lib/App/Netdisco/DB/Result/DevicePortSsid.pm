@@ -19,10 +19,10 @@ __PACKAGE__->add_columns(
   "broadcast",
   { data_type => "boolean", is_nullable => 1 },
   "bssid",
-  { data_type => "macaddr", is_nullable => 1 },
+  { data_type => "macaddr", is_nullable => 0 },
 );
 
-__PACKAGE__->set_primary_key("port", "ip");
+__PACKAGE__->set_primary_key("ip", "bssid", "port");
 
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zvgylKzUQtizJZCe1rEdUg
