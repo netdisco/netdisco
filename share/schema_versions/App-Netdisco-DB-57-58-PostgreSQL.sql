@@ -1,14 +1,19 @@
 BEGIN;
 
-alter table device_port_wireless alter column ip set not null;
-alter table device_port_wireless alter column port set not null;
-alter table device_port_wireless add constraint device_port_wireless_pkey primary key (ip, port);
+ALTER TABLE device_port_wireless ALTER COLUMN ip SET NOT NULL;
 
-alter table device_port_ssid alter column ip set not null;
-alter table device_port_ssid alter column port set not null;
-alter table device_port_ssid alter column bssid set not null;
-alter table device_port_ssid add constraint device_port_ssid_pkey primary key (ip, bssid, port);
+ALTER TABLE device_port_wireless ALTER COLUMN port SET NOT NULL;
 
+ALTER TABLE device_port_wireless ADD CONSTRAINT device_port_wireless_pkey PRIMARY KEY (ip, port);
 
+ALTER TABLE device_port_ssid ALTER COLUMN ip SET NOT NULL;
+
+ALTER TABLE device_port_ssid ALTER COLUMN port SET NOT NULL;
+
+ALTER TABLE device_port_ssid ALTER COLUMN bssid SET NOT NULL;
+
+ALTER TABLE device_port_ssid ADD CONSTRAINT device_port_ssid_pkey PRIMARY KEY (ip, bssid, port);
+
+ALTER TABLE device_port_log ADD PRIMARY KEY (id);
 
 COMMIT;
