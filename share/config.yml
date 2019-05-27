@@ -194,7 +194,7 @@ port_control_reasons:
   compromised: 'System Compromised'
   other:       'Other'
   resolved:    'Issue Resolved'
-check_userlog: true
+check_userlog: false
 devport_vlan_limit: 150
 login_logo: ""
 defanged_admin: 'admin'
