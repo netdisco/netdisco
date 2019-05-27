@@ -1,6 +1,5 @@
 package App::Netdisco::SSHCollector::Platform::ASA;
 
-
 =head1 NAME
 
 App::Netdisco::SSHCollector::Platform::ASA
@@ -14,15 +13,17 @@ C<enable> status after login:
 
  aaa authorization exec LOCAL auto-enable
 
-To use an C<enable> password seaparate from the login password, add an
-C<enable_password> under C<sshcollector> in your configuration file:
+To use an C<enable> password separate from the login password, add an
+C<enable_password> under C<device_auth> tag in your configuration file:
 
- sshcollector:
-   - ip: '192.0.2.1'
-     user: oliver
-     password: letmein
-     enable_password: myenablepass
-     platform: IOS
+device_auth:
+  - tag: sshasa
+    driver: cli
+    platform: ASA
+    only: '192.0.2.1'
+    username: oliver
+    password: letmein
+    enable_password: myenablepass
 
 =cut
 
