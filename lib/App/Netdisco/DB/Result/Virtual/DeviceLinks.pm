@@ -19,8 +19,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     ( SELECT dp.ip AS left_ip,
              ld.dns AS left_dns,
              ld.name AS left_name,
-             array_agg(dp.port) AS left_port,
-             array_agg(dp.name) AS left_descr,
+             array_agg(dp.port ORDER BY dp.port) AS left_port,
+             array_agg(dp.name ORDER BY dp.name) AS left_descr,
 
              count(dpp.*) AS aggports,
              sum(COALESCE(dpp.raw_speed, 0)) AS aggspeed,
@@ -28,8 +28,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
              di.ip AS right_ip,
              rd.dns AS right_dns,
              rd.name AS right_name,
-             array_agg(dp.remote_port) AS right_port,
-             array_agg(dp2.name) AS right_descr
+             array_agg(dp.remote_port ORDER BY dp.remote_port) AS right_port,
+             array_agg(dp2.name ORDER BY dp2.name) AS right_descr
 
      FROM device_port dp
 
@@ -68,8 +68,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
        WHERE b2.right_ip = b.left_ip
          AND b2.right_port = b.left_port
          AND b2.left_ip < b.left_ip )
-  ORDER BY 1,
-           2
+  ORDER BY aggspeed DESC, 1, 2
 ENDSQL
 );
 

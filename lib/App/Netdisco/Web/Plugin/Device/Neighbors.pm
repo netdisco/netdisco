@@ -167,6 +167,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     # LINKS
 
+    my %seen_link = ();
     my $links = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({
       ($mapshow eq 'neighbors' ? ( -or => [
           { left_ip  => $qdev->ip },
@@ -175,6 +176,11 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     }, { result_class => 'DBIx::Class::ResultClass::HashRefInflator' });
 
     while (my $link = $links->next) {
+      # query is ordered by aggregate speed desc so we see highest speed
+      # first, which is hopefully the "best" if links are not symmetric
+      next if exists $seen_link{$link->{left_ip} ."\0". $link->{right_ip}}
+           or exists $seen_link{$link->{right_ip} ."\0". $link->{left_ip}};
+
       push @{$data{'links'}}, {
         FROMID => $link->{left_ip},
         TOID   => $link->{right_ip},
@@ -184,6 +190,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
       ++$ok_dev{$link->{left_ip}};
       ++$ok_dev{$link->{right_ip}};
+      ++$seen_link{$link->{left_ip} ."\0". $link->{right_ip}};
     }
 
     # DEVICES (NODES)
