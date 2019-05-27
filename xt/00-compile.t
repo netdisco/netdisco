@@ -13,6 +13,8 @@ BEGIN {
   unshift @INC,
     dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
     dir($FindBin::RealBin, 'lib')->stringify;
+
+  $ENV{DANCER_ENVDIR} = '/dev/null';
 }
 
 # for netdisco app config
