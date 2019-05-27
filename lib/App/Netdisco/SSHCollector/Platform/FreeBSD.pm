@@ -12,13 +12,15 @@ This collector uses "C<arp>" as the command for the arp utility on your
 system.  If you wish to specify an absolute path, then add an C<arp_command>
 item to your configuration:
 
- sshcollector:
-   - ip: '192.0.2.1'
-     user: oliver
-     password: letmein
-     platform: FreeBSD
-     arp_command: '/usr/sbin/arp'
-
+device_auth:
+  - tag: sshfreebsd
+    driver: cli
+    platform: FreeBSD
+    only: '192.0.2.1'
+    username: oliver
+    password: letmein
+    arp_command: '/usr/sbin/arp'
+    
 =cut
 
 use strict;
