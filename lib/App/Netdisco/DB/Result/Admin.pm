@@ -52,8 +52,6 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("job");
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
-
 =head1 RELATIONSHIPS
 
 =head2 device_skips( $backend?, $max_deferrals?, $retry_after? )

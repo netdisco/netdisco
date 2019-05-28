@@ -58,5 +58,4 @@ __PACKAGE__->has_many( nodes => 'App::Netdisco::DB::Result::Node',
     cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

@@ -41,5 +41,4 @@ __PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePortPower', {
   'foreign.ip' => 'self.ip', 'foreign.module' => 'self.module',
 } );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
