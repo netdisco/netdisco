@@ -60,5 +60,4 @@ Returns the entry from the C<device> table on which this VLAN entry was discover
 
 __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
