@@ -48,6 +48,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my $type = $i_vlan_type->{$entry};
 
       foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} || [] }) {
+          next unless $vlan;
           next if $this_port_vlans{$vlan};
           my $native = ((defined $i_vlan->{$entry})
                           and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
@@ -66,6 +67,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       }
 
       foreach my $vlan (@{ $i_vlan_membership->{$entry} || [] }) {
+          next unless $vlan;
           next if $this_port_vlans{$vlan};
           my $native = ((defined $i_vlan->{$entry})
                           and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
@@ -100,6 +102,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # add named vlans to the device
   foreach my $entry (keys %$v_name) {
       my $vlan = $v_index->{$entry};
+      next unless $vlan;
       next unless defined $vlan and $vlan;
       ++$d_seen{$vlan};
 
@@ -112,6 +115,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   # also add unnamed vlans to the device
   foreach my $vlan (keys %p_seen) {
+      next unless $vlan;
       next if $d_seen{$vlan};
       push @devicevlans, {
           vlan => $vlan,

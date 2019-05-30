@@ -189,14 +189,16 @@
         data-field="c_pvid" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
       <div class="nd_editable-cell-content">
-        [% IF row.vlan %][% row.vlan | html_entity %][% END %]
+        [% IF row.vlan AND row.vlan > 0 %][% row.vlan | html_entity %][% END %]
       </div>
       </td>
       [% ELSE %]
       <td>
+        [% IF row.vlan AND row.vlan > 0 %]
         <a class="nd_linkcell"
           href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
             [% row.vlan | html_entity %]</a>
+        [% END %]
       </td>
       [% END %]
       [% END %]
@@ -204,14 +206,16 @@
       [% IF params.c_vmember %]
       <td>
         [% IF vlans.$portname.vlan_count <= settings.devport_vlan_limit %]
+          [% SET vlan_count = vlans.$portname.vlan_count %]
           [% SET output = '' %]
           [% FOREACH vlan IN vlans.$portname.vlan_set.nsort %]
+            [% IF vlan == 0 %][% SET vlan_count = (vlan_count - 1) %][% NEXT %][% END %]
             [% SET output = output _
               '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan _ '">' _ vlan _ '</a>' %]
             [% SET output = output _ ', ' IF NOT loop.last %]
           [% END %]
-          [% IF vlans.$portname.vlan_count > 10 %] [%# TODO make this a settable variable %]
-            [% SET output = '<div class="nd_vlan-total">(' _ vlans.$portname.vlan_count
+          [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
+            [% SET output = '<div class="nd_vlan-total">(' _ vlan_count
               _ ')</div><span class="nd_linkcell nd_collapse-vlans">
                 <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
                 <div class="nd_collapsing nd_collapse-pre-hidden">' _ output %]

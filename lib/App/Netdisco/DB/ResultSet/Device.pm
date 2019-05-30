@@ -399,6 +399,8 @@ sub carrying_vlan {
     die "vlan number required for carrying_vlan\n"
       if ref {} ne ref $cond or !exists $cond->{vlan};
 
+    return $rs unless $cond->{vlan};
+
     return $rs
       ->search_rs({ 'vlans.vlan' => $cond->{vlan} },
         {
@@ -449,6 +451,7 @@ sub carrying_vlan_name {
     die "vlan name required for carrying_vlan_name\n"
       if ref {} ne ref $cond or !exists $cond->{name};
 
+    $cond->{'vlans.vlan'} = { '>' => 0 };
     $cond->{'vlans.description'} = { '-ilike' => delete $cond->{name} };
 
     return $rs

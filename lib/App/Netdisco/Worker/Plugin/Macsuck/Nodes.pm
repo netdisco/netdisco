@@ -54,8 +54,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # reverse sort allows vlan 0 entries to be included only as fallback
   foreach my $vlan (reverse sort keys %$fwtable) {
       foreach my $port (keys %{ $fwtable->{$vlan} }) {
+          my $vlabel = ($vlan ? $vlan : 'unknown');
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
-            $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
+            $device->ip, $port, $vlabel, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
           # make sure this port is UP in netdisco (unless it's a lag master,
           # because we can still see nodes without a functioning aggregate)
@@ -200,7 +201,7 @@ sub get_vlan_list {
   }
 
   debug sprintf ' [%s] macsuck - VLANs: %s', $device->ip,
-    (join ',', sort keys %vlans);
+    (join ',', sort grep {$_} keys %vlans);
 
   my @ok_vlans = ();
   foreach my $vlan (sort keys %vlans) {
@@ -240,11 +241,12 @@ sub get_vlan_list {
           next;
       }
 
-      if ($vlan == 0 or $vlan > 4094) {
+      if ($vlan > 4094) {
           debug sprintf ' [%s] macsuck - invalid VLAN number %s',
             $device->ip, $vlan;
           next;
       }
+      next if $vlan == 0; # quietly skip
 
       # check in use by a port on this device
       if (!$vlans{$vlan} && !setting('macsuck_all_vlans')) {
