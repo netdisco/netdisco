@@ -1,3 +1,25 @@
+2.042009 - 2019-05-30
+
+  [ENHANCEMENTS]
+
+  * #572 allow setting some pseudo device info such as location, contact
+  * #573 support for build within intellij IDE
+  * #585 change default for check_userlog to be false (fewer popup notifications)
+  * #586 do not show poller performance rows for still running jobs
+  * #590, #600 remove DBIx::Class::Schema::Loader remnants
+  * improve documentation for OpenSuSE installation
+  * enable tests on Perl 5.30
+
+  [BUG FIXES]
+
+  * #571 tests should not use user local config
+  * #576 HTML template fixups
+  * #577 fix bug related to hostnames comprised a-f only
+  * #581 skip storing and displaying fabricated vlan 0
+  * #584 fix for case where port has no corresponding properties row
+  * #589 only show link with highest agg speed if map links between two devices are asymmetric
+  * #594, #595, #596 fixes to DB schema PKs and defaults, and documentation
+
 2.042008 - 2019-04-30
 
   [ENHANCEMENTS]
