@@ -1,6 +1,6 @@
 language: perl
 perl:
-  - "5.28"
+  - "5.30"
   - "5.10"
 addons:
   apt:
