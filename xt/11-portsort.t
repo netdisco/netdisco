@@ -7,7 +7,7 @@ BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 
 use Test::More;
 use Env::Path;
-use FindBin qw( $Bin );
+use FindBin qw/ $Bin /;
 
 my $phantomjs = $ENV{ND_PHANTOMJS};
 

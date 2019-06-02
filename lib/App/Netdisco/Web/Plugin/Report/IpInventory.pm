@@ -49,13 +49,13 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 \'false AS node',
                 \qq/replace( date_trunc( 'minute', age( now(), device.last_discover ) ) ::text, 'mon', 'month') AS age/
             ],
-            as => [qw( ip mac time_first time_last dns active node age)],
+            as => [qw/ ip mac time_first time_last dns active node age /],
         }
     )->hri;
 
     my $rs2 = schema('netdisco')->resultset('NodeIp')->search(
         undef,
-        {   columns   => [qw( ip mac time_first time_last dns active)],
+        {   columns   => [qw/ ip mac time_first time_last dns active /],
             '+select' => [ \'true AS node',
                            \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
                          ],
@@ -65,7 +65,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     my $rs3 = schema('netdisco')->resultset('NodeNbt')->search(
         undef,
-        {   columns   => [qw( ip mac time_first time_last )],
+        {   columns   => [qw/ ip mac time_first time_last /],
             '+select' => [
                 'nbname AS dns', 'active',
                 \'true AS node',
@@ -83,7 +83,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         my $rs4 = schema('netdisco')->resultset('Virtual::CidrIps')->search(
             undef,
             {   bind => [ $subnet->cidr ],
-                columns   => [qw( ip mac time_first time_last dns active)],
+                columns   => [qw/ ip mac time_first time_last dns active /],
                 '+select' => [ \'false AS node',
                                \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
                              ],

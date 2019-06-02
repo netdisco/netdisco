@@ -3,7 +3,7 @@ package App::Netdisco::AnyEvent::Nbtstat;
 use strict;
 use warnings;
 
-use Socket qw(AF_INET SOCK_DGRAM inet_aton sockaddr_in);
+use Socket qw/AF_INET SOCK_DGRAM inet_aton sockaddr_in/;
 use List::Util ();
 use Carp       ();
 
