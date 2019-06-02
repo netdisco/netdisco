@@ -157,7 +157,7 @@
             </span>
           </button>
           <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
-            <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
+            <span class="caret" style="border-top-color: #999; border-bottom-color: #999;"></span>
           </button>
           <ul class="dropdown-menu">
             <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>

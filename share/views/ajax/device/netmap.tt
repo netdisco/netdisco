@@ -1,4 +1,4 @@
-<div id="netmap_pane_tooltip" class="net_gobrechts_d3_force_tooltip" style="top: 0px; left: 0px;"></div>
+<div id="netmap_pane_tooltip" class="net_gobrechts_d3_force_tooltip" style="top: 0; left: 0;"></div>
 <script>
 
 // ***********************************************

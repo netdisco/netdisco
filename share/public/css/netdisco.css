@@ -554,9 +554,9 @@ div.toggle.btn-small {
   cursor: pointer;
 }
 
+/* for some reason only .add-on:first-child gets these */
 .nd_port-invert-label {
   padding: 0 !important;
-  /* for some reason only .add-on:first-child gets these */
   border-radius: 4px 0 0 4px !important;
 }
 

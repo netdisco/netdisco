@@ -97,7 +97,7 @@
         </span>
       [% ELSE %]
         <span class="nd_hand-icon">
-          <i class="icon-bullseye" data-action="bounce" style="display: none"
+          <i class="icon-bullseye" data-action="bounce" style="display: none;"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="Bounce Port"></i>
           <i class="icon-hand-up"
