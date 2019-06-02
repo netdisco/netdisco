@@ -1,5 +1,5 @@
 body {
-  padding-top: 0px !important;
+  padding-top: 0 !important;
 }
 
 #nd_search-results > li:not(.active) {
@@ -11,8 +11,8 @@ body {
 }
 
 .content, .nd_content {
-  margin-left: 0px !important;
-  margin-right: 0px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .floatThead-table {
@@ -20,6 +20,6 @@ body {
   top: 45px;
 }
 
-a:after {
+a::after {
   content: "" !important;
 }
