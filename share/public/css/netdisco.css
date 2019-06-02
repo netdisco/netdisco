@@ -1,7 +1,8 @@
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* style common to all pages in the site */
+/*
+style common to all pages in the site
+for the fixed navbar make sure content stops short of page top
+*/
 
-/* for the fixed navbar make sure content stops short of page top*/
 body {
   padding-top: 50px;
 }
@@ -20,13 +21,15 @@ body {
 
 /* careful align of navbar search button and menu */
 .nd_navbar-search-group {
-  margin-top: 0px !important;
+  margin-top: 0 !important;
 }
+
 .nd_navbar-search-icon {
   color: #999;
   padding-left: 5px;
   padding-right: 5px;
 }
+
 .nd_navbar-search-caret {
   padding-top: 10px !important;
   padding-left: 5px !important;
@@ -71,7 +74,7 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #333333;
   white-space: nowrap;
   text-decoration: none;
-  margin-top: 0px !important;
+  margin-top: 0 !important;
   width: 100%;
   text-align: left;
   margin-left: -1px;
@@ -92,13 +95,13 @@ div.content > div.tab-content table.nd_floatinghead thead {
 }
 
 .qtip-content {
-  padding-bottom: 0px;
+  padding-bottom: 0;
   line-height: 8px;
 }
 
 /* for where min-width is set but we don't want it */
 .nd_no-min-width {
-  min-width: 0px;
+  min-width: 0;
 }
 
 /* for when hidden modals interfere with mouse actions on higher elements */
@@ -116,8 +119,10 @@ div.content > div.tab-content table.nd_floatinghead thead {
   background-color: #eeeeee;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles to adjust the hero box used for homepage + login */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles to adjust the hero box used for homepage + login
+*/
 
 /* space between hero box and navbar */
 .nd_hero-row {
@@ -132,11 +137,13 @@ div.content > div.tab-content table.nd_floatinghead thead {
 /* push user/pass/login form down+away from the Netdisco banner text */
 .nd_login-form {
   margin-top: 15px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles for device inventory */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles for device inventory
+*/
 
 .nd_inventory-table-head {
   text-align: center;
@@ -145,13 +152,15 @@ div.content > div.tab-content table.nd_floatinghead thead {
   margin-bottom: 3px;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles for links in results tables */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles for links in results tables
+*/
 
 /* make the whole cell become a hyperlink in results table */
 .nd_linkcell {
   display: block;
-  padding: 0px;
+  padding: 0;
   height: 100%;
 }
 
@@ -165,11 +174,13 @@ div.content > div.tab-content table.nd_floatinghead thead {
 .nd_this-port-only {
   margin-right: 15px;
 }
+
 /* nudge cell content to the right when port_control controls are enabled */
 .nd_editable-cell > .nd_this-port-only {
   margin-left: 14px;
   margin-right: 60px;
 }
+
 .nd_editable-cell > .nd_port-only-first {
   margin-left: 5px;
 }
@@ -178,8 +189,10 @@ div.content > div.tab-content table.nd_floatinghead thead {
   margin-right: 25px;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles to position table cell content */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles to position table cell content
+*/
 
 .table td {
   vertical-align: baseline;
@@ -200,7 +213,7 @@ td.nd_devport-icon i {
 
 /* fix layout of form fields inside the (topology) table */
 td div.input-append {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 /* admin buttons in the device details view */
@@ -210,7 +223,7 @@ td > form.nd_inline-form {
 
 /* fix layout of form fields inside the (pseudo devices) table */
 .nd_center-cell input {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 /* with two forms inside one cell, make the submit buttons side-by-side */
@@ -218,9 +231,10 @@ td > form.nd_inline-form {
   display: inline;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles for "tabs" and surrounding content */
-
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles for "tabs" and surrounding content
+*/
 
 /* add a small bottom margin (gutter) below all pages */
 #nd_search-results {
@@ -230,7 +244,7 @@ td > form.nd_inline-form {
 /* for any label which we want to appear alongside tabs, floated to the right */
 #nd_device-name {
   float: right;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   margin-top: 9px;
   font-weight: bold;
   color: #6D5720;
@@ -252,13 +266,15 @@ td > form.nd_inline-form {
 
 /* when there's only one tab (report, task etc) change the text color */
 .nd_single-tab {
-  color: rgb(187,112,0) !important;
+  color: rgb(187, 112, 0) !important;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* style for port_control controls */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+style for port_control controls
+*/
 
-/* edit icon in details tab is in the label (not content) cell so nudge to RHS*/
+/* edit icon in details tab is in the label (not content) cell so nudge to RHS */
 .nd_device-details-edit {
   float: right !important;
   font-size: 14px;
@@ -285,6 +301,7 @@ td > form.nd_inline-form {
   margin-top: 2px;
   position: relative;
 }
+
 .nd_log-icon:hover, .nd_log-icon:focus {
   text-decoration: none;
   color: black;
@@ -311,8 +328,10 @@ td > form.nd_inline-form {
   background: #FFFFD3 !important;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles for collapsing lists - sidebar or main table cell content */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles for collapsing lists - sidebar or main table cell content
+ */
 
 /* sidebar collapser is clickable and deep grey */
 .nd_collapser {
@@ -352,8 +371,10 @@ td > form.nd_inline-form {
   color: #555;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles for sidebar placement and sizing */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles for sidebar placement and sizing
+*/
 
 /* make the sidebar fixed on the screen */
 .container-fluid > .nd_sidebar {
@@ -365,9 +386,9 @@ td > form.nd_inline-form {
 
 /* nudge content in the sidebar closer to the left */
 .nd_sidebar-form {
-  padding-left: 0px;
+  padding-left: 0;
   margin-top: -9px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 /* reduce padding at the bottom of the sidebar content */
@@ -378,18 +399,20 @@ td > form.nd_inline-form {
 /* pull tab content away from the sidebar */
 .container-fluid > .content {
   margin-right: 215px;
-  margin-left: 0px;
+  margin-left: 0;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* styles for sidebar position controls (collapse, pin) */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+styles for sidebar position controls (collapse, pin)
+*/
 
 .nd_sidebar-pinned {
   position: fixed !important;
 }
 
 .nd_sidebar-pin-clicked {
-  color: rgba(255,0,0,0.8) !important;
+  color: rgba(255, 0, 0, 0.8) !important;
 }
 
 .nd_sidebar-pin {
@@ -429,15 +452,17 @@ td > form.nd_inline-form {
   display: none;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* style customization for many items which appear in the sidebar */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+style customization for many items which appear in the sidebar
+*/
 
 /* horizontal rule */
 .nd_sidebar-hr {
   color: black;
   background-color: black;
   height: 2px;
-  margin: 12px 0px 12px 0px;
+  margin: 12px 0 12px 0;
 }
 
 /* text in the sidebar */
@@ -457,6 +482,7 @@ td > form.nd_inline-form {
 .tooltip-wrapper {
   display: inline-block;
 }
+
 .tooltip-wrapper .input[disabled] {
   pointer-events: none;
 }
@@ -466,9 +492,11 @@ td > form.nd_inline-form {
   margin-left: 5px;
   margin-bottom: -7px;
 }
+
 #nd_vlan-label-text {
   vertical-align: text-bottom;
 }
+
 #nd_vlan-entry {
   width: 45px;
 }
@@ -505,12 +533,12 @@ div.toggle.btn-small {
 /* fixup for prepended partial port name checkbox in sidebar */
 .nd_port-partial-checkbox {
   width: 84px;
-  padding: 0px 0px 0px 5px !important;
+  padding: 0 0 0 5px !important;
   cursor: pointer;
 }
 
 .nd_port-partial-label {
-  padding: 0px !important;
+  padding: 0 !important;
 }
 
 .nd_port-partial {
@@ -522,15 +550,13 @@ div.toggle.btn-small {
 /* fixup for prepended invert port name checkbox in sidebar */
 .nd_port-invert-checkbox {
   width: 30px;
-  padding: 0px 0px 0px 5px !important;
+  padding: 0 0 0 5px !important;
   cursor: pointer;
 }
 
 .nd_port-invert-label {
-  padding: 0px !important;
+  padding: 0 !important;
   /* for some reason only .add-on:first-child gets these */
-  -webkit-border-radius: 4px 0 0 4px !important;
-  -moz-border-radius: 4px 0 0 4px !important;
   border-radius: 4px 0 0 4px !important;
 }
 
@@ -543,7 +569,7 @@ div.toggle.btn-small {
 /* fixup for prepended checkbox in sidebar */
 .nd_sidebar .input-prepend {
   margin-left: -2px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 /* for some reason bootstrap 2.1.0 displays add-on as block - no check supprt? */
@@ -568,6 +594,7 @@ div.toggle.btn-small {
   margin-left: 5px !important;
   width: 152px;
 }
+
 .nd_sidebar-topinput {
   margin-left: 5px !important;
   width: 152px;
@@ -621,6 +648,7 @@ div.toggle.btn-small {
 #nd_colorby {
   width: 107px;
 }
+
 #nd_colorby-label-text {
   vertical-align: bottom;
   line-height: 2;
@@ -637,6 +665,7 @@ div.toggle.btn-small {
 .nd_sidebar-btn-drop {
   width: 138px;
 }
+
 .nd_sidebar-btn-drop-drop {
   height: 28px;
   width: 28px;
@@ -648,7 +677,7 @@ div.toggle.btn-small {
   margin-left: 140px;
   margin-top: 5px;
   z-index: 1;
-  padding: 0px;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -663,7 +692,8 @@ div.toggle.btn-small {
   color: #3A87AD;
 }
 
- /* same for the ports form, but the positioning is slightly different */
+/* same for the ports form, but the positioning is slightly different */
+
 #ports_form .nd_field-clear-icon {
   margin-left: 149px;
   margin-top: 5px;
@@ -673,6 +703,7 @@ div.toggle.btn-small {
 form .clearfix.success select {
   background-color: #A9DBA9;
 }
+
 form .clearfix.success input {
   background-color: #A9DBA9;
 }
@@ -692,7 +723,7 @@ form .clearfix.success input {
 }
 
 .nd_netmap-sidebar {
-  margin-top: 0px;
+  margin-top: 0;
   margin-left: -5px;
 }
 
@@ -708,8 +739,10 @@ form .clearfix.success input {
   margin-left: 22px;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* D3 SVG */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D3 SVG
+*/
 
 /*
 .node circle {
@@ -736,8 +769,10 @@ form .clearfix.success input {
 }
 */
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* dataTables */
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dataTables
+*/
 
 div.nd_datatables-pager {
   float: left;
