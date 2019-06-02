@@ -1,3 +1,9 @@
+2.042010 - 2019-06-02
+
+  [BUG FIXES]
+
+  * #601 fix job queue no longer shows running or queued jobs
+
 2.042009 - 2019-05-30
 
   [ENHANCEMENTS]

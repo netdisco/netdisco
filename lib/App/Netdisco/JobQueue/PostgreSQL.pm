@@ -271,7 +271,10 @@ sub jq_complete {
 
 sub jq_log {
   return schema('netdisco')->resultset('Admin')->search({
-    'me.log' => { '-not_like' => 'duplicate of %' },
+    -or => [
+      { 'me.log' => undef },
+      { 'me.log' => { '-not_like' => 'duplicate of %' } },
+    ],
   }, {
     prefetch => 'target',
     order_by => { -desc => [qw/entered device action/] },
