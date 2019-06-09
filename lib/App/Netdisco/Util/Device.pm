@@ -11,6 +11,7 @@ our @EXPORT_OK = qw/
   delete_device
   renumber_device
   match_to_setting
+  device_ips_matching device_ips_not_matching
   is_discoverable is_discoverable_now
   is_arpnipable   is_arpnipable_now
   is_macsuckable  is_macsuckable_now
@@ -142,6 +143,23 @@ sub match_to_setting {
     return 0 unless $type and $setting_name;
     return (scalar grep {$type =~ m/$_/}
                         @{setting($setting_name) || []});
+}
+
+=head2 device_ips_matching( $setting_name | $acl_entry | \@acl, @IPs? )
+
+Returns a list of Device IPs that match the given ACL. If the ACL is
+missing then no device IPs will be returned. If the C< @IPs > list is
+provided then it will be used otherwise the current devices in Netdisco's
+database will be used as the source list.
+
+=cut
+
+sub device_ips_matching {
+    my ($acl, @ips) = @_;
+    return () unless $acl;
+    my $config = (exists config->{"$acl"} ? setting($acl) : $acl);
+    my @startlist = (scalar @ips ? @ips :
+      schema('netdisco')->resultset('Device')->get_column('ip')->all);
 }
 
 sub _bail_msg { debug $_[0]; return 0; }

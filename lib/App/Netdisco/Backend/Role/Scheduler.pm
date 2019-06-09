@@ -2,9 +2,10 @@ package App::Netdisco::Backend::Role::Scheduler;
 
 use Dancer qw/:moose :syntax :script/;
 
-use NetAddr::IP;
 use Algorithm::Cron;
 use App::Netdisco::Util::MCE;
+use App::Netdisco::Util::Device
+  qw/device_ips_matching device_ips_not_matching/;
 use App::Netdisco::JobQueue qw/jq_insert/;
 
 use Role::Tiny;
@@ -68,14 +69,12 @@ sub worker_body {
             $win_start, $win_end, $sched->{when}->next_time($win_start);
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
-          my $net = NetAddr::IP->new($sched->{device});
-          next if ($sched->{device}
-            and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
+          my @hostlist = device_ips_not_matching($sched->{no},
+            device_ips_matching($sched->{device} || $sched->{only}));
 
-          my @hostlist = map { (ref $_) ? $_->addr : undef }
-            (defined $sched->{device} ? ($net->hostenum) : (undef));
+# TODO work for actions without a host/device
+
           my @job_specs = ();
-
           foreach my $host (@hostlist) {
             push @job_specs, {
               action => $real_action,
