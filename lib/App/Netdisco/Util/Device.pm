@@ -2,7 +2,8 @@ package App::Netdisco::Util::Device;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission
+  qw/check_acl_no check_acl_only acl_to_where_clause/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -11,7 +12,7 @@ our @EXPORT_OK = qw/
   delete_device
   renumber_device
   match_to_setting
-  device_ips_matching device_ips_not_matching
+  device_ips_matching
   is_discoverable is_discoverable_now
   is_arpnipable   is_arpnipable_now
   is_macsuckable  is_macsuckable_now
@@ -145,21 +146,25 @@ sub match_to_setting {
                         @{setting($setting_name) || []});
 }
 
-=head2 device_ips_matching( $setting_name | $acl_entry | \@acl, @IPs? )
+=head2 device_ips_matching( $setting_name | $acl_entry | \@acl, ... )
 
-Returns a list of Device IPs that match the given ACL. If the ACL is
-missing then no device IPs will be returned. If the C< @IPs > list is
-provided then it will be used otherwise the current devices in Netdisco's
-database will be used as the source list.
+Returns a list of Device IPs that match the given ACL. If the ACL is missing
+then no device IPs will be returned. If a second ACL is also passed then that
+will work as an exclusion list applied at the same time.
 
 =cut
 
 sub device_ips_matching {
-    my ($acl, @ips) = @_;
-    return () unless $acl;
-    my $config = (exists config->{"$acl"} ? setting($acl) : $acl);
-    my @startlist = (scalar @ips ? @ips :
-      schema('netdisco')->resultset('Device')->get_column('ip')->all);
+    my ($acl_only, $acl_no) = @_;
+    return () unless $acl_only;
+    my $only = acl_to_where_clause($acl_only);
+    my $no   = acl_to_where_clause($acl_no);
+    my $no_query = schema('netdisco')->resultset('Device')
+      ->search({ $no }, { select => ['ip'] });
+
+    return schema('netdisco')->resultset('Device')->search({ $only,
+      ($no ? { ip => { -not_in => $no_query->as_query } } : ()) })
+      ->get_column('ip')->all;
 }
 
 sub _bail_msg { debug $_[0]; return 0; }
