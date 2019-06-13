@@ -168,8 +168,9 @@ ajax '/ajax/content/search/node' => require_login sub {
         else {
             $set = schema('netdisco')->resultset('NodeIp')
               ->search_by_dns({
-                  dns => $likeval,
-                  suffix => setting('domain_suffix'),
+                  ($using_wildcards ? (dns => $likeval) :
+                  (dns => "${likeval}.\%",
+                   suffix => setting('domain_suffix'))),
                   @active,
                   @times,
                 });
