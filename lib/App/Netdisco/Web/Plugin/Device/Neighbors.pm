@@ -121,9 +121,9 @@ sub make_node_infostring {
 sub make_link_infostring {
   my $link = shift or return '';
 
-  my $domain = quotemeta( setting('domain_suffix') || '' );
-  (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domain$//;
-  (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domain$//;
+  my $domains = setting('domain_suffix');
+  (my $left_name = lc($link->{left_dns} || $link->{left_name} || $link->{left_ip})) =~ s/$domains//;
+  (my $right_name = lc($link->{right_dns} || $link->{right_name} || $link->{right_ip})) =~ s/$domains//;
 
   my @zipped = List::MoreUtils::zip6
     @{$link->{left_port}}, @{$link->{left_descr}},
@@ -163,7 +163,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     my %logvals = ();
     my %metadata = ();
     my %data = ( nodes => [], links => [] );
-    my $domain = quotemeta( setting('domain_suffix') || '' );
+    my $domains = setting('domain_suffix');
 
     # LINKS
 
@@ -236,7 +236,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
                           keys %{ setting('host_group_displaynames') || {} };
 
       ++$logvals{ $device->get_column('log') || 1 };
-      (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domain$//;
+      (my $name = lc($device->dns || $device->name || $device->ip)) =~ s/$domains//;
 
       my %color_lkp = (
         speed => (($device->get_column('log') || 1) * 1000),
