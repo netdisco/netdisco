@@ -8,6 +8,11 @@
 
 <!-- everything else about Netdisco's behaviour is good, here :-D -->
 
+<!--- when including netdisco config snippets, whitespace matters since it's a yaml file -->
+<!--- for github issues it really helps if you include the relevant config parts in a codeblock (code fencing) -->
+<!--- see the "code" subject on https://guides.github.com/features/mastering-markdown/ for that) -->
+<!--- this should preserve spaces in the issue tracker and make troubleshooting quicker -->
+
 ## Expected Behavior
 <!--- If you're describing a bug, tell us what should happen -->
 <!--- If you're suggesting a change/improvement, tell us how it should work -->
