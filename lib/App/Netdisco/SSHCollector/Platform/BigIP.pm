@@ -34,7 +34,7 @@ use Moo;
 Retrieve ARP entries from device. C<$host> is the hostname or IP address
 of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
-Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
+Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADDR }>.
 
 =back
 
