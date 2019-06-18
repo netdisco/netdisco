@@ -7,21 +7,21 @@ App::Netdisco::SSHCollector::Platform::GAIAEmbedded
 =head1 DESCRIPTION
 
 Collect ARP entries from Checkpoint GAIA embedded Systems
-To get this Plugin to work you have to add an User like 'netdisco' with
-'Network admin' right in the GAIA embedded OS 
+To get this Plugin to work you have to add a user like 'netdisco' with
+'Network admin' rights in the GAIA embedded OS.
 
 This collector uses "C<arp>" as the command for the arp utility on your
-system.  If you wish to specify an absolute path, then add an C<arp_command>
+system. If you wish to specify an absolute path, then add an C<arp_command>
 item to your configuration:
 
-device_auth:
-  - tag: sshgaia
-    driver: cli
-    platform: GAIAEmbedded
-    only: '192.0.2.1'
-    username: oliver
-    password: letmein
-    arp_command: 'arp'
+ device_auth:
+   - tag: sshgaia
+     driver: cli
+     platform: GAIAEmbedded
+     only: '192.0.2.1'
+     username: oliver
+     password: letmein
+     arp_command: 'arp'
 
 =cut
 
@@ -41,7 +41,7 @@ use Moo;
 Retrieve ARP entries from device. C<$host> is the hostname or IP address
 of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
-Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
+Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADDR }>.
 
 =back
 
