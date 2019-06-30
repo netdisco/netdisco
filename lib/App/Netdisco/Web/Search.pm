@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web 'sql_match';
+use Regexp::Common 'net';
 use NetAddr::MAC ();
 
 hook 'before_template' => sub {
@@ -39,7 +40,11 @@ get '/search' => require_login sub {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
             my ($likeval, $likeclause) = sql_match($q);
             my $mac = NetAddr::MAC->new($q);
-            undef $mac if ($mac and $mac->as_ieee and ($mac->as_ieee eq '00:00:00:00'));
+
+            undef $mac if
+              ($mac and $mac->as_ieee
+              and (($mac->as_ieee eq '00:00:00:00')
+                or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
             if ($nd and $nd->count) {
                 if ($nd->count == 1) {

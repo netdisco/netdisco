@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP::Lite ':lower';
+use Regexp::Common 'net';
 use NetAddr::MAC ();
 
 use App::Netdisco::Web::Plugin;
@@ -23,10 +24,14 @@ ajax '/ajax/content/search/node' => require_login sub {
     my ( $start, $end ) = param('daterange') =~ m/(\d+-\d+-\d+)/gmx;
 
     my $mac = NetAddr::MAC->new(mac => $node);
-    undef $mac if ($mac and $mac->as_ieee and ($mac->as_ieee eq '00:00:00:00'));
-    my @active = (param('archived') ? () : (-bool => 'active'));
+    undef $mac if
+      ($mac and $mac->as_ieee
+      and (($mac->as_ieee eq '00:00:00:00')
+        or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
+    my @active = (param('archived') ? () : (-bool => 'active'));
     my (@times, @wifitimes, @porttimes);
+
     if ( $start and $end ) {
         $start = $start . ' 00:00:00';
         $end   = $end   . ' 23:59:59';
