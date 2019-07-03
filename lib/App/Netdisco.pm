@@ -100,7 +100,7 @@ will take about 250MB including MIB files.
  root:~# useradd -m -p x -s /bin/bash netdisco
 
 Netdisco uses the PostgreSQL database server. Install PostgreSQL (at least
-version 8.4) and then change to the PostgreSQL superuser (usually
+version 9.4) and then change to the PostgreSQL superuser (usually
 C<postgres>). Create a new database and PostgreSQL user for the Netdisco
 application:
 
