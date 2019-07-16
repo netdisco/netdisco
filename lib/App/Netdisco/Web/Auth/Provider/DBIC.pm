@@ -15,6 +15,10 @@ use Digest::MD5;
 use Net::LDAP;
 use Try::Tiny;
 
+if (setting('radius') and ref {} eq ref setting('radius')) {
+    use Authen::Radius;
+    }
+
 sub authenticate_user {
     my ($self, $username, $password) = @_;
     return unless defined $username;
@@ -103,9 +107,21 @@ sub match_password {
     my $settings = $self->realm_settings;
     my $username_column = $settings->{users_username_column} || 'username';
 
-    return $user->ldap
-      ? $self->match_with_ldap($password, $user->$username_column)
-      : $self->match_with_local_pass($password, $user);
+#    return $user->ldap
+#      ? $self->match_with_ldap($password, $user->$username_column)
+#      : $self->match_with_local_pass($password, $user);
+    my $pwmatch_result=0;
+    my $username = $user->$username_column;
+
+    if ($user->ldap) {
+      $pwmatch_result = $self->match_with_ldap($password, $user->$username_column);
+    } else {
+      if ( setting('radius') and ref {} eq ref setting('radius') ) {
+        $pwmatch_result =       ( $self->match_with_radius($password, $username) || $self->match_with_local_pass($password, $user) );
+      } else {
+        $pwmatch_result = $self->match_with_local_pass($password, $user);
+      }
+   }
 }
 
 sub match_with_local_pass {
@@ -214,5 +230,21 @@ sub _ldap_search {
 
     return undef;
 }
-
+sub match_with_radius {
+   my($self, $pass, $user) = @_;
+   return unless setting('radius') and ref {} eq ref setting('radius');
+   my $conf = setting('radius');
+   my $radius = new Authen::Radius(Host => $conf->{server}, Secret => $conf->{secret});
+      Authen::Radius->load_dictionary();
+   $radius->add_attributes(
+      { Name=> 'User-Name', Value => $user },
+      { Name=> 'User-Password', Value => $pass },
+      { Name => 'h323-return-code', Value => '0' }, # Cisco AV pair
+      { Name => 'Digest-Attributes', Value => { Method => 'REGISTER' } }
+    );
+    $radius->send_packet(ACCESS_REQUEST);
+    my $type = $radius->recv_packet();
+    my $radius_return = ($type eq ACCESS_ACCEPT)?1:0;
+    return $radius_return;
+}
 1;
