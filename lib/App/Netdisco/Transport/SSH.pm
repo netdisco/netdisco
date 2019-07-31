@@ -79,6 +79,8 @@ sub session_for {
     $device->ip,
     user => $auth->{username},
     password => $auth->{password},
+    key_path => $auth->{identity_file},
+    passphrase => $auth->{identity_pass},
     timeout => 30,
     async => 0,
     default_stderr_file => '/dev/null',
