@@ -244,7 +244,7 @@
                 <i class="icon-off nd_power-on"></i>
             [% END %]
                 <span>
-                [% IF row.power.power > 0 %]
+                [% IF row.power.power AND row.power.power > 0 %]
                   [% row.power.power | html_entity %]&nbsp;mW
                 [% ELSE %]
                   ([% row.power.status | html_entity %])
