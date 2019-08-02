@@ -43,7 +43,7 @@ get '/search' => require_login sub {
 
             undef $mac if
               ($mac and $mac->as_ieee
-              and (($mac->as_ieee eq '00:00:00:00')
+              and (($mac->as_ieee eq '00:00:00:00:00:00')
                 or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
             if ($nd and $nd->count) {
