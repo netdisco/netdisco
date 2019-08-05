@@ -26,7 +26,7 @@ ajax '/ajax/content/search/node' => require_login sub {
     my $mac = NetAddr::MAC->new(mac => $node);
     undef $mac if
       ($mac and $mac->as_ieee
-      and (($mac->as_ieee eq '00:00:00:00')
+      and (($mac->as_ieee eq '00:00:00:00:00:00')
         or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
     my @active = (param('archived') ? () : (-bool => 'active'));
