@@ -71,7 +71,8 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 Netdisco has several Perl library dependencies which will be automatically
 installed. However it's required that you first install the following
-operating system packages:
+operating system packages, if not the installation will most likely fail
+further down the road.
 
 On Ubuntu/Debian:
 
