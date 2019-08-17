@@ -252,7 +252,7 @@ Then the process below should be run for each installation:
 
 The main black navigation bar has a search box which is smart enough to work
 out what you're looking for in most cases. For example device names, node IP
-or MAC addreses, VLAN numbers, and so on.
+or MAC addresses, VLAN numbers, and so on.
 
 =head2 Command-Line Device and Port Actions
 

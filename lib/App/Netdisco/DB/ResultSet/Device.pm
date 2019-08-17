@@ -187,11 +187,11 @@ Will match exactly the C<model> field.
 
 =item os
 
-Will match exactly the C<os> field, which is the operating sytem.
+Will match exactly the C<os> field, which is the operating system.
 
 =item os_ver
 
-Will match exactly the C<os_ver> field, which is the operating sytem software version.
+Will match exactly the C<os_ver> field, which is the operating system software version.
 
 =item vendor
 

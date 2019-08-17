@@ -38,7 +38,7 @@ sub get_distinct_col {
 
 Returns a ResultSet for DataTables Server-side processing which populates
 the displayed table.  Evaluates the supplied query parameters for filtering,
-paging, and ordering information.  Note: query paramters are expected to be
+paging, and ordering information.  Note: query parameters are expected to be
 passed as a reference to an expanded hash of hashes.
 
 Filtering if present, will generate simple LIKE matching conditions for each
@@ -75,7 +75,7 @@ sub get_datatables_data {
 Returns the total records, after filtering (i.e. the total number of
 records after filtering has been applied - not just the number of records
 being returned for this page of data) for a datatables ResultSet and
-query parameters.  Note: query paramters are expected to be passed as a
+query parameters.  Note: query parameters are expected to be passed as a
 reference to an expanded hash of hashes.
 
 =cut
