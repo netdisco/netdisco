@@ -1,7 +1,5 @@
 package App::Netdisco::SSHCollector::Platform::ACE;
 
-# vim: set expandtab tabstop=8 softtabstop=4 shiftwidth=4:
-
 =head1 NAME
 
 App::Netdisco::SSHCollector::Platform::ACE
@@ -13,7 +11,7 @@ virtual contexts with individual ARP tables. Contexts are enumerated
 with C<show context>, afterwards the commands C<changeto CONTEXTNAME> and
 C<show arp> must be executed for every context.
 
-The IOS shell does not permit to combine mulitple commands in a single
+The IOS shell does not permit to combine multiple commands in a single
 line, and Net::OpenSSH uses individual connections for individual commands,
 so we need to use Expect to execute the changeto and show commands in
 the same context.
