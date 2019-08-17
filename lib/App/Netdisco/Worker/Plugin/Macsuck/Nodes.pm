@@ -105,7 +105,7 @@ All four fields in the tuple are required. If you don't know the VLAN ID,
 Netdisco supports using ID "0".
 
 Optionally, a fifth argument can be the literal string passed to the time_last
-field of the database record. If not provided, it defauls to C<now()>.
+field of the database record. If not provided, it defaults to C<now()>.
 
 =cut
 
