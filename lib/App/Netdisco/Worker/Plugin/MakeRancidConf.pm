@@ -189,7 +189,7 @@ email config and creating the repository with C<rancid-cvs>.
 =head2 C<rancid_conf>
 
 The location where the rancid configuration (F<rancid.types.base> and
-F<rancid.types.conf>) is installed. It will be used to check the existance
+F<rancid.types.conf>) is installed. It will be used to check the existence
 of device types before exporting the devices to the rancid configuration. If no match
 is found the device will not be added to rancid.
 
