@@ -78,7 +78,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   debug sprintf ' [%s] macsuck - %s updated forwarding table entries',
     $device->ip, $total_nodes;
 
-  # a use for $now ... need to archive dissapeared nodes
+  # a use for $now ... need to archive disappeared nodes
   my $archived = 0;
 
   if (setting('node_freshness')) {
