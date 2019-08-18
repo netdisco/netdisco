@@ -233,7 +233,9 @@ sub match_with_radius {
 
   my $conf = setting('radius');
   my $radius = Authen::Radius->new(Host => $conf->{server}, Secret => $conf->{secret});
-  Authen::Radius->load_dictionary();
+  # my $dict_dir = Path::Class::Dir->new( dist_dir('App-Netdisco') )
+  #   ->subdir('radius_dictionaries')->stringify;
+  Authen::Radius->load_dictionary(); # put $dict_dir in here once it's useful
 
   $radius->add_attributes(
      { Name => 'User-Name',         Value => $user },
