@@ -96,14 +96,22 @@ sub only_free_ports {
     ->search_rs($cond, $attrs)
     ->search(
       {
-        'me.up' => { '!=' => 'up' },
-      },{
-        where =>
-          \["age(now(), to_timestamp(extract(epoch from device.last_discover) "
-                ."- (device.uptime - me.lastchange)/100)) "
-              ."> ?::interval",
+        'me.up_admin' => 'up',
+        'me.up'       => { '!=' => 'up' },
+        'me.type'     => { '!=' => 'propVirtual' },
+        -or => [
+          -and => [
+            \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval",
+              [{} => $interval]],
+            -or => [
+              'last_node.time_last' => undef,
+              \["age(now(), last_node.time_last) > ?::interval", [{} => $interval]],
+            ]
+          ],
+          \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval",
             [{} => $interval]],
-      join => 'device' },
+        ],
+      },{ join => [qw/device last_node/] },
     );
 }
 
