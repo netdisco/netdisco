@@ -242,6 +242,34 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
   { join_type => 'LEFT' },
 );
 
+=head2 last_node
+
+This relationship will return the last node that was seen on the port.
+
+The JOIN is of type "LEFT" in case there isn't any such node.
+
+=cut
+
+__PACKAGE__->belongs_to( last_node => 'App::Netdisco::DB::Result::Node',
+  sub {
+      my $args = shift;
+      return {
+          "$args->{foreign_alias}.mac" => { '=' =>
+             $args->{self_resultsource}->schema->resultset('Node')->search({
+               switch => { -ident => "$args->{self_alias}.ip"},
+               port   => { -ident => "$args->{self_alias}.port"}
+             },{
+               rows => 1,
+               order_by => { -desc => ['time_last'] },
+               columns => 'mac',
+               alias => 'lastnodesub'
+             })->as_query
+          }
+      };
+  },
+  { join_type => 'LEFT' },
+);
+
 =head2 vlans
 
 As compared to C<port_vlans>, this relationship returns a set of Device VLAN

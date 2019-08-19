@@ -40,7 +40,7 @@ sub with_times {
       });
 }
 
-=head2 with_free_ports
+=head2 with_is_free
 
 This is a modifier for any C<search()> (including the helpers below) which
 will add the following additional synthesized columns to the result set:
