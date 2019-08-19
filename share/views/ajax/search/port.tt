@@ -30,7 +30,7 @@ $(document).ready(function() {
             return'<i class="icon-remove"></i>';
           }
           else if (row.up_admin == "up" && (row.up != "up" && row.up != "dormant")) {
-            return '<i class="icon-circle-arrow-down text-error"></i>';
+            return '<i class="icon-arrow-down text-error"></i>';
           }
           else {
             return '<i class="icon-angle-up text-success"></i>';
