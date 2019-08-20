@@ -23,22 +23,17 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
              AND (last_node.time_last IS NULL OR (age(now(), last_node.time_last)) > ?::interval) )
         THEN 1
       WHEN ( dp.type != 'propVirtual' AND dp.up_admin = 'up' AND dp.up != 'up'
-             AND (last_node.time_last IS NULL OR
-               (age(now(), to_timestamp(extract(epoch from d.last_discover) - (d.uptime - dp.lastchange)/100)) > ?::interval)) )
+             AND (age(now(), to_timestamp(extract(epoch from d.last_discover) - (d.uptime - dp.lastchange)/100)) > ?::interval) )
         THEN 1
       ELSE 0
      END) as ports_free
    FROM device d
    LEFT JOIN device_port dp
      ON d.ip = dp.ip
-   LEFT JOIN node last_node
-    ON last_node.mac = (
-      SELECT lastnodesub.mac
-        FROM node lastnodesub
-      WHERE port = dp.port AND switch = dp.ip
-      ORDER BY time_last DESC
-        LIMIT '1'
-    )
+   LEFT JOIN
+     ( SELECT DISTINCT ON (switch, port) * FROM node
+         ORDER BY switch, port, time_last desc ) AS last_node
+     ON dp.port = last_node.port AND dp.ip = last_node.switch
    GROUP BY d.dns, d.ip
    ORDER BY d.dns, d.ip
 ENDSQL
