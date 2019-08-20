@@ -20,8 +20,9 @@ database:
 # RECOMMENDED SETTINGS
 # --------------------
 
-# SNMP community string(s)
-# ````````````````````````
+# Device authentication settings
+# define snmp communities and ssh credentials here
+# ````````````````````````````````````````````````
 device_auth:
   - tag: 'default_v2_readonly'
     community: 'public'
@@ -39,20 +40,18 @@ device_auth:
 
 
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
+#
+# SOME MORE INTERESTING SETTINGS WHERE THE DEFAULTS ARE PROBABLY OKAY
+#
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
 
 
-# ---------------------------------------------------------------
-# OTHER INTERESTING SETTINGS WHERE THE DEFAULTS ARE PROBABLY OKAY
-# ---------------------------------------------------------------
-
-# do not discover IP Phones or Wireless Access Points.
+# discover Wireless Access Points, but not IP Phones
 # usually these are visible as device neighbors but don't support
 # SNMP, which just clogs up the job queue.
 # ```````````````````````````````````````````````````````````````
-#discover_no_type:
-#  - '(?i)phone'
-#  - '(?i)(?:wap|wireless)'
+#discover_waps: true
+#discover_phones: false
 
 # this is the schedule for automatically keeping netdisco up-to-date;
 # these are good defaults, so only uncomment if needing to change.
@@ -71,6 +70,7 @@ device_auth:
 #    when: '0 8,13,21 * * *'
 #  expire:
 #    when: '30 23 * * *'
+#  makerancidconf: null
 
 # number of SNMP workers to run in parallel (in netdisco-backend).
 # the default is twice the number of CPU cores. increase this if

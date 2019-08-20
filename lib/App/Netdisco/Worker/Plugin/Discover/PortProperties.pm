@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
 use Encode;
-use App::Netdisco::Util::Device 'match_devicetype';
+use App::Netdisco::Util::Device 'match_to_setting';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -86,12 +86,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     my $remote_type = Encode::decode('UTF-8', $c_platform->{$idx} || '');
 
     $properties{ $port }->{remote_is_wap} = 'true'
-      if scalar grep {match_devicetype($_, 'wap_capabilities')} @$remote_cap
-         or match_devicetype($remote_type, 'wap_platforms');
+      if scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap
+         or match_to_setting($remote_type, 'wap_platforms');
 
     $properties{ $port }->{remote_is_phone} = 'true'
-      if scalar grep {match_devicetype($_, 'phone_capabilities')} @$remote_cap
-         or match_devicetype($remote_type, 'phone_platforms');
+      if scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap
+         or match_to_setting($remote_type, 'phone_platforms');
 
     next unless scalar grep {defined && m/^inventory$/} @{ $rem_media_cap->{$idx} };
 
@@ -99,6 +99,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{remote_model}  = $rem_model->{ $idx };
     $properties{ $port }->{remote_os_ver} = $rem_os_ver->{ $idx };
     $properties{ $port }->{remote_serial} = $rem_serial->{ $idx };
+  }
+
+  foreach my $idx (keys %$interfaces) {
+    my $port = $interfaces->{$idx} or next;
+    if (!defined $device_ports->{$port}) {
+        debug sprintf ' [%s] properties/ifindex - local port %s already skipped, ignoring',
+          $device->ip, $port;
+        next;
+    }
+
+    $properties{ $port }->{ifindex} = $idx;
   }
 
   return Status->info(" [$device] no port properties to record")

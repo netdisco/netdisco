@@ -31,14 +31,14 @@ ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
 
     schema('netdisco')->txn_do(sub {
       if (param('port')) {
-          my $a = "$action $subaction";
-          $a =~ s/-other$//;
-          $a =~ s/^portcontrol/port/;
+          my $act = "$action $subaction";
+          $act =~ s/-other$//;
+          $act =~ s/^portcontrol/port/;
 
           schema('netdisco')->resultset('DevicePortLog')->create({
             ip => param('device'),
             port => param('port'),
-            action => $a,
+            action => $act,
             username => session('logged_in_user'),
             userip => request->remote_address,
             reason => (param('reason') || 'other'),

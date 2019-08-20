@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Dancer qw/:syntax :script/;
 
-use Scalar::Util 'blessed';
+use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
@@ -35,8 +35,8 @@ undefined or empty, then C<check_acl_no> also returns false.
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
 
-See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
-contain.
+See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
+for details of what C<$acl> may contain.
 
 =cut
 
@@ -57,8 +57,8 @@ undefined or empty, then C<check_acl_only> also returns true.
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
 
-See L<App::Netdisco::Manual::Configuration> for details of what C<$acl> may
-contain.
+See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
+for details of what C<$acl> may contain.
 
 =cut
 
@@ -83,7 +83,8 @@ Accepts instances of classes representing Netdisco Devices, Netdisco Device
 IPs, and L<NetAddr::IP> family objects.
 
 There are several options for what C<< \@acl >> may contain. See
-L<App::Netdisco::Manual::Configuration> for the details.
+L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
+for the details.
 
 =cut
 
@@ -97,19 +98,26 @@ sub check_acl {
       $thing->can('ip') ? $thing->ip : (
         $thing->can('addr') ? $thing->addr : $thing )));
   }
-  return 0 if blessed $real_ip; # class we do not understand
+  return 0 if !defined $real_ip
+    or blessed $real_ip; # class we do not understand
 
   $config  = [$config] if ref [] ne ref $config;
+  my $all  = (scalar grep {$_ eq 'op:and'} @$config);
+
+  # common case of using plain IP in ACL, so string compare for speed
+  my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
+  return 1 if $find and not $all;
+
   my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
-  my $all  = (scalar grep {m/^op:and$/} @$config);
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
+  my $qref = ref qr//;
 
   INLIST: foreach (@$config) {
       my $item = $_; # must copy so that we can modify safely
-      next INLIST if $item eq 'op:and';
+      next INLIST if !defined $item or $item eq 'op:and';
 
-      if (ref qr// eq ref $item) {
+      if ($qref eq ref $item) {
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
           if ($name =~ $item) {
             return 1 if not $all;

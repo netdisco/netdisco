@@ -10,7 +10,7 @@ our @EXPORT_OK = qw/
   get_device
   delete_device
   renumber_device
-  match_devicetype
+  match_to_setting
   is_discoverable is_discoverable_now
   is_arpnipable   is_arpnipable_now
   is_macsuckable  is_macsuckable_now
@@ -100,8 +100,8 @@ sub delete_device {
 =head2 renumber_device( $current_ip, $new_ip )
 
 Will update all records in Netdisco referring to the device with
-C<$current_ip> to use C<$new_ip> instead, followed by renumbering the device
-iteself.
+C<$current_ip> to use C<$new_ip> instead, followed by renumbering the
+device itself.
 
 Returns true if the transaction completes, else returns false.
 
@@ -120,7 +120,7 @@ sub renumber_device {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
-      event => (sprintf "Renumber device %s to %s", $device->ip, $new_ip),
+      event => (sprintf "Renumber device %s to %s", $ip, $new_ip),
     });
 
     $happy = 1;
@@ -129,7 +129,7 @@ sub renumber_device {
   return $happy;
 }
 
-=head2 match_devicetype( $type, $setting_name )
+=head2 match_to_setting( $type, $setting_name )
 
 Given a C<$type> (which may be any text value), returns true if any of the
 list of regular expressions in C<$setting_name> is matched, otherwise returns
@@ -137,7 +137,7 @@ false.
 
 =cut
 
-sub match_devicetype {
+sub match_to_setting {
     my ($type, $setting_name) = @_;
     return 0 unless $type and $setting_name;
     return (scalar grep {$type =~ m/$_/}
@@ -146,7 +146,7 @@ sub match_devicetype {
 
 sub _bail_msg { debug $_[0]; return 0; }
 
-=head2 is_discoverable( $ip, $device_type? )
+=head2 is_discoverable( $ip, [$device_type, \@device_capabilities]? )
 
 Given an IP address, returns C<true> if Netdisco on this host is permitted by
 the local configuration to discover the device.
@@ -154,20 +154,32 @@ the local configuration to discover the device.
 The configuration items C<discover_no> and C<discover_only> are checked
 against the given IP.
 
-If C<$device_type> is also given, then C<discover_no_type> will also be
-checked.
+If C<$device_type> is also given, then C<discover_no_type> will be checked.
+Also respects C<discover_phones> and C<discover_waps> if either are set to
+false.
 
 Returns false if the host is not permitted to discover the target device.
 
 =cut
 
 sub is_discoverable {
-  my ($ip, $remote_type) = @_;
+  my ($ip, $remote_type, $remote_cap) = @_;
   my $device = get_device($ip) or return 0;
+  $remote_type ||= '';
+  $remote_cap  ||= [];
 
-  if (match_devicetype($remote_type, 'discover_no_type')) {
-      return _bail_msg("is_discoverable: $device matched discover_no_type");
-  }
+  return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
+    if ((not setting('discover_waps')) and
+        (match_to_setting($remote_type, 'wap_platforms') or
+         scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap));
+
+  return _bail_msg("is_discoverable: $device matches phone_platforms but discover_phones is not enabled")
+    if ((not setting('discover_phones')) and
+        (match_to_setting($remote_type, 'phone_platforms') or
+         scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap));
+
+  return _bail_msg("is_discoverable: $device matched discover_no_type")
+    if (match_to_setting($remote_type, 'discover_no_type'));
 
   return _bail_msg("is_discoverable: $device matched discover_no")
     if check_acl_no($device, 'discover_no');

@@ -14,7 +14,7 @@ __PACKAGE__->add_columns(
   "device",
   { data_type => "inet", is_nullable => 0 },
   "actionset",
-  { data_type => "text[]", is_nullable => 1, default_value => '{}' },
+  { data_type => "text[]", is_nullable => 1, default_value => \"'{}'::text[]" },
   "deferrals",
   { data_type => "integer", is_nullable => 1, default_value => '0' },
   "last_defer",

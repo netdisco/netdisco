@@ -87,7 +87,7 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 /* to be added to qtip-bootstrap class */
 .nd_qtip-unconstrained {
-  min-width: none;
+  min-width: 0;
   max-width: none;
 }
 
@@ -161,10 +161,14 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #404040;
 }
 
+/* make room for the port log icon */
+.nd_this-port-only {
+  margin-right: 15px;
+}
 /* nudge cell content to the right when port_control controls are enabled */
 .nd_editable-cell > .nd_this-port-only {
   margin-left: 14px;
-  margin-right: 35px;
+  margin-right: 60px;
 }
 .nd_editable-cell > .nd_port-only-first {
   margin-left: 5px;
@@ -268,6 +272,7 @@ td > form.nd_inline-form {
 }
 
 .nd_hand-icon {
+  position: relative;
   margin-right: 4px;
 }
 
@@ -278,6 +283,7 @@ td > form.nd_inline-form {
   float: right;
   padding-left: 10px;
   margin-top: 2px;
+  position: relative;
 }
 .nd_log-icon:hover, .nd_log-icon:focus {
   text-decoration: none;
@@ -353,7 +359,7 @@ td > form.nd_inline-form {
 .container-fluid > .nd_sidebar {
   position: absolute;
   right: 20px;
-  width: 200px;
+  width: 205px;
   left: auto;
 }
 

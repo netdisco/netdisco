@@ -15,6 +15,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
     d.ip, d.name, d.dns,
     p.port, p.name AS port_description,
     p.remote_ip, p.remote_id, p.remote_type, p.remote_port,
+    dpp.remote_is_wap, dpp.remote_is_phone,
     l.log AS comment,
     a.log, a.finished
 
@@ -23,6 +24,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
   INNER JOIN device d USING (ip)
   LEFT OUTER JOIN device_skip ds
     ON ('discover' = ANY(ds.actionset) AND p.remote_ip = ds.device)
+  LEFT OUTER JOIN device_port_properties dpp USING (ip, port)
   LEFT OUTER JOIN device_port_log l USING (ip, port)
   LEFT OUTER JOIN admin a
     ON (p.remote_ip = a.device AND a.action = 'discover')
@@ -58,6 +60,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "remote_id",
   { data_type => "text", is_nullable => 1 },
+  "remote_is_wap",
+  { data_type => "boolean", is_nullable => 1 },
+  "remote_is_phone",
+  { data_type => "boolean", is_nullable => 1 },
   "comment",
   { data_type => "text", is_nullable => 1 },
   "log",

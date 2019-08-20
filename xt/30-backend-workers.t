@@ -1,6 +1,9 @@
 #!/usr/bin/env perl
 
-use strict; use warnings FATAL => 'all';
+use strict; use warnings;
+
+BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
+
 use Test::More 0.88;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 

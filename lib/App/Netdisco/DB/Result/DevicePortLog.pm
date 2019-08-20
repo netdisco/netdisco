@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::DevicePortLog;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;

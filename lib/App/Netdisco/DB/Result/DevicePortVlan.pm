@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::DevicePortVlan;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;
@@ -18,6 +16,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "native",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
+  "egress_tag",
+  { data_type => "boolean", default_value => \"true",  is_nullable => 0 },
   "creation",
   {
     data_type     => "timestamp",
@@ -38,8 +38,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("ip", "port", "vlan", "native");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/3KLjJ3D18pGaPEaw9EU5w
 
 =head1 RELATIONSHIPS
 

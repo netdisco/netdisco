@@ -16,13 +16,13 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("macsuck skipped: $device not yet discovered")
     unless $device->in_storage;
 
-  return Status->defer("macsuck skipped: $device is pseudo-device")
+  return Status->info("macsuck skipped: $device is pseudo-device")
     if $device->is_pseudo;
 
-  return Status->defer("macsuck skipped: $device has no layer 2 capability")
+  return Status->info("macsuck skipped: $device has no layer 2 capability")
     unless $device->has_layer(2);
 
-  return Status->defer("macsuck deferred: $device is not macsuckable")
+  return Status->info("macsuck skipped: $device is not macsuckable")
     unless is_macsuckable_now($device);
 
   return Status->done('Macsuck is able to run.');

@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::User;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;
@@ -14,6 +12,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 50 },
   "password",
   { data_type => "text", is_nullable => 1 },
+  "token",
+  { data_type => "text", is_nullable => 1 },
+  "token_from",
+  { data_type => "integer", is_nullable => 1 },
   "creation",
   {
     data_type     => "timestamp",
@@ -26,6 +28,8 @@ __PACKAGE__->add_columns(
   "port_control",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "ldap",
+  { data_type => "boolean", default_value => \"false", is_nullable => 1 },
+  "radius",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "admin",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },

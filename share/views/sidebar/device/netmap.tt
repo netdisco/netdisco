@@ -13,7 +13,7 @@
               <div class="checkbox pull-left">
                 <label>
                   <input type="checkbox" name="showips" id="nd_showips"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="Show" data-off=" " data-onstyle="success">
                   <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
@@ -22,7 +22,7 @@
               <div class="checkbox pull-left">
                 <label>
                   <input type="checkbox" name="showspeed" id="nd_showspeed"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="Show" data-off=" " data-onstyle="success">
                   <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
@@ -78,8 +78,8 @@
 
             [% IF hgroup_list.size %]
             <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
-              multiple="on" name="hgroup" id="nd_hgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups"/>
+              multiple name="hgroup" id="nd_hgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
               <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                 value="[% opt.key %]">[% opt.value | html_entity %]</option>
@@ -88,8 +88,8 @@
             [% END %]
             [% IF lgroup_list.size %]
             <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
-              multiple="on" name="lgroup" id="nd_lgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations"/>
+              multiple name="lgroup" id="nd_lgroup-select"
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations">
               [% FOREACH loc IN lgroup_list %]
               <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
                 value="[% loc %]">[% loc | html_entity %]</option>
@@ -123,7 +123,7 @@
               <div class="clearfix input-prepend">
                 <label class="add-on">
                   <input type="checkbox" id="dynamicsize" name="dynamicsize"
-                    [% 'checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="dynamicsize">
                   <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>

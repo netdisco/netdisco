@@ -17,9 +17,9 @@ register_worker({ phase => 'check' }, sub {
     or return Status->error(sprintf "Unknown port name [%s] on device %s",
                               $job->port, $job->device);
 
-  my $vlan_reconfig_check = vlan_reconfig_check(vars->{'port'});
-  return Status->error("Cannot alter vlan: $vlan_reconfig_check")
-    if $vlan_reconfig_check;
+  my $port_reconfig_check = port_reconfig_check(vars->{'port'});
+  return Status->error("Cannot alter port: $port_reconfig_check")
+    if $port_reconfig_check;
 
   return Status->done('PortControl is able to run');
 });
@@ -56,7 +56,7 @@ sub _action {
   my $rv = $snmp->set_i_up_admin($data, $iid);
 
   if (!defined $rv) {
-      return Status->error(sprintf 'Failed to set [%s] up_admin to [%s] on $device: %s',
+      return Status->error(sprintf "Failed to set [%s] up_admin to [%s] on $device: %s",
                     $pn, $data, ($snmp->error || ''));
   }
 

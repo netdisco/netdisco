@@ -238,6 +238,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   # must do this after building %interfaces so that we can set is_master
   foreach my $sidx (keys %$agg_ports) {
       my $slave  = $interfaces->{$sidx} or next;
+      next unless defined $agg_ports->{$sidx}; # slave without a master?!
       my $master = $interfaces->{ $agg_ports->{$sidx} } or next;
       next unless exists $interfaces{$slave} and exists $interfaces{$master};
 

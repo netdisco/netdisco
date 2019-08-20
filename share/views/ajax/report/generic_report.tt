@@ -6,7 +6,7 @@
       [% END %]
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% FOREACH row IN results %]
     <tr>
       [% FOREACH col IN columns %]

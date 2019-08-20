@@ -1,11 +1,12 @@
 package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
-use App::Netdisco::Util::SNMP ();
+use App::Netdisco::Util::DeviceAuth ();
 use Dancer ':script';
 
 use Path::Class 'dir';
 use Net::Domain 'hostdomain';
+use File::ShareDir 'dist_dir';
 
 BEGIN {
   if (setting('include_paths') and ref [] eq ref setting('include_paths')) {
@@ -84,7 +85,9 @@ if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
   config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
 }
 # fix up device_auth (or create it from old snmp_auth and community settings)
-config->{'device_auth'} = [ App::Netdisco::Util::SNMP::fixup_device_auth() ];
+# also imports legacy sshcollector config
+config->{'device_auth'}
+  = [ App::Netdisco::Util::DeviceAuth::fixup_device_auth() ];
 
 # defaults for workers
 setting('workers')->{queue} ||= 'PostgreSQL';
@@ -201,5 +204,9 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
 
 # add system_reports onto reports
 config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
+
+# set swagger ui location
+config->{plugins}->{Swagger}->{ui_dir}
+  = dir(dist_dir('App-Netdisco'), 'swagger-ui')->absolute;
 
 true;

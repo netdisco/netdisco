@@ -16,7 +16,9 @@ get '/ajax/content/device/addresses' => require_login sub {
         = schema('netdisco')->resultset('Device')->search_for_device($q)
         or send_error( 'Bad device', 400 );
 
-    my @results = $device->device_ips->search( {}, { order_by => 'alias' } )->hri->all;
+    my @results = $device->device_ips
+      ->search( {}, { order_by => 'alias', prefetch => 'device_port' } )
+      ->hri->all;
 
     return unless scalar @results;
 

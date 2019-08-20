@@ -28,6 +28,7 @@ suggest_guest: false
 navbar_autocomplete: true
 trust_remote_user: false
 trust_x_remote_user: false
+api_token_lifetime: 3600
 #ldap:
 #  servers: []
 #  user_string: 'MYDOMAIN\%USER%'
@@ -87,6 +88,7 @@ web_plugins:
   - Device::Modules
   - Device::Neighbors
   - Device::Addresses
+  - Device::Vlans
 extra_web_plugins: []
 sidebar_defaults:
   search_node:
@@ -99,7 +101,7 @@ sidebar_defaults:
     daterange:   { default: null }
     mac_format:  { default: IEEE }
   search_port:
-    partial:     { default: null }
+    partial:     { default: checked }
     uplink:      { default: null }
     ethernet:    { default: checked }
   search_device:
@@ -192,7 +194,7 @@ port_control_reasons:
   compromised: 'System Compromised'
   other:       'Other'
   resolved:    'Issue Resolved'
-check_userlog: true
+check_userlog: false
 devport_vlan_limit: 150
 login_logo: ""
 defanged_admin: 'admin'
@@ -215,7 +217,9 @@ device_identity: []
 community: []
 community_rw: []
 device_auth: []
-get_community: ""
+use_legacy_rancidexport: false
+use_legacy_sshcollector: false
+get_credentials: ""
 bulkwalk_off: false
 bulkwalk_no: []
 bulkwalk_repeaters: 20
@@ -228,9 +232,9 @@ devices_no: []
 devices_only: []
 discover_no: []
 discover_only: []
-discover_no_type:
-  - '(?i)phone'
-  - '(?i)(?:wap|wireless)'
+discover_no_type: []
+discover_waps: true
+discover_phones: false
 discover_min_age: 0
 macsuck_no: []
 macsuck_only: []
@@ -293,7 +297,7 @@ ignore_interfaces:
   - 'Register-Tunnel\d'
   - 'Blade-Aggregation\d'
   - 'M-GigabitEthernet\d\/\d\/\d'
-  - 'Ethernet(?:-| )QOS Packet Schedu?ler'
+  - 'Ethernet(?:-| )QOS Packet Scheduler'
   - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
   - 'ii\d\/\d\/\d+'
 ignore_notpresent_types:
@@ -309,7 +313,7 @@ phone_platforms:
 wap_capabilities:
   - 'wlanAccessPoint'
 wap_platforms:
-  - '(?i:\bw?ap\b)'
+  - '(?i:\bwap\b)'
   - 'cisco\s+AIR-[L|C]?AP'
   - '-K9W8-'
 
@@ -348,6 +352,7 @@ schedule:
     when: '0 8,13,21 * * *'
   expire:
     when: '30 23 * * *'
+  makerancidconf: null
 
 job_prio:
   high:
@@ -407,13 +412,13 @@ worker_plugins:
   - 'Power'
   - 'Psql'
   - 'Renumber'
+  - 'SetUserToken'
   - 'Show'
   - 'Stats'
   - 'Vlan'
   - 'Vlan::Core'
 
 extra_worker_plugins: []
-#  - Discover::ConfigBackup::CLI
 
 driver_priority:
   restconf: 500
@@ -483,6 +488,9 @@ engines:
     INCLUDE_PATH: []
 layout: 'main'
 plugins:
+  Swagger:
+     main_api_module: 'App::Netdisco'
+     ui_url: '/swagger-ui'
   Auth::Extensible:
     no_api_change_warning: true
     no_default_pages: true

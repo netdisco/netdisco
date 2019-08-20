@@ -12,7 +12,7 @@ register_worker({ phase => 'check' }, sub {
   return Status->error('nbtstat failed: unable to interpret device param')
     unless defined $job->device;
 
-  return Status->defer(sprintf 'nbtstat deferred: %s is not macsuckable', $job->device->ip)
+  return Status->info(sprintf 'nbtstat skipped: %s is not macsuckable', $job->device->ip)
     unless is_macsuckable($job->device);
 
   return Status->done('Nbtstat is able to run.');

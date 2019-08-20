@@ -1,6 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
+
+BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 
 use Test::More;
 use Env::Path;

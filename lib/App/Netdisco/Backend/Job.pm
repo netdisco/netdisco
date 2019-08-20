@@ -70,7 +70,7 @@ sub display_name {
 
 =head2 cancel
 
-Log a status and prevent other stages from runnning.
+Log a status and prevent other stages from running.
 
 =cut
 
@@ -81,19 +81,40 @@ sub cancel {
   return Status->error($msg);
 }
 
+=head2 best_status
+
+Find the best status so far. The process is to track back from the last worker
+and find the highest scoring status, skipping the check phase.
+
+=cut
+
+sub best_status {
+  my $job = shift;
+  my $cur_level = 0;
+  my $cur_status = '';
+
+  foreach my $status (reverse @{ $job->_statuslist }) {
+    next if $status->phase
+      and $status->phase !~ m/^(?:early|main|store|late)$/;
+
+    if ($status->level >= $cur_level) {
+      $cur_level = $status->level;
+      $cur_status = $status->status;
+    }
+  }
+
+  return $cur_status;
+}
+
 =head2 finalise_status
 
 Find the best status and log it into the job's C<status> and C<log> slots.
-
-The process is to track back from the last worker and find the best status,
-which is C<done> in early or main phases, or else any status in any non-user
-phase.
 
 =cut
 
 sub finalise_status {
   my $job = shift;
-  # use DDP; p $job->_statuslist;
+  # use DDP; p $job->_statuslist;
 
   # fallback
   $job->status('error');
@@ -102,8 +123,8 @@ sub finalise_status {
   my $max_level = Status->error()->level;
 
   foreach my $status (reverse @{ $job->_statuslist }) {
-    next if $status->phase 
-      and $status->phase !~ m/^(?:check|early|main)$/;
+    next if $status->phase
+      and $status->phase !~ m/^(?:check|early|main|store|late)$/;
 
     # done() from check phase should not be the action's done()
     next if $status->phase eq 'check' and $status->is_ok;

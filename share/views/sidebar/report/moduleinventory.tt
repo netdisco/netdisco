@@ -44,8 +44,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select nd_colored-input" size="[% class_list.size > 5 ? 5 : class_list.size %]"
-                multiple="on" name="class"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Class"/>
+                multiple name="class"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Class">
                 [% FOREACH opt IN class_list %]
                 <option[% ' selected="selected"' IF class_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]

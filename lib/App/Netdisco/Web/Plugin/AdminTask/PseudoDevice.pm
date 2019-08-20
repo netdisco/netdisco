@@ -36,6 +36,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
           ip => param('ip'),
           dns => param('dns'),
           vendor => 'netdisco',
+          layers => '00000100',
           last_discover => \'now()',
         });
       return unless $device;
@@ -72,9 +73,19 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
       }
       elsif (param('ports') < $count) {
           my $start = param('ports') + 1;
-          $device->ports
-            ->single({port => "Port$_"})->delete
-          for ($start .. $count);
+
+          foreach my $port ($start .. $count) {
+              $device->ports
+                ->single({port => "Port${port}"})->delete;
+
+              # clear outdated manual topology links
+              schema('netdisco')->resultset('Topology')->search({
+                -or => [
+                  { dev1 => $device->ip, port1 => "Port${port}" },
+                  { dev2 => $device->ip, port2 => "Port${port}" },
+                ],
+              })->delete;
+          }
       }
     });
 };

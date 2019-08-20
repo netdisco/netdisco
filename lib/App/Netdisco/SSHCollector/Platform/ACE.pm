@@ -1,7 +1,5 @@
 package App::Netdisco::SSHCollector::Platform::ACE;
 
-# vim: set expandtab tabstop=8 softtabstop=4 shiftwidth=4:
-
 =head1 NAME
 
 App::Netdisco::SSHCollector::Platform::ACE
@@ -13,7 +11,7 @@ virtual contexts with individual ARP tables. Contexts are enumerated
 with C<show context>, afterwards the commands C<changeto CONTEXTNAME> and
 C<show arp> must be executed for every context.
 
-The IOS shell does not permit to combine mulitple commands in a single
+The IOS shell does not permit to combine multiple commands in a single
 line, and Net::OpenSSH uses individual connections for individual commands,
 so we need to use Expect to execute the changeto and show commands in
 the same context.
@@ -36,7 +34,7 @@ use Moo;
 Retrieve ARP entries from device. C<$host> is the hostname or IP address
 of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
-Returns a list of hashrefs in the format C<{ mac => MACADDR, ip => IPADDR }>.
+Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADDR }>.
 
 =back
 

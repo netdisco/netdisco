@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::PortMAC 'get_port_macs';
-use App::Netdisco::Util::Device 'match_devicetype';
+use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Dancer::Plugin::DBIC 'schema';
@@ -54,8 +54,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # reverse sort allows vlan 0 entries to be included only as fallback
   foreach my $vlan (reverse sort keys %$fwtable) {
       foreach my $port (keys %{ $fwtable->{$vlan} }) {
+          my $vlabel = ($vlan ? $vlan : 'unknown');
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
-            $device->ip, $port, $vlan, scalar keys %{ $fwtable->{$vlan}->{$port} };
+            $device->ip, $port, $vlabel, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
           # make sure this port is UP in netdisco (unless it's a lag master,
           # because we can still see nodes without a functioning aggregate)
@@ -77,7 +78,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   debug sprintf ' [%s] macsuck - %s updated forwarding table entries',
     $device->ip, $total_nodes;
 
-  # a use for $now ... need to archive dissapeared nodes
+  # a use for $now ... need to archive disappeared nodes
   my $archived = 0;
 
   if (setting('node_freshness')) {
@@ -104,7 +105,7 @@ All four fields in the tuple are required. If you don't know the VLAN ID,
 Netdisco supports using ID "0".
 
 Optionally, a fifth argument can be the literal string passed to the time_last
-field of the database record. If not provided, it defauls to C<now()>.
+field of the database record. If not provided, it defaults to C<now()>.
 
 =cut
 
@@ -200,7 +201,7 @@ sub get_vlan_list {
   }
 
   debug sprintf ' [%s] macsuck - VLANs: %s', $device->ip,
-    (join ',', sort keys %vlans);
+    (join ',', sort grep {$_} keys %vlans);
 
   my @ok_vlans = ();
   foreach my $vlan (sort keys %vlans) {
@@ -240,11 +241,12 @@ sub get_vlan_list {
           next;
       }
 
-      if ($vlan == 0 or $vlan > 4094) {
+      if ($vlan > 4094) {
           debug sprintf ' [%s] macsuck - invalid VLAN number %s',
             $device->ip, $vlan;
           next;
       }
+      next if $vlan == 0; # quietly skip
 
       # check in use by a port on this device
       if (!$vlans{$vlan} && !setting('macsuck_all_vlans')) {
@@ -342,7 +344,7 @@ sub walk_fwtable {
       # neighbors otherwise it would kill the DB with device lookups.
       my $neigh_cannot_macsuck = eval { # can fail
         check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
-        match_devicetype($device_port->remote_type, 'macsuck_unsupported_type') };
+        match_to_setting($device_port->remote_type, 'macsuck_unsupported_type') };
 
       if ($device_port->is_uplink) {
           if ($neigh_cannot_macsuck) {

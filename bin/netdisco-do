@@ -49,11 +49,11 @@ use App::Netdisco::Util::Device 'get_device';
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($device, $port, $extra, $debug, $quiet, $queue_only, $rollback);
-my ($infotrace, $snmptrace, $sqltrace) = (0, 0, 0);
+my ($port, $extra, $debug, $quiet, $queue_only, $rollback);
+my ($devices, $infotrace, $snmptrace, $sqltrace) = ([], 0, 0, 0);
 
 my $result = GetOptions(
-  'device|d=s' => \$device,
+  'device|d=s@' => \$devices,
   'port|p=s'   => \$port,
   'extra|e=s'  => \$extra,
   'debug|D'    => \$debug,
@@ -101,14 +101,16 @@ unless ($action) {
   use Moo;
   with 'App::Netdisco::Worker::Runner';
 }
-
-my $net = NetAddr::IP->new($device);
-if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
+my @hostlist = ();
+foreach my $device (@$devices) {
+  my $net = NetAddr::IP->new($device);
+  if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
     info sprintf '%s: error - Bad host, IP or prefix: %s', $action, $device;
     exit 1;
+  }
+  push(@hostlist,$net->hostenum) if defined $device;
 }
 
-my @hostlist = defined $device ? ($net->hostenum) : (undef);
 my @job_specs = ();
 my $exitstatus =  0;
 
@@ -116,6 +118,9 @@ if (scalar @hostlist > 512) {
     info sprintf '%s: aborted - unwise to attempt %s jobs at once', $action, (scalar @hostlist);
     exit 1;
 }
+
+# some actions do not take a device parameter
+@hostlist = (undef) if 0 == scalar @hostlist;
 
 foreach my $host (@hostlist) {
   my $dev = $host ? get_device($host->addr) : undef;
@@ -203,14 +208,22 @@ pass C<action::stage> as the first argument to C<netdisco-do>, for example
 C<discover::neighbors>.
 
 Any action taking a C<device> parameter can be passed either a hostname or IP
-of any interface on a known or unknown device, or an IP prefix (subnet) which
-will cause C<netdisco-do> to run the action for all addresses in that range.
+address of any interface of a known or unknown device, or an IP prefix
+(subnet) which will cause C<netdisco-do> to run the action on all addresses in
+that range.
+
+The C<device> parameter may be passed multiple times. In this case, all
+addresses (after expanding IP Prefixes) will be handled one by one.
 
 =head2 discover
 
 Run a discover on the device (specified with C<-d>).
 
  ~/bin/netdisco-do discover -d 192.0.2.1
+
+Run a discover on two different devices (specified with C<-d>).
+
+ ~/bin/netdisco-do discover -d 192.0.2.1 -d 192.15.2.95
 
 =head2 discoverall
 
@@ -301,14 +314,30 @@ the leaf (such as C<interfaces> or C<uptime>).
 
 If you wish to test with a device class other than that discovered, prefix the
 leaf with the class short name, for example "C<Layer3::C3550::interfaces>" or
-"C<Layer2::HP::uptime>".
+"C<Layer2::HP::uptime>". Using "C<::>" as the start of the prefix will test
+against the base "C<SNMP::Info>" class.
+
+As well, SNMP OID names can be used as an argument for "C<-e>", so you can
+use C<ifName> for example, which will use the netdisco-mibs files for
+translations.
+
+All "C<-e>" parameters are case sensitive.
 
  ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces
  ~/bin/netdisco-do show -d 192.0.2.1 -e Layer2::HP::interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e ::interfaces
+ ~/bin/netdisco-do show -d 192.0.2.1 -e ifName
 
-A parameter may be passed to the C<SNMP::Info> method in the C<-p> parameter:
+A parameter may be passed to the C<SNMP::Info> method or SNMP object in the
+"C<-p>" parameter:
 
  ~/bin/netdisco-do show -d 192.0.2.1 -e has_layer -p 3
+ ~/bin/netdisco-do show -d 192.0.2.1 -e ifName -p 2
+
+The "C<-e>" parameter C<specify> will show the used configuration for the
+specified device.
+
+ ~/bin/netdisco-do show -d 192.0.2.1 -e specify
 
 =head2 psql
 
@@ -367,10 +396,22 @@ Set the PoE on/off status on a device port. Requires the C<-d> parameter
  ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
  ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
 
+=head2 makerancidconf
+
+Generates rancid configuration for known devices. See
+L<App::Netdisco::Worker::Plugin::MakeRancidConf> for configuration needs.
+
+ ~/bin/netdisco-do makerancidconf
+
 =head2 dumpconfig
 
 Will dump the loaded and parsed configuration for the application. Pass a
 specific configuration setting name to the C<-e> parameter to dump only that.
+
+Some configuration items like device_auth are evaluated against the ACL first.
+Pass a device in C<-d> to display them:
+
+ ~/bin/netdisco-do dumpconfig -d 192.0.2.1 -e device_auth
 
 =head1 DEBUG OPTIONS
 
@@ -384,7 +425,7 @@ following items in order:
 
 =item C<-D>
 
-Netdisco debug log level
+Netdisco debug log level.
 
 =item C<-I> or C<-II>
 
@@ -396,8 +437,11 @@ L<SNMP> (net-snmp) trace level (1, 2 or 3).
 
 =item C<-Q>
 
-L<DBIx::Class> trace enabled
+L<DBIx::Class> trace enabled.
 
 =back
+
+In case of issues with the colored output, setting the environment variable
+C<ANSI_COLORS_DISABLED> can be used to suppress it.
 
 =cut

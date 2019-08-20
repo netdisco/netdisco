@@ -13,8 +13,8 @@
             </div>
             <div class="clearfix">
               <select class="nd_side-select nd_colored-input" size="[% type_list.size > 8 ? 8 : type_list.size %]"
-                multiple="on" name="remote_type"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Remote Type"/>
+                multiple name="remote_type"
+                rel="tooltip" data-placement="left" data-offset="5" data-title="Remote Type">
                 [% FOREACH opt IN type_list %]
                     <option[% ' selected="selected"' IF type_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]

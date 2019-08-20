@@ -219,7 +219,7 @@ function saveMapPositions() {
     ,$("#nd_vlan-entry, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
       + '&positions=' + JSON.stringify(graph.positions())
   );
-  toastr.success('Saved map positions.');
+  // toastr.success('Saved map positions.');
 }
 
 // ***********************************************

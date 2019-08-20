@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::DevicePortWireless;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;
@@ -22,8 +20,6 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("port", "ip");
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:T5GmnCj/9BB7meiGZ3xN7g
 
 =head1 RELATIONSHIPS
 
@@ -62,5 +58,4 @@ __PACKAGE__->has_many( nodes => 'App::Netdisco::DB::Result::Node',
     cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;

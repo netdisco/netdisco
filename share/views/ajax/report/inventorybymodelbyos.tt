@@ -6,7 +6,7 @@
       <th>Count</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% FOREACH row IN results %]
     <tr>
       <td>

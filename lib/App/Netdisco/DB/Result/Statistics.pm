@@ -8,8 +8,7 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table("statistics");
 __PACKAGE__->add_columns(
   "day",
-  { data_type => "date", is_nullable => 0 },
-
+  { data_type => "date", default_value => \"CURRENT_DATE", is_nullable => 0 },
   "device_count",
   { data_type => "integer", is_nullable => 0 },
   "device_ip_count",
@@ -28,7 +27,6 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "node_active_count",
   { data_type => "integer", is_nullable => 0 },
-
   "netdisco_ver",
   { data_type => "text", is_nullable => 1 },
   "snmpinfo_ver",

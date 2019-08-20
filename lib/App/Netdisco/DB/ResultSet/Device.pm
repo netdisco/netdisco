@@ -5,7 +5,9 @@ use strict;
 use warnings;
 
 use Try::Tiny;
+use Regexp::Common 'net';
 use NetAddr::IP::Lite ':lower';
+
 require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
@@ -47,16 +49,16 @@ sub with_times {
     ->search({},
       {
         '+columns' => {
-          uptime_age => \("replace(age(timestamp 'epoch' + uptime / 100 * interval '1 second', "
+          uptime_age => \("replace(age(timestamp 'epoch' + me.uptime / 100 * interval '1 second', "
             ."timestamp '1970-01-01 00:00:00-00')::text, 'mon', 'month')"),
           first_seen_stamp    => \"to_char(me.creation, 'YYYY-MM-DD HH24:MI')",
-          last_discover_stamp => \"to_char(last_discover, 'YYYY-MM-DD HH24:MI')",
-          last_macsuck_stamp  => \"to_char(last_macsuck,  'YYYY-MM-DD HH24:MI')",
-          last_arpnip_stamp   => \"to_char(last_arpnip,   'YYYY-MM-DD HH24:MI')",
+          last_discover_stamp => \"to_char(me.last_discover, 'YYYY-MM-DD HH24:MI')",
+          last_macsuck_stamp  => \"to_char(me.last_macsuck,  'YYYY-MM-DD HH24:MI')",
+          last_arpnip_stamp   => \"to_char(me.last_arpnip,   'YYYY-MM-DD HH24:MI')",
           since_first_seen    => \"extract(epoch from (age(now(), me.creation)))",
-          since_last_discover => \"extract(epoch from (age(now(), last_discover)))",
-          since_last_macsuck  => \"extract(epoch from (age(now(), last_macsuck)))",
-          since_last_arpnip   => \"extract(epoch from (age(now(), last_arpnip)))",
+          since_last_discover => \"extract(epoch from (age(now(), me.last_discover)))",
+          since_last_macsuck  => \"extract(epoch from (age(now(), me.last_macsuck)))",
+          since_last_arpnip   => \"extract(epoch from (age(now(), me.last_arpnip)))",
         },
       });
 }
@@ -84,7 +86,7 @@ sub search_aliases {
 
     # rough approximation of IP addresses (v4 in v6 not supported).
     # this helps us avoid triggering any DNS.
-    my $by_ip = ($q =~ m{^(?:[.0-9/]+|[:0-9a-f/]+)$}i) ? 1 : 0;
+    my $by_ip = ($q =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})$}i) ? 1 : 0;
 
     my $clause;
     if ($by_ip) {
@@ -132,7 +134,7 @@ Returns only the first result of any found devices
 
 =back
 
-If not matching devices are found, C<undef> is returned.
+If no matching devices are found, C<undef> is returned.
 
 =cut
 
@@ -185,11 +187,11 @@ Will match exactly the C<model> field.
 
 =item os
 
-Will match exactly the C<os> field, which is the operating sytem.
+Will match exactly the C<os> field, which is the operating system.
 
 =item os_ver
 
-Will match exactly the C<os_ver> field, which is the operating sytem software version.
+Will match exactly the C<os_ver> field, which is the operating system software version.
 
 =item vendor
 
@@ -224,21 +226,20 @@ sub search_by_field {
     }
 
     # For Search on Layers
-    my @layer_search = ( '_', '_', '_', '_', '_', '_', '_' );
-    # @layer_search is computer indexed, left->right
     my $layers = $p->{layers};
+    my @layer_select = ();
     if ( defined $layers && ref $layers ) {
       foreach my $layer (@$layers) {
         next unless defined $layer and length($layer);
         next if ( $layer < 1 || $layer > 7 );
-        $layer_search[ $layer - 1 ] = 1;
+        push @layer_select,
+          \[ 'substring(me.layers,9-?, 1)::int = 1', $layer ];
       }
     }
     elsif ( defined $layers ) {
-      $layer_search[ $layers - 1 ] = 1;
+      push @layer_select,
+        \[ 'substring(me.layers,9-?, 1)::int = 1', $layers ];
     }
-    # the database field is in order 87654321
-    my $layer_string = join( '', reverse @layer_search );
 
     return $rs
       ->search_rs({}, $attrs)
@@ -250,8 +251,6 @@ sub search_by_field {
             { '-ilike' => "\%$p->{location}\%" }) : ()),
           ($p->{description} ? ('me.description' =>
             { '-ilike' => "\%$p->{description}\%" }) : ()),
-          ($p->{layers} ? ('me.layers' =>
-            { '-ilike' => "\%$layer_string" }) : ()),
 
           ($p->{model} ? ('me.model' =>
             { '-in' => $p->{model} }) : ()),
@@ -261,6 +260,8 @@ sub search_by_field {
             { '-in' => $p->{os_ver} }) : ()),
           ($p->{vendor} ? ('me.vendor' =>
             { '-in' => $p->{vendor} }) : ()),
+
+          ($p->{layers} ? (-or => \@layer_select) : ()),
 
           ($p->{dns} ? (
             -or => [
@@ -397,6 +398,8 @@ sub carrying_vlan {
     die "vlan number required for carrying_vlan\n"
       if ref {} ne ref $cond or !exists $cond->{vlan};
 
+    return $rs unless $cond->{vlan};
+
     return $rs
       ->search_rs({ 'vlans.vlan' => $cond->{vlan} },
         {
@@ -447,6 +450,7 @@ sub carrying_vlan_name {
     die "vlan name required for carrying_vlan_name\n"
       if ref {} ne ref $cond or !exists $cond->{name};
 
+    $cond->{'vlans.vlan'} = { '>' => 0 };
     $cond->{'vlans.description'} = { '-ilike' => delete $cond->{name} };
 
     return $rs

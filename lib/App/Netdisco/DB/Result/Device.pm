@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::Device;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;
@@ -83,8 +81,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("ip");
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:671/XuuvsO2aMB1+IRWFjg
 
 =head1 RELATIONSHIPS
 
@@ -262,19 +258,26 @@ sub renumber {
   foreach my $set (qw/
     DeviceIp
     DeviceModule
-    DevicePower
-    DeviceVlan
     DevicePort
     DevicePortLog
     DevicePortPower
+    DevicePortProperties
     DevicePortSsid
     DevicePortVlan
     DevicePortWireless
+    DevicePower
+    DeviceVlan
   /) {
     $schema->resultset($set)
       ->search({ip => $old_ip})
       ->update({ip => $new_ip});
   }
+
+  $schema->resultset('DeviceSkip')
+    ->search({device => $new_ip})->delete;
+  $schema->resultset('DeviceSkip')
+    ->search({device => $old_ip})
+    ->update({device => $new_ip});
 
   $schema->resultset('DevicePort')
     ->search({remote_ip => $old_ip})

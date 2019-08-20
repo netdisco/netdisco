@@ -11,7 +11,7 @@
       [% END %]
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% WHILE (row = ips.next) %]
     <tr>
       <td>

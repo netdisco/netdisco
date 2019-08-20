@@ -12,7 +12,7 @@
       <th class="nd_center-cell">Try Again</th>
     </tr>
   </thead>
-  </tbody>
+  <tbody>
     [% FOREACH row IN results %]
     <tr>
       <td class="nd_center-cell">[% row.backend | html_entity %]</td>

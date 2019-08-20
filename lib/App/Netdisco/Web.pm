@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
+use Dancer::Plugin::Swagger;
 
 use URI ();
 use Socket6 (); # to ensure dependency is met
@@ -66,10 +67,36 @@ if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
 
 # load cookie key from database
 setting('session_cookie_key' => undef);
-my $sessions = schema('netdisco')->resultset('Session');
-my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
-setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
+setting('session_cookie_key' => 'this_is_for_testing_only')
+  if $ENV{HARNESS_ACTIVE};
+eval {
+  my $sessions = schema('netdisco')->resultset('Session');
+  my $skey = $sessions->find({id => 'dancer_session_cookie_key'});
+  setting('session_cookie_key' => $skey->get_column('a_session')) if $skey;
+};
 Dancer::Session::Cookie::init(session);
+
+# setup for swagger API
+my $swagger = Dancer::Plugin::Swagger->instance->doc;
+$swagger->{schemes} = ['http','https'];
+$swagger->{consumes} = 'application/json';
+$swagger->{produces} = 'application/json';
+$swagger->{tags} = [
+  {name => 'Global'},
+  {name => 'Devices',
+    description => 'Operations relating to Devices (switches, routers, etc)'},
+  {name => 'Nodes',
+    description => 'Operations relating to Nodes (end-stations such as printers)'},
+  {name => 'NodeIPs',
+    description => 'Operations relating to MAC-IP mappings (IPv4 ARP and IPv6 Neighbors)'},
+];
+$swagger->{securityDefinitions} = {
+  APIKeyHeader =>
+    { type => 'apiKey', name => 'Authorization', in => 'header' },
+  BasicAuth =>
+    { type => 'basic'  },
+};
+$swagger->{security} = [ { APIKeyHeader => [] } ];
 
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
@@ -176,6 +203,16 @@ hook 'before_template' => sub {
 
     # allow hash keys with leading underscores
     $Template::Stash::PRIVATE = undef;
+};
+
+# workaround for Swagger plugin weird response body
+hook 'after' => sub {
+    my $r = shift; # a Dancer::Response
+
+    if (request->path eq '/swagger.json') {
+        $r->content( to_json( $r->content ) );
+        header('Content-Type' => 'application/json');
+    }
 };
 
 # remove empty lines from CSV response

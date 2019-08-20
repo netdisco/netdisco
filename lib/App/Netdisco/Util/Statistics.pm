@@ -34,6 +34,7 @@ sub update_stats {
   my $schema = schema('netdisco');
   eval { require SNMP::Info };
   my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
+  my $postgres_ver = pretty_version($schema->storage->dbh->{pg_server_version}, 2);
 
   # TODO: (when we have the capabilities table?)
   #  $stats{waps} = sql_scalar('device',['COUNT(*)'], {"model"=>"AIR%"});
@@ -47,10 +48,11 @@ sub update_stats {
       device_ip_count =>
         $schema->resultset('DeviceIp')->count_rs->as_query,
       device_link_count =>
+        ( $postgres_ver =~ m/^8\./ ? 0 :
         $schema->resultset('Virtual::DeviceLinks')->search(undef, {
             select => [ { coalesce => [ { sum => 'aggports' }, 0 ] } ],
             as => ['totlinks'],
-        })->get_column('totlinks')->as_query,
+        })->get_column('totlinks')->as_query ),
       device_port_count =>
         $schema->resultset('DevicePort')->count_rs->as_query,
       device_port_up_count =>
@@ -70,8 +72,7 @@ sub update_stats {
       snmpinfo_ver => $snmpinfo_ver,
       schema_ver   => $schema->schema_version,
       perl_ver     => pretty_version($], 3),
-      pg_ver       =>
-        pretty_version($schema->storage->dbh->{pg_server_version}, 2),
+      pg_ver       => $postgres_ver,
 
     }, { key => 'primary' });
   });

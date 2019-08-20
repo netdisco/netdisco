@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::NodeWireless;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;
@@ -25,9 +23,9 @@ __PACKAGE__->add_columns(
   "sigqual",
   { data_type => "integer", is_nullable => 1 },
   "rxpkt",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "bigint", is_nullable => 1 },
   "txpkt",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "bigint", is_nullable => 1 },
   "rxbyte",
   { data_type => "bigint", is_nullable => 1 },
   "txbyte",
@@ -45,8 +43,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("mac", "ssid");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3xsSiWzL85ih3vhdews8Hg
 
 =head1 RELATIONSHIPS
 

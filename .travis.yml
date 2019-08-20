@@ -1,16 +1,23 @@
 language: perl
+perl:
+  - "5.30"
+  - "5.10"
+os: linux
+dist: trusty
 addons:
   apt:
     packages:
       - libsnmp-dev
       - phantomjs
+      - graphviz 
   hosts:
     - localhost
 branches:
   only:
     - /^2\.\d{6}$/
     - 'master'
-install: true
+install:
+  - cpanm --quiet --notest PkgConfig Test::CChecker Alien::zlib::Static Alien::OpenSSL::Static Alien::SNMP
 script: |
   perl Build.PL && \
   ./Build && \
@@ -18,12 +25,12 @@ script: |
   ND_PHANTOMJS=/usr/bin/phantomjs ./Build test --test_files xt/
 notifications:
   irc:
-    on_success: always
-    on_failure: always
+    on_success: change
+    on_failure: change
     channels:
       - 'chat.freenode.net#netdisco'
-  email:
-    on_success: always
-    on_failure: always
-    recipients:
-      - 'netdisco-ng-commit@lists.sourceforge.net'
+#  email:
+#    on_success: always
+#    on_failure: always
+#    recipients:
+#      - 'netdisco-ng-commit@lists.sourceforge.net'

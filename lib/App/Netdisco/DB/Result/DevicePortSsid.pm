@@ -1,8 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::DevicePortSsid;
 
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 use strict;
 use warnings;
@@ -19,13 +17,11 @@ __PACKAGE__->add_columns(
   "broadcast",
   { data_type => "boolean", is_nullable => 1 },
   "bssid",
-  { data_type => "macaddr", is_nullable => 1 },
+  { data_type => "macaddr", is_nullable => 0 },
 );
 
-__PACKAGE__->set_primary_key("port", "ip");
+__PACKAGE__->set_primary_key("ip", "bssid", "port");
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-01-07 14:20:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zvgylKzUQtizJZCe1rEdUg
 
 =head1 RELATIONSHIPS
 
@@ -63,5 +59,4 @@ __PACKAGE__->has_many( nodes => 'App::Netdisco::DB::Result::Node',
     cascade_copy => 0, cascade_update => 0, cascade_delete => 0 },
 );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
