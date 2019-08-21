@@ -110,7 +110,7 @@ sub match_password {
     if ($user->ldap) {
       $pwmatch_result = $self->match_with_ldap($password, $username);
     }
-    elsif ($user->raidus) {
+    elsif ($user->radius) {
       $pwmatch_result = $self->match_with_radius($password, $username);
     }
     else {
