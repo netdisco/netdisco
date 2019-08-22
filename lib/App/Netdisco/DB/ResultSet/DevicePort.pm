@@ -67,12 +67,12 @@ sub with_is_free {
     ->search({},
       {
         '+columns' => { is_free =>
-          \["me.up != 'up' and "
-              ."age(now(), to_timestamp(extract(epoch from device.last_discover) "
-                ."- (device.uptime - me.lastchange)/100)) "
-              ."> ?::interval",
-            [{} => $interval]] },
-        join => 'device',
+          \["me.up = ' up' AND me.up != 'up' AND me.type != 'propVirtual' AND "
+              ."((age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval "
+              ."AND (last_node.time_last IS NULL OR age(now(), last_node.time_last) > ?::interval)) "
+              ."OR age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval)",
+            [{} => $interval],[ {} => $interval],[ {} => $interval]] },
+        join => [qw/device last_node/],
       });
 }
 
