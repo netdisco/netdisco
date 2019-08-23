@@ -226,21 +226,20 @@ sub search_by_field {
     }
 
     # For Search on Layers
-    my @layer_search = ( '_', '_', '_', '_', '_', '_', '_' );
-    # @layer_search is computer indexed, left->right
     my $layers = $p->{layers};
+    my @layer_select = ();
     if ( defined $layers && ref $layers ) {
       foreach my $layer (@$layers) {
         next unless defined $layer and length($layer);
         next if ( $layer < 1 || $layer > 7 );
-        $layer_search[ $layer - 1 ] = 1;
+        push @layer_select,
+          \[ 'substring(me.layers,9-?, 1)::int = 1', $layer ];
       }
     }
     elsif ( defined $layers ) {
-      $layer_search[ $layers - 1 ] = 1;
+      push @layer_select,
+        \[ 'substring(me.layers,9-?, 1)::int = 1', $layers ];
     }
-    # the database field is in order 87654321
-    my $layer_string = join( '', reverse @layer_search );
 
     return $rs
       ->search_rs({}, $attrs)
@@ -252,8 +251,6 @@ sub search_by_field {
             { '-ilike' => "\%$p->{location}\%" }) : ()),
           ($p->{description} ? ('me.description' =>
             { '-ilike' => "\%$p->{description}\%" }) : ()),
-          ($p->{layers} ? ('me.layers' =>
-            { '-ilike' => "\%$layer_string" }) : ()),
 
           ($p->{model} ? ('me.model' =>
             { '-in' => $p->{model} }) : ()),
@@ -263,6 +260,8 @@ sub search_by_field {
             { '-in' => $p->{os_ver} }) : ()),
           ($p->{vendor} ? ('me.vendor' =>
             { '-in' => $p->{vendor} }) : ()),
+
+          ($p->{layers} ? (-or => \@layer_select) : ()),
 
           ($p->{dns} ? (
             -or => [

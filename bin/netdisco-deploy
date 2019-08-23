@@ -257,7 +257,7 @@ sub deploy_oui {
   print color 'reset';
 }
 
-# This subroutine is from Wireshark's make-manuf
+# This subroutine is baed on Wireshark's make-manuf
 # http://anonsvn.wireshark.org/wireshark/trunk/tools/make-manuf
 sub shorten {
     my $manuf = shift;
@@ -271,22 +271,27 @@ sub shorten {
     # & isn't needed when Standalone
     $manuf =~ s/ \& / /g;
 
+    # remove junk whitespace
+    $manuf =~ s/\s+/ /g;
+
     # Remove any "the", "inc", "plc" ...
     $manuf
-        =~ s/\s(the|inc|incorporated|plc|systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
+        =~ s/\s(?:the|inc|incorporated|plc|systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
 
     # Convert to consistent case
     $manuf =~ s/(\w+)/\u\L$1/g;
 
-    # Remove all spaces
-    $manuf =~ s/\s+//g;
-
     # Deviating from make-manuf for HP
     $manuf =~ s/Hewlett[-]?Packard/Hp/;
 
-    # Truncate all names to a reasonable length, say, 8 characters.
-    # If the string contains UTF-8, this may be substantially more than 8 bytes.
-    $manuf = substr( $manuf, 0, 8 );
+    # Truncate all names to first two words max 20 chars
+    if (length($manuf) > 21) {
+        my @twowords = grep {defined} (split ' ', $manuf)[0 .. 1];
+        $manuf = join ' ', @twowords;
+    }
+
+    # Remove all spaces
+    $manuf =~ s/\s+//g;
 
     return encode( "utf8", $manuf );
 }

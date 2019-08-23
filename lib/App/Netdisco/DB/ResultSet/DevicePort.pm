@@ -40,7 +40,7 @@ sub with_times {
       });
 }
 
-=head2 with_free_ports
+=head2 with_is_free
 
 This is a modifier for any C<search()> (including the helpers below) which
 will add the following additional synthesized columns to the result set:
@@ -67,12 +67,13 @@ sub with_is_free {
     ->search({},
       {
         '+columns' => { is_free =>
-          \["me.up != 'up' and "
-              ."age(now(), to_timestamp(extract(epoch from device.last_discover) "
-                ."- (device.uptime - me.lastchange)/100)) "
-              ."> ?::interval",
-            [{} => $interval]] },
-        join => 'device',
+          # NOTE this query is in `git grep 'THREE PLACES'`
+          \["me.up_admin = 'up' AND me.up != 'up' AND me.type != 'propVirtual' AND "
+              ."((age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval "
+              ."AND (last_node.time_last IS NULL OR age(now(), last_node.time_last) > ?::interval)) "
+              ."OR age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval)",
+            [{} => $interval],[ {} => $interval],[ {} => $interval]] },
+        join => [qw/device last_node/],
       });
 }
 
@@ -96,14 +97,23 @@ sub only_free_ports {
     ->search_rs($cond, $attrs)
     ->search(
       {
-        'me.up' => { '!=' => 'up' },
-      },{
-        where =>
-          \["age(now(), to_timestamp(extract(epoch from device.last_discover) "
-                ."- (device.uptime - me.lastchange)/100)) "
-              ."> ?::interval",
+        # NOTE this query is in `git grep 'THREE PLACES'`
+        'me.up_admin' => 'up',
+        'me.up'       => { '!=' => 'up' },
+        'me.type'     => { '!=' => 'propVirtual' },
+        -or => [
+          -and => [
+            \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval",
+              [{} => $interval]],
+            -or => [
+              'last_node.time_last' => undef,
+              \["age(now(), last_node.time_last) > ?::interval", [{} => $interval]],
+            ]
+          ],
+          \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval",
             [{} => $interval]],
-      join => 'device' },
+        ],
+      },{ join => [qw/device last_node/] },
     );
 }
 
