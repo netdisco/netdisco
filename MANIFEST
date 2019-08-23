@@ -238,7 +238,7 @@ lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
 lib/App/Netdisco/Worker/Runner.pm
 lib/App/Netdisco/Worker/Status.pm
 lib/Dancer/Template/NetdiscoTemplateToolkit.pm
-LICENCE
+LICENSE.md
 MANIFEST			This list of files
 META.json
 META.yml

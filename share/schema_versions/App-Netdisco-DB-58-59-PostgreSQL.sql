@@ -1,7 +1,5 @@
 BEGIN;
 
-ALTER TABLE users ADD radius boolean;
-
-ALTER TABLE users ALTER radius SET DEFAULT false;
+ALTER TABLE users ADD COLUMN "radius" boolean DEFAULT false;
 
 COMMIT;
