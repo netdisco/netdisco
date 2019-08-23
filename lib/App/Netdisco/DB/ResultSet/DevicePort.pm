@@ -67,6 +67,7 @@ sub with_is_free {
     ->search({},
       {
         '+columns' => { is_free =>
+          # NOTE this query is in `git grep 'THREE PLACES'`
           \["me.up_admin = 'up' AND me.up != 'up' AND me.type != 'propVirtual' AND "
               ."((age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval "
               ."AND (last_node.time_last IS NULL OR age(now(), last_node.time_last) > ?::interval)) "
@@ -96,6 +97,7 @@ sub only_free_ports {
     ->search_rs($cond, $attrs)
     ->search(
       {
+        # NOTE this query is in `git grep 'THREE PLACES'`
         'me.up_admin' => 'up',
         'me.up'       => { '!=' => 'up' },
         'me.type'     => { '!=' => 'propVirtual' },

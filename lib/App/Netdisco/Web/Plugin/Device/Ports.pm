@@ -82,6 +82,7 @@ get '/ajax/content/device/ports' => require_login sub {
             });
         }
         delete $port_state{free};
+        # showing free ports requires showing down ports
         ++$port_state{down};
     }
 

@@ -7,6 +7,7 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
+# NOTE this query is in `git grep 'THREE PLACES'`
 __PACKAGE__->table('port_utilization');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
