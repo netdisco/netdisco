@@ -34,7 +34,10 @@ register_worker({ phase => 'store' }, sub {
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
     $device->ip, scalar @{ vars->{'v6arps'} };
 
-  $device->update({last_arpnip => \$now});
+  $device->update({
+    last_arpnip => \$now,
+    layers => \[q{overlay(layers placing '1' from 6 for 1)}],
+  });
 
   my $status = $job->best_status;
   return Status->$status("Ended arpnip for $device");
