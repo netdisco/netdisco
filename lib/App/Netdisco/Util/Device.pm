@@ -241,9 +241,10 @@ sub is_arpnipable {
 
 =head2 is_arpnipable_now( $ip )
 
-Same as C<is_arpnipable>, but also checks the last_arpnip field if the
-device is in storage, and returns false if that host has been too recently
-arpnipped.
+Same as C<is_arpnipable>, but also compares the C<last_arpnip> field
+of the C<device> to the C<arpnip_min_age> configuration. Also checks
+for pseudo devices and for devices not supporting layer 3, with some
+exceptions.
 
 Returns false if the host is not permitted to arpnip the target device.
 
@@ -252,6 +253,12 @@ Returns false if the host is not permitted to arpnip the target device.
 sub is_arpnipable_now {
   my ($ip) = @_;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_arpnipable: $device is pseudo-device")
+    if $device->is_pseudo;
+
+  return _bail_msg("is_arpnipable: $device has no layer 3 capability")
+    unless $device->has_layer(3);
 
   if ($device->in_storage
       and $device->since_last_arpnip and setting('arpnip_min_age')
@@ -290,9 +297,10 @@ sub is_macsuckable {
 
 =head2 is_macsuckable_now( $ip )
 
-Same as C<is_macsuckable>, but also checks the last_macsuck field if the
-device is in storage, and returns false if that host has been too recently
-macsucked.
+Same as C<is_macsuckable>, but also compares the C<last_macsuck> field
+of the C<device> to the C<macsuck_min_age> configuration. Also checks
+for pseudo devices and for devices not supporting layer 2, with some
+exceptions.
 
 Returns false if the host is not permitted to macsuck the target device.
 
@@ -301,6 +309,12 @@ Returns false if the host is not permitted to macsuck the target device.
 sub is_macsuckable_now {
   my ($ip) = @_;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_macsuckable: $device is pseudo-device")
+    if $device->is_pseudo;
+
+  return _bail_msg("is_macsuckable: $device has no layer 2 capability")
+    unless $device->has_layer(2);
 
   if ($device->in_storage
       and $device->since_last_macsuck and setting('macsuck_min_age')
