@@ -192,9 +192,9 @@ sub is_discoverable {
 
 =head2 is_discoverable_now( $ip, $device_type? )
 
-Same as C<is_discoverable>, but also checks the last_discover field if the
-device is in storage, and returns false if that host has been too recently
-discovered.
+Same as C<is_discoverable>, but also compares the C<last_discover> field
+of the C<device> to the C<discover_min_age> configuration. Also checks
+for pseudo devicea.
 
 Returns false if the host is not permitted to discover the target device.
 
@@ -203,6 +203,9 @@ Returns false if the host is not permitted to discover the target device.
 sub is_discoverable_now {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_discoverable: $device is pseudo-device")
+    if $device->is_pseudo;
 
   if ($device->in_storage
       and $device->since_last_discover and setting('discover_min_age')

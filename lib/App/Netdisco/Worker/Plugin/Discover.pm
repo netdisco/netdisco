@@ -16,9 +16,6 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("discover failed: no device param (need -d ?)")
     if $device->ip eq '0.0.0.0';
 
-  return Status->info("discover skipped: $device is pseudo-device")
-    if $device->is_pseudo;
-
   # runner has already called get_device to promote $job->device
   return $job->cancel("fresh discover cancelled: $device already known")
     if $device->in_storage
