@@ -1,4 +1,9 @@
 <!---
+
+READ THIS FIRST!
+----------------
+
+
 Provide a general summary of the issue in the Title above
 
 STOP! If your ticket is about a device not being detected correctly,
@@ -16,6 +21,9 @@ when including netdisco config snippets, whitespace matters since it's a yaml fi
 for github issues it really helps if you include the relevant config parts in a codeblock (code fencing)
 see the "code" subject on https://guides.github.com/features/mastering-markdown/ for that)
 this should preserve spaces in the issue tracker and make troubleshooting quicker
+
+the more info you can provide, the easier it is for us the help you, so please
+fill out as many of the items below as possible.
 -->
 
 
@@ -47,6 +55,10 @@ this should preserve spaces in the issue tracker and make troubleshooting quicke
 <!--- Include as many relevant details about the environment you experienced the bug in -->
 * Netdisco version used: 
 * SNMP::Info version used: 
+
+## Config info (deployment.yml)
+<!--- if possible include all options you added to your deployment.yml file, since -->
+<!--- some options can change the behaviour in drastic ways -->
 
 ## Device information
 <!--- if the issue relates to specific devices their info would be usefull -->
