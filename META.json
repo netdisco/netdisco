@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4224",
+   "generated_by" : "Module::Build version 0.4229",
    "license" : [
       "bsd"
    ],
@@ -39,6 +39,7 @@
             "App::cpanminus" : "1.6108",
             "App::local::lib::helper" : "0.07",
             "Archive::Extract" : "0",
+            "Authen::Radius" : "0",
             "CGI::Expand" : "2.05",
             "DBD::Pg" : "0",
             "DBIx::Class" : "0.082841",
@@ -143,7 +144,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "58"
+         "version" : "59"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -267,6 +268,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::GenericReport" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::LastNode" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/LastNode.pm"
       },
       "App::Netdisco::DB::Result::Virtual::NodeIp4" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm"
@@ -804,7 +808,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/BSD-3-Clause"
+         "http://opensource.org/licenses/bsd-license.php"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -813,5 +817,5 @@
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
    "version" : "2.042010",
-   "x_serialization_backend" : "JSON::PP version 2.97001"
+   "x_serialization_backend" : "JSON::PP version 4.02"
 }
