@@ -508,6 +508,7 @@ share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
 xt/00-compile.t
+xt/01-local-pod.t
 xt/10-sort_port.t
 xt/11-portsort.t
 xt/20-checkacl.t
