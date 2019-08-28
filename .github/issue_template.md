@@ -3,9 +3,6 @@
 READ THIS FIRST!
 ----------------
 
-
-Provide a general summary of the issue in the Title above
-
 STOP! If your ticket is about a device not being detected correctly,
 see SNMP::Info: https://github.com/netdisco/snmp-info/issues/new
 
@@ -15,15 +12,20 @@ see netdisco-mibs: https://github.com/netdisco/netdisco-mibs/issues/new
 STOP! If you are running a netdisco docker setup,
 see netdisco-docker: https://github.com/netdisco/netdisco-docker/issues/new
 
+
+
 everything else about Netdisco's behaviour is good, here :-D
+
+the more info you can provide, the easier it is for us the help you, so please
+fill out as many of the items below as possible.
+
+Provide a general summary of the issue in the Title above
 
 when including netdisco config snippets, whitespace matters since it's a yaml file
 for github issues it really helps if you include the relevant config parts in a codeblock (code fencing)
 see the "code" subject on https://guides.github.com/features/mastering-markdown/ for that)
 this should preserve spaces in the issue tracker and make troubleshooting quicker
 
-the more info you can provide, the easier it is for us the help you, so please
-fill out as many of the items below as possible.
 -->
 
 
