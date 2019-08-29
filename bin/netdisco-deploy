@@ -206,13 +206,13 @@ sub deploy_db {
 }
 
 sub get_userpass {
-  my $term = shift;
-  my $name = $term->get_reply(prompt => 'Username: ');
-  my $pass = $term->get_reply(prompt => 'Password: ');
+  my $upterm = shift;
+  my $name = $upterm->get_reply(prompt => 'Username: ');
+  my $pass = $upterm->get_reply(prompt => 'Password: ');
 
   unless ($name and $pass) {
     say 'username and password cannot be empty, please try again.';
-    ($name, $pass) = get_userpass($term);
+    ($name, $pass) = get_userpass($upterm);
   }
 
   return ($name, $pass);
