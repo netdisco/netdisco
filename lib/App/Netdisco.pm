@@ -116,14 +116,25 @@ application:
 You may wish to L<amend the PostgreSQL
 configuration|https://github.com/netdisco/netdisco/wiki/Install-Tips#enable-md5-authentication-to-postgresql>
 so that local connections are working.  The default PostgreSQL configuration
-also needs tuning for modern server hardware. We recommend that you use the
-C<pgtune> Python program to auto-tune your C<postgresql.conf> file:
+can also use tuning for modern server hardware. We recommend that you use one of the following
+tools to tune your C<postgresql.conf> file:
 
 =over 4
 
-=item *
+=item L<postgresqltuner|https://github.com/jfcoz/postgresqltuner>
 
-L<https://github.com/elitwin/pgtune>
+Script that will check your operating system resources and settings as well as your
+running PostgreSQL database and will make recommendations based on actual load. Works
+on new netdisco installs but will make the best suggestions once the database contains
+a bigger dataset.
+
+=item L<pgtune (fork)|https://pgtune.leopard.in.ua>
+
+A web based application which will recommend which parameters to change.
+
+=item L<pgtune|https://github.com/elitwin/pgtune>
+
+Program to auto-tune your C<postgresql.conf>, regretfully not updated in a while.
 
 =back
 
@@ -230,7 +241,7 @@ If you're running a version of Netdisco prior to 2.x then you should follow
 the full installation instructions, above. This process is for upgrading
 version 2.x only.
 
-Before upgrading please review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
+Before upgrading always review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 Then the process below should be run for each installation:
 
  # upgrade Netdisco
@@ -333,7 +344,7 @@ built upon.
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2011-2018 by The Netdisco Developer Team.
+This software is copyright (c) 2011-2019 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
