@@ -9,7 +9,7 @@ addons:
     packages:
       - libsnmp-dev
       - phantomjs
-      - graphviz 
+      - graphviz
   hosts:
     - localhost
 branches:
