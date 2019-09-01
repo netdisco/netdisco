@@ -92,10 +92,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   debug sprintf ' [%s] macsuck - removed %d fwd table entries to archive',
     $device->ip, $archived;
 
-  $device->update({
-    last_macsuck => \$now,
-    layers => \[q{overlay(layers placing '1' from 7 for 1)}],
-  });
+  $device->update({last_macsuck => \$now});
   return Status->done("Ended macsuck for $device");
 });
 
