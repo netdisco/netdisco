@@ -16,13 +16,13 @@ $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
     "order": [[ 5, "desc" ]],
-    "data": [% results %],
+    "data": [% results | none %],
     "columns": [
       {
         "data": 'ip',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% uri_for('/device') %]?tab=details&q=' + encodeURIComponent(row.ip) + '">'
+            '<a href="[% uri_for('/device') | none %]?tab=details&q=' + encodeURIComponent(row.ip) + '">'
             + he.encode(row.dns || row.name || row.ip) + '</a>' :
           data;
         }
@@ -41,7 +41,7 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data || '') + '</a>' :
+            '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data || '') + '</a>' :
             he.encode(data || '');
         }
       }, {

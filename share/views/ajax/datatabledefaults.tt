@@ -1,8 +1,8 @@
 
     "processing": true
     ,"stateSave": true
-    ,"pageLength": [% settings.table_pagesize %]
-    ,"lengthMenu": [% table_showrecordsmenu %]
+    ,"pageLength": [% settings.table_pagesize | none %]
+    ,"lengthMenu": [% table_showrecordsmenu | none %]
     ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
     ,"language": {
       "search": '_INPUT_'

@@ -33,15 +33,15 @@
 
       <td class="nd_center-cell">
         <button class="btn btn-danger btn-small"
-          data-toggle="modal" data-target="#nd_devdel-[% count %]" type="button">
+          data-toggle="modal" data-target="#nd_devdel-[% count | hmtl_entity %]" type="button">
           <i class="icon-trash text-danger"></i>
         </button>
 
-        <div id="nd_devdel-[% count %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-          role="dialog" aria-labelledby="nd_devdel-label-[% count %]" aria-hidden="true">
+        <div id="nd_devdel-[% count | hmtl_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% count | hmtl_entity %]" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
+            <h3 id="nd_devdel-label-[% count | hmtl_entity %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
           </div>
           <div class="modal-body">
             <blockquote>

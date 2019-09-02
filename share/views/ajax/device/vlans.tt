@@ -11,12 +11,12 @@
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
-    "data": [% results %],
+    "data": [% results | none %],
     "columns": [
       {
         "data": 'vlan',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + data + '</a>';
+          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + data + '</a>';
         }
       }, {
         "data": 'description',

@@ -195,7 +195,7 @@
   </div>
 </div>
 
-[% content %]
+[% content | none %]
 
 <script type="text/javascript">
 [%+ INCLUDE 'js/common.js' -%]

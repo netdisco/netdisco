@@ -5,7 +5,7 @@
 // ************ retrieve network map *************
 // ***********************************************
 
-$.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(mapdata) {
+$.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query | none %]', function(mapdata) {
 
   jQuery(document).ready(function() {
     window.graph = netGobrechtsD3Force('netmap_pane')
@@ -22,7 +22,7 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
       .showLinkDirection(false)
       .colorScheme('color10')
       //.preventLabelOverlappingOnForceEnd(
-      //  (mapdata['newnodes'] && ('[% params.mapshow %]' == 'neighbors'))
+      //  (mapdata['newnodes'] && ('[% params.mapshow | hmtl_entity %]' == 'neighbors'))
       //  ? true : false
       //)
       .nodeEventToStopPinMode('none')
@@ -158,9 +158,9 @@ $.getJSON('[% uri_for('/ajax/data/device/netmap') %]?[% my_query %]', function(m
     graph.start(mapdata);
 
     // about a second after render starts, zoom in a bit
-    if ('[% params.mapshow %]' == 'neighbors') {
+    if ('[% params.mapshow | hmtl_entity %]' == 'neighbors') {
       setTimeout(function() {
-        //if ('[% params.dynamicsize %]' == 'on') {
+        //if ('[% params.dynamicsize | hmtl_entity %]' == 'on') {
         //  graph.zoomToFit();
         //} else {
           var node = graph.nodeDataById( graph['nd2']['centernode'] );
