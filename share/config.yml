@@ -481,11 +481,15 @@ show_errors: false
 logger: 'console'
 engines:
   netdisco_template_toolkit:
+    subclass: 'Template::AutoFilter'
     encoding: 'utf8'
     start_tag: '[%'
     end_tag: '%]'
+    ANYCASE: 1
+    ABSOLUTE: 1
     PRE_CHOMP: 1
     INCLUDE_PATH: []
+    AUTO_FILTER: 'html_entity'
 layout: 'main'
 plugins:
   Swagger:
