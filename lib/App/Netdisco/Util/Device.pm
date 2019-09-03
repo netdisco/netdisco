@@ -158,6 +158,8 @@ If C<$device_type> is also given, then C<discover_no_type> will be checked.
 Also respects C<discover_phones> and C<discover_waps> if either are set to
 false.
 
+Also checks if the device is a pseudo device (vendor is C<netdisco>).
+
 Returns false if the host is not permitted to discover the target device.
 
 =cut
@@ -167,6 +169,9 @@ sub is_discoverable {
   my $device = get_device($ip) or return 0;
   $remote_type ||= '';
   $remote_cap  ||= [];
+
+  return _bail_msg("is_discoverable: $device is pseudo-device")
+    if $device->is_pseudo;
 
   return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
     if ((not setting('discover_waps')) and
@@ -193,8 +198,7 @@ sub is_discoverable {
 =head2 is_discoverable_now( $ip, $device_type? )
 
 Same as C<is_discoverable>, but also compares the C<last_discover> field
-of the C<device> to the C<discover_min_age> configuration. Also checks
-for pseudo devicea.
+of the C<device> to the C<discover_min_age> configuration.
 
 Returns false if the host is not permitted to discover the target device.
 
@@ -203,9 +207,6 @@ Returns false if the host is not permitted to discover the target device.
 sub is_discoverable_now {
   my ($ip, $remote_type) = @_;
   my $device = get_device($ip) or return 0;
-
-  return _bail_msg("is_discoverable: $device is pseudo-device")
-    if $device->is_pseudo;
 
   if ($device->in_storage
       and $device->since_last_discover and setting('discover_min_age')
@@ -225,6 +226,9 @@ the local configuration to arpnip the device.
 The configuration items C<arpnip_no> and C<arpnip_only> are checked
 against the given IP.
 
+Also checks if the device is a pseudo device (vendor is C<netdisco>) and
+that it has reported layer 3 capability.
+
 Returns false if the host is not permitted to arpnip the target device.
 
 =cut
@@ -232,6 +236,12 @@ Returns false if the host is not permitted to arpnip the target device.
 sub is_arpnipable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_arpnipable: $device is pseudo-device")
+    if $device->is_pseudo;
+
+  return _bail_msg("is_arpnipable: $device has no layer 3 capability")
+    unless $device->has_layer(3);
 
   return _bail_msg("is_arpnipable: $device matched arpnip_no")
     if check_acl_no($device, 'arpnip_no');
@@ -257,12 +267,6 @@ sub is_arpnipable_now {
   my ($ip) = @_;
   my $device = get_device($ip) or return 0;
 
-  return _bail_msg("is_arpnipable: $device is pseudo-device")
-    if $device->is_pseudo;
-
-  return _bail_msg("is_arpnipable: $device has no layer 3 capability")
-    unless $device->has_layer(3);
-
   if ($device->in_storage
       and $device->since_last_arpnip and setting('arpnip_min_age')
       and $device->since_last_arpnip < setting('arpnip_min_age')) {
@@ -281,6 +285,9 @@ the local configuration to macsuck the device.
 The configuration items C<macsuck_no> and C<macsuck_only> are checked
 against the given IP.
 
+Also checks if the device is a pseudo device (vendor is C<netdisco>) and
+that it has reported layer 2 capability.
+
 Returns false if the host is not permitted to macsuck the target device.
 
 =cut
@@ -288,6 +295,12 @@ Returns false if the host is not permitted to macsuck the target device.
 sub is_macsuckable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_macsuckable: $device is pseudo-device")
+    if $device->is_pseudo;
+
+  return _bail_msg("is_macsuckable: $device has no layer 2 capability")
+    unless $device->has_layer(2);
 
   return _bail_msg("is_macsuckable: $device matched macsuck_no")
     if check_acl_no($device, 'macsuck_no');
@@ -312,12 +325,6 @@ Returns false if the host is not permitted to macsuck the target device.
 sub is_macsuckable_now {
   my ($ip) = @_;
   my $device = get_device($ip) or return 0;
-
-  return _bail_msg("is_macsuckable: $device is pseudo-device")
-    if $device->is_pseudo;
-
-  return _bail_msg("is_macsuckable: $device has no layer 2 capability")
-    unless $device->has_layer(2);
 
   if ($device->in_storage
       and $device->since_last_macsuck and setting('macsuck_min_age')
