@@ -59,13 +59,20 @@ ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_a
 get '/admin/*' => require_role admin => sub {
     my ($tag) = splat;
 
-    # trick the ajax into working as if this were a tabbed page
-    params->{tab} = $tag;
+    if (exists setting('_admin_tasks')->{ $tag }) {
+      # trick the ajax into working as if this were a tabbed page
+      params->{tab} = $tag;
 
-    var(nav => 'admin');
-    template 'admintask', {
-      task => setting('_admin_tasks')->{ $tag },
-    };
+      var(nav => 'admin');
+      template 'admintask', {
+        task => setting('_admin_tasks')->{ $tag },
+      };
+    }
+    else {
+      var('notfound' => true);
+      status 'not_found';
+      template 'index';
+    }
 };
 
 true;
