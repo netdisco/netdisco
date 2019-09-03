@@ -141,7 +141,8 @@ config->{'domain_suffix'} = [setting('domain_suffix')]
   if ref [] ne ref setting('domain_suffix');
 
 if (scalar @{ setting('domain_suffix') }) {
-  my @suffixes = map { quotemeta } @{ setting('domain_suffix') };
+  my @suffixes = map { (ref qr// eq ref $_) ? $_ : quotemeta }
+                    @{ setting('domain_suffix') };
   my $buildref = '(?:'. (join '|', @suffixes) .')$';
   config->{'domain_suffix'} = qr/$buildref/;
 }

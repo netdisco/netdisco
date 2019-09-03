@@ -151,11 +151,11 @@ sub search_by_dns {
       if ref {} ne ref $cond or !exists $cond->{dns};
 
     (my $suffix = (delete $cond->{suffix} || ''))
-      =~ s|^\Q(?^\E|***:(?|;
+      =~ s|\Q(?^\Eu?|(?|g;
 
     $cond->{dns} = [ -and =>
       { '-ilike' => delete $cond->{dns} },
-      { '~*' => "$suffix" },
+      { '~*' => "***:$suffix" },
     ];
 
     return $rs
