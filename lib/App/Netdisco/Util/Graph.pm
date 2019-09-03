@@ -298,8 +298,8 @@ sub graph_addnode {
     $devloc = $GRAPH{$ip}->{location};
 
     $label = "($ip)" unless defined $label;
-    my $domain_suffix = setting('domain_suffix') || '';
-    $label =~ s/$domain_suffix$//;
+    my $domain_suffix = setting('domain_suffix');
+    $label =~ s/$domain_suffix//;
     $node{label} = $label;
 
     # Dereferencing the scalar by name below
