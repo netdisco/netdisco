@@ -33,13 +33,8 @@
         <input data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        [% d.layers.substr(7,1) ? '<span class="badge badge-success">1</span>' : '<span class="badge">&nbsp;</span>' %]
-        [% d.layers.substr(6,1) ? '<span class="badge badge-success">2</span>' : '<span class="badge">&nbsp;</span>' %]
-        <a class="nd_layer-three-link" href="#"><span class="badge[% ' badge-success' IF row.layers.substr(5,1) %]">3</span></a>
-        [% d.layers.substr(4,1) ? '<span class="badge badge-success">4</span>' : '<span class="badge">&nbsp;</span>' %]
-        [% d.layers.substr(3,1) ? '<span class="badge badge-success">5</span>' : '<span class="badge">&nbsp;</span>' %]
-        [% d.layers.substr(2,1) ? '<span class="badge badge-success">6</span>' : '<span class="badge">&nbsp;</span>' %]
-        [% d.layers.substr(1,1) ? '<span class="badge badge-success">7</span>' : '<span class="badge">&nbsp;</span>' %]
+        <span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
+        <a class="nd_layer-three-link" href="#"><span class="badge[% ' badge-success' IF row.layers.substr(5,1) %]">3</span></a><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
         <input data-form="update" name="layers" type="hidden" value="[% row.layers | html_entity %]">
       </td>
       <td class="nd_center-cell">
