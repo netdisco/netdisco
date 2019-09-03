@@ -226,8 +226,7 @@ the local configuration to arpnip the device.
 The configuration items C<arpnip_no> and C<arpnip_only> are checked
 against the given IP.
 
-Also checks if the device is a pseudo device (vendor is C<netdisco>) and
-that it has reported layer 3 capability.
+Also checks if the device reports layer 3 capability.
 
 Returns false if the host is not permitted to arpnip the target device.
 
@@ -236,9 +235,6 @@ Returns false if the host is not permitted to arpnip the target device.
 sub is_arpnipable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
-
-  return _bail_msg("is_arpnipable: $device is pseudo-device")
-    if $device->is_pseudo;
 
   return _bail_msg("is_arpnipable: $device has no layer 3 capability")
     unless $device->has_layer(3);
@@ -285,8 +281,7 @@ the local configuration to macsuck the device.
 The configuration items C<macsuck_no> and C<macsuck_only> are checked
 against the given IP.
 
-Also checks if the device is a pseudo device (vendor is C<netdisco>) and
-that it has reported layer 2 capability.
+Also checks if the device reports layer 2 capability.
 
 Returns false if the host is not permitted to macsuck the target device.
 
@@ -295,9 +290,6 @@ Returns false if the host is not permitted to macsuck the target device.
 sub is_macsuckable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
-
-  return _bail_msg("is_macsuckable: $device is pseudo-device")
-    if $device->is_pseudo;
 
   return _bail_msg("is_macsuckable: $device has no layer 2 capability")
     unless $device->has_layer(2);
