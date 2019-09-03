@@ -1,3 +1,32 @@
+2.043000 - 2019-09-03
+
+  [NEW FEATURES]
+
+  * #591 domain_suffix can be a list and supports (simple) regexp
+  * #613 Free Ports works even if the device has rebooted recently
+  * #621 RADIUS authentication support for users
+
+  [ENHANCEMENTS]
+
+  * #587 #561 update pseudo devices to better support ssh arpnip
+  * #606 license file reformatted to work better within Github
+  * #630 display full OUI vendor name in web view
+  * #633 change Port Free icon to be more accessible
+  * #638 avoid page reload on admintask data updates
+  * #640 some documentation fixes
+  * add PoE on-off icons to legend in Device Ports view
+
+  [BUG FIXES]
+
+  * #610 better MAC addr input sanity checking
+  * #611 compare IEEE MAC addresses properly
+  * #622 workaround for changes in Test::Compile
+  * #624 device layers search should be OR (not AND)
+  * #625 make sidebar tiny bit wider
+  * #642 requests to /admin/unknown-thing should get 404
+  * handle row.power.power being NULL
+  * allow stats to run smoothly on ancient Pg 8.4
+
 2.042010 - 2019-06-02
 
   [BUG FIXES]
