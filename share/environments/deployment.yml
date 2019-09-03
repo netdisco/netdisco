@@ -36,7 +36,7 @@ device_auth:
 # will be stripped from fqdn when displayed in the web UI
 # also, do not forget the leading dot.
 # ```````````````````````````````````````````````````````
-#domain_suffix: '.example.com'
+#domain_suffix: ['.example.com']
 
 
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸

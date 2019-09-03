@@ -17,8 +17,8 @@ SELECT *
 FROM device
 WHERE dns IS NULL
   OR name IS NULL
-  OR regexp_replace(lower(dns), ? || '$', '')
-    != regexp_replace(lower(name), ? || '$', '')
+  OR regexp_replace(lower(dns), ?, '')
+    != regexp_replace(lower(name), ?, '')
 ENDSQL
 
 1;
