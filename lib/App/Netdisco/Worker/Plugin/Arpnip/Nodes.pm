@@ -55,6 +55,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   push @{ vars->{'v6arps'} },
     @{get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr) };
 
+  $device->update({layers => \[q{overlay(layers placing '1' from 6 for 1)}]});
   return Status->done("Gathered arp caches from $device");
 });
 
@@ -82,24 +83,25 @@ sub get_arps_snmp {
 }
 
 register_worker({ phase => 'main', driver => 'cli' }, sub {
-    my ($job, $workerconf) = @_;
+  my ($job, $workerconf) = @_;
 
-    my $device = $job->device;
-    my $cli = App::Netdisco::Transport::SSH->session_for($device)
-      or return Status->defer("arpnip failed: could not SSH connect to $device");
+  my $device = $job->device;
+  my $cli = App::Netdisco::Transport::SSH->session_for($device)
+    or return Status->defer("arpnip failed: could not SSH connect to $device");
 
-    # should be both v4 and v6
-    my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
+  # should be both v4 and v6
+  my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
 
-    # cache v4 arp table
-    push @{ vars->{'v4arps'} },
-      grep { NetAddr::IP::Lite->new($_->{ip})->bits ==  32 } @arps;
+  # cache v4 arp table
+  push @{ vars->{'v4arps'} },
+    grep { NetAddr::IP::Lite->new($_->{ip})->bits ==  32 } @arps;
 
-    # cache v6 neighbor cache
-    push @{ vars->{'v6arps'} },
-      grep { NetAddr::IP::Lite->new($_->{ip})->bits == 128 } @arps;
+  # cache v6 neighbor cache
+  push @{ vars->{'v6arps'} },
+    grep { NetAddr::IP::Lite->new($_->{ip})->bits == 128 } @arps;
 
-    return Status->done("Gathered arp caches from $device");
+  $device->update({layers => \[q{overlay(layers placing '1' from 6 for 1)}]});
+  return Status->done("Gathered arp caches from $device");
 });
 
 sub get_arps_cli {

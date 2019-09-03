@@ -26,7 +26,7 @@
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="note" type="text"></td>
-      <td class="nd_center-cell">
+      <td nowrap class="nd_center-cell">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
@@ -62,7 +62,7 @@
         <input class="span2" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
       </td>
 
-      <td class="nd_center-cell">
+      <td nowrap class="nd_center-cell">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
