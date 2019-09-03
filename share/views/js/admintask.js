@@ -143,17 +143,38 @@
         ,url: uri_base + '/ajax/control/admin/' + tab + '/' + mode
         ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
         ,beforeSend: function() {
-          $(target).html(
-            '<div class="span2 alert">Request submitted...</div>'
-          );
+          if (mode == 'add' || mode == 'delete') {
+            $(target).html(
+              '<div class="span2 alert">Request submitted...</div>'
+            );
+          }
         }
         ,success: function() {
-          $('#' + tab + '_form').trigger('submit');
+          if (mode == 'add') {
+            toastr.success('Added record');
+            $('#' + tab + '_form').trigger('submit');
+          }
+          else if (mode == 'delete') {
+            toastr.success('Deleted record');
+            $('#' + tab + '_form').trigger('submit');
+          }
+          else {
+            toastr.success('Updated record');
+          }
         }
-        // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          $('#' + tab + '_form').trigger('submit');
+          if (mode == 'add') {
+            toastr.error('Failed to add record');
+            $('#' + tab + '_form').trigger('submit');
+          }
+          else if (mode == 'delete') {
+            toastr.error('Failed to delete record');
+            $('#' + tab + '_form').trigger('submit');
+          }
+          else {
+            toastr.error('Failed to update record');
+          }
         }
       });
     });
