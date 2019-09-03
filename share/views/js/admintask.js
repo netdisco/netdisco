@@ -71,8 +71,9 @@
       ,minLength: 0
     });
 
-    // activate modals
+    // activate modals and tooltips
     $('.nd_modal').modal({show: false});
+    $("[rel=tooltip]").tooltip({live: true});
   }
 
   // on load, establish global delegations for now and future
