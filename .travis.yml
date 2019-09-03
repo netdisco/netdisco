@@ -2,12 +2,14 @@ language: perl
 perl:
   - "5.30"
   - "5.10"
+os: linux
+dist: trusty
 addons:
   apt:
     packages:
       - libsnmp-dev
       - phantomjs
-      - graphviz 
+      - graphviz
   hosts:
     - localhost
 branches:
@@ -15,7 +17,7 @@ branches:
     - /^2\.\d{6}$/
     - 'master'
 install:
-  - cpanm --quiet --notest PkgConfig Test::CChecker Alien::zlib::Static Alien::OpenSSL::Static Alien::SNMP
+  - cpanm --quiet --notest https://github.com/egiles/test-compile/archive/v2.1.2.tar.gz PkgConfig Test::CChecker Alien::zlib::Static Alien::OpenSSL::Static Alien::SNMP
 script: |
   perl Build.PL && \
   ./Build && \

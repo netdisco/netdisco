@@ -20,8 +20,9 @@ database:
 # RECOMMENDED SETTINGS
 # --------------------
 
-# SNMP community string(s)
-# ````````````````````````
+# Device authentication settings
+# define snmp communities and ssh credentials here
+# ````````````````````````````````````````````````
 device_auth:
   - tag: 'default_v2_readonly'
     community: 'public'
@@ -50,7 +51,7 @@ device_auth:
 # SNMP, which just clogs up the job queue.
 # ```````````````````````````````````````````````````````````````
 #discover_waps: true
-#disover_phones: false
+#discover_phones: false
 
 # this is the schedule for automatically keeping netdisco up-to-date;
 # these are good defaults, so only uncomment if needing to change.

@@ -158,6 +158,8 @@ If C<$device_type> is also given, then C<discover_no_type> will be checked.
 Also respects C<discover_phones> and C<discover_waps> if either are set to
 false.
 
+Also checks if the device is a pseudo device (vendor is C<netdisco>).
+
 Returns false if the host is not permitted to discover the target device.
 
 =cut
@@ -167,6 +169,9 @@ sub is_discoverable {
   my $device = get_device($ip) or return 0;
   $remote_type ||= '';
   $remote_cap  ||= [];
+
+  return _bail_msg("is_discoverable: $device is pseudo-device")
+    if $device->is_pseudo;
 
   return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
     if ((not setting('discover_waps')) and
@@ -192,9 +197,8 @@ sub is_discoverable {
 
 =head2 is_discoverable_now( $ip, $device_type? )
 
-Same as C<is_discoverable>, but also checks the last_discover field if the
-device is in storage, and returns false if that host has been too recently
-discovered.
+Same as C<is_discoverable>, but also compares the C<last_discover> field
+of the C<device> to the C<discover_min_age> configuration.
 
 Returns false if the host is not permitted to discover the target device.
 
@@ -222,6 +226,8 @@ the local configuration to arpnip the device.
 The configuration items C<arpnip_no> and C<arpnip_only> are checked
 against the given IP.
 
+Also checks if the device reports layer 3 capability.
+
 Returns false if the host is not permitted to arpnip the target device.
 
 =cut
@@ -229,6 +235,9 @@ Returns false if the host is not permitted to arpnip the target device.
 sub is_arpnipable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_arpnipable: $device has no layer 3 capability")
+    unless $device->has_layer(3);
 
   return _bail_msg("is_arpnipable: $device matched arpnip_no")
     if check_acl_no($device, 'arpnip_no');
@@ -241,9 +250,8 @@ sub is_arpnipable {
 
 =head2 is_arpnipable_now( $ip )
 
-Same as C<is_arpnipable>, but also checks the last_arpnip field if the
-device is in storage, and returns false if that host has been too recently
-arpnipped.
+Same as C<is_arpnipable>, but also compares the C<last_arpnip> field
+of the C<device> to the C<arpnip_min_age> configuration.
 
 Returns false if the host is not permitted to arpnip the target device.
 
@@ -271,6 +279,8 @@ the local configuration to macsuck the device.
 The configuration items C<macsuck_no> and C<macsuck_only> are checked
 against the given IP.
 
+Also checks if the device reports layer 2 capability.
+
 Returns false if the host is not permitted to macsuck the target device.
 
 =cut
@@ -278,6 +288,9 @@ Returns false if the host is not permitted to macsuck the target device.
 sub is_macsuckable {
   my $ip = shift;
   my $device = get_device($ip) or return 0;
+
+  return _bail_msg("is_macsuckable: $device has no layer 2 capability")
+    unless $device->has_layer(2);
 
   return _bail_msg("is_macsuckable: $device matched macsuck_no")
     if check_acl_no($device, 'macsuck_no');
@@ -290,9 +303,8 @@ sub is_macsuckable {
 
 =head2 is_macsuckable_now( $ip )
 
-Same as C<is_macsuckable>, but also checks the last_macsuck field if the
-device is in storage, and returns false if that host has been too recently
-macsucked.
+Same as C<is_macsuckable>, but also compares the C<last_macsuck> field
+of the C<device> to the C<macsuck_min_age> configuration.
 
 Returns false if the host is not permitted to macsuck the target device.
 

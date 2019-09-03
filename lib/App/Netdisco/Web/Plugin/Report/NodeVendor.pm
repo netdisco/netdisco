@@ -47,7 +47,7 @@ get '/ajax/content/report/nodevendor/data' => require_login sub {
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
         $rs = $rs->search( { 'oui.abbrev' => $match },
-            {   '+columns' => [qw/ device.dns device.name oui.abbrev /],
+            {   '+columns' => [qw/ device.dns device.name oui.abbrev oui.company /],
                 join       => [qw/ oui device /],
                 collapse   => 1,
             });
@@ -86,7 +86,7 @@ get '/ajax/content/report/nodevendor' => require_login sub {
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
         $rs = $rs->search( { 'oui.abbrev' => $match },
-            {   '+columns' => [qw/ device.dns device.name oui.abbrev /],
+            {   '+columns' => [qw/ device.dns device.name oui.abbrev oui.company /],
                 join       => [qw/ oui device /],
                 collapse   => 1,
             });
@@ -102,9 +102,9 @@ get '/ajax/content/report/nodevendor' => require_login sub {
         $rs = $rs->search(
             { },
             {   join     => 'oui',
-                select   => [ 'oui.abbrev', { count => {distinct => 'me.mac'}} ],
-                as       => [qw/ vendor count /],
-                group_by => [qw/ oui.abbrev /]
+                select   => [ 'oui.abbrev', 'oui.company', { count => {distinct => 'me.mac'}} ],
+                as       => [qw/ abbrev vendor count /],
+                group_by => [qw/ oui.abbrev oui.company /]
             }
         )->order_by( { -desc => 'count' } );
 

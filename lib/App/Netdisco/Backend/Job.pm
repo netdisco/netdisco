@@ -70,7 +70,7 @@ sub display_name {
 
 =head2 cancel
 
-Log a status and prevent other stages from runnning.
+Log a status and prevent other stages from running.
 
 =cut
 

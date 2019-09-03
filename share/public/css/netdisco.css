@@ -245,6 +245,13 @@ td > form.nd_inline-form {
   text-decoration: none;
 }
 
+/* badge for pseudo devices layer three toggle */
+.nd_layer-three-link {
+  text-decoration: none !important;
+  display: inline-block;
+  margin-left: -4px;
+}
+
 /* for the job control admin page play/pause links */
 #nd_countdown-refresh:hover, #nd_countdown-control:hover {
   text-decoration: none;
@@ -359,7 +366,7 @@ td > form.nd_inline-form {
 .container-fluid > .nd_sidebar {
   position: absolute;
   right: 20px;
-  width: 200px;
+  width: 205px;
   left: auto;
 }
 

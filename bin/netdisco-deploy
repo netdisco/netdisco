@@ -71,7 +71,7 @@ these is an optional service which the user is asked to confirm.
 Pre-existing requirements are that there be a database table created and a
 user with rights to create tables in that database. Both the table and user
 name must match those configured in your environment YAML file (default
-C<~/environments/deployment.yml>).
+F<~/environments/deployment.yml>).
 
 This script will download the latest MAC address vendor prefix data from the
 Internet, and update the OUI table in the database. Hence Internet access is
@@ -80,10 +80,17 @@ required to run the script.
 Similarly the latest Netdisco MIB bundle is also downloaded and placed into
 the user's home directory (or C<$ENV{NETDISCO_HOME}>).
 
+If you upgrade Netdisco make sure you run this script again to make sure
+your config remains compatible.
+
+Before each upgrade also review the
+L<Release notes|https://github.com/netdisco/netdisco/wiki/Release-Notes> since
+additional steps might be required!
+
 =cut
 
 print color 'bold cyan';
-say 'This is the Netdisco II deployment script.';
+say 'This is the Netdisco 2 deployment script.';
 say '';
 say 'Before we continue, the following prerequisites must be in place:';
 say ' * Database added to PostgreSQL for Netdisco';
@@ -91,6 +98,11 @@ say ' * User added to PostgreSQL with rights to the Netdisco Database';
 say ' * "~/environments/deployment.yml" file configured with Database dsn/user/pass';
 say ' * A full backup of any existing Netdisco database data';
 say ' * Internet access (for OUIs and MIBs)';
+say '';
+say 'If you are upgrading Netdisco 2 read the release notes:';
+say 'https://github.com/netdisco/netdisco/wiki/Release-Notes';
+say 'There you will find required and incompatible changes';
+say 'which are not covered by this script.';
 say '';
 say 'You will be asked to confirm all changes to your system.';
 say '';
@@ -194,13 +206,13 @@ sub deploy_db {
 }
 
 sub get_userpass {
-  my $term = shift;
-  my $name = $term->get_reply(prompt => 'Username: ');
-  my $pass = $term->get_reply(prompt => 'Password: ');
+  my $upterm = shift;
+  my $name = $upterm->get_reply(prompt => 'Username: ');
+  my $pass = $upterm->get_reply(prompt => 'Password: ');
 
   unless ($name and $pass) {
     say 'username and password cannot be empty, please try again.';
-    ($name, $pass) = get_userpass($term);
+    ($name, $pass) = get_userpass($upterm);
   }
 
   return ($name, $pass);
@@ -257,7 +269,7 @@ sub deploy_oui {
   print color 'reset';
 }
 
-# This subroutine is from Wireshark's make-manuf
+# This subroutine is based on Wireshark's make-manuf
 # http://anonsvn.wireshark.org/wireshark/trunk/tools/make-manuf
 sub shorten {
     my $manuf = shift;
@@ -271,22 +283,27 @@ sub shorten {
     # & isn't needed when Standalone
     $manuf =~ s/ \& / /g;
 
+    # remove junk whitespace
+    $manuf =~ s/\s+/ /g;
+
     # Remove any "the", "inc", "plc" ...
     $manuf
-        =~ s/\s(the|inc|incorporated|plc|systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
+        =~ s/\s(?:the|inc|incorporated|plc|systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
 
     # Convert to consistent case
     $manuf =~ s/(\w+)/\u\L$1/g;
 
-    # Remove all spaces
-    $manuf =~ s/\s+//g;
-
     # Deviating from make-manuf for HP
     $manuf =~ s/Hewlett[-]?Packard/Hp/;
 
-    # Truncate all names to a reasonable length, say, 8 characters.
-    # If the string contains UTF-8, this may be substantially more than 8 bytes.
-    $manuf = substr( $manuf, 0, 8 );
+    # Truncate all names to first two words max 20 chars
+    if (length($manuf) > 21) {
+        my @twowords = grep {defined} (split ' ', $manuf)[0 .. 1];
+        $manuf = join ' ', @twowords;
+    }
+
+    # Remove all spaces
+    $manuf =~ s/\s+//g;
 
     return encode( "utf8", $manuf );
 }

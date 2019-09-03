@@ -12,7 +12,7 @@ __PACKAGE__->load_components(qw/
 
 =head2 skipped( $backend?, $max_deferrals?, $retry_after? )
 
-Retuns a correlated subquery for the set of C<device_skip> entries that apply
+Returns a correlated subquery for the set of C<device_skip> entries that apply
 to some jobs. They match the device IP, current backend, and job action.
 
 Pass the C<backend> FQDN (or the current host will be used as a default), the
