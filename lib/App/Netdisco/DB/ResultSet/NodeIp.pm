@@ -99,7 +99,11 @@ sub search_by_ip {
 
 =head1 search_by_dns( \%cond, \%attrs? )
 
- my $set = $rs->search_by_dns({dns => 'foo.example.com', active => 1});
+ my $set = $rs->search_by_dns({
+   dns => 'foo.example.com',
+   suffix => qr/(?:\.example\..com|\.local)$/,
+   active => 1
+ });
 
 Like C<search()>, this returns a ResultSet of matching rows from the
 NodeIp table.
@@ -118,8 +122,8 @@ to search for. The value may optionally include SQL wildcard characters.
 
 =item *
 
-The C<cond> parameter may optionally have a suffix parameter which is a
-regular expression of domain names that must also match the results.
+The C<cond> parameter may optionally have a C<suffix> parameter which is a
+regular expression of domain names - one of which must match the results.
 
 =item *
 
