@@ -1,3 +1,9 @@
+2.043001 - 2019-09-04
+
+  [BUG FIXES]
+
+  * #644 Device DNS Mismatch report broken by domain_suffix change
+
 2.043000 - 2019-09-03
 
   [NEW FEATURES]
