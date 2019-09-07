@@ -81,6 +81,7 @@ Module::Build->new(
     'SQL::Abstract' => '1.85',
     'SQL::Translator' => '0.11024',
     'Template' => '2.24',
+    'Template::AutoFilter' => '0',
     'Template::Plugin::CSV' => '0.04',
     'Template::Plugin::Number::Format' => '1.02',
     'Term::ReadLine' => '0',

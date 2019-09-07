@@ -65,10 +65,10 @@
               <em class="muted">MAC address format:</em><br/>
               <select id="nd_node-mac-format" name="mac_format">
                 [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                <option[% ' selected="selected"' IF vars.sidebar_defaults.search_node.mac_format == format %]>[% format %]</option>
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.search_node.mac_format == format %]>[% format | html_entity %]</option>
                 [% END %]
               </select>
             </div>
-            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
+            <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
               <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Nodes</button>
 

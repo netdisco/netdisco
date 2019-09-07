@@ -15,7 +15,7 @@
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
-    "data": [% results %],
+    "data": [% results | none %],
     "columns": [
       {
         "data": 'ip',
@@ -27,7 +27,7 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% device_ports %]&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>' :
+            '<a href="[% device_ports | none %]&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>' :
             he.encode(data || '');
         }
       }, {
@@ -38,7 +38,7 @@ $(document).ready(function() {
       }, {
         "data": 'remote_ip',
         "render": function(data, type, row, meta) {
-          return '<a href="[% search_node %]&q=' + encodeURIComponent(data || '') + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% search_node | none %]&q=' + encodeURIComponent(data || '') + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'remote_port',

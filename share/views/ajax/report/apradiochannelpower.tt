@@ -25,7 +25,7 @@ function groupString(d) {
     "use strict";
     var s = '';
     s = s + 'Device: ';
-    s = s + '<a href="[% uri_for('/device') %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
+    s = s + '<a href="[% uri_for('/device') | none %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
     s = s + he.encode(d.dns || d.device_name || d.ip);
     if (d.dns || d.device_name) {
         s = s + ' (' +  he.encode(d.ip) + ') ';
@@ -39,7 +39,7 @@ function groupString(d) {
 $(document).ready(function() {
   var table = $('#data-table').DataTable({
     "serverSide": true,
-    "ajax": "[% uri_for('/ajax/content/report/apradiochannelpower/data') %]",
+    "ajax": "[% uri_for('/ajax/content/report/apradiochannelpower/data') | none %]",
     "order": [[ 0, 'asc' ]],
     "columns": [
       {
@@ -59,7 +59,7 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>' :
+            '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>' :
             he.encode(data || '');
         }
       }, {

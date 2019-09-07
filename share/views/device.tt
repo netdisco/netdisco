@@ -13,18 +13,18 @@
       </a>
       <div class="tab-content">
         [% FOREACH tab IN settings._device_tabs %]
-        <div id="[% tab.tag %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-          <form id="[% tab.tag %]_form" class="nd_sidebar-form form-stacked"
-              method="get" action="[% uri_for('/device') %]">
-            <input name="tab" value="[% tab.tag %]" type="hidden"/>
+        <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
+          <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
+              method="get" action="[% uri_for('/device') | none %]">
+            <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
             [% TRY %]
-            <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 1;</script>
+            <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
             [% INCLUDE "sidebar/device/${tab.tag}.tt" %]
             [% CATCH %]
-            <!-- no "[% tab.tag %]" search options -->
+            <!-- no "[% tab.tag | html_entity %]" search options -->
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <input name="f" value="[% params.f | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["[% tab.tag %]"] = 0;</script>
+            <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 0;</script>
             [% END %]
           </form>
         </div> <!-- /tab-pane -->
@@ -36,7 +36,7 @@
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
       [% FOREACH tab IN settings._device_tabs %]
-      <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag %]_link" href="#[% tab.tag %]_pane">[% tab.label %]</a></li>
+      <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag | html_entity %]_link" href="#[% tab.tag | html_entity %]_pane">[% tab.label | html_entity %]</a></li>
       [% END %]
       <span id="nd_device-name">
         [% display_name | html_entity %]
@@ -47,7 +47,7 @@
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN settings._device_tabs %]
-      <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag %]_pane"></div>
+      <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag | html_entity %]_pane"></div>
       [% END %]
   </div>
 </div>

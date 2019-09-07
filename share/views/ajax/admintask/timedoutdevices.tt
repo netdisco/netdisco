@@ -17,7 +17,7 @@
     <tr>
       <td class="nd_center-cell">[% row.backend | html_entity %]</td>
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/search') %]?tab=node&q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
+        href="[% uri_for('/search') | none %]?tab=node&q=[% row.device | uri %]">[% row.device | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.dns | html_entity %]</td>
       <td class="nd_center-cell">[% row.deferrals | html_entity %]</td>
       <td class="nd_center-cell">[% row.last_defer | html_entity %]</td>

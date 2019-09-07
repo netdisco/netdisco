@@ -89,7 +89,7 @@
                     <em class="muted">MAC address format:</em><br/>
                     <select id="nd_mac-format" name="mac_format">
                       [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
-                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format %]</option>
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format | html_entity %]</option>
                       [% END %]
                     </select>
                   </li>
@@ -116,12 +116,12 @@
                     <em class="muted">Mark as Free if Down for:</em><br/>
                     <select id="nd_days-select" name="age_num">
                       [% FOREACH count IN [1..31] %]
-                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count %]</option>
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count | html_entity %]</option>
                       [% END %]
                     </select>
                     <select id="nd_age-select" name="age_unit">
                       [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
-                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_unit == unit %]>[% unit %]</option>
+                      <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_unit == unit %]>[% unit | html_entity %]</option>
                       [% END %]
                     </select>
                   </li>
@@ -140,7 +140,7 @@
               </div>
             </div>
             <div class="btn-group">
-              <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info nd_sidebar-btn-drop">
+              <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info nd_sidebar-btn-drop">
                 <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>
               <button class="btn btn-info dropdown-toggle nd_sidebar-btn-drop-drop" data-toggle="dropdown">
                 <span class="caret"></span>

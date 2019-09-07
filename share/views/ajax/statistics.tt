@@ -29,7 +29,7 @@
               <th>[% stats.ip_table_count | format_number %] IPs logged, of which [% stats.ip_active_count | format_number %] are active</th>
             </tr>
             <tr>
-              <th>Statistics last generated on [% stats.day %]</th>
+              <th>Statistics last generated on [% stats.day | html_entity %]</th>
             </tr>
           </tbody>
         </table>

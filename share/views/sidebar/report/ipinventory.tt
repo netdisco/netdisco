@@ -37,7 +37,7 @@
                     <select id="nd_mac-format" class="nd_side-select" name="limit">
                       [% FOREACH size IN [ '32', '64', '128', '256', '512', '1024', '2048', '4096', '8192' ] %]
                       <option[% ' selected="selected"' IF (params.limit == size OR (NOT params.limit AND size == 2048)) %]>
-                        [% size %]</option>
+                        [% size | html_entity %]</option>
                       [% END %]
                     </select>
                   </li>
@@ -55,6 +55,6 @@
               </div>
             </fieldset>
 
-            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
+            <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search IPs</button>
 

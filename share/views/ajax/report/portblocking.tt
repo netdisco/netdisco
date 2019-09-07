@@ -14,7 +14,7 @@ $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
     "order": [[ 0, "asc" ], [1, "asc"]],
-    "data": [% results %],
+    "data": [% results | none %],
     "columns": [
       {
         "data": 'ip',
@@ -26,7 +26,7 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="[% device_ports %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data || '') + '</a>' :
+            '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data || '') + '</a>' :
             he.encode(data || '');
         }
       }, {

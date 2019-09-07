@@ -37,9 +37,9 @@
       [% END %]
       <td class="nd_center-cell">
         [% IF row.action == 'discover' AND row.status == 'error' %]
-        <a href="[% uri_for('/') %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
+        <a href="[% uri_for('/') | none %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
         [% ELSE %]
-        <a href="[% uri_for('/device') %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
+        <a href="[% uri_for('/device') | none %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
         [% END %]
       </td>
       <td class="nd_center-cell">[% row.port | html_entity %]</td>

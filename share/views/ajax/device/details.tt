@@ -3,7 +3,7 @@
   <tbody>
     <tr>
       <td>System Name</td>
-      <td>[% d.name | hmtl_entity %]</td>
+      <td>[% d.name | html_entity %]</td>
     </tr>
     <tr>
       <td>Location
@@ -13,7 +13,7 @@
       </td>
       [% IF user_can_port_control %]
       <td class="nd_editable-cell" contenteditable="true"
-        data-field="location" data-for-device="[% d.ip | hmtl_entity %]">
+        data-field="location" data-for-device="[% d.ip | html_entity %]">
           [% d.location | html_entity %]
       </td>
       [% ELSE %]
@@ -70,7 +70,7 @@
     [% FOREACH config IN settings._extra_device_details %]
     <tr>
       <td>
-          [% config.label | hmtl_entity %]
+          [% config.label | html_entity %]
       </td>
       <td>
           [% TRY %]
@@ -139,7 +139,7 @@
         [% UNLESS m.module == 1 %]
           <br/>
         [% END %]
-        Module [% m.module | hmtl_entity %]: [% m.status | html_entity %], [% m.poe_capable_ports | hmtl_entity %] power-capable ports, [% m.poe_powered_ports | hmtl_entity %] powered ([% m.poe_disabled_ports | hmtl_entity %] admin disabled, [% m.poe_errored_ports | hmtl_entity %] errors), [% m.poe_power_committed | hmtl_entity %]/[% m.power | hmtl_entity %] watts committed.
+        Module [% m.module | html_entity %]: [% m.status | html_entity %], [% m.poe_capable_ports | html_entity %] power-capable ports, [% m.poe_powered_ports | html_entity %] powered ([% m.poe_disabled_ports | html_entity %] admin disabled, [% m.poe_errored_ports | html_entity %] errors), [% m.poe_power_committed | html_entity %]/[% m.power | html_entity %] watts committed.
       [% END %]
       </td>
     </tr>
@@ -153,16 +153,16 @@
       <td>[% d.vtp_domain | html_entity %]</td>
     </tr>
     [% IF user_has_role('admin') %]
-    <tr data-for-device="[% d.ip | hmtl_entity %]">
+    <tr data-for-device="[% d.ip | html_entity %]">
       <td>Admin Tasks</td>
       <td>
-        <input type="hidden" data-form="discover" value="[% d.ip | hmtl_entity %]" name="device"/>
+        <input type="hidden" data-form="discover" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="discover">Discover</button>
-        <input type="hidden" data-form="arpnip" value="[% d.ip | hmtl_entity %]" name="device"/>
+        <input type="hidden" data-form="arpnip" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="arpnip">Arpnip</button>
-        <input type="hidden" data-form="macsuck" value="[% d.ip | hmtl_entity %]" name="device"/>
+        <input type="hidden" data-form="macsuck" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="macsuck">Macsuck</button>
-        <input type="hidden" data-form="nbtstat" value="[% d.ip | hmtl_entity %]" name="device"/>
+        <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
 
         <button class="btn btn-danger btn-small pull-right"
@@ -187,7 +187,7 @@
               <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="archive">
               <h4 class="nd_unbolden">Archive Nodes</h4>
             </label>
-            <input type="hidden" data-form="delete" value="[% d.ip | hmtl_entity %]" name="device"/>
+            <input type="hidden" data-form="delete" value="[% d.ip | html_entity %]" name="device"/>
           </div>
           <div class="modal-footer">
             <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>

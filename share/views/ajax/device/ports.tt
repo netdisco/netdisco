@@ -11,7 +11,7 @@
         [% IF (item.name == 'c_port' OR item.name == 'c_descr' OR item.name == 'c_name') %]
           [% th_class = ' class="portsort"' %]
         [% END %]
-        <th[% th_class | hmtl_entity %]>
+        <th[% th_class | html_entity %]>
           [% IF item.name == 'c_neighbors' %]
           [% IF params.c_nodes %]
           Connected Nodes &amp; Devices
@@ -84,7 +84,7 @@
       <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
       [% END %]
         <a class="nd_log-icon"
-          href="[% uri_for('/report/portlog') %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
+          href="[% uri_for('/report/portlog') | none %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
           <i class="icon-file-text-alt"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
@@ -200,7 +200,7 @@
       <td>
         [% IF row.vlan AND row.vlan > 0 %]
         <a class="nd_linkcell"
-          href="[% uri_for('/search') %]?tab=vlan&q=[% row.vlan | uri %]">
+          href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.vlan | uri %]">
             [% row.vlan | html_entity %]</a>
         [% END %]
       </td>
@@ -297,7 +297,7 @@
             [% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
-              [% row.remote_inventory | hmtl_entity %]<br/>
+              [% row.remote_inventory | html_entity %]<br/>
             [% END %]
             [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
@@ -317,7 +317,7 @@
               [% END %]
             </a><br/>
             [% IF params.n_inventory and row.remote_inventory %]
-              [% row.remote_inventory | hmtl_entity %]<br/>
+              [% row.remote_inventory | html_entity %]<br/>
             [% END %]
             [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
               ([% 'id: '_ row.remote_id IF row.remote_id %]
@@ -365,7 +365,7 @@
           [% END %]
           [% IF params.n_netbios %]
             [% FOREACH nbt IN node.netbios %]
-            <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
+            <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
             <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node | none %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
             [% END %]
           [% END %]
@@ -373,7 +373,7 @@
         [% END %]
         [% IF user_can_port_control AND params.c_admin %]
         <a class="nd_log-icon"
-          href="[% uri_for('/admin/topology') %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
+          href="[% uri_for('/admin/topology') | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
           <i class="icon-link text-warning"
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="Manual Topology"></i>

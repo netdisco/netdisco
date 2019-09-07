@@ -34,42 +34,42 @@ $(document).ready(function() {
     "serverSide": true,
     "searching": false,
     "order": [[ 0, "desc" ]],
-    "ajax": "[% uri_for('/ajax/content/report/moduleinventory/data') %]?[% url(params('query').hash) %]",
+    "ajax": "[% uri_for('/ajax/content/report/moduleinventory/data') | none %]?[% url(params('query').hash) | none %]",
     "columns": [
       {
       "data": 'ip',
       "render": function(data, type, row, meta) {
-        return '<a href="[% uri_for('/device') %]?tab=modules&q=' + encodeURIComponent(data) + '">' + he.encode(row.device.dns || row.device.name || row.ip) + '</a>';
+        return '<a href="[% uri_for('/device') | none %]?tab=modules&q=' + encodeURIComponent(data) + '">' + he.encode(row.device.dns || row.device.name || row.ip) + '</a>';
         }
       }, {
         "data": 'description',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&description=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&description=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'name',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&name=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&name=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'class',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data + '')) + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data + '')) + '</a>';
         }
       }, {
         "data": 'type',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&type=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&type=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'model',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'serial',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&serial=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&serial=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'hw_ver',
@@ -90,12 +90,12 @@ $(document).ready(function() {
     ],
     [% ELSE %]
     "deferRender": true,
-    "data": [% results %],
+    "data": [% results | none %],
     "columns": [
       {
         "data": 'class',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory %]&class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data + '')) + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data + '')) + '</a>';
         }
       }, {
         "data": 'count',

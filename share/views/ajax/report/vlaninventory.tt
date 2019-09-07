@@ -13,17 +13,17 @@
 $(document).ready(function() {
   var table = $('#data-table').dataTable({
     "deferRender": true,
-    "data": [% results %],
+    "data": [% results | none %],
     "columns": [
       {
         "data": 'vlan',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/search') %]?tab=vlan&q=' + encodeURIComponent(data) + '">' + data + '</a>';
+          return '<a href="[% uri_for('/search') | none %]?tab=vlan&q=' + encodeURIComponent(data) + '">' + data + '</a>';
         }
       }, {
         "data": 'description',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/search') %]?tab=vlan&q=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% uri_for('/search') | none %]?tab=vlan&q=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }, {
         "data": 'dcount',

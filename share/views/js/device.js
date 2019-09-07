@@ -27,7 +27,7 @@
 
   // on load, establish global delegations for now and future
   $(document).ready(function() {
-    var tab = '[% tab.tag %]'
+    var tab = '[% tab.tag | html_entity %]'
     var target = '#' + tab + '_pane';
     var portfilter = $('#ports_form').find("input[name=f]");
 

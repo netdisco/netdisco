@@ -78,7 +78,7 @@
 
   // on load, establish global delegations for now and future
   $(document).ready(function() {
-    var tab = '[% task.tag %]'
+    var tab = '[% task.tag | html_entity %]'
     var target = '#' + tab + '_pane';
 
     // get all devices on device input focus

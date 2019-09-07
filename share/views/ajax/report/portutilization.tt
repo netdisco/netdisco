@@ -14,12 +14,12 @@
 $(document).ready(function() {
     var table = $('#data-table').dataTable({
         "deferRender": true,
-        "data": [% results %],
+        "data": [% results | none %],
         "columns": [
            {
                 "data": 'ip',
                 "render": function(data, type, row, meta) {
-                    return '<a href="[% device_ports %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.ip) + '</a>';
+                    return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.ip) + '</a>';
                 }
             }, {
                 "data": 'port_count',

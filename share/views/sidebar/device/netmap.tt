@@ -82,7 +82,7 @@
               rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
               <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
-                value="[% opt.key %]">[% opt.value | html_entity %]</option>
+                value="[% opt.key | html_entity %]">[% opt.value | html_entity %]</option>
               [% END %]
             </select>
             [% END %]
@@ -92,7 +92,7 @@
               rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations">
               [% FOREACH loc IN lgroup_list %]
               <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
-                value="[% loc %]">[% loc | html_entity %]</option>
+                value="[% loc | html_entity %]">[% loc | html_entity %]</option>
               [% END %]
             </select>
             [% END %]
@@ -132,6 +132,6 @@
 
             </div>
 
-            <button id="[% tab.tag %]_submit" type="submit" class="btn btn-info">
+            <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
                 <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i>
             Redraw Map</button>

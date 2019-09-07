@@ -18,14 +18,14 @@
             <th>
               [% IF platform.vendor %]
               <a class="nd_linkcell"
-                href="[% search_device %]&q=[% platform.vendor | uri %]&vendor=[% platform.vendor | uri %]">
+                href="[% search_device | none %]&q=[% platform.vendor | uri %]&vendor=[% platform.vendor | uri %]">
                   [% platform.vendor | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
             <th>
               [% IF platform.model %]
               <a class="nd_linkcell"
-                href="[% search_device %]&q=[% platform.model | uri %]&model=[% platform.model | uri %]">
+                href="[% search_device | none %]&q=[% platform.model | uri %]&model=[% platform.model | uri %]">
                   [% platform.model | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
@@ -52,14 +52,14 @@
             <th>
               [% IF release.os %]
               <a class="nd_linkcell"
-                href="[% search_device %]&q=[% release.os | uri %]&os=[% release.os | uri %]">
+                href="[% search_device | none %]&q=[% release.os | uri %]&os=[% release.os | uri %]">
                   [% release.os | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
             <th>
               [% IF release.os_ver %]
               <a class="nd_linkcell"
-                href="[% search_device %]&q=[% release.os_ver | uri %]&os_ver=[% release.os_ver | uri %]">
+                href="[% search_device | none %]&q=[% release.os_ver | uri %]&os_ver=[% release.os_ver | uri %]">
                   [% release.os_ver | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
