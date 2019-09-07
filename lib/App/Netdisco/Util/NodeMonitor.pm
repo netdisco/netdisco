@@ -5,6 +5,7 @@ use App::Netdisco;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
+use Net::Domain 'hostfqdn';
 use App::Netdisco::Util::DNS qw/hostname_from_ip ipv4_from_hostname/;
 
 use base 'Exporter';
@@ -16,8 +17,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 sub _email {
   my ($to, $subject, $body) = @_;
   return unless $to;
-  my $domain = setting('domain_suffix') || 'localhost';
-  $domain =~ s/^\.//;
+  my $domain =~ (hostfqdn || 'fqdn-undefined');
 
   my $SENDMAIL = '/usr/sbin/sendmail';
   open (SENDMAIL, "| $SENDMAIL -t") or die "Can't open sendmail at $SENDMAIL.\n";

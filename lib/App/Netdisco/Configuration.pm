@@ -135,6 +135,21 @@ if ($ENV{NETDISCO_DOMAIN}) {
   }
 }
 
+# convert domain_suffix from scalar or list to regexp
+
+config->{'domain_suffix'} = [setting('domain_suffix')]
+  if ref [] ne ref setting('domain_suffix');
+
+if (scalar @{ setting('domain_suffix') }) {
+  my @suffixes = map { (ref qr// eq ref $_) ? $_ : quotemeta }
+                    @{ setting('domain_suffix') };
+  my $buildref = '(?:'. (join '|', @suffixes) .')$';
+  config->{'domain_suffix'} = qr/$buildref/;
+}
+else {
+  config->{'domain_suffix'} = qr//;
+}
+
 # support unordered dictionary as if it were a single item list
 if (ref {} eq ref setting('device_identity')) {
   config->{'device_identity'} = [ setting('device_identity') ];

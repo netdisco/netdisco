@@ -62,6 +62,7 @@ lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
+lib/App/Netdisco/DB/Result/Virtual/LastNode.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeIp6.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
@@ -237,7 +238,7 @@ lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
 lib/App/Netdisco/Worker/Runner.pm
 lib/App/Netdisco/Worker/Status.pm
 lib/Dancer/Template/NetdiscoTemplateToolkit.pm
-LICENCE
+LICENSE.md
 MANIFEST			This list of files
 META.json
 META.yml
@@ -318,6 +319,7 @@ share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
 share/public/javascripts/underscore.min.js
+share/radius_dictionaries/TODO
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
@@ -371,6 +373,7 @@ share/schema_versions/App-Netdisco-DB-54-55-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-55-56-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-56-57-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-57-58-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-58-59-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
@@ -505,6 +508,7 @@ share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
 xt/00-compile.t
+xt/01-local-pod.t
 xt/10-sort_port.t
 xt/11-portsort.t
 xt/20-checkacl.t

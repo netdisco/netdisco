@@ -46,7 +46,7 @@ use App::Netdisco::Util::Permission ':all';
 exit(0) unless setting('use_legacy_rancidexport');
 
 my $settings = setting( 'rancid' );
-my $domain_suffix = setting( 'domain_suffix' ) || '';
+my $domain_suffix = setting( 'domain_suffix' );
 my $delimiter = $settings->{ 'delimiter' } || ':';
 my $down_age = $settings->{ 'down_age' } || '1 day';
 my $rancidhome = $settings->{ 'rancid_home' } || '/var/lib/rancid';
@@ -110,7 +110,7 @@ foreach my $group (keys %$list) {
       $name = ($dev->dns || $dev->name);
     }
     if ($by_hostname->{$group}) {
-      $name =~ s/$domain_suffix$//;
+      $name =~ s/$domain_suffix//;
     }
     printf ROUTER "%s$delimiter%s$delimiter%s\n", $name, $vendor,
       $dev->get_column( 'old' ) ? "down" : "up";

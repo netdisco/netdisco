@@ -20,7 +20,7 @@ get '/ajax/content/report/portutilization' => require_login sub {
     my $age_num = param('age_num') || 3;
     my $age_unit = param('age_unit') || 'months';
     my @results = schema('netdisco')->resultset('Virtual::PortUtilization')
-      ->search(undef, { bind => [ "$age_num  $age_unit" ] })->hri->all;
+      ->search(undef, { bind => [ "$age_num $age_unit", "$age_num $age_unit", "$age_num $age_unit" ] })->hri->all;
 
     if (request->is_ajax) {
         my $json = to_json (\@results);

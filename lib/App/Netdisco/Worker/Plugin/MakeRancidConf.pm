@@ -18,7 +18,7 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $config = setting('rancid') || {};
 
-  my $domain_suffix = setting('domain_suffix') || '';
+  my $domain_suffix = setting('domain_suffix');
   my $delimiter = $config->{delimiter} || ';';
   my $down_age  = $config->{down_age} || '1 day';
   my $default_group = $config->{default_group} || 'default';
@@ -65,7 +65,7 @@ register_worker({ phase => 'main' }, sub {
     }
 
     my $name = check_acl_no($d, $config->{by_ip}) ? $d->ip : ($d->dns || $d->name);
-    $name =~ s/$domain_suffix$// if check_acl_no($d, $config->{by_hostname});
+    $name =~ s/$domain_suffix// if check_acl_no($d, $config->{by_hostname});
 
     my ($group) =
       (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{groups} }) || $default_group;
@@ -189,7 +189,7 @@ email config and creating the repository with C<rancid-cvs>.
 =head2 C<rancid_conf>
 
 The location where the rancid configuration (F<rancid.types.base> and
-F<rancid.types.conf>) is installed. It will be used to check the existance
+F<rancid.types.conf>) is installed. It will be used to check the existence
 of device types before exporting the devices to the rancid configuration. If no match
 is found the device will not be added to rancid.
 

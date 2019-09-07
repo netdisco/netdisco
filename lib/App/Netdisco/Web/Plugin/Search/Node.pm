@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP::Lite ':lower';
+use Regexp::Common 'net';
 use NetAddr::MAC ();
 
 use App::Netdisco::Web::Plugin;
@@ -23,10 +24,14 @@ ajax '/ajax/content/search/node' => require_login sub {
     my ( $start, $end ) = param('daterange') =~ m/(\d+-\d+-\d+)/gmx;
 
     my $mac = NetAddr::MAC->new(mac => $node);
-    undef $mac if ($mac and $mac->as_ieee and ($mac->as_ieee eq '00:00:00:00'));
-    my @active = (param('archived') ? () : (-bool => 'active'));
+    undef $mac if
+      ($mac and $mac->as_ieee
+      and (($mac->as_ieee eq '00:00:00:00:00:00')
+        or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
+    my @active = (param('archived') ? () : (-bool => 'active'));
     my (@times, @wifitimes, @porttimes);
+
     if ( $start and $end ) {
         $start = $start . ' 00:00:00';
         $end   = $end   . ' 23:59:59';
@@ -166,11 +171,14 @@ ajax '/ajax/content/search/node' => require_login sub {
               ->search_by_ip({ip => $ip, @active, @times});
         }
         else {
-            $likeval .= setting('domain_suffix')
-              if index($node, setting('domain_suffix')) == -1;
-
             $set = schema('netdisco')->resultset('NodeIp')
-              ->search_by_dns({dns => $likeval, @active, @times});
+              ->search_by_dns({
+                  ($using_wildcards ? (dns => $likeval) :
+                  (dns => "${likeval}.\%",
+                   suffix => setting('domain_suffix'))),
+                  @active,
+                  @times,
+                });
 
             # if the user selects Vendor search opt, then
             # we'll try the OUI company name as a fallback

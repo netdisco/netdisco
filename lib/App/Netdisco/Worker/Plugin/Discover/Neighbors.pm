@@ -95,7 +95,7 @@ port relationships.
 The Device database object can be a fresh L<DBIx::Class::Row> object which is
 not yet stored to the database.
 
-A list of discovererd neighbors will be returned as [C<$ip>, C<$type>] tuples.
+A list of discovered neighbors will be returned as [C<$ip>, C<$type>] tuples.
 
 =cut
 
