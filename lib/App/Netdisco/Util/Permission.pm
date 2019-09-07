@@ -283,58 +283,38 @@ sub acl_to_where_clause {
           next INLIST;
       }
 
-#      if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
-#          my $first = $1;
-#          my $last  = $2;
-#
-#          if ($item =~ m/:/) {
-#              next INLIST if $addr->bits != 128 and not $all;
-#
-#              $first = hex $first;
-#              $last  = hex $last;
-#
-#              (my $header = $item) =~ s/:[^:]+$/:/;
-#              foreach my $part ($first .. $last) {
-#                  my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
-#                    or next;
-#                  if ($neg xor ($ip == $addr)) {
-#                    return 1 if not $all;
-#                    next INLIST;
-#                  }
-#              }
-#              return 0 if (not $neg and $all);
-#              return 1 if ($neg and not $all);
-#          }
-#          else {
-#              next INLIST if $addr->bits != 32 and not $all;
-#
-#              (my $header = $item) =~ s/\.[^.]+$/./;
-#              foreach my $part ($first .. $last) {
-#                  my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
-#                    or next;
-#                  if ($neg xor ($ip == $addr)) {
-#                    return 1 if not $all;
-#                    next INLIST;
-#                  }
-#              }
-#              return 0 if (not $neg and $all);
-#              return 1 if ($neg and not $all);
-#          }
-#          next INLIST;
-#      }
-#
-#      my $ip = NetAddr::IP::Lite->new($item)
-#        or next INLIST;
-#      next INLIST if $ip->bits != $addr->bits and not $all;
-#
-#      if ($neg xor ($ip->contains($addr))) {
-#        return 1 if not $all;
-#      }
-#      else {
-#        return 0 if $all;
-#      }
-#      next INLIST;
+      if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
+          my $first = $1;
+          my $last  = $2;
+          my ($header, $family);
+
+          if ($item =~ m/:/) {
+              $family = 6;
+              ($header = $item) =~ s/:[^:]+$/:/;
+          }
+          else {
+              $family = 4;
+              ($header = $item) =~ s/\.[^.]+$/./;
+          }
+
+          push @where, (-and => [
+            \['family(ip) = ?', $family],
+            ($neg ? '-or' : '-and') => [
+              ip => { ($neg ? '<' : '>=') => $header . $first },
+              ip => { ($neg ? '>' : '<=') => $header . $first },
+            ],
+          ]);
+          next INLIST;
+      }
+
+      push @where, (-and => [
+        \['family(ip) = family(? :: inet)', $item],
+        ($neg ? '-not_bool' : '-bool') => { ip => { '<<=' => $item } },
+      ]);
+      next INLIST;
   }
+
+  return {($all ? '-and' : '-or') => \@where};
 }
 
 true;
