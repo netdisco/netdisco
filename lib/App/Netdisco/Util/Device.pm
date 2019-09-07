@@ -163,7 +163,7 @@ sub device_ips_matching {
       ->search({ $no }, { select => ['ip'] });
 
     return schema('netdisco')->resultset('Device')->search({ $only,
-      ($no ? { ip => { -not_in => $no_query->as_query } } : ()) })
+      ($acl_no ? { ip => { -not_in => $no_query->as_query } } : ()) })
       ->get_column('ip')->all;
 }
 
