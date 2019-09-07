@@ -58,8 +58,11 @@ Returns C<undef> if the connection fails.
 sub reader_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
+  return undef if $device->in_storage and $device->is_pseudo;
+
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
+
   debug sprintf 'snmp reader cache warm: [%s]', $device->ip;
   return ($readers->{$device->ip}
     = _snmp_connect_generic('read', $device, $useclass));
@@ -104,8 +107,11 @@ Returns C<undef> if the connection fails.
 sub writer_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
+  return undef if $device->in_storage and $device->is_pseudo;
+
   my $writers = $class->instance->writers or return undef;
   return $writers->{$device->ip} if exists $writers->{$device->ip};
+
   debug sprintf 'snmp writer cache warm: [%s]', $device->ip;
   return ($writers->{$device->ip}
     = _snmp_connect_generic('write', $device, $useclass));

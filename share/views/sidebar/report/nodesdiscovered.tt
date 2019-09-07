@@ -35,7 +35,7 @@
                   name="aps"[% ' checked="checked"' IF params.aps %]/>
               </label>
               <label class="nd_checkboxlabel" for="aps">
-                <span class="nd_searchcheckbox uneditable-input"><i class="icon-li icon-signal"></i>&nbsp Wireless APs</span>
+                <span class="nd_searchcheckbox uneditable-input"><i class="icon-li icon-signal"></i>&nbsp; Wireless APs</span>
               </label>
             </div>
             <div class="clearfix"><p></p></div>

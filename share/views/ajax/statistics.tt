@@ -17,9 +17,11 @@
                   of which [% stats.device_port_up_count | format_number %] are up
               </th>
             </tr>
+            [% IF stats.device_link_count %]
             <tr>
               <th>[% stats.device_link_count| format_number %] layer 2 links between devices</th>
             </tr>
+            [% END %]
             <tr>
               <th>[% stats.node_table_count | format_number %] nodes logged, of which [% stats.node_active_count | format_number %] are active</th>
             </tr>

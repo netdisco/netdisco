@@ -31,7 +31,7 @@ get '/ajax/content/device/ports' => require_login sub {
                 # change wildcard chars to SQL
                 $f =~ s/\*/%/g;
                 $f =~ s/\?/_/g;
-                # set wilcards at param boundaries
+                # set wildcards at param boundaries
                 if ($f !~ m/[%_]/) {
                     $f =~ s/^\%*/%/;
                     $f =~ s/\%*$/%/;
@@ -82,6 +82,8 @@ get '/ajax/content/device/ports' => require_login sub {
             });
         }
         delete $port_state{free};
+        # showing free ports requires showing down ports
+        ++$port_state{down};
     }
 
     if (scalar keys %port_state < 3) {

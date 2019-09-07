@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.042010'
+    version: '2.043001'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '58'
+    version: '59'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -121,6 +121,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
   App::Netdisco::DB::Result::Virtual::GenericReport:
     file: lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
+  App::Netdisco::DB::Result::Virtual::LastNode:
+    file: lib/App/Netdisco/DB/Result/Virtual/LastNode.pm
   App::Netdisco::DB::Result::Virtual::NodeIp4:
     file: lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm
   App::Netdisco::DB::Result::Virtual::NodeIp6:
@@ -483,6 +485,7 @@ requires:
   App::cpanminus: '1.6108'
   App::local::lib::helper: '0.07'
   Archive::Extract: '0'
+  Authen::Radius: '0'
   CGI::Expand: '2.05'
   DBD::Pg: '0'
   DBIx::Class: '0.082841'
@@ -556,7 +559,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/BSD-3-Clause
+  license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.042010'
+version: '2.043001'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

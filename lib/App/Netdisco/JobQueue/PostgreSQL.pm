@@ -79,6 +79,19 @@ sub jq_warm_thrusters {
       actionset => $actionset{$_},
     }, { key => 'primary' }) for keys %actionset;
   });
+
+  # fix up the pseudo devices which need layer 3
+  # TODO remove this after next release
+  schema('netdisco')->txn_do(sub {
+    my @hosts = grep { defined }
+                map  { schema('netdisco')->resultset('Device')->search_for_device($_->{only}) }
+                grep { exists $_->{only} and ref '' eq ref $_->{only} }
+                grep { exists $_->{driver} and $_->{driver} eq 'cli' }
+                    @{ setting('device_auth') };
+
+    $_->update({ layers => \[q{overlay(layers placing '1' from 6 for 1)}] })
+      for @hosts;
+  });
 }
 
 sub jq_getsome {

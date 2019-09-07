@@ -97,9 +97,13 @@ sub search_by_ip {
       ->search($cond, $attrs);
 }
 
-=head1 search_by_name( \%cond, \%attrs? )
+=head1 search_by_dns( \%cond, \%attrs? )
 
- my $set = $rs->search_by_name({dns => 'foo.example.com', active => 1});
+ my $set = $rs->search_by_dns({
+   dns => 'foo.example.com',
+   suffix => qr/(?:\.example\..com|\.local)$/,
+   active => 1
+ });
 
 Like C<search()>, this returns a ResultSet of matching rows from the
 NodeIp table.
@@ -115,6 +119,11 @@ this column is the IP's DNS PTR record, cached at the time of Netdisco Arpnip.
 
 The C<cond> parameter must be a hashref containing a key C<dns> with the value
 to search for. The value may optionally include SQL wildcard characters.
+
+=item *
+
+The C<cond> parameter may optionally have a C<suffix> parameter which is a
+regular expression of domain names - one of which must match the results.
 
 =item *
 
@@ -141,7 +150,13 @@ sub search_by_dns {
     die "dns field required for search_by_dns\n"
       if ref {} ne ref $cond or !exists $cond->{dns};
 
-    $cond->{dns} = { '-ilike' => delete $cond->{dns} };
+    (my $suffix = (delete $cond->{suffix} || ''))
+      =~ s|\Q(?^\Eu?|(?|g;
+
+    $cond->{dns} = [ -and =>
+      { '-ilike' => delete $cond->{dns} },
+      { '~*' => "***:$suffix" },
+    ];
 
     return $rs
       ->search_rs({}, $search_attr)

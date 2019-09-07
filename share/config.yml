@@ -22,7 +22,7 @@ external_databases: []
 # WEB FRONTEND
 # ------------
 
-domain_suffix: ""
+domain_suffix: []
 no_auth: false
 suggest_guest: false
 navbar_autocomplete: true

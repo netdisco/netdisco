@@ -36,7 +36,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
           ip => param('ip'),
           dns => param('dns'),
           vendor => 'netdisco',
-          layers => '00000100',
+          layers => param('layers'),
           last_discover => \'now()',
         });
       return unless $device;
@@ -87,6 +87,9 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
               })->delete;
           }
       }
+
+      # also set layers
+      $device->update({layers => param('layers')});
     });
 };
 

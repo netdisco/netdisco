@@ -43,7 +43,7 @@ $(document).ready(function() {
       }, {
         "data": 'oui.abbrev',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/report/nodevendor') %]?vendor=' + encodeURIComponent(data || 'blank') + '">' + he.encode(data ||'(Unknown Vendor)') + '</a>';
+          return '<a href="[% uri_for('/report/nodevendor') %]?vendor=' + encodeURIComponent(row.oui.abbrev || 'blank') + '">' + he.encode(row.oui.company ||'(Unknown Vendor)') + '</a>';
         }
       }, {
         "data": 'port',
@@ -71,7 +71,7 @@ $(document).ready(function() {
       {
         "data": 'vendor',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/report/nodevendor') %]?vendor=' + encodeURIComponent(data || 'blank') + '">' + he.encode(data ||'(Unknown Vendor)') + '</a>';
+          return '<a href="[% uri_for('/report/nodevendor') %]?vendor=' + encodeURIComponent(row.abbrev || 'blank') + '">' + he.encode(row.vendor ||'(Unknown Vendor)') + '</a>';
         }
       }, {
         "data": 'count',

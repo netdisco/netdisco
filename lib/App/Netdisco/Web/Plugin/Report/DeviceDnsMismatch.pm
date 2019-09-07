@@ -16,7 +16,7 @@ register_report(
 
 get '/ajax/content/report/devicednsmismatch' => require_login sub {
 
-    my $suffix = setting('domain_suffix') || '';
+    (my $suffix = '***:'. setting('domain_suffix')) =~ s|\Q(?^\Eu?|(?|g;
 
     my @results
         = schema('netdisco')->resultset('Virtual::DeviceDnsMismatch')
