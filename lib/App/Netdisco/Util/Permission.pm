@@ -276,7 +276,7 @@ sub acl_to_where_clause {
       # lazy version of vendor: and model:
       if ($item =~ m/^([^:]+):([^:]+)$/) {
           my $prop  = $1;
-          my $match = $2;
+          my $match = qr/^$2$/;
           $match =~ s|\Q(?^\Eu?|(?|g;
 
           push @where, ($prop => {($neg ? '!~' : '~') => '***:'. $match});
@@ -301,7 +301,7 @@ sub acl_to_where_clause {
             \['family(ip) = ?', $family],
             ($neg ? '-or' : '-and') => [
               ip => { ($neg ? '<' : '>=') => $header . $first },
-              ip => { ($neg ? '>' : '<=') => $header . $first },
+              ip => { ($neg ? '>' : '<=') => $header . $last },
             ],
           ]);
           next INLIST;
