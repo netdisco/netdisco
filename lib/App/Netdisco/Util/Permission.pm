@@ -4,9 +4,11 @@ use strict;
 use warnings;
 use Dancer qw/:syntax :script/;
 
+use Regexp::Common 'net';
 use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
-use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::DNS
+  qw/hostname_from_ip ip_from_hostname/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -258,7 +260,7 @@ sub acl_to_where_clause {
       # in a context where that is a problem.
       if ($qref eq ref $item) {
           (my $match = '***:'. $item) =~ s|\Q(?^\Eu?|(?|g;
-          push @where, (dns => { '~' => $match });
+          push @where, (dns => { '!=' => undef, '~' => $match });
           next INLIST;
       }
 
@@ -279,38 +281,52 @@ sub acl_to_where_clause {
           my $match = qr/^$2$/;
           $match =~ s|\Q(?^\Eu?|(?|g;
 
-          push @where, ($prop => {($neg ? '!~' : '~') => '***:'. $match});
+          push @where, ($prop => { '!=' => undef,
+                                   ($neg ? '!~' : '~') => '***:'. $match });
           next INLIST;
       }
 
+      # assume TLD cannot contain hyphen so this is not FQDN
       if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
           my $last  = $2;
-          my ($header, $family);
+          my $header;
 
           if ($item =~ m/:/) {
-              $family = 6;
               ($header = $item) =~ s/:[^:]+$/:/;
           }
           else {
-              $family = 4;
               ($header = $item) =~ s/\.[^.]+$/./;
           }
 
-          push @where, (-and => [
-            \['family(ip) = ?', $family],
-            ($neg ? '-or' : '-and') => [
-              ip => { ($neg ? '<' : '>=') => $header . $first },
-              ip => { ($neg ? '>' : '<=') => $header . $last },
-            ],
+          push @where, (($neg ? '-or' : '-and') => [
+            ip => { ($neg ? '<' : '>=') => $header . $first },
+            ip => { ($neg ? '>' : '<=') => $header . $last },
           ]);
           next INLIST;
       }
 
-      push @where, (-and => [
-        \['family(ip) = family(? :: inet)', $item],
-        ($neg ? '-not_bool' : '-bool') => { ip => { '<<=' => $item } },
-      ]);
+      # handle NetAddr::IP equivalent special syntax
+      if ($item eq 'any') {
+          push @where, (($neg ? '-and' : '-or') => [
+            ip => { '<<=' => '0.0.0.0/0' },
+            ip => { '<<=' => '::/0' },
+          ]);
+          next INLIST;
+      }
+
+      # FQDN must be translated to IP addr (if we can!)
+      if ($item =~ m/^$RE{net}{domain}{-rfc1101}$/) {
+          my $resolved = ip_from_hostname($item);
+          if (not defined $resolved) {
+              debug sprintf('acl_to_where_clause: cannot resolve %s', $item);
+              next INLIST;
+          }
+          $item = $resolved;
+      }
+
+      push @where,
+        (($neg ? '-not_bool' : '-bool') => { ip => { '<<=' => $item } });
       next INLIST;
   }
 

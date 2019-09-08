@@ -9,7 +9,11 @@ use NetAddr::IP::Lite ':lower';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/hostname_from_ip ipv4_from_hostname/;
+our @EXPORT_OK = qw/
+  hostname_from_ip
+  ipv4_from_hostname
+  ip_from_hostname
+/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -102,6 +106,42 @@ sub ipv4_from_hostname {
   if ($query) {
       foreach my $rr ($query->answer) {
           next unless $rr->type eq "A";
+          return $rr->address;
+      }
+  }
+
+  return undef;
+}
+
+=head2 ip_from_hostname( $name )
+
+Given a host name will return its first IPv4 or IPv6 address. Does not use
+L<NetAddr::IP> (for speed) but that might affect results from C</etc/hosts>.
+
+Returns C<undef> if no A or AAAA records exist for the name.
+
+=cut
+
+sub ip_from_hostname {
+  my $name = shift;
+  return unless $name;
+  my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
+
+  # check /etc/hosts file and short-circuit if found
+  return $ETCHOSTS->{$name}->[0]->[0]
+    if exists $ETCHOSTS->{$name} and $ETCHOSTS->{$name}->[0]->[0];
+
+  my $res   = Net::DNS::Resolver->new;
+  my $query = $res->search($name);
+
+  if ($query) {
+      my @answers = $query->answer;
+      foreach my $rr (@answers) {
+          next unless $rr->type eq "A";
+          return $rr->address;
+      }
+      foreach my $rr (@answers) {
+          next unless $rr->type eq "AAAA";
           return $rr->address;
       }
   }
