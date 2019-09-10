@@ -275,18 +275,8 @@ sub acl_to_where_clause {
           next INLIST;
       }
 
-      # lazy version of vendor: and model:
-      if ($item =~ m/^([^:]+):([^:]+)$/) {
-          my $prop  = $1;
-          my $match = qr/^$2$/;
-          $match =~ s|\Q(?^\Eu?|(?|g;
-
-          push @where, ($prop => { '!=' => undef,
-                                   ($neg ? '!~' : '~') => '***:'. $match });
-          next INLIST;
-      }
-
       # assume TLD cannot contain hyphen so this is not FQDN
+      # and it's not DB field:value
       if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
           my $last  = $2;
@@ -303,6 +293,19 @@ sub acl_to_where_clause {
             ip => { ($neg ? '<' : '>=') => $header . $first },
             ip => { ($neg ? '>' : '<=') => $header . $last },
           ]);
+          next INLIST;
+      }
+
+      # lazy version of vendor: and model:
+      if ($item !~ m/$RE{net}{IPv6}{-sep => ':'}/
+          and $item =~ m/^([^:]+):(.+)$/) {
+
+          my $prop  = $1;
+          my $match = qr/^$2$/;
+          $match =~ s|\Q(?^\Eu?|(?|g;
+
+          push @where, ($prop => { '!=' => undef,
+                                   ($neg ? '!~' : '~') => '***:'. $match });
           next INLIST;
       }
 

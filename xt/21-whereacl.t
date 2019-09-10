@@ -41,7 +41,20 @@ config->{'host_groups'} = {
 my $clause = acl_to_where_clause(setting('host_groups')->{'primary'});
 my $sqla = SQL::Abstract->new();
 
-my $compiled = ' WHERE ( ( ip <<= ? OR ip <<= ? OR ip <<= ? OR ( ip >= ? AND ip <= ? ) OR ( dns IS NOT NULL AND dns ~ ? ) OR ( vendor IS NOT NULL AND vendor ~ ? ) OR ( ip <<= ? AND ( dns IS NOT NULL AND dns ~ ? ) ) OR ( model IS NOT NULL AND model ~ ? ) OR (NOT ip <<= ?) OR ( ip <<= ? OR ip <<= ? ) OR ( ip <<= ? AND ip <<= ? ) ) )';
+my $compiled = ' WHERE ( ('
+.' ip <<= ?'
+.' OR ip <<= ?'
+.' OR ip <<= ?'
+.' OR ( ip >= ? AND ip <= ? )'
+.' OR ( ip < ? OR ip > ? )'
+.' OR ( dns IS NOT NULL AND dns ~ ? )'
+.' OR ( vendor IS NOT NULL AND vendor ~ ? )'
+.' OR ( ( model IS NOT NULL AND model ~ ? ) AND ( dns IS NOT NULL AND dns ~ ? ) )'
+.' OR ( model IS NOT NULL AND model ~ ? )'
+.' OR (NOT ip <<= ?)'
+.' OR ( ip <<= ? OR ip <<= ? )'
+.' OR ( ip <<= ? AND ip <<= ? )'
+.' ) )';
 
 is($sqla->where($clause), $compiled, 'syntax in compiled WHERE clause');
 
