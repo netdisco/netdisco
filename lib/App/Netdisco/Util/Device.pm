@@ -157,13 +157,13 @@ will work as an exclusion list applied at the same time.
 sub device_ips_matching {
     my ($acl_only, $acl_no) = @_;
     return () unless $acl_only;
-    my $only = acl_to_where_clause($acl_only);
-    my $no   = acl_to_where_clause($acl_no);
+    my $only = acl_to_where_clause($acl_only) or return ();
+    my $no   = acl_to_where_clause($acl_no) || {};
     my $no_query = schema('netdisco')->resultset('Device')
-      ->search({ $no }, { select => ['ip'] });
+      ->search( $no, { select => ['ip'] });
 
-    return schema('netdisco')->resultset('Device')->search({ $only,
-      ($acl_no ? { ip => { -not_in => $no_query->as_query } } : ()) })
+    return schema('netdisco')->resultset('Device')->search({ %$only,
+      ($acl_no ? ( ip => { -not_in => $no_query->as_query } ) : ()) })
       ->get_column('ip')->all;
 }
 

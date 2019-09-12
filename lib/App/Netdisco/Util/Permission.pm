@@ -333,7 +333,7 @@ sub acl_to_where_clause {
       next INLIST;
   }
 
-  return {($all ? '-and' : '-or') => \@where};
+  return { ($all ? '-and' : '-or') => \@where };
 }
 
 true;
