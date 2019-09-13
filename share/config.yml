@@ -386,6 +386,7 @@ worker_plugins:
   - 'Discover::Entities'
   - 'Discover::Neighbors'
   - 'Discover::Neighbors::Routed'
+  - 'Discover::Neighbors::DOCSIS'
   - 'Discover::PortPower'
   - 'Discover::PortProperties'
   - 'Discover::Properties'
