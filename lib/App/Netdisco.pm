@@ -76,11 +76,11 @@ further down the road.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl curl postgresql build-essential
+ root:~# apt-get install build-essential curl postgresql postgresql-plperl libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl openssh-client
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel curl postgresql-server postgresql-contrib make automake gcc
+ root:~# yum install make automake gcc curl postgresql-server postgresql-contrib postgresql-plperl perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel openssh-clients
  root:~# postgresql-setup initdb
  root:~# systemctl start postgresql
  root:~# systemctl enable postgresql
@@ -88,7 +88,7 @@ On Fedora/Red-Hat:
 On openSUSE:
 
  root:~# zypper refresh
- root:~# zypper install curl automake gcc make postgresql postgresql-server openssh openssl net-snmp perl perl-DBD-Pg perl-SNMP
+ root:~# zypper install automake gcc make curl postgresql postgresql-server postgresql-plperl net-snmp perl perl-DBD-Pg perl-SNMP openssl openssh
 
 On BSD systems please see L<our BSD tips|https://github.com/netdisco/netdisco/wiki/BSD-Install>.
 
