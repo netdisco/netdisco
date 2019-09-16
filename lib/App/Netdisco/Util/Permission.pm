@@ -306,7 +306,8 @@ sub acl_to_where_clause {
           my $match = qr/^$2$/;
           push @where, '-and' => [
             $prop => { '!=' => undef },
-            ($neg ? '-not_bool' : '-bool') => \['match(?, ?)', $prop, "$match"],
+            ($neg ? '-not_bool' : '-bool')
+              => \[(sprintf 'match(%s, ?)', quotemeta($prop)), "$match"],
           ];
           next INLIST;
       }
