@@ -261,7 +261,7 @@ sub acl_to_where_clause {
       if ($qref eq ref $item) {
           push @where, '-and' => [
             dns => { '!=' => undef },
-            \['match(dns, ?)', "$item"],
+            \['match(dns::text, ? ::text)', "$item"],
           ];
           next INLIST;
       }
@@ -307,7 +307,7 @@ sub acl_to_where_clause {
           push @where, '-and' => [
             $prop => { '!=' => undef },
             ($neg ? '-not_bool' : '-bool')
-              => \[(sprintf 'match(%s, ?)', quotemeta($prop)), "$match"],
+              => \[(sprintf 'match(%s::text, ? ::text)', quotemeta($prop)), "$match"],
           ];
           next INLIST;
       }
