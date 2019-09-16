@@ -259,8 +259,10 @@ sub acl_to_where_clause {
       # from within Pg, so just use the DNS field. assume this sub is not used
       # in a context where that is a problem.
       if ($qref eq ref $item) {
-          push @where, (dns => { '!=' => undef }),
-                       \['match(dns, ?)', $match];
+          push @where, '-and' => [
+            dns => { '!=' => undef },
+            \['match(dns, ?)', "$item"],
+          ];
           next INLIST;
       }
 
@@ -302,8 +304,10 @@ sub acl_to_where_clause {
 
           my $prop  = $1;
           my $match = qr/^$2$/;
-          push @where, ($prop => { '!=' => undef }),
-                       ($neg ? '-not_bool' : '-bool') => \['match(?, ?)', $prop, $match]);
+          push @where, '-and' => [
+            $prop => { '!=' => undef },
+            ($neg ? '-not_bool' : '-bool') => \['match(?, ?)', $prop, "$match"],
+          ];
           next INLIST;
       }
 
