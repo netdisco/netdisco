@@ -18,7 +18,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   my $modems = $snmp->docs_if_cmts_cm_status_inet_address() || {};
 
-  return Status->info(" [$device] neigh - no modems (not a DOCSIS device?)")
+  return Status->info(" [$device] neigh - no modems (probably not a DOCSIS device)")
     unless (scalar values %$modems);
 
   my $count = 0;
@@ -42,7 +42,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $ip;
   }
 
-  return Status->info(" [$device] neigh - $count peers added to queue.");
+  return Status->info(" [$device] neigh - $count DOCSIS peers (modems) added to queue.");
 });
 
 true;
