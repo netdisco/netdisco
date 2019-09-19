@@ -392,6 +392,12 @@
       </td>
       [% END %]
 
+      [% IF params.c_speed_admin %]
+      <td>
+        [% row.speed_admin | html_entity %] 
+      </td>
+      [% END %]
+
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
         <td>

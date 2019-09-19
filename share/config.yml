@@ -127,6 +127,7 @@ sidebar_defaults:
     c_neighbors:  { label: 'Connected Devices', default: checked, idx: 17 }
     c_stp:        { label: 'Spanning Tree', default: null, idx: 18 }
     c_up:         { label: 'Status', default: null, idx: 19 }
+    c_speed_admin: { label: 'Admin Speed', default: null, idx: 20 }
     mac_format:   { default: IEEE }
     n_inventory:  { label: 'Inventory Data', default: checked, idx: 0 }
     n_detailed_inventory: { label: 'Detailed Inventory', default: null, idx: 1 }

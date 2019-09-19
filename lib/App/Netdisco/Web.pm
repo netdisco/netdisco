@@ -120,6 +120,7 @@ hook after_error_render => sub { setting('layout' => 'main') };
   # update sidebar_defaults so hooks scanning params see new plugin cols
   setting('sidebar_defaults')->{'device_ports'}->{ $_->{name} } = $_
     for @port_columns;
+
 }
 
 hook 'before' => sub {

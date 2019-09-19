@@ -366,6 +366,15 @@ sub remote_inventory {
   return (($retval =~ m/[[:alnum:]]/) ? $retval : '');
 }
 
+=head2 speed_admin
+
+Returns the administratively set speed of this device port. 
+
+=cut
+
+sub speed_admin { return (shift)->get_column('speed_admin') }
+
+
 =head2 vlan_count
 
 Returns the number of VLANs active on this device port. Enable this column by

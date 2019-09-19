@@ -163,6 +163,10 @@
     [% myport.push( row.up.ucfirst ) %]
   [% END %]
 
+  [% IF params.c_speed_admin %]
+    [% myport.push(row.speed_admin) %]
+  [% END %]
+
   [% FOREACH config IN settings._extra_device_port_cols %]
     [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
     [% TRY %]
