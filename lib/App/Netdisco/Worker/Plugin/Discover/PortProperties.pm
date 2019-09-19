@@ -26,6 +26,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     || { map {($_->port => $_)} $device->ports->all };
 
   my $raw_speed = $snmp->i_speed_raw || {};
+  my $speed_admin = $snmp->i_speed_admin || {};
 
   foreach my $idx (keys %$raw_speed) {
     my $port = $interfaces->{$idx} or next;
@@ -36,6 +37,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     }
 
     $properties{ $port }->{raw_speed} = $raw_speed->{$idx};
+    $properties{ $port }->{speed_admin} = $speed_admin->{$idx};
   }
 
   my $err_cause = $snmp->i_err_disable_cause || {};
