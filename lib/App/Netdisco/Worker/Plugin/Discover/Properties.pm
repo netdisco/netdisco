@@ -381,4 +381,3 @@ sub _get_ipv6_aliases {
 }
 
 true;
-
