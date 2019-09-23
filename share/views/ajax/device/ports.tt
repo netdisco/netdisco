@@ -175,6 +175,10 @@
       <td>[% row.speed | html_entity %]</td>
       [% END %]
 
+      [% IF params.c_speed_admin %]
+      <td>[% row.speed_admin | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_error %]
       <td>[% row.error_disable_cause | html_entity %]</td>
       [% END %]
@@ -389,12 +393,6 @@
       [% IF params.c_up %]
       <td>
         [% row.up_admin.ucfirst | html_entity %] / [% row.up.ucfirst | html_entity %]
-      </td>
-      [% END %]
-
-      [% IF params.c_speed_admin %]
-      <td>
-        [% row.speed_admin | html_entity %] 
       </td>
       [% END %]
 

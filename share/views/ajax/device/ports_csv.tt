@@ -91,6 +91,10 @@
     [% myport.push(row.speed) %]
   [% END %]
 
+  [% IF params.c_speed_admin %]
+    [% myport.push(row.speed_admin) %]
+  [% END %]
+
   [% IF params.c_error %]
     [% myport.push(row.error_disable_cause) %]
   [% END %]
@@ -161,10 +165,6 @@
   [% IF params.c_up %]
     [% myport.push( row.up_admin.ucfirst ) %]
     [% myport.push( row.up.ucfirst ) %]
-  [% END %]
-
-  [% IF params.c_speed_admin %]
-    [% myport.push(row.speed_admin) %]
   [% END %]
 
   [% FOREACH config IN settings._extra_device_port_cols %]

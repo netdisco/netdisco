@@ -31,8 +31,6 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "ifindex",
   { data_type => "bigint", is_nullable => 1 },
-  "speed_admin",
-  { data_type => "text", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("port", "ip");
 

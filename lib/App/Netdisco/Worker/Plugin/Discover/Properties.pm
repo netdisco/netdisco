@@ -124,6 +124,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $i_descr        = $snmp->i_description;
   my $i_mtu          = $snmp->i_mtu;
   my $i_speed        = $snmp->i_speed;
+  my $i_speed_admin  = $snmp->i_speed_admin;
   my $i_mac          = $snmp->i_mac;
   my $i_up           = $snmp->i_up;
   my $i_up_admin     = $snmp->i_up_admin;
@@ -221,6 +222,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           up_admin     => $i_up_admin->{$entry},
           mac          => $i_mac->{$entry},
           speed        => $i_speed->{$entry},
+          speed_admin  => $i_speed_admin->{$entry},
           mtu          => $i_mtu->{$entry},
           name         => Encode::decode('UTF-8', $i_name->{$entry}),
           duplex       => $i_duplex->{$entry},

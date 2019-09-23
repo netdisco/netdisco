@@ -130,8 +130,6 @@ will add the following additional synthesized columns to the result set:
 
 =item remote_is_phone (boolean)
 
-=item speed_admin
-
 =back
 
 =cut
@@ -147,11 +145,10 @@ sub with_properties {
           properties.error_disable_cause
           properties.remote_is_wap
           properties.remote_is_phone
-          properties.speed_admin
         /],
         '+as' => [qw/
           error_disable_cause
-          remote_is_wap remote_is_phone speed_admin
+          remote_is_wap remote_is_phone
         /],
         join => 'properties',
       });

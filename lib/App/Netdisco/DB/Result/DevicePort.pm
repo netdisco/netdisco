@@ -37,6 +37,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "speed",
   { data_type => "text", is_nullable => 1 },
+  "speed_admin",
+  { data_type => "text", is_nullable => 1 },
   "name",
   { data_type => "text", is_nullable => 1 },
   "mac",
@@ -365,15 +367,6 @@ sub remote_inventory {
 
   return (($retval =~ m/[[:alnum:]]/) ? $retval : '');
 }
-
-=head2 speed_admin
-
-Returns the administratively set speed of this device port. 
-
-=cut
-
-sub speed_admin { return (shift)->get_column('speed_admin') }
-
 
 =head2 vlan_count
 
