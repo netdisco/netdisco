@@ -124,6 +124,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $i_descr        = $snmp->i_description;
   my $i_mtu          = $snmp->i_mtu;
   my $i_speed        = $snmp->i_speed;
+  my $i_speed_admin  = $snmp->i_speed_admin;
   my $i_mac          = $snmp->i_mac;
   my $i_up           = $snmp->i_up;
   my $i_up_admin     = $snmp->i_up_admin;
@@ -221,6 +222,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           up_admin     => $i_up_admin->{$entry},
           mac          => $i_mac->{$entry},
           speed        => $i_speed->{$entry},
+          speed_admin  => $i_speed_admin->{$entry},
           mtu          => $i_mtu->{$entry},
           name         => Encode::decode('UTF-8', $i_name->{$entry}),
           duplex       => $i_duplex->{$entry},
@@ -331,11 +333,11 @@ sub _get_ipv6_aliases {
   my ($device, $snmp) = @_;
   my @aliases;
 
-  my $ipv6_index  = $snmp->ipv6_index;
-  my $ipv6_addr   = $snmp->ipv6_addr;
-  my $ipv6_type   = $snmp->ipv6_type;
-  my $ipv6_pfxlen = $snmp->ipv6_addr_prefixlength;
-  my $interfaces  = $snmp->interfaces;
+  my $ipv6_index  = $snmp->ipv6_index || {};
+  my $ipv6_addr   = $snmp->ipv6_addr || {};
+  my $ipv6_type   = $snmp->ipv6_type || {};
+  my $ipv6_pfxlen = $snmp->ipv6_addr_prefixlength || {};
+  my $interfaces  = $snmp->interfaces || {};
 
   # Get IP Table per VRF if supported
   my @vrf_list = _get_vrf_list($device, $snmp);
@@ -343,10 +345,10 @@ sub _get_ipv6_aliases {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
       snmp_comm_reindex($snmp, $device, $vrf);
-      $ipv6_index  = { %$ipv6_index,  %{$snmp->ipv6_index} };
-      $ipv6_addr   = { %$ipv6_addr,   %{$snmp->ipv6_addr} };
-      $ipv6_type   = { %$ipv6_type,   %{$snmp->ipv6_type} };
-      $ipv6_pfxlen = { %$ipv6_pfxlen, %{$snmp->ipv6_addr_prefixlength} };
+      $ipv6_index  = { %$ipv6_index,  %{$snmp->ipv6_index || {}} };
+      $ipv6_addr   = { %$ipv6_addr,   %{$snmp->ipv6_addr || {}} };
+      $ipv6_type   = { %$ipv6_type,   %{$snmp->ipv6_type || {}} };
+      $ipv6_pfxlen = { %$ipv6_pfxlen, %{$snmp->ipv6_addr_prefixlength || {}} };
       $interfaces  = { %$interfaces,  %{$snmp->interfaces} };
     }
   }

@@ -215,16 +215,21 @@ port control, etc):
 
  ~/bin/netdisco-backend start
 
-I<note:> Whenever you upgrade your operating system, you should delete the
-C<~/perl5> directory and re-run the C<curl> command above, to update
-Netdisco's C library bindings.
+=head1 First Run
 
-I<also note:> You should take care not to run C<< netdisco-backend >> and the
-Netdisco 1.x daemon at the same time. Similarly, if you use the device
-discovery with Netdisco 2, disable your system's cron jobs for the Netdisco
-1.x poller.
+After installing Netdisco for the first time, you must manually discover at
+least one device on your network.  Choose a device which speaks CDP, FDP, or
+LLDP and thus knows about its neighbors; Netdisco will then start following
+this chain of neighbors to discover the rest of your network.
 
-We have several other pages with tips for
+To do this, either go to the web interface and enter an IP or fully qualified
+domain name, or perform the following step at the command line:
+
+ ~/bin/netdisco-do discover {name or IP address of a switch or router}
+
+=head1 Further Reading
+
+We have several pages with tips for
 L<alternate deployment scenarios|https://github.com/netdisco/netdisco/wiki/Install-Tips>,
 L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisco/wiki/Troubleshooting>,
 L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
@@ -236,6 +241,15 @@ Before installing or upgrading please always review the latest
 L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
+
+I<note:> Whenever you upgrade your operating system, you should delete the
+C<~/perl5> directory and re-run the C<curl> command above, to update
+Netdisco's C library bindings.
+
+I<also note:> You should take care not to run C<< netdisco-backend >> and the
+Netdisco 1.x daemon at the same time. Similarly, if you use the device
+discovery with Netdisco 2, disable your system's cron jobs for the Netdisco
+1.x poller.
 
 If you're running a version of Netdisco prior to 2.x then you should follow
 the full installation instructions, above. This process is for upgrading
