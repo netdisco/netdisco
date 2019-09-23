@@ -37,6 +37,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "speed",
   { data_type => "text", is_nullable => 1 },
+  "speed_admin",
+  { data_type => "text", is_nullable => 1 },
   "name",
   { data_type => "text", is_nullable => 1 },
   "mac",

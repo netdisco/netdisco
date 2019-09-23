@@ -175,6 +175,10 @@
       <td>[% row.speed | html_entity %]</td>
       [% END %]
 
+      [% IF params.c_speed_admin %]
+      <td>[% row.speed_admin | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_error %]
       <td>[% row.error_disable_cause | html_entity %]</td>
       [% END %]
