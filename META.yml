@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.043001'
+    version: '2.044000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '59'
+    version: '60'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result::Admin:
@@ -403,6 +403,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
   App::Netdisco::Worker::Plugin::Discover::Neighbors:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
+  App::Netdisco::Worker::Plugin::Discover::Neighbors::DOCSIS:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm
   App::Netdisco::Worker::Plugin::Discover::Neighbors::Routed:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
   App::Netdisco::Worker::Plugin::Discover::PortPower:
@@ -540,6 +542,7 @@ requires:
   Storable: '0'
   Sys::SigAction: '0'
   Template: '2.24'
+  Template::AutoFilter: '0'
   Template::Plugin::CSV: '0.04'
   Template::Plugin::Number::Format: '1.02'
   Term::ReadLine: '0'
@@ -561,5 +564,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.043001'
+version: '2.044000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

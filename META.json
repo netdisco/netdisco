@@ -94,6 +94,7 @@
             "Storable" : "0",
             "Sys::SigAction" : "0",
             "Template" : "2.24",
+            "Template::AutoFilter" : "0",
             "Template::Plugin::CSV" : "0.04",
             "Template::Plugin::Number::Format" : "1.02",
             "Term::ReadLine" : "0",
@@ -122,7 +123,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.043001"
+         "version" : "2.044000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -144,7 +145,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "59"
+         "version" : "60"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -692,6 +693,9 @@
       "App::Netdisco::Worker::Plugin::Discover::Neighbors" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm"
       },
+      "App::Netdisco::Worker::Plugin::Discover::Neighbors::DOCSIS" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover::Neighbors::Routed" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm"
       },
@@ -816,6 +820,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.043001",
+   "version" : "2.044000",
    "x_serialization_backend" : "JSON::PP version 2.97001"
 }

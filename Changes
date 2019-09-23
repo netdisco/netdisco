@@ -1,3 +1,15 @@
+2.044000 - 2019-09-23
+
+  [NEW FEATURES]
+
+  * #646 Add DOCSIS (Cable Modem) peers discovery as neighbors (pyro3d)
+  * #650 Add administrative port speed setting storage and display (C. Ramseyer)
+
+  [BUG FIXES]
+
+  * Enforce escaping on all template content
+  * Fix potential crash in Discover/Properties::_get_ipv6_aliases (C. Ramseyer)
+
 2.043001 - 2019-09-04
 
   [BUG FIXES]

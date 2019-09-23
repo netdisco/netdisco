@@ -203,6 +203,7 @@ lib/App/Netdisco/Worker/Plugin/Discover.pm
 lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
+lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
@@ -374,6 +375,7 @@ share/schema_versions/App-Netdisco-DB-55-56-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-56-57-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-57-58-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-58-59-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-59-60-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
