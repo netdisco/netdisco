@@ -51,7 +51,7 @@ sub worker_body {
       prctl sprintf 'nd2: #%s sched: idle', $wid;
       debug "sched ($wid): sleeping for $naptime seconds";
 
-      sleep $naptime;
+      sleep ($ENV{ND_SCHEDULER_SLEEP} || $naptime);
       prctl sprintf 'nd2: #%s sched: queueing', $wid;
 
       # NB next_time() returns the next *after* win_start
