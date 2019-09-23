@@ -18,7 +18,7 @@
   // on load, check initial Report Options form state,
   // and on each change to the form fields
   $(document).ready(function() {
-    var tab = '[% report.tag %]'
+    var tab = '[% report.tag | html_entity %]'
     var target = '#' + tab + '_pane';
 
     // sidebar form fields should change colour and have trash icon

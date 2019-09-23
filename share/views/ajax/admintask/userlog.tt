@@ -19,7 +19,7 @@ $(document).ready(function() {
   $('#aul-data-table').dataTable( {
     "serverSide": true,
     "order": [[ 0, "desc" ]],
-    "ajax": "[% uri_for('/ajax/control/admin/userlog/data') %]",
+    "ajax": "[% uri_for('/ajax/control/admin/userlog/data') | none %]",
     "columns": [{
       "data": 'creation',
       "className": "nd_center-cell",

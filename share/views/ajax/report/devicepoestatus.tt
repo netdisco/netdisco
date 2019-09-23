@@ -20,20 +20,20 @@
   <tbody>
     [% FOREACH row IN results %]
     <tr>
-      <td>[% row.ip %]</td>
-      <td>[% row.dns %]</td>
-      <td>[% row.name %]</td>
-      <td>[% row.model %]</td>
-      <td>[% row.location %]</td>
-      <td>[% row.module %]</td>
-      <td class="nd_center-cell">[% row.power %]</td>
-      <td class="nd_center-cell">[% row.status %]</td>
-      <td class="nd_center-cell">[% row.poe_capable_ports %]</td>
-      <td class="nd_center-cell">[% row.poe_powered_ports %]</td>
-      <td class="nd_center-cell">[% row.poe_disabled_ports %]</td>
-      <td class="nd_center-cell">[% row.poe_errored_ports %]</td>
-      <td class="nd_center-cell">[% row.poe_power_committed %]</td>
-      <td class="nd_center-cell">[% row.poe_power_delivering %]</td>
+      <td>[% row.ip | html_entity %]</td>
+      <td>[% row.dns | html_entity %]</td>
+      <td>[% row.name | html_entity %]</td>
+      <td>[% row.model | html_entity %]</td>
+      <td>[% row.location | html_entity %]</td>
+      <td>[% row.module | html_entity %]</td>
+      <td class="nd_center-cell">[% row.power | html_entity %]</td>
+      <td class="nd_center-cell">[% row.status | html_entity %]</td>
+      <td class="nd_center-cell">[% row.poe_capable_ports | html_entity %]</td>
+      <td class="nd_center-cell">[% row.poe_powered_ports | html_entity %]</td>
+      <td class="nd_center-cell">[% row.poe_disabled_ports | html_entity %]</td>
+      <td class="nd_center-cell">[% row.poe_errored_ports | html_entity %]</td>
+      <td class="nd_center-cell">[% row.poe_power_committed | html_entity %]</td>
+      <td class="nd_center-cell">[% row.poe_power_delivering | html_entity %]</td>
     </tr>
     [% END %]
   </tbody>
@@ -51,7 +51,7 @@ function groupString(d) {
     "use strict";
     var s = '';
     s = s + 'Device: ';
-    s = s + '<a href="[% uri_for('/device') %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
+    s = s + '<a href="[% uri_for('/device') | none %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
     s = s + he.encode(d.dns || d.name || d.ip);
     if (d.dns || d.name) {
         s = s + ' (' +  he.encode(d.ip) + ') ';
@@ -65,7 +65,7 @@ function groupString(d) {
 $(document).ready(function() {
     var table = $('#data-table').DataTable({
     "serverSide": true,
-    "ajax": "[% uri_for('/ajax/content/report/devicepoestatus/data') %]",
+    "ajax": "[% uri_for('/ajax/content/report/devicepoestatus/data') | none %]",
     "order": [[ 0, 'asc' ]],
     "columns": [
       {

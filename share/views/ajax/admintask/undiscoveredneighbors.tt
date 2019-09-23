@@ -11,14 +11,14 @@
     [% FOREACH row IN results %]
     [% NEXT IF NOT row.remote_ip %]
     <tr>
-      <td nowrap><a href="[% device_ports %]&q=[% row.ip | uri %]">
+      <td nowrap><a href="[% device_ports | none %]&q=[% row.ip | uri %]">
               [% row.dns || row.name || row.ip | html_entity %]</a><br>
-          <a href="[% device_ports %]&q=[% row.ip | uri %]&f=[% row.port | uri %]">
+          <a href="[% device_ports | none %]&q=[% row.ip | uri %]&f=[% row.port | uri %]">
               [% row.port | html_entity %]</a>
           [% IF row.port_description %]<br>[% row.port_description | html_entity %][% END %]
           [% IF row.comment %]<br>&quot;<em>[% row.comment | html_entity %]</em>&quot;[% END %]
       </td>
-      <td nowrap><a href="[% search_node %]&q=[% row.remote_ip | uri %]">
+      <td nowrap><a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">
           [% row.remote_ip | html_entity %]</a><br>
           [% row.remote_port | html_entity %]</td>
       <td>[% row.remote_id | html_entity %]<br>

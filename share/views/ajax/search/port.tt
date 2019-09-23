@@ -15,7 +15,7 @@
 $(document).ready(function() {
   var table = $('#ps-data-table').dataTable({
     "deferRender": true,
-    "data": [% results %],
+    "data": [% results | none %],
     "columnDefs": [
         { "sortable": false, "targets": 0 },
         { "searchable": false, "targets": 0 },
@@ -49,7 +49,7 @@ $(document).ready(function() {
           if (row.device.dns || row.device.name) {
             ddns = '<br>(' + he.encode(row.device.dns || row.device.name)  + ')';
           }
-          return '<a href="[% device_ports %]&q=' + encodeURIComponent(data)
+          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data)
             + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data)
             + ' [' + he.encode(row.port) + ']</a>' + ddns;
         }

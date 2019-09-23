@@ -35,6 +35,6 @@
                 </div>
             </fieldset>
 
-            <button id="[% report.tag %]_submit" type="submit" class="btn btn-info">
+            <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Vendors</button>
 

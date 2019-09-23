@@ -73,11 +73,11 @@
     // search tabs
     [% FOREACH tab IN settings._search_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
-      var pgtitle = update_page_title('[% tab.tag %]');
-      copy_navbar_to_sidebar('[% tab.tag %]');
-      update_browser_history('[% tab.tag %]', pgtitle, '');
-      update_csv_download_link('search', '[% tab.tag %]', '[% tab.provides_csv %]');
-      do_search(event, '[% tab.tag %]');
+      var pgtitle = update_page_title('[% tab.tag | html_entity %]');
+      copy_navbar_to_sidebar('[% tab.tag | html_entity %]');
+      update_browser_history('[% tab.tag | html_entity %]', pgtitle, '');
+      update_csv_download_link('search', '[% tab.tag | html_entity %]', '[% tab.provides_csv | html_entity %]');
+      do_search(event, '[% tab.tag | html_entity %]');
     });
     [% END %]
     [% END %]
@@ -86,25 +86,25 @@
     // device tabs
     [% FOREACH tab IN settings._device_tabs %]
     $('[% "#${tab.tag}_form" %]').submit(function (event) {
-      var pgtitle = update_page_title('[% tab.tag %]');
-      copy_navbar_to_sidebar('[% tab.tag %]');
-      update_browser_history('[% tab.tag %]', pgtitle, '');
-      update_csv_download_link('device', '[% tab.tag %]', '[% tab.provides_csv %]');
+      var pgtitle = update_page_title('[% tab.tag | html_entity %]');
+      copy_navbar_to_sidebar('[% tab.tag | html_entity %]');
+      update_browser_history('[% tab.tag | html_entity %]', pgtitle, '');
+      update_csv_download_link('device', '[% tab.tag | html_entity %]', '[% tab.provides_csv | html_entity %]');
 
       [% IF tab.tag == 'ports' %]
       // form reset icon on ports tab
-      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag %]&reset=on&firstsearch=on&' +
+      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag | html_entity %]&reset=on&firstsearch=on&' +
         $('#ports_form')
           .find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]')
           .serialize());
 
       [% ELSIF tab.tag == 'netmap' %]
       // form reset icon on netmap tab
-      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag %]&reset=on&firstsearch=on&' +
+      $('#nd_sidebar-reset-link').attr('href', uri_base + '/device?tab=[% tab.tag | html_entity %]&reset=on&firstsearch=on&' +
         $('#netmap_form').find('input[name="q"]').serialize());
       [% END %]
 
-      do_search(event, '[% tab.tag %]');
+      do_search(event, '[% tab.tag | html_entity %]');
     });
     [% END %]
     [% END %]
@@ -112,28 +112,28 @@
     [% IF report %]
     // for the report pages
     $('[% "#${report.tag}_form" %]').submit(function (event) {
-      var pgtitle = update_page_title('[% report.tag %]');
-      update_browser_history('[% report.tag %]', pgtitle, '1');
-      update_csv_download_link('report', '[% report.tag %]', '1');
-      do_search(event, '[% report.tag %]');
+      var pgtitle = update_page_title('[% report.tag | html_entity %]');
+      update_browser_history('[% report.tag | html_entity %]', pgtitle, '1');
+      update_csv_download_link('report', '[% report.tag | html_entity %]', '1');
+      do_search(event, '[% report.tag | html_entity %]');
     });
     [% END -%]
 
     [% IF task %]
     // for the admin pages
     $('[% "#${task.tag}_form" %]').submit(function (event) {
-      update_page_title('[% task.tag %]');
-      update_csv_download_link('admin', '[% task.tag %]', '1');
-      do_search(event, '[% task.tag %]');
+      update_page_title('[% task.tag | html_entity %]');
+      update_csv_download_link('admin', '[% task.tag | html_entity %]', '1');
+      do_search(event, '[% task.tag | html_entity %]');
     });
     [% END %]
 
     // on page load, load the content for the active tab
     [% IF params.tab %]
     [% IF params.tab == 'ipinventory' OR params.tab == 'subnets' %]
-      $('#[% params.tab %]_submit').click();
+      $('#[% params.tab | html_entity %]_submit').click();
     [% ELSE %]
-      $('#[% params.tab %]_form').trigger("submit");
+      $('#[% params.tab | html_entity %]_form').trigger("submit");
     [% END %]
     [% END %]
   });

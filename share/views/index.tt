@@ -36,13 +36,13 @@
         <h2>Welcome to Netdisco</h2>
         <small>Netdisco is an Open Source management tool designed for network administrators.</small>
         [% IF NOT session.logged_in_user %]
-        <form class="nd_login-form" method="post" action="[% uri_for('/login') %]">
+        <form class="nd_login-form" method="post" action="[% uri_for('/login') | none %]">
           <div class="form-horizontal">
             <input id='loginuser' placeholder="Username" class="span2" name="username" type="text" required="required"/>
             <input placeholder="Password" class="span2" name="password" type="password" required="required"/>
             <button type="submit" class="btn btn-info">Log In</button>
             [% IF settings.login_logo %]
-            <img src="[% settings.login_logo %]" alt="Login Logo" />
+            <img src="[% settings.login_logo | none %]" alt="Login Logo" />
             [% END %]
           </div>
           [% IF params.return_url %]
@@ -51,7 +51,7 @@
         </form>
         [% ELSE %]
           <p></p> <p></p>
-          <form class="" method="get" action="[% uri_for('/search') %]">
+          <form class="" method="get" action="[% uri_for('/search') | none %]">
             <div class="form-horizontal">
               <input placeholder="Find Anything" class="span4" id="nqbody" name="q" type="text" autocomplete="off"/>
               <input name="firstsearch" type="hidden" value="on">
@@ -70,9 +70,9 @@
             </div>
           </form>
           [% IF user_has_role('admin') %]
-          <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') %]">
+          <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') | none %]">
             <div class="form-horizontal">
-              <input placeholder="Device hostname or IP" class="span4" name="device" value="[% params.device %]" type="text"/>
+              <input placeholder="Device hostname or IP" class="span4" name="device" value="[% params.device | html_entity %]" type="text"/>
               <input type="hidden" name="extra" value="with-nodes"/>
               <button type="submit" class="btn btn-info">Discover</button>
             </div>
@@ -113,7 +113,7 @@
     $('.nd_chevron').toggleClass('icon-chevron-up icon-chevron-down');
 
     if (! stats_loaded) {
-      $('#nd_stats').load("[% uri_for('/ajax/content/statistics') %]", function(r,s,x) {
+      $('#nd_stats').load("[% uri_for('/ajax/content/statistics') | none %]", function(r,s,x) {
         if (s == "error") {
           $('#nd_stats_status').addClass('alert-error')
             .html('<i class="icon-warning-sign"></i> Failed to retrieve system information.');

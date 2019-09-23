@@ -22,11 +22,11 @@
         <tbody>
           [% FOREACH row IN orphans %]
           <tr>
-            <td><a href="[% uri_for('/device') %]?q=[% row.ip | uri %]">
+            <td><a href="[% uri_for('/device') | none %]?q=[% row.ip | uri %]">
             [% row.dns || row.name || row.ip | html_entity %]</a></td>
             <td>
               [% IF row.location %]
-                <a href="[% search_device %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
+                <a href="[% search_device | none %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
                  [% row.location | html_entity %]</a>
               [% ELSE %]
                 [Not Set]
@@ -55,12 +55,12 @@
   [% NEXT IF count == 1 %]
   <div class="accordion-group">
       <div class="accordion-heading"> 
-          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count %]" href="#collapse-[% count %]">
+          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count | html_entity %]" href="#collapse-[% count | html_entity %]">
             <i class="icon-chevron-up"></i> &nbsp;
               Orphaned Network: [% count - 1 | html_entity  %] Size: [% network.size | html_entity  %] Devices
           </a>
       </div>
-    <div id="collapse-[% count %]" class="accordion-body collapse">
+    <div id="collapse-[% count | html_entity %]" class="accordion-body collapse">
       <div class="accordion-inner">
       <table class="table table-bordered table-condensed">
         <thead>
@@ -75,11 +75,11 @@
         <tbody>
         [% FOREACH row IN network %]
           <tr>
-            <td><a href="[% uri_for('/device') %]?tab=netmap&q=[% row.ip | uri %]&firstsearch=on">
+            <td><a href="[% uri_for('/device') | none %]?tab=netmap&q=[% row.ip | uri %]&firstsearch=on">
             [% row.dns || row.name || row.ip | html_entity %]</a></td>
             <td>
               [% IF row.location %]
-                <a href="[% search_device %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
+                <a href="[% search_device | none %]&q=[% row.location | uri %]&location=[% row.location | uri %]">
                  [% row.location | html_entity %]</a>
               [% ELSE %]
                 [Not Set]

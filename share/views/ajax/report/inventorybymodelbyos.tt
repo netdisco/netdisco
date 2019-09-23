@@ -10,13 +10,13 @@
     [% FOREACH row IN results %]
     <tr>
       <td>
-        <a href="[% search_device %]&q=[% row.model | uri %]&vendor=[% row.vendor | uri %]&model=[% row.model | uri %]">
+        <a href="[% search_device | none %]&q=[% row.model | uri %]&vendor=[% row.vendor | uri %]&model=[% row.model | uri %]">
             [% row.vendor.ucfirst | html_entity %]&nbsp;[% row.model | html_entity %]</a>
             [% IF row.os %] running &quot;[% row.os | html_entity %]&quot;[% END %]
       </td>
       <td>
         <a class="nd_linkcell"
-          href="[% search_device %]&q=[% row.os_ver | uri %]&vendor=[% row.vendor | uri %]&model=[% row.model | uri %]&os=[% row.os | uri %]&os_ver=[% row.os_ver | uri %]&matchall=on">
+          href="[% search_device | none %]&q=[% row.os_ver | uri %]&vendor=[% row.vendor | uri %]&model=[% row.model | uri %]&os=[% row.os | uri %]&os_ver=[% row.os_ver | uri %]&matchall=on">
             [% row.os_ver | html_entity %]</a>
       </td>
       <td>[% row.os_ver_count | html_entity %]</td>

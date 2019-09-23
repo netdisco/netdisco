@@ -21,7 +21,7 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') %]?tab=details&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
+        href="[% uri_for('/device') | none %]?tab=details&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% row.dns | html_entity %]</td>
       <td class="nd_center-cell">[% row.contact  | html_entity %]</td>
       <td class="nd_center-cell">[% row.location | html_entity %]</td>
@@ -33,15 +33,15 @@
 
       <td class="nd_center-cell">
         <button class="btn btn-danger btn-small"
-          data-toggle="modal" data-target="#nd_devdel-[% count %]" type="button">
+          data-toggle="modal" data-target="#nd_devdel-[% count | html_entity %]" type="button">
           <i class="icon-trash text-danger"></i>
         </button>
 
-        <div id="nd_devdel-[% count %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-          role="dialog" aria-labelledby="nd_devdel-label-[% count %]" aria-hidden="true">
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
+            <h3 id="nd_devdel-label-[% count | html_entity %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
           </div>
           <div class="modal-body">
             <blockquote>

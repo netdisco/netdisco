@@ -48,13 +48,13 @@
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count %]" type="button"><i class="icon-trash text-error"></i></button>
+          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
 
-        <div id="nd_devdel-[% count %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-          role="dialog" aria-labelledby="nd_devdel-label-[% count %]" aria-hidden="true">
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count %]">Are you sure?</h3>
+            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
             <blockquote>
