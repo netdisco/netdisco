@@ -9,9 +9,9 @@
         [% NEXT UNLESS params.${item.name} %]
         [% SET th_class = '' %]
         [% IF (item.name == 'c_port' OR item.name == 'c_descr' OR item.name == 'c_name') %]
-          [% th_class = ' class="portsort"' %]
+          [% SET th_class = ' class="portsort"' %]
         [% END %]
-        <th[% th_class | html_entity %]>
+        <th[% th_class | none %]>
           [% IF item.name == 'c_neighbors' %]
           [% IF params.c_nodes %]
           Connected Nodes &amp; Devices
