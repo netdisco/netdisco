@@ -1,3 +1,9 @@
+2.044001 - 2019-09-26
+
+  [BUG FIXES]
+
+  * #654 Device Ports list is not sorting numerically
+
 2.044000 - 2019-09-23
 
   [NEW FEATURES]
