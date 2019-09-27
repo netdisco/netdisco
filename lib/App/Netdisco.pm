@@ -225,7 +225,7 @@ chain of neighbors to discover the rest of your network.
 Either go to the web interface and enter an IP or fully qualified domain name,
 OR perform the following step at the command line:
 
- ~/bin/netdisco-do discover {name or IP address of a switch or router}
+ ~/bin/netdisco-do discover -d {name or IP address of a switch or router}
 
 =head1 Further Reading
 
