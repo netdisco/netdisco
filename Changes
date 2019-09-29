@@ -1,3 +1,9 @@
+2.044001 - 2019-xx-xx
+
+  [BUG FIXES]
+
+  * fix jquery security issue - CVE-2019-11358
+
 2.044001 - 2019-09-26
 
   [BUG FIXES]
