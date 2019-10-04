@@ -155,7 +155,6 @@ else {
       ($job->action eq 'show' ? ('/'. ($job->subaction || 'interfaces')) : '')
     );
 
-
     # do job
     try {
       info sprintf '%s: %s started at %s',
