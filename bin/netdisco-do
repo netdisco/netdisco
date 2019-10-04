@@ -148,11 +148,13 @@ else {
   foreach my $spec (@job_specs) {
     my $worker = MyWorker->new();
     my $job = App::Netdisco::Backend::Job->new({ job => 0, %$spec });
+    $CONFIG->{$1."_min_age"} = 0 if $job->action =~ m/^(arpnip|macsuck|discover)$/;
 
     my $actiontext = (
       ($job->device ? ('['.$job->device->ip.']') : '') .
       ($job->action eq 'show' ? ('/'. ($job->subaction || 'interfaces')) : '')
     );
+
 
     # do job
     try {
