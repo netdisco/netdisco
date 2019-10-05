@@ -1,8 +1,14 @@
-2.044001 - 2019-xx-xx
+2.044003 - 2019-xx-xx
 
   [BUG FIXES]
 
-  * fix jquery security issue - CVE-2019-11358
+  * jquery issue - CVE-2019-11358
+
+2.044002 - 2019-10-01
+
+  [BUG FIXES]
+
+  * Typo in install documentation
 
 2.044001 - 2019-09-26
 
