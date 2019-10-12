@@ -23,6 +23,9 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   SELECT username, 'radius' AS role FROM users
     WHERE radius
   UNION
+  SELECT username, 'tacacs' AS role FROM users
+    WHERE tacacs
+  UNION
   SELECT username, 'api' AS role FROM users
     WHERE token IS NOT NULL AND token_from IS NOT NULL
 ENDSQL
