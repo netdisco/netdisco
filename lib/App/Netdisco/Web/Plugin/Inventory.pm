@@ -16,10 +16,19 @@ get '/inventory' => require_login sub {
     my $platforms = schema('netdisco')->resultset('Device')->get_platforms();
     my $releases = schema('netdisco')->resultset('Device')->get_releases();
 
+    my %release_map = (
+      map  { (join '', map {sprintf '%05s', $_} split m/(\D)/, ($_->{os_ver} || '')) => $_ }
+      $releases->hri->all
+    );
+    my @release_list =
+      map  { $release_map{$_} }
+      sort {(($release_map{$a}->{os} || '') cmp ($release_map{$b}->{os} || '')) || ($a cmp $b)}
+           keys %release_map;
+
     var(nav => 'inventory');
     template 'inventory', {
-      platforms => [$platforms->hri->all],
-      releases => [$releases->hri->all],
+      platforms => [ $platforms->hri->all ],
+      releases  => [ @release_list ],
     };
 };
 
