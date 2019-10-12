@@ -27,6 +27,7 @@ Module::Build->new(
     'App::local::lib::helper' => '0.07',
     'Archive::Extract' => '0',
     'Authen::Radius' => '0',
+    'Authen::TacacsPlus' => '0',
     'CGI::Expand' => '2.05',
     'Data::Printer' => '0',
     'DBD::Pg' => '0',
