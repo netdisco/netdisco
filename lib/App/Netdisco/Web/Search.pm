@@ -78,9 +78,9 @@ get '/search' => require_login sub {
     }
 
     # used in the device search sidebar to populate select inputs
-    my $model_list  = [ $s->resultset('Device')->get_distinct_col('model')  ];
-    my $os_list     = [ $s->resultset('Device')->get_distinct_col('os') ];
-    my $vendor_list = [ $s->resultset('Device')->get_distinct_col('vendor') ];
+    my $model_list  = [ grep { defined } $s->resultset('Device')->get_distinct_col('model') ];
+    my $os_list     = [ grep { defined } $s->resultset('Device')->get_distinct_col('os') ];
+    my $vendor_list = [ grep { defined } $s->resultset('Device')->get_distinct_col('vendor') ];
 
     my %os_vermap = (
       map  { $_ => (join '', map {sprintf '%05s', $_} split m/(\D)/) }
