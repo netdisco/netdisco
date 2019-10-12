@@ -260,15 +260,15 @@ sub match_with_tacacs {
   return unless setting('tacacs') and ref {} eq ref setting('tacacs');
 
   my $conf = setting('tacacs');
-
   my $tacacs = new Authen::TacacsPlus(Host => $conf->{server}, Key => $conf->{key});
-  unless ($tacacs) {
-      print STDERR "Error: Authe::TacacsPlus: ", Authen::TacacsPlus::errmsg(), "\n";
+  if (not $tacacs) {
+      debug sprintf('auth error: Authen::TacacsPlus: %s', Authen::TacacsPlus::errmsg());
       return undef;
   }
+
   my $tacacs_return = $tacacs->authen($user,$pass);
-  if (!$tacacs_return) {
-      print STDERR "Error: Authe::TacacsPlus: ", Authen::TacacsPlus::errmsg(), "\n";
+  if (not $tacacs_return) {
+      debug sprintf('error: Authen::TacacsPlus: %s', Authen::TacacsPlus::errmsg());
   }
   $tacacs->close();
 
