@@ -274,7 +274,8 @@ sub walk_fwtable {
 
   my $fw_mac   = $snmp->fw_mac;
   my $fw_port  = $snmp->fw_port;
-  my $fw_vlan  = $snmp->qb_fw_vlan;
+  my $fw_vlan  = ($snmp->can('cisco_comm_indexing') && $snmp->cisco_comm_indexing()) 
+    ? {} : $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index;
 
   # to map forwarding table port to device port we have

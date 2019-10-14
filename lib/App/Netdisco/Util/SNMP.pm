@@ -80,6 +80,8 @@ sub get_communities {
 Takes an established L<SNMP::Info> instance and makes a fresh connection using
 community indexing, with the given C<$vlan> ID. Works for all SNMP versions.
 
+Inherits the C<vtp_version> from the previous L<SNMP::Info> instance.
+
 Passing VLAN "C<0>" (zero) will reset the indexing to the basic v2 community
 or v3 empty context.
 
@@ -88,6 +90,7 @@ or v3 empty context.
 sub snmp_comm_reindex {
   my ($snmp, $device, $vlan) = @_;
   my $ver = $snmp->snmp_ver;
+  my $vtp = $snmp->vtp_version;
 
   if ($ver == 3) {
       my $prefix = '';
@@ -122,6 +125,9 @@ sub snmp_comm_reindex {
       $vlan ? $snmp->update(Community => $comm . '@' . $vlan)
             : $snmp->update(Community => $comm);
   }
+
+  $snmp->cache({ _vtp_version => $vtp });
+  return $snmp;
 }
 
 true;
