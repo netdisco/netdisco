@@ -35,6 +35,7 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/he.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/natural.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/portsort.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/versionsort.js"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base | none %]';
