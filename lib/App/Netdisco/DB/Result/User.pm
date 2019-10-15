@@ -31,6 +31,8 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "radius",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
+  "tacacs",
+  { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "admin",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "fullname",

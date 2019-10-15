@@ -14,6 +14,7 @@ use Dancer::Plugin::Passphrase;
 use Digest::MD5;
 use Net::LDAP;
 use Authen::Radius;
+use Authen::TacacsPlus;
 use Try::Tiny;
 
 sub authenticate_user {
@@ -112,6 +113,9 @@ sub match_password {
     }
     elsif ($user->radius) {
       $pwmatch_result = $self->match_with_radius($password, $username);
+    }
+    elsif ($user->tacacs) {
+      $pwmatch_result = $self->match_with_tacacs($password, $username);
     }
     else {
       $pwmatch_result = $self->match_with_local_pass($password, $user);
@@ -249,6 +253,26 @@ sub match_with_radius {
   my $radius_return = ($type eq ACCESS_ACCEPT) ? 1 : 0;
 
   return $radius_return;
+}
+
+sub match_with_tacacs {
+  my($self, $pass, $user) = @_;
+  return unless setting('tacacs') and ref {} eq ref setting('tacacs');
+
+  my $conf = setting('tacacs');
+  my $tacacs = new Authen::TacacsPlus(Host => $conf->{server}, Key => $conf->{key});
+  if (not $tacacs) {
+      debug sprintf('auth error: Authen::TacacsPlus: %s', Authen::TacacsPlus::errmsg());
+      return undef;
+  }
+
+  my $tacacs_return = $tacacs->authen($user,$pass);
+  if (not $tacacs_return) {
+      debug sprintf('error: Authen::TacacsPlus: %s', Authen::TacacsPlus::errmsg());
+  }
+  $tacacs->close();
+
+  return $tacacs_return;
 }
 
 1;
