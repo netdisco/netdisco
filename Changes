@@ -1,4 +1,14 @@
-2.044003 - 2019-xx-xx
+2.044003 - 2019-10-15
+
+  [NEW FEATURES]
+
+  * #662 add TACACS+ support
+
+  [ENHANCEMENTS]
+
+  * #659 speed up Macsuck::Nodes while using $snmp->cisco_comm_indexing
+  * #663 sortable device OS version numbers
+  * ignore *_min_age when running jobs from netdisco-do
 
   [BUG FIXES]
 

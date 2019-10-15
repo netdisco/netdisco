@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4229",
+   "generated_by" : "Module::Build version 0.4224",
    "license" : [
       "bsd"
    ],
@@ -40,6 +40,7 @@
             "App::local::lib::helper" : "0.07",
             "Archive::Extract" : "0",
             "Authen::Radius" : "0",
+            "Authen::TacacsPlus" : "0",
             "CGI::Expand" : "2.05",
             "DBD::Pg" : "0",
             "DBIx::Class" : "0.082841",
@@ -84,7 +85,7 @@
             "Pod::Usage" : "0",
             "Regexp::Common" : "2017060201",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.68",
+            "SNMP::Info" : "3.70",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -123,7 +124,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.044002"
+         "version" : "2.044003"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -145,7 +146,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "60"
+         "version" : "61"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -820,6 +821,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.044002",
+   "version" : "2.044003",
    "x_serialization_backend" : "JSON::PP version 2.97001"
 }

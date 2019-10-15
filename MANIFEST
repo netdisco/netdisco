@@ -320,6 +320,7 @@ share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
 share/public/javascripts/underscore.min.js
+share/public/javascripts/versionsort.js
 share/radius_dictionaries/TODO
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
@@ -377,6 +378,7 @@ share/schema_versions/App-Netdisco-DB-57-58-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-58-59-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-59-60-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-60-61-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
