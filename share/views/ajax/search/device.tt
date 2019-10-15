@@ -41,6 +41,7 @@ $(document).ready(function() {
         }
       }, {
         "data": 'os_ver',
+        "type": 'versionsort',
         "render": function(data, type, row, meta) {
           return he.encode(data || '');
         }
