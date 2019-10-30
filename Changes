@@ -1,3 +1,9 @@
+2.044004 - 2019-10-30
+
+  [BUG FIXES]
+
+  * #669 check device is in storage before layers check (pyro3d)
+
 2.044003 - 2019-10-15
 
   [NEW FEATURES]
