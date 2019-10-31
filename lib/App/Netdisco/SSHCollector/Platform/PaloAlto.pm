@@ -1,7 +1,5 @@
 package App::Netdisco::SSHCollector::Platform::PaloAlto;
 
-# vim: set expandtab tabstop=8 softtabstop=4 shiftwidth=4:
-
 =head1 NAME
 
 App::Netdisco::SSHCollector::Platform::PaloAlto
