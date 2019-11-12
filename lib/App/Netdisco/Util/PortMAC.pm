@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ get_port_macs  /;
+our @EXPORT_OK = qw/ get_port_macs /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -32,7 +32,6 @@ sub get_port_macs {
 
     my ($fw_mac_list) = @_;
     my $port_macs = {};
-    
 
     my $dp_macs
         = schema('netdisco')->resultset('DevicePort')
