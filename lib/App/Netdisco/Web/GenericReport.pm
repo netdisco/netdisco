@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use Path::Class 'file';
+use Storable 'dclone';
 use Safe;
 
 our ($config, @data);
@@ -30,11 +31,24 @@ foreach my $report (@{setting('reports')}) {
       my $rs = schema($schema)->resultset('Virtual::GenericReport')->result_source;
       (my $query = $report->{query}) =~ s/;$//;
 
+      # unpick the rather hairy config of 'columns' to get field,
+      # displayname, and "_"-prefixed options
+      my %column_config = ();
+      my @column_order  = ();
+      foreach my $col (@{ $report->{columns} }) {
+        foreach my $k (keys %$col) {
+          if ($k !~ m/^_/) {
+            push @column_order, $k;
+            $column_config{$k} = dclone($col || {});
+            $column_config{$k}->{displayname} = delete $column_config{$k}->{$k};
+          }
+        }
+      }
+
       $rs->view_definition($query);
       $rs->remove_columns($rs->columns);
       $rs->add_columns( exists $report->{query_columns}
-        ? @{ $report->{query_columns} }
-        : (map {keys %{$_}} @{$report->{columns}})
+        ? @{ $report->{query_columns} } : @column_order
       );
 
       my $set = schema($schema)->resultset('Virtual::GenericReport')
@@ -60,16 +74,17 @@ foreach my $report (@{setting('reports')}) {
           template 'ajax/report/generic_report.tt',
               { results => \@results,
                 is_custom_report => true,
-                headings => [map {values %{$_}} @{$report->{columns}}],
-                columns => [map {keys %{$_}} @{$report->{columns}}] },
+                column_options => \%column_config,
+                headings => [map {$column_config{$_}->{displayname}} @column_order],
+                columns => [@column_order] },
               { layout => undef };
       }
       else {
           header( 'Content-Type' => 'text/comma-separated-values' );
           template 'ajax/report/generic_report_csv.tt',
               { results => \@results,
-                headings => [map {values %{$_}} @{$report->{columns}}],
-                columns => [map {keys %{$_}} @{$report->{columns}}] },
+                headings => [map {$column_config{$_}->{displayname}} @column_order],
+                columns => [@column_order] },
               { layout => undef };
       }
   };

@@ -10,7 +10,13 @@
     [% FOREACH row IN results %]
     <tr>
       [% FOREACH col IN columns %]
+        [% IF column_options.$col._searchable %]
+        <td>
+          <a href="[% uri_for('/search') | none %]?q=[% row.item(col) | uri %]">[% row.item(col) | html_entity %]</a>
+        </td>
+        [% ELSE %]
         <td>[% row.item(col) | html_entity %]</td>
+        [% END %]
       [% END %]
     </tr>
     [% END %]
