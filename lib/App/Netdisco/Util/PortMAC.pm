@@ -33,22 +33,11 @@ sub get_port_macs {
     my $port_macs = {};
     return {} unless defined $fw_mac_list and ref [] eq ref $fw_mac_list;
 
-    my $dp_macs
-        = schema('netdisco')->resultset('DevicePort')
-        ->search( { mac => { '-in' => $fw_mac_list } },
-        { select => [ 'mac', 'ip' ],
-          group_by => [ 'mac', 'ip' ] } );
-    my $dp_cursor = $dp_macs->cursor;
-    while ( my @vals = $dp_cursor->next ) {
-        $port_macs->{ $vals[0] } = $vals[1];
-    }
-
-    my $d_macs
-        = schema('netdisco')->resultset('Device')
-        ->search( { mac => { '-in' => $fw_mac_list } },
-        { select => [ 'mac', 'ip' ] } );
-    my $d_cursor = $d_macs->cursor;
-    while ( my @vals = $d_cursor->next ) {
+    my $macs
+        = schema('netdisco')->resultset('Virtual::PortMacs')->search({},
+        { bind => [$fw_mac_list], select => [ 'mac', 'ip' ], group_by => [ 'mac', 'ip' ] } );
+    my $cursor = $macs->cursor;
+    while ( my @vals = $cursor->next ) {
         $port_macs->{ $vals[0] } = $vals[1];
     }
 
