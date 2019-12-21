@@ -29,9 +29,9 @@ addresses supplied as array reference
 =cut
 
 sub get_port_macs {
-
     my ($fw_mac_list) = @_;
     my $port_macs = {};
+    return {} unless defined $fw_mac_list and ref [] eq ref $fw_mac_list;
 
     my $dp_macs
         = schema('netdisco')->resultset('DevicePort')
