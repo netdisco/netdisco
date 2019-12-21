@@ -15,7 +15,7 @@ sub request_is_api {
 
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
-      ? request->uri : uri_for('/inventory')->path);
+      ? request->uri : uri_for(setting('web_home'))->path);
 
     # from the internals of Dancer::Plugin::Auth::Extensible
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
@@ -191,7 +191,7 @@ get '/logout' => sub {
         return to_json {};
     }
 
-    redirect uri_for('/inventory')->path;
+    redirect uri_for(setting('web_home'))->path;
 };
 
 true;

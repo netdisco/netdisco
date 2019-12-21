@@ -39,6 +39,7 @@ api_token_lifetime: 3600
 #    debug: 3
 #  tls_opts: {}
 path: '/'
+web_home: '/inventory'
 web_plugins:
   - Inventory
   - Report::PortVLANMismatch
