@@ -24,19 +24,18 @@ subroutines.
 =head2 get_port_macs
 
 Returns a Hash reference of C<< { MAC => IP } >> for all interface MAC
-addresses on all devices.
-
-If you need to filter for a given device, simply compare the IP (hash value)
-to your device's IP.
+addresses supplied as array reference
 
 =cut
 
 sub get_port_macs {
+
+    my ($fw_mac_list) = @_;
     my $port_macs = {};
 
     my $dp_macs
         = schema('netdisco')->resultset('DevicePort')
-        ->search( { mac => { '!=' => [ -and => (undef, '00:00:00:00:00:00') ] } },
+        ->search( { mac => { '-in' => $fw_mac_list } },
         { select => [ 'mac', 'ip' ],
           group_by => [ 'mac', 'ip' ] } );
     my $dp_cursor = $dp_macs->cursor;
@@ -46,7 +45,7 @@ sub get_port_macs {
 
     my $d_macs
         = schema('netdisco')->resultset('Device')
-        ->search( { mac => { '!=' => undef } },
+        ->search( { mac => { '-in' => $fw_mac_list } },
         { select => [ 'mac', 'ip' ] } );
     my $d_cursor = $d_macs->cursor;
     while ( my @vals = $d_cursor->next ) {
