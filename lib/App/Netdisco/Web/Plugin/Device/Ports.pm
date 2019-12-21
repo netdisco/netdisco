@@ -192,7 +192,7 @@ get '/ajax/content/device/ports' => require_login sub {
       }
       else {
         @results = grep {
-            ($_->vlan eq $f)
+            (defined $_->vlan and $_->vlan eq $f)
               or
             (scalar grep {defined and $_ eq $f} @{ $vlans->{$_->port}->{vlan_set} })
         } @results;
