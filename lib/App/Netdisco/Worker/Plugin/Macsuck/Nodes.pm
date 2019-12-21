@@ -272,11 +272,11 @@ sub walk_fwtable {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return $cache; # already checked!
 
-  my $fw_mac   = $snmp->fw_mac;
-  my $fw_port  = $snmp->fw_port;
+  my $fw_mac   = $snmp->fw_mac || {};
+  my $fw_port  = $snmp->fw_port || {};
   my $fw_vlan  = ($snmp->can('cisco_comm_indexing') && $snmp->cisco_comm_indexing()) 
     ? {} : $snmp->qb_fw_vlan;
-  my $bp_index = $snmp->bp_index;
+  my $bp_index = $snmp->bp_index || {};
 
   my $port_macs = get_port_macs( values %$fw_mac );
 
