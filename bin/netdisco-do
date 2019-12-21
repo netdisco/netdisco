@@ -134,7 +134,7 @@ foreach my $host (@hostlist) {
     action => $action,
     device => $dev,
     port   => $port,
-    subaction => $extra,
+    subaction => ($extra || (($action eq 'discover') ? 'with-nodes' : undef)),
     username => ($ENV{USER} || 'netdisco-do'),
   };
 }
