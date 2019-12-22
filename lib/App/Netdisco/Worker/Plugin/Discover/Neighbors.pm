@@ -155,7 +155,7 @@ sub store_neighbors {
       }
 
       if (ref $c_ip->{$entry}) {
-          error sprintf ' [%s] neigh - Error! port %s has multiple neighbors - skipping',
+          debug sprintf ' [%s] neigh - port %s has multiple neighbors - skipping',
             $device->ip, $port;
           next;
       }
@@ -189,10 +189,18 @@ sub store_neighbors {
 
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');
-              my $neigh = $devices->single({name => $remote_id});
+
               debug sprintf
                 ' [%s] neigh - bad address %s on port %s, searching for %s instead',
                 $device->ip, $remote_ip, $port, $remote_id;
+              my $neigh_rs = $devices->search_rs({name => $remote_id});
+              my $neigh = ($neigh_rs->count == 1 ? $neigh_rs->first : undef);
+
+              if (!defined $neigh and $neigh_rs->count) {
+                  debug sprintf ' [%s] neigh - multiple devices claim to be %s (port %s) - skipping',
+                    $device->ip, $remote_id, $port;
+                  next;
+              }
 
               if (!defined $neigh) {
                   my $mac = NetAddr::MAC->new(mac => $remote_id);
