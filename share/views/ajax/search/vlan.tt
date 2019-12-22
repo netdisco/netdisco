@@ -4,6 +4,7 @@
       <th>VLAN</th>
       <th>Device</th>
       <th>Description</th>
+      <th>Ports</th>
       <th>Model</th>
       <th>OS</th>
       <th>Vendor</th>
@@ -30,6 +31,12 @@ $(document).ready(function() {
         "data": 'vlans.description',
         "render": function(data, type, row, meta) {
           return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data || '') + '</a>';
+        }
+      }, {
+        "data": 'pcount',
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return '<a class="nd_linkcell nd_stealth-link" href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(row.vlans.vlan) + '">' + he.encode(data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")) + '</a>';
         }
       }, {
         "data": 'model',

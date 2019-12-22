@@ -386,7 +386,8 @@ Results are ordered by the Device DNS and IP fields.
 
 =item *
 
-Related rows from the C<device_vlan> table will be prefetched.
+Column C<pcount> gives a count of the number of ports on the device
+that are actually configured to carry the VLAN.
 
 =back
 
@@ -404,13 +405,16 @@ sub carrying_vlan {
       ->search_rs({ 'vlans.vlan' => $cond->{vlan} },
         {
           order_by => [qw/ me.dns me.ip /],
-            columns  => [
-                'me.ip',     'me.dns',
-                'me.model',  'me.os',
-                'me.vendor', 'vlans.vlan',
-                'vlans.description'
-            ],
-            join => 'vlans'
+          select => [{ count => 'ports.vlan' }],
+          as => ['pcount'],
+          columns  => [
+              'me.ip',     'me.dns',
+              'me.model',  'me.os',
+              'me.vendor', 'vlans.vlan',
+              'vlans.description'
+          ],
+          join => {'vlans' => 'ports'},
+          distinct => 1,
         })
       ->search({}, $attrs);
 }
