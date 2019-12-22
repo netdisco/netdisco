@@ -158,10 +158,21 @@
       <td>
         <input type="hidden" data-form="discover" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="discover">Discover</button>
+
+        [% IF d.layers.substr(5,1) %]
         <input type="hidden" data-form="arpnip" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="arpnip">Arpnip</button>
+        [% ELSE %]
+        <button class="btn btn-default btn-small disabled">Arpnip</button>
+        [% END %]
+
+        [% IF d.layers.substr(6,1) %]
         <input type="hidden" data-form="macsuck" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="macsuck">Macsuck</button>
+        [% ELSE %]
+        <button class="btn btn-default btn-small disabled">Macsuck</button>
+        [% END %]
+
         <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
 
