@@ -38,10 +38,10 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     my $rs1 = schema('netdisco')->resultset('DeviceIp')->search(
         undef,
-        {   join   => 'device',
+        {   join   => ['device', 'device_port'],
             select => [
                 'alias AS ip',
-                \'NULL::macaddr as mac',
+                'device_port.mac as mac',
                 'creation AS time_first',
                 'device.last_discover AS time_last',
                 'dns',
