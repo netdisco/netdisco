@@ -141,6 +141,18 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 port_vlans_filter
+
+A JOIN condition which can be used to filter a set of Devices to those known
+carrying a given VLAN on its ports. Uses an INNER JOIN to achieve this.
+
+=cut
+
+__PACKAGE__->has_many(
+    port_vlans_filter => 'App::Netdisco::DB::Result::DevicePortVlan',
+    'ip', { join_type => 'INNER' }
+);
+
 # helper which assumes we've just RIGHT JOINed to Vlans table
 sub vlan { return (shift)->vlans->first }
 

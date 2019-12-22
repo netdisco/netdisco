@@ -211,8 +211,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # filter by vlan for all or neighbors only
     if ($vlan) {
       $devices = $devices->search(
-        { 'vlans.vlan' => $vlan },
-        { join => 'vlans' }
+        { 'port_vlans_filter.vlan' => $vlan },
+        { join => 'port_vlans_filter' }
       );
     }
 
