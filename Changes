@@ -16,6 +16,7 @@
   * #667 neighbors map with VLAN filter should only consider configured ports
   * #676 remove vim settings from files
   * #679 uninitialised error
+  * #686 makerancidconf excluded setting should be (ACL) list not dict
 
 2.044004 - 2019-10-30
 
