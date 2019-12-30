@@ -101,7 +101,11 @@ sub check_acl {
   return 0 if !defined $real_ip
     or blessed $real_ip; # class we do not understand
 
-  $config  = [$config] if ref [] ne ref $config;
+  $config  = [$config] if ref '' eq ref $config;
+  if (ref [] ne ref $config) {
+    error "error: acl is not a single item or list (cannot compare to $real_ip)";
+    return 0;
+  }
   my $all  = (scalar grep {$_ eq 'op:and'} @$config);
 
   # common case of using plain IP in ACL, so string compare for speed
@@ -200,6 +204,9 @@ sub check_acl {
           }
           next INLIST;
       }
+
+      # could be something in error, and IP/host is only option left
+      next INLIST if ref $item;
 
       my $ip = NetAddr::IP::Lite->new($item)
         or next INLIST;
