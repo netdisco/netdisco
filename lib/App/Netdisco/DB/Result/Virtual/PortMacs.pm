@@ -11,16 +11,16 @@ __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 __PACKAGE__->table("port_macs");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
-  SELECT all.ip, all.mac
+  SELECT dp.ip, dp.mac
 
   FROM
     (SELECT ip, mac FROM device
       UNION
-    SELECT ip, mac FROM device_port) all
+    SELECT ip, mac FROM device_port) dp
 
   INNER JOIN
-    (SELECT unnest( ? )) locals(m)
-    ON (all.mac = locals.m ::macaddr)
+    (SELECT unnest( ? ::macaddr[] )) locals(m)
+    ON (dp.mac = locals.m ::macaddr)
 
 ENDSQL
 );
