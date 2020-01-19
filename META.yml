@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.044004'
+    version: '2.044005'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -137,6 +137,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
   App::Netdisco::DB::Result::Virtual::PollerPerformance:
     file: lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
+  App::Netdisco::DB::Result::Virtual::PortMacs:
+    file: lib/App/Netdisco/DB/Result/Virtual/PortMacs.pm
   App::Netdisco::DB::Result::Virtual::PortUtilization:
     file: lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
   App::Netdisco::DB::Result::Virtual::PortVLANMismatch:
@@ -565,5 +567,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.044004'
+version: '2.044005'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

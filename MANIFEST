@@ -70,6 +70,7 @@ lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
+lib/App/Netdisco/DB/Result/Virtual/PortMacs.pm
 lib/App/Netdisco/DB/Result/Virtual/PortUtilization.pm
 lib/App/Netdisco/DB/Result/Virtual/PortVLANMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/SlowDevices.pm
