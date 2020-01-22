@@ -205,7 +205,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     my $devices = schema('netdisco')->resultset('Device')->search({}, {
       '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
-      join => 'throughput',
+      join => 'throughput', distinct => 1,
     })->with_times;
 
     # filter by vlan for all or neighbors only
@@ -216,10 +216,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       );
     }
 
-    my %seen_node = ();
     DEVICE: while (my $device = $devices->next) {
-      next if $seen_node{$device->ip};
-
       # if in neighbors mode then use %ok_dev to filter
       next DEVICE if ($device->ip ne $qdev->ip)
         and ($mapshow eq 'neighbors')
@@ -272,8 +269,6 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       }
 
       push @{$data{'nodes'}}, $node;
-      ++$seen_node{$device->ip};
-
       $metadata{'centernode'} = $device->ip
         if $qdev and $qdev->in_storage and $device->ip eq $qdev->ip;
     }
