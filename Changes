@@ -1,3 +1,9 @@
+2.044006 - 2019-01-22
+
+  [BUG FIXES]
+
+  * #677 neighbors map with VLAN filter should only consider configured ports
+
 2.044005 - 2019-01-19
 
   [ENHANCEMENTS]
@@ -13,8 +19,8 @@
 
   * #81  (redux) avoid DEPRECATED warning from DBIC
   * #524 ipinventory misses mac address for device ips
-  * #667 neighbors map with VLAN filter should only consider configured ports
   * #676 remove vim settings from files
+  * #677 neighbors map with VLAN filter should only consider configured ports
   * #679 uninitialised error
   * #686 makerancidconf excluded setting should be (ACL) list not dict
 
