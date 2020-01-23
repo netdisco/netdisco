@@ -124,7 +124,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.044008"
+         "version" : "2.044009"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -414,6 +414,9 @@
       },
       "App::Netdisco::SSHCollector::Platform::PaloAlto" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm"
+      },
+      "App::Netdisco::SSHCollector::Platform::VOSS" : {
+         "file" : "lib/App/Netdisco/SSHCollector/Platform/VOSS.pm"
       },
       "App::Netdisco::Transport::SNMP" : {
          "file" : "lib/App/Netdisco/Transport/SNMP.pm"
@@ -824,6 +827,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.044008",
+   "version" : "2.044009",
    "x_serialization_backend" : "JSON::PP version 2.97001"
 }

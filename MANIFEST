@@ -110,6 +110,7 @@ lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
 lib/App/Netdisco/SSHCollector/Platform/Linux.pm
 lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
+lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
 lib/App/Netdisco/Transport/SNMP.pm
 lib/App/Netdisco/Transport/SSH.pm
 lib/App/Netdisco/Util/Device.pm

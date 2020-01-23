@@ -1,3 +1,9 @@
+2.044009 - 2020-01-23
+
+  [ENHANCEMENTS]
+
+  * SSH collector for Extreme VSP devices running the VOSS operating system (antonc42)
+
 2.044008 - 2020-01-23
 
   [BUG FIXES]
