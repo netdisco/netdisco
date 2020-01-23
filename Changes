@@ -1,16 +1,22 @@
-2.044007 - 2019-01-22
+2.044008 - 2020-01-23
+
+  [BUG FIXES]
+
+  * Fix dates in changelog (osmogr)
+
+2.044007 - 2020-01-22
 
   [ENHANCEMENTS]
 
   * Better fix for #677
 
-2.044006 - 2019-01-22
+2.044006 - 2020-01-22
 
   [BUG FIXES]
 
   * #677 neighbors map with VLAN filter should only consider configured ports
 
-2.044005 - 2019-01-19
+2.044005 - 2020-01-19
 
   [ENHANCEMENTS]
 
