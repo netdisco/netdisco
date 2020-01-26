@@ -29,13 +29,15 @@ addresses supplied as array reference
 =cut
 
 sub get_port_macs {
-    my ($fw_mac_list) = @_;
+    my ($fw_mac_list) = $_[0];
     my $port_macs = {};
-    return {} unless defined $fw_mac_list and ref [] eq ref $fw_mac_list;
+    return {} unless ref [] eq ref $fw_mac_list and @{$fw_mac_list} >= 1;
+
+    my $bindarray = [ { sqlt_datatype => "array" }, $fw_mac_list ];
 
     my $macs
         = schema('netdisco')->resultset('Virtual::PortMacs')->search({},
-        { bind => [$fw_mac_list], select => [ 'mac', 'ip' ], group_by => [ 'mac', 'ip' ] } );
+        { bind => [$bindarray], select => [ 'mac', 'ip' ], group_by => [ 'mac', 'ip' ] } );
     my $cursor = $macs->cursor;
     while ( my @vals = $cursor->next ) {
         $port_macs->{ $vals[0] } = $vals[1];

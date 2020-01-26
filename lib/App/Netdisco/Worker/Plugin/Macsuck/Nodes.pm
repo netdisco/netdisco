@@ -278,7 +278,8 @@ sub walk_fwtable {
     ? {} : $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index || {};
 
-  my $port_macs = get_port_macs( values %$fw_mac );
+  my @fw_mac_list = values %$fw_mac;
+  my $port_macs = get_port_macs(\@fw_mac_list);
 
   # to map forwarding table port to device port we have
   #   fw_port -> bp_index -> interfaces
