@@ -6,7 +6,10 @@ App::Netdisco::SSHCollector::Platform::IOSXR
 
 =head1 DESCRIPTION
 
-Collect ARP entries from Cisco IOSXR devices.
+Collect ARP entries from IOSXR routers using Expect
+
+This is a reworked version of the IOSXR module, and it is suitable
+for both 32- and 64-bit IOSXR.
 
 =cut
 
@@ -14,6 +17,7 @@ use strict;
 use warnings;
 
 use Dancer ':script';
+use Expect;
 use Moo;
 
 =head1 PUBLIC METHODS
@@ -34,20 +38,31 @@ Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADD
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
-    # IOSXR show commands seem to depend on an available STDIN
-    unless (-t STDIN){
-        open STDIN, "<", "/dev/zero" or warn "Failed to fake stdin: $!";
-    }
-
     debug "$hostlabel $$ arpnip()";
-    my @data = $ssh->capture("show arp vrf all");
 
-    chomp @data;
-    my @arpentries;
+    my ($pty, $pid) = $ssh->open2pty;
+    unless ($pty) {
+        warn "unable to run remote command [$hostlabel] " . $ssh->error;
+        return ();
+    }
+    my $expect = Expect->init($pty);
 
-    # 0.0.0.0     00:00:00   0000.0000.0000  Dynamic    ARPA  GigabitEthernet0/0/0/0
+    my ($pos, $error, $match, $before, $after);
+    my $prompt = qr/# +$/;
+    my $timeout = 10;
+
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    $expect->send("terminal length 0\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    $expect->send("show arp vrf all\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    my @arpentries = ();
+    my @data = split(m/\n/, $before);
+
     foreach (@data) {
-
         my ($ip, $age, $mac, $state, $t, $iface) = split(/\s+/);
 
         if ($ip =~ m/(\d{1,3}\.){3}\d{1,3}/
@@ -55,6 +70,10 @@ sub arpnip {
               push(@arpentries, { ip => $ip, mac => $mac });
         }
     }
+
+
+    $expect->send("exit\n");
+    $expect->soft_close();
 
     return @arpentries;
 }
