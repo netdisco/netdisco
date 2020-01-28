@@ -73,7 +73,7 @@ sub arpnip {
 
 
     $expect->send("exit\n");
-    $expect->soft_close();
+    $expect->hard_close();
 
     return @arpentries;
 }
