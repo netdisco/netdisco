@@ -1,3 +1,9 @@
+2.044012 - 2020-XX-XX
+
+  [BUG FIXES]
+
+  * prevent Template::AutoFilter taking action on CSV output
+
 2.044011 - 2020-01-26
 
   [BUG FIXES]

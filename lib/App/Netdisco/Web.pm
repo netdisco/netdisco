@@ -205,6 +205,30 @@ hook 'before_template' => sub {
     $Template::Stash::PRIVATE = undef;
 };
 
+# prevent Template::AutoFilter taking action on CSV output
+hook 'before_template' => sub {
+    my $template_engine = engine 'template';
+    if (not request->is_ajax
+        and header('Content-Type')
+        and header('Content-Type') eq 'text/comma-separated-values' ) {
+
+        $template_engine->{config}->{AUTO_FILTER} = 'none';
+        $template_engine->init();
+    }
+    # debug $template_engine->{config}->{AUTO_FILTER};
+};
+hook 'after_template_render' => sub {
+    my $template_engine = engine 'template';
+    if (not request->is_ajax
+        and header('Content-Type')
+        and header('Content-Type') eq 'text/comma-separated-values' ) {
+
+        $template_engine->{config}->{AUTO_FILTER} = 'html_entity';
+        $template_engine->init();
+    }
+    # debug $template_engine->{config}->{AUTO_FILTER};
+};
+
 # workaround for Swagger plugin weird response body
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
