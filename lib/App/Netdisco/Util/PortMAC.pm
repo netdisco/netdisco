@@ -37,7 +37,7 @@ sub get_port_macs {
 
     my $macs
         = schema('netdisco')->resultset('Virtual::PortMacs')->search({},
-        { bind => [$bindarray], select => [ 'mac', 'ip' ], group_by => [ 'mac', 'ip' ] } );
+        { bind => [$bindarray, $bindarray], select => [ 'mac', 'ip' ], group_by => [ 'mac', 'ip' ] } );
     my $cursor = $macs->cursor;
     while ( my @vals = $cursor->next ) {
         $port_macs->{ $vals[0] } = $vals[1];
