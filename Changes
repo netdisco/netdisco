@@ -1,4 +1,8 @@
-2.044012 - 2020-XX-XX
+2.044012 - 2020-02-01
+
+  [ENHANCEMENTS]
+
+  * #680 redux - speed up macsuck again (rc9000)
 
   [BUG FIXES]
 
