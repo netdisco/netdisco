@@ -16,6 +16,7 @@ branches:
   only:
     - /^2\.\d{6}$/
     - 'master'
+    - /.*travis.*/
 install:
   - cpanm --quiet --notest https://github.com/egiles/test-compile/archive/v2.1.2.tar.gz PkgConfig Test::CChecker Alien::zlib::Static Alien::OpenSSL::Static Alien::SNMP
 script: |
