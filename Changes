@@ -1,3 +1,9 @@
+2.044013 - 2020-02-04
+
+  [BUG FIXES]
+
+  * change from MCE::Queue to MCE::Shared to better handle signals
+
 2.044012 - 2020-02-01
 
   [ENHANCEMENTS]
