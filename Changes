@@ -1,3 +1,9 @@
+2.044014 - 2020-02-09
+
+  [BUG FIXES]
+
+  * change from MCE::Shared to MCE::Queue after resolution of crash bug
+
 2.044013 - 2020-02-04
 
   [BUG FIXES]

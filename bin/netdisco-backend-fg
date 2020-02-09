@@ -35,7 +35,7 @@ use Role::Tiny::With;
 
 use MCE::Signal '-setpgrp';
 use MCE::Flow Sereal => 1;
-use MCE::Shared;
+use MCE::Queue;
 
 # set temporary MCE files' location in home directory
 my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
@@ -46,7 +46,7 @@ mkdir $tmp_dir if ! -d $tmp_dir;
 prctl 'nd2: master';
 
 # shared local job queue
-my $queue = MCE::Shared->queue();
+my $queue = MCE::Queue->new;
 
 # support a scheduler-only node
 setting('workers')->{'no_manager'} = 1
