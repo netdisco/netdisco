@@ -1,3 +1,9 @@
+2.044015 - 2020-02-12
+
+  [BUG FIXES]
+
+  * default access list for device_auth should be ipv4 and ipv6
+
 2.044014 - 2020-02-09
 
   [BUG FIXES]

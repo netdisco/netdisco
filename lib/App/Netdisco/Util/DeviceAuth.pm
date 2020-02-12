@@ -63,7 +63,7 @@ sub fixup_device_auth {
     $stanza->{tag} ||= $tag;
     $stanza->{read} = 1 if !exists $stanza->{read};
     $stanza->{no}   ||= [];
-    $stanza->{only} ||= ['any'];
+    $stanza->{only} ||= ['group:__ANY__'];
 
     die "error: config: snmpv2 community in device_auth must be single item, not list\n"
       if ref $stanza->{community};
