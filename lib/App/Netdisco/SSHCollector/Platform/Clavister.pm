@@ -27,6 +27,8 @@ Retrieve ARP entries from device. C<$host> is the hostname or IP address
 of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 Returns an array of hashrefs in the format { mac => MACADDR, ip => IPADDR }.
 
+=back
+
 =cut
 
 sub arpnip {
