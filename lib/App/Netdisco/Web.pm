@@ -14,7 +14,7 @@ use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
 use App::Netdisco::Util::Web
-  qw/interval_to_daterange request_is_api_data/;
+  qw/interval_to_daterange request_is_api_v0/;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -84,12 +84,10 @@ $swagger->{consumes} = 'application/json';
 $swagger->{produces} = 'application/json';
 $swagger->{tags} = [
   {name => 'Global'},
-  {name => 'Devices',
-    description => 'Operations relating to Devices (switches, routers, etc)'},
-  {name => 'Nodes',
-    description => 'Operations relating to Nodes (end-stations such as printers)'},
-  {name => 'NodeIPs',
-    description => 'Operations relating to MAC-IP mappings (IPv4 ARP and IPv6 Neighbors)'},
+  {name => 'v0',
+    description => 'Operations relating to Web User Interface'},
+  {name => 'v1',
+    description => 'Operations relating to Data Objects'},
 ];
 $swagger->{securityDefinitions} = {
   APIKeyHeader =>
@@ -233,8 +231,7 @@ hook 'after_template_render' => sub {
 # support for v0 api which is basic table result in json
 hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
-  return unless (request_is_api_data
-    and index(request->path, uri_for('/api/v0')->path) == 0);
+  return unless request_is_api_v0;
 
   if ($tokens->{results}) {
       ${ $html_ref } = to_json( $tokens->{results} );

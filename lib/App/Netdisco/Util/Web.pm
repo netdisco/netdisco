@@ -3,16 +3,19 @@ package App::Netdisco::Util::Web;
 use strict;
 use warnings;
 
-use base 'Exporter';
+use Dancer ':syntax';
+
 use Time::Piece;
 use Time::Seconds;
+
+use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   sort_port sort_modules
   interval_to_daterange
-  sql_matcha
+  sql_match
   request_is_api
-  request_is_api_data
+  request_is_api_v0
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -41,15 +44,19 @@ sub request_is_api {
     and request->accept =~ m/(?:json|javascript)/);
 }
 
-=head2 request_is_api_data
+=head2 request_is_api_v0
 
-Same as C<request_is_data> but also requires path to start "C</api/...>".
+Same as C<request_is_data> but also requires path to start "C</api/v0/...>".
 
 =cut
 
-sub request_is_api_data {
-  return (request_is_api
-    and index(request->path, uri_for('/api')->path) == 0);
+sub request_is_api_v0 {
+  return (request_is_api and (
+    index(request->path, uri_for('/api/v0')->path) == 0
+      or
+    (param('return_url')
+    and index(param('return_url'), uri_for('/api/v0')->path) == 0)
+  ));
 }
 
 =head2 sql_match( $value, $exact? )

@@ -3,6 +3,7 @@ package App::Netdisco::Web::GenericReport;
 use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
+use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
@@ -22,6 +23,21 @@ foreach my $report (@{setting('reports')}) {
     ($report->{hidden} ? (hidden => true) : ()),
     provides_csv => true,
   });
+
+  (my $category_path = lc ($report->{category} || 'My Reports')) =~ s/ /-/g;
+  swagger_path {
+    tags => ['v0'],
+    description => $report->{label} .' Report',
+    parameters => [
+      (exists $report->{bind_params}) ? (
+          map { $_ => {} } @{ $report->{bind_params} }
+      ) : ()
+    ],
+    responses => { default => {} },
+  }, get "/api/v0/report/$category_path/$r" => sub {
+    request->headers->header('X-Requested-With' => 'XMLHttpRequest');
+    forward "/ajax/content/report/$r";
+  };
 
   get "/ajax/content/report/$r" => require_login sub {
       # TODO: this should be done by creating a new Virtual Result class on
@@ -77,7 +93,7 @@ foreach my $report (@{setting('reports')}) {
                 column_options => \%column_config,
                 headings => [map {$column_config{$_}->{displayname}} @column_order],
                 columns => [@column_order] },
-              { layout => undef };
+              { layout => 'api' };
       }
       else {
           header( 'Content-Type' => 'text/comma-separated-values' );
