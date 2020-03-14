@@ -34,7 +34,7 @@ foreach my $report (@{setting('reports')}) {
       ) : ()
     ],
     responses => { default => {} },
-  }, get "/api/v0/report/$category_path/$r" => sub {
+  }, get "/api/v0/report/$category_path/$r" => require_login sub {
     request->headers->header('X-Requested-With' => 'XMLHttpRequest');
     forward "/ajax/content/report/$r";
   };
