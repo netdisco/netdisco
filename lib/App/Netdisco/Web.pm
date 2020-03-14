@@ -13,7 +13,8 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
-use App::Netdisco::Util::Web 'interval_to_daterange';
+use App::Netdisco::Util::Web
+  qw/interval_to_daterange request_is_api_data/;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -227,6 +228,17 @@ hook 'after_template_render' => sub {
         $template_engine->init();
     }
     # debug $template_engine->{config}->{AUTO_FILTER};
+};
+
+# support for v0 api which is basic table result in json
+hook before_layout_render => sub {
+  my ($tokens, $html_ref) = @_;
+  return unless (request_is_api_data
+    and index(request->path, uri_for('/api/v0')->path) == 0);
+
+  if ($tokens->{results}) {
+      ${ $html_ref } = to_json( $tokens->{results} );
+  }
 };
 
 # workaround for Swagger plugin weird response body

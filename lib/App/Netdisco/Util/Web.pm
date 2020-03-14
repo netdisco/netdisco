@@ -8,7 +8,11 @@ use Time::Piece;
 use Time::Seconds;
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sort_port sort_modules interval_to_daterange sql_match
+  sort_port sort_modules
+  interval_to_daterange
+  sql_matcha
+  request_is_api
+  request_is_api_data
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -24,6 +28,29 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 request_is_api
+
+Returns true if the request is an API call, else returns false.
+
+=cut
+
+sub request_is_api {
+  return (setting('api_token_lifetime')
+    and request->header('Authorization')
+    and request->accept =~ m/(?:json|javascript)/);
+}
+
+=head2 request_is_api_data
+
+Same as C<request_is_data> but also requires path to start "C</api/...>".
+
+=cut
+
+sub request_is_api_data {
+  return (request_is_api
+    and index(request->path, uri_for('/api')->path) == 0);
+}
 
 =head2 sql_match( $value, $exact? )
 
