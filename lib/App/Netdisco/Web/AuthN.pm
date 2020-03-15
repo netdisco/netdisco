@@ -8,12 +8,29 @@ use Dancer::Plugin::Swagger;
 use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 
+# ensure that regardless of where the user is redirected, we have a link
+# back to the page they requested.
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
       ? request->uri : uri_for(setting('web_home'))->path);
+};
 
+# This hook ensures that a session is active so that calls in the app, which
+# are all wrapped in require_login or require_role, will succeed.  If there is
+# no auth data passed, then the hook simply returns, no session is set, and
+# the user is redirected to login page.
+hook 'before' => sub {
     # from the internals of Dancer::Plugin::Auth::Extensible
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
+
+    if (index(request->path, uri_for('/api')->path) == 0) {
+        my $token = request->header('Authorization');
+        my $user = $provider->validate_api_token($token)
+          or return;
+
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
+    }
 
     if (! session('logged_in_user')
         and request->path ne uri_for('/login')->path
@@ -47,16 +64,6 @@ hook 'before' => sub {
             session(logged_in_user => 'guest');
             session(logged_in_user_realm => 'users');
         }
-        elsif (request_is_api()
-          and index(request->path, uri_for('/api')->path) == 0) {
-
-            my $token = request->header('Authorization');
-            my $user = $provider->validate_api_token($token)
-              or return;
-
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
         else {
             # user has no AuthN - force to handler for '/'
             request->path_info('/');
@@ -64,37 +71,17 @@ hook 'before' => sub {
     }
 };
 
-# user redirected here (POST -> GET) when login fails
-get qr{^/(?:login(?:/denied)?)?} => sub {
-    if (request_is_api()) {
-      status('unauthorized');
-      return to_json {
-        error => 'not authorized',
-        return_url => param('return_url'),
-      };
-    }
-    else {
-      template 'index', {
-        return_url => param('return_url')
-      }, { layout => 'main' };
-    }
-};
-
 # override default login_handler so we can log access in the database
 swagger_path {
-  description => 'Obtain an API Key using HTTP BasicAuth',
-  tags => ['Global'],
+  description => 'Obtain an API Key',
+  tags => ['Common'],
   parameters => [],
-  responses => {
-    default => {
-      examples => {
-        'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
+  responses => { default => { examples => {
+    'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
   },
 },
 post '/login' => sub {
-    my $mode = (request_is_api() ? 'API' : 'WebUI');
-
-    # get authN data from request (HTTP BasicAuth or Form params)
+    # get authN data from BasicAuth header used by API, put into params
     my $authheader = request->header('Authorization');
     if (defined $authheader and $authheader =~ /^Basic (.*)$/i) {
         my ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
@@ -116,12 +103,12 @@ post '/login' => sub {
         schema('netdisco')->resultset('UserLog')->create({
           username => session('logged_in_user'),
           userip => request->remote_address,
-          event => "Login ($mode)",
+          event => (sprintf 'Login (%s)', (request_is_api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
         $user->update({ last_on => \'now()' });
 
-        if ($mode eq 'API') {
+        if (request_is_api) {
             $user->update({
               token_from => time,
               token => \'md5(random()::text)',
@@ -132,16 +119,17 @@ post '/login' => sub {
         redirect param('return_url');
     }
     else {
+        # invalidate session cookie
         session->destroy;
 
         schema('netdisco')->resultset('UserLog')->create({
           username => param('username'),
           userip => request->remote_address,
-          event => "Login Failure ($mode)",
+          event => (sprintf 'Login Failure (%s)', (request_is_api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
 
-        if ($mode eq 'API') {
+        if (request_is_api) {
             status('unauthorized');
             return to_json { error => 'authentication failed' };
         }
@@ -161,13 +149,11 @@ Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
-  tags => ['Global'],
+  tags => ['Common'],
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },
 get '/logout' => sub {
-    my $mode = (request_is_api() ? 'API' : 'WebUI');
-
     # clear out API token
     my $user = schema('netdisco')->resultset('User')
       ->find({ username => session('logged_in_user')});
@@ -180,15 +166,28 @@ get '/logout' => sub {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => request->remote_address,
-      event => "Logout ($mode)",
+      event => (sprintf 'Logout (%s)', (request_is_api ? 'API' : 'WebUI')),
       details => '',
     });
 
-    if ($mode eq 'API') {
-        return to_json {};
-    }
-
+    return to_json {} if request_is_api;
     redirect uri_for(setting('web_home'))->path;
+};
+
+# user redirected here (POST -> GET) when login fails
+get qr{^/(?:login(?:/denied)?)?} => sub {
+    if (request_is_api) {
+      status('unauthorized');
+      return to_json {
+        error => 'not authorized',
+        return_url => param('return_url'),
+      };
+    }
+    else {
+      template 'index', {
+        return_url => param('return_url')
+      }, { layout => 'main' };
+    }
 };
 
 true;

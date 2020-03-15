@@ -189,9 +189,9 @@ register 'register_report' => sub {
                   map { $_ => {} } @{ $config->{bind_params} }
               ) : ()
             ],
-            responses => { default => {} },
+            responses => { default => { examples => { 'application/json' => {} } } },
           }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
-            request->headers->header('X-Requested-With' => 'XMLHttpRequest');
+            # request->headers->header('X-Requested-With' => 'XMLHttpRequest');
             forward "/ajax/content/report/$tag";
           };
 
