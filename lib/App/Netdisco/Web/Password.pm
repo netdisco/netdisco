@@ -19,7 +19,7 @@ sub _make_password {
 
 sub _bail {
     var('passchange_failed' => 1);
-    return template 'password.tt';
+    return template 'password.tt', {}, { layout => 'main' };
 }
 
 any ['get', 'post'] => '/password' => require_login sub {
@@ -45,7 +45,7 @@ any ['get', 'post'] => '/password' => require_login sub {
         var('passchange_ok' => 1);
     }
 
-    template 'password.tt';
+    template 'password.tt', {}, { layout => 'main' };
 };
 
 true;

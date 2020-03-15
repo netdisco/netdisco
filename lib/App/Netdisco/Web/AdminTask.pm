@@ -66,12 +66,12 @@ get '/admin/*' => require_role admin => sub {
       var(nav => 'admin');
       template 'admintask', {
         task => setting('_admin_tasks')->{ $tag },
-      };
+      }, { layout => 'main' };
     }
     else {
       var('notfound' => true);
       status 'not_found';
-      template 'index';
+      template 'index', {}, { layout => 'main' };
     }
 };
 

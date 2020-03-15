@@ -79,7 +79,9 @@ get qr{^/(?:login(?:/denied)?)?} => sub {
       };
     }
     else {
-      template 'index', { return_url => param('return_url') };
+      template 'index', {
+        return_url => param('return_url')
+      }, { layout => 'main' };
     }
 };
 

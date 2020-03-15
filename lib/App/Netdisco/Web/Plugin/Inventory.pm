@@ -29,7 +29,7 @@ get '/inventory' => require_login sub {
     template 'inventory', {
       platforms => [ $platforms->hri->all ],
       releases  => [ @release_list ],
-    };
+    }, { layout => 'main' };
 };
 
 true;

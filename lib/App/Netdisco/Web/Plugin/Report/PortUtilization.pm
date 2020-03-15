@@ -24,8 +24,7 @@ get '/ajax/content/report/portutilization' => require_login sub {
 
     if (request->is_ajax) {
         my $json = to_json (\@results);
-        template 'ajax/report/portutilization.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/portutilization.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );

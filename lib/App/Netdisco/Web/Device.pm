@@ -85,7 +85,7 @@ get '/device' => require_login sub {
       lgroup_list => [ schema('netdisco')->resultset('Device')->get_distinct_col('location') ],
       hgroup_list => setting('host_group_displaynames'),
       device => params->{'tab'},
-    };
+    }, { layout => 'main' };
 };
 
 true;
