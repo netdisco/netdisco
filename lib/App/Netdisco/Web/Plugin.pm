@@ -190,7 +190,7 @@ register 'register_report' => sub {
               ) : ()
             ],
             responses => { default => {} },
-          }, get "/api/v0/report/$category_path/$tag" => require_login sub {
+          }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
             request->headers->header('X-Requested-With' => 'XMLHttpRequest');
             forward "/ajax/content/report/$tag";
           };

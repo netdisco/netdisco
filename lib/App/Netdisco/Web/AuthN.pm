@@ -5,13 +5,8 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
+use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
-
-sub request_is_api {
-  return (setting('api_token_lifetime')
-    and request->header('Authorization')
-    and request->accept =~ m/(?:json|javascript)/);
-}
 
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
