@@ -29,6 +29,9 @@ hook 'before' => sub {
       or index(request->path, uri_for('/swagger-ui')->path) == 0
     );
 
+    # from the internals of Dancer::Plugin::Auth::Extensible
+    my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
+
     # API calls must conform strictly to path and header requirements
     if (request_is_api_path) {
         # Dancer will issue a cookie to the client which could be returned and
@@ -48,9 +51,6 @@ hook 'before' => sub {
 
     # after checking API, we can short circuit if Dancer reads its cookie OK
     return if session('logged_in_user');
-
-    # from the internals of Dancer::Plugin::Auth::Extensible
-    my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
     if (setting('trust_x_remote_user')
       and scalar request->header('X-REMOTE_USER')
