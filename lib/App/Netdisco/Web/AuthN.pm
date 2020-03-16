@@ -5,8 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
-use App::Netdisco::Util::Web
-  qw/request_is_api request_is_api_path/;
+use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 
 # ensure that regardless of where the user is redirected, we have a link
@@ -33,19 +32,17 @@ hook 'before' => sub {
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
     # API calls must conform strictly to path and header requirements
-    if (request_is_api_path) {
+    if (request_is_api) {
         # Dancer will issue a cookie to the client which could be returned and
         # cause API calls to succeed without passing token. Kill the session.
         session->destroy;
 
-        if (request_is_api) {
-            my $token = request->header('Authorization');
-            my $user = $provider->validate_api_token($token)
-              or return;
+        my $token = request->header('Authorization');
+        my $user = $provider->validate_api_token($token)
+          or return;
 
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
         return;
     }
 
@@ -94,6 +91,8 @@ swagger_path {
   },
 },
 post '/login' => sub {
+    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+
     # get authN data from BasicAuth header used by API, put into params
     my $authheader = request->header('Authorization');
     if (defined $authheader and $authheader =~ /^Basic (.*)$/i) {
@@ -116,12 +115,13 @@ post '/login' => sub {
         schema('netdisco')->resultset('UserLog')->create({
           username => session('logged_in_user'),
           userip => request->remote_address,
-          event => (sprintf 'Login (%s)', (request_is_api ? 'API' : 'WebUI')),
+          event => (sprintf 'Login (%s)', ($api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
         $user->update({ last_on => \'now()' });
 
-        if (request_is_api) {
+        if ($api) {
+            header('Content-Type' => 'application/json');
             $user->update({
               token_from => time,
               token => \'md5(random()::text)',
@@ -138,11 +138,12 @@ post '/login' => sub {
         schema('netdisco')->resultset('UserLog')->create({
           username => param('username'),
           userip => request->remote_address,
-          event => (sprintf 'Login Failure (%s)', (request_is_api ? 'API' : 'WebUI')),
+          event => (sprintf 'Login Failure (%s)', ($api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
 
-        if (request_is_api) {
+        if ($api) {
+            header('Content-Type' => 'application/json');
             status('unauthorized');
             return to_json { error => 'authentication failed' };
         }
@@ -167,6 +168,8 @@ swagger_path {
   responses => { default => { examples => { 'application/json' => {} } } },
 },
 get '/logout' => sub {
+    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+
     # clear out API token
     my $user = schema('netdisco')->resultset('User')
       ->find({ username => session('logged_in_user')});
@@ -179,17 +182,24 @@ get '/logout' => sub {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => request->remote_address,
-      event => (sprintf 'Logout (%s)', (request_is_api ? 'API' : 'WebUI')),
+      event => (sprintf 'Logout (%s)', ($api ? 'API' : 'WebUI')),
       details => '',
     });
 
-    return to_json {} if request_is_api;
+    if ($api) {
+        header('Content-Type' => 'application/json');
+        return to_json {};
+    }
+
     redirect uri_for(setting('web_home'))->path;
 };
 
 # user redirected here (POST -> GET) when login fails
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    if (request_is_api) {
+    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+
+    if ($api) {
+      header('Content-Type' => 'application/json');
       status('unauthorized');
       return to_json {
         error => 'not authorized',

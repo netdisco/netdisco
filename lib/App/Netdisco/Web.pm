@@ -234,8 +234,8 @@ hook before_layout_render => sub {
   return unless request_is_api_v0;
 
   if ($tokens->{results}) {
-      ${ $html_ref } = $tokens->{results};
       header('Content-Type' => 'application/json');
+      ${ $html_ref } = $tokens->{results};
   }
 };
 

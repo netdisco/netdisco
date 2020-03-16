@@ -15,7 +15,6 @@ our @EXPORT_OK = qw/
   interval_to_daterange
   sql_match
   request_is_api
-  request_is_api_path
   request_is_api_v0
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -35,29 +34,17 @@ subroutines.
 
 =head2 request_is_api
 
-Returns true if the request is an API call, else returns false.
+Same as C<request_is_api_path> but also that client asked for JSON.
 
 =cut
 
 sub request_is_api {
-  return (setting('api_token_lifetime')
-    and request->header('Authorization')
-    and request->accept =~ m/(?:json|javascript)/);
-}
-
-=head2 request_is_api_path
-
-Path starts "C</api/...>".
-
-=cut
-
-sub request_is_api_path {
-  return (
+  return ((request->accept =~ m/(?:json|javascript)/) and (
     index(request->path, uri_for('/api/')->path) == 0
       or
     (param('return_url')
     and index(param('return_url'), uri_for('/api/')->path) == 0)
-  );
+  ));
 }
 
 =head2 request_is_api_v0
