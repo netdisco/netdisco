@@ -47,22 +47,22 @@ sub request_is_api {
 
 =head2 request_is_api_path
 
-Same as C<request_is_data> but also requires path to start "C</api/...>".
+Path starts "C</api/...>".
 
 =cut
 
 sub request_is_api_path {
-  return (request_is_api and (
+  return (
     index(request->path, uri_for('/api/')->path) == 0
       or
     (param('return_url')
     and index(param('return_url'), uri_for('/api/')->path) == 0)
-  ));
+  );
 }
 
 =head2 request_is_api_v0
 
-Same as C<request_is_data> but also requires path to start "C</api/v0/...>".
+Same as C<request_is_api> but also requires path to start "C</api/v0/...>".
 
 =cut
 
