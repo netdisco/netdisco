@@ -5,7 +5,8 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
-use App::Netdisco::Util::Web 'request_is_api';
+use App::Netdisco::Util::Web
+  qw/request_is_api request_is_api_path/;
 use MIME::Base64;
 
 # ensure that regardless of where the user is redirected, we have a link
@@ -15,15 +16,26 @@ hook 'before' => sub {
       ? request->uri : uri_for(setting('web_home'))->path);
 };
 
-# This hook ensures that a session is active so that calls in the app, which
+# This hook creates an active user session so that endpoints in the app, which
 # are all wrapped in require_login or require_role, will succeed.  If there is
 # no auth data passed, then the hook simply returns, no session is set, and
 # the user is redirected to login page.
 hook 'before' => sub {
+    return if session('logged_in_user');
+
+    # return if request is for endpoints not requiring a session
+    return if (
+      request->path eq uri_for('/login')->path
+      or request->path eq uri_for('/logout')->path
+      or request->path eq uri_for('/swagger.json')->path
+      or index(request->path, uri_for('/swagger-ui')->path) == 0
+    );
+
     # from the internals of Dancer::Plugin::Auth::Extensible
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
-    if (index(request->path, uri_for('/api')->path) == 0) {
+    # API calls must conform strictly to path and header requirements
+    if (request_is_api_path) {
         my $token = request->header('Authorization');
         my $user = $provider->validate_api_token($token)
           or return;
@@ -31,43 +43,37 @@ hook 'before' => sub {
         session(logged_in_user => $user);
         session(logged_in_user_realm => 'users');
     }
+    return if index(request->path, uri_for('/api/')->path) == 0;
 
-    if (! session('logged_in_user')
-        and request->path ne uri_for('/login')->path
-        and request->path ne uri_for('/logout')->path
-        and request->path ne uri_for('/swagger.json')->path
-        and index(request->path, uri_for('/swagger-ui')->path) != 0) {
+    if (setting('trust_x_remote_user')
+      and scalar request->header('X-REMOTE_USER')
+      and length scalar request->header('X-REMOTE_USER')) {
 
-        if (setting('trust_x_remote_user')
-          and scalar request->header('X-REMOTE_USER')
-          and length scalar request->header('X-REMOTE_USER')) {
+        (my $user = scalar request->header('X-REMOTE_USER')) =~ s/@[^@]*$//;
+        return if setting('validate_remote_user')
+          and not $provider->get_user_details($user);
 
-            (my $user = scalar request->header('X-REMOTE_USER')) =~ s/@[^@]*$//;
-            return if setting('validate_remote_user')
-              and not $provider->get_user_details($user);
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
+    }
+    elsif (setting('trust_remote_user')
+      and defined $ENV{REMOTE_USER}
+      and length  $ENV{REMOTE_USER}) {
 
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
-        elsif (setting('trust_remote_user')
-          and defined $ENV{REMOTE_USER}
-          and length  $ENV{REMOTE_USER}) {
+        (my $user = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
+        return if setting('validate_remote_user')
+          and not $provider->get_user_details($user);
 
-            (my $user = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
-            return if setting('validate_remote_user')
-              and not $provider->get_user_details($user);
-
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
-        elsif (setting('no_auth')) {
-            session(logged_in_user => 'guest');
-            session(logged_in_user_realm => 'users');
-        }
-        else {
-            # user has no AuthN - force to handler for '/'
-            request->path_info('/');
-        }
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
+    }
+    elsif (setting('no_auth')) {
+        session(logged_in_user => 'guest');
+        session(logged_in_user_realm => 'users');
+    }
+    else {
+        # user has no AuthN - force to handler for '/'
+        request->path_info('/');
     }
 };
 
