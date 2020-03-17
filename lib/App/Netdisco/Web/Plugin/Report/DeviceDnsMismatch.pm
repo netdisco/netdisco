@@ -27,14 +27,12 @@ get '/ajax/content/report/devicednsmismatch' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/devicednsmismatch.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/devicednsmismatch.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/devicednsmismatch_csv.tt',
-            { results => \@results },
-            { layout  => undef };
+            { results => \@results };
     }
 };
 

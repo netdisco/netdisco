@@ -235,7 +235,7 @@ hook before_layout_render => sub {
 
   if ($tokens->{results}) {
       header('Content-Type' => 'application/json');
-      ${ $html_ref } = $tokens->{results};
+      ${ $html_ref } = to_json $tokens->{results};
   }
 };
 
