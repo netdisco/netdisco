@@ -11,6 +11,7 @@ register_report(
         tag          => 'portmultinodes',
         label        => 'Ports with multiple nodes attached',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -39,14 +40,12 @@ get '/ajax/content/report/portmultinodes' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/portmultinodes.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/portmultinodes.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portmultinodes_csv.tt',
-            { results => \@results, },
-            { layout  => undef };
+            { results => \@results, };
     }
 };
 

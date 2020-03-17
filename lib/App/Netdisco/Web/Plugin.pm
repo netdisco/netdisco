@@ -180,20 +180,22 @@ register 'register_report' => sub {
       if ($config->{tag} eq $tag) {
           setting('_reports')->{$tag} = $config;
 
-          (my $category_path = lc $config->{category}) =~ s/ /-/g;
-          swagger_path {
-            tags => ['v0'],
-            description => $config->{label} .' Report',
-            parameters => [
-              (exists $config->{bind_params}) ? (
-                  map { $_ => {} } @{ $config->{bind_params} }
-              ) : ()
-            ],
-            responses => { default => {} },
-          }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
-            # request->headers->header('X-Requested-With' => 'XMLHttpRequest');
-            forward "/ajax/content/report/$tag";
-          };
+          if ($config->{api_endpoint}) {
+              (my $category_path = lc $config->{category}) =~ s/ /-/g;
+              swagger_path {
+                tags => ['v0'],
+                description => $config->{label} .' Report',
+                parameters => [
+                  (exists $config->{bind_params}) ? (
+                      map { $_ => {} } @{ $config->{bind_params} }
+                  ) : ()
+                ],
+                responses => { default => {} },
+              }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
+                # request->headers->header('X-Requested-With' => 'XMLHttpRequest');
+                forward "/ajax/content/report/$tag";
+              };
+          }
 
           foreach my $rconfig (@{setting('reports')}) {
               if ($rconfig->{tag} eq $tag) {

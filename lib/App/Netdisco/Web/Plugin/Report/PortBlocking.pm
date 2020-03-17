@@ -11,6 +11,7 @@ register_report(
         tag          => 'portblocking',
         label        => 'Ports that are blocking',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -31,14 +32,12 @@ get '/ajax/content/report/portblocking' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/portblocking.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/portblocking.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portblocking_csv.tt',
-            { results => \@results, },
-            { layout  => undef };
+            { results => \@results, };
     }
 };
 

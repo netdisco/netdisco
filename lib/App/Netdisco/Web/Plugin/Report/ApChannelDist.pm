@@ -11,6 +11,7 @@ register_report(
         tag          => 'apchanneldist',
         label        => 'Access Point Channel Distribution',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -28,13 +29,11 @@ get '/ajax/content/report/apchanneldist' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/apchanneldist.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/apchanneldist.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/apchanneldist_csv.tt', { results => \@results },
-            { layout => undef };
+        template 'ajax/report/apchanneldist_csv.tt', { results => \@results };
     }
 };
 

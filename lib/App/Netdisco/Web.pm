@@ -14,7 +14,7 @@ use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
 use App::Netdisco::Util::Web
-  qw/interval_to_daterange request_is_api_v0/;
+  qw/interval_to_daterange request_is_api request_is_api_v0/;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -233,10 +233,8 @@ hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
   return unless request_is_api_v0;
 
-  if ($tokens->{results}) {
-      header('Content-Type' => 'application/json');
-      ${ $html_ref } = to_json $tokens->{results};
-  }
+  ${ $html_ref } =
+    $tokens->{results} ? (to_json $tokens->{results}) : {};
 };
 
 # workaround for Swagger plugin weird response body
@@ -247,6 +245,9 @@ hook 'after' => sub {
         $r->content( to_json( $r->content ) );
         header('Content-Type' => 'application/json');
     }
+
+    header('Content-Type' => 'application/json')
+      if request_is_api;
 };
 
 # remove empty lines from CSV response

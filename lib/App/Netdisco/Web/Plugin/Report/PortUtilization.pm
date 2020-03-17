@@ -11,6 +11,7 @@ register_report(
         tag      => 'portutilization',
         label    => 'Port Utilization',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -28,8 +29,7 @@ get '/ajax/content/report/portutilization' => require_login sub {
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/portutilization_csv.tt', { results => \@results, },
-            { layout => undef };
+        template 'ajax/report/portutilization_csv.tt', { results => \@results, };
     }
 };
 

@@ -11,6 +11,7 @@ register_report(
         tag          => 'vlaninventory',
         label        => 'VLAN Inventory',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -36,13 +37,11 @@ get '/ajax/content/report/vlaninventory' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/vlaninventory.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/vlaninventory.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/vlaninventory_csv.tt', { results => \@results },
-            { layout => undef };
+        template 'ajax/report/vlaninventory_csv.tt', { results => \@results };
     }
 };
 

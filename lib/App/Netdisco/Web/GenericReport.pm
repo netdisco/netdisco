@@ -21,6 +21,7 @@ foreach my $report (@{setting('reports')}) {
     category => ($report->{category} || 'My Reports'),
     ($report->{hidden} ? (hidden => true) : ()),
     provides_csv => true,
+    api_endpoint => true,
   });
 
   get "/ajax/content/report/$r" => require_login sub {

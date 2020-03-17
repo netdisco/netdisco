@@ -11,6 +11,7 @@ register_report(
         tag          => 'ssidinventory',
         label        => 'SSID Inventory',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -22,13 +23,11 @@ get '/ajax/content/report/ssidinventory' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/portssid.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/portssid.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/portssid_csv.tt', { results => \@results },
-            { layout => undef };
+        template 'ajax/report/portssid_csv.tt', { results => \@results };
     }
 };
 
