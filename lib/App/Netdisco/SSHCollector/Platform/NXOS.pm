@@ -15,6 +15,7 @@ use warnings;
 
 use Dancer ':script';
 use Moo;
+use Expect;
 
 =head1 PUBLIC METHODS
 
@@ -35,10 +36,35 @@ sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
     debug "$hostlabel $$ arpnip()";
-    my @data = $ssh->capture("show ip arp vrf all");
 
-    chomp @data;
+    my ($pty, $pid) = $ssh->open2pty;
+    unless ($pty) {
+        warn "unable to run remote command [$hostlabel] " . $ssh->error;
+        return ();
+    }
+
+    #$Expect::Debug = 1;
+    #$Expect::Exp_Internal = 1;
+
+    my $expect = Expect->init($pty);
+    $expect->raw_pty(1);
+
+    my ($pos, $error, $match, $before, $after);
+    my $prompt = qr/# +$/;
+    my $timeout = 10;
+
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    $expect->send("terminal length 0\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    # we filter on the : in Age as the output header of the command may contain prompt chars, e.g.
+    # Flags:   # - Adjacencies Throttled for Glean
+    $expect->send("show ip arp vrf all | inc :\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
     my @arpentries;
+    my @data = split(/\R/, $before);
 
     #IP ARP Table for all contexts
     #Total number of entries: 5
@@ -59,3 +85,4 @@ sub arpnip {
 }
 
 1;
+
