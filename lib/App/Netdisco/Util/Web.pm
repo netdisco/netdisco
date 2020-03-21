@@ -34,7 +34,7 @@ subroutines.
 
 =head2 request_is_api
 
-Same as C<request_is_api_path> but also that client asked for JSON.
+Client has requested JSON format data and an endpoint under C</api>.
 
 =cut
 
