@@ -186,7 +186,7 @@ register 'register_report' => sub {
                 tags => ['v0'],
                 description => $config->{label} .' Report',
                 parameters =>
-                  ($config->{api_parameters}  ? $config->{api_parameters} :
+                  ($config->{api_parameters} ||
                   ($config->{bind_params} ? [map { $_ => {} } @{ $config->{bind_params} }] : [])),
                 responses => { default => {} },
               }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
