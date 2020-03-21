@@ -11,6 +11,7 @@ register_report(
         tag          => 'devicednsmismatch',
         label        => 'Device Name / DNS Mismatches',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
