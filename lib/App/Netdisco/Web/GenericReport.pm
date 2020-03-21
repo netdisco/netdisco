@@ -22,6 +22,7 @@ foreach my $report (@{setting('reports')}) {
     ($report->{hidden} ? (hidden => true) : ()),
     provides_csv => true,
     api_endpoint => true,
+    bind_params => $report->{bind_params},
   });
 
   get "/ajax/content/report/$r" => require_login sub {

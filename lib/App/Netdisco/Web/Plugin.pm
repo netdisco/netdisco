@@ -185,14 +185,11 @@ register 'register_report' => sub {
               swagger_path {
                 tags => ['v0'],
                 description => $config->{label} .' Report',
-                parameters => [
-                  (exists $config->{bind_params}) ? (
-                      map { $_ => {} } @{ $config->{bind_params} }
-                  ) : ()
-                ],
+                parameters =>
+                  ($config->{api_parameters}  ? $config->{api_parameters} :
+                  ($config->{bind_params} ? [map { $_ => {} } @{ $config->{bind_params} }] : [])),
                 responses => { default => {} },
               }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
-                # request->headers->header('X-Requested-With' => 'XMLHttpRequest');
                 forward "/ajax/content/report/$tag";
               };
           }

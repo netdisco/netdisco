@@ -12,6 +12,18 @@ register_report(
         label    => 'Port Utilization',
         provides_csv => 1,
         api_endpoint => 1,
+        api_parameters => [
+          age_num => {
+            description => 'Mark as Free if down for (quantity)',
+            enum => [1 .. 31],
+            default => '3',
+          },
+          age_unit => {
+            description => 'Mark as Free if down for (period)',
+            enum => [qw/days weeks months years/],
+            default => 'months',
+          },
+        ],
     }
 );
 

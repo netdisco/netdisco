@@ -12,6 +12,12 @@ register_report(
         label        => 'Ports with multiple nodes attached',
         provides_csv => 1,
         api_endpoint => 1,
+        api_parameters => [
+          vlan => {
+            description => 'Filter by VLAN',
+            type => 'integer',
+          },
+        ],
     }
 );
 

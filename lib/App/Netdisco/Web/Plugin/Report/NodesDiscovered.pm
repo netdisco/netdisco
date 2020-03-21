@@ -13,6 +13,29 @@ register_report(
         label        => 'Nodes discovered through LLDP/CDP',
         provides_csv => 1,
         api_endpoint => 1,
+        api_parameters => [
+          remote_id => {
+            description => 'Host Name reported',
+          },
+          remote_type => {
+            description => 'Platform reported',
+          },
+          aps => {
+            description => 'Include Wireless APs in the report',
+            type => 'boolean',
+            default => 'false',
+          },
+          phones => {
+            description => 'Include IP Phones in the report',
+            type => 'boolean',
+            default => 'false',
+          },
+          matchall => {
+            description => 'Match all parameters (true) or any (false)',
+            type => 'boolean',
+            default => 'false',
+          },
+        ],
     }
 );
 

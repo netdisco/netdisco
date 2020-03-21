@@ -12,6 +12,11 @@ register_report(
         label        => 'Port SSID Inventory',
         provides_csv => 1,
         api_endpoint => 1,
+        api_parameters => [
+          ssid => {
+            description => 'Get details for this SSID',
+          },
+        ],
     }
 );
 

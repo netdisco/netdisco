@@ -16,7 +16,6 @@ register_report(
 );
 
 get '/ajax/content/report/halfduplex' => require_login sub {
-    my $format = param('format');
     my @results
         = schema('netdisco')->resultset('DevicePort')
         ->columns( [qw/ ip port name duplex /] )->search(

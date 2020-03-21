@@ -16,7 +16,7 @@ hook 'before' => sub {
 };
 
 # Dancer will create a session if it sees its own cookie. For the API and also
-# various auto login options we need to bootstrap the session instead.  no
+# various auto login options we need to bootstrap the session instead. If no
 # auth data passed, then the hook simply returns, no session is set, and the
 # user is redirected to login page.
 hook 'before' => sub {
