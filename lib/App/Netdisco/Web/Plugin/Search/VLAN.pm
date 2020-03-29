@@ -6,7 +6,18 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
-register_search_tab( { tag => 'vlan', label => 'VLAN', provides_csv => 1 } );
+register_search_tab({
+    tag => 'vlan',
+    label => 'VLAN',
+    provides_csv => 1,
+    api_endpoint => 1,
+    api_parameters => [
+      q => {
+        description => 'VLAN name or number',
+        required => 1,
+      },
+    ],
+});
 
 # devices carrying vlan xxx
 get '/ajax/content/search/vlan' => require_login sub {
@@ -28,13 +39,11 @@ get '/ajax/content/search/vlan' => require_login sub {
 
     if (request->is_ajax) {
         my $json = to_json( \@results );
-        template 'ajax/search/vlan.tt', { results => $json },
-          { layout => undef };
+        template 'ajax/search/vlan.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/search/vlan_csv.tt', { results => \@results },
-          { layout => undef };
+        template 'ajax/search/vlan_csv.tt', { results => \@results };
     }
 };
 

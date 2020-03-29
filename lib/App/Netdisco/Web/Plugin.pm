@@ -152,6 +152,18 @@ sub _register_tab {
 register 'register_search_tab' => sub {
   my ($self, $config) = plugin_args(@_);
   _register_tab('search', $config);
+
+  if ($config->{api_endpoint}) {
+      my $tag = $config->{tag};
+      swagger_path {
+        tags => ['Search'],
+        description => $config->{label} .' Search',
+        parameters  => $config->{api_parameters},
+        responses => { default => {} },
+      }, get "/api/search/$tag" => require_role api => sub {
+        forward "/ajax/content/search/$tag";
+      };
+  }
 };
 
 register 'register_device_tab' => sub {
