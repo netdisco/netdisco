@@ -183,13 +183,13 @@ register 'register_report' => sub {
           if ($config->{api_endpoint}) {
               (my $category_path = lc $config->{category}) =~ s/ /-/g;
               swagger_path {
-                tags => ['v0'],
+                tags => ['Reports'],
                 description => $config->{label} .' Report',
                 parameters =>
                   ($config->{api_parameters} ||
                   ($config->{bind_params} ? [map { $_ => {} } @{ $config->{bind_params} }] : [])),
                 responses => { default => {} },
-              }, get "/api/v0/report/$category_path/$tag" => require_role api => sub {
+              }, get "/api/report/$category_path/$tag" => require_role api => sub {
                 forward "/ajax/content/report/$tag";
               };
           }

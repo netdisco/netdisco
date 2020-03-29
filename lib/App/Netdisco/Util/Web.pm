@@ -15,7 +15,7 @@ our @EXPORT_OK = qw/
   interval_to_daterange
   sql_match
   request_is_api
-  request_is_api_v0
+  request_is_api_report
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -47,18 +47,18 @@ sub request_is_api {
   ));
 }
 
-=head2 request_is_api_v0
+=head2 request_is_api_report
 
-Same as C<request_is_api> but also requires path to start "C</api/v0/...>".
+Same as C<request_is_api> but also requires path to start "C</api/report/...>".
 
 =cut
 
-sub request_is_api_v0 {
+sub request_is_api_report {
   return (request_is_api and (
-    index(request->path, uri_for('/api/v0/')->path) == 0
+    index(request->path, uri_for('/api/report/')->path) == 0
       or
     (param('return_url')
-    and index(param('return_url'), uri_for('/api/v0/')->path) == 0)
+    and index(param('return_url'), uri_for('/api/report/')->path) == 0)
   ));
 }
 

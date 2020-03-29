@@ -14,7 +14,7 @@ use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
 use App::Netdisco::Util::Web
-  qw/interval_to_daterange request_is_api request_is_api_v0/;
+  qw/interval_to_daterange request_is_api request_is_api_report/;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -83,11 +83,14 @@ $swagger->{schemes} = ['http','https'];
 $swagger->{consumes} = 'application/json';
 $swagger->{produces} = 'application/json';
 $swagger->{tags} = [
-  {name => 'Common'},
-  {name => 'v0',
-    description => 'Operations relating to Web User Interface'},
-  {name => 'v1',
-    description => 'Operations relating to Data Objects'},
+  {name => 'General',
+    description => 'Log in and Log out'},
+  {name => 'Search',
+    description => 'Search Operations'},
+  {name => 'Reports',
+    description => 'Canned and Custom Reports'},
+  {name => 'Objects',
+    description => 'Retrieve Node and Device Data'},
 ];
 $swagger->{securityDefinitions} = {
   APIKeyHeader =>
@@ -228,10 +231,10 @@ hook 'after_template_render' => sub {
     # debug $template_engine->{config}->{AUTO_FILTER};
 };
 
-# support for v0 api which is basic table result in json
+# support for report api which is basic table result in json
 hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
-  return unless request_is_api_v0;
+  return unless request_is_api_report;
 
   ${ $html_ref } =
     $tokens->{results} ? (to_json $tokens->{results}) : {};

@@ -84,7 +84,7 @@ hook 'before' => sub {
 # override default login_handler so we can log access in the database
 swagger_path {
   description => 'Obtain an API Key',
-  tags => ['Common'],
+  tags => ['General'],
   parameters => [],
   responses => { default => { examples => {
     'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
@@ -163,7 +163,7 @@ Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
-  tags => ['Common'],
+  tags => ['General'],
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },
