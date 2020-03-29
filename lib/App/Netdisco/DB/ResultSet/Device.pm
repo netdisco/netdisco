@@ -206,6 +206,10 @@ Can match any of the Device IP address aliases as a substring.
 Can be a string IP or a NetAddr::IP object, either way being treated as an
 IPv4 or IPv6 prefix within which the device must have one IP address alias.
 
+=item layers
+
+OSI Layers which the device must support.
+
 =back
 
 =cut
