@@ -160,7 +160,7 @@ register 'register_search_tab' => sub {
         description => $config->{label} .' Search',
         parameters  => $config->{api_parameters},
         responses => { default => {} },
-      }, get "/api/search/$tag" => require_role api => sub {
+      }, get "/api/v1/search/$tag" => require_role api => sub {
         forward "/ajax/content/search/$tag";
       };
   }
@@ -201,7 +201,7 @@ register 'register_report' => sub {
                   ($config->{api_parameters} ||
                   ($config->{bind_params} ? [map { $_ => {} } @{ $config->{bind_params} }] : [])),
                 responses => { default => {} },
-              }, get "/api/report/$category_path/$tag" => require_role api => sub {
+              }, get "/api/v1/report/$category_path/$tag" => require_role api => sub {
                 forward "/ajax/content/report/$tag";
               };
           }

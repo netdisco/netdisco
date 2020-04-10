@@ -49,16 +49,16 @@ sub request_is_api {
 
 =head2 request_is_api_report
 
-Same as C<request_is_api> but also requires path to start "C</api/report/...>".
+Same as C<request_is_api> but also requires path to start "C</api/v1/report/...>".
 
 =cut
 
 sub request_is_api_report {
   return (request_is_api and (
-    index(request->path, uri_for('/api/report/')->path) == 0
+    index(request->path, uri_for('/api/v1/report/')->path) == 0
       or
     (param('return_url')
-    and index(param('return_url'), uri_for('/api/report/')->path) == 0)
+    and index(param('return_url'), uri_for('/api/v1/report/')->path) == 0)
   ));
 }
 
