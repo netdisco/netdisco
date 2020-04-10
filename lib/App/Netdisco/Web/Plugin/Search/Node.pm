@@ -12,7 +12,51 @@ use NetAddr::MAC ();
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::Web 'sql_match';
 
-register_search_tab({ tag => 'node', label => 'Node' });
+register_search_tab({
+    tag => 'node',
+    label => 'Node',
+    api_endpoint => 1,
+    api_parameters => [
+      q => {
+        description => 'MAC Address or IP Address or Hostname (without Domain Suffix) of a Node (supports SQL or "*" wildcards)',
+        required => 1,
+      },
+      partial => {
+        description => 'Partially match the "q" parameter (wildcard characters not required)',
+        type => 'boolean',
+        default => 'false',
+      },
+      deviceports => {
+        description => 'MAC Address search will include Device Port MACs',
+        type => 'boolean',
+        default => 'true',
+      },
+      show_vendor => {
+        description => 'Include interface Vendor in results',
+        type => 'boolean',
+        default => 'false',
+      },
+      archived => {
+        description => 'Include archived records in results',
+        type => 'boolean',
+        default => 'false',
+      },
+      daterange => {
+        description => 'Date Range in format "YYYY-MM-DD to YYYY-MM-DD"',
+      },
+      age_invert => {
+        description => 'Date Range is NOT within the supplied range',
+        type => 'boolean',
+        default => 'false',
+      },
+      # mac_format is used only in the template (will be IEEE) in results
+      #mac_format => {
+      #},
+      # stamps param is used only in the template (they will be included)
+      #stamps => {
+      #},
+    ],
+});
 
 # nodes matching the param as an IP or DNS hostname or MAC
 ajax '/ajax/content/search/node' => require_login sub {
@@ -144,7 +188,7 @@ ajax '/ajax/content/search/node' => require_login sub {
           ports     => $ports,
           wireless  => $wireless,
           netbios   => $netbios,
-        }, { layout => undef };
+        };
     }
     else {
         my $ports = param('deviceports')
@@ -157,7 +201,7 @@ ajax '/ajax/content/search/node' => require_login sub {
               ports     => $ports,
               wireless  => $wireless,
               netbios   => $netbios,
-            }, { layout => undef };
+            };
         }
     }
 
@@ -200,7 +244,7 @@ ajax '/ajax/content/search/node' => require_login sub {
     template 'ajax/search/node_by_ip.tt', {
       macs => $set,
       archive_filter => {@active},
-    }, { layout => undef };
+    };
 };
 
 true;
