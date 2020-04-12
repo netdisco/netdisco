@@ -254,8 +254,12 @@ hook 'after' => sub {
         header('Content-Type' => 'application/json');
     }
 
-    header('Content-Type' => 'application/json')
-      if request_is_api;
+    # instead of setting serialiser
+    # and also to handle some plugins just returning undef if search fails
+    if (request_is_api) {
+        header('Content-Type' => 'application/json');
+        $r->content( $r->content || '[]' );
+    }
 };
 
 # remove empty lines from CSV response
