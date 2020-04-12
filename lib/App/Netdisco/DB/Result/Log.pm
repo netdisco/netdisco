@@ -5,7 +5,7 @@ package App::Netdisco::DB::Result::Log;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("log");
 __PACKAGE__->add_columns(
   "id",

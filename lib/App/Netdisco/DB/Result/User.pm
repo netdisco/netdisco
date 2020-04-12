@@ -5,7 +5,7 @@ package App::Netdisco::DB::Result::User;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("users");
 __PACKAGE__->add_columns(
   "username",

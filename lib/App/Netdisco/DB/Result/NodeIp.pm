@@ -7,7 +7,7 @@ use warnings;
 
 use NetAddr::MAC;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("node_ip");
 __PACKAGE__->add_columns(
   "mac",

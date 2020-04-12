@@ -5,7 +5,7 @@ package App::Netdisco::DB::Result::DevicePower;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device_power");
 __PACKAGE__->add_columns(
   "ip",

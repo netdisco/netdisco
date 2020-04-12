@@ -6,7 +6,7 @@ use warnings;
 
 use List::MoreUtils ();
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device_skip");
 __PACKAGE__->add_columns(
   "backend",

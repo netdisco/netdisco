@@ -9,7 +9,7 @@ use NetAddr::MAC;
 
 use MIME::Base64 'encode_base64url';
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device_port");
 __PACKAGE__->add_columns(
   "ip",

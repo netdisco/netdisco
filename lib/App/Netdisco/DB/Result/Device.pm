@@ -1,7 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::Device;
 
-
 use strict;
 use warnings;
 
@@ -10,9 +9,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use overload '""' => sub { shift->ip }, fallback => 1;
 
-__PACKAGE__->load_components(qw{Helper::Row::ToJSON});
-
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
   "ip",
@@ -422,15 +419,5 @@ Number of seconds which have elapsed since the value of C<last_arpnip>.
 =cut
 
 sub since_last_arpnip  { return (shift)->get_column('since_last_arpnip')  }
-
-# for DBIx::Class::Helper::Row::ToJSON
-# to allow text columns to be included in results
-
-sub unserializable_data_types {
-   return {
-      blob  => 1,
-      ntext => 1,
-   };
-}
 
 1;
