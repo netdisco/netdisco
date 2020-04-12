@@ -17,7 +17,7 @@ register_report(
         api_parameters => [
           subnet => {
             description => 'IP Prefix to search',
-            default => '0.0.0.0/32',
+            required => 1,
           },
           daterange => {
             description => 'Date range to search',
