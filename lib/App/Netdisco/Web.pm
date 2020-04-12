@@ -122,10 +122,10 @@ $swagger->{tags} = [
     description => 'Log in and Log out'},
   {name => 'Search',
     description => 'Search Operations'},
-  {name => 'Reports',
-    description => 'Canned and Custom Reports'},
   {name => 'Objects',
     description => 'Retrieve Node and Device Data'},
+  {name => 'Reports',
+    description => 'Canned and Custom Reports'},
 ];
 $swagger->{securityDefinitions} = {
   APIKeyHeader =>
