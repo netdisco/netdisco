@@ -7,6 +7,9 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
+use Dancer::Error;
+use Dancer::Continuation::Route::ErrorSent;
+
 use URI ();
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
@@ -19,6 +22,33 @@ use App::Netdisco::Util::Web qw/
   request_is_api_report
   request_is_api_search
 /;
+
+BEGIN {
+  # https://github.com/PerlDancer/Dancer/issues/967
+  no warnings 'redefine';
+  *Dancer::_redirect = sub {
+      my ($destination, $status) = @_;
+      my $response = Dancer::SharedData->response;
+      $response->status($status || 302);
+      $response->headers('Location' => $destination);
+  };
+  # neater than using Dancer::Plugin::Res to handle JSON differently
+  *Dancer::send_error = sub {
+      my ($body, $status) = @_;
+      if (request_is_api) {
+        status $status || 400;
+        $body = '' unless defined $body;
+        Dancer::Continuation::Route::ErrorSent->new(
+            return_value => to_json { error => $body, return_url => param('return_url') }
+        )->throw;
+      }
+      Dancer::Continuation::Route::ErrorSent->new(
+          return_value => Dancer::Error->new(
+              message => $body,
+              code => $status || 500)->render()
+      )->throw;
+  };
+}
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
@@ -284,16 +314,5 @@ any qr{.*} => sub {
     status 'not_found';
     template 'index';
 };
-
-{
-  # https://github.com/PerlDancer/Dancer/issues/967
-  no warnings 'redefine';
-  *Dancer::_redirect = sub {
-      my ($destination, $status) = @_;
-      my $response = Dancer::SharedData->response;
-      $response->status($status || 302);
-      $response->headers('Location' => $destination);
-  };
-}
 
 true;
