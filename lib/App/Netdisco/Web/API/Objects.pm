@@ -26,6 +26,23 @@ swagger_path {
 
 swagger_path {
   tags => ['Objects'],
+  description => 'Returns device_port rows for a given device',
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/object/device/:ip/ports' => require_role api => sub {
+  my $ports = try { schema('netdisco')->resultset('Device')
+    ->find( params->{ip} )->ports } or send_error('Bad Device', 404);
+  return to_json [ map {$_->TO_JSON} $ports->all ];
+};
+
+swagger_path {
+  tags => ['Objects'],
   description => 'Returns a row from the device_port table',
   path => '/api/v1/object/device/{ip}/port/{port}',
   parameters  => [
@@ -35,7 +52,7 @@ swagger_path {
       in => 'path',
     },
     port => {
-      description => 'Name of the port. Use the ".../device/:ip/ports" method to find these.',
+      description => 'Name of the port. Use the ".../device/{ip}/ports" method to find these.',
       required => 1,
       in => 'path',
     },
