@@ -10,6 +10,8 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use overload '""' => sub { shift->ip }, fallback => 1;
 
+__PACKAGE__->load_components(qw{Helper::Row::ToJSON});
+
 use base 'DBIx::Class::Core';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
@@ -36,8 +38,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "layers",
   { data_type => "varchar", is_nullable => 1, size => 8 },
-  "ports",
-  { data_type => "integer", is_nullable => 1 },
   "mac",
   { data_type => "macaddr", is_nullable => 1 },
   "serial",
@@ -422,5 +422,15 @@ Number of seconds which have elapsed since the value of C<last_arpnip>.
 =cut
 
 sub since_last_arpnip  { return (shift)->get_column('since_last_arpnip')  }
+
+# for DBIx::Class::Helper::Row::ToJSON
+# to allow text columns to be included in results
+
+sub unserializable_data_types {
+   return {
+      blob  => 1,
+      ntext => 1,
+   };
+}
 
 1;

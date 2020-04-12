@@ -16,6 +16,7 @@ our @EXPORT_OK = qw/
   sql_match
   request_is_api
   request_is_api_report
+  request_is_api_search
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -59,6 +60,21 @@ sub request_is_api_report {
       or
     (param('return_url')
     and index(param('return_url'), uri_for('/api/v1/report/')->path) == 0)
+  ));
+}
+
+=head2 request_is_api_search
+
+Same as C<request_is_api> but also requires path to start "C</api/v1/search/...>".
+
+=cut
+
+sub request_is_api_search {
+  return (request_is_api and (
+    index(request->path, uri_for('/api/v1/search/')->path) == 0
+      or
+    (param('return_url')
+    and index(param('return_url'), uri_for('/api/v1/search/')->path) == 0)
   ));
 }
 

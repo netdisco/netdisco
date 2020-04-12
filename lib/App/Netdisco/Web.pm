@@ -13,14 +13,19 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
-use App::Netdisco::Util::Web
-  qw/interval_to_daterange request_is_api request_is_api_report/;
+use App::Netdisco::Util::Web qw/
+  interval_to_daterange
+  request_is_api
+  request_is_api_report
+  request_is_api_search
+/;
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
 use App::Netdisco::Web::Report;
+use App::Netdisco::Web::API::Objects;
 use App::Netdisco::Web::AdminTask;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
@@ -234,7 +239,7 @@ hook 'after_template_render' => sub {
 # support for report api which is basic table result in json
 hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
-  return unless request_is_api_report;
+  return unless request_is_api_report or request_is_api_search;
 
   ${ $html_ref } =
     $tokens->{results} ? (to_json $tokens->{results}) : {};
