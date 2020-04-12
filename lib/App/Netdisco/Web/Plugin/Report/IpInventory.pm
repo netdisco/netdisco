@@ -56,8 +56,6 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     my $daterange = param('daterange')
       || ('1970-01-01 to '. strftime('%Y-%m-%d', gmtime));
     my ( $start, $end ) = $daterange =~ /(\d+-\d+-\d+)/gmx;
-    $start = $start . ' 00:00:00';
-    $end   = $end . ' 23:59:59';
 
     my $limit = param('limit') || 256;
     my $never = param('never') || '0';
