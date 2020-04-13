@@ -63,7 +63,8 @@ swagger_path {
 }, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>[^/]+)$} => require_role api => sub {
   my $params = captures;
   my $port = try { schema('netdisco')->resultset('DevicePort')
-    ->find( $$params{port}, $$params{ip} ) } or send_error('Bad Device or Port', 404);
+    ->find( $$params{port}, $$params{ip} ) }
+    or send_error('Bad Device or Port', 404);
   return to_json $port->TO_JSON;
 };
 
@@ -88,7 +89,8 @@ foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age vlan
     }, get qq{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>[^/]+)/$rel} => require_role api => sub {
       my $params = captures;
       my $rows = try { schema('netdisco')->resultset('DevicePort')
-        ->find( $$params{port}, $$params{ip} )->$rel } or send_error('Bad Device or Port', 404);
+        ->find( $$params{port}, $$params{ip} )->$rel }
+        or send_error('Bad Device or Port', 404);
       return to_json [ map {$_->TO_JSON} $rows->all ];
     };
 }
@@ -114,9 +116,61 @@ foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node
     }, get qq{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>[^/]+)/$rel} => require_role api => sub {
       my $params = captures;
       my $row = try { schema('netdisco')->resultset('DevicePort')
-        ->find( $$params{port}, $$params{ip} )->$rel } or send_error('Bad Device or Port', 404);
+        ->find( $$params{port}, $$params{ip} )->$rel }
+        or send_error('Bad Device or Port', 404);
       return to_json $row->TO_JSON;
     };
 }
+
+swagger_path {
+  tags => ['Objects'],
+  description => "Returns the nodes found on a given Device",
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    active_only => {
+      description => 'Restrict results to active Nodes only',
+      type => 'boolean',
+      default => 'true',
+      in => 'query',
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/object/device/:ip/nodes' => require_role api => sub {
+  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $rows = try { schema('netdisco')->resultset('Node')
+    ->search({ switch => params->{ip}, ($active ? (-bool => 'active') : ()) }) }
+    or send_error('Bad Device', 404);
+  return to_json [ map {$_->TO_JSON} $rows->all ];
+};
+
+swagger_path {
+  tags => ['Objects'],
+  description => "Returns the nodes found in a given VLAN",
+  parameters  => [
+    vlan => {
+      description => 'VLAN number',
+      type => 'integer',
+      required => 1,
+      in => 'path',
+    },
+    active_only => {
+      description => 'Restrict results to active Nodes only',
+      type => 'boolean',
+      default => 'true',
+      in => 'query',
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/object/vlan/:vlan/nodes' => require_role api => sub {
+  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $rows = try { schema('netdisco')->resultset('Node')
+    ->search({ vlan => params->{vlan}, ($active ? (-bool => 'active') : ()) }) }
+    or send_error('Bad VLAN', 404);
+  return to_json [ map {$_->TO_JSON} $rows->all ];
+};
 
 true;

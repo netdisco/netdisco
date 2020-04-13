@@ -123,7 +123,7 @@ $swagger->{tags} = [
   {name => 'Search',
     description => 'Search Operations'},
   {name => 'Objects',
-    description => 'Retrieve Node, Device, and Port Data'},
+    description => 'Retrieve Device, Port, and associated Node Data'},
   {name => 'Reports',
     description => 'Canned and Custom Reports'},
 ];
