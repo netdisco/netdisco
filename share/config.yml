@@ -416,7 +416,7 @@ worker_plugins:
   - 'Power'
   - 'Psql'
   - 'Renumber'
-  - 'SetUserToken'
+  - 'GetAPIKey'
   - 'Show'
   - 'Stats'
   - 'Vlan'
