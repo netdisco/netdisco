@@ -1,3 +1,15 @@
+2.045000 - 2020-04-15
+
+  [NEW FEATURES]
+
+  * API for search, objects, and reports: https://github.com/netdisco/netdisco/wiki/API
+
+  [ENHANCEMENTS]
+
+  * #442 add device ip, port and vlan to the node vendor report results
+  * #674 added support for Clavister SSH collection (Henningen)
+  * #707 change SSHCollector::NXOS to use expect (rc9000)
+
 2.044015 - 2020-02-12
 
   [BUG FIXES]

@@ -22,6 +22,7 @@ lib/App/Netdisco/Backend/Role/Scheduler.pm
 lib/App/Netdisco/Configuration.pm
 lib/App/Netdisco/DB.pm
 lib/App/Netdisco/DB/ExplicitLocking.pm
+lib/App/Netdisco/DB/Result.pm
 lib/App/Netdisco/DB/Result/Admin.pm
 lib/App/Netdisco/DB/Result/Community.pm
 lib/App/Netdisco/DB/Result/Device.pm
@@ -102,6 +103,7 @@ lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
 lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
+lib/App/Netdisco/SSHCollector/Platform/Clavister.pm
 lib/App/Netdisco/SSHCollector/Platform/CPVSX.pm
 lib/App/Netdisco/SSHCollector/Platform/FreeBSD.pm
 lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
@@ -132,6 +134,7 @@ lib/App/Netdisco/Util/Statistics.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AdminTask.pm
+lib/App/Netdisco/Web/API/Objects.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/Device.pm
@@ -217,6 +220,7 @@ lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
 lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
 lib/App/Netdisco/Worker/Plugin/Expire.pm
 lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
+lib/App/Netdisco/Worker/Plugin/GetAPIKey.pm
 lib/App/Netdisco/Worker/Plugin/Graph.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
@@ -233,7 +237,6 @@ lib/App/Netdisco/Worker/Plugin/PortName.pm
 lib/App/Netdisco/Worker/Plugin/Power.pm
 lib/App/Netdisco/Worker/Plugin/Psql.pm
 lib/App/Netdisco/Worker/Plugin/Renumber.pm
-lib/App/Netdisco/Worker/Plugin/SetUserToken.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
 lib/App/Netdisco/Worker/Plugin/Stats.pm
 lib/App/Netdisco/Worker/Plugin/Vlan.pm
@@ -390,6 +393,8 @@ share/swagger-ui/index.html
 share/swagger-ui/oauth2-redirect.html
 share/swagger-ui/swagger-ui-bundle.js
 share/swagger-ui/swagger-ui-bundle.js.map
+share/swagger-ui/swagger-ui-json-tree-plugin.js
+share/swagger-ui/swagger-ui-json-tree-plugin.js.map
 share/swagger-ui/swagger-ui-standalone-preset.js
 share/swagger-ui/swagger-ui-standalone-preset.js.map
 share/swagger-ui/swagger-ui.css
@@ -492,6 +497,7 @@ share/views/js/device.js
 share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt
+share/views/layouts/noop.tt
 share/views/password.tt
 share/views/plugin.tt
 share/views/report.tt

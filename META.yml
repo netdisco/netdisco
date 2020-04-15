@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.044015'
+    version: '2.045000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -41,6 +41,8 @@ provides:
     version: '61'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
+  App::Netdisco::DB::Result:
+    file: lib/App/Netdisco/DB/Result.pm
   App::Netdisco::DB::Result::Admin:
     file: lib/App/Netdisco/DB/Result/Admin.pm
   App::Netdisco::DB::Result::Community:
@@ -203,6 +205,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
   App::Netdisco::SSHCollector::Platform::CPVSX:
     file: lib/App/Netdisco/SSHCollector/Platform/CPVSX.pm
+  App::Netdisco::SSHCollector::Platform::Clavister:
+    file: lib/App/Netdisco/SSHCollector/Platform/Clavister.pm
   App::Netdisco::SSHCollector::Platform::FreeBSD:
     file: lib/App/Netdisco/SSHCollector/Platform/FreeBSD.pm
   App::Netdisco::SSHCollector::Platform::GAIAEmbedded:
@@ -259,6 +263,8 @@ provides:
     file: lib/App/Netdisco/Util/Web.pm
   App::Netdisco::Web:
     file: lib/App/Netdisco/Web.pm
+  App::Netdisco::Web::API::Objects:
+    file: lib/App/Netdisco/Web/API/Objects.pm
   App::Netdisco::Web::AdminTask:
     file: lib/App/Netdisco/Web/AdminTask.pm
   App::Netdisco::Web::Auth::Provider::DBIC:
@@ -431,6 +437,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Expire.pm
   App::Netdisco::Worker::Plugin::ExpireNodes:
     file: lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
+  App::Netdisco::Worker::Plugin::GetAPIKey:
+    file: lib/App/Netdisco/Worker/Plugin/GetAPIKey.pm
   App::Netdisco::Worker::Plugin::Graph:
     file: lib/App/Netdisco/Worker/Plugin/Graph.pm
   App::Netdisco::Worker::Plugin::Location:
@@ -463,8 +471,6 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Psql.pm
   App::Netdisco::Worker::Plugin::Renumber:
     file: lib/App/Netdisco/Worker/Plugin/Renumber.pm
-  App::Netdisco::Worker::Plugin::SetUserToken:
-    file: lib/App/Netdisco/Worker/Plugin/SetUserToken.pm
   App::Netdisco::Worker::Plugin::Show:
     file: lib/App/Netdisco/Worker/Plugin/Show.pm
   App::Netdisco::Worker::Plugin::Stats:
@@ -569,5 +575,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.044015'
+version: '2.045000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
