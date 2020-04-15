@@ -7,7 +7,7 @@ use warnings;
 
 use NetAddr::MAC;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("node");
 __PACKAGE__->add_columns(
   "mac",
@@ -19,7 +19,7 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "boolean", is_nullable => 1 },
   "oui",
-  { data_type => "varchar", is_nullable => 1, size => 8 },
+  { data_type => "varchar", is_nullable => 1, is_serializable => 0, size => 8 },
   "time_first",
   {
     data_type     => "timestamp",

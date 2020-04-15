@@ -12,6 +12,7 @@ register_report(
         tag          => 'apradiochannelpower',
         label        => 'Access Point Radios Channel and Power',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -38,8 +39,7 @@ get '/ajax/content/report/apradiochannelpower/data' => require_login sub {
 get '/ajax/content/report/apradiochannelpower' => require_login sub {
 
     if ( request->is_ajax ) {
-        template 'ajax/report/apradiochannelpower.tt', {},
-            { layout => undef };
+        template 'ajax/report/apradiochannelpower.tt';
     }
     else {
         my @results
@@ -50,8 +50,7 @@ get '/ajax/content/report/apradiochannelpower' => require_login sub {
 
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/apradiochannelpower_csv.tt',
-            { results => \@results, },
-            { layout  => undef };
+            { results => \@results, };
     }
 };
 

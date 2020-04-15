@@ -4,7 +4,7 @@ package App::Netdisco::DB::Result::DevicePortProperties;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device_port_properties");
 __PACKAGE__->add_columns(
   "ip",

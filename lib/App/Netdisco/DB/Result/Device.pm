@@ -1,7 +1,6 @@
 use utf8;
 package App::Netdisco::DB::Result::Device;
 
-
 use strict;
 use warnings;
 
@@ -10,7 +9,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use overload '""' => sub { shift->ip }, fallback => 1;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device");
 __PACKAGE__->add_columns(
   "ip",
@@ -36,8 +35,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "layers",
   { data_type => "varchar", is_nullable => 1, size => 8 },
-  "ports",
-  { data_type => "integer", is_nullable => 1 },
   "mac",
   { data_type => "macaddr", is_nullable => 1 },
   "serial",

@@ -94,7 +94,8 @@ sub get_user_roles {
     my $role_column = $settings->{role_column}        || 'role';
 
     return [ try {
-      $user->$roles->get_column( $role_column )->all;
+      $user->$roles->search({}, { bind => [setting('api_token_lifetime')] })
+        ->get_column( $role_column )->all;
     } ];
 }
 

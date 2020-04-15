@@ -11,6 +11,12 @@ register_report(
         tag          => 'portssid',
         label        => 'Port SSID Inventory',
         provides_csv => 1,
+        api_endpoint => 1,
+        api_parameters => [
+          ssid => {
+            description => 'Get details for this SSID',
+          },
+        ],
     }
 );
 
@@ -65,14 +71,12 @@ get '/ajax/content/report/portssid' => require_login sub {
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
         template 'ajax/report/portssid.tt',
-            { results => $json, opt => $ssid },
-            { layout => undef };
+            { results => $json, opt => $ssid };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portssid_csv.tt',
-            { results => \@results, opt => $ssid },
-            { layout => undef };
+            { results => \@results, opt => $ssid };
     }
 };
 

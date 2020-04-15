@@ -4,7 +4,7 @@ package App::Netdisco::DB::Result::Statistics;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("statistics");
 __PACKAGE__->add_columns(
   "day",

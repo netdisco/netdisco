@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::SetUserToken;
+package App::Netdisco::Worker::Plugin::GetAPIKey;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC 'schema';
@@ -9,7 +9,7 @@ use aliased 'App::Netdisco::Worker::Status';
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing user (-e).')
     unless shift->extra;
-  return Status->done('SetUserToken is able to run');
+  return Status->done('GetAPIKey is able to run');
 });
 
 register_worker({ phase => 'main' }, sub {

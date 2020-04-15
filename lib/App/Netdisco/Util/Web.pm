@@ -3,12 +3,20 @@ package App::Netdisco::Util::Web;
 use strict;
 use warnings;
 
-use base 'Exporter';
+use Dancer ':syntax';
+
 use Time::Piece;
 use Time::Seconds;
+
+use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sort_port sort_modules interval_to_daterange sql_match
+  sort_port sort_modules
+  interval_to_daterange
+  sql_match
+  request_is_api
+  request_is_api_report
+  request_is_api_search
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -24,6 +32,51 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 request_is_api
+
+Client has requested JSON format data and an endpoint under C</api>.
+
+=cut
+
+sub request_is_api {
+  return ((request->accept =~ m/(?:json|javascript)/) and (
+    index(request->path, uri_for('/api/')->path) == 0
+      or
+    (param('return_url')
+    and index(param('return_url'), uri_for('/api/')->path) == 0)
+  ));
+}
+
+=head2 request_is_api_report
+
+Same as C<request_is_api> but also requires path to start "C</api/v1/report/...>".
+
+=cut
+
+sub request_is_api_report {
+  return (request_is_api and (
+    index(request->path, uri_for('/api/v1/report/')->path) == 0
+      or
+    (param('return_url')
+    and index(param('return_url'), uri_for('/api/v1/report/')->path) == 0)
+  ));
+}
+
+=head2 request_is_api_search
+
+Same as C<request_is_api> but also requires path to start "C</api/v1/search/...>".
+
+=cut
+
+sub request_is_api_search {
+  return (request_is_api and (
+    index(request->path, uri_for('/api/v1/search/')->path) == 0
+      or
+    (param('return_url')
+    and index(param('return_url'), uri_for('/api/v1/search/')->path) == 0)
+  ));
+}
 
 =head2 sql_match( $value, $exact? )
 

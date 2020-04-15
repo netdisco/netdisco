@@ -416,7 +416,7 @@ worker_plugins:
   - 'Power'
   - 'Psql'
   - 'Renumber'
-  - 'SetUserToken'
+  - 'GetAPIKey'
   - 'Show'
   - 'Stats'
   - 'Vlan'
@@ -494,7 +494,7 @@ engines:
     PRE_CHOMP: 1
     INCLUDE_PATH: []
     AUTO_FILTER: 'html_entity'
-layout: 'main'
+layout: 'noop'
 plugins:
   Swagger:
      main_api_module: 'App::Netdisco'

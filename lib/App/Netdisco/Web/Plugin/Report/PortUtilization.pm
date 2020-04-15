@@ -11,6 +11,19 @@ register_report(
         tag      => 'portutilization',
         label    => 'Port Utilization',
         provides_csv => 1,
+        api_endpoint => 1,
+        api_parameters => [
+          age_num => {
+            description => 'Mark as Free if down for (quantity)',
+            enum => [1 .. 31],
+            default => '3',
+          },
+          age_unit => {
+            description => 'Mark as Free if down for (period)',
+            enum => [qw/days weeks months years/],
+            default => 'months',
+          },
+        ],
     }
 );
 
@@ -24,13 +37,11 @@ get '/ajax/content/report/portutilization' => require_login sub {
 
     if (request->is_ajax) {
         my $json = to_json (\@results);
-        template 'ajax/report/portutilization.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/portutilization.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/portutilization_csv.tt', { results => \@results, },
-            { layout => undef };
+        template 'ajax/report/portutilization_csv.tt', { results => \@results, };
     }
 };
 

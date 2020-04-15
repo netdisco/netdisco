@@ -12,6 +12,7 @@ register_report(
         tag          => 'devicepoestatus',
         label        => 'Power over Ethernet (PoE) Status',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -39,7 +40,7 @@ get '/ajax/content/report/devicepoestatus/data' => require_login sub {
 get '/ajax/content/report/devicepoestatus' => require_login sub {
 
     if ( request->is_ajax ) {
-        template 'ajax/report/devicepoestatus.tt', {}, { layout => undef };
+        template 'ajax/report/devicepoestatus.tt';
     }
     else {
         my @results
@@ -50,8 +51,7 @@ get '/ajax/content/report/devicepoestatus' => require_login sub {
 
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/devicepoestatus_csv.tt',
-            { results => \@results, },
-            { layout  => undef };
+            { results => \@results, };
     }
 };
 

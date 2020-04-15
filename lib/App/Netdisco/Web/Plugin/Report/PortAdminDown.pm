@@ -11,6 +11,7 @@ register_report(
         tag          => 'portadmindown',
         label        => 'Ports administratively disabled',
         provides_csv => 1,
+        api_endpoint => 1,
     }
 );
 
@@ -31,14 +32,12 @@ get '/ajax/content/report/portadmindown' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/portadmindown.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/portadmindown.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portadmindown_csv.tt',
-            { results => \@results, },
-            { layout  => undef };
+            { results => \@results, };
     }
 };
 

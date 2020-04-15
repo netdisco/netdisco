@@ -51,7 +51,7 @@ get '/report/*' => require_login sub {
         ssid_list   => $ssid_list,
         type_list   => $type_list,
         vendor_list => $vendor_list,
-        };
+        }, { layout => 'main' };
 };
 
 true;

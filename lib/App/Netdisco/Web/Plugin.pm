@@ -2,6 +2,8 @@ package App::Netdisco::Web::Plugin;
 
 use Dancer ':syntax';
 use Dancer::Plugin;
+use Dancer::Plugin::Swagger;
+use Dancer::Plugin::Auth::Extensible;
 
 use Path::Class 'dir';
 
@@ -150,6 +152,19 @@ sub _register_tab {
 register 'register_search_tab' => sub {
   my ($self, $config) = plugin_args(@_);
   _register_tab('search', $config);
+
+  if ($config->{api_endpoint}) {
+      my $tag = $config->{tag};
+      swagger_path {
+        tags => ['Search'],
+        description => $config->{label} .' Search',
+        parameters  => $config->{api_parameters},
+        responses =>
+          ($config->{api_responses} || { default => {} }),
+      }, get "/api/v1/search/$tag" => require_role api => sub {
+        forward "/ajax/content/search/$tag";
+      };
+  }
 };
 
 register 'register_device_tab' => sub {
@@ -177,6 +192,21 @@ register 'register_report' => sub {
   foreach my $tag (@{setting('_reports_menu')->{ $config->{category} }}) {
       if ($config->{tag} eq $tag) {
           setting('_reports')->{$tag} = $config;
+
+          if ($config->{api_endpoint}) {
+              (my $category_path = lc $config->{category}) =~ s/ /-/g;
+              swagger_path {
+                tags => ['Reports'],
+                description => $config->{label} .' Report',
+                parameters =>
+                  ($config->{api_parameters} ||
+                  ($config->{bind_params} ? [map { $_ => {} } @{ $config->{bind_params} }] : [])),
+                responses => 
+                  ($config->{api_responses} || { default => {} }),
+              }, get "/api/v1/report/$category_path/$tag" => require_role api => sub {
+                forward "/ajax/content/report/$tag";
+              };
+          }
 
           foreach my $rconfig (@{setting('reports')}) {
               if ($rconfig->{tag} eq $tag) {

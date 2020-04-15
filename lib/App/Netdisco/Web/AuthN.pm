@@ -5,99 +5,95 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
+use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 
-sub request_is_api {
-  return (setting('api_token_lifetime')
-    and request->header('Authorization')
-    and request->accept =~ m/(?:json|javascript)/);
-}
-
+# ensure that regardless of where the user is redirected, we have a link
+# back to the page they requested.
 hook 'before' => sub {
     params->{return_url} ||= ((request->path ne uri_for('/')->path)
       ? request->uri : uri_for(setting('web_home'))->path);
+};
+
+# Dancer will create a session if it sees its own cookie. For the API and also
+# various auto login options we need to bootstrap the session instead. If no
+# auth data passed, then the hook simply returns, no session is set, and the
+# user is redirected to login page.
+hook 'before' => sub {
+    # return if request is for endpoints not requiring a session
+    return if (
+      request->path eq uri_for('/login')->path
+      or request->path eq uri_for('/logout')->path
+      or request->path eq uri_for('/swagger.json')->path
+      or index(request->path, uri_for('/swagger-ui')->path) == 0
+    );
 
     # from the internals of Dancer::Plugin::Auth::Extensible
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
-    if (! session('logged_in_user')
-        and request->path ne uri_for('/login')->path
-        and request->path ne uri_for('/logout')->path
-        and request->path ne uri_for('/swagger.json')->path
-        and index(request->path, uri_for('/swagger-ui')->path) != 0) {
+    # API calls must conform strictly to path and header requirements
+    if (request_is_api) {
+        # Dancer will issue a cookie to the client which could be returned and
+        # cause API calls to succeed without passing token. Kill the session.
+        session->destroy;
 
-        if (setting('trust_x_remote_user')
-          and scalar request->header('X-REMOTE_USER')
-          and length scalar request->header('X-REMOTE_USER')) {
+        my $token = request->header('Authorization');
+        my $user = $provider->validate_api_token($token)
+          or return;
 
-            (my $user = scalar request->header('X-REMOTE_USER')) =~ s/@[^@]*$//;
-            return if setting('validate_remote_user')
-              and not $provider->get_user_details($user);
-
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
-        elsif (setting('trust_remote_user')
-          and defined $ENV{REMOTE_USER}
-          and length  $ENV{REMOTE_USER}) {
-
-            (my $user = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
-            return if setting('validate_remote_user')
-              and not $provider->get_user_details($user);
-
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
-        elsif (setting('no_auth')) {
-            session(logged_in_user => 'guest');
-            session(logged_in_user_realm => 'users');
-        }
-        elsif (request_is_api()
-          and index(request->path, uri_for('/api')->path) == 0) {
-
-            my $token = request->header('Authorization');
-            my $user = $provider->validate_api_token($token)
-              or return;
-
-            session(logged_in_user => $user);
-            session(logged_in_user_realm => 'users');
-        }
-        else {
-            # user has no AuthN - force to handler for '/'
-            request->path_info('/');
-        }
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
+        return;
     }
-};
 
-# user redirected here (POST -> GET) when login fails
-get qr{^/(?:login(?:/denied)?)?} => sub {
-    if (request_is_api()) {
-      status('unauthorized');
-      return to_json {
-        error => 'not authorized',
-        return_url => param('return_url'),
-      };
+    # after checking API, we can short circuit if Dancer reads its cookie OK
+    return if session('logged_in_user');
+
+    if (setting('trust_x_remote_user')
+      and scalar request->header('X-REMOTE_USER')
+      and length scalar request->header('X-REMOTE_USER')) {
+
+        (my $user = scalar request->header('X-REMOTE_USER')) =~ s/@[^@]*$//;
+        return if setting('validate_remote_user')
+          and not $provider->get_user_details($user);
+
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
+    }
+    elsif (setting('trust_remote_user')
+      and defined $ENV{REMOTE_USER}
+      and length  $ENV{REMOTE_USER}) {
+
+        (my $user = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
+        return if setting('validate_remote_user')
+          and not $provider->get_user_details($user);
+
+        session(logged_in_user => $user);
+        session(logged_in_user_realm => 'users');
+    }
+    elsif (setting('no_auth')) {
+        session(logged_in_user => 'guest');
+        session(logged_in_user_realm => 'users');
     }
     else {
-      template 'index', { return_url => param('return_url') };
+        # user has no AuthN - force to handler for '/'
+        request->path_info('/');
     }
 };
 
 # override default login_handler so we can log access in the database
 swagger_path {
-  description => 'Obtain an API Key using HTTP BasicAuth',
-  tags => ['Global'],
+  description => 'Obtain an API Key',
+  tags => ['General'],
   parameters => [],
-  responses => {
-    default => {
-      examples => {
-        'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
+  responses => { default => { examples => {
+    'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
   },
 },
 post '/login' => sub {
-    my $mode = (request_is_api() ? 'API' : 'WebUI');
+    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
 
-    # get authN data from request (HTTP BasicAuth or Form params)
+    # get authN data from BasicAuth header used by API, put into params
     my $authheader = request->header('Authorization');
     if (defined $authheader and $authheader =~ /^Basic (.*)$/i) {
         my ($u, $p) = split(m/:/, (MIME::Base64::decode($1) || ":"));
@@ -119,12 +115,13 @@ post '/login' => sub {
         schema('netdisco')->resultset('UserLog')->create({
           username => session('logged_in_user'),
           userip => request->remote_address,
-          event => "Login ($mode)",
+          event => (sprintf 'Login (%s)', ($api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
         $user->update({ last_on => \'now()' });
 
-        if ($mode eq 'API') {
+        if ($api) {
+            header('Content-Type' => 'application/json');
             $user->update({
               token_from => time,
               token => \'md5(random()::text)',
@@ -135,16 +132,18 @@ post '/login' => sub {
         redirect param('return_url');
     }
     else {
+        # invalidate session cookie
         session->destroy;
 
         schema('netdisco')->resultset('UserLog')->create({
           username => param('username'),
           userip => request->remote_address,
-          event => "Login Failure ($mode)",
+          event => (sprintf 'Login Failure (%s)', ($api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
 
-        if ($mode eq 'API') {
+        if ($api) {
+            header('Content-Type' => 'application/json');
             status('unauthorized');
             return to_json { error => 'authentication failed' };
         }
@@ -164,12 +163,12 @@ Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
-  tags => ['Global'],
+  tags => ['General'],
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },
 get '/logout' => sub {
-    my $mode = (request_is_api() ? 'API' : 'WebUI');
+    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     # clear out API token
     my $user = schema('netdisco')->resultset('User')
@@ -183,15 +182,35 @@ get '/logout' => sub {
     schema('netdisco')->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => request->remote_address,
-      event => "Logout ($mode)",
+      event => (sprintf 'Logout (%s)', ($api ? 'API' : 'WebUI')),
       details => '',
     });
 
-    if ($mode eq 'API') {
+    if ($api) {
+        header('Content-Type' => 'application/json');
         return to_json {};
     }
 
     redirect uri_for(setting('web_home'))->path;
+};
+
+# user redirected here (POST -> GET) when login fails
+get qr{^/(?:login(?:/denied)?)?} => sub {
+    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+
+    if ($api) {
+      header('Content-Type' => 'application/json');
+      status('unauthorized');
+      return to_json {
+        error => 'not authorized',
+        return_url => param('return_url'),
+      };
+    }
+    else {
+      template 'index', {
+        return_url => param('return_url')
+      }, { layout => 'main' };
+    }
 };
 
 true;

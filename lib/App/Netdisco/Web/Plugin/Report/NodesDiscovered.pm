@@ -12,6 +12,30 @@ register_report(
         tag          => 'nodesdiscovered',
         label        => 'Nodes discovered through LLDP/CDP',
         provides_csv => 1,
+        api_endpoint => 1,
+        api_parameters => [
+          remote_id => {
+            description => 'Host Name reported',
+          },
+          remote_type => {
+            description => 'Platform reported',
+          },
+          aps => {
+            description => 'Include Wireless APs in the report',
+            type => 'boolean',
+            default => 'false',
+          },
+          phones => {
+            description => 'Include IP Phones in the report',
+            type => 'boolean',
+            default => 'false',
+          },
+          matchall => {
+            description => 'Match all parameters (true) or any (false)',
+            type => 'boolean',
+            default => 'false',
+          },
+        ],
     }
 );
 
@@ -40,14 +64,12 @@ get '/ajax/content/report/nodesdiscovered' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/nodesdiscovered.tt', { results => $json },
-            { layout => undef };
+        template 'ajax/report/nodesdiscovered.tt', { results => $json };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/nodesdiscovered_csv.tt',
-            { results => \@results },
-            { layout  => undef };
+            { results => \@results };
     }
 };
 

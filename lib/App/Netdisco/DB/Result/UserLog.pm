@@ -5,7 +5,7 @@ package App::Netdisco::DB::Result::UserLog;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("user_log");
 __PACKAGE__->add_columns(
   "entry",

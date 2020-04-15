@@ -95,7 +95,7 @@ get '/search' => require_login sub {
       os_list     => $os_list,
       os_ver_list => $os_ver_list,
       vendor_list => $vendor_list,
-    };
+    }, { layout => 'main' };
 };
 
 true;
