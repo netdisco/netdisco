@@ -35,6 +35,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "layers",
   { data_type => "varchar", is_nullable => 1, size => 8 },
+  "ports",
+  { data_type => "integer", is_serializable => 0, is_nullable => 1 },
   "mac",
   { data_type => "macaddr", is_nullable => 1 },
   "serial",
