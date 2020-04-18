@@ -1,3 +1,9 @@
+2.045001 - 2020-04-18
+
+  [BUG FIXES]
+
+  * restore port column in device table, needed for discovery
+
 2.045000 - 2020-04-15
 
   [NEW FEATURES]
