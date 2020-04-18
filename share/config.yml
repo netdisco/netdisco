@@ -499,6 +499,7 @@ plugins:
   Swagger:
      main_api_module: 'App::Netdisco'
      ui_url: '/swagger-ui'
+     show_ui: false
   Auth::Extensible:
     no_api_change_warning: true
     no_default_pages: true
