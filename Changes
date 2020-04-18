@@ -1,8 +1,14 @@
+2.045002 - 2020-04-18
+
+  [BUG FIXES]
+
+  * rename ports column in device table to be num_ports
+
 2.045001 - 2020-04-18
 
   [BUG FIXES]
 
-  * restore port column in device table, needed for discovery
+  * restore ports column in device table to fix discover bug
 
 2.045000 - 2020-04-15
 

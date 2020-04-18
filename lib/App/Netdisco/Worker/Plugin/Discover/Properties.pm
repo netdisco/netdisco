@@ -35,7 +35,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my @properties = qw/
     snmp_ver
     description uptime name
-    layers ports mac
+    layers mac
     ps1_type ps2_type ps1_status ps2_status
     fan slots
     vendor os os_ver
@@ -51,7 +51,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
 
+  $device->set_column( num_ports  => $snmp->ports );
   $device->set_column( snmp_class => $snmp->class );
+
   $device->set_column( last_discover => \'now()' );
 
   schema('netdisco')->txn_do(sub {
