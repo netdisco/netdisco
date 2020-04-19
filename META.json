@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4224",
+   "generated_by" : "Module::Build version 0.4231",
    "license" : [
       "bsd"
    ],
@@ -102,6 +102,7 @@
             "Term::UI" : "0",
             "Try::Tiny" : "0",
             "URI" : "0",
+            "URI::Based" : "0",
             "URL::Encode" : "0.03",
             "URL::Encode::XS" : "0",
             "YAML" : "0.84",
@@ -124,7 +125,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.045001"
+         "version" : "2.045002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -146,7 +147,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "61"
+         "version" : "62"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -836,6 +837,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.045001",
-   "x_serialization_backend" : "JSON::PP version 2.97001"
+   "version" : "2.045002",
+   "x_serialization_backend" : "JSON::PP version 4.02"
 }

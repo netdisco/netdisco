@@ -1,4 +1,8 @@
-2.045002 - 2020-04-18
+2.045002 - 2020-04-19
+
+  [ENHANCEMENTS]
+
+  * allow API to work with non-root hosting (where path is not '/')
 
   [BUG FIXES]
 
