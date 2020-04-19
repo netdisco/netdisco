@@ -221,7 +221,7 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
 config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 
 # set swagger ui location
-config->{plugins}->{Swagger}->{ui_dir}
-  = dir(dist_dir('App-Netdisco'), 'swagger-ui')->absolute;
+#config->{plugins}->{Swagger}->{ui_dir} =
+  #dir(dist_dir('App-Netdisco'), 'share', 'public', 'swagger-ui')->absolute;
 
 true;

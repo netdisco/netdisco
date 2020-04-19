@@ -306,16 +306,12 @@ get $swagger_base => sub {
 get $swagger_base.'/' => sub {
     # user might request /swagger-ui/ initially (Plugin doesn't handle this)
     params->{url} or redirect uri_for($swagger_base)->path;
-
-    my $file = $swagger->ui_dir->child('index.html');
-    send_error "file not found", 404 unless -f $file;
-    return $file->slurp;
+    send_file( 'swagger-ui/index.html' );
 };
 
+# omg the plugin uses system_path and we don't want to go there
 get $swagger_base.'/**' => sub {
-    my $file = $swagger->ui_dir->child( @{ (splat())[0] } );
-    send_error "file not found", 404 unless -f $file;
-    send_file $file, system_path => 1;
+    send_file( join '/', 'swagger-ui', @{ (splat())[0] } );
 };
 
 # remove empty lines from CSV response
