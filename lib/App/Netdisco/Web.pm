@@ -305,7 +305,7 @@ get $swagger_base => sub {
 
 get $swagger_base.'/' => sub {
     # user might request /swagger-ui/ initially (Plugin doesn't handle this)
-    params->{url} or redirect $swagger_base;
+    params->{url} or redirect uri_for($swagger_base)->path;
 
     my $file = $swagger->ui_dir->child('index.html');
     send_error "file not found", 404 unless -f $file;
