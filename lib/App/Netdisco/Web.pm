@@ -32,6 +32,7 @@ BEGIN {
       $response->status($status || 302);
       $response->headers('Location' => $destination);
   };
+
   # neater than using Dancer::Plugin::Res to handle JSON differently
   *Dancer::send_error = sub {
       my ($body, $status) = @_;

@@ -85,6 +85,7 @@ hook 'before' => sub {
 swagger_path {
   description => 'Obtain an API Key',
   tags => ['General'],
+  path => setting('url_base')->with('/login')->path,
   parameters => [],
   responses => { default => { examples => {
     'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
@@ -157,13 +158,15 @@ post '/login' => sub {
 
 # ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
 # must be after the path is declared, above.
-Dancer::Plugin::Swagger->instance->doc->{paths}->{'/login'}
+Dancer::Plugin::Swagger->instance->doc
+  ->{paths}->{ setting('url_base')->with('/login')->path }
   ->{post}->{security}->[0]->{BasicAuth} = [];
 
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
   tags => ['General'],
+  path => setting('url_base')->with('/logout')->path,
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },

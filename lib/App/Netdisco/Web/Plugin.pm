@@ -157,6 +157,7 @@ register 'register_search_tab' => sub {
       my $tag = $config->{tag};
       swagger_path {
         tags => ['Search'],
+        path => setting('api_base')."/search/$tag",
         description => $config->{label} .' Search',
         parameters  => $config->{api_parameters},
         responses =>
@@ -197,6 +198,7 @@ register 'register_report' => sub {
               (my $category_path = lc $config->{category}) =~ s/ /-/g;
               swagger_path {
                 tags => ['Reports'],
+                path => setting('api_base')."/report/$category_path/$tag",
                 description => $config->{label} .' Report',
                 parameters =>
                   ($config->{api_parameters} ||

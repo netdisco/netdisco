@@ -89,6 +89,7 @@ Module::Build->new(
     'Term::UI' => '0',
     'Try::Tiny' => '0',
     'URI' => '0',
+    'URI::Based' => '0',
     'URL::Encode' => '0.03',
     'URL::Encode::XS' => '0',
     'YAML' => '0.84',

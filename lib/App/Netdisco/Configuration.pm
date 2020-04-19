@@ -7,6 +7,7 @@ use Dancer ':script';
 use Path::Class 'dir';
 use Net::Domain 'hostdomain';
 use File::ShareDir 'dist_dir';
+use URI::Based;
 
 BEGIN {
   if (setting('include_paths') and ref [] eq ref setting('include_paths')) {
@@ -223,5 +224,12 @@ config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 # set swagger ui location
 #config->{plugins}->{Swagger}->{ui_dir} =
   #dir(dist_dir('App-Netdisco'), 'share', 'public', 'swagger-ui')->absolute;
+
+# setup helpers for when request->uri_for() isn't available
+# (for example when inside swagger_path())
+config->{url_base}
+  = URI::Based->new((config->{path} eq '/') ? '' : config->{path});
+config->{api_base}
+  = config->{url_base}->with('/api/v1')->path;
 
 true;
