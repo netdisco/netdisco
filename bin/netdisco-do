@@ -404,6 +404,14 @@ L<App::Netdisco::Worker::Plugin::MakeRancidConf> for configuration needs.
 
  ~/bin/netdisco-do makerancidconf
 
+=head2 getapikey
+
+Generates an API key for the supplied username. See the 
+L<API doc|https://github.com/netdisco/netdisco/wiki/API> for further 
+information.
+
+ ~/bin/netdisco-do getapikey -e the_username 
+
 =head2 dumpconfig
 
 Will dump the loaded and parsed configuration for the application. Pass a
