@@ -77,31 +77,37 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 'dns',
                 \'true AS active',
                 \'false AS node',
-                \qq/replace( date_trunc( 'minute', age( now(), device.last_discover ) ) ::text, 'mon', 'month') AS age/
+                \qq/replace( date_trunc( 'minute', age( now(), device.last_discover ) ) ::text, 'mon', 'month') AS age/,
+                'device.vendor',
+
             ],
-            as => [qw( ip mac time_first time_last dns active node age)],
+            as => [qw( ip mac time_first time_last dns active node age vendor)],
         }
     )->hri;
 
     my $rs2 = schema('netdisco')->resultset('NodeIp')->search(
         undef,
-        {   columns   => [qw( ip mac time_first time_last dns active)],
+        {   join   => ['oui'],
+            columns   => [qw( ip mac time_first time_last dns active)],
             '+select' => [ \'true AS node',
-                           \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
+                           \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/,
+                           \'oui.company || oui.abbrev'
                          ],
-            '+as'     => [ 'node', 'age' ],
+            '+as'     => [ 'node', 'age', 'vendor' ],
         }
     )->hri;
 
     my $rs3 = schema('netdisco')->resultset('NodeNbt')->search(
         undef,
-        {   columns   => [qw( ip mac time_first time_last )],
+        {   join   => ['oui'], 
+            columns   => [qw( ip mac time_first time_last )],
             '+select' => [
                 'nbname AS dns', 'active',
                 \'true AS node',
-                \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/ 
+                \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/,
+                'oui.company'
             ],
-            '+as' => [ 'dns', 'active', 'node', 'age' ],
+            '+as' => [ 'dns', 'active', 'node', 'age', 'vendor' ],
         }
     )->hri;
 
@@ -115,9 +121,10 @@ get '/ajax/content/report/ipinventory' => require_login sub {
             {   bind => [ $subnet->cidr ],
                 columns   => [qw( ip mac time_first time_last dns active)],
                 '+select' => [ \'false AS node',
-                               \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/
+                               \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/,
+                               \'null as vendor' 
                              ],
-                '+as'     => [ 'node', 'age' ],
+                '+as'     => [ 'node', 'age', 'vendor' ],
             }
         )->hri;
 
@@ -134,11 +141,12 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 \qq/date_trunc('second', time_first) AS time_first/,
                 'active',
                 'node',
-                'age'
+                'age',
+                'vendor'
             ],
             as => [
                 'ip',     'mac',  'dns',  'time_last', 'time_first',
-                'active', 'node', 'age'
+                'active', 'node', 'age', 'vendor'
             ],
             order_by => [{-asc => 'ip'}, {-desc => 'active'}, {-asc => 'node'}],
         }

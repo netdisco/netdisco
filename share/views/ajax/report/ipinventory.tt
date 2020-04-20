@@ -3,6 +3,7 @@
     <tr>
       <th>IP Address</th>
       <th>MAC Address</th>
+      <th>Vendor</th>
       <th class="nd_center-cell">DNS</th>
       <th>Last Used</th>      
     </tr>
@@ -41,6 +42,12 @@ $(document).ready(function() {
               + (row.active ? '' : '&nbsp;<i class="icon-book text-warning"></i>&nbsp;') + '</a>';
           }
           return cell_str;
+        }
+      }, {
+        "data": 'vendor',
+        "className": "nd_nowrap nd_center-cell",
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
         }
       }, {
         "data": 'dns',
