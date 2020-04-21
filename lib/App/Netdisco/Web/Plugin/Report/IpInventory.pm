@@ -91,7 +91,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
             columns   => [qw( ip mac time_first time_last dns active)],
             '+select' => [ \'true AS node',
                            \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/,
-                           \'oui.company || oui.abbrev'
+                           'oui.company'
                          ],
             '+as'     => [ 'node', 'age', 'vendor' ],
         }
