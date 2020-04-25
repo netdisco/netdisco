@@ -91,6 +91,18 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       };
   }
 
+  foreach my $m (@modules){
+    unless ($seen_idx{$m->{parent}} || !$m->{parent}){
+      # Some combined devices like Nexus with FEX or ASR with Satellites can return invalid
+      # EntityMIB trees. This workaround relocates entitites with invalid parents to the root 
+      # of the tree, so they are at least visible in the Modules tab (see #710)
+      
+      info sprintf ' [%s] Entity %s (%s) has invalid parent %s - attaching as root entity instead',
+          $device->ip, $m->{index}, $m->{name}, $m->{parent}; 
+      $m->{parent} = undef;
+    }
+  }
+
   schema('netdisco')->txn_do(sub {
     my $gone = $device->modules->delete;
     debug sprintf ' [%s] modules - removed %d chassis modules',
