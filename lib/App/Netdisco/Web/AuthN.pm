@@ -92,7 +92,7 @@ swagger_path {
   },
 },
 post '/login' => sub {
-    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+    my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     # get authN data from BasicAuth header used by API, put into params
     my $authheader = request->header('Authorization');
@@ -171,7 +171,7 @@ swagger_path {
   responses => { default => { examples => { 'application/json' => {} } } },
 },
 get '/logout' => sub {
-    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+    my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     # clear out API token
     my $user = schema('netdisco')->resultset('User')
@@ -199,7 +199,7 @@ get '/logout' => sub {
 
 # user redirected here (POST -> GET) when login fails
 get qr{^/(?:login(?:/denied)?)?} => sub {
-    my $api = ((request->accept =~ m/(?:json|javascript)/) ? true : false);
+    my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     if ($api) {
       header('Content-Type' => 'application/json');

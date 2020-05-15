@@ -2,6 +2,7 @@
 
   [BUG FIXES]
 
+  * #715 fix crash on missing Accept Header
   * #718 fix Node Search API endpoint
   * #719 include IO::Socket::INET6 in deps to ensure IPv6 support
 
