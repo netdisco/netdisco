@@ -1,7 +1,6 @@
 package App::Netdisco::Web::Search;
 
 use Dancer ':syntax';
-use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 

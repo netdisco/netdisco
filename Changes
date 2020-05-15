@@ -2,6 +2,7 @@
 
   [BUG FIXES]
 
+  * #718 fix Node Search API endpoint
   * #719 include IO::Socket::INET6 in deps to ensure IPv6 support
 
 2.045002 - 2020-04-19
