@@ -40,7 +40,7 @@ Client has requested JSON format data and an endpoint under C</api>.
 =cut
 
 sub request_is_api {
-  return ((request->accept =~ m/(?:json|javascript)/) and (
+  return ((request->accept and request->accept =~ m/(?:json|javascript)/) and (
     index(request->path, uri_for('/api/')->path) == 0
       or
     (param('return_url')

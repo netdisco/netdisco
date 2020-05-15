@@ -45,7 +45,7 @@ register_search_tab({
         description => 'Date Range in format "YYYY-MM-DD to YYYY-MM-DD"',
       },
       age_invert => {
-        description => 'Date Range is NOT within the supplied range',
+        description => 'Results should NOT be within daterange',
         type => 'boolean',
         default => 'false',
       },
@@ -241,7 +241,7 @@ ajax '/ajax/content/search/node' => require_login sub {
     return unless $set and $set->has_rows;
     $set = $set->search_rs({}, { order_by => 'me.mac' });
 
-    template 'ajax/search/node_by_ip.tt', {
+    return template 'ajax/search/node_by_ip.tt', {
       macs => $set,
       archive_filter => {@active},
     };
