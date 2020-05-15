@@ -46,6 +46,7 @@ Module::Build->new(
     'Guard' => '1.022',
     'HTML::Parser' => '3.70',
     'HTTP::Tiny' => '0.029',
+    'IO::Socket::INET6' => '2.72',
     'IO::Socket::SSL' => '2.048',
     'JSON' => '2.90',
     'JSON::XS' => '3.01',
