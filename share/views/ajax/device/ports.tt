@@ -220,7 +220,7 @@
             [% IF vlan == 0 %][% SET vlan_count = (vlan_count - 1) %][% NEXT %][% END %]
             [% SET output = output _
               '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan _ '">' _ vlan _ '</a>' %]
-            [% SET output = output _ ', ' IF NOT loop.last %]
+            [% IF NOT loop.last %][% SET output = output _ ', ' %][% END %]
           [% END %]
           [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
             [% SET output = '<div class="nd_vlan-total">(' _ vlan_count
