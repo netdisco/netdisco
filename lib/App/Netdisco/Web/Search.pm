@@ -32,7 +32,7 @@ get '/search' => require_login sub {
         }
 
         # pick most likely tab for initial results
-        if ($q =~ m/^\d+$/) {
+        if ($q =~ m/^[0-9]+$/ and $q < 4096) {
             params->{'tab'} = 'vlan';
         }
         else {

@@ -1,3 +1,9 @@
+2.045006 - 2020-05-24
+
+  [ENHANCEMENTS]
+
+  * #721 search will trim whitespace and handle more MAC formats
+
 2.045005 - 2020-05-18
 
   [BUG FIXES]

@@ -145,6 +145,9 @@ hook 'before' => sub {
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
   var(sidebar_key => $key);
 
+  # trim whitespace
+  params->{'q'} =~ s/^\s+|\s+$//g if param('q');
+
   # copy sidebar defaults into vars so we can mess about with it
   foreach my $sidebar (keys %{setting('sidebar_defaults')}) {
     vars->{'sidebar_defaults'}->{$sidebar} = { map {
