@@ -18,7 +18,7 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $config = setting('rancid') || {};
 
-  my $domain_suffix = setting('domain_suffix');
+  my $domain_suffix = setting('domain_suffix') || '';
   my $delimiter = $config->{delimiter} || ';';
   my $down_age  = $config->{down_age} || '1 day';
   my $default_group = $config->{default_group} || 'default';
@@ -62,6 +62,7 @@ register_worker({ phase => 'main' }, sub {
   }
 
   my $routerdb = {};
+  my $routerunicity = {};
   while (my $d = $devices->next) {
 
     if (check_acl_no($d, $config->{excluded})) {
@@ -70,10 +71,15 @@ register_worker({ phase => 'main' }, sub {
     }
 
     my $name = check_acl_no($d, $config->{by_ip}) ? $d->ip : ($d->dns || $d->name);
-    $name =~ s/$domain_suffix// if check_acl_no($d, $config->{by_hostname});
+    $name =~ s/$domain_suffix$// if check_acl_no($d, $config->{by_hostname});
 
     my ($group) =
       (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{groups} }) || $default_group;
+
+    if (exists($routerunicity->{$group}->{$name})) {
+      debug " skipping $d: device excluded because already present in export list";
+      next;
+    }
 
     my ($vendor) =
       (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{vendormap} })
@@ -93,6 +99,7 @@ register_worker({ phase => 'main' }, sub {
     push @{$routerdb->{$group}},
       (sprintf "%s${delimiter}%s${delimiter}%s", $name, $vendor,
         ($d->get_column('old') ? 'down' : 'up'));
+    $routerunicity->{$group}->{$name} = 1;
   }
 
   foreach my $group (keys %$routerdb) {
