@@ -1,3 +1,9 @@
+2.045007 - 2020-06-05
+
+  [BUG FIXES]
+
+  * #725 Avoid duplicate device in rancid export file (earendilfr)
+
 2.045006 - 2020-05-24
 
   [ENHANCEMENTS]
