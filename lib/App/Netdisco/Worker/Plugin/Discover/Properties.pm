@@ -53,6 +53,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
   $device->set_column( num_ports  => $snmp->ports );
   $device->set_column( snmp_class => $snmp->class );
+  $device->set_column( snmp_engineid => unpack('H*', $snmp->snmpEngineID) );
 
   $device->set_column( last_discover => \'now()' );
 

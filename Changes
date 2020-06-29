@@ -1,5 +1,9 @@
 2.046000 - 2020-06-29
 
+  [ENHANCEMENTS]
+
+  * #728 store SNMP Engine ID
+
   [BUG FIXES]
 
   * #729 Discovery partially fails on invalid indexes
