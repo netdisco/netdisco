@@ -26,6 +26,9 @@ sub _sanity_ok {
     return 0 unless param('port1');
     return 0 unless param('port2');
 
+    return 0 if
+      (($dev1->addr eq $dev2->addr) and (param('port1') eq param('port2')));
+
     return 1;
 }
 

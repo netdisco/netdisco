@@ -6,6 +6,7 @@
 
   [BUG FIXES]
 
+  * #722 manual topology should not allow same left and right port/device
   * #729 Discovery partially fails on invalid indexes
 
 2.045007 - 2020-06-05
