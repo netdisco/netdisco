@@ -102,10 +102,18 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   foreach my $idx (keys %$interfaces) {
+    next unless defined $idx;
     my $port = $interfaces->{$idx} or next;
+
     if (!defined $device_ports->{$port}) {
         debug sprintf ' [%s] properties/ifindex - local port %s already skipped, ignoring',
           $device->ip, $port;
+        next;
+    }
+
+    if ($idx !~ m/^[0-9]+$/) {
+        debug sprintf ' [%s] properties/ifindex - port %s ifindex %s is not an integer',
+          $device->ip, $port, $idx;
         next;
     }
 

@@ -72,7 +72,15 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # build device modules list for DBIC
   my (@modules, %seen_idx);
   foreach my $entry (keys %$e_index) {
+      next unless defined $e_index->{$entry};
       next if $seen_idx{ $e_index->{$entry} }++;
+
+      if ($e_index->{$entry} !~ m/^[0-9]+$/) {
+          debug sprintf ' [%s] modules - index %s is not an integer',
+            $device->ip, $e_index->{$entry};
+          next;
+      }
+
       push @modules, {
           index  => $e_index->{$entry},
           type   => $e_type->{$entry},

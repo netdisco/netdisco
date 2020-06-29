@@ -1,3 +1,9 @@
+2.046000 - 2020-06-29
+
+  [BUG FIXES]
+
+  * #729 Discovery partially fails on invalid indexes
+
 2.045007 - 2020-06-05
 
   [BUG FIXES]
