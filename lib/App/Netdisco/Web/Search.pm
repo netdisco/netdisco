@@ -62,7 +62,7 @@ get '/search' => require_login sub {
                      ->search({
                        -or => [
                          {name => $likeclause},
-                         ((!defined $mac or $mac->errstr)
+                         (((!defined $mac) or $mac->errstr)
                             ? \['mac::text ILIKE ?', $likeval]
                             : {mac => $mac->as_ieee}),
                        ],
