@@ -2,6 +2,7 @@
 
   [ENHANCEMENTS]
 
+  * #721 redux - better MAC address support in searching
   * #728 store SNMP Engine ID
 
   [BUG FIXES]

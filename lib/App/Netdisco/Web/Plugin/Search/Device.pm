@@ -32,6 +32,9 @@ register_search_tab({
       description => {
         description => 'Partial match of the Device description',
       },
+      mac => {
+        description => 'MAC Address of the Device or any of its Interfaces',
+      },
       model => {
         description => 'Exact match of the Device model',
       },
@@ -58,7 +61,7 @@ register_search_tab({
 # device with various properties or a default match-all
 get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any { param($_) }
-      qw/name location dns ip description model os os_ver vendor layers/;
+      qw/name location dns ip description model os os_ver vendor layers mac/;
     my $rs;
 
     if ($has_opt) {

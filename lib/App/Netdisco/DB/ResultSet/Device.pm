@@ -7,6 +7,7 @@ use warnings;
 use Try::Tiny;
 use Regexp::Common 'net';
 use NetAddr::IP::Lite ':lower';
+use NetAddr::MAC ();
 
 require Dancer::Logger;
 
@@ -181,6 +182,10 @@ Can match the C<location> field as a substring.
 Can match the C<description> field as a substring (usually this field contains
 a description of the vendor operating system).
 
+=item mac
+
+Will match exactly the C<mac> field of the Device or any of its Interfaces.
+
 =item model
 
 Will match exactly the C<model> field.
@@ -245,6 +250,13 @@ sub search_by_field {
         \[ 'substring(me.layers,9-?, 1)::int = 1', $layers ];
     }
 
+    # get IEEE MAC format
+    my $mac = NetAddr::MAC->new($p->{mac});
+    undef $mac if
+      ($mac and $mac->as_ieee
+      and (($mac->as_ieee eq '00:00:00:00:00:00')
+        or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
+
     return $rs
       ->search_rs({}, $attrs)
       ->search({
@@ -255,6 +267,12 @@ sub search_by_field {
             { '-ilike' => "\%$p->{location}\%" }) : ()),
           ($p->{description} ? ('me.description' =>
             { '-ilike' => "\%$p->{description}\%" }) : ()),
+
+          ($mac ? (
+            -or => [
+              'me.mac' => $mac->as_ieee,
+              'ports.mac' => $mac->as_ieee,
+            ]) : ()),
 
           ($p->{model} ? ('me.model' =>
             { '-in' => $p->{model} }) : ()),
@@ -283,7 +301,7 @@ sub search_by_field {
       {
         order_by => [qw/ me.dns me.ip /],
         (($p->{dns} or $p->{ip}) ? (
-          join => 'device_ips',
+          join => [qw/device_ips ports/],
           distinct => 1,
         ) : ()),
       }
@@ -308,6 +326,8 @@ The following fields are inspected for a match:
 =item location
 
 =item name
+
+=item mac (including port addresses)
 
 =item description
 
@@ -341,6 +361,14 @@ sub search_fuzzy {
         ];
     }
 
+    # get IEEE MAC format
+    my $mac = NetAddr::MAC->new($q);
+    undef $mac if
+      ($mac and $mac->as_ieee
+      and (($mac->as_ieee eq '00:00:00:00:00:00')
+        or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
+    $mac = ($mac ? $mac->as_ieee : $q);
+
     return $rs->search(
       {
         -or => [
@@ -354,6 +382,10 @@ sub search_fuzzy {
                         { join => 'modules', columns => 'ip' })->as_query()
           },
           -or => [
+            'me.mac::text' => { '-ilike' => $mac},
+            'ports.mac::text' => { '-ilike' => $mac},
+          ],
+          -or => [
             'me.dns'      => { '-ilike' => $q },
             'device_ips.dns' => { '-ilike' => $q },
           ],
@@ -362,7 +394,7 @@ sub search_fuzzy {
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        join => 'device_ips',
+        join => [qw/device_ips ports/],
         distinct => 1,
       }
     );
