@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
@@ -56,6 +56,19 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( snmp_engineid => unpack('H*', $snmp->snmpEngineID) );
 
   $device->set_column( last_discover => \'now()' );
+
+  # protection for failed SNMP gather
+  if ($device->in_storage) {
+      my $ip = $device->ip;
+      my $protect = setting('snmp_field_protection')->{'device'} || {};
+      my %dirty = $device->get_dirty_columns;
+      foreach my $field (keys %dirty) {
+          next unless check_acl_only($ip, ($protect->{$field} || []));
+          if (exists $dirty{$field} and not $dirty{$field}) {
+              return $job->cancel("discover cancelled: $ip failed to return valid $field");
+          }
+      }
+  }
 
   schema('netdisco')->txn_do(sub {
     $device->update_or_insert(undef, {for => 'update'});

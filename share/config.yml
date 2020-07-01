@@ -231,6 +231,9 @@ snmpver: 3
 snmptimeout: 3000000
 snmpretries: 2
 snmp_remoteport: {}
+snmp_field_protection:
+  device:
+    serial: ['any']
 devices_no: []
 devices_only: []
 discover_no: []
