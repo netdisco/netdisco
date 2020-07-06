@@ -93,6 +93,8 @@ sub best_status {
   my $cur_level = 0;
   my $cur_status = '';
 
+  return Status->error()->status if $job->is_cancelled;
+
   foreach my $status (reverse @{ $job->_statuslist }) {
     next if $status->phase
       and $status->phase !~ m/^(?:early|main|store|late)$/;
@@ -121,6 +123,12 @@ sub finalise_status {
   $job->log('failed to report from any worker!');
 
   my $max_level = Status->error()->level;
+
+  if ($job->is_cancelled and scalar @{ $job->_statuslist }) {
+    $job->status( $job->_statuslist->[-1]->status );
+    $job->log( $job->_statuslist->[-1]->log );
+    return;
+  }
 
   foreach my $status (reverse @{ $job->_statuslist }) {
     next if $status->phase
