@@ -30,6 +30,7 @@ Module::Build->new(
     'Authen::TacacsPlus' => '0',
     'CGI::Expand' => '2.05',
     'Data::Printer' => '0',
+    'Data::Visitor::Tiny' => '0',
     'DBD::Pg' => '0',
     'DBIx::Class' => '0.082841',
     'DBIx::Class::Helpers' => '2.033004',
