@@ -16,6 +16,9 @@ use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
 use Path::Class 'dir';
 use Module::Load ();
+use Data::Visitor::Tiny;
+use Scalar::Util 'blessed';
+
 use App::Netdisco::Util::Web qw/
   interval_to_daterange
   request_is_api
@@ -156,6 +159,13 @@ hook 'before' => sub {
   }
 };
 
+# swagger submits "false" params whereas web UI does not - remove them
+# so that code testing for param existence as truth still works.
+hook 'before' => sub {
+  return unless request_is_api_report or request_is_api_search;
+  map {delete params->{$_} if params->{$_} eq 'false'} keys %{params()};
+};
+
 hook 'before_template' => sub {
   # search or report from navbar, or reset of sidebar, can ignore params
   return if param('firstsearch')
@@ -252,8 +262,25 @@ hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
   return unless request_is_api_report or request_is_api_search;
 
-  ${ $html_ref } =
-    $tokens->{results} ? (to_json $tokens->{results}) : {};
+  if (ref {} eq ref $tokens and exists $tokens->{results}) {
+      ${ $html_ref } = to_json $tokens->{results};
+  }
+  elsif (ref {} eq ref $tokens) {
+      map {delete $tokens->{$_}}
+           grep {not blessed $tokens->{$_} or not $tokens->{$_}->isa('App::Netdisco::DB::ResultSet')}
+                keys %$tokens;
+
+      visit( $tokens, sub {
+          my ( $key, $valueref ) = @_;
+          $$valueref = [$$valueref->hri->all]
+            if blessed $$valueref and $$valueref->isa('App::Netdisco::DB::ResultSet');
+      });
+
+      ${ $html_ref } = to_json $tokens;
+  }
+  else {
+      ${ $html_ref } = '[]';
+  }
 };
 
 # workaround for Swagger plugin weird response body
