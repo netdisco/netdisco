@@ -238,6 +238,7 @@ sub deploy_oui {
           if ($line =~ m/^\s*(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
               my ($oui, $company) = ($1, $2);
               $oui =~ s/-/:/g;
+              $company =~ s/[\r\n]//g;
               my $abbrev = shorten($company);
               $data{lc($oui)}{'company'} = $company;
               $data{lc($oui)}{'abbrev'}  = $abbrev;

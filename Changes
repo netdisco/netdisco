@@ -7,6 +7,7 @@
 
   [BUG FIXES]
 
+  * #733 strip nonprinting characters from OUI table
   * #227 Do not overwrite partially retrieved data with null or incorrect vals
   * #722 manual topology should not allow same left and right port/device
   * #729 Discovery partially fails on invalid indexes
