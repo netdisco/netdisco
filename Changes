@@ -7,8 +7,10 @@
 
   [BUG FIXES]
 
+  * #227 Do not overwrite partially retrieved data with null or incorrect vals
   * #722 manual topology should not allow same left and right port/device
   * #729 Discovery partially fails on invalid indexes
+  * #732 Node Search via API for known node returns invalid or empty JSON
 
 2.045007 - 2020-06-05
 
