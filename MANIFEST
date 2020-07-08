@@ -400,6 +400,7 @@ share/schema_versions/App-Netdisco-DB-59-60-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-6-7-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-60-61-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-61-62-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-62-63-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
