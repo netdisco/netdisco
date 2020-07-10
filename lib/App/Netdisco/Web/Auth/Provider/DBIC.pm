@@ -234,10 +234,10 @@ sub _ldap_search {
 
 sub match_with_radius {
   my($self, $pass, $user) = @_;
-  return unless setting('radius') and ref {} eq ref setting('radius');
+  return unless setting('radius') and ref [] eq ref setting('radius');
 
   my $conf = setting('radius');
-  my $radius = Authen::Radius->new(Host => $conf->{server}, Secret => $conf->{secret});
+  my $radius = Authen::Radius->new(@$conf);
   # my $dict_dir = Path::Class::Dir->new( dist_dir('App-Netdisco') )
   #   ->subdir('radius_dictionaries')->stringify;
   Authen::Radius->load_dictionary(); # put $dict_dir in here once it's useful
@@ -258,10 +258,10 @@ sub match_with_radius {
 
 sub match_with_tacacs {
   my($self, $pass, $user) = @_;
-  return unless setting('tacacs') and ref {} eq ref setting('tacacs');
+  return unless setting('tacacs') and ref [] eq ref setting('tacacs');
 
   my $conf = setting('tacacs');
-  my $tacacs = new Authen::TacacsPlus(Host => $conf->{server}, Key => $conf->{key});
+  my $tacacs = new Authen::TacacsPlus(@$conf);
   if (not $tacacs) {
       debug sprintf('auth error: Authen::TacacsPlus: %s', Authen::TacacsPlus::errmsg());
       return undef;

@@ -151,6 +151,42 @@ else {
   config->{'domain_suffix'} = qr//;
 }
 
+# convert radius and tacacs from single to lists
+
+if (ref {} eq ref setting('radius')
+  and exists setting('radius')->{'secret'}) {
+
+  my $servers = (ref [] eq ref setting('radius')->{'server'}
+    ? setting('radius')->{'server'} : [setting('radius')->{'server'}]);
+  config->{'radius'} = [
+    Secret => setting('radius')->{'secret'},
+    NodeList => $servers,
+  ];
+}
+
+if (ref {} eq ref setting('tacacs')
+  and exists setting('tacacs')->{'key'}) {
+
+  config->{'tacacs'} = [
+    Host => setting('tacacs')->{'server'},
+    Key  => setting('tacacs')->{'key'} || setting('tacacs')->{'secret'},
+    Port => (setting('tacacs')->{'port'} || 'tacacs'),
+    Timeout => (setting('tacacs')->{'timeout'} || 15),
+  ];
+}
+elsif (ref [] eq ref setting('tacacs')) {
+  my @newservers = ();
+  foreach my $server (@{ setting('tacacs') }) {
+    push @newservers, [
+      Host => $server->{'server'},
+      Key  => $server->{'key'} || $server->{'secret'},
+      Port => ($server->{'port'} || 'tacacs'),
+      Timeout => ($server->{'timeout'} || 15),
+    ];
+  }
+  config->{'tacacs'} = [ @newservers ];
+}
+
 # support unordered dictionary as if it were a single item list
 if (ref {} eq ref setting('device_identity')) {
   config->{'device_identity'} = [ setting('device_identity') ];

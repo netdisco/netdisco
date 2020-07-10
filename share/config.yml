@@ -29,7 +29,9 @@ navbar_autocomplete: true
 trust_remote_user: false
 trust_x_remote_user: false
 api_token_lifetime: 3600
-#ldap:
+tacacs: {}
+radius: {}
+ldap: {}
 #  servers: []
 #  user_string: 'MYDOMAIN\%USER%'
 #  base: ""
