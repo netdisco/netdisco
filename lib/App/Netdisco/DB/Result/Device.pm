@@ -94,6 +94,30 @@ all the interface IP aliases configured on the Device.
 
 __PACKAGE__->has_many( device_ips => 'App::Netdisco::DB::Result::DeviceIp', 'ip' );
 
+=head2 device_ips_by_address_or_name
+
+Returns rows from the C<device_ip> table which relate to this Device. That is,
+all the interface IP aliases configured on the Device. However you probably
+want to use the C<device_ips_with_address_or_name> ResultSet method instead,
+so you can pass the MAC address part.
+
+=cut
+
+__PACKAGE__->has_many( device_ips_by_address_or_name => 'App::Netdisco::DB::Result::DeviceIp',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
+      -or => [
+        "$args->{foreign_alias}.dns" => { 'ilike', \'?' },
+        "$args->{foreign_alias}.alias" => { '<<=', \'?' },
+        "$args->{foreign_alias}.alias::text" => { 'ilike', \'?' },
+      ],
+    };
+  },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
+
 =head2 vlans
 
 Returns the C<device_vlan> entries for this Device. That is, the list of VLANs
@@ -110,6 +134,25 @@ Returns the set of ports on this Device.
 =cut
 
 __PACKAGE__->has_many( ports => 'App::Netdisco::DB::Result::DevicePort', 'ip' );
+
+=head2 ports_by_mac
+
+Returns the set of ports on this Device, filtered by MAC. However you probably
+want to use the C<ports_with_mac> ResultSet method instead, so you can pass the
+MAC address part.
+
+=cut
+
+__PACKAGE__->has_many( ports_by_mac => 'App::Netdisco::DB::Result::DevicePort',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
+      "$args->{foreign_alias}.mac::text" => { 'ilike', \'?' },
+    };
+  },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
 
 =head2 modules
 

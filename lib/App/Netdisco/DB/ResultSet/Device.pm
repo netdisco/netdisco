@@ -13,6 +13,43 @@ require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
 
+=head2 device_ips_with_address_or_name( $address_or_name )
+
+Returns a correlated subquery for the set of C<device_ip> entries for each
+device. The IP alias or dns matches the supplied C<address_or_name>, using
+C<ILIKE>.
+
+=cut
+
+sub device_ips_with_address_or_name {
+  my ($rs, $q, $ipbind) = @_;
+  $q ||= '255.255.255.255/32';
+
+  return $rs->search(undef,{
+    # NOTE: bind param list order is significant
+    join => ['device_ips_by_address_or_name'],
+    bind => [$q, $ipbind, $q],
+  });
+}
+
+=head2 ports_with_mac( $mac )
+
+Returns a correlated subquery for the set of C<device_port> entries for each
+device. The port MAC address matches the supplied C<mac>, using C<ILIKE>.
+
+=cut
+
+sub ports_with_mac {
+  my ($rs, $mac) = @_;
+  $mac ||= '00:00:00:00:00:00';
+
+  return $rs->search(undef,{
+    # NOTE: bind param list order is significant
+    join => ['ports_by_mac'],
+    bind => [$mac],
+  });
+}
+
 =head2 with_times
 
 This is a modifier for any C<search()> (including the helpers below) which
@@ -350,15 +387,17 @@ sub search_fuzzy {
     # basic IP check is a string match
     my $ip_clause = [
         'me.ip::text'  => { '-ilike' => $q },
-        'device_ips.alias::text' => { '-ilike' => $q },
+        'device_ips_by_address_or_name.alias::text' => { '-ilike' => $q },
     ];
+    my $ipbind = '255.255.255.255/32';
 
     # but also allow prefix search
     if (my $ip = NetAddr::IP::Lite->new($qc)) {
         $ip_clause = [
             'me.ip'  => { '<<=' => $ip->cidr },
-            'device_ips.alias' => { '<<=' => $ip->cidr },
+            'device_ips_by_address_or_name.alias' => { '<<=' => $ip->cidr },
         ];
+        $ipbind = $ip->cidr;
     }
 
     # get IEEE MAC format
@@ -369,7 +408,9 @@ sub search_fuzzy {
         or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
     $mac = ($mac ? $mac->as_ieee : $q);
 
-    return $rs->search(
+    return $rs->ports_with_mac($mac)
+              ->device_ips_with_address_or_name($q, $ipbind)
+              ->search(
       {
         -or => [
           'me.contact'  => { '-ilike' => $q },
@@ -383,18 +424,17 @@ sub search_fuzzy {
           },
           -or => [
             'me.mac::text' => { '-ilike' => $mac},
-            'ports.mac::text' => { '-ilike' => $mac},
+            'ports_by_mac.mac::text' => { '-ilike' => $mac},
           ],
           -or => [
             'me.dns'      => { '-ilike' => $q },
-            'device_ips.dns' => { '-ilike' => $q },
+            'device_ips_by_address_or_name.dns' => { '-ilike' => $q },
           ],
           -or => $ip_clause,
         ],
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        join => [qw/device_ips ports/],
         distinct => 1,
       }
     );
