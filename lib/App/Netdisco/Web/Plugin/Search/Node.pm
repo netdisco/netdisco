@@ -63,6 +63,7 @@ register_search_tab({
 get '/ajax/content/search/node' => require_login sub {
     my $node = param('q');
     send_error('Missing node', 400) unless $node;
+    return unless ($node =~ m/\w/); # need some alphanum at least
     content_type('text/html');
 
     my $agenot = param('age_invert') || '0';

@@ -23,6 +23,7 @@ register_search_tab({
 get '/ajax/content/search/vlan' => require_login sub {
     my $q = param('q');
     send_error( 'Missing query', 400 ) unless $q;
+    return unless ($q =~ m/\w/); # need some alphanum at least
     my $rs;
 
     if ( $q =~ m/^\d+$/ ) {
