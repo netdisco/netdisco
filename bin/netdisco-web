@@ -44,6 +44,15 @@ use Filesys::Notify::Simple;
 use IO::File;
 use File::Copy;
 
+use Getopt::Long;
+Getopt::Long::Configure ("pass_through");
+
+my ($logfiles, $logsize) = (8,10);
+my $result = GetOptions(
+  'logfiles=i' => \$logfiles,
+  'logsize=i'  => \$logsize,
+);
+
 use App::Netdisco::Environment;
 my $config = ($ENV{PLACK_ENV} || $ENV{DANCER_ENVIRONMENT}) .'.yml';
 
@@ -171,13 +180,13 @@ sub rotate_logs {
   my $child = shift;
 
   return unless (-f $log_file) and
-    ((-s $log_file) > (10 * 1024768));
+    ((-s $log_file) > ($logsize * 1024768));
 
   my @files = glob file($log_dir, '*');
   foreach my $f (reverse sort @files) {
       next unless $f =~ m/$log_file\.(\d)$/;
       my $pos = $1;
-      unlink $f if $pos == 7;
+      unlink $f if $pos == ($logfiles - 1);
       my $next = $pos + 1;
       (my $newf = $f) =~ s/\.$pos$/.$next/;
       rename $f, $newf;
