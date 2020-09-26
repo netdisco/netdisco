@@ -86,7 +86,7 @@
               <div id="nd_nodeprops" class="collapse">
                 <ul class="nd_inputs-list unstyled">
                   <li>
-                    <em class="muted">MAC address format:</em><br/>
+                    <em class="muted">MAC address display as:</em><br/>
                     <select id="nd_mac-format" name="mac_format">
                       [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
                       <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format | html_entity %]</option>
