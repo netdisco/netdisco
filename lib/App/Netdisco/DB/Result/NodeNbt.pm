@@ -178,6 +178,6 @@ Returns the C<mac> column instantiated into a L<NetAddr::MAC> object.
 
 =cut
 
-sub net_mac { return NetAddr::MAC->new(mac => (shift)->mac) }
+sub net_mac { return NetAddr::MAC->new(mac => ((shift)->mac) || '') }
 
 1;

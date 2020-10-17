@@ -60,7 +60,7 @@ get '/ajax/content/search/port' => require_login sub {
     }
     else {
         my ( $likeval, $likeclause ) = sql_match($q);
-        my $mac = NetAddr::MAC->new(mac => $q);
+        my $mac = NetAddr::MAC->new(mac => ($q || ''));
 
         undef $mac if
           ($mac and $mac->as_ieee

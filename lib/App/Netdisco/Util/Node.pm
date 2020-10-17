@@ -68,7 +68,7 @@ sub check_mac {
   my ($node, $device, $port_macs) = @_;
   return 0 if !$node;
 
-  my $mac = NetAddr::MAC->new(mac => $node);
+  my $mac = NetAddr::MAC->new(mac => ($node || ''));
   my $devip = ($device ? (ref $device ? $device->ip : $device) : '');
   $port_macs ||= {};
 
@@ -168,7 +168,7 @@ sub store_arp {
   my ($hash_ref, $now) = @_;
   $now ||= 'now()';
   my $ip   = $hash_ref->{'ip'};
-  my $mac  = NetAddr::MAC->new(mac => $hash_ref->{'node'});
+  my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || ''));
   my $name = $hash_ref->{'dns'};
 
   return if !defined $mac or $mac->errstr;

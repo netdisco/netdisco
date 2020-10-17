@@ -203,7 +203,7 @@ sub store_neighbors {
               }
 
               if (!defined $neigh) {
-                  my $mac = NetAddr::MAC->new(mac => $remote_id);
+                  my $mac = NetAddr::MAC->new(mac => ($remote_id || ''));
                   if ($mac and not $mac->errstr) {
                       $neigh = $devices->single({mac => $mac->as_ieee});
                   }
@@ -214,7 +214,7 @@ sub store_neighbors {
               # "myswitchname(012345-012345)"
               if (!defined $neigh) {
                   (my $tmpid = $remote_id) =~ s/.*\(([0-9a-f]{6})-([0-9a-f]{6})\).*/$1$2/;
-                  my $mac = NetAddr::MAC->new(mac => $tmpid);
+                  my $mac = NetAddr::MAC->new(mac => ($tmpid || ''));
                   if ($mac and not $mac->errstr) {
                       debug sprintf
                         ' [%s] neigh - trying to find neighbor %s by MAC %s',

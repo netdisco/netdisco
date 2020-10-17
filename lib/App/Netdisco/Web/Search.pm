@@ -38,7 +38,7 @@ get '/search' => require_login sub {
         else {
             my $nd = $s->resultset('Device')->search_fuzzy($q);
             my ($likeval, $likeclause) = sql_match($q);
-            my $mac = NetAddr::MAC->new(mac => $q);
+            my $mac = NetAddr::MAC->new(mac => ($q || ''));
 
             undef $mac if
               ($mac and $mac->as_ieee

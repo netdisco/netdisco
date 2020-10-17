@@ -1,3 +1,9 @@
+2.046004 - 2020-10-17
+
+  [ENHANCEMENTS]
+
+  * #748 even safer calls to NetAddr::MAC->new()
+
 2.046003 - 2020-10-17
 
   [NEW FEATURES]
