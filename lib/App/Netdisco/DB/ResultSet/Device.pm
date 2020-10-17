@@ -288,7 +288,7 @@ sub search_by_field {
     }
 
     # get IEEE MAC format
-    my $mac = NetAddr::MAC->new($p->{mac});
+    my $mac = NetAddr::MAC->new(mac => $p->{mac});
     undef $mac if
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
@@ -401,7 +401,7 @@ sub search_fuzzy {
     }
 
     # get IEEE MAC format
-    my $mac = NetAddr::MAC->new($q);
+    my $mac = NetAddr::MAC->new(mac => $q);
     undef $mac if
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
