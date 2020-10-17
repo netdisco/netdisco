@@ -4,7 +4,7 @@
       "Oliver Gorwits <oliver@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4231",
+   "generated_by" : "Module::Build version 0.4224",
    "license" : [
       "bsd"
    ],
@@ -81,6 +81,7 @@
             "Path::Class" : "0.32",
             "Plack" : "1.0023",
             "Plack::Handler::Twiggy" : "0",
+            "Plack::Middleware::AccessLog" : "0",
             "Plack::Middleware::Debug" : "0",
             "Plack::Middleware::Expires" : "0.03",
             "Plack::Middleware::ReverseProxy" : "0.15",
@@ -127,7 +128,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.046002"
+         "version" : "2.046003"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -831,7 +832,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/bsd-license.php"
+         "http://opensource.org/licenses/BSD-3-Clause"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -839,6 +840,6 @@
       "x_IRC" : "irc://irc.freenode.org/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.046002",
-   "x_serialization_backend" : "JSON::PP version 4.02"
+   "version" : "2.046003",
+   "x_serialization_backend" : "JSON::PP version 2.97001"
 }

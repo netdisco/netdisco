@@ -1,7 +1,18 @@
-2.046003 - 2020-10-??
+2.046003 - 2020-10-17
+
+  [NEW FEATURES]
+
+  * #740 --logfiles=8 and --logsize=10 (MB) options to netdisco-backend and netdisco-web
+
+  [ENHANCEMENTS]
+
+  * #715 enable Apache style access logging
+  * #743 make clear when partial MAC search can be used
+  * #744 remove whitespace from serial numbers
 
   [BUG FIXES]
 
+  * #738 crash on wildcard search
   * #747 handle missing snmpEngineID
   * #748 always call NetAddr::MAC->new() with named mac param
 
