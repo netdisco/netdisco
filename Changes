@@ -1,3 +1,9 @@
+2.046003 - 2020-10-??
+
+  [BUG FIXES]
+
+  * #747 handle missing snmpEngineID
+
 2.046002 - 2020-08-07
 
   [BUG FIXES]
