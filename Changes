@@ -1,3 +1,9 @@
+2.046006 - 2020-10-??
+
+  [BUG FIXES]
+
+  * Try again to drop unneeded constraint on netmap_positions
+
 2.046005 - 2020-10-17
 
   [ENHANCEMENTS]
