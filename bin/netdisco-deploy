@@ -251,8 +251,8 @@ sub deploy_oui {
             $schema->resultset('Oui')->populate([
                           map {
                               {   oui     => $_,
-                                  company => $data{$_}{'company'},
-                                  abbrev  => $data{$_}{'abbrev'}
+                                  company => Encode::decode('UTF-8', $data{$_}{'company'}),
+                                  abbrev  => Encode::decode('UTF-8', $data{$_}{'abbrev'}),
                               }
                               } keys %data
             ]);

@@ -1,7 +1,8 @@
-2.046006 - 2020-10-??
+2.046006 - 2020-10-31
 
-  [BUG FIXES]
+  [BIG FIXES]
 
+  * #753 fix UTF-8 handling of Company names in OUI
   * Try again to drop unneeded constraint on netmap_positions
 
 2.046005 - 2020-10-17
