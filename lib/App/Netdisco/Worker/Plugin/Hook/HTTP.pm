@@ -30,14 +30,14 @@ register_worker({ phase => 'main' }, sub {
       if $action_conf->{'bearer_token'};
 
   my ($orig_url, $url) = ($action_conf->{'url'}, undef);
-  $action_conf->{'url_is_template'} = 1
+  $action_conf->{'url_is_template'} ||= 1
     if !exists $action_conf->{'url_is_template'};
   $tt->process(\$orig_url, $event_data, \$url)
     if $action_conf->{'url_is_template'};
   $url ||= $orig_url;
 
   my ($orig_body, $body) = (($action_conf->{'body'} || to_json($event_data)), undef);
-  $action_conf->{'body_is_template'} = 1
+  $action_conf->{'body_is_template'} ||= 1
     if !exists $action_conf->{'body_is_template'};
   $tt->process(\$orig_body, $event_data, \$body)
     if $action_conf->{'body_is_template'};
