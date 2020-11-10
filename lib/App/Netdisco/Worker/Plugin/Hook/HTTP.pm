@@ -4,14 +4,51 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use MIME::Base64 'decode_base64';
+use HTTP::Tiny;
+use Template;
+
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  my $extra = $job->extra;
-  my $meta = from_json ($extra || '');
+  my $extra = from_json( decode_base64( $job->extra || '' ) );
 
-  # make http call according to config
+  my $event_data  = $extra->{'event_data'};
+  my $action_conf = $extra->{'action_conf'};
 
-  return Status->done('Completed http Hook');
+  return Status->error('missing url parameter to http Hook')
+    if !defined $action_conf->{'url'};
+
+  my $tt = Template->new({ ENCODING => 'utf8' });
+  my $http = HTTP::Tiny
+    ->new( timeout => (($action_conf->{'timeout'} || 5000) / 1000) );
+
+  $action_conf->{'custom_headers'} ||= {};
+  $action_conf->{'custom_headers'}->{'Content-Type'} ||= 'application/json; charset=UTF-8';
+  $action_conf->{'custom_headers'}->{'Authorization'}
+    = ('Bearer '. $action_conf->{'bearer_token'}) if $action_conf->{'bearer_token'};
+
+  my $url = $action_conf->{'url'};
+  $tt->process(\$url, $event_data, \$url)
+    if $action_conf->{'url_is_template'};
+
+  my $body = ($action_conf->{'body'} || to_json( $extra->{'event_data'} ));
+  $tt->process(\$body, $event_data, \$body)
+    if $action_conf->{'body_is_template'};
+
+  my $response = $http->request(
+    ($action_conf->{'method'} || 'GET'), $url,
+    { headers => $action_conf->{'custom_headers'},
+      content => $body },
+  );
+
+  if ($action_conf->{'ignore_failure'} or $response->{'success'}) {
+    return Status->done(sprintf 'HTTP Hook: %s %s',
+      $response->{'status'}, $response->{'reason'});
+  }
+  else {
+    return Status->error(sprintf 'HTTP Hook: %s %s',
+      $response->{'status'}, $response->{'reason'});
+  }
 });
 
 true;

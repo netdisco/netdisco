@@ -234,7 +234,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
       if (exists $i_ignore->{$entry}) {
           debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s)',
-            $device->ip, $entry, $port, $i_type->{$entry};
+            $device->ip, $entry, $port, ($i_type->{$entry} || '');
           next;
       }
 
