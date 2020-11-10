@@ -70,6 +70,12 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           }
       }
   }
+  else {
+      vars->{'new_device'} = 1;
+      vars->{'hook_data'} = { $device->get_columns };
+      delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
+      delete vars->{'hook_data'}->{'last_discover'}; # to_json cannot do refs
+  }
 
   schema('netdisco')->txn_do(sub {
     $device->update_or_insert(undef, {for => 'update'});

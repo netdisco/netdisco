@@ -32,6 +32,8 @@ sub add_job {
 foreach my $action (@{ setting('job_prio')->{high} },
                     @{ setting('job_prio')->{normal} }) {
 
+    next if $action and $action =~ m/^hook::/; # skip hooks
+
     ajax "/ajax/control/admin/$action" => require_role admin => sub {
         add_job($action, param('device'), param('extra'))
           or send_error('Bad device', 400);

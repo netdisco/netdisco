@@ -46,7 +46,7 @@ register 'register_worker' => sub {
     # support part-actions via action::namespace
     if ($job->only_namespace and $workerconf->{phase} ne 'check') {
       return unless $workerconf->{namespace} eq lc( $job->only_namespace )
-        or (($workerconf->{phase} eq 'early')
+        or (($job->only_namespace ne 'hooks') and ($workerconf->{phase} eq 'early')
              and ($job->device and not $job->device->in_storage));
     }
 
