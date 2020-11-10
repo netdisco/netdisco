@@ -270,6 +270,7 @@ sub jq_complete {
           log    => $job->log,
           started  => $job->started,
           finished => $job->finished,
+          (($job->action eq 'hook') ? (subaction => undef) : ()),
         });
     });
     $happy = true;
