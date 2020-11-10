@@ -408,6 +408,7 @@ worker_plugins:
   - 'Expire'
   - 'ExpireNodes'
   - 'Graph'
+  - 'Hook'
   - 'Hook::http'
   - 'Location'
   - 'Macsuck'
