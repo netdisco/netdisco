@@ -23,17 +23,25 @@ register_worker({ phase => 'main' }, sub {
     ->new( timeout => (($action_conf->{'timeout'} || 5000) / 1000) );
 
   $action_conf->{'custom_headers'} ||= {};
-  $action_conf->{'custom_headers'}->{'Content-Type'} ||= 'application/json; charset=UTF-8';
+  $action_conf->{'custom_headers'}->{'Content-Type'}
+    ||= 'application/json; charset=UTF-8';
   $action_conf->{'custom_headers'}->{'Authorization'}
-    = ('Bearer '. $action_conf->{'bearer_token'}) if $action_conf->{'bearer_token'};
+    = ('Bearer '. $action_conf->{'bearer_token'})
+      if $action_conf->{'bearer_token'};
 
-  my $url = $action_conf->{'url'};
-  $tt->process(\$url, $event_data, \$url)
+  my ($orig_url, $url) = ($action_conf->{'url'}, undef);
+  $action_conf->{'url_is_template'} = 1
+    if !exists $action_conf->{'url_is_template'};
+  $tt->process(\$orig_url, $event_data, \$url)
     if $action_conf->{'url_is_template'};
+  $url ||= $orig_url;
 
-  my $body = ($action_conf->{'body'} || to_json( $extra->{'event_data'} ));
-  $tt->process(\$body, $event_data, \$body)
+  my ($orig_body, $body) = (($action_conf->{'body'} || to_json($event_data)), undef);
+  $action_conf->{'body_is_template'} = 1
+    if !exists $action_conf->{'body_is_template'};
+  $tt->process(\$orig_body, $event_data, \$body)
     if $action_conf->{'body_is_template'};
+  $body ||= $orig_body;
 
   my $response = $http->request(
     ($action_conf->{'method'} || 'GET'), $url,
