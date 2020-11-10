@@ -14,6 +14,7 @@ register_worker({ phase => 'main' }, sub {
 
   my $event_data  = $extra->{'event_data'};
   my $action_conf = $extra->{'action_conf'};
+  $action_conf->{'body'} ||= to_json($event_data);
 
   return Status->error('missing url parameter to http Hook')
     if !defined $action_conf->{'url'};
@@ -36,7 +37,7 @@ register_worker({ phase => 'main' }, sub {
     if $action_conf->{'url_is_template'};
   $url ||= $orig_url;
 
-  my ($orig_body, $body) = (($action_conf->{'body'} || to_json($event_data)), undef);
+  my ($orig_body, $body) = ($action_conf->{'body'} , undef);
   $action_conf->{'body_is_template'} ||= 1
     if !exists $action_conf->{'body_is_template'};
   $tt->process(\$orig_body, $event_data, \$body)
