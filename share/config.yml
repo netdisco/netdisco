@@ -409,7 +409,7 @@ worker_plugins:
   - 'ExpireNodes'
   - 'Graph'
   - 'Hook'
-  - 'Hook::http'
+  - 'Hook::HTTP'
   - 'Location'
   - 'Macsuck'
   - 'Macsuck::Nodes'

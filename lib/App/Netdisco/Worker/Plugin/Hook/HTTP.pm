@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Hook::http;
+package App::Netdisco::Worker::Plugin::Hook::HTTP;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
