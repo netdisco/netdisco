@@ -70,12 +70,13 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           }
       }
   }
-  else {
-      vars->{'new_device'} = 1;
-      vars->{'hook_data'} = { $device->get_columns };
-      delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
-      delete vars->{'hook_data'}->{'last_discover'}; # to_json cannot do refs
-  }
+
+  # support for Hooks
+  vars->{'hook_data'} = { $device->get_columns };
+  delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
+
+  # support for new_device Hook
+  vars->{'new_device'} = 1 if not $device->in_storage;
 
   schema('netdisco')->txn_do(sub {
     $device->update_or_insert(undef, {for => 'update'});
@@ -154,6 +155,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   # or if we're discovering on an IP not listed in ip_index
   push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
     if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
+
+  # support for Hooks
+  vars->{'hook_data'}->{'device_ips'} = $resolved_aliases;
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->device_ips->delete;
@@ -303,6 +307,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $interfaces{$slave}->{slave_of} = $master;
       $interfaces{$master}->{is_master} = 'true';
   }
+
+  # support for Hooks
+  vars->{'hook_data'}->{'ports'} = [values %interfaces];
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
     my $gone = $device->ports->delete({keep_nodes => 1});

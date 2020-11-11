@@ -4,26 +4,16 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-use App::Netdisco::JobQueue 'jq_insert';
-use MIME::Base64 'encode_base64';
-use Encode 'encode';
+use App::Netdisco::Util::Worker;
 
 register_worker({ phase => 'late' }, sub {
   my ($job, $workerconf) = @_;
-  return unless vars->{'new_device'} and vars->{'hook_data'};
 
-  foreach my $conf (@{ setting('hooks') }) {
-    next unless scalar grep {$_ eq 'new_device'} @{ $conf->{'events'} };
+  my @hooks = ('discover');
+  push @hooks, 'new_device' if vars->{'new_device'};
 
-    my $extra = { action_conf => $conf->{'with'},
-                  event_data  => vars->{'hook_data'} };
-    jq_insert({
-      action => ('hook::'. $conf->{'type'}),
-      extra  => encode_base64( encode('UTF-8', to_json( $extra )) ),
-    });
-  }
-
-  return Status->info(sprintf 'Queued new_device Hook for %s.', $job->device);
+  my $count = queue_hooks(@hooks);
+  return Status->info(sprintf ' [%s] hooks - %d queued', $job->device, $count);
 });
 
 true;

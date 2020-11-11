@@ -124,6 +124,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       };
   }
 
+  # support for Hooks
+  vars->{'hook_data'}->{'vlans'} = \@devicevlans;
+
   schema('netdisco')->txn_do(sub {
     my $gone = $device->vlans->delete;
     debug sprintf ' [%s] vlans - removed %d device VLANs',
