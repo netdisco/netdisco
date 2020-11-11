@@ -45,7 +45,7 @@ register_worker({ phase => 'main' }, sub {
   $body ||= $orig_body;
 
   my $response = $http->request(
-    ($action_conf->{'method'} || 'GET'), $url,
+    ($action_conf->{'method'} || 'POST'), $url,
     { headers => $action_conf->{'custom_headers'},
       content => $body },
   );
