@@ -8,11 +8,22 @@ use App::Netdisco::Util::Worker;
 
 register_worker({ phase => 'late' }, sub {
   my ($job, $workerconf) = @_;
+  my $count = 0;
 
-  my @hooks = ('discover');
-  push @hooks, 'new_device' if vars->{'new_device'};
+  foreach my $conf (@{ setting('hooks') }) {
+    $count += queue_hook('new_device', $conf)
+      if vars->{'new_device'} and $conf->{'event'} eq 'new_device';
 
-  my $count = queue_hooks(@hooks);
+    if ($conf->{'event'} eq 'discover') {
+      # TODO filter for no/only
+      my $no   = ($conf->{'filter'}->{'no'}   || '');
+      my $only = ($conf->{'filter'}->{'only'} || '');
+      my $when = ($conf->{'filter'}->{'when'} || '');
+
+      $count += queue_hook('discover', $conf);
+    }
+  }
+
   return Status->info(sprintf ' [%s] hooks - %d queued', $job->device, $count);
 });
 
