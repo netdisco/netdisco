@@ -29,8 +29,8 @@ subroutines.
 =head2 check_acl_no( $ip | $instance, $setting_name | $acl_entry | \@acl )
 
 Given an IP address or object instance, returns true if the configuration
-setting C<$setting_name> matches, else returns false. If the setting is
-undefined or empty, then C<check_acl_no> also returns false.
+setting C<$setting_name> matches, else returns false. If the content of the
+setting is undefined or empty, then C<check_acl_no> also returns false.
 
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
@@ -51,8 +51,8 @@ sub check_acl_no {
 =head2 check_acl_only( $ip | $instance, $setting_name | $acl_entry | \@acl )
 
 Given an IP address or object instance, returns true if the configuration
-setting C<$setting_name> matches, else returns false. If the setting is
-undefined or empty, then C<check_acl_only> also returns true.
+setting C<$setting_name> matches, else returns false. If the content of the
+setting is undefined or empty, then C<check_acl_only> also returns true.
 
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
