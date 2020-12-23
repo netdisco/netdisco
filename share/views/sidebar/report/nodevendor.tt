@@ -9,11 +9,8 @@
                   multiple name="vendor"
                   rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor">
                   [% FOREACH opt IN vendor_list %]
-                    [% UNLESS opt == '' %]
-                      <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt | html_entity %]</option>
-                    [% ELSE %]
-                      <option value="blank"[% ' selected="selected"' IF vendor_lkp.exists('blank') %]>[% '(Unknown Vendor)' | html_entity %]</option>     
-                    [% END %]
+                    [% NEXT IF opt == '' %]
+                    <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                   [% END %]
                 </select>
               </div>
