@@ -132,6 +132,7 @@ lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
 lib/App/Netdisco/Util/Web.pm
+lib/App/Netdisco/Util/Worker.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/API/Objects.pm
@@ -207,6 +208,7 @@ lib/App/Netdisco/Worker/Plugin/Delete.pm
 lib/App/Netdisco/Worker/Plugin/Discover.pm
 lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
+lib/App/Netdisco/Worker/Plugin/Discover/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
@@ -222,6 +224,8 @@ lib/App/Netdisco/Worker/Plugin/Expire.pm
 lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
 lib/App/Netdisco/Worker/Plugin/GetAPIKey.pm
 lib/App/Netdisco/Worker/Plugin/Graph.pm
+lib/App/Netdisco/Worker/Plugin/Hook.pm
+lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm

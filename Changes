@@ -1,3 +1,13 @@
+2.047000 - 2020-12-23
+
+  [NEW FEATURES]
+
+  * #726 Hooks - see https://github.com/netdisco/netdisco/wiki/Hooks
+
+  [BUG FIXES]
+
+  * #442 remove Unknown Vendor from sidebar option as it does not work
+
 2.046006 - 2020-10-31
 
   [BUG FIXES]

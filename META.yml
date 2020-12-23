@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.046006'
+    version: '2.047000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -261,6 +261,8 @@ provides:
     file: lib/App/Netdisco/Util/Statistics.pm
   App::Netdisco::Util::Web:
     file: lib/App/Netdisco/Util/Web.pm
+  App::Netdisco::Util::Worker:
+    file: lib/App/Netdisco/Util/Worker.pm
   App::Netdisco::Web:
     file: lib/App/Netdisco/Web.pm
   App::Netdisco::Web::API::Objects:
@@ -411,6 +413,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
   App::Netdisco::Worker::Plugin::Discover::Entities:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
+  App::Netdisco::Worker::Plugin::Discover::Hooks:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Hooks.pm
   App::Netdisco::Worker::Plugin::Discover::Neighbors:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
   App::Netdisco::Worker::Plugin::Discover::Neighbors::DOCSIS:
@@ -441,6 +445,10 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/GetAPIKey.pm
   App::Netdisco::Worker::Plugin::Graph:
     file: lib/App/Netdisco/Worker/Plugin/Graph.pm
+  App::Netdisco::Worker::Plugin::Hook:
+    file: lib/App/Netdisco/Worker/Plugin/Hook.pm
+  App::Netdisco::Worker::Plugin::Hook::HTTP:
+    file: lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
   App::Netdisco::Worker::Plugin::Location:
     file: lib/App/Netdisco/Worker/Plugin/Location.pm
   App::Netdisco::Worker::Plugin::Macsuck:
@@ -578,5 +586,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.046006'
+version: '2.047000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
