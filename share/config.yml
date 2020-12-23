@@ -347,6 +347,8 @@ dns:
   hosts_file: '/etc/hosts'
   no: ['group:__LOCAL_ADDRESSES__','169.254.0.0/16']
 
+hooks: []
+
 schedule:
   discoverall:
     when: '5 7 * * *'
