@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Discover::Hooks;
+package App::Netdisco::Worker::Plugin::Arpnip::Hooks;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
@@ -18,14 +18,9 @@ register_worker({ phase => 'late' }, sub {
     next if check_acl_no( $job->device, $no );
     next unless check_acl_only( $job->device, $only);
 
-    if (vars->{'new_device'} and $conf->{'event'} eq 'new_device') {
-      $count += queue_hook('new_device', $conf);
-      debug sprintf ' [%s] hooks - %s queued', 'new_device', $job->device;
-    }
-
-    if ($conf->{'event'} eq 'discover') {
-      $count += queue_hook('discover', $conf);
-      debug sprintf ' [%s] hooks - %s queued', 'discover', $job->device;
+    if ($conf->{'event'} eq 'arpnip') {
+      $count += queue_hook('arpnip', $conf);
+      sprintf ' [%s] hooks - %s queued', 'arpnip', $job->device;
     }
   }
 
