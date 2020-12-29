@@ -285,7 +285,7 @@ sub jq_complete {
 
 sub jq_log {
   return schema('netdisco')->resultset('Admin')->search({
-    { 'me.action' => { '-not_like' => 'hook::%' } },
+    'me.action' => { '-not_like' => 'hook::%' },
     -or => [
       { 'me.log' => undef },
       { 'me.log' => { '-not_like' => 'duplicate of %' } },
