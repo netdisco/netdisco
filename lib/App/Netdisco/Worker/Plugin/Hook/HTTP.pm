@@ -11,6 +11,7 @@ use Template;
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $extra = from_json( decode_base64( $job->extra || '' ) );
+  $job->subaction('');
 
   my $event_data  = $extra->{'event_data'};
   my $action_conf = $extra->{'action_conf'};

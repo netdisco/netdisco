@@ -29,6 +29,7 @@ Module::Build->new(
     'Authen::Radius' => '0',
     'Authen::TacacsPlus' => '0',
     'CGI::Expand' => '2.05',
+    'Command::Runner' => 0,
     'Data::Printer' => '0',
     'Data::Visitor::Tiny' => '0',
     'DBD::Pg' => '0',

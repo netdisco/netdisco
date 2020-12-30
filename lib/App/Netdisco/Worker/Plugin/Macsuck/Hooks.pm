@@ -20,7 +20,7 @@ register_worker({ phase => 'late' }, sub {
 
     if ($conf->{'event'} eq 'macsuck') {
       $count += queue_hook('macsuck', $conf);
-      sprintf ' [%s] hooks - %s queued', 'macsuck', $job->device;
+      debug sprintf ' [%s] hooks - %s queued', 'macsuck', $job->device;
     }
   }
 

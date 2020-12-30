@@ -270,7 +270,8 @@ sub jq_complete {
           log    => $job->log,
           started  => $job->started,
           finished => $job->finished,
-          (($job->action eq 'hook') ? (subaction => undef) : ()),
+          (($job->action eq 'hook') ? (subaction => $job->subaction) : ()),
+          ($job->only_namespace ? (action => ($job->action .'::'. $job->only_namespace)) : ()),
         });
     });
     $happy = true;
