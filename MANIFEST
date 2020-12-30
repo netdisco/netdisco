@@ -200,6 +200,7 @@ lib/App/Netdisco/Web/TypeAhead.pm
 lib/App/Netdisco/Worker/Loader.pm
 lib/App/Netdisco/Worker/Plugin.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip.pm
+lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
 lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
@@ -225,9 +226,11 @@ lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
 lib/App/Netdisco/Worker/Plugin/GetAPIKey.pm
 lib/App/Netdisco/Worker/Plugin/Graph.pm
 lib/App/Netdisco/Worker/Plugin/Hook.pm
+lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
 lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
+lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
 lib/App/Netdisco/Worker/Plugin/Macwalk.pm

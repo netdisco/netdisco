@@ -1,3 +1,13 @@
+2.047002 - 2020-12-30
+
+  [NEW FEATURES]
+
+  * Exec Hook to run an external command on an Event
+
+  [ENHANCEMENTS]
+
+  * Added arpnip and macsuck Events for triggering Hooks
+
 2.047001 - 2020-12-29
 
   [BUG FIXES]

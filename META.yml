@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.047001'
+    version: '2.047002'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -397,6 +397,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin.pm
   App::Netdisco::Worker::Plugin::Arpnip:
     file: lib/App/Netdisco/Worker/Plugin/Arpnip.pm
+  App::Netdisco::Worker::Plugin::Arpnip::Hooks:
+    file: lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
   App::Netdisco::Worker::Plugin::Arpnip::Nodes:
     file: lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
   App::Netdisco::Worker::Plugin::Arpnip::Subnets:
@@ -447,12 +449,16 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Graph.pm
   App::Netdisco::Worker::Plugin::Hook:
     file: lib/App/Netdisco/Worker/Plugin/Hook.pm
+  App::Netdisco::Worker::Plugin::Hook::Exec:
+    file: lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
   App::Netdisco::Worker::Plugin::Hook::HTTP:
     file: lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
   App::Netdisco::Worker::Plugin::Location:
     file: lib/App/Netdisco/Worker/Plugin/Location.pm
   App::Netdisco::Worker::Plugin::Macsuck:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck.pm
+  App::Netdisco::Worker::Plugin::Macsuck::Hooks:
+    file: lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
   App::Netdisco::Worker::Plugin::Macsuck::Nodes:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
   App::Netdisco::Worker::Plugin::Macsuck::WirelessNodes:
@@ -508,6 +514,7 @@ requires:
   Authen::Radius: '0'
   Authen::TacacsPlus: '0'
   CGI::Expand: '2.05'
+  Command::Runner: '0'
   DBD::Pg: '0'
   DBIx::Class: '0.082841'
   DBIx::Class::Helpers: '2.033004'
@@ -586,5 +593,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.047001'
+version: '2.047002'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
