@@ -1,3 +1,9 @@
+2.047003 - 2021-02-10
+
+  [BUG FIXES]
+
+  * #740 more robust log rotation
+
 2.047002 - 2020-12-30
 
   [NEW FEATURES]
