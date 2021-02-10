@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * #740 more robust log rotation
+  * #762 wide character error on deploy with local oui.txt
 
 2.047002 - 2020-12-30
 

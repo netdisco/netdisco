@@ -225,7 +225,7 @@ sub deploy_oui {
   my %data = ();
 
   if (@ARGV) {
-      @lines = File::Slurper::read_lines($ARGV[0]);
+      @lines = File::Slurper::read_lines($ARGV[0], 'iso-8859-1');
   }
   else {
       my $url = 'https://raw.githubusercontent.com/netdisco/upstream-sources/master/ieee/oui.txt';
@@ -275,7 +275,7 @@ sub deploy_oui {
 sub shorten {
     my $manuf = shift;
 
-    $manuf = decode("utf8", $manuf, Encode::FB_CROAK) unless @ARGV;
+    $manuf = decode("utf8", $manuf, Encode::FB_CROAK);
     $manuf = " " . $manuf . " ";
 
     # Remove any punctuation
