@@ -4,6 +4,7 @@
 
   * #740 more robust log rotation
   * #762 wide character error on deploy with local oui.txt
+  * error when using API /api/v1/object/device/ip/port_vlans
 
 2.047002 - 2020-12-30
 
