@@ -45,31 +45,6 @@ foreach my $rel (qw/device_ips vlans ports modules port_vlans wireless_ports ssi
     };
 }
 
-swagger_path {
-  tags => ['Objects'],
-  description => 'Returns a row from the device_port table',
-  path => setting('api_base').'/object/device/{ip}/port/{port}',
-  parameters  => [
-    ip => {
-      description => 'Canonical IP of the Device. Use Search methods to find this.',
-      required => 1,
-      in => 'path',
-    },
-    port => {
-      description => 'Name of the port. Use the ".../device/{ip}/ports" method to find these.',
-      required => 1,
-      in => 'path',
-    },
-  ],
-  responses => { default => {} },
-}, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>[^/]+)$} => require_role api => sub {
-  my $params = captures;
-  my $port = try { schema('netdisco')->resultset('DevicePort')
-    ->find( $$params{port}, $$params{ip} ) }
-    or send_error('Bad Device or Port', 404);
-  return to_json $port->TO_JSON;
-};
-
 foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age vlans logs/) {
     swagger_path {
       tags => ['Objects'],
@@ -88,7 +63,7 @@ foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age vlan
         },
       ],
       responses => { default => {} },
-    }, get qq{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>[^/]+)/$rel} => require_role api => sub {
+    }, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>.+)/${rel}$} => require_role api => sub {
       my $params = captures;
       my $rows = try { schema('netdisco')->resultset('DevicePort')
         ->find( $$params{port}, $$params{ip} )->$rel }
@@ -115,7 +90,7 @@ foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node
         },
       ],
       responses => { default => {} },
-    }, get qq{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>[^/]+)/$rel} => require_role api => sub {
+    }, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>.+)/${rel}$} => require_role api => sub {
       my $params = captures;
       my $row = try { schema('netdisco')->resultset('DevicePort')
         ->find( $$params{port}, $$params{ip} )->$rel }
@@ -123,6 +98,32 @@ foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node
       return to_json $row->TO_JSON;
     };
 }
+
+# must come after the port methods above, so the route matches later
+swagger_path {
+  tags => ['Objects'],
+  description => 'Returns a row from the device_port table',
+  path => setting('api_base').'/object/device/{ip}/port/{port}',
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    port => {
+      description => 'Name of the port. Use the ".../device/{ip}/ports" method to find these.',
+      required => 1,
+      in => 'path',
+    },
+  ],
+  responses => { default => {} },
+}, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>.+)$} => require_role api => sub {
+  my $params = captures;
+  my $port = try { schema('netdisco')->resultset('DevicePort')
+    ->find( $$params{port}, $$params{ip} ) }
+    or send_error('Bad Device or Port', 404);
+  return to_json $port->TO_JSON;
+};
 
 swagger_path {
   tags => ['Objects'],

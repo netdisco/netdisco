@@ -1,3 +1,9 @@
+2.047004 - 2021-02-15
+
+  [BUG FIXES]
+
+  * API port methods do not work with Cisco style Fa1/0/1 port names
+
 2.047003 - 2021-02-10
 
   [BUG FIXES]
