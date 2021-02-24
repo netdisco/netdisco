@@ -168,7 +168,7 @@ sub rotate_logs {
     ((-s $log_file) > ($logsize * 1024768));
 
   my @files = grep { /$log_file\.\d+/ } glob file($log_dir, '*');
-  foreach my $f (sort { $b <=> $a } @files) {
+  foreach my $f (sort { $b cmp $a } @files) {
       next unless $f =~ m/$log_file\.(\d+)$/;
       my $pos = $1;
       unlink $f if $pos == ($logfiles - 1);

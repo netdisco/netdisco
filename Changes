@@ -1,3 +1,9 @@
+2.047005 - 2021-02-24
+
+  [BUG FIXES]
+
+  * #769 Numeric sort error for logfile rotation
+
 2.047004 - 2021-02-15
 
   [BUG FIXES]
