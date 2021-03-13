@@ -19,3 +19,4 @@ node_modules/*
 yarn.lock
 package.json
 .stylelintrc
+.vscode
