@@ -88,11 +88,12 @@
             "Pod::Usage" : "0",
             "Regexp::Common" : "2017060201",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.70",
+            "SNMP::Info" : "3.71",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
             "Sereal" : "0",
+            "Session::Storage::Secure" : "1.000",
             "Socket6" : "0.23",
             "Starman" : "0.4008",
             "Storable" : "0",
@@ -862,5 +863,5 @@
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
    "version" : "2.047005",
-   "x_serialization_backend" : "JSON::PP version 4.02"
+   "x_serialization_backend" : "JSON::PP version 4.04"
 }
