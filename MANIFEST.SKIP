@@ -78,3 +78,5 @@ README.md
 
 # ignore intellij project directory
 \B\.idea
+# ignore vscode directory
+\B\.vscode
