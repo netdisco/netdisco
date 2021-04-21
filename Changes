@@ -1,3 +1,9 @@
+2.04xxxx - 2021-xx-xx
+
+  [ENHANCEMENTS]
+
+  * #782 Allow <"> in remote_port
+
 2.047005 - 2021-02-24
 
   [BUG FIXES]
