@@ -129,7 +129,7 @@ Module::Build->new(
       bugtracker => 'https://github.com/netdisco/netdisco/issues',
       repository => 'https://github.com/netdisco/netdisco',
       MailingList => 'https://lists.sourceforge.net/lists/listinfo/netdisco-users',
-      IRC => 'irc://irc.freenode.org/#netdisco',
+      IRC => 'irc://irc.libera.chat/#netdisco',
     },
   },
 )->create_build_script;

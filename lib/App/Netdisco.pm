@@ -62,7 +62,7 @@ L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisc
 L<notes for specific device vendors|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
 and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
 
-You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
+You can also speak to someone in the C<#netdisco@libera> IRC channel, or on
 the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
 Before installing or upgrading please always review the latest
 L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
@@ -235,7 +235,7 @@ L<understanding and troubleshooting Netdisco|https://github.com/netdisco/netdisc
 L<tips and tricks for specific platforms|https://github.com/netdisco/netdisco/wiki/Vendor-Tips>,
 and L<all the configuration options|https://github.com/netdisco/netdisco/wiki/Configuration>.
 
-You can also speak to someone in the C<#netdisco@freenode> IRC channel, or on
+You can also speak to someone in the C<#netdisco@libera> IRC channel, or on
 the L<community email list|https://lists.sourceforge.net/lists/listinfo/netdisco-users>.
 Before installing or upgrading please always review the latest
 L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
