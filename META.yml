@@ -587,7 +587,7 @@ requires:
   namespace::clean: '0.24'
   version: '0.9902'
 resources:
-  IRC: irc://irc.freenode.org/#netdisco
+  IRC: irc://irc.libera.chat/#netdisco
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
