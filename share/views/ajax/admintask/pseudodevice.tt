@@ -10,7 +10,7 @@
   </thead>
   <tbody>
     <tr>
-      <td class="nd_center-cell"><input data-form="add" name="dns" type="text"></td>
+      <td class="nd_center-cell"><input data-form="add" name="name" type="text"></td>
       <td class="nd_center-cell"><input data-form="add" name="ip" type="text"></td>
       <td class="nd_center-cell"><input data-form="add" name="ports" type="number" value="1"></td>
       <td class="nd_center-cell">
@@ -27,7 +27,7 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell"><a class="nd_linkcell"
-        href="[% uri_for('/device') | none %]?q=[% row.ip | uri %]">[% row.dns | html_entity %]</a></td>
+        href="[% uri_for('/device') | none %]?q=[% row.ip | uri %]">[% row.name | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.ip | html_entity %]</td>
       <td class="nd_center-cell">
         <input data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">
@@ -38,7 +38,7 @@
         <input data-form="update" name="layers" type="hidden" value="[% row.layers | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="dns" type="hidden" value="[% row.dns | html_entity %]">
+        <input data-form="update" name="name" type="hidden" value="[% row.name | html_entity %]">
         <input data-form="update" name="ip" type="hidden" value="[% row.ip | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
@@ -54,7 +54,7 @@
           <div class="modal-body">
             <blockquote>
               <p class="text-info">
-                Pseudo-device &quot;[% row.dns | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
+                Pseudo-device &quot;[% row.name | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
             </blockquote>
             <input data-form="delete" name="device" type="hidden" value="[% row.ip | html_entity %]">
           </div>
