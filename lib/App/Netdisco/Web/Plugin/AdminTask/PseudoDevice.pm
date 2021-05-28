@@ -5,6 +5,7 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::Statistics 'pretty_version';
 use App::Netdisco::Web::Plugin;
 use NetAddr::IP::Lite ':lower';
@@ -35,7 +36,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
       my $device = schema('netdisco')->resultset('Device')
         ->create({
           ip => param('ip'),
-          dns => param('name'),
+          dns => hostname_from_ip(param('ip')),
           name => param('name'),
           vendor => 'netdisco',
           model => 'pseudodevice',
