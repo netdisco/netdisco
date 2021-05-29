@@ -26,8 +26,8 @@ script: |
   ND_PHANTOMJS=/usr/bin/phantomjs ./Build test --test_files xt/
 notifications:
   irc:
-    on_success: change
-    on_failure: change
+    on_success: always
+    on_failure: always
     channels:
       - 'irc.libera.chat#netdisco'
 #  email:
