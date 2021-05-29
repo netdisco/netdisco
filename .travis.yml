@@ -29,7 +29,7 @@ notifications:
     on_success: change
     on_failure: change
     channels:
-      - 'chat.freenode.net#netdisco'
+      - 'irc.libera.chat#netdisco'
 #  email:
 #    on_success: always
 #    on_failure: always
