@@ -21,7 +21,7 @@ BEGIN {
 
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
-    # override from env for docker
+    # override from env for docker
 
     setting('database')->{name} =
       ($ENV{NETDISCO_DB_NAME} || $ENV{NETDISCO_DBNAME} || setting('database')->{name});
@@ -73,19 +73,19 @@ if (ref {} eq ref setting('database')) {
 # always set this
 $ENV{DBIC_TRACE_PROFILE} = 'console';
 
-# override from env for docker
+# override from env for docker
 config->{'community'} = ($ENV{NETDISCO_RO_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RO_COMMUNITY}] : config->{'community'});
 config->{'community_rw'} = ($ENV{NETDISCO_RW_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RW_COMMUNITY}] : config->{'community_rw'});
 
-# if snmp_auth and device_auth not set, add defaults to community{_rw}
+# if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
     and (setting('device_auth') and 0 == scalar @{ setting('device_auth') })) {
   config->{'community'} = [ @{setting('community')}, 'public' ];
   config->{'community_rw'} = [ @{setting('community_rw')}, 'private' ];
 }
-# fix up device_auth (or create it from old snmp_auth and community settings)
+# fix up device_auth (or create it from old snmp_auth and community settings)
 # also imports legacy sshcollector config
 config->{'device_auth'}
   = [ App::Netdisco::Util::DeviceAuth::fixup_device_auth() ];
@@ -122,7 +122,7 @@ setting('dns')->{'ETCHOSTS'} = {};
     for keys %AnyEvent::DNS::EtcHosts::HOSTS;
 }
 
-# override from env for docker
+# override from env for docker
 if ($ENV{NETDISCO_DOMAIN}) {
   if ($ENV{NETDISCO_DOMAIN} eq 'discover') {
     delete $ENV{NETDISCO_DOMAIN};
@@ -187,7 +187,7 @@ elsif (ref [] eq ref setting('tacacs')) {
   config->{'tacacs'} = [ @newservers ];
 }
 
-# support unordered dictionary as if it were a single item list
+# support unordered dictionary as if it were a single item list
 if (ref {} eq ref setting('device_identity')) {
   config->{'device_identity'} = [ setting('device_identity') ];
 }
@@ -236,8 +236,8 @@ setting('workers')->{'timeout'} = setting('timeout')
   if defined setting('timeout')
      and !defined setting('workers')->{'timeout'};
 
-# 0 for workers max_deferrals and retry_after is like disabling
-# but we need to fake it with special values
+# 0 for workers max_deferrals and retry_after is like disabling
+# but we need to fake it with special values
 setting('workers')->{'max_deferrals'} ||= (2**30);
 setting('workers')->{'retry_after'}   ||= '100 years';
 
@@ -254,15 +254,15 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
     }} keys %{ setting('reports') } ];
 }
 
-# add system_reports onto reports
+# add system_reports onto reports
 config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 
 # set swagger ui location
 #config->{plugins}->{Swagger}->{ui_dir} =
   #dir(dist_dir('App-Netdisco'), 'share', 'public', 'swagger-ui')->absolute;
 
-# setup helpers for when request->uri_for() isn't available
-# (for example when inside swagger_path())
+# setup helpers for when request->uri_for() isn't available
+# (for example when inside swagger_path())
 config->{url_base}
   = URI::Based->new((config->{path} eq '/') ? '' : config->{path});
 config->{api_base}

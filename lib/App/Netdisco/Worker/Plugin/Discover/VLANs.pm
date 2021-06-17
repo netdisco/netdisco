@@ -124,7 +124,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       };
   }
 
-  # support for Hooks
+  # support for Hooks
   vars->{'hook_data'}->{'vlans'} = \@devicevlans;
 
   schema('netdisco')->txn_do(sub {

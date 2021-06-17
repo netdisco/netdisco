@@ -26,7 +26,7 @@ sub device_ips_with_address_or_name {
   $q ||= '255.255.255.255/32';
 
   return $rs->search(undef,{
-    # NOTE: bind param list order is significant
+    # NOTE: bind param list order is significant
     join => ['device_ips_by_address_or_name'],
     bind => [$q, $ipbind, $q],
   });
@@ -44,7 +44,7 @@ sub ports_with_mac {
   $mac ||= '00:00:00:00:00:00';
 
   return $rs->search(undef,{
-    # NOTE: bind param list order is significant
+    # NOTE: bind param list order is significant
     join => ['ports_by_mac'],
     bind => [$mac],
   });

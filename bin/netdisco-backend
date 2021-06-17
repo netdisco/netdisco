@@ -55,7 +55,7 @@ my $result = GetOptions(
 use App::Netdisco::Environment;
 my $config = ($ENV{PLACK_ENV} || $ENV{DANCER_ENVIRONMENT}) .'.yml';
 
-# make sure there is a config file in place
+# make sure there is a config file in place
 my $template_config = file($ENV{DANCER_CONFDIR}, 'environments', $config);
 my $app_config = file($ENV{DANCER_ENVDIR}, $config);
 if (! -e $app_config and -e $template_config) {

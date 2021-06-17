@@ -94,7 +94,7 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
 push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
      setting('views');
 
-# any template paths in deployment.yml (should override plugins)
+# any template paths in deployment.yml (should override plugins)
 if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
     if (setting('site_local_files')) {
       push @{setting('template_paths')},
@@ -135,7 +135,7 @@ hook after_error_render => sub { setting('layout' => 'main') };
 
   set('port_columns' => \@port_columns);
 
-  # update sidebar_defaults so hooks scanning params see new plugin cols
+  # update sidebar_defaults so hooks scanning params see new plugin cols
   setting('sidebar_defaults')->{'device_ports'}->{ $_->{name} } = $_
     for @port_columns;
 }
@@ -151,7 +151,7 @@ hook 'before' => sub {
   # trim whitespace
   params->{'q'} =~ s/^\s+|\s+$//g if param('q');
 
-  # copy sidebar defaults into vars so we can mess about with it
+  # copy sidebar defaults into vars so we can mess about with it
   foreach my $sidebar (keys %{setting('sidebar_defaults')}) {
     vars->{'sidebar_defaults'}->{$sidebar} = { map {
       ($_ => setting('sidebar_defaults')->{$sidebar}->{$_}->{'default'})
@@ -160,19 +160,19 @@ hook 'before' => sub {
 };
 
 # swagger submits "false" params whereas web UI does not - remove them
-# so that code testing for param existence as truth still works.
+# so that code testing for param existence as truth still works.
 hook 'before' => sub {
   return unless request_is_api_report or request_is_api_search;
   map {delete params->{$_} if params->{$_} eq 'false'} keys %{params()};
 };
 
 hook 'before_template' => sub {
-  # search or report from navbar, or reset of sidebar, can ignore params
+  # search or report from navbar, or reset of sidebar, can ignore params
   return if param('firstsearch')
     or var('sidebar_key') !~ m/^\w+_\w+$/;
 
-  # update defaults to contain the passed url params
-  # (this follows initial copy from config.yml, then cookie restore)
+  # update defaults to contain the passed url params
+  # (this follows initial copy from config.yml, then cookie restore)
   var('sidebar_defaults')->{var('sidebar_key')}->{$_} = param($_)
     for keys %{ var('sidebar_defaults')->{var('sidebar_key')} || {} };
 };
@@ -187,7 +187,7 @@ hook 'before_template' => sub {
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
 
-    # current query string to all resubmit from within ajax template
+    # current query string to all resubmit from within ajax template
     my $queryuri = URI->new();
     $queryuri->query_param($_ => param($_))
       for grep {$_ ne 'return_url'} keys %{params()};
@@ -222,7 +222,7 @@ hook 'before_template' => sub {
         $tokens->{$sidebar_key} = $tokens->{$sidebar_key}->path_query;
     }
 
-    # helper from NetAddr::MAC for the MAC formatting
+    # helper from NetAddr::MAC for the MAC formatting
     $tokens->{mac_format_call} = 'as_'. lc(param('mac_format'))
       if param('mac_format');
 

@@ -8,9 +8,9 @@ use base 'DBIx::Class::Core';
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
 # note to future devs:
-# this query does not use the slave_of field in device_port table to group
-# ports because what we actually want is total b/w between devices on all
-# links, regardless of whether those links are in an aggregate.
+# this query does not use the slave_of field in device_port table to group
+# ports because what we actually want is total b/w between devices on all
+# links, regardless of whether those links are in an aggregate.
 
 __PACKAGE__->table('device_links');
 __PACKAGE__->result_source_instance->is_virtual(1);
