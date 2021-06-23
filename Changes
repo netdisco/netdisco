@@ -3,6 +3,7 @@
   [ENHANCEMENTS]
 
   * #782 Allow <"> in remote_port
+  * #775 include /contrib/raddb/* in distribution
 
   [BUG FIXES]
 

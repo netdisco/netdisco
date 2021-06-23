@@ -1,0 +1,15 @@
+#
+# Xtradius specific attributes
+# Version 1.1 - 
+#
+# Xtradius < 1.1 uses these lines
+#ATTRIBUTE	Exec-Program-Account	1142	string
+#ATTRIBUTE	Exec-Program-Nas	1143	string
+#ATTRIBUTE	Exec-Program-Log	1144	string
+#
+# Use these lines with 1.1
+ATTRIBUTE	Exec-Program-Account	942	string
+ATTRIBUTE	Exec-Program-Nas	943	string
+ATTRIBUTE	Exec-Program-Log	944	string
+ATTRIBUTE	Radius-Shared-Secret	945	string
+VALUE		Auth-Type		External		252

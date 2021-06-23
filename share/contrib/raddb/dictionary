@@ -1,0 +1,65 @@
+#
+#   This file contains dictionary translations for parsing
+#   requests and generating responses. All transactions are
+#   composed of Attribute/Value Pairs. The value of each attribute
+#   is specified as one of 4 data types. Valid data types are:
+#
+#       * string  - 0-253 octets;
+#       * ipaddr  - 4 octets in network byte order;
+#       * integer - 32 bit value in big endian order (high byte first);
+#       * date    - 32 bit value in big endian order (seconds since
+#                   00:00:00 GMT, Jan. 1, 1970).
+#
+#   Enumerated values are stored in the user file with dictionary
+#   VALUE translations for easy administration.
+#
+#   Example:
+#
+#   ATTRIBUTE         VALUE
+#   ---------------   -----
+#   Framed-Protocol = PPP
+#   7               = 1     (integer encoding)
+#
+
+#
+#   Include compatibility dictionary for older users file. Move this
+#   directive to the end of the file if you want to see the old names
+#   in the logfiles too.
+#
+$INCLUDE dictionary.compat
+
+$INCLUDE dictionary.livingston
+$INCLUDE dictionary.tunnel
+$INCLUDE dictionary.usr
+$INCLUDE dictionary.ascend
+$INCLUDE dictionary.xtradius
+$INCLUDE dictionary.quintum
+$INCLUDE dictionary.cisco
+$INCLUDE dictionary.rfc2865
+$INCLUDE dictionary.rfc2866
+$INCLUDE dictionary.rfc2869
+$INCLUDE dictionary.rfc3162
+$INCLUDE dictionary.wimax
+
+#
+#   Attributes
+#
+
+
+ATTRIBUTE   Digest-Response     206     string
+ATTRIBUTE   Digest-Attributes   207     sublist
+
+#
+#   Integer and Sub-Attribute Translations
+#
+
+VALUE   Digest-Attributes   Realm           1
+VALUE   Digest-Attributes   Nonce           2
+VALUE   Digest-Attributes   Method          3
+VALUE   Digest-Attributes   URI             4
+VALUE   Digest-Attributes   QOP             5
+VALUE   Digest-Attributes   Algorithm       6
+VALUE   Digest-Attributes   Body-Digest     7
+VALUE   Digest-Attributes   CNonce          8
+VALUE   Digest-Attributes   Nonce-Count     8
+VALUE   Digest-Attributes   User-Name       10
