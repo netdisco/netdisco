@@ -153,7 +153,7 @@ sub get_vlan_list {
   my $device = shift;
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return (); # already checked!
+    or return (); # already checked!
 
   return () unless $snmp->cisco_comm_indexing;
 
@@ -270,7 +270,7 @@ sub walk_fwtable {
   my $cache = {};
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return $cache; # already checked!
+    or return $cache; # already checked!
 
   my $fw_mac   = $snmp->fw_mac || {};
   my $fw_port  = $snmp->fw_port || {};

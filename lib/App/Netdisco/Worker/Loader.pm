@@ -23,7 +23,7 @@ sub load_workers {
   my @core_plugins = @{ setting('worker_plugins') || [] };
   my @user_plugins = @{ setting('extra_worker_plugins') || [] };
 
-  # load worker plugins for our action
+  # load worker plugins for our action
   foreach my $plugin (@user_plugins, @core_plugins) {
     $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
     $plugin = 'App::Netdisco::Worker::Plugin::'. $plugin
@@ -35,7 +35,7 @@ sub load_workers {
     Module::Load::load $plugin;
   }
 
-  # now vars->{workers} is populated, we set the dispatch order
+  # now vars->{workers} is populated, we set the dispatch order
   my $workers = vars->{'workers'}->{$action} || {};
   #use DDP; p vars->{'workers'};
 

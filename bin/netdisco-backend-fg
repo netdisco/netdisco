@@ -29,7 +29,7 @@ BEGIN {
   setting('workers')->{'BACKEND'} ||= (hostfqdn || 'fqdn-undefined');
 }
 
-use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
+use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
 use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
 use Role::Tiny::With;
 

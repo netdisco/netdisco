@@ -43,7 +43,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         next unless ref {} eq ref $map;
 
         foreach my $key (sort keys %$map) {
-          # lhs matches device, rhs matches device_ip
+          # lhs matches device, rhs matches device_ip
           if (check_acl_only($device, $key)
                 and check_acl_only($alias, $map->{$key})) {
 
@@ -64,7 +64,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           }
         }
       }
-    } # ALIAS
+    } # ALIAS
   }
 
   return if $new_ip eq $old_ip;

@@ -79,7 +79,7 @@ sub hostnames_resolve_async {
   $done->recv;
 
   # Remove reference to resolver so that we close sockets
-  # and allow return to any instance defaults we have changed
+  # and allow return to any instance defaults we have changed
   undef $AnyEvent::DNS::RESOLVER if $AnyEvent::DNS::RESOLVER;
 
   return $ips;

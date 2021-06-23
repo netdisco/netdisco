@@ -104,7 +104,7 @@ sub store_neighbors {
   my @to_discover = ();
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return (); # already checked!
+    or return (); # already checked!
 
   # first allow any manually configured topology to be set
   # and do this before we cache the rows in vars->{'device_ports'}
@@ -127,14 +127,14 @@ sub store_neighbors {
     { map {($_->port => $_)} $device->ports->reset->all };
   my $device_ports = vars->{'device_ports'};
 
-  # v4 and v6 neighbor tables
+  # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
   my %c_ipv6 = %{ ($snmp->can('hasLLDP') and $snmp->hasLLDP)
     ? ($snmp->lldp_ipv6 || {}) : {} };
 
-  # remove keys with undef values, as c_ip does
+  # remove keys with undef values, as c_ip does
   delete @c_ipv6{ grep { not defined $c_ipv6{$_} } keys %c_ipv6 };
-  # now combine them, v6 wins
+  # now combine them, v6 wins
   $c_ip = { %$c_ip, %c_ipv6 };
 
   foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {

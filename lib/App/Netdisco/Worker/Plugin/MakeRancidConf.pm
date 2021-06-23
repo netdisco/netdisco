@@ -156,8 +156,8 @@ C<rancid>. All keys are optional:
  rancid:
    rancid_cvsroot:  '$ENV{NETDISCO_HOME}/rancid' # default
    rancid_conf:     '/etc/rancid'                # default
-   down_age:        '1 day'                      # default
-   delimiter:       ';'                          # default
+   down_age:        '1 day'                      # default
+   delimiter:       ';'                          # default
    default_group:   'default'                    # default 
    groups:
      groupname1:    'host_group1_acl'

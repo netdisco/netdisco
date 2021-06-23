@@ -65,7 +65,7 @@ for details of what C<$acl> may contain.
 sub check_acl_only {
   my ($thing, $setting_name) = @_;
   return 0 unless $thing and $setting_name;
-  # logic to make an empty config be equivalent to 'any' (i.e. a match)
+  # logic to make an empty config be equivalent to 'any' (i.e. a match)
   my $config = (exists config->{"$setting_name"} ? setting($setting_name)
                                                  : $setting_name);
   return 1 if not $config # undef or empty string
@@ -99,7 +99,7 @@ sub check_acl {
         $thing->can('addr') ? $thing->addr : $thing )));
   }
   return 0 if !defined $real_ip
-    or blessed $real_ip; # class we do not understand
+    or blessed $real_ip; # class we do not understand
 
   $config  = [$config] if ref '' eq ref $config;
   if (ref [] ne ref $config) {
@@ -113,12 +113,12 @@ sub check_acl {
   return 1 if $find and not $all;
 
   my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
-  my $name = undef; # only look up once, and only if qr// is used
+  my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
   my $qref = ref qr//;
 
   INLIST: foreach (@$config) {
-      my $item = $_; # must copy so that we can modify safely
+      my $item = $_; # must copy so that we can modify safely
       next INLIST if !defined $item or $item eq 'op:and';
 
       if ($qref eq ref $item) {

@@ -19,7 +19,7 @@ use namespace::clean;
 with 'App::Netdisco::Worker::Loader';
 has 'job' => ( is => 'rw' );
 
-# mixin code to run workers loaded via plugins
+# mixin code to run workers loaded via plugins
 sub run {
   my ($self, $job) = @_;
 
@@ -31,13 +31,13 @@ sub run {
   $job->device( get_device($job->device) );
   $self->load_workers();
 
-  # finalise job status when we exit
+  # finalise job status when we exit
   my $statusguard = guard { $job->finalise_status };
 
   my @newuserconf = ();
   my @userconf = @{ dclone (setting('device_auth') || []) };
 
-  # reduce device_auth by only/no
+  # reduce device_auth by only/no
   if (ref $job->device) {
     foreach my $stanza (@userconf) {
       my $no   = (exists $stanza->{no}   ? $stanza->{no}   : undef);
@@ -49,25 +49,25 @@ sub run {
       push @newuserconf, dclone $stanza;
     }
 
-    # per-device action but no device creds available
+    # per-device action but no device creds available
     return $job->add_status( Status->defer('deferred job with no device creds') )
       if 0 == scalar @newuserconf && $job->action ne "delete";
   }
 
-  # back up and restore device_auth
+  # back up and restore device_auth
   my $configguard = guard { set(device_auth => \@userconf) };
   set(device_auth => \@newuserconf);
 
   my $runner = sub {
     my ($self, $job) = @_;
-    # roll everything back if we're testing
+    # roll everything back if we're testing
     my $txn_guard = $ENV{ND2_DB_ROLLBACK}
       ? schema('netdisco')->storage->txn_scope_guard : undef;
 
-    # run check phase and if there are workers then one MUST be successful
+    # run check phase and if there are workers then one MUST be successful
     $self->run_workers('workers_check');
 
-    # run other phases
+    # run other phases
     if ($job->check_passed) {
       $self->run_workers("workers_${_}") for qw/early main user store late/;
     }

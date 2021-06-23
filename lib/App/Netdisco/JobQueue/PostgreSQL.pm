@@ -27,8 +27,8 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-# given a device, tests if any of the primary acls applies
-# returns a list of job actions to be denied/skipped on this host.
+# given a device, tests if any of the primary acls applies
+# returns a list of job actions to be denied/skipped on this host.
 sub _get_denied_actions {
   my $device = shift;
   my @badactions = ();
@@ -110,10 +110,10 @@ sub jq_getsome {
 
   while (my $job = $tasty->next) {
     if ($job->device) {
-      # need to handle device discovered since backend daemon started
+      # need to handle device discovered since backend daemon started
       # and the skiplist was primed. these should be checked against
-      # the various acls and have device_skip entry added if needed,
-      # and return false if it should have been skipped.
+      # the various acls and have device_skip entry added if needed,
+      # and return false if it should have been skipped.
       my @badactions = _get_denied_actions($job->device);
       if (scalar @badactions) {
         schema('netdisco')->resultset('DeviceSkip')->find_or_create({
@@ -128,10 +128,10 @@ sub jq_getsome {
     # remove any duplicate jobs, incuding possibly this job if there
     # is already an equivalent job running
 
-    # note that the self-removal of a job has an unhelpful log: it is
-    # reported as a duplicate of itself! however what's happening is that
-    # netdisco has seen another running job with same params (but the query
-    # cannot see that ID to use it in the message).
+    # note that the self-removal of a job has an unhelpful log: it is
+    # reported as a duplicate of itself! however what's happening is that
+    # netdisco has seen another running job with same params (but the query
+    # cannot see that ID to use it in the message).
 
     my %job_properties = (
       action => $job->action,
@@ -217,12 +217,12 @@ sub jq_defer {
   my $job = shift;
   my $happy = false;
 
-  # note this taints all actions on the device. for example if both
-  # macsuck and arpnip are allowed, but macsuck fails 10 times, then
-  # arpnip (and every other action) will be prevented on the device.
+  # note this taints all actions on the device. for example if both
+  # macsuck and arpnip are allowed, but macsuck fails 10 times, then
+  # arpnip (and every other action) will be prevented on the device.
 
-  # seeing as defer is only triggered by an SNMP connect failure, this
-  # behaviour seems reasonable, to me (or desirable, perhaps).
+  # seeing as defer is only triggered by an SNMP connect failure, this
+  # behaviour seems reasonable, to me (or desirable, perhaps).
 
   try {
     schema('netdisco')->txn_do(sub {
@@ -252,9 +252,9 @@ sub jq_complete {
 
   # lock db row and update to show job is done/error
 
-  # now that SNMP connect failures are deferrals and not errors, any complete
-  # status, whether success or failure, indicates an SNMP connect. reset the
-  # connection failures counter to forget about occasional connect glitches.
+  # now that SNMP connect failures are deferrals and not errors, any complete
+  # status, whether success or failure, indicates an SNMP connect. reset the
+  # connection failures counter to forget about occasional connect glitches.
 
   try {
     schema('netdisco')->txn_do(sub {

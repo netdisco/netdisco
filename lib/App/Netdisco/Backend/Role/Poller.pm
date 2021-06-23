@@ -42,7 +42,7 @@ sub worker_body {
 
       $self->close_job($job);
       sleep( setting('workers')->{'min_runtime'} || 0 );
-      $self->exit(0); # recycle worker
+      $self->exit(0); # recycle worker
   }
 }
 

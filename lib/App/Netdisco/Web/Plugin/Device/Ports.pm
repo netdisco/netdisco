@@ -99,11 +99,11 @@ get '/ajax/content/device/ports' => require_login sub {
         $set = $set->search({-or => \@combi});
     }
 
-    # so far only the basic device_port data
-    # now begin to join tables depending on the selected columns/options
+    # so far only the basic device_port data
+    # now begin to join tables depending on the selected columns/options
 
     # get vlans on the port
-    # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
+    # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
     my $vlans = $set->search({}, {
       select => [
         'port',
@@ -117,7 +117,7 @@ get '/ajax/content/device/ports' => require_login sub {
     if (param('c_vmember') or ($prefer eq 'vlan') or (not $prefer and $f =~ m/^\d+$/)) {
         $vlans = { map {(
           $_->port => {
-            # DBIC smart enough to work out this should be an arrayref :)
+            # DBIC smart enough to work out this should be an arrayref :)
             vlan_set   => $_->get_column('vlan_set'),
             vlan_count => $_->get_column('vlan_count'),
           },

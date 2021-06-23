@@ -679,7 +679,7 @@
 
   [NEW FEATURES]
 
-  * #401 Autodiscovery via EIGRP peers
+  * #401 Autodiscovery via EIGRP peers
 
   [BUG FIXES]
 
@@ -746,7 +746,7 @@
 
   [NEW FEATURES]
 
-  * #48 Node Monitor supports matching on OUI
+  * #48 Node Monitor supports matching on OUI
   * #31 configurable Free Time in Port Utilization Report
   * improvements to network map, location filtering and auto saving
 

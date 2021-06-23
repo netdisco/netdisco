@@ -310,7 +310,7 @@ sub shorten {
 }
 
 sub deploy_mibs {
-  my $mibhome = dir(shift); # /path/to/netdisco-mibs
+  my $mibhome = dir(shift); # /path/to/netdisco-mibs
   my $fail = 0;
 
   my $latest = 'https://github.com/netdisco/netdisco-mibs/releases/latest';

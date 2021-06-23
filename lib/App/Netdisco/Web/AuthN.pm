@@ -157,7 +157,7 @@ post '/login' => sub {
 };
 
 # ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
-# must be after the path is declared, above.
+# must be after the path is declared, above.
 Dancer::Plugin::Swagger->instance->doc
   ->{paths}->{ setting('url_base')->with('/login')->path }
   ->{post}->{security}->[0]->{BasicAuth} = [];

@@ -56,7 +56,7 @@ register_worker({ phase => 'main' }, sub {
       });
   }
 
-  # also have to clean up node_ip that have no correspoding node
+  # also have to clean up node_ip that have no correspoding node
   schema('netdisco')->resultset('NodeIp')->search({
     mac => { -in => schema('netdisco')->resultset('NodeIp')->search(
       { port => undef },
@@ -82,7 +82,7 @@ register_worker({ phase => 'main' }, sub {
       });
   }
 
-  # now update stats
+  # now update stats
   update_stats();
 
   return Status->done('Checked expiry and updated stats');
