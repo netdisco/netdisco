@@ -4,6 +4,10 @@
 
   * #782 Allow <"> in remote_port
 
+  [BUG FIXES]
+
+  * #784 empty device_skip table when also emptying job queue
+
 2.047005 - 2021-02-24
 
   [BUG FIXES]

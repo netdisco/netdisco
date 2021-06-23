@@ -347,6 +347,7 @@ sub jq_delete {
   else {
       schema('netdisco')->txn_do(sub {
         schema('netdisco')->resultset('Admin')->delete();
+        schema('netdisco')->resultset('DeviceSkip')->delete();
       });
   }
 }
