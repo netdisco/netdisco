@@ -366,6 +366,7 @@ schedule:
 
 job_prio:
   high:
+    - hook::exec
     - hook::http
     - location
     - contact
