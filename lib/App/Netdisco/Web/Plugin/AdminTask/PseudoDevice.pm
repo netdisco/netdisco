@@ -14,9 +14,9 @@ register_admin_task({
 });
 
 sub _sanity_ok {
-    return 0 unless param('dns')
-      and param('dns') =~ m/^[[:print:]]+$/
-      and param('dns') !~ m/[[:space:]]/;
+    return 0 unless param('name')
+      and param('name') =~ m/^[[:print:]]+$/
+      and param('name') !~ m/[[:space:]]/;
 
     my $ip = NetAddr::IP::Lite->new(param('ip'));
     return 0 unless ($ip and $ip->addr ne '0.0.0.0');
@@ -34,7 +34,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
       my $device = schema('netdisco')->resultset('Device')
         ->create({
           ip => param('ip'),
-          dns => param('dns'),
+          name => param('name'),
           vendor => 'netdisco',
           layers => param('layers'),
           last_discover => \'now()',
