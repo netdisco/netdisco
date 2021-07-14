@@ -17,7 +17,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 sub _email {
   my ($to, $subject, $body) = @_;
   return unless $to;
-  my $domain =~ (hostfqdn || 'fqdn-undefined');
+  my $domain = (hostfqdn || 'fqdn-undefined');
 
   my $SENDMAIL = '/usr/sbin/sendmail';
   open (SENDMAIL, "| $SENDMAIL -t") or die "Can't open sendmail at $SENDMAIL.\n";

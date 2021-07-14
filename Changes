@@ -9,6 +9,7 @@
 
   * #784 empty device_skip table when also emptying job queue
   * #788 use device.name instead of device.dns for pseudo devices
+  * #783 fix FQDN discovery in node monitor emails
 
 2.047005 - 2021-02-24
 
