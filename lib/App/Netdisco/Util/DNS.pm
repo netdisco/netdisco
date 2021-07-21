@@ -7,8 +7,6 @@ use Dancer ':script';
 use Net::DNS;
 use NetAddr::IP::Lite ':lower';
 
-use App::Netdisco::Util::Permission 'check_acl_no';
-
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/hostname_from_ip ipv4_from_hostname/;
@@ -30,8 +28,6 @@ subroutines.
 =head2 hostname_from_ip( $ip, \%opts? )
 
 Given an IP address (either IPv4 or IPv6), return the canonical hostname.
-
-Will respect the excluded IPs in L<DNS no> configuration.
 
 C<< %opts >> can override the various timeouts available in
 L<Net::DNS::Resolver>:
@@ -55,10 +51,7 @@ Returns C<undef> if no PTR record exists for the IP.
 sub hostname_from_ip {
   my ($ip, $opts) = @_;
   return unless $ip;
-  my $skip = setting('dns')->{'no'};
   my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
-
-  return if check_acl_no($ip, $skip);
 
   # check /etc/hosts file and short-circuit if found
   foreach my $name (reverse sort keys %$ETCHOSTS) {
