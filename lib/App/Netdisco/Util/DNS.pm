@@ -5,6 +5,7 @@ use warnings;
 use Dancer ':script';
 
 use Net::DNS;
+use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
 
 use base 'Exporter';
@@ -51,7 +52,10 @@ Returns C<undef> if no PTR record exists for the IP.
 sub hostname_from_ip {
   my ($ip, $opts) = @_;
   return unless $ip;
+  my $skip = setting('dns')->{'no'};
   my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
+
+  return if check_acl_no_ipaddr_only($ip, $skip);
 
   # check /etc/hosts file and short-circuit if found
   foreach my $name (reverse sort keys %$ETCHOSTS) {
@@ -107,6 +111,113 @@ sub ipv4_from_hostname {
   }
 
   return undef;
+}
+
+# to avoid circular dependency with App::Netdisco::Util::Permission
+# supports IP addresses and CIDR blocks only
+
+sub check_acl_no_ipaddr_only {
+  my ($thing, $config) = @_;
+  return 0 unless defined $thing and defined $config;
+
+  my $real_ip = $thing;
+  if (blessed $thing) {
+    $real_ip = ($thing->can('alias') ? $thing->alias : (
+      $thing->can('ip') ? $thing->ip : (
+        $thing->can('addr') ? $thing->addr : $thing )));
+  }
+  return 0 if !defined $real_ip
+    or blessed $real_ip; # class we do not understand
+
+  $config  = [$config] if ref '' eq ref $config;
+  if (ref [] ne ref $config) {
+    error "error: acl is not a single item or list (cannot compare to $real_ip)";
+    return 0;
+  }
+  my $all  = (scalar grep {$_ eq 'op:and'} @$config);
+
+  # common case of using plain IP in ACL, so string compare for speed
+  my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
+  return 1 if $find and not $all;
+
+  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
+
+  INLIST: foreach (@$config) {
+      my $item = $_; # must copy so that we can modify safely
+      next INLIST if !defined $item or $item eq 'op:and';
+
+      my $neg = ($item =~ s/^!//);
+
+      if ($item =~ m/^group:(.+)$/) {
+          my $group = $1;
+          setting('host_groups')->{$group} ||= [];
+
+          if ($neg xor check_acl_no_ipaddr_only($thing, setting('host_groups')->{$group})) {
+            return 1 if not $all;
+          }
+          else {
+            return 0 if $all;
+          }
+          next INLIST;
+      }
+
+      if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
+          my $first = $1;
+          my $last  = $2;
+
+          if ($item =~ m/:/) {
+              next INLIST if $addr->bits != 128 and not $all;
+
+              $first = hex $first;
+              $last  = hex $last;
+
+              (my $header = $item) =~ s/:[^:]+$/:/;
+              foreach my $part ($first .. $last) {
+                  my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
+                    or next;
+                  if ($neg xor ($ip == $addr)) {
+                    return 1 if not $all;
+                    next INLIST;
+                  }
+              }
+              return 0 if (not $neg and $all);
+              return 1 if ($neg and not $all);
+          }
+          else {
+              next INLIST if $addr->bits != 32 and not $all;
+
+              (my $header = $item) =~ s/\.[^.]+$/./;
+              foreach my $part ($first .. $last) {
+                  my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
+                    or next;
+                  if ($neg xor ($ip == $addr)) {
+                    return 1 if not $all;
+                    next INLIST;
+                  }
+              }
+              return 0 if (not $neg and $all);
+              return 1 if ($neg and not $all);
+          }
+          next INLIST;
+      }
+
+      # could be something in error, and IP/host is only option left
+      next INLIST if ref $item;
+
+      my $ip = NetAddr::IP::Lite->new($item)
+        or next INLIST;
+      next INLIST if $ip->bits != $addr->bits and not $all;
+
+      if ($neg xor ($ip->contains($addr))) {
+        return 1 if not $all;
+      }
+      else {
+        return 0 if $all;
+      }
+      next INLIST;
+  }
+
+  return ($all ? 1 : 0);
 }
 
 1;

@@ -1,3 +1,9 @@
+2.047009 - 2021-07-xx
+
+  [ENHANCEMENTS]
+
+  * #767 also respect dns->no configuration in hostname_from_ip()
+
 2.047008 - 2021-07-21
 
   [BUG FIXES]
