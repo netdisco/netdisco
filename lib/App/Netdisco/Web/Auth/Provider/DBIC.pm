@@ -15,6 +15,8 @@ use Digest::MD5;
 use Net::LDAP;
 use Authen::Radius;
 use Authen::TacacsPlus;
+use Path::Class;
+use File::ShareDir 'dist_dir';
 use Try::Tiny;
 
 sub authenticate_user {
