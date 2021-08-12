@@ -709,8 +709,8 @@ sub delete {
         { ip => { '-in' => $devices->as_query } },
       )->delete;
 
-      Dancer::Logger::debug sprintf ' [%s] db/device - removed %d %s from %s',
-        $ip, $gone, _plural($gone), $set if defined Dancer::Logger::logger();
+      Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d %s from %s',
+        $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
   }
 
   foreach my $set (qw/
@@ -729,8 +729,8 @@ sub delete {
     ],
   })->delete;
 
-  Dancer::Logger::debug sprintf ' [%s] db/device - removed %d manual topology %s',
-    $ip, $gone, _plural($gone) if defined Dancer::Logger::logger();
+  Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d manual topology %s',
+    $ip, $gone, _plural($gone) ) ) if defined Dancer::Logger::logger();
 
   $schema->resultset('DevicePort')->search(
     { ip => { '-in' => $devices->as_query } },

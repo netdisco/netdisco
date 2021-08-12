@@ -2,9 +2,14 @@ package App::Netdisco::JobQueue;
 
 use Dancer qw/:moose :syntax :script/;
 
+BEGIN {
+  $ENV{ND_QUEUE_ENGINE} ||=
+    setting('workers') ? setting('workers')->{queue} : 'PostgreSQL';
+}
+
 use Module::Load ();
 Module::Load::load
-  'App::Netdisco::JobQueue::' . setting('workers')->{queue} => ':all';
+  'App::Netdisco::JobQueue::' . $ENV{ND_QUEUE_ENGINE} => ':all';
 
 use base 'Exporter';
 our @EXPORT = ();

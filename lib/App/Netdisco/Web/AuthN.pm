@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
+use App::Netdisco; # a safe noop but needed for standalone testing
 use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 
@@ -85,7 +86,7 @@ hook 'before' => sub {
 swagger_path {
   description => 'Obtain an API Key',
   tags => ['General'],
-  path => setting('url_base')->with('/login')->path,
+  path => (setting('url_base') ? setting('url_base')->with('/login')->path : '/login'),
   parameters => [],
   responses => { default => { examples => {
     'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
@@ -159,14 +160,14 @@ post '/login' => sub {
 # ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
 # must be after the path is declared, above.
 Dancer::Plugin::Swagger->instance->doc
-  ->{paths}->{ setting('url_base')->with('/login')->path }
+  ->{paths}->{ (setting('url_base') ? setting('url_base')->with('/login')->path : '/login') }
   ->{post}->{security}->[0]->{BasicAuth} = [];
 
 # we override the default login_handler, so logout has to be handled as well
 swagger_path {
   description => 'Destroy user API Key and session cookie',
   tags => ['General'],
-  path => setting('url_base')->with('/logout')->path,
+  path => (setting('url_base') ? setting('url_base')->with('/logout')->path : '/logout'),
   parameters => [],
   responses => { default => { examples => { 'application/json' => {} } } },
 },

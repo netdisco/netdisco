@@ -262,8 +262,8 @@ sub delete {
         { ip => { '-in' => $ports->as_query }},
       )->delete;
 
-      Dancer::Logger::debug sprintf ' [%s] db/ports - removed %d port %s from %s',
-        $ip, $gone, _plural($gone), $set if defined Dancer::Logger::logger();
+      Dancer::Logger::debug( sprintf( ' [%s] db/ports - removed %d port %s from %s',
+        $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
   }
 
   $schema->resultset('Node')->search(
