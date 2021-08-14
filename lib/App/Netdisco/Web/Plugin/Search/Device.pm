@@ -15,7 +15,7 @@ register_search_tab({
     api_endpoint => 1,
     api_parameters => [
       q => {
-        description => 'Partial match of Device contact, serial, module serials, location, name, description, dns, or any IP alias',
+        description => 'Partial match of Device contact, serial, chassis ID, module serials, location, name, description, dns, or any IP alias',
       },
       name => {
         description => 'Partial match of the Device name',
@@ -67,7 +67,7 @@ get '/ajax/content/search/device' => require_login sub {
     if ($has_opt) {
         $rs = schema('netdisco')->resultset('Device')->columns(
             [   "ip",       "dns",   "name",
-                "location", "model", "os_ver", "serial"
+                "location", "model", "os_ver", "serial", "chassis_id"
             ]
         )->with_times->search_by_field( scalar params );
     }
@@ -77,7 +77,7 @@ get '/ajax/content/search/device' => require_login sub {
 
         $rs = schema('netdisco')->resultset('Device')->columns(
             [   "ip",       "dns",   "name",
-                "location", "model", "os_ver", "serial"
+                "location", "model", "os_ver", "serial", "chassis_id"
             ]
         )->with_times->search_fuzzy($q);
     }

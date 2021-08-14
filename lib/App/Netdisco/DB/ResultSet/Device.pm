@@ -358,6 +358,8 @@ The following fields are inspected for a match:
 
 =item serial
 
+=item chassis_id
+
 =item module serials (exact)
 
 =item location
@@ -413,10 +415,11 @@ sub search_fuzzy {
               ->search(
       {
         -or => [
-          'me.contact'  => { '-ilike' => $q },
-          'me.serial'   => { '-ilike' => $q },
-          'me.location' => { '-ilike' => $q },
-          'me.name'     => { '-ilike' => $q },
+          'me.contact'     => { '-ilike' => $q },
+          'me.serial'      => { '-ilike' => $q },
+          'me.chassis_id'  => { '-ilike' => $q },
+          'me.location'    => { '-ilike' => $q },
+          'me.name'        => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
           'me.ip' => { '-in' =>
             $rs->search({ 'modules.serial' => $qc },

@@ -41,6 +41,8 @@ __PACKAGE__->add_columns(
   { data_type => "macaddr", is_nullable => 1 },
   "serial",
   { data_type => "text", is_nullable => 1 },
+  "chassis_id",
+  { data_type => "text", is_nullable => 1 },
   "model",
   { data_type => "text", is_nullable => 1 },
   "ps1_type",
