@@ -425,6 +425,7 @@ share/schema_versions/App-Netdisco-DB-61-62-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-62-63-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-63-64-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-64-65-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-65-66-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
@@ -550,6 +551,7 @@ xt/01-local-pod.t
 xt/10-sort_port.t
 xt/11-portsort.t
 xt/20-checkacl.t
+xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
 xt/html/portsort.html
 xt/js/qunit-tap.js

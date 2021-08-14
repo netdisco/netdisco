@@ -1,8 +1,17 @@
-2.047009 - 2021-07-xx
+2.048000 - 2021-08-14
+
+  [NEW FEATURES]
+
+  * #800 gather and report SNMP Chassis ID
 
   [ENHANCEMENTS]
 
   * #767 also respect dns->no configuration in hostname_from_ip()
+  * improvements to test suite
+
+  [BUG FIXES]
+
+  * fix for #775 radius dict finding
 
 2.047008 - 2021-07-21
 
