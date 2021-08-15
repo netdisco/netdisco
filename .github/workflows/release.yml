@@ -1,4 +1,4 @@
-name: Make GitHub Release on Tagged Master
+name: Make GitHub Release on Tag
 on:
   push:
     tags:
@@ -13,4 +13,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        args: Netdisco Release
+        args: NetdiscoRelease
