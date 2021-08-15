@@ -1,0 +1,16 @@
+name: Make GitHub Release on Tagged Master
+on:
+  push:
+    tags:
+      - '2.[0-9][0-9][0-9][0-9][0-9][0-9]'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Netdisco Release
+      uses: elgohr/Github-Release-Action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        args: Netdisco Release
