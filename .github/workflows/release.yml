@@ -11,10 +11,6 @@ jobs:
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
-    - name: Install cURL
-      run: |
-        apt install -y curl
-        apt install -y bash
     - name: Netdisco Release
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
