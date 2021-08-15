@@ -11,9 +11,17 @@ jobs:
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
+    - name: Install cURL
+      run: |
+        apt install -y curl
+        apt install -y bash
     - name: Netdisco Release
-      uses: elgohr/Github-Release-Action@master
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        args: 'Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}'
+      run: |
+        curl -sL -X POST -H "Content-Type: application/json" \
+          -u "$GITHUB_TOKEN" \
+          --data "{\"tag_name\": \"${{ steps.get_tag.outputs.TAGVALUE }}\", \
+                   \"target_commitish\": \"master\", \
+                   \"name\": \"Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}\"}" \
+          https://api.github.com/repos/netdisco/netdisco/releases
