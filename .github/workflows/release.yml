@@ -8,9 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Get the Tag
+      id: get_tag
+      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
     - name: Netdisco Release
       uses: elgohr/Github-Release-Action@master
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        args: NetdiscoRelease
+        args: Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}
