@@ -15,4 +15,4 @@ jobs:
       with:
         perl-version: 'latest'
     - run: 'cpanm --installdeps .'
-    - run: 'prove -v xt/*.t'
+    - run: 'prove -vl xt/*.t'
