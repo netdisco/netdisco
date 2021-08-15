@@ -11,7 +11,7 @@ jobs:
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
-    - uses: shogo82148/actions-setup-perl@master
+    - uses: shogo82148/actions-setup-perl@v1.12.2
       with:
         perl-version: 'latest'
     - run: 'cpanm --installdeps .'
