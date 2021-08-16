@@ -28,7 +28,7 @@ jobs:
     - name: Check out latest code
       uses: actions/checkout@v1
       with:
-        path: '../../netdisco/git'
+        path: '../../../netdisco/git'
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       with:
