@@ -30,14 +30,14 @@ jobs:
     - run: echo $PATH
     - run: id
     - run: pwd
-    - run: apk add openssh xz tmux bash curl sudo
-    - run: mkdir -p /github/home/.upterm
-    - run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz tmux bash curl; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+    - run: apk add openssh xz tmux bash curl sudo tmate
+#    - run: mkdir -p /github/home/.upterm
+    - run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz tmux bash curl sudo tmate; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
     - name: Setup tmate session
-#      uses: mxschmitt/action-tmate@v3
-      uses: lhotari/action-upterm@v1
-#      with:
-#        sudo: false
+      uses: mxschmitt/action-tmate@v3
+#      uses: lhotari/action-upterm@v1
+      with:
+        sudo: true
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}.
 #    - run: 'cpanm --installdeps .'
 #    - run: 'prove -vl xt/*.t'
