@@ -44,10 +44,21 @@ jobs:
         sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
         sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
       working-directory: /github/workspace/netdisco/netdisco
-    - name: IRC notification
+    - name: IRC failure notification
       uses: Gottox/irc-message-action@v2
+      if: ${{ always() && failure() }}
       with:
         channel: '#netdisco'
-        nickname: netdisco-automation
+        nickname: github-actions
         message: |-
-          ${{ github.actor }} pushed ${{ github.event.ref }} ${{ github.event.compare }}
+          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on ${{ github.repository }}
+          but the TESTS FAILED! 😭
+    - name: IRC success notification
+      uses: Gottox/irc-message-action@v2
+      if: ${{ always() && success() }}
+      with:
+        channel: '#netdisco'
+        nickname: github-actions
+        message: |-
+          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on ${{ github.repository }}
+          and the TESTS PASSED! 🎉
