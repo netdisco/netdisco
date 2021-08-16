@@ -1,18 +1,30 @@
 name: Test Netdisco
 on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default:  false
   push:
     branches:
       - master
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: 'netdisco/netdisco:latest-do'
     steps:
     - uses: actions/checkout@master
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
-    - uses: shogo82148/actions-setup-perl@v1.12.2
-      with:
-        perl-version: 'latest'
-    - run: 'cpanm --installdeps .'
-    - run: 'prove -vl xt/*.t'
+#    - uses: shogo82148/actions-setup-perl@v1.12.2
+#      with:
+#        perl-version: 'latest'
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}.
+#    - run: 'cpanm --installdeps .'
+#    - run: 'prove -vl xt/*.t'
