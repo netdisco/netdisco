@@ -51,9 +51,9 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }}
-          but the TESTS FAILED! 😭 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          😭 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }} but the TESTS FAILED!
+          😭 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          😭 https://github.com/netdisco/netdisco/commit/${{ github.sha }}
     - name: IRC success notification
       uses: Gottox/irc-message-action@v2
       if: ${{ always() && success() }}
@@ -61,6 +61,6 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }}
-          and the TESTS PASSED! 🎉 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          🎉 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }} and the TESTS PASSED!
+          🎉 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          🎉 https://github.com/netdisco/netdisco/commit/${{ github.sha }}
