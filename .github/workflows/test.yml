@@ -15,10 +15,10 @@ jobs:
     container:
       image: 'netdisco/netdisco:latest-do'
     steps:
-    - name: Check out latest code
-      env:
-        GITHUB_WORKSPACE: '/home/netdisco/git'
-      uses: actions/checkout@master
+#    - name: Check out latest code
+#      env:
+#        GITHUB_WORKSPACE: '/home/netdisco/git'
+#      uses: actions/checkout@master
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
