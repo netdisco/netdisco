@@ -10,7 +10,8 @@ on:
 #    branches:
 #      - master
 jobs:
-  build:
+  test_netdisco:
+    name: Test Netdisco Job
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-do'
@@ -22,11 +23,22 @@ jobs:
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
     - name: Install packages
-      run: apk add openssh xz tmux bash curl sudo
+      run: apk add openssh xz tmux bash curl sudo gcc make
     - name: Install fake apt-get
-      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz tmux bash curl sudo; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+    - name: Add localhost
+      run: echo "127.0.0.1 localhost" >> /etc/hosts
     - name: Check out latest code
       uses: actions/checkout@v1
+    - name: Fix owner of checkout
+      run: chown -R /github/workspace/netdisco/netdisco
+    - name: Install Perl deps
+      run: sudo -l -u netdisco ~/bin/localenv cpanm --notest Env::Path Test::Compile
+    - name: Run Tests
+      run: |
+        sudo -l -u netdisco ~/bin/localenv perl ./Build.PL
+        sudo -l -u netdisco ~/bin/localenv perl ./Build test --test_files xt/
+      working-directory: /github/workspace/netdisco/netdisco
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       with:
