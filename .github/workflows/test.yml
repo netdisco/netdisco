@@ -13,7 +13,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: 'netdisco/netdisco:latest-base'
+      image: 'netdisco/netdisco:latest-do'
+      options: '--user root --entrypoint /bin/ash'
     steps:
 #    - name: Check out latest code
 #      env:
