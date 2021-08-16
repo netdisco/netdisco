@@ -19,10 +19,16 @@ jobs:
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
+    - name: Install packages
+      run: apk add openssh xz tmux bash curl sudo
     - name: Install fake apt-get
       run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz tmux bash curl sudo; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+    - name: Make git home
+      run: sudo -l -u netdisco mkdir /home/netdisco/git
     - name: Check out latest code
       uses: actions/checkout@v1
+      with:
+        path: '../../netdisco/git'
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       with:
