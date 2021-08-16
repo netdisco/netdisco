@@ -28,6 +28,8 @@ jobs:
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
+      with:
+        sudo: false
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}.
 #    - run: 'cpanm --installdeps .'
 #    - run: 'prove -vl xt/*.t'
