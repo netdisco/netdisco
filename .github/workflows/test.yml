@@ -30,7 +30,7 @@ jobs:
     - run: echo $PATH
     - run: id
     - run: pwd
-    - run: echo 'if [ "$1" == "update" ]; then `apk update`; else `apk add "${*:2}"`; fi' > /home/netdisco/bin/apt-get && chmod +x /home/netdisco/bin/apt-get
+    - run: echo 'if [ "$1" == "update" ]; then `exec apk update`; else `exec apk add "${*:2}"`; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       with:
