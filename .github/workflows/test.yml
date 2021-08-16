@@ -31,7 +31,7 @@ jobs:
     - name: Check out latest code
       uses: actions/checkout@v1
     - name: Fix owner of checkout
-      run: chown -R /github/workspace/netdisco/netdisco
+      run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
     - name: Install Perl deps
       run: sudo -l -u netdisco ~/bin/localenv cpanm --notest Env::Path Test::Compile
     - name: Run Tests
