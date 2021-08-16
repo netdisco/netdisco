@@ -6,9 +6,9 @@ on:
         description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
         required: false
         default:  false
-#  push:
-#    branches:
-#      - master
+  push:
+    branches:
+      - master
 jobs:
   test_netdisco:
     name: Test Netdisco Job
@@ -21,7 +21,7 @@ jobs:
     steps:
     - name: Get the Tag
       id: get_tag
-      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
+      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/heads/}
     - name: Install packages
       run: apk add openssh xz tmux bash curl sudo gcc make
     - name: Install fake apt-get
@@ -51,8 +51,9 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on ${{ github.repository }}
-          but the TESTS FAILED! 😭
+          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }}
+          but the TESTS FAILED! 😭 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          https://github.com/netdisco/netdisco/commit/${{ github.sha }}
     - name: IRC success notification
       uses: Gottox/irc-message-action@v2
       if: ${{ always() && success() }}
@@ -60,5 +61,6 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on ${{ github.repository }}
-          and the TESTS PASSED! 🎉
+          ${{ github.actor }} pushed ${{ github.sha }} to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }}
+          and the TESTS PASSED! 🎉 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          https://github.com/netdisco/netdisco/commit/${{ github.sha }}
