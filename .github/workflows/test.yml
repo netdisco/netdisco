@@ -30,7 +30,7 @@ jobs:
     - run: echo $PATH
     - run: id
     - run: pwd
-    - run: apk add openssh xz tmux bash curl
+    - run: apk add openssh xz tmux bash curl sudo
     - run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz tmux bash curl; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
     - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
