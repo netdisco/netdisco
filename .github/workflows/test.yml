@@ -15,6 +15,8 @@ jobs:
     container:
       image: 'netdisco/netdisco:latest-do'
       options: '--user root --entrypoint /bin/ash'
+      volumes:
+        - '/home/runner/work/netdisco/netdisco:/github/workspace'
     steps:
     - name: Get the Tag
       id: get_tag
