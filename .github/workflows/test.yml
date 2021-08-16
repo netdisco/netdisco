@@ -26,6 +26,8 @@ jobs:
 #      with:
 #        perl-version: 'latest'
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - run: |
+      echo 'if [ "$1" == "update" ]; then `apk update`; else `apk add "${*:2}"`; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       with:
