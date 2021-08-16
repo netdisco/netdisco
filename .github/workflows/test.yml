@@ -27,6 +27,8 @@ jobs:
 #        perl-version: 'latest'
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - run: echo $PATH
+    - run: echo id
+    - run: echo pwd
     - run: echo 'if [ "$1" == "update" ]; then `apk update`; else `apk add "${*:2}"`; fi' > /home/netdisco/bin/apt-get && chmod +x /home/netdisco/bin/apt-get
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
