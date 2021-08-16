@@ -6,16 +6,19 @@ on:
         description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
         required: false
         default:  false
-  push:
-    branches:
-      - master
+#  push:
+#    branches:
+#      - master
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-do'
     steps:
-    - uses: actions/checkout@master
+    - name: Check out latest code
+      env:
+        GITHUB_WORKSPACE: '/home/netdisco/git'
+      uses: actions/checkout@master
     - name: Get the Tag
       id: get_tag
       run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
