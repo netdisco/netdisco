@@ -44,3 +44,10 @@ jobs:
         sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
         sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
       working-directory: /github/workspace/netdisco/netdisco
+    - name: IRC notification
+      uses: Gottox/irc-message-action@v2
+      with:
+        channel: '#netdisco'
+        nickname: netdisco-automation
+        message: |-
+          ${{ github.actor }} pushed ${{ github.event.ref }} ${{ github.event.compare }}
