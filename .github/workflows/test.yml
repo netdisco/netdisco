@@ -4,8 +4,8 @@ on:
     inputs:
       debug_enabled:
         description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
-        required: true
-        default:  false
+        required: false
+        default:  'false'
 #  push:
 #    branches:
 #      - master
