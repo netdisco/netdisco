@@ -34,13 +34,13 @@ jobs:
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
     - name: Install Perl deps
       run: sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile
-    - name: Run Tests
-      run: |
-        sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
-        sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
-      working-directory: /github/workspace/netdisco/netdisco
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       with:
         sudo: true
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}.
+    - name: Run Tests
+      run: |
+        sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
+        sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
+      working-directory: /github/workspace/netdisco/netdisco
