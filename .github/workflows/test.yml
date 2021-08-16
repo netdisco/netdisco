@@ -33,11 +33,11 @@ jobs:
     - name: Fix owner of checkout
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
     - name: Install Perl deps
-      run: sudo -l -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile
+      run: sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile
     - name: Run Tests
       run: |
-        sudo -l -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
-        sudo -l -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
+        sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
+        sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
       working-directory: /github/workspace/netdisco/netdisco
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
