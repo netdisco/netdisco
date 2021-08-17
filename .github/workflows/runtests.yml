@@ -11,7 +11,7 @@ on:
       - master
 jobs:
   test_netdisco:
-    name: Test Netdisco Job
+    name: Run Netdisco Test Suite
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-do'
@@ -34,33 +34,33 @@ jobs:
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
     - name: Install Perl deps
       run: sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      with:
-        sudo: true
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
     - name: Run Tests
+      id: build_and_run_tests
       run: |
         sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
         sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
       working-directory: /github/workspace/netdisco/netdisco
+      continue-on-error: true
     - name: IRC failure notification
       uses: Gottox/irc-message-action@v2
-      if: ${{ always() && failure() }}
+      if: (! github.event.inputs.debug_enabled) && (steps.build_and_run_tests.outcome == 'failure')
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          😭 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }} but the TESTS FAILED!
-          😭 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          😭 https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC success notification
       uses: Gottox/irc-message-action@v2
-      if: ${{ always() && success() }}
+      if: (! github.event.inputs.debug_enabled) && (steps.build_and_run_tests.outcome == 'success')
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🎉 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }} on repo:${{ github.repository }} and the TESTS PASSED!
-          🎉 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          🎉 https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }} (tests PASSED)
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: always() && github.event.inputs.debug_enabled && (github.event_name == 'workflow_dispatch')
+      with:
+        sudo: true
+
