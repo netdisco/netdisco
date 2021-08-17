@@ -4,20 +4,28 @@ on:
     tags:
       - '2.[0-9][0-9][0-9][0-9][0-9][0-9]'
 jobs:
-  build:
+  release_netdisco:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Get the Tag
-      id: get_tag
-      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
-    - name: Netdisco Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      run: |
-        curl -sL -X POST -H "Content-Type: application/json" \
-          -u "$GITHUB_TOKEN" \
-          --data "{\"tag_name\": \"${{ steps.get_tag.outputs.TAGVALUE }}\", \
-                   \"target_commitish\": \"master\", \
-                   \"name\": \"Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}\"}" \
-          https://api.github.com/repos/netdisco/netdisco/releases
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@master
+#    - name: Get the Tag
+#      id: get_tag
+#      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
+#    - name: Netdisco Release
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+#      run: |
+#        curl -sL -X POST -H "Content-Type: application/json" \
+#          -u "$GITHUB_TOKEN" \
+#          --data "{\"tag_name\": \"${{ steps.get_tag.outputs.TAGVALUE }}\", \
+#                   \"target_commitish\": \"master\", \
+#                   \"name\": \"Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}\"}" \
+#          https://api.github.com/repos/netdisco/netdisco/releases
