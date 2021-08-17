@@ -1,0 +1,23 @@
+name: Upload Renamed Tarball
+on:
+  release:
+    types: ['published']
+jobs:
+  upload_renamed_tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get the Tag
+        id: get_tag
+        run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
+      - name: Download tarball
+        run: curl -O https://github.com/netdisco/netdisco/archive/refs/tags/${{ steps.get_tag.outputs.TAGVALUE }}.tar.gz
+      - name: Rename tarball
+        run: mv ${{ steps.get_tag.outputs.TAGVALUE }}.tar.gz netdisco-mibs.tar.gz
+      - name: Upload tarball
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: netdisco-mibs.tar.gz application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

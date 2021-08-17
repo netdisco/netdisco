@@ -17,27 +17,3 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}
-      - name: get upload url 2
-        run: echo ${{ steps.create_release.outputs.upload_url }}
-      - name: get upload url
-        run: echo ${{ steps.create_release.outputs.upload_url }} > uploadurl.txt
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-#jobs:
-#  build:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@master
-#    - name: Get the Tag
-#      id: get_tag
-#      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
-#    - name: Netdisco Release
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-#      run: |
-#        curl -sL -X POST -H "Content-Type: application/json" \
-#          -u "$GITHUB_TOKEN" \
-#          --data "{\"tag_name\": \"${{ steps.get_tag.outputs.TAGVALUE }}\", \
-#                   \"target_commitish\": \"master\", \
-#                   \"name\": \"Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}\"}" \
-#          https://api.github.com/repos/netdisco/netdisco/releases
