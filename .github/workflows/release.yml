@@ -1,5 +1,11 @@
 name: Make GitHub Release on Tag
 on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default:  false
   push:
     tags:
       - '2.[0-9][0-9][0-9][0-9][0-9][0-9]'
@@ -13,9 +19,19 @@ jobs:
         id: get_tag
         run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
       - name: Release
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           name: Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}
+      - name: get upload url 2
+        run: echo ${{ steps.create_release.outputs.upload_url }}
+      - name: get upload url
+        run: echo ${{ steps.create_release.outputs.upload_url }} > uploadurl.txt
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: always() && github.event.inputs.debug_enabled && (github.event_name == 'workflow_dispatch')
+        with:
+          sudo: true
 #jobs:
 #  build:
 #    runs-on: ubuntu-latest
