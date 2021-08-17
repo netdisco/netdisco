@@ -1,7 +1,5 @@
 name: Upload Renamed Tarball
-on:
-  release:
-    types: ['created']
+on: release:
 jobs:
   upload_renamed_tarball:
     runs-on: ubuntu-latest
