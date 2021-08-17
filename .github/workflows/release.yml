@@ -31,8 +31,9 @@ jobs:
             -XPOST \
             -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
             -H 'Content-Type: application/gzip' \
-            --upload-file "${1}" \
+            --upload-file 'netdisco-mibs.tar.gz' \
             '${{ env.UPLOAD_URL }}=netdisco-mibs.tar.gz'
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
+        if: always()
 
