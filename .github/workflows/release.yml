@@ -17,3 +17,22 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}
+      - name: Download tarball
+        run: curl -O https://github.com/netdisco/netdisco/archive/refs/tags/${{ steps.get_tag.outputs.TAGVALUE }}.tar.gz
+      - name: Rename tarball
+        run: mv ${{ steps.get_tag.outputs.TAGVALUE }}.tar.gz netdisco-mibs.tar.gz
+      - name: Get upload URL
+        run: echo UPLOAD_URL=${{ steps.create_release.outputs.upload_url }} | cut -d ' ' -f 1 >> $GITHUB_ENV
+      - name: Upload tarball
+        run: |
+          curl \
+            -f \
+            -sSL \
+            -XPOST \
+            -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+            -H 'Content-Type: application/gzip' \
+            --upload-file "${1}" \
+            '${{ env.UPLOAD_URL }}=netdisco-mibs.tar.gz'
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
