@@ -26,8 +26,9 @@ jobs:
     steps:
     - name: Get the Tag and Branch
       id: get_refs
-      run: echo ::set-output name=RELEASE_TAG::${GITHUB_REF#refs/tags/}
-      run: echo ::set-output name=RELEASE_BRANCH::${GITHUB_REF#refs/heads)/}
+      run: |
+        echo ::set-output name=RELEASE_TAG::${GITHUB_REF#refs/tags/}
+        echo ::set-output name=RELEASE_BRANCH::${GITHUB_REF#refs/heads)/}
 
     - name: Install packages
       run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
