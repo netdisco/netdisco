@@ -61,7 +61,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC test success notification
       uses: Gottox/irc-message-action@v2
@@ -70,7 +70,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }} (tests PASSED 🎉)
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
 
     - name: Upload dist to CPAN
       id: upload_to_cpan
@@ -90,7 +90,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Failed to upload release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN! 😭
+          🤖 Failed to upload Netdisco release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN! 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC upload success notification
       uses: Gottox/irc-message-action@v2
@@ -99,7 +99,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Uploaded release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN 🎉
+          🤖 Uploaded Netdisco release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN 🎉
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
