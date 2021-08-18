@@ -74,9 +74,12 @@ jobs:
     - name: Upload dist to CPAN
       id: upload_to_cpan
       if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.build_and_run_tests.outcome == 'success')
+      env:
+        PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
+        PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
       run: |
         sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
-        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload --user=${{ secrets.PAUSE_USERNAME }} --password=${{ secrets.PAUSE_PASSWORD }} App-Netdisco-*.tar.gz
+        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload --user=$PAUSE_USERNAME --password=$PAUSE_PASSWORD App-Netdisco-*.tar.gz
       continue-on-error: true
 
     - name: IRC upload failure notification
