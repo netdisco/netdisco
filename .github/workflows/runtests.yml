@@ -9,55 +9,93 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '2.[0-9][0-9][0-9][0-9][0-9][0-9]'
 jobs:
   test_netdisco:
-    name: Run Netdisco Test Suite
+    name: Test and CPAN Upload
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-do'
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
+    defaults:
+      run:
+        working-directory: /github/workspace/netdisco/netdisco
     steps:
-    - name: Get the Tag
+    - name: Get the Tag or Branch
       id: get_tag
-      run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/heads/}
+      run: echo ::set-output name=RELEASE_REF::${GITHUB_REF#refs/(heads|tags)/}
+
     - name: Install packages
-      run: apk add openssh xz tmux bash curl sudo gcc make
+      run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
     - name: Install fake apt-get
       run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
     - name: Add localhost
       run: echo "127.0.0.1 localhost" >> /etc/hosts
+
     - name: Check out latest code
       uses: actions/checkout@v1
     - name: Fix owner of checkout
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
+
     - name: Install Perl deps
-      run: sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile
+      run: |
+        sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader
+        sudo -u netdisco /home/netdisco/bin/localenv curl -L https://raw.githubusercontent.com/rjbs/CPAN-Uploader/4dd4fbad6bc96257c53a50ea2761932795dddf5c/lib/CPAN/Uploader.pm > /home/netdisco/perl5/lib/perl5/CPAN/Uploader.pm
+
     - name: Run Tests
       id: build_and_run_tests
       run: |
         sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
         sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
-      working-directory: /github/workspace/netdisco/netdisco
       continue-on-error: true
-    - name: IRC failure notification
+
+    - name: IRC test failure notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_enabled) && (steps.build_and_run_tests.outcome == 'failure')
+      if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/heads/') && (steps.build_and_run_tests.outcome == 'failure')
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.RELEASE_REF }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }}
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    - name: IRC success notification
+    - name: IRC test success notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_enabled) && (steps.build_and_run_tests.outcome == 'success')
+      if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/heads/') && (steps.build_and_run_tests.outcome == 'success')
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.TAGVALUE }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }} (tests PASSED)
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.RELEASE_REF }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }} (tests PASSED 🎉)
+
+    - name: Upload dist to CPAN
+      id: upload_to_cpan
+      if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.build_and_run_tests.outcome == 'success')
+      run: |
+        sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
+        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload --user=${{ secrets.CPAN_USERNAME }} --password=${{ secrets.CPAN_PASSWORD }} App-Netdisco-*.tar.gz
+      continue-on-error: true
+
+    - name: IRC upload failure notification
+      uses: Gottox/irc-message-action@v2
+      if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.upload_to_cpan.outcome == 'failure')
+      with:
+        channel: '#netdisco'
+        nickname: github-actions
+        message: |-
+          🤖 Failed to upload release ${{ steps.get_tag.outputs.RELEASE_REF }} to CPAN! 😭
+          👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    - name: IRC upload success notification
+      uses: Gottox/irc-message-action@v2
+      if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.upload_to_cpan.outcome == 'success')
+      with:
+        channel: '#netdisco'
+        nickname: github-actions
+        message: |-
+          🤖 Uploaded release ${{ steps.get_tag.outputs.RELEASE_REF }} to CPAN 🎉
+
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       if: always() && github.event.inputs.debug_enabled && (github.event_name == 'workflow_dispatch')
