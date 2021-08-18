@@ -24,9 +24,10 @@ jobs:
       run:
         working-directory: /github/workspace/netdisco/netdisco
     steps:
-    - name: Get the Tag or Branch
-      id: get_tag
-      run: echo ::set-output name=RELEASE_REF::${GITHUB_REF#refs/(heads|tags)/}
+    - name: Get the Tag and Branch
+      id: get_refs
+      run: echo ::set-output name=RELEASE_TAG::${GITHUB_REF#refs/tags/}
+      run: echo ::set-output name=RELEASE_BRANCH::${GITHUB_REF#refs/heads)/}
 
     - name: Install packages
       run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
@@ -59,7 +60,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.RELEASE_REF }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }}
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC test success notification
       uses: Gottox/irc-message-action@v2
@@ -68,14 +69,14 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_tag.outputs.RELEASE_REF }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }} (tests PASSED 🎉)
+          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/netdisco/netdisco/commit/${{ github.sha }} (tests PASSED 🎉)
 
     - name: Upload dist to CPAN
       id: upload_to_cpan
       if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.build_and_run_tests.outcome == 'success')
       run: |
         sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
-        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload --user=${{ secrets.CPAN_USERNAME }} --password=${{ secrets.CPAN_PASSWORD }} App-Netdisco-*.tar.gz
+        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload --user=${{ secrets.PAUSE_USERNAME }} --password=${{ secrets.PAUSE_PASSWORD }} App-Netdisco-*.tar.gz
       continue-on-error: true
 
     - name: IRC upload failure notification
@@ -85,7 +86,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Failed to upload release ${{ steps.get_tag.outputs.RELEASE_REF }} to CPAN! 😭
+          🤖 Failed to upload release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN! 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC upload success notification
       uses: Gottox/irc-message-action@v2
@@ -94,7 +95,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Uploaded release ${{ steps.get_tag.outputs.RELEASE_REF }} to CPAN 🎉
+          🤖 Uploaded release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN 🎉
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
