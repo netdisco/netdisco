@@ -28,7 +28,7 @@ jobs:
       id: get_refs
       run: |
         echo ::set-output name=RELEASE_TAG::${GITHUB_REF#refs/tags/}
-        echo ::set-output name=RELEASE_BRANCH::${GITHUB_REF#refs/heads)/}
+        echo ::set-output name=RELEASE_BRANCH::${GITHUB_REF#refs/heads/}
 
     - name: Install packages
       run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
