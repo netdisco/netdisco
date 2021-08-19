@@ -21,68 +21,80 @@ jobs:
       run:
         working-directory: /home/runner/work/netdisco/netdisco-docker
     steps:
-    - name: Check out latest code
-      uses: actions/checkout@v1
-      with:
-        repository: 'netdisco/netdisco-docker'
-        ref: 'master'
-    - name: Get the Tag
-      id: get_refs
-      run: |
-        echo "TAG=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-        echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Check out latest code
+        uses: actions/checkout@v1
+        with:
+          repository: 'netdisco/netdisco-docker'
+          ref: 'master'
 
-    - name: Build netdisco-postgresql
-      id: build_netdisco_postgresql
-      run: |
-        cd netdisco-postgresql
-        docker build -t ${IMAGE_ROOT}-postgresql \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} .
+      - name: Get the Tag
+        id: get_refs
+        run: |
+          echo "TAG=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-    - name: Build netdisco-base
-      id: build_netdisco_base
-      run: |
-        cd netdisco-base
-        docker build -t ${IMAGE_ROOT}-base \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} .
+      - name: Build netdisco-postgresql
+        run: |
+          cd netdisco-postgresql
+          docker build -t ${IMAGE_ROOT}-postgresql \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} .
+          docker tag ${IMAGE_ROOT}-postgresql netdisco/${IMAGE_ROOT}-postgresql
 
-    - name: Build netdisco-backend
-      id: build_netdisco_backend
-      run: |
-        cd netdisco-backend
-        docker build -t ${IMAGE_ROOT}-backend \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} .
+      - name: Build netdisco-base
+        run: |
+          cd netdisco-base
+          docker build -t ${IMAGE_ROOT}-base \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} .
+          docker tag ${IMAGE_ROOT}-base netdisco/${IMAGE_ROOT}-base
 
-    - name: Build netdisco-web
-      id: build_netdisco_web
-      run: |
-        cd netdisco-web
-        docker build -t ${IMAGE_ROOT}-web \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} .
+      - name: Build netdisco-backend
+        run: |
+          cd netdisco-backend
+          docker build -t ${IMAGE_ROOT}-backend \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} .
+          docker tag ${IMAGE_ROOT}-backend netdisco/${IMAGE_ROOT}-backend
 
-    - name: Build netdisco-do
-      id: build_netdisco_do
-      run: |
-        cd netdisco-do
-        docker build -t ${IMAGE_ROOT}-do \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} .
+      - name: Build netdisco-web
+        run: |
+          cd netdisco-web
+          docker build -t ${IMAGE_ROOT}-web \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} .
+          docker tag ${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
 
-    - name: Retag all images
-      run: |
-        for image in postgresql backend web do; do
-          docker tag ${IMAGE_ROOT}-$image netdisco/${IMAGE_ROOT}-$image
-          docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
-        done
+      - name: Build netdisco-do
+        run: |
+          cd netdisco-do
+          docker build -t ${IMAGE_ROOT}-do \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} .
+          docker tag ${IMAGE_ROOT}-do netdisco/${IMAGE_ROOT}-do
+
+      - name: Tag all images latest
+        run: |
+          for image in postgresql backend web do; do
+            docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
+          done
+
+      - name: Upload all images
+        if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/tags/')
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          for image in postgresql backend web do; do
+              docker push netdisco/${IMAGE_ROOT}-$image
+              docker push netdisco/netdisco:latest-$image
+          done
 
 #    - name: IRC upload failure notification
 #      uses: Gottox/irc-message-action@v2
