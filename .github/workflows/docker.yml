@@ -24,7 +24,7 @@ jobs:
     - name: Check out latest code
       uses: actions/checkout@v1
       with:
-        repo: 'netdisco/netdisco-docker'
+        repository: 'netdisco/netdisco-docker'
     - name: Get the Tag
       id: get_refs
       run: |
