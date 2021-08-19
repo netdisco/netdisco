@@ -17,14 +17,15 @@ jobs:
   build_docker_images:
     name: Build Docker Images
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: /github/workspace/netdisco-docker/netdisco-docker
+#    defaults:
+#      run:
+#        working-directory: /github/workspace/netdisco-docker/netdisco-docker
     steps:
     - name: Check out latest code
       uses: actions/checkout@v1
       with:
         repository: 'netdisco/netdisco-docker'
+        ref: 'HEAD'
     - name: Get the Tag
       id: get_refs
       run: |
