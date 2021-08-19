@@ -41,6 +41,15 @@ jobs:
               --build-arg TAG=${TAG} \
               --build-arg COMMITTISH=${TAG} .
 
+    - name: Build netdisco-base
+      id: build_netdisco_base
+      run: |
+        cd netdisco-base
+        docker build -t ${IMAGE_ROOT}-base \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} .
+
     - name: Retag all images
       run: |
         for image in postgresql; do
