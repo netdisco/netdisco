@@ -6,6 +6,10 @@ on:
         description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
         required: false
         default:  false
+      success_irc_squawk:
+        description: 'Squawk to IRC on successful tests'     
+        required: false
+        default:  false
   push:
     branches:
       - master
@@ -65,7 +69,7 @@ jobs:
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC test success notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_enabled) && startsWith(github.ref, 'refs/heads/') && (steps.build_and_run_tests.outcome == 'success')
+      if: github.event.inputs.success_irc_squawk && startsWith(github.ref, 'refs/heads/') && (steps.build_and_run_tests.outcome == 'success')
       with:
         channel: '#netdisco'
         nickname: github-actions
