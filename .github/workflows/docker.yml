@@ -50,9 +50,36 @@ jobs:
               --build-arg TAG=${TAG} \
               --build-arg COMMITTISH=${TAG} .
 
+    - name: Build netdisco-backend
+      id: build_netdisco_backend
+      run: |
+        cd netdisco-backend
+        docker build -t ${IMAGE_ROOT}-backend \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} .
+
+    - name: Build netdisco-web
+      id: build_netdisco_web
+      run: |
+        cd netdisco-web
+        docker build -t ${IMAGE_ROOT}-web \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} .
+
+    - name: Build netdisco-do
+      id: build_netdisco_do
+      run: |
+        cd netdisco-do
+        docker build -t ${IMAGE_ROOT}-do \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} .
+
     - name: Retag all images
       run: |
-        for image in postgresql; do
+        for image in postgresql backend web do; do
           docker tag ${IMAGE_ROOT}-$image netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
         done
