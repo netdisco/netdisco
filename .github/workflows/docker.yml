@@ -1,4 +1,4 @@
-name: Netdisco Docker Images
+name: Build Docker Images
 on:
   workflow_dispatch:
     inputs:
@@ -21,15 +21,15 @@ jobs:
       run:
         working-directory: /github/workspace/netdisco-docker/netdisco-docker
     steps:
-    - name: Get the Tag
-      id: get_refs
-      run: |
-        echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-        echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
     - name: Check out latest code
       uses: actions/checkout@v1
       with:
         repo: 'netdisco/netdisco-docker'
+    - name: Get the Tag
+      id: get_refs
+      run: |
+        echo "TAG=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
     - name: Build netdisco-postgresql
       id: build_netdisco_postgresql
