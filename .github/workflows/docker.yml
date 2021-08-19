@@ -114,9 +114,9 @@ jobs:
 #        message: |-
 #          🤖 Uploaded Netdisco release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN 🎉
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_enabled && (github.event_name == 'workflow_dispatch')
-      with:
-        sudo: true
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: always() && github.event.inputs.debug_enabled && (github.event_name == 'workflow_dispatch')
+        with:
+          sudo: true
 
