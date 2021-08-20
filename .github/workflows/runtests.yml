@@ -2,16 +2,16 @@ name: Test and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
+      success_irc_squawk:
+        description: 'Squawk to IRC on successful tests'     
+        required: false
+        default:  false
       debug_test_enabled:
         description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
         required: false
         default:  false
       debug_docker_enabled:
         description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
-        required: false
-        default:  false
-      success_irc_squawk:
-        description: 'Squawk to IRC on successful tests'     
         required: false
         default:  false
   push:
@@ -64,7 +64,7 @@ jobs:
 
     - name: IRC test failure notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_test_enabled) && startsWith(github.ref, 'refs/heads/') && (steps.build_and_run_tests.outcome == 'failure')
+      if: (steps.build_and_run_tests.outcome == 'failure') && (github.event_name != 'workflow_dispatch')
       with:
         channel: '#netdisco'
         nickname: github-actions
@@ -73,7 +73,7 @@ jobs:
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC test success notification
       uses: Gottox/irc-message-action@v2
-      if: github.event.inputs.success_irc_squawk && startsWith(github.ref, 'refs/heads/') && (steps.build_and_run_tests.outcome == 'success')
+      if: (steps.build_and_run_tests.outcome == 'success') && github.event.inputs.success_irc_squawk
       with:
         channel: '#netdisco'
         nickname: github-actions
@@ -82,7 +82,7 @@ jobs:
 
     - name: Upload dist to CPAN
       id: upload_to_cpan
-      if: (! github.event.inputs.debug_test_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.build_and_run_tests.outcome == 'success')
+      if: (steps.build_and_run_tests.outcome == 'success') && startsWith(github.ref, 'refs/tags/')
       env:
         PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
         PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
@@ -93,7 +93,7 @@ jobs:
 
     - name: IRC upload failure notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_test_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.upload_to_cpan.outcome == 'failure')
+      if: steps.upload_to_cpan.outcome == 'failure'
       with:
         channel: '#netdisco'
         nickname: github-actions
@@ -102,7 +102,7 @@ jobs:
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC upload success notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_test_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.upload_to_cpan.outcome == 'success')
+      if: steps.upload_to_cpan.outcome == 'success'
       with:
         channel: '#netdisco'
         nickname: github-actions
@@ -111,13 +111,18 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_test_enabled && (github.event_name == 'workflow_dispatch')
+      if: always() && github.event.inputs.debug_test_enabled
       with:
         sudo: true
+
+    - name: Fix job exit status
+      if: always() && (steps.build_and_run_tests.outcome == 'failure')
+      run: exit 1
 
   build_docker_images:
     name: Build Docker Images
     needs: test_netdisco
+    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -130,7 +135,6 @@ jobs:
         ref: 'master'
 
     - name: Get the Tag
-      id: get_refs
       run: |
         echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
         echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
@@ -188,7 +192,7 @@ jobs:
 
     - name: Upload to Docker Hub
       id: upload_docker_hub
-      if: (! github.event.inputs.debug_docker_enabled) && startsWith(github.ref, 'refs/tags/')
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -203,7 +207,7 @@ jobs:
 
     - name: Upload to GitHub Packages
       id: upload_github_packages
-      if: (! github.event.inputs.debug_docker_enabled) && startsWith(github.ref, 'refs/tags/')
+      if: startsWith(github.ref, 'refs/tags/')
       run: |
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
         for image in postgresql backend web do; do
@@ -215,25 +219,25 @@ jobs:
 
     - name: IRC DH upload failure notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_docker_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.upload_docker_hub.outcome == 'failure')
+      if: steps.upload_docker_hub.outcome == 'failure'
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Failed to publish containers (release ${{ steps.get_refs.outputs.RELEASE_TAG }}) 😭
+          🤖 Failed to publish containers (release $TAG) 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC DH upload success notification
       uses: Gottox/irc-message-action@v2
-      if: (! github.event.inputs.debug_docker_enabled) && startsWith(github.ref, 'refs/tags/') && (steps.upload_docker_hub.outcome == 'success')
+      if: steps.upload_docker_hub.outcome == 'success'
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Published containers (release: ${{ steps.get_refs.outputs.RELEASE_TAG }}) 🎉
+          🤖 Published containers (release: $TAG) 🎉
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_docker_enabled && (github.event_name == 'workflow_dispatch')
+      if: always() && github.event.inputs.debug_docker_enabled
       with:
         sudo: true
 
