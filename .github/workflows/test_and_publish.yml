@@ -88,7 +88,7 @@ jobs:
         PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
       run: |
         sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
-        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload --user=$PAUSE_USERNAME --password=$PAUSE_PASSWORD App-Netdisco-*.tar.gz
+        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
       continue-on-error: true
 
     - name: IRC upload failure notification
@@ -219,8 +219,8 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         for image in postgresql backend web do; do
-            docker push netdisco/${IMAGE_ROOT}-$image
-            docker push netdisco/netdisco:latest-$image
+            docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
+            docker push ghcr.io/netdisco/netdisco:latest-$image
         done
       continue-on-error: true
 
@@ -234,7 +234,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Failed to publish containers (release $TAG) 😭
+          🤖 Failed to publish containers to Docker Hub (release ${{ env.TAG }}) 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC DH upload success notification
       uses: Gottox/irc-message-action@v2
@@ -243,7 +243,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Published containers (release: $TAG) 🎉
+          🤖 Published containers to Docker Hub (release: ${{ env.TAG }}) 🎉
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
