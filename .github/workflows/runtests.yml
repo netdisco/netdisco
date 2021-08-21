@@ -136,8 +136,8 @@ jobs:
 
     - name: Get the Tag
       run: |
-        echo "TAG=${GITHUB_REF#refs/(heads/tags)/}" >> $GITHUB_ENV
-        echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/(heads|tags)/}" >> $GITHUB_ENV
+        echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+        echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
     - name: Build netdisco-postgresql
       run: |
@@ -190,32 +190,42 @@ jobs:
           docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
         done
 
-    - name: Upload to Docker Hub
-      id: upload_docker_hub
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Login to DH
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Upload to Docker Hub
+      id: upload_docker_hub
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
         for image in postgresql backend web do; do
             docker push netdisco/${IMAGE_ROOT}-$image
             docker push netdisco/netdisco:latest-$image
         done
-        docker logout
       continue-on-error: true
+
+    - name: Logout from DH
+      run: docker logout
+
+    - name: Login to GHP
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
     - name: Upload to GitHub Packages
       id: upload_github_packages
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
         for image in postgresql backend web do; do
             docker push netdisco/${IMAGE_ROOT}-$image
             docker push netdisco/netdisco:latest-$image
         done
-        docker logout
       continue-on-error: true
+
+    - name: Logout from GHP
+      run: docker logout
 
     - name: IRC DH upload failure notification
       uses: Gottox/irc-message-action@v2
