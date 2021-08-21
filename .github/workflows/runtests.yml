@@ -136,8 +136,8 @@ jobs:
 
     - name: Get the Tag
       run: |
-        echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-        echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        echo "TAG=${GITHUB_REF#refs/(heads/tags)/}" >> $GITHUB_ENV
+        echo "IMAGE_ROOT=netdisco:${GITHUB_REF#refs/(heads|tags)/}" >> $GITHUB_ENV
 
     - name: Build netdisco-postgresql
       run: |
