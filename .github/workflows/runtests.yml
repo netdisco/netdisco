@@ -7,11 +7,11 @@ on:
         required: false
         default:  false
       debug_test_enabled:
-        description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        description: 'With build and test debug'
         required: false
         default:  false
       debug_docker_enabled:
-        description: 'Run debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        description: 'With docker debug'
         required: false
         default:  false
   push:
