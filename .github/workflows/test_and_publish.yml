@@ -24,7 +24,7 @@ jobs:
     name: Test and CPAN Upload
     runs-on: ubuntu-latest
     container:
-      image: 'netdisco/netdisco:latest-do'
+      image: 'netdisco/netdisco:2.047002-do'
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
