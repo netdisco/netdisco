@@ -80,14 +80,26 @@ jobs:
         message: |-
           🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
 
-    - name: Upload dist to CPAN
+    - name: Make release
+      if: (steps.build_and_run_tests.outcome == 'success')
+      run: |
+        sudo -u netdisco /home/netdisco/bin/localenv rm ./MANIFEST
+        sudo -u netdisco /home/netdisco/bin/localenv ./Build manifest
+        sudo -u netdisco /home/netdisco/bin/localenv ./Build distmeta
+        sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
+
+    - name: Check CPAN Release
+      run: |
+        sudo -u netdisco /home/netdisco/bin/localenv RELEASENAME=(App-Netdisco-*.tar.gz)
+        sudo -u netdisco /home/netdisco/bin/localenv ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}
+
+    - name: Upload to CPAN
       id: upload_to_cpan
-      if: (steps.build_and_run_tests.outcome == 'success') && startsWith(github.ref, 'refs/tags/')
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
         PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
       run: |
-        sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
         sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
       continue-on-error: true
 
@@ -184,12 +196,6 @@ jobs:
               --build-arg COMMITTISH=${TAG} .
         docker tag ${IMAGE_ROOT}-do netdisco/${IMAGE_ROOT}-do
 
-    - name: Tag all images latest
-      run: |
-        for image in postgresql backend web do; do
-          docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
-        done
-
     - name: Login to DH
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -203,6 +209,7 @@ jobs:
       run: |
         for image in postgresql backend web do; do
             docker push netdisco/${IMAGE_ROOT}-$image
+          docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
             docker push netdisco/netdisco:latest-$image
         done
       continue-on-error: true
@@ -219,7 +226,9 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         for image in postgresql backend web do; do
+            docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:${IMAGE_ROOT}-$image
             docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
+            docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
             docker push ghcr.io/netdisco/netdisco:latest-$image
         done
       continue-on-error: true
@@ -250,4 +259,8 @@ jobs:
       if: always() && github.event.inputs.debug_docker_enabled
       with:
         sudo: true
+
+    - name: Fix job exit status
+      if: always() && (steps.upload_docker_hub.outcome == 'failure')
+      run: exit 1
 
