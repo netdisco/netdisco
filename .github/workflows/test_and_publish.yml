@@ -24,7 +24,7 @@ jobs:
     name: Test and CPAN Upload
     runs-on: ubuntu-latest
     container:
-      image: 'netdisco/netdisco:2.047002-do'
+      image: 'netdisco/netdisco:latest-do'
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
@@ -32,11 +32,8 @@ jobs:
       run:
         working-directory: /github/workspace/netdisco/netdisco
     steps:
-    - name: Get the Tag and Branch
-      id: get_refs
-      run: |
-        echo ::set-output name=RELEASE_TAG::${GITHUB_REF#refs/tags/}
-        echo ::set-output name=RELEASE_BRANCH::${GITHUB_REF#refs/heads/}
+    - name: Get the Tag or Branch
+      run: echo "GH_REF_SHORT=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
     - name: Install packages
       run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
@@ -63,22 +60,22 @@ jobs:
       continue-on-error: true
 
     - name: IRC test failure notification
-      uses: Gottox/irc-message-action@v2
       if: (steps.build_and_run_tests.outcome == 'failure') && (github.event_name != 'workflow_dispatch')
+      uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} pushed to ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC test success notification
-      uses: Gottox/irc-message-action@v2
       if: (steps.build_and_run_tests.outcome == 'success') && github.event.inputs.success_irc_squawk
+      uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
+          🤖 ${{ github.actor }} pushed to ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
 
     - name: Make release
       if: steps.build_and_run_tests.outcome == 'success'
@@ -88,9 +85,6 @@ jobs:
         sudo -u netdisco /home/netdisco/bin/localenv ./Build distmeta
         sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
 
-    - name: Check CPAN Release
-      run: bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
-
     - name: Upload to CPAN
       id: upload_to_cpan
       if: startsWith(github.ref, 'refs/tags/')
@@ -98,26 +92,27 @@ jobs:
         PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
         PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
       run: |
+        bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
         sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
       continue-on-error: true
 
     - name: IRC upload failure notification
-      uses: Gottox/irc-message-action@v2
       if: steps.upload_to_cpan.outcome == 'failure'
+      uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Failed to upload Netdisco release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN! 😭
+          🤖 Failed to upload Netdisco release ${{ env.GH_REF_SHORT }} to CPAN! 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC upload success notification
-      uses: Gottox/irc-message-action@v2
       if: steps.upload_to_cpan.outcome == 'success'
+      uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Uploaded Netdisco release ${{ steps.get_refs.outputs.RELEASE_TAG }} to CPAN 🎉
+          🤖 Uploaded Netdisco release ${{ env.GH_REF_SHORT }} to CPAN 🎉
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
@@ -125,13 +120,9 @@ jobs:
       with:
         sudo: true
 
-    - name: Fix job exit status
+    - name: Preserve status from tests
       if: always() && (steps.build_and_run_tests.outcome == 'failure')
       run: exit 1
-
-    - name: Fix job exit status
-      if: always() && github.event.inputs.debug_docker_enabled
-      run: exit 0
 
   build_docker_images:
     name: Build Docker Images
@@ -239,8 +230,8 @@ jobs:
       run: docker logout
 
     - name: IRC DH upload failure notification
-      uses: Gottox/irc-message-action@v2
       if: steps.upload_docker_hub.outcome == 'failure'
+      uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
@@ -248,8 +239,8 @@ jobs:
           🤖 Failed to publish containers to Docker Hub (release ${{ env.TAG }}) 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC DH upload success notification
-      uses: Gottox/irc-message-action@v2
       if: steps.upload_docker_hub.outcome == 'success'
+      uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
