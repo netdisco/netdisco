@@ -129,6 +129,10 @@ jobs:
       if: always() && (steps.build_and_run_tests.outcome == 'failure')
       run: exit 1
 
+    - name: Fix job exit status
+      if: always() && github.event.inputs.debug_docker_enabled
+      run: exit 0
+
   build_docker_images:
     name: Build Docker Images
     needs: test_netdisco
