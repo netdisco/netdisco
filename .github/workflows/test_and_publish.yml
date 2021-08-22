@@ -89,9 +89,7 @@ jobs:
         sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
 
     - name: Check CPAN Release
-      run: |
-        RELEASENAME=(App-Netdisco-*.tar.gz)
-        sudo -u netdisco /home/netdisco/bin/localenv ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}
+      run: bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
 
     - name: Upload to CPAN
       id: upload_to_cpan
