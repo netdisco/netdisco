@@ -81,7 +81,7 @@ jobs:
           🤖 ${{ github.actor }} pushed to ${{ steps.get_refs.outputs.RELEASE_BRANCH }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
 
     - name: Make release
-      if: (steps.build_and_run_tests.outcome == 'success')
+      if: steps.build_and_run_tests.outcome == 'success'
       run: |
         sudo -u netdisco /home/netdisco/bin/localenv rm ./MANIFEST
         sudo -u netdisco /home/netdisco/bin/localenv ./Build manifest
@@ -90,7 +90,7 @@ jobs:
 
     - name: Check CPAN Release
       run: |
-        sudo -u netdisco /home/netdisco/bin/localenv RELEASENAME=(App-Netdisco-*.tar.gz)
+        RELEASENAME=(App-Netdisco-*.tar.gz)
         sudo -u netdisco /home/netdisco/bin/localenv ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}
 
     - name: Upload to CPAN
