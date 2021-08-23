@@ -236,7 +236,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Failed to publish containers to Docker Hub (release ${{ env.TAG }}) 😭
+          🤖 Failed to publish Netdisco release ${{ env.TAG }} to Docker Hub! 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC DH upload success notification
       if: steps.upload_docker_hub.outcome == 'success'
@@ -245,7 +245,7 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 Published containers to Docker Hub (release: ${{ env.TAG }}) 🎉
+          🤖 Published Netdisco release ${{ env.TAG }} to Docker Hub! 🎉
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
