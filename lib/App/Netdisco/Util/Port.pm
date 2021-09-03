@@ -11,7 +11,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   vlan_reconfig_check port_reconfig_check
   get_port get_iid get_powerid
-  is_vlan_interface port_has_phone
+  is_vlan_interface port_has_phone port_has_wap
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -101,6 +101,7 @@ sub port_reconfig_check {
   my $ip = $port->ip;
   my $name = $port->port;
 
+  my $has_wap   = port_has_wap($port);
   my $has_phone = port_has_phone($port);
   my $is_vlan   = is_vlan_interface($port);
 
@@ -118,6 +119,10 @@ sub port_reconfig_check {
   return "forbidden: port [$name] on [$ip] is an uplink"
     if ($port->is_uplink or $port->remote_type)
         and not $has_phone and not setting('portctl_uplinks');
+
+  # wap check
+  return "forbidden: port [$name] on [$ip] is a wireless ap"
+    if $has_wap and setting('portctl_nowaps');
 
   # phone check
   return "forbidden: port [$name] on [$ip] is a phone"
@@ -232,6 +237,17 @@ Returns true if the C<$port> L<DBIx::Class> object has a phone connected.
 sub port_has_phone {
   my $properties = (shift)->properties;
   return ($properties ? $properties->remote_is_phone : undef);
+}
+
+=head2 port_has_wap( $port )
+
+Returns true if the C<$port> L<DBIx::Class> object has a wireless AP  connected.
+
+=cut
+
+sub port_has_wap {
+  my $properties = (shift)->properties;
+  return ($properties ? $properties->remote_is_wap : undef);
 }
 
 1;

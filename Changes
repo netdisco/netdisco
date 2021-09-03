@@ -3,6 +3,7 @@
   [NEW FEATURES]
 
   * ACLs portctl_no and portctl_only for limiting port control targets
+  * Config setting portctl_nowaps to prevent port control on WAP ports
 
 2.049001 - 2021-08-22
 

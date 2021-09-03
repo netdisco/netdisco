@@ -186,6 +186,7 @@ vlanctl: true
 portctl_nameonly: false
 portctl_no: []
 portctl_only: []
+portctl_nowaps: false
 portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false
