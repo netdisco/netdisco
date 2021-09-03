@@ -136,6 +136,11 @@ if ($ENV{NETDISCO_DOMAIN}) {
   }
 }
 
+# check user's port_control_reasons
+
+config->{'port_control_reasons'} =
+  config->{'port_control_reasons'} || config->{'system_port_control_reasons'};
+
 # convert domain_suffix from scalar or list to regexp
 
 config->{'domain_suffix'} = [setting('domain_suffix')]

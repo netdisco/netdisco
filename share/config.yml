@@ -190,7 +190,7 @@ portctl_nowaps: false
 portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false
-port_control_reasons:
+system_port_control_reasons:
   address:     'Address Allocation Abuse'
   copyright:   'Copyright Violation'
   dos:         'Denial of Service'

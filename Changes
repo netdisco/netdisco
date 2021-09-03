@@ -1,3 +1,9 @@
+2.049004 - 2021-09-03
+
+  [BUG FIXES]
+
+  * Allow port_control_reasons setting to actually work
+
 2.049003 - 2021-09-03
 
   [ENHANCEMENTS]
