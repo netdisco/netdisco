@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::Port 'port_reconfig_check';
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
@@ -201,6 +202,11 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # sort ports
     @results = sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } @results;
+
+    # add acl on port config
+    if (param('c_admin') and user_has_role('port_control')) {
+      map {$_->{portctl} = (port_reconfig_check($_) ? false : true)} @results;
+    }
 
     # empty set would be a 'no records' msg
     return unless scalar @results;

@@ -1,3 +1,9 @@
+2.049003 - 2021-09-03
+
+  [ENHANCEMENTS]
+
+  * Hide portctl features in Device Ports where ACLs would not permit the action
+
 2.049002 - 2021-09-03
 
   [NEW FEATURES]
