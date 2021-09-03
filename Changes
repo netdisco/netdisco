@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * Allow port_control_reasons setting to actually work
+  * Swap error and info return status from Jobs to avoid info() on error
 
 2.049003 - 2021-09-03
 

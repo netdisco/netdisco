@@ -98,8 +98,8 @@ sub level {
   my $self = shift;
   return (($self->status eq 'done')  ? 4
         : ($self->status eq 'defer') ? 3
-        : ($self->status eq 'info')  ? 2
-        : ($self->status eq 'error') ? 1 : 0);
+        : ($self->status eq 'error') ? 2
+        : ($self->status eq 'info')  ? 1 : 0);
 }
 
 1;

@@ -122,7 +122,7 @@ sub finalise_status {
   $job->status('error');
   $job->log('failed to report from any worker!');
 
-  my $max_level = Status->error()->level;
+  my $max_level = Status->info()->level;
 
   if ($job->is_cancelled and scalar @{ $job->_statuslist }) {
     $job->status( $job->_statuslist->[-1]->status );
