@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -68,6 +69,10 @@ sub vlan_reconfig_check {
 
 =item *
 
+Permission check that C<portctl_no> and C<portctl_only> pass for the device.
+
+=item *
+
 Permission check that C<portctl_nameonly> is false in Netdisco config.
 
 =item *
@@ -98,6 +103,12 @@ sub port_reconfig_check {
 
   my $has_phone = port_has_phone($port);
   my $is_vlan   = is_vlan_interface($port);
+
+  # check for limits on devices
+  return "forbidden: device [$ip] is in denied ACL"
+    if check_acl_no($ip, 'portctl_no');
+  return "forbidden: device [$ip] is not in permitted ACL"
+    unless check_acl_only($ip, 'portctl_only');
 
   # only permitted to change interface name
   return "forbidden: not permitted to change port configuration"

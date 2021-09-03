@@ -1,3 +1,9 @@
+2.049002 - 2021-09-03
+
+  [NEW FEATURES]
+
+  * ACLs portctl_no and portctl_only for limiting port control targets
+
 2.049001 - 2021-08-22
 
   [ENHANCEMENTS]
