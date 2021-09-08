@@ -2,7 +2,11 @@
 
   [ENHANCEMENTS]
 
-  * Change duplicate job status from 'error' to 'info'
+  * #811 change duplicate job status from 'error' to 'info'
+
+  [BUG FIXES
+
+  * #809 fix crash in Node search due to regexp translation perl to SQL
 
 2.049004 - 2021-09-03
 
