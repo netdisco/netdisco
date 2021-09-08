@@ -159,7 +159,7 @@ sub jq_getsome {
         }],
       ],
     }, {for => 'update'})
-        ->update({ status => 'error', log => (sprintf 'duplicate of %s', $job->id) });
+        ->update({ status => 'info', log => (sprintf 'duplicate of %s', $job->id) });
 
     debug sprintf 'getsome: cancelled %s duplicate(s) of job %s', ($gone || 0), $job->id;
     push @returned, App::Netdisco::Backend::Job->new({ $job->get_columns });
