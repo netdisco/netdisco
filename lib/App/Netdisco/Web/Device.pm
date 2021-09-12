@@ -26,7 +26,7 @@ hook 'before_template' => sub {
     or return;
 
   # override ports form defaults with cookie settings
-  # always do this so that embedded links to device ports page have user prefs
+  # always do this so that embedded links to device ports page have user prefs
   if (param('reset')) {
     cookie('nd_ports-form' => '', expires => '-1 day');
   }
@@ -50,7 +50,7 @@ hook 'before_template' => sub {
   return if param('reset')
     or not var('sidebar_key') or (var('sidebar_key') ne 'device_ports');
 
-  # update cookie from params we just recieved in form submit
+  # update cookie from params we just recieved in form submit
   my $uri = URI->new();
   foreach my $key (keys %{ $defaults }) {
     $uri->query_param($key => param($key));

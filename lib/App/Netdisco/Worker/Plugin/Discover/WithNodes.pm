@@ -12,7 +12,7 @@ register_worker({ phase => 'main' }, sub {
   my $device = $job->device;
 
   # if requested, and the device has not yet been
-  # arpniped/macsucked, queue those jobs now
+  # arpniped/macsucked, queue those jobs now
   return unless $device->in_storage and $job->subaction eq 'with-nodes';
 
   if (!defined $device->last_macsuck and $device->has_layer(2)) {

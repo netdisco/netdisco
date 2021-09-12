@@ -63,6 +63,10 @@
       <td>[% d.serial | html_entity %]</td>
     </tr>
     <tr>
+      <td>Chassis ID</td>
+      <td>[% d.chassis_id | html_entity %]</td>
+    </tr>
+    <tr>
       <td>Description</td>
       <td>[% d.description | html_entity | html_line_break %]</td>
     </tr>

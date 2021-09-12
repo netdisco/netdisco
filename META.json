@@ -88,11 +88,12 @@
             "Pod::Usage" : "0",
             "Regexp::Common" : "2017060201",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.70",
+            "SNMP::Info" : "3.78",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
             "Sereal" : "0",
+            "Session::Storage::Secure" : "1.000",
             "Socket6" : "0.23",
             "Starman" : "0.4008",
             "Storable" : "0",
@@ -128,7 +129,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.047005"
+         "version" : "2.049005"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -150,7 +151,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "64"
+         "version" : "66"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -861,6 +862,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.047005",
-   "x_serialization_backend" : "JSON::PP version 4.02"
+   "version" : "2.049005",
+   "x_serialization_backend" : "JSON::PP version 4.06"
 }

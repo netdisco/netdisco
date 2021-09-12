@@ -28,10 +28,10 @@ Dancer::Logger->init('console', $CONFIG);
   with 'App::Netdisco::Worker::Runner';
 }
 
-# clear user device_auth and set our own
+# clear user device_auth and set our own
 config->{'device_auth'} = [{driver => 'snmp'}, {driver => 'cli'}];
 
-# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 my $j1 = do_job('TestOne');
 is($j1->status, 'done', 'status is done');
@@ -95,12 +95,12 @@ is($j8->log, 'OK: SNMP driver is successful.',
 
 done_testing;
 
-# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 sub do_job {
   my $pkg = shift;
 
-  # include local plugins
+  # include local plugins
   config->{'extra_worker_plugins'} = ["X::${pkg}"];
 
   my $job = App::Netdisco::Backend::Job->new({

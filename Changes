@@ -1,8 +1,78 @@
-2.04xxxx - 2021-xx-xx
+2.049005 - 2021-09-09
+
+  [ENHANCEMENTS]
+
+  * #811 change duplicate job status from 'error' to 'info'
+
+  [BUG FIXES
+
+  * #809 fix crash in Node search due to regexp translation perl to SQL
+
+2.049004 - 2021-09-03
+
+  [BUG FIXES]
+
+  * Allow port_control_reasons setting to actually work
+  * Swap error and info return status from Jobs to avoid info() on error
+
+2.049003 - 2021-09-03
+
+  [ENHANCEMENTS]
+
+  * Hide portctl features in Device Ports where ACLs would not permit the action
+
+2.049002 - 2021-09-03
+
+  [NEW FEATURES]
+
+  * ACLs portctl_no and portctl_only for limiting port control targets
+  * Config setting portctl_nowaps to prevent port control on WAP ports
+
+2.049001 - 2021-08-22
+
+  [ENHANCEMENTS]
+
+  * GitHub Actions for Build, Test, and Release
+
+2.048000 - 2021-08-14
+
+  [NEW FEATURES]
+
+  * #800 gather and report SNMP Chassis ID
+
+  [ENHANCEMENTS]
+
+  * #767 also respect dns->no configuration in hostname_from_ip()
+  * improvements to test suite
+
+  [BUG FIXES]
+
+  * fix for #775 radius dict finding
+
+2.047008 - 2021-07-21
+
+  [BUG FIXES]
+
+  * #767 reverted - circular dependency
+
+2.047007 - 2021-07-14
+
+  [BUG FIXES]
+
+  * #778 exec hooks were not configured to be high priority
+
+2.047006 - 2021-07-14
 
   [ENHANCEMENTS]
 
   * #782 Allow <"> in remote_port
+  * #775 include /contrib/raddb/* in distribution
+
+  [BUG FIXES]
+
+  * #784 empty device_skip table when also emptying job queue
+  * #788 use device.name instead of device.dns for pseudo devices
+  * #783 fix FQDN discovery in node monitor emails
 
 2.047005 - 2021-02-24
 
@@ -679,7 +749,7 @@
 
   [NEW FEATURES]
 
-  * #401 Autodiscovery via EIGRP peers
+  * #401 Autodiscovery via EIGRP peers
 
   [BUG FIXES]
 
@@ -746,7 +816,7 @@
 
   [NEW FEATURES]
 
-  * #48 Node Monitor supports matching on OUI
+  * #48 Node Monitor supports matching on OUI
   * #31 configurable Free Time in Port Utilization Report
   * improvements to network map, location filtering and auto saving
 

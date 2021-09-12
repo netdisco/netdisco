@@ -47,8 +47,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
   (my $model  = Encode::decode('UTF-8', ($snmp->model  || ''))) =~ s/\s+$//;
   (my $serial = Encode::decode('UTF-8', ($snmp->serial || ''))) =~ s/\s+$//;
+  (my $chassis_id = Encode::decode('UTF-8', ($snmp->serial1 || ''))) =~ s/\s+$//;
   $device->set_column( model  => $model  );
   $device->set_column( serial => $serial );
+  $device->set_column( chassis_id => (($chassis_id ne $serial) ? $chassis_id : '') );
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
 
@@ -71,11 +73,11 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       }
   }
 
-  # support for Hooks
+  # support for Hooks
   vars->{'hook_data'} = { $device->get_columns };
-  delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
+  delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
 
-  # support for new_device Hook
+  # support for new_device Hook
   vars->{'new_device'} = 1 if not $device->in_storage;
 
   schema('netdisco')->txn_do(sub {
@@ -156,7 +158,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
     if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
 
-  # support for Hooks
+  # support for Hooks
   vars->{'hook_data'}->{'device_ips'} = $resolved_aliases;
 
   schema('netdisco')->txn_do(sub {
@@ -308,7 +310,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $interfaces{$master}->{is_master} = 'true';
   }
 
-  # support for Hooks
+  # support for Hooks
   vars->{'hook_data'}->{'ports'} = [values %interfaces];
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {

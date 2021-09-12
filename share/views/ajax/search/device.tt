@@ -7,7 +7,7 @@
       <th>Model</th>
       <th>OS Version</th>
       <th>Management IP</th>
-      <th>Serial</th>
+      <th>Serial / Chassis ID</th>
       <th>First Seen</th>
       <th>Last Discovered</th>
     </tr>
@@ -53,7 +53,7 @@ $(document).ready(function() {
       }, {
         "data": 'serial',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return he.encode(row.serial || '') + (row.chassis_id ? ('<br />' + he.encode(row.chassis_id || '')) : '');
         }
       }, {
         "data": 'first_seen_stamp',

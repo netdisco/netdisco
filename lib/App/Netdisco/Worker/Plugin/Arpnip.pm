@@ -19,9 +19,9 @@ register_worker({ phase => 'check' }, sub {
   return Status->info("arpnip skipped: $device is not arpnipable")
     unless is_arpnipable_now($device);
 
-  # support for Hooks
+  # support for Hooks
   vars->{'hook_data'} = { $device->get_columns };
-  delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
+  delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
 
   return Status->done('arpnip is able to run');
 });

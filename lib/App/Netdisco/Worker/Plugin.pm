@@ -31,15 +31,15 @@ register 'register_worker' => sub {
 
   my $worker = sub {
     my $job = shift or die 'missing job param';
-    # use DDP; p $workerconf;
+    # use DDP; p $workerconf;
 
     debug sprintf '-> run worker %s/%s/%s',
       @$workerconf{qw/phase namespace priority/};
 
     return if $job->is_cancelled;
 
-    # check to see if this namespace has already passed at higher priority
-    # and also update job's record of namespace and priority
+    # check to see if this namespace has already passed at higher priority
+    # and also update job's record of namespace and priority
     return $job->add_status( Status->info('skip: namespace passed at higher priority') )
       if $job->namespace_passed($workerconf);
 
@@ -53,7 +53,7 @@ register 'register_worker' => sub {
     my @newuserconf = ();
     my @userconf = @{ dclone (setting('device_auth') || []) };
 
-    # worker might be vendor/platform specific
+    # worker might be vendor/platform specific
     if (ref $job->device) {
       my $no   = (exists $workerconf->{no}   ? $workerconf->{no}   : undef);
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
@@ -62,33 +62,33 @@ register 'register_worker' => sub {
         if ($no and check_acl_no($job->device, $no))
            or ($only and not check_acl_only($job->device, $only));
 
-      # reduce device_auth by driver and action filters
+      # reduce device_auth by driver and action filters
       foreach my $stanza (@userconf) {
         next if exists $stanza->{driver} and exists $workerconf->{driver}
           and (($stanza->{driver} || '') ne ($workerconf->{driver} || ''));
 
-        # filter here rather than in Runner as runner does not know namespace
+        # filter here rather than in Runner as runner does not know namespace
         next if exists $stanza->{action}
           and not _find_matchaction($workerconf, lc($stanza->{action}));
 
         push @newuserconf, dclone $stanza;
       }
 
-      # per-device action but no device creds available
+      # per-device action but no device creds available
       return $job->add_status( Status->info('skip: driver or action not applicable') )
         if 0 == scalar @newuserconf && $job->action ne "delete";
     }
 
-    # back up and restore device_auth
+    # back up and restore device_auth
     my $guard = guard { set(device_auth => \@userconf) };
     set(device_auth => \@newuserconf);
-    # use DDP; p @newuserconf;
+    # use DDP; p @newuserconf;
 
-    # run worker
+    # run worker
     $code->($job, $workerconf);
   };
 
-  # store the built worker as Worker.pm will build the dispatch order later on
+  # store the built worker as Worker.pm will build the dispatch order later on
   push @{ vars->{'workers'}->{$workerconf->{action}}
               ->{$workerconf->{phase}}
               ->{$workerconf->{namespace}}

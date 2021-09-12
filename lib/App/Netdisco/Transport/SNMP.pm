@@ -84,7 +84,7 @@ Returns C<undef> if the connection fails.
 sub test_connection {
   my ($class, $ip) = @_;
   my $addr = NetAddr::IP::Lite->new($ip) or return undef;
-  # avoid renumbering to localhost loopbacks
+  # avoid renumbering to localhost loopbacks
   return undef if $addr->addr eq '0.0.0.0'
                   or check_acl_no($addr->addr, 'group:__LOCAL_ADDRESSES__');
   my $device = schema('netdisco')->resultset('Device')

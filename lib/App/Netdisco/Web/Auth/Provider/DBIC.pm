@@ -15,6 +15,8 @@ use Digest::MD5;
 use Net::LDAP;
 use Authen::Radius;
 use Authen::TacacsPlus;
+use Path::Class;
+use File::ShareDir 'dist_dir';
 use Try::Tiny;
 
 sub authenticate_user {
@@ -238,9 +240,9 @@ sub match_with_radius {
 
   my $conf = setting('radius');
   my $radius = Authen::Radius->new(@$conf);
-  # my $dict_dir = Path::Class::Dir->new( dist_dir('App-Netdisco') )
-  #   ->subdir('radius_dictionaries')->stringify;
-  Authen::Radius->load_dictionary(); # put $dict_dir in here once it's useful
+  my $dict_dir = Path::Class::Dir->new( dist_dir('App-Netdisco') )
+    ->subdir('contrib')->subdir('raddb')->file('dictionary')->stringify;
+  Authen::Radius->load_dictionary($dict_dir);
 
   $radius->add_attributes(
      { Name => 'User-Name',         Value => $user },

@@ -34,7 +34,7 @@ sub gather_subnets {
   my @subnets = ();
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return (); # already checked!
+    or return (); # already checked!
 
   my $ip_netmask = $snmp->ip_netmask;
   foreach my $entry (keys %$ip_netmask) {

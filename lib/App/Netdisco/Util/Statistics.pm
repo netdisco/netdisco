@@ -3,7 +3,7 @@ package App::Netdisco::Util::Statistics;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use Time::Piece; # for OO localtime
+use Time::Piece; # for OO localtime
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -36,7 +36,7 @@ sub update_stats {
   my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
   my $postgres_ver = pretty_version($schema->storage->dbh->{pg_server_version}, 2);
 
-  # TODO: (when we have the capabilities table?)
+  # TODO: (when we have the capabilities table?)
   #  $stats{waps} = sql_scalar('device',['COUNT(*)'], {"model"=>"AIR%"});
 
   $schema->txn_do(sub {

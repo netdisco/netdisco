@@ -26,7 +26,7 @@ sub device_ips_with_address_or_name {
   $q ||= '255.255.255.255/32';
 
   return $rs->search(undef,{
-    # NOTE: bind param list order is significant
+    # NOTE: bind param list order is significant
     join => ['device_ips_by_address_or_name'],
     bind => [$q, $ipbind, $q],
   });
@@ -44,7 +44,7 @@ sub ports_with_mac {
   $mac ||= '00:00:00:00:00:00';
 
   return $rs->search(undef,{
-    # NOTE: bind param list order is significant
+    # NOTE: bind param list order is significant
     join => ['ports_by_mac'],
     bind => [$mac],
   });
@@ -358,6 +358,8 @@ The following fields are inspected for a match:
 
 =item serial
 
+=item chassis_id
+
 =item module serials (exact)
 
 =item location
@@ -413,10 +415,11 @@ sub search_fuzzy {
               ->search(
       {
         -or => [
-          'me.contact'  => { '-ilike' => $q },
-          'me.serial'   => { '-ilike' => $q },
-          'me.location' => { '-ilike' => $q },
-          'me.name'     => { '-ilike' => $q },
+          'me.contact'     => { '-ilike' => $q },
+          'me.serial'      => { '-ilike' => $q },
+          'me.chassis_id'  => { '-ilike' => $q },
+          'me.location'    => { '-ilike' => $q },
+          'me.name'        => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
           'me.ip' => { '-in' =>
             $rs->search({ 'modules.serial' => $qc },
@@ -709,8 +712,8 @@ sub delete {
         { ip => { '-in' => $devices->as_query } },
       )->delete;
 
-      Dancer::Logger::debug sprintf ' [%s] db/device - removed %d %s from %s',
-        $ip, $gone, _plural($gone), $set if defined Dancer::Logger::logger();
+      Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d %s from %s',
+        $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
   }
 
   foreach my $set (qw/
@@ -729,8 +732,8 @@ sub delete {
     ],
   })->delete;
 
-  Dancer::Logger::debug sprintf ' [%s] db/device - removed %d manual topology %s',
-    $ip, $gone, _plural($gone) if defined Dancer::Logger::logger();
+  Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d manual topology %s',
+    $ip, $gone, _plural($gone) ) ) if defined Dancer::Logger::logger();
 
   $schema->resultset('DevicePort')->search(
     { ip => { '-in' => $devices->as_query } },

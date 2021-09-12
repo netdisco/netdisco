@@ -9,7 +9,7 @@ use Try::Tiny;
 
 swagger_path {
   tags => ['Objects'],
-  path => setting('api_base').'/object/device/{ip}',
+  path => (setting('api_base') || '').'/object/device/{ip}',
   description => 'Returns a row from the device table',
   parameters  => [
     ip => {
@@ -28,7 +28,7 @@ swagger_path {
 foreach my $rel (qw/device_ips vlans ports modules port_vlans wireless_ports ssids powered_ports/) {
     swagger_path {
       tags => ['Objects'],
-      path => setting('api_base')."/object/device/{ip}/$rel",
+      path => (setting('api_base') || '')."/object/device/{ip}/$rel",
       description => "Returns $rel rows for a given device",
       parameters  => [
         ip => {
@@ -49,7 +49,7 @@ foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age vlan
     swagger_path {
       tags => ['Objects'],
       description => "Returns $rel rows for a given port",
-      path => setting('api_base')."/object/device/{ip}/port/{port}/$rel",
+      path => (setting('api_base') || '')."/object/device/{ip}/port/{port}/$rel",
       parameters  => [
         ip => {
           description => 'Canonical IP of the Device. Use Search methods to find this.',
@@ -76,7 +76,7 @@ foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node
     swagger_path {
       tags => ['Objects'],
       description => "Returns the related $rel table entry for a given port",
-      path => setting('api_base')."/object/device/{ip}/port/{port}/$rel",
+      path => (setting('api_base') || '')."/object/device/{ip}/port/{port}/$rel",
       parameters  => [
         ip => {
           description => 'Canonical IP of the Device. Use Search methods to find this.',
@@ -103,7 +103,7 @@ foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node
 swagger_path {
   tags => ['Objects'],
   description => 'Returns a row from the device_port table',
-  path => setting('api_base').'/object/device/{ip}/port/{port}',
+  path => (setting('api_base') || '').'/object/device/{ip}/port/{port}',
   parameters  => [
     ip => {
       description => 'Canonical IP of the Device. Use Search methods to find this.',
@@ -127,7 +127,7 @@ swagger_path {
 
 swagger_path {
   tags => ['Objects'],
-  path => setting('api_base').'/object/device/{ip}/nodes',
+  path => (setting('api_base') || '').'/object/device/{ip}/nodes',
   description => "Returns the nodes found on a given Device",
   parameters  => [
     ip => {
@@ -153,7 +153,7 @@ swagger_path {
 
 swagger_path {
   tags => ['Objects'],
-  path => setting('api_base').'/object/vlan/{vlan}/nodes',
+  path => (setting('api_base') || '').'/object/vlan/{vlan}/nodes',
   description => "Returns the nodes found in a given VLAN",
   parameters  => [
     vlan => {

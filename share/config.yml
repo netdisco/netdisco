@@ -184,10 +184,13 @@ table_showrecordsmenu:
   - [10, 25, 50, 100, 'All']
 vlanctl: true
 portctl_nameonly: false
+portctl_no: []
+portctl_only: []
+portctl_nowaps: false
 portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false
-port_control_reasons:
+system_port_control_reasons:
   address:     'Address Allocation Abuse'
   copyright:   'Copyright Violation'
   dos:         'Denial of Service'
@@ -338,7 +341,7 @@ workers:
   retry_after: '7 days'
   queue: PostgreSQL
 
-# 50 minutes
+# 50 minutes
 jobs_stale_after: 3000
 jobs_qdepth: 50
 
@@ -366,6 +369,7 @@ schedule:
 
 job_prio:
   high:
+    - hook::exec
     - hook::http
     - location
     - contact

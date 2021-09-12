@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::Port 'port_reconfig_check';
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
@@ -99,11 +100,11 @@ get '/ajax/content/device/ports' => require_login sub {
         $set = $set->search({-or => \@combi});
     }
 
-    # so far only the basic device_port data
-    # now begin to join tables depending on the selected columns/options
+    # so far only the basic device_port data
+    # now begin to join tables depending on the selected columns/options
 
     # get vlans on the port
-    # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
+    # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
     my $vlans = $set->search({}, {
       select => [
         'port',
@@ -117,7 +118,7 @@ get '/ajax/content/device/ports' => require_login sub {
     if (param('c_vmember') or ($prefer eq 'vlan') or (not $prefer and $f =~ m/^\d+$/)) {
         $vlans = { map {(
           $_->port => {
-            # DBIC smart enough to work out this should be an arrayref :)
+            # DBIC smart enough to work out this should be an arrayref :)
             vlan_set   => $_->get_column('vlan_set'),
             vlan_count => $_->get_column('vlan_count'),
           },
@@ -201,6 +202,11 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # sort ports
     @results = sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } @results;
+
+    # add acl on port config
+    if (param('c_admin') and user_has_role('port_control')) {
+      map {$_->{portctl} = (port_reconfig_check($_) ? false : true)} @results;
+    }
 
     # empty set would be a 'no records' msg
     return unless scalar @results;

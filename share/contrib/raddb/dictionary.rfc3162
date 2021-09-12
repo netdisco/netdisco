@@ -1,0 +1,10 @@
+#
+#   RFC 3162 - RADIUS and IPv6
+#
+
+ATTRIBUTE   NAS-IPv6-Address        95      ipv6addr
+ATTRIBUTE   Framed-Interface-Id     96      ifid
+ATTRIBUTE   Framed-IPv6-Prefix      97      ipv6prefix
+ATTRIBUTE   Login-IPv6-Host         98      ipv6addr
+ATTRIBUTE   Framed-IPv6-Route       99      string
+ATTRIBUTE   Framed-IPv6-Pool        100     string

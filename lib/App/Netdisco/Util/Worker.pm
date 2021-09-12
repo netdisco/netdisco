@@ -17,7 +17,7 @@ sub queue_hook {
   my $extra = { action_conf => dclone ($conf->{'with'} || {}),
                 event_data  => dclone (vars->{'hook_data'} || {}) };
 
-  # remove scalar references which to_json cannot handle
+  # remove scalar references which to_json cannot handle
   visit( $extra->{'event_data'}, sub {
     my ($key, $valueref) = @_;
     $$valueref = '' if ref $$valueref eq 'SCALAR';

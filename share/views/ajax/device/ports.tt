@@ -70,7 +70,7 @@
       [% END %]
 
       [% IF params.c_port %]
-      [% IF user_can_port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin AND row.portctl %]
       [% IF row.up_admin == 'up' %]
       <td nowrap class="nd_editable-cell" data-action="down"
         data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]"
@@ -89,7 +89,7 @@
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
         </a>
-      [% IF user_can_port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin AND row.portctl %]
       [% IF row.up_admin == 'up' %]
         <span class="nd_hand-icon">
           <i class="icon-bullseye" data-action="bounce"
@@ -158,7 +158,7 @@
       [% END %]
 
       [% IF params.c_name %]
-      [% IF user_can_port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin AND row.portctl %]
       <td nowrap class="nd_editable-cell" contenteditable="true"
           data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
@@ -192,7 +192,7 @@
       [% END %]
 
       [% IF params.c_pvid %]
-      [% IF user_can_port_control AND params.c_admin %]
+      [% IF user_can_port_control AND params.c_admin AND row.portctl %]
       <td class="nd_editable-cell" contenteditable="true" data-default="[% row.vlan | html_entity %]"
         data-field="c_pvid" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <i class="icon-edit nd_edit-icon"></i>
@@ -239,7 +239,7 @@
       [% IF params.c_power %]
         [% IF row.power %]
           [% IF row.power.admin == 'true' %]
-            [% IF user_can_port_control AND params.c_admin %]
+            [% IF user_can_port_control AND params.c_admin AND row.portctl %]
               <td nowrap data-action="false"
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
@@ -259,7 +259,7 @@
                 [% END %]
                 </span>
           [% ELSE %]
-            [% IF user_can_port_control AND params.c_admin %]
+            [% IF user_can_port_control AND params.c_admin AND row.portctl %]
               <td nowrap data-action="true"
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
@@ -375,7 +375,7 @@
           [% END %]
         [% END %]
         [% END %]
-        [% IF user_can_port_control AND params.c_admin %]
+        [% IF user_can_port_control AND params.c_admin AND row.portctl %]
         <a class="nd_log-icon"
           href="[% uri_for('/admin/topology') | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
           <i class="icon-link text-warning"

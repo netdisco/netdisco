@@ -91,8 +91,8 @@ sub fixup_device_auth {
   }
 
   # legacy config
-  # note: read strings tried before write
-  # note: read-write is no longer used for read operations
+  # note: read strings tried before write
+  # note: read-write is no longer used for read operations
 
   push @new_stanzas, map {{
     read => 1, write => 0,

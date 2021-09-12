@@ -54,8 +54,8 @@ device_auth:
 #discover_phones: false
 
 # this is the schedule for automatically keeping netdisco up-to-date;
-# these are good defaults, so only uncomment if needing to change.
-# (or set "schedule: null" if you wish to disable the scheduler)
+# these are good defaults, so only uncomment if needing to change.
+# (or set "schedule: null" if you wish to disable the scheduler)
 # ````````````````````````````````````````````````````````````````````
 #schedule:
 #  discoverall:

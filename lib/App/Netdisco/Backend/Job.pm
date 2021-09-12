@@ -118,11 +118,11 @@ sub finalise_status {
   my $job = shift;
   # use DDP; p $job->_statuslist;
 
-  # fallback
+  # fallback
   $job->status('error');
   $job->log('failed to report from any worker!');
 
-  my $max_level = Status->error()->level;
+  my $max_level = Status->info()->level;
 
   if ($job->is_cancelled and scalar @{ $job->_statuslist }) {
     $job->status( $job->_statuslist->[-1]->status );
@@ -134,7 +134,7 @@ sub finalise_status {
     next if $status->phase
       and $status->phase !~ m/^(?:check|early|main|store|late)$/;
 
-    # done() from check phase should not be the action's done()
+    # done() from check phase should not be the action's done()
     next if $status->phase eq 'check' and $status->is_ok;
 
     if ($status->level >= $max_level) {

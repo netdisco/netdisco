@@ -25,7 +25,7 @@ sub _set_operation {
          unless $self->_compare_arrays($as, $attrs->{as});
  
       my ($sql, @bind) = @{${$_->as_query}};
-      # $sql =~ s/^\s*\((.*)\)\s*$/$1/;
+      # $sql =~ s/^\s*\((.*)\)\s*$/$1/;
       $sql = q<(> . $sql . q<)>;
  
       push @sql, $sql;
