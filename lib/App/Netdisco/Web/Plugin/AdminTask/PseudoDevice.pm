@@ -36,7 +36,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
       my $device = schema('netdisco')->resultset('Device')
         ->create({
           ip => param('ip'),
-          dns => hostname_from_ip(param('ip')),
+          dns => (hostname_from_ip(param('ip')) || ''),
           name => param('name'),
           vendor => 'netdisco',
           model => 'pseudodevice',
