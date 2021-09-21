@@ -62,7 +62,7 @@ jobs:
       continue-on-error: true
 
     - name: IRC test failure notification
-      if: (steps.build_and_run_tests.outcome == 'failure') && (github.event_name != 'workflow_dispatch')
+      if: (steps.build_and_run_tests.outcome == 'failure') && (github.event_name != 'workflow_dispatch') && (github.event_name != 'pull_request')
       uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
