@@ -50,11 +50,32 @@ set plack_middlewares => [
   )
 ];
 
+use App::AutoCRUD;
+#require App::Netdisco::AutoCRUD::Schema;
 use App::Netdisco::Web;
 use Plack::Builder;
 
+my $crudconf = {
+  app => { name => 'Netdisco AutoCRUD' },
+  datasources => { netdisco => {
+    dbh => { connect => [
+      'dbi:Pg:dbname=netdisco',
+      '',
+      '',
+      { AutoCommit => 1,
+        RaiseError => 1,
+        auto_savepoint => 1,
+        pg_enable_utf8 => 1, }
+    ] },
+#    schema_class => 'App::Netdisco::AutoCRUD::Schema',
+  } },
+};
+
 my $path = (setting('path') || '/');
-builder { mount $path => dance };
+builder {
+  mount $path => dance;
+  mount '/autocrud' => App::AutoCRUD->new(config => $crudconf);
+};
 
 =head1 NAME
 
