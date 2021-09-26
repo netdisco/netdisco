@@ -1,10 +1,16 @@
+2.049005 - 2021-09-xx
+
+  [BUG FIXES]
+
+  * #816 skip duplicate bssid on ports on wireless discovery
+
 2.049005 - 2021-09-09
 
   [ENHANCEMENTS]
 
   * #811 change duplicate job status from 'error' to 'info'
 
-  [BUG FIXES
+  [BUG FIXES]
 
   * #809 fix crash in Node search due to regexp translation perl to SQL
 

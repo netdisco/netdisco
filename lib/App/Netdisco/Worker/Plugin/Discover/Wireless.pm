@@ -29,7 +29,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $power      = $snmp->dot11_cur_tx_pwr_mw;
 
   # build device ssid list suitable for DBIC
-  my @ssids;
+  my (%ssidseen, @ssids);
   foreach my $entry (keys %$ssidlist) {
       (my $iid = $entry) =~ s/\.\d+$//;
       my $port = $interfaces->{$iid};
@@ -45,6 +45,15 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
             $device->ip, $port;
           next;
       }
+
+      next unless $ssidmac->{$entry};
+
+      if (exists $ssidseen{$port}{ $ssidmac->{$entry} }) {
+          debug sprintf ' [%s] wireless - duplicate bssid %s on port %s',
+            $device->ip, $ssidmac->{$entry}, $port;
+          next;
+      }
+      ++$ssidseen{$port}{ $ssidmac->{$entry} };
 
       push @ssids, {
           port      => $port,
