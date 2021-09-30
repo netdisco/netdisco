@@ -30,13 +30,15 @@ function do_search (event, tab) {
   );
 
   // submit the query and put results into the tab pane
-  fetch( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query )
+  fetch( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
+    { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then( response => {
-      if (!response.ok) {
+      if (! response.ok) {
         $(target).html(
           '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
           'Search failed! Please contact your site administrator (server error).</div>'
         );
+        return;
         // throw new Error('Network response was not ok');
       }
       return response.text();
@@ -46,7 +48,6 @@ function do_search (event, tab) {
         $(target).html('<div class="span2 alert alert-info">No matching records.</div>');
       }
       else {
-        console.log(content);
         $(target).html(content);
         // delegate to any [device|search] specific JS code
         $('div.content > div.tab-content table.nd_floatinghead').floatThead({
