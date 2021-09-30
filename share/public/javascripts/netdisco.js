@@ -60,9 +60,9 @@ function do_search (event, tab) {
     .catch( error => {
       $(target).html(
         '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
-        'Search failed! Please contact your site administrator (network error).</div>'
+        'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
       );
-      // console.error('There has been a problem with your fetch operation:', error);
+      console.error('There has been a problem with your fetch operation:', error);
     });
 
 //  $(target).load( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
