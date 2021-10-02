@@ -259,12 +259,12 @@ jobs:
       run: docker logout
 
     - name: Release on Heroku
-      if: steps.upload_heroku_packages.outcome == 'success'
+      if: (github.event_name == 'workflow_dispatch') || (steps.upload_heroku_packages.outcome == 'success')
       env:
         HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       run: |
         curl -X PATCH https://api.heroku.com/apps/netdisco2-demo/formation \
-          -d '{ "updates": [ { "type": "web", "docker_image": "$DEMO_IMAGE_ID" } ] }' \
+          -d "{ \"updates\": [ { \"type\": \"web\", \"docker_image\": \"$DEMO_IMAGE_ID\" } ] }" \
           -H "Content-Type: application/json" \
           -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
           -H "Authorization: Bearer $HEROKU_API_KEY"
