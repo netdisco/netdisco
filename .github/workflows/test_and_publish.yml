@@ -183,6 +183,15 @@ jobs:
               --build-arg COMMITTISH=${TAG} .
         docker tag ${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
 
+    - name: Build netdisco-demo
+      run: |
+        cd netdisco-demo
+        docker build -t ${IMAGE_ROOT}-demo \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} .
+        docker tag ${IMAGE_ROOT}-demo netdisco/${IMAGE_ROOT}-demo
+
     - name: Build netdisco-do
       run: |
         cd netdisco-do
@@ -203,7 +212,7 @@ jobs:
       id: upload_docker_hub
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql backend web do; do
+        for image in postgresql backend web demo do; do
           docker push netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
           docker push netdisco/netdisco:latest-$image
@@ -221,7 +230,7 @@ jobs:
       id: upload_github_packages
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql backend web do; do
+        for image in postgresql backend web demo do; do
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
