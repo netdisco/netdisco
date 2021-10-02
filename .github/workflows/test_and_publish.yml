@@ -190,7 +190,7 @@ jobs:
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
               --build-arg COMMITTISH=${TAG} .
-        docker tag ${IMAGE_ROOT}-demo netdisco/${IMAGE_ROOT}-demo
+        echo "DEMO_IMAGE_ID=$(docker inspect registry.heroku.com/netdisco2-demo/web --format={{.Id}})" >> $GITHUB_ENV
 
     - name: Build netdisco-do
       run: |
@@ -212,7 +212,7 @@ jobs:
       id: upload_docker_hub
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql backend web demo do; do
+        for image in postgresql backend web do; do
           docker push netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
           docker push netdisco/netdisco:latest-$image
@@ -230,7 +230,7 @@ jobs:
       id: upload_github_packages
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql backend web demo do; do
+        for image in postgresql backend web do; do
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
@@ -240,6 +240,35 @@ jobs:
 
     - name: Logout from GHP
       run: docker logout
+
+    - name: Login to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        echo '${{ env.HEROKU_API_KEY }}' | docker login registry.heroku.com --username=_ --password-stdin
+
+    - name: Upload to Heroku
+      id: upload_heroku_packages
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        docker tag ${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
+        docker push registry.heroku.com/netdisco2-demo/web
+      continue-on-error: true
+
+    - name: Logout from Heroku
+      run: docker logout
+
+    - name: Release on Heroku
+      if: steps.upload_heroku_packages.outcome == 'success'
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        curl -X PATCH https://api.heroku.com/apps/netdisco2-demo/formation \
+          -d '{ "updates": [ { "type": "web", "docker_image": "$DEMO_IMAGE_ID" } ] }' \
+          -H "Content-Type: application/json" \
+          -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
+          -H "Authorization: Bearer $HEROKU_API_KEY"
+      continue-on-error: true
 
     - name: IRC DH upload failure notification
       if: steps.upload_docker_hub.outcome == 'failure'
