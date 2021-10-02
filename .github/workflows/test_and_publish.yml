@@ -190,6 +190,7 @@ jobs:
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
               --build-arg COMMITTISH=${TAG} .
+        docker tag ${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
         echo "DEMO_IMAGE_ID=$(docker inspect registry.heroku.com/netdisco2-demo/web --format={{.Id}})" >> $GITHUB_ENV
 
     - name: Build netdisco-do
@@ -251,7 +252,6 @@ jobs:
       id: upload_heroku_packages
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        docker tag ${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
         docker push registry.heroku.com/netdisco2-demo/web
       continue-on-error: true
 
