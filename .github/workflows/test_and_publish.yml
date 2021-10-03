@@ -14,6 +14,10 @@ on:
         description: 'With docker debug'
         required: false
         default:  false
+      debug_dbdeploy_enabled:
+        description: 'With db deploy debug'
+        required: false
+        default:  false
   push:
     branches:
       - master
@@ -183,6 +187,16 @@ jobs:
               --build-arg COMMITTISH=${TAG} .
         docker tag ${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
 
+    - name: Build netdisco-demo
+      run: |
+        cd netdisco-demo
+        docker build -t ${IMAGE_ROOT}-demo \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} .
+        docker tag ${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
+        echo "DEMO_IMAGE_ID=$(docker inspect registry.heroku.com/netdisco2-demo/web --format={{.Id}})" >> $GITHUB_ENV
+
     - name: Build netdisco-do
       run: |
         cd netdisco-do
@@ -232,6 +246,34 @@ jobs:
     - name: Logout from GHP
       run: docker logout
 
+    - name: Login to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        echo '${{ env.HEROKU_API_KEY }}' | docker login registry.heroku.com --username=_ --password-stdin
+
+    - name: Upload to Heroku
+      id: upload_heroku_packages
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        docker push registry.heroku.com/netdisco2-demo/web
+      continue-on-error: true
+
+    - name: Logout from Heroku
+      run: docker logout
+
+    - name: Release on Heroku
+      if: (github.event_name == 'workflow_dispatch') || (steps.upload_heroku_packages.outcome == 'success')
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        curl -X PATCH https://api.heroku.com/apps/netdisco2-demo/formation \
+          -d "{ \"updates\": [ { \"type\": \"web\", \"docker_image\": \"$DEMO_IMAGE_ID\" } ] }" \
+          -H "Content-Type: application/json" \
+          -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
+          -H "Authorization: Bearer $HEROKU_API_KEY"
+      continue-on-error: true
+
     - name: IRC DH upload failure notification
       if: steps.upload_docker_hub.outcome == 'failure'
       uses: Gottox/irc-message-action@v2
@@ -259,4 +301,56 @@ jobs:
     - name: Fix job exit status
       if: always() && (steps.upload_docker_hub.outcome == 'failure')
       run: exit 1
+
+  demo_db_redeploy:
+    name: Redeploy Demo DB
+    needs: build_docker_images
+    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    container:
+      image: 'netdisco/netdisco:latest-do'
+      options: '--user root --entrypoint /bin/ash'
+      volumes:
+        - '/home/runner/work:/github/workspace'
+    defaults:
+      run:
+        working-directory: /github/workspace/netdisco/netdisco
+    steps:
+    - name: Install packages
+      run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
+    - name: Install fake apt-get
+      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+    - name: Check out latest code
+      uses: actions/checkout@v1
+    - name: Fix owner of checkout
+      run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
+
+    - name: Reinitialise DB
+      env:
+        PGUSER:     ${{ secrets.DEMO_PGUSER }}
+        PGPASSWORD: ${{ secrets.DEMO_PGPASSWORD }}
+        PGHOST:     ${{ secrets.DEMO_PGHOST }}
+        PGDATABASE: ${{ secrets.DEMO_PGDATABASE }}
+      run: |
+        psql -c "drop owned by $PGUSER"
+        psql -c "create schema public"
+        curl -LO https://github.com/netdisco/netdisco2-demo/raw/master/netdisco2-demo-cumulus-clean.db.bin
+        pg_restore -x -O -1 -d ${{ env.PGDATABASE }} netdisco2-demo-cumulus-clean.db.bin
+
+    - name: Update schema
+      env:
+        NETDISCO_HOME: /github/workspace/netdisco/netdisco
+        NETDISCO_DB_USER: ${{ secrets.DEMO_PGUSER }}
+        NETDISCO_DB_PASS: ${{ secrets.DEMO_PGPASSWORD }}
+        NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
+        NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
+      run: |
+        /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
+        /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: always() && github.event.inputs.debug_dbdeploy_enabled
+      with:
+        sudo: true
 
