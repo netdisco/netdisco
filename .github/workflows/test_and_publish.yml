@@ -318,6 +318,8 @@ jobs:
     steps:
     - name: Install packages
       run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
+    - name: Install fake apt-get
+      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
     - name: Check out latest code
       uses: actions/checkout@v1
     - name: Fix owner of checkout
@@ -330,10 +332,10 @@ jobs:
         PGHOST:     ${{ secrets.DEMO_PGHOST }}
         PGDATABASE: ${{ secrets.DEMO_PGDATABASE }}
       run: |
-        sudo -u netdisco psql -c "drop owned by $PGUSER"
-        sudo -u netdisco psql -c "create schema public"
-        sudo -u netdisco curl -LO https://github.com/netdisco/netdisco2-demo/raw/master/netdisco2-demo-cumulus-clean.db.bin
-        sudo -u netdisco pg_restore -x -O -1 netdisco2-demo-cumulus-clean.db.bin
+        psql -c "drop owned by $PGUSER"
+        psql -c "create schema public"
+        curl -LO https://github.com/netdisco/netdisco2-demo/raw/master/netdisco2-demo-cumulus-clean.db.bin
+        pg_restore -x -O -1 netdisco2-demo-cumulus-clean.db.bin
 
     - name: Update schema
       env:
@@ -343,8 +345,8 @@ jobs:
         NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
         NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
       run: |
-        sudo -u netdisco bin/netdisco-db-deploy
-        sudo -u netdisco bin/netdisco-do stats -D
+        /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
+        /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
