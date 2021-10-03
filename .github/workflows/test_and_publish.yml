@@ -284,7 +284,7 @@ jobs:
           🤖 Failed to publish Netdisco release ${{ env.TAG }} to Docker Hub! 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC DH upload success notification
-      if: steps.upload_docker_hub.outcome == 'success'
+      if: (steps.upload_docker_hub.outcome == 'success') && github.event.inputs.success_irc_squawk
       uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
