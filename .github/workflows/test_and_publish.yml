@@ -316,6 +316,8 @@ jobs:
       run:
         working-directory: /github/workspace/netdisco/netdisco
     steps:
+    - name: Install packages
+      run: apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
     - name: Check out latest code
       uses: actions/checkout@v1
     - name: Fix owner of checkout
@@ -341,9 +343,8 @@ jobs:
         NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
         NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
       run: |
-        sudo -u netdisco mkdir ~/environments
-        sudo -u netdisco curl -L https://raw.githubusercontent.com/netdisco/netdisco2-demo/master/environments/deployment.yml > ~/environments/deployment.yml
         sudo -u netdisco bin/netdisco-db-deploy
+        sudo -u netdisco bin/netdisco-do stats -D
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
