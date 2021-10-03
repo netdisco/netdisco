@@ -335,7 +335,7 @@ jobs:
         psql -c "drop owned by $PGUSER"
         psql -c "create schema public"
         curl -LO https://github.com/netdisco/netdisco2-demo/raw/master/netdisco2-demo-cumulus-clean.db.bin
-        pg_restore -x -O -1 netdisco2-demo-cumulus-clean.db.bin
+        pg_restore -x -O -1 -d ${{ env.PGDATABASE }} netdisco2-demo-cumulus-clean.db.bin
 
     - name: Update schema
       env:
@@ -345,8 +345,8 @@ jobs:
         NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
         NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
       run: |
-        /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
-        /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
+        /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
+        /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
