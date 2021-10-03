@@ -38,6 +38,9 @@ device_auth:
 # ```````````````````````````````````````````````````````
 #domain_suffix: ['.example.com']
 
+# when serving over HTTPS this should be uncommented (enabled)
+# ````````````````````````````````````````````````````````````
+#session_secure: true
 
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
 #
