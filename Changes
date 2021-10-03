@@ -1,4 +1,9 @@
-2.049005 - 2021-09-xx
+2.049006 - 2021-10-03
+
+  [ENHANCEMENTS]
+
+  * support for IPv6 neighbors in NXOS SSHCollector
+  * netdisco-web can use PORT environment variable for --port option
 
   [BUG FIXES]
 
