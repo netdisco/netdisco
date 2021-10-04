@@ -716,14 +716,14 @@ sub delete {
         $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
   }
 
-  foreach my $set (qw/
-    Admin
-    DeviceSkip
-  /) {
-      $schema->resultset($set)->search(
-        { device => { '-in' => $devices->as_query } },
-      )->delete;
-  }
+  $schema->resultset('Admin')->search({
+    device => { '-in' => $devices->as_query },
+    status => { '-not_like' => 'queued-%' },
+  })->delete;
+
+  $schema->resultset('DeviceSkip')->search(
+    { device => { '-in' => $devices->as_query } },
+  )->delete;
 
   my $gone = $schema->resultset('Topology')->search({
     -or => [
