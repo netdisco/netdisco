@@ -304,7 +304,6 @@ hook 'after' => sub {
 my $swagger = Dancer::Plugin::Swagger->instance;
 my $swagger_doc = $swagger->doc;
 
-$swagger_doc->{schemes} = ['http','https'];
 $swagger_doc->{consumes} = 'application/json';
 $swagger_doc->{produces} = 'application/json';
 $swagger_doc->{tags} = [
@@ -330,11 +329,13 @@ $swagger_doc->{security} = [ { APIKeyHeader => [] } ];
 my $swagger_base = config->{plugins}->{Swagger}->{ui_url};
 
 get $swagger_base => sub {
+    Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
     redirect uri_for($swagger_base)->path
       . '/?url=' . uri_for('/swagger.json')->path;
 };
 
 get $swagger_base.'/' => sub {
+    Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
     # user might request /swagger-ui/ initially (Plugin doesn't handle this)
     params->{url} or redirect uri_for($swagger_base)->path;
     send_file( 'swagger-ui/index.html' );
@@ -342,6 +343,7 @@ get $swagger_base.'/' => sub {
 
 # omg the plugin uses system_path and we don't want to go there
 get $swagger_base.'/**' => sub {
+    Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
     send_file( join '/', 'swagger-ui', @{ (splat())[0] } );
 };
 
