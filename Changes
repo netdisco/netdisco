@@ -1,3 +1,13 @@
+2.049007 - 2021-10-05
+
+  [ENHANCEMENTS]
+
+  * make swagger-ui scheme follow the hosted scheme
+
+  [BUG FIXES]
+
+  * #814 when deleting device, avoid deleting jobs running on the device
+
 2.049006 - 2021-10-03
 
   [ENHANCEMENTS]
