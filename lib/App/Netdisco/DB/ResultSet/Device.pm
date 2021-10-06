@@ -124,7 +124,7 @@ sub search_aliases {
 
     # rough approximation of IP addresses (v4 in v6 not supported).
     # this helps us avoid triggering any DNS.
-    my $by_ip = ($q =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})$}i) ? 1 : 0;
+    my $by_ip = ($q =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i) ? 1 : 0;
 
     my $clause;
     if ($by_ip) {
@@ -394,7 +394,9 @@ sub search_fuzzy {
     my $ipbind = '255.255.255.255/32';
 
     # but also allow prefix search
-    if (my $ip = NetAddr::IP::Lite->new($qc)) {
+    if ($qc =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i
+        and my $ip = NetAddr::IP::Lite->new($qc)) {
+
         $ip_clause = [
             'me.ip'  => { '<<=' => $ip->cidr },
             'device_ips_by_address_or_name.alias' => { '<<=' => $ip->cidr },
