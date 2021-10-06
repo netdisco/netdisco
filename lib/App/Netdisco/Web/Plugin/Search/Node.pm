@@ -211,7 +211,9 @@ get '/ajax/content/search/node' => require_login sub {
         ->search_by_name({nbname => $likeval, @active, @times});
 
     unless ( $set->has_rows ) {
-        if (my $ip = NetAddr::IP::Lite->new($node)) {
+        if ($node =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i
+            and my $ip = NetAddr::IP::Lite->new($node)) {
+
             # search_by_ip() will extract cidr notation if necessary
             $set = schema('netdisco')->resultset('NodeIp')
               ->search_by_ip({ip => $ip, @active, @times});
