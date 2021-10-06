@@ -31,6 +31,12 @@ BEGIN {
 
 set plack_middlewares => [
   ['Plack::Middleware::ReverseProxy'],
+  [ Headers => (
+      set => ['X-Frame-Options' => setting('HTTP-Header-X-Frame-Options')],
+  )],
+  [ Headers => (
+      set => ['Content-Security-Policy' => setting('HTTP-Header-Content-Security-Policy')],
+  )],
   [ Expires => (
       content_type => [qr{^application/javascript}, qr{^text/css}, qr{image}, qr{font}],
       expires => 'access plus 1 day',

@@ -71,6 +71,7 @@ Module::Build->new(
     'Plack::Handler::Twiggy' => '0',
     'Plack::Middleware::Debug' => '0',
     'Plack::Middleware::Expires' => '0.03',
+    'Plack::Middleware::Headers' => '0',
     'Plack::Middleware::ReverseProxy' => '0.15',
     'Pod::Usage' => 0,
     'Regexp::Common' => 2017060201,
