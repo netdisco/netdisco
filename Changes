@@ -1,3 +1,10 @@
+2.049008 - 2021-10-06
+
+  [BUG FIXES]
+
+  * #808 avoid dns for search on IPish things
+  * clickjacking prevention via X-Frame-Options and Content-Security-Policy headers
+
 2.049007 - 2021-10-05
 
   [ENHANCEMENTS]
