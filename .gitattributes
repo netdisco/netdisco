@@ -1,3 +1,4 @@
+share/public/javascripts/*.map binary
 share/public/javascripts/*.min.js binary
 share/public/css/*.min.css binary
 share/public/swagger-ui/* binary

@@ -1,3 +1,9 @@
+2.049009 - 2021-10-06
+
+  [BUG FIXES]
+
+  * improvement to Content-Security-Policy header default
+
 2.049008 - 2021-10-06
 
   [BUG FIXES]
