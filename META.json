@@ -84,11 +84,12 @@
             "Plack::Handler::Twiggy" : "0",
             "Plack::Middleware::Debug" : "0",
             "Plack::Middleware::Expires" : "0.03",
+            "Plack::Middleware::Headers" : "0",
             "Plack::Middleware::ReverseProxy" : "0.15",
             "Pod::Usage" : "0",
             "Regexp::Common" : "2017060201",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.78",
+            "SNMP::Info" : "3.81",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -129,7 +130,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.049007"
+         "version" : "2.049010"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -862,6 +863,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.049007",
+   "version" : "2.049010",
    "x_serialization_backend" : "JSON::PP version 4.06"
 }

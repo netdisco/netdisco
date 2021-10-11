@@ -1,3 +1,9 @@
+2.049010 - 2021-10-11
+
+  [ENHANCEMENTS]
+
+  * require SNMP::Info 3.81
+
 2.049009 - 2021-10-06
 
   [BUG FIXES]
