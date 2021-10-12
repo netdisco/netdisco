@@ -1,3 +1,18 @@
+2.050000 - 2021-10-12
+
+  [NEW FEATURES]
+
+  * #827 add ignore_interface_types setting
+
+  [ENHANCEMENTS]
+
+  * replace jquery.load with fetch
+
+  [BUG FIXES]
+
+  * #761 Sometimes queries status return null values
+  * #765 Issues with IP Reports
+
 2.049011 - 2021-10-12
 
   [BUG FIXES]
