@@ -1,3 +1,9 @@
+2.049011 - 2021-10-12
+
+  [BUG FIXES]
+
+  * fix dns_opt in docker-compose.yml
+
 2.049010 - 2021-10-11
 
   [ENHANCEMENTS]
