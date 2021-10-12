@@ -190,7 +190,7 @@ get '/ajax/content/search/node' => require_login sub {
           ports     => $ports,
           wireless  => $wireless,
           netbios   => $netbios,
-        };
+        }, { layout => undef };
     }
     else {
         my $ports = param('deviceports')
@@ -203,7 +203,7 @@ get '/ajax/content/search/node' => require_login sub {
               ports     => $ports,
               wireless  => $wireless,
               netbios   => $netbios,
-            };
+            }, { layout => undef };
         }
     }
 
@@ -248,7 +248,7 @@ get '/ajax/content/search/node' => require_login sub {
     return template 'ajax/search/node_by_ip.tt', {
       macs => $set,
       archive_filter => {@active},
-    };
+    }, { layout => undef };
 };
 
 true;
