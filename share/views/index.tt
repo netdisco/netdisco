@@ -113,12 +113,25 @@
     $('.nd_chevron').toggleClass('icon-chevron-up icon-chevron-down');
 
     if (! stats_loaded) {
-      $('#nd_stats').load("[% uri_for('/ajax/content/statistics') | none %]", function(r,s,x) {
-        if (s == "error") {
+      fetch( "[% uri_for('/ajax/content/statistics') | none %]",
+        { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then( response => {
+          if (! response.ok) {
+            $('#nd_stats_status').addClass('alert-error')
+              .html('<i class="icon-warning-sign"></i> Failed to retrieve system information (server error).');
+            return;
+            // throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then( content => {
+          $('#nd_stats').html(content);
+        })
+        .catch( error => {
           $('#nd_stats_status').addClass('alert-error')
-            .html('<i class="icon-warning-sign"></i> Failed to retrieve system information.');
-        }
-      });
+            .html('<i class="icon-warning-sign"></i> Failed to retrieve system information (network error: ' + error + ').');
+          console.error('There has been a problem with your fetch operation:', error);
+        });
       stats_loaded = 1;
     }
   });

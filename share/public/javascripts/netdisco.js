@@ -64,30 +64,6 @@ function do_search (event, tab) {
       );
       console.error('There has been a problem with your fetch operation:', error);
     });
-
-//  $(target).load( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
-//    function(response, status, xhr) {
-//      if (status !== "success") {
-//        $(target).html(
-//          '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
-//          'Search failed! Please contact your site administrator.</div>'
-//        );
-//        return;
-//      }
-//      if (response == "") {
-//        $(target).html(
-//          '<div class="span2 alert alert-info">No matching records.</div>'
-//        );
-//      }
-//
-//      // delegate to any [device|search] specific JS code
-//      $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-//        scrollingTop: 40
-//        ,useAbsolutePositioning: false
-//      });
-//      inner_view_processing(tab);
-//    }
-//  );
 }
 
 // keep track of which tabs have a sidebar, for when switching tab
