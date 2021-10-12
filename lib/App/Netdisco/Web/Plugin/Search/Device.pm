@@ -91,7 +91,7 @@ get '/ajax/content/search/device' => require_login sub {
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/search/device_csv.tt', { results => \@results, };
+        template 'ajax/search/device_csv.tt', { results => \@results, }, { layout => undef };
     }
 };
 
