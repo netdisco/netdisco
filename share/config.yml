@@ -311,6 +311,7 @@ ignore_interfaces:
   - 'Ethernet(?:-| )QOS Packet Scheduler'
   - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
   - 'ii\d\/\d\/\d+'
+ignore_interface_types: []
 ignore_notpresent_types:
   - 'ethernetCsmacd'
   - 'tunnel'
