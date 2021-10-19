@@ -6,6 +6,10 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
 
+use Data::Visitor::Tiny;
+use MIME::Base64 'encode_base64';
+use DDP;
+
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
     unless defined shift->device;
@@ -33,19 +37,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       eval { $snmp->$method() };
   }
 
-  use DDP;
-  my $x = $snmp->cache();
-  foreach my $k (keys %{ $x->{store}->{i_mac} }) {
-    p $x->{store}->{i_mac}->{$k};
-    my $v = $snmp->munge_mac( $x->{store}->{i_mac}->{$k} );
-    p $v;
-  }
-  use Data::Visitor::Tiny;
-  visit( $x, sub {
+  my $cache = $snmp->cache();
+  visit( $cache, sub {
       my ($key, $valueref) = @_;
-      $$valueref = $munge->{$key}->($$valueref) if exists $munge->{$key};
+      ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
   });
-  p $x;
+  p $cache;
 
   return Status->done(
     sprintf "Gathered Replay data from %s", $device->ip);
