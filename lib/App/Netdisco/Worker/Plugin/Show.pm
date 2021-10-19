@@ -28,8 +28,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     }
   }
 
-  my $i = App::Netdisco::Transport::SNMP->reader_for($device, $class);
-  my $result = sub { eval { $i->$extra($port) } || undef };
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device, $class);
+  my $result = sub { eval { $snmp->$extra($port) } || undef };
   Data::Printer::p( $result->() );
 
   return Status->done(
