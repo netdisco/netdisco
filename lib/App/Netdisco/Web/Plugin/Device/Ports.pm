@@ -218,7 +218,7 @@ get '/ajax/content/device/ports' => require_login sub {
           ips   => $ips_name,
           device => $device,
           vlans  => $vlans,
-        }, { layout => undef };
+        }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
@@ -228,7 +228,7 @@ get '/ajax/content/device/ports' => require_login sub {
           ips   => $ips_name,
           device => $device,
           vlans  => $vlans,
-        }, { layout => undef };
+        }, { layout => 'noop' };
     }
 };
 

@@ -24,7 +24,7 @@ ajax '/ajax/content/device/modules' => require_login sub {
     content_type('text/html');
     template 'ajax/device/modules.tt', {
       nodes => $results,
-    }, { layout => undef };
+    }, { layout => 'noop' };
 };
 
 true;
