@@ -1,3 +1,9 @@
+2.050002 - 2021-10-19
+
+  [BUG FIXES]
+
+  * #832 fix dancer layout for API requests
+
 2.050001 - 2021-10-12
 
   [BUG FIXES]
