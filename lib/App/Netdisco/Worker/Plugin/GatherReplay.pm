@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP;
 
 use Data::Visitor::Tiny;
 use MIME::Base64 'encode_base64';
-use DDP;
+use Storable 'nfreeze';
 
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
@@ -42,8 +42,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my ($key, $valueref) = @_;
       ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
   });
-  p $cache;
 
+  $job->subaction( encode_base64( nfreeze( $cache ) ) );
   return Status->done(
     sprintf "Gathered Replay data from %s", $device->ip);
 });
