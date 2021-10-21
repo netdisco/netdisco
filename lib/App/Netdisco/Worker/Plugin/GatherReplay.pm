@@ -7,8 +7,11 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP;
 
 use Data::Visitor::Tiny;
+use File::Spec::Functions qw(catdir catfile);
 use MIME::Base64 'encode_base64';
+use File::Slurper 'read_lines';
 use Storable 'nfreeze';
+use DDP;
 
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
@@ -20,17 +23,60 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return Status->defer("gather failed: could not SNMP connect to $device");
+  my $snmp = 1;#App::Netdisco::Transport::SNMP->reader_for($device)
+#    or return Status->defer("gather failed: could not SNMP connect to $device");
 
-  my $munge = {
-    _snmpEngineID => sub { unpack('H*', (shift || '')) },
-    i_mac => sub { my $h = shift; return { map {( $_ => $snmp->munge_mac($h->{$_}) )} keys %$h } },
-  };
+  my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
+  my @report = read_lines(catfile($home, qw(EXTRAS reports all)), 'latin-1')
+    or return Status->error("gather failed to read netdisco-mibs report file");
+
+  my $oid = '.1';
+  my $last_leaf = '';
+  my $last_indent = -1;
+  my %oidmap = ();
+
+  foreach my $line (@report) {
+    my ($spaces, $leaf, $idx) = ($line =~ m/^(\s*)(\w+)\((\d+)\)/);
+    next unless defined $spaces and defined $leaf and defined $idx;
+    my $this_indent = length($spaces);
+
+    if ($this_indent > $last_indent) {
+      $last_indent = $this_indent;
+      $last_leaf = $leaf;
+      $oid .= ".$idx";
+    }
+    elsif ($this_indent == $last_indent) {
+      $oidmap{$oid} = $last_leaf;
+      # debug "$oid => $last_leaf";
+      $last_leaf = $leaf;
+      $oid =~ s/\.\d+$/.$idx/;
+    }
+    elsif ($this_indent < $last_indent) {
+      $oidmap{$oid} = $last_leaf;
+      # debug "$oid => $last_leaf";
+      $last_leaf = $leaf;
+      my $step_back = (($last_indent - $this_indent) / 2);
+      foreach (0 .. $step_back) {
+        $oid =~ s/\.\d+$//;
+      }
+      $oid .= ".$idx";
+      $last_indent = $this_indent;
+    }
+  }
+
+  #p %oidmap;
+  #foreach (keys %oidmap) {
+  #  debug $_ if $oidmap{$_} eq 'sysDescr';
+  #  debug $_ if $oidmap{$_} eq 'sysObjectID';
+  #}
+  return Status->done(
+    sprintf "Gathered Replay data from %s", $device->ip);
 
   foreach my $method (qw/
     i_mac
     snmpEngineID
+    ifName
+    SNMP_VIEW_BASED_ACM_MIB__vacmViewTreeFamilyStorageType
     /) {
 
       debug sprintf ' [%s] gather - requesting %s', $device->ip, $method;
@@ -42,6 +88,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my ($key, $valueref) = @_;
       ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
   });
+  p $cache;
 
   $job->subaction( encode_base64( nfreeze( $cache ) ) );
   return Status->done(
