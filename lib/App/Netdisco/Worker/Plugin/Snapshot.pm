@@ -66,23 +66,25 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   $snmp->_cache($_, $tables{$_}) for keys %tables;
   $snmp->_cache($_, $leaves{$_}) for keys %leaves;
 
-#  # specific to this device's class
-#  my %aliases = (%{ $snmp->funcs() }, %{ $snmp->globals() });
-#  my %cache = %{ $snmp->cache() };
+  # specific to this device's class
+  my %aliases = (%{ $snmp->funcs() }, %{ $snmp->globals() });
+  my %cache = %{ $snmp->cache() };
 #  p %aliases;
 #  p %cache;
-#
-#  # !!! poking SNMP::Info internals now
-#  foreach my $alias (keys %aliases) {
-#    my $target = $aliases{ $alias };
-#
-#    if (exists $cache{"_${target}"}) {
-#        $snmp->{"_${alias}"} = \$snmp->{"_${target}"};
-#    }
-#    elsif (exists $cache{store}->{$target}) {
-#        $snmp->{store}->{$alias} = \$snmp->{store}->{$target};
-#    }
-#  }
+
+  # !!! poking SNMP::Info internals now
+  foreach my $alias (keys %aliases) {
+    my $target = $aliases{ $alias };
+    next if $alias eq $target;
+
+    if (exists $cache{store}->{$target}) {
+        $snmp->{store}->{$alias} = $snmp->{store}->{$target};
+        $snmp->{"_${alias}"} = scalar keys %{ $snmp->{store}->{$target} };
+    }
+    elsif (exists $cache{"_${target}"}) {
+        $snmp->{"_${alias}"} = \{ $snmp->{"_${target}"} };
+    }
+  }
 
 #  foreach my $method (qw/
 #    i_mac
@@ -96,11 +98,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 #  }
 
   my $cache = $snmp->cache();
+  p $cache;
   visit( $cache, sub {
       my ($key, $valueref) = @_;
       ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
   });
-  # p $cache;
 
   $job->subaction( encode_base64( nfreeze( $cache ) ) );
   return Status->done(
