@@ -31,44 +31,29 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->error("gather failed to read netdisco-mibs report file");
 
   my $oid = '.1';
-  my $last_leaf = '';
-  my $last_indent = -1;
+  my $last_indent = 0;
   my %oidmap = ();
 
   foreach my $line (@report) {
-    my ($spaces, $leaf, $idx) = ($line =~ m/^(\s*)(\w+)\((\d+)\)/);
+    my ($spaces, $leaf, $idx) = ($line =~ m/^(\s*)([-\w]+)\((\d+)\)/);
     next unless defined $spaces and defined $leaf and defined $idx;
     my $this_indent = length($spaces);
 
-    if ($this_indent > $last_indent) {
-      $last_indent = $this_indent;
-      $last_leaf = $leaf;
-      $oid .= ".$idx";
-    }
-    elsif ($this_indent == $last_indent) {
-      $oidmap{$oid} = $last_leaf;
-      # debug "$oid => $last_leaf";
-      $last_leaf = $leaf;
-      $oid =~ s/\.\d+$/.$idx/;
-    }
-    elsif ($this_indent < $last_indent) {
-      $oidmap{$oid} = $last_leaf;
-      # debug "$oid => $last_leaf";
-      $last_leaf = $leaf;
+    # update current OID
+    if ($this_indent <= $last_indent) {
       my $step_back = (($last_indent - $this_indent) / 2);
-      foreach (0 .. $step_back) {
-        $oid =~ s/\.\d+$//;
-      }
-      $oid .= ".$idx";
-      $last_indent = $this_indent;
+      foreach (0 .. $step_back) { $oid =~ s/\.\d+$// }
     }
+    $oid .= ".$idx";
+
+    # store what we have just seen
+    $oidmap{$oid} = $leaf;
+
+    # and remember the indent
+    $last_indent = $this_indent;
   }
 
   #p %oidmap;
-  #foreach (keys %oidmap) {
-  #  debug $_ if $oidmap{$_} eq 'sysDescr';
-  #  debug $_ if $oidmap{$_} eq 'sysObjectID';
-  #}
   return Status->done(
     sprintf "Gathered Replay data from %s", $device->ip);
 
