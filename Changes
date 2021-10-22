@@ -1,10 +1,84 @@
+2.050003 - 2021-10-19
+
+  [BUG FIXES]
+
+  * #832 fix dancer layout for API requests
+
+2.050001 - 2021-10-12
+
+  [BUG FIXES]
+
+  * #761 Sometimes queries status return null values
+  * #765 Issues with IP Reports
+
+2.050000 - 2021-10-12
+
+  [NEW FEATURES]
+
+  * #827 add ignore_interface_types setting
+
+  [ENHANCEMENTS]
+
+  * replace jquery.load with fetch
+
+  [BUG FIXES]
+
+  * #761 Sometimes queries status return null values
+  * #765 Issues with IP Reports
+
+2.049011 - 2021-10-12
+
+  [BUG FIXES]
+
+  * fix dns_opt in docker-compose.yml
+
+2.049010 - 2021-10-11
+
+  [ENHANCEMENTS]
+
+  * require SNMP::Info 3.81
+
+2.049009 - 2021-10-06
+
+  [BUG FIXES]
+
+  * improvement to Content-Security-Policy header default
+
+2.049008 - 2021-10-06
+
+  [BUG FIXES]
+
+  * #808 avoid dns for search on IPish things
+  * clickjacking prevention via X-Frame-Options and Content-Security-Policy headers
+
+2.049007 - 2021-10-05
+
+  [ENHANCEMENTS]
+
+  * make swagger-ui scheme follow the hosted scheme
+
+  [BUG FIXES]
+
+  * #814 when deleting device, avoid deleting jobs running on the device
+
+2.049006 - 2021-10-03
+
+  [ENHANCEMENTS]
+
+  * support for IPv6 neighbors in NXOS SSHCollector
+  * netdisco-web can use PORT environment variable for --port option
+
+  [BUG FIXES]
+
+  * #816 skip duplicate bssid on ports on wireless discovery
+
 2.049005 - 2021-09-09
 
   [ENHANCEMENTS]
 
   * #811 change duplicate job status from 'error' to 'info'
 
-  [BUG FIXES
+  [BUG FIXES]
 
   * #809 fix crash in Node search due to regexp translation perl to SQL
 

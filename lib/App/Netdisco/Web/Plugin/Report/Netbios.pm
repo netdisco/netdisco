@@ -97,13 +97,13 @@ get '/ajax/content/report/netbios' => require_login sub {
         my $json = to_json( \@results );
         template 'ajax/report/netbios.tt',
             { results => $json, opt => $domain },
-            { layout => undef };
+            { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/netbios_csv.tt',
             { results => \@results, opt => $domain },
-            { layout => undef };
+            { layout => 'noop' };
     }
 };
 

@@ -131,13 +131,13 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
         my $json = to_json( \@results );
         template 'ajax/report/moduleinventory.tt',
             { results => $json, opt => $has_opt },
-            { layout => undef };
+            { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/moduleinventory_csv.tt',
             { results => \@results, opt => $has_opt },
-            { layout => undef };
+            { layout => 'noop' };
     }
 };
 

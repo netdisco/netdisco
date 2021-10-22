@@ -69,6 +69,10 @@ if (! -e $app_config) {
 my $netdisco = file($FindBin::RealBin, 'netdisco-web-fg');
 my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
+if (exists $ENV{PORT} and 0 == scalar grep { $_ =~ m/port/ } @args) {
+    push @args, "--port=$ENV{PORT}";
+}
+
 my $uid = (stat($netdisco->stringify))[4] || 0;
 my $gid = (stat($netdisco->stringify))[5] || 0;
 

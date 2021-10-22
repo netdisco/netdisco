@@ -193,11 +193,11 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/ipinventory.tt', { results => $json };
+        template 'ajax/report/ipinventory.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/ipinventory_csv.tt', { results => \@results, };
+        template 'ajax/report/ipinventory_csv.tt', { results => \@results, }, { layout => 'noop' };
     }
 };
 

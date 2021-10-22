@@ -16,6 +16,7 @@ use warnings;
 use Dancer ':script';
 use Moo;
 use Expect;
+use Regexp::Common 'net';
 
 =head1 PUBLIC METHODS
 
@@ -81,8 +82,35 @@ sub arpnip {
         }
     }
 
+    $expect->send("show ipv6 neighbor vrf all | exclude Flags:\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    my @data6 = split(/\R/, $before);
+
+    #IPv6 neighbors use this two-line format
+    #IPv6 Adjacency Table for all VRFs
+    #Total number of entries: 65
+    #Address         Age       MAC Address     Pref Source     Interface
+    #bff:a90:c405:120::3
+    #                00:01:46  5c71.0d42.df3f  50   icmpv6     Vlan376
+    #bff:a90:c405:120::52
+    #                    3w0d  9440.c988.b6fd  50   icmpv6     Vlan376
+
+
+    my $prevline;
+    foreach my $line (@data6) {
+
+        my (undef, $age, $mac, $pref, $src, $iface) = split(/\s+/, $line);
+        if ($mac && $mac =~ m/([0-9a-f]{4}\.){2}[0-9a-f]{4}/i && $prevline =~ /$RE{net}{IPv6}/) {
+            push(@arpentries, { ip => $prevline, mac => $mac });
+        }
+
+        $prevline = $line;
+    }
+
     return @arpentries;
 }
 
 1;
+
 

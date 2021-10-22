@@ -5,6 +5,7 @@ on:
       - '2.[0-9][0-9][0-9][0-9][0-9][0-9]'
 jobs:
   release_netdisco:
+    if: github.repository == 'netdisco/netdisco'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

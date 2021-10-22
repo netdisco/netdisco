@@ -48,11 +48,11 @@ get '/ajax/content/report/subnets' => require_login sub {
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/subnets.tt', { results => \@results };
+        template 'ajax/report/subnets.tt', { results => \@results }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/subnets_csv.tt', { results => \@results };
+        template 'ajax/report/subnets_csv.tt', { results => \@results }, { layout => 'noop' };
     }
 };
 

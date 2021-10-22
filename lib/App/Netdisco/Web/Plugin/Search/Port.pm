@@ -100,11 +100,11 @@ get '/ajax/content/search/port' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/search/port.tt', { results => $json };
+        template 'ajax/search/port.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/search/port_csv.tt', { results => \@results };
+        template 'ajax/search/port_csv.tt', { results => \@results }, { layout => 'noop' };
     }
 };
 

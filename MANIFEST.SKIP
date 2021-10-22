@@ -21,6 +21,7 @@ logs/.*
 \B\.svn\b
 \B\.git\b
 \B\.gitignore\b
+\B\.gitattributes\b
 \b_darcs\b
 \B\.cvsignore$
 
@@ -75,6 +76,7 @@ logs/.*
 \.docker
 \.circleci
 README.md
+SECURITY.md
 
 # ignore intellij project directory
 \B\.idea

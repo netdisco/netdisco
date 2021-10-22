@@ -45,7 +45,10 @@ register 'register_worker' => sub {
 
     # support part-actions via action::namespace
     if ($job->only_namespace and $workerconf->{phase} ne 'check') {
+      # skip namespaces not the requested ::namespace
       return unless $workerconf->{namespace} eq lc( $job->only_namespace )
+        # apart from discover::properties which needs to run, so that's early
+        # phase for unknown devices, but not ::hooks/early (if implemented)
         or (($job->only_namespace ne 'hooks') and ($workerconf->{phase} eq 'early')
              and ($job->device and not $job->device->in_storage));
     }

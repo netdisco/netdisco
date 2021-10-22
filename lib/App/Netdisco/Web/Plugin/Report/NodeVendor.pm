@@ -120,13 +120,13 @@ get '/ajax/content/report/nodevendor' => require_login sub {
         my $json = to_json( \@results );
         template 'ajax/report/nodevendor.tt',
             { results => $json, opt => $vendor },
-            { layout => undef };
+            { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/nodevendor_csv.tt',
             { results => \@results, opt => $vendor },
-            { layout => undef };
+            { layout => 'noop' };
     }
 };
 

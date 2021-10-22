@@ -29,11 +29,11 @@ get '/ajax/content/report/apchanneldist' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/apchanneldist.tt', { results => $json };
+        template 'ajax/report/apchanneldist.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/apchanneldist_csv.tt', { results => \@results };
+        template 'ajax/report/apchanneldist_csv.tt', { results => \@results }, { layout => 'noop' };
     }
 };
 

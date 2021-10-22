@@ -60,7 +60,7 @@ ajax '/ajax/content/report/portlog' => require_login sub {
     content_type('text/html');
     template 'ajax/report/portlog.tt', {
       results => $set,
-    }, { layout => undef };
+    }, { layout => 'noop' };
 };
 
 true;

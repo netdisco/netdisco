@@ -25,12 +25,12 @@ get '/ajax/content/device/vlans' => require_login sub {
     if (request->is_ajax) {
       my $json = to_json( \@results );
       template 'ajax/device/vlans.tt', { results => $json },
-        { layout => undef };
+        { layout => 'noop' };
     }
     else {
       header( 'Content-Type' => 'text/comma-separated-values' );
       template 'ajax/device/vlans_csv.tt', { results => \@results },
-        { layout => undef };
+        { layout => 'noop' };
     }
 };
 

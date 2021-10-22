@@ -37,11 +37,11 @@ get '/ajax/content/report/vlaninventory' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/vlaninventory.tt', { results => $json };
+        template 'ajax/report/vlaninventory.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/vlaninventory_csv.tt', { results => \@results };
+        template 'ajax/report/vlaninventory_csv.tt', { results => \@results }, { layout => 'noop' };
     }
 };
 

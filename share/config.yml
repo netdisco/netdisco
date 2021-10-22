@@ -311,6 +311,7 @@ ignore_interfaces:
   - 'Ethernet(?:-| )QOS Packet Scheduler'
   - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
   - 'ii\d\/\d\/\d+'
+ignore_interface_types: []
 ignore_notpresent_types:
   - 'ethernetCsmacd'
   - 'tunnel'
@@ -533,3 +534,6 @@ template: 'netdisco_template_toolkit'
 route_cache: true
 appname: 'Netdisco'
 behind_proxy: false
+HTTP-Header-X-Frame-Options: 'DENY'
+HTTP-Header-Content-Security-Policy: 'frame-ancestors none;'
+

@@ -30,29 +30,40 @@ function do_search (event, tab) {
   );
 
   // submit the query and put results into the tab pane
-  $(target).load( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
-    function(response, status, xhr) {
-      if (status !== "success") {
+  fetch( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
+    { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then( response => {
+      if (! response.ok) {
         $(target).html(
           '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
-          'Search failed! Please contact your site administrator.</div>'
+          'Search failed! Please contact your site administrator (server error).</div>'
         );
         return;
+        // throw new Error('Network response was not ok');
       }
-      if (response == "") {
-        $(target).html(
-          '<div class="span2 alert alert-info">No matching records.</div>'
-        );
+      return response.text();
+    })
+    .then( content => {
+      if (content == "") {
+        $(target).html('<div class="span2 alert alert-info">No matching records.</div>');
       }
-
-      // delegate to any [device|search] specific JS code
-      $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-        scrollingTop: 40
-        ,useAbsolutePositioning: false
-      });
-      inner_view_processing(tab);
-    }
-  );
+      else {
+        $(target).html(content);
+        // delegate to any [device|search] specific JS code
+        $('div.content > div.tab-content table.nd_floatinghead').floatThead({
+          scrollingTop: 40
+          ,useAbsolutePositioning: false
+        });
+        inner_view_processing(tab);
+      }
+    })
+    .catch( error => {
+      $(target).html(
+        '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
+        'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
+      );
+      console.error('There has been a problem with your fetch operation:', error);
+    });
 }
 
 // keep track of which tabs have a sidebar, for when switching tab

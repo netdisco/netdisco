@@ -71,12 +71,12 @@ get '/ajax/content/report/portssid' => require_login sub {
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
         template 'ajax/report/portssid.tt',
-            { results => $json, opt => $ssid };
+            { results => $json, opt => $ssid }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portssid_csv.tt',
-            { results => \@results, opt => $ssid };
+            { results => \@results, opt => $ssid }, { layout => 'noop' };
     }
 };
 

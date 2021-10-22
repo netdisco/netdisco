@@ -40,7 +40,7 @@ get '/ajax/content/report/devicepoestatus/data' => require_login sub {
 get '/ajax/content/report/devicepoestatus' => require_login sub {
 
     if ( request->is_ajax ) {
-        template 'ajax/report/devicepoestatus.tt';
+        template 'ajax/report/devicepoestatus.tt', {}, { layout => 'noop' };
     }
     else {
         my @results
@@ -51,7 +51,7 @@ get '/ajax/content/report/devicepoestatus' => require_login sub {
 
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/devicepoestatus_csv.tt',
-            { results => \@results, };
+            { results => \@results, }, { layout => 'noop' };
     }
 };
 

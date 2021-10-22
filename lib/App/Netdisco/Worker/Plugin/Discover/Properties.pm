@@ -239,8 +239,15 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       }
 
       if (exists $i_ignore->{$entry}) {
-          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s)',
+          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s) (SNMP::Info::i_ignore)',
             $device->ip, $entry, $port, ($i_type->{$entry} || '');
+          next;
+      }
+
+      # Skip interfaces by type filter
+      if (defined $i_type->{$entry} and (scalar grep {$i_type->{$entry} =~ m/^$_$/} @{setting('ignore_interface_types') || []})) {
+          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s) (config:ignore_interface_types)',
+            $device->ip, $entry, $port, $i_type->{$entry};
           next;
       }
 

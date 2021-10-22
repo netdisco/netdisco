@@ -46,12 +46,12 @@ get '/ajax/content/report/portmultinodes' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/portmultinodes.tt', { results => $json };
+        template 'ajax/report/portmultinodes.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portmultinodes_csv.tt',
-            { results => \@results, };
+            { results => \@results, }, { layout => 'noop' };
     }
 };
 

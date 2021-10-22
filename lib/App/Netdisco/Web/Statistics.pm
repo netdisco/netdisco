@@ -14,7 +14,7 @@ get '/ajax/content/statistics' => require_login sub {
     var( nav => 'statistics' );
     template 'ajax/statistics.tt',
         { stats => $stats },
-        { layout => undef };
+        { layout => 'noop' };
 };
 
 true;

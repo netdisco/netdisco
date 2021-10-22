@@ -29,12 +29,12 @@ get '/ajax/content/report/deviceaddrnodns' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/deviceaddrnodns.tt', { results => $json };
+        template 'ajax/report/deviceaddrnodns.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/deviceaddrnodns_csv.tt',
-            { results => \@results, };
+            { results => \@results, }, { layout => 'noop' };
     }
 };
 

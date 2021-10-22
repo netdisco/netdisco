@@ -40,11 +40,11 @@ get '/ajax/content/search/vlan' => require_login sub {
 
     if (request->is_ajax) {
         my $json = to_json( \@results );
-        template 'ajax/search/vlan.tt', { results => $json };
+        template 'ajax/search/vlan.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/search/vlan_csv.tt', { results => \@results };
+        template 'ajax/search/vlan_csv.tt', { results => \@results }, { layout => 'noop' };
     }
 };
 

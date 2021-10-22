@@ -32,12 +32,12 @@ get '/ajax/content/report/portblocking' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json (\@results);
-        template 'ajax/report/portblocking.tt', { results => $json };
+        template 'ajax/report/portblocking.tt', { results => $json }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/portblocking_csv.tt',
-            { results => \@results, };
+            { results => \@results, }, { layout => 'noop' };
     }
 };
 

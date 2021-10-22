@@ -78,14 +78,14 @@ foreach my $report (@{setting('reports')}) {
                 is_custom_report => true,
                 column_options => \%column_config,
                 headings => [map {$column_config{$_}->{displayname}} @column_order],
-                columns => [@column_order] };
+                columns => [@column_order] }, { layout => 'noop' };
       }
       else {
           header( 'Content-Type' => 'text/comma-separated-values' );
           template 'ajax/report/generic_report_csv.tt',
               { results => \@results,
                 headings => [map {$column_config{$_}->{displayname}} @column_order],
-                columns => [@column_order] };
+                columns => [@column_order] }, { layout => 'noop' };
       }
   };
 }

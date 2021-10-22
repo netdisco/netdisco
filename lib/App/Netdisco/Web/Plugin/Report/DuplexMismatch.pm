@@ -23,12 +23,12 @@ get '/ajax/content/report/duplexmismatch' => require_login sub {
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
-        template 'ajax/report/duplexmismatch.tt', { results => $json, };
+        template 'ajax/report/duplexmismatch.tt', { results => $json, }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/report/duplexmismatch_csv.tt',
-            { results => \@results, };
+            { results => \@results, }, { layout => 'noop' };
     }
 };
 
