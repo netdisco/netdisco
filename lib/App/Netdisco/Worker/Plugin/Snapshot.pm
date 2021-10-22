@@ -10,7 +10,7 @@ use Data::Visitor::Tiny;
 use File::Spec::Functions qw(catdir catfile);
 use MIME::Base64 'encode_base64';
 use File::Slurper 'read_lines';
-use Storable 'nfreeze';
+use Storable qw(dclone nfreeze);
 use DDP;
 
 register_worker({ phase => 'check' }, sub {
@@ -77,13 +77,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     my $target = $aliases{ $alias };
     next if $alias eq $target;
 
-    if (exists $cache{store}->{$target}) {
-        $snmp->{store}->{$alias} = $snmp->{store}->{$target};
-        $snmp->{"_${alias}"} = scalar keys %{ $snmp->{store}->{$target} };
-    }
-    elsif (exists $cache{"_${target}"}) {
-        $snmp->{"_${alias}"} = \{ $snmp->{"_${target}"} };
-    }
+    $snmp->{"_${alias}"} = $snmp->{"_${target}"};
+    $snmp->{store}->{$alias} = dclone $snmp->{store}->{$target}
+      if exists $cache{store}->{$target};
   }
 
 #  foreach my $method (qw/
