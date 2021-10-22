@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::GatherReplay;
+package App::Netdisco::Worker::Plugin::Snapshot;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
@@ -16,19 +16,20 @@ use DDP;
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
     unless defined shift->device;
-  return Status->done('Gather is able to run');
+  return Status->done('Snapshot is able to run');
 });
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
+  # FIXME
   my $snmp = 1;#App::Netdisco::Transport::SNMP->reader_for($device)
-#    or return Status->defer("gather failed: could not SNMP connect to $device");
+#    or return Status->defer("snapshot failed: could not SNMP connect to $device");
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my @report = read_lines(catfile($home, qw(EXTRAS reports all)), 'latin-1')
-    or return Status->error("gather failed to read netdisco-mibs report file");
+    or return Status->error("snapshot failed to read netdisco-mibs report file");
 
   my $oid = '.1';
   my $last_indent = 0;
@@ -54,8 +55,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   #p %oidmap;
+  # FIXME
   return Status->done(
-    sprintf "Gathered Replay data from %s", $device->ip);
+    sprintf "Snapshot data from %s", $device->ip);
 
   foreach my $method (qw/
     i_mac
@@ -64,7 +66,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     SNMP_VIEW_BASED_ACM_MIB__vacmViewTreeFamilyStorageType
     /) {
 
-      debug sprintf ' [%s] gather - requesting %s', $device->ip, $method;
+      debug sprintf ' [%s] snapshot - requesting %s', $device->ip, $method;
       eval { $snmp->$method() };
   }
 
@@ -77,7 +79,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   $job->subaction( encode_base64( nfreeze( $cache ) ) );
   return Status->done(
-    sprintf "Gathered Replay data from %s", $device->ip);
+    sprintf "Snapshot data captured from %s", $device->ip);
 });
 
 true;
