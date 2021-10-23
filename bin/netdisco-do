@@ -422,6 +422,17 @@ Pass a device in C<-d> to display them:
 
  ~/bin/netdisco-do dumpconfig -d 192.0.2.1 -e device_auth
 
+=head2 snapshot
+
+Performs an snmp walk from L<.1.3.6.1> on the device and builds a data
+structure which SNMP::Info can use to mimic the device.
+
+There's no output unless you pass a value to the L<-e> parameter, then the
+base64 encoded data will be saved to L<NETDISCO_HOME/logs/snapshots/IP> where
+L<IP> is the canonical IP of the device passed.
+
+ ~/bin/netdisco-do snapshot -d 192.0.2.1 -e save
+
 =head1 DEBUG OPTIONS
 
 The flag "C<-R>" will cause any changes to the database to be rolled back
