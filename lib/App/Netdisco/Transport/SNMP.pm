@@ -10,8 +10,12 @@ use App::Netdisco::Util::Permission ':all';
 use SNMP::Info;
 use Try::Tiny;
 use Module::Load ();
+use Storable 'thaw';
+use File::Slurper 'read_text';
+use MIME::Base64 'decode_base64';
 use Path::Class 'dir';
 use File::Path 'make_path';
+use Data::Visitor::Tiny;
 use File::Spec::Functions qw(catdir catfile);
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
@@ -112,8 +116,7 @@ sub writer_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
 
-  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
-  return undef if $device->in_storage and $device->is_pseudo and ! -f $pseudo_cache;
+  return undef if $device->in_storage and $device->is_pseudo;
 
   my $writers = $class->instance->writers or return undef;
   return $writers->{$device->ip} if exists $writers->{$device->ip};
@@ -160,6 +163,20 @@ sub _snmp_connect_generic {
         "[%s] turning off BulkWalk due to buggy Net-SNMP - please upgrade!",
         $device->ip;
       $snmp_args{BulkWalk} = 0;
+  }
+
+  # support for offline cache
+  if ($device->is_pseudo) {
+    my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+    my $cache = thaw( decode_base64( read_text($pseudo_cache) ) );
+
+    visit( $cache, sub {
+        my ($key, $valueref) = @_;
+        ($$valueref = decode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
+    });
+
+    $snmp_args{Cache} = $cache;
+    $snmp_args{Offline} = 1;
   }
 
   # get the community string(s)
