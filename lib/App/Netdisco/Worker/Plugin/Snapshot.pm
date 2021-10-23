@@ -86,14 +86,18 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # refresh it
   %cache = %{ $snmp->cache() };
 
-  while (my $method = <DATA>) {
-    $method =~ s/\s//g;
-    next unless length $method;
-
-    if (!exists $cache{"_$method"}) {
-      # debug sprintf ' [%s] snapshot - missing alias: %s', $device->ip, $method;
-    }
-  }
+#  my %funcs = %{ $snmp->funcs() };
+#  my %globals = %{ $snmp->globals() };
+#  while (my $method = <DATA>) {
+#    $method =~ s/\s//g;
+#    next unless length $method;
+#
+#    if (!exists $cache{"_$method"} and (exists $globals{$method} or exists $funcs{$method})) {
+#      debug sprintf ' [%s] snapshot - missing alias: %s pointing to: %s',
+#        $device->ip, $method,
+#        (exists $globals{$method} ? "global:$globals{$method}" : "func:$funcs{$method}");
+#    }
+#  }
 
   # p %cache;
   visit( \%cache, sub {
@@ -122,7 +126,7 @@ sub getoidmap {
   my $last_indent = 0;
 
   foreach my $line (@report) {
-    my ($spaces, $leaf, $idx) = ($line =~ m/^(\s*)([-\w]+)\((\d+)\)/);
+    my ($spaces, $leaf, $idx) = ($line =~ m/^(\s*)([-#\w]+)\((\d+)\)/);
     next unless defined $spaces and defined $leaf and defined $idx;
     my $this_indent = length($spaces);
 
