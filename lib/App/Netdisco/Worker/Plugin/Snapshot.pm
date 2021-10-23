@@ -9,7 +9,8 @@ use App::Netdisco::Transport::SNMP;
 use Data::Visitor::Tiny;
 use File::Spec::Functions qw(catdir catfile);
 use MIME::Base64 'encode_base64';
-use File::Slurper 'read_lines';
+use File::Slurper qw(read_lines write_text);
+use File::Path 'make_path';
 use Storable qw(dclone nfreeze);
 use DDP;
 
@@ -22,6 +23,7 @@ register_worker({ phase => 'check' }, sub {
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
+  my $save = $job->extra;
 
   # needed to avoid $var being returned with leafname and breaking loop checks
   $SNMP::use_numeric = 1;
@@ -101,8 +103,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $snmp->_cache($method, '') if exists $globals{$method};
   }
 
-  # finally, base64 encode all values in the cache, then freeze the cache,
-  # then base64 encode that, and store in our Job.
+  # finally, base64 encode all scalar values in the cache, then freeze the
+  # cache, then base64 encode that, store in our Job, and optionally save file.
 
   # refresh the cache again
   %cache = %{ $snmp->cache() };
@@ -112,7 +114,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
   });
 
-  $job->subaction( encode_base64( nfreeze( \%cache ) ) );
+  my $frozen = encode_base64( nfreeze( \%cache ) );
+  $job->subaction($frozen);
+
+  if ($save) {
+    my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
+    make_path($target_dir);
+    my $target_file = catfile($target_dir, $device->ip);
+    debug "snapshot $device - saving snapshot to $target_file";
+    write_text($target_file, $frozen);
+  }
+
   return Status->done(
     sprintf "Snapshot data captured from %s", $device->ip);
 });
