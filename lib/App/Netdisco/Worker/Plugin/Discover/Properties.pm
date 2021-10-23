@@ -61,7 +61,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( last_discover => \'now()' );
 
   # protection for failed SNMP gather
-  if ($device->in_storage) {
+  if ($device->in_storage and not $device->is_pseudo) {
       my $ip = $device->ip;
       my $protect = setting('snmp_field_protection')->{'device'} || {};
       my %dirty = $device->get_dirty_columns;
