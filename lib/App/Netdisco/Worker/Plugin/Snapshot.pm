@@ -29,16 +29,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("snapshot failed: could not SNMP connect to $device");
 
   my %oidmap = getoidmap($device, $snmp);
-  # my %localstore = walker($device, $snmp);
-  # my %localstore = walker($device, $snmp, '.1.3.6.1.2.1.5.30.1.4'); # 16 rows
-  my %localstore = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');        # 22 rows, i_mac/ifPhysAddress
-  # my %localstore = walker($device, $snmp, '.1.3.6.1.2.1.1');        # 29 rows
-  # my %localstore = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1');    # 484 rows
-  # my %localstore = walker($device, $snmp, '.1.3.6.1');              # 10205 rows
+  my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
+  # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
 
   my (%tables, %leaves) = ((), ());
-  OID: foreach my $origoid (keys %localstore) {
-    my $oid = $origoid;
+  OID: foreach my $orig_oid (keys %walk) {
+    my $oid = $orig_oid;
     my $idx = '';
 
     while (length($oid) and !exists $oidmap{$oid}) {
@@ -50,57 +46,62 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $idx =~ s/^\.//;
 
       if ($idx eq 0) {
-        $leaves{ $oidmap{$oid} } = $localstore{$origoid};
+        $leaves{ $oidmap{$oid} } = $walk{$orig_oid};
       }
       else {
-        $tables{ $oidmap{$oid} }->{$idx} = $localstore{$origoid};
+        $tables{ $oidmap{$oid} }->{$idx} = $walk{$orig_oid};
       }
 
       # debug "snapshot $device - cached $oidmap{$oid}($idx)";
       next OID;
     }
 
-    debug "snapshot $device - missing OID $origoid in netdisco-mibs";
+    debug "snapshot $device - missing OID $orig_oid in netdisco-mibs";
   }
 
   $snmp->_cache($_, $tables{$_}) for keys %tables;
   $snmp->_cache($_, $leaves{$_}) for keys %leaves;
 
-  # specific to this device's class
-  my %aliases = (%{ $snmp->funcs() }, %{ $snmp->globals() });
+  # now the instance has the complete snmpwalk loaded into cache
+  # with MIB names from netdisco-mibs
+
+  # we want to add in the GLOBALS and FUNCS aliases which users
+  # have created in the SNMP::Info device class, with binary copy
+  # of data so that it can be frozen
+
   my %cache = %{ $snmp->cache() };
-#  p %aliases;
-#  p %cache;
 
-  # !!! poking SNMP::Info internals now
-  foreach my $alias (keys %aliases) {
-    my $target = $aliases{ $alias };
-    next if $alias eq $target;
-
-    $snmp->{"_${alias}"} = $snmp->{"_${target}"};
-    $snmp->{store}->{$alias} = dclone $snmp->{store}->{$target}
-      if exists $cache{store}->{$target};
+  while (my ($alias, $leaf) = each %{ $snmp->globals() }) {
+    if (exists $cache{"_$leaf"} and !exists $cache{"_$alias"}) {
+      $snmp->_cache($alias, $cache{"_$leaf"});
+    }
   }
 
-#  foreach my $method (qw/
-#    i_mac
-#    snmpEngineID
-#    ifName
-#    SNMP_VIEW_BASED_ACM_MIB__vacmViewTreeFamilyStorageType
-#    /) {
-#
-#      debug sprintf ' [%s] snapshot - requesting %s', $device->ip, $method;
-#      eval { $snmp->$method() };
-#  }
+  while (my ($alias, $leaf) = each %{ $snmp->funcs() }) {
+    if (exists $cache{store}->{$leaf} and !exists $cache{store}->{$alias}) {
+      $snmp->_cache($alias, dclone $cache{store}->{$leaf});
+    }
+  }
 
-  my $cache = $snmp->cache();
-  p $cache;
-  visit( $cache, sub {
+  # refresh it
+  %cache = %{ $snmp->cache() };
+
+  while (my $method = <DATA>) {
+    $method =~ s/\s//g;
+    next unless length $method;
+
+    if (!exists $cache{"_$method"}) {
+      # debug sprintf ' [%s] snapshot - missing alias: %s', $device->ip, $method;
+    }
+  }
+
+  # p %cache;
+  visit( \%cache, sub {
       my ($key, $valueref) = @_;
       ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
   });
 
-  $job->subaction( encode_base64( nfreeze( $cache ) ) );
+  $job->subaction( encode_base64( nfreeze( \%cache ) ) );
   return Status->done(
     sprintf "Snapshot data captured from %s", $device->ip);
 });
@@ -283,119 +284,115 @@ sub walker {
 }
 
 true;
-__END__
-      agg_ports
-      at_paddr
-      bgp_peer_addr
-      bp_index
-      c_cap
-      c_id
-      c_if
-      c_ip
-      c_platform
-      c_port
-      cd11_mac
-      cd11_port
-      cd11_rateset
-      cd11_rxbyte
-      cd11_rxpkt
-      cd11_sigqual
-      cd11_sigstrength
-      cd11_ssid
-      cd11_txbyte
-      cd11_txpkt
-      cd11_txrate
-      cd11_uptime
-      class
-      contact
-      docs_if_cmts_cm_status_inet_address
-      dot11_cur_tx_pwr_mw
-      e_class
-      e_descr
-      e_fru
-      e_fwver
-      e_hwver
-      e_index
-      e_model
-      e_name
-      e_parent
-      e_pos
-      e_serial
-      e_swver
-      e_type
-      eigrp_peers
-      fw_mac
-      fw_port
-      has_topo
-      i_80211channel
-      i_alias
-      i_description
-      i_duplex
-      i_duplex_admin
-      i_err_disable_cause
-      i_faststart_enabled
-      i_ignore
-      i_lastchange
-      i_mac
-      i_mtu
-      i_name
-      i_speed
-      i_speed_admin
-      i_speed_raw
-      i_ssidbcast
-      i_ssidlist
-      i_ssidmac
-      i_stp_state
-      i_type
-      i_up
-      i_up_admin
-      i_vlan
-      i_vlan_membership
-      i_vlan_membership_untagged
-      i_vlan_type
-      interfaces
-      ip_index
-      ip_netmask
-      ipv6_addr
-      ipv6_addr_prefixlength
-      ipv6_index
-      ipv6_n2p_mac
-      ipv6_type
-      isis_peers
-      lldp_ipv6
-      lldp_media_cap
-      lldp_rem_model
-      lldp_rem_serial
-      lldp_rem_sw_rev
-      lldp_rem_vendor
-      load_uptime
-      location
-      model
-      name
-      ospf_peer_id
-      ospf_peers
-      peth_port_admin
-      peth_port_class
-      peth_port_ifindex
-      peth_port_power
-      peth_port_status
-      peth_power_status
-      peth_power_watts
-      ports
-      qb_fw_vlan
-      serial
-      serial1
-      set_contact
-      set_i_alias
-      set_i_up_admin
-      set_location
-      set_peth_port_admin
-      snmpEngineID
-      snmpEngineTime
-      snmp_comm
-      snmp_ver
-      v_index
-      v_name
-      vrf_name
-      vtp_d_name
-      vtp_version
+
+__DATA__
+agg_ports
+at_paddr
+bgp_peer_addr
+bp_index
+c_cap
+c_id
+c_if
+c_ip
+c_platform
+c_port
+cd11_mac
+cd11_port
+cd11_rateset
+cd11_rxbyte
+cd11_rxpkt
+cd11_sigqual
+cd11_sigstrength
+cd11_ssid
+cd11_txbyte
+cd11_txpkt
+cd11_txrate
+cd11_uptime
+class
+contact
+docs_if_cmts_cm_status_inet_address
+dot11_cur_tx_pwr_mw
+e_class
+e_descr
+e_fru
+e_fwver
+e_hwver
+e_index
+e_model
+e_name
+e_parent
+e_pos
+e_serial
+e_swver
+e_type
+eigrp_peers
+fw_mac
+fw_port
+has_topo
+i_80211channel
+i_alias
+i_description
+i_duplex
+i_duplex_admin
+i_err_disable_cause
+i_faststart_enabled
+i_ignore
+i_lastchange
+i_mac
+i_mtu
+i_name
+i_speed
+i_speed_admin
+i_speed_raw
+i_ssidbcast
+i_ssidlist
+i_ssidmac
+i_stp_state
+i_type
+i_up
+i_up_admin
+i_vlan
+i_vlan_membership
+i_vlan_membership_untagged
+i_vlan_type
+interfaces
+ip_index
+ip_netmask
+ipv6_addr
+ipv6_addr_prefixlength
+ipv6_index
+ipv6_n2p_mac
+ipv6_type
+isis_peers
+lldp_ipv6
+lldp_media_cap
+lldp_rem_model
+lldp_rem_serial
+lldp_rem_sw_rev
+lldp_rem_vendor
+load_uptime
+location
+model
+name
+ospf_peer_id
+ospf_peers
+peth_port_admin
+peth_port_class
+peth_port_ifindex
+peth_port_power
+peth_port_status
+peth_power_status
+peth_power_watts
+ports
+qb_fw_vlan
+serial
+serial1
+snmpEngineID
+snmpEngineTime
+snmp_comm
+snmp_ver
+v_index
+v_name
+vrf_name
+vtp_d_name
+vtp_version
