@@ -32,6 +32,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
   # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
 
+  # take the snmpwalk of the device which is numeric (no MIB translateObj)
+  # and resolve to MIB identifiers using the netdisco-mibs report
+  # then store in SNMP::Info instance cache
+
   my (%tables, %leaves) = ((), ());
   OID: foreach my $orig_oid (keys %walk) {
     my $oid = $orig_oid;
@@ -62,44 +66,47 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   $snmp->_cache($_, $tables{$_}) for keys %tables;
   $snmp->_cache($_, $leaves{$_}) for keys %leaves;
 
-  # now the instance has the complete snmpwalk loaded into cache
-  # with MIB names from netdisco-mibs
-
   # we want to add in the GLOBALS and FUNCS aliases which users
   # have created in the SNMP::Info device class, with binary copy
   # of data so that it can be frozen
 
-  my %cache = %{ $snmp->cache() };
+  my %cache   = %{ $snmp->cache() };
+  my %funcs   = %{ $snmp->funcs() };
+  my %globals = %{ $snmp->globals() };
 
-  while (my ($alias, $leaf) = each %{ $snmp->globals() }) {
+  while (my ($alias, $leaf) = each %globals) {
     if (exists $cache{"_$leaf"} and !exists $cache{"_$alias"}) {
       $snmp->_cache($alias, $cache{"_$leaf"});
     }
   }
 
-  while (my ($alias, $leaf) = each %{ $snmp->funcs() }) {
+  while (my ($alias, $leaf) = each %funcs) {
     if (exists $cache{store}->{$leaf} and !exists $cache{store}->{$alias}) {
       $snmp->_cache($alias, dclone $cache{store}->{$leaf});
     }
   }
 
-  # refresh it
+  # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
+  # might call, but will not have data, we fake a cache entry to avoid
+  # throwing errors
+
+  # refresh the cache
   %cache = %{ $snmp->cache() };
 
-#  my %funcs = %{ $snmp->funcs() };
-#  my %globals = %{ $snmp->globals() };
-#  while (my $method = <DATA>) {
-#    $method =~ s/\s//g;
-#    next unless length $method;
-#
-#    if (!exists $cache{"_$method"} and (exists $globals{$method} or exists $funcs{$method})) {
-#      debug sprintf ' [%s] snapshot - missing alias: %s pointing to: %s',
-#        $device->ip, $method,
-#        (exists $globals{$method} ? "global:$globals{$method}" : "func:$funcs{$method}");
-#    }
-#  }
+  while (my $method = <DATA>) {
+    $method =~ s/\s//g;
+    next unless length $method and !exists $cache{"_$method"};
 
-  # p %cache;
+    $snmp->_cache($method, {}) if exists $funcs{$method};
+    $snmp->_cache($method, '') if exists $globals{$method};
+  }
+
+  # finally, base64 encode all values in the cache, then freeze the cache,
+  # then base64 encode that, and store in our Job.
+
+  # refresh the cache again
+  %cache = %{ $snmp->cache() };
+
   visit( \%cache, sub {
       my ($key, $valueref) = @_;
       ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
@@ -110,6 +117,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     sprintf "Snapshot data captured from %s", $device->ip);
 });
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # read in netdisco-mibs translation report and make an OID -> leafname map
 # takes about a second to run on my laptop
