@@ -81,6 +81,8 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "last_arpnip",
   { data_type => "timestamp", is_nullable => 1 },
+  "is_pseudo",
+  { data_type => "boolean", is_nullable => 0, default_value => \"false" },
 );
 __PACKAGE__->set_primary_key("ip");
 
@@ -266,17 +268,6 @@ __PACKAGE__->has_one(
     throughput => 'App::Netdisco::DB::Result::Virtual::DevicePortSpeed', 'ip');
 
 =head1 ADDITIONAL METHODS
-
-=head2 is_pseudo
-
-Returns true if the vendor of the device is "netdisco".
-
-=cut
-
-sub is_pseudo {
-  my $device = shift;
-  return (defined $device->vendor and $device->vendor eq 'netdisco');
-}
 
 =head2 has_layer( $number )
 

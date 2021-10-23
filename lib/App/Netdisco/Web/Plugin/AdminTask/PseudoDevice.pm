@@ -38,6 +38,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
           vendor => 'netdisco',
           layers => param('layers'),
           last_discover => \'now()',
+          is_pseudo => \'true',
         });
       return unless $device;
 
@@ -96,7 +97,7 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
 ajax '/ajax/content/admin/pseudodevice' => require_role admin => sub {
     my $set = schema('netdisco')->resultset('Device')
       ->search(
-        {vendor => 'netdisco'},
+        {-bool => 'is_pseudo'},
         {order_by => { -desc => 'last_discover' }},
       )->with_port_count;
 

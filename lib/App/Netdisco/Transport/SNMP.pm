@@ -11,6 +11,8 @@ use SNMP::Info;
 use Try::Tiny;
 use Module::Load ();
 use Path::Class 'dir';
+use File::Path 'make_path';
+use File::Spec::Functions qw(catdir catfile);
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
 
@@ -58,7 +60,9 @@ Returns C<undef> if the connection fails.
 sub reader_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
-  return undef if $device->in_storage and $device->is_pseudo;
+
+  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+  return undef if $device->in_storage and $device->is_pseudo and ! -f $pseudo_cache;
 
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
@@ -107,7 +111,9 @@ Returns C<undef> if the connection fails.
 sub writer_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
-  return undef if $device->in_storage and $device->is_pseudo;
+
+  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+  return undef if $device->in_storage and $device->is_pseudo and ! -f $pseudo_cache;
 
   my $writers = $class->instance->writers or return undef;
   return $writers->{$device->ip} if exists $writers->{$device->ip};
