@@ -180,6 +180,7 @@
         <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
 
+        [% IF NOT d.is_pseudo %]
         <span class="dropdown">
           <button class="nd_snap_btn btn [% d.has_snapshot ? 'btn-success' : 'btn-info' %] btn-small dropdown-toggle" type="button" id="snapshotmenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Snapshot
@@ -195,6 +196,7 @@
             <li class='nd_snap_func [% 'disabled' UNLESS d.has_snapshot %]'><a href="#" class="nd_adminbutton" name="snapshot_del"><i class="icon-trash"></i> Delete</a></li>
           </ul>
         </span>
+        [% END %]
 
         <button class="btn btn-danger btn-small pull-right"
           data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
