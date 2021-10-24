@@ -15,7 +15,6 @@ use File::Slurper 'read_text';
 use MIME::Base64 'decode_base64';
 use Path::Class 'dir';
 use File::Path 'make_path';
-use Data::Visitor::Tiny;
 use File::Spec::Functions qw(catdir catfile);
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
@@ -168,14 +167,7 @@ sub _snmp_connect_generic {
   # support for offline cache
   if ($device->is_pseudo) {
     my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
-    my $cache = thaw( decode_base64( read_text($pseudo_cache) ) );
-
-    visit( $cache, sub {
-        my ($key, $valueref) = @_;
-        ($$valueref = decode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
-    });
-
-    $snmp_args{Cache} = $cache;
+    $snmp_args{Cache} = thaw( decode_base64( read_text($pseudo_cache) ) );
     $snmp_args{Offline} = 1;
   }
 

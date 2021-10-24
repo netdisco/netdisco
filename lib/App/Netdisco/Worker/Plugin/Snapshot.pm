@@ -6,7 +6,6 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
 
-use Data::Visitor::Tiny;
 use File::Spec::Functions qw(catdir catfile);
 use MIME::Base64 'encode_base64';
 use File::Slurper qw(read_lines write_text);
@@ -103,16 +102,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $snmp->_cache($method, '') if exists $globals{$method};
   }
 
-  # finally, base64 encode all scalar values in the cache, then freeze the
-  # cache, then base64 encode that, store in our Job, and optionally save file.
+  # finally, freeze the cache, then base64 encode, store in our Job, and
+  # optionally save file.
 
   # refresh the cache again
   %cache = %{ $snmp->cache() };
-
-  visit( \%cache, sub {
-      my ($key, $valueref) = @_;
-      ($$valueref = encode_base64( $$valueref )) =~ s/\n$// if defined $_ and ref $_ eq q{};
-  });
 
   my $frozen = encode_base64( nfreeze( \%cache ) );
   $job->subaction($frozen);
