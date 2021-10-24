@@ -38,14 +38,14 @@ sub gather_subnets {
 
   my $ip_netmask = $snmp->ip_netmask;
   foreach my $entry (keys %$ip_netmask) {
-      my $ip = NetAddr::IP::Lite->new($entry);
+      my $ip = NetAddr::IP::Lite->new($entry) or next;
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
       next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
-      my $netmask = $ip_netmask->{$addr};
+      my $netmask = $ip_netmask->{$addr} || $ip->bits();
       next if $netmask eq '255.255.255.255' or $netmask eq '0.0.0.0';
 
       my $cidr = NetAddr::IP::Lite->new($addr, $netmask)->network->cidr;
