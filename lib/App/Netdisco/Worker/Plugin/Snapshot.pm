@@ -22,7 +22,7 @@ register_worker({ phase => 'check' }, sub {
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
-  my $save = $job->extra;
+  my $save = $job->port;
 
   # needed to avoid $var being returned with leafname and breaking loop checks
   $SNMP::use_numeric = 1;
@@ -109,7 +109,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   %cache = %{ $snmp->cache() };
 
   my $frozen = encode_base64( nfreeze( \%cache ) );
-  $job->subaction($frozen);
+  $device->update_or_create_related('snapshot', {cache => $frozen});
 
   if ($save) {
     my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');

@@ -708,6 +708,7 @@ sub delete {
     DeviceVlan
     DevicePower
     DeviceModule
+    DeviceSnapshot
     Community
   /) {
       my $gone = $schema->resultset($set)->search(

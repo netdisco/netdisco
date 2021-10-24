@@ -258,6 +258,15 @@ Returns the row from the community string table, if one exists.
 __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
 
+=head2 snapshot
+
+Returns the row from the snapshot table, if one exists.
+
+=cut
+
+__PACKAGE__->might_have(
+    snapshot => 'App::Netdisco::DB::Result::DeviceSnapshot', 'ip');
+
 =head2 throughput
 
 Returns a sum of speeds on all ports on the device.
@@ -315,6 +324,7 @@ sub renumber {
     DevicePortVlan
     DevicePortWireless
     DevicePower
+    DeviceSnapshot
     DeviceVlan
   /) {
     $schema->resultset($set)
