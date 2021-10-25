@@ -33,9 +33,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
   # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
 
-  # take the snmpwalk of the device which is numeric (no MIB translateObj)
-  # and resolve to MIB identifiers using the netdisco-mibs report
-  # then store in SNMP::Info instance cache
+  # take the snmpwalk of the device which is numeric (no MIB translateObj),
+  # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
+  # instance cache
 
   my (%tables, %leaves) = ((), ());
   OID: foreach my $orig_oid (keys %walk) {
@@ -102,7 +102,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $snmp->_cache($method, '') if exists $globals{$method};
   }
 
-  # finally, freeze the cache, then base64 encode, store in our Job, and
+  # finally, freeze the cache, then base64 encode, store in the DB, and
   # optionally save file.
 
   # refresh the cache again
@@ -126,39 +126,21 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # read in netdisco-mibs translation report and make an OID -> leafname map
-# takes about a second to run on my laptop
 sub getoidmap {
-  my ($device, $snmp, $oid) = @_;
-  $oid ||= '.1';
-
-  debug "snapshot $device - starting netdisco-mibs report parse";
+  my ($device, $snmp) = @_;
+  debug "snapshot $device - loading netdisco-mibs object cache";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my @report = read_lines(catfile($home, qw(EXTRAS reports all)), 'latin-1');
+  my @report = read_lines(catfile($home, qw(EXTRAS reports all_oids)), 'latin-1');
 
   my %oidmap = ();
-  my $last_indent = 0;
-
   foreach my $line (@report) {
-    my ($spaces, $leaf, $idx) = ($line =~ m/^(\s*)([-#\w]+)\((\d+)\)/);
-    next unless defined $spaces and defined $leaf and defined $idx;
-    my $this_indent = length($spaces);
-
-    # update current OID
-    if ($this_indent <= $last_indent) {
-      my $step_back = (($last_indent - $this_indent) / 2);
-      foreach (0 .. $step_back) { $oid =~ s/\.\d+$// }
-    }
-    $oid .= ".$idx";
-
-    # store what we have just seen
+    my ($oid, $mib, $leaf) = ($line =~ m/^(\S+)\s([^:]+)::([^:]+)$/);
+    next unless defined $oid and defined $leaf;
     $oidmap{$oid} = $leaf;
-
-    # and remember the indent
-    $last_indent = $this_indent;
   }
 
-  debug sprintf "snapshot $device - parsed %d items from netdisco-mibs report",
+  debug sprintf "snapshot $device - loaded %d objects from netdisco-mibs",
     scalar keys %oidmap;
   return %oidmap;
 }
