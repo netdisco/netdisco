@@ -38,7 +38,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
   # instance cache
 
-  my (%tables, %leaves) = ((), ());
+  my (%tables, %leaves, @realoids) = ((), (), ());
   OID: foreach my $orig_oid (keys %walk) {
     my $oid = $orig_oid;
     my $idx = '';
@@ -52,9 +52,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $idx =~ s/^\.//;
 
       if ($idx eq 0) {
+        push @realoids, $oid;
         $leaves{ $oidmap{$oid}->{leaf} } = $walk{$orig_oid};
       }
       else {
+        push @realoids, $oid if !exists $tables{ $oidmap{$oid}->{leaf} };
         $tables{ $oidmap{$oid}->{leaf} }->{$idx} = $walk{$orig_oid};
       }
 
@@ -115,15 +117,15 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   debug "snapshot $device - cacheing snapshot for browsing";
   my @browser = map {{
-    oid    => '',
-    mib    => '',
-    leaf   => '',
-    type   => '',
+    oid    => $_,
+    mib    => $oidmap{$_}->{mib},
+    leaf   => $oidmap{$_}->{leaf},
+    type   => $oidmap{$_}->{type},
     # munge => '',
-    access => '',
-    index  => [],
-    value  => '',
-  }} (1);
+    access => $oidmap{$_}->{access},
+    index  => $oidmap{$_}->{index},
+    value  => do { my $m = $oidmap{$_}->{leaf}; encode_base64( nfreeze( [$snmp->$m] ) ); },
+  }} sort {lxoid($a) cmp lxoid($b)} @realoids;
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->oids->delete;
@@ -311,6 +313,16 @@ sub walker {
     debug sprintf "snapshot $device - walked %d rows from $base",
       scalar keys %localstore;
     return %localstore;
+}
+
+# take oid and make comparable
+sub lxoid {
+  my ($oid, $seglen) = @_;
+  $seglen ||= 6;
+  return $oid if $oid !~ m/^[0-9.]+$/;
+  $oid =~ s/^(\.)//; my $leading = $1;
+  $oid = join '.', map { sprintf("\%0${seglen}d", $_) } (split m/\./, $oid);
+  return (($leading || '') . $oid);
 }
 
 true;
