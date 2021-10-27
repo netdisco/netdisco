@@ -5,13 +5,14 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
+use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw(catdir catfile);
 use MIME::Base64 'encode_base64';
 use File::Slurper qw(read_lines write_text);
 use File::Path 'make_path';
 use Storable qw(dclone nfreeze);
-use DDP;
+# use DDP;
 
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
@@ -51,13 +52,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $idx =~ s/^\.//;
 
       if ($idx eq 0) {
-        $leaves{ $oidmap{$oid} } = $walk{$orig_oid};
+        $leaves{ $oidmap{$oid}->{leaf} } = $walk{$orig_oid};
       }
       else {
-        $tables{ $oidmap{$oid} }->{$idx} = $walk{$orig_oid};
+        $tables{ $oidmap{$oid}->{leaf} }->{$idx} = $walk{$orig_oid};
       }
 
-      # debug "snapshot $device - cached $oidmap{$oid}($idx)";
+      # debug "snapshot $device - cached $oidmap{$oid}->{leaf}($idx)";
       next OID;
     }
 
@@ -108,8 +109,30 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # refresh the cache again
   %cache = %{ $snmp->cache() };
 
+  debug "snapshot $device - cacheing snapshot bundle";
   my $frozen = encode_base64( nfreeze( \%cache ) );
   $device->update_or_create_related('snapshot', {cache => $frozen});
+
+  debug "snapshot $device - cacheing snapshot for browsing";
+  my @browser = map {{
+    oid    => '',
+    mib    => '',
+    leaf   => '',
+    type   => '',
+    # munge => '',
+    access => '',
+    index  => [],
+    value  => '',
+  }} (1);
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->oids->delete;
+    debug sprintf ' [%s] snapshot - removed %d oids',
+      $device->ip, $gone;
+    $device->oids->populate(\@browser);
+    debug sprintf ' [%s] snapshot - added %d new oids',
+      $device->ip, scalar @browser;
+  });
 
   if ($save) {
     my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
@@ -135,10 +158,16 @@ sub getoidmap {
 
   my %oidmap = ();
   foreach my $line (@report) {
-    my ($oid, $leaf, $rest) = split m/,/, $line;
-    next unless defined $oid and defined $leaf;
-    $leaf =~ s/^[^:]+:://;
-    $oidmap{$oid} = $leaf;
+    my ($oid, $qual_leaf, $type, $access, $index) = split m/,/, $line;
+    next unless defined $oid and defined $qual_leaf;
+    my ($mib, $leaf) = split m/::/, $qual_leaf;
+    $oidmap{$oid} = {
+      mib    => $mib,
+      leaf   => $leaf,
+      type   => $type,
+      access => $access,
+      index  => [($index ? (split m/:/, $index) : ())],
+    };
   }
 
   debug sprintf "snapshot $device - loaded %d objects from netdisco-mibs",

@@ -174,6 +174,14 @@ Returns the set of power modules on this Device.
 
 __PACKAGE__->has_many( power_modules => 'App::Netdisco::DB::Result::DevicePower', 'ip' );
 
+=head2 oids
+
+Returns the oids walked on this Device.
+
+=cut
+
+__PACKAGE__->has_many( oids => 'App::Netdisco::DB::Result::DeviceBrowser', 'ip' );
+
 =head2 port_vlans
 
 Returns the set of VLANs known to be configured on Ports on this Device,
