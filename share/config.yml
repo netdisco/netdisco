@@ -92,6 +92,7 @@ web_plugins:
   - Device::Neighbors
   - Device::Addresses
   - Device::Vlans
+  - Device::SNMP
 extra_web_plugins: []
 sidebar_defaults:
   search_node:
