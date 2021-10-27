@@ -135,8 +135,9 @@ sub getoidmap {
 
   my %oidmap = ();
   foreach my $line (@report) {
-    my ($oid, $mib, $leaf) = ($line =~ m/^(\S+)\s([^:]+)::([^:]+)$/);
+    my ($oid, $leaf, $rest) = split m/,/, $line;
     next unless defined $oid and defined $leaf;
+    $leaf =~ s/^[^:]+:://;
     $oidmap{$oid} = $leaf;
   }
 
