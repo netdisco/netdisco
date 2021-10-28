@@ -62,7 +62,7 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/d3-force-network-chart.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/javascript/jstree/themes/proton/style.min.css"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/javascripts/jstree/themes/proton/style.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker-bs2.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css" media="print"/>

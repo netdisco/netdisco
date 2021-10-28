@@ -88,7 +88,9 @@
         },
         'data' : {
           'url' : function (node) {
-            return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/' + node.id);
+            console.log(node);
+            var base = (node.id ? node.id : '.1.3.6.1');
+            return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/' + base);
           }
         }
       },

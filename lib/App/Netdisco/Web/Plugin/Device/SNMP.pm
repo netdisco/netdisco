@@ -24,30 +24,33 @@ get '/ajax/content/device/snmp' => require_login sub {
       { layout => 'noop' };
 };
 
-# handler for base request at 1.3.6.1
-ajax '/ajax/data/device/:ip/snmptree/' => require_login sub {
+ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     my $device = try { schema('netdisco')->resultset('Device')
                                          ->find( param('ip') ) }
        or send_error('Bad Device', 404);
 
-    # get children of 1.3.6.1
-    my $kids = schema('netdisco')->resultset('Virtual::OidChildren')
-                                 ->search({}, { bind => [ $device->ip, [1,3,6,1] ] }); 
+    my $base = param('base');
+    $base =~ m/^\.1\.3\.6\.1(\.\d+)+$/ or send_error('Bad OID Base', 404);
+    my @parts = grep {length} split m/\./, $base;
 
-    my @items = (map {{
-        id => '1.3.6.1.'. $_->part,
-        text => '1.3.6.1.'. $_->part,
+    my %kids = map { ($base .'.'. $_->{part}) => $_ }
+               schema('netdisco')->resultset('Virtual::OidChildren')
+                                 ->search({}, { bind => [ $device->ip, [@parts] ] })
+                                 ->hri->all; 
+
+    my %meta = map { ('.'. join '.', @{$_->{oid}}) => $_ }
+               schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
+                                 ->search({}, { bind => [ [@parts], [ map {$_->{part}} values %kids ] ] })
+                                 ->hri->all;
+
+    my @items = map {{
+        id => $_,
+        text => ($meta{$_}->{leaf} .' ('. $kids{$_}->{part} .')'),
         children => \1,
-      }} $kids->all);
+      }} sort keys %kids;
 
     content_type 'application/json';
     to_json \@items
-};
-
-# handler for any subsequent request
-ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
-    content_type 'application/json';
-    to_json ['foo', { text => 'bar', state => { opened => 'true', selected => 'true' }, children => [ { text => 'child 1' }, 'child 2' ] }];
 };
 
 true;
