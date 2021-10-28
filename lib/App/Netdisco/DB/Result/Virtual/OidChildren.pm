@@ -15,7 +15,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     WITH params AS (select ?::inet AS ip, ?::int[] AS root),
            args AS (select array_length(params.root,1) AS rootlen FROM params)
     SELECT DISTINCT(oid[(args.rootlen + 1)]) AS part,
-           (SELECT count(*) FROM device_browser db2
+           (SELECT count(DISTINCT(db2.oid[1:(args.rootlen + 2)])) FROM device_browser db2
                             WHERE db2.oid[1:(args.rootlen + 1)] = device_browser.oid[1:(args.rootlen + 1)]
                             AND db2.ip = params.ip) AS children
       FROM device_browser, params, args
