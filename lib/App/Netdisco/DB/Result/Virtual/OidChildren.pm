@@ -21,7 +21,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
       FROM device_browser, params, args
       WHERE device_browser.ip = params.ip
       AND device_browser.oid[1:(args.rootlen)] = params.root
-      ORDER BY part;
+      ORDER BY part
 
 ENDSQL
 );

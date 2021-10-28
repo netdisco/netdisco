@@ -4,7 +4,7 @@
             <span class="form-group">
               <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label">
               <label class="checkbox-inline">
-                <input type="checkbox" id="partialSearch" value="partial"> Partial </input>
+                <input type="checkbox" id="snmpPartialSearch" value="partial"> Partial </input>
               </label>
             </span>
         <button type="submit" class="btn btn-default">Search</button>
@@ -66,7 +66,7 @@
       var name = node.text.toLowerCase();
       var oid = node.id.toLowerCase();
 
-      if (document.getElementById('partialSearch').checked) {
+      if (document.getElementById('snmpPartialSearch').checked) {
         if ((name.indexOf(pattern) == 0) || (oid.indexOf(pattern) == 0)) {
           return true;
         }
@@ -88,7 +88,7 @@
         },
         'data' : {
           'url' : function (node) {
-            return ('/api/nodetree/' + node.id);
+            return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/' + node.id);
           }
         }
       },
@@ -98,7 +98,7 @@
           'url' : '/api/search/nodes',
           'beforeSend' : function(jqXHR, settings) {
             settings.url = settings.url + '&excludeself=on';
-            if (document.getElementById('partialSearch').checked) {
+            if (document.getElementById('snmpPartialSearch').checked) {
               settings.url = settings.url + '&partial=on';
             }
             return true;
@@ -113,7 +113,7 @@
     });
     $('#jstree').on("changed.jstree", function (e, data) {
       if (data.selected && data.selected != "#") {
-        $('#node').load('/api/node/' + data.selected);
+        $('#node').load('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/' + data.selected);
       }
     });
     $('#jstree').on("search.jstree", function (e, data) {

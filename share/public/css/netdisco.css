@@ -61,6 +61,13 @@ div.content > div.tab-content table.nd_floatinghead thead {
   overflow-x: hidden;
 }
 
+/* jstree scrollable */
+
+.nd_scrollable {
+    height: 100%;
+    overflow: auto;
+}
+
 /* fake looks for form submit buttons embedded in bootstrap dropdowns */
 .nd_btn-link {
   display: block;
