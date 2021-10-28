@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE snmp_oid_meta (
+CREATE TABLE snmp_object (
     "oid"    "text" NOT NULL,
     "mib"    "text" NOT NULL,
     "leaf"   "text" NOT NULL,

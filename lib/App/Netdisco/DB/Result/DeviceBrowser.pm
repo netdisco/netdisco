@@ -20,4 +20,14 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("ip", "oid");
 
+=head1 RELATIONSHIPS
+
+=head2 snmp_object
+
+Returns the SNMP Object table entry to which the given row is related.
+
+=cut
+
+__PACKAGE__->belongs_to( snmp_object => 'App::Netdisco::DB::Result::SNMPObject', 'oid' );
+
 1;

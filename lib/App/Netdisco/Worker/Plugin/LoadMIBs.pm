@@ -37,9 +37,9 @@ register_worker({ phase => 'main' }, sub {
     scalar @browser;
 
   schema('netdisco')->txn_do(sub {
-    my $gone = schema('netdisco')->resultset('SNMPOIDMeta')->delete;
+    my $gone = schema('netdisco')->resultset('SNMPObject')->delete;
     debug sprintf ' loadmibs - removed %d oids', $gone;
-    schema('netdisco')->resultset('SNMPOIDMeta')->populate(\@browser);
+    schema('netdisco')->resultset('SNMPObject')->populate(\@browser);
     debug sprintf ' loadmibs - added %d new oids', scalar @browser;
   });
 
