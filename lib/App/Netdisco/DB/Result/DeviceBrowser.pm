@@ -7,12 +7,10 @@ use warnings;
 use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("device_browser");
 __PACKAGE__->add_columns(
-  "id",
-  { data_type => "integer", is_nullable => 0 },
   "ip",
   { data_type => "inet", is_nullable => 0 },
   "oid",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "integer[]", is_nullable => 0 },
   "leaf",
   { data_type => "text", is_nullable => 0 },
   "value",

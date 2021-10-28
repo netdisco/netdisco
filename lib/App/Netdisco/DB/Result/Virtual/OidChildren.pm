@@ -11,13 +11,18 @@ __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 __PACKAGE__->table("oid_children");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
-    SELECT
-        DISTINCT(split_part(oid,'.',?))::int AS part,
-        (SELECT count (*) FROM device_browser db2 WHERE db2.oid LIKE (? || '.' || split_part(db.oid,'.',?) || '.%') AND ip = ?) AS children
-      FROM device_browser db
-      WHERE ip = ?
-      AND oid LIKE (? || '.%')
-      ORDER BY part
+
+    WITH params AS (select ?::inet AS ip, ?::int[] AS root),
+           args AS (select array_length(params.root,1) AS rootlen FROM params)
+    SELECT DISTINCT(oid[(args.rootlen + 1)]) AS part,
+           (SELECT count(*) FROM device_browser db2
+                            WHERE db2.oid[1:(args.rootlen + 1)] = device_browser.oid[1:(args.rootlen + 1)]
+                            AND db2.ip = params.ip) AS children
+      FROM device_browser, params, args
+      WHERE device_browser.ip = params.ip
+      AND device_browser.oid[1:(args.rootlen)] = params.root
+      ORDER BY part;
+
 ENDSQL
 );
 
