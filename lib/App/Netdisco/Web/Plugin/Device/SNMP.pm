@@ -30,7 +30,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
        or send_error('Bad Device', 404);
 
     my $base = param('base');
-    $base =~ m/^\.1\.3\.6\.1(\.\d+)+$/ or send_error('Bad OID Base', 404);
+    $base =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
     my @parts = grep {length} split m/\./, $base;
 
     my %kids = map { ($base .'.'. $_->{part}) => $_ }
