@@ -421,6 +421,7 @@ worker_plugins:
   - 'Hook'
   - 'Hook::Exec'
   - 'Hook::HTTP'
+  - 'LoadMIBs'
   - 'Location'
   - 'Macsuck'
   - 'Macsuck::Hooks'

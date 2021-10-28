@@ -53,14 +53,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
       if ($idx eq 0) {
         push @realoids, $oid;
-        $leaves{ $oidmap{$oid}->{leaf} } = $walk{$orig_oid};
+        $leaves{ $oidmap{$oid} } = $walk{$orig_oid};
       }
       else {
-        push @realoids, $oid if !exists $tables{ $oidmap{$oid}->{leaf} };
-        $tables{ $oidmap{$oid}->{leaf} }->{$idx} = $walk{$orig_oid};
+        push @realoids, $oid if !exists $tables{ $oidmap{$oid} };
+        $tables{ $oidmap{$oid} }->{$idx} = $walk{$orig_oid};
       }
 
-      # debug "snapshot $device - cached $oidmap{$oid}->{leaf}($idx)";
+      # debug "snapshot $device - cached $oidmap{$oid}($idx)";
       next OID;
     }
 
@@ -117,14 +117,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   debug "snapshot $device - cacheing snapshot for browsing";
   my @browser = map {{
-    oid    => $_,
-    mib    => $oidmap{$_}->{mib},
-    leaf   => $oidmap{$_}->{leaf},
-    type   => $oidmap{$_}->{type},
-    # munge => '',
-    access => $oidmap{$_}->{access},
-    index  => $oidmap{$_}->{index},
-    value  => do { my $m = $oidmap{$_}->{leaf}; encode_base64( nfreeze( [$snmp->$m] ) ); },
+    oid   => $_,
+    leaf  => $oidmap{$_},
+    value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
   }} sort {lxoid($a) cmp lxoid($b)} @realoids;
 
   schema('netdisco')->txn_do(sub {
@@ -160,16 +155,10 @@ sub getoidmap {
 
   my %oidmap = ();
   foreach my $line (@report) {
-    my ($oid, $qual_leaf, $type, $access, $index) = split m/,/, $line;
+    my ($oid, $qual_leaf, $rest) = split m/,/, $line;
     next unless defined $oid and defined $qual_leaf;
     my ($mib, $leaf) = split m/::/, $qual_leaf;
-    $oidmap{$oid} = {
-      mib    => $mib,
-      leaf   => $leaf,
-      type   => $type,
-      access => $access,
-      index  => [($index ? (split m/:/, $index) : ())],
-    };
+    $oidmap{$oid} = $leaf;
   }
 
   debug sprintf "snapshot $device - loaded %d objects from netdisco-mibs",
