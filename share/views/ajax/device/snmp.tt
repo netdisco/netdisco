@@ -1,5 +1,8 @@
-<div class="row scrollable">
-    <div class="span7 scrollable">
+<div class="row">
+    <div class="span5">
+        <div id="jstree" class="nd_scrollable"></div>
+    </div>
+    <div class="span8">
         <form id="searchTreeForm" class="form-inline col-md-4">
             <span class="form-group">
               <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label">
@@ -9,9 +12,6 @@
             </span>
         <button type="submit" class="btn btn-default">Search</button>
         </form>
-        <div id="jstree"></div>
-    </div>
-    <div class="span5 scrollable">
         <div id="node">
           <table class="table table-bordered">
               <tbody>
@@ -82,7 +82,8 @@
         },
         'data' : {
           'url' : function (node) {
-            return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/' + (node.id === '#' ? '.1.3.6.1' : node.id));
+            return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/'
+              + (node.id === '#' ? '.1.3.6.1' : node.id));
           }
         }
       },

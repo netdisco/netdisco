@@ -1,0 +1,52 @@
+<table class="table table-bordered">
+    <tbody>
+      <tr>
+        <th scope="row" class="span1">OID</th>
+        <td>[% node.oid %]</td>
+      </tr>
+      <tr>
+        <th scope="row">Module</th>
+        <td>[% node.snmp_object.mib %]</td>
+      </tr>
+      <tr>
+        <th scope="row">Leaf</th>
+        <td>[% node.snmp_object.leaf %]</td>
+      </tr>
+      <tr>
+        <th scope="row">Type</th>
+        <td>[% node.snmp_object.type %]</td>
+      </tr>
+      <tr>
+        <th scope="row">Munge</th>
+        <td>[% node.snmp_object.munge %]</td>
+      </tr>
+      <tr>
+        <th scope="row">Access</th>
+        <td>[% node.snmp_object.access %]</td>
+      </tr>
+      <tr>
+        <th scope="row">Index</th>
+        <td>
+        [% IF node.snmp_object.index.size > 0 %]
+          <table class="table table-condensed table-bordered">
+            [% FOREACH idx IN node.snmp_object.index %]
+            <tr><td>[% idx %]</td></tr>
+            [% END %]
+          </table>
+        [% END %]
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Value</th>
+        [% IF node.value %]
+        <td><pre id="snmp_node_value"></pre></td>
+        <script>
+          document.getElementById("snmp_node_value").textContent =
+            JSON.stringify(JSON.parse('[% node.value | none %]'), null, 2);
+        </script>
+        [% ELSE %]
+        <td></td>
+        [% END %]
+      </tr>
+    </tbody>    
+  </table>
