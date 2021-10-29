@@ -104,7 +104,7 @@
     });
     $('#jstree').on("changed.jstree", function (e, data) {
       if (data.selected && data.selected != "#") {
-        $('#node').load('[% uri_base | none %]/ajax/content/snmpnode/' + data.selected);
+        $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + data.selected);
       }
     });
     $('#jstree').on("search.jstree", function (e, data) {

@@ -12,6 +12,7 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::Web::Plugin;
 use MIME::Base64 'decode_base64';
 use Storable 'thaw';
+use Module::Load ();
 use Try::Tiny;
 
 register_device_tab({ tag => 'snmp', label => 'SNMP' });
@@ -40,18 +41,22 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     to_json $items;
 };
 
-ajax '/ajax/content/snmpnode/:oid' => require_login sub {
+ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
+    my $device = try { schema('netdisco')->resultset('Device')
+                                         ->find( param('ip') ) }
+       or send_error('Bad Device', 404);
+
     my $oid = param('oid');
     $oid =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID', 404);
 
     my $object = schema('netdisco')->resultset('DeviceBrowser')
-      ->find({ 'snmp_object.oid' => $oid }, { prefetch => 'snmp_object' })
+      ->find({ 'snmp_object.oid' => $oid, ip => $device->ip }, { prefetch => 'snmp_object' })
       or send_error('Bad OID', 404);
 
     my %data = (
       $object->get_columns,
       snmp_object => { $object->snmp_object->get_columns },
-      value => ($object->value ? to_json( @{ thaw( decode_base64( $object->value ) ) } )
+      value => ($object->value ? to_json( _munge( $object->munge, $object->value ) )
                                : undef),
     );
 
@@ -99,6 +104,35 @@ sub _get_snmp_data {
       }} sort {$kids{$a}->{part} <=> $kids{$b}->{part}} keys %kids;
 
     return \@items;
+}
+
+sub get_code_info { return ($_[0]) =~ m/^(.+)::(.*?)$/ }
+sub sub_name      { return (get_code_info $_[0])[1] }
+sub stash_name    { return (get_code_info $_[0])[0] }
+
+sub _munge {
+    my ($subname, $encoded) = @_;
+    my $data = (@{ thaw( decode_base64( $encoded ) ) })[0];
+
+    return $data unless $subname;
+    my $sub   = sub_name($subname);
+    my $class = stash_name($subname);
+    Module::Load::load $class;
+    no strict 'refs';
+
+    if (ref {} eq ref $data) {
+        my %munged;
+        foreach my $key ( keys %$data ) {
+            my $value = $data->{$key};
+            next unless defined $value;
+            $munged{$key} = &{$subname}($value);
+        }
+        return \%munged;
+    }
+    else {
+        return unless $data;
+        return &{$subname}($data);
+    }
 }
 
 true;
