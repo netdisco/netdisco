@@ -28,6 +28,9 @@ Returns the SNMP Object table entry to which the given row is related.
 
 =cut
 
-__PACKAGE__->belongs_to( snmp_object => 'App::Netdisco::DB::Result::SNMPObject', 'oid' );
+__PACKAGE__->belongs_to(
+  snmp_object => 'App::Netdisco::DB::Result::SNMPObject',
+  'oid', { join_type => 'RIGHT' }
+);
 
 1;

@@ -10,6 +10,8 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use MIME::Base64 'decode_base64';
+use Storable 'thaw';
 use Try::Tiny;
 
 register_device_tab({ tag => 'snmp', label => 'SNMP' });
@@ -35,7 +37,26 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     my $items = _get_snmp_data($device->ip, $base);
 
     content_type 'application/json';
-    to_json $items
+    to_json $items;
+};
+
+ajax '/ajax/content/snmpnode/:oid' => require_login sub {
+    my $oid = param('oid');
+    $oid =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID', 404);
+
+    my $object = schema('netdisco')->resultset('DeviceBrowser')
+      ->find({ 'snmp_object.oid' => $oid }, { prefetch => 'snmp_object' })
+      or send_error('Bad OID', 404);
+
+    my %data = (
+      $object->get_columns,
+      snmp_object => { $object->snmp_object->get_columns },
+      value => ($object->value ? to_json( @{ thaw( decode_base64( $object->value ) ) } )
+                               : undef),
+    );
+
+    template 'ajax/device/snmpnode.tt', { node => \%data },
+        { layout => 'noop' };
 };
 
 sub _get_snmp_data {
@@ -67,9 +88,10 @@ sub _get_snmp_data {
         id => $_,
         text => ($meta{$_}->{leaf} .' ('. $kids{$_}->{part} .')'),
 
+        # for nodes with only one child, recurse to prefetch...
         children => ($kids{$_}->{children} == 1 ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}))
                                                 : ($kids{$_}->{children} ? \1 : \0)),
-
+        # and set the display to open to show the single child
         ($kids{$_}->{children} == 1 ? (state => { opened => \1 }) : ()),
 
         ($kids{$_}->{children} ? () : (icon => 'icon-leaf')),
