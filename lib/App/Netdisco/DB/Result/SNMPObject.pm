@@ -8,6 +8,8 @@ use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("snmp_object");
 __PACKAGE__->add_columns(
   "oid",
+  { data_type => "text", is_nullable => 0 },
+  "oid_parts",
   { data_type => "integer[]", is_nullable => 0 },
   "mib",
   { data_type => "text", is_nullable => 0 },

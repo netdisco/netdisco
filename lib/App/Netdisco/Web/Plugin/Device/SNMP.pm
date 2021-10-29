@@ -38,7 +38,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
                                  ->search({}, { bind => [ $device->ip, [@parts] ] })
                                  ->hri->all; 
 
-    my %meta = map { ('.'. join '.', @{$_->{oid}}) => $_ }
+    my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
                                  ->search({}, { bind => [ [@parts], [ map {$_->{part}} values %kids ] ] })
                                  ->hri->all;

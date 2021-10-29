@@ -14,13 +14,13 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
     WITH params AS (SELECT ?::inet AS ip, ?::int[] AS root),
            args AS (SELECT array_length(params.root,1) AS rootlen FROM params)
-    SELECT DISTINCT(oid[(args.rootlen + 1)]) AS part,
-           (SELECT count(DISTINCT(db2.oid[1:(args.rootlen + 2)])) FROM device_browser db2
-                            WHERE db2.oid[1:(args.rootlen + 1)] = device_browser.oid[1:(args.rootlen + 1)]
+    SELECT DISTINCT(oid_parts[(args.rootlen + 1)]) AS part,
+           (SELECT count(DISTINCT(db2.oid_parts[1:(args.rootlen + 2)])) FROM device_browser db2
+                            WHERE db2.oid_parts[1:(args.rootlen + 1)] = device_browser.oid_parts[1:(args.rootlen + 1)]
                             AND db2.ip = params.ip) AS children
       FROM device_browser, params, args
       WHERE device_browser.ip = params.ip
-      AND device_browser.oid[1:(args.rootlen)] = params.root
+      AND device_browser.oid_parts[1:(args.rootlen)] = params.root
       ORDER BY part
 
 ENDSQL

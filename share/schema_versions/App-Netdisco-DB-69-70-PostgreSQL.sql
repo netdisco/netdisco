@@ -1,7 +1,8 @@
 BEGIN;
 
 CREATE TABLE snmp_object (
-    "oid"    integer[] NOT NULL,
+    "oid"    "text" NOT NULL,
+    "oid_parts" integer[] NOT NULL,
     "mib"    "text" NOT NULL,
     "leaf"   "text" NOT NULL,
     "type"   "text",

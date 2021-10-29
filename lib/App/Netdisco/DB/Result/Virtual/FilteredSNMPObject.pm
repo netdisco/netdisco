@@ -15,18 +15,19 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     WITH params AS (SELECT ?::int[] AS root, ?::int[] AS children),
            args AS (SELECT array_length(params.root,1) AS rootlen FROM params)
 
-    SELECT oid, mib, leaf, type, munge, access, index
+    SELECT oid, oid_parts, mib, leaf, type, munge, access, index
       FROM snmp_object, params, args
-      WHERE oid[1:(args.rootlen)] = params.root
-        AND oid[(args.rootlen + 1)] = ANY (children)
-        AND array_length(oid,1) = (args.rootlen + 1)
-      ORDER BY oid
+      WHERE oid_parts[1:(args.rootlen)] = params.root
+        AND oid_parts[(args.rootlen + 1)] = ANY (children)
+        AND array_length(oid_parts,1) = (args.rootlen + 1)
+      ORDER BY oid_parts
 
 ENDSQL
 );
 
 __PACKAGE__->add_columns(
-  'oid'    => { data_type => 'integer[]' },
+  'oid'    => { data_type => 'text' },
+  'oid_parts' => { data_type => 'integer[]' },
   'mib'    => { data_type => 'text' },
   'leaf'   => { data_type => 'text' },
   'type'   => { data_type => 'text' },

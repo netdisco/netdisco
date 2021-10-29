@@ -117,7 +117,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   debug "snapshot $device - cacheing snapshot for browsing";
   my @browser = map {{
-    oid   => [ grep {length} (split m/\./, $_) ],
+    oid => $_,
+    oid_parts => [ grep {length} (split m/\./, $_) ],
     leaf  => $oidmap{$_},
     value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
   }} sort {lxoid($a) cmp lxoid($b)} @realoids;

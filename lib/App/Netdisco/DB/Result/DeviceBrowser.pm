@@ -10,6 +10,8 @@ __PACKAGE__->add_columns(
   "ip",
   { data_type => "inet", is_nullable => 0 },
   "oid",
+  { data_type => "text", is_nullable => 0 },
+  "oid_parts",
   { data_type => "integer[]", is_nullable => 0 },
   "leaf",
   { data_type => "text", is_nullable => 0 },

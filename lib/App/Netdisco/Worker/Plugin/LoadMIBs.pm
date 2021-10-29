@@ -24,7 +24,8 @@ register_worker({ phase => 'main' }, sub {
     next unless defined $oid and defined $qual_leaf;
     my ($mib, $leaf) = split m/::/, $qual_leaf;
     push @browser, {
-      oid    => [ grep {length} (split m/\./, $oid) ],
+      oid    => $oid,
+      oid_parts => [ grep {length} (split m/\./, $oid) ],
       mib    => $mib,
       leaf   => $leaf,
       type   => $type,
