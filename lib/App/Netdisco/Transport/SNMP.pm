@@ -124,9 +124,8 @@ sub _snmp_connect_generic {
   my %snmp_args = (
     AutoSpecify => 0,
     DestHost => $device->ip,
-    # 0 is falsy. Using || with snmpretries equal to 0 will set retries to 2.
-    # check if the setting is 0. If not, use the default value of 2.
-    Retries => (setting('snmpretries') || setting('snmpretries') == 0 ? 0 : 2),
+    # the defined() allows 0 to be a settable value 
+    Retries => defined(setting('snmpretries')) ? setting('snmpretries') : 2,
     Timeout => (setting('snmptimeout') || 1000000),
     NonIncreasing => (setting('nonincreasing') || 0),
     BulkWalk => ((defined setting('bulkwalk_off') && setting('bulkwalk_off'))
