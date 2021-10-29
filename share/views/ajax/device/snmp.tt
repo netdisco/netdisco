@@ -1,5 +1,5 @@
 <div class="row scrollable">
-    <div class="span6 scrollable">
+    <div class="span7 scrollable">
         <form id="searchTreeForm" class="form-inline col-md-4">
             <span class="form-group">
               <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label">
@@ -11,7 +11,7 @@
         </form>
         <div id="jstree"></div>
     </div>
-    <div class="span8 scrollable">
+    <div class="span5 scrollable">
         <div id="node">
           <table class="table table-bordered">
               <tbody>
@@ -92,7 +92,7 @@
           }
         }
       },
-      'plugins': ['search', 'types'],
+      'plugins': ['search'],
       'search': {
         'ajax' : {
           'url' : '/api/search/nodes',
@@ -106,10 +106,6 @@
         },
         'search_callback' : jstree_search_callback
       },
-      'types': {
-        'table': { 'icon': 'glyphicon glyphicon-th' },
-        'leaf': { 'icon': 'glyphicon glyphicon-leaf' }
-      }
     });
     $('#jstree').on("changed.jstree", function (e, data) {
       if (data.selected && data.selected != "#") {

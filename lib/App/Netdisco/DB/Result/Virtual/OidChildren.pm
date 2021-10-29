@@ -12,13 +12,18 @@ __PACKAGE__->table("oid_children");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
-    SELECT DISTINCT(oid_parts[?]) AS part,
-           (SELECT count(DISTINCT(db2.oid_parts[1:?])) FROM device_browser db2
-                            WHERE db2.oid_parts[1:?] = device_browser.oid_parts[1:?]
-                            AND db2.ip = ?) AS children
-      FROM device_browser
-      WHERE device_browser.ip = ?
-      AND device_browser.oid LIKE ?::text || '.%'
+    SELECT DISTINCT(db.oid_parts[?]) AS part, count(distinct(db2.oid_parts[?])) as children
+      FROM device_browser db
+
+      LEFT JOIN device_browser db2
+      ON (db2.oid LIKE ? || '.%'
+          AND db2.oid_parts[?] = db.oid_parts[?]
+          AND db2.ip = db.ip)
+
+      WHERE db.ip = ?
+            AND db.oid LIKE ? || '.%'
+
+      GROUP BY db.oid_parts
 
 ENDSQL
 );

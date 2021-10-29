@@ -31,6 +31,15 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
 
     my $base = param('base');
     $base =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
+
+    my $items = _get_snmp_data($device->ip, $base);
+
+    content_type 'application/json';
+    to_json $items
+};
+
+sub _get_snmp_data {
+    my ($ip, $base) = @_;
     my @parts = grep {length} split m/\./, $base;
 
     my %kids = map { ($base .'.'. $_->{part}) => $_ }
@@ -38,10 +47,10 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
                                  ->search({}, { bind => [
                                      (scalar @parts + 1),
                                      (scalar @parts + 2),
+                                     $base,
                                      (scalar @parts + 1),
                                      (scalar @parts + 1),
-                                     $device->ip,
-                                     $device->ip,
+                                     $ip,
                                      $base,
                                  ] })->hri->all;
 
@@ -50,18 +59,24 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
                                  ->search({}, { bind => [
                                      $base,
                                      (scalar @parts + 1),
-                                     [ map {$_->{part}} values %kids ],
+                                     [[ map {$_->{part}} values %kids ]],
                                      (scalar @parts + 1),
                                  ] })->hri->all;
 
     my @items = map {{
         id => $_,
         text => ($meta{$_}->{leaf} .' ('. $kids{$_}->{part} .')'),
-        children => \1,
-      }} sort keys %kids;
 
-    content_type 'application/json';
-    to_json \@items
-};
+        children => ($kids{$_}->{children} == 1 ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}))
+                                                : ($kids{$_}->{children} ? \1 : \0)),
+
+        ($kids{$_}->{children} == 1 ? (state => { opened => \1 }) : ()),
+
+        ($kids{$_}->{children} ? () : (icon => 'icon-leaf')),
+        (scalar @{$meta{$_}->{index}} ? (icon => 'icon-th') : ()),
+      }} sort {$kids{$a}->{part} <=> $kids{$b}->{part}} keys %kids;
+
+    return \@items;
+}
 
 true;

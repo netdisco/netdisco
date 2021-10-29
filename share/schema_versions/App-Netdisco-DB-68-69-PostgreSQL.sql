@@ -11,4 +11,6 @@ CREATE TABLE device_browser (
 
 CREATE INDEX idx_device_browser_ip_leaf ON device_browser(ip, leaf);
 
+CREATE INDEX idx_device_browser_oid__pattern on device_browser (oid text_pattern_ops);
+
 COMMIT;

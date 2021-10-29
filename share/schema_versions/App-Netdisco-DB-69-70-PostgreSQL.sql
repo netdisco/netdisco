@@ -12,4 +12,6 @@ CREATE TABLE snmp_object (
     PRIMARY KEY ("oid")
 );
 
+CREATE INDEX idx_snmp_object_oid__pattern on snmp_object (oid text_pattern_ops);
+
 COMMIT;
