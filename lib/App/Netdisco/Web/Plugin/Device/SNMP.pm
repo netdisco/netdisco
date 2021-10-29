@@ -35,13 +35,24 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
 
     my %kids = map { ($base .'.'. $_->{part}) => $_ }
                schema('netdisco')->resultset('Virtual::OidChildren')
-                                 ->search({}, { bind => [ $device->ip, [@parts] ] })
-                                 ->hri->all; 
+                                 ->search({}, { bind => [
+                                     (scalar @parts + 1),
+                                     (scalar @parts + 2),
+                                     (scalar @parts + 1),
+                                     (scalar @parts + 1),
+                                     $device->ip,
+                                     $device->ip,
+                                     $base,
+                                 ] })->hri->all;
 
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
-                                 ->search({}, { bind => [ [@parts], [ map {$_->{part}} values %kids ] ] })
-                                 ->hri->all;
+                                 ->search({}, { bind => [
+                                     $base,
+                                     (scalar @parts + 1),
+                                     [ map {$_->{part}} values %kids ],
+                                     (scalar @parts + 1),
+                                 ] })->hri->all;
 
     my @items = map {{
         id => $_,
