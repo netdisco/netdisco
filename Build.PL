@@ -86,6 +86,7 @@ Module::Build->new(
     'SNMP::Info' => '3.81',
     'SQL::Abstract' => '1.85',
     'SQL::Translator' => '0.11024',
+    'Sub::Util' => '1.40',
     'Template' => '2.24',
     'Template::AutoFilter' => '0',
     'Template::Plugin::CSV' => '0.04',

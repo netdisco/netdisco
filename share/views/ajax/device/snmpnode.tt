@@ -18,7 +18,7 @@
       </tr>
       <tr>
         <th scope="row">Munge</th>
-        <td>[% node.snmp_object.munge %]</td>
+        <td>[% node.munge %]</td>
       </tr>
       <tr>
         <th scope="row">Access</th>

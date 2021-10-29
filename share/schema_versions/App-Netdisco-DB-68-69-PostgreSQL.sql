@@ -5,6 +5,7 @@ CREATE TABLE device_browser (
     "oid"    "text" NOT NULL,
     "oid_parts" integer[] NOT NULL,
     "leaf"   "text" NOT NULL,
+    "munge"  "text",
     "value"  "text",
     PRIMARY KEY ("ip", "oid")
 );

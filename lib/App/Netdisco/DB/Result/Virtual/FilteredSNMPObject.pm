@@ -12,7 +12,7 @@ __PACKAGE__->table("filtered_snmp_object");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
-    SELECT oid, oid_parts, mib, leaf, type, munge, access, index
+    SELECT oid, oid_parts, mib, leaf, type, access, index
       FROM snmp_object
       WHERE oid LIKE ?::text || '.%'
         AND oid_parts[?] = ANY (?)
@@ -27,7 +27,6 @@ __PACKAGE__->add_columns(
   'mib'    => { data_type => 'text' },
   'leaf'   => { data_type => 'text' },
   'type'   => { data_type => 'text' },
-  'munge'  => { data_type => 'text' },
   'access' => { data_type => 'text' },
   'index'  => { data_type => 'text[]' },
 );

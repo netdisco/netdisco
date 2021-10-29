@@ -11,6 +11,7 @@ use File::Spec::Functions qw(catdir catfile);
 use MIME::Base64 'encode_base64';
 use File::Slurper qw(read_lines write_text);
 use File::Path 'make_path';
+use Sub::Util 'subname';
 use Storable qw(dclone nfreeze);
 # use DDP;
 
@@ -34,6 +35,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
   # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
 
+  my %munge = %{ $snmp->munge() };
+  my %munge_set = ();
+
   # take the snmpwalk of the device which is numeric (no MIB translateObj),
   # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
   # instance cache
@@ -50,14 +54,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
     if (exists $oidmap{$oid}) {
       $idx =~ s/^\.//;
+      my $leaf = $oidmap{$oid};
 
       if ($idx eq 0) {
         push @realoids, $oid;
-        $leaves{ $oidmap{$oid} } = $walk{$orig_oid};
+        $leaves{ $leaf } = $walk{$orig_oid};
+        $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
       }
       else {
-        push @realoids, $oid if !exists $tables{ $oidmap{$oid} };
-        $tables{ $oidmap{$oid} }->{$idx} = $walk{$orig_oid};
+        push @realoids, $oid if !exists $tables{ $leaf };
+        $tables{ $leaf }->{$idx} = $walk{$orig_oid};
+        $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
       }
 
       # debug "snapshot $device - cached $oidmap{$oid}($idx)";
@@ -67,8 +74,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     debug "snapshot $device - missing OID $orig_oid in netdisco-mibs";
   }
 
-  $snmp->_cache($_, $tables{$_}) for keys %tables;
   $snmp->_cache($_, $leaves{$_}) for keys %leaves;
+  $snmp->_cache($_, $tables{$_}) for keys %tables;
 
   # we want to add in the GLOBALS and FUNCS aliases which users
   # have created in the SNMP::Info device class, with binary copy
@@ -82,12 +89,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     if (exists $cache{"_$leaf"} and !exists $cache{"_$alias"}) {
       $snmp->_cache($alias, $cache{"_$leaf"});
     }
+    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
   }
 
   while (my ($alias, $leaf) = each %funcs) {
     if (exists $cache{store}->{$leaf} and !exists $cache{store}->{$alias}) {
       $snmp->_cache($alias, dclone $cache{store}->{$leaf});
     }
+    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
   }
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
@@ -120,6 +129,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     oid => $_,
     oid_parts => [ grep {length} (split m/\./, $_) ],
     leaf  => $oidmap{$_},
+    munge => $munge_set{ $oidmap{$_} },
     value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
   }} sort {lxoid($a) cmp lxoid($b)} @realoids;
 

@@ -17,8 +17,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "type",
   { data_type => "text", is_nullable => 1 },
-  "munge",
-  { data_type => "text", is_nullable => 1 },
   "access",
   { data_type => "text", is_nullable => 1 },
   "index",

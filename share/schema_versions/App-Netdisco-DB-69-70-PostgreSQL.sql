@@ -6,7 +6,6 @@ CREATE TABLE snmp_object (
     "mib"    "text" NOT NULL,
     "leaf"   "text" NOT NULL,
     "type"   "text",
-    "munge"  "text",
     "access" "text",
     "index"  text[] DEFAULT '{}',
     PRIMARY KEY ("oid")
