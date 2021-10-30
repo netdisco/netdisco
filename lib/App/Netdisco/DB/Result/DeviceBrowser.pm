@@ -26,13 +26,25 @@ __PACKAGE__->set_primary_key("ip", "oid");
 
 =head2 snmp_object
 
-Returns the SNMP Object table entry to which the given row is related.
+Returns the SNMP Object table entry to which the given row is related. The
+idea is that you always get the SNMP Object row data even if the Device
+Browser table doesn't have any walked data.
+
+However you probably want to use the C<snmp_object> method in the
+C<DeviceBrowser> ResultSet instead, so you can pass the IP address.
 
 =cut
 
 __PACKAGE__->belongs_to(
   snmp_object => 'App::Netdisco::DB::Result::SNMPObject',
-  'oid', { join_type => 'RIGHT' }
+  sub {
+    my $args = shift;
+    return {
+        "$args->{self_alias}.oid" => { -ident => "$args->{foreign_alias}.oid" },
+        "$args->{self_alias}.ip" => { '=' => \'?' },
+    };
+  },
+  { join_type => 'RIGHT' }
 );
 
 1;

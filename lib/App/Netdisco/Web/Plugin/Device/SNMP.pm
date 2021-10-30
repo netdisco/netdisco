@@ -50,7 +50,7 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
     $oid =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID', 404);
 
     my $object = schema('netdisco')->resultset('DeviceBrowser')
-      ->find({ 'snmp_object.oid' => $oid, ip => $device->ip }, { prefetch => 'snmp_object' })
+      ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
       or send_error('Bad OID', 404);
 
     my %data = (

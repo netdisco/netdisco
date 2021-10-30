@@ -2,7 +2,7 @@
     <tbody>
       <tr>
         <th scope="row" class="span1">OID</th>
-        <td>[% node.oid %]</td>
+        <td>[% node.snmp_object.oid %]</td>
       </tr>
       <tr>
         <th scope="row">Module</th>
