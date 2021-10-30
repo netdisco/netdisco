@@ -38,15 +38,7 @@
       </tr>
       <tr>
         <th scope="row">Value</th>
-        [% IF node.value %]
-        <td><pre id="snmp_node_value"></pre></td>
-        <script>
-          document.getElementById("snmp_node_value").textContent =
-            JSON.stringify(JSON.parse('[% node.value | none %]'), null, 2);
-        </script>
-        [% ELSE %]
-        <td></td>
-        [% END %]
+        <td>[% IF node.value %]<pre id="snmp_node_value">[% node.value %]</pre>[% END %]</td>
       </tr>
     </tbody>    
   </table>

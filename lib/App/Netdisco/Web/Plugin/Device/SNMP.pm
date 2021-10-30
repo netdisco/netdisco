@@ -14,6 +14,7 @@ use MIME::Base64 'decode_base64';
 use Storable 'thaw';
 use Module::Load ();
 use Try::Tiny;
+use JSON::XS;
 
 register_device_tab({ tag => 'snmp', label => 'SNMP' });
 
@@ -53,10 +54,11 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
       ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
       or send_error('Bad OID', 404);
 
+    my $coder = JSON::XS->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
     my %data = (
       $object->get_columns,
       snmp_object => { $object->snmp_object->get_columns },
-      value => ($object->value ? to_json( _munge( $object->munge, $object->value ) )
+      value => ($object->value ? $coder->encode ( _munge( $object->munge, $object->value ) )
                                : undef),
     );
 
