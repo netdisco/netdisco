@@ -69,8 +69,9 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
 };
 
 sub _get_snmp_data {
-    my ($ip, $base) = @_;
+    my ($ip, $base, $recurse) = @_;
     my @parts = grep {length} split m/\./, $base;
+    ++$recurse;
 
     my %kids = map { ($base .'.'. $_->{part}) => $_ }
                schema('netdisco')->resultset('Virtual::OidChildren')
@@ -98,10 +99,14 @@ sub _get_snmp_data {
         text => ($meta{$_}->{leaf} .' ('. $kids{$_}->{part} .')'),
 
         # for nodes with only one child, recurse to prefetch...
-        children => ($kids{$_}->{children} == 1 ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}))
-                                                : ($kids{$_}->{children} ? \1 : \0)),
+        children => ( ($recurse < 2 and $kids{$_}->{children} == 1)
+          ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}), $recurse)
+          : ($kids{$_}->{children} ? \1 : \0)),
+
         # and set the display to open to show the single child
-        ($kids{$_}->{children} == 1 ? (state => { opened => \1 }) : ()),
+        state => { opened => ( ($recurse < 2 and $kids{$_}->{children} == 1)
+          ? \1
+          : \0 ) },
 
         ($kids{$_}->{children} ? () : (icon => 'icon-leaf')),
         (scalar @{$meta{$_}->{index}} ? (icon => 'icon-th') : ()),
