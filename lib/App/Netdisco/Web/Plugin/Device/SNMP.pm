@@ -3,18 +3,19 @@ package App::Netdisco::Web::Plugin::Device::SNMP;
 use strict;
 use warnings;
 
-use Dancer ':syntax';
+use Dancer qw(:syntax !to_json !from_json);
 use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::SNMP 'sortable_oid';
 use MIME::Base64 'decode_base64';
 use Storable 'thaw';
 use Module::Load ();
 use Try::Tiny;
-use JSON::XS;
+use JSON::PP;
 
 register_device_tab({ tag => 'snmp', label => 'SNMP' });
 
@@ -39,7 +40,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     my $items = _get_snmp_data($device->ip, $base);
 
     content_type 'application/json';
-    to_json $items;
+    encode_json $items;
 };
 
 ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
@@ -54,7 +55,8 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
       ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
       or send_error('Bad OID', 404);
 
-    my $coder = JSON::XS->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
+    my $coder = JSON::PP->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
+    $coder->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
     my %data = (
       $object->get_columns,
       snmp_object => { $object->snmp_object->get_columns },

@@ -5,7 +5,11 @@ use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ get_communities snmp_comm_reindex /;
+our @EXPORT_OK = qw/
+  get_communities
+  snmp_comm_reindex
+  sortable_oid
+/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -20,6 +24,24 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 sortable_oid( $oid, $seglen? )
+
+Take an OID and return a version of it which is sortable using C<cmp>
+operator. Works by zero-padding the numeric parts all to be length
+C<< $seglen >>, which defaults to 6.
+
+=cut
+
+# take oid and make comparable
+sub sortable_oid {
+  my ($oid, $seglen) = @_;
+  $seglen ||= 6;
+  return $oid if $oid !~ m/^[0-9.]+$/;
+  $oid =~ s/^(\.)//; my $leading = $1;
+  $oid = join '.', map { sprintf("\%0${seglen}d", $_) } (split m/\./, $oid);
+  return (($leading || '') . $oid);
+}
 
 =head2 get_communities( $device, $mode )
 

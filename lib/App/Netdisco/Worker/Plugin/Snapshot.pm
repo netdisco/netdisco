@@ -5,6 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
+use App::Netdisco::Util::SNMP 'sortable_oid';
 use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw(catdir catfile);
@@ -131,7 +132,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     leaf  => $oidmap{$_},
     munge => $munge_set{ $oidmap{$_} },
     value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
-  }} sort {lxoid($a) cmp lxoid($b)} @realoids;
+  }} sort {sortable_oid($a) cmp sortable_oid($b)} @realoids;
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->oids->delete;
@@ -313,16 +314,6 @@ sub walker {
     debug sprintf "snapshot $device - walked %d rows from $base",
       scalar keys %localstore;
     return %localstore;
-}
-
-# take oid and make comparable
-sub lxoid {
-  my ($oid, $seglen) = @_;
-  $seglen ||= 6;
-  return $oid if $oid !~ m/^[0-9.]+$/;
-  $oid =~ s/^(\.)//; my $leading = $1;
-  $oid = join '.', map { sprintf("\%0${seglen}d", $_) } (split m/\./, $oid);
-  return (($leading || '') . $oid);
 }
 
 true;
