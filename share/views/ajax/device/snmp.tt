@@ -102,6 +102,10 @@
         'search_callback' : jstree_search_callback
       },
     });
+    $('#jstree').on("change", "#munger", function(e, data) {
+      var ary = $('#jstree').jstree('get_selected');
+      $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + ary[0] + '?' + $('#munger').find(":selected").text());
+    });
     $('#jstree').on("changed.jstree", function (e, data) {
       if (data.selected && data.selected != "#") {
         $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + data.selected);
