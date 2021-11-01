@@ -224,7 +224,8 @@ sub decode_and_munge {
     $coder->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
 
     my $data = (@{ thaw( decode_base64( $encoded ) ) })[0];
-    return $coder->encode( $data ) unless $munger;
+    return $coder->encode( $data )
+      unless $munger and exists $all_mungers{$munger};
 
     my $sub   = sub_name($munger);
     my $class = class_name($munger);
