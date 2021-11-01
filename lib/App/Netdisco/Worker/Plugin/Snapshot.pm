@@ -25,7 +25,8 @@ register_worker({ phase => 'check' }, sub {
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
-  my $save = $job->port;
+  my $save_file = $job->port;
+  my $save_db = $job->extra;
 
   # needed to avoid $var being returned with leafname and breaking loop checks
   $SNMP::use_numeric = 1;
@@ -125,30 +126,32 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $frozen = encode_base64( nfreeze( \%cache ) );
   $device->update_or_create_related('snapshot', {cache => $frozen});
 
-  debug "snapshot $device - cacheing snapshot for browsing";
-  my @browser = map {{
-    oid => $_,
-    oid_parts => [ grep {length} (split m/\./, $_) ],
-    leaf  => $oidmap{$_},
-    munge => $munge_set{ $oidmap{$_} },
-    value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
-  }} sort {sortable_oid($a) cmp sortable_oid($b)} @realoids;
+  if ($save_db) {
+      debug "snapshot $device - cacheing snapshot for browsing";
+      my @browser = map {{
+        oid => $_,
+        oid_parts => [ grep {length} (split m/\./, $_) ],
+        leaf  => $oidmap{$_},
+        munge => $munge_set{ $oidmap{$_} },
+        value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
+      }} sort {sortable_oid($a) cmp sortable_oid($b)} @realoids;
 
-  schema('netdisco')->txn_do(sub {
-    my $gone = $device->oids->delete;
-    debug sprintf ' [%s] snapshot - removed %d oids',
-      $device->ip, $gone;
-    $device->oids->populate(\@browser);
-    debug sprintf ' [%s] snapshot - added %d new oids',
-      $device->ip, scalar @browser;
-  });
+      schema('netdisco')->txn_do(sub {
+        my $gone = $device->oids->delete;
+        debug sprintf ' [%s] snapshot - removed %d oids',
+          $device->ip, $gone;
+        $device->oids->populate(\@browser);
+        debug sprintf ' [%s] snapshot - added %d new oids',
+          $device->ip, scalar @browser;
+      });
+  }
 
-  if ($save) {
-    my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
-    make_path($target_dir);
-    my $target_file = catfile($target_dir, $device->ip);
-    debug "snapshot $device - saving snapshot to $target_file";
-    write_text($target_file, $frozen);
+  if ($save_file) {
+      my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
+      make_path($target_dir);
+      my $target_file = catfile($target_dir, $device->ip);
+      debug "snapshot $device - saving snapshot to $target_file";
+      write_text($target_file, $frozen);
   }
 
   return Status->done(
