@@ -18,7 +18,16 @@
       </tr>
       <tr>
         <th scope="row">Munge</th>
-        <td>[% node.munge %]</td>
+        <td>
+        [% IF node.value %]
+        <select name="munger" id="munger">
+          [% UNLESS node.munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
+          [% FOREACH m IN mungers %]
+          <option [% 'selected' IF m == node.munge %] value="[% m %]">[% m %]</option>
+          [% END %]
+        </select>
+        [% END %]
+        </td>
       </tr>
       <tr>
         <th scope="row">Access</th>

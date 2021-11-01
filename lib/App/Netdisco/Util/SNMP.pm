@@ -14,7 +14,7 @@ our @EXPORT_OK = qw/
   snmp_comm_reindex
   sortable_oid
   decode_and_munge
-  all_mungers
+  %ALL_MUNGERS
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -158,7 +158,7 @@ sub snmp_comm_reindex {
   return $snmp;
 }
 
-my %all_mungers = (
+our %ALL_MUNGERS = (
     'SNMP::Info::munge_speed' => \&SNMP::Info::munge_speed,
     'SNMP::Info::munge_highspeed' => \&SNMP::Info::munge_highspeed,
     'SNMP::Info::munge_ip' => \&SNMP::Info::munge_ip,
@@ -225,7 +225,7 @@ sub decode_and_munge {
 
     my $data = (@{ thaw( decode_base64( $encoded ) ) })[0];
     return $coder->encode( $data )
-      unless $munger and exists $all_mungers{$munger};
+      unless $munger and exists $ALL_MUNGERS{$munger};
 
     my $sub   = sub_name($munger);
     my $class = class_name($munger);
@@ -236,13 +236,13 @@ sub decode_and_munge {
         foreach my $key ( keys %$data ) {
             my $value = $data->{$key};
             next unless defined $value;
-            $munged{$key} = $all_mungers{$munger}->($value);
+            $munged{$key} = $ALL_MUNGERS{$munger}->($value);
         }
         return $coder->encode( \%munged );
     }
     else {
         return unless $data;
-        return $coder->encode( $all_mungers{$munger}->($data) );
+        return $coder->encode( $ALL_MUNGERS{$munger}->($data) );
     }
 
 }

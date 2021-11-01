@@ -10,7 +10,7 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::SNMP 'decode_and_munge';
+use App::Netdisco::Util::SNMP qw(%ALL_MUNGERS decode_and_munge);
 use Module::Load ();
 use Try::Tiny;
 
@@ -58,7 +58,8 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
       value => decode_and_munge( $object->munge, $object->value ),
     );
 
-    template 'ajax/device/snmpnode.tt', { node => \%data },
+    template 'ajax/device/snmpnode.tt',
+        { node => \%data, mungers => [sort keys %ALL_MUNGERS] },
         { layout => 'noop' };
 };
 
