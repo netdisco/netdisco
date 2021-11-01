@@ -52,14 +52,17 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
       ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
       or send_error('Bad OID', 404);
 
+    my $munge = (param('munge') and exists $ALL_MUNGERS{param('munge')})
+      ? param('munge') : $object->munge;
+
     my %data = (
       $object->get_columns,
       snmp_object => { $object->snmp_object->get_columns },
-      value => decode_and_munge( $object->munge, $object->value ),
+      value => decode_and_munge( $munge, $object->value ),
     );
 
     template 'ajax/device/snmpnode.tt',
-        { node => \%data, mungers => [sort keys %ALL_MUNGERS] },
+        { node => \%data, munge => $munge, mungers => [sort keys %ALL_MUNGERS] },
         { layout => 'noop' };
 };
 

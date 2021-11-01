@@ -21,9 +21,9 @@
       <td>
       [% IF node.value %]
       <select name="munger" id="munger">
-        [% UNLESS node.munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
+        [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
         [% FOREACH m IN mungers %]
-        <option [% 'selected' IF m == node.munge %] value="[% m %]">[% m %]</option>
+        <option [% 'selected' IF m == munge %] value="[% m %]">[% m %]</option>
         [% END %]
       </select>
       [% END %]

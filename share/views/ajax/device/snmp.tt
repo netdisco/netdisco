@@ -2,7 +2,7 @@
     <div class="span5">
         <div id="jstree" class="nd_scrollable"></div>
     </div>
-    <div class="span8">
+    <div id="snmpnodecontainer" class="span8">
         <form id="searchTreeForm" class="form-inline col-md-4">
             <span class="form-group">
               <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label">
@@ -102,9 +102,10 @@
         'search_callback' : jstree_search_callback
       },
     });
-    $('#jstree').on("change", "#munger", function(e, data) {
+    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
       var ary = $('#jstree').jstree('get_selected');
-      $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + ary[0] + '?' + $('#munger').find(":selected").text());
+      $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/'
+        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
     });
     $('#jstree').on("changed.jstree", function (e, data) {
       if (data.selected && data.selected != "#") {
