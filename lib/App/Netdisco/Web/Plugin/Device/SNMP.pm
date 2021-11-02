@@ -32,13 +32,27 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
                                          ->find( param('ip') ) }
        or send_error('Bad Device', 404);
 
+    my $recurse =  ((param('recurse') and param('recurse') eq 'on') ? 0 : 1);
     my $base = param('base');
     $base =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
 
-    my $items = _get_snmp_data($device->ip, $base);
+    my $items = _get_snmp_data($device->ip, $base, $recurse);
 
     content_type 'application/json';
     to_json $items;
+};
+
+ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
+    my $device = try { schema('netdisco')->resultset('Device')
+                                         ->find( param('ip') ) }
+       or send_error('Bad Device', 404);
+
+    my $match = param('str');
+    my $partial = param('partial');
+    my $excludeself = param('excludeself');
+
+    content_type 'application/json';
+    to_json ['.1.3.6.1.2.1','.1.3.6.1.2.1.1'];
 };
 
 ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
