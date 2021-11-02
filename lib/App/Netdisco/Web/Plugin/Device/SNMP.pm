@@ -14,7 +14,8 @@ use App::Netdisco::Util::SNMP qw(%ALL_MUNGERS decode_and_munge);
 use Module::Load ();
 use Try::Tiny;
 
-register_device_tab({ tag => 'snmp', label => 'SNMP' });
+register_device_tab({ tag => 'snmp', label => 'SNMP',
+  render_if => sub { schema('netdisco')->resultset('DeviceBrowser')->count() } });
 
 get '/ajax/content/device/snmp' => require_login sub {
     my $q = param('q');
