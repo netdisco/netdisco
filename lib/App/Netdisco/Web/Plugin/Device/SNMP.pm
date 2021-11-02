@@ -47,12 +47,32 @@ ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
                                          ->find( param('ip') ) }
        or send_error('Bad Device', 404);
 
-    my $match = param('str');
+    my $to_match = param('str');
     my $partial = param('partial');
     my $excludeself = param('excludeself');
 
+    return [] unless $to_match or length($to_match);
+    $to_match = $to_match . '%' if $partial;
+    my $found = undef;
+
+    my $op = ($partial ? '-ilike' : '=');
+    $found = schema('netdisco')->resultset('DeviceBrowser')
+      ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ] },
+               { rows => 1, order_by => 'oid_parts' })->first;
+
+    return [] unless $found;
+
+    $found = $found->oid;
+    $found =~ s/^\.1\.3\.6\.1\.?//;
+    my @results = ('.1.3.6.1');
+
+    foreach my $part (split m/\./, $found) {
+        my $last = $results[-1];
+        push @results, "${last}.${part}";
+    }
+
     content_type 'application/json';
-    to_json ['.1.3.6.1.2.1','.1.3.6.1.2.1.1'];
+    to_json \@results;
 };
 
 ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {

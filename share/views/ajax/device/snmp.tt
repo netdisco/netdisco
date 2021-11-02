@@ -115,6 +115,7 @@
     $('#jstree').on("search.jstree", function (e, data) {
       if (data.res.length) {
         document.getElementById( data.res[0] + '_anchor' ).scrollIntoView();
+        $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + data.res[0]);
       }
     });
     $("#searchTreeForm").submit(function(e) {
