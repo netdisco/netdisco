@@ -51,12 +51,12 @@ ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
     $term = '%'. $term .'%';
 
     my @found = schema('netdisco')->resultset('DeviceBrowser')
-      ->search({ leaf => { -ilike => $term } }, { columns => 'leaf' })
+      ->search({ leaf => { -ilike => $term } }, { rows => 25, columns => 'leaf' })
       ->get_column('leaf')->all;
     return to_json [] unless scalar @found;
 
     content_type 'application/json';
-    to_json [ @found ];
+    to_json [ sort @found ];
 };
 
 ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
