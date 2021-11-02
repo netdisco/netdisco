@@ -84,6 +84,13 @@ sub _get_snmp_data {
                                      $base,
                                  ] })->hri->all;
 
+    return [{
+      text => 'No SNMP data for this device.',
+      children => \0,
+      state => { disabled => \1 },
+      icon => 'icon-search',
+    }] unless scalar keys %kids;
+
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
                                  ->search({}, { bind => [
