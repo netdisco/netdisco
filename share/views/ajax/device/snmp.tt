@@ -5,8 +5,9 @@
     <div id="snmpnodecontainer" class="span8">
         <form id="searchTreeForm" class="form-inline col-md-4">
             <span class="form-group">
-              <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label">
-              <label class="checkbox-inline">
+              <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label or OID">
+              <label class="checkbox-inline"
+                rel="tooltip" data-placement="top" data-offset="5" data-title="Anchored to the beginning">
                 <input type="checkbox" id="snmpPartialSearch" value="partial"> Partial </input>
               </label>
             </span>
