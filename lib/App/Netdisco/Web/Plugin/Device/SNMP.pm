@@ -42,6 +42,23 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     to_json $items;
 };
 
+ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
+    my $device = try { schema('netdisco')->resultset('Device')
+                                         ->find( param('ip') ) }
+       or send_error('Bad Device', 404);
+
+    my $term = param('term') or return to_json [];
+    $term = '%'. $term .'%';
+
+    my @found = schema('netdisco')->resultset('DeviceBrowser')
+      ->search({ leaf => { -ilike => $term } }, { columns => 'leaf' })
+      ->get_column('leaf')->all;
+    return to_json [] unless scalar @found;
+
+    content_type 'application/json';
+    to_json [ @found ];
+};
+
 ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
     my $device = try { schema('netdisco')->resultset('Device')
                                          ->find( param('ip') ) }
@@ -51,7 +68,7 @@ ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
     my $partial = param('partial');
     my $excludeself = param('excludeself');
 
-    return [] unless $to_match or length($to_match);
+    return to_json [] unless $to_match or length($to_match);
     $to_match = $to_match . '%' if $partial;
     my $found = undef;
 
@@ -60,7 +77,7 @@ ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
       ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ] },
                { rows => 1, order_by => 'oid_parts' })->first;
 
-    return [] unless $found;
+    return to_json [] unless $found;
 
     $found = $found->oid;
     $found =~ s/^\.1\.3\.6\.1\.?//;

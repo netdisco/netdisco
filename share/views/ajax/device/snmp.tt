@@ -123,5 +123,10 @@
       $("#jstree").jstree("search", $("#treeSearchText").val());
       e.preventDefault();
     });
+    $('#treeSearchText').autocomplete({
+      source: uri_base + '/ajax/data/device/[% device %]/typeahead'
+      ,delay: 150
+      ,minLength: 2
+    });
   });
 </script>
