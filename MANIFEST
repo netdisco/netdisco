@@ -26,6 +26,7 @@ lib/App/Netdisco/DB/Result.pm
 lib/App/Netdisco/DB/Result/Admin.pm
 lib/App/Netdisco/DB/Result/Community.pm
 lib/App/Netdisco/DB/Result/Device.pm
+lib/App/Netdisco/DB/Result/DeviceBrowser.pm
 lib/App/Netdisco/DB/Result/DeviceIp.pm
 lib/App/Netdisco/DB/Result/DeviceModule.pm
 lib/App/Netdisco/DB/Result/DevicePort.pm
@@ -37,6 +38,7 @@ lib/App/Netdisco/DB/Result/DevicePortVlan.pm
 lib/App/Netdisco/DB/Result/DevicePortWireless.pm
 lib/App/Netdisco/DB/Result/DevicePower.pm
 lib/App/Netdisco/DB/Result/DeviceSkip.pm
+lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
 lib/App/Netdisco/DB/Result/Log.pm
 lib/App/Netdisco/DB/Result/NetmapPositions.pm
@@ -48,6 +50,7 @@ lib/App/Netdisco/DB/Result/NodeWireless.pm
 lib/App/Netdisco/DB/Result/Oui.pm
 lib/App/Netdisco/DB/Result/Process.pm
 lib/App/Netdisco/DB/Result/Session.pm
+lib/App/Netdisco/DB/Result/SNMPObject.pm
 lib/App/Netdisco/DB/Result/Statistics.pm
 lib/App/Netdisco/DB/Result/Subnet.pm
 lib/App/Netdisco/DB/Result/Topology.pm
@@ -62,6 +65,7 @@ lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
+lib/App/Netdisco/DB/Result/Virtual/FilteredSNMPObject.pm
 lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/DB/Result/Virtual/LastNode.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeIp4.pm
@@ -69,6 +73,7 @@ lib/App/Netdisco/DB/Result/Virtual/NodeIp6.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
+lib/App/Netdisco/DB/Result/Virtual/OidChildren.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortMacs.pm
@@ -83,6 +88,7 @@ lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
 lib/App/Netdisco/DB/ResultSet.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
+lib/App/Netdisco/DB/ResultSet/DeviceBrowser.pm
 lib/App/Netdisco/DB/ResultSet/DeviceModule.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
 lib/App/Netdisco/DB/ResultSet/DevicePortLog.pm
@@ -159,6 +165,7 @@ lib/App/Netdisco/Web/Plugin/Device/Details.pm
 lib/App/Netdisco/Web/Plugin/Device/Modules.pm
 lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
 lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+lib/App/Netdisco/Web/Plugin/Device/SNMP.pm
 lib/App/Netdisco/Web/Plugin/Device/Vlans.pm
 lib/App/Netdisco/Web/Plugin/Inventory.pm
 lib/App/Netdisco/Web/Plugin/Report/ApChannelDist.pm
@@ -228,6 +235,7 @@ lib/App/Netdisco/Worker/Plugin/Graph.pm
 lib/App/Netdisco/Worker/Plugin/Hook.pm
 lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
 lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
+lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
@@ -245,6 +253,7 @@ lib/App/Netdisco/Worker/Plugin/Power.pm
 lib/App/Netdisco/Worker/Plugin/Psql.pm
 lib/App/Netdisco/Worker/Plugin/Renumber.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
+lib/App/Netdisco/Worker/Plugin/Snapshot.pm
 lib/App/Netdisco/Worker/Plugin/Stats.pm
 lib/App/Netdisco/Worker/Plugin/Vlan.pm
 lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
@@ -343,6 +352,24 @@ share/public/javascripts/jquery.cookie.js
 share/public/javascripts/jquery.dataTables.min.js
 share/public/javascripts/jquery.floatThead.js
 share/public/javascripts/jquery.qtip.min.js
+share/public/javascripts/jstree/jstree.min.js
+share/public/javascripts/jstree/themes/proton/30px.png
+share/public/javascripts/jstree/themes/proton/32px.png
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-bold-webfont.eot
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-bold-webfont.svg
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-bold-webfont.ttf
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-bold-webfont.woff
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-extralight-webfont.eot
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-extralight-webfont.svg
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-extralight-webfont.ttf
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-extralight-webfont.woff
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-regular-webfont.eot
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-regular-webfont.svg
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-regular-webfont.ttf
+share/public/javascripts/jstree/themes/proton/fonts/titillium/titilliumweb-regular-webfont.woff
+share/public/javascripts/jstree/themes/proton/style.css
+share/public/javascripts/jstree/themes/proton/style.min.css
+share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
 share/public/javascripts/natural.js
 share/public/javascripts/netdisco.js
@@ -429,6 +456,10 @@ share/schema_versions/App-Netdisco-DB-62-63-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-63-64-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-64-65-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-65-66-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-66-67-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-67-68-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-68-69-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-69-70-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
@@ -456,6 +487,8 @@ share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/device/ports_csv.tt
+share/views/ajax/device/snmp.tt
+share/views/ajax/device/snmpnode.tt
 share/views/ajax/device/vlans.tt
 share/views/ajax/device/vlans_csv.tt
 share/views/ajax/report/apchanneldist.tt
