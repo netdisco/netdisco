@@ -322,8 +322,12 @@ sub renumber {
 
   # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
+    DeviceBrowser
     DeviceIp
     DeviceModule
+    DevicePower
+    DeviceSnapshot
+    DeviceVlan
     DevicePort
     DevicePortLog
     DevicePortPower
@@ -331,9 +335,6 @@ sub renumber {
     DevicePortSsid
     DevicePortVlan
     DevicePortWireless
-    DevicePower
-    DeviceSnapshot
-    DeviceVlan
   /) {
     $schema->resultset($set)
       ->search({ip => $old_ip})
@@ -361,6 +362,11 @@ sub renumber {
   $schema->resultset('Topology')
     ->search({dev2 => $old_ip})
     ->update({dev2 => $new_ip});
+
+  $schema->resultset('Admin')->search({
+    device => $old_ip,
+    status => { '-not_like' => 'queued-%' },
+  })->delete;
 
   $device->update({
     ip  => $new_ip,

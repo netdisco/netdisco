@@ -704,12 +704,13 @@ sub delete {
   $ip ||= 'netdisco';
 
   foreach my $set (qw/
-    DeviceIp
-    DeviceVlan
-    DevicePower
-    DeviceModule
-    DeviceSnapshot
     Community
+    DeviceBrowser
+    DeviceIp
+    DeviceModule
+    DevicePower
+    DeviceSnapshot
+    DeviceVlan
   /) {
       my $gone = $schema->resultset($set)->search(
         { ip => { '-in' => $devices->as_query } },
@@ -747,3 +748,35 @@ sub delete {
 }
 
 1;
+
+__END__
+list of tables in the db that use the device:
+
+# use 'ip' as PK
+community
+device_browser
+device_ip
+device_module
+device_power
+device_snapshot
+device_vlan
+
+# use 'device' as PK
+admin
+device_skip
+topology
+
+# special to let nodes be kept
+device_port
+
+# defer to port resultset class
+device_port_power
+device_port_properties
+device_port_ssid
+device_port_vlan
+device_port_wireless
+device_port_log
+
+# dbic does this one itself
+device
+
