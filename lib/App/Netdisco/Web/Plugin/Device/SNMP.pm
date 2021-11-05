@@ -18,10 +18,9 @@ register_device_tab({ tag => 'snmp', label => 'SNMP',
   render_if => sub { schema('netdisco')->resultset('DeviceBrowser')->count() } });
 
 get '/ajax/content/device/snmp' => require_login sub {
-    my $q = param('q');
-
-    my $device = schema('netdisco')->resultset('Device')
-      ->search_for_device($q) or send_error('Bad device', 400);
+    my $device = try { schema('netdisco')->resultset('Device')
+                                         ->find( param('ip') ) }
+       or send_error('Bad Device', 404);
 
     template 'ajax/device/snmp.tt', { device => $device->ip },
       { layout => 'noop' };
@@ -51,7 +50,8 @@ ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
     $term = '%'. $term .'%';
 
     my @found = schema('netdisco')->resultset('DeviceBrowser')
-      ->search({ leaf => { -ilike => $term } }, { rows => 25, columns => 'leaf' })
+      ->search({ leaf => { -ilike => $term }, ip => $device->ip },
+               { rows => 25, columns => 'leaf' })
       ->get_column('leaf')->all;
     return to_json [] unless scalar @found;
 
@@ -74,7 +74,7 @@ ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
 
     my $op = ($partial ? '-ilike' : '=');
     $found = schema('netdisco')->resultset('DeviceBrowser')
-      ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ] },
+      ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ], ip => $device->ip },
                { rows => 1, order_by => 'oid_parts' })->first;
 
     return to_json [] unless $found;
