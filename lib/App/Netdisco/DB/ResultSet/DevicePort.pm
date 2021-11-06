@@ -254,9 +254,9 @@ sub delete {
   foreach my $set (qw/
     DevicePortPower
     DevicePortProperties
+    DevicePortSsid
     DevicePortVlan
     DevicePortWireless
-    DevicePortSsid
   /) {
       my $gone = $schema->resultset($set)->search(
         { ip => { '-in' => $ports->as_query }},

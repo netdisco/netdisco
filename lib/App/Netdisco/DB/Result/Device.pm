@@ -81,6 +81,8 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "last_arpnip",
   { data_type => "timestamp", is_nullable => 1 },
+  "is_pseudo",
+  { data_type => "boolean", is_nullable => 0, default_value => \"false" },
 );
 __PACKAGE__->set_primary_key("ip");
 
@@ -172,6 +174,14 @@ Returns the set of power modules on this Device.
 
 __PACKAGE__->has_many( power_modules => 'App::Netdisco::DB::Result::DevicePower', 'ip' );
 
+=head2 oids
+
+Returns the oids walked on this Device.
+
+=cut
+
+__PACKAGE__->has_many( oids => 'App::Netdisco::DB::Result::DeviceBrowser', 'ip' );
+
 =head2 port_vlans
 
 Returns the set of VLANs known to be configured on Ports on this Device,
@@ -256,6 +266,15 @@ Returns the row from the community string table, if one exists.
 __PACKAGE__->might_have(
     community => 'App::Netdisco::DB::Result::Community', 'ip');
 
+=head2 snapshot
+
+Returns the row from the snapshot table, if one exists.
+
+=cut
+
+__PACKAGE__->might_have(
+    snapshot => 'App::Netdisco::DB::Result::DeviceSnapshot', 'ip');
+
 =head2 throughput
 
 Returns a sum of speeds on all ports on the device.
@@ -266,17 +285,6 @@ __PACKAGE__->has_one(
     throughput => 'App::Netdisco::DB::Result::Virtual::DevicePortSpeed', 'ip');
 
 =head1 ADDITIONAL METHODS
-
-=head2 is_pseudo
-
-Returns true if the vendor of the device is "netdisco".
-
-=cut
-
-sub is_pseudo {
-  my $device = shift;
-  return (defined $device->vendor and $device->vendor eq 'netdisco');
-}
 
 =head2 has_layer( $number )
 
@@ -314,8 +322,12 @@ sub renumber {
 
   # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
+    DeviceBrowser
     DeviceIp
     DeviceModule
+    DevicePower
+    DeviceSnapshot
+    DeviceVlan
     DevicePort
     DevicePortLog
     DevicePortPower
@@ -323,8 +335,6 @@ sub renumber {
     DevicePortSsid
     DevicePortVlan
     DevicePortWireless
-    DevicePower
-    DeviceVlan
   /) {
     $schema->resultset($set)
       ->search({ip => $old_ip})
@@ -352,6 +362,11 @@ sub renumber {
   $schema->resultset('Topology')
     ->search({dev2 => $old_ip})
     ->update({dev2 => $new_ip});
+
+  $schema->resultset('Admin')->search({
+    device => $old_ip,
+    status => { '-not_like' => 'queued-%' },
+  })->delete;
 
   $device->update({
     ip  => $new_ip,

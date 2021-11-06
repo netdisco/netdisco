@@ -58,6 +58,31 @@ ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_a
     );
 };
 
+ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
+    my $device = NetAddr::IP->new(param('device'));
+    send_error('Bad device', 400)
+      if ! $device or $device->addr eq '0.0.0.0';
+
+    add_job('snapshot', $device->addr) or send_error('Bad device', 400);
+};
+
+get "/ajax/content/admin/snapshot_get" => require_role admin => sub {
+    my $device = NetAddr::IP->new(param('device'));
+    send_error('Bad device', 400)
+      if ! $device or $device->addr eq '0.0.0.0';
+
+    my $content = schema('netdisco')->resultset('DeviceSnapshot')->find($device->addr)->cache;
+    send_file( \$content, content_type => 'text/plain', filename => ($device->addr .'-snapshot.txt') );
+};
+
+ajax "/ajax/control/admin/snapshot_del" => require_role setting('defanged_admin') => sub {
+    my $device = NetAddr::IP->new(param('device'));
+    send_error('Bad device', 400)
+      if ! $device or $device->addr eq '0.0.0.0';
+
+    schema('netdisco')->resultset('DeviceSnapshot')->find($device->addr)->delete;
+};
+
 get '/admin/*' => require_role admin => sub {
     my ($tag) = splat;
 

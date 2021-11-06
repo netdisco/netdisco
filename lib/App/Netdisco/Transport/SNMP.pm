@@ -10,7 +10,12 @@ use App::Netdisco::Util::Permission ':all';
 use SNMP::Info;
 use Try::Tiny;
 use Module::Load ();
+use Storable 'thaw';
+use File::Slurper 'read_text';
+use MIME::Base64 'decode_base64';
 use Path::Class 'dir';
+use File::Path 'make_path';
+use File::Spec::Functions qw(catdir catfile);
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
 
@@ -58,7 +63,9 @@ Returns C<undef> if the connection fails.
 sub reader_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
-  return undef if $device->in_storage and $device->is_pseudo;
+
+  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+  return undef if $device->in_storage and $device->is_pseudo and ! -f $pseudo_cache;
 
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
@@ -107,6 +114,7 @@ Returns C<undef> if the connection fails.
 sub writer_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
+
   return undef if $device->in_storage and $device->is_pseudo;
 
   my $writers = $class->instance->writers or return undef;
@@ -153,6 +161,13 @@ sub _snmp_connect_generic {
         "[%s] turning off BulkWalk due to buggy Net-SNMP - please upgrade!",
         $device->ip;
       $snmp_args{BulkWalk} = 0;
+  }
+
+  # support for offline cache
+  if ($device->is_pseudo) {
+    my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+    $snmp_args{Cache} = thaw( decode_base64( read_text($pseudo_cache) ) );
+    $snmp_args{Offline} = 1;
   }
 
   # get the community string(s)
@@ -242,7 +257,7 @@ sub _try_read {
 
   return undef unless (
     (not defined $info->error)
-    and defined $info->uptime
+    and (defined $info->uptime or defined $info->hrSystemUptime or defined $info->sysUpTime)
     and ($info->layers or $info->description)
     and $info->class
   );

@@ -1,0 +1,53 @@
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <th scope="row" class="span1">OID</th>
+      <td>[% node.snmp_object.oid %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Module</th>
+      <td>[% node.snmp_object.mib %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Leaf</th>
+      <td>[% node.snmp_object.leaf %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Type</th>
+      <td>[% node.snmp_object.type %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Munge</th>
+      <td>
+      [% IF node.value %]
+      <select name="munger" id="munger">
+        [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
+        [% FOREACH m IN mungers %]
+        <option [% 'selected' IF m == munge %] value="[% m %]">[% m %]</option>
+        [% END %]
+      </select>
+      [% END %]
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Access</th>
+      <td>[% node.snmp_object.access %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Index</th>
+      <td>
+      [% IF node.snmp_object.index.size > 0 %]
+        <table class="table table-condensed table-bordered">
+          [% FOREACH idx IN node.snmp_object.index %]
+          <tr><td>[% idx %]</td></tr>
+          [% END %]
+        </table>
+      [% END %]
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Value</th>
+      <td>[% IF node.value %]<pre id="snmp_node_value">[% node.value %]</pre>[% END %]</td>
+    </tr>
+  </tbody>    
+</table>

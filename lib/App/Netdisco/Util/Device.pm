@@ -4,6 +4,9 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 
+use File::Spec::Functions qw(catdir catfile);
+use File::Path 'make_path';
+
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
@@ -158,7 +161,7 @@ If C<$device_type> is also given, then C<discover_no_type> will be checked.
 Also respects C<discover_phones> and C<discover_waps> if either are set to
 false.
 
-Also checks if the device is a pseudo device (vendor is C<netdisco>).
+Also checks if the device is a pseudo device and no offline cache exists.
 
 Returns false if the host is not permitted to discover the target device.
 
@@ -170,8 +173,9 @@ sub is_discoverable {
   $remote_type ||= '';
   $remote_cap  ||= [];
 
-  return _bail_msg("is_discoverable: $device is pseudo-device")
-    if $device->is_pseudo;
+  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+  return _bail_msg("is_discoverable: $device is pseudo-device without offline cache")
+    if $device->is_pseudo and ! -f $pseudo_cache;
 
   return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
     if ((not setting('discover_waps')) and
