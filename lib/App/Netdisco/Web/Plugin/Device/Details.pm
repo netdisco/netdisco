@@ -17,9 +17,15 @@ ajax '/ajax/content/device/details' => require_login sub {
 
     my @results
         = schema('netdisco')->resultset('Device')
-        ->search( { 'me.ip' => $device->ip } )->with_times()
+        ->search({ 'me.ip' => $device->ip },
+          {
+            '+select' => ['snapshot.ip'],
+            '+as' => ['has_snapshot'],
+            join => 'snapshot',
+          },
+        )->with_times()
         ->hri->all;
-    
+
     my @power
         = schema('netdisco')->resultset('DevicePower')
         ->search( { 'me.ip' => $device->ip } )->with_poestats->hri->all;

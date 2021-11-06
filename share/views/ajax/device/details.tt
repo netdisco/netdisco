@@ -180,6 +180,24 @@
         <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
 
+        [% IF NOT d.is_pseudo %]
+        <span class="dropdown">
+          <button class="nd_snap_btn btn [% d.has_snapshot ? 'btn-success' : 'btn-info' %] btn-small dropdown-toggle" type="button" id="snapshotmenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Snapshot
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="snapshotmenu">
+            <input type="hidden" data-form="snapshot_req" value="[% d.ip | html_entity %]" name="device"/>
+            <li><a href="#" class="nd_adminbutton" name="snapshot_req"><i class="icon-edit"></i> Create</a></li>
+
+            <li class='nd_snap_func [% 'disabled' UNLESS d.has_snapshot %]'><a href="[% uri_for('/ajax/content/admin/snapshot_get') | none %]?device=[% d.ip | uri %]"><i class="icon-download-alt"></i> Download</a></li>
+
+            <input type="hidden" data-form="snapshot_del" value="[% d.ip | html_entity %]" name="device"/>
+            <li class='nd_snap_func [% 'disabled' UNLESS d.has_snapshot %]'><a href="#" class="nd_adminbutton" name="snapshot_del"><i class="icon-trash"></i> Delete</a></li>
+          </ul>
+        </span>
+        [% END %]
+
         <button class="btn btn-danger btn-small pull-right"
           data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
 

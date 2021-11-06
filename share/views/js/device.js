@@ -169,6 +169,11 @@
         ,success: function() {
           if (mode != 'delete') {
             toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
+            if (mode == 'snapshot_del') {
+                $('.nd_snap_btn').toggleClass('btn-success');
+                $('.nd_snap_btn').toggleClass('btn-info');
+                $('.nd_snap_func').toggleClass('disabled');
+            }
           }
           else {
             toastr.success('Deleted device '+ tr.data('for-device'));

@@ -32,6 +32,7 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.bootstrap.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-detect.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-sort.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jstree/jstree.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/he.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/natural.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/portsort.js"></script>
@@ -61,6 +62,7 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/d3-force-network-chart.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/javascripts/jstree/themes/proton/style.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker-bs2.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css" media="print"/>

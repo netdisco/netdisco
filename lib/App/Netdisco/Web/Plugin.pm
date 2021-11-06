@@ -170,6 +170,7 @@ register 'register_search_tab' => sub {
 
 register 'register_device_tab' => sub {
   my ($self, $config) = plugin_args(@_);
+  $config->{render_if} ||= sub { true };
   _register_tab('device', $config);
 };
 

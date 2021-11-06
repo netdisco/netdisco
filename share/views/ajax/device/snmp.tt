@@ -1,0 +1,132 @@
+<div class="row">
+    <div class="span5">
+        <div id="jstree" class="nd_scrollable"></div>
+    </div>
+    <div id="snmpnodecontainer" class="span8">
+        <form id="searchTreeForm" class="form-inline col-md-4">
+            <span class="form-group">
+              <input id="treeSearchText" type="text" class="form-control" size="30" required placeholder="Search for label or OID">
+              <label class="checkbox-inline"
+                rel="tooltip" data-placement="top" data-offset="5" data-title="Anchored to the beginning">
+                <input type="checkbox" id="snmpPartialSearch" value="partial"> Partial </input>
+              </label>
+            </span>
+        <button type="submit" class="btn btn-default">Search</button>
+        </form>
+        <div id="node">
+          <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th scope="row" class="span1">OID</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Module</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Leaf</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Type</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Munge</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Access</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Index</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Value</th>
+                  <td></td>
+                </tr>
+              </tbody>    
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+  $(function () {
+    var jstree_search_callback = function(str, node) {
+      var pattern = str.toLowerCase();
+      var name = node.text.toLowerCase();
+      var oid = node.id.toLowerCase();
+
+      if (document.getElementById('snmpPartialSearch').checked) {
+        if ((name.indexOf(pattern) == 0) || (oid.indexOf(pattern) == 0)) {
+          return true;
+        }
+      }
+      else {
+        if ((name.indexOf(pattern + ' ') == 0) || (oid == pattern)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    $('#jstree').jstree({
+      'core': {
+        'multiple' : false,
+        'themes': {
+          'name': 'proton',
+          'responsive': true
+        },
+        'data' : {
+          'url' : function (node) {
+            return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/'
+              + (node.id === '#' ? '.1.3.6.1' : node.id) + '?recurse=on');
+          }
+        }
+      },
+      'plugins': ['search'],
+      'search': {
+        'ajax' : {
+          'url' : '[% uri_base | none %]/ajax/data/device/[% device %]/snmpnodesearch',
+          'beforeSend' : function(jqXHR, settings) {
+            settings.url = settings.url + '&excludeself=on';
+            if (document.getElementById('snmpPartialSearch').checked) {
+              settings.url = settings.url + '&partial=on';
+            }
+            return true;
+          }
+        },
+        'search_callback' : jstree_search_callback
+      },
+    });
+    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
+      var ary = $('#jstree').jstree('get_selected');
+      $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/'
+        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
+    });
+    $('#jstree').on("changed.jstree", function (e, data) {
+      if (data.selected && data.selected != "#") {
+        $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + data.selected);
+      }
+    });
+    $('#jstree').on("search.jstree", function (e, data) {
+      if (data.res.length) {
+        document.getElementById( data.res[0] + '_anchor' ).scrollIntoView();
+        $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + data.res[0]);
+      }
+    });
+    $("#searchTreeForm").submit(function(e) {
+      $("#jstree").jstree("search", $("#treeSearchText").val());
+      e.preventDefault();
+    });
+    $('#treeSearchText').autocomplete({
+      source: uri_base + '/ajax/data/device/[% device %]/typeahead'
+      ,delay: 150
+      ,minLength: 2
+    });
+  });
+</script>
