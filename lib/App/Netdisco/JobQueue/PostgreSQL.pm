@@ -4,7 +4,7 @@ use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device
-  qw/is_discoverable is_macsuckable is_arpnipable/;
+  qw/get_device is_discoverable is_macsuckable is_arpnipable/;
 use App::Netdisco::Backend::Job;
 
 use Module::Load ();
@@ -33,9 +33,20 @@ sub _get_denied_actions {
   my $device = shift;
   my @badactions = ();
   return @badactions unless $device;
+  $device = get_device($device); # might be no-op but is done in is_* anyway
 
-  push @badactions, ('discover', @{ setting('job_prio')->{high} })
-    if not is_discoverable($device);
+  if ($device->is_pseudo) {
+      # always let pseudo devices do contact|location|portname|snapshot
+      # and additionally if there's a snapshot cache, is_discoverable will let
+      # them do all other discover and high prio actions
+      push @badactions, ('discover', grep { $_ !~ m/^(?:contact|location|portname|snapshot)$/ }
+                                          @{ setting('job_prio')->{high} })
+        if not is_discoverable($device);
+  }
+  else {
+      push @badactions, ('discover', @{ setting('job_prio')->{high} })
+        if not is_discoverable($device);
+  }
 
   push @badactions, (qw/macsuck nbtstat/)
     if not is_macsuckable($device);
