@@ -7,7 +7,7 @@ use Time::Piece; # for OO localtime
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/update_stats/;
+our @EXPORT_OK = qw/pretty_version update_stats/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -78,10 +78,23 @@ sub update_stats {
   });
 }
 
-# take perl or pg versions and make pretty
+=head2 pretty_version ( $versionstring , $seglen )
+
+Splits a string (only numbers and dots allowed) into a number of parts which
+are seglen long, then removes all leading zeros from each part and returns
+the parts joined by dots as one string.
+
+Returns the original versionstring if unallowed characters are found or seglen
+is negative.
+
+Returns C<undef> if seglen is zero.
+
+=cut
+
 sub pretty_version {
   my ($version, $seglen) = @_;
   return unless $version and $seglen;
+  return $version unless $seglen > 0;
   return $version if $version !~ m/^[0-9.]+$/;
   $version =~ s/\.//g;
   $version = (join '.', reverse map {scalar reverse}

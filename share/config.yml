@@ -371,24 +371,25 @@ schedule:
 
 job_prio:
   high:
+    - contact
     - hook::exec
     - hook::http
     - location
-    - contact
     - portcontrol
     - portname
-    - vlan
     - power
+    - snapshot
+    - vlan
   normal:
-    - discoverall
-    - discover
-    - arpwalk
     - arpnip
-    - macwalk
-    - macsuck
-    - nbtwalk
-    - nbtstat
+    - arpwalk
+    - discover
+    - discoverall
     - expire
+    - macsuck
+    - macwalk
+    - nbtstat
+    - nbtwalk
     - stats
 
 worker_plugins:

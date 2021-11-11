@@ -5,6 +5,8 @@ use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::Statistics 'pretty_version';
 use App::Netdisco::Web::Plugin;
 use NetAddr::IP::Lite ':lower';
 
@@ -34,8 +36,13 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
       my $device = schema('netdisco')->resultset('Device')
         ->create({
           ip => param('ip'),
+          dns => (hostname_from_ip(param('ip')) || ''),
           name => param('name'),
           vendor => 'netdisco',
+          model => 'pseudodevice',
+          num_ports => param('ports'),
+          os => 'netdisco',
+          os_ver => pretty_version($App::Netdisco::VERSION, 3),
           layers => param('layers'),
           last_discover => \'now()',
           is_pseudo => \'true',
@@ -43,8 +50,8 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
       return unless $device;
 
       $device->ports->populate([
-        [qw/port type/],
-        map {["Port$_", 'other']} @{[1 .. param('ports')]},
+        [qw/port type descr/],
+        map {["Port$_", 'other', "Port$_"]} @{[1 .. param('ports')]},
       ]);
 
       # device_ip table is used to show whether topo is "broken"
@@ -68,8 +75,8 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
       if (param('ports') > $count) {
           my $start = $count + 1;
           $device->ports->populate([
-            [qw/port type/],
-            map {["Port$_", 'other']} @{[$start .. param('ports')]},
+            [qw/port type descr/],
+            map {["Port$_", 'other', "Port$_"]} @{[$start .. param('ports')]},
           ]);
       }
       elsif (param('ports') < $count) {
@@ -88,9 +95,13 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
               })->delete;
           }
       }
+      $device->update({num_ports => param('ports')});
 
       # also set layers
       $device->update({layers => param('layers')});
+
+      # and update last_discover, since device properties changed
+      $device->update({last_discover => \'now()'});
     });
 };
 
