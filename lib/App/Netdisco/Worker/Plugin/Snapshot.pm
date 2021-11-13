@@ -25,126 +25,58 @@ register_worker({ phase => 'check' }, sub {
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
+
+  my $save_browser = $job->extra;
   my $save_file = $job->port;
-  my $save_db = $job->extra;
 
   # needed to avoid $var being returned with leafname and breaking loop checks
   $SNMP::use_numeric = 1;
+
+  # might restore a cache if there's one on disk
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("snapshot failed: could not SNMP connect to $device");
 
   my %oidmap = getoidmap($device, $snmp);
-  my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
-  # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
+  my %munges = get_munges($snmp);
 
-  my %munge = %{ $snmp->munge() };
-  my %munge_set = ();
+  # only if not pseudo device
+  walk_and_store($device, $snmp, %oidmap) if not $device->is_pseudo;
 
-  # take the snmpwalk of the device which is numeric (no MIB translateObj),
-  # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
-  # instance cache
+  # load the cache
+  my %cache = %{ $snmp->cache() };
 
-  my (%tables, %leaves, @realoids) = ((), (), ());
-  OID: foreach my $orig_oid (keys %walk) {
-    my $oid = $orig_oid;
-    my $idx = '';
+  # finally, freeze the cache, then base64 encode, store in the DB,
+  # optionally store browsing data, and optionally save file.
 
-    while (length($oid) and !exists $oidmap{$oid}) {
-      $oid =~ s/\.(\d+)$//;
-      $idx = ($idx ? "${1}.${idx}" : $1);
-    }
-
-    if (exists $oidmap{$oid}) {
-      $idx =~ s/^\.//;
-      my $leaf = $oidmap{$oid};
-
-      if ($idx eq 0) {
-        push @realoids, $oid;
-        $leaves{ $leaf } = $walk{$orig_oid};
-        $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
-      }
-      else {
-        push @realoids, $oid if !exists $tables{ $leaf };
-        $tables{ $leaf }->{$idx} = $walk{$orig_oid};
-        $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
-      }
-
-      # debug "snapshot $device - cached $oidmap{$oid}($idx)";
-      next OID;
-    }
-
-    debug "snapshot $device - missing OID $orig_oid in netdisco-mibs";
-  }
-
-  $snmp->_cache($_, $leaves{$_}) for keys %leaves;
-  $snmp->_cache($_, $tables{$_}) for keys %tables;
-
-  # we want to add in the GLOBALS and FUNCS aliases which users
-  # have created in the SNMP::Info device class, with binary copy
-  # of data so that it can be frozen
-
-  my %cache   = %{ $snmp->cache() };
-  my %funcs   = %{ $snmp->funcs() };
-  my %globals = %{ $snmp->globals() };
-
-  while (my ($alias, $leaf) = each %globals) {
-    if (exists $cache{"_$leaf"} and !exists $cache{"_$alias"}) {
-      $snmp->_cache($alias, $cache{"_$leaf"});
-    }
-    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
-  }
-
-  while (my ($alias, $leaf) = each %funcs) {
-    if (exists $cache{store}->{$leaf} and !exists $cache{store}->{$alias}) {
-      $snmp->_cache($alias, dclone $cache{store}->{$leaf});
-    }
-    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
-  }
-
-  # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
-  # might call, but will not have data, we fake a cache entry to avoid
-  # throwing errors
-
-  # refresh the cache
-  %cache = %{ $snmp->cache() };
-
-  while (my $method = <DATA>) {
-    $method =~ s/\s//g;
-    next unless length $method and !exists $cache{"_$method"};
-
-    $snmp->_cache($method, {}) if exists $funcs{$method};
-    $snmp->_cache($method, '') if exists $globals{$method};
-  }
-
-  # finally, freeze the cache, then base64 encode, store in the DB, and
-  # optionally save file.
-
-  # refresh the cache again
-  %cache = %{ $snmp->cache() };
-
-  debug "snapshot $device - cacheing snapshot bundle";
-  my $frozen = encode_base64( nfreeze( \%cache ) );
-  $device->update_or_create_related('snapshot', {cache => $frozen});
-
-  if ($save_db) {
+  if ($save_browser) {
       debug "snapshot $device - cacheing snapshot for browsing";
+      my %seenoid = ();
+
       my @browser = map {{
         oid => $_,
         oid_parts => [ grep {length} (split m/\./, $_) ],
         leaf  => $oidmap{$_},
-        munge => $munge_set{ $oidmap{$_} },
+        munge => $munges{ $oidmap{$_} },
         value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
-      }} sort {sortable_oid($a) cmp sortable_oid($b)} @realoids;
+      }} sort {sortable_oid($a) cmp sortable_oid($b)}
+         grep {not $seenoid{$_}++}
+         grep {m/^\.1\.3\.6\.1/}
+         map {s/^_//; $_}
+         keys %cache;
 
       schema('netdisco')->txn_do(sub {
         my $gone = $device->oids->delete;
-        debug sprintf ' [%s] snapshot - removed %d oids',
+        debug sprintf 'snapshot %s - removed %d oids from db',
           $device->ip, $gone;
         $device->oids->populate(\@browser);
-        debug sprintf ' [%s] snapshot - added %d new oids',
+        debug sprintf 'snapshot %s - added %d new oids to db',
           $device->ip, scalar @browser;
       });
   }
+
+  debug "snapshot $device - cacheing snapshot bundle";
+  my $frozen = encode_base64( nfreeze( \%cache ) );
+  $device->update_or_create_related('snapshot', {cache => $frozen});
 
   if ($save_file) {
       my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
@@ -179,6 +111,112 @@ sub getoidmap {
   debug sprintf "snapshot $device - loaded %d objects from netdisco-mibs",
     scalar keys %oidmap;
   return %oidmap;
+}
+
+sub get_munges {
+  my $snmp = shift;
+  my %munge_set = ();
+
+  my %munge   = %{ $snmp->munge() };
+  my %funcs   = %{ $snmp->funcs() };
+  my %globals = %{ $snmp->globals() };
+
+  while (my ($alias, $leaf) = each %globals) {
+    $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
+    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
+  }
+
+  while (my ($alias, $leaf) = each %funcs) {
+    $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
+    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
+  }
+
+  return %munge_set;
+}
+
+sub walk_and_store {
+  my ($device, $snmp, %oidmap) = @_;
+
+  my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
+  # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
+
+  # take the snmpwalk of the device which is numeric (no MIB translateObj),
+  # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
+  # instance cache
+
+  my (%tables, %leaves, @realoids) = ((), (), ());
+  OID: foreach my $orig_oid (keys %walk) {
+    my $oid = $orig_oid;
+    my $idx = '';
+
+    while (length($oid) and !exists $oidmap{$oid}) {
+      $oid =~ s/\.(\d+)$//;
+      $idx = ($idx ? "${1}.${idx}" : $1);
+    }
+
+    if (exists $oidmap{$oid}) {
+      $idx =~ s/^\.//;
+      my $leaf = $oidmap{$oid};
+
+      if ($idx eq 0) {
+        push @realoids, $oid;
+        $leaves{ $leaf } = $walk{$orig_oid};
+      }
+      else {
+        push @realoids, $oid if !exists $tables{ $leaf };
+        $tables{ $leaf }->{$idx} = $walk{$orig_oid};
+      }
+
+      # debug "snapshot $device - cached $oidmap{$oid}($idx)";
+      next OID;
+    }
+
+    debug "snapshot $device - missing OID $orig_oid in netdisco-mibs";
+  }
+
+  $snmp->_cache($_, $leaves{$_}) for keys %leaves;
+  $snmp->_cache($_, $tables{$_}) for keys %tables;
+
+  # add in any GLOBALS and FUNCS aliases which users have created in the
+  # SNMP::Info device class, with binary copy of data so that it can be frozen
+
+  my %cache   = %{ $snmp->cache() };
+  my %funcs   = %{ $snmp->funcs() };
+  my %globals = %{ $snmp->globals() };
+
+  while (my ($alias, $leaf) = each %globals) {
+    if (exists $cache{"_$leaf"} and !exists $cache{"_$alias"}) {
+      $snmp->_cache($alias, $cache{"_$leaf"});
+    }
+  }
+
+  while (my ($alias, $leaf) = each %funcs) {
+    if (exists $cache{store}->{$leaf} and !exists $cache{store}->{$alias}) {
+      $snmp->_cache($alias, dclone $cache{store}->{$leaf});
+    }
+  }
+
+  # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
+  # might call, but will not have data, we fake a cache entry to avoid
+  # throwing errors
+
+  # refresh the cache
+  %cache = %{ $snmp->cache() };
+
+  while (my $method = <DATA>) {
+    $method =~ s/\s//g;
+    next unless length $method and !exists $cache{"_$method"};
+
+    $snmp->_cache($method, {}) if exists $funcs{$method};
+    $snmp->_cache($method, '') if exists $globals{$method};
+  }
+
+  # put into the cache an oid ref to each leaf name
+  # this allows rebuild of browser data from a frozen cache
+  foreach my $oid (@realoids) {
+      my $leaf = $oidmap{$oid} or next;
+      $snmp->_cache($oid, $snmp->$leaf);
+  }
 }
 
 # taken from SNMP::Info and adjusted to work on walks outside a single table

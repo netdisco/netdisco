@@ -65,7 +65,10 @@ sub reader_for {
   my $device = get_device($ip) or return undef;
 
   my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
-  return undef if $device->in_storage and $device->is_pseudo and ! -f $pseudo_cache;
+  if ($device->in_storage and $device->is_pseudo and ! -f $pseudo_cache) {
+      error sprintf 'transport error - cannot act on pseudo-device [%s] without offline cache', $device->ip;
+      return undef;
+  }
 
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
@@ -168,6 +171,7 @@ sub _snmp_connect_generic {
     my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
     $snmp_args{Cache} = thaw( decode_base64( read_text($pseudo_cache) ) );
     $snmp_args{Offline} = 1;
+    debug sprintf 'snmp transport running in offline mode for: [%s]', $device->ip;
   }
 
   # get the community string(s)
