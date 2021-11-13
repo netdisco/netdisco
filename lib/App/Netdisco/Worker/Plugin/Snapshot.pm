@@ -26,7 +26,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  my $save_db = $job->extra;
+  my $save_browser = $job->extra;
   my $save_file = $job->port;
 
   # needed to avoid $var being returned with leafname and breaking loop checks
@@ -48,7 +48,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # finally, freeze the cache, then base64 encode, store in the DB,
   # optionally store browsing data, and optionally save file.
 
-  if ($save_db) {
+  if ($save_browser) {
       debug "snapshot $device - cacheing snapshot for browsing";
       my %seenoid = ();
 
