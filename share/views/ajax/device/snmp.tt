@@ -115,8 +115,15 @@
     });
     $('#jstree').on("search.jstree", function (e, data) {
       if (data.res.length) {
-        document.getElementById( data.res[0] + '_anchor' ).scrollIntoView();
         $('#node').load('[% uri_base | none %]/ajax/content/device/[% device %]/snmpnode/' + data.res[0]);
+
+        $("#jstree").jstree().deselect_all(true);
+        $('#jstree').jstree('select_node', data.res[0] + '_anchor');
+
+        var node = $('#jstree').jstree("get_selected", true);
+        var path = $('#jstree').jstree().get_path(node[0], false, true);
+        var parent = path[path.length - 2];
+        document.getElementById( parent ).scrollIntoView();
       }
     });
     $("#searchTreeForm").submit(function(e) {
