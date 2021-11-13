@@ -1,3 +1,18 @@
+2.051000 - 2021-11-13
+
+  [NEW FEATURES]
+
+  * Feature to gather SNMP Walk, use as Pseudo Device, and Browse Objects
+
+  [ENHANCEMENTS]
+
+  * Allow contact|location|portname|snapshot to run on pseudo devices
+  * Give Pseudo Devices better OS, OS ver, Port Descr, Discovered, and DNS Name
+
+  [BUG FIXES]
+
+  * #835 Fix snmpretries parsing
+
 2.050003 - 2021-10-19
 
   [BUG FIXES]

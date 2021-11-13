@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.050003'
+    version: '2.051000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '67'
+    version: '70'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -49,6 +49,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Community.pm
   App::Netdisco::DB::Result::Device:
     file: lib/App/Netdisco/DB/Result/Device.pm
+  App::Netdisco::DB::Result::DeviceBrowser:
+    file: lib/App/Netdisco/DB/Result/DeviceBrowser.pm
   App::Netdisco::DB::Result::DeviceIp:
     file: lib/App/Netdisco/DB/Result/DeviceIp.pm
   App::Netdisco::DB::Result::DeviceModule:
@@ -71,6 +73,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/DevicePower.pm
   App::Netdisco::DB::Result::DeviceSkip:
     file: lib/App/Netdisco/DB/Result/DeviceSkip.pm
+  App::Netdisco::DB::Result::DeviceSnapshot:
+    file: lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
   App::Netdisco::DB::Result::DeviceVlan:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
   App::Netdisco::DB::Result::Log:
@@ -91,6 +95,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Oui.pm
   App::Netdisco::DB::Result::Process:
     file: lib/App/Netdisco/DB/Result/Process.pm
+  App::Netdisco::DB::Result::SNMPObject:
+    file: lib/App/Netdisco/DB/Result/SNMPObject.pm
   App::Netdisco::DB::Result::Session:
     file: lib/App/Netdisco/DB/Result/Session.pm
   App::Netdisco::DB::Result::Statistics:
@@ -121,6 +127,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
   App::Netdisco::DB::Result::Virtual::DuplexMismatch:
     file: lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm
+  App::Netdisco::DB::Result::Virtual::FilteredSNMPObject:
+    file: lib/App/Netdisco/DB/Result/Virtual/FilteredSNMPObject.pm
   App::Netdisco::DB::Result::Virtual::GenericReport:
     file: lib/App/Netdisco/DB/Result/Virtual/GenericReport.pm
   App::Netdisco::DB::Result::Virtual::LastNode:
@@ -135,6 +143,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
   App::Netdisco::DB::Result::Virtual::NodesDiscovered:
     file: lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
+  App::Netdisco::DB::Result::Virtual::OidChildren:
+    file: lib/App/Netdisco/DB/Result/Virtual/OidChildren.pm
   App::Netdisco::DB::Result::Virtual::OrphanedDevices:
     file: lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
   App::Netdisco::DB::Result::Virtual::PollerPerformance:
@@ -163,6 +173,8 @@ provides:
     file: lib/App/Netdisco/DB/ResultSet/Admin.pm
   App::Netdisco::DB::ResultSet::Device:
     file: lib/App/Netdisco/DB/ResultSet/Device.pm
+  App::Netdisco::DB::ResultSet::DeviceBrowser:
+    file: lib/App/Netdisco/DB/ResultSet/DeviceBrowser.pm
   App::Netdisco::DB::ResultSet::DeviceModule:
     file: lib/App/Netdisco/DB/ResultSet/DeviceModule.pm
   App::Netdisco::DB::ResultSet::DevicePort:
@@ -315,6 +327,8 @@ provides:
     file: lib/App/Netdisco/Web/Plugin/Device/Neighbors.pm
   App::Netdisco::Web::Plugin::Device::Ports:
     file: lib/App/Netdisco/Web/Plugin/Device/Ports.pm
+  App::Netdisco::Web::Plugin::Device::SNMP:
+    file: lib/App/Netdisco/Web/Plugin/Device/SNMP.pm
   App::Netdisco::Web::Plugin::Device::Vlans:
     file: lib/App/Netdisco/Web/Plugin/Device/Vlans.pm
   App::Netdisco::Web::Plugin::Inventory:
@@ -453,6 +467,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
   App::Netdisco::Worker::Plugin::Hook::HTTP:
     file: lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
+  App::Netdisco::Worker::Plugin::LoadMIBs:
+    file: lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
   App::Netdisco::Worker::Plugin::Location:
     file: lib/App/Netdisco/Worker/Plugin/Location.pm
   App::Netdisco::Worker::Plugin::Macsuck:
@@ -487,6 +503,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Renumber.pm
   App::Netdisco::Worker::Plugin::Show:
     file: lib/App/Netdisco/Worker/Plugin/Show.pm
+  App::Netdisco::Worker::Plugin::Snapshot:
+    file: lib/App/Netdisco/Worker/Plugin/Snapshot.pm
   App::Netdisco::Worker::Plugin::Stats:
     file: lib/App/Netdisco/Worker/Plugin/Stats.pm
   App::Netdisco::Worker::Plugin::Vlan:
@@ -528,14 +546,17 @@ requires:
   Data::Printer: '0'
   Data::Visitor::Tiny: '0'
   Expect: '0'
+  File::Path: '0'
   File::ShareDir: '1.03'
   File::Slurper: '0.009'
+  File::Spec::Functions: '0'
   Guard: '1.022'
   HTML::Parser: '3.70'
   HTTP::Tiny: '0.029'
   IO::Socket::INET6: '2.72'
   IO::Socket::SSL: '2.048'
   JSON: '2.90'
+  JSON::PP: '0'
   JSON::XS: '3.01'
   List::MoreUtils: '0.428'
   List::Util: '1.49'
@@ -570,6 +591,7 @@ requires:
   Socket6: '0.23'
   Starman: '0.4008'
   Storable: '0'
+  Sub::Util: '1.40'
   Sys::SigAction: '0'
   Template: '2.24'
   Template::AutoFilter: '0'
@@ -593,7 +615,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/BSD-3-Clause
+  license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.050003'
+version: '2.051000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
