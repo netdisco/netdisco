@@ -1,3 +1,9 @@
+2.051001 - 2021-11-14
+
+  [BUG FIXES]
+
+  * Remove patched CPAN::Uploader as the dist has been updated now
+
 2.051000 - 2021-11-13
 
   [NEW FEATURES]
