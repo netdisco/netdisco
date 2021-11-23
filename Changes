@@ -1,3 +1,9 @@
+2.051002 - 2021-11-23
+
+  [BUG FIXES]
+
+  * Support names as well as IPs in SNMP report
+
 2.051001 - 2021-11-14
 
   [BUG FIXES]
