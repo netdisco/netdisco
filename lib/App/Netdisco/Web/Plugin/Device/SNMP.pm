@@ -19,7 +19,7 @@ register_device_tab({ tag => 'snmp', label => 'SNMP',
 
 get '/ajax/content/device/snmp' => require_login sub {
     my $device = try { schema('netdisco')->resultset('Device')
-                                         ->find( param('q') ) }
+                                   ->search_for_device( param('q') ) }
        or send_error('Bad Device', 404);
 
     template 'ajax/device/snmp.tt', { device => $device->ip },
