@@ -96,7 +96,6 @@ my $child = 0;
 sub restarter {
   my ($daemon, @program_args) = @_;
   $0 = 'netdisco-backend';
-
   $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;
 
@@ -129,8 +128,7 @@ sub restarter {
               ++$hupit;
           }
       }
-
-      rotate_logs($child, $daemon, @program_args) if $rotate;
+      $child = rotate_logs($child, $daemon, @program_args) if $rotate;
       if ($hupit) {
           signal_child('TERM', $child);
           $child = fork_and_start($daemon, @program_args);
@@ -163,8 +161,7 @@ sub signal_child {
 
 sub rotate_logs {
   my $child = shift;
-
-  return unless (-f $log_file) and
+  return $child unless (-f $log_file) and
     ((-s $log_file) > ($logsize * 1024768));
 
   my @files = grep { /$log_file\.\d+/ } glob file($log_dir, '*');
@@ -184,11 +181,15 @@ sub rotate_logs {
       rename $log_file, $log_file .'.1';
       signal_child('TERM', $child);
       $child = fork_and_start(@_);
-      exit(1) unless $child;
-  }
-  else {
+      if ($child){
+        return $child;
+      }else{
+        exit(1);
+      }
+  } else {
       copy $log_file, $log_file .'.1';
       truncate $log_file, 0;
+      return $child;
   }
 }
 
