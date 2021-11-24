@@ -1,3 +1,9 @@
+2.051003 - 2021-11-24
+
+  [BUG FIXES]
+
+  * #840 after rotate_logs, restarter() may have a stale PID
+
 2.051002 - 2021-11-23
 
   [BUG FIXES]
