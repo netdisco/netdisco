@@ -1,3 +1,10 @@
+2.051004 - 2021-11-25
+
+  [BUG FIXES]
+
+  * fix snapshot for bulkwalk_no devies
+  * fix snapshot bug on index with trailing zero
+
 2.051003 - 2021-11-24
 
   [BUG FIXES]
