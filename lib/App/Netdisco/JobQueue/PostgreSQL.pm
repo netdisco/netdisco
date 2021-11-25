@@ -321,8 +321,11 @@ sub jq_userlog {
 sub jq_insert {
   my $jobs = shift;
   $jobs = [$jobs] if ref [] ne ref $jobs;
-  my $happy = false;
 
+  # bit of a hack for heroku hosting to avoid DB overload
+  return true if setting('defanged_admin') eq 'false_admin';
+
+  my $happy = false;
   try {
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('Admin')->populate([

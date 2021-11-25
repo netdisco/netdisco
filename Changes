@@ -1,3 +1,9 @@
+2.051005 - 2021-11-25
+
+  [ENHANCEMENTS]
+
+  * do not accept any job queue entries for demo hosting
+
 2.051004 - 2021-11-25
 
   [BUG FIXES]
