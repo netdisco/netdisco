@@ -39,9 +39,9 @@ register_worker({ phase => 'main' }, sub {
 
   schema('netdisco')->txn_do(sub {
     my $gone = schema('netdisco')->resultset('SNMPObject')->delete;
-    debug sprintf ' loadmibs - removed %d oids', $gone;
+    debug sprintf 'loadmibs - removed %d oids', $gone;
     schema('netdisco')->resultset('SNMPObject')->populate(\@browser);
-    debug sprintf ' loadmibs - added %d new oids', scalar @browser;
+    debug sprintf 'loadmibs - added %d new oids', scalar @browser;
   });
 
   return Status->done('Loaded MIBs');

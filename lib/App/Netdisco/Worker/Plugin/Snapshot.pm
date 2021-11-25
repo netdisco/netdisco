@@ -151,7 +151,7 @@ sub walk_and_store {
 
     while (length($oid) and !exists $oidmap{$oid}) {
       $oid =~ s/\.(\d+)$//;
-      $idx = ($idx ? "${1}.${idx}" : $1);
+      $idx = ((defined $idx and length $idx) ? "${1}.${idx}" : $1);
     }
 
     if (exists $oidmap{$oid}) {
@@ -167,7 +167,7 @@ sub walk_and_store {
         $tables{ $leaf }->{$idx} = $walk{$orig_oid};
       }
 
-      # debug "snapshot $device - cached $oidmap{$oid}($idx)";
+      # debug "snapshot $device - cached $oidmap{$oid}($idx) from $orig_oid";
       next OID;
     }
 
@@ -230,26 +230,8 @@ sub walker {
     my $REPEATERS = 20;
     my $ver  = $snmp->snmp_ver();
 
-    # We want the qualified leaf name so that we can
-    # specify the Module (MIB) in the case of private leaf naming
-    # conflicts.  Example: ALTEON-TIGON-SWITCH-MIB::agSoftwareVersion
-    # and ALTEON-CHEETAH-SWITCH-MIB::agSoftwareVersion
-    # Third argument to translateObj specifies the Module prefix
-
-    my $qual_leaf = SNMP::translateObj($base,0,1) || '';
-
-    # We still want just the leaf since a SNMP get in the case of a
-    # partial fetch may strip the Module portion upon return.  We need
-    # the match to make sure we didn't leave the table during getnext
-    # requests
-
-    my ($leaf) = $qual_leaf =~ /::(.+)$/;
-
-    # If we weren't able to translate, we'll only have an OID
-    $leaf = $base unless defined $leaf;
-
     # debug "snapshot $device - $base translated as $qual_leaf";
-    my $var = SNMP::Varbind->new( [$qual_leaf] );
+    my $var = SNMP::Varbind->new( [$base] );
 
     # So devices speaking SNMP v.1 are not supposed to give out
     # data from SNMP2, but most do.  Net-SNMP, being very precise
@@ -290,7 +272,7 @@ sub walker {
         else {
             # GETNEXT instead of BULKWALK
             # debug "snapshot $device GETNEXT $var";
-            $sess->getnext($var);
+            my @x = $sess->getnext($var);
             $errornum = $sess->{ErrorNum};
         }
 
@@ -299,7 +281,7 @@ sub walker {
         my $oid = $var->[0] . (defined $iid ? ".${iid}" : '');
 
         # debug "snapshot $device reading $oid";
-        # p $var;
+        # use DDP; p $var;
 
         unless ( defined $iid ) {
             error "snapshot $device not here";
@@ -331,7 +313,7 @@ sub walker {
         if ($loopdetect) {
             # Check to see if we've already seen this IID (looping)
             if ( defined $seen{$oid} and $seen{$oid} ) {
-                error "Looping on: oid:$oid. ";
+                error "Looping on: oid: $oid";
                 last;
             }
             else {

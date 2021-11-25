@@ -343,6 +343,9 @@ workers:
   retry_after: '7 days'
   queue: PostgreSQL
 
+# this one takes ages
+snapshot_timeout: 1200
+
 # 50 minutes
 jobs_stale_after: 3000
 jobs_qdepth: 50
