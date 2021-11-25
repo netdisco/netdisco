@@ -40,7 +40,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my %munges = get_munges($snmp);
 
   # only if not pseudo device
-  walk_and_store($device, $snmp, %oidmap) if not $device->is_pseudo;
+  if (not $device->is_pseudo) {
+      my $walk_error = walk_and_store($device, $snmp, %oidmap);
+      return $walk_error if $walk_error;
+  }
 
   # load the cache
   my %cache = %{ $snmp->cache() };
@@ -137,15 +140,18 @@ sub get_munges {
 sub walk_and_store {
   my ($device, $snmp, %oidmap) = @_;
 
-  my %walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
+  my $walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
   # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
+
+  # something went wrong - error
+  return $walk if ref {} ne ref $walk;
 
   # take the snmpwalk of the device which is numeric (no MIB translateObj),
   # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
   # instance cache
 
   my (%tables, %leaves, @realoids) = ((), (), ());
-  OID: foreach my $orig_oid (keys %walk) {
+  OID: foreach my $orig_oid (keys %$walk) {
     my $oid = $orig_oid;
     my $idx = '';
 
@@ -160,11 +166,11 @@ sub walk_and_store {
 
       if ($idx eq 0) {
         push @realoids, $oid;
-        $leaves{ $leaf } = $walk{$orig_oid};
+        $leaves{ $leaf } = $walk->{$orig_oid};
       }
       else {
         push @realoids, $oid if !exists $tables{ $leaf };
-        $tables{ $leaf }->{$idx} = $walk{$orig_oid};
+        $tables{ $leaf }->{$idx} = $walk->{$orig_oid};
       }
 
       # debug "snapshot $device - cached $oidmap{$oid}($idx) from $orig_oid";
@@ -228,7 +234,7 @@ sub walker {
     return unless defined $sess;
 
     my $REPEATERS = 20;
-    my $ver  = $snmp->snmp_ver();
+    my $ver = $snmp->snmp_ver();
 
     # debug "snapshot $device - $base translated as $qual_leaf";
     my $var = SNMP::Varbind->new( [$base] );
@@ -313,8 +319,7 @@ sub walker {
         if ($loopdetect) {
             # Check to see if we've already seen this IID (looping)
             if ( defined $seen{$oid} and $seen{$oid} ) {
-                error "Looping on: oid: $oid";
-                last;
+                return Status->error("Looping on: oid: $oid");
             }
             else {
                 $seen{$oid}++;
@@ -336,7 +341,7 @@ sub walker {
 
     debug sprintf "snapshot $device - walked %d rows from $base",
       scalar keys %localstore;
-    return %localstore;
+    return \%localstore;
 }
 
 true;
