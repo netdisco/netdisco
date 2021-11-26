@@ -257,6 +257,17 @@ sub deploy_oui {
                               } keys %data
             ]);
           });
+
+          if (scalar @ARGV > 1) {
+              my @sql_lines = ('COPY oui (oui, company, abbrev) FROM stdin;');
+              foreach my $oui (sort {$a cmp $b} keys %data) {
+                  push @sql_lines, sprintf "%s\t%s\t%s",
+                    $oui,
+                    Encode::decode('UTF-8', $data{$oui}{'company'}),
+                    Encode::decode('UTF-8', $data{$oui}{'abbrev'});
+              }
+              File::Slurper::write_text($ARGV[1], join "\n", @sql_lines, "\\.\n\n");
+          }
       }
 
       print color 'bold blue';
