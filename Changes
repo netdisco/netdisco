@@ -1,3 +1,9 @@
+2.052000 - ?
+
+  [NEW FEATURES]
+
+  * Added SSHCollector::Platform::ASAContext (@haught)
+
 2.051005 - 2021-11-25
 
   [ENHANCEMENTS]
