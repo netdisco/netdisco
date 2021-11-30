@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.051005'
+    version: '2.052000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -213,6 +213,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/ACE.pm
   App::Netdisco::SSHCollector::Platform::ASA:
     file: lib/App/Netdisco/SSHCollector/Platform/ASA.pm
+  App::Netdisco::SSHCollector::Platform::ASAContext:
+    file: lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
   App::Netdisco::SSHCollector::Platform::BigIP:
     file: lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
   App::Netdisco::SSHCollector::Platform::CPVSX:
@@ -615,7 +617,7 @@ resources:
   MailingList: https://lists.sourceforge.net/lists/listinfo/netdisco-users
   bugtracker: https://github.com/netdisco/netdisco/issues
   homepage: http://netdisco.org/
-  license: http://opensource.org/licenses/BSD-3-Clause
+  license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.051005'
+version: '2.052000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
