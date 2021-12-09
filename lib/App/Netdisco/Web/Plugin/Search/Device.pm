@@ -55,6 +55,11 @@ register_search_tab({
         type => 'boolean',
         default => 'false',
       },
+      seeallcolumns => {
+        description => 'If true, all columns of the Device will be shown',
+        type => 'boolean',
+        default => 'false',
+      },
     ],
 });
 
@@ -63,23 +68,28 @@ get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any { param($_) }
       qw/name location dns ip description model os os_ver vendor layers mac/;
     my $rs;
+    my $rs_columns;
+    my $see_all = param('seeallcolumns');
 
-    if ($has_opt) {
-        $rs = schema('netdisco')->resultset('Device')->columns(
+    if ($see_all) {
+      $rs_columns = schema('netdisco')->resultset('Device');
+    }
+    else {
+      $rs_columns = schema('netdisco')->resultset('Device')->columns(
             [   "ip",       "dns",   "name",
                 "location", "model", "os_ver", "serial", "chassis_id"
             ]
-        )->with_times->search_by_field( scalar params );
+        );
+    }
+
+    if ($has_opt) {
+        $rs = $rs_columns->with_times->search_by_field( scalar params );
     }
     else {
         my $q = param('q');
         send_error( 'Missing query', 400 ) unless $q;
 
-        $rs = schema('netdisco')->resultset('Device')->columns(
-            [   "ip",       "dns",   "name",
-                "location", "model", "os_ver", "serial", "chassis_id"
-            ]
-        )->with_times->search_fuzzy($q);
+        $rs = $rs_columns->with_times->search_fuzzy($q);
     }
 
     my @results = $rs->hri->all;
