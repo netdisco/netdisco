@@ -157,7 +157,7 @@ sub get_vlan_list {
 
   return () unless $snmp->cisco_comm_indexing;
 
-  my (%vlans, %vlan_names);
+  my (%vlans, %vlan_names, %vlan_states);
   my $i_vlan = $snmp->i_vlan || {};
   my $trunks = $snmp->i_vlan_membership || {};
   my $i_type = $snmp->i_type || {};
@@ -203,9 +203,24 @@ sub get_vlan_list {
   debug sprintf ' [%s] macsuck - VLANs: %s', $device->ip,
     (join ',', sort grep {$_} keys %vlans);
 
+  my $v_state = $snmp->v_state || {};
+
+  # get vlan states (required for ignoring suspended vlans)
+  while (my ($idx, $state) = each %$v_state) {
+      # hack: if vlan id comes as 1.142 instead of 142
+      (my $vlan = $idx) =~ s/^\d+\.//;
+
+      # just in case i_vlan is different to v_name set
+      # capture the VLAN, but it's not in use on a port
+      $vlans{$vlan} ||= 0;
+
+      $vlan_states{$vlan} = $state;
+  }
+
   my @ok_vlans = ();
   foreach my $vlan (sort keys %vlans) {
       my $name = $vlan_names{$vlan} || '(unnamed)';
+      my $state = $vlan_states{$vlan} || '(unknown)';
 
       if (ref [] eq ref setting('macsuck_no_vlan')) {
           my $ignore = setting('macsuck_no_vlan');
@@ -253,6 +268,14 @@ sub get_vlan_list {
           debug sprintf
             ' [%s] macsuck VLAN %s/%s - not in use by any port - skipping.',
             $device->ip, $vlan, $name;
+          next;
+      }
+
+      # check if vlan is in state 'suspended'
+      if ($state eq 'suspended') {
+          debug sprintf
+            ' [%s] macsuck VLAN %s - VLAN is suspended - skipping.',
+            $device->ip, $vlan;
           next;
       }
 
