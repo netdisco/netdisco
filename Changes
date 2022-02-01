@@ -1,4 +1,8 @@
-2.052001 - tbd
+2.052001 - 01-02-2022
+
+  [ENHANCEMENTS]
+
+  * Do not macsuck suspended VLANs
 
   [BUG FIXES]
 
