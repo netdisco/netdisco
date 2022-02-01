@@ -92,13 +92,27 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   # should be both v4 and v6
   my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
 
-  # cache v4 arp table
-  push @{ vars->{'v4arps'} },
-    grep { NetAddr::IP::Lite->new($_->{ip})->bits ==  32 } @arps;
+  my $a_entry;
+  my $a_ip;
+  my $a_mac;
 
-  # cache v6 neighbor cache
-  push @{ vars->{'v6arps'} },
-    grep { NetAddr::IP::Lite->new($_->{ip})->bits == 128 } @arps;
+  # should be both v4 and v6
+  my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
+
+  foreach $a_entry (@arps) {
+    $a_ip = NetAddr::IP::Lite->new($a_entry->{ip});
+
+    if (defined($a_ip)) {
+      # IPv4
+      if ($a_ip->bits == 32 ) {
+        push @{ vars->{"v4arps"} }, $a_entry;
+      }
+      # IPv6
+      if ($a_ip->bits == 128 ) {
+        push @{ vars->{"v6arps"} }, $a_entry;
+      }
+    }
+  }
 
   $device->update({layers => \[q{overlay(layers placing '1' from 6 for 1)}]});
   return Status->done("Gathered arp caches from $device");
