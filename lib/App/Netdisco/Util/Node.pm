@@ -173,6 +173,8 @@ sub store_arp {
 
   return if !defined $mac or $mac->errstr;
 
+  debug sprintf 'store_arp - mac %s ip %s', $mac->as_ieee, $ip;
+
   schema('netdisco')->txn_do(sub {
     my $current = schema('netdisco')->resultset('NodeIp')
       ->search(
