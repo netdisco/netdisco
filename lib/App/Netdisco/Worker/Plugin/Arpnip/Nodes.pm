@@ -89,9 +89,6 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   my $cli = App::Netdisco::Transport::SSH->session_for($device)
     or return Status->defer("arpnip failed: could not SSH connect to $device");
 
-  # should be both v4 and v6
-  my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
-
   my $a_entry;
   my $a_ip;
   my $a_mac;
