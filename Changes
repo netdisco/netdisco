@@ -1,10 +1,15 @@
-2.052002 - ?
+2.052002 - 2022-02-28
 
   [ENHANCEMENTS]
 
   * netdisco-do -D arpnip ... shows collected arp entries
+  * #846 add seeallcolumns parameter in API search
 
-2.052001 - 01-02-2022
+  [BUG FIXES]
+
+  * #857 bug in arp cli gather
+
+2.052001 - 2022-02-01
 
   [ENHANCEMENTS]
 
