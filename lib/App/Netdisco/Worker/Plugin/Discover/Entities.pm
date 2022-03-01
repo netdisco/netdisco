@@ -100,7 +100,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   foreach my $m (@modules){
-    unless ($seen_idx{$m->{parent}} || !$m->{parent}){
+    unless (!$m->{parent} || $seen_idx{$m->{parent}}){
       # Some combined devices like Nexus with FEX or ASR with Satellites can return invalid
       # EntityMIB trees. This workaround relocates entitites with invalid parents to the root 
       # of the tree, so they are at least visible in the Modules tab (see #710)
