@@ -1,3 +1,9 @@
+2.052003 - 2022-04-13
+
+  [BUG FIXES]
+
+  * CVE-2022-24785 in moment.js
+
 2.052002 - 2022-02-28
 
   [ENHANCEMENTS]
