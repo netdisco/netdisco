@@ -1,3 +1,9 @@
+2.052004 - ?
+
+  [BUG FIXES]
+
+  * Fix datepicker.js crash introduced with CVE-2022-24785 moment.js upgrade
+  
 2.052003 - 2022-04-13
 
   [BUG FIXES]
