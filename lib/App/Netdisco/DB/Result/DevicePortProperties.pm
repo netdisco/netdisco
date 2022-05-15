@@ -13,6 +13,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "error_disable_cause",
   { data_type => "text", is_nullable => 1 },
+  "remote_is_discoverable",
+  { data_type => "boolean", default_value => \"true",  is_nullable => 1 },
   "remote_is_wap",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "remote_is_phone",

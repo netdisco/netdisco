@@ -126,6 +126,8 @@ will add the following additional synthesized columns to the result set:
 
 =item error_disable_cause
 
+=item remote_is_discoverable (boolean)
+
 =item remote_is_wap (boolean)
 
 =item remote_is_phone (boolean)
@@ -143,12 +145,13 @@ sub with_properties {
       {
         '+select' => [qw/
           properties.error_disable_cause
+          properties.remote_is_discoverable
           properties.remote_is_wap
           properties.remote_is_phone
         /],
         '+as' => [qw/
           error_disable_cause
-          remote_is_wap remote_is_phone
+          remote_is_discoverable remote_is_wap remote_is_phone
         /],
         join => 'properties',
       });

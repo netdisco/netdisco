@@ -331,6 +331,15 @@ state, or else `undef` if the port is not in an error state.
 
 sub error_disable_cause { return (shift)->get_column('error_disable_cause') }
 
+=head2 remote_is_discoverable
+
+Returns true if Netdisco is permitted to discover the remote device with
+the configuration of the local poller doing the local device discovery.
+
+=cut
+
+sub remote_is_discoverable { return (shift)->get_column('remote_is_discoverable') }
+
 =head2 remote_is_wap
 
 Returns true if the remote LLDP neighbor has reported Wireless Access Point
