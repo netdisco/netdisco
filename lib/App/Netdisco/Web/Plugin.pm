@@ -66,6 +66,7 @@ register 'register_device_port_column' => sub {
   $config->{position} ||= 'right';
 
   if (!$config->{name} or !$config->{label}) {
+      debug $config;
       return error "bad config to register_device_port_column";
   }
 
@@ -83,6 +84,7 @@ register 'register_device_details' => sub {
   my ($self, $config) = plugin_args(@_);
 
   if (!$config->{name} or !$config->{label}) {
+      debug $config;
       return error "bad config to register_device_details";
   }
 
@@ -103,6 +105,7 @@ register 'register_navbar_item' => sub {
       or !$config->{path}
       or !$config->{label}) {
 
+      debug $config;
       return error "bad config to register_navbar_item";
   }
 
@@ -122,6 +125,7 @@ register 'register_admin_task' => sub {
   if (!$config->{tag}
       or !$config->{label}) {
 
+      debug $config;
       return error "bad config to register_admin_task";
   }
 
@@ -136,6 +140,7 @@ sub _register_tab {
   if (!$config->{tag}
       or !$config->{label}) {
 
+      debug $config;
       return error "bad config to register_${nav}_item";
   }
 
@@ -183,6 +188,7 @@ register 'register_report' => sub {
       or !$config->{label}
       or 0 == scalar grep {$config->{category} eq $_} @categories) {
 
+      debug $config;
       return error "bad config to register_report";
   }
 
