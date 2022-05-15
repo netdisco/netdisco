@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
 use Encode;
-use App::Netdisco::Util::Device 'match_to_setting';
+use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -92,6 +92,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{remote_is_phone} = 'true'
       if scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap
          or match_to_setting($remote_type, 'phone_platforms');
+
+    $properties{ $port }->{remote_is_discoverable} = 'false'
+      unless is_discoverable($device_ports->{$port}->remote_ip, $remote_type, $remote_cap);
 
     next unless scalar grep {defined && m/^inventory$/} @{ $rem_media_cap->{$idx} };
 
