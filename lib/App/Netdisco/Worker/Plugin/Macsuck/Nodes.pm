@@ -361,18 +361,22 @@ sub walk_fwtable {
       # check to see if the port is connected to another device
       # and if we have that device in the database.
 
-      # we have several ways to detect "uplink" port status:
+      # carefully be aware: "uplink" here means "connected to another device"
+      # it does _not_ mean that the user wants nodes gathered on the remote dev.
+
+      # we have two ways to detect "uplink" port status:
       #  * a neighbor was discovered using CDP/LLDP
       #  * a mac addr is seen which belongs to any device port/interface
-      #  * (TODO) admin sets is_uplink_admin on the device_port
 
       # allow to gather MACs on upstream port for some kinds of device that
       # do not expose MAC address tables via SNMP. relies on prefetched
       # neighbors otherwise it would kill the DB with device lookups.
+
       my $neigh_cannot_macsuck = eval { # can fail
         check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
         match_to_setting($device_port->remote_type, 'macsuck_unsupported_type') };
 
+      # here, is_uplink comes from Discover::Neighbors finding LLDP remnants
       if ($device_port->is_uplink) {
           if ($neigh_cannot_macsuck) {
               debug sprintf
@@ -406,6 +410,7 @@ sub walk_fwtable {
           }
       }
 
+      # here, the MAC is known as belonging to a device switchport
       if (exists $port_macs->{$mac}) {
           my $switch_ip = $port_macs->{$mac};
           if ($device->ip eq $switch_ip) {
