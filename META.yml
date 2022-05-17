@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.052005'
+    version: '2.052006'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '70'
+    version: '71'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -215,6 +215,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/ASA.pm
   App::Netdisco::SSHCollector::Platform::ASAContext:
     file: lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
+  App::Netdisco::SSHCollector::Platform::Aruba:
+    file: lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
   App::Netdisco::SSHCollector::Platform::BigIP:
     file: lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
   App::Netdisco::SSHCollector::Platform::CPVSX:
@@ -547,6 +549,7 @@ requires:
   Dancer::Session::Cookie: '0.27'
   Data::Printer: '0'
   Data::Visitor::Tiny: '0'
+  EV: '0'
   Expect: '0'
   File::Path: '0'
   File::ShareDir: '1.03'
@@ -619,5 +622,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.052005'
+version: '2.052006'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

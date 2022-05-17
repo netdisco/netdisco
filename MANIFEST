@@ -107,6 +107,7 @@ lib/App/Netdisco/GenericDB/Result/Virtual/GenericReport.pm
 lib/App/Netdisco/JobQueue.pm
 lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
+lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
 lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
@@ -462,6 +463,7 @@ share/schema_versions/App-Netdisco-DB-67-68-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-68-69-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-69-70-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-7-8-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-70-71-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt

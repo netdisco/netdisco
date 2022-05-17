@@ -55,6 +55,7 @@
             "Dancer::Session::Cookie" : "0.27",
             "Data::Printer" : "0",
             "Data::Visitor::Tiny" : "0",
+            "EV" : "0",
             "Expect" : "0",
             "File::Path" : "0",
             "File::ShareDir" : "1.03",
@@ -134,7 +135,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.052005"
+         "version" : "2.052006"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -156,7 +157,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "70"
+         "version" : "71"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -421,6 +422,9 @@
       },
       "App::Netdisco::SSHCollector::Platform::ASAContext" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm"
+      },
+      "App::Netdisco::SSHCollector::Platform::Aruba" : {
+         "file" : "lib/App/Netdisco/SSHCollector/Platform/Aruba.pm"
       },
       "App::Netdisco::SSHCollector::Platform::BigIP" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/BigIP.pm"
@@ -897,6 +901,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.052005",
+   "version" : "2.052006",
    "x_serialization_backend" : "JSON::PP version 4.06"
 }
