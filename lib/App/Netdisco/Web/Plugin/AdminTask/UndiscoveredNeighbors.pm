@@ -16,6 +16,11 @@ register_admin_task(
     }
 );
 
+# just to note a problem with this query:
+# using DeviceSkip to see if discover is blocked, but that table only shows
+# blocked actions on backends not permitted, so there may be a backend running
+# that permits the action, we would not know.
+
 get '/ajax/content/admin/undiscoveredneighbors' => require_role admin => sub {
     my @results
         = schema('netdisco')->resultset('Virtual::UndiscoveredNeighbors')->hri->all;

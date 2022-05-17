@@ -19,9 +19,6 @@ set('connected_properties' => [
 hook 'before_template' => sub {
   my $tokens = shift;
 
-  # allow checking of discoverability of remote connected device
-  $tokens->{has_snmp} = sub { not match_to_setting(shift, 'discover_no_type') };
-
   my $defaults = var('sidebar_defaults')->{'device_ports'}
     or return;
 
