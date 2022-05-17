@@ -49,12 +49,15 @@ get '/ajax/content/search/port' => require_login sub {
                 ->columns( [qw/ ip port name up up_admin speed /] )->search({
                   "port_vlans.vlan" => $q,
                   ( param('uplink') ? () : (-or => [
-                    {-not_bool => "me.is_uplink"},
-                    {"me.is_uplink" => undef},
+                    {-not_bool => "properties.remote_is_discoverable"},
+                    {-or => [
+                      {-not_bool => "me.is_uplink"},
+                      {"me.is_uplink" => undef},
+                    ]}
                   ]) ),
                   ( param('ethernet') ? ("me.type" => 'ethernetCsmacd') : () ),
                 },{ '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
-                    join       => [qw/ port_vlans device /]
+                    join       => [qw/ properties port_vlans device /]
                 }
                 )->with_times;
     }
@@ -83,14 +86,17 @@ get '/ajax/content/search/port' => require_login sub {
                   ) : () ),
                 ],
                 ( param('uplink') ? () : (-or => [
-                  {-not_bool => "me.is_uplink"},
-                  {"me.is_uplink" => undef},
+                  {-not_bool => "properties.remote_is_discoverable"},
+                  {-or => [
+                    {-not_bool => "me.is_uplink"},
+                    {"me.is_uplink" => undef},
+                  ]}
                 ]) ),
                 ( param('ethernet') ? ("me.type" => 'ethernetCsmacd') : () ),
               ]
             },
             {   '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
-                join       => [qw/ port_vlans device /]
+                join       => [qw/ properties port_vlans device /]
             }
             )->with_times;
     }
