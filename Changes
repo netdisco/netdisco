@@ -1,8 +1,13 @@
-2.052006 - tbd
+2.052006 - 2022-05-17
 
   [ENHANCEMENTS]
 
-  * added sshcollector Aruba.pm by @sgb1reg
+  * add sshcollector for Aruba by @sgb1reg
+
+  [BUG FIXES]
+
+  * #864 add EV to dependencies to avoid broken OS version issues
+  * #866 add debug when register plugin error
 
 2.052005 - 2022-04-22
 
