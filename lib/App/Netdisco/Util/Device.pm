@@ -299,6 +299,9 @@ sub is_macsuckable {
   return _bail_msg("is_macsuckable: $device matched macsuck_no")
     if check_acl_no($device, 'macsuck_no');
 
+  return _bail_msg("is_macsuckable: $device matched macsuck_unsupported")
+    if check_acl_no($device, 'macsuck_unsupported');
+
   return _bail_msg("is_macsuckable: $device failed to match macsuck_only")
     unless check_acl_only($device, 'macsuck_only');
 
