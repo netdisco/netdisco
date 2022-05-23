@@ -56,6 +56,7 @@ Module::Build->new(
     'JSON' => '2.90',
     'JSON::PP' => '0',
     'JSON::XS' => '3.01',
+    'Lingua::EN::Inflect::Number' => '0',
     'List::Util' => '1.49',
     'List::MoreUtils' => '0.428',
     'MIME::Base64' => '3.13',

@@ -1,0 +1,64 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin;
+FindBin::again();
+use Path::Class 'dir';
+
+BEGIN {
+  # stuff useful locations into @INC
+  unshift @INC,
+    dir($FindBin::RealBin)->parent->subdir('lib')->stringify,
+    dir($FindBin::RealBin, 'lib')->stringify;
+}
+
+use App::Netdisco;
+use Dancer ':script';
+use Dancer::Plugin::DBIC 'schema';
+
+#schema('netdisco')->create_ddl_dir(
+#  'PostgreSQL', $version, $sql_dir, $preversion );
+
+use SQL::Translator;
+use SQL::Translator::Netdisco::Quick;
+use SQL::Translator::Netdisco::Utils;
+
+# generate SQLT Schema instance representing this data schema
+sub schema_metadata {
+    my $dbic = schema('netdisco');
+    my $sqlt = SQL::Translator->new(
+        parser => 'SQL::Translator::Parser::DBIx::Class',
+        parser_args => { dbic_schema => $dbic },
+        filters => [
+            ['Netdisco::StorageEngine::DBIC::ViewsAsTables', $dbic],
+            ['Netdisco::StorageEngine::DBIC::Relationships', $dbic],
+            ['Netdisco::StorageEngine::DBIC::ProxyColumns', $dbic],
+            'Netdisco::ColumnsAndPKs',
+            'Netdisco::DisplayName',
+            'Netdisco::ExtJSxType',
+            ['Netdisco::StorageEngine::DBIC::AccessorDisplayName', $dbic],
+        ],
+        producer => 'SQL::Translator::Producer::POD', # something cheap
+    ) or die SQL::Translator->error;
+
+    $sqlt->translate() or die $sqlt->error; # throw result away
+    return $sqlt->schema;
+}
+
+my $m = SQL::Translator::Netdisco::Quick->new( schema_metadata() );
+use DDP class => { stringify => 0 };
+my $t = $m->t->{'node'};
+
+&p( $t->extra('fields')  );
+&p( $t->f->{ip4s}  );
+&p( [ $t->f->{oui}->extra('display_name') ] );
+
+
+#&p( $x );
+#foreach my $field ($x->get_fields) {
+#&p( ['==='.$field->name, { $field->extra }] );
+#}
+
+1;

@@ -66,6 +66,7 @@ use App::Netdisco::Web::PortControl;
 use App::Netdisco::Web::Statistics;
 use App::Netdisco::Web::Password;
 use App::Netdisco::Web::GenericReport;
+use App::Netdisco::Web::DatabaseViewer;
 
 sub _load_web_plugins {
   my $plugin_list = shift;
