@@ -42,7 +42,8 @@
                   <li><i class="icon-li icon-off nd_power-on"></i>&nbsp; PoE Enabled</li>
                   <li><i class="icon-li icon-link text-warning"></i>&nbsp; Manual Topology</li>
                   <li><i class="icon-li icon-link"></i>&nbsp; Neighbor Device</li>
-                  <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Inacessible</li>
+                  <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Not Polled</li>
+                  <li><i class="icon-li icon-eye-close text-error"></i>&nbsp; Neighbor Forbidden</li>
                   <li><i class="icon-li icon-phone"></i>&nbsp; IP Phone</li>
                   <li><i class="icon-li icon-signal"></i>&nbsp; Wireless Client</li>
                   <li><i class="icon-li icon-rss"></i>&nbsp; Wireless Access Point</li>

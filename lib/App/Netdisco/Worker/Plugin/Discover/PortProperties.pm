@@ -85,16 +85,32 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     my $remote_cap  = $c_cap->{$idx} || [];
     my $remote_type = Encode::decode('UTF-8', $c_platform->{$idx} || '');
 
-    $properties{ $port }->{remote_is_wap} = 'true'
-      if scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap
-         or match_to_setting($remote_type, 'wap_platforms');
+    $properties{ $port }->{remote_is_wap} = 'false';
+    $properties{ $port }->{remote_is_phone} = 'false';
+    $properties{ $port }->{remote_is_discoverable} = 'true';
 
-    $properties{ $port }->{remote_is_phone} = 'true'
-      if scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap
-         or match_to_setting($remote_type, 'phone_platforms');
+    if (scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap
+        or match_to_setting($remote_type, 'wap_platforms')) {
 
-    $properties{ $port }->{remote_is_discoverable} = 'false'
-      unless is_discoverable($device_ports->{$port}->remote_ip, $remote_type, $remote_cap);
+        $properties{ $port }->{remote_is_wap} = 'true';
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a WAP',
+          $device->ip, $port;
+    }
+
+    if (scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap
+        or match_to_setting($remote_type, 'phone_platforms')) {
+
+        $properties{ $port }->{remote_is_phone} = 'true';
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a Phone',
+          $device->ip, $port;
+    }
+
+    if (! is_discoverable($device_ports->{$port}->remote_ip, $remote_type, $remote_cap)) {
+
+        $properties{ $port }->{remote_is_discoverable} = 'false';
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is denied discovery',
+          $device->ip, $port;
+    }
 
     next unless scalar grep {defined && m/^inventory$/} @{ $rem_media_cap->{$idx} };
 
