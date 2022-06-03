@@ -1,3 +1,10 @@
+2.052007 - 2022-06-03
+
+  [ENHANCEMENTS]
+
+  * new 'Neighbor Forbidden' icon in device ports table
+  * update is_macsuckable to check macsuck_unsupported so jobs are skipped
+
 2.052006 - 2022-05-17
 
   [ENHANCEMENTS]
