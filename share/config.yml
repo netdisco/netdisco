@@ -396,6 +396,7 @@ job_prio:
     - stats
 
 worker_plugins:
+  - 'AddPseudoDevice'
   - 'Arpnip'
   - 'Arpnip::Hooks'
   - 'Arpnip::Nodes'

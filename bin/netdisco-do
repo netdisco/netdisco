@@ -124,7 +124,7 @@ if (scalar @hostlist > 512) {
 
 foreach my $host (@hostlist) {
   my $dev = $host ? get_device($host->addr) : undef;
-  if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^discover/) {
+  if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^(?:discover|addpseudodevice)/) {
     info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
     next;
   }
