@@ -11,9 +11,12 @@ use NetAddr::IP::Lite ':lower';
 
 register_worker({ phase => 'check' }, sub {
     my ($job, $workerconf) = @_;
-    my $devip = $job->device->ip;
     my $name  = $job->extra;
     my $ports = $job->port;
+
+    return Status->error('Missing or invalid device IP (-d).')
+      unless $job->device;
+    my $devip = $job->device->ip;
 
     return Status->error('Missing or invalid device name (-e).')
       unless $name
