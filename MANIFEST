@@ -208,6 +208,7 @@ lib/App/Netdisco/Web/Statistics.pm
 lib/App/Netdisco/Web/TypeAhead.pm
 lib/App/Netdisco/Worker/Loader.pm
 lib/App/Netdisco/Worker/Plugin.pm
+lib/App/Netdisco/Worker/Plugin/AddPseudoDevice.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
