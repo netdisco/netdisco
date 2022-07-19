@@ -219,6 +219,11 @@ td > form.nd_inline-form {
   margin-bottom: 2px;
 }
 
+/* pull right admin buttons in the device details view */
+.nd_pull-right-admin-button {
+  margin-right: 4px;
+}
+
 /* fix layout of form fields inside the (pseudo devices) table */
 .nd_center-cell input {
   margin-bottom: 0px;

@@ -201,6 +201,10 @@
         <button class="btn btn-danger btn-small pull-right"
           data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
 
+        <button class="btn btn-danger btn-small pull-right nd_pull-right-admin-button"
+          data-toggle="modal" data-target="#nd_devrenumber" type="button">Renumber</button>
+
+
         <div id="nd_devdel" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
           <div class="modal-header">
@@ -225,6 +229,29 @@
           <div class="modal-footer">
             <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
             <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
+
+        <div id="nd_devrenumber" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devrenumber-label" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="nd_devrenumber-label">Confirm Renumber: [% d.dns || d.ip | html_entity %]</h3>
+          </div>
+          <div class="modal-body">
+            <blockquote>
+              <ul>
+                <li><p>This action is run immediately</p></li>
+                <li><p>No check is made as to whether the new IP is reachable</p></li>
+              </ul>
+            </blockquote>
+            <textarea id="nd_devrenumber-newip" class="input-block-level" rows="1" data-form="renumber"
+              placeholder="Enter new IP address" name="newip"></textarea>
+            <input type="hidden" data-form="renumber" value="[% d.ip | html_entity %]" name="device"/>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="renumber" data-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

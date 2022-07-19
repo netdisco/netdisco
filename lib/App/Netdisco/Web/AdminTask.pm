@@ -7,7 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::JobQueue 'jq_insert';
-use App::Netdisco::Util::Device 'delete_device';
+use App::Netdisco::Util::Device qw/delete_device renumber_device/;
 
 sub add_job {
     my ($action, $device, $subaction) = @_;
@@ -45,6 +45,21 @@ foreach my $action (@{ setting('job_prio')->{high} },
           : redirect uri_for('/')->path;
     };
 }
+
+ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => require_role setting('defanged_admin') => sub {
+    send_error('Missing device', 400) unless param('device');
+    send_error('Missing new IP', 400) unless param('newip');
+
+    my $device = NetAddr::IP->new(param('device'));
+    send_error('Bad device', 400)
+      if ! $device or $device->addr eq '0.0.0.0';
+
+    my $newip = NetAddr::IP->new(param('newip'));
+    send_error('Bad new IP', 400)
+      if ! $newip or $newip->addr eq '0.0.0.0';
+
+    return renumber_device( $device->addr, $newip->addr );
+};
 
 ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_admin') => sub {
     send_error('Missing device', 400) unless param('device');
