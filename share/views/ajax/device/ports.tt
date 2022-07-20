@@ -327,7 +327,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            [% '<i class="icon-unlink text-error"></i>&nbsp; (possible uplink)' %]
+            <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
