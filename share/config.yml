@@ -133,8 +133,8 @@ sidebar_defaults:
     c_stp:         { label: 'Spanning Tree', default: null, idx: 19 }
     c_up:          { label: 'Status', default: null, idx: 20 }
     mac_format:    { default: IEEE }
-    n_inventory:   { label: 'Inventory Data', default: checked, idx: 0 }
-    n_detailed_inventory: { label: 'Detailed Inventory', default: null, idx: 1 }
+    n_inventory:   { label: 'Remote Inventory', default: checked, idx: 0 }
+    n_detailed_inventory: { label: 'Remote Advertisement', default: null, idx: 1 }
     n_age:         { label: 'Age Stamp', default: null, idx: 2 }
     n_ip4:         { label: 'IPv4 Addresses', default: checked, idx: 3 }
     n_ip6:         { label: 'IPv6 Addresses', default: checked, idx: 4 }
