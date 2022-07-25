@@ -670,7 +670,10 @@ sub with_port_count {
               ->search(
                 {
                   'dp.ip' => { -ident => 'me.ip' },
-                  'dp.type' => { '!=' => 'propVirtual' },
+                  'dp.type' => [ '-or' =>
+                    { '=' => undef },
+                    { '!~*' => '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)$' },
+                  ],
                 },
                 { alias => 'dp' }
               )->count_rs->as_query,

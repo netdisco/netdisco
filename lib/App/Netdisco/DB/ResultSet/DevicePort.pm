@@ -68,7 +68,8 @@ sub with_is_free {
       {
         '+columns' => { is_free =>
           # NOTE this query is in `git grep 'THREE PLACES'`
-          \["me.up_admin = 'up' AND me.up != 'up' AND me.type != 'propVirtual' AND "
+          \["me.up_admin = 'up' AND me.up != 'up' AND "
+              ."(me.type IS NULL OR me.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$') AND "
               ."((age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval "
               ."AND (last_node.time_last IS NULL OR age(now(), last_node.time_last) > ?::interval)) "
               ."OR age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval)",
@@ -100,7 +101,10 @@ sub only_free_ports {
         # NOTE this query is in `git grep 'THREE PLACES'`
         'me.up_admin' => 'up',
         'me.up'       => { '!=' => 'up' },
-        'me.type'     => { '!=' => 'propVirtual' },
+        'me.type' => [ '-or' =>
+          { '=' => undef },
+          { '!~*' => '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)$' },
+        ],
         -or => [
           -and => [
             \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval",
