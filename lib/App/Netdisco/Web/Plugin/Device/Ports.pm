@@ -108,10 +108,11 @@ get '/ajax/content/device/ports' => require_login sub {
     my $vlans = $set->search({}, {
       select => [
         'port',
-        { array_agg => 'port_vlans.vlan', -as => 'vlan_set'   },
         { count     => 'port_vlans.vlan', -as => 'vlan_count' },
+        { array_agg => 'port_vlans.vlan', -as => 'vlan_set' },
+        { array_agg => 'vlan_entry.description', -as => 'vlan_name_set' },
       ],
-      join => 'port_vlans',
+      join => {'port_vlans' => 'vlan_entry'},
       group_by => 'me.port',
     });
 
@@ -119,10 +120,19 @@ get '/ajax/content/device/ports' => require_login sub {
         $vlans = { map {(
           $_->port => {
             # DBIC smart enough to work out this should be an arrayref :)
-            vlan_set   => $_->get_column('vlan_set'),
             vlan_count => $_->get_column('vlan_count'),
+            vlan_set   => $_->get_column('vlan_set'),
+            vlan_name_set => $_->get_column('vlan_name_set'),
           },
         )} $vlans->all };
+    }
+
+    if (param('c_vlan_names')) {
+        $set = $set->search({}, {
+          'join' => 'native_vlan',
+          '+select' => [qw/native_vlan.description/],
+          '+as'     => [qw/native_vlan_name/],
+        });
     }
 
     # get aggregate master status (self join)

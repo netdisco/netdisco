@@ -60,14 +60,14 @@ __PACKAGE__->belongs_to( port => 'App::Netdisco::DB::Result::DevicePort', {
     'foreign.ip' => 'self.ip', 'foreign.port' => 'self.port',
 });
 
-=head2 vlan
+=head2 vlan_entry
 
 Returns the entry from the C<device_vlan> table describing this VLAN in
 detail, typically in order that the C<name> can be retrieved.
 
 =cut
 
-__PACKAGE__->belongs_to( vlan => 'App::Netdisco::DB::Result::DeviceVlan', {
+__PACKAGE__->belongs_to( vlan_entry => 'App::Netdisco::DB::Result::DeviceVlan', {
     'foreign.ip' => 'self.ip', 'foreign.vlan' => 'self.vlan',
 });
 

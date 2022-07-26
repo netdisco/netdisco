@@ -203,6 +203,26 @@ __PACKAGE__->might_have(
     }
 );
 
+=head2 native_vlan
+
+Returns the row from the C<device_vlan> table corresponding to the native
+vlan of this port.
+
+=cut
+
+__PACKAGE__->belongs_to(
+    native_vlan => 'App::Netdisco::DB::Result::DeviceVlan',
+    sub {
+        my $args = shift;
+        return {
+            "$args->{foreign_alias}.ip" =>
+              { '-ident' => "$args->{self_alias}.ip" },
+            "$args->{self_alias}.vlan" =>
+              { '=' => \"cast($args->{foreign_alias}.vlan as text)" }
+        };
+    },
+);
+
 =head2 agg_master
 
 Returns another row from the C<device_port> table if this port is slave

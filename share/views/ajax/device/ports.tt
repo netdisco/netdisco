@@ -4,7 +4,7 @@
     <tr>
       <th></th>
       [% FOREACH item IN settings.port_columns %]
-      [% NEXT IF item.name == 'c_admin' %]
+      [% NEXT IF item.name == 'c_admin' OR item.name == 'c_vlan_names' %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
         [% SET th_class = '' %]
@@ -204,8 +204,13 @@
       <td>
         [% IF row.vlan AND row.vlan > 0 %]
         <a class="nd_linkcell"
-          href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.vlan | uri %]">
-            [% row.vlan | html_entity %]</a>
+          [% IF params.c_vlan_names %]
+            href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.get_column('native_vlan_name') | uri %]">
+              [% row.get_column('native_vlan_name') | html_entity %]</a>
+          [% ELSE %]
+            href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.vlan | uri %]">
+              [% row.vlan | html_entity %]</a>
+          [% END %]
         [% END %]
       </td>
       [% END %]
@@ -215,21 +220,20 @@
       <td>
         [% IF vlans.$portname.vlan_count <= settings.devport_vlan_limit %]
           [% SET vlan_count = vlans.$portname.vlan_count %]
-          [% SET output = '' %]
-          [% FOREACH vlan IN vlans.$portname.vlan_set.nsort %]
-            [% IF vlan == 0 %][% SET vlan_count = (vlan_count - 1) %][% NEXT %][% END %]
-            [% SET output = output _
-              '<a href="' _ uri_for('/search') _ '?tab=vlan&q=' _ vlan _ '">' _ vlan _ '</a>' %]
-            [% IF NOT loop.last %][% SET output = output _ ', ' %][% END %]
+          [% IF params.c_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set.sort %]
+            [% ELSE %][% SET vlanlist = vlans.$portname.vlan_set.nsort %][% END %]
+          [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
+            <div class="nd_vlan-total">([% vlan_count %])</div><span class="nd_linkcell nd_collapse-vlans">
+            <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
+            <div class="nd_collapsing nd_collapse-pre-hidden">
+          [% END %]
+          [% FOREACH vlan IN vlanlist %]
+            <a href="[% uri_for('/search') %]?tab=vlan&q=[% vlan | uri %]">[% vlan | html_entity %]</a>
+            [% ', ' IF NOT loop.last %]
           [% END %]
           [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
-            [% SET output = '<div class="nd_vlan-total">(' _ vlan_count
-              _ ')</div><span class="nd_linkcell nd_collapse-vlans">
-                <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
-                <div class="nd_collapsing nd_collapse-pre-hidden">' _ output %]
-            [% SET output = output _ '</div>' %]
+            </div>
           [% END %]
-          [% output | none %]
         [% ELSE %]
         <i class="icon-asterisk text-warning"></i> ([% vlans.$portname.vlan_count %] is too many to list)
         [% END %]
