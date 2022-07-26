@@ -206,6 +206,7 @@
           [% CSV.dump(myport) %]
         [% END %]
 
+        [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
         [% CSV.dump(myport) IF NOT has_ips %]
       [% ELSE %]
         [% CALL myport.splice(c_nodes_pos, mynode.size, mynode) %]
