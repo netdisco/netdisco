@@ -70,6 +70,8 @@
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% IF item.name == 'c_admin' %]
                         <span class="label label-info">[% item.label | html_entity %]</span>
+                      [% ELSIF item.name == 'c_vlan_names' %]
+                        <span class="label label-default">[% item.label | html_entity %]</span>
                       [% ELSE %]
                         [% item.label | html_entity %]
                       [% END %]
