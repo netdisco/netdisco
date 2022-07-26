@@ -30,9 +30,14 @@ ajax '/ajax/content/device/details' => require_login sub {
         = schema('netdisco')->resultset('DevicePower')
         ->search( { 'me.ip' => $device->ip } )->with_poestats->hri->all;
 
+    my @interfaces
+        = schema('netdisco')->resultset('Device')
+        ->find($device->ip)
+        ->device_ips->hri->all;
+
     content_type('text/html');
     template 'ajax/device/details.tt', {
-      d => $results[0], p => \@power
+      d => $results[0], p => \@power, interfaces => \@interfaces,
     }, { layout => undef };
 };
 

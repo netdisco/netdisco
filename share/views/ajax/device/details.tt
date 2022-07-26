@@ -245,8 +245,12 @@
                 <li><p>No check is made as to whether the new IP is reachable</p></li>
               </ul>
             </blockquote>
-            <textarea id="nd_devrenumber-newip" class="input-block-level" rows="1" data-form="renumber"
-              placeholder="Enter new IP address" name="newip"></textarea>
+            <label>Enter new IP address: <input list="interfaces" name="newip" data-form="renumber"/></label>
+            <datalist id="interfaces">
+              [% FOREACH i IN interfaces %]
+              <option value="[% i.alias | html_entity %]">[% i.dns | html_entity %]</option>
+              [% END %]
+            </datalist>
             <input type="hidden" data-form="renumber" value="[% d.ip | html_entity %]" name="device"/>
           </div>
           <div class="modal-footer">

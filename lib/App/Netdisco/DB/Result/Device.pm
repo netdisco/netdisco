@@ -370,7 +370,8 @@ sub renumber {
 
   $device->update({
     ip  => $new_ip,
-    dns => hostname_from_ip($new_ip),
+    dns => (hostname_from_ip($new_ip)
+      || eval { $schema->resultset('DeviceIp')->find($new_ip,$new_ip)->dns } || undef),
   });
 
   return $device;
