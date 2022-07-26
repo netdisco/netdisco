@@ -3,7 +3,7 @@
 [% SET headers = [] %]
 [% SET c_nodes_pos = -1 %]
 [% FOREACH item IN settings.port_columns %]
-  [% NEXT IF item.name == 'c_admin' %]
+  [% NEXT IF item.name == 'c_admin' OR item.name == 'c_vlan_names' %]
   [% NEXT UNLESS params.${item.name} %]
 
   [% IF item.name == 'c_nodes' %]
@@ -108,13 +108,15 @@
   [% END %]
 
   [% IF params.c_pvid %]
-    [% myport.push(row.vlan) %]
+    [% myport.push(params.c_vlan_names ? row.get_column('native_vlan_name') : row.vlan) %]
   [% END %]
 
   [% IF params.c_vmember %]
     [% SET portname = row.port %]
     [% SET output = '' %]
-    [% FOREACH vlan IN vlans.$portname.vlan_set.nsort %]
+    [% IF params.c_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set.sort %]
+      [% ELSE %][% SET vlanlist = vlans.$portname.vlan_set.nsort %][% END %]
+    [% FOREACH vlan IN vlanlist %]
       [% SET output = output _ ',' IF NOT loop.first %]
       [% SET output = output _ vlan %]
     [% END %]
