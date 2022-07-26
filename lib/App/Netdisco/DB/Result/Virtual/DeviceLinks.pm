@@ -16,42 +16,45 @@ __PACKAGE__->table('device_links');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   WITH BothWays AS
-    ( SELECT dp.ip AS left_ip,
+    ( SELECT ldp.ip AS left_ip,
              ld.dns AS left_dns,
              ld.name AS left_name,
-             array_agg(dp.port ORDER BY dp.port) AS left_port,
-             array_agg(dp.name ORDER BY dp.name) AS left_descr,
+             array_agg(ldp.port ORDER BY ldp.port) AS left_port,
+             array_agg(ldp.name ORDER BY ldp.name) AS left_descr,
 
-             count(dpp.*) AS aggports,
-             sum(COALESCE(dpp.raw_speed, 0)) AS aggspeed,
+             count(ldpp.*) AS aggports,
+             sum(COALESCE(ldpp.raw_speed, 0)) AS aggspeed,
 
              di.ip AS right_ip,
              rd.dns AS right_dns,
              rd.name AS right_name,
-             array_agg(dp.remote_port ORDER BY dp.remote_port) AS right_port,
-             array_agg(dp2.name ORDER BY dp2.name) AS right_descr
+             array_agg(ldp.remote_port ORDER BY ldp.remote_port) AS right_port,
+             array_agg(rdp.name ORDER BY rdp.name) AS right_descr
 
-     FROM device_port dp
+     FROM device_port ldp
 
-     LEFT OUTER JOIN device_port_properties dpp ON (
-        (dp.ip = dpp.ip) AND (dp.port = dpp.port)
-        AND (dp.type IS NULL
-             OR dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
-        AND (dp.is_master = 'false'
-             OR dp.slave_of IS NOT NULL) )
+     LEFT OUTER JOIN device_port_properties ldpp ON (
+        (ldp.ip = ldpp.ip) AND (ldp.port = ldpp.port)
+        AND (ldp.type IS NULL
+             OR ldp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
+        AND (ldp.is_master = 'false'
+             OR ldp.slave_of IS NOT NULL) )
 
-     INNER JOIN device ld ON dp.ip = ld.ip
-     INNER JOIN device_ip di ON dp.remote_ip = di.alias
+     INNER JOIN device ld ON ldp.ip = ld.ip
+     INNER JOIN
+      (SELECT ip, alias FROM device_ip WHERE alias IN
+        (SELECT alias FROM device_ip GROUP BY alias HAVING count(alias) = 1)) di
+        ON ldp.remote_ip = di.alias
      INNER JOIN device rd ON di.ip = rd.ip
 
-     LEFT OUTER JOIN device_port dp2 ON (di.ip = dp2.ip
-                                         AND ((dp.remote_port = dp2.port)
-                                              OR (dp.remote_port = dp2.name)
-                                              OR (dp.remote_port = dp2.descr)))
+     LEFT OUTER JOIN device_port rdp ON (di.ip = rdp.ip
+                                         AND ((ldp.remote_port = rdp.port)
+                                              OR (ldp.remote_port = rdp.name)
+                                              OR (ldp.remote_port = rdp.descr)))
 
-     WHERE dp.remote_port IS NOT NULL
-       AND dp.port !~* 'vlan'
-       AND (dp.descr IS NULL OR dp.descr !~* 'vlan')
+     WHERE ldp.remote_port IS NOT NULL
+       AND ldp.port !~* 'vlan'
+       AND (ldp.descr IS NULL OR ldp.descr !~* 'vlan')
 
      GROUP BY left_ip,
               left_dns,
