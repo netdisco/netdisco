@@ -1,8 +1,22 @@
-2.052009 - 2022-06-xx
+2.052009 - 2022-06-26
 
   [NEW FEATURES]
 
-  * #889 implement renumber in the web interface
+  * #882 option to display vlan names instead of numbers in device ports
+  * #889 renumber device option in the device details web page
+
+  [ENHANCEMENTS]
+
+  * #877 ignore vlans 1002-1005 in port vlan mismatch report
+  * rename Inventory Data to be Remote Inventory in device ports options
+  * rename Detailed Inventory to be Remote Advertisement in device ports options
+
+  [BUG FIXES]
+
+  * #878 device ports csv misses mac addresses having no IPs
+  * #895 fix for neighbor showing phantom connections when remote_ip is not unique
+  * #897 port free should only apply to physical interfaces
+  * fix error displaying 'unlink' icon for device unreachable in device ports
 
 2.052008 - 2022-06-12
 
