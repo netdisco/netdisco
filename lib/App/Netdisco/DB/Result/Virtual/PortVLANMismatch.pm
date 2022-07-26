@@ -14,7 +14,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
             array_to_string(array_agg( CASE WHEN native THEN 'n:' || vlan::text
                                         ELSE vlan::text END
                        ORDER BY vlan ASC ), ', ') AS vlist 
-     FROM device_port_vlan GROUP BY ip, port)
+     FROM device_port_vlan WHERE vlan NOT IN (1002, 1003, 1004, 1005) GROUP BY ip, port)
 
   SELECT CASE WHEN length(ld.dns) > 0 THEN ld.dns ELSE host(ld.ip) END AS left_device,
          lp.port AS left_port,
