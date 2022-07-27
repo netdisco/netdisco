@@ -220,8 +220,8 @@
       <td>
         [% IF vlans.$portname.vlan_count <= settings.devport_vlan_limit %]
           [% SET vlan_count = vlans.$portname.vlan_count %]
-          [% IF params.c_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set.sort %]
-            [% ELSE %][% SET vlanlist = vlans.$portname.vlan_set.nsort %][% END %]
+          [% IF params.c_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set %]
+            [% ELSE %][% SET vlanlist = vlans.$portname.vlan_set %][% END %]
           [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
             <div class="nd_vlan-total">([% vlan_count %])</div><span class="nd_linkcell nd_collapse-vlans">
             <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>

@@ -109,8 +109,8 @@ get '/ajax/content/device/ports' => require_login sub {
       select => [
         'port',
         { count     => 'port_vlans.vlan', -as => 'vlan_count' },
-        { array_agg => 'port_vlans.vlan', -as => 'vlan_set' },
-        { array_agg => 'vlan_entry.description', -as => 'vlan_name_set' },
+        { array_agg => \q{port_vlans.vlan ORDER BY port_vlans.vlan}, -as => 'vlan_set' },
+        { array_agg => \q{COALESCE(NULLIF(vlan_entry.description,''), vlan_entry.vlan::text) ORDER BY vlan_entry.vlan}, -as => 'vlan_name_set' },
       ],
       join => {'port_vlans' => 'vlan_entry'},
       group_by => 'me.port',
