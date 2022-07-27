@@ -1,3 +1,15 @@
+2.052010 - 2022-06-27
+
+  [ENHANCEMENTS]
+
+  * #872 separate column for NetBIOS name in IP Inventory
+  * web feature to renumber a device now offers existing interface addresses
+  * web feature to renumber a device is renamed to "Change IP"
+
+  [BUG FIXES]
+
+  * make VLAN names option in device ports also work for VLANs missing a name
+
 2.052009 - 2022-06-26
 
   [NEW FEATURES]
