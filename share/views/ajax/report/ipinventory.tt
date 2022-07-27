@@ -5,6 +5,7 @@
       <th>MAC Address</th>
       <th>Vendor</th>
       <th class="nd_center-cell">DNS</th>
+      <th class="nd_center-cell">NetBIOS</th>
       <th>Last Used</th>      
     </tr>
   </thead>
@@ -51,6 +52,12 @@ $(document).ready(function() {
         }
       }, {
         "data": 'dns',
+        "className": "nd_nowrap nd_center-cell",
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'nbname',
         "className": "nd_nowrap nd_center-cell",
         "render": function(data, type, row, meta) {
           return he.encode(data || '');

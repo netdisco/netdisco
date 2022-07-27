@@ -1,5 +1,5 @@
 [% USE CSV %]
-[% CSV.dump([ 'Node' 'MAC Address' 'Vendor' 'DNS' 'Last Used' ]) %]
+[% CSV.dump([ 'Node' 'MAC Address' 'Vendor' 'DNS' 'NetBIOS' 'Last Used' ]) %]
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
@@ -7,6 +7,7 @@
   [% mylist.push(row.mac) %]
   [% mylist.push(row.vendor) %]
   [% mylist.push(row.dns) %]
+  [% mylist.push(row.nbname) %]
   [% mylist.push(row.time_last) %]
   [% CSV.dump(mylist) %]
 
