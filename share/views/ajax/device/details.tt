@@ -202,7 +202,7 @@
           data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
 
         <button class="btn btn-danger btn-small pull-right nd_pull-right-admin-button"
-          data-toggle="modal" data-target="#nd_devrenumber" type="button">Renumber</button>
+          data-toggle="modal" data-target="#nd_devrenumber" type="button">Change IP</button>
 
 
         <div id="nd_devdel" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
@@ -242,6 +242,7 @@
             <blockquote>
               <ul>
                 <li><p>This action is run immediately</p></li>
+                <li><p>You can to change to an existing interface IP or a new IP</p></li>
                 <li><p>No check is made as to whether the new IP is reachable</p></li>
               </ul>
             </blockquote>
