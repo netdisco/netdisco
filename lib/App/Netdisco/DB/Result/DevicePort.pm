@@ -220,7 +220,7 @@ __PACKAGE__->belongs_to(
             "$args->{self_alias}.vlan" =>
               { '=' => \"cast($args->{foreign_alias}.vlan as text)" }
         };
-    },
+    }, {  join_type => 'LEFT' }
 );
 
 =head2 agg_master
