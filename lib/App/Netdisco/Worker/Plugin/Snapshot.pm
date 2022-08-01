@@ -266,8 +266,12 @@ sub walker {
     if ( $bulkwalk && @$vars == 0 ) {
         ($vars) = $sess->bulkwalk( 0, $repeaters, $var );
         if ( $sess->{ErrorNum} ) {
-            error "snapshot $device BULKWALK " . $sess->{ErrorStr};
-            return;
+            debug "snapshot $device BULKWALK " . $sess->{ErrorStr};
+            debug "snapshot $device disabling BULKWALK";
+            $vars = [];
+            $bulkwalk = 0;
+            delete $sess->{ErrorNum};
+            delete $sess->{ErrorStr};
         }
     }
 
