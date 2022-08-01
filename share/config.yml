@@ -116,11 +116,11 @@ sidebar_defaults:
     c_descr:       { label: 'Description', default: null, idx: 2 }
     c_comment:     { label: 'Last Comment', default: null, idx: 3 }
     c_type:        { label: 'Type', default: null, idx: 4 }
-    c_duplex:      { label: 'Duplex', default: null, idx: 5 }
-    c_lastchange:  { label: 'Last Change', default: null, idx: 6 }
-    c_name:        { label: 'Name', default: checked, idx: 7 }
+    c_lastchange:  { label: 'Last Change', default: null, idx: 5 }
+    c_name:        { label: 'Name', default: checked, idx: 6 }
+    c_speed_admin: { label: 'Speed (configured)', default: null, idx: 7 }
     c_speed:       { label: 'Speed (running)', default: null, idx: 8 }
-    c_speed_admin: { label: 'Speed (configured)', default: null, idx: 9 }
+    c_duplex:      { label: 'Duplex', default: null, idx: 9 }
     c_error:       { label: 'Error Message', default: null, idx: 10 }
     c_mac:         { label: 'Port MAC', default: null, idx: 11 }
     c_mtu:         { label: 'MTU', default: null, idx: 12 }
