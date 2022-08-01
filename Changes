@@ -1,4 +1,11 @@
-2.052010 - 2022-06-27
+2.052011 - 2022-08-01
+
+  [BUG FIXES]
+
+  * #902 change order of device ports cols to put duplex after speed
+  * vlan names feature missing ports without vlan table entry
+
+2.052010 - 2022-07-27
 
   [ENHANCEMENTS]
 
@@ -10,7 +17,7 @@
 
   * make VLAN names option in device ports also work for VLANs missing a name
 
-2.052009 - 2022-06-26
+2.052009 - 2022-07-26
 
   [NEW FEATURES]
 
