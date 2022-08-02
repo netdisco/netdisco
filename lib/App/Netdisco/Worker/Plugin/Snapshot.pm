@@ -140,7 +140,11 @@ sub get_munges {
 sub walk_and_store {
   my ($device, $snmp, %oidmap) = @_;
 
-  my $walk = walker($device, $snmp, '.1.3.6.1');                 # 10205 rows
+  my $walk = {
+    %{ walker($device, $snmp, '.1.0.8802.1.1') },
+    %{ walker($device, $snmp, '.1.3.6.1') },
+    %{ walker($device, $snmp, '.1.3.111.2.802') },
+  };
   # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
 
   # something went wrong - error
