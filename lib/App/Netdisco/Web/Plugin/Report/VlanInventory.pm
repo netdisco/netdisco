@@ -21,7 +21,7 @@ get '/ajax/content/report/vlaninventory' => require_login sub {
           'me.vlan' => { '>' => 0 },
           'ports.vlan' => { '>' => 0 },
         },
-        {   join   => { 'ports' => 'vlan' },
+        {   join   => { 'ports' => 'vlan_entry' },
             select => [
                 'me.vlan',
                 'me.description',

@@ -1,3 +1,9 @@
+2.052012 - 2022-08-01
+
+  [BUG FIXES]
+
+  * retry without BULKWALK automatically in snapshot
+
 2.052011 - 2022-08-01
 
   [BUG FIXES]
