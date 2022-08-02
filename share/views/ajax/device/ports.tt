@@ -111,7 +111,7 @@
       [% END %]
       [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% device_ports | none %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
-          [% IF row.is_master %]
+          [% IF row.is_master OR row.has_subinterfaces %]
             <small><i class="icon-group muted"></i></small>&nbsp;
           [% END %]
         [% row.port | html_entity %]</a>

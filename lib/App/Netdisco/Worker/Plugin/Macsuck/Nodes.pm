@@ -443,8 +443,12 @@ sub walk_fwtable {
       # possibly move node to lag master
       if (defined $device_port->slave_of
             and exists $device_ports->{$device_port->slave_of}) {
-          $port = $device_port->slave_of;
-          $device_ports->{$port}->update({is_uplink => \'true'});
+          $parent = $device_port->slave_of;
+          $device_ports->{$parent}->update({is_uplink => \'true'});
+
+          # VLAN subinterfaces can be set uplink,
+          # but we don't want to move nodes there (so check is_master).
+          $port = $parent if $device_ports->{$parent}->is_master;
       }
 
       ++$cache->{$vlan}->{$port}->{$mac};

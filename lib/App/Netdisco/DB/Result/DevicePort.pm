@@ -55,6 +55,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "remote_id",
   { data_type => "text", is_nullable => 1 },
+  "has_subinterfaces",
+  { data_type => "boolean", is_nullable => 0, default_value => \"false" },
   "is_master",
   { data_type => "boolean", is_nullable => 0, default_value => \"false" },
   "slave_of",

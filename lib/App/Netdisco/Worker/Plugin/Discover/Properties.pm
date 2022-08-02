@@ -197,6 +197,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $i_vlan         = $snmp->i_vlan;
   my $i_lastchange   = $snmp->i_lastchange;
   my $agg_ports      = $snmp->agg_ports;
+  my $i_subs         = $snmp->i_subinterfaces;
 
   # clear the cached uptime and get a new one
   my $dev_uptime = ($device->is_pseudo ? $snmp->uptime : $snmp->load_uptime);
@@ -300,9 +301,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           type         => $i_type->{$entry},
           vlan         => $i_vlan->{$entry},
           pvid         => $i_vlan->{$entry},
-          is_master    => 'false',
-          slave_of     => undef,
-          lastchange   => $lc,
+          has_subinterfaces => 'false',
+          is_master         => 'false',
+          slave_of          => undef,
+          lastchange => $lc,
       };
   }
 
@@ -315,6 +317,21 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
       $interfaces{$slave}->{slave_of} = $master;
       $interfaces{$master}->{is_master} = 'true';
+  }
+
+  # also for VLAN subinterfaces
+  foreach my $pidx (keys %$i_subs) {
+      my $parent = $interfaces->{$pidx} or next;
+      # parent without subinterfaces?
+      next unless defined $i_subs->{$pidx}
+       and ref [] eq ref $i_subs->{$pidx}
+       and scalar @{ $i_subs->{$pidx} };
+
+      $interfaces{$parent}->{has_subinterfaces} = 'true';
+      foreach my $sidx (@{ $i_subs->{$pidx} }) {
+          my $sub = $interfaces->{$sidx} or next;
+          $interfaces{$sub}->{slave_of} = $parent;
+      }
   }
 
   # support for Hooks
