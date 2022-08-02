@@ -14,7 +14,13 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
             array_to_string(array_agg( CASE WHEN native THEN 'n:' || vlan::text
                                         ELSE vlan::text END
                        ORDER BY vlan ASC ), ', ') AS vlist 
-     FROM device_port_vlan WHERE vlan NOT IN (1002, 1003, 1004, 1005) GROUP BY ip, port)
+     FROM (SELECT ip, port, native, vlan FROM device_port_vlan UNION
+            SELECT dp.ip, dp.port, false, dp2v.vlan
+                FROM device_port dp
+            LEFT JOIN device_port dp2 ON (dp.ip = dp2.ip and dp.port = dp2.slave_of)
+            LEFT JOIN device_port_vlan dp2v ON (dp2.ip = dp2v.ip and dp2.port = dp2v.port)
+                WHERE dp.has_subinterfaces) alldpv
+     WHERE vlan NOT IN (1002, 1003, 1004, 1005) GROUP BY ip, port)
 
   SELECT CASE WHEN length(ld.dns) > 0 THEN ld.dns ELSE host(ld.ip) END AS left_device,
          lp.port AS left_port,
