@@ -1,3 +1,9 @@
+2.053001 - 2022-08-02
+
+  [NEW FEATURES]
+
+  * #904 add FortiOS SSH collector implementation from @jpvelders
+
 2.053000 - 2022-08-02
 
   [NEW FEATURES]
