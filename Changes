@@ -1,3 +1,14 @@
+2.053000 - 2022-08-02
+
+  [NEW FEATURES]
+
+  * #900 add option in device ports sidebar to hide vlan 1002-1005
+  * Group Cisco subinterfaces in Device Ports view (like LAG)
+
+  [BUG FIXES]
+
+  * #877 fix Port VLAN Mismatches report incorrect with Cisco subinterfaces
+
 2.052012 - 2022-08-02
 
   [BUG FIXES]
