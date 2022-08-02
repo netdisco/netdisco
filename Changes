@@ -1,8 +1,9 @@
-2.052012 - 2022-08-01
+2.052012 - 2022-08-02
 
   [BUG FIXES]
 
   * retry without BULKWALK automatically in snapshot
+  * fix broken VLAN Inventory report
 
 2.052011 - 2022-08-01
 
