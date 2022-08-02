@@ -145,6 +145,7 @@ sidebar_defaults:
     n_archived:    { label: 'Archived Data', default: null, idx: 8 }
     age_num:       { default: 3 }
     age_unit:      { default: months }
+    hide1002:      { default: checked }
   device_netmap:
     showips:     { default: null }
     showspeed:   { default: null }

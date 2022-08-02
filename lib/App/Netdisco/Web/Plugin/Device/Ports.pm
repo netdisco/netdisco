@@ -105,7 +105,11 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # get vlans on the port
     # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
-    my $vlans = $set->search({}, {
+    my $vlans = $set->search(
+      { param('hide1002') ?
+        (-or => ['port_vlans.vlan' => {'<', '1002'},
+                 'port_vlans.vlan' => {'>', '1005'}]) : ()
+      }, {
       select => [
         'port',
         { count     => 'port_vlans.vlan', -as => 'vlan_count' },

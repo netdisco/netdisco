@@ -139,6 +139,12 @@
                       </select>
                     </div>
                   </li>
+                  <li>
+                    <label class="checkbox">
+                      <input type="checkbox" id="hide1002"
+                        name="hide1002" [% ' checked="checked"' IF vars.sidebar_defaults.device_ports.hide1002 %] />Hide VLAN 1002-1005
+                    </label>
+                  </li>
                 </ul>
               </div>
             </div>
