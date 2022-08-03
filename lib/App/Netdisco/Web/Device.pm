@@ -16,6 +16,12 @@ set('connected_properties' => [
   grep { $_ =~ m/^n_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
 ]);
 
+set('port_display_properties' => [
+  sort { $a->{idx} <=> $b->{idx} }
+  map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
+  grep { $_ =~ m/^p_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
+]);
+
 hook 'before_template' => sub {
   my $tokens = shift;
 

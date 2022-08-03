@@ -106,7 +106,7 @@ get '/ajax/content/device/ports' => require_login sub {
     # get vlans on the port
     # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
     my $vlans = $set->search(
-      { param('hide1002') ?
+      { param('p_hide1002') ?
         (-or => ['port_vlans.vlan' => {'<', '1002'},
                  'port_vlans.vlan' => {'>', '1005'}]) : ()
       }, {
@@ -131,7 +131,7 @@ get '/ajax/content/device/ports' => require_login sub {
         )} $vlans->all };
     }
 
-    if (param('c_vlan_names')) {
+    if (param('p_vlan_names')) {
         $set = $set->search({}, {
           'join' => 'native_vlan',
           '+select' => [qw/native_vlan.description/],

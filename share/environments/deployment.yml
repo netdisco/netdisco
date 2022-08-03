@@ -56,6 +56,13 @@ device_auth:
 #discover_waps: true
 #discover_phones: false
 
+# show VLAN names instead of VLAN numbers in Device Ports table.
+# hide VLAN 1002-1005 in Device Ports (useful for older Cisco).
+#sidebar_defaults:
+#  device_ports:
+#    p_vlan_names: { default: checked }
+#    p_hide1002:   { default: checked }
+
 # this is the schedule for automatically keeping netdisco up-to-date;
 # these are good defaults, so only uncomment if needing to change.
 # (or set "schedule: null" if you wish to disable the scheduler)
