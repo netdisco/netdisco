@@ -123,10 +123,14 @@ post '/login' => sub {
         $user->update({ last_on => \'now()' });
 
         if ($api) {
+            # from the internals of Dancer::Plugin::Auth::Extensible
+            my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
             header('Content-Type' => 'application/json');
+            # if there's a current valid token then reissue it and reset timer
             $user->update({
               token_from => time,
-              token => \'md5(random()::text)',
+              ($provider->validate_api_token($user->token)
+                ? () : (token => \'md5(random()::text)')),
             })->discard_changes();
             return to_json { api_key => $user->token };
         }
