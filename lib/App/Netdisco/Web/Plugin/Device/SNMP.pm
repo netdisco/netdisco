@@ -123,17 +123,30 @@ sub _get_snmp_data {
     my @parts = grep {length} split m/\./, $base;
     ++$recurse;
 
+    # psql cannot cope with bind params and group by array element
+    # so we build a static query instead.
+
+    my $next_part  = (scalar @parts + 1);
+    my $child_part = (scalar @parts + 2);
+    my $query = <<QUERY;
+  SELECT db.oid_parts[$next_part] AS part,
+         count(distinct(db.oid_parts[$child_part])) as children
+    FROM device_browser db
+    WHERE db.ip = ?
+          AND db.oid LIKE ? || '.%'
+    GROUP BY db.oid_parts[$next_part]
+QUERY
+    my $rs = schema('netdisco')->resultset('Virtual::GenericReport')->result_source;
+    $rs->view_definition($query);
+    $rs->remove_columns($rs->columns);
+    $rs->add_columns(qw/part children/);
+
     my %kids = map { ($base .'.'. $_->{part}) => $_ }
-               schema('netdisco')->resultset('Virtual::OidChildren')
-                                 ->search({}, { bind => [
-                                     (scalar @parts + 1),
-                                     (scalar @parts + 2),
-                                     $base,
-                                     (scalar @parts + 1),
-                                     (scalar @parts + 1),
-                                     $ip,
-                                     $base,
-                                 ] })->hri->all;
+                   schema('netdisco')->resultset('Virtual::GenericReport')
+                   ->search(undef, {
+                     result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+                     bind => [$ip, $base],
+                   })->hri->all;
 
     return [{
       text => 'No SNMP data for this device.',
