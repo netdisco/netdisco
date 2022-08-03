@@ -63,7 +63,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
       }} sort {sortable_oid($a) cmp sortable_oid($b)}
          grep {not $seenoid{$_}++}
-         grep {m/^\.1\.3\.6\.1/}
+         grep {m/^\.1/}
          map {s/^_//; $_}
          keys %cache;
 
@@ -271,9 +271,10 @@ sub walker {
         ($vars) = $sess->bulkwalk( 0, $repeaters, $var );
         if ( $sess->{ErrorNum} ) {
             debug "snapshot $device BULKWALK " . $sess->{ErrorStr};
-            debug "snapshot $device disabling BULKWALK";
+            debug "snapshot $device disabling BULKWALK and trying again...";
             $vars = [];
             $bulkwalk = 0;
+            $snmp->{BulkWalk} = 0;
             delete $sess->{ErrorNum};
             delete $sess->{ErrorStr};
         }

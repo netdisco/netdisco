@@ -33,7 +33,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
 
     my $recurse =  ((param('recurse') and param('recurse') eq 'on') ? 0 : 1);
     my $base = param('base');
-    $base =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
+    $base =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
 
     my $items = _get_snmp_data($device->ip, $base, $recurse);
 
@@ -80,8 +80,8 @@ ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
     return to_json [] unless $found;
 
     $found = $found->oid;
-    $found =~ s/^\.1\.3\.6\.1\.?//;
-    my @results = ('.1.3.6.1');
+    $found =~ s/^\.1\.?//;
+    my @results = ('.1');
 
     foreach my $part (split m/\./, $found) {
         my $last = $results[-1];
@@ -98,7 +98,7 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
        or send_error('Bad Device', 404);
 
     my $oid = param('oid');
-    $oid =~ m/^\.1\.3\.6\.1(\.\d+)*$/ or send_error('Bad OID', 404);
+    $oid =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID', 404);
 
     my $object = schema('netdisco')->resultset('DeviceBrowser')
       ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
