@@ -1,3 +1,19 @@
+2.053002 - 2022-08-03
+
+  [NEW FEATURES]
+
+  * #900 make Port VLAN mismatch respect setting hiding VLAN 1002-1005
+  * make VLAN hiding and VLAN names configurable options and move to port properties sidebar section
+
+  [ENHANCEMENTS]
+
+  * #888 add 1.0.8802.1.1 and 1.3.111.2.802 to the SNMP browser
+  * #906 snmp browser is very slow sometimes
+
+  [BUG FIXES]
+
+  * template error when no vlans known for a port
+
 2.053001 - 2022-08-02
 
   [NEW FEATURES]
