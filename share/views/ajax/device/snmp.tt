@@ -84,7 +84,7 @@
         'data' : {
           'url' : function (node) {
             return ('[% uri_base | none %]/ajax/data/device/[% device %]/snmptree/'
-              + (node.id === '#' ? '.1' : node.id) + '?recurse=on');
+              + (node.id === '#' ? '.1' : node.id));
           }
         }
       },

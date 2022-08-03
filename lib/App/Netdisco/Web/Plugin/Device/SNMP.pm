@@ -31,11 +31,10 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
                                          ->find( param('ip') ) }
        or send_error('Bad Device', 404);
 
-    my $recurse =  ((param('recurse') and param('recurse') eq 'on') ? 0 : 1);
     my $base = param('base');
     $base =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
 
-    my $items = _get_snmp_data($device->ip, $base, $recurse);
+    my $items = _get_snmp_data($device->ip, $base);
 
     content_type 'application/json';
     to_json $items;
@@ -121,7 +120,6 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
 sub _get_snmp_data {
     my ($ip, $base, $recurse) = @_;
     my @parts = grep {length} split m/\./, $base;
-    ++$recurse;
 
     # psql cannot cope with bind params and group by array element
     # so we build a static query instead.
@@ -169,12 +167,12 @@ QUERY
         text => ($meta{$_}->{leaf} .' ('. $kids{$_}->{part} .')'),
 
         # for nodes with only one child, recurse to prefetch...
-        children => ( ($recurse < 2 and $kids{$_}->{children} == 1)
-          ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}), $recurse)
+        children => (($kids{$_}->{children} == 1)
+          ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}), 1)
           : ($kids{$_}->{children} ? \1 : \0)),
 
         # and set the display to open to show the single child
-        state => { opened => ( ($recurse < 2 and $kids{$_}->{children} == 1)
+        state => { opened => ( ($recurse or $kids{$_}->{children} == 1)
           ? \1
           : \0 ) },
 
