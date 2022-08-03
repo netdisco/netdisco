@@ -275,8 +275,8 @@ sub walker {
             $vars = [];
             $bulkwalk = 0;
             $snmp->{BulkWalk} = 0;
-            delete $sess->{ErrorNum};
-            delete $sess->{ErrorStr};
+            undef $sess->{ErrorNum};
+            undef $sess->{ErrorStr};
         }
     }
 
@@ -328,7 +328,10 @@ sub walker {
         if ($loopdetect) {
             # Check to see if we've already seen this IID (looping)
             if ( defined $seen{$oid} and $seen{$oid} ) {
-                return Status->error("Looping on: oid: $oid");
+                debug "snapshot $device : looping on $oid";
+                shift @$vars;
+                $var = shift @$vars or last;
+                next;
             }
             else {
                 $seen{$oid}++;
@@ -344,7 +347,7 @@ sub walker {
             next;
         }
 
-        # debug "snapshot $device - retreived $oid : $val";
+        # debug "snapshot $device - retreived $oid : $val";
         $localstore{$oid} = $val;
     }
 
