@@ -218,6 +218,7 @@
 
       [% IF params.c_vmember %]
       <td>
+        [% IF vlans.exists($portname) %]
         [% IF vlans.$portname.vlan_count <= settings.devport_vlan_limit %]
           [% SET vlan_count = vlans.$portname.vlan_count %]
           [% IF params.c_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set %]
@@ -236,6 +237,7 @@
           [% END %]
         [% ELSE %]
         <i class="icon-asterisk text-warning"></i> ([% vlans.$portname.vlan_count %] is too many to list)
+        [% END %]
         [% END %]
       </td>
       [% END %]
