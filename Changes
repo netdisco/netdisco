@@ -1,3 +1,9 @@
+2.053005 - 2022-08-04
+
+  [ENHANCEMENTS]
+
+  * on SNMP Browser do not auto-expand branches with no data
+
 2.053004 - 2022-08-04
 
   [ENHANCEMENTS]
