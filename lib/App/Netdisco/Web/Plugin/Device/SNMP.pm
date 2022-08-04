@@ -149,7 +149,8 @@ sub _get_snmp_data {
         children => ($meta{$_}->{num_children} ? \1 : \0),
   
         # and set the display to open to show the single child
-        state => { opened => (($meta{$_}->{num_children} == 1) ? \1 : \0 ) },
+        # but only if there is data below
+        state => { opened => (($meta{$_}->{browser} and $meta{$_}->{num_children} == 1) ? \1 : \0 ) },
 
       }} sort {$meta{$a}->{oid_parts}->[-1] <=> $meta{$b}->{oid_parts}->[-1]} keys %meta;
 
