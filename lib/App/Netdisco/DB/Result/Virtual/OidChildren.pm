@@ -8,6 +8,10 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
+# NO LONGER USED BY NETDISCO
+# (PostgreSQL cannot handle GROUP BY using ARRAY element where
+# element ID is a bind value)
+
 __PACKAGE__->table("oid_children");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL

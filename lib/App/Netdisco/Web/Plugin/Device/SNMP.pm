@@ -121,64 +121,37 @@ sub _get_snmp_data {
     my ($ip, $base, $recurse) = @_;
     my @parts = grep {length} split m/\./, $base;
 
-    # psql cannot cope with bind params and group by array element
-    # so we build a static query instead.
-
-    my $next_part  = (scalar @parts + 1);
-    my $child_part = (scalar @parts + 2);
-    my $query = <<QUERY;
-  SELECT db.oid_parts[$next_part] AS part,
-         count(distinct(db.oid_parts[$child_part])) as children
-    FROM device_browser db
-    WHERE db.ip = ?
-          AND db.oid LIKE ? || '.%'
-    GROUP BY db.oid_parts[$next_part]
-QUERY
-    my $rs = schema('netdisco')->resultset('Virtual::GenericReport')->result_source;
-    $rs->view_definition($query);
-    $rs->remove_columns($rs->columns);
-    $rs->add_columns(qw/part children/);
-
-    my %kids = map { ($base .'.'. $_->{part}) => $_ }
-                   schema('netdisco')->resultset('Virtual::GenericReport')
-                   ->search(undef, {
-                     result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-                     bind => [$ip, $base],
-                   })->hri->all;
-
-    return [{
-      text => 'No SNMP data for this device.',
-      children => \0,
-      state => { disabled => \1 },
-      icon => 'icon-search',
-    }] unless scalar keys %kids;
-
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
                                  ->search({}, { bind => [
+                                     $ip,
+                                     (scalar @parts + 1),
+                                     (scalar @parts + 1),
                                      $base,
-                                     (scalar @parts + 1),
-                                     [[ map {$_->{part}} values %kids ]],
-                                     (scalar @parts + 1),
                                  ] })->hri->all;
 
     my @items = map {{
         id => $_,
-        text => ($meta{$_}->{leaf} .' ('. $kids{$_}->{part} .')'),
+        text => ($meta{$_}->{leaf} .' ('. $meta{$_}->{oid_parts}->[-1] .')'),
 
-        # for nodes with only one child, recurse to prefetch...
-        children => (($kids{$_}->{children} == 1)
-          ? _get_snmp_data($ip, ("${base}.". $kids{$_}->{part}), 1)
-          : ($kids{$_}->{children} ? \1 : \0)),
+        ($meta{$_}->{browser} ? (icon => 'icon-folder-close text-info')
+                              : (icon => 'icon-folder-close-alt muted')),
 
+        (scalar @{$meta{$_}->{index}}
+          ? (icon => 'icon-th'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
+
+        (($meta{$_}->{num_children} == 0 and ($meta{$_}->{type} or $meta{$_}->{oid_parts}->[-1] == 0))
+          ? (icon => 'icon-leaf'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
+
+        # jstree will async call to expand these, and while it's possible
+        # for us to prefetch by calling _get_snmp_data() and passing to
+        # children, it's much slower UX. async is better for search especially
+        children => ($meta{$_}->{num_children} ? \1 : \0),
+  
         # and set the display to open to show the single child
-        state => { opened => ( ($recurse or $kids{$_}->{children} == 1)
-          ? \1
-          : \0 ) },
+        state => { opened => (($meta{$_}->{num_children} == 1) ? \1 : \0 ) },
 
-        ($kids{$_}->{children} ? () : (icon => 'icon-leaf')),
-        (scalar @{$meta{$_}->{index}} ? (icon => 'icon-th') : ()),
-      }} sort {$kids{$a}->{part} <=> $kids{$b}->{part}} keys %kids;
+      }} sort {$meta{$a}->{oid_parts}->[-1] <=> $meta{$b}->{oid_parts}->[-1]} keys %meta;
 
     return \@items;
 }

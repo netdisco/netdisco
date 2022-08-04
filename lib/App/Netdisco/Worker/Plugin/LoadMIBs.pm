@@ -19,19 +19,30 @@ register_worker({ phase => 'main' }, sub {
   my @report = read_lines(catfile($home, qw(EXTRAS reports all_oids)), 'latin-1');
 
   my @browser = ();
+  my %children = ();
+
   foreach my $line (@report) {
     my ($oid, $qual_leaf, $type, $access, $index) = split m/,/, $line;
     next unless defined $oid and defined $qual_leaf;
+
     my ($mib, $leaf) = split m/::/, $qual_leaf;
+    my @oid_parts = grep {length} (split m/\./, $oid);
+    ++$children{ join '.', '', @oid_parts[0 .. (@oid_parts - 2)] }
+      if scalar @oid_parts > 1;
+
     push @browser, {
       oid    => $oid,
-      oid_parts => [ grep {length} (split m/\./, $oid) ],
+      oid_parts => [ @oid_parts ],
       mib    => $mib,
       leaf   => $leaf,
       type   => $type,
       access => $access,
       index  => [($index ? (split m/:/, $index) : ())],
     };
+  }
+
+  foreach my $row (@browser) {
+    $row->{num_children} = $children{ $row->{oid} } || 0;
   }
 
   debug sprintf "loadmibs - loaded %d objects from netdisco-mibs",

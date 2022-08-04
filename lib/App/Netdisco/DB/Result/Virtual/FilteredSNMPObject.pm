@@ -12,11 +12,20 @@ __PACKAGE__->table("filtered_snmp_object");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
-    SELECT oid, oid_parts, mib, leaf, type, access, index
-      FROM snmp_object
-      WHERE oid LIKE ?::text || '.%'
-        AND oid_parts[?] = ANY (?)
-        AND array_length(oid_parts,1) = ?
+    SELECT so.oid, so.oid_parts, so.mib, so.leaf, so.type, so.access, so.index, so.num_children,
+           count(db.oid) AS browser
+      FROM snmp_object so
+
+      LEFT JOIN device_browser db ON
+           (db.ip = ? AND
+            ((so.oid = db.oid)
+              OR (array_length(db.oid_parts,1) > ?
+                  AND db.oid LIKE so.oid || '.%')))
+
+      WHERE array_length(so.oid_parts,1) = ?
+            AND so.oid LIKE ?::text || '.%'
+
+      GROUP BY so.oid, so.oid_parts, so.mib, so.leaf, so.type, so.access, so.index, so.num_children
 
 ENDSQL
 );
@@ -29,6 +38,8 @@ __PACKAGE__->add_columns(
   'type'   => { data_type => 'text' },
   'access' => { data_type => 'text' },
   'index'  => { data_type => 'text[]' },
+  'num_children' => { data_type => 'integer' },
+  'browser' => { data_type => 'integer' },
 );
 
 1;
