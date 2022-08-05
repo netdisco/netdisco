@@ -227,6 +227,8 @@ sub walk_and_store {
       my $leaf = $oidmap{$oid} or next;
       $snmp->_cache($oid, $snmp->$leaf);
   }
+
+  return 0;
 }
 
 # taken from SNMP::Info and adjusted to work on walks outside a single table
