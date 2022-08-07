@@ -78,7 +78,8 @@ ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
     send_error('Bad device', 400)
       if ! $device or $device->addr eq '0.0.0.0';
 
-    add_job('snapshot', $device->addr) or send_error('Bad device', 400);
+    # will store for download and for browsing
+    add_job('snapshot', $device->addr, 'yes') or send_error('Bad device', 400);
 };
 
 get "/ajax/content/admin/snapshot_get" => require_role admin => sub {
@@ -96,6 +97,7 @@ ajax "/ajax/control/admin/snapshot_del" => require_role setting('defanged_admin'
       if ! $device or $device->addr eq '0.0.0.0';
 
     schema('netdisco')->resultset('DeviceSnapshot')->find($device->addr)->delete;
+    schema('netdisco')->resultset('DeviceBrowser')->search({ip => $device->addr})->delete;
 };
 
 get '/admin/*' => require_role admin => sub {
