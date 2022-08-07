@@ -123,6 +123,13 @@ sub _get_snmp_data {
     my ($ip, $base, $recurse) = @_;
     my @parts = grep {length} split m/\./, $base;
 
+    return [{
+      text => 'No data for this device. You can request a snapshot in the Details tab.',
+      children => \0,
+      state => { disabled => \1 },
+      icon => 'icon-search',
+    }] unless schema('netdisco')->resultset('DeviceSnapshot')->find($ip);
+
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
                                  ->search({}, { bind => [
