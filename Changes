@@ -1,3 +1,10 @@
+2.053006 - 2022-08-07
+
+  [ENHANCEMENTS]
+
+  * #911 requesting an SNMP snapshot in the web will now also install Browser data
+  * #912 on SNMP Browser show OID status, enumeration syntax, and description
+
 2.053005 - 2022-08-04
 
   [ENHANCEMENTS]
