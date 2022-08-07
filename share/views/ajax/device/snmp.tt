@@ -33,7 +33,7 @@
                   <td></td>
                 </tr>
                 <tr>
-                  <th scope="row">Munge</th>
+                  <th scope="row">Unpacker</th>
                   <td></td>
                 </tr>
                 <tr>
@@ -42,6 +42,18 @@
                 </tr>
                 <tr>
                   <th scope="row">Index</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Status</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Enum Syntax</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Description</th>
                   <td></td>
                 </tr>
                 <tr>

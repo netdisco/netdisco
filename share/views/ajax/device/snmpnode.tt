@@ -2,28 +2,28 @@
   <tbody>
     <tr>
       <th scope="row" class="span1">OID</th>
-      <td>[% node.snmp_object.oid %]</td>
+      <td>[% node.snmp_object.oid | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Module</th>
-      <td>[% node.snmp_object.mib %]</td>
+      <td>[% node.snmp_object.mib | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Leaf</th>
-      <td>[% node.snmp_object.leaf %]</td>
+      <td>[% node.snmp_object.leaf | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Type</th>
-      <td>[% node.snmp_object.type %]</td>
+      <td>[% node.snmp_object.type | html_entity %]</td>
     </tr>
     <tr>
-      <th scope="row">Munge</th>
+      <th scope="row">Unpacker</th>
       <td>
       [% IF node.value %]
       <select name="munger" id="munger">
         [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
         [% FOREACH m IN mungers %]
-        <option [% 'selected' IF m == munge %] value="[% m %]">[% m %]</option>
+        <option [% 'selected' IF m == munge %] value="[% m | uri %]">[% m | html_entity %]</option>
         [% END %]
       </select>
       [% END %]
@@ -31,7 +31,7 @@
     </tr>
     <tr>
       <th scope="row">Access</th>
-      <td>[% node.snmp_object.access %]</td>
+      <td>[% node.snmp_object.access | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Index</th>
@@ -39,15 +39,35 @@
       [% IF node.snmp_object.index.size > 0 %]
         <table class="table table-condensed table-bordered">
           [% FOREACH idx IN node.snmp_object.index %]
-          <tr><td>[% idx %]</td></tr>
+          <tr><td>[% idx | html_entity %]</td></tr>
           [% END %]
         </table>
       [% END %]
       </td>
     </tr>
     <tr>
+      <th scope="row">Status</th>
+      <td>[% node.snmp_object.status | html_entity %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Enum Syntax</th>
+      <td>
+      [% IF node.snmp_object.enum.size > 0 %]
+        <table class="table table-condensed table-bordered">
+          [% FOREACH idx IN node.snmp_object.enum %]
+          <tr><td>[% idx | html_entity %]</td></tr>
+          [% END %]
+        </table>
+      [% END %]
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Description</th>
+      <td>[% node.snmp_object.descr | html_entity %]</td>
+    </tr>
+    <tr>
       <th scope="row">Value</th>
-      <td>[% IF node.value %]<pre id="snmp_node_value">[% node.value %]</pre>[% END %]</td>
+      <td>[% IF node.value %]<pre id="snmp_node_value">[% node.value | html_entity %]</pre>[% END %]</td>
     </tr>
   </tbody>    
 </table>

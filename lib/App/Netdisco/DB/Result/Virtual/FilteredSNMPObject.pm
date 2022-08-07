@@ -12,7 +12,7 @@ __PACKAGE__->table("filtered_snmp_object");
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
-    SELECT so.oid, so.oid_parts, so.mib, so.leaf, so.type, so.access, so.index, so.num_children,
+    SELECT so.oid, so.oid_parts, so.mib, so.leaf, so.type, so.access, so.index, so.status, so.enum, so.descr, so.num_children,
            count(db.oid) AS browser
       FROM snmp_object so
 
@@ -25,7 +25,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
       WHERE array_length(so.oid_parts,1) = ?
             AND so.oid LIKE ?::text || '.%'
 
-      GROUP BY so.oid, so.oid_parts, so.mib, so.leaf, so.type, so.access, so.index, so.num_children
+      GROUP BY so.oid, so.oid_parts, so.mib, so.leaf, so.type, so.access, so.index, so.status, so.enum, so.descr, so.num_children
 
 ENDSQL
 );
@@ -38,6 +38,9 @@ __PACKAGE__->add_columns(
   'type'   => { data_type => 'text' },
   'access' => { data_type => 'text' },
   'index'  => { data_type => 'text[]' },
+  'status' => { data_type => 'text' },
+  'enum'   => { data_type => 'text[]' },
+  'descr'  => { data_type => 'text' },
   'num_children' => { data_type => 'integer' },
   'browser' => { data_type => 'integer' },
 );

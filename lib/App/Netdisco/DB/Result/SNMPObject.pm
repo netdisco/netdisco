@@ -23,6 +23,12 @@ __PACKAGE__->add_columns(
   { data_type => "text[]", is_nullable => 1, default_value => \"'{}'::text[]" },
   "num_children",
   { data_type => "integer", is_nullable => 0, default_value => \'0' },
+  "status",
+  { data_type => "text", is_nullable => 1 },
+  "enum",
+  { data_type => "text[]", is_nullable => 1, default_value => \"'{}'::text[]" },
+  "descr",
+  { data_type => "text", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("oid");
 

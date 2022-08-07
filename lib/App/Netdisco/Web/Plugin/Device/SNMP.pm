@@ -40,6 +40,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     to_json $items;
 };
 
+# TODO add form option for limiting to this device, so leave :ip
 ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
     my $device = try { schema('netdisco')->resultset('Device')
                                          ->find( param('ip') ) }
@@ -48,8 +49,8 @@ ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
     my $term = param('term') or return to_json [];
     $term = '%'. $term .'%';
 
-    my @found = schema('netdisco')->resultset('DeviceBrowser')
-      ->search({ leaf => { -ilike => $term }, ip => $device->ip },
+    my @found = schema('netdisco')->resultset('SNMPObject')
+      ->search({ leaf => { -ilike => $term } },
                { rows => 25, columns => 'leaf' })
       ->get_column('leaf')->all;
     return to_json [] unless scalar @found;
@@ -58,6 +59,7 @@ ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
     to_json [ sort @found ];
 };
 
+# TODO add form option for limiting to this device, so leave :ip
 ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
     my $device = try { schema('netdisco')->resultset('Device')
                                          ->find( param('ip') ) }
@@ -72,8 +74,8 @@ ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
     my $found = undef;
 
     my $op = ($partial ? '-ilike' : '=');
-    $found = schema('netdisco')->resultset('DeviceBrowser')
-      ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ], ip => $device->ip },
+    $found = schema('netdisco')->resultset('SNMPObject')
+      ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ] },
                { rows => 1, order_by => 'oid_parts' })->first;
 
     return to_json [] unless $found;
@@ -140,7 +142,7 @@ sub _get_snmp_data {
         (scalar @{$meta{$_}->{index}}
           ? (icon => 'icon-th'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
 
-        (($meta{$_}->{num_children} == 0 and ($meta{$_}->{type} or $meta{$_}->{oid_parts}->[-1] == 0))
+        (($meta{$_}->{num_children} == 0 and ($meta{$_}->{access} =~ m/^(?:read|write)/ or $meta{$_}->{oid_parts}->[-1] == 0))
           ? (icon => 'icon-leaf'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
 
         # jstree will async call to expand these, and while it's possible

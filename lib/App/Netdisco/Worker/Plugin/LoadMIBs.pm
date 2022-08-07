@@ -8,6 +8,8 @@ use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw(catdir catfile);
 use File::Slurper qw(read_lines write_text);
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
+use File::Temp;
 # use DDP;
 
 register_worker({ phase => 'main' }, sub {
@@ -16,13 +18,17 @@ register_worker({ phase => 'main' }, sub {
   debug "loadmibs - loading netdisco-mibs object cache";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my @report = read_lines(catfile($home, qw(EXTRAS reports all_oids)), 'latin-1');
+  my $infile = catfile($home, qw(EXTRAS reports all_oids));
+  my $outfh = File::Temp->new();
+  my $outfile = $outfh->filename;
+  gunzip $infile => $outfile or die "gunzip failed: $GunzipError\n";
+  my @report = read_lines($outfile, 'latin-1');
 
   my @browser = ();
   my %children = ();
 
   foreach my $line (@report) {
-    my ($oid, $qual_leaf, $type, $access, $index) = split m/,/, $line;
+    my ($oid, $qual_leaf, $type, $access, $index, $status, $enum, $descr) = split m/,/, $line, 8;
     next unless defined $oid and defined $qual_leaf;
 
     my ($mib, $leaf) = split m/::/, $qual_leaf;
@@ -38,6 +44,9 @@ register_worker({ phase => 'main' }, sub {
       type   => $type,
       access => $access,
       index  => [($index ? (split m/:/, $index) : ())],
+      status => $status,
+      enum   => [($enum  ? (split m/:/, $enum ) : ())],
+      descr  => $descr,
     };
   }
 
