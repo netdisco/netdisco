@@ -141,9 +141,10 @@ sub walk_and_store {
   my ($device, $snmp, %oidmap) = @_;
 
   my $walk = {
-    %{ walker($device, $snmp, '.1.0.8802.1.1') },
-    %{ walker($device, $snmp, '.1.3.6.1') },
-    %{ walker($device, $snmp, '.1.3.111.2.802') },
+    %{ walker($device, $snmp, '.1.3.6.1.2.1.1') },
+    #%{ walker($device, $snmp, '.1.0.8802.1.1') },
+    #%{ walker($device, $snmp, '.1.3.6.1') },
+    #%{ walker($device, $snmp, '.1.3.111.2.802') },
   };
   # my %walk = walker($device, $snmp, '.1.3.6.1.2.1.2.2.1.6');   # 22 rows, i_mac/ifPhysAddress
 
@@ -154,7 +155,7 @@ sub walk_and_store {
   # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
   # instance cache
 
-  my (%tables, %leaves, @realoids) = ((), (), ());
+  my (%tables, %leaves, %fixups, @realoids) = ((), (), (), ());
   OID: foreach my $orig_oid (keys %$walk) {
     my $oid = $orig_oid;
     my $idx = '';
@@ -182,10 +183,23 @@ sub walk_and_store {
     }
 
     debug "snapshot $device - missing OID $orig_oid in netdisco-mibs";
+
+    # make best effort to store the polled data _somewhere_
+
+    if ($orig_oid =~ m/\.0$/) {
+        (my $leaf = $orig_oid) =~ s/\.0$//;
+        $fixups{ $leaf } = $walk->{$orig_oid};
+    }
+    else {
+        (my $leaf   = $orig_oid) =~ s/.(\d+)$/$1/;
+        (my $branch = $orig_oid) =~ s/.\d+$//;
+        $fixups{ $branch }->{ $leaf } = $walk->{$orig_oid};
+    }
   }
 
   $snmp->_cache($_, $leaves{$_}) for keys %leaves;
   $snmp->_cache($_, $tables{$_}) for keys %tables;
+  $snmp->_cache($_, $fixups{$_}) for keys %fixups;
 
   # add in any GLOBALS and FUNCS aliases which users have created in the
   # SNMP::Info device class, with binary copy of data so that it can be frozen
@@ -228,6 +242,8 @@ sub walk_and_store {
       $snmp->_cache($oid, $snmp->$leaf);
   }
 
+  %cache = %{ $snmp->cache() };
+  use DDP; p %cache;
   return 0;
 }
 
