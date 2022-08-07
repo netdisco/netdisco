@@ -18,7 +18,7 @@ register_worker({ phase => 'main' }, sub {
   debug "loadmibs - loading netdisco-mibs object cache";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my $infile = catfile($home, qw(EXTRAS reports all_oids));
+  my $infile = catfile($home, qw(EXTRAS reports all_oids.gz));
   my $outfh = File::Temp->new();
   my $outfile = $outfh->filename;
   gunzip $infile => $outfile or die "gunzip failed: $GunzipError\n";
