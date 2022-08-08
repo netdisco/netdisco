@@ -29,11 +29,7 @@
                   <td></td>
                 </tr>
                 <tr>
-                  <th scope="row">Type</th>
-                  <td></td>
-                </tr>
-                <tr>
-                  <th scope="row">Unpacker</th>
+                  <th scope="row">Status</th>
                   <td></td>
                 </tr>
                 <tr>
@@ -41,11 +37,15 @@
                   <td></td>
                 </tr>
                 <tr>
+                  <th scope="row">Type</th>
+                  <td></td>
+                </tr>
+                <tr>
                   <th scope="row">Index</th>
                   <td></td>
                 </tr>
                 <tr>
-                  <th scope="row">Status</th>
+                  <th scope="row">Filter</th>
                   <td></td>
                 </tr>
                 <tr>

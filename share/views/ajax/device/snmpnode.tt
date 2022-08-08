@@ -13,25 +13,16 @@
       <td>[% node.snmp_object.leaf | html_entity %]</td>
     </tr>
     <tr>
-      <th scope="row">Type</th>
-      <td>[% node.snmp_object.type | html_entity %]</td>
-    </tr>
-    <tr>
-      <th scope="row">Unpacker</th>
-      <td>
-      [% IF node.value %]
-      <select name="munger" id="munger">
-        [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
-        [% FOREACH m IN mungers %]
-        <option [% 'selected' IF m == munge %] value="[% m | uri %]">[% m | html_entity %]</option>
-        [% END %]
-      </select>
-      [% END %]
-      </td>
+      <th scope="row">Status</th>
+      <td>[% node.snmp_object.status | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Access</th>
       <td>[% node.snmp_object.access | html_entity %]</td>
+    </tr>
+    <tr>
+      <th scope="row">Type</th>
+      <td>[% node.snmp_object.type | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Index</th>
@@ -46,8 +37,17 @@
       </td>
     </tr>
     <tr>
-      <th scope="row">Status</th>
-      <td>[% node.snmp_object.status | html_entity %]</td>
+      <th scope="row">Filter</th>
+      <td>
+      [% IF node.value %]
+      <select name="munger" id="munger">
+        [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
+        [% FOREACH m IN mungers %]
+        <option [% 'selected' IF m == munge %] value="[% m | uri %]">[% m | html_entity %]</option>
+        [% END %]
+      </select>
+      [% END %]
+      </td>
     </tr>
     <tr>
       <th scope="row">Enum Syntax</th>
