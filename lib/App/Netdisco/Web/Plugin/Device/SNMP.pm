@@ -37,18 +37,18 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     content_type 'application/json';
 
     return to_json [{
-      text => 'No MIB data. Please run `~/bin/netdisco-do loadmibs`.',
-      children => \0,
-      state => { disabled => \1 },
-      icon => 'icon-search',
-    }] unless schema('netdisco')->resultset('SNMPObject')->count();
-
-    return to_json [{
       text => 'No data for this device. You can request a snapshot in the Details tab.',
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
     }] unless schema('netdisco')->resultset('DeviceSnapshot')->find($device->ip);
+
+    return to_json [{
+      text => 'No MIB data. Please run `~/bin/netdisco-do loadmibs`.',
+      children => \0,
+      state => { disabled => \1 },
+      icon => 'icon-search',
+    }] unless schema('netdisco')->resultset('SNMPObject')->count();
 
     my $items = _get_snmp_data($device->ip, $base);
     to_json $items;
