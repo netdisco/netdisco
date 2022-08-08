@@ -34,9 +34,23 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     my $base = param('base');
     $base =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID Base', 404);
 
-    my $items = _get_snmp_data($device->ip, $base);
-
     content_type 'application/json';
+
+    return to_json [{
+      text => 'No MIB data. Please run `~/bin/netdisco-do loadmibs`.',
+      children => \0,
+      state => { disabled => \1 },
+      icon => 'icon-search',
+    }] unless schema('netdisco')->resultset('SNMPObject')->count();
+
+    return to_json [{
+      text => 'No data for this device. You can request a snapshot in the Details tab.',
+      children => \0,
+      state => { disabled => \1 },
+      icon => 'icon-search',
+    }] unless schema('netdisco')->resultset('DeviceSnapshot')->find($device->ip);
+
+    my $items = _get_snmp_data($device->ip, $base);
     to_json $items;
 };
 
@@ -122,13 +136,6 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
 sub _get_snmp_data {
     my ($ip, $base, $recurse) = @_;
     my @parts = grep {length} split m/\./, $base;
-
-    return [{
-      text => 'No data for this device. You can request a snapshot in the Details tab.',
-      children => \0,
-      state => { disabled => \1 },
-      icon => 'icon-search',
-    }] unless schema('netdisco')->resultset('DeviceSnapshot')->find($ip);
 
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
