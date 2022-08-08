@@ -156,7 +156,9 @@ sub _get_snmp_data {
         (scalar @{$meta{$_}->{index}}
           ? (icon => 'icon-th'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
 
-        (($meta{$_}->{num_children} == 0 and ($meta{$_}->{access} =~ m/^(?:read|write)/ or $meta{$_}->{oid_parts}->[-1] == 0))
+        (($meta{$_}->{num_children} == 0 and ($meta{$_}->{type}
+                                              or $meta{$_}->{access} =~ m/^(?:read|write)/
+                                              or $meta{$_}->{oid_parts}->[-1] == 0))
           ? (icon => 'icon-leaf'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
 
         # jstree will async call to expand these, and while it's possible
