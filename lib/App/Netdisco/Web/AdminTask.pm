@@ -78,6 +78,9 @@ ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
     send_error('Bad device', 400)
       if ! $device or $device->addr eq '0.0.0.0';
 
+    add_job('loadmibs')
+      if not schema('netdisco')->resultset('SNMPObject')->count();
+
     # will store for download and for browsing
     add_job('snapshot', $device->addr, 'yes') or send_error('Bad device', 400);
 };
