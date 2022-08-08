@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP;
 use App::Netdisco::Util::SNMP 'sortable_oid';
 use Dancer::Plugin::DBIC 'schema';
 
-use File::Spec::Functions qw(catdir catfile);
+use File::Spec::Functions qw(splitdir catdir catfile);
 use MIME::Base64 'encode_base64';
 use File::Slurper qw(read_lines write_text);
 use File::Path 'make_path';
@@ -101,12 +101,22 @@ sub getoidmap {
   debug "snapshot $device - loading netdisco-mibs object cache";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my @report = read_lines(catfile($home, qw(EXTRAS reports all_oids)), 'latin-1');
+  my $reports = catdir( $home, 'EXTRAS', 'reports' );
+  my @maps = map  { (splitdir($_))[-1] }
+             grep { ! m/^(?:EXTRAS)$/ }
+             grep { ! m/\./ }
+             grep { -f }
+             glob (catfile( $reports, '*_oids' ));
+
+  my @report = ();
+  push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
+    for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
 
   my %oidmap = ();
   foreach my $line (@report) {
     my ($oid, $qual_leaf, $rest) = split m/,/, $line;
     next unless defined $oid and defined $qual_leaf;
+    next if exists $oidmap{$oid};
     my ($mib, $leaf) = split m/::/, $qual_leaf;
     $oidmap{$oid} = $leaf;
   }

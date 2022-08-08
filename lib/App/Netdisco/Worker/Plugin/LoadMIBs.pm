@@ -6,9 +6,8 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Dancer::Plugin::DBIC 'schema';
 
-use File::Spec::Functions qw(catdir catfile);
+use File::Spec::Functions qw(splitdir catfile catdir);
 use File::Slurper qw(read_lines write_text);
-use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use File::Temp;
 # use DDP;
 
@@ -18,18 +17,25 @@ register_worker({ phase => 'main' }, sub {
   debug "loadmibs - loading netdisco-mibs object cache";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my $infile = catfile($home, qw(EXTRAS reports all_oids.gz));
-  my $outfh = File::Temp->new();
-  my $outfile = $outfh->filename;
-  gunzip $infile => $outfile or die "gunzip failed: $GunzipError\n";
-  my @report = read_lines($outfile, 'latin-1');
+  my $reports = catdir( $home, 'EXTRAS', 'reports' );
+  my @maps = map  { (splitdir($_))[-1] }
+             grep { ! m/^(?:EXTRAS)$/ }
+             grep { ! m/\./ }
+             grep { -f }
+             glob (catfile( $reports, '*_oids' ));
+
+  my @report = ();
+  push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
+    for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
 
   my @browser = ();
   my %children = ();
+  my %seenoid = ();
 
   foreach my $line (@report) {
     my ($oid, $qual_leaf, $type, $access, $index, $status, $enum, $descr) = split m/,/, $line, 8;
     next unless defined $oid and defined $qual_leaf;
+    next if ++$seenoid{$oid} > 1;
 
     my ($mib, $leaf) = split m/::/, $qual_leaf;
     my @oid_parts = grep {length} (split m/\./, $oid);
