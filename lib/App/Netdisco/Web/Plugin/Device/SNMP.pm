@@ -54,18 +54,19 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     to_json $items;
 };
 
-# TODO add form option for limiting to this device, so leave :ip
-ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
-    my $device = try { schema('netdisco')->resultset('Device')
-                                         ->find( param('ip') ) }
-       or send_error('Bad Device', 404);
-
+ajax '/ajax/data/snmp/typeahead' => require_login sub {
     my $term = param('term') or return to_json [];
-    $term = '%'. $term .'%';
 
-    my @found = schema('netdisco')->resultset('SNMPObject')
-      ->search({ leaf => { -ilike => $term } },
-               { rows => 25, columns => 'leaf' })
+    my $device = param('ip');
+    my $deviceonly = param('deviceonly');
+    my $table = ($deviceonly ? 'DeviceBrowser' : 'SNMPObject');
+
+    my @found = schema('netdisco')->resultset($table)
+      ->search({ -or => [ oid => $term,
+                          oid => { -like => ($term .'.%') },
+                          leaf => { -ilike => ('%'. $term .'%') } ],
+                 (($deviceonly and $device) ? (ip => $device) : ()), },
+               { rows => 25, columns => 'leaf', order_by => 'oid_parts' })
       ->get_column('leaf')->all;
     return to_json [] unless scalar @found;
 
@@ -73,25 +74,24 @@ ajax '/ajax/data/device/:ip/typeahead' => require_login sub {
     to_json [ sort @found ];
 };
 
-# TODO add form option for limiting to this device, so leave :ip
-ajax '/ajax/data/device/:ip/snmpnodesearch' => require_login sub {
-    my $device = try { schema('netdisco')->resultset('Device')
-                                         ->find( param('ip') ) }
-       or send_error('Bad Device', 404);
-
-    my $to_match = param('str');
+ajax '/ajax/data/snmp/nodesearch' => require_login sub {
+    my $to_match = param('str') or return to_json [];
     my $partial = param('partial');
-    my $excludeself = param('excludeself');
 
-    return to_json [] unless $to_match or length($to_match);
-    $to_match = $to_match . '%' if $partial;
     my $found = undef;
-
-    my $op = ($partial ? '-ilike' : '=');
-    $found = schema('netdisco')->resultset('SNMPObject')
-      ->search({ -or => [ oid => { $op => $to_match }, leaf => { $op => $to_match } ] },
-               { rows => 1, order_by => 'oid_parts' })->first;
-
+    if ($partial) {
+        $found = schema('netdisco')->resultset('SNMPObject')
+          ->search({ -or => [ oid => $to_match,
+                              oid => { -like => ($to_match .'.%') },
+                              leaf => { -ilike => ($to_match .'%') } ] },
+                   { rows => 1, order_by => 'oid_parts' })->first;
+    }
+    else {
+        $found = schema('netdisco')->resultset('SNMPObject')
+          ->search({ -or => [ oid => $to_match,
+                              leaf => $to_match ] },
+                   { rows => 1, order_by => 'oid_parts' })->first;
+    }
     return to_json [] unless $found;
 
     $found = $found->oid;
