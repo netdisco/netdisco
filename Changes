@@ -1,3 +1,10 @@
+2.053007 - 2022-08-09
+
+  [ENHANCEMENTS]
+
+  * add snmp browser option to limit searching to current device only
+  * run 'loadmibs' in the background if needed for first device snmp browser
+
 2.053006 - 2022-08-07
 
   [ENHANCEMENTS]
