@@ -249,6 +249,7 @@ discover_only: []
 discover_no_type: []
 discover_waps: true
 discover_phones: false
+discover_routed_neighbors: true
 discover_min_age: 0
 macsuck_no: []
 macsuck_only: []

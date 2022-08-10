@@ -10,6 +10,7 @@ use App::Netdisco::JobQueue 'jq_insert';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
+  return unless setting('discover_routed_neighbors');
 
   my $device = $job->device;
   return unless $device->in_storage and $device->has_layer(3);
