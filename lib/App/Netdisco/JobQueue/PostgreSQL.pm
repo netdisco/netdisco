@@ -159,10 +159,11 @@ sub jq_getsome {
       -and => [
         %job_properties,
         -or => [{
-          job => { '!=' => $job->id },
+          job => { '<' => $job->id },
         },{
           job => $job->id,
           -exists => $jobs->search({
+	    job => { '>' => $job->id },
             status => { -like => 'queued-%' },
             started => \[q/> (now() - ?::interval)/, setting('jobs_stale_after')],
             %job_properties,
