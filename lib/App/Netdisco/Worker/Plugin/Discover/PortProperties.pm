@@ -8,6 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
 use Encode;
+use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
@@ -24,6 +25,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   # cache the device ports to save hitting the database for many single rows
   my $device_ports = vars->{'device_ports'}
     || { map {($_->port => $_)} $device->ports->all };
+
+  my @remote_ips = map {{ip => $_}}
+                   grep {defined}
+                   map {$_->remote_ip}
+                   values %$device_ports;
+
+  debug sprintf ' resolving %d remote_ips with max %d outstanding requests',
+      scalar @remote_ips, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+
+  my $resolved_remote_ips = hostnames_resolve_async(\@remote_ips);
+  $properties{$_}->{remote_dns} = $_->{dns} for @$resolved_remote_ips;
 
   my $raw_speed = $snmp->i_speed_raw || {};
 
