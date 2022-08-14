@@ -379,6 +379,14 @@ Returns true if the remote LLDP neighbor has reported Telephone capability.
 
 sub remote_is_phone { return (shift)->get_column('remote_is_phone') }
 
+=head2 ifindex
+
+Returns the interface index (C<ifIndex>) of the port.
+
+=cut
+
+sub ifindex { return (shift)->get_column('ifindex') }
+
 =head2 remote_inventory
 
 Returns a synthesized description of the remote LLDP device if inventory

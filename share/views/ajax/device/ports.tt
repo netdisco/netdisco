@@ -153,6 +153,10 @@
       </td>
       [% END %]
 
+      [% IF params.c_ifindex %]
+      <td>[% row.ifindex | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_lastchange %]
       <td>[% row.lastchange_stamp | html_entity %]</td>
       [% END %]

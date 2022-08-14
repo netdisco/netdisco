@@ -79,6 +79,10 @@
     [% END %]
   [% END %]
 
+  [% IF params.c_ifindex %]
+    [% myport.push(row.ifindex) %]
+  [% END %]
+
   [% IF params.c_lastchange %]
     [% myport.push(row.lastchange_stamp) %]
   [% END %]
