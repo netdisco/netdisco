@@ -325,7 +325,7 @@
             [% ELSIF row.remote_is_wap %]
               <i class="icon-rss"></i>&nbsp;
             [% END %]
-            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_ip | html_entity %]</a>
+            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>
             [% IF row.remote_port %]
               - [% row.remote_port | html_entity %]
             [% END %]
