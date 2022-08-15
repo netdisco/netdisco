@@ -15,7 +15,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
     d.ip, d.name, d.dns,
     p.port, p.name AS port_description,
     p.remote_ip, p.remote_id, p.remote_type, p.remote_port,
-    dpp.remote_is_discoverable, dpp.remote_is_wap, dpp.remote_is_phone,
+    dpp.remote_is_discoverable, dpp.remote_is_wap, dpp.remote_is_phone, dpp.remote_dns,
     l.log AS comment,
     a.log, a.finished
 
@@ -67,6 +67,8 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 1 },
   "remote_is_phone",
   { data_type => "boolean", is_nullable => 1 },
+  "remote_dns",
+  { data_type => "text", is_nullable => 1 },
   "comment",
   { data_type => "text", is_nullable => 1 },
   "log",
