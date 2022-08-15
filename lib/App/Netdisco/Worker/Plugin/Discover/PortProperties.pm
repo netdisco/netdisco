@@ -26,16 +26,15 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $device_ports = vars->{'device_ports'}
     || { map {($_->port => $_)} $device->ports->all };
 
-  my @remote_ips = map {{ip => $_}}
-                   grep {defined}
-                   map {$_->remote_ip}
+  my @remote_ips = map {{ip => $_->remote_ip, port => $_->port}}
+                   grep {$_->remote_ip}
                    values %$device_ports;
 
-  debug sprintf ' resolving %d remote_ips with max %d outstanding requests',
-      scalar @remote_ips, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+  debug sprintf ' [%s] resolving %d remote_ips with max %d outstanding requests',
+      $device->ip, scalar @remote_ips, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
 
   my $resolved_remote_ips = hostnames_resolve_async(\@remote_ips);
-  $properties{$_}->{remote_dns} = $_->{dns} for @$resolved_remote_ips;
+  $properties{ $_->{port} }->{remote_dns} = $_->{dns} for @$resolved_remote_ips;
 
   my $raw_speed = $snmp->i_speed_raw || {};
 
