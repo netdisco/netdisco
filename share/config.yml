@@ -222,7 +222,6 @@ host_groups:
     - '::/0'
   __LOCAL_ADDRESSES__:
     - '::1'
-    - 'fe80::/10'
     - '127.0.0.0/8'
 host_group_displaynames: {}
 device_identity: []
@@ -357,7 +356,7 @@ jobs_qdepth: 50
 dns:
   max_outstanding: 50
   hosts_file: '/etc/hosts'
-  no: ['group:__LOCAL_ADDRESSES__','169.254.0.0/16']
+  no: ['group:__LOCAL_ADDRESSES__','169.254.0.0/16','fe80::/10']
 
 hooks: []
 
