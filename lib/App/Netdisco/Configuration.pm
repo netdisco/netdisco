@@ -192,11 +192,17 @@ elsif (ref [] eq ref setting('tacacs')) {
   config->{'tacacs'} = [ @newservers ];
 }
 
-# support unordered dictionary as if it were a single item list
+# support unordered dictionaries as if they were a single item list
+
 if (ref {} eq ref setting('device_identity')) {
   config->{'device_identity'} = [ setting('device_identity') ];
 }
 else { config->{'device_identity'} ||= [] }
+
+if (ref {} eq ref setting('silent_ports')) {
+  config->{'silent_ports'} = [ setting('silent_ports') ];
+}
+else { config->{'silent_ports'} ||= [] }
 
 # copy devices_no and devices_only into others
 foreach my $name (qw/devices_no devices_only

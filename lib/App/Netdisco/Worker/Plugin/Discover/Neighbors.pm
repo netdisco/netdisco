@@ -137,33 +137,51 @@ sub store_neighbors {
   # now combine them, v6 wins
   $c_ip = { %$c_ip, %c_ipv6 };
 
-  foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
+  NEIGHBOR: foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
       if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
-          next;
+          next NEIGHBOR;
       }
 
       # WRT #475 this is SAFE because we check against known ports below
-      my $port = $interfaces->{ $c_if->{$entry} } or next;
+      my $port = $interfaces->{ $c_if->{$entry} } or next NEIGHBOR;
       my $portrow = $device_ports->{$port};
 
       if (!defined $portrow) {
           debug sprintf ' [%s] neigh - local port %s already skipped, ignoring',
             $device->ip, $port;
-          next;
+          next NEIGHBOR;
       }
 
       if (ref $c_ip->{$entry}) {
           debug sprintf ' [%s] neigh - port %s has multiple neighbors - skipping',
             $device->ip, $port;
-          next;
+          next NEIGHBOR;
       }
 
       if ($portrow->manual_topo) {
           debug sprintf ' [%s] neigh - %s has manually defined topology',
             $device->ip, $port;
-          next;
+          next NEIGHBOR;
+      }
+
+      if (scalar @{ setting('silent_ports') }) {
+          my @silentmaps = @{ setting('silent_ports') };
+
+          foreach my $map (@silentmaps) {
+              next unless ref {} eq ref $map;
+
+              foreach my $key (sort keys %$map) {
+                  # lhs matches device, rhs matches port
+                  next unless (check_acl_only($device, $key)
+                                  and check_acl_only($portrow, $map->{$key}));
+
+                  debug sprintf ' [%s] neigh - port %s requested to be silent - skipping',
+                    $device->ip, $port;
+                  next NEIGHBOR;
+              }
+          }
       }
 
       my $remote_ip   = $c_ip->{$entry};
@@ -172,7 +190,7 @@ sub store_neighbors {
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
       my $remote_cap  = $c_cap->{$entry} || [];
 
-      next unless $remote_ip;
+      next NEIGHBOR unless $remote_ip;
       my $r_netaddr = NetAddr::IP::Lite->new($remote_ip);
 
       if ($r_netaddr and ($r_netaddr->addr ne $remote_ip)) {
@@ -181,7 +199,7 @@ sub store_neighbors {
         $remote_ip = $r_netaddr->addr;
       }
 
-      # a bunch of heuristics to search known devices if we don't have a
+      # a bunch of heuristics to search known devices if we do not have a
       # useable remote IP...
 
       if ((! $r_netaddr) or ($remote_ip eq '0.0.0.0') or
@@ -199,7 +217,7 @@ sub store_neighbors {
               if (!defined $neigh and $neigh_rs->count) {
                   debug sprintf ' [%s] neigh - multiple devices claim to be %s (port %s) - skipping',
                     $device->ip, $remote_id, $port;
-                  next;
+                  next NEIGHBOR;
               }
 
               if (!defined $neigh) {
@@ -236,13 +254,13 @@ sub store_neighbors {
               else {
                   debug sprintf ' [%s] neigh - could not find %s, skipping',
                     $device->ip, $remote_id;
-                  next;
+                  next NEIGHBOR;
               }
           }
           else {
               debug sprintf ' [%s] neigh - skipping unuseable address %s on port %s',
                 $device->ip, $remote_ip, $port;
-              next;
+              next NEIGHBOR;
           }
       }
 
