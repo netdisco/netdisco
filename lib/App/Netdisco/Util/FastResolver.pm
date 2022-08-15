@@ -50,6 +50,7 @@ sub hostnames_resolve_async {
   my $skip = setting('dns')->{'no'};
   my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
   AnyEvent::DNS::resolver->timeout(@$timeouts);
+  AnyEvent::DNS::resolver->os_config();
 
   # Set up the condvar
   my $done = AE::cv;
