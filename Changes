@@ -1,3 +1,19 @@
+2.054000 - 2022-08-15
+
+  [NEW FEATURES]
+
+  * new discover_routed_neighbors setting to skip adding next-hops for discovery
+
+  [ENHANCEMENTS]
+
+  * #917 resolve dns for undiscovered neighbors
+  * device ports column added for ifIndex (interface index)
+
+  [BUG FIXES]
+
+  * #918 avoid duplicate jobs mutually cancelling (only lower job ID is stops)
+  * initialise the resolver config for the DNS resolution
+
 2.053007 - 2022-08-09
 
   [ENHANCEMENTS]
