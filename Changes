@@ -1,3 +1,19 @@
+2.055000 - 2022-08-16
+
+  [NEW FEATURES]
+
+  * #914 new setting macsuck_no_deviceport to ignore nodes on a device port
+
+  [ENHANCEMENTS]
+
+  * #834 VLAN Mismatch report - add sysname, port comment, and vlan diff
+  * #875 Node Search - layout and text changes to make meaning more clear
+  * add DNS of remote_ip to undiscovered neighbors report
+
+  [BUG FIXES]
+
+  * fe80::/10 is not LOCAL ADDRESS like ::1/128
+
 2.054000 - 2022-08-15
 
   [NEW FEATURES]
