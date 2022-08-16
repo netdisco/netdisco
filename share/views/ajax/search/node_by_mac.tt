@@ -15,12 +15,13 @@
     [% WHILE (row = ips.next) %]
     <tr>
       <td>
-          MAC: <a href="[% search_node | none %]&q=[% row.net_mac.$mac_format_call | uri %]">
+          MAC <a href="[% search_node | none %]&q=[% row.net_mac.$mac_format_call | uri %]">
             [% row.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
         ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% row.oui.abbrev | uri %]">
         [% row.oui.company | html_entity %]</a> )
       [% END %]
+      seen as:
       </td>
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell"><a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
@@ -34,62 +35,63 @@
     </tr>
     [% END %]
     [% WHILE (node = sightings.next) %]
+    [% SET nodecount = nodecount + 1 %]
     <tr>
       <td>
-        MAC: <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
+        MAC <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
         ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% node.oui.abbrev | uri %]">
         [% node.oui.company | html_entity %]</a> )
       [% END %]
+      seen as:
       </td>
-      <td>Switch Port</td>
+      <td>Node on Port</td>
       <td class="nd_center-cell">
-            <a href="[% device_ports | none %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on&prefer=port">
-            [% node.switch | html_entity %] - [% node.port | html_entity %]</a>
-        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT node.active %]
-        [% IF node.device.dns AND node.device_port AND node.device_port.name %]
-          ([% node.device.dns | html_entity %] - [% node.device_port.name | html_entity %])
-        [% END %]
-            on vlan [% node.vlan | html_entity %]
+          <a href="[% device_ports | none %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on&prefer=port">
+            [% node.device.dns || node.switch | html_entity %] - [% node.port | html_entity %]</a>
+          [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT node.active %]
+          on vlan [% node.vlan | html_entity %]
+          <br />([% node.switch | html_entity %] - [% node.device.name | html_entity %] - &quot;[% node.device_port.name | html_entity %]&quot;)
       </td>
       [% IF params.stamps %]
-      <td>[% node.time_first_stamp | html_entity %]</td>
-      <td>[% node.time_last_stamp | html_entity %]</td>
+      <td [% 'class="text-success"' IF nodecount == 1 %]>[% node.time_first_stamp | html_entity %]</td>
+      <td [% 'class="text-success"' IF nodecount == 1 %]>[% node.time_last_stamp | html_entity %]</td>
       [% END %]
     </tr>
     [% END %]
     [% WHILE (port = ports.next) %]
+    [% SET portcount = portcount + 1 %]
     <tr>
       <td>
-        MAC: <a href="[% search_node | none %]&q=[% port.net_mac.$mac_format_call | uri %]">[% port.net_mac.$mac_format_call | html_entity %]</a>
+        MAC <a href="[% search_node | none %]&q=[% port.net_mac.$mac_format_call | uri %]">[% port.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
         ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% port.oui.abbrev | uri %]">
         [% port.oui.company | html_entity %]</a> )
       [% END %]
+      seen as:
       </td>
-      <td>Switch Port</td>
+      <td>Device Port</td>
       <td class="nd_center-cell">
             <a href="[% device_ports | none %]&q=[% port.ip | uri %]&f=[% port.port | uri %]&c_mac=on&c_nodes=on&c_neighbors=on">
-            [% port.ip | html_entity %] - [% port.descr | html_entity %]</a>
-        [% IF port.device.dns AND port.name %]
-          ([% port.device.dns | html_entity %] - [% port.name | html_entity %])
-        [% END %]
+                [% port.device.dns || port.ip | html_entity %] - [% port.descr | html_entity %]</a>
+            <br />([% port.ip | html_entity %] - [% port.device.name | html_entity %] - &quot;[% port.name | html_entity %]&quot;)
       </td>
       [% IF params.stamps %]
-      <td>[% port.creation | html_entity %]</td>
-      <td>[% port.creation | html_entity %]</td>
+      <td [% 'class="text-success"' IF portcount == 1 %]>[% port.creation.remove(':[0-9./]+$') | html_entity %]</td>
+      <td [% 'class="text-success"' IF portcount == 1 %]>[% port.creation.remove(':[0-9./]+$') | html_entity %]</td>
       [% END %]
     </tr>
     [% END %]
     [% WHILE (nbt = netbios.next) %]
     <tr>
       <td>
-        MAC: <a href="[% search_node | none %]&q=[% nbt.net_mac.$mac_format_call | uri %]">[% nbt.net_mac.$mac_format_call | html_entity %]</a>
+        MAC <a href="[% search_node | none %]&q=[% nbt.net_mac.$mac_format_call | uri %]">[% nbt.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
         ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% nbt.oui.abbrev | uri %]">
         [% nbt.oui.company | html_entity %]</a> )
       [% END %]
+      seen as:
       </td>
       <td>NetBIOS</td>
       <td class="nd_center-cell">\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
@@ -104,11 +106,12 @@
     [% WHILE (wlan = wireless.next) %]
     <tr>
       <td>
-        MAC: <a href="[% search_node | none %]&q=[% wlan.net_mac.$mac_format_call | uri %]">[% wlan.net_mac.$mac_format_call | html_entity %]</a>
+        MAC <a href="[% search_node | none %]&q=[% wlan.net_mac.$mac_format_call | uri %]">[% wlan.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
         ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% wlan.oui.abbrev | uri %]">
         [% wlan.oui.company | html_entity %]</a> )
       [% END %]
+      seen as:
       </td>
       <td>Wireless Info</td>
       <td class="nd_center-cell">SSID: [% wlan.ssid | html_entity %]<br>

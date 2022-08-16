@@ -92,7 +92,7 @@ See also the C<node_sightings> helper routine, below.
 =cut
 
 __PACKAGE__->has_many( nodes => 'App::Netdisco::DB::Result::Node',
-  { 'foreign.mac' => 'self.mac' } );
+  { 'foreign.mac' => 'self.mac' }, { order_by => { '-desc' => 'time_last' }} );
 
 =head2 netbios
 
