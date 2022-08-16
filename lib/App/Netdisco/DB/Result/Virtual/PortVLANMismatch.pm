@@ -23,10 +23,14 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
      WHERE vlan::text NOT IN (?, ?, ?, ?) GROUP BY ip, port)
 
   SELECT CASE WHEN length(ld.dns) > 0 THEN ld.dns ELSE host(ld.ip) END AS left_device,
+         ld.name AS left_name,
          lp.port AS left_port,
+         lp.name AS left_portname,
          (SELECT vlist FROM all_vlans WHERE ip=lp.ip AND port=lp.port) AS left_vlans,
          CASE WHEN length(rd.dns) > 0 THEN rd.dns ELSE host(rd.ip) END AS right_device,
+         rd.name AS right_name,
          rp.port AS right_port,
+         rp.name AS right_portname,
          (SELECT vlist FROM all_vlans WHERE ip=rp.ip AND port=rp.port) AS right_vlans
   FROM device ld
        JOIN device_port lp USING (ip)
@@ -40,13 +44,17 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
 ENDSQL
 
 __PACKAGE__->add_columns(
-  'left_device'  => { data_type => 'text' },
-  'left_port'    => { data_type => 'text' },
-  'left_vlans'   => { data_type => 'text' },
+  'left_device'   => { data_type => 'text' },
+  'left_name'     => { data_type => 'text' },
+  'left_port'     => { data_type => 'text' },
+  'left_portname' => { data_type => 'text' },
+  'left_vlans'    => { data_type => 'text' },
 
-  'right_device' => { data_type => 'text' },
-  'right_port'   => { data_type => 'text' },
-  'right_vlans'  => { data_type => 'text' },
+  'right_device'   => { data_type => 'text' },
+  'right_name'     => { data_type => 'text' },
+  'right_port'     => { data_type => 'text' },
+  'right_portname' => { data_type => 'text' },
+  'right_vlans'    => { data_type => 'text' },
 );
 
 1;
