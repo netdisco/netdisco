@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
 use App::Netdisco::Util::PortMAC 'get_port_macs';
 use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
