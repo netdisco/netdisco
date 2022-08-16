@@ -199,10 +199,10 @@ if (ref {} eq ref setting('device_identity')) {
 }
 else { config->{'device_identity'} ||= [] }
 
-if (ref {} eq ref setting('silent_ports')) {
-  config->{'silent_ports'} = [ setting('silent_ports') ];
+if (ref {} eq ref setting('macsuck_no_deviceport')) {
+  config->{'macsuck_no_deviceport'} = [ setting('macsuck_no_deviceport') ];
 }
-else { config->{'silent_ports'} ||= [] }
+else { config->{'macsuck_no_deviceport'} ||= [] }
 
 # copy devices_no and devices_only into others
 foreach my $name (qw/devices_no devices_only

@@ -166,24 +166,6 @@ sub store_neighbors {
           next NEIGHBOR;
       }
 
-      if (scalar @{ setting('silent_ports') }) {
-          my @silentmaps = @{ setting('silent_ports') };
-
-          foreach my $map (@silentmaps) {
-              next unless ref {} eq ref $map;
-
-              foreach my $key (sort keys %$map) {
-                  # lhs matches device, rhs matches port
-                  next unless (check_acl_only($device, $key)
-                                  and check_acl_only($portrow, $map->{$key}));
-
-                  debug sprintf ' [%s] neigh - port %s requested to be silent - skipping',
-                    $device->ip, $port;
-                  next NEIGHBOR;
-              }
-          }
-      }
-
       my $remote_ip   = $c_ip->{$entry};
       my $remote_port = undef;
       my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');

@@ -292,6 +292,28 @@ sub walk_fwtable {
   my $skiplist = {}; # ports through which we can see another device
   my $cache = {};
 
+  my $ignorelist = {}; # ports suppressed by macsuck_no_deviceport
+  if (scalar @{ setting('macsuck_no_deviceport') }) {
+      my @ignoremaps = @{ setting('macsuck_no_deviceport') };
+
+      foreach my $map (@ignoremaps) {
+          next unless ref {} eq ref $map;
+
+          foreach my $key (sort keys %$map) {
+              # lhs matches device, rhs matches port
+              next unless check_acl_only($device, $key);
+
+              foreach my $port (keys %$device_ports) {
+                  next unless check_acl_only($device_ports->{$port}, $map->{$key});
+
+                  ++$ignorelist->{$port};
+                  debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceport',
+                    $device->ip, $port;
+              }
+          }
+      }
+  }
+
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return $cache; # already checked!
 
@@ -307,24 +329,25 @@ sub walk_fwtable {
   # to map forwarding table port to device port we have
   #   fw_port -> bp_index -> interfaces
 
-  while (my ($idx, $mac) = each %$fw_mac) {
+  MAC: while (my ($idx, $mac) = each %$fw_mac) {
       my $bp_id = $fw_port->{$idx};
-      next unless check_mac($mac, $device);
+      next MAC unless check_mac($mac, $device);
 
       unless (defined $bp_id) {
           debug sprintf
             ' [%s] macsuck %s - %s has no fw_port mapping - skipping.',
             $device->ip, $mac, $idx;
-          next;
+          next MAC;
       }
 
-      my $iid = $bp_index->{$bp_id};
+      my $iid  = $bp_index->{$bp_id};
+      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
 
       unless (defined $iid) {
           debug sprintf
             ' [%s] macsuck %s - port %s has no bp_index mapping - skipping.',
             $device->ip, $mac, $bp_id;
-          next;
+          next MAC;
       }
 
       # WRT #475 this is SAFE because we check against known ports below
@@ -335,28 +358,37 @@ sub walk_fwtable {
           debug sprintf
             ' [%s] macsuck %s - iid %s has no port mapping - skipping.',
             $device->ip, $mac, $iid;
-          next;
+          next MAC;
+      }
+
+      # this uses the cached $ports resultset to limit hits on the db
+      my $device_port = $device_ports->{$port};
+
+      if (exists $ignorelist->{$port}) {
+          # stash in the skiplist so that node search works for neighbor
+          # (besides this, skiplist is not used for ignorelist ports)
+          $skiplist->{$port} = [ $vlan, $mac ] if exists $port_macs->{$mac};
+
+          debug sprintf
+            ' [%s] macsuck %s - port %s is suppressed by config - skipping.',
+            $device->ip, $mac, $port;
+          next MAC;
       }
 
       if (exists $skiplist->{$port}) {
           debug sprintf
             ' [%s] macsuck %s - seen another device thru port %s - skipping.',
             $device->ip, $mac, $port;
-          next;
+          next MAC;
       }
-
-      # this uses the cached $ports resultset to limit hits on the db
-      my $device_port = $device_ports->{$port};
 
       # WRT #475 ... see? :-)
       unless (defined $device_port) {
           debug sprintf
             ' [%s] macsuck %s - port %s is not in database - skipping.',
             $device->ip, $mac, $port;
-          next;
+          next MAC;
       }
-
-      my $vlan = $fw_vlan->{$idx} || $comm_vlan || '0';
 
       # check to see if the port is connected to another device
       # and if we have that device in the database.
@@ -391,7 +423,7 @@ sub walk_fwtable {
               debug sprintf
                 ' [%s] macsuck %s - port %s has neighbor %s - skipping.',
                 $device->ip, $mac, $port, $neighbor->ip;
-              next;
+              next MAC;
           }
           elsif (my $remote = $device_port->remote_ip) {
               debug sprintf
@@ -404,9 +436,9 @@ sub walk_fwtable {
                 ' [%s] macsuck %s - port %s is detected uplink - skipping.',
                 $device->ip, $mac, $port;
 
-              $skiplist->{$port} = [ $vlan, $mac ] # remember for later
+              $skiplist->{$port} = [ $vlan, $mac ] # remember neighbor port mac
                 if exists $port_macs->{$mac};
-              next;
+              next MAC;
           }
       }
 
@@ -417,7 +449,7 @@ sub walk_fwtable {
               debug sprintf
                 ' [%s] macsuck %s - port %s connects to self - skipping.',
                 $device->ip, $mac, $port;
-              next;
+              next MAC;
           }
 
           debug sprintf ' [%s] macsuck %s - port %s is probably an uplink',
@@ -427,7 +459,7 @@ sub walk_fwtable {
           # neighbor exists and Netdisco can speak to it, so we don't want
           # its MAC address. however don't add to skiplist as that would
           # clear all other MACs on the port.
-          next if $neigh_cannot_macsuck;
+          next MAC if $neigh_cannot_macsuck;
 
           # when there's no CDP/LLDP, we only want to gather macs at the
           # topology edge, hence skip ports with known device macs.
@@ -436,7 +468,7 @@ sub walk_fwtable {
                     $device->ip, $mac, $port;
 
                 $skiplist->{$port} = [ $vlan, $mac ]; # remember for later
-                next;
+                next MAC;
           }
       }
 

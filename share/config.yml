@@ -251,7 +251,6 @@ discover_waps: true
 discover_phones: false
 discover_routed_neighbors: true
 discover_min_age: 0
-silent_ports: []
 macsuck_no: []
 macsuck_only: []
 macsuck_all_vlans: false
@@ -266,6 +265,7 @@ macsuck_no_vlan:
   - 'SAM-vlan-appliance-management'
   - 'SAM-vlan-management'
 macsuck_no_devicevlan: []
+macsuck_no_deviceport: []
 macsuck_unsupported: []
 macsuck_unsupported_type: []
 macsuck_bleed: false
