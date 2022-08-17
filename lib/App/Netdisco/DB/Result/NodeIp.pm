@@ -180,7 +180,7 @@ sub node_sightings {
 
     return $row
       ->nodes({}, {
-        '+columns' => [qw/ device.dns /],
+        '+columns' => [qw/ device.dns device.name /],
         join => 'device',
       })
       ->search_rs({}, $search_attr)

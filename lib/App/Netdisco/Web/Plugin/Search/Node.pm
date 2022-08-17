@@ -136,6 +136,7 @@ get '/ajax/content/search/node' => require_login sub {
           order_by => {'-desc' => 'time_last'},
           '+columns' => [
             'device.dns',
+            'device.name',
             { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
             { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
           ],
