@@ -37,8 +37,8 @@ get '/ajax/content/report/portvlanmismatch' => require_login sub {
             map { push @{ $new{$_} }, ( (2 == scalar @{ $cmp{$vlan} }) ? $vlan : "<strong>$vlan</strong>" ) } @{ $cmp{$vlan} };
         }
 
-        $res->{left_vlans}  = join ', ', sort_by { (my $a = $_) =~ s/\D//g; sprintf "%04d", $a } @{ $new{0} };
-        $res->{right_vlans} = join ', ', sort_by { (my $a = $_) =~ s/\D//g; sprintf "%04d", $a } @{ $new{1} };
+        $res->{left_vlans}  = join ', ', sort_by { (my $a = $_) =~ s/\D//g; sprintf "%05d", $a } @{ $new{0} };
+        $res->{right_vlans} = join ', ', sort_by { (my $a = $_) =~ s/\D//g; sprintf "%05d", $a } @{ $new{1} };
     }
 
     if (request->is_ajax) {
