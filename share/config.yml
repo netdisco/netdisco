@@ -209,6 +209,14 @@ check_userlog: false
 devport_vlan_limit: 150
 login_logo: ""
 defanged_admin: 'admin'
+hide_interfaces:
+  'vendor:juniper':
+    - 'group:__LOOPBACK_NO_IP__'
+    - 'port:.*\.0'
+    - 'port:irb(?:\.\d+)?'
+    - 'port:lsi(?:\.\d+)?'
+    - 'port:vtep(?:\.\d+)?'
+    - 'type:other'
 
 # -------------
 # NETDISCO CORE
@@ -220,9 +228,50 @@ host_groups:
   __ANY__:
     - '0.0.0.0/0'
     - '::/0'
-  __LOCAL_ADDRESSES__:
+  __LOOPBACK_ADDRESSES__:
     - '::1'
     - '127.0.0.0/8'
+  __LOCAL_ADDRESSES__:
+    - '169.254.0.0/16'
+    - 'fe80::/10'
+  __LOOPBACK_NO_IP__:
+    - 'op:and'
+    - 'ip:'
+    - 'type:softwareLoopback'
+  __IGNORE_INTERFACES__:
+    - 'port:EOBC'
+    - 'port:unrouted VLAN(?: \d+)?'
+    - 'port:StackPort'
+    - 'port:Control Plane Interface'
+    - 'port:SPAN (S|R)P Interface'
+    - 'port:StackSub-.*'
+    - 'port:StackPort\d+'
+    - 'port:netflow'
+    - 'port:Vlan\d+-mpls layer'
+    - 'port:BRI\S+-Bearer Channel'
+    - 'port:BRI\S+-Physical'
+    - 'port:BRI\S+-Signalling'
+    - 'port:BRI\S+-Signaling'
+    - 'port:Embedded-Service-Engine\d+\/\d+'
+    - 'port:Virtual-Template\d+'
+    - 'port:Virtual-Access\d+'
+    - 'port:(E|T)\d \d\/\d\/\d'
+    - 'port:InLoopback0'
+    - 'port:NULL\d'
+    - 'port:Register-Tunnel\d'
+    - 'port:Blade-Aggregation\d'
+    - 'port:M-GigabitEthernet\d\/\d\/\d'
+    - 'port:Ethernet(?:-| )QOS Packet Scheduler'
+    - 'port:Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
+    - 'port:ii\d\/\d\/\d+'
+  __NOTPRESENT_TYPES__:
+    - 'type:ethernetCsmacd'
+    - 'type:tunnel'
+    - 'type:ieee8023adLag'
+  __IGNORE_NOTPRESENT_TYPES__:
+    - 'op:and'
+    - 'up:notPresent'
+    - 'group:__NOTPRESENT_TYPES__'
 host_group_displaynames: {}
 device_identity: []
 community: []
@@ -290,37 +339,17 @@ expire_userlog: 365
 expire_nodeip_freshness: null
 store_wireless_clients: true
 store_modules: true
-ignore_interfaces:
-  - 'EOBC'
-  - 'unrouted VLAN(?: \d+)?'
-  - 'StackPort'
-  - 'Control Plane Interface'
-  - 'SPAN (S|R)P Interface'
-  - 'StackSub-.*'
-  - 'StackPort\d+'
-  - 'netflow'
-  - 'Vlan\d+-mpls layer'
-  - 'BRI\S+-Bearer Channel'
-  - 'BRI\S+-Physical'
-  - 'BRI\S+-Signalling'
-  - 'BRI\S+-Signaling'
-  - 'Embedded-Service-Engine\d+\/\d+'
-  - 'Virtual-Template\d+'
-  - 'Virtual-Access\d+'
-  - '(E|T)\d \d\/\d\/\d'
-  - 'InLoopback0'
-  - 'NULL\d'
-  - 'Register-Tunnel\d'
-  - 'Blade-Aggregation\d'
-  - 'M-GigabitEthernet\d\/\d\/\d'
-  - 'Ethernet(?:-| )QOS Packet Scheduler'
-  - 'Ethernet(?:-| )WFP (?:802\.3|Native) MAC Layer Lightweight Filter'
-  - 'ii\d\/\d\/\d+'
+ignore_deviceports:
+  'group:__ANY__':
+    - 'group:__IGNORE_INTERFACES__'
+    - 'group:__IGNORE_NOTPRESENT_TYPES__'
+  'vendor:juniper':
+    - '128.0.0.0/2'
+    - 'port:.+\.1638\d'
+    - 'port:.+\.3276\d'
+ignore_interfaces: []
 ignore_interface_types: []
-ignore_notpresent_types:
-  - 'ethernetCsmacd'
-  - 'tunnel'
-  - 'ieee8023adLag'
+ignore_notpresent_types: []
 ignore_private_nets: false
 reverse_sysname: false
 phone_capabilities:
@@ -357,7 +386,7 @@ jobs_qdepth: 50
 dns:
   max_outstanding: 50
   hosts_file: '/etc/hosts'
-  no: ['group:__LOCAL_ADDRESSES__','169.254.0.0/16','fe80::/10']
+  no: ['group:__LOCAL_ADDRESSES__','group:__LOOPBACK_ADDRESSES__']
 
 hooks: []
 

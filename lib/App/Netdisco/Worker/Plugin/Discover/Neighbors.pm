@@ -185,7 +185,7 @@ sub store_neighbors {
       # useable remote IP...
 
       if ((! $r_netaddr) or ($remote_ip eq '0.0.0.0') or
-        check_acl_no($remote_ip, 'group:__LOCAL_ADDRESSES__')) {
+        check_acl_no($remote_ip, 'group:__LOOPBACK_ADDRESSES__')) {
 
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');

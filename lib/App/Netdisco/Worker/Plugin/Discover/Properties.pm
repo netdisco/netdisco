@@ -397,7 +397,7 @@ sub _get_ipv4_aliases {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+      next if check_acl_no($ip, 'group:__LOOPBACK_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};
@@ -450,7 +450,7 @@ sub _get_ipv6_aliases {
       my $addr = $ip->addr;
 
       next if $addr eq '::0';
-      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+      next if check_acl_no($ip, 'group:__LOOPBACK_ADDRESSES__');
 
       my $port   = $interfaces->{ $ipv6_index->{$iid} };
       my $subnet = $ipv6_pfxlen->{$iid}

@@ -96,7 +96,7 @@ sub test_connection {
   my $addr = NetAddr::IP::Lite->new($ip) or return undef;
   # avoid renumbering to localhost loopbacks
   return undef if $addr->addr eq '0.0.0.0'
-                  or check_acl_no($addr->addr, 'group:__LOCAL_ADDRESSES__');
+                  or check_acl_no($addr->addr, 'group:__LOOPBACK_ADDRESSES__');
   my $device = schema('netdisco')->resultset('Device')
     ->new_result({ ip => $addr->addr }) or return undef;
   my $readers = $class->instance->readers or return undef;
