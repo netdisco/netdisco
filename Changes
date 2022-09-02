@@ -1,3 +1,10 @@
+2.055001 - 2022-09-02
+
+  [BUG FIXES]
+
+  * #928 404 page template broken
+  * sorting vlans in device ports tab works for extended vlan ranges
+
 2.055000 - 2022-08-16
 
   [NEW FEATURES]

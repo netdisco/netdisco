@@ -367,7 +367,7 @@ hook 'after' => sub {
 any qr{.*} => sub {
     var('notfound' => true);
     status 'not_found';
-    template 'index';
+    template 'index', {}, { layout => 'main' };
 };
 
 true;
