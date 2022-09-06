@@ -101,7 +101,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
     });
   }
 
-  return Status->info(" [$device] device - OK to continue discover");
+  return Status->info(" [$device] device - OK to continue discover (not a duplicate)");
 });
 
 register_worker({ phase => 'early', driver => 'snmp' }, sub {
@@ -113,7 +113,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
-  my $pass = Status->info(" [$device] device - OK to continue discover");
+  my $pass = Status->info(" [$device] device - OK to continue discover (valid interfaces)");
   my $interfaces = $snmp->interfaces;
 
   # OK if no interfaces
