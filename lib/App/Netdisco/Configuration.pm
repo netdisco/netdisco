@@ -204,6 +204,16 @@ if (ref {} eq ref setting('macsuck_no_deviceport')) {
 }
 else { config->{'macsuck_no_deviceport'} ||= [] }
 
+if (ref {} eq ref setting('hide_interfaces')) {
+  config->{'hide_interfaces'} = [ setting('hide_interfaces') ];
+}
+else { config->{'hide_interfaces'} ||= [] }
+
+if (ref {} eq ref setting('ignore_deviceports')) {
+  config->{'ignore_deviceports'} = [ setting('ignore_deviceports') ];
+}
+else { config->{'ignore_deviceports'} ||= [] }
+
 # copy devices_no and devices_only into others
 foreach my $name (qw/devices_no devices_only
                     discover_no macsuck_no arpnip_no nbtstat_no

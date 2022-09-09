@@ -172,6 +172,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   });
 });
 
+
+# NOTE must come after the IP Aliases gathering for ignore ACLs to work
 register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
@@ -179,6 +181,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   return unless $device->in_storage;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
+
+  # gather device_ips for use in ACLs later
+  my $device_ips = { map {($_->{port} => $_)}
+                         $device->device_ips()->hri->all };
 
   my $interfaces     = $snmp->interfaces;
   my $i_type         = $snmp->i_type;
@@ -223,40 +229,19 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
   # build device interfaces suitable for DBIC
   my %interfaces;
-  foreach my $entry (keys %$interfaces) {
+  PORT: foreach my $entry (keys %$interfaces) {
       my $port = $interfaces->{$entry};
 
       if (not $port) {
           debug sprintf ' [%s] interfaces - ignoring %s (no port mapping)',
             $device->ip, $entry;
-          next;
-      }
-
-      if (scalar grep {$port =~ m/^$_$/} @{setting('ignore_interfaces') || []}) {
-          debug sprintf
-            ' [%s] interfaces - ignoring %s (%s) (config:ignore_interfaces)',
-            $device->ip, $entry, $port;
-          next;
+          next PORT;
       }
 
       if (exists $i_ignore->{$entry}) {
           debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s) (SNMP::Info::i_ignore)',
             $device->ip, $entry, $port, ($i_type->{$entry} || '');
-          next;
-      }
-
-      # Skip interfaces by type filter
-      if (defined $i_type->{$entry} and (scalar grep {$i_type->{$entry} =~ m/^$_$/} @{setting('ignore_interface_types') || []})) {
-          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s) (config:ignore_interface_types)',
-            $device->ip, $entry, $port, $i_type->{$entry};
-          next;
-      }
-
-      # Skip interfaces which are 'notPresent' and match the notpresent type filter
-      if (defined $i_up->{$entry} and defined $i_type->{$entry} and $i_up->{$entry} eq 'notPresent' and (scalar grep {$i_type->{$entry} =~ m/^$_$/} @{setting('ignore_notpresent_types') || []}) ) {
-          debug sprintf ' [%s] interfaces - ignoring %s (%s) (%s) (config:ignore_notpresent_types)',
-            $device->ip, $entry, $port, $i_up->{$entry};
-          next;
+          next PORT;
       }
 
       my $lc = $i_lastchange->{$entry} || 0;
@@ -285,7 +270,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           }
       }
 
-      $interfaces{$port} = {
+      # create a DBIx::Class row for this port which can be used to test ACLs
+      # also include the Device IP alias if we have one for L3 interfaces
+      my $portrow = schema('netdisco')->resultset('DevicePort')->new_result({
           port         => $port,
           descr        => $i_descr->{$entry},
           up           => $i_up->{$entry},
@@ -304,8 +291,30 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           has_subinterfaces => 'false',
           is_master         => 'false',
           slave_of          => undef,
-          lastchange => $lc,
-      };
+          lastchange   => $lc,
+          interface    => { %{ $device_ips->{$port} || {} } },
+      });
+
+      if (scalar @{ setting('ignore_deviceports') }) {
+          foreach my $map (@{ setting('ignore_deviceports')}) {
+              next unless ref {} eq ref $map;
+
+              foreach my $key (sort keys %$map) {
+                  # lhs matches device, rhs matches port
+                  next unless check_acl_only($device, $key);
+                  # this is a bit more expensive here than outside of the PORT
+                  # loop, but allows us to check device_ip relation more easily.
+                  next unless check_acl_only($portrow, $map->{$key});
+
+                  debug sprintf ' [%s] interfaces - ignoring %s (%s) (config:ignore_deviceports)',
+                    $device->ip, $port, $entry;
+                  next PORT;
+              }
+          }
+      }
+
+      # does not include the interfaces field
+      $interfaces{$port} = { $portrow->get_columns() };
   }
 
   # must do this after building %interfaces so that we can set is_master
