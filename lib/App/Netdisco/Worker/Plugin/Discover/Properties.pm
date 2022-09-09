@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
@@ -66,7 +66,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       my $protect = setting('snmp_field_protection')->{'device'} || {};
       my %dirty = $device->get_dirty_columns;
       foreach my $field (keys %dirty) {
-          next unless check_acl_only($ip, $protect->{$field});
+          next unless check_acl_no($ip, $protect->{$field});
           if (!defined $dirty{$field} or $dirty{$field} eq '') {
               return $job->cancel("discover cancelled: $ip failed to return valid $field");
           }
@@ -298,6 +298,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   if (scalar @{ setting('ignore_deviceports') }) {
     # add interface field (device_ip) and inflate to DBIC Row for ACL processing
     foreach my $port (keys %deviceports) {
+        $deviceports{$port}->{ip} = $device->ip;
         $deviceports{$port}->{interface} =
           { %{ $device_ips->{$port} || {} } };
         $deviceports{$port} = schema('netdisco')->resultset('DevicePort')
@@ -309,10 +310,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
         foreach my $key (sort keys %$map) {
             # lhs matches device, rhs matches port
-            next unless check_acl_only($device, $key);
+            next unless check_acl_no($device, $key);
 
-            foreach my $port (keys %deviceports) {
-                next unless check_acl_only($deviceports{$port}, $map->{$key});
+            foreach my $port (sort keys %deviceports) {
+                next unless check_acl_no($deviceports{$port}, $map->{$key});
 
                 debug sprintf ' [%s] interfaces - ignoring %s (config:ignore_deviceports)',
                   $device->ip, $port;
@@ -324,6 +325,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
     # remove interface field and deflate to simple dict
     foreach my $port (keys %deviceports) {
         $deviceports{$port} = { $deviceports{$port}->get_columns() };
+        delete $deviceports{$port}->{ip};
     }
   }
 
@@ -344,11 +346,13 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       # parent without subinterfaces?
       next unless defined $i_subs->{$pidx}
        and ref [] eq ref $i_subs->{$pidx}
-       and scalar @{ $i_subs->{$pidx} };
+       and scalar @{ $i_subs->{$pidx} }
+       and exists $deviceports{$parent};
 
       $deviceports{$parent}->{has_subinterfaces} = 'true';
       foreach my $sidx (@{ $i_subs->{$pidx} }) {
           my $sub = $interfaces->{$sidx} or next;
+          next unless exists $deviceports{$sub};
           $deviceports{$sub}->{slave_of} = $parent;
       }
   }

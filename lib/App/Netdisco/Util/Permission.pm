@@ -94,9 +94,10 @@ sub check_acl {
 
   my $real_ip = $thing;
   if (blessed $thing) {
-    $real_ip = ($thing->can('alias') ? $thing->alias : (
-      $thing->can('ip') ? $thing->ip : (
-        $thing->can('addr') ? $thing->addr : $thing )));
+    $real_ip = (
+      ($thing->can('alias') and $thing->alias) ? $thing->alias : (
+      ($thing->can('ip')    and $thing->ip)    ? $thing->ip    : (
+      ($thing->can('addr')  and $thing->addr)  ? $thing->addr  : $thing )));
   }
   return 0 if !defined $real_ip
     or blessed $real_ip; # class we do not understand
