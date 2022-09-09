@@ -228,7 +228,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   # build device interfaces suitable for DBIC
-  my %interfaces;
+  my %deviceports;
   PORT: foreach my $entry (keys %$interfaces) {
       my $port = $interfaces->{$entry};
 
@@ -272,7 +272,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
       # create a DBIx::Class row for this port which can be used to test ACLs
       # also include the Device IP alias if we have one for L3 interfaces
-      my $portrow = schema('netdisco')->resultset('DevicePort')->new_result({
+      $deviceports{$port} = {
           port         => $port,
           descr        => $i_descr->{$entry},
           up           => $i_up->{$entry},
@@ -292,40 +292,50 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           is_master         => 'false',
           slave_of          => undef,
           lastchange   => $lc,
-          interface    => { %{ $device_ips->{$port} || {} } },
-      });
-
-      if (scalar @{ setting('ignore_deviceports') }) {
-          foreach my $map (@{ setting('ignore_deviceports')}) {
-              next unless ref {} eq ref $map;
-
-              foreach my $key (sort keys %$map) {
-                  # lhs matches device, rhs matches port
-                  next unless check_acl_only($device, $key);
-                  # this is a bit more expensive here than outside of the PORT
-                  # loop, but allows us to check device_ip relation more easily.
-                  next unless check_acl_only($portrow, $map->{$key});
-
-                  debug sprintf ' [%s] interfaces - ignoring %s (%s) (config:ignore_deviceports)',
-                    $device->ip, $port, $entry;
-                  next PORT;
-              }
-          }
-      }
-
-      # does not include the interfaces field
-      $interfaces{$port} = { $portrow->get_columns() };
+      };
   }
 
-  # must do this after building %interfaces so that we can set is_master
+  if (scalar @{ setting('ignore_deviceports') }) {
+    # add interface field (device_ip) and inflate to DBIC Row for ACL processing
+    foreach my $port (keys %deviceports) {
+        $deviceports{$port}->{interface} =
+          { %{ $device_ips->{$port} || {} } };
+        $deviceports{$port} = schema('netdisco')->resultset('DevicePort')
+                                                ->new_result( $deviceports{$port} );
+    }
+
+    foreach my $map (@{ setting('ignore_deviceports')}) {
+        next unless ref {} eq ref $map;
+
+        foreach my $key (sort keys %$map) {
+            # lhs matches device, rhs matches port
+            next unless check_acl_only($device, $key);
+
+            foreach my $port (keys %deviceports) {
+                next unless check_acl_only($deviceports{$port}, $map->{$key});
+
+                debug sprintf ' [%s] interfaces - ignoring %s (config:ignore_deviceports)',
+                  $device->ip, $port;
+                delete $deviceports{$port};
+            }
+        }
+    }
+
+    # remove interface field and deflate to simple dict
+    foreach my $port (keys %deviceports) {
+        $deviceports{$port} = { $deviceports{$port}->get_columns() };
+    }
+  }
+
+  # must do this after building %deviceports so that we can set is_master
   foreach my $sidx (keys %$agg_ports) {
       my $slave  = $interfaces->{$sidx} or next;
       next unless defined $agg_ports->{$sidx}; # slave without a master?!
       my $master = $interfaces->{ $agg_ports->{$sidx} } or next;
-      next unless exists $interfaces{$slave} and exists $interfaces{$master};
+      next unless exists $deviceports{$slave} and exists $deviceports{$master};
 
-      $interfaces{$slave}->{slave_of} = $master;
-      $interfaces{$master}->{is_master} = 'true';
+      $deviceports{$slave}->{slave_of} = $master;
+      $deviceports{$master}->{is_master} = 'true';
   }
 
   # also for VLAN subinterfaces
@@ -336,25 +346,25 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
        and ref [] eq ref $i_subs->{$pidx}
        and scalar @{ $i_subs->{$pidx} };
 
-      $interfaces{$parent}->{has_subinterfaces} = 'true';
+      $deviceports{$parent}->{has_subinterfaces} = 'true';
       foreach my $sidx (@{ $i_subs->{$pidx} }) {
           my $sub = $interfaces->{$sidx} or next;
-          $interfaces{$sub}->{slave_of} = $parent;
+          $deviceports{$sub}->{slave_of} = $parent;
       }
   }
 
   # support for Hooks
-  vars->{'hook_data'}->{'ports'} = [values %interfaces];
+  vars->{'hook_data'}->{'ports'} = [values %deviceports];
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
     my $gone = $device->ports->delete({keep_nodes => 1});
     debug sprintf ' [%s] interfaces - removed %d interfaces',
       $device->ip, $gone;
     $device->update_or_insert(undef, {for => 'update'});
-    $device->ports->populate([values %interfaces]);
+    $device->ports->populate([values %deviceports]);
 
     return Status->info(sprintf ' [%s] interfaces - added %d new interfaces',
-      $device->ip, scalar values %interfaces);
+      $device->ip, scalar values %deviceports);
   });
 });
 
