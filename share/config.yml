@@ -347,7 +347,7 @@ ignore_deviceports:
     - 'group:__IGNORE_INTERFACE_TYPES__'
     - 'group:__IGNORE_NOTPRESENT_TYPES__'
   'vendor:juniper':
-    - 'subnet:128.0.0.0/2'
+    - '128.0.0.0/2'
     - 'port:.+\.1638\d'
     - 'port:.+\.3276\d'
 ignore_interfaces: []
