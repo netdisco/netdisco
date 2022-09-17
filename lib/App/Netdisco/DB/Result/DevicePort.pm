@@ -266,24 +266,6 @@ __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp'
   { join_type => 'LEFT' },
 );
 
-=head2 interface
-
-This relationship will return the Device IP table entry for this port, if
-it's a layer 3 interface.
-
-The JOIN is of type "LEFT" in case there isn't any such Device IP entry.
-
-=cut
-
-__PACKAGE__->belongs_to(
-    interface => 'App::Netdisco::DB::Result::DeviceIp', {
-      'foreign.ip'   => 'self.ip',
-      'foreign.port' => 'self.port',
-    }, {
-      join_type => 'LEFT',
-    }
-);
-
 =head2 last_node
 
 This relationship will return the last node that was seen on the port.
@@ -496,29 +478,5 @@ sub last_comment {
     { order_by => { -desc => 'creation' }, rows => 1 })->first;
   return ($row ? $row->log : '');
 }
-
-=head2 alias
-
-Returns the IP associated with this L3 interface.
-
-=cut
-
-sub alias { return (shift)->interface->alias }
-
-=head2 dns
-
-Returns the DNS FQDN of the IP associated with this L3 interface.
-
-=cut
-
-sub dns { return (shift)->interface->dns }
-
-=head2 subnet
-
-Returns the IP Prefix associated with this L3 interface.
-
-=cut
-
-sub subnet { return (shift)->interface->subnet }
 
 1;

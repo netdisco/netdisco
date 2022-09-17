@@ -183,8 +183,11 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   # gather device_ips for use in ACLs later
-  my $device_ips = { map {($_->{port} => $_)}
-                         $device->device_ips()->hri->all };
+  my $device_ips = {};
+  foreach my $dip ($device->device_ips()->all) {
+      next unless defined $dip->port and $dip->port;
+      push @{ $device_ips->{ $dip->port } }, $dip;
+  }
 
   my $interfaces     = $snmp->interfaces;
   my $i_type         = $snmp->i_type;
@@ -296,13 +299,20 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   if (scalar @{ setting('ignore_deviceports') }) {
-    # add interface field (device_ip) and inflate to DBIC Row for ACL processing
+    foreach my $port (keys %$device_ips) {
+        if (!exists $deviceports{$port}) {
+            delete $device_ips->{$port};
+            next;
+        }
+        foreach my $dip (@{ $device_ips->{$port} }) {
+            $dip->set_inflated_columns({device_port => $deviceports{$port}});
+        }
+    }
     foreach my $port (keys %deviceports) {
-        $deviceports{$port}->{ip} = $device->ip;
-        $deviceports{$port}->{interface} =
-          { %{ $device_ips->{$port} || {} } };
-        $deviceports{$port} = schema('netdisco')->resultset('DevicePort')
-                                                ->new_result( $deviceports{$port} );
+        next if exists $device_ips->{$port};
+        push @{ $device_ips->{$port} },
+          schema('netdisco')->resultset('DevicePort')
+                            ->new_result({ ip => $device->ip, %{ $deviceports{$port} } });
     }
 
     foreach my $map (@{ setting('ignore_deviceports')}) {
@@ -312,20 +322,17 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
             # lhs matches device, rhs matches port
             next unless check_acl_no($device, $key);
 
-            foreach my $port (sort keys %deviceports) {
-                next unless check_acl_no($deviceports{$port}, $map->{$key});
+            PORT: foreach my $port (sort keys %$device_ips) {
+                foreach my $thing (@{ $device_ips->{$port} }) {
+                    next unless check_acl_no($thing, $map->{$key});
 
-                debug sprintf ' [%s] interfaces - ignoring %s (config:ignore_deviceports)',
-                  $device->ip, $port;
-                delete $deviceports{$port};
+                    debug sprintf ' [%s] interfaces - ignoring %s (config:ignore_deviceports)',
+                      $device->ip, $port;
+                    delete $deviceports{$port};
+                    next PORT;
+                }
             }
         }
-    }
-
-    # remove interface field and deflate to simple dict
-    foreach my $port (keys %deviceports) {
-        $deviceports{$port} = { $deviceports{$port}->get_columns() };
-        delete $deviceports{$port}->{ip};
     }
   }
 

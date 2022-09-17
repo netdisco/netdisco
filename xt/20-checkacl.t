@@ -32,6 +32,8 @@ my @conf = (
   'op:and',    # 20
   'group:groupreftest',  # 21
   '!group:groupreftest', # 22
+
+  '192.0.2.1', #23
 );
 
 # name, ipv4, ipv6, v4 prefix, v6 prefix
@@ -109,7 +111,29 @@ ok(check_acl('localhost',$conf[0]), 'scalar promoted');
 ok(check_acl('localhost',$conf[1]), 'not scalar promoted');
 is(check_acl('www.microsoft.com',$conf[0]),  0, 'failed scalar promoted');
 
-# device property
-# negated device property
+use App::Netdisco::DB;
+my $dip = App::Netdisco::DB->resultset('DeviceIp')->new_result({
+   ip   => '127.0.0.1',
+   port => 'TenGigabitEthernet1/10',
+   alias => '192.0.2.1',
+   device_port =>
+     App::Netdisco::DB->resultset('DevicePort')->new_result({
+          ip   => '127.0.0.1',
+          port => 'TenGigabitEthernet1/10',
+          type => 'l3ipvlan',
+      })
+});
+
+# device properties
+ok(check_acl($dip, [$conf[23]]), 'instance anon property deviceport:alias');
+ok(check_acl($dip, ['ip:'.$conf[2]]), 'instance named property deviceport:ip');
+ok(check_acl($dip, ['!ip:'. $conf[23]]), 'negated instance named property deviceport:ip');
+is(check_acl($dip, ['port:'.$conf[2]]), 0, 'failed instance named property deviceport:ip');
+ok(check_acl($dip, ['port:.*GigabitEthernet.*']), 'instance named property regexp deviceport:port');
+
+ok(check_acl($dip, ['type:l3ipvlan']), 'related item field match');
+ok(check_acl($dip, ['remote_ip:']), 'related item field empty');
+ok(check_acl($dip, ['!type:']), 'related item field not empty');
+is(check_acl($dip, ['foobar:xyz']), 0, 'unknown property');
 
 done_testing;

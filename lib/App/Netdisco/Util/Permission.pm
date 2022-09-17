@@ -148,35 +148,23 @@ sub check_acl {
           next INLIST;
       }
 
-      # prop regexp
-      if ($item =~ m/^([^:]+):([^:]+)$/) {
+      if ($item =~ m/^([^:]+):([^:]*)$/) {
           my $prop  = $1;
-          my $match = $2;
+          my $match = $2 || '';
 
           # if not an object, we can't do much with properties
           next INLIST unless blessed $thing;
 
-          # lazy version of vendor: and model:
+          # prop:val
           if ($neg xor ($thing->can($prop) and
-                defined eval { $thing->$prop } and $thing->$prop =~ m/^$match$/)) {
+                          defined eval { $thing->$prop } and
+                          ref $thing->$prop eq q{}
+                          and $thing->$prop =~ m/^$match$/) ) {
             return 1 if not $all;
           }
-          else {
-            return 0 if $all;
-          }
-          next INLIST;
-      }
-
-      # prop is empty
-      if ($item =~ m/^([^:]+):$/) {
-          my $prop  = $1;
-
-          # if not an object, we can't do much with properties
-          next INLIST unless blessed $thing;
-
-          # lazy version of vendor: and model:
-          if ($neg xor ($thing->can($prop) and
-                (!defined eval { $thing->$prop } or $thing->$prop eq q{}))) {
+          # empty or missing property
+          elsif ($neg xor ($match eq q{} and
+                             (!defined eval { $thing->$prop } or $thing->$prop eq q{})) ) {
             return 1 if not $all;
           }
           else {
