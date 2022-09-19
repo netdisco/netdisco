@@ -99,21 +99,21 @@ sub check_acl {
       $thing->can('ip')    ? $thing->ip    : (
       $thing->can('addr')  ? $thing->addr  : $thing )));
   }
-  return 0 if !defined $real_ip
-    or blessed $real_ip; # class we do not understand
+  return 0 if blessed $real_ip; # class we do not understand
+  $real_ip ||= ''; # valid to be empty
 
-  $config  = [$config] if ref '' eq ref $config;
+  $config  = [$config] if ref q{} eq ref $config;
   if (ref [] ne ref $config) {
-    error "error: acl is not a single item or list (cannot compare to $real_ip)";
+    error "error: acl is not a single item or list (cannot compare to '$real_ip')";
     return 0;
   }
   my $all  = (scalar grep {$_ eq 'op:and'} @$config);
 
   # common case of using plain IP in ACL, so string compare for speed
   my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
-  return 1 if $find and not $all;
+  return 1 if $real_ip and $find and not $all;
 
-  my $addr = NetAddr::IP::Lite->new($real_ip) or return 0;
+  my $addr = NetAddr::IP::Lite->new($real_ip);
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
   my $qref = ref qr//;
@@ -123,6 +123,9 @@ sub check_acl {
       next INLIST if !defined $item or $item eq 'op:and';
 
       if ($qref eq ref $item) {
+          # if no IP addr, cannot match its dns
+          next INLIST unless $addr;
+
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
           if ($name =~ $item) {
             return 1 if not $all;
@@ -177,6 +180,9 @@ sub check_acl {
           my $first = $1;
           my $last  = $2;
 
+          # if no IP addr, cannot match IP range
+          next INLIST unless $addr;
+
           if ($item =~ m/:/) {
               next INLIST if $addr->bits != 128 and not $all;
 
@@ -215,6 +221,9 @@ sub check_acl {
 
       # could be something in error, and IP/host is only option left
       next INLIST if ref $item;
+
+      # if no IP addr, cannot match IP prefix
+      next INLIST unless $addr;
 
       my $ip = NetAddr::IP::Lite->new($item)
         or next INLIST;

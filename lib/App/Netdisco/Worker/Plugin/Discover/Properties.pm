@@ -305,14 +305,14 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
             next;
         }
         foreach my $dip (@{ $device_ips->{$port} }) {
-            $dip->set_inflated_columns({device_port => $deviceports{$port}});
+            $dip->set_inflated_columns({ device_port => $deviceports{$port} });
         }
     }
     foreach my $port (keys %deviceports) {
         next if exists $device_ips->{$port};
         push @{ $device_ips->{$port} },
           schema('netdisco')->resultset('DevicePort')
-                            ->new_result({ ip => $device->ip, %{ $deviceports{$port} } });
+                            ->new_result( $deviceports{$port} );
     }
 
     foreach my $map (@{ setting('ignore_deviceports')}) {
