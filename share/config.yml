@@ -147,7 +147,7 @@ sidebar_defaults:
     age_unit:      { default: months }
     p_vlan_names:  { label: 'Use VLAN Names', default: null, idx: 0 }
     p_hide1002:    { label: 'Hide VLAN 1002-1005', default: null, idx: 1 }
-    p_include_hidden: { label: 'Include Hidden Ports', default: checked, idx: 2 }
+    p_include_hidden: { label: 'Include Hidden Ports', default: null, idx: 2 }
   device_netmap:
     showips:     { default: null }
     showspeed:   { default: null }
@@ -210,7 +210,7 @@ check_userlog: false
 devport_vlan_limit: 150
 login_logo: ""
 defanged_admin: 'admin'
-hide_interfaces:
+hide_deviceports:
   'vendor:juniper':
     - 'group:__LOOPBACK_WITH_NO_IP__'
     - 'port:.+\.0'

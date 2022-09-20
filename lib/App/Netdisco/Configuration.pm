@@ -204,10 +204,10 @@ if (ref {} eq ref setting('macsuck_no_deviceport')) {
 }
 else { config->{'macsuck_no_deviceport'} ||= [] }
 
-if (ref {} eq ref setting('hide_interfaces')) {
-  config->{'hide_interfaces'} = [ setting('hide_interfaces') ];
+if (ref {} eq ref setting('hide_deviceports')) {
+  config->{'hide_deviceports'} = [ setting('hide_deviceports') ];
 }
-else { config->{'hide_interfaces'} ||= [] }
+else { config->{'hide_deviceports'} ||= [] }
 
 if (ref {} eq ref setting('ignore_deviceports')) {
   config->{'ignore_deviceports'} = [ setting('ignore_deviceports') ];
