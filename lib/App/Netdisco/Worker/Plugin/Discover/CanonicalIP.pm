@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission 'check_acl_only';
+use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::DNS 'ipv4_from_hostname';
 use App::Netdisco::Util::Device 'is_discoverable';
 use Dancer::Plugin::DBIC 'schema';
@@ -44,8 +44,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
         foreach my $key (sort keys %$map) {
           # lhs matches device, rhs matches device_ip
-          if (check_acl_only($device, $key)
-                and check_acl_only($alias, $map->{$key})) {
+          if (check_acl_no($device, $key)
+                and check_acl_no($alias, $map->{$key})) {
 
             if (not is_discoverable( $alias->alias )) {
               debug sprintf ' [%s] device - cannot renumber to %s - not discoverable',

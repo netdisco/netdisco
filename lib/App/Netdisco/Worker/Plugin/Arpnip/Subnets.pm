@@ -42,7 +42,7 @@ sub gather_subnets {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOCAL_ADDRESSES__');
+      next if check_acl_no($ip, 'group:__LOOPBACK_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $netmask = $ip_netmask->{$addr} || $ip->bits();
