@@ -210,14 +210,7 @@ check_userlog: false
 devport_vlan_limit: 150
 login_logo: ""
 defanged_admin: 'admin'
-hide_deviceports:
-  'vendor:juniper':
-    - 'group:__LOOPBACK_WITH_NO_IP__'
-    - 'port:.+\.0'
-    - 'port:irb(?:\.\d+)?'
-    - 'port:lsi(?:\.\d+)?'
-    - 'port:vtep(?:\.\d+)?'
-    - 'type:other'
+hide_deviceports: []
 
 # -------------
 # NETDISCO CORE
