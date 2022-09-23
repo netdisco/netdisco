@@ -76,7 +76,7 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="[% uri_for('/') | none %]">Netdisco</a>
+      <a class="brand" href="[% uri_for('') | none %]">Netdisco</a>
       [% IF session.logged_in_user %]
       <ul class="nav">
         [% FOREACH ni IN settings._navbar_items %]
@@ -170,6 +170,17 @@
           </ul>
         </div>
       </form>
+      <ul class="nav pull-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="icon-home text-success"></i> Offices <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="[% uri_for('#') | none %]">Data Centre</a></li>
+            <li><a href="[% uri_for('#') | none %]">Other</a></li>
+          </ul>
+        </li> <!-- /dropdown -->
+      </ul>
       <ul class="nav pull-right">
         <li class="nd_navbar-text">Logged in as&nbsp;</li>
         <li class="dropdown">

@@ -52,6 +52,25 @@ BEGIN {
               code => $status || 500)->render()
       )->throw;
   };
+
+  *Dancer::Request::uri_for = sub {
+    my ($self, $part, $params, $dont_escape) = @_;
+    my $uri = $self->base;
+
+    if (vars->{'tenant'}) {
+        $part = '/t/'. vars->{'tenant'} . $part;
+    }
+
+    # Make sure there's exactly one slash between the base and the new part
+    my $base = $uri->path;
+    $base =~ s|/$||;
+    $part =~ s|^/||;
+    $uri->path("$base/$part");
+
+    $uri->query_form($params) if $params;
+
+    return $dont_escape ? uri_unescape($uri->canonical) : $uri->canonical;
+  }
 }
 
 use App::Netdisco::Web::AuthN;
@@ -182,7 +201,9 @@ hook 'before_template' => sub {
 
     # allow portable static content
     $tokens->{uri_base} = request->base->path
-        if request->base->path ne '/';
+      if request->base->path ne '/';
+    $tokens->{uri_base} .= ('/t/'. vars->{'tenant'})
+      if vars->{tenant};
 
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
@@ -362,6 +383,18 @@ hook 'after' => sub {
 
         $r->content(join "\n", @newlines);
     }
+};
+
+# support for tenancies
+any qr{^/t/(?<tenant>[^/]+)/?$} => sub {
+    my $capture = captures;
+    var tenant => $capture->{tenant};
+    forward '/';
+};
+any '/t/*/**' => sub {
+    my ($tenant, $path) = splat;
+    var tenant => $tenant;
+    forward (join '/', '', @$path);
 };
 
 any qr{.*} => sub {
