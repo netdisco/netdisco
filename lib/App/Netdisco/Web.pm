@@ -84,11 +84,15 @@ BEGIN {
     $self->_build_path() unless $self->{path};
 
     if (vars->{'tenant'} and $self->{path} !~ m{/t/}) {
-        my $orig = $self->{path};
-        my $path = setting('path') || '';
-        $orig =~ s/^$path//;
-        my $new = ($path . '/t/' . vars->{'tenant'} . $orig);
-        return $new;
+        my $path = $self->{path};
+        my $base = setting('path');
+        my $tenant = '/t/' . vars->{'tenant'};
+
+        $tenant = ($base . $tenant) if $base ne '/';
+        $tenant .= '/' if $base eq '/';
+        $path =~ s/^$base/$tenant/;
+
+        return $path;
     }
     return $self->{path};
   };
