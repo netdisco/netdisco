@@ -18,6 +18,7 @@ use Path::Class 'dir';
 use Module::Load ();
 use Data::Visitor::Tiny;
 use Scalar::Util 'blessed';
+use Storable 'dclone';
 
 use App::Netdisco::Util::Web qw/
   interval_to_daterange
@@ -333,8 +334,23 @@ hook before_layout_render => sub {
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
 
-    if (request->path eq uri_for('/swagger.json')->path) {
-        $r->content( to_json( $r->content ) );
+    if (request->path eq uri_for('/swagger.json')->path
+          and ref {} eq ref $r->content) {
+        my $spec = dclone $r->content;
+
+        if (vars->{'tenant'}) {
+            my $base = setting('path');
+            my $tenant = '/t/' . vars->{'tenant'};
+            $tenant = ($base . $tenant) if $base ne '/';
+            $tenant .= '/' if $base eq '/';
+
+            foreach my $path (sort keys %{ $spec->{paths} }) {
+                (my $newpath = $path) =~ s/^$base/$tenant/;
+                $spec->{paths}->{$newpath} = delete $spec->{paths}->{$path};
+            }
+        }
+
+        $r->content( to_json( $spec ) );
         header('Content-Type' => 'application/json');
     }
 
