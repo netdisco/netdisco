@@ -63,11 +63,40 @@ if (ref {} eq ref setting('database')) {
 
     foreach my $c (@{setting('external_databases')}) {
         my $schema = delete $c->{tag} or next;
-        next if $schema eq 'netdisco';
+        next if exists setting('plugins')->{DBIC}->{$schema};
         setting('plugins')->{DBIC}->{$schema} = $c;
         setting('plugins')->{DBIC}->{$schema}->{schema_class}
           ||= 'App::Netdisco::GenericDB';
     }
+
+    foreach my $c (@{setting('tenant_databases')}) {
+        my $schema = $c->{tag} or next;
+        next if exists setting('plugins')->{DBIC}->{$schema};
+
+        my $name = $c->{name};
+        my $host = $c->{host};
+        my $user = $c->{user};
+        my $pass = $c->{pass};
+
+        my $dsn = "dbi:Pg:dbname=${name}";
+        $dsn .= ";host=${host}" if $host;
+
+        setting('plugins')->{DBIC}->{$schema} = {
+          dsn  => $dsn,
+          user => $user,
+          password => $pass,
+          options => {
+              AutoCommit => 1,
+              RaiseError => 1,
+              auto_savepoint => 1,
+              pg_enable_utf8 => 1,
+          },
+          schema_class => 'App::Netdisco::DB',
+        };
+    }
+
+    # and support tenancies by setting what the default schema points to
+    setting('plugins')->{DBIC}->{'default'}->{'alias'} = 'netdisco';
 }
 
 # always set this
