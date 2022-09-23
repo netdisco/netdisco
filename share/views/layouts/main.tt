@@ -170,19 +170,25 @@
           </ul>
         </div>
       </form>
+      [% IF settings.tenant_databases.size %]
+      [% SET tenant = vars.tenant %]
       <ul class="nav pull-right">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-home text-success"></i> Offices <b class="caret"></b>
+            <i class="icon-home text-success"></i>
+            &nbsp;[% IF tenant %][% settings.tenant_displaynames.$tenant %][% ELSE %]Default[% END %]
+            <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="[% uri_for('#') | none %]">Data Centre</a></li>
-            <li><a href="[% uri_for('#') | none %]">Other</a></li>
+            [% FOREACH t IN settings.tenant_displaynames.keys %]
+            [% NEXT IF t == tenant %]
+            <li><a href="[% uri_for() | none %]">[% settings.tenant_displaynames.$t %]</a></li>
+            [% END %]
           </ul>
         </li> <!-- /dropdown -->
       </ul>
+      [% END %]
       <ul class="nav pull-right">
-        <li class="nd_navbar-text">Logged in as&nbsp;</li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
           [% IF user_has_role('admin') %]

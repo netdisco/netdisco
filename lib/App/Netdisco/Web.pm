@@ -185,6 +185,15 @@ hook after_error_render => sub { setting('layout' => 'main') };
     for @port_columns;
 }
 
+# build lookup for tenancies
+{
+    set('tenant_displaynames' => {
+        map { ( $_->{tag} => $_->{displayname} ) }
+            @{ setting('tenant_databases') },
+            { tag => 'netdisco', displayname => 'Default' }
+    });
+}
+
 hook 'before' => sub {
   my $key = request->path;
   if (param('tab') and ($key !~ m/ajax/)) {
