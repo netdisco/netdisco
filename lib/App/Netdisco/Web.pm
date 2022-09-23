@@ -27,8 +27,9 @@ use App::Netdisco::Util::Web qw/
 /;
 
 BEGIN {
-  # https://github.com/PerlDancer/Dancer/issues/967
   no warnings 'redefine';
+
+  # https://github.com/PerlDancer/Dancer/issues/967
   *Dancer::_redirect = sub {
       my ($destination, $status) = @_;
       my $response = Dancer::SharedData->response;
@@ -53,6 +54,10 @@ BEGIN {
       )->throw;
   };
 
+  # to insert /t/$tenant if set
+  # which is fine for building links, but not fine for
+  # comparison to request->path, because when is_forward() the
+  # request->path is changed...
   *Dancer::Request::uri_for = sub {
     my ($self, $part, $params, $dont_escape) = @_;
     my $uri = $self->base;
@@ -70,7 +75,23 @@ BEGIN {
     $uri->query_form($params) if $params;
 
     return $dont_escape ? uri_unescape($uri->canonical) : $uri->canonical;
-  }
+  };
+
+  # ...so here we are monkeypatching request->path as well
+  *Dancer::Request::path = sub {
+    die "path is accessor not mutator" if scalar @_ > 1;
+    my $self = shift;
+    $self->_build_path() unless $self->{path};
+
+    if (vars->{'tenant'} and $self->{path} !~ m{/t/}) {
+        my $orig = $self->{path};
+        my $path = setting('path') || '';
+        $orig =~ s/^$path//;
+        my $new = ($path . '/t/' . vars->{'tenant'} . $orig);
+        return $new;
+    }
+    return $self->{path};
+  };
 }
 
 use App::Netdisco::Web::AuthN;
@@ -203,7 +224,7 @@ hook 'before_template' => sub {
     $tokens->{uri_base} = request->base->path
       if request->base->path ne '/';
     $tokens->{uri_base} .= ('/t/'. vars->{'tenant'})
-      if vars->{tenant};
+      if vars->{'tenant'};
 
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
@@ -388,7 +409,7 @@ hook 'after' => sub {
 # support for tenancies
 any qr{^/t/(?<tenant>[^/]+)/?$} => sub {
     my $capture = captures;
-    var tenant => $capture->{tenant};
+    var tenant => $capture->{'tenant'};
     forward '/';
 };
 any '/t/*/**' => sub {
