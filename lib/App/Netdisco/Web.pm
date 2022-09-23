@@ -394,7 +394,7 @@ any qr{^/t/(?<tenant>[^/]+)/?$} => sub {
 any '/t/*/**' => sub {
     my ($tenant, $path) = splat;
     var tenant => $tenant;
-    forward (join '/', '', @$path);
+    forward (join '/', '', @$path, (request->path =~ m{/$} ? '' : ()));
 };
 
 any qr{.*} => sub {
