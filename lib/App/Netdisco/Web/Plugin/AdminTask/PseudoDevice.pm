@@ -32,8 +32,8 @@ sub _sanity_ok {
 ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $device = schema('netdisco')->resultset('Device')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $device = schema(vars->{'tenant'})->resultset('Device')
         ->create({
           ip => param('ip'),
           dns => (hostname_from_ip(param('ip')) || ''),
@@ -55,7 +55,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
       ]);
 
       # device_ip table is used to show whether topo is "broken"
-      schema('netdisco')->resultset('DeviceIp')
+      schema(vars->{'tenant'})->resultset('DeviceIp')
         ->create({
           ip => param('ip'),
           alias => param('ip'),
@@ -66,8 +66,8 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
 ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $device = schema('netdisco')->resultset('Device')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $device = schema(vars->{'tenant'})->resultset('Device')
         ->with_port_count->find({ip => param('ip')});
       return unless $device;
       my $count = $device->port_count;
@@ -87,7 +87,7 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
                 ->single({port => "Port${port}"})->delete;
 
               # clear outdated manual topology links
-              schema('netdisco')->resultset('Topology')->search({
+              schema(vars->{'tenant'})->resultset('Topology')->search({
                 -or => [
                   { dev1 => $device->ip, port1 => "Port${port}" },
                   { dev2 => $device->ip, port2 => "Port${port}" },
@@ -106,7 +106,7 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
 };
 
 ajax '/ajax/content/admin/pseudodevice' => require_role admin => sub {
-    my $set = schema('netdisco')->resultset('Device')
+    my $set = schema(vars->{'tenant'})->resultset('Device')
       ->search(
         {-bool => 'is_pseudo'},
         {order_by => { -desc => 'last_discover' }},

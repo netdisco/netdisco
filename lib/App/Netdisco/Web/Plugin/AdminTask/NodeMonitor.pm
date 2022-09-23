@@ -24,8 +24,8 @@ sub _sanity_ok {
 ajax '/ajax/control/admin/nodemonitor/add' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $monitor = schema('netdisco')->resultset('NodeMonitor')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $monitor = schema(vars->{'tenant'})->resultset('NodeMonitor')
         ->create({
           mac => param('mac'),
           matchoui => (param('matchoui') ? \'true' : \'false'),
@@ -39,8 +39,8 @@ ajax '/ajax/control/admin/nodemonitor/add' => require_role admin => sub {
 ajax '/ajax/control/admin/nodemonitor/del' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('NodeMonitor')
+    schema(vars->{'tenant'})->txn_do(sub {
+      schema(vars->{'tenant'})->resultset('NodeMonitor')
         ->find({mac => param('mac')})->delete;
     });
 };
@@ -48,8 +48,8 @@ ajax '/ajax/control/admin/nodemonitor/del' => require_role admin => sub {
 ajax '/ajax/control/admin/nodemonitor/update' => require_role admin => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $monitor = schema('netdisco')->resultset('NodeMonitor')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $monitor = schema(vars->{'tenant'})->resultset('NodeMonitor')
         ->find({mac => param('mac')});
       return unless $monitor;
 
@@ -65,7 +65,7 @@ ajax '/ajax/control/admin/nodemonitor/update' => require_role admin => sub {
 };
 
 ajax '/ajax/content/admin/nodemonitor' => require_role admin => sub {
-    my $set = schema('netdisco')->resultset('NodeMonitor')
+    my $set = schema(vars->{'tenant'})->resultset('NodeMonitor')
       ->search(undef, { order_by => [qw/active date mac/] });
 
     content_type('text/html');

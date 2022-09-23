@@ -42,7 +42,7 @@ get '/ajax/content/report/nodevendor/data' => require_login sub {
 
     my $vendor = param('vendor');
 
-    my $rs = schema('netdisco')->resultset('Node');
+    my $rs = schema(vars->{'tenant'})->resultset('Node');
 
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
@@ -78,7 +78,7 @@ get '/ajax/content/report/nodevendor' => require_login sub {
 
     my $vendor = param('vendor');
 
-    my $rs = schema('netdisco')->resultset('Node');
+    my $rs = schema(vars->{'tenant'})->resultset('Node');
     my @results;
     
     if ( defined $vendor && !request->is_ajax ) {

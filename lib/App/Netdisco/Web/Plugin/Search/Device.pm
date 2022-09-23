@@ -72,10 +72,10 @@ get '/ajax/content/search/device' => require_login sub {
     my $see_all = param('seeallcolumns');
 
     if ($see_all) {
-      $rs_columns = schema('netdisco')->resultset('Device');
+      $rs_columns = schema(vars->{'tenant'})->resultset('Device');
     }
     else {
-      $rs_columns = schema('netdisco')->resultset('Device')->columns(
+      $rs_columns = schema(vars->{'tenant'})->resultset('Device')->columns(
             [   "ip",       "dns",   "name",
                 "location", "model", "os_ver", "serial", "chassis_id"
             ]

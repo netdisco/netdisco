@@ -97,7 +97,7 @@ sub test_connection {
   # avoid renumbering to localhost loopbacks
   return undef if $addr->addr eq '0.0.0.0'
                   or check_acl_no($addr->addr, 'group:__LOOPBACK_ADDRESSES__');
-  my $device = schema('netdisco')->resultset('Device')
+  my $device = schema(vars->{'tenant'})->resultset('Device')
     ->new_result({ ip => $addr->addr }) or return undef;
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};

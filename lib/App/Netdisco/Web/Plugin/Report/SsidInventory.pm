@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/ssidinventory' => require_login sub {
-    my @results = schema('netdisco')->resultset('DevicePortSsid')
+    my @results = schema(vars->{'tenant'})->resultset('DevicePortSsid')
         ->get_ssids->hri->all;
 
     return unless scalar @results;

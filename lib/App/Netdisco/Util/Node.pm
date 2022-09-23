@@ -175,13 +175,13 @@ sub store_arp {
 
   debug sprintf 'store_arp - mac %s ip %s', $mac->as_ieee, $ip;
 
-  schema('netdisco')->txn_do(sub {
-    my $current = schema('netdisco')->resultset('NodeIp')
+  schema(vars->{'tenant'})->txn_do(sub {
+    my $current = schema(vars->{'tenant'})->resultset('NodeIp')
       ->search(
         { ip => $ip, -bool => 'active'},
         { columns => [qw/mac ip/] })->update({active => \'false'});
 
-    schema('netdisco')->resultset('NodeIp')
+    schema(vars->{'tenant'})->resultset('NodeIp')
       ->update_or_create(
       {
         mac => $mac->as_ieee,

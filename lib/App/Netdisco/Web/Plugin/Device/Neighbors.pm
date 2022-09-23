@@ -19,7 +19,7 @@ ajax '/ajax/content/device/netmap' => require_login sub {
 
 ajax '/ajax/data/device/netmappositions' => require_login sub {
     my $q = param('q');
-    my $qdev = schema('netdisco')->resultset('Device')
+    my $qdev = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
 
     my $p = param('positions') or send_error('Missing positions', 400);
@@ -55,7 +55,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
     return unless scalar keys %clean;
 
-    my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
+    my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
       device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
@@ -66,7 +66,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
       $posrow->update({ positions => to_json(\%clean) });
     }
     else {
-      schema('netdisco')->resultset('NetmapPositions')->create({
+      schema(vars->{'tenant'})->resultset('NetmapPositions')->create({
         device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
         host_groups => [sort @hgrplist],
         locations   => [sort @lgrplist],
@@ -136,7 +136,7 @@ sub make_link_infostring {
 
 ajax '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
-    my $qdev = schema('netdisco')->resultset('Device')
+    my $qdev = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
 
     my $vlan = param('vlan');
@@ -168,7 +168,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # LINKS
 
     my %seen_link = ();
-    my $links = schema('netdisco')->resultset('Virtual::DeviceLinks')->search({
+    my $links = schema(vars->{'tenant'})->resultset('Virtual::DeviceLinks')->search({
       ($mapshow eq 'neighbors' ? ( -or => [
           { left_ip  => $qdev->ip },
           { right_ip => $qdev->ip },
@@ -195,7 +195,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     # DEVICES (NODES)
 
-    my $posrow = schema('netdisco')->resultset('NetmapPositions')->find({
+    my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
       device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
@@ -203,7 +203,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     });
     my $pos_for = from_json( $posrow ? $posrow->positions : '{}' );
 
-    my $devices = schema('netdisco')->resultset('Device')->search({}, {
+    my $devices = schema(vars->{'tenant'})->resultset('Device')->search({}, {
       '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
       join => 'throughput', distinct => 1,
     })->with_times;

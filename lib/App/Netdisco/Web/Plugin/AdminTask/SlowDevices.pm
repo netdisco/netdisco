@@ -13,7 +13,7 @@ register_admin_task({
 });
 
 ajax '/ajax/content/admin/slowdevices' => require_role admin => sub {
-    my $set = schema('netdisco')->resultset('Virtual::SlowDevices');
+    my $set = schema(vars->{'tenant'})->resultset('Virtual::SlowDevices');
 
     content_type('text/html');
     template 'ajax/admintask/slowdevices.tt', {

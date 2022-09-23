@@ -13,7 +13,7 @@ get '/ajax/content/device/addresses' => require_login sub {
     my $q = param('q');
 
     my $device
-        = schema('netdisco')->resultset('Device')->search_for_device($q)
+        = schema(vars->{'tenant'})->resultset('Device')->search_for_device($q)
         or send_error( 'Bad device', 400 );
 
     my @results = $device->device_ips

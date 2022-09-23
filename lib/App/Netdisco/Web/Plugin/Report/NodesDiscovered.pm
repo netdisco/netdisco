@@ -42,7 +42,7 @@ register_report(
 get '/ajax/content/report/nodesdiscovered' => require_login sub {
     my $op = param('matchall') ? '-and' : '-or';
 
-    my @results = schema('netdisco')->resultset('Virtual::NodesDiscovered')
+    my @results = schema(vars->{'tenant'})->resultset('Virtual::NodesDiscovered')
         ->search({
             $op => [
               (param('aps') ?

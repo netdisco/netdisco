@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/portblocking' => require_login sub {
-    my @results = schema('netdisco')->resultset('Device')->search(
+    my @results = schema(vars->{'tenant'})->resultset('Device')->search(
         { 'stp' => [ 'blocking', 'broken' ], 'up' => { '!=', 'down' } },
         {   select       => [ 'ip', 'dns', 'name' ],
             join         => ['ports'],

@@ -11,7 +11,7 @@ ajax '/ajax/data/devicename/typeahead' => require_login sub {
     return '[]' unless setting('navbar_autocomplete');
 
     my $q = param('query') || param('term');
-    my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
+    my $set = schema(vars->{'tenant'})->resultset('Device')->search_fuzzy($q);
 
     content_type 'application/json';
     to_json [map {$_->dns || $_->name || $_->ip} $set->all];
@@ -19,7 +19,7 @@ ajax '/ajax/data/devicename/typeahead' => require_login sub {
 
 ajax '/ajax/data/deviceip/typeahead' => require_login sub {
     my $q = param('query') || param('term');
-    my $set = schema('netdisco')->resultset('Device')->search_fuzzy($q);
+    my $set = schema(vars->{'tenant'})->resultset('Device')->search_fuzzy($q);
 
     my @data = ();
     while (my $d = $set->next) {
@@ -40,7 +40,7 @@ ajax '/ajax/data/port/typeahead' => require_login sub {
     my $port = param('port1') || param('port2');
     send_error('Missing device', 400) unless $dev;
 
-    my $device = schema('netdisco')->resultset('Device')
+    my $device = schema(vars->{'tenant'})->resultset('Device')
       ->find({ip => $dev});
     send_error('Bad device', 400) unless $device;
 
@@ -60,7 +60,7 @@ ajax '/ajax/data/port/typeahead' => require_login sub {
 ajax '/ajax/data/subnet/typeahead' => require_login sub {
     my $q = param('query') || param('term');
     $q = "$q\%" if $q !~ m/\%/;
-    my $nets = schema('netdisco')->resultset('Subnet')->search(
+    my $nets = schema(vars->{'tenant'})->resultset('Subnet')->search(
            { 'me.net::text'  => { '-ilike' => $q }},
            { columns => ['net'], order_by => 'net' } );
 

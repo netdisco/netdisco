@@ -13,8 +13,8 @@ register_admin_task({
 });
 
 ajax '/ajax/content/admin/duplicatedevices' => require_role admin => sub {
-    my @set = schema('netdisco')->resultset('Device')->search({
-      serial => { '-in' => schema('netdisco')->resultset('Device')->search({
+    my @set = schema(vars->{'tenant'})->resultset('Device')->search({
+      serial => { '-in' => schema(vars->{'tenant'})->resultset('Device')->search({
           '-and' => [serial => { '!=', undef }, serial => { '!=', '' }],
         }, {
           group_by => ['serial'],

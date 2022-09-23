@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/apclients' => require_login sub {
-    my @results = schema('netdisco')->resultset('Device')->search(
+    my @results = schema(vars->{'tenant'})->resultset('Device')->search(
         { 'nodes.time_last' => { '>=', \'me.last_macsuck' } },
         {   select => [ 'ip', 'dns', 'name', 'model', 'location' ],
             join       => { 'ports' => { 'ssid' => 'nodes' } },

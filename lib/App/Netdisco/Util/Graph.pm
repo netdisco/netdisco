@@ -373,13 +373,13 @@ Nodes without topology information are not included.
 sub make_graph {
     my $G = Graph::Undirected->new();
 
-    my $devices = schema('netdisco')->resultset('Device')
+    my $devices = schema(vars->{'tenant'})->resultset('Device')
         ->search({}, { columns => [qw/ip dns location /] });
-    my $links = schema('netdisco')->resultset('DevicePort')
+    my $links = schema(vars->{'tenant'})->resultset('DevicePort')
         ->search({remote_ip => { -not => undef }},
                  { columns => [qw/ip remote_ip speed remote_type/]});
     my %aliases = map {$_->alias => $_->ip}
-        schema('netdisco')->resultset('DeviceIp')
+        schema(vars->{'tenant'})->resultset('DeviceIp')
           ->search({}, { columns => [qw/ip alias/] })->all;
 
     my %devs = ( map {($_->ip => $_->dns)}      $devices->all );

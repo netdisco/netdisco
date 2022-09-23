@@ -24,7 +24,7 @@ hook 'before_template' => sub {
 
 get '/search' => require_login sub {
     my $q = param('q');
-    my $s = schema('netdisco');
+    my $s = schema(vars->{'tenant'});
 
     if (not param('tab')) {
         if (not $q) {

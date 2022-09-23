@@ -17,8 +17,8 @@ register_report(
 );
 
 get '/ajax/content/report/portvlanmismatch' => require_login sub {
-    return unless schema('netdisco')->resultset('Device')->count;
-    my @results = schema('netdisco')
+    return unless schema(vars->{'tenant'})->resultset('Device')->count;
+    my @results = schema(vars->{'tenant'})
       ->resultset('Virtual::PortVLANMismatch')->search({},{
           bind => [ setting('sidebar_defaults')->{'device_ports'}->{'p_hide1002'}->{'default'}
                       ? (1002, 1003, 1004, 1005) : (0, 0, 0, 0) ],

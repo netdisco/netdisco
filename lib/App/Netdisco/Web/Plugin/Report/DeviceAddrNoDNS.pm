@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/deviceaddrnodns' => require_login sub {
-    my @results = schema('netdisco')->resultset('Device')->search(
+    my @results = schema(vars->{'tenant'})->resultset('Device')->search(
         { 'device_ips.dns' => undef },
         {   select       => [ 'ip', 'dns', 'name', 'location', 'contact' ],
             join         => [qw/device_ips/],

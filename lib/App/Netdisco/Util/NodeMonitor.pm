@@ -29,7 +29,7 @@ sub _email {
 }
 
 sub monitor {
-  my $monitor = schema('netdisco')->resultset('Virtual::NodeMonitor');
+  my $monitor = schema(vars->{'tenant'})->resultset('Virtual::NodeMonitor');
 
   while (my $entry = $monitor->next) {
     my $body = <<"end_body";

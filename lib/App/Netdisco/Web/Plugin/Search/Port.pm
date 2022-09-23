@@ -45,7 +45,7 @@ get '/ajax/content/search/port' => require_login sub {
     my $rs;
 
     if ($q =~ m/^[0-9]+$/ and $q < 4096) {
-        $rs = schema('netdisco')->resultset('DevicePort')
+        $rs = schema(vars->{'tenant'})->resultset('DevicePort')
                 ->columns( [qw/ ip port name up up_admin speed /] )->search({
                   "port_vlans.vlan" => $q,
                   ( param('uplink') ? () : (-or => [
@@ -70,7 +70,7 @@ get '/ajax/content/search/port' => require_login sub {
           and (($mac->as_ieee eq '00:00:00:00:00:00')
             or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
-        $rs = schema('netdisco')->resultset('DevicePort')
+        $rs = schema(vars->{'tenant'})->resultset('DevicePort')
                                 ->columns( [qw/ ip port name up up_admin speed /] )
                                 ->search({
               -and => [

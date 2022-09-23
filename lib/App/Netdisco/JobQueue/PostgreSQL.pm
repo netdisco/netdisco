@@ -58,8 +58,8 @@ sub _get_denied_actions {
 }
 
 sub jq_warm_thrusters {
-  my @devices = schema('netdisco')->resultset('Device')->all;
-  my $rs = schema('netdisco')->resultset('DeviceSkip');
+  my @devices = schema(vars->{'tenant'})->resultset('Device')->all;
+  my $rs = schema(vars->{'tenant'})->resultset('DeviceSkip');
   my %actionset = ();
 
   foreach my $d (@devices) {
@@ -67,7 +67,7 @@ sub jq_warm_thrusters {
     $actionset{$d->ip} = \@badactions if scalar @badactions;
   }
 
-  schema('netdisco')->txn_do(sub {
+  schema(vars->{'tenant'})->txn_do(sub {
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
     }, { for => 'update' }, )->update({ actionset => [] });
@@ -93,9 +93,9 @@ sub jq_warm_thrusters {
 
   # fix up the pseudo devices which need layer 3
   # TODO remove this after next release
-  schema('netdisco')->txn_do(sub {
+  schema(vars->{'tenant'})->txn_do(sub {
     my @hosts = grep { defined }
-                map  { schema('netdisco')->resultset('Device')->search_for_device($_->{only}) }
+                map  { schema(vars->{'tenant'})->resultset('Device')->search_for_device($_->{only}) }
                 grep { exists $_->{only} and ref '' eq ref $_->{only} }
                 grep { exists $_->{driver} and $_->{driver} eq 'cli' }
                     @{ setting('device_auth') };
@@ -109,10 +109,10 @@ sub jq_getsome {
   my $num_slots = shift;
   return () unless $num_slots and $num_slots > 0;
 
-  my $jobs = schema('netdisco')->resultset('Admin');
+  my $jobs = schema(vars->{'tenant'})->resultset('Admin');
   my @returned = ();
 
-  my $tasty = schema('netdisco')->resultset('Virtual::TastyJobs')
+  my $tasty = schema(vars->{'tenant'})->resultset('Virtual::TastyJobs')
     ->search(undef,{ bind => [
       setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
       setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
@@ -127,7 +127,7 @@ sub jq_getsome {
       # and return false if it should have been skipped.
       my @badactions = _get_denied_actions($job->device);
       if (scalar @badactions) {
-        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+        schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
 
@@ -182,7 +182,7 @@ sub jq_getsome {
 
 sub jq_locked {
   my @returned = ();
-  my $rs = schema('netdisco')->resultset('Admin')->search({
+  my $rs = schema(vars->{'tenant'})->resultset('Admin')->search({
     status  => ('queued-'. setting('workers')->{'BACKEND'}),
     started => \[q/> (now() - ?::interval)/, setting('jobs_stale_after')],
   });
@@ -196,7 +196,7 @@ sub jq_locked {
 sub jq_queued {
   my $job_type = shift;
 
-  return schema('netdisco')->resultset('Admin')->search({
+  return schema(vars->{'tenant'})->resultset('Admin')->search({
     device => { '!=' => undef},
     action => $job_type,
     status => { -like => 'queued%' },
@@ -209,7 +209,7 @@ sub jq_lock {
 
   # lock db row and update to show job has been picked
   try {
-    my $updated = schema('netdisco')->resultset('Admin')
+    my $updated = schema(vars->{'tenant'})->resultset('Admin')
       ->search({ job => $job->id, status => 'queued' }, { for => 'update' })
       ->update({
           status  => ('queued-'. setting('workers')->{'BACKEND'}),
@@ -237,15 +237,15 @@ sub jq_defer {
   # behaviour seems reasonable, to me (or desirable, perhaps).
 
   try {
-    schema('netdisco')->txn_do(sub {
+    schema(vars->{'tenant'})->txn_do(sub {
       if ($job->device) {
-        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+        schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->increment_deferrals;
       }
 
       # lock db row and update to show job is available
-      schema('netdisco')->resultset('Admin')
+      schema(vars->{'tenant'})->resultset('Admin')
         ->find($job->id, {for => 'update'})
         ->update({ status => 'queued', started => undef });
     });
@@ -269,14 +269,14 @@ sub jq_complete {
   # connection failures counter to forget about occasional connect glitches.
 
   try {
-    schema('netdisco')->txn_do(sub {
+    schema(vars->{'tenant'})->txn_do(sub {
       if ($job->device) {
-        schema('netdisco')->resultset('DeviceSkip')->find_or_create({
+        schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
       }
 
-      schema('netdisco')->resultset('Admin')
+      schema(vars->{'tenant'})->resultset('Admin')
         ->find($job->id, {for => 'update'})->update({
           status => $job->status,
           log    => $job->log,
@@ -297,7 +297,7 @@ sub jq_complete {
 }
 
 sub jq_log {
-  return schema('netdisco')->resultset('Admin')->search({
+  return schema(vars->{'tenant'})->resultset('Admin')->search({
     'me.action' => { '-not_like' => 'hook::%' },
     -or => [
       { 'me.log' => undef },
@@ -312,7 +312,7 @@ sub jq_log {
 
 sub jq_userlog {
   my $user = shift;
-  return schema('netdisco')->resultset('Admin')->search({
+  return schema(vars->{'tenant'})->resultset('Admin')->search({
     username => $user,
     log      => { '-not_like' => 'duplicate of %' },
     finished => { '>' => \"(now() - interval '5 seconds')" },
@@ -328,8 +328,8 @@ sub jq_insert {
 
   my $happy = false;
   try {
-    schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('Admin')->populate([
+    schema(vars->{'tenant'})->txn_do(sub {
+      schema(vars->{'tenant'})->resultset('Admin')->populate([
         map {{
             device     => $_->{device},
             device_key => $_->{device_key},
@@ -355,14 +355,14 @@ sub jq_delete {
   my $id = shift;
 
   if ($id) {
-      schema('netdisco')->txn_do(sub {
-        schema('netdisco')->resultset('Admin')->find($id)->delete();
+      schema(vars->{'tenant'})->txn_do(sub {
+        schema(vars->{'tenant'})->resultset('Admin')->find($id)->delete();
       });
   }
   else {
-      schema('netdisco')->txn_do(sub {
-        schema('netdisco')->resultset('Admin')->delete();
-        schema('netdisco')->resultset('DeviceSkip')->delete();
+      schema(vars->{'tenant'})->txn_do(sub {
+        schema(vars->{'tenant'})->resultset('Admin')->delete();
+        schema(vars->{'tenant'})->resultset('DeviceSkip')->delete();
       });
   }
 }

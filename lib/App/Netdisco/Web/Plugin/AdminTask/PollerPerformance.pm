@@ -13,7 +13,7 @@ register_admin_task({
 });
 
 ajax '/ajax/content/admin/performance' => require_role admin => sub {
-    my $set = schema('netdisco')->resultset('Virtual::PollerPerformance');
+    my $set = schema(vars->{'tenant'})->resultset('Virtual::PollerPerformance');
 
     content_type('text/html');
     template 'ajax/admintask/performance.tt', {

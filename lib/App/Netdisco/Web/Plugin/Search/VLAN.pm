@@ -27,11 +27,11 @@ get '/ajax/content/search/vlan' => require_login sub {
     my $rs;
 
     if ( $q =~ m/^\d+$/ ) {
-        $rs = schema('netdisco')->resultset('Device')
+        $rs = schema(vars->{'tenant'})->resultset('Device')
             ->carrying_vlan( { vlan => $q } );
     }
     else {
-        $rs = schema('netdisco')->resultset('Device')
+        $rs = schema(vars->{'tenant'})->resultset('Device')
             ->carrying_vlan_name( { name => $q } );
     }
 

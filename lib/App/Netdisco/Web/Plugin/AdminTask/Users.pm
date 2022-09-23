@@ -34,8 +34,8 @@ sub _make_password {
 ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $user = schema('netdisco')->resultset('User')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $user = schema(vars->{'tenant'})->resultset('User')
         ->create({
           username => param('username'),
           password => _make_password(param('password')),
@@ -53,8 +53,8 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
 ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      schema('netdisco')->resultset('User')
+    schema(vars->{'tenant'})->txn_do(sub {
+      schema(vars->{'tenant'})->resultset('User')
         ->find({username => param('username')})->delete;
     });
 };
@@ -62,8 +62,8 @@ ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') =
 ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $user = schema('netdisco')->resultset('User')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $user = schema(vars->{'tenant'})->resultset('User')
         ->find({username => param('username')});
       return unless $user;
 
@@ -83,7 +83,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
 };
 
 get '/ajax/content/admin/users' => require_role admin => sub {
-    my @results = schema('netdisco')->resultset('User')
+    my @results = schema(vars->{'tenant'})->resultset('User')
       ->search(undef, {
         '+columns' => {
           created   => \"to_char(creation, 'YYYY-MM-DD HH24:MI')",

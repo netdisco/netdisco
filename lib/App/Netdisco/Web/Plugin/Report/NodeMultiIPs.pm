@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/nodemultiips' => require_login sub {
-    my @results = schema('netdisco')->resultset('Node')->search(
+    my @results = schema(vars->{'tenant'})->resultset('Node')->search(
         {},
         {   select     => [ 'mac', 'switch', 'port' ],
             join       => [qw/device ips oui/],

@@ -152,7 +152,7 @@ sub get_port {
   # accept either ip or dbic object
   $device = get_device($device);
 
-  my $port = schema('netdisco')->resultset('DevicePort')
+  my $port = schema(vars->{'tenant'})->resultset('DevicePort')
     ->find({ip => $device->ip, port => $portname});
 
   return $port;

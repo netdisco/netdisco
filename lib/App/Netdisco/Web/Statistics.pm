@@ -6,7 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 get '/ajax/content/statistics' => require_login sub {
 
-    my $stats = schema('netdisco')->resultset('Statistics')
+    my $stats = schema(vars->{'tenant'})->resultset('Statistics')
       ->search(undef, { order_by => { -desc => 'day' }, rows => 1 });
 
     $stats = ($stats->count ? $stats->first : undef);

@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/apchanneldist' => require_login sub {
-    my @results = schema('netdisco')->resultset('DevicePortWireless')->search(
+    my @results = schema(vars->{'tenant'})->resultset('DevicePortWireless')->search(
         { channel => { '!=', '0' } },
         {   select   => [ 'channel', { count => 'channel' } ],
             as       => [qw/ channel ch_count /],

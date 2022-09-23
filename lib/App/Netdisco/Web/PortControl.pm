@@ -29,13 +29,13 @@ ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
       ? (param('action') ."-other")
       : param('value'));
 
-    schema('netdisco')->txn_do(sub {
+    schema(vars->{'tenant'})->txn_do(sub {
       if (param('port')) {
           my $act = "$action $subaction";
           $act =~ s/-other$//;
           $act =~ s/^portcontrol/port/;
 
-          schema('netdisco')->resultset('DevicePortLog')->create({
+          schema(vars->{'tenant'})->resultset('DevicePortLog')->create({
             ip => param('device'),
             port => param('port'),
             action => $act,

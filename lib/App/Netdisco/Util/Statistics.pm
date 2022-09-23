@@ -31,7 +31,7 @@ figures.
 =cut
 
 sub update_stats {
-  my $schema = schema('netdisco');
+  my $schema = schema(vars->{'tenant'});
   eval { require SNMP::Info };
   my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
   my $postgres_ver = pretty_version($schema->storage->dbh->{pg_server_version}, 2);

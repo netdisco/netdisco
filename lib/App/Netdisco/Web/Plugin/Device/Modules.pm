@@ -13,7 +13,7 @@ register_device_tab({ tag => 'modules', label => 'Modules' });
 ajax '/ajax/content/device/modules' => require_login sub {
     my $q = param('q');
 
-    my $device = schema('netdisco')->resultset('Device')
+    my $device = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
     my @set = $device->modules->search({}, {order_by => { -asc => [qw/parent class pos index/] }});
 

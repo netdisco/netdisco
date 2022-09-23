@@ -57,12 +57,12 @@ sub get_device {
   # in case the management IP of one device is in use on another device,
   # we first try to get an exact match for the IP as mgmt interface.
   my $alias =
-    schema('netdisco')->resultset('DeviceIp')->find($ip, $ip)
+    schema(vars->{'tenant'})->resultset('DeviceIp')->find($ip, $ip)
     ||
-    schema('netdisco')->resultset('DeviceIp')->search({alias => $ip})->first;
+    schema(vars->{'tenant'})->resultset('DeviceIp')->search({alias => $ip})->first;
   $ip = $alias->ip if defined $alias;
 
-  return schema('netdisco')->resultset('Device')->with_times
+  return schema(vars->{'tenant'})->resultset('Device')->with_times
     ->find_or_new({ip => $ip});
 }
 
@@ -82,12 +82,12 @@ sub delete_device {
   return 0 if not $device->in_storage;
 
   my $happy = 0;
-  schema('netdisco')->txn_do(sub {
+  schema(vars->{'tenant'})->txn_do(sub {
     # will delete everything related too...
-    schema('netdisco')->resultset('Device')
+    schema(vars->{'tenant'})->resultset('Device')
       ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
 
-    schema('netdisco')->resultset('UserLog')->create({
+    schema(vars->{'tenant'})->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
       event => (sprintf "Delete device %s", $device->ip),
@@ -116,11 +116,11 @@ sub renumber_device {
   return 0 if not $device->in_storage;
 
   my $happy = 0;
-  schema('netdisco')->txn_do(sub {
+  schema(vars->{'tenant'})->txn_do(sub {
     $device->renumber($new_ip)
       or die "cannot renumber to: $new_ip"; # rollback
 
-    schema('netdisco')->resultset('UserLog')->create({
+    schema(vars->{'tenant'})->resultset('UserLog')->create({
       username => session('logged_in_user'),
       userip => scalar eval {request->remote_address},
       event => (sprintf "Renumber device %s to %s", $ip, $new_ip),

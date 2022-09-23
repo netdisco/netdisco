@@ -15,7 +15,7 @@ register_report(
 );
 
 get '/ajax/content/report/inventorybymodelbyos' => require_login sub {
-    my @results = schema('netdisco')->resultset('Device')->search(undef, {
+    my @results = schema(vars->{'tenant'})->resultset('Device')->search(undef, {
       columns => [qw/vendor model os os_ver/],
       select => [ { count => 'os_ver' } ],
       as => [qw/ os_ver_count /],

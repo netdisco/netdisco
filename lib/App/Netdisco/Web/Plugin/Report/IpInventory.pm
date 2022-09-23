@@ -66,7 +66,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     # server-side to provide user feedback
     $limit = 8192 if $limit > 8192;
 
-    my $rs1 = schema('netdisco')->resultset('DeviceIp')->search(
+    my $rs1 = schema(vars->{'tenant'})->resultset('DeviceIp')->search(
         undef,
         {   join   => ['device', 'device_port'],
             select => [
@@ -86,7 +86,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         }
     )->hri;
 
-    my $rs2 = schema('netdisco')->resultset('NodeIp')->search(
+    my $rs2 = schema(vars->{'tenant'})->resultset('NodeIp')->search(
         undef,
         {   join   => ['oui', 'netbios'],
             columns   => [qw( ip mac time_first time_last dns active)],
@@ -99,7 +99,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         }
     )->hri;
 
-    my $rs3 = schema('netdisco')->resultset('NodeNbt')->search(
+    my $rs3 = schema(vars->{'tenant'})->resultset('NodeNbt')->search(
         undef,
         {   join   => ['oui'], 
             columns   => [qw( ip mac time_first time_last )],
@@ -120,7 +120,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     if ( $never ) {
         $subnet = NetAddr::IP::Lite->new('0.0.0.0/32') if ($subnet->bits ne 32);
 
-        my $rs4 = schema('netdisco')->resultset('Virtual::CidrIps')->search(
+        my $rs4 = schema(vars->{'tenant'})->resultset('Virtual::CidrIps')->search(
             undef,
             {   bind => [ $subnet->cidr ],
                 columns   => [qw( ip mac time_first time_last dns active node age vendor nbname )],
