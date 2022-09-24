@@ -292,9 +292,9 @@ sub walk_fwtable {
   my $skiplist = {}; # ports through which we can see another device
   my $cache = {};
 
-  my $ignorelist = {}; # ports suppressed by macsuck_no_deviceport
-  if (scalar @{ setting('macsuck_no_deviceport') }) {
-      my @ignoremaps = @{ setting('macsuck_no_deviceport') };
+  my $ignorelist = {}; # ports suppressed by macsuck_no_deviceports
+  if (scalar @{ setting('macsuck_no_deviceports') }) {
+      my @ignoremaps = @{ setting('macsuck_no_deviceports') };
 
       foreach my $map (@ignoremaps) {
           next unless ref {} eq ref $map;
@@ -307,7 +307,7 @@ sub walk_fwtable {
                   next unless check_acl_only($device_ports->{$port}, $map->{$key});
 
                   ++$ignorelist->{$port};
-                  debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceport',
+                  debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceports',
                     $device->ip, $port;
               }
           }

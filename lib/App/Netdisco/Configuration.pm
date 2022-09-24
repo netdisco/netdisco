@@ -229,9 +229,12 @@ if (ref {} eq ref setting('device_identity')) {
 else { config->{'device_identity'} ||= [] }
 
 if (ref {} eq ref setting('macsuck_no_deviceport')) {
-  config->{'macsuck_no_deviceport'} = [ setting('macsuck_no_deviceport') ];
+  config->{'macsuck_no_deviceports'} = [ setting('macsuck_no_deviceport') ];
 }
-else { config->{'macsuck_no_deviceport'} ||= [] }
+if (ref {} eq ref setting('macsuck_no_deviceports')) {
+  config->{'macsuck_no_deviceports'} = [ setting('macsuck_no_deviceports') ];
+}
+else { config->{'macsuck_no_deviceports'} ||= [] }
 
 if (ref {} eq ref setting('hide_deviceports')) {
   config->{'hide_deviceports'} = [ setting('hide_deviceports') ];

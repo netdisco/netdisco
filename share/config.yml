@@ -310,7 +310,7 @@ macsuck_no_vlan:
   - 'SAM-vlan-appliance-management'
   - 'SAM-vlan-management'
 macsuck_no_devicevlan: []
-macsuck_no_deviceport: []
+macsuck_no_deviceports: []
 macsuck_unsupported: []
 macsuck_unsupported_type: []
 macsuck_bleed: false

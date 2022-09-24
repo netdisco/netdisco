@@ -1,3 +1,9 @@
+2.057002 - 2022-09-24
+
+  [BUG FIXES]
+
+  * rename setting macsuck_no_deviceport to macsuck_no_deviceports
+
 2.057001 - 2022-09-24
 
   [ENHANCEMENTS]
