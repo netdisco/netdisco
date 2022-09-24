@@ -188,7 +188,8 @@ hook after_error_render => sub { setting('layout' => 'main') };
 # build lookup for tenancies
 {
     set('tenant_displaynames' => {
-        map { ( $_->{tag} => $_->{displayname} ) }
+        map { ( $_->{tag} => { displayname => $_->{displayname},
+                               path => config->{url_base}->with("/t/$_->{tag}")->path } ) }
             @{ setting('tenant_databases') },
             { tag => 'netdisco', displayname => 'Default' }
     });
