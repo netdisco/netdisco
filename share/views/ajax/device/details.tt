@@ -6,6 +6,10 @@
       <td>[% d.name | html_entity %]</td>
     </tr>
     <tr>
+      <td>Canonical IP</td>
+      <td>[% d.ip | html_entity %]</td>
+    </tr>
+    <tr>
       <td>Location
       [% IF user_can_port_control %]
       <i class="icon-edit nd_edit-icon nd_device-details-edit"></i>

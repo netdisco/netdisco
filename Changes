@@ -1,5 +1,9 @@
 2.057002 - 2022-09-24
 
+  [ENHANCEMENTS]
+
+  * show canonical IP in Device Details tab
+
   [BUG FIXES]
 
   * rename setting macsuck_no_deviceport to macsuck_no_deviceports
