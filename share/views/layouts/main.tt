@@ -229,6 +229,8 @@
     event.preventDefault();
     var newpath = window.location.pathname;
     newpath = newpath.replace($(this).data('currenttenant'), "");
+    newpath = newpath.replace("[% settings.path %]", "/");
+    newpath = newpath.replace("//", "/");
     newpath = $(this).data('tenantpath').concat(newpath, window.location.search);
     window.location = newpath;
   });
