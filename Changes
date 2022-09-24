@@ -1,3 +1,13 @@
+2.057001 - 2022-09-24
+
+  [ENHANCEMENTS]
+
+  * sort the tenants in menu
+
+  [BUG FIXES]
+
+  * add missing require for URI::Based
+
 2.057000 - 2022-09-24
 
   [NEW FEATURES]
