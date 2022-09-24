@@ -19,6 +19,7 @@ use Module::Load ();
 use Data::Visitor::Tiny;
 use Scalar::Util 'blessed';
 use Storable 'dclone';
+use URI::Based;
 
 use App::Netdisco::Util::Web qw/
   interval_to_daterange
@@ -187,14 +188,18 @@ hook after_error_render => sub { setting('layout' => 'main') };
 
 # build lookup for tenancies
 {
-    set('tenant_displaynames' => {
-        map { ( $_->{tag} => { displayname => $_->{displayname},
-                               path => config->{url_base}->with("/t/$_->{tag}")->path } ) }
+    set('tenant_data' => {
+        map { ( $_->{tag} => { displayname => $_->{'displayname'},
+                               tag => $_->{'tag'},
+                               path => config->{'url_base'}->with("/t/$_->{tag}")->path } ) }
             @{ setting('tenant_databases') },
             { tag => 'netdisco', displayname => 'Default' }
     });
-    config->{'tenant_displaynames'}->{'netdisco'}->{'path'}
+    config->{'tenant_data'}->{'netdisco'}->{'path'}
       = URI::Based->new((config->{path} eq '/') ? '' : config->{path})->path;
+    set('tenant_tags' => [  map { $_->{'tag'} }
+                           sort { $a->{'displayname'} cmp $b->{'displayname'} }
+                                values %{ config->{'tenant_data'} } ]);
 }
 
 hook 'before' => sub {
