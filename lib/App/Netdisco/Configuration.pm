@@ -73,7 +73,7 @@ if (ref {} eq ref setting('database')) {
         my $schema = $c->{tag} or next;
         next if exists setting('plugins')->{DBIC}->{$schema};
 
-        my $name = $c->{name};
+        my $name = $c->{name} || $c->{tag};
         my $host = $c->{host};
         my $user = $c->{user};
         my $pass = $c->{pass};

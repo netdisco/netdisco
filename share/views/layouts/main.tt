@@ -227,11 +227,12 @@
   // tenant change
   $('.nd_navtenant').click(function(event) {
     event.preventDefault();
-    var newpath = window.location.pathname;
+    var url = new URL(window.History.getState()['url']);
+    var newpath = url.pathname;
     newpath = newpath.replace($(this).data('currenttenant'), "");
     newpath = newpath.replace("[% settings.path %]", "/");
     newpath = newpath.replace("//", "/");
-    newpath = $(this).data('tenantpath').concat(newpath, window.location.search);
+    newpath = $(this).data('tenantpath').concat(newpath, url.search);
     window.location = newpath;
   });
 

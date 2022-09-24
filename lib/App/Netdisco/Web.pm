@@ -193,6 +193,8 @@ hook after_error_render => sub { setting('layout' => 'main') };
             @{ setting('tenant_databases') },
             { tag => 'netdisco', displayname => 'Default' }
     });
+    config->{'tenant_displaynames'}->{'netdisco'}->{'path'}
+      = URI::Based->new((config->{path} eq '/') ? '' : config->{path})->path;
 }
 
 hook 'before' => sub {
