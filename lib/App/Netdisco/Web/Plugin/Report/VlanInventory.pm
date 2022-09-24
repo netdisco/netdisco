@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/vlaninventory' => require_login sub {
-    my @results = schema('netdisco')->resultset('DeviceVlan')->search(
+    my @results = schema(vars->{'tenant'})->resultset('DeviceVlan')->search(
         { 'me.description' => { '!=', 'NULL' },
           'me.vlan' => { '>' => 0 },
           'ports.vlan' => { '>' => 0 },

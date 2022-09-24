@@ -17,7 +17,7 @@ register_report(
 
 get '/ajax/content/report/devicebylocation' => require_login sub {
     my @results
-        = schema('netdisco')->resultset('Device')
+        = schema(vars->{'tenant'})->resultset('Device')
         ->columns(  [qw/ ip dns name location vendor model /] )
         ->order_by( [qw/ location name ip vendor model /] )->hri->all;
 

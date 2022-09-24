@@ -46,7 +46,7 @@ get '/ajax/content/report/portssid' => require_login sub {
 
     my $ssid = param('ssid');
 
-    my $rs = schema('netdisco')->resultset('DevicePortSsid');
+    my $rs = schema(vars->{'tenant'})->resultset('DevicePortSsid');
 
     if ( defined $ssid ) {
 

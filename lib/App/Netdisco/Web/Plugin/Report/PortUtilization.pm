@@ -28,11 +28,11 @@ register_report(
 );
 
 get '/ajax/content/report/portutilization' => require_login sub {
-    return unless schema('netdisco')->resultset('Device')->count;
+    return unless schema(vars->{'tenant'})->resultset('Device')->count;
 
     my $age_num = param('age_num') || 3;
     my $age_unit = param('age_unit') || 'months';
-    my @results = schema('netdisco')->resultset('Virtual::PortUtilization')
+    my @results = schema(vars->{'tenant'})->resultset('Virtual::PortUtilization')
       ->search(undef, { bind => [ "$age_num $age_unit", "$age_num $age_unit", "$age_num $age_unit" ] })->hri->all;
 
     if (request->is_ajax) {

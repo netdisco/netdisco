@@ -17,6 +17,7 @@ include_paths:  []
 template_paths: []
 site_local_files: false
 external_databases: []
+tenant_databases: []
 
 # ------------
 # WEB FRONTEND

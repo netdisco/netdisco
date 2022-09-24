@@ -35,7 +35,7 @@ sub _sanity_ok {
 ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_control)] => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    my $device = schema('netdisco')->resultset('Topology')
+    my $device = schema(vars->{'tenant'})->resultset('Topology')
       ->create({
         dev1  => param('dev1'),
         port1 => param('port1'),
@@ -46,7 +46,7 @@ ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_contr
     # re-set remote device details in affected ports
     # could fail for bad device or port names
     try {
-        schema('netdisco')->txn_do(sub {
+        schema(vars->{'tenant'})->txn_do(sub {
           # only work on root_ips
           my $left  = get_device(param('dev1'));
           my $right = get_device(param('dev2'));
@@ -84,8 +84,8 @@ ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_contr
 ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_control)] => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $device = schema('netdisco')->resultset('Topology')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $device = schema(vars->{'tenant'})->resultset('Topology')
         ->search({
           dev1  => param('dev1'),
           port1 => param('port1'),
@@ -97,7 +97,7 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
     # re-set remote device details in affected ports
     # could fail for bad device or port names
     try {
-        schema('netdisco')->txn_do(sub {
+        schema(vars->{'tenant'})->txn_do(sub {
           # only work on root_ips
           my $left  = get_device(param('dev1'));
           my $right = get_device(param('dev2'));
@@ -133,7 +133,7 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
 };
 
 ajax '/ajax/content/admin/topology' => require_any_role [qw(admin port_control)] => sub {
-    my $set = schema('netdisco')->resultset('Topology')
+    my $set = schema(vars->{'tenant'})->resultset('Topology')
       ->search({},{order_by => [qw/dev1 dev2 port1/]});
 
     content_type('text/html');

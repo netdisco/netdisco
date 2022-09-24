@@ -12,11 +12,11 @@ register_device_tab({ tag => 'details', label => 'Details' });
 # device details table
 ajax '/ajax/content/device/details' => require_login sub {
     my $q = param('q');
-    my $device = schema('netdisco')->resultset('Device')
+    my $device = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
 
     my @results
-        = schema('netdisco')->resultset('Device')
+        = schema(vars->{'tenant'})->resultset('Device')
         ->search({ 'me.ip' => $device->ip },
           {
             '+select' => ['snapshot.ip'],
@@ -27,11 +27,11 @@ ajax '/ajax/content/device/details' => require_login sub {
         ->hri->all;
 
     my @power
-        = schema('netdisco')->resultset('DevicePower')
+        = schema(vars->{'tenant'})->resultset('DevicePower')
         ->search( { 'me.ip' => $device->ip } )->with_poestats->hri->all;
 
     my @interfaces
-        = schema('netdisco')->resultset('Device')
+        = schema(vars->{'tenant'})->resultset('Device')
         ->find($device->ip)
         ->device_ips->hri->all;
 

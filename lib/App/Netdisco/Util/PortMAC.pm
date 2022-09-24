@@ -36,7 +36,7 @@ sub get_port_macs {
     my $bindarray = [ { sqlt_datatype => "array" }, $fw_mac_list ];
 
     my $macs
-        = schema('netdisco')->resultset('Virtual::PortMacs')->search({},
+        = schema(vars->{'tenant'})->resultset('Virtual::PortMacs')->search({},
         { bind => [$bindarray, $bindarray], select => [ 'mac', 'ip' ], group_by => [ 'mac', 'ip' ] } );
     my $cursor = $macs->cursor;
     while ( my @vals = $cursor->next ) {

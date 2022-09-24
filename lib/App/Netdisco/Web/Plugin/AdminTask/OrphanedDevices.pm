@@ -17,11 +17,11 @@ register_admin_task(
 
 get '/ajax/content/admin/orphaned' => require_role admin => sub {
 
-    my @tree = schema('netdisco')->resultset('Virtual::UnDirEdgesAgg')
+    my @tree = schema(vars->{'tenant'})->resultset('Virtual::UnDirEdgesAgg')
         ->search( undef, { prefetch => 'device' } )->hri->all;
 
     my @orphans
-        = schema('netdisco')->resultset('Virtual::OrphanedDevices')->search()
+        = schema(vars->{'tenant'})->resultset('Virtual::OrphanedDevices')->search()
         ->order_by('ip')->hri->all;
 
     return unless ( scalar @tree || scalar @orphans );

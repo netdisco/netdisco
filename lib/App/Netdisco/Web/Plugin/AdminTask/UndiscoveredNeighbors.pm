@@ -23,7 +23,7 @@ register_admin_task(
 
 get '/ajax/content/admin/undiscoveredneighbors' => require_role admin => sub {
     my @results
-        = schema('netdisco')->resultset('Virtual::UndiscoveredNeighbors')->hri->all;
+        = schema(vars->{'tenant'})->resultset('Virtual::UndiscoveredNeighbors')->hri->all;
     return unless scalar @results;
 
     if ( request->is_ajax ) {

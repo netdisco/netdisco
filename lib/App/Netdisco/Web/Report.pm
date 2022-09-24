@@ -11,24 +11,24 @@ get '/report/*' => require_login sub {
     my ( $domain_list, $class_list, $ssid_list, $type_list, $vendor_list );
 
     if ( $tag eq 'netbios' ) {
-        $domain_list = [ schema('netdisco')->resultset('NodeNbt')
+        $domain_list = [ schema(vars->{'tenant'})->resultset('NodeNbt')
                 ->get_distinct_col('domain') ];
     }
     elsif ( $tag eq 'moduleinventory' ) {
-        $class_list = [ schema('netdisco')->resultset('DeviceModule')
+        $class_list = [ schema(vars->{'tenant'})->resultset('DeviceModule')
                 ->get_distinct_col('class') ];
     }
     elsif ( $tag eq 'portssid' ) {
-        $ssid_list = [ schema('netdisco')->resultset('DevicePortSsid')
+        $ssid_list = [ schema(vars->{'tenant'})->resultset('DevicePortSsid')
                 ->get_distinct_col('ssid') ];
     }
     elsif ( $tag eq 'nodesdiscovered' ) {
-        $type_list = [ schema('netdisco')->resultset('DevicePort')
+        $type_list = [ schema(vars->{'tenant'})->resultset('DevicePort')
                 ->get_distinct_col('remote_type') ];
     }
     elsif ( $tag eq 'nodevendor' ) {
         $vendor_list = [
-            schema('netdisco')->resultset('Node')->search(
+            schema(vars->{'tenant'})->resultset('Node')->search(
                 {},
                 {   join     => 'oui',
                     columns  => ['oui.abbrev'],

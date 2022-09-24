@@ -13,8 +13,8 @@ register_navbar_item({
 });
 
 get '/inventory' => require_login sub {
-    my $platforms = schema('netdisco')->resultset('Device')->get_platforms();
-    my $releases = schema('netdisco')->resultset('Device')->get_releases();
+    my $platforms = schema(vars->{'tenant'})->resultset('Device')->get_platforms();
+    my $releases = schema(vars->{'tenant'})->resultset('Device')->get_releases();
 
     my %release_map = (
       map  { (join '', map {sprintf '%05s', $_} split m/(\D)/, ($_->{os_ver} || '')) => $_ }

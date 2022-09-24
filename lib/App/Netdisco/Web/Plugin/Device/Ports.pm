@@ -18,7 +18,7 @@ get '/ajax/content/device/ports' => require_login sub {
     $prefer = ''
       unless defined $prefer and $prefer =~ m/^(?:port|name|vlan)$/;
 
-    my $device = schema('netdisco')->resultset('Device')
+    my $device = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);
     my $set = $device->ports->with_properties;
 

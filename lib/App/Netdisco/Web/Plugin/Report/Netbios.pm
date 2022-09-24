@@ -41,7 +41,7 @@ get '/ajax/content/report/netbios/data' => require_login sub {
 
     my $domain = param('domain');
 
-    my $rs = schema('netdisco')->resultset('NodeNbt');
+    my $rs = schema(vars->{'tenant'})->resultset('NodeNbt');
 
     my $search = $domain eq 'blank' ? '' : $domain;
     $rs = $rs->search( { domain => $search } )
@@ -69,7 +69,7 @@ get '/ajax/content/report/netbios' => require_login sub {
 
     my $domain = param('domain');
 
-    my $rs = schema('netdisco')->resultset('NodeNbt');
+    my $rs = schema(vars->{'tenant'})->resultset('NodeNbt');
     my @results;
 
     if ( defined $domain && !request->is_ajax ) {

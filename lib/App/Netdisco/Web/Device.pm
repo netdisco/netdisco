@@ -63,7 +63,7 @@ hook 'before_template' => sub {
 
 get '/device' => require_login sub {
     my $q = param('q');
-    my $devices = schema('netdisco')->resultset('Device');
+    my $devices = schema(vars->{'tenant'})->resultset('Device');
 
     # we are passed either dns or ip
     my $dev = $devices->search({
@@ -86,7 +86,7 @@ get '/device' => require_login sub {
     template 'device', {
       is_pseudo => $first->is_pseudo,
       display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
-      lgroup_list => [ schema('netdisco')->resultset('Device')->get_distinct_col('location') ],
+      lgroup_list => [ schema(vars->{'tenant'})->resultset('Device')->get_distinct_col('location') ],
       hgroup_list => setting('host_group_displaynames'),
       device => params->{'tab'},
     }, { layout => 'main' };

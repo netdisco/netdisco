@@ -20,7 +20,7 @@ get '/ajax/content/report/devicednsmismatch' => require_login sub {
     (my $suffix = '***:'. setting('domain_suffix')) =~ s|\Q(?^\Eu?|(?|g;
 
     my @results
-        = schema('netdisco')->resultset('Virtual::DeviceDnsMismatch')
+        = schema(vars->{'tenant'})->resultset('Virtual::DeviceDnsMismatch')
         ->search( undef, { bind => [ $suffix, $suffix ] } )
         ->columns( [qw/ ip dns name location contact /] )->hri->all;
 

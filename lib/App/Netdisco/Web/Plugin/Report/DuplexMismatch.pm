@@ -17,7 +17,7 @@ register_report(
 
 get '/ajax/content/report/duplexmismatch' => require_login sub {
     my @results
-        = schema('netdisco')->resultset('Virtual::DuplexMismatch')->hri->all;
+        = schema(vars->{'tenant'})->resultset('Virtual::DuplexMismatch')->hri->all;
 
     return unless scalar @results;
 

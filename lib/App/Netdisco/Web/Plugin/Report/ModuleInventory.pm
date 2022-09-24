@@ -41,11 +41,11 @@ get '/ajax/content/report/moduleinventory/data' => require_login sub {
     send_error( 'Missing parameter', 400 )
         unless ( param('draw') && param('draw') =~ /\d+/ );
 
-    my $rs = schema('netdisco')->resultset('DeviceModule');
+    my $rs = schema(vars->{'tenant'})->resultset('DeviceModule');
     $rs = $rs->search( { -bool => 'fru' } ) if param('fruonly');
 
     if ( param('device') ) {
-        my @ips = schema('netdisco')->resultset('Device')
+        my @ips = schema(vars->{'tenant'})->resultset('Device')
             ->search_fuzzy( param('device') )->get_column('ip')->all;
 
         params->{'ips'} = \@ips;
@@ -87,14 +87,14 @@ get '/ajax/content/report/moduleinventory' => require_login sub {
     my $has_opt = List::MoreUtils::any { param($_) }
     qw/device description name type model serial class/;
 
-    my $rs = schema('netdisco')->resultset('DeviceModule');
+    my $rs = schema(vars->{'tenant'})->resultset('DeviceModule');
     $rs = $rs->search( { -bool => 'fru' } ) if param('fruonly');
     my @results;
 
     if ( $has_opt && !request->is_ajax ) {
 
         if ( param('device') ) {
-            my @ips = schema('netdisco')->resultset('Device')
+            my @ips = schema(vars->{'tenant'})->resultset('Device')
                 ->search_fuzzy( param('device') )->get_column('ip')->all;
 
             params->{'ips'} = \@ips;

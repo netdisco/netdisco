@@ -16,7 +16,7 @@ register_report(
 );
 
 get '/ajax/content/report/portadmindown' => require_login sub {
-    my @results = schema('netdisco')->resultset('Device')->search(
+    my @results = schema(vars->{'tenant'})->resultset('Device')->search(
         { 'up_admin' => 'down' },
         {   select       => [ 'ip', 'dns', 'name' ],
             join       => [ 'ports' ],

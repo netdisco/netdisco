@@ -15,10 +15,10 @@ use Module::Load ();
 use Try::Tiny;
 
 register_device_tab({ tag => 'snmp', label => 'SNMP',
-  render_if => sub { schema('netdisco')->resultset('DeviceBrowser')->count() } });
+  render_if => sub { schema(vars->{'tenant'})->resultset('DeviceBrowser')->count() } });
 
 get '/ajax/content/device/snmp' => require_login sub {
-    my $device = try { schema('netdisco')->resultset('Device')
+    my $device = try { schema(vars->{'tenant'})->resultset('Device')
                                    ->search_for_device( param('q') ) }
        or send_error('Bad Device', 404);
 
@@ -27,7 +27,7 @@ get '/ajax/content/device/snmp' => require_login sub {
 };
 
 ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
-    my $device = try { schema('netdisco')->resultset('Device')
+    my $device = try { schema(vars->{'tenant'})->resultset('Device')
                                          ->find( param('ip') ) }
        or send_error('Bad Device', 404);
 
@@ -41,14 +41,14 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
-    }] unless schema('netdisco')->resultset('DeviceSnapshot')->find($device->ip);
+    }] unless schema(vars->{'tenant'})->resultset('DeviceSnapshot')->find($device->ip);
 
     return to_json [{
       text => 'No MIB data. Please run `~/bin/netdisco-do loadmibs`.',
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
-    }] unless schema('netdisco')->resultset('SNMPObject')->count();
+    }] unless schema(vars->{'tenant'})->resultset('SNMPObject')->count();
 
     my $items = _get_snmp_data($device->ip, $base);
     to_json $items;
@@ -61,7 +61,7 @@ ajax '/ajax/data/snmp/typeahead' => require_login sub {
     my $deviceonly = param('deviceonly');
     my $table = ($deviceonly ? 'DeviceBrowser' : 'SNMPObject');
 
-    my @found = schema('netdisco')->resultset($table)
+    my @found = schema(vars->{'tenant'})->resultset($table)
       ->search({ -or => [ oid => $term,
                           oid => { -like => ($term .'.%') },
                           leaf => { -ilike => ('%'. $term .'%') } ],
@@ -80,14 +80,14 @@ ajax '/ajax/data/snmp/nodesearch' => require_login sub {
 
     my $found = undef;
     if ($partial) {
-        $found = schema('netdisco')->resultset('SNMPObject')
+        $found = schema(vars->{'tenant'})->resultset('SNMPObject')
           ->search({ -or => [ oid => $to_match,
                               oid => { -like => ($to_match .'.%') },
                               leaf => { -ilike => ($to_match .'%') } ] },
                    { rows => 1, order_by => 'oid_parts' })->first;
     }
     else {
-        $found = schema('netdisco')->resultset('SNMPObject')
+        $found = schema(vars->{'tenant'})->resultset('SNMPObject')
           ->search({ -or => [ oid => $to_match,
                               leaf => $to_match ] },
                    { rows => 1, order_by => 'oid_parts' })->first;
@@ -108,14 +108,14 @@ ajax '/ajax/data/snmp/nodesearch' => require_login sub {
 };
 
 ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
-    my $device = try { schema('netdisco')->resultset('Device')
+    my $device = try { schema(vars->{'tenant'})->resultset('Device')
                                          ->find( param('ip') ) }
        or send_error('Bad Device', 404);
 
     my $oid = param('oid');
     $oid =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID', 404);
 
-    my $object = schema('netdisco')->resultset('DeviceBrowser')
+    my $object = schema(vars->{'tenant'})->resultset('DeviceBrowser')
       ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
       or send_error('Bad OID', 404);
 
@@ -138,7 +138,7 @@ sub _get_snmp_data {
     my @parts = grep {length} split m/\./, $base;
 
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
-               schema('netdisco')->resultset('Virtual::FilteredSNMPObject')
+               schema(vars->{'tenant'})->resultset('Virtual::FilteredSNMPObject')
                                  ->search({}, { bind => [
                                      $ip,
                                      (scalar @parts + 1),

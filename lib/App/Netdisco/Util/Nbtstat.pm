@@ -120,7 +120,7 @@ sub _filter_nbname {
     unless ( check_mac( $mac, $ip ) ) {
 
         # Just assume it's the last MAC we saw this IP at.
-        my $node_ip = schema('netdisco')->resultset('NodeIp')
+        my $node_ip = schema(vars->{'tenant'})->resultset('NodeIp')
             ->single( { ip => $ip, -bool => 'active' } );
 
         if ( !defined $node_ip ) {
@@ -158,7 +158,7 @@ sub store_nbt {
     my ( $hash_ref, $now ) = @_;
     $now ||= 'now()';
 
-    schema('netdisco')->resultset('NodeNbt')->update_or_create(
+    schema(vars->{'tenant'})->resultset('NodeNbt')->update_or_create(
         {   mac       => $hash_ref->{'mac'},
             ip        => $hash_ref->{'ip'},
             nbname    => $hash_ref->{'nbname'},

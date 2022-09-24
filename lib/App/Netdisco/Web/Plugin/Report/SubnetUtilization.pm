@@ -40,7 +40,7 @@ get '/ajax/content/report/subnets' => require_login sub {
     $start = $start . ' 00:00:00';
     $end   = $end . ' 23:59:59';
 
-    my @results = schema('netdisco')->resultset('Virtual::SubnetUtilization')
+    my @results = schema(vars->{'tenant'})->resultset('Virtual::SubnetUtilization')
       ->search(undef,{
         bind => [ $subnet, $start, $end, $start, $subnet, $start, $start ],
       })->hri->all;

@@ -76,7 +76,7 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="[% uri_for('/') | none %]">Netdisco</a>
+      <a class="brand" href="[% uri_for('') | none %]">Netdisco</a>
       [% IF session.logged_in_user %]
       <ul class="nav">
         [% FOREACH ni IN settings._navbar_items %]
@@ -170,8 +170,29 @@
           </ul>
         </div>
       </form>
+      [% IF settings.tenant_databases.size %]
+      [% SET tenant = vars.tenant %]
       <ul class="nav pull-right">
-        <li class="nd_navbar-text">Logged in as&nbsp;</li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="icon-home text-success"></i>
+            &nbsp;[% settings.tenant_displaynames.$tenant.displayname || 'Default' | html_entity %]
+            <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            [% FOREACH t IN settings.tenant_displaynames.keys %]
+            [% NEXT IF tenant AND t == tenant %]
+            [% NEXT IF NOT tenant and t == 'netdisco' %]
+            <li><a class="nd_navtenant" href=""
+              data-currenttenant="[% settings.tenant_displaynames.$tenant.path || settings.tenant_displaynames.netdisco.path %]"
+              data-tenantpath="[% settings.tenant_displaynames.$t.path %]"
+              data-tenant="[% t %]">[% settings.tenant_displaynames.$t.displayname | html_entity %]</a></li>
+            [% END %]
+          </ul>
+        </li> <!-- /dropdown -->
+      </ul>
+      [% END %]
+      <ul class="nav pull-right">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
           [% IF user_has_role('admin') %]
@@ -202,6 +223,19 @@
 
 <script type="text/javascript">
 [%+ INCLUDE 'js/common.js' -%]
+
+  // tenant change
+  $('.nd_navtenant').click(function(event) {
+    event.preventDefault();
+    var url = new URL(window.History.getState()['url']);
+    var newpath = url.pathname;
+    newpath = newpath.replace($(this).data('currenttenant'), "");
+    newpath = newpath.replace("[% settings.path %]", "/");
+    newpath = newpath.replace("//", "/");
+    newpath = $(this).data('tenantpath').concat(newpath, url.search);
+    window.location = newpath;
+  });
+
 </script>
 
 </body>

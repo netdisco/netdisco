@@ -26,8 +26,8 @@ sub _sanity_ok {
 ajax '/ajax/control/report/portlog/add' => require_login sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema('netdisco')->txn_do(sub {
-      my $user = schema('netdisco')->resultset('DevicePortLog')
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $user = schema(vars->{'tenant'})->resultset('DevicePortLog')
         ->create({
           ip => param('ip'),
           port => param('port'),
@@ -45,11 +45,11 @@ ajax '/ajax/content/report/portlog' => require_login sub {
     my $port = param('f');
     send_error('Bad Request', 400) unless $device and $port;
 
-    $device = schema('netdisco')->resultset('Device')
+    $device = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($device);
     return unless $device;
 
-    my $set = schema('netdisco')->resultset('DevicePortLog')->search({
+    my $set = schema(vars->{'tenant'})->resultset('DevicePortLog')->search({
         ip => $device->ip,
         port => $port,
       }, {

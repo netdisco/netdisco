@@ -131,7 +131,7 @@ get '/ajax/content/search/node' => require_login sub {
       ($using_wildcards ? \['me.mac::text ILIKE ?', $likeval]
                         : ((!defined $mac or $mac->errstr) ? \'0=1' : ('me.mac' => $mac->as_ieee)) );
 
-    my $sightings = schema('netdisco')->resultset('Node')
+    my $sightings = schema(vars->{'tenant'})->resultset('Node')
       ->search({-and => [@where_mac, @active, @times]}, {
           order_by => {'-desc' => 'time_last'},
           '+columns' => [
@@ -143,7 +143,7 @@ get '/ajax/content/search/node' => require_login sub {
           join => 'device',
       });
 
-    my $ips = schema('netdisco')->resultset('NodeIp')
+    my $ips = schema(vars->{'tenant'})->resultset('NodeIp')
       ->search({-and => [@where_mac, @active, @times]}, {
           order_by => {'-desc' => 'time_last'},
           '+columns' => [
@@ -155,7 +155,7 @@ get '/ajax/content/search/node' => require_login sub {
           join => 'oui'
       });
 
-    my $netbios = schema('netdisco')->resultset('NodeNbt')
+    my $netbios = schema(vars->{'tenant'})->resultset('NodeNbt')
       ->search({-and => [@where_mac, @active, @times]}, {
           order_by => {'-desc' => 'time_last'},
           '+columns' => [
@@ -167,7 +167,7 @@ get '/ajax/content/search/node' => require_login sub {
           join => 'oui'
       });
 
-    my $wireless = schema('netdisco')->resultset('NodeWireless')->search(
+    my $wireless = schema(vars->{'tenant'})->resultset('NodeWireless')->search(
         { -and => [@where_mac, @wifitimes] },
         { order_by   => { '-desc' => 'time_last' },
           '+columns' => [
@@ -180,7 +180,7 @@ get '/ajax/content/search/node' => require_login sub {
         }
     );
 
-    my $rs_dp = schema('netdisco')->resultset('DevicePort');
+    my $rs_dp = schema(vars->{'tenant'})->resultset('DevicePort');
     if ($sightings->has_rows or $ips->has_rows or $netbios->has_rows) {
         my $ports = param('deviceports')
           ? $rs_dp->search({ -and => [@where_mac] }, { order_by => { '-desc' => 'creation' }}) : undef;
@@ -208,7 +208,7 @@ get '/ajax/content/search/node' => require_login sub {
         }
     }
 
-    my $set = schema('netdisco')->resultset('NodeNbt')
+    my $set = schema(vars->{'tenant'})->resultset('NodeNbt')
         ->search_by_name({nbname => $likeval, @active, @times});
 
     unless ( $set->has_rows ) {
@@ -216,11 +216,11 @@ get '/ajax/content/search/node' => require_login sub {
             and my $ip = NetAddr::IP::Lite->new($node)) {
 
             # search_by_ip() will extract cidr notation if necessary
-            $set = schema('netdisco')->resultset('NodeIp')
+            $set = schema(vars->{'tenant'})->resultset('NodeIp')
               ->search_by_ip({ip => $ip, @active, @times});
         }
         else {
-            $set = schema('netdisco')->resultset('NodeIp')
+            $set = schema(vars->{'tenant'})->resultset('NodeIp')
               ->search_by_dns({
                   ($using_wildcards ? (dns => $likeval) :
                   (dns => "${likeval}.\%",
@@ -233,7 +233,7 @@ get '/ajax/content/search/node' => require_login sub {
             # we'll try the OUI company name as a fallback
 
             if (param('show_vendor') and not $set->has_rows) {
-                $set = schema('netdisco')->resultset('NodeIp')
+                $set = schema(vars->{'tenant'})->resultset('NodeIp')
                   ->with_times
                   ->search(
                     {'oui.company' => { -ilike => ''.sql_match($node)}, @times},

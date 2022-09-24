@@ -17,7 +17,7 @@ register_report(
 
 get '/ajax/content/report/halfduplex' => require_login sub {
     my @results
-        = schema('netdisco')->resultset('DevicePort')
+        = schema(vars->{'tenant'})->resultset('DevicePort')
         ->columns( [qw/ ip port name duplex /] )->search(
         { up => 'up', duplex => { '-ilike' => 'half' } },
         {   '+columns' => [qw/ device.dns device.name /],

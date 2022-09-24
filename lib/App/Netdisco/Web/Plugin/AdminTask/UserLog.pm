@@ -18,7 +18,7 @@ ajax '/ajax/control/admin/userlog/data' => require_role admin => sub {
     send_error( 'Missing parameter', 400 )
         unless ( param('draw') && param('draw') =~ /\d+/ );
 
-    my $rs = schema('netdisco')->resultset('UserLog');
+    my $rs = schema(vars->{'tenant'})->resultset('UserLog');
 
     my $exp_params = expand_hash( scalar params );
 
@@ -41,18 +41,18 @@ ajax '/ajax/control/admin/userlog/data' => require_role admin => sub {
 ajax '/ajax/control/admin/userlog/del' => require_role admin => sub {
     send_error( 'Missing entry', 400 ) unless param('entry');
 
-    schema('netdisco')->txn_do(
+    schema(vars->{'tenant'})->txn_do(
         sub {
-            my $device = schema('netdisco')->resultset('UserLog')
+            my $device = schema(vars->{'tenant'})->resultset('UserLog')
                 ->search( { entry => param('entry') } )->delete;
         }
     );
 };
 
 ajax '/ajax/control/admin/userlog/delall' => require_role admin => sub {
-    schema('netdisco')->txn_do(
+    schema(vars->{'tenant'})->txn_do(
         sub {
-            my $device = schema('netdisco')->resultset('UserLog')->delete;
+            my $device = schema(vars->{'tenant'})->resultset('UserLog')->delete;
         }
     );
 };

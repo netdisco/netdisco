@@ -18,6 +18,7 @@ use Path::Class 'dir';
 use Module::Load ();
 use Data::Visitor::Tiny;
 use Scalar::Util 'blessed';
+use Storable 'dclone';
 
 use App::Netdisco::Util::Web qw/
   interval_to_daterange
@@ -27,8 +28,9 @@ use App::Netdisco::Util::Web qw/
 /;
 
 BEGIN {
-  # https://github.com/PerlDancer/Dancer/issues/967
   no warnings 'redefine';
+
+  # https://github.com/PerlDancer/Dancer/issues/967
   *Dancer::_redirect = sub {
       my ($destination, $status) = @_;
       my $response = Dancer::SharedData->response;
@@ -51,6 +53,49 @@ BEGIN {
               message => $body,
               code => $status || 500)->render()
       )->throw;
+  };
+
+  # to insert /t/$tenant if set
+  # which is fine for building links, but not fine for
+  # comparison to request->path, because when is_forward() the
+  # request->path is changed...
+  *Dancer::Request::uri_for = sub {
+    my ($self, $part, $params, $dont_escape) = @_;
+    my $uri = $self->base;
+
+    if (vars->{'tenant'}) {
+        $part = '/t/'. vars->{'tenant'} . $part;
+    }
+
+    # Make sure there's exactly one slash between the base and the new part
+    my $base = $uri->path;
+    $base =~ s|/$||;
+    $part =~ s|^/||;
+    $uri->path("$base/$part");
+
+    $uri->query_form($params) if $params;
+
+    return $dont_escape ? uri_unescape($uri->canonical) : $uri->canonical;
+  };
+
+  # ...so here we are monkeypatching request->path as well
+  *Dancer::Request::path = sub {
+    die "path is accessor not mutator" if scalar @_ > 1;
+    my $self = shift;
+    $self->_build_path() unless $self->{path};
+
+    if (vars->{'tenant'} and $self->{path} !~ m{/t/}) {
+        my $path = $self->{path};
+        my $base = setting('path');
+        my $tenant = '/t/' . vars->{'tenant'};
+
+        $tenant = ($base . $tenant) if $base ne '/';
+        $tenant .= '/' if $base eq '/';
+        $path =~ s/^$base/$tenant/;
+
+        return $path;
+    }
+    return $self->{path};
   };
 }
 
@@ -140,6 +185,18 @@ hook after_error_render => sub { setting('layout' => 'main') };
     for @port_columns;
 }
 
+# build lookup for tenancies
+{
+    set('tenant_displaynames' => {
+        map { ( $_->{tag} => { displayname => $_->{displayname},
+                               path => config->{url_base}->with("/t/$_->{tag}")->path } ) }
+            @{ setting('tenant_databases') },
+            { tag => 'netdisco', displayname => 'Default' }
+    });
+    config->{'tenant_displaynames'}->{'netdisco'}->{'path'}
+      = URI::Based->new((config->{path} eq '/') ? '' : config->{path})->path;
+}
+
 hook 'before' => sub {
   my $key = request->path;
   if (param('tab') and ($key !~ m/ajax/)) {
@@ -182,7 +239,9 @@ hook 'before_template' => sub {
 
     # allow portable static content
     $tokens->{uri_base} = request->base->path
-        if request->base->path ne '/';
+      if request->base->path ne '/';
+    $tokens->{uri_base} .= ('/t/'. vars->{'tenant'})
+      if vars->{'tenant'};
 
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
@@ -287,8 +346,23 @@ hook before_layout_render => sub {
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
 
-    if (request->path eq uri_for('/swagger.json')->path) {
-        $r->content( to_json( $r->content ) );
+    if (request->path eq uri_for('/swagger.json')->path
+          and ref {} eq ref $r->content) {
+        my $spec = dclone $r->content;
+
+        if (vars->{'tenant'}) {
+            my $base = setting('path');
+            my $tenant = '/t/' . vars->{'tenant'};
+            $tenant = ($base . $tenant) if $base ne '/';
+            $tenant .= '/' if $base eq '/';
+
+            foreach my $path (sort keys %{ $spec->{paths} }) {
+                (my $newpath = $path) =~ s/^$base/$tenant/;
+                $spec->{paths}->{$newpath} = delete $spec->{paths}->{$path};
+            }
+        }
+
+        $r->content( to_json( $spec ) );
         header('Content-Type' => 'application/json');
     }
 
@@ -362,6 +436,18 @@ hook 'after' => sub {
 
         $r->content(join "\n", @newlines);
     }
+};
+
+# support for tenancies
+any qr{^/t/(?<tenant>[^/]+)/?$} => sub {
+    my $capture = captures;
+    var tenant => $capture->{'tenant'};
+    forward '/';
+};
+any '/t/*/**' => sub {
+    my ($tenant, $path) = splat;
+    var tenant => $tenant;
+    forward (join '/', '', @$path, (request->path =~ m{/$} ? '' : ()));
 };
 
 any qr{.*} => sub {

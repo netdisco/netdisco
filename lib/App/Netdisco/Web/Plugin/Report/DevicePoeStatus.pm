@@ -20,7 +20,7 @@ get '/ajax/content/report/devicepoestatus/data' => require_login sub {
     send_error( 'Missing parameter', 400 )
         unless ( param('draw') && param('draw') =~ /\d+/ );
 
-    my $rs = schema('netdisco')->resultset('Virtual::DevicePoeStatus');
+    my $rs = schema(vars->{'tenant'})->resultset('Virtual::DevicePoeStatus');
 
     my $exp_params = expand_hash( scalar params );
     my $recordsTotal = $rs->count;
@@ -44,7 +44,7 @@ get '/ajax/content/report/devicepoestatus' => require_login sub {
     }
     else {
         my @results
-            = schema('netdisco')->resultset('Virtual::DevicePoeStatus')
+            = schema(vars->{'tenant'})->resultset('Virtual::DevicePoeStatus')
             ->hri->all;
 
         return unless scalar @results;
