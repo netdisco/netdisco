@@ -1,8 +1,14 @@
+2.057000 - 2022-09-24
+
+  [NEW FEATURES]
+
+  * #929 implement multi tenancy with tenant_databases setting
+
 2.056000 - 2022-09-24
 
   [NEW FEATURES]
 
-  * #925 implement ignore_deviceports and hide_deviceports
+  * #925 implement ignore_deviceports and hide_deviceports settings
 
 2.055001 - 2022-09-02
 
