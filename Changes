@@ -1,3 +1,9 @@
+2.056000 - 2022-09-24
+
+  [NEW FEATURES]
+
+  * #925 implement ignore_deviceports and hide_deviceports
+
 2.055001 - 2022-09-02
 
   [BUG FIXES]
