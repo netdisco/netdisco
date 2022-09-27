@@ -145,14 +145,6 @@
       <td>[% row.type | html_entity %]</td>
       [% END %]
 
-      [% IF params.c_duplex %]
-      <td>
-        [% IF row.up == 'up' AND row.duplex %]
-        [% (row.duplex_admin.ucfirst || 'Auto') | html_entity %] / [% row.duplex.ucfirst | html_entity %]
-        [% END %]
-      </td>
-      [% END %]
-
       [% IF params.c_ifindex %]
       <td>[% row.ifindex | html_entity %]</td>
       [% END %]
@@ -175,12 +167,20 @@
       </td>
       [% END %]
 
+      [% IF params.c_speed_admin %]
+      <td>[% row.speed_admin | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_speed %]
       <td>[% row.speed | html_entity %]</td>
       [% END %]
 
-      [% IF params.c_speed_admin %]
-      <td>[% row.speed_admin | html_entity %]</td>
+      [% IF params.c_duplex %]
+      <td>
+        [% IF row.up == 'up' AND row.duplex %]
+        [% (row.duplex_admin.ucfirst || 'Auto') | html_entity %] / [% row.duplex.ucfirst | html_entity %]
+        [% END %]
+      </td>
       [% END %]
 
       [% IF params.c_error %]
