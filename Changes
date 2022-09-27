@@ -1,3 +1,9 @@
+2.057003 - 2022-09-27
+
+  [BUG FIXES]
+
+  * workaround DBICx::Sugar alias only working for non-default
+
 2.057002 - 2022-09-24
 
   [ENHANCEMENTS]
