@@ -48,7 +48,7 @@ if (ref {} eq ref setting('database')) {
 
     # set up the netdisco schema now we have access to the config
     # but only if it doesn't exist from an earlier config style
-    setting('plugins')->{DBIC}->{netdisco} ||= {
+    setting('plugins')->{DBIC}->{'default'} ||= {
         dsn  => $dsn,
         user => $user,
         password => $pass,
@@ -96,7 +96,7 @@ if (ref {} eq ref setting('database')) {
     }
 
     # and support tenancies by setting what the default schema points to
-    setting('plugins')->{DBIC}->{'default'}->{'alias'} = 'netdisco';
+    setting('plugins')->{DBIC}->{'netdisco'}->{'alias'} = 'default';
 }
 
 # always set this
