@@ -249,15 +249,15 @@ else { config->{'ignore_deviceports'} ||= [] }
 # copy old ignore_* into new settings
 if (scalar @{ config->{'ignore_interfaces'} }) {
   config->{'host_groups'}->{'__IGNORE_INTERFACES__'}
-    = config->{'ignore_interfaces'};
+    = [ map { ($_ !~ m/^port:/) ? "port:$_" : $_ } @{ config->{'ignore_interfaces'} } ];
 }
 if (scalar @{ config->{'ignore_interface_types'} }) {
   config->{'host_groups'}->{'__IGNORE_INTERFACE_TYPES__'}
-    = config->{'ignore_interface_types'};
+    = [ map { ($_ !~ m/^type:/) ? "type:$_" : $_ } @{ config->{'ignore_interface_types'} } ];
 }
 if (scalar @{ config->{'ignore_notpresent_types'} }) {
   config->{'host_groups'}->{'__NOTPRESENT_TYPES__'}
-    = config->{'ignore_notpresent_types'};
+    = [ map { ($_ !~ m/^type:/) ? "type:$_" : $_ } @{ config->{'ignore_notpresent_types'} } ];
 }
 
 # copy devices_no and devices_only into others
