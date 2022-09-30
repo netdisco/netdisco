@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.057005'
+    version: '2.057006'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -223,6 +223,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/CPVSX.pm
   App::Netdisco::SSHCollector::Platform::Clavister:
     file: lib/App/Netdisco/SSHCollector/Platform/Clavister.pm
+  App::Netdisco::SSHCollector::Platform::FTD:
+    file: lib/App/Netdisco/SSHCollector/Platform/FTD.pm
   App::Netdisco::SSHCollector::Platform::FortiOS:
     file: lib/App/Netdisco/SSHCollector/Platform/FortiOS.pm
   App::Netdisco::SSHCollector::Platform::FreeBSD:
@@ -627,5 +629,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.057005'
+version: '2.057006'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

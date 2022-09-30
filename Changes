@@ -1,9 +1,12 @@
-2.057006 - tbd
+2.057006 - 2022-09-30
 
   [ENHANCEMENTS]
 
-  * added Firepower SSH collector (FTD.pm) contributed by Sebastian Roesch (roesch[at]alcera.de) on the mailing list
+  * added Firepower SSH collector (FTD.pm) by Sebastian Roesch (roesch[at]alcera.de)
 
+  [BUG FIXES]
+
+  * fix wrong use of check_acl breaking snmp_field_protection
 
 2.057005 - 2022-09-28
 
