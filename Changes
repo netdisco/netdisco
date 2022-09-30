@@ -1,3 +1,10 @@
+2.057006 - tbd
+
+  [ENHANCEMENTS]
+
+  * added Firepower SSH collector (FTD.pm) contributed by Sebastian Roesch (roesch[at]alcera.de) on the mailing list
+
+
 2.057005 - 2022-09-28
 
   [BUG FIXES]
