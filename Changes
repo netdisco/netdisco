@@ -1,3 +1,9 @@
+2.057007 - 2022-10-04
+
+  [BUG FIXES]
+
+  * fix ordering of device ports table column headers
+
 2.057006 - 2022-09-30
 
   [ENHANCEMENTS]
