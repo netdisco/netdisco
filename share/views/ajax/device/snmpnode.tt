@@ -55,7 +55,7 @@
       [% IF node.snmp_object.enum.size > 0 %]
         <table class="table table-condensed table-bordered">
           [% FOREACH idx IN node.snmp_object.enum %]
-          <tr><td>[% idx | html_entity %]</td></tr>
+          <tr><td>[% idx.replace('(\w)\(', '$1 (') | html_entity %]</td></tr>
           [% END %]
         </table>
       [% END %]
@@ -63,7 +63,7 @@
     </tr>
     <tr>
       <th scope="row">Description</th>
-      <td>[% node.snmp_object.descr | html_entity %]</td>
+      <td>[% node.snmp_object.descr.replace('(\w)\(', '$1 (') | html_entity %]</td>
     </tr>
     <tr>
       <th scope="row">Value</th>
