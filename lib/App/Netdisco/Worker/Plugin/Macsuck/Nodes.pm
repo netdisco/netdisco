@@ -32,6 +32,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
                           $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
 
   my $interfaces = $snmp->interfaces;
+  my $reverse_interfaces = { reverse %{ $interfaces } }; # might squash but prob not
+  my $i_up       = $snmp->i_up;
+  my $i_up_admin = $snmp->i_up_admin;
 
   # get forwarding table data via basic snmp connection
   my $fwtable = walk_fwtable($device, $interfaces, $device_ports);
@@ -60,8 +63,15 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
           # make sure this port is UP in netdisco (unless it's a lag master,
           # because we can still see nodes without a functioning aggregate)
-          $device_ports->{$port}->update({up_admin => 'up', up => 'up'})
-            if not $device_ports->{$port}->is_master;
+          my $iid = $reverse_interfaces->{$port};
+          if ($iid and not $device_ports->{$port}->is_master) {
+              debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
+                $device->ip, $port, ($i_up_admin->{$iid} || '-'), ($i_up->{$iid} || '-');
+              $device_ports->{$port}->update({
+                up => $i_up->{$iid},
+                up_admin => $i_up_admin->{$iid},
+              });
+          }
 
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
 
