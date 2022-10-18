@@ -40,9 +40,17 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
           username => param('username'),
           password => _make_password(param('password')),
           fullname => param('fullname'),
-          ldap => (param('ldap') ? \'true' : \'false'),
-          radius => (param('radius') ? \'true' : \'false'),
-          tacacs => (param('tacacs') ? \'true' : \'false'),
+
+          (param('auth_method') ? (
+            (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
+            (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
+            (tacacs => (param('auth_method') eq 'tacacs' ? \'true' : \'false')),
+          ) : (
+            ldap => \'false',
+            radius => \'false',
+            tacacs => \'false',
+          )),
+
           port_control => (param('port_control') ? \'true' : \'false'),
           admin => (param('admin') ? \'true' : \'false'),
           note => param('note'),
@@ -72,9 +80,17 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
           ? (password => _make_password(param('password')))
           : ()),
         fullname => param('fullname'),
-        ldap => (param('ldap') ? \'true' : \'false'),
-        radius => (param('radius') ? \'true' : \'false'),
-        tacacs => (param('tacacs') ? \'true' : \'false'),
+
+        (param('auth_method') ? (
+          (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
+          (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
+          (tacacs => (param('auth_method') eq 'tacacs' ? \'true' : \'false')),
+        ) : (
+          ldap => \'false',
+          radius => \'false',
+          tacacs => \'false',
+        )),
+
         port_control => (param('port_control') ? \'true' : \'false'),
         admin => (param('admin') ? \'true' : \'false'),
         note => param('note'),

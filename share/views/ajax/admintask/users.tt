@@ -4,9 +4,7 @@
       <th class="nd_center-cell">Full Name</th>
       <th class="nd_center-cell">Username</th>
       <th class="nd_center-cell">Password</th>
-      <th class="nd_center-cell">LDAP Auth</th>
-      <th class="nd_center-cell">RADIUS Auth</th>
-      <th class="nd_center-cell">TACACS+ Auth</th>
+      <th class="nd_center-cell">Auth Method</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
       <th class="nd_center-cell">Created</th>
@@ -20,9 +18,16 @@
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="username" type="text"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="password" type="password"></td>
-      <td class="nd_center-cell"><input data-form="add" type="checkbox" name="ldap"></td>
-      <td class="nd_center-cell"><input data-form="add" type="checkbox" name="radius"></td>
-      <td class="nd_center-cell"><input data-form="add" type="checkbox" name="tacacs"></td>
+      <td class="nd_center-cell">
+        <div class="form-group">
+          <select class="span2 form-control" data-form="add" name="auth_method">
+            <option value="" selected>Netdisco Password</option>
+            <option value="ldap">LDAP</option>
+            <option value="radius">RADIUS</option>
+            <option value="tacacs">TACACS</option>
+          </select>
+        </div>
+      </td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="port_control"></td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
@@ -47,13 +52,14 @@
         <input class="span2" data-form="update" name="password" type="password" value="********">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="ldap" type="checkbox" [% ' checked="checked"' IF row.ldap %]>
-      </td>
-      <td class="nd_center-cell">
-        <input data-form="update" name="radius" type="checkbox" [% ' checked="checked"' IF row.radius %]>
-      </td>
-      <td class="nd_center-cell">
-        <input data-form="update" name="tacacs" type="checkbox" [% ' checked="checked"' IF row.tacacs %]>
+        <div class="form-group">
+          <select class="span2 form-control" data-form="update" name="auth_method">
+            <option value="">Netdisco Password</option>
+            <option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>
+            <option[% ' selected' IF row.radius %] value="radius">RADIUS</option>
+            <option[% ' selected' IF row.tacacs %] value="tacacs">TACACS</option>
+          </select>
+        </div>
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="port_control" type="checkbox" [% ' checked="checked"' IF row.port_control %]>

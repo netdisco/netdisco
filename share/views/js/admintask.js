@@ -141,7 +141,7 @@
         ,async: true
         ,dataType: 'html'
         ,url: uri_base + '/ajax/control/admin/' + tab + '/' + mode
-        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
+        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"],select[data-form="' + mode + '"]').serializeArray()
         ,beforeSend: function() {
           if (mode == 'add' || mode == 'delete') {
             $(target).html(
