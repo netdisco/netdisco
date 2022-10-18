@@ -154,7 +154,12 @@ sub restarter {
       }
 
       rotate_logs($child) if $rotate;
-      signal_child('HUP', $child) if $hupit;
+      if ($hupit) {
+          signal_child('TERM', $child);
+          warn "successfully terminated! Restarting the web server process.\n";
+          $child = fork_and_start($daemon, @program_args);
+          return unless $child;
+      }
   }
 }
 
@@ -175,7 +180,7 @@ sub fork_and_start {
 sub signal_child {
   my ($signal, $pid) = @_;
   return unless $signal and $pid;
-  warn "config watcher: sending $signal to the server (pid:$pid)...\n";
+  warn "config watcher: sending $signal to the web server (pid:$pid)...\n";
   kill $signal => $pid;
   waitpid($pid, 0);
 }
