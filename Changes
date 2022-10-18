@@ -1,3 +1,14 @@
+2.057008 - 2022-10-18
+
+  [ENHANCEMENTS]
+
+  * #936 user auth method should be drop-down menu
+
+  [BUG FIXES]
+
+  * #919 netdisco-web will not auto restart more than once
+  * #935 check port up status on macsuck instead of assume up
+
 2.057007 - 2022-10-04
 
   [BUG FIXES]
