@@ -462,6 +462,7 @@ worker_plugins:
   - 'Macsuck::Hooks'
   - 'Macsuck::Nodes'
   - 'Macsuck::WirelessNodes'
+  - 'Macsuck::PortAccessEntity'
   - 'Macwalk'
   - 'MakeRancidConf'
   - 'Nbtstat'

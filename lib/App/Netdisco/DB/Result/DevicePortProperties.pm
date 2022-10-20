@@ -25,8 +25,7 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "remote_os_ver",
   { data_type => "text", is_nullable => 1 },
-  "remote_serial",
-  { data_type => "text", is_nullable => 1 },
+  "remote_serial", { data_type => "text", is_nullable => 1 },
   "remote_dns",
   { data_type => "text", is_nullable => 1 },
   "raw_speed",
@@ -35,6 +34,19 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "ifindex",
   { data_type => "bigint", is_nullable => 1 },
+  "pae_authconfig_state",
+  { data_type => "text", is_nullable => 1 },      
+  "pae_authconfig_port_status",
+  { data_type => "text", is_nullable => 1 },
+  "pae_authsess_user",
+  { data_type => "text", is_nullable => 1 },         
+  "pae_authsess_mab",
+  { data_type => "text", is_nullable => 1 },           
+  "pae_capabilities",
+  { data_type => "text", is_nullable => 1 },          
+  "pae_last_eapol_frame_source",
+  { data_type => "text", is_nullable => 1 },
+
 );
 __PACKAGE__->set_primary_key("port", "ip");
 
