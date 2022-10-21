@@ -10,6 +10,7 @@ use Dancer::Plugin::DBIC 'schema';
 use Encode;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
+use App::Netdisco::Util::PortAccessEntity qw/update_pae_attributes/;
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -163,6 +164,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     return Status->info(sprintf ' [%s] properties - added %d new port properties',
       $device->ip, scalar keys %properties);
   });
+});
+
+register_worker({ phase => 'main', driver => 'snmp' }, sub {
+
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+  return update_pae_attributes($device)
+
 });
 
 true;

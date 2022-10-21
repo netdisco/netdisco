@@ -83,6 +83,8 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "is_pseudo",
   { data_type => "boolean", is_nullable => 0, default_value => \"false" },
+  "pae_control",
+  { data_type => "text", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("ip");
 
