@@ -443,6 +443,7 @@ worker_plugins:
   - 'Discover::Neighbors::Routed'
   - 'Discover::PortPower'
   - 'Discover::PortProperties'
+  - 'Discover::PortAccessEntity'
   - 'Discover::Properties'
   - 'Discover::VLANs'
   - 'Discover::Wireless'

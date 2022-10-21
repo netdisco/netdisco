@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Macsuck::PortAccessEntity;
+package App::Netdisco::Worker::Plugin::Discover::PortAccessEntity;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
@@ -7,7 +7,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Worker;
 use App::Netdisco::Util::PortAccessEntity qw/update_pae_attributes/;
 
-register_worker({ phase => 'main', driver => 'snmp' }, sub {
+register_worker({ phase => 'store', driver => 'snmp' }, sub {
 
   my ($job, $workerconf) = @_;
   my $device = $job->device;
