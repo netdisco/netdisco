@@ -29,7 +29,7 @@ sub update_pae_attributes {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("pae failed: could not SNMP connect to $device");
   my $interfaces = $snmp->interfaces;
-  debug sprintf ' [%s] pae - updating PortAccessEntity details for %s', $device->ip, $device->dns;
+  debug sprintf ' [%s] pae - updating PortAccessEntity details', $device->ip;
 
   # device property
   my $pae_control = $snmp->pae_control();
