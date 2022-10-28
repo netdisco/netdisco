@@ -52,7 +52,7 @@ sub update_pae_attributes {
   my $pae_capabilities = $snmp->pae_i_capabilities();
   my $pae_last_eapol_frame_source = $snmp->pae_i_last_eapol_frame_source();
 
-  for my $ind (sort keys $interfaces){
+  for my $ind (sort keys %$interfaces){
     debug sprintf ' [%s] pae - attributes found for ifindex %s: %s %s %s %s %s %s %s', 
       $device->ip, $ind, 
       $pae_authconfig_state->{$ind} || 'no pae_authconfig_state', 
