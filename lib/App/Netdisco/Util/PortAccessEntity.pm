@@ -35,8 +35,8 @@ sub update_pae_attributes {
   my $pae_control = $snmp->pae_control();
 
   if ($pae_control) {
-        schema('netdisco')->resultset('Device')->search({ 'me.ip' => $device->ip})
-          ->update({ pae_control => $pae_control });
+    schema('netdisco')->resultset('Device')->search({ 'me.ip' => $device->ip})
+          ->update({ pae_is_enabled => $pae_control eq "enabled" ? 't' : 'f' });
     debug sprintf ' [%s] pae - PortAccessEntity device-wide support: %s', $device->ip, $pae_control;
   } else {
     debug sprintf ' [%s] pae - no PortAccessEntity support, leaving worker', $device->ip;
@@ -45,6 +45,7 @@ sub update_pae_attributes {
 
   # individual port properties
   my $pae_authconfig_state = $snmp->pae_authconfig_state();
+  my $pae_authconfig_port_control = $snmp->dot1xAuthAuthControlledPortControl();
   my $pae_authconfig_port_status = $snmp->pae_authconfig_port_status();
   my $pae_authsess_user = $snmp->pae_authsess_user();
   my $pae_authsess_mab = $snmp->pae_authsess_mab();
@@ -52,9 +53,10 @@ sub update_pae_attributes {
   my $pae_last_eapol_frame_source = $snmp->pae_i_last_eapol_frame_source();
 
   for my $ind (sort keys $interfaces){
-    debug sprintf ' [%s] pae - attributes found %s %s %s %s %s %s %s', 
+    debug sprintf ' [%s] pae - attributes found for ifindex %s: %s %s %s %s %s %s %s', 
       $device->ip, $ind, 
       $pae_authconfig_state->{$ind} || 'no pae_authconfig_state', 
+      $pae_authconfig_port_control->{$ind}, 
       $pae_authconfig_port_status->{$ind}, 
       $pae_authsess_user->{$ind}, 
       $pae_authsess_mab->{$ind}, 
@@ -65,6 +67,7 @@ sub update_pae_attributes {
           ->search({ 'me.ip' => $device->ip, 'me.port' => $interfaces->{$ind} })
           ->update({ 
             pae_authconfig_state          => $pae_authconfig_state->{$ind} ,
+            pae_authconfig_port_control   => $pae_authconfig_port_control->{$ind} ,
             pae_authconfig_port_status    => $pae_authconfig_port_status->{$ind} ,
             pae_authsess_user             => $pae_authsess_user->{$ind} ,
             pae_authsess_mab              => $pae_authsess_mab->{$ind} ,

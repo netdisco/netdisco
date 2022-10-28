@@ -37,6 +37,8 @@ __PACKAGE__->add_columns(
   { data_type => "bigint", is_nullable => 1 },
   "pae_authconfig_state",
   { data_type => "text", is_nullable => 1 },      
+  "pae_authconfig_port_control",
+  { data_type => "text", is_nullable => 1 },
   "pae_authconfig_port_status",
   { data_type => "text", is_nullable => 1 },
   "pae_authsess_user",
