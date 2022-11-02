@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Macsuck::PortAccessEntity;
+package App::Netdisco::Worker::Plugin::Macsuck::Nodes::PortAccessEntity;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
