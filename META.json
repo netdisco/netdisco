@@ -136,7 +136,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.057008"
+         "version" : "2.058000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -511,6 +511,9 @@
       "App::Netdisco::Util::Port" : {
          "file" : "lib/App/Netdisco/Util/Port.pm"
       },
+      "App::Netdisco::Util::PortAccessEntity" : {
+         "file" : "lib/App/Netdisco/Util/PortAccessEntity.pm"
+      },
       "App::Netdisco::Util::PortMAC" : {
          "file" : "lib/App/Netdisco/Util/PortMAC.pm"
       },
@@ -778,6 +781,9 @@
       "App::Netdisco::Worker::Plugin::Discover::PortProperties" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm"
       },
+      "App::Netdisco::Worker::Plugin::Discover::PortProperties::PortAccessEntity" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover::Properties" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm"
       },
@@ -831,6 +837,9 @@
       },
       "App::Netdisco::Worker::Plugin::Macsuck::Nodes" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm"
+      },
+      "App::Netdisco::Worker::Plugin::Macsuck::Nodes::PortAccessEntity" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes/PortAccessEntity.pm"
       },
       "App::Netdisco::Worker::Plugin::Macsuck::WirelessNodes" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm"
@@ -911,6 +920,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.057008",
+   "version" : "2.058000",
    "x_serialization_backend" : "JSON::PP version 4.06"
 }
