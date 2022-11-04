@@ -138,6 +138,7 @@ lib/App/Netdisco/Util/NodeMonitor.pm
 lib/App/Netdisco/Util/Noop.pm
 lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
+lib/App/Netdisco/Util/PortAccessEntity.pm
 lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
@@ -227,6 +228,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
+lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
@@ -245,6 +247,7 @@ lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
+lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes/PortAccessEntity.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
 lib/App/Netdisco/Worker/Plugin/Macwalk.pm
 lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm
@@ -471,6 +474,7 @@ share/schema_versions/App-Netdisco-DB-71-72-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-72-73-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-73-74-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-74-75-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-75-76-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
