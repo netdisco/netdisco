@@ -1,4 +1,10 @@
-2.058001 - 2022-11-05
+2.058002 - 2022-11-04
+
+  [ENHANCEMENTS]
+
+  * Github actions installs always over HTTPS
+
+2.058001 - 2022-11-04
 
   [BUG FIXES]
 
