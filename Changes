@@ -1,3 +1,21 @@
+2.058003 - 2022-11-04
+
+  [BUG FIXES]
+
+  * Revert HTTPS download for build as it does not work in busybox
+
+2.058002 - 2022-11-04
+
+  [ENHANCEMENTS]
+
+  * Github actions installs always over HTTPS
+
+2.058001 - 2022-11-04
+
+  [BUG FIXES]
+
+  * #940 bump db schema version
+
 2.058000 - 2022-11-04
 
   [NEW FEATURES]
