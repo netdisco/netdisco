@@ -14,7 +14,8 @@ has [qw/workers_check
         workers_main
         workers_user
         workers_store
-        workers_late/] => ( is => 'rw' );
+        workers_late
+        transport_required/] => ( is => 'rw' );
 
 sub load_workers {
   my $self = shift;
@@ -37,6 +38,7 @@ sub load_workers {
 
   # now vars->{workers} is populated, we set the dispatch order
   my $workers = vars->{'workers'}->{$action} || {};
+  my $driverless_main = 0;
   #use DDP; p vars->{'workers'};
 
   foreach my $phase (qw/check early main user store late/) {
@@ -46,10 +48,13 @@ sub load_workers {
     foreach my $namespace (sort keys %{ $workers->{$phase} }) {
       foreach my $priority (sort {$b <=> $a}
                             keys %{ $workers->{$phase}->{$namespace} }) {
+
+        ++$driverless_main if $priority == 0 and $phase eq 'main';
         push @wset, @{ $workers->{$phase}->{$namespace}->{$priority} };
       }
     }
 
+    $self->transport_required( $driverless_main ? false : true );
     $self->$pname( \@wset );
   }
 }

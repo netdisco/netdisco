@@ -51,7 +51,7 @@ sub run {
 
     # per-device action but no device creds available
     return $job->add_status( Status->defer('deferred job with no device creds') )
-      if 0 == scalar @newuserconf && $job->action ne "delete";
+      if 0 == scalar @newuserconf && $self->transport_required;
   }
 
   # back up and restore device_auth

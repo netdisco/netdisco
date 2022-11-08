@@ -93,6 +93,15 @@ is($j8->_last_priority, 100, 'priority is for snmp');
 is($j8->log, 'OK: SNMP driver is successful.',
   'add to an action');
 
+config->{'device_auth'} = [];
+
+my $j9 = do_job('TestSix');
+is($j9->status, 'done', 'status is done');
+is((scalar @{$j9->_statuslist}), 3, 'three workers ran');
+is($j9->_last_priority, 0, 'priority is for driverless action');
+is($j9->log, 'OK: first driverless action is successful.',
+  'driverless actions always run');
+
 done_testing;
 
 # TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
