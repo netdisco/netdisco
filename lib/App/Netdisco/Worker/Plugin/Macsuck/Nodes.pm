@@ -31,7 +31,7 @@ register_worker({ phase => 'early' }, sub {
   vars->{'device_ports'} = {map {($_->port => $_)}
                           $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
 
-  return Status->info('prepared macsuck helper data');
+  return Status->info('Prepared macsuck helper data');
 });
 
 # gather data from file
@@ -43,6 +43,7 @@ register_worker({ phase => 'main' }, sub {
     unless $job->port or $job->extra;
 
   # TODO load cache from file or copy from job param
+  # my @ok_vlans = sanity_vlans($device, %$vlans, %$vlan_names, %$vlan_states);
 
   debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
     $device->ip, scalar @{ vars->{'fwtable'} };
@@ -66,6 +67,8 @@ register_worker({ phase => 'main' }, sub {
 
     ++$port_seen{$port};
   }
+
+  return Status->done("Imported MAC addresses for $device");
 });
 
 # gather data from snmp if not already gathered
@@ -84,18 +87,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $i_up       = $snmp->i_up;
   my $i_up_admin = $snmp->i_up_admin;
 
-  # make sure ports are UP in netdisco (unless it's a lag master,
-  # because we can still see nodes without a functioning aggregate)
-  foreach my $port (values %{ vars->{'device_ports'} }) {
-    my $iid = $reverse_interfaces->{ vars->{'device_ports'}->port };
-    if ($iid and not $port->is_master) {
-        debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
-          $device->ip, $port->port, ($i_up_admin->{$iid} || '-'), ($i_up->{$iid} || '-');
-        $port->update({
-          up => $i_up->{$iid},
-          up_admin => $i_up_admin->{$iid},
-        });
-    }
+  # make sure ports reflect their latest state as reported by device
+  foreach my $port (keys %{ vars->{'device_ports'} }) {
+    my $iid = $reverse_interfaces->{$port} or next;
+
+    debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
+      $device->ip, $port, ($i_up_admin->{$iid} || '-'), ($i_up->{$iid} || '-');
+
+    $port->update({
+      up => $i_up->{$iid},
+      up_admin => $i_up_admin->{$iid},
+    });
   }
 
   # get forwarding table data via basic snmp connection
@@ -130,11 +132,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
                 vlan => $vlan,
                 port => $port,
                 mac  => $mac,
-                timestamp => $now,
+                timestamp => vars->{'timestamp'},
               };
           }
       }
   }
+
+  return Status->done("Gathered MAC addresses for $device");
 });
 
 # save from cache to database
@@ -152,7 +156,7 @@ register_worker({ phase => 'store' }, sub {
                               $node->{timestamp});
   }
 
-  debug sprintf ' [%s] macsuck - applied %s forwarding table entries',
+  debug sprintf ' [%s] macsuck - stored %s forwarding table entries',
     $device->ip, scalar @{ vars->{'fwtable'} };
 
   # a use for $now ... need to archive disappeared nodes
@@ -171,7 +175,9 @@ register_worker({ phase => 'store' }, sub {
     $device->ip, $archived;
 
   $device->update({last_macsuck => \$now});
-  return Status->done("Ended macsuck for $device");
+
+  my $status = $job->best_status;
+  return Status->$status("Ended macsuck for $device");
 });
 
 
@@ -298,10 +304,18 @@ sub get_vlan_list {
       $vlan_states{$vlan} = $state;
   }
 
+  # have to sanity clean here because we need the VLAN list to do
+  # community indexing in the snmp gather
+  return sanity_vlans($device, \%vlans, \%vlan_names, \%vlan_states);
+}
+
+sub sanity_vlans {
+  my ($device, $vlans, $vlan_names, $vlan_states) = @_;
+
   my @ok_vlans = ();
-  foreach my $vlan (sort keys %vlans) {
-      my $name = $vlan_names{$vlan} || '(unnamed)';
-      my $state = $vlan_states{$vlan} || '(unknown)';
+  foreach my $vlan (sort keys %$vlans) {
+      my $name = $vlan_names->{$vlan} || '(unnamed)';
+      my $state = $vlan_states->{$vlan} || '(unknown)';
 
       if (ref [] eq ref setting('macsuck_no_vlan')) {
           my $ignore = setting('macsuck_no_vlan');
@@ -345,7 +359,7 @@ sub get_vlan_list {
       next if $vlan == 0; # quietly skip
 
       # check in use by a port on this device
-      if (!$vlans{$vlan} && !setting('macsuck_all_vlans')) {
+      if (not $vlans->{$vlan} and not setting('macsuck_all_vlans')) {
           debug sprintf
             ' [%s] macsuck VLAN %s/%s - not in use by any port - skipping.',
             $device->ip, $vlan, $name;
@@ -400,7 +414,7 @@ sub walk_fwtable {
 
   my $fw_mac   = $snmp->fw_mac || {};
   my $fw_port  = $snmp->fw_port || {};
-  my $fw_vlan  = ($snmp->can('cisco_comm_indexing') && $snmp->cisco_comm_indexing()) 
+  my $fw_vlan  = ($snmp->can('cisco_comm_indexing') and $snmp->cisco_comm_indexing()) 
     ? {} : $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index || {};
 
