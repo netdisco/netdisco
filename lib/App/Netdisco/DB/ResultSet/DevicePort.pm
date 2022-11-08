@@ -158,11 +158,23 @@ sub with_properties {
           properties.remote_is_phone
           properties.remote_dns
           properties.ifindex
+          properties.pae_authconfig_port_control
+          properties.pae_authconfig_state
+          properties.pae_authconfig_port_status
+          properties.pae_authsess_user
+          properties.pae_authsess_mab
+          properties.pae_last_eapol_frame_source
         /],
         '+as' => [qw/
           error_disable_cause
           remote_is_discoverable remote_is_wap remote_is_phone remote_dns
-          ifindex
+          ifindex 
+          pae_authconfig_port_control 
+          pae_authconfig_state 
+          pae_authconfig_port_status
+          pae_authsess_user 
+          pae_authsess_mab
+          pae_last_eapol_frame_source
         /],
         join => 'properties',
       });

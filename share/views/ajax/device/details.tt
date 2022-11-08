@@ -160,6 +160,10 @@
       <td>VTP Domain</td>
       <td>[% d.vtp_domain | html_entity %]</td>
     </tr>
+    <tr>
+      <td>NAC enabled</td>
+      <td>[% IF d.pae_is_enabled %] yes [% ELSE %] no [% END %]</td>
+    </tr>
     [% IF user_has_role('admin') %]
     <tr data-for-device="[% d.ip | html_entity %]">
       <td>Admin Tasks</td>

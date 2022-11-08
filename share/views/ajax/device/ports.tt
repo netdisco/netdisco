@@ -396,6 +396,30 @@
       </td>
       [% END %]
 
+      [% IF params.c_nac_port_control %]
+      <td>[% row.pae_authconfig_port_control | html_entity %]</td>
+      [% END %]
+
+      [% IF params.c_nac_eapol_state %]
+      <td>[% row.pae_authconfig_state | html_entity %]</td>
+      [% END %]
+
+      [% IF params.c_nac_port_status %]
+      <td>[% row.pae_authconfig_port_status | html_entity %]</td>
+      [% END %]
+
+      [% IF params.c_nac_user %]
+      <td>[% row.pae_authsess_user | html_entity %]</td>
+      [% END %]
+
+      [% IF params.c_nac_mab %]
+      <td>[% IF row.pae_authsess_mab %] yes [% END %]</td>
+      [% END %]
+
+      [% IF params.c_nac_last_eapol %]
+      <td>[% row.pae_last_eapol_frame_source | html_entity %]</td>
+      [% END %]
+
       [% IF params.c_stp %]
       <td>[% row.stp | html_entity %]</td>
       [% END %]

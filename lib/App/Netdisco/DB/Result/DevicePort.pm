@@ -387,6 +387,54 @@ Returns the interface index (C<ifIndex>) of the port.
 
 sub ifindex { return (shift)->get_column('ifindex') }
 
+=head2 pae_authsess_user
+
+Returns the pae_authsess_user of the port.
+
+=cut
+
+sub pae_authsess_user { return (shift)->get_column('pae_authsess_user') }
+
+=head2 pae_authconfig_port_control
+
+Returns the pae_authconfig_port_control of the port.
+
+=cut
+
+sub pae_authconfig_port_control { return (shift)->get_column('pae_authconfig_port_control') }
+
+=head2 pae_authconfig_state
+
+Returns the pae_authconfig_state of the port.
+
+=cut
+
+sub pae_authconfig_state { return (shift)->get_column('pae_authconfig_state') }
+
+=head2 pae_authconfig_port_status
+
+Returns the pae_authconfig_port_status of the port.
+
+=cut
+
+sub pae_authconfig_port_status { return (shift)->get_column('pae_authconfig_port_status') }
+
+=head2 pae_authsess_mab
+
+Returns the pae_authsess_mab of the port.
+
+=cut
+
+sub pae_authsess_mab { return (shift)->get_column('pae_authsess_mab') }
+
+=head2 pae_last_eapol_frame_source
+
+Returns the pae_last_eapol_frame_source of the port.
+
+=cut
+
+sub pae_last_eapol_frame_source { return (shift)->get_column('pae_last_eapol_frame_source') }
+
 =head2 remote_dns
 
 Returns a hostname resolved from C<remote_ip> column.
