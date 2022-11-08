@@ -14,30 +14,92 @@ use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use Scope::Guard 'guard';
 
-register_worker({ phase => 'main', driver => 'snmp' }, sub {
+# prep macsuck helper data
+register_worker({ phase => 'early' }, sub {
   my ($job, $workerconf) = @_;
-
   my $device = $job->device;
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we can if we want add a job at the end to
   # select and do something with the updated set (see set archive, below)
-  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
-  my $total_nodes = 0;
+  vars->{'timestamp'} = 'to_timestamp('. (join '.', gettimeofday) .')';
+
+  # initialise the cache
+  vars->{'fwtable'} ||= [];
 
   # cache the device ports to save hitting the database for many single rows
-  my $device_ports = {map {($_->port => $_)}
+  vars->{'device_ports'} = {map {($_->port => $_)}
                           $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
+
+  return Status->info('prepared macsuck helper data');
+});
+
+# gather data from file
+register_worker({ phase => 'main' }, sub {
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  return Status->info('skip: fwtable data supplied by other source')
+    unless $job->port or $job->extra;
+
+  # TODO load cache from file or copy from job param
+
+  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
+    $device->ip, scalar @{ vars->{'fwtable'} };
+
+  # make sure ports are UP in netdisco (unless it's a lag master,
+  # because we can still see nodes without a functioning aggregate)
+
+  my %port_seen = ();
+  foreach my $node (@{ vars->{'fwtable'} }) {
+    my $port = $node->{port};
+    next if $port_seen{$port};
+    next if vars->{'device_ports'}->{$port}->is_master;
+
+    debug sprintf ' [%s] macsuck - updating port %s status up/up due to node presence',
+      $device->ip, $port;
+
+    vars->{'device_ports'}->{$port}->update({
+      up => 'up',
+      up_admin => 'up',
+    });
+
+    ++$port_seen{$port};
+  }
+});
+
+# gather data from snmp if not already gathered
+register_worker({ phase => 'main', driver => 'snmp' }, sub {
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  return Status->info('skip: fwtable data supplied by other source')
+    if scalar @{ vars->{'fwtable'} };
+
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+    or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
   my $interfaces = $snmp->interfaces;
   my $reverse_interfaces = { reverse %{ $interfaces } }; # might squash but prob not
   my $i_up       = $snmp->i_up;
   my $i_up_admin = $snmp->i_up_admin;
 
+  # make sure ports are UP in netdisco (unless it's a lag master,
+  # because we can still see nodes without a functioning aggregate)
+  foreach my $port (values %{ vars->{'device_ports'} }) {
+    my $iid = $reverse_interfaces->{ vars->{'device_ports'}->port };
+    if ($iid and not $port->is_master) {
+        debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
+          $device->ip, $port->port, ($i_up_admin->{$iid} || '-'), ($i_up->{$iid} || '-');
+        $port->update({
+          up => $i_up->{$iid},
+          up_admin => $i_up_admin->{$iid},
+        });
+    }
+  }
+
   # get forwarding table data via basic snmp connection
-  my $fwtable = walk_fwtable($device, $interfaces, $device_ports);
+  my $fwtable = walk_fwtable($device, $interfaces, vars->{'device_ports'});
 
   # ...then per-vlan if supported
   my @vlan_list = get_vlan_list($device);
@@ -46,13 +108,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     foreach my $vlan (@vlan_list) {
       snmp_comm_reindex($snmp, $device, $vlan);
       my $pv_fwtable =
-        walk_fwtable($device, $interfaces, $device_ports, $vlan);
+        walk_fwtable($device, $interfaces, vars->{'device_ports'}, $vlan);
       $fwtable = {%$fwtable, %$pv_fwtable};
     }
   }
-
-  # now it's time to call store_node for every node discovered
-  # on every port on every vlan on this device.
 
   # reverse sort allows vlan 0 entries to be included only as fallback
   foreach my $vlan (reverse sort keys %$fwtable) {
@@ -61,34 +120,43 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
             $device->ip, $port, $vlabel, scalar keys %{ $fwtable->{$vlan}->{$port} };
 
-          # make sure this port is UP in netdisco (unless it's a lag master,
-          # because we can still see nodes without a functioning aggregate)
-          my $iid = $reverse_interfaces->{$port};
-          if ($iid and not $device_ports->{$port}->is_master) {
-              debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
-                $device->ip, $port, ($i_up_admin->{$iid} || '-'), ($i_up->{$iid} || '-');
-              $device_ports->{$port}->update({
-                up => $i_up->{$iid},
-                up_admin => $i_up_admin->{$iid},
-              });
-          }
-
           foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
 
               # remove vlan 0 entry for this MAC addr
               delete $fwtable->{0}->{$_}->{$mac}
                 for keys %{ $fwtable->{0} };
 
-              ++$total_nodes;
-              store_node($device->ip, $vlan, $port, $mac, $now);
+              push @{ vars->{'fwtable'} },  {
+                vlan => $vlan,
+                port => $port,
+                mac  => $mac,
+                timestamp => $now,
+              };
           }
       }
   }
+});
 
-  debug sprintf ' [%s] macsuck - %s updated forwarding table entries',
-    $device->ip, $total_nodes;
+# save from cache to database
+register_worker({ phase => 'store' }, sub {
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  # now it's time to call store_node for every node discovered
+  # on every port on every vlan on this device.
+
+  foreach my $node (@{ vars->{'fwtable'} }) {
+      store_node($device->ip, $node->{vlan},
+                              $node->{port},
+                              $node->{mac},
+                              $node->{timestamp});
+  }
+
+  debug sprintf ' [%s] macsuck - applied %s forwarding table entries',
+    $device->ip, scalar @{ vars->{'fwtable'} };
 
   # a use for $now ... need to archive disappeared nodes
+  my $now = vars->{'timestamp'};
   my $archived = 0;
 
   if (setting('node_freshness')) {
@@ -105,6 +173,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   $device->update({last_macsuck => \$now});
   return Status->done("Ended macsuck for $device");
 });
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 =head2 store_node( $ip, $vlan, $port, $mac, $now? )
 
