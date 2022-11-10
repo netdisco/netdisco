@@ -484,6 +484,7 @@ worker_plugins:
 extra_worker_plugins: []
 
 driver_priority:
+  direct:   1000000
   restconf: 500
   netconf:  400
   eapi:     300

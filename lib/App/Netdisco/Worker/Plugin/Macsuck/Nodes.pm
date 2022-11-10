@@ -14,10 +14,8 @@ use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use Scope::Guard 'guard';
 
-# prep macsuck helper data
-register_worker({ phase => 'early' }, sub {
-  my ($job, $workerconf) = @_;
-  my $device = $job->device;
+register_worker({ phase => 'early',
+  title => 'prepare common data' }, sub {
 
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we can if we want add a job at the end to
@@ -30,12 +28,12 @@ register_worker({ phase => 'early' }, sub {
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
                           $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
-
-  return Status->info('Prepared macsuck helper data');
 });
 
-# gather data from file
-register_worker({ phase => 'main' }, sub {
+
+register_worker({ phase => 'main', driver => 'direct',
+  title => 'gather macs from file and set interfaces' }, sub {
+
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
@@ -43,18 +41,21 @@ register_worker({ phase => 'main' }, sub {
     unless $job->port or $job->extra;
 
   # TODO load cache from file or copy from job param
-  # my @ok_vlans = sanity_vlans($device, %$vlans, %$vlan_names, %$vlan_states);
+  my @fwtable = ();
+  # remember to add vars->{'timestamp'}?
+  # skip the worker if there are no macs?
 
   debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
-    $device->ip, scalar @{ vars->{'fwtable'} };
+    $device->ip, scalar @fwtable;
 
   # make sure ports are UP in netdisco (unless it's a lag master,
   # because we can still see nodes without a functioning aggregate)
 
   my %port_seen = ();
-  foreach my $node (@{ vars->{'fwtable'} }) {
-    my $port = $node->{port};
+  foreach my $node (@fwtable) {
+    my $port = $node->{port} or next;
     next if $port_seen{$port};
+    next unless exists vars->{'device_ports'}->{$port};
     next if vars->{'device_ports'}->{$port}->is_master;
 
     debug sprintf ' [%s] macsuck - updating port %s status up/up due to node presence',
@@ -68,16 +69,26 @@ register_worker({ phase => 'main' }, sub {
     ++$port_seen{$port};
   }
 
-  return Status->done("Imported MAC addresses for $device");
+  # remove macs on forbidden vlans
+
+  my $vlan_orig = { map { (($_->{vlan} || '0') => 1) } @fwtable };
+  my @vlans = sanity_vlans($device, $vlan_orig, {}, {});
+
+  foreach my $node (@fwtable) {
+    my $vlan = $node->{vlan};
+    next unless scalar grep {$_ eq $vlan} @vlans;
+    push @{ vars->{'fwtable'} }, $node;
+  }
+
+  return Status->done("Received MAC addresses for $device");
 });
 
-# gather data from snmp if not already gathered
-register_worker({ phase => 'main', driver => 'snmp' }, sub {
+
+register_worker({ phase => 'main', driver => 'snmp',
+  title => 'gather macs from snmp and set interfaces'}, sub {
+
   my ($job, $workerconf) = @_;
   my $device = $job->device;
-
-  return Status->info('skip: fwtable data supplied by other source')
-    if scalar @{ vars->{'fwtable'} };
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("macsuck failed: could not SNMP connect to $device");
@@ -104,7 +115,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $fwtable = walk_fwtable($device, $interfaces, vars->{'device_ports'});
 
   # ...then per-vlan if supported
-  my @vlan_list = get_vlan_list($device);
+  my @vlan_list = get_vlan_list($device, $snmp);
   {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vlan (@vlan_list) {
@@ -141,8 +152,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   return Status->done("Gathered MAC addresses for $device");
 });
 
-# save from cache to database
-register_worker({ phase => 'store' }, sub {
+
+register_worker({ phase => 'store',
+  title => 'saving macs to database'}, sub {
+
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
@@ -237,11 +250,7 @@ sub store_node {
 
 # return a list of vlan numbers which are OK to macsuck on this device
 sub get_vlan_list {
-  my $device = shift;
-
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return (); # already checked!
-
+  my ($device, $snmp) = @_;
   return () unless $snmp->cisco_comm_indexing;
 
   my (%vlans, %vlan_names, %vlan_states);
@@ -304,8 +313,6 @@ sub get_vlan_list {
       $vlan_states{$vlan} = $state;
   }
 
-  # have to sanity clean here because we need the VLAN list to do
-  # community indexing in the snmp gather
   return sanity_vlans($device, \%vlans, \%vlan_names, \%vlan_states);
 }
 
