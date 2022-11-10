@@ -12,6 +12,7 @@ use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
+use File::Slurper 'read_text';
 use Scope::Guard 'guard';
 
 register_worker({ phase => 'early',
@@ -43,13 +44,24 @@ register_worker({ phase => 'main', driver => 'direct',
   return Status->info('skip: fwtable data supplied by other source')
     unless $job->port or $job->extra;
 
-  # TODO load cache from file or copy from job param
-  my @fwtable = ();
-  # remember to add vars->{'timestamp'}?
-  # skip the worker if there are no macs?
+  # load cache from file or copy from job param
+  my $data = $job->extra;
+
+  if ($job->port and -f $job->port) {
+    $data = read_text($job->port)
+      or return Status->error(sprintf 'could not open data source "%s"', $job->port);
+  }
+
+  my @fwtable = (length $data ? @{ from_json($data)->{'data'} } : ());
 
   debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
     $device->ip, scalar @fwtable;
+
+  return Status->done('error? 0 forwarding table entries provided')
+    unless scalar @fwtable;
+
+  # add timestamp if missing
+  map { $_->{'timestamp'} ||= vars->{'timestamp'} } @fwtable;
 
   # make sure ports are UP in netdisco (unless it's a lag master,
   # because we can still see nodes without a functioning aggregate)
