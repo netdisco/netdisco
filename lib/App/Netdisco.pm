@@ -90,7 +90,9 @@ On openSUSE:
  root:~# zypper refresh
  root:~# zypper install curl automake gcc make postgresql postgresql-server openssh openssl net-snmp perl perl-DBD-Pg perl-SNMP
 
-On BSD systems please see L<our BSD tips|https://github.com/netdisco/netdisco/wiki/BSD-Install>.
+On FreeBSD systems please see L<our FreeBSD tips|https://github.com/netdisco/netdisco/wiki/FreeBSD-Install>.
+
+On OpenBSD systems please see L<our OpenBSD tips|https://github.com/netdisco/netdisco/wiki/openbsd-install>.
 
 With those installed, please check that your system's clock is correct.
 
