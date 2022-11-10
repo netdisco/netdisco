@@ -49,7 +49,8 @@ sub load_workers {
       foreach my $priority (sort {$b <=> $a}
                             keys %{ $workers->{$phase}->{$namespace} }) {
 
-        ++$driverless_main if $priority == 0 and $phase eq 'main';
+        ++$driverless_main if $phase eq 'main'
+          and ($priority == 0 or $priority == setting('driver_priority')->{'direct'});
         push @wset, @{ $workers->{$phase}->{$namespace}->{$priority} };
       }
     }

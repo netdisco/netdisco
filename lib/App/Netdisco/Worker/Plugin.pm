@@ -80,7 +80,9 @@ register 'register_worker' => sub {
 
       # per-device action but no device creds available
       return $job->add_status( Status->info('skip: driver or action not applicable') )
-        if 0 == scalar @newuserconf && $workerconf->{priority} > 0;
+        if 0 == scalar @newuserconf
+           and $workerconf->{priority} > 0
+           and $workerconf->{priority} < setting('driver_priority')->{'direct'};
     }
 
     # back up and restore device_auth
