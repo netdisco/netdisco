@@ -54,9 +54,10 @@ sub load_workers {
       }
     }
 
-    $self->transport_required( $driverless_main ? false : true );
     $self->$pname( \@wset );
   }
+
+  $self->transport_required( $driverless_main ? false : true );
 }
 
 true;

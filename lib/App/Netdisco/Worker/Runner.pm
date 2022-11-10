@@ -83,6 +83,7 @@ sub run {
     }
   }
   else {
+    debug sprintf '%s: running with no timeout', $job->action;
     $runner->($self, $job);
   }
 }

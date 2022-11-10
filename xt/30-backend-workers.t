@@ -19,7 +19,7 @@ use Dancer qw/:moose :script !pass/;
 # configure logging to force console output
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
-$CONFIG->{log} = 'error';
+$CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
 Dancer::Logger->init('console', $CONFIG);
 
 {
