@@ -122,7 +122,7 @@ sub finalise_status {
   $job->status('error');
   $job->log('failed to report from any worker!');
 
-  my $max_level = Status->info()->level;
+  my $max_level = 0;
 
   if ($job->is_cancelled and scalar @{ $job->_statuslist }) {
     $job->status( $job->_statuslist->[-1]->status );
@@ -137,7 +137,7 @@ sub finalise_status {
     # done() from check phase should not be the action's done()
     next if $status->phase eq 'check' and $status->is_ok;
 
-    if ($status->level >= $max_level) {
+    if ($status->level > $max_level) {
       $job->status( $status->status );
       $job->log( $status->log );
       $max_level = $status->level;

@@ -6,11 +6,11 @@ use aliased 'App::Netdisco::Worker::Status';
 
 # info 'test: add to an action';
 
-register_worker({ phase => 'main', driver => 'snmp' }, sub {
-  return Status->error('NOT OK: additional worker at SNMP level.');
+register_worker({ phase => 'main', driver => 'snmp', title => 'NOT OK' }, sub {
+  return Status->done('NOT OK: additional worker at SNMP level.');
 });
 
-register_worker({ phase => 'main', driver => 'snmp' }, sub {
+register_worker({ phase => 'main', driver => 'snmp', title => 'OK' }, sub {
   return Status->done('OK: SNMP driver is successful.');
 });
 

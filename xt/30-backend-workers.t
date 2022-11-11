@@ -99,8 +99,15 @@ my $j9 = do_job('TestSix');
 is($j9->status, 'done', 'status is done');
 is((scalar @{$j9->_statuslist}), 3, 'three workers ran');
 is($j9->_last_priority, 0, 'priority is for driverless action');
-is($j9->log, 'OK: first driverless action is successful.',
+is($j9->log, 'OK: second driverless action is successful.',
   'driverless actions always run');
+
+my $j9 = do_job('TestSeven');
+is($j9->status, 'error', 'status is error');
+is((scalar @{$j9->_statuslist}), 1, 'one worker ran');
+is($j9->_last_priority, 1000000, 'priority is for direct action');
+is($j9->log, 'NOT OK: cancelled worker at SNMP level.',
+  'cancelled worker prevented others running');
 
 done_testing;
 

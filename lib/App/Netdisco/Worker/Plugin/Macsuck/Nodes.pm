@@ -47,9 +47,12 @@ register_worker({ phase => 'main', driver => 'direct',
   # load cache from file or copy from job param
   my $data = $job->extra;
 
-  if ($job->port and -f $job->port) {
+  if ($job->port) {
+    return $job->cancel(sprintf 'could not open data source "%s"', $job->port)
+      unless -f $job->port;
+
     $data = read_text($job->port)
-      or return Status->error(sprintf 'could not open data source "%s"', $job->port);
+      or return $job->cancel(sprintf 'problem reading from file "%s"', $job->port);
   }
 
   my @fwtable = (length $data ? @{ from_json($data)->{'data'} } : ());
@@ -57,7 +60,7 @@ register_worker({ phase => 'main', driver => 'direct',
   debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
     $device->ip, scalar @fwtable;
 
-  return Status->done('error? 0 forwarding table entries provided')
+  return $job->cancel('data provided but 0 fwd entries found')
     unless scalar @fwtable;
 
   # add timestamp if missing
