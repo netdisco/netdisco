@@ -95,7 +95,10 @@ register_worker({ phase => 'main', driver => 'direct',
 
   # remove macs on forbidden vlans
   my @vlans = sanity_vlans($device, vars->{'fwtable'}, {}, {});
-  delete vars->{'fwtable'}->{$_} for @vlans;
+  foreach my $vlan (keys %{ vars->{'fwtable'} }) {
+      delete vars->{'fwtable'}->{$vlan}
+        unless scalar grep {$_ eq $vlan} @vlans;
+  }
 
   return Status->done("Received MAC addresses for $device");
 });
