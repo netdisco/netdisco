@@ -10,10 +10,12 @@ use App::Netdisco::Util::PortMAC 'get_port_macs';
 use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
+
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use File::Slurper 'read_text';
 use Scope::Guard 'guard';
+use List::MoreUtils ();
 
 register_worker({ phase => 'early',
   title => 'prepare common data' }, sub {
@@ -27,7 +29,7 @@ register_worker({ phase => 'early',
   vars->{'timestamp'} = 'to_timestamp('. (join '.', gettimeofday) .')';
 
   # initialise the cache
-  vars->{'fwtable'} ||= [];
+  vars->{'fwtable'} ||= {};
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
@@ -57,14 +59,11 @@ register_worker({ phase => 'main', driver => 'direct',
 
   my @fwtable = (length $data ? @{ from_json($data)->{'data'} } : ());
 
-  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
-    $device->ip, scalar @fwtable;
-
   return $job->cancel('data provided but 0 fwd entries found')
     unless scalar @fwtable;
 
-  # add timestamp if missing
-  map { $_->{'timestamp'} ||= vars->{'timestamp'} } @fwtable;
+  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
+    $device->ip, scalar @fwtable;
 
   # make sure ports are UP in netdisco (unless it's a lag master,
   # because we can still see nodes without a functioning aggregate)
@@ -87,16 +86,16 @@ register_worker({ phase => 'main', driver => 'direct',
     ++$port_seen{$port};
   }
 
-  # remove macs on forbidden vlans
-
-  my $vlan_orig = { map { (($_->{vlan} || '0') => 1) } @fwtable };
-  my @vlans = sanity_vlans($device, $vlan_orig, {}, {});
-
+  # rebuild fwtable in format for filtering more easily
   foreach my $node (@fwtable) {
-    my $vlan = $node->{vlan};
-    next unless scalar grep {$_ eq $vlan} @vlans;
-    push @{ vars->{'fwtable'} }, $node;
+      vars->{'fwtable'}->{ $node->{'vlan'} || 0 }
+                       ->{ $node->{'port'} }
+                       ->{ $node->{'mac'} } += 1;
   }
+
+  # remove macs on forbidden vlans
+  my @vlans = sanity_vlans($device, vars->{'fwtable'}, {}, {});
+  delete vars->{'fwtable'}->{$_} for @vlans;
 
   return Status->done("Received MAC addresses for $device");
 });
@@ -130,7 +129,7 @@ register_worker({ phase => 'main', driver => 'snmp',
   }
 
   # get forwarding table data via basic snmp connection
-  my $fwtable = walk_fwtable($device, $interfaces, vars->{'device_ports'});
+  vars->{'fwtable'} = walk_fwtable($device, $snmp, $interfaces);
 
   # ...then per-vlan if supported
   my @vlan_list = get_vlan_list($device, $snmp);
@@ -139,32 +138,9 @@ register_worker({ phase => 'main', driver => 'snmp',
     foreach my $vlan (@vlan_list) {
       snmp_comm_reindex($snmp, $device, $vlan);
       my $pv_fwtable =
-        walk_fwtable($device, $interfaces, vars->{'device_ports'}, $vlan);
-      $fwtable = {%$fwtable, %$pv_fwtable};
+        walk_fwtable($device, $snmp, $interfaces, $vlan);
+      vars->{'fwtable'} = {%{ vars->{'fwtable'} }, %$pv_fwtable};
     }
-  }
-
-  # reverse sort allows vlan 0 entries to be included only as fallback
-  foreach my $vlan (reverse sort keys %$fwtable) {
-      foreach my $port (keys %{ $fwtable->{$vlan} }) {
-          my $vlabel = ($vlan ? $vlan : 'unknown');
-          debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
-            $device->ip, $port, $vlabel, scalar keys %{ $fwtable->{$vlan}->{$port} };
-
-          foreach my $mac (keys %{ $fwtable->{$vlan}->{$port} }) {
-
-              # remove vlan 0 entry for this MAC addr
-              delete $fwtable->{0}->{$_}->{$mac}
-                for keys %{ $fwtable->{0} };
-
-              push @{ vars->{'fwtable'} },  {
-                vlan => $vlan,
-                port => $port,
-                mac  => $mac,
-                timestamp => vars->{'timestamp'},
-              };
-          }
-      }
   }
 
   return Status->done("Gathered MAC addresses for $device");
@@ -172,23 +148,38 @@ register_worker({ phase => 'main', driver => 'snmp',
 
 
 register_worker({ phase => 'store',
-  title => 'saving macs to database'}, sub {
+  title => 'save macs to database'}, sub {
 
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  # now it's time to call store_node for every node discovered
-  # on every port on every vlan on this device.
+  # sanity filter the MAC addresses from the device
 
-  foreach my $node (@{ vars->{'fwtable'} }) {
-      store_node($device->ip, $node->{vlan},
-                              $node->{port},
-                              $node->{mac},
-                              $node->{timestamp});
+  vars->{'fwtable'} = sanity_macs( $device, vars->{'fwtable'}, vars->{'device_ports'} );
+
+  # reverse sort allows vlan 0 entries to be included only as fallback
+
+  my $node_count = 0;
+  foreach my $vlan (reverse sort keys %{ vars->{'fwtable'} }) {
+      foreach my $port (keys %{ vars->{'fwtable'}->{$vlan} }) {
+          my $vlabel = ($vlan ? $vlan : 'unknown');
+          debug sprintf ' [%s] macsuck - port %s vlan %s : %s nodes',
+            $device->ip, $port, $vlabel, scalar keys %{ vars->{'fwtable'}->{$vlan}->{$port} };
+
+          foreach my $mac (keys %{ vars->{'fwtable'}->{$vlan}->{$port} }) {
+
+              # remove vlan 0 entry for this MAC addr
+              delete vars->{'fwtable'}->{0}->{$_}->{$mac}
+                for keys %{ vars->{'fwtable'}->{0} };
+
+              store_node($device->ip, $vlan, $port, $mac, vars->{'timestamp'});
+              ++$node_count;
+          }
+      }
   }
 
   debug sprintf ' [%s] macsuck - stored %s forwarding table entries',
-    $device->ip, scalar @{ vars->{'fwtable'} };
+    $device->ip, $node_count;
 
   # a use for $now ... need to archive disappeared nodes
   my $now = vars->{'timestamp'};
@@ -408,43 +399,14 @@ sub sanity_vlans {
 # walks the forwarding table (BRIDGE-MIB) for the device and returns a
 # table of node entries.
 sub walk_fwtable {
-  my ($device, $interfaces, $device_ports, $comm_vlan) = @_;
-  my $skiplist = {}; # ports through which we can see another device
+  my ($device, $snmp, $interfaces, $comm_vlan) = @_;
   my $cache = {};
-
-  my $ignorelist = {}; # ports suppressed by macsuck_no_deviceports
-  if (scalar @{ setting('macsuck_no_deviceports') }) {
-      my @ignoremaps = @{ setting('macsuck_no_deviceports') };
-
-      foreach my $map (@ignoremaps) {
-          next unless ref {} eq ref $map;
-
-          foreach my $key (sort keys %$map) {
-              # lhs matches device, rhs matches port
-              next unless check_acl_only($device, $key);
-
-              foreach my $port (keys %$device_ports) {
-                  next unless check_acl_only($device_ports->{$port}, $map->{$key});
-
-                  ++$ignorelist->{$port};
-                  debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceports',
-                    $device->ip, $port;
-              }
-          }
-      }
-  }
-
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return $cache; # already checked!
 
   my $fw_mac   = $snmp->fw_mac || {};
   my $fw_port  = $snmp->fw_port || {};
   my $fw_vlan  = ($snmp->can('cisco_comm_indexing') and $snmp->cisco_comm_indexing()) 
     ? {} : $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index || {};
-
-  my @fw_mac_list = values %$fw_mac;
-  my $port_macs = get_port_macs(\@fw_mac_list);
 
   # to map forwarding table port to device port we have
   #   fw_port -> bp_index -> interfaces
@@ -481,136 +443,205 @@ sub walk_fwtable {
           next MAC;
       }
 
-      # this uses the cached $ports resultset to limit hits on the db
-      my $device_port = $device_ports->{$port};
-
-      if (exists $ignorelist->{$port}) {
-          # stash in the skiplist so that node search works for neighbor
-          # (besides this, skiplist is not used for ignorelist ports)
-          $skiplist->{$port} = [ $vlan, $mac ] if exists $port_macs->{$mac};
-
-          debug sprintf
-            ' [%s] macsuck %s - port %s is suppressed by config - skipping.',
-            $device->ip, $mac, $port;
-          next MAC;
-      }
-
-      if (exists $skiplist->{$port}) {
-          debug sprintf
-            ' [%s] macsuck %s - seen another device thru port %s - skipping.',
-            $device->ip, $mac, $port;
-          next MAC;
-      }
-
-      # WRT #475 ... see? :-)
-      unless (defined $device_port) {
-          debug sprintf
-            ' [%s] macsuck %s - port %s is not in database - skipping.',
-            $device->ip, $mac, $port;
-          next MAC;
-      }
-
-      # check to see if the port is connected to another device
-      # and if we have that device in the database.
-
-      # carefully be aware: "uplink" here means "connected to another device"
-      # it does _not_ mean that the user wants nodes gathered on the remote dev.
-
-      # we have two ways to detect "uplink" port status:
-      #  * a neighbor was discovered using CDP/LLDP
-      #  * a mac addr is seen which belongs to any device port/interface
-
-      # allow to gather MACs on upstream port for some kinds of device that
-      # do not expose MAC address tables via SNMP. relies on prefetched
-      # neighbors otherwise it would kill the DB with device lookups.
-
-      my $neigh_cannot_macsuck = eval { # can fail
-        check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
-        match_to_setting($device_port->remote_type, 'macsuck_unsupported_type') };
-
-      # here, is_uplink comes from Discover::Neighbors finding LLDP remnants
-      if ($device_port->is_uplink) {
-          if ($neigh_cannot_macsuck) {
-              debug sprintf
-                ' [%s] macsuck %s - port %s neighbor %s without macsuck support',
-                $device->ip, $mac, $port,
-                (eval { $device_port->neighbor->ip }
-                 || ($device_port->remote_ip
-                     || $device_port->remote_id || '?'));
-              # continue!!
-          }
-          elsif (my $neighbor = $device_port->neighbor) {
-              debug sprintf
-                ' [%s] macsuck %s - port %s has neighbor %s - skipping.',
-                $device->ip, $mac, $port, $neighbor->ip;
-              next MAC;
-          }
-          elsif (my $remote = $device_port->remote_ip) {
-              debug sprintf
-                ' [%s] macsuck %s - port %s has undiscovered neighbor %s',
-                $device->ip, $mac, $port, $remote;
-              # continue!!
-          }
-          elsif (not setting('macsuck_bleed')) {
-              debug sprintf
-                ' [%s] macsuck %s - port %s is detected uplink - skipping.',
-                $device->ip, $mac, $port;
-
-              $skiplist->{$port} = [ $vlan, $mac ] # remember neighbor port mac
-                if exists $port_macs->{$mac};
-              next MAC;
-          }
-      }
-
-      # here, the MAC is known as belonging to a device switchport
-      if (exists $port_macs->{$mac}) {
-          my $switch_ip = $port_macs->{$mac};
-          if ($device->ip eq $switch_ip) {
-              debug sprintf
-                ' [%s] macsuck %s - port %s connects to self - skipping.',
-                $device->ip, $mac, $port;
-              next MAC;
-          }
-
-          debug sprintf ' [%s] macsuck %s - port %s is probably an uplink',
-            $device->ip, $mac, $port;
-          $device_port->update({is_uplink => \'true'});
-
-          # neighbor exists and Netdisco can speak to it, so we don't want
-          # its MAC address. however don't add to skiplist as that would
-          # clear all other MACs on the port.
-          next MAC if $neigh_cannot_macsuck;
-
-          # when there's no CDP/LLDP, we only want to gather macs at the
-          # topology edge, hence skip ports with known device macs.
-          if (not setting('macsuck_bleed')) {
-                debug sprintf ' [%s] macsuck %s - adding port %s to skiplist',
-                    $device->ip, $mac, $port;
-
-                $skiplist->{$port} = [ $vlan, $mac ]; # remember for later
-                next MAC;
-          }
-      }
-
-      # possibly move node to lag master
-      if (defined $device_port->slave_of
-            and exists $device_ports->{$device_port->slave_of}) {
-          my $parent = $device_port->slave_of;
-          $device_ports->{$parent}->update({is_uplink => \'true'});
-
-          # VLAN subinterfaces can be set uplink,
-          # but we don't want to move nodes there (so check is_master).
-          $port = $parent if $device_ports->{$parent}->is_master;
-      }
-
       ++$cache->{$vlan}->{$port}->{$mac};
+  }
+
+  return $cache;
+}
+
+sub sanity_macs {
+  my ($device, $cache, $device_ports) = @_;
+
+  # note any of the MACs which are actually device or device_port MACs
+  # used to spot uplink ports (neighborport)
+  my @fw_mac_list = ();
+  foreach my $vlan (keys %{ $cache }) {
+      foreach my $port (keys %{ $cache->{$vlan} }) {
+          push @fw_mac_list, keys %{ $cache->{$vlan}->{$port} };
+      }
+  }
+  @fw_mac_list = List::MoreUtils::uniq( @fw_mac_list );
+  my $port_macs = get_port_macs(\@fw_mac_list);
+
+  my $neighborport = {}; # ports through which we can see another device
+  my $ignoreport   = {}; # ports suppressed by macsuck_no_deviceports
+
+  if (scalar @{ setting('macsuck_no_deviceports') }) {
+      my @ignoremaps = @{ setting('macsuck_no_deviceports') };
+
+      foreach my $map (@ignoremaps) {
+          next unless ref {} eq ref $map;
+
+          foreach my $key (sort keys %$map) {
+              # lhs matches device, rhs matches port
+              next unless check_acl_only($device, $key);
+
+              foreach my $port (keys %{ $device_ports }) {
+                  next unless check_acl_only($device_ports->{$port}, $map->{$key});
+
+                  ++$ignoreport->{$port};
+                  debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceports',
+                    $device->ip, $port;
+              }
+          }
+      }
+  }
+
+
+  foreach my $vlan (keys %{ $cache }) {
+      foreach my $port (keys %{ $cache->{$vlan} }) {
+          MAC: foreach my $mac (keys %{ $cache->{$vlan}->{$port} }) {
+
+              if (not check_mac($mac, $device)) {
+                  delete $cache->{$vlan}->{$port}->{$mac};
+                  next MAC;
+              }
+
+              # this uses the cached $ports resultset to limit hits on the db
+              my $device_port = $device_ports->{$port};
+
+              # WRT #475 ... see? :-)
+              unless (defined $device_port) {
+                  debug sprintf
+                    ' [%s] macsuck %s - port %s is not in database - skipping.',
+                    $device->ip, $mac, $port;
+                  delete $cache->{$vlan}->{$port}->{$mac};
+                  next MAC;
+              }
+
+              if (exists $ignoreport->{$port}) {
+                  # stash in the neighborport so that node search works for neighbor
+                  # (besides this, neighborport is not used for ignoreport ports)
+                  $neighborport->{$port} = [ $vlan, $mac ] if exists $port_macs->{$mac};
+
+                  debug sprintf
+                    ' [%s] macsuck %s - port %s is suppressed by config - skipping.',
+                    $device->ip, $mac, $port;
+                  delete $cache->{$vlan}->{$port}->{$mac};
+                  next MAC;
+              }
+
+              if (exists $neighborport->{$port}) {
+                  debug sprintf
+                    ' [%s] macsuck %s - seen another device thru port %s - skipping.',
+                    $device->ip, $mac, $port;
+                  delete $cache->{$vlan}->{$port}->{$mac};
+                  next MAC;
+              }
+
+              # check to see if the port is connected to another device
+              # and if we have that device in the database.
+
+              # carefully be aware: "uplink" here means "connected to another device"
+              # it does _not_ mean that the user wants nodes gathered on the remote dev.
+
+              # we have two ways to detect "uplink" port status:
+              #  * a neighbor was discovered using CDP/LLDP
+              #  * a mac addr is seen which belongs to any device port/interface
+
+              # allow to gather MACs on upstream (local) port for some kinds
+              # of device that do not expose MAC address tables via SNMP.
+              # relies on prefetched neighbors otherwise it would kill the DB
+              # with device lookups.
+
+              my $neigh_cannot_macsuck = eval { # can fail
+                check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
+                match_to_setting($device_port->remote_type, 'macsuck_unsupported_type') };
+
+              # here, is_uplink comes from Discover::Neighbors finding LLDP remnants
+              if ($device_port->is_uplink) {
+                  if ($neigh_cannot_macsuck) {
+                      debug sprintf
+                        ' [%s] macsuck %s - port %s neighbor %s without macsuck support',
+                        $device->ip, $mac, $port,
+                        (eval { $device_port->neighbor->ip }
+                         || ($device_port->remote_ip
+                             || $device_port->remote_id || '?'));
+                      # continue!!
+                  }
+                  elsif (my $neighbor = $device_port->neighbor) {
+                      debug sprintf
+                        ' [%s] macsuck %s - port %s has neighbor %s - skipping.',
+                        $device->ip, $mac, $port, $neighbor->ip;
+                      delete $cache->{$vlan}->{$port}->{$mac};
+                      next MAC;
+                  }
+                  elsif (my $remote = $device_port->remote_ip) {
+                      debug sprintf
+                        ' [%s] macsuck %s - port %s has undiscovered neighbor %s',
+                        $device->ip, $mac, $port, $remote;
+                      # continue!!
+                  }
+                  elsif (not setting('macsuck_bleed')) {
+                      debug sprintf
+                        ' [%s] macsuck %s - port %s is detected uplink - skipping.',
+                        $device->ip, $mac, $port;
+
+                      $neighborport->{$port} = [ $vlan, $mac ] # remember neighbor port mac
+                        if exists $port_macs->{$mac};
+                      delete $cache->{$vlan}->{$port}->{$mac};
+                      next MAC;
+                  }
+              }
+
+              # here, the MAC is known as belonging to a device switchport
+              if (exists $port_macs->{$mac}) {
+                  my $switch_ip = $port_macs->{$mac};
+                  if ($device->ip eq $switch_ip) {
+                      debug sprintf
+                        ' [%s] macsuck %s - port %s connects to self - skipping.',
+                        $device->ip, $mac, $port;
+                      delete $cache->{$vlan}->{$port}->{$mac};
+                      next MAC;
+                  }
+
+                  debug sprintf ' [%s] macsuck %s - port %s is probably an uplink',
+                    $device->ip, $mac, $port;
+                  $device_port->update({is_uplink => \'true'});
+
+                  if ($neigh_cannot_macsuck) {
+                      # neighbor exists and Netdisco can speak to it, so we don't want
+                      # its MAC address. however don't add to neighborport as that would
+                      # clear all other MACs on the port.
+                      delete $cache->{$vlan}->{$port}->{$mac};
+                      next MAC;
+                  }
+
+                  # when there's no CDP/LLDP, we only want to gather macs at the
+                  # topology edge, hence skip ports with known device macs.
+                  if (not setting('macsuck_bleed')) {
+                        debug sprintf ' [%s] macsuck %s - port %s is at topology edge',
+                            $device->ip, $mac, $port;
+
+                        $neighborport->{$port} = [ $vlan, $mac ]; # remember for later
+                        delete $cache->{$vlan}->{$port}->{$mac};
+                        next MAC;
+                  }
+              }
+
+              # possibly move node to lag master
+              if (defined $device_port->slave_of
+                    and exists $device_ports->{$device_port->slave_of}) {
+
+                  my $parent = $device_port->slave_of;
+                  $device_ports->{$parent}->update({is_uplink => \'true'});
+
+                  # VLAN subinterfaces can be set uplink,
+                  # but we don't want to move nodes there (so check is_master).
+                  if ($device_ports->{$parent}->is_master) {
+                      delete $cache->{$vlan}->{$port}->{$mac};
+                      ++$cache->{$vlan}->{$parent}->{$mac};
+                  }
+              }
+          }
+      }
   }
 
   # restore MACs of neighbor devices.
   # this is when we have a "possible uplink" detected but we still want to
   # record the single MAC of the neighbor device so it works in Node search.
-  foreach my $port (keys %$skiplist) {
-      my ($vlan, $mac) = @{ $skiplist->{$port} };
+  foreach my $port (keys %$neighborport) {
+      my ($vlan, $mac) = @{ $neighborport->{$port} };
       delete $cache->{$_}->{$port} for keys %$cache; # nuke nodes on all VLANs
       ++$cache->{$vlan}->{$port}->{$mac};
   }
