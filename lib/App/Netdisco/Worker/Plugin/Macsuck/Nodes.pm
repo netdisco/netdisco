@@ -132,16 +132,16 @@ register_worker({ phase => 'main', driver => 'snmp',
   }
 
   # get forwarding table data via basic snmp connection
-  vars->{'fwtable'} = walk_fwtable($device, $snmp, $interfaces);
+  vars->{'fwtable'} = walk_fwtable($snmp, $device, $interfaces);
 
   # ...then per-vlan if supported
-  my @vlan_list = get_vlan_list($device, $snmp);
+  my @vlan_list = get_vlan_list($snmp, $device);
   {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vlan (@vlan_list) {
       snmp_comm_reindex($snmp, $device, $vlan);
       my $pv_fwtable =
-        walk_fwtable($device, $snmp, $interfaces, $vlan);
+        walk_fwtable($snmp, $device, $interfaces, $vlan);
       vars->{'fwtable'} = {%{ vars->{'fwtable'} }, %$pv_fwtable};
     }
   }
@@ -262,7 +262,7 @@ sub store_node {
 
 # return a list of vlan numbers which are OK to macsuck on this device
 sub get_vlan_list {
-  my ($device, $snmp) = @_;
+  my ($snmp, $device) = @_;
   return () unless $snmp->cisco_comm_indexing;
 
   my (%vlans, %vlan_names, %vlan_states);
@@ -402,7 +402,7 @@ sub sanity_vlans {
 # walks the forwarding table (BRIDGE-MIB) for the device and returns a
 # table of node entries.
 sub walk_fwtable {
-  my ($device, $snmp, $interfaces, $comm_vlan) = @_;
+  my ($snmp, $device, $interfaces, $comm_vlan) = @_;
   my $cache = {};
 
   my $fw_mac   = $snmp->fw_mac || {};
@@ -416,7 +416,6 @@ sub walk_fwtable {
 
   MAC: while (my ($idx, $mac) = each %$fw_mac) {
       my $bp_id = $fw_port->{$idx};
-      next MAC unless check_mac($mac, $device);
 
       unless (defined $bp_id) {
           debug sprintf
@@ -495,7 +494,7 @@ sub sanity_macs {
       foreach my $port (keys %{ $cache->{$vlan} }) {
           MAC: foreach my $mac (keys %{ $cache->{$vlan}->{$port} }) {
 
-              if (not check_mac($mac, $device)) {
+              unless (check_mac($mac, $device)) {
                   delete $cache->{$vlan}->{$port}->{$mac};
                   next MAC;
               }
