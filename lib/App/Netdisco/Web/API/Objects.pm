@@ -5,6 +5,9 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Backend::Job;
+use App::Netdisco::JobQueue 'jq_insert';
+
 use Try::Tiny;
 
 swagger_path {
@@ -149,6 +152,89 @@ swagger_path {
     ->search({ switch => params->{ip}, ($active ? (-bool => 'active') : ()) }) }
     or send_error('Bad Device', 404);
   return to_json [ map {$_->TO_JSON} $rows->all ];
+};
+
+swagger_path {
+  tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/device/{ip}/nodes',
+  description => "Stores the nodes found on a given Device",
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    enqueue => {
+      description => 'Import nodes as a backend job, not right now',
+      type => 'boolean',
+      default => 'false',
+      in => 'query',
+    },
+    nodes => {
+      description => 'List of node tuples (port, vlan, mac)',
+      default => '[]',
+      schema => {
+        type => 'array',
+        items => {
+          type => 'object',
+          properties => {
+            port => {
+              type => 'string'
+            },
+            vlan => {
+              type => 'integer',
+              default => '1'
+            },
+            mac => {
+              type => 'string'
+            }
+          }
+        }
+      },
+      in => 'body',
+    },
+  ],
+  responses => { default => {} },
+}, put '/api/v1/object/device/:ip/nodes' => require_role api => sub {
+  my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
+  my $body = request->body;
+  my $action = 'macsuck';
+  my $job_spec = {
+    action => $action,
+    device => params->{ip},
+    subaction => $body,
+    username => request->user,
+  };
+  my $exitstatus = 0;
+
+  if ($enqueue) {
+      jq_insert([ $job_spec ]);
+  }
+  else {
+      # create worker (placeholder object for the action runner)
+      {
+        package MyWorker;
+        use Moo;
+        with 'App::Netdisco::Worker::Runner';
+      }
+
+      my $worker = MyWorker->new();
+      my $job = App::Netdisco::Backend::Job->new({ job => 0, %$job_spec });
+
+      # do job
+      try {
+        $worker->run($job);
+      }
+      catch {
+        $job->status('error');
+        $job->log("error running job: $_");
+      };
+      debug sprintf '%s: finished at %s', $action, scalar localtime;
+      debug sprintf '%s: status %s: %s', $action, $job->status, $job->log;
+      $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
+  }
+
+  return to_json [];
 };
 
 swagger_path {
