@@ -57,7 +57,7 @@ register_worker({ phase => 'main', driver => 'direct',
       or return $job->cancel(sprintf 'problem reading from file "%s"', $job->port);
   }
 
-  my @fwtable = (length $data ? @{ from_json($data)->{'data'} } : ());
+  my @fwtable = (length $data ? @{ from_json($data) } : ());
 
   return $job->cancel('data provided but 0 fwd entries found')
     unless scalar @fwtable;
@@ -94,7 +94,7 @@ register_worker({ phase => 'main', driver => 'direct',
   }
 
   # remove macs on forbidden vlans
-  my @vlans = sanity_vlans($device, vars->{'fwtable'}, {}, {});
+  my @vlans = (0, sanity_vlans($device, vars->{'fwtable'}, {}, {}));
   foreach my $vlan (keys %{ vars->{'fwtable'} }) {
       delete vars->{'fwtable'}->{$vlan}
         unless scalar grep {$_ eq $vlan} @vlans;
