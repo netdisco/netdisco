@@ -15,6 +15,8 @@ use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
 use File::Slurper 'read_text';
 use Scope::Guard 'guard';
+use Regexp::Common 'net';
+use NetAddr::MAC ();
 use List::MoreUtils ();
 
 register_worker({ phase => 'early',
@@ -88,9 +90,13 @@ register_worker({ phase => 'main', driver => 'direct',
 
   # rebuild fwtable in format for filtering more easily
   foreach my $node (@fwtable) {
+      my $mac = NetAddr::MAC->new(mac => ($node->{'mac'} || ''));
+      next unless $node->{'port'} and $mac;
+      next if (($mac->as_ieee eq '00:00:00:00:00:00') or ($mac->as_ieee !~ m/$RE{net}{MAC}/));
+
       vars->{'fwtable'}->{ $node->{'vlan'} || 0 }
                        ->{ $node->{'port'} }
-                       ->{ $node->{'mac'} } += 1;
+                       ->{ $mac->as_ieee } += 1;
   }
 
   # remove macs on forbidden vlans
