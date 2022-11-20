@@ -197,12 +197,11 @@ swagger_path {
   responses => { default => {} },
 }, put '/api/v1/object/device/:ip/nodes' => require_role api => sub {
   my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
-  my $body = request->body;
-  my $action = 'macsuck';
+
   my $job_spec = {
-    action => $action,
+    action => 'macsuck',
     device => params->{ip},
-    subaction => $body,
+    subaction => request->body,
     username => request->user,
   };
   my $exitstatus = 0;
@@ -229,12 +228,13 @@ swagger_path {
         $job->status('error');
         $job->log("error running job: $_");
       };
-      debug sprintf '%s: finished at %s', $action, scalar localtime;
-      debug sprintf '%s: status %s: %s', $action, $job->status, $job->log;
+      debug sprintf 'macsuck: finished at %s', scalar localtime;
+      debug sprintf 'macsuck: status %s: %s', $job->status, $job->log;
       $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
   }
 
-  return to_json [];
+  send_error('macsuck failed', 400) if $exitstatus. # do not reveal the error
+  return to_json {};
 };
 
 swagger_path {
