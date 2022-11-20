@@ -23,6 +23,7 @@ foreach my $slot (qw/
       device_key
       job_priority
       is_cancelled
+      is_offline
 
       _current_phase
       _last_namespace

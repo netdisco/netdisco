@@ -38,7 +38,6 @@ register_worker({ phase => 'early',
                           $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
 });
 
-
 register_worker({ phase => 'main', driver => 'direct',
   title => 'gather macs from file and set interfaces' }, sub {
 
@@ -46,7 +45,7 @@ register_worker({ phase => 'main', driver => 'direct',
   my $device = $job->device;
 
   return Status->info('skip: fwtable data supplied by other source')
-    unless $job->port or $job->extra;
+    unless $job->is_offline;
 
   # load cache from file or copy from job param
   my $data = $job->extra;

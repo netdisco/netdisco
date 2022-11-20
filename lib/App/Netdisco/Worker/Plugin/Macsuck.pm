@@ -16,9 +16,14 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("macsuck skipped: $device not yet discovered")
     unless $device->in_storage;
 
-  # presence of port/extra indicates API submission so ignore safety checks
-  return Status->info("macsuck skipped: $device is not macsuckable")
-    unless $job->port or $job->extra or is_macsuckable_now($device);
+  $job->is_offline(true) if $job->port or $job->extra;
+  if ($job->is_offline) {
+      debug 'macsuck offline: will update from CLI or API';
+  }
+  else {
+      return Status->info("macsuck skipped: $device is not macsuckable")
+        unless is_macsuckable_now($device);
+  }
 
   # support for Hooks
   vars->{'hook_data'} = { $device->get_columns };
