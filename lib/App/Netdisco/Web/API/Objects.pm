@@ -165,13 +165,13 @@ swagger_path {
       in => 'path',
     },
     enqueue => {
-      description => 'Import nodes as a backend job, not right now',
+      description => 'Queue a backend job to import the nodes',
       type => 'boolean',
       default => 'false',
       in => 'query',
     },
     nodes => {
-      description => 'List of node tuples (port, vlan, mac)',
+      description => 'List of node tuples (port, VLAN, MAC)',
       default => '[]',
       schema => {
         type => 'array',
@@ -262,6 +262,91 @@ swagger_path {
     ->search({ vlan => params->{vlan}, ($active ? (-bool => 'active') : ()) }) }
     or send_error('Bad VLAN', 404);
   return to_json [ map {$_->TO_JSON} $rows->all ];
+};
+
+swagger_path {
+  tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/device/{ip}/arps',
+  description => "Stores the ARP entries found on a given Device",
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    enqueue => {
+      description => 'Queue a backend job to import the ARP data',
+      type => 'boolean',
+      default => 'false',
+      in => 'query',
+    },
+    arps => {
+      description => 'List of arp tuples (MAC, IP, DNS?). DNS is optional and will be resolved by Netdisco if not provided.',
+      default => '[]',
+      schema => {
+        type => 'array',
+        items => {
+          type => 'object',
+          properties => {
+            mac => {
+              type => 'string',
+              required => 1,
+            },
+            ip => {
+              type => 'string',
+              required => 1,
+            },
+            dns => {
+              type => 'string',
+              required => 0,
+            }
+          }
+        }
+      },
+      in => 'body',
+    },
+  ],
+  responses => { default => {} },
+}, put '/api/v1/object/device/:ip/arps' => require_role api => sub {
+  my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
+
+  my $job_spec = {
+    action => 'arpnip',
+    device => params->{ip},
+    subaction => request->body,
+    username => request->user,
+  };
+  my $exitstatus = 0;
+
+  if ($enqueue) {
+      jq_insert([ $job_spec ]);
+  }
+  else {
+      # create worker (placeholder object for the action runner)
+      {
+        package MyWorker;
+        use Moo;
+        with 'App::Netdisco::Worker::Runner';
+      }
+
+      my $worker = MyWorker->new();
+      my $job = App::Netdisco::Backend::Job->new({ job => 0, %$job_spec });
+
+      # do job
+      try {
+        $worker->run($job);
+      }
+      catch {
+        $job->status('error');
+        $job->log("error running job: $_");
+      };
+      debug sprintf 'arpnip: finished at %s', scalar localtime;
+      debug sprintf 'arpnip: status %s: %s', $job->status, $job->log;
+      $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
+  }
+
+  send_error('arpnip failed', 400) if $exitstatus. # do not reveal the error
+  return to_json {};
 };
 
 true;

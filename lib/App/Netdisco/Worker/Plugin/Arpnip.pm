@@ -16,8 +16,14 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("arpnip skipped: $device not yet discovered")
     unless $device->in_storage;
 
-  return Status->info("arpnip skipped: $device is not arpnipable")
-    unless is_arpnipable_now($device);
+  $job->is_offline(true) if $job->port or $job->extra;
+  if ($job->is_offline) {
+      debug 'arpnip offline: will update from CLI or API';
+  }
+  else {
+      return Status->info("arpnip skipped: $device is not arpnipable")
+        unless is_arpnipable_now($device);
+  }
 
   # support for Hooks
   vars->{'hook_data'} = { $device->get_columns };

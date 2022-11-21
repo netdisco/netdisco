@@ -12,29 +12,58 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
+use File::Slurper 'read_text';
 use NetAddr::IP::Lite ':lower';
+use Regexp::Common 'net';
+use NetAddr::MAC ();
 use Time::HiRes 'gettimeofday';
+
+register_worker({ phase => 'early',
+  title => 'prepare common data' }, sub {
+
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  # would be possible just to use now() on updated records, but by using this
+  # same value for them all, we can if we want add a job at the end to
+  # select and do something with the updated set (see set archive, below)
+  vars->{'timestamp'} = 'to_timestamp('. (join '.', gettimeofday) .')';
+
+  # initialise the cache
+  vars->{'arps'} ||= [];
+});
 
 register_worker({ phase => 'store' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  # would be possible just to use now() on updated records, but by using this
-  # same value for them all, we _can_ if we want add a job at the end to
-  # select and do something with the updated set (no reason to yet, though)
-  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
+  vars->{'arps'} = [ grep { check_mac(($_->{mac} || $_->{node}), $device) }
+                          @{ vars->{'arps'} } ];
 
-  # update node_ip with ARP and Neighbor Cache entries
+  debug sprintf ' resolving %d ARP entries with max %d outstanding requests',
+    scalar @{ vars->{'arps'} }, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
+  vars->{'arps'} = hostnames_resolve_async( vars->{'arps'} );
 
-  store_arp(\%$_, $now) for @{ vars->{'v4arps'} };
+  my ($v4, $v6) = (0, 0);
+  foreach my $a_entry (@{ vars->{'arps'} }) {
+    my $a_ip = NetAddr::IP::Lite->new($a_entry->{ip});
+
+    if ($a_ip) {
+      ++$v4 if $a_ip->bits == 32;;
+      ++$v6 if $a_ip->bits == 128;;
+    }
+  }
+
+  my $now = vars->{'timestamp'};
+  store_arp(\%$_, $now) for @{ vars->{'arps'} };
+
   debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
-    $device->ip, scalar @{ vars->{'v4arps'} };
-
-  store_arp(\%$_, $now) for @{ vars->{'v6arps'} };
+    $device->ip, $v4;
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
-    $device->ip, scalar @{ vars->{'v6arps'} };
+    $device->ip, $v6;
 
   $device->update({last_arpnip => \$now});
+  $device->update({layers => \[q{overlay(layers placing '1' from 6 for 1)}]});
 
   my $status = $job->best_status;
   return Status->$status("Ended arpnip for $device");
@@ -48,14 +77,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
   # cache v4 arp table
-  push @{ vars->{'v4arps'} },
-    @{ get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr) };
+  push @{ vars->{'arps'} },
+    get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
 
   # cache v6 neighbor cache
-  push @{ vars->{'v6arps'} },
-    @{get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr) };
+  push @{ vars->{'arps'} },
+    get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
-  $device->update({layers => \[q{overlay(layers placing '1' from 6 for 1)}]});
   return Status->done("Gathered arp caches from $device");
 });
 
@@ -65,21 +93,15 @@ sub get_arps_snmp {
   my @arps = ();
 
   while (my ($arp, $node) = each %$paddr) {
-      my $ip = $netaddr->{$arp};
-      next unless defined $ip;
-      next unless check_mac($node, $device);
+      my $ip = $netaddr->{$arp} or next;
       push @arps, {
-        node => $node,
-        ip   => $ip,
-        dns  => undef,
+        mac => $node,
+        ip  => $ip,
+        dns => undef,
       };
   }
 
-  debug sprintf ' resolving %d ARP entries with max %d outstanding requests',
-    scalar @arps, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
-  my $resolved_ips = hostnames_resolve_async(\@arps);
-
-  return $resolved_ips;
+  return @arps;
 }
 
 register_worker({ phase => 'main', driver => 'cli' }, sub {
@@ -89,51 +111,51 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   my $cli = App::Netdisco::Transport::SSH->session_for($device)
     or return Status->defer("arpnip failed: could not SSH connect to $device");
 
-  my $a_entry;
-  my $a_ip;
-  my $a_mac;
-
   # should be both v4 and v6
-  my @arps = @{ get_arps_cli($device, [$cli->arpnip]) };
+  vars->{'arps'} = [ $cli->arpnip ];
 
-  foreach $a_entry (@arps) {
-    $a_ip = NetAddr::IP::Lite->new($a_entry->{ip});
-
-    if (defined($a_ip)) {
-      # IPv4
-      if ($a_ip->bits == 32 ) {
-        push @{ vars->{"v4arps"} }, $a_entry;
-      }
-      # IPv6
-      if ($a_ip->bits == 128 ) {
-        push @{ vars->{"v6arps"} }, $a_entry;
-      }
-    }
-  }
-
-  $device->update({layers => \[q{overlay(layers placing '1' from 6 for 1)}]});
   return Status->done("Gathered arp caches from $device");
 });
 
-sub get_arps_cli {
-  my ($device, $entries) = @_;
-  my @arps = ();
-  $entries ||= [];
+register_worker({ phase => 'main', driver => 'direct' }, sub {
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
 
-  foreach my $entry (@$entries) {
-    next unless check_mac($entry->{mac}, $device);
-    push @arps, {
-        node => $entry->{mac},
-        ip   => $entry->{ip},
-        dns  => $entry->{dns},
-    };
+  return Status->info('skip: arp table data supplied by other source')
+    unless $job->is_offline;
+
+  # load cache from file or copy from job param
+  my $data = $job->extra;
+
+  if ($job->port) {
+    return $job->cancel(sprintf 'could not open data source "%s"', $job->port)
+      unless -f $job->port;
+
+    $data = read_text($job->port)
+      or return $job->cancel(sprintf 'problem reading from file "%s"', $job->port);
   }
 
-  debug sprintf ' resolving %d ARP entries with max %d outstanding requests',
-    scalar @arps, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
-  my $resolved_ips = hostnames_resolve_async(\@arps);
+  my @arps = (length $data ? @{ from_json($data) } : ());
 
-  return $resolved_ips;
-}
+  return $job->cancel('data provided but 0 arp entries found')
+    unless scalar @arps;
+
+  debug sprintf ' [%s] arpnip - %s arp table entries provided',
+    $device->ip, scalar @arps;
+
+  # sanity check
+  foreach my $a_entry (@arps) {
+      my $ip  = NetAddr::IP::Lite->new($a_entry->{'ip'} || '');
+      my $mac = NetAddr::MAC->new(mac => ($a_entry->{'mac'} || ''));
+
+      next unless $ip and $mac;
+      next if (($ip->addr eq '0.0.0.0') or ($ip !~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i));
+      next if (($mac->as_ieee eq '00:00:00:00:00:00') or ($mac->as_ieee !~ m{^$RE{net}{MAC}$}i));
+
+      push @{ vars->{'arps'} }, $a_entry;
+  }
+
+  return Status->done("Received arp cache for $device");
+});
 
 true;

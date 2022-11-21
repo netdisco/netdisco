@@ -91,7 +91,7 @@ register_worker({ phase => 'main', driver => 'direct',
   foreach my $node (@fwtable) {
       my $mac = NetAddr::MAC->new(mac => ($node->{'mac'} || ''));
       next unless $node->{'port'} and $mac;
-      next if (($mac->as_ieee eq '00:00:00:00:00:00') or ($mac->as_ieee !~ m/$RE{net}{MAC}/));
+      next if (($mac->as_ieee eq '00:00:00:00:00:00') or ($mac->as_ieee !~ m{^$RE{net}{MAC}$}));
 
       vars->{'fwtable'}->{ $node->{'vlan'} || 0 }
                        ->{ $node->{'port'} }
