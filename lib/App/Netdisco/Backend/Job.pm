@@ -94,8 +94,6 @@ sub best_status {
   my $cur_level = 0;
   my $cur_status = '';
 
-  return Status->error()->status if $job->is_cancelled;
-
   foreach my $status (reverse @{ $job->_statuslist }) {
     next if $status->phase
       and $status->phase !~ m/^(?:early|main|store|late)$/;
@@ -117,19 +115,13 @@ Find the best status and log it into the job's C<status> and C<log> slots.
 
 sub finalise_status {
   my $job = shift;
-  # use DDP; p $job->_statuslist;
+  # use DDP; p $job->_statuslist;
 
   # fallback
   $job->status('error');
   $job->log('failed to report from any worker!');
 
   my $max_level = 0;
-
-  if ($job->is_cancelled and scalar @{ $job->_statuslist }) {
-    $job->status( $job->_statuslist->[-1]->status );
-    $job->log( $job->_statuslist->[-1]->log );
-    return;
-  }
 
   foreach my $status (reverse @{ $job->_statuslist }) {
     next if $status->phase
@@ -138,7 +130,12 @@ sub finalise_status {
     # done() from check phase should not be the action's done()
     next if $status->phase eq 'check' and $status->is_ok;
 
-    if ($status->level > $max_level) {
+    # for done() we want the latest log message
+    # for error() (and others) we want the earliest log message
+
+    if (($max_level != Status->done()->level and $status->level >= $max_level)
+        or ($status->level > $max_level)) {
+
       $job->status( $status->status );
       $job->log( $status->log );
       $max_level = $status->level;
