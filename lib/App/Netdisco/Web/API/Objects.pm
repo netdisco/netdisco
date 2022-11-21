@@ -202,7 +202,7 @@ swagger_path {
     },
   ],
   responses => { default => {} },
-}, put '/api/v1/object/device/:ip/nodes' => require_role api => sub {
+}, put '/api/v1/object/device/:ip/nodes' => require_role api_admin => sub {
   my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
 
   my $job_spec = {
@@ -307,7 +307,7 @@ swagger_path {
     },
   ],
   responses => { default => {} },
-}, put '/api/v1/object/device/:ip/arps' => require_role api => sub {
+}, put '/api/v1/object/device/:ip/arps' => require_role api_admin => sub {
   my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
 
   my $job_spec = {
