@@ -24,7 +24,7 @@ register 'register_worker' => sub {
   return error "failed to parse action in '$package'"
     unless $workerconf->{action};
 
-  $workerconf->{title}     ||= '-';
+  ( $workerconf->{title}   ||= lc($package) ) =~ s/.+plugin:://;
   $workerconf->{phase}     ||= 'user';
   $workerconf->{namespace} ||= '_base_';
   $workerconf->{priority}  ||= (exists $workerconf->{driver}
@@ -34,8 +34,8 @@ register 'register_worker' => sub {
     my $job = shift or die 'missing job param';
     # use DDP; p $workerconf;
 
-    debug sprintf '-> run worker %s/%s/%s "%s"',
-      @$workerconf{qw/phase namespace priority title/};
+    debug sprintf '-> run worker %s/%s "%s"',
+      @$workerconf{qw/phase priority title/};
 
     if ($job->is_cancelled) {
       return $job->add_status( Status->info('skip: job is cancelled') );
