@@ -609,5 +609,7 @@ xt/js/run_qunit.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
