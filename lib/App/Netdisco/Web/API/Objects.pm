@@ -10,6 +10,13 @@ use App::Netdisco::JobQueue 'jq_insert';
 
 use Try::Tiny;
 
+# create worker (placeholder object for the action runner)
+{
+  package MyWorker;
+  use Moo;
+  with 'App::Netdisco::Worker::Runner';
+}
+
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
@@ -210,13 +217,6 @@ swagger_path {
       jq_insert([ $job_spec ]);
   }
   else {
-      # create worker (placeholder object for the action runner)
-      {
-        package MyWorker;
-        use Moo;
-        with 'App::Netdisco::Worker::Runner';
-      }
-
       my $worker = MyWorker->new();
       my $job = App::Netdisco::Backend::Job->new({ job => 0, %$job_spec });
 
@@ -322,13 +322,6 @@ swagger_path {
       jq_insert([ $job_spec ]);
   }
   else {
-      # create worker (placeholder object for the action runner)
-      {
-        package MyWorker;
-        use Moo;
-        with 'App::Netdisco::Worker::Runner';
-      }
-
       my $worker = MyWorker->new();
       my $job = App::Netdisco::Backend::Job->new({ job => 0, %$job_spec });
 
