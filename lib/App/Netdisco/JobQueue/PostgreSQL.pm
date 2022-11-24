@@ -152,6 +152,9 @@ sub jq_getsome {
         { device => $job->device },
         ($job->device_key ? ({ device_key => $job->device_key }) : ()),
       ],
+      # never de-duplicate user-submitted jobs
+      username => { '=' => undef },
+      userip   => { '=' => undef },
     );
 
     my $gone = $jobs->search({
@@ -270,7 +273,7 @@ sub jq_complete {
 
   try {
     schema(vars->{'tenant'})->txn_do(sub {
-      if ($job->device) {
+      if ($job->device and not $job->is_offline) {
         schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
