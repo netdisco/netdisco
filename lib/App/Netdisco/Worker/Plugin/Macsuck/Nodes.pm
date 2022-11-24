@@ -28,7 +28,9 @@ register_worker({ phase => 'early',
   # would be possible just to use now() on updated records, but by using this
   # same value for them all, we can if we want add a job at the end to
   # select and do something with the updated set (see set archive, below)
-  vars->{'timestamp'} = 'to_timestamp('. (join '.', gettimeofday) .')';
+  vars->{'timestamp'} = ($job->is_offline and $job->entered)
+    ? (schema('netdisco')->storage->dbh->quote($job->entered) .'::timestamp')
+    : 'to_timestamp('. (join '.', gettimeofday) .')';
 
   # initialise the cache
   vars->{'fwtable'} ||= {};
