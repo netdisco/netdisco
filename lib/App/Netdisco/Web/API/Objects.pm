@@ -200,7 +200,8 @@ swagger_path {
     action => 'macsuck',
     device => params->{ip},
     subaction => request->body,
-    username => request->user,
+    username => session('logged_in_user'),
+    userip => request->remote_address,
   }]);
 
   return to_json {};
@@ -276,7 +277,8 @@ swagger_path {
     action => 'arpnip',
     device => params->{ip},
     subaction => request->body,
-    username => request->user,
+    username => session('logged_in_user'),
+    userip => request->remote_address,
   }]);
 
   return to_json {};
