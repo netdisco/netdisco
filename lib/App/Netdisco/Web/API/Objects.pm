@@ -5,9 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
-use App::Netdisco::Backend::Job;
 use App::Netdisco::JobQueue 'jq_insert';
-
 use Try::Tiny;
 
 # create worker (placeholder object for the action runner)
@@ -164,18 +162,12 @@ swagger_path {
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}/nodes',
-  description => "Stores the nodes found on a given Device",
+  description => "Queue a job to store the nodes found on a given Device",
   parameters  => [
     ip => {
       description => 'Canonical IP of the Device. Use Search methods to find this.',
       required => 1,
       in => 'path',
-    },
-    enqueue => {
-      description => 'Queue a backend job to import the nodes',
-      type => 'boolean',
-      default => 'false',
-      in => 'query',
     },
     nodes => {
       description => 'List of node tuples (port, VLAN, MAC)',
@@ -203,37 +195,14 @@ swagger_path {
   ],
   responses => { default => {} },
 }, put '/api/v1/object/device/:ip/nodes' => require_role api_admin => sub {
-  my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
 
-  my $job_spec = {
+  jq_insert([{
     action => 'macsuck',
     device => params->{ip},
     subaction => request->body,
     username => request->user,
-  };
-  my $exitstatus = 0;
+  }]);
 
-  if ($enqueue) {
-      jq_insert([ $job_spec ]);
-  }
-  else {
-      my $worker = MyWorker->new();
-      my $job = App::Netdisco::Backend::Job->new({ job => 0, %$job_spec });
-
-      # do job
-      try {
-        $worker->run($job);
-      }
-      catch {
-        $job->status('error');
-        $job->log("error running job: $_");
-      };
-      debug sprintf 'macsuck: finished at %s', scalar localtime;
-      debug sprintf 'macsuck: status %s: %s', $job->status, $job->log;
-      $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
-  }
-
-  send_error('macsuck failed', 400) if $exitstatus. # do not reveal the error
   return to_json {};
 };
 
@@ -267,21 +236,15 @@ swagger_path {
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}/arps',
-  description => "Stores the ARP entries found on a given Device",
+  description => "Queue a job to store the ARP entries found on a given Device",
   parameters  => [
     ip => {
       description => 'Canonical IP of the Device. Use Search methods to find this.',
       required => 1,
       in => 'path',
     },
-    enqueue => {
-      description => 'Queue a backend job to import the ARP data',
-      type => 'boolean',
-      default => 'false',
-      in => 'query',
-    },
     arps => {
-      description => 'List of arp tuples (MAC, IP, DNS?). DNS is optional and will be resolved by Netdisco if not provided.',
+      description => 'List of arp tuples (MAC, IP, DNS?). IPs will be resolved to FQDN by Netdisco.',
       default => '[]',
       schema => {
         type => 'array',
@@ -308,37 +271,14 @@ swagger_path {
   ],
   responses => { default => {} },
 }, put '/api/v1/object/device/:ip/arps' => require_role api_admin => sub {
-  my $enqueue = (params->{enqueue} and ('true' eq params->{enqueue})) ? 1 : 0;
 
-  my $job_spec = {
+  jq_insert([{
     action => 'arpnip',
     device => params->{ip},
     subaction => request->body,
     username => request->user,
-  };
-  my $exitstatus = 0;
+  }]);
 
-  if ($enqueue) {
-      jq_insert([ $job_spec ]);
-  }
-  else {
-      my $worker = MyWorker->new();
-      my $job = App::Netdisco::Backend::Job->new({ job => 0, %$job_spec });
-
-      # do job
-      try {
-        $worker->run($job);
-      }
-      catch {
-        $job->status('error');
-        $job->log("error running job: $_");
-      };
-      debug sprintf 'arpnip: finished at %s', scalar localtime;
-      debug sprintf 'arpnip: status %s: %s', $job->status, $job->log;
-      $exitstatus = 1 if !$exitstatus and $job->status ne 'done';
-  }
-
-  send_error('arpnip failed', 400) if $exitstatus. # do not reveal the error
   return to_json {};
 };
 
