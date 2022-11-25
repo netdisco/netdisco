@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::JobQueue 'jq_insert';
 use Try::Tiny;
 
 swagger_path {
@@ -153,6 +154,54 @@ swagger_path {
 
 swagger_path {
   tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/device/{ip}/nodes',
+  description => "Queue a job to store the nodes found on a given Device",
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    nodes => {
+      description => 'List of node tuples (port, VLAN, MAC)',
+      default => '[]',
+      schema => {
+        type => 'array',
+        items => {
+          type => 'object',
+          properties => {
+            port => {
+              type => 'string'
+            },
+            vlan => {
+              type => 'integer',
+              default => '1'
+            },
+            mac => {
+              type => 'string'
+            }
+          }
+        }
+      },
+      in => 'body',
+    },
+  ],
+  responses => { default => {} },
+}, put '/api/v1/object/device/:ip/nodes' => require_role api_admin => sub {
+
+  jq_insert([{
+    action => 'macsuck',
+    device => params->{ip},
+    subaction => request->body,
+    username => session('logged_in_user'),
+    userip => request->remote_address,
+  }]);
+
+  return to_json {};
+};
+
+swagger_path {
+  tags => ['Objects'],
   path => (setting('api_base') || '').'/object/vlan/{vlan}/nodes',
   description => "Returns the nodes found in a given VLAN",
   parameters  => [
@@ -176,6 +225,56 @@ swagger_path {
     ->search({ vlan => params->{vlan}, ($active ? (-bool => 'active') : ()) }) }
     or send_error('Bad VLAN', 404);
   return to_json [ map {$_->TO_JSON} $rows->all ];
+};
+
+swagger_path {
+  tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/device/{ip}/arps',
+  description => "Queue a job to store the ARP entries found on a given Device",
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    arps => {
+      description => 'List of arp tuples (MAC, IP, DNS?). IPs will be resolved to FQDN by Netdisco.',
+      default => '[]',
+      schema => {
+        type => 'array',
+        items => {
+          type => 'object',
+          properties => {
+            mac => {
+              type => 'string',
+              required => 1,
+            },
+            ip => {
+              type => 'string',
+              required => 1,
+            },
+            dns => {
+              type => 'string',
+              required => 0,
+            }
+          }
+        }
+      },
+      in => 'body',
+    },
+  ],
+  responses => { default => {} },
+}, put '/api/v1/object/device/:ip/arps' => require_role api_admin => sub {
+
+  jq_insert([{
+    action => 'arpnip',
+    device => params->{ip},
+    subaction => request->body,
+    username => session('logged_in_user'),
+    userip => request->remote_address,
+  }]);
+
+  return to_json {};
 };
 
 true;

@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 # info 'test: workers are run in decreasing priority until done';
 
 register_worker({ phase => 'main', driver => 'cli' }, sub {
-  return Status->noop('NOT OK: CLI driver is not the winner here.');
+  return Status->info('NOT OK: CLI driver is not the winner here.');
 });
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {

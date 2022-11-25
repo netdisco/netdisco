@@ -168,7 +168,7 @@ sub store_arp {
   my ($hash_ref, $now) = @_;
   $now ||= 'now()';
   my $ip   = $hash_ref->{'ip'};
-  my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || ''));
+  my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || $hash_ref->{'mac'} || ''));
   my $name = $hash_ref->{'dns'};
 
   return if !defined $mac or $mac->errstr;
