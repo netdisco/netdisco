@@ -8,13 +8,6 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::JobQueue 'jq_insert';
 use Try::Tiny;
 
-# create worker (placeholder object for the action runner)
-{
-  package MyWorker;
-  use Moo;
-  with 'App::Netdisco::Worker::Runner';
-}
-
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
