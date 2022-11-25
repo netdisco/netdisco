@@ -16,8 +16,8 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("arpnip skipped: $device not yet discovered")
     unless $device->in_storage;
 
-  $job->is_offline(true) if $job->port or $job->extra;
-  if ($job->is_offline) {
+  if ($job->port or $job->extra) {
+      $job->is_offline(true);
       debug 'arpnip offline: will update from CLI or API';
   }
   else {
