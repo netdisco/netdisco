@@ -1,3 +1,9 @@
+2.059001 - 2022-11-26
+
+  [ENHANCEMENTS]
+
+  * set layer2 support after successful macsuck, similar to arpnip does for l3
+
 2.059000 - 2022-11-25
 
   [NEW FEATURES]
