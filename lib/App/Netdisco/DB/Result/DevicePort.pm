@@ -395,6 +395,28 @@ Returns the pae_authsess_user of the port.
 
 sub pae_authsess_user { return (shift)->get_column('pae_authsess_user') }
 
+=head2 pae_authsess_info
+
+Returns a combined pae_authsess_user and pae_authsess_mab of the port.
+
+This is the PAE "username", and in the case of a MAC address in Cisco MAB style
+(AA-BB-CC-DD-EE), the MAB hint is added
+
+=cut
+
+sub pae_authsess_info { 
+
+  my $self = shift; 
+  my $mab = $self->get_column('pae_authsess_mab'); 
+
+  if ($mab){
+    return $self->get_column('pae_authsess_user') . " (" . uc($self->get_column('pae_authsess_mab')) .")";
+  }else{
+    return $self->get_column('pae_authsess_user')
+  }
+}
+
+
 =head2 pae_authconfig_port_control
 
 Returns the pae_authconfig_port_control of the port.

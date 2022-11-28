@@ -409,16 +409,19 @@
       [% END %]
 
       [% IF params.c_nac_user %]
-      <td>[% row.pae_authsess_user | html_entity %]</td>
+      <td>[% row.pae_authsess_info | html_entity %]</td>
       [% END %]
 
-      [% IF params.c_nac_mab %]
-      <td>[% IF row.pae_authsess_mab %] yes [% END %]</td>
+      [% IF params.c_nac_summary %]
+      <td>
+        Control [% row.pae_authconfig_port_control | html_entity %],
+        Status [% row.pae_authconfig_port_status | html_entity %],
+        EAP State [% row.pae_authconfig_state | html_entity %]
+        [% IF row.pae_authsess_info %], User [% row.pae_authsess_info | html_entity %][% END %]
+      </td>
       [% END %]
 
-      [% IF params.c_nac_last_eapol %]
-      <td>[% row.pae_last_eapol_frame_source | html_entity %]</td>
-      [% END %]
+
 
       [% IF params.c_stp %]
       <td>[% row.stp | html_entity %]</td>
