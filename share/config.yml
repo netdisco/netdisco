@@ -275,6 +275,9 @@ community_rw: []
 device_auth: []
 use_legacy_rancidexport: false
 use_legacy_sshcollector: false
+custom_fields:
+  device: []
+  device_ports: []
 get_credentials: ""
 bulkwalk_off: false
 bulkwalk_no: []

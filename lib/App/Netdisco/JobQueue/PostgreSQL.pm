@@ -332,18 +332,39 @@ sub jq_insert {
   my $happy = false;
   try {
     schema(vars->{'tenant'})->txn_do(sub {
-      schema(vars->{'tenant'})->resultset('Admin')->populate([
-        map {{
-            device     => $_->{device},
-            device_key => $_->{device_key},
-            port       => $_->{port},
-            action     => $_->{action},
-            subaction  => ($_->{extra} || $_->{subaction}),
-            username   => $_->{username},
-            userip     => $_->{userip},
-            status     => 'queued',
-        }} @$jobs
-      ]);
+      if (scalar @$jobs == 1 and defined $jobs->[0]->{device} and
+          scalar grep {$_ eq $jobs->[0]->{action}} @{ setting('_inline_actions') }) {
+
+          my $spec = $jobs->[0];
+          if ($spec->{port}) {
+          }
+          else {
+              my $device = schema(vars->{'tenant'})->resultset('Device')
+                                                   ->find($spec->{device});
+              $device->make_column_dirty('custom_fields');
+              $spec->{action} =~ s/^device_custom_field_//;
+              $spec->{subaction} = to_json( $spec->{subaction} );
+
+              $device->update({
+                custom_fields => \['jsonb_set(custom_fields, ?, ?)'
+                                  => (qq{{$spec->{action}}}, $spec->{subaction}) ]
+                })->discard_changes();
+          }
+      }
+      else {
+          schema(vars->{'tenant'})->resultset('Admin')->populate([
+            map {{
+                device     => $_->{device},
+                device_key => $_->{device_key},
+                port       => $_->{port},
+                action     => $_->{action},
+                subaction  => ($_->{extra} || $_->{subaction}),
+                username   => $_->{username},
+                userip     => $_->{userip},
+                status     => 'queued',
+            }} @$jobs
+          ]);
+      }
     });
     $happy = true;
   }
