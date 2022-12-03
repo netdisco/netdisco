@@ -71,6 +71,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "lastchange",
   { data_type => "bigint", is_nullable => 1 },
+  "custom_fields",
+  { data_type => "jsonb", is_nullable => 0, default_value => \"{}" },
 );
 __PACKAGE__->set_primary_key("port", "ip");
 

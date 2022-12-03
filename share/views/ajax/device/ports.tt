@@ -408,13 +408,26 @@
 
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
-        <td>
+
           [% TRY %]
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+            <td>
+            [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+            </td>
           [% CATCH %]
-          <!-- dummy content required by Template Toolkit TRY -->
+            [% CLEAR %]
+            [% IF config.editable AND user_can_port_control AND params.c_admin AND row.portctl %]
+              <td nowrap class="nd_editable-cell" contenteditable="true"
+                  data-field="device_port_custom_field_[% config.name | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+              <i class="icon-edit nd_edit-icon"></i>
+            [% ELSE %]
+              <td nowrap class="nd_editable-cell">
+            [% END %]
+              <div class="nd_editable-cell-content">
+                [% row.${config.name} | html_entity %]
+              </div>
+              </td>
           [% END %]
-        </td>
+
       [% END %]
     </tr>
     [% END %]

@@ -336,20 +336,25 @@ sub jq_insert {
           scalar grep {$_ eq $jobs->[0]->{action}} @{ setting('_inline_actions') }) {
 
           my $spec = $jobs->[0];
+          my $row = undef;
+
           if ($spec->{port}) {
+              my $row = schema(vars->{'tenant'})->resultset('DevicePort')
+                                                   ->find($spec->{port}, $spec->{device});
+              $spec->{action} =~ s/^device_port_custom_field_//;
           }
           else {
-              my $device = schema(vars->{'tenant'})->resultset('Device')
+              my $row = schema(vars->{'tenant'})->resultset('Device')
                                                    ->find($spec->{device});
-              $device->make_column_dirty('custom_fields');
               $spec->{action} =~ s/^device_custom_field_//;
-              $spec->{subaction} = to_json( $spec->{subaction} );
-
-              $device->update({
-                custom_fields => \['jsonb_set(custom_fields, ?, ?)'
-                                  => (qq{{$spec->{action}}}, $spec->{subaction}) ]
-                })->discard_changes();
           }
+
+          $spec->{subaction} = to_json( $spec->{subaction} );
+          $row->make_column_dirty('custom_fields');
+          $row->update({
+            custom_fields => \['jsonb_set(custom_fields, ?, ?)'
+                              => (qq{{$spec->{action}}}, $spec->{subaction}) ]
+            })->discard_changes();
       }
       else {
           schema(vars->{'tenant'})->resultset('Admin')->populate([
