@@ -2,7 +2,9 @@ package App::Netdisco::Web::CustomFields;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
-use Dancer::Plugin::Auth::Extensible;
+
+use App::Netdisco::DB::ResultSet::Device;
+use App::Netdisco::DB::ResultSet::DevicePort;
 
 use App::Netdisco::Web::Plugin;
 
@@ -18,6 +20,7 @@ foreach my $config (@{ setting('custom_fields')->{'device'} || [] }) {
 
   register_device_details({
     %{ $config },
+    field => ('cf_' . $config->{'name'}),
     label => ($config->{'label'} || ucfirst $config->{'name'}),
   });
 
@@ -34,6 +37,7 @@ foreach my $config (@{ setting('custom_fields')->{'device_port'} || [] }) {
 
   register_device_port_column({
     %{ $config },
+    field => ('cf_' . $config->{'name'}),
     label => ($config->{'label'} || ucfirst $config->{'name'}),
     position => 'right', # or "mid" or "right"
     default  => undef,   # or undef
@@ -43,21 +47,40 @@ foreach my $config (@{ setting('custom_fields')->{'device_port'} || [] }) {
 
 }
 
-schema(vars->{'tenant'})->resultset('Device')->result_source
-  ->resultset_attributes({ '+columns' => {
-    map {( $_ => \[ 'me.custom_fields ->> ?' => $_ ] )}
-        @inline_device_actions
-  } });
+{
+  package App::Netdisco::DB::ResultSet::Device;
 
-schema(vars->{'tenant'})->resultset('DevicePort')->result_source
-  ->resultset_attributes({ '+columns' => {
-    map {( $_ => \[ 'me.custom_fields ->> ?' => $_ ] )}
-        @inline_device_port_actions
-  } });
+  sub with_custom_fields {
+    my ($rs, $cond, $attrs) = @_;
+
+    return $rs
+      ->search_rs($cond, $attrs)
+      ->search({},
+        { '+columns' => {
+            map {( ('cf_'. $_) => \[ 'me.custom_fields ->> ?' => $_ ] )}
+                @inline_device_actions
+        }});
+  }
+}
+
+{
+  package App::Netdisco::DB::ResultSet::DevicePort;
+
+  sub with_custom_fields {
+    my ($rs, $cond, $attrs) = @_;
+
+    return $rs
+      ->search_rs($cond, $attrs)
+      ->search({},
+        { '+columns' => {
+            map {( ('cf_'. $_) => \[ 'me.custom_fields ->> ?' => $_ ] )}
+                @inline_device_port_actions
+        }});
+  }
+}
 
 set('_inline_actions' => [
-  ( map {'device_custom_field_' . $_} @inline_device_actions ),
-  ( map {'device_port_custom_field_' . $_} @inline_device_port_actions ),
+  map {'cf_' . $_} (@inline_device_actions, @inline_device_port_actions)
 ]);
 
 true;

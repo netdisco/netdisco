@@ -339,16 +339,16 @@ sub jq_insert {
           my $row = undef;
 
           if ($spec->{port}) {
-              my $row = schema(vars->{'tenant'})->resultset('DevicePort')
-                                                   ->find($spec->{port}, $spec->{device});
-              $spec->{action} =~ s/^device_port_custom_field_//;
+              $row = schema(vars->{'tenant'})->resultset('DevicePort')
+                                             ->find($spec->{port}, $spec->{device});
           }
           else {
-              my $row = schema(vars->{'tenant'})->resultset('Device')
-                                                   ->find($spec->{device});
-              $spec->{action} =~ s/^device_custom_field_//;
+              $row = schema(vars->{'tenant'})->resultset('Device')
+                                             ->find($spec->{device});
           }
+          die 'failed to find row for custom field update' unless $row;
 
+          $spec->{action} =~ s/^cf_//;
           $spec->{subaction} = to_json( $spec->{subaction} );
           $row->make_column_dirty('custom_fields');
           $row->update({

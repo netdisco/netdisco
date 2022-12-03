@@ -91,11 +91,11 @@
         [% CLEAR %]
         [% IF config.editable AND user_can_port_control %]
           <td class="nd_editable-cell" contenteditable="true"
-            data-field="device_custom_field_[% config.name | html_entity %]" data-for-device="[% d.ip | html_entity %]">
+            data-field="[% config.field | html_entity %]" data-for-device="[% d.ip | html_entity %]">
         [% ELSE %]
           <td>
         [% END %]
-          [% d.${config.name} | html_entity %]
+          [% d.${config.field} | html_entity %]
           </td>
       [% END %]
     </tr>

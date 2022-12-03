@@ -23,8 +23,7 @@ ajax '/ajax/content/device/details' => require_login sub {
             '+as' => ['has_snapshot'],
             join => 'snapshot',
           },
-        )->with_times()
-        ->hri->all;
+        )->with_times->with_custom_fields->hri->all;
 
     my @power
         = schema(vars->{'tenant'})->resultset('DevicePower')
