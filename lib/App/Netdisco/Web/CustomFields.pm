@@ -22,7 +22,7 @@ foreach my $config (@{ setting('custom_fields')->{'device'} || [] }) {
     %{ $config },
     field => ('cf_' . $config->{'name'}),
     label => ($config->{'label'} || ucfirst $config->{'name'}),
-  });
+  }) unless $config->{'hidden'};
 
   push @inline_device_actions, $config->{'name'};
 
@@ -41,7 +41,7 @@ foreach my $config (@{ setting('custom_fields')->{'device_port'} || [] }) {
     %{ $config },
     field => ('cf_' . $config->{'name'}),
     label => ($config->{'label'} || ucfirst $config->{'name'}),
-  });
+  }) unless $config->{'hidden'};
 
   push @inline_device_port_actions, $config->{'name'};
 
