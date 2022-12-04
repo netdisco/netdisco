@@ -36,11 +36,11 @@ foreach my $config (@{ setting('custom_fields')->{'device_port'} || [] }) {
   }
 
   register_device_port_column({
+    position => 'right', # or "mid" or "right"
+    default  => undef,   # or undef
     %{ $config },
     field => ('cf_' . $config->{'name'}),
     label => ($config->{'label'} || ucfirst $config->{'name'}),
-    position => 'right', # or "mid" or "right"
-    default  => undef,   # or undef
   });
 
   push @inline_device_port_actions, $config->{'name'};
