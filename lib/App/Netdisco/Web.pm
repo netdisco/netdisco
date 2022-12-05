@@ -392,7 +392,7 @@ $swagger_doc->{tags} = [
   {name => 'Search',
     description => 'Search Operations'},
   {name => 'Objects',
-    description => 'Retrieve Device, Port, and associated Node Data'},
+    description => 'Device, Port, and associated Node Data'},
   {name => 'Reports',
     description => 'Canned and Custom Reports'},
 ];
