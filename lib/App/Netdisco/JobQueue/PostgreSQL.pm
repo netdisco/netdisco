@@ -333,7 +333,7 @@ sub jq_insert {
   try {
     schema(vars->{'tenant'})->txn_do(sub {
       if (scalar @$jobs == 1 and defined $jobs->[0]->{device} and
-          scalar grep {$_ eq $jobs->[0]->{action}} @{ setting('_inline_actions') }) {
+          scalar grep {$_ eq $jobs->[0]->{action}} @{ setting('_inline_actions') || [] }) {
 
           my $spec = $jobs->[0];
           my $row = undef;
