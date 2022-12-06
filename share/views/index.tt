@@ -53,7 +53,7 @@
           <p></p> <p></p>
           <form class="" method="get" action="[% uri_for('/search') | none %]">
             <div class="form-horizontal">
-              <input placeholder="Find Anything" class="span4" id="nqbody" name="q" type="text" autocomplete="off"/>
+              <input placeholder="Find Anything" class="span4" id="nqbody" name="q" type="search" autocomplete="off"/>
               <input name="firstsearch" type="hidden" value="on">
               <div class="btn-group">
                 <button type="submit" class="btn btn-primary">Search</button>

@@ -235,7 +235,9 @@ Returns true if the C<$port> L<DBIx::Class> object has a phone connected.
 =cut
 
 sub port_has_phone {
-  my $properties = (shift)->properties;
+  my $row = shift;
+  return $row->remote_is_phone if $row->can('remote_is_phone');
+  my $properties = $row->properties;
   return ($properties ? $properties->remote_is_phone : undef);
 }
 
@@ -246,7 +248,9 @@ Returns true if the C<$port> L<DBIx::Class> object has a wireless AP  connected.
 =cut
 
 sub port_has_wap {
-  my $properties = (shift)->properties;
+  my $row = shift;
+  return $row->remote_is_wap if $row->can('remote_is_wap');
+  my $properties = $row->properties;
   return ($properties ? $properties->remote_is_wap : undef);
 }
 

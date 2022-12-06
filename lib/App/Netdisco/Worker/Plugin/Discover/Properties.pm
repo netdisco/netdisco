@@ -54,7 +54,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
   $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
 
-  $device->set_column( num_ports  => $snmp->ports );
+  $device->set_column( num_ports  => ($snmp->ports || 0) );
   $device->set_column( snmp_class => $snmp->class );
   $device->set_column( snmp_engineid => unpack('H*', ($snmp->snmpEngineID || '')) );
 

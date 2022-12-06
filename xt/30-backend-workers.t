@@ -19,7 +19,7 @@ use Dancer qw/:moose :script !pass/;
 # configure logging to force console output
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
-$CONFIG->{log} = 'error';
+$CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
 Dancer::Logger->init('console', $CONFIG);
 
 {
@@ -92,6 +92,20 @@ is((scalar @{$j8->_statuslist}), 2, 'two workers ran');
 is($j8->_last_priority, 100, 'priority is for snmp');
 is($j8->log, 'OK: SNMP driver is successful.',
   'add to an action');
+
+config->{'device_auth'} = [];
+
+my $j9 = do_job('TestSix');
+is($j9->status, 'done', 'status is done');
+is((scalar @{$j9->_statuslist}), 3, 'three workers ran');
+is($j9->_last_priority, 0, 'priority is for driverless action');
+is($j9->log, 'OK: second driverless action is successful.',
+  'driverless actions always run');
+
+my $j9 = do_job('TestSeven');
+is($j9->best_status, 'error', 'status is error');
+is((scalar @{$j9->_statuslist}), 2, 'two workers ran');
+is($j9->_last_priority, 1000000, 'priority is for direct action');
 
 done_testing;
 

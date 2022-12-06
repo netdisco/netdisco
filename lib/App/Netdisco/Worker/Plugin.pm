@@ -24,6 +24,7 @@ register 'register_worker' => sub {
   return error "failed to parse action in '$package'"
     unless $workerconf->{action};
 
+  ( $workerconf->{title}   ||= lc($package) ) =~ s/.+plugin:://;
   $workerconf->{phase}     ||= 'user';
   $workerconf->{namespace} ||= '_base_';
   $workerconf->{priority}  ||= (exists $workerconf->{driver}
@@ -33,10 +34,20 @@ register 'register_worker' => sub {
     my $job = shift or die 'missing job param';
     # use DDP; p $workerconf;
 
-    debug sprintf '-> run worker %s/%s/%s',
-      @$workerconf{qw/phase namespace priority/};
+    debug sprintf '-> run worker %s/%s "%s"',
+      @$workerconf{qw/phase priority title/};
 
-    return if $job->is_cancelled;
+    if ($job->is_cancelled) {
+      return $job->add_status( Status->info('skip: job is cancelled') );
+    }
+
+    if ($job->is_offline
+        and $workerconf->{phase} eq 'main'
+        and $workerconf->{priority} > 0
+        and $workerconf->{priority} < setting('driver_priority')->{'direct'}) {
+
+      return $job->add_status( Status->info('skip: networked worker but job is running offline') );
+    }
 
     # check to see if this namespace has already passed at higher priority
     # and also update job's record of namespace and priority
@@ -79,7 +90,9 @@ register 'register_worker' => sub {
 
       # per-device action but no device creds available
       return $job->add_status( Status->info('skip: driver or action not applicable') )
-        if 0 == scalar @newuserconf && $job->action ne "delete";
+        if 0 == scalar @newuserconf
+           and $workerconf->{priority} > 0
+           and $workerconf->{priority} < setting('driver_priority')->{'direct'};
     }
 
     # back up and restore device_auth

@@ -236,6 +236,11 @@ Run a macsuck on the device (specified with C<-d>).
 
  ~/bin/netdisco-do macsuck -d 192.0.2.1
 
+Submit macsuck results directly to Netdisco by putting the JSON data in a
+file and using the C<-p> option (see API web docs for data format example):
+
+ ~/bin/netdisco-do macsuck -d 192.0.2.1 -p /tmp/mac-address-table.json
+
 =head2 macwalk
 
 Queue a macsuck for all known devices.
@@ -245,6 +250,11 @@ Queue a macsuck for all known devices.
 Run an arpnip on the device (specified with C<-d>).
 
  ~/bin/netdisco-do arpnip -d 192.0.2.1
+
+Submit arpnip results directly to Netdisco by putting the JSON data in a
+file and using the C<-p> option (see API web docs for data format example):
+
+ ~/bin/netdisco-do arpnip -d 192.0.2.1 -p /tmp/arp-table.json
 
 =head2 arpwalk
 
