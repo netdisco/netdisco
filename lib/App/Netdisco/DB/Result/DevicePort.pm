@@ -293,7 +293,7 @@ See also C<vlan_count>.
 
 =cut
 
-__PACKAGE__->many_to_many( vlans => 'port_vlans', 'vlan' );
+__PACKAGE__->many_to_many( vlans => 'port_vlans', 'vlan_entry' );
 
 
 =head2 oui
