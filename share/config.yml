@@ -112,7 +112,7 @@ sidebar_defaults:
   search_device:
     matchall:    { default: checked }
   device_ports:
-    c_admin:       { label: 'Port Controls', default: null, idx: 0 }
+    c_admin:       { label: 'Port Control and Editing', default: null, idx: 0 }
     c_port:        { label: 'Port', default: checked, idx: 1 }
     c_descr:       { label: 'Description', default: null, idx: 2 }
     c_comment:     { label: 'Last Comment', default: null, idx: 3 }
