@@ -292,6 +292,18 @@
       <td>[% row.ssid.ssid | html_entity %]</td>
       [% END %]
 
+      [% IF params.c_nac_summary %]
+      <td>
+      [% IF row.up == 'up' AND (row.pae_authconfig_port_status OR row.pae_authconfig_state) %]
+        [% IF row.pae_authconfig_port_status == 'authorized' %] <i class="icon-ok-sign"></i> [% ELSE %] <i class="icon-ban-circle"></i> [% END %]
+        [% IF row.pae_authconfig_state == 'authenticated' %] <i class="icon-link"></i> [% ELSE %] <i class="icon-unlink"></i> [% END %]
+        [% IF row.pae_authsess_mab %] <i class="icon-laptop"></i> [% ELSE %] <i class="icon-user"></i> [% END %]
+        <a href="[% search_node | none %]&q=[% row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)| uri %]">
+          [% row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix) | html_entity %]</a>
+      [% END %]
+      </td>
+      [% END %]
+
       [% IF params.c_nodes OR params.c_neighbors %]
       <td>
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
@@ -395,33 +407,6 @@
         [% END %]
       </td>
       [% END %]
-
-      [% IF params.c_nac_port_control %]
-      <td>[% row.pae_authconfig_port_control | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_nac_eapol_state %]
-      <td>[% row.pae_authconfig_state | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_nac_port_status %]
-      <td>[% row.pae_authconfig_port_status | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_nac_user %]
-      <td>[% row.pae_authsess_info | html_entity %]</td>
-      [% END %]
-
-      [% IF params.c_nac_summary %]
-      <td>
-        Control [% row.pae_authconfig_port_control | html_entity %],
-        Status [% row.pae_authconfig_port_status | html_entity %],
-        EAP State [% row.pae_authconfig_state | html_entity %]
-        [% IF row.pae_authsess_info %], User [% row.pae_authsess_info | html_entity %][% END %]
-      </td>
-      [% END %]
-
-
 
       [% IF params.c_stp %]
       <td>[% row.stp | html_entity %]</td>

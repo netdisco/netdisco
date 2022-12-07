@@ -134,6 +134,10 @@
       <td>[% d.last_macsuck_stamp | html_entity %]</td>
     </tr>
     <tr>
+      <td>NAC/802.1X Enabled</td>
+      <td>[% IF d.pae_is_enabled %] <i class="icon-ok-sign text-success"></i> [% END %]</td>
+    </tr>
+    <tr>
       <td>Hardware Status</td>
       <td>Fan: [% d.fan | html_entity %]
         <br/>PS1 [[% d.ps1_type | html_entity %]]: [% d.ps1_status | html_entity %]
@@ -159,10 +163,6 @@
     <tr>
       <td>VTP Domain</td>
       <td>[% d.vtp_domain | html_entity %]</td>
-    </tr>
-    <tr>
-      <td>NAC enabled</td>
-      <td>[% IF d.pae_is_enabled %] yes [% ELSE %] no [% END %]</td>
     </tr>
     [% IF user_has_role('admin') %]
     <tr data-for-device="[% d.ip | html_entity %]">
