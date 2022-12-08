@@ -295,11 +295,13 @@
       [% IF params.c_nac_summary %]
       <td>
       [% IF row.up == 'up' AND (row.pae_authconfig_port_status OR row.pae_authconfig_state) %]
-        [% IF row.pae_authconfig_port_status == 'authorized' %] <i class="icon-ok-sign"></i> [% ELSE %] <i class="icon-ban-circle"></i> [% END %]
-        [% IF row.pae_authconfig_state == 'authenticated' %] <i class="icon-link"></i> [% ELSE %] <i class="icon-unlink"></i> [% END %]
-        [% IF row.pae_authsess_mab %] <i class="icon-laptop"></i> [% ELSE %] <i class="icon-user"></i> [% END %]
-        <a href="[% search_node | none %]&q=[% row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)| uri %]">
-          [% row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix) | html_entity %]</a>
+        <i class="icon-[% row.pae_authconfig_port_status == 'authorized' ? 'ok-sign' : 'ban-circle' %]"
+          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_port_status %]"></i>
+        <i class="icon-[% row.pae_authconfig_state == 'authenticated' ? 'link' : 'unlink' %]"
+          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_state %]"></i>
+        <i class="icon-[% row.pae_authsess_mab ? 'laptop' : 'user' %]"></i>
+        [% SET sessuser = (row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)) %]
+        <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
       [% END %]
       </td>
       [% END %]
