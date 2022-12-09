@@ -58,7 +58,7 @@
             </tr>
             <tr>
               <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
-              <th>[% stats.pg_ver | html_entity %]</th>
+              <th>[% '<span class="badge alert-danger">' IF stats.pg_ver < 9.6 %][% stats.pg_ver | html_entity %][% '</span>' IF stats.pg_ver < 9.6 %]</th>
             </tr>
             <tr>
               <th><a href="http://www.perl.org">Perl</a></th>

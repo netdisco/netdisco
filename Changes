@@ -1,3 +1,18 @@
+2.060000 - 2022-12-09
+
+  [NEW FEATURES]
+
+  * #945 custom fields on devices and ports in the web from config
+
+  [ENHANCEMENTS]
+
+  * #943 search fields HTML5 type "search" to allow clearing
+
+  [BUG FIXES]
+
+  * #944 DevicePort.pm should use vlan_entry instead of vlan
+  * avoid pulling port_properties rows if with_properties already called
+
 2.059001 - 2022-11-26
 
   [ENHANCEMENTS]
