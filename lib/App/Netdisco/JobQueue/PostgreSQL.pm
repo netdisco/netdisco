@@ -332,18 +332,44 @@ sub jq_insert {
   my $happy = false;
   try {
     schema(vars->{'tenant'})->txn_do(sub {
-      schema(vars->{'tenant'})->resultset('Admin')->populate([
-        map {{
-            device     => $_->{device},
-            device_key => $_->{device_key},
-            port       => $_->{port},
-            action     => $_->{action},
-            subaction  => ($_->{extra} || $_->{subaction}),
-            username   => $_->{username},
-            userip     => $_->{userip},
-            status     => 'queued',
-        }} @$jobs
-      ]);
+      if (scalar @$jobs == 1 and defined $jobs->[0]->{device} and
+          scalar grep {$_ eq $jobs->[0]->{action}} @{ setting('_inline_actions') || [] }) {
+
+          my $spec = $jobs->[0];
+          my $row = undef;
+
+          if ($spec->{port}) {
+              $row = schema(vars->{'tenant'})->resultset('DevicePort')
+                                             ->find($spec->{port}, $spec->{device});
+          }
+          else {
+              $row = schema(vars->{'tenant'})->resultset('Device')
+                                             ->find($spec->{device});
+          }
+          die 'failed to find row for custom field update' unless $row;
+
+          $spec->{action} =~ s/^cf_//;
+          $spec->{subaction} = to_json( $spec->{subaction} );
+          $row->make_column_dirty('custom_fields');
+          $row->update({
+            custom_fields => \['jsonb_set(custom_fields, ?, ?)'
+                              => (qq{{$spec->{action}}}, $spec->{subaction}) ]
+            })->discard_changes();
+      }
+      else {
+          schema(vars->{'tenant'})->resultset('Admin')->populate([
+            map {{
+                device     => $_->{device},
+                device_key => $_->{device_key},
+                port       => $_->{port},
+                action     => $_->{action},
+                subaction  => ($_->{extra} || $_->{subaction}),
+                username   => $_->{username},
+                userip     => $_->{userip},
+                status     => 'queued',
+            }} @$jobs
+          ]);
+      }
     });
     $happy = true;
   }

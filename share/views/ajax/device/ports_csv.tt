@@ -47,7 +47,7 @@
     [% TRY %]
     [% PROCESS "plugin/${config.name}/device_port_column_csv.tt" %]
     [% CATCH %]
-    [% myport.push('') %]
+    [% myport.push( row.get_column(config.field) ) %]
     [% END %]
   [% END %]
 
@@ -60,7 +60,7 @@
     [% TRY %]
     [% PROCESS "plugin/${config.name}/device_port_column_csv.tt" %]
     [% CATCH %]
-    [% myport.push('') %]
+    [% myport.push( row.get_column(config.field) ) %]
     [% END %]
   [% END %]
 
@@ -194,7 +194,7 @@
     [% TRY %]
     [% PROCESS "plugin/${config.name}/device_port_column_csv.tt" %]
     [% CATCH %]
-    [% myport.push('') %]
+    [% myport.push( row.get_column(config.field) ) %]
     [% END %]
   [% END %]
 

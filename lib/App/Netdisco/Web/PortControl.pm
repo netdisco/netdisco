@@ -24,7 +24,7 @@ ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
       'c_power'  => 'power',
     );
 
-    my $action = $action_map{ param('field') };
+    my $action = ($action_map{ param('field') } || param('field') || '');
     my $subaction = ($action =~ m/^(?:power|portcontrol)/
       ? (param('action') ."-other")
       : param('value'));
@@ -34,6 +34,7 @@ ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
           my $act = "$action $subaction";
           $act =~ s/-other$//;
           $act =~ s/^portcontrol/port/;
+          $act =~ s/^device_port_custom_field_/custom_field: /;
 
           schema(vars->{'tenant'})->resultset('DevicePortLog')->create({
             ip => param('device'),
