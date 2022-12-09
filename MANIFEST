@@ -149,6 +149,7 @@ lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/API/Objects.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
+lib/App/Netdisco/Web/CustomFields.pm
 lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/GenericReport.pm
 lib/App/Netdisco/Web/Password.pm
@@ -475,6 +476,7 @@ share/schema_versions/App-Netdisco-DB-72-73-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-73-74-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-74-75-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-75-76-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-76-77-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
