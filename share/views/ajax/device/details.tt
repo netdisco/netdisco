@@ -134,8 +134,8 @@
       <td>[% d.last_macsuck_stamp | html_entity %]</td>
     </tr>
     <tr>
-      <td>NAC/802.1X Enabled</td>
-      <td>[% IF d.pae_is_enabled %] <i class="icon-ok-sign text-success"></i> [% END %]</td>
+      <td>NAC / 802.1X</td>
+      <td>[% IF d.pae_is_enabled %] <i class="icon-ok-sign text-success"></i> Enabled [% END %]</td>
     </tr>
     <tr>
       <td>Hardware Status</td>

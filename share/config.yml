@@ -130,7 +130,7 @@ sidebar_defaults:
     c_vmember:     { label: 'VLAN Membership', default: checked, idx: 15 }
     c_power:       { label: 'PoE', default: null, idx: 16 }
     c_ssid:        { label: 'SSID', default: null, idx: 17 }
-    c_nac_summary: { label: 'NAC/802.1X Summary', default: null, idx: 18 }
+    c_nac_summary: { label: 'NAC/802.1X Status', default: null, idx: 18 }
     c_nodes:       { label: 'Connected Nodes', default: null, idx: 19 }
     c_neighbors:   { label: 'Connected Devices', default: checked, idx: 20 }
     c_stp:         { label: 'Spanning Tree', default: null, idx: 21 }
