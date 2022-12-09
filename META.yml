@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.059001'
+    version: '2.060000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '76'
+    version: '77'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -295,6 +295,8 @@ provides:
     file: lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
   App::Netdisco::Web::AuthN:
     file: lib/App/Netdisco/Web/AuthN.pm
+  App::Netdisco::Web::CustomFields:
+    file: lib/App/Netdisco/Web/CustomFields.pm
   App::Netdisco::Web::Device:
     file: lib/App/Netdisco/Web/Device.pm
   App::Netdisco::Web::GenericReport:
@@ -635,5 +637,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.059001'
+version: '2.060000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
