@@ -58,7 +58,7 @@
             </tr>
             <tr>
               <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
-              <th>[% '<span class="badge alert-danger">' IF stats.pg_ver.remove('\.+') < 9.6 %][% stats.pg_ver | html_entity %][% '</span>' IF stats.pg_ver.remove('\.+') < 9.6 %]</th>
+              <th>[% '<span class="badge alert-danger">' IF stats.pg_ver.remove('\.\d+') < 9.6 %][% stats.pg_ver | html_entity %][% '</span>' IF stats.pg_ver.remove('\.\d+') < 9.6 %]</th>
             </tr>
             <tr>
               <th><a href="http://www.perl.org">Perl</a></th>
