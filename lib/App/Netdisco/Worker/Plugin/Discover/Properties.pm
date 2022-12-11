@@ -364,6 +364,9 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       }
   }
 
+  # update num_ports
+  $device->num_ports( scalar values %deviceports );
+
   # support for Hooks
   vars->{'hook_data'}->{'ports'} = [values %deviceports];
 
@@ -371,7 +374,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
     my $gone = $device->ports->delete({keep_nodes => 1});
     debug sprintf ' [%s] interfaces - removed %d interfaces',
       $device->ip, $gone;
-    $device->update_or_insert(undef, {for => 'update'});
+
+    # uptime and num_ports changed
+    $device->update();
+
     $device->ports->populate([values %deviceports]);
 
     return Status->info(sprintf ' [%s] interfaces - added %d new interfaces',
