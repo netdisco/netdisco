@@ -1,3 +1,14 @@
+2.060001 - 2022-12-11
+
+  [ENHANCEMENTS]
+
+  * show PostgreSQL version in stats in red if < 9.6
+
+  [BUG FIXES]
+
+  * update num_ports to number of actually stored interfaces
+  * keep port custom_fields in place across device discovery
+
 2.060000 - 2022-12-09
 
   [NEW FEATURES]
