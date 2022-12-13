@@ -152,6 +152,7 @@ sub walk_and_store {
 
   my $walk = {
     %{ walker($device, $snmp, '.1.0.8802.1.1') },
+    %{ walker($device, $snmp, '.1.2.840.10006.300.43') },
     %{ walker($device, $snmp, '.1.3.6.1') },
     %{ walker($device, $snmp, '.1.3.111.2.802') },
   };
