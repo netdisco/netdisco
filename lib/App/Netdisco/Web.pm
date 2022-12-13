@@ -173,12 +173,12 @@ hook after_error_render => sub { setting('layout' => 'main') };
     map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
     grep { $_ =~ m/^c_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} };
 
-  splice @port_columns, setting('device_port_col_idx_left'), 0,
-    grep {$_->{position} eq 'left'}  @{ setting('_extra_device_port_cols') };
-  splice @port_columns, setting('device_port_col_idx_mid'), 0,
-    grep {$_->{position} eq 'mid'}   @{ setting('_extra_device_port_cols') };
-  splice @port_columns, setting('device_port_col_idx_right'), 0,
+  splice @port_columns, setting('device_port_col_idx_right') + 1, 0,
     grep {$_->{position} eq 'right'} @{ setting('_extra_device_port_cols') };
+  splice @port_columns, setting('device_port_col_idx_mid') + 1, 0,
+    grep {$_->{position} eq 'mid'}   @{ setting('_extra_device_port_cols') };
+  splice @port_columns, setting('device_port_col_idx_left') + 1, 0,
+    grep {$_->{position} eq 'left'}  @{ setting('_extra_device_port_cols') };
 
   set('port_columns' => \@port_columns);
 

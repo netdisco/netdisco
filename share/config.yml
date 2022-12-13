@@ -162,9 +162,9 @@ sidebar_defaults:
   report_portutilization:
     age_num:      { default: 3 }
     age_unit:     { default: months }
-device_port_col_idx_left: 0
-device_port_col_idx_mid: 2
-device_port_col_idx_right: -1
+device_port_col_idx_left: 7
+device_port_col_idx_mid: 18
+device_port_col_idx_right: 22
 jobqueue_refresh: 10
 safe_password_store: true
 reports: []

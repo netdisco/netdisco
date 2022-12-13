@@ -58,30 +58,6 @@
         [% END %]
       </td>
 
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
-
-        [% TRY %]
-          <td>
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
-          </td>
-        [% CATCH %]
-          [% CLEAR %]
-          [% IF config.editable AND user_can_port_control AND params.c_admin AND row.portctl %]
-            <td nowrap class="nd_editable-cell" contenteditable="true"
-                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="icon-edit nd_edit-icon"></i>
-          [% ELSE %]
-            <td nowrap class="nd_editable-cell">
-          [% END %]
-            <div class="nd_editable-cell-content">
-              [% row.get_column(config.field) | html_entity %]
-            </div>
-            </td>
-        [% END %]
-
-      [% END %]
-
       [% IF params.c_port %]
       [% IF user_can_port_control AND params.c_admin AND row.portctl %]
       [% IF row.up_admin == 'up' %]
@@ -135,30 +111,6 @@
       </td>
       [% END %]
 
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
-
-        [% TRY %]
-          <td>
-          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
-          </td>
-        [% CATCH %]
-          [% CLEAR %]
-          [% IF config.editable AND user_can_port_control AND params.c_admin AND row.portctl %]
-            <td nowrap class="nd_editable-cell" contenteditable="true"
-                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="icon-edit nd_edit-icon"></i>
-          [% ELSE %]
-            <td nowrap class="nd_editable-cell">
-          [% END %]
-            <div class="nd_editable-cell-content">
-              [% row.get_column(config.field) | html_entity %]
-            </div>
-            </td>
-        [% END %]
-
-      [% END %]
-
       [% IF params.c_descr %]
       <td nowrap>[% row.descr | html_entity %]</td>
       [% END %]
@@ -191,6 +143,30 @@
         [% row.name | html_entity %]
       </div>
       </td>
+      [% END %]
+
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
+
+        [% TRY %]
+          <td>
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          </td>
+        [% CATCH %]
+          [% CLEAR %]
+          [% IF config.editable AND user_can_port_control AND params.c_admin AND row.portctl %]
+            <td nowrap class="nd_editable-cell" contenteditable="true"
+                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+            <i class="icon-edit nd_edit-icon"></i>
+          [% ELSE %]
+            <td nowrap class="nd_editable-cell">
+          [% END %]
+            <div class="nd_editable-cell-content">
+              [% row.get_column(config.field) | html_entity %]
+            </div>
+            </td>
+        [% END %]
+
       [% END %]
 
       [% IF params.c_speed_admin %]
@@ -330,6 +306,30 @@
         <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
       [% END %]
       </td>
+      [% END %]
+
+      [% FOREACH config IN settings._extra_device_port_cols %]
+        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
+
+        [% TRY %]
+          <td>
+          [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
+          </td>
+        [% CATCH %]
+          [% CLEAR %]
+          [% IF config.editable AND user_can_port_control AND params.c_admin AND row.portctl %]
+            <td nowrap class="nd_editable-cell" contenteditable="true"
+                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+            <i class="icon-edit nd_edit-icon"></i>
+          [% ELSE %]
+            <td nowrap class="nd_editable-cell">
+          [% END %]
+            <div class="nd_editable-cell-content">
+              [% row.get_column(config.field) | html_entity %]
+            </div>
+            </td>
+        [% END %]
+
       [% END %]
 
       [% IF params.c_nodes OR params.c_neighbors %]
