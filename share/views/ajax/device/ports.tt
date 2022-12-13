@@ -318,6 +318,20 @@
       <td>[% row.ssid.ssid | html_entity %]</td>
       [% END %]
 
+      [% IF params.c_nac_summary %]
+      <td>
+      [% IF row.up == 'up' AND (row.pae_authconfig_port_status OR row.pae_authconfig_state) %]
+        <i class="icon-[% row.pae_authconfig_port_status == 'authorized' ? 'ok-sign' : 'ban-circle' %]"
+          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_port_status %]"></i>
+        <i class="icon-[% row.pae_authconfig_state == 'authenticated' ? 'link' : 'unlink' %]"
+          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_state %]"></i>
+        <i class="icon-[% row.pae_authsess_mab ? 'laptop' : 'user' %]"></i>
+        [% SET sessuser = (row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)) %]
+        <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
+      [% END %]
+      </td>
+      [% END %]
+
       [% IF params.c_nodes OR params.c_neighbors %]
       <td>
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]

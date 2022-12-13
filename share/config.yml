@@ -130,10 +130,11 @@ sidebar_defaults:
     c_vmember:     { label: 'VLAN Membership', default: checked, idx: 15 }
     c_power:       { label: 'PoE', default: null, idx: 16 }
     c_ssid:        { label: 'SSID', default: null, idx: 17 }
-    c_nodes:       { label: 'Connected Nodes', default: null, idx: 18 }
-    c_neighbors:   { label: 'Connected Devices', default: checked, idx: 19 }
-    c_stp:         { label: 'Spanning Tree', default: null, idx: 20 }
-    c_up:          { label: 'Status', default: null, idx: 21 }
+    c_nac_summary: { label: 'NAC/802.1X Status', default: null, idx: 18 }
+    c_nodes:       { label: 'Connected Nodes', default: null, idx: 19 }
+    c_neighbors:   { label: 'Connected Devices', default: checked, idx: 20 }
+    c_stp:         { label: 'Spanning Tree', default: null, idx: 21 }
+    c_up:          { label: 'Up/Down Status', default: null, idx: 22 }
     mac_format:    { default: IEEE }
     n_inventory:   { label: 'Remote Inventory', default: checked, idx: 0 }
     n_detailed_inventory: { label: 'Remote Advertisement', default: null, idx: 1 }
