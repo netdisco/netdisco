@@ -1,8 +1,13 @@
-2.x - TBD
+2.060002 - 2022-12-13
 
   [ENHANCEMENTS]
 
-  * Display PAE/NAC attributes
+  * display PAE/NAC/802.1X attributes in the Device Ports tab
+  * add IEEE8023-LAG-MIB to snapshot retrieval
+
+  [BUG FIXES]
+
+  * #948 Column order wrong when displaying custom fields
 
 2.060001 - 2022-12-11
 
