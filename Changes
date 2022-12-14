@@ -1,3 +1,9 @@
+2.060003 - 2022-12-14
+
+  [ENHANCEMENTS]
+
+  * #947 FATAL: minimum PostgreSQL version error added to DB deploy
+
 2.060002 - 2022-12-13
 
   [ENHANCEMENTS]
