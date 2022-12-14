@@ -94,6 +94,18 @@ Version 17 onwards deploys schema upgrades for Netdisco 2
 =cut
 
 my $schema = schema('netdisco');
+my $pg_ver = $schema->storage->dbh->{pg_server_version};
+
+if ($pg_ver and $pg_ver < 90600) {
+    printf "\nFATAL: minimum PostgreSQL version for Netdisco is 9.6, you have %s\n",
+      (join '.', reverse map {scalar reverse} unpack("(A2)*", reverse $pg_ver));
+    print "\nUnfortunately, if you are reading this, you already upgraded Netdisco,";
+    print "\nso your only options now are to delete and reinstall Netdisco, or upgrade";
+    print "\nyour PostgreSQL installation.\n";
+    print "\nPlease always read the Release Notes before upgrading:";
+    print "\nhttps://github.com/netdisco/netdisco/wiki/Release-Notes\n";
+    die "\n";
+}
 
 if (scalar @ARGV and $ARGV[0] and $ARGV[0] eq '--redeploy-all') {
     $schema->storage->dbh_do(

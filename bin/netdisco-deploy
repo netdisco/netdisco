@@ -146,7 +146,7 @@ else {
 }
 
 sub deploy_db {
-  system 'netdisco-db-deploy';
+  system('netdisco-db-deploy') == 0 or die "\n";
   print color 'bold blue';
   say 'DB schema update complete.';
   print color 'reset';
