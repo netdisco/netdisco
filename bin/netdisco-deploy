@@ -152,7 +152,7 @@ sub deploy_db {
   print color 'reset';
 
   print color 'bold blue';
-  print 'Updating statistics... ';
+  say 'Updating statistics... ';
   App::Netdisco::Util::Statistics::update_stats();
   say 'done.';
   print color 'reset';
