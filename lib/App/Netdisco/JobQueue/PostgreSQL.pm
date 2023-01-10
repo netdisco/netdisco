@@ -385,7 +385,8 @@ sub jq_delete {
 
   if ($id) {
       schema(vars->{'tenant'})->txn_do(sub {
-        schema(vars->{'tenant'})->resultset('Admin')->find($id)->delete();
+        my $job = schema(vars->{'tenant'})->resultset('Admin')->find($id);
+        $job->delete() if $job;
       });
   }
   else {
