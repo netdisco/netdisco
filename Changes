@@ -1,3 +1,9 @@
+2.060004 - 2023-01-10
+
+  [BUG FIXES]
+
+  * #953 fix port reconfig (vlan) fail due to missing DB column data
+
 2.060003 - 2022-12-14
 
   [ENHANCEMENTS]
