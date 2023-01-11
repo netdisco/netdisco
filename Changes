@@ -5,6 +5,7 @@
   * #953 port reconfig (vlan) fail due to missing DB column data
   * #957 make job queue updates work reliably and atomically
   * #958 make job queue updates work reliably and atomically
+  * #956 numberic interpretation error in Node MAC search template
 
 2.060003 - 2022-12-14
 

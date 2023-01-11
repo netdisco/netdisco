@@ -34,6 +34,7 @@
       [% END %]
     </tr>
     [% END %]
+    [% SET nodecount = 0 %]
     [% WHILE (node = sightings.next) %]
     [% SET nodecount = nodecount + 1 %]
     <tr>
@@ -60,6 +61,7 @@
       [% END %]
     </tr>
     [% END %]
+    [% SET portcount = 0 %]
     [% WHILE (port = ports.next) %]
     [% SET portcount = portcount + 1 %]
     <tr>
