@@ -173,7 +173,7 @@ sub jq_getsome {
           })->as_query,
         }],
       ],
-    }, {for => 'update'})
+    }, { for => 'update' })
         ->update({ status => 'info', log => (sprintf 'duplicate of %s', $job->id) });
 
     debug sprintf 'getsome: cancelled %s duplicate(s) of job %s', ($gone || 0), $job->id;
@@ -249,7 +249,7 @@ sub jq_defer {
 
       # lock db row and update to show job is available
       schema(vars->{'tenant'})->resultset('Admin')
-        ->find($job->id, {for => 'update'})
+        ->search({ job => $job->id }, { for => 'update' })
         ->update({ status => 'queued', started => undef });
     });
     $happy = true;
@@ -280,7 +280,8 @@ sub jq_complete {
       }
 
       schema(vars->{'tenant'})->resultset('Admin')
-        ->find($job->id, {for => 'update'})->update({
+        ->search({ job => $job->id }, { for => 'update' })
+        ->update({
           status => $job->status,
           log    => $job->log,
           started  => $job->started,
@@ -385,8 +386,7 @@ sub jq_delete {
 
   if ($id) {
       schema(vars->{'tenant'})->txn_do(sub {
-        my $job = schema(vars->{'tenant'})->resultset('Admin')->find($id);
-        $job->delete() if $job;
+        schema(vars->{'tenant'})->resultset('Admin')->search({ job => $id })->delete;
       });
   }
   else {

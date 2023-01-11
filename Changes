@@ -3,7 +3,8 @@
   [BUG FIXES]
 
   * #953 port reconfig (vlan) fail due to missing DB column data
-  * #957 race condition in job queue management when deleting one job
+  * #957 make job queue updates work reliably and atomically
+  * #958 make job queue updates work reliably and atomically
 
 2.060003 - 2022-12-14
 
