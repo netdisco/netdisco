@@ -29,7 +29,7 @@ foreach my $report (@{setting('reports')}) {
       # TODO: this should be done by creating a new Virtual Result class on
       # the fly (package...) and then calling DBIC register_class on it.
 
-      my $schema = ($report->{database} || 'netdisco');
+      my $schema = ($vars->{'tenant'} || 'netdisco');
       my $rs = schema($schema)->resultset('Virtual::GenericReport')->result_source;
       (my $query = $report->{query}) =~ s/;$//;
 
