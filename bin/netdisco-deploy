@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+$|++;
 our $home;
 
 BEGIN {
