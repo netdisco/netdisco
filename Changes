@@ -1,3 +1,10 @@
+2.060005 - 2023-02-21
+
+  [BUG FIXES]
+
+  * #961 unbuffer output on netdisco-deploy for slow stats update
+  * #979 tenancy awareness for generic reports
+
 2.060004 - 2023-01-10
 
   [BUG FIXES]
