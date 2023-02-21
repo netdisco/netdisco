@@ -42,12 +42,13 @@ jobs:
     - name: Get the Tag or Branch
       run: echo "GH_REF_SHORT=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
-    - name: Install packages
-      run: |
-        apk del openssh-client
-        apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
+    - name: Install base packages
+      run: apk add tmux bash curl sudo xz
+    - name: Install other packages
+      run: apk add openssh-client gcc make musl-dev perl-dev unzip
     - name: Install fake apt-get
-      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+
     - name: Add localhost
       run: echo "127.0.0.1 localhost" >> /etc/hosts
 
@@ -318,14 +319,16 @@ jobs:
       run:
         working-directory: /github/workspace/netdisco/netdisco
     steps:
+    - name: Install base packages
+      run: apk add tmux bash curl sudo xz
     - name: Install packages
-      run: |
-        apk del openssh-client
-        apk add openssh xz tmux bash curl sudo gcc make musl-dev perl-dev unzip
+      run: apk add openssh-client gcc make musl-dev perl-dev unzip
     - name: Install fake apt-get
-      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+
     - name: Check out latest code
       uses: actions/checkout@v1
+
     - name: Fix owner of checkout
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
 
