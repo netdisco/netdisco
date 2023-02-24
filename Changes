@@ -1,3 +1,9 @@
+2.060006 - 2023-02-24
+
+  [ENHANCEMENTS]
+
+  * #933 separate Duplex port info into running and configured columns
+
 2.060005 - 2023-02-21
 
   [BUG FIXES]

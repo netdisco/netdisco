@@ -6,10 +6,7 @@
   [% NEXT IF item.name == 'c_admin' %]
   [% NEXT UNLESS params.${item.name} %]
 
-  [% IF item.name == 'c_duplex' %]
-    [% headers.push('Duplex Setting') %]
-    [% headers.push('Duplex') %]
-  [% ELSIF item.name == 'c_power' %]
+  [% IF item.name == 'c_power' %]
     [% headers.push('PoE Status') %]
     [% headers.push('PoE Power (mW)') %]
   [% ELSIF item.name == 'c_nac_summary' %]
@@ -87,14 +84,12 @@
     [% myport.push(row.speed) %]
   [% END %]
 
+  [% IF params.c_duplex_admin %]
+    [% myport.push(row.duplex_admin.ucfirst) %]
+  [% END %]
+
   [% IF params.c_duplex %]
-    [% IF row.up == 'up' AND row.duplex %]
-      [% myport.push( row.duplex_admin.ucfirst || 'Auto' ) %]
-      [% myport.push( row.duplex.ucfirst ) %]
-    [% ELSE %]
-      [% myport.push('') %]
-      [% myport.push('') %]
-    [% END %]
+    [% myport.push(row.duplex.ucfirst) %]
   [% END %]
 
   [% IF params.c_error %]

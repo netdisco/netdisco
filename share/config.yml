@@ -112,43 +112,44 @@ sidebar_defaults:
   search_device:
     matchall:    { default: checked }
   device_ports:
-    c_admin:       { label: 'Port Control and Editing', default: null, idx: 0 }
-    c_port:        { label: 'Port', default: checked, idx: 1 }
-    c_descr:       { label: 'Description', default: null, idx: 2 }
-    c_comment:     { label: 'Last Comment', default: null, idx: 3 }
-    c_type:        { label: 'Type', default: null, idx: 4 }
-    c_ifindex:     { label: 'Interface Index', default: null, idx: 5 }
-    c_lastchange:  { label: 'Last Change', default: null, idx: 6 }
-    c_name:        { label: 'Name', default: checked, idx: 7 }
-    c_speed_admin: { label: 'Speed (configured)', default: null, idx: 8 }
-    c_speed:       { label: 'Speed (running)', default: null, idx: 9 }
-    c_duplex:      { label: 'Duplex', default: null, idx: 10 }
-    c_error:       { label: 'Error Message', default: null, idx: 11 }
-    c_mac:         { label: 'Port MAC', default: null, idx: 12 }
-    c_mtu:         { label: 'MTU', default: null, idx: 13 }
-    c_pvid:        { label: 'Native VLAN', default: checked, idx: 14 }
-    c_vmember:     { label: 'VLAN Membership', default: checked, idx: 15 }
-    c_power:       { label: 'PoE', default: null, idx: 16 }
-    c_ssid:        { label: 'SSID', default: null, idx: 17 }
-    c_nac_summary: { label: 'NAC/802.1X Status', default: null, idx: 18 }
-    c_nodes:       { label: 'Connected Nodes', default: null, idx: 19 }
-    c_neighbors:   { label: 'Connected Devices', default: checked, idx: 20 }
-    c_stp:         { label: 'Spanning Tree', default: null, idx: 21 }
-    c_up:          { label: 'Up/Down Status', default: null, idx: 22 }
-    mac_format:    { default: IEEE }
-    n_inventory:   { label: 'Remote Inventory', default: checked, idx: 0 }
+    c_admin:        { label: 'Port Control and Editing', default: null, idx: 0 }
+    c_port:         { label: 'Port', default: checked, idx: 1 }
+    c_descr:        { label: 'Description', default: null, idx: 2 }
+    c_comment:      { label: 'Last Comment', default: null, idx: 3 }
+    c_type:         { label: 'Type', default: null, idx: 4 }
+    c_ifindex:      { label: 'Interface Index', default: null, idx: 5 }
+    c_lastchange:   { label: 'Last Change', default: null, idx: 6 }
+    c_name:         { label: 'Name', default: checked, idx: 7 }
+    c_speed_admin:  { label: 'Speed (configured)', default: null, idx: 8 }
+    c_speed:        { label: 'Speed (running)', default: null, idx: 9 }
+    c_duplex_admin: { label: 'Duplex (configured)', default: null, idx: 10 }
+    c_duplex:       { label: 'Duplex (running)', default: null, idx: 11 }
+    c_error:        { label: 'Error Message', default: null, idx: 12 }
+    c_mac:          { label: 'Port MAC', default: null, idx: 13 }
+    c_mtu:          { label: 'MTU', default: null, idx: 14 }
+    c_pvid:         { label: 'Native VLAN', default: checked, idx: 15 }
+    c_vmember:      { label: 'VLAN Membership', default: checked, idx: 16 }
+    c_power:        { label: 'PoE', default: null, idx: 17 }
+    c_ssid:         { label: 'SSID', default: null, idx: 18 }
+    c_nac_summary:  { label: 'NAC/802.1X Status', default: null, idx: 19 }
+    c_nodes:        { label: 'Connected Nodes', default: null, idx: 20 }
+    c_neighbors:    { label: 'Connected Devices', default: checked, idx: 21 }
+    c_stp:          { label: 'Spanning Tree', default: null, idx: 22 }
+    c_up:           { label: 'Up/Down Status', default: null, idx: 23 }
+    mac_format:     { default: IEEE }
+    n_inventory:    { label: 'Remote Inventory', default: checked, idx: 0 }
     n_detailed_inventory: { label: 'Remote Advertisement', default: null, idx: 1 }
-    n_age:         { label: 'Age Stamp', default: null, idx: 2 }
-    n_ip4:         { label: 'IPv4 Addresses', default: checked, idx: 3 }
-    n_ip6:         { label: 'IPv6 Addresses', default: checked, idx: 4 }
-    n_netbios:     { label: 'NetBIOS Name', default: checked, idx: 5 }
-    n_ssid:        { label: 'SSID', default: checked, idx: 6 }
-    n_vendor:      { label: 'Vendor', default: null, idx: 7 }
-    n_archived:    { label: 'Archived Data', default: null, idx: 8 }
-    age_num:       { default: 3 }
-    age_unit:      { default: months }
-    p_vlan_names:  { label: 'Use VLAN Names', default: null, idx: 0 }
-    p_hide1002:    { label: 'Hide VLAN 1002-1005', default: null, idx: 1 }
+    n_age:          { label: 'Age Stamp', default: null, idx: 2 }
+    n_ip4:          { label: 'IPv4 Addresses', default: checked, idx: 3 }
+    n_ip6:          { label: 'IPv6 Addresses', default: checked, idx: 4 }
+    n_netbios:      { label: 'NetBIOS Name', default: checked, idx: 5 }
+    n_ssid:         { label: 'SSID', default: checked, idx: 6 }
+    n_vendor:       { label: 'Vendor', default: null, idx: 7 }
+    n_archived:     { label: 'Archived Data', default: null, idx: 8 }
+    age_num:        { default: 3 }
+    age_unit:       { default: months }
+    p_vlan_names:   { label: 'Use VLAN Names', default: null, idx: 0 }
+    p_hide1002:     { label: 'Hide VLAN 1002-1005', default: null, idx: 1 }
     p_include_hidden: { label: 'Include Hidden Ports', default: null, idx: 2 }
   device_netmap:
     showips:     { default: null }
@@ -163,8 +164,8 @@ sidebar_defaults:
     age_num:      { default: 3 }
     age_unit:     { default: months }
 device_port_col_idx_left: 7
-device_port_col_idx_mid: 18
-device_port_col_idx_right: 22
+device_port_col_idx_mid: 19
+device_port_col_idx_right: 23
 jobqueue_refresh: 10
 safe_password_store: true
 reports: []
