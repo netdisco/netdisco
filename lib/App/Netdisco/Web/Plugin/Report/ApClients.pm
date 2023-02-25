@@ -17,20 +17,18 @@ register_report(
 
 get '/ajax/content/report/apclients' => require_login sub {
     my @results = schema(vars->{'tenant'})->resultset('Device')->search(
-        { 'nodes.time_last' => { '>=', \'me.last_macsuck' } },
-        {   select => [ 'ip', 'dns', 'name', 'model', 'location' ],
-            join       => { 'ports' => { 'ssid' => 'nodes' } },
+        { 'nodes.time_last' => { '>=', \'me.last_macsuck' },
+          'ports.port' => { '-in' => schema(vars->{'tenant'})->resultset('DevicePortWireless')->get_column('port')->as_query },
+        },
+        {   select => [ 'ip', 'model', 'ports.port', 'ports.name', 'ports.type' ],
+            join       => { 'ports' =>  'nodes' },
             '+columns' => [
-                { 'port'        => 'ports.port' },
-                { 'description' => 'ports.name' },
-                { 'ssid'        => 'ssid.ssid' },
-                { 'mac_count'   => { count => 'nodes.mac' } },
+                { 'mac_count' => { count => 'nodes.mac' } },
             ],
             group_by => [
-                'me.ip',       'me.dns',     'me.name',     'me.model',
-                'me.location', 'ports.port', 'ports.descr', 'ports.name', 'ssid.ssid',
+                'me.ip', 'me.model', 'ports.port', 'ports.name', 'ports.type',
             ],
-            order_by => { -desc => [qw/count/] },
+            order_by => { -asc => [qw/ports.name ports.type/] },
         }
     )->hri->all;
 
