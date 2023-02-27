@@ -247,32 +247,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           next PORT;
       }
 
-      my $lc = $i_lastchange->{$entry} || 0;
-      if (not $dev_uptime_wrapped and $lc > $dev_uptime) {
-          debug sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
-            $device->ip, $port;
-          $device->uptime( $dev_uptime + 2**32 );
-          $dev_uptime_wrapped = 1;
-      }
-
-      if ($device->is_column_changed('uptime') and $lc) {
-          if ($lc < $dev_uptime) {
-              # ambiguous: lastchange could be sysUptime before or after wrap
-              if ($dev_uptime > 30000 and $lc < 30000) {
-                  # uptime wrap more than 5min ago but lastchange within 5min
-                  # assume lastchange was directly after boot -> no action
-              }
-              else {
-                  # uptime wrap less than 5min ago or lastchange > 5min ago
-                  # to be on safe side, assume lastchange after counter wrap
-                  debug sprintf
-                    ' [%s] interfaces - correcting LastChange for %s, assuming sysUptime wrap',
-                    $device->ip, $port;
-                  $lc += $dev_uptime_wrapped * 2**32;
-              }
-          }
-      }
-
       # create a DBIx::Class row for this port which can be used to test ACLs
       # also include the Device IP alias if we have one for L3 interfaces
       $deviceports{$port} = {
@@ -294,7 +268,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           has_subinterfaces => 'false',
           is_master         => 'false',
           slave_of          => undef,
-          lastchange   => $lc,
       };
   }
 
@@ -334,6 +307,38 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
             }
         }
     }
+  }
+
+  # #981 must do this after filtering %deviceports to avoid weird data
+  UPTIME: foreach my $entry (keys %$interfaces) {
+      my $port = $interfaces->{$entry};
+      next unless exists $deviceports{$port};
+      my $lc = $i_lastchange->{$entry} || 0;
+
+      if (not $dev_uptime_wrapped and $lc > $dev_uptime) {
+          debug sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
+            $device->ip, $port;
+          $device->uptime( $dev_uptime + 2**32 );
+          $dev_uptime_wrapped = 1;
+      }
+
+      if ($device->is_column_changed('uptime') and $lc and $lc < $dev_uptime) {
+          # ambiguous: lastchange could be sysUptime before or after wrap
+          if ($dev_uptime > 30000 and $lc < 30000) {
+              # uptime wrap more than 5min ago but lastchange within 5min
+              # assume lastchange was directly after boot -> no action
+          }
+          else {
+              # uptime wrap less than 5min ago or lastchange > 5min ago
+              # to be on safe side, assume lastchange after counter wrap
+              debug sprintf
+                ' [%s] interfaces - correcting LastChange for %s, assuming sysUptime wrap',
+                $device->ip, $port;
+              $lc += $dev_uptime_wrapped * 2**32;
+          }
+      }
+
+      $deviceports{$port}->{lastchange} = $lc;
   }
 
   # must do this after building %deviceports so that we can set is_master
