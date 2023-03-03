@@ -65,7 +65,7 @@ foreach my $g (@{$settings->{ 'by_hostname' }}) {
 my @devices = schema('netdisco')->resultset('Device')->search({},
   {
     '+columns' => {
-      old => \"age(now(), last_discover) > interval '$down_age'"
+      old => \"age(LOCALTIMESTAMP, last_discover) > interval '$down_age'"
     }
   })->all;
 
