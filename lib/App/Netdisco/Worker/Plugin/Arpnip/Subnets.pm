@@ -21,7 +21,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my @subnets = gather_subnets($device);
   # TODO: IPv6 subnets
 
-  my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
+  my $now = 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
   store_subnet($_, $now) for @subnets;
 
   return Status->info(sprintf ' [%s] arpnip - processed %s Subnet entries',

@@ -70,9 +70,9 @@ sub with_is_free {
           # NOTE this query is in `git grep 'THREE PLACES'`
           \["me.up_admin = 'up' AND me.up != 'up' AND "
               ."(me.type IS NULL OR me.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$') AND "
-              ."((age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval "
-              ."AND (last_node.time_last IS NULL OR age(now(), last_node.time_last) > ?::interval)) "
-              ."OR age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval)",
+              ."((age(LOCALTIMESTAMP, to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))::timestamp) < ?::interval "
+              ."AND (last_node.time_last IS NULL OR age(LOCALTIMESTAMP, last_node.time_last) > ?::interval)) "
+              ."OR age(LOCALTIMESTAMP, to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)::timestamp) > ?::interval)",
             [{} => $interval],[ {} => $interval],[ {} => $interval]] },
         join => [qw/device last_node/],
       });
@@ -107,14 +107,14 @@ sub only_free_ports {
         ],
         -or => [
           -and => [
-            \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))) < ?::interval",
+            \["age(LOCALTIMESTAMP, to_timestamp(extract(epoch from device.last_discover) - (device.uptime/100))::timestamp) < ?::interval",
               [{} => $interval]],
             -or => [
               'last_node.time_last' => undef,
-              \["age(now(), last_node.time_last) > ?::interval", [{} => $interval]],
+              \["age(LOCALTIMESTAMP, last_node.time_last) > ?::interval", [{} => $interval]],
             ]
           ],
-          \["age(now(), to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)) > ?::interval",
+          \["age(LOCALTIMESTAMP, to_timestamp(extract(epoch from device.last_discover) - (device.uptime - me.lastchange)/100)::timestamp) > ?::interval",
             [{} => $interval]],
         ],
       },{ join => [qw/device last_node/] },

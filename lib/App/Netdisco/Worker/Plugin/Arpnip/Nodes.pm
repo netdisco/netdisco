@@ -29,7 +29,7 @@ register_worker({ phase => 'early',
   # select and do something with the updated set (see set archive, below)
   vars->{'timestamp'} = ($job->is_offline and $job->entered)
     ? (schema('netdisco')->storage->dbh->quote($job->entered) .'::timestamp')
-    : 'to_timestamp('. (join '.', gettimeofday) .')';
+    : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
 
   # initialise the cache
   vars->{'arps'} ||= [];

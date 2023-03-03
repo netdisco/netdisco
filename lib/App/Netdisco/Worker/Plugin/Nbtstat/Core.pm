@@ -19,7 +19,7 @@ register_worker({ phase => 'main' }, sub {
     -bool => 'me.active',
     -bool => 'nodes.active',
     'nodes.switch' => $host,
-    'me.time_last' => \[ '>= now() - ?::interval', $interval ],
+    'me.time_last' => \[ '>= LOCALTIMESTAMP - ?::interval', $interval ],
   },{
     join => 'nodes',
     columns => 'ip',
@@ -32,7 +32,7 @@ register_worker({ phase => 'main' }, sub {
 
   # Unless we have IPs don't bother
   if (scalar @ips) {
-    my $now = 'to_timestamp('. (join '.', gettimeofday) .')';
+    my $now = 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
     my $resolved_nodes = nbtstat_resolve_async(\@ips);
 
     # update node_nbt with status entries

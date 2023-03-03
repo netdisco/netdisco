@@ -23,12 +23,12 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
      sum(CASE
       WHEN ( (dp.type IS NULL OR dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
              AND dp.up_admin = 'up' AND dp.up != 'up'
-             AND (age(now(), to_timestamp(extract(epoch from d.last_discover) - (d.uptime/100))) < ?::interval)
-             AND (last_node.time_last IS NULL OR (age(now(), last_node.time_last)) > ?::interval) )
+             AND (age(LOCALTIMESTAMP, to_timestamp(extract(epoch from d.last_discover) - (d.uptime/100))::timestamp) < ?::interval)
+             AND (last_node.time_last IS NULL OR (age(LOCALTIMESTAMP, last_node.time_last)) > ?::interval) )
         THEN 1
       WHEN ( (dp.type IS NULL OR dp.type !~* '^(53|ieee8023adLag|propVirtual|l2vlan|l3ipvlan|135|136|137)\$')
              AND dp.up_admin = 'up' AND dp.up != 'up'
-             AND (age(now(), to_timestamp(extract(epoch from d.last_discover) - (d.uptime - dp.lastchange)/100)) > ?::interval) )
+             AND (age(LOCALTIMESTAMP, to_timestamp(extract(epoch from d.last_discover) - (d.uptime - dp.lastchange)/100)::timestamp) > ?::interval) )
         THEN 1
       ELSE 0
      END) as ports_free

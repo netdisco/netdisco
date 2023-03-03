@@ -30,7 +30,7 @@ register_worker({ phase => 'early',
   # select and do something with the updated set (see set archive, below)
   vars->{'timestamp'} = ($job->is_offline and $job->entered)
     ? (schema('netdisco')->storage->dbh->quote($job->entered) .'::timestamp')
-    : 'to_timestamp('. (join '.', gettimeofday) .')';
+    : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
 
   # initialise the cache
   vars->{'fwtable'} ||= {};
@@ -225,13 +225,13 @@ All four fields in the tuple are required. If you don't know the VLAN ID,
 Netdisco supports using ID "0".
 
 Optionally, a fifth argument can be the literal string passed to the time_last
-field of the database record. If not provided, it defaults to C<now()>.
+field of the database record. If not provided, it defaults to C<LOCALTIMESTAMP>.
 
 =cut
 
 sub store_node {
   my ($ip, $vlan, $port, $mac, $now) = @_;
-  $now ||= 'now()';
+  $now ||= 'LOCALTIMESTAMP';
   $vlan ||= 0;
 
   schema('netdisco')->txn_do(sub {
