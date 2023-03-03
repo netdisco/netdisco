@@ -18,7 +18,7 @@ SELECT host(network (prefix) + sub.int)::inet AS ip,
        NULL::text AS dns,
        false::boolean AS active,
        false::boolean AS node,
-       replace( date_trunc( 'minute', age( now(), NULL::timestamp ) ) ::text, 'mon', 'month') AS age,
+       replace( date_trunc( 'minute', age( LOCALTIMESTAMP, NULL::timestamp ) ) ::text, 'mon', 'month') AS age,
        NULL::text AS vendor,
        NULL::text AS nbname
   FROM (

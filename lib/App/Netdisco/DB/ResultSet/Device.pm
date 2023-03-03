@@ -93,10 +93,10 @@ sub with_times {
           last_discover_stamp => \"to_char(me.last_discover, 'YYYY-MM-DD HH24:MI')",
           last_macsuck_stamp  => \"to_char(me.last_macsuck,  'YYYY-MM-DD HH24:MI')",
           last_arpnip_stamp   => \"to_char(me.last_arpnip,   'YYYY-MM-DD HH24:MI')",
-          since_first_seen    => \"extract(epoch from (age(now(), me.creation)))",
-          since_last_discover => \"extract(epoch from (age(now(), me.last_discover)))",
-          since_last_macsuck  => \"extract(epoch from (age(now(), me.last_macsuck)))",
-          since_last_arpnip   => \"extract(epoch from (age(now(), me.last_arpnip)))",
+          since_first_seen    => \"extract(epoch from (age(LOCALTIMESTAMP, me.creation)))",
+          since_last_discover => \"extract(epoch from (age(LOCALTIMESTAMP, me.last_discover)))",
+          since_last_macsuck  => \"extract(epoch from (age(LOCALTIMESTAMP, me.last_macsuck)))",
+          since_last_arpnip   => \"extract(epoch from (age(LOCALTIMESTAMP, me.last_arpnip)))",
         },
       });
 }
