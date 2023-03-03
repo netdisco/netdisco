@@ -1,3 +1,12 @@
+2.060007 - 2023-03-03
+
+  [BUG FIXES]
+
+  * #478 rewrite wireless client count report which was bobbins
+  * #901 node_ip time_last can be before time_first
+  * #949 inconsistencies in time values due to time zone handling
+  * #981 inspect ports lastchange for uptime wrap only after filtering ports
+
 2.060006 - 2023-02-24
 
   [ENHANCEMENTS]
