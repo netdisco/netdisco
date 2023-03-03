@@ -176,13 +176,13 @@ sub store_arp {
   debug sprintf 'store_arp - mac %s ip %s', $mac->as_ieee, $ip;
 
   schema(vars->{'tenant'})->txn_do(sub {
-    my $current = schema(vars->{'tenant'})->resultset('NodeIp')
+    schema(vars->{'tenant'})->resultset('NodeIp')
       ->search(
         { ip => $ip, -bool => 'active'},
         { columns => [qw/mac ip/] })->update({active => \'false'});
 
-    schema(vars->{'tenant'})->resultset('NodeIp')
-      ->update_or_create(
+    my $row = schema(vars->{'tenant'})->resultset('NodeIp')
+      ->update_or_new(
       {
         mac => $mac->as_ieee,
         ip => $ip,
@@ -194,6 +194,11 @@ sub store_arp {
         key => 'primary',
         for => 'update',
       });
+
+    if (! $row->in_storage) {
+        $row->set_column(time_first => \$now);
+        $row->insert;
+    }
   });
 }
 

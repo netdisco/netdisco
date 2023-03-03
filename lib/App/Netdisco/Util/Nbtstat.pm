@@ -158,20 +158,27 @@ sub store_nbt {
     my ( $hash_ref, $now ) = @_;
     $now ||= 'LOCALTIMESTAMP';
 
-    schema(vars->{'tenant'})->resultset('NodeNbt')->update_or_create(
-        {   mac       => $hash_ref->{'mac'},
-            ip        => $hash_ref->{'ip'},
-            nbname    => $hash_ref->{'nbname'},
-            domain    => $hash_ref->{'domain'},
-            server    => $hash_ref->{'server'},
-            nbuser    => $hash_ref->{'nbuser'},
-            active    => \'true',
-            time_last => \$now,
-        },
-        {   key => 'primary',
-            for => 'update',
-        }
-    );
+    schema(vars->{'tenant'})->txn_do(sub {
+      my $row = schema(vars->{'tenant'})->resultset('NodeNbt')->update_or_new(
+          {   mac       => $hash_ref->{'mac'},
+              ip        => $hash_ref->{'ip'},
+              nbname    => $hash_ref->{'nbname'},
+              domain    => $hash_ref->{'domain'},
+              server    => $hash_ref->{'server'},
+              nbuser    => $hash_ref->{'nbuser'},
+              active    => \'true',
+              time_last => \$now,
+          },
+          {   key => 'primary',
+              for => 'update',
+          }
+      );
+
+      if (! $row->in_storage) {
+          $row->set_column(time_first => \$now);
+          $row->insert;
+      }
+    });
 
     return;
 }

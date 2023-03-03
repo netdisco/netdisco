@@ -249,7 +249,7 @@ sub store_node {
         })->update( { active => \'false' } );
 
     # new data
-    $nodes->update_or_create(
+    my $row = $nodes->update_or_new(
       {
         switch => $ip,
         port => $port,
@@ -265,6 +265,11 @@ sub store_node {
         for => 'update',
       }
     );
+
+    if (! $row->in_storage) {
+        $row->set_column(time_first => \$now);
+        $row->insert;
+    }
   });
 }
 
