@@ -39,9 +39,9 @@ __PACKAGE__->add_columns(
   "creation",
   {
     data_type     => "timestamp",
-    default_value => \"current_timestamp",
+    default_value => \"LOCALTIMESTAMP",
     is_nullable   => 1,
-    original      => { default_value => \"now()" },
+    original      => { default_value => \"LOCALTIMESTAMP" },
   },
   "last_discover",
   { data_type => "timestamp", is_nullable => 1 },

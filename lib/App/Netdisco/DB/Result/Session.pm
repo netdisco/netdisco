@@ -13,9 +13,9 @@ __PACKAGE__->add_columns(
   "creation",
   {
     data_type     => "timestamp",
-    default_value => \"current_timestamp",
+    default_value => \"LOCALTIMESTAMP",
     is_nullable   => 1,
-    original      => { default_value => \"now()" },
+    original      => { default_value => \"LOCALTIMESTAMP" },
   },
   "a_session",
   { data_type => "text", is_nullable => 1 },
