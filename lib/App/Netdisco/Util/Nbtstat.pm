@@ -150,13 +150,13 @@ and the current NetBIOS user C<nbuser>.
 Adds new entry or time stamps matching one.
 
 Optionally a literal string can be passed in the second argument for the
-C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
+C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
 
 =cut
 
 sub store_nbt {
     my ( $hash_ref, $now ) = @_;
-    $now ||= 'now()';
+    $now ||= 'LOCALTIMESTAMP';
 
     schema(vars->{'tenant'})->resultset('NodeNbt')->update_or_create(
         {   mac       => $hash_ref->{'mac'},

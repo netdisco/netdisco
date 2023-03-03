@@ -47,7 +47,7 @@ register_worker({ phase => 'main' }, sub {
 
   my $devices = schema('netdisco')->resultset('Device')->search(undef, {
     '+columns' => { old =>
-      \['age(now(), last_discover) > ?::interval', $down_age] },
+      \['age(LOCALTIMESTAMP, last_discover) > ?::interval', $down_age] },
   });
 
   $config->{groups}    ||= { default => 'any' };

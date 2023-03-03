@@ -59,7 +59,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
               native => $native,
               egress_tag => 'f',
               vlantype => $type,
-              last_discover => \'now()',
+              last_discover => \'LOCALTIMESTAMP',
           };
 
           ++$this_port_vlans{$vlan};
@@ -78,7 +78,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
               native => $native,
               egress_tag => ($native eq 't' ? 'f' : 't'),
               vlantype => $type,
-              last_discover => \'now()',
+              last_discover => \'LOCALTIMESTAMP',
           };
 
           ++$this_port_vlans{$vlan};
@@ -109,7 +109,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       push @devicevlans, {
           vlan => $vlan,
           description => $v_name->{$entry},
-          last_discover => \'now()',
+          last_discover => \'LOCALTIMESTAMP',
       };
   }
 
@@ -120,7 +120,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       push @devicevlans, {
           vlan => $vlan,
           description => (sprintf "VLAN %d", $vlan),
-          last_discover => \'now()',
+          last_discover => \'LOCALTIMESTAMP',
       };
   }
 

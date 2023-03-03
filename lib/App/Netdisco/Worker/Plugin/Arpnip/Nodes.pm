@@ -24,7 +24,7 @@ register_worker({ phase => 'early',
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  # would be possible just to use now() on updated records, but by using this
+  # would be possible just to use LOCALTIMESTAMP on updated records, but by using this
   # same value for them all, we can if we want add a job at the end to
   # select and do something with the updated set (see set archive, below)
   vars->{'timestamp'} = ($job->is_offline and $job->entered)

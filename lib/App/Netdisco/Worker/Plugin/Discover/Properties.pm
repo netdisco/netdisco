@@ -58,7 +58,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( snmp_class => $snmp->class );
   $device->set_column( snmp_engineid => unpack('H*', ($snmp->snmpEngineID || '')) );
 
-  $device->set_column( last_discover => \'now()' );
+  $device->set_column( last_discover => \'LOCALTIMESTAMP' );
 
   # protection for failed SNMP gather
   if ($device->in_storage and not $device->is_pseudo) {

@@ -52,7 +52,7 @@ register_worker({ phase => 'main' }, sub {
           os => 'netdisco',
           os_ver => pretty_version($App::Netdisco::VERSION, 3),
           layers => '00000100',
-          last_discover => \'now()',
+          last_discover => \'LOCALTIMESTAMP',
           is_pseudo => \'true',
         });
       return unless $device;

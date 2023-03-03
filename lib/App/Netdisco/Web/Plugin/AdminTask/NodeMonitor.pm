@@ -59,7 +59,7 @@ ajax '/ajax/control/admin/nodemonitor/update' => require_role admin => sub {
         active => (param('active') ? \'true' : \'false'),
         why => param('why'),
         cc => param('cc'),
-        date => \'now()',
+        date => \'LOCALTIMESTAMP',
       });
     });
 };

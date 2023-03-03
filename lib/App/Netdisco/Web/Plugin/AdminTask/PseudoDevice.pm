@@ -44,7 +44,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
           os => 'netdisco',
           os_ver => pretty_version($App::Netdisco::VERSION, 3),
           layers => param('layers'),
-          last_discover => \'now()',
+          last_discover => \'LOCALTIMESTAMP',
           is_pseudo => \'true',
         });
       return unless $device;
@@ -101,7 +101,7 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
       $device->update({layers => param('layers')});
 
       # and update last_discover, since device properties changed
-      $device->update({last_discover => \'now()'});
+      $device->update({last_discover => \'LOCALTIMESTAMP'});
     });
 };
 

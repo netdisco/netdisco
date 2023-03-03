@@ -120,7 +120,7 @@ post '/login' => sub {
           event => (sprintf 'Login (%s)', ($api ? 'API' : 'WebUI')),
           details => param('return_url'),
         });
-        $user->update({ last_on => \'now()' });
+        $user->update({ last_on => \'LOCALTIMESTAMP' });
 
         if ($api) {
             # from the internals of Dancer::Plugin::Auth::Extensible

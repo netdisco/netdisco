@@ -77,7 +77,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 'dns',
                 \'true AS active',
                 \'false AS node',
-                \qq/replace( date_trunc( 'minute', age( now(), device.last_discover ) ) ::text, 'mon', 'month') AS age/,
+                \qq/replace( date_trunc( 'minute', age( LOCALTIMESTAMP, device.last_discover ) ) ::text, 'mon', 'month') AS age/,
                 'device.vendor',
                 \'null AS nbname',
 
@@ -91,7 +91,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         {   join   => ['oui', 'netbios'],
             columns   => [qw( ip mac time_first time_last dns active)],
             '+select' => [ \'true AS node',
-                           \qq/replace( date_trunc( 'minute', age( now(), me.time_last ) ) ::text, 'mon', 'month') AS age/,
+                           \qq/replace( date_trunc( 'minute', age( LOCALTIMESTAMP, me.time_last ) ) ::text, 'mon', 'month') AS age/,
                            'oui.company',
                            'netbios.nbname',
                          ],
@@ -107,7 +107,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
                 \'null AS dns',
                 'active',
                 \'true AS node',
-                \qq/replace( date_trunc( 'minute', age( now(), time_last ) ) ::text, 'mon', 'month') AS age/,
+                \qq/replace( date_trunc( 'minute', age( LOCALTIMESTAMP, time_last ) ) ::text, 'mon', 'month') AS age/,
                 'oui.company',
                 'nbname'
             ],

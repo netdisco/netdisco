@@ -28,7 +28,7 @@ my $clean = sub {
     serial => $device->serial,
     model => $device->model,
     fru => \'false',
-    last_discover => \'now()',
+    last_discover => \'LOCALTIMESTAMP',
   });
 };
 
@@ -95,7 +95,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           serial => Encode::decode('UTF-8', $e_serial->{$entry}),
           fru    => $e_fru->{$entry},
           description => Encode::decode('UTF-8', $e_descr->{$entry}),
-          last_discover => \'now()',
+          last_discover => \'LOCALTIMESTAMP',
       };
   }
 

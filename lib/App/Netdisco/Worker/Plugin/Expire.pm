@@ -15,7 +15,7 @@ register_worker({ phase => 'main' }, sub {
       schema('netdisco')->txn_do(sub {
         schema('netdisco')->resultset('Device')->search({
           -or => [ 'vendor' => undef, 'vendor' => { '!=' => 'netdisco' }],
-          last_discover => \[q/< (now() - ?::interval)/,
+          last_discover => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_devices') * 86400)],
         })->delete();
       });
@@ -27,12 +27,12 @@ register_worker({ phase => 'main' }, sub {
           ? setting('expire_nodeip_freshness') : setting('expire_nodes'));
         if ($freshness) {
           schema('netdisco')->resultset('NodeIp')->search({
-            time_last => \[q/< (now() - ?::interval)/, ($freshness * 86400)],
+            time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/, ($freshness * 86400)],
           })->delete();
         }
 
         schema('netdisco')->resultset('Node')->search({
-          time_last => \[q/< (now() - ?::interval)/,
+          time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_nodes') * 86400)],
         })->delete();
       });
@@ -44,13 +44,13 @@ register_worker({ phase => 'main' }, sub {
           ? setting('expire_nodeip_freshness') : setting('expire_nodes_archive'));
         if ($freshness) {
           schema('netdisco')->resultset('NodeIp')->search({
-            time_last => \[q/< (now() - ?::interval)/, ($freshness * 86400)],
+            time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/, ($freshness * 86400)],
           })->delete();
         }
 
         schema('netdisco')->resultset('Node')->search({
           -not_bool => 'active',
-          time_last => \[q/< (now() - ?::interval)/,
+          time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_nodes_archive') * 86400)],
         })->delete();
       });
@@ -67,7 +67,7 @@ register_worker({ phase => 'main' }, sub {
   if (setting('expire_jobs') and setting('expire_jobs') > 0) {
       schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
         schema('netdisco')->resultset('Admin')->search({
-          entered => \[q/< (now() - ?::interval)/,
+          entered => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_jobs') * 86400)],
         })->delete();
       });
@@ -76,7 +76,7 @@ register_worker({ phase => 'main' }, sub {
   if (setting('expire_userlog') and setting('expire_userlog') > 0) {
       schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
         schema('netdisco')->resultset('UserLog')->search({
-          creation => \[q/< (now() - ?::interval)/,
+          creation => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_userlog') * 86400)],
         })->delete();
       });

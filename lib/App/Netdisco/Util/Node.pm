@@ -160,13 +160,13 @@ The C<dns> entry is optional. The update will mark old entries for this IP as
 no longer C<active>.
 
 Optionally a literal string can be passed in the second argument for the
-C<time_last> timestamp, otherwise the current timestamp (C<now()>) is used.
+C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
 
 =cut
 
 sub store_arp {
   my ($hash_ref, $now) = @_;
-  $now ||= 'now()';
+  $now ||= 'LOCALTIMESTAMP';
   my $ip   = $hash_ref->{'ip'};
   my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || $hash_ref->{'mac'} || ''));
   my $name = $hash_ref->{'dns'};

@@ -168,7 +168,7 @@ sub jq_getsome {
           -exists => $jobs->search({
 	    job => { '>' => $job->id },
             status => { -like => 'queued-%' },
-            started => \[q/> (now() - ?::interval)/, setting('jobs_stale_after')],
+            started => \[q/> (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
             %job_properties,
           })->as_query,
         }],
@@ -187,7 +187,7 @@ sub jq_locked {
   my @returned = ();
   my $rs = schema(vars->{'tenant'})->resultset('Admin')->search({
     status  => ('queued-'. setting('workers')->{'BACKEND'}),
-    started => \[q/> (now() - ?::interval)/, setting('jobs_stale_after')],
+    started => \[q/> (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
   });
 
   while (my $job = $rs->next) {
@@ -216,7 +216,7 @@ sub jq_lock {
       ->search({ job => $job->id, status => 'queued' }, { for => 'update' })
       ->update({
           status  => ('queued-'. setting('workers')->{'BACKEND'}),
-          started => \"now()",
+          started => \"LOCALTIMESTAMP",
       });
 
     $happy = true if $updated > 0;
@@ -319,7 +319,7 @@ sub jq_userlog {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
     username => $user,
     log      => { '-not_like' => 'duplicate of %' },
-    finished => { '>' => \"(now() - interval '5 seconds')" },
+    finished => { '>' => \"(LOCALTIMESTAMP - interval '5 seconds')" },
   })->with_times->all;
 }
 
