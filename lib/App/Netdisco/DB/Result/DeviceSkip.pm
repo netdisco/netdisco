@@ -40,7 +40,7 @@ sub increment_deferrals {
   return unless $row->in_storage;
   return $row->update({
     deferrals => (($row->deferrals || 0) + 1),
-    last_defer => \'now()',
+    last_defer => \'LOCALTIMESTAMP',
   });
 }
 
