@@ -174,11 +174,11 @@ system_reports:
     label: 'Error Disabled Ports'
     category: Port
     columns:
-    - { ip: Device } 
-    - { dns: DNS } 
-    - { port: Port } 
-    - { name: Description } 
-    - { reason: Reason } 
+      - { ip: Device }
+      - { dns: DNS }
+      - { port: Port }
+      - { name: Description }
+      - { reason: Reason }
     query: |
       SELECT dp.ip, d.dns, dp.port, dp.name, properties.error_disable_cause AS reason
         FROM device_port dp
@@ -186,6 +186,21 @@ system_reports:
         LEFT JOIN device d USING (ip)
       WHERE properties.error_disable_cause IS NOT NULL
       ORDER BY dp.ip, dp.port
+  - tag: deviceaddresscount
+    label: 'Devices with Multiple Addresses'
+    category: Device
+    columns:
+      - { 'ip': 'Device IP', _searchable: true }
+      - { 'devname': 'Name' }
+      - { 'count': 'Addresses Count' }
+      - { 'contact': 'Contact' }
+      - { 'location': 'Location' }
+    query: |
+      SELECT ip, COALESCE(NULLIF(device.dns,''), NULLIF(name,''), '(none)') AS devname, count(alias), contact, location
+        FROM device_ip LEFT JOIN device USING (ip)
+        GROUP BY ip, devname, contact, location
+        HAVING count(alias) > 1
+        ORDER BY count(alias) DESC
 table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
