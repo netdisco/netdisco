@@ -141,6 +141,15 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
 push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
      setting('views');
 
+# sort the reports which have been loaded, by their label
+foreach my $cat (@{ setting('_report_order') }) {
+    setting('_reports_menu')->{ $cat }
+      = [ sort { setting('_reports')->{$a}->{'label'}
+                 cmp
+                 setting('_reports')->{$b}->{'label'} }
+          @{ setting('_reports_menu')->{ $cat } } ];
+}
+
 # any template paths in deployment.yml (should override plugins)
 if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
     if (setting('site_local_files')) {
