@@ -186,7 +186,7 @@ system_reports:
         LEFT JOIN device d USING (ip)
       WHERE properties.error_disable_cause IS NOT NULL
       ORDER BY dp.ip, dp.port
-  - tag: deviceaddresscount
+  - tag: devicemultipleaddresses
     label: 'Devices with Multiple Addresses'
     category: Device
     columns:
@@ -200,7 +200,20 @@ system_reports:
         FROM device_ip LEFT JOIN device USING (ip)
         GROUP BY ip, devname, contact, location
         HAVING count(alias) > 1
-        ORDER BY count(alias) DESC
+        ORDER BY count(alias) DESC, devname ASC
+  - tag: devicesharedaddresses
+    label: 'IPs on Multiple Devices'
+    category: Device
+    columns:
+      - { 'alias': 'Interface IP', _searchable: true }
+      - { 'count': 'Instance Count' }
+    query: |
+      SELECT alias, count(ip)
+        FROM device_ip
+        WHERE alias != '127.0.0.1'
+        GROUP BY alias
+        HAVING count(ip) > 1
+        ORDER BY count(ip) DESC, alias ASC
 table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
