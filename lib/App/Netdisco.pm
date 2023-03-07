@@ -94,7 +94,9 @@ On FreeBSD systems please see L<our FreeBSD tips|https://github.com/netdisco/net
 
 On OpenBSD systems please see L<our OpenBSD tips|https://github.com/netdisco/netdisco/wiki/openbsd-install>.
 
-With those installed, please check that your system's clock is correct.
+With those installed, please check that your system's clock is correct. We
+also recommend that you run Netdisco in UTC (time zone +0) if possible, to
+avoid issues with Daylight Savings Time changes.
 
 Create a user on your system called C<netdisco> if one does not already exist.
 We'll install Netdisco and its dependencies into this user's home area, which
