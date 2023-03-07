@@ -356,7 +356,7 @@ built upon.
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2011-2019 by The Netdisco Developer Team.
+This software is copyright (c) 2011-2023 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
