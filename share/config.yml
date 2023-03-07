@@ -214,6 +214,27 @@ system_reports:
         GROUP BY alias
         HAVING count(ip) > 1
         ORDER BY count(ip) DESC, alias ASC
+  - tag: recentlyaddeddevices
+    category: Device
+    label: 'Recently Added Devices'
+    columns:
+      - { ip: 'Device IP', _searchable: true }
+      - { devname: 'Name' }
+      - { model: 'Model' }
+      - { vendor: 'Vendor' }
+      - { creation: 'Date Added' }
+      - { os: 'Operating System' }
+      - { os_ver: 'OS Version' }
+      - { location: 'Location' }
+      - { contact: 'Contact' }
+      - { serial: 'Serial' }
+    bind_params: ['since']
+    query: |
+      SELECT ip, COALESCE(NULLIF(dns,''), NULLIF(name,''), '') AS devname,
+          model, vendor, creation, os, os_ver, location, contact, serial
+        FROM device
+        WHERE creation > (LOCALTIMESTAMP - COALESCE(NULLIF(?,''), '2 months')::interval)
+        ORDER BY creation DESC
 table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
