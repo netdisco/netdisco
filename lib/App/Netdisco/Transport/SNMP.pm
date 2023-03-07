@@ -180,6 +180,18 @@ sub _snmp_connect_generic {
     debug sprintf 'snmp transport running in offline mode for: [%s]', $device->ip;
   }
 
+  # any net-snmp options to add or override
+  foreach my $k (keys %{ setting('net_snmp_options') }) {
+    $snmp_args{ $k } = setting('net_snmp_options')->{ $k };
+  }
+
+  if (scalar keys %{ setting('net_snmp_options') }) {
+    foreach my $k (sort keys %snmp_args) {
+        next if $k eq 'MibDirs';
+        debug sprintf 'snmp transport conf: %s => %s', $k, $snmp_args{ $k };
+    }
+  }
+
   # get the community string(s)
   my @communities = get_communities($device, $mode);
 

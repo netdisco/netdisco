@@ -316,6 +316,7 @@ nonincreasing: false
 snmpver: 3
 snmptimeout: 3000000
 snmpretries: 2
+net_snmp_options: {}
 snmp_remoteport: {}
 snmp_field_protection:
   device:
