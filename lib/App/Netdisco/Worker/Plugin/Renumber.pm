@@ -18,6 +18,9 @@ register_worker({ phase => 'check' }, sub {
       return Status->error("Bad host or IP: ".($job->extra || '0.0.0.0'));
   }
 
+  debug 'NB: this feature will change the primary IP of a device to support migrations';
+  debug 'NB: use the device_identity feature if you wish to steer Netdisco in choosing the canonical IP of devices';
+
   return Status->done('Renumber is able to run');
 });
 

@@ -260,9 +260,11 @@
           <div class="modal-body">
             <blockquote>
               <ul>
-                <li><p>This action is run immediately</p></li>
+                <li><p>This will change the primary IP of a device to support migrations.</p></li>
                 <li><p>You can to change to an existing interface IP or a new IP</p></li>
                 <li><p>No check is made as to whether the new IP is reachable</p></li>
+                <li><p>The action is run immediately</p></li>
+                <li><p>The <a href="https://github.com/netdisco/netdisco/wiki/Configuration#device_identity"><code>device_identity</code></a> setting is safer and may work better</p></li>
               </ul>
             </blockquote>
             <label>Enter new IP address: <input list="interfaces" name="newip" data-form="renumber"/></label>
