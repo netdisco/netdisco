@@ -97,6 +97,13 @@ if (ref {} eq ref setting('database')) {
 
     # and support tenancies by setting what the default schema points to
     setting('plugins')->{DBIC}->{'netdisco'}->{'alias'} = 'default';
+
+    # allow override of the default tenancy
+    setting('plugins')->{DBIC}->{'default'}
+     = setting('plugins')->{DBIC}->{$ENV{NETDISCO_DB_TENANT}}
+     if $ENV{NETDISCO_DB_TENANT}
+        and $ENV{NETDISCO_DB_TENANT} ne 'netdisco'
+        and exists setting('plugins')->{DBIC}->{$ENV{NETDISCO_DB_TENANT}};
 }
 
 # always set this
