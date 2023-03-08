@@ -1,3 +1,16 @@
+2.060008 - 2023-03-08
+
+  [ENHANCEMENTS]
+
+  * #921 add IPs on Multiple Devices report
+  * #952 support user-supplied net-snmp options in SNMP Transport (net_snmp_options)
+  * #977 add comment to netdisco-do renumber about device_identity
+  * #985 allow netdisco-{deploy,do,db-deploy} on custom tenant with NETDISCO_DB_TENANT
+  * #989 netdisco-deploy and netdisco-db-deploy respect ND2_DB_ROLLBACK
+  * #991 add Recently Added Devices report
+  * Report menu items are now alphabetically sorted
+  * support pseudo/offline device renumber, and autovivification from snapshot
+
 2.060007 - 2023-03-03
 
   [BUG FIXES]
