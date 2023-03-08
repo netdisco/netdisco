@@ -43,11 +43,11 @@ Can match the C<type> field as a substring.
 
 =item model
 
-Can match the C<model> field as a substring.
+Can match the C<model> field as a substring (case sensitive).
 
 =item serial
 
-Can match the C<serial> field as a substring.
+Can match the C<serial> field as a substring (case sensitive).
 
 =item class
 
@@ -86,11 +86,11 @@ sub search_by_field {
                     : ()
                 ),
                 (   $p->{model}
-                    ? ( 'me.model' => { '-ilike' => "\%$p->{model}\%" } )
+                    ? ( 'me.model' => { '-like' => "\%$p->{model}\%" } )
                     : ()
                 ),
                 (   $p->{serial}
-                    ? ( 'me.serial' => { '-ilike' => "\%$p->{serial}\%" } )
+                    ? ( 'me.serial' => { '-like' => "\%$p->{serial}\%" } )
                     : ()
                 ),
 
