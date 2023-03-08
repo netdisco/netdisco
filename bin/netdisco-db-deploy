@@ -107,10 +107,6 @@ if ($pg_ver and $pg_ver < 90600) {
     die "\n";
 }
 
-# roll everything back if we're testing
-my $txn_guard = $ENV{ND2_DB_ROLLBACK}
-  ? schema('netdisco')->storage->txn_scope_guard : undef;
-
 if (scalar @ARGV and $ARGV[0] and $ARGV[0] eq '--redeploy-all') {
     $schema->storage->dbh_do(
       sub {
@@ -138,6 +134,10 @@ try {
       if $schema->get_db_version == 1;
     $schema->storage->disconnect;
 };
+
+# roll everything back if we're testing
+my $txn_guard = $ENV{ND2_DB_ROLLBACK}
+  ? schema('netdisco')->storage->txn_scope_guard : undef;
 
 # upgrade from whatever dbix_class_schema_versions says, to $VERSION
 # except that get_db_version will be 0 at first deploy
