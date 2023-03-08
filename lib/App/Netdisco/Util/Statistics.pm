@@ -36,6 +36,10 @@ sub update_stats {
   my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
   my $postgres_ver = pretty_version($schema->storage->dbh->{pg_server_version}, 2);
 
+  # roll everything back if we're testing
+  my $txn_guard = $ENV{ND2_DB_ROLLBACK}
+    ? $schema->storage->txn_scope_guard : undef;
+
   # TODO: (when we have the capabilities table?)
   #  $stats{waps} = sql_scalar('device',['COUNT(*)'], {"model"=>"AIR%"});
 

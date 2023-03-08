@@ -176,6 +176,10 @@ sub deploy_db {
     }
   }
 
+  # roll everything back if we're testing
+  my $txn_guard = $ENV{ND2_DB_ROLLBACK}
+    ? schema('netdisco')->storage->txn_scope_guard : undef;
+
   # set up initial admin user
   my $users = schema('netdisco')->resultset('User');
   if ($users->search({-bool => 'admin'})->count == 0) {
@@ -247,6 +251,10 @@ sub deploy_oui {
       }
 
       if ((scalar keys %data) > 15_000) {
+          # roll everything back if we're testing
+          my $txn_guard = $ENV{ND2_DB_ROLLBACK}
+            ? schema('netdisco')->storage->txn_scope_guard : undef;
+
           $schema->txn_do(sub{
             $schema->resultset('Oui')->delete;
             $schema->resultset('Oui')->populate([
