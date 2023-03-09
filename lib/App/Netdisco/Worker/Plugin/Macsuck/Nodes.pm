@@ -207,7 +207,6 @@ register_worker({ phase => 'store',
     $device->ip, $archived;
 
   $device->update({last_macsuck => \$now});
-  $device->update({layers => \[q{overlay(layers placing '1' from 7 for 1)}]});
 
   my $status = $job->best_status;
   return Status->$status("Ended macsuck for $device");

@@ -10,9 +10,25 @@ use Dancer::Plugin::DBIC 'schema';
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
+  my @backends = schema('netdisco')->resultset('DeviceSkip')
+                                   ->get_distinct_col('backend');
+
+  # TODO what if DeviceSkip table is empty
+
+  my @devices = ();
+  foreach my $host (@backends) {
+      push @devices,
+      schema('netdisco')->resultset('Device')
+        ->skipped(
+          'macsuck', $host,
+          setting('workers')->{'max_deferrals'},
+          setting('workers')->{'retry_after'}
+        )
+        ->search({ 'skipped_actions.device' => undef})
+        ->get_column('ip')->all;
+  }
+
   my %queued = map {$_ => 1} jq_queued('macsuck');
-  my @devices = schema('netdisco')->resultset('Device')
-    ->has_layer('2')->get_column('ip')->all;
   my @filtered_devices = grep {!exists $queued{$_}} @devices;
 
   jq_insert([

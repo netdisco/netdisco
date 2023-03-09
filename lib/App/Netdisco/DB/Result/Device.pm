@@ -261,6 +261,38 @@ __PACKAGE__->has_many(
     'ip', { join_type => 'RIGHT' }
 );
 
+=head2 skipped_actions
+
+Returns the set of C<device_skip> entries which apply to this device. They match
+the device IP, current backend, and job action.
+
+You probably want to use the ResultSet method C<skipped> which completes this
+query with a C<backend> host, C<max_deferrals>, and C<retry_after> parameters
+(or sensible defaults).
+
+=cut
+
+__PACKAGE__->has_many( skipped_actions => 'App::Netdisco::DB::Result::DeviceSkip',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.backend" => { '=' => \'?' },
+      "$args->{foreign_alias}.device"
+        => { -ident => "$args->{self_alias}.ip" },
+      -or => [
+        "$args->{foreign_alias}.actionset"
+            => { '@>' => \"string_to_array(?,'')" },
+        -and => [
+            "$args->{foreign_alias}.deferrals"  => { '>=' => \'?' },
+            "$args->{foreign_alias}.last_defer" =>
+                { '>', \'(LOCALTIMESTAMP - ?::interval)' },
+        ],
+      ],
+    };
+  },
+  { join_type => 'LEFT OUTER' },
+);
+
 =head2 community
 
 Returns the row from the community string table, if one exists.

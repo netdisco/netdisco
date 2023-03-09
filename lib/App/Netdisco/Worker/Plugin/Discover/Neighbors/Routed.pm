@@ -6,6 +6,7 @@ use App::Netdisco::Transport::SNMP;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
+use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::JobQueue 'jq_insert';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
@@ -13,7 +14,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   return unless setting('discover_routed_neighbors');
 
   my $device = $job->device;
-  return unless $device->in_storage and $device->has_layer(3);
+  return unless $device->in_storage and ($device->has_layer(3)
+                                         or check_acl_no($device, 'force_macsuck')
+                                         or check_acl_no($device, 'ignore_layers'))) {
+
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 

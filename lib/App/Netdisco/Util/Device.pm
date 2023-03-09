@@ -230,7 +230,8 @@ the local configuration to arpnip the device.
 The configuration items C<arpnip_no> and C<arpnip_only> are checked
 against the given IP.
 
-Also checks if the device reports layer 3 capability.
+Also checks if the device reports layer 3 capability, or matches
+C<force_arpnip> or C<ignore_layers>.
 
 Returns false if the host is not permitted to arpnip the target device.
 
@@ -241,7 +242,9 @@ sub is_arpnipable {
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_arpnipable: $device has no layer 3 capability")
-    if ($device->in_storage() and not $device->has_layer(3));
+    if ($device->in_storage() and not ($device->has_layer(3)
+                                       or check_acl_no($device, 'force_arpnip')
+                                       or check_acl_no($device, 'ignore_layers')));
 
   return _bail_msg("is_arpnipable: $device matched arpnip_no")
     if check_acl_no($device, 'arpnip_no');
@@ -283,7 +286,8 @@ the local configuration to macsuck the device.
 The configuration items C<macsuck_no> and C<macsuck_only> are checked
 against the given IP.
 
-Also checks if the device reports layer 2 capability.
+Also checks if the device reports layer 2 capability, or matches
+C<force_macsuck> or C<ignore_layers>.
 
 Returns false if the host is not permitted to macsuck the target device.
 
@@ -294,7 +298,9 @@ sub is_macsuckable {
   my $device = get_device($ip) or return 0;
 
   return _bail_msg("is_macsuckable: $device has no layer 2 capability")
-    if ($device->in_storage() and not $device->has_layer(2));
+    if ($device->in_storage() and not ($device->has_layer(2)
+                                       or check_acl_no($device, 'force_macsuck')
+                                       or check_acl_no($device, 'ignore_layers')));
 
   return _bail_msg("is_macsuckable: $device matched macsuck_no")
     if check_acl_no($device, 'macsuck_no');

@@ -90,19 +90,6 @@ sub jq_warm_thrusters {
       actionset => $actionset{$_},
     }, { key => 'primary' }) for keys %actionset;
   });
-
-  # fix up the pseudo devices which need layer 3
-  # TODO remove this after next release
-  schema(vars->{'tenant'})->txn_do(sub {
-    my @hosts = grep { defined }
-                map  { schema(vars->{'tenant'})->resultset('Device')->search_for_device($_->{only}) }
-                grep { exists $_->{only} and ref '' eq ref $_->{only} }
-                grep { exists $_->{driver} and $_->{driver} eq 'cli' }
-                    @{ setting('device_auth') };
-
-    $_->update({ layers => \[q{overlay(layers placing '1' from 6 for 1)}] })
-      for @hosts;
-  });
 }
 
 sub jq_getsome {
@@ -166,7 +153,7 @@ sub jq_getsome {
         },{
           job => $job->id,
           -exists => $jobs->search({
-	    job => { '>' => $job->id },
+            job => { '>' => $job->id },
             status => { -like => 'queued-%' },
             started => \[q/> (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
             %job_properties,
