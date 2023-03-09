@@ -67,7 +67,7 @@
       <td>
         [% FOREACH s IN serials %]
         <a href="[% uri_for('/report/moduleinventory') | none %]?class=chassis&matchall=on&serial=[% s | uri %]">[% s | html_entity %]</a>
-        [% ' (master)' IF s == d.serial AND serials.size > 1 %]<br />
+        [% ' (primary)' IF s == d.serial AND serials.size > 1 %]<br />
         [% END %]
       </td>
     </tr>
