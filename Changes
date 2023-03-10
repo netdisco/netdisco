@@ -1,8 +1,12 @@
-2.060009 - 2023-03-10
+2.060010 - 2023-03-10
+
+  [ENHANCEMENTS]
+
+  * #974 show all chassis serials in device details
 
   [BUG FIXES]
 
-  * fix error with unused reports menu categories
+  * fix bug with ILIKE/LIKE in Module search on UTF8 encoded field
 
 2.060008 - 2023-03-08
 
