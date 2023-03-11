@@ -13,32 +13,6 @@ require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
 
-=head2 skipped( $backend?, $action?, $max_deferrals?, $retry_after? )
-
-Returns a correlated subquery for the set of C<device_skip> entries that apply
-to some devices. They match the device IP, current backend, and job action.
-
-Pass the C<action> (or all actions will be matched), C<backend> FQDN (or the
-current host will be used as a default), the C<max_deferrals> (option disabled
-if 0/undef value is passed), and C<retry_after> when devices will be retried
-once (disabled if 0/undef passed).
-
-=cut
-
-sub skipped {
-  my ($rs, $action, $backend, $max_deferrals, $retry) = @_;
-  $action  ||= 'ANY';
-  $backend ||= 'fqdn-undefined';
-  $max_deferrals ||= (2**30); # not really 'disabled'
-  $retry ||= '100 years'; # not really 'disabled'
-
-  return $rs->search(undef,{
-    join => 'skipped_actions',
-    # NOTE: bind param list order is significant
-    bind => [[action => $action], [deferrals => $max_deferrals], [last_defer => $retry], [backend => $backend]],
-  });
-}
-
 =head2 device_ips_with_address_or_name( $address_or_name )
 
 Returns a correlated subquery for the set of C<device_ip> entries for each

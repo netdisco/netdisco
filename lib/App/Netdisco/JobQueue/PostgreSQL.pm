@@ -72,6 +72,8 @@ sub jq_warm_thrusters {
       backend => setting('workers')->{'BACKEND'},
     }, { for => 'update' }, )->update({ actionset => [] });
 
+    # on backend restart, allow one retry of all devices which have
+    # reached max retry (max_deferrals)
     my $deferrals = setting('workers')->{'max_deferrals'} - 1;
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
@@ -80,7 +82,7 @@ sub jq_warm_thrusters {
 
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
-      actionset => { -value => [] },
+      actionset => { -value => [] }, # special syntax for matching empty ARRAY
       deferrals => 0,
     })->delete;
 
@@ -89,6 +91,12 @@ sub jq_warm_thrusters {
       device  => $_,
       actionset => $actionset{$_},
     }, { key => 'primary' }) for keys %actionset;
+
+    # add one faux record to allow *walk actions to see there is a backend running
+    $rs->update_or_create({
+      backend => setting('workers')->{'BACKEND'},
+      device  => '255.255.255.255',
+    }, { key => 'primary' });
   });
 }
 
