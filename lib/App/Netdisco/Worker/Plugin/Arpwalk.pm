@@ -4,16 +4,18 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-use App::Netdisco::JobQueue qw/jq_queued jq_insert/;
+use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
-  my %queued = map {$_ => 1} jq_queued('arpnip');
-  my @devices = schema('netdisco')->resultset('Device')
-    ->has_layer('3')->get_column('ip')->all;
-  my @filtered_devices = grep {!exists $queued{$_}} @devices;
+  my @walk = schema(vars->{'tenant'})->resultset('Virtual::WalkJobs')
+    ->search(undef,{ bind => [
+      'arpnip', 'arpnip',
+      setting('workers')->{'max_deferrals'},
+      setting('workers')->{'retry_after'},
+    ]})->get_column('ip')->all;
 
   jq_insert([
     map {{
@@ -21,7 +23,7 @@ register_worker({ phase => 'main' }, sub {
       action => 'arpnip',
       username => $job->username,
       userip => $job->userip,
-    }} (@filtered_devices)
+    }} (@walk)
   ]);
 
   return Status->done('Queued arpnip job for all devices');
