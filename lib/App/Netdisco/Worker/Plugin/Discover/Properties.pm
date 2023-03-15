@@ -310,12 +310,14 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   # #981 must do this after filtering %deviceports to avoid weird data
-  UPTIME: foreach my $entry (keys %$interfaces) {
+  UPTIME: foreach my $entry (sort keys %$interfaces) {
       my $port = $interfaces->{$entry};
       next unless exists $deviceports{$port};
       my $lc = $i_lastchange->{$entry} || 0;
 
-      if (not $dev_uptime_wrapped and $lc > $dev_uptime) {
+      # allow three minutes skew during boot, in case lc is larger than uptime
+      # because of different counters starting at different times
+      if (not $dev_uptime_wrapped and $lc > ($dev_uptime + 18000)) {
           debug sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
             $device->ip, $port;
           $device->uptime( $dev_uptime + 2**32 );
