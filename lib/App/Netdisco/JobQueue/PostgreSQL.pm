@@ -96,6 +96,7 @@ sub jq_warm_thrusters {
     $rs->update_or_create({
       backend => setting('workers')->{'BACKEND'},
       device  => '255.255.255.255',
+      last_defer => \'LOCALTIMESTAMP',
     }, { key => 'primary' });
   });
 }
