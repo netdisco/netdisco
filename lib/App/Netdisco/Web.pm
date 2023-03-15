@@ -143,6 +143,7 @@ push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
 
 # sort the reports which have been loaded, by their label
 foreach my $cat (@{ setting('_report_order') }) {
+    setting('_reports_menu')->{ $cat } ||= [];
     setting('_reports_menu')->{ $cat }
       = [ sort { setting('_reports')->{$a}->{'label'}
                  cmp
