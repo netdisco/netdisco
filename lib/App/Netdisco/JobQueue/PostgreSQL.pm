@@ -72,6 +72,8 @@ sub jq_warm_thrusters {
       backend => setting('workers')->{'BACKEND'},
     }, { for => 'update' }, )->update({ actionset => [] });
 
+    # on backend restart, allow one retry of all devices which have
+    # reached max retry (max_deferrals)
     my $deferrals = setting('workers')->{'max_deferrals'} - 1;
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
@@ -80,7 +82,7 @@ sub jq_warm_thrusters {
 
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
-      actionset => { -value => [] },
+      actionset => { -value => [] }, # special syntax for matching empty ARRAY
       deferrals => 0,
     })->delete;
 
@@ -89,19 +91,13 @@ sub jq_warm_thrusters {
       device  => $_,
       actionset => $actionset{$_},
     }, { key => 'primary' }) for keys %actionset;
-  });
 
-  # fix up the pseudo devices which need layer 3
-  # TODO remove this after next release
-  schema(vars->{'tenant'})->txn_do(sub {
-    my @hosts = grep { defined }
-                map  { schema(vars->{'tenant'})->resultset('Device')->search_for_device($_->{only}) }
-                grep { exists $_->{only} and ref '' eq ref $_->{only} }
-                grep { exists $_->{driver} and $_->{driver} eq 'cli' }
-                    @{ setting('device_auth') };
-
-    $_->update({ layers => \[q{overlay(layers placing '1' from 6 for 1)}] })
-      for @hosts;
+    # add one faux record to allow *walk actions to see there is a backend running
+    $rs->update_or_create({
+      backend => setting('workers')->{'BACKEND'},
+      device  => '255.255.255.255',
+      last_defer => \'LOCALTIMESTAMP',
+    }, { key => 'primary' });
   });
 }
 
@@ -166,7 +162,7 @@ sub jq_getsome {
         },{
           job => $job->id,
           -exists => $jobs->search({
-	    job => { '>' => $job->id },
+            job => { '>' => $job->id },
             status => { -like => 'queued-%' },
             started => \[q/> (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
             %job_properties,

@@ -351,6 +351,8 @@ discover_waps: true
 discover_phones: false
 discover_routed_neighbors: true
 discover_min_age: 0
+ignore_layers: []
+force_macsuck: []
 macsuck_no: []
 macsuck_only: []
 macsuck_all_vlans: false
@@ -373,6 +375,7 @@ macsuck_min_age: 0
 snmpforce_v1: []
 snmpforce_v2: []
 snmpforce_v3: []
+force_arpnip: []
 arpnip_no: []
 arpnip_only: []
 arpnip_min_age: 0
