@@ -16,7 +16,7 @@
             <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = 1;</script>
             [% INCLUDE "sidebar/report/${report.tag}.tt" %]
             [% CATCH %]
-            <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = 0;</script>
+            <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = [% report.rconfig.bind_params.size ? '1' : '0' %];</script>
             [% INCLUDE "sidebar/report/generic_report.tt" %]
             [% END %]
           </form>
@@ -49,5 +49,16 @@
 </div>
 
 <script type="text/javascript">
+[% IF report.rconfig.bind_params.size AND NOT report.rconfig.show_sidebar %]
+$('.nd_sidebar').toggle(0);
+$('#nd_sidebar-toggle-img-out').toggle();
+$('.content').css('margin-right', '10px');
+$('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
+$('div.content > div.tab-content table.nd_floatinghead').floatThead({
+  scrollingTop: 40
+  ,useAbsolutePositioning: false
+});
+sidebar_hidden = 1;
+[% END %]
 [%+ INCLUDE 'js/report.js' -%]
 </script>

@@ -1,4 +1,19 @@
+[% IF report.rconfig.bind_params.size %]
+  <p class="nd_sidebar-title"><em>Report Options</em></p>
 
-[% FOREACH k IN report.rconfig.bind_params %]
-            <input name="[% k %]" value="[% params.$k | html_entity %]" type="hidden"/>
+  [% FOREACH p IN report.rconfig.bind_params %]
+  <div class="clearfix nd_netmap-sidebar">
+    <em class="muted nd_sidebar-label">[% p.ucfirst | html_entity %]</em><br/>
+    <input id="nd_port-query" placeholder=""
+      name="[% p | html_entity %]" value="[% params.$p | html_entity %]" type="text"
+      rel="tooltip" data-placement="left" data-offset="5" data-title="[% p.ucfirst | html_entity %]"/>
+  </div>
+  [% END %]
+
+  <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
+   <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search</button>
+[% ELSE %]
+  [% FOREACH k IN report.rconfig.bind_params %]
+              <input name="[% k %]" value="[% params.$k | html_entity %]" type="hidden"/>
+  [% END %]
 [% END %]
