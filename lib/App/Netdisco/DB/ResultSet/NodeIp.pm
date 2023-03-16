@@ -8,7 +8,7 @@ __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::ExplicitLocking
 /);
 
-my $search_attr = {
+my $order_by_time_last_and_join_oui = {
     order_by => {'-desc' => 'time_last'},
     '+columns' => [
       'oui.company',
@@ -38,7 +38,7 @@ sub with_times {
   my ($rs, $cond, $attrs) = @_;
 
   return $rs
-    ->search_rs({}, $search_attr)
+    ->search_rs({}, $order_by_time_last_and_join_oui)
     ->search($cond, $attrs);
 }
 
@@ -93,7 +93,7 @@ sub search_by_ip {
     $cond->{ip} = { $op => $ip };
 
     return $rs
-      ->search_rs({}, $search_attr)
+      ->search_rs({}, $order_by_time_last_and_join_oui)
       ->search($cond, $attrs);
 }
 
@@ -159,7 +159,7 @@ sub search_by_dns {
     ];
 
     return $rs
-      ->search_rs({}, $search_attr)
+      ->search_rs({}, $order_by_time_last_and_join_oui)
       ->search($cond, $attrs);
 }
 
@@ -203,7 +203,7 @@ sub search_by_mac {
       if ref {} ne ref $cond or !exists $cond->{mac};
 
     return $rs
-      ->search_rs({}, $search_attr)
+      ->search_rs({}, $order_by_time_last_and_join_oui)
       ->search($cond, $attrs);
 }
 
