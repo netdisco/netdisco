@@ -122,8 +122,9 @@ to search for. The value may optionally include SQL wildcard characters.
 
 =item *
 
-The C<cond> parameter may optionally have a C<suffix> parameter which is a
-regular expression of domain names - one of which must match the results.
+If C<dns> is a plain string, then the C<cond> parameter may optionally have a
+C<suffix> parameter which is a regular expression of domain names - one of
+which must match the results.
 
 =item *
 
@@ -150,14 +151,37 @@ sub search_by_dns {
     die "dns field required for search_by_dns\n"
       if ref {} ne ref $cond or !exists $cond->{dns};
 
-    (my $suffix = (delete $cond->{suffix} || ''))
+    my $dns_field = delete $cond->{dns};
+
+    (my $suffix = ($cond->{suffix} || ''))
       =~ s|\Q(?^\E[-xismu]*|(?|g;
 
-    $cond->{dns} = [ -and =>
-      { '-ilike' => delete $cond->{dns} },
-      { '~*' => "***:$suffix" },
-    ];
+    if (q{} eq ref $dns_field and exists $cond->{suffix}) {
+        (my $stripped_dns_field = $dns_field) =~ s/\.\%$//;
+        (my $fqdn_field = $stripped_dns_field) .= '%';
+        $stripped_dns_field =~ s/$cond->{suffix}$// if $cond->{suffix};
+        $stripped_dns_field .= '.%';
 
+        $cond->{dns} = [ -or =>
+          [ -and =>
+              { '-ilike' => $stripped_dns_field },
+              { '~*' => "***:$suffix" },
+          ],
+          [ -and =>
+              { '-ilike' => $dns_field },
+              { '~*' => "***:$suffix" },
+          ],
+          { '-ilike' => $fqdn_field },
+        ];
+    }
+    elsif (q{} ne ref $dns_field) {
+        $cond->{dns} = $dns_field;
+    }
+    else {
+        $cond->{dns} = { '-ilike' => $dns_field };
+    }
+
+    delete $cond->{suffix};
     return $rs
       ->search_rs({}, $order_by_time_last_and_join_oui)
       ->search($cond, $attrs);

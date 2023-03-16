@@ -10,6 +10,7 @@ use NetAddr::MAC ();
 use POSIX qw/strftime/;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::DNS 'ipv4_from_hostname';
 use App::Netdisco::Util::Web 'sql_match';
 
 register_search_tab({
@@ -208,42 +209,57 @@ get '/ajax/content/search/node' => require_login sub {
         }
     }
 
+    my $have_rows = 0;
     my $set = schema(vars->{'tenant'})->resultset('NodeNbt')
         ->search_by_name({nbname => $likeval, @active, @times});
+    ++$have_rows if $set->has_rows;
 
-    unless ( $set->has_rows ) {
+    unless ( $have_rows ) {
         if ($node =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i
             and my $ip = NetAddr::IP::Lite->new($node)) {
 
             # search_by_ip() will extract cidr notation if necessary
             $set = schema(vars->{'tenant'})->resultset('NodeIp')
               ->search_by_ip({ip => $ip, @active, @times});
+            ++$have_rows if $set->has_rows;
         }
         else {
             $set = schema(vars->{'tenant'})->resultset('NodeIp')
               ->search_by_dns({
                   ($using_wildcards ? (dns => $likeval) :
-                  (dns => "${likeval}.\%",
-                   suffix => setting('domain_suffix'))),
+                                      (dns => "${likeval}.\%", suffix => setting('domain_suffix'))),
                   @active,
                   @times,
                 });
+            ++$have_rows if $set->has_rows;
+
+            # try DNS lookup as fallback
+            if (not $using_wildcards and not $have_rows) {
+                my $resolved_ip = ipv4_from_hostname($node);
+
+                if ($resolved_ip) {
+                    $set = schema(vars->{'tenant'})->resultset('NodeIp')
+                      ->search_by_ip({ip => $resolved_ip, @active, @times});
+                    ++$have_rows if $set->has_rows;
+                }
+            }
 
             # if the user selects Vendor search opt, then
             # we'll try the OUI company name as a fallback
 
-            if (param('show_vendor') and not $set->has_rows) {
+            if (param('show_vendor') and not $have_rows) {
                 $set = schema(vars->{'tenant'})->resultset('NodeIp')
                   ->with_times
                   ->search(
                     {'oui.company' => { -ilike => ''.sql_match($node)}, @times},
                     {'prefetch' => 'oui'},
                   );
+                ++$have_rows if $set->has_rows;
             }
         }
     }
 
-    return unless $set and $set->has_rows;
+    return unless $set and ($have_rows or $set->has_rows);
     $set = $set->search_rs({}, { order_by => 'me.mac' });
 
     return template 'ajax/search/node_by_ip.tt', {
