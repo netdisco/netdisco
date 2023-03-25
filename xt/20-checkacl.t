@@ -125,15 +125,78 @@ my $dip = App::Netdisco::DB->resultset('DeviceIp')->new_result({
 });
 
 # device properties
-ok(check_acl($dip, [$conf[23]]), 'instance anon property deviceport:alias');
-ok(check_acl($dip, ['ip:'.$conf[2]]), 'instance named property deviceport:ip');
-ok(check_acl($dip, ['!ip:'. $conf[23]]), 'negated instance named property deviceport:ip');
-is(check_acl($dip, ['port:'.$conf[2]]), 0, 'failed instance named property deviceport:ip');
-ok(check_acl($dip, ['port:.*GigabitEthernet.*']), 'instance named property regexp deviceport:port');
+ok(check_acl($dip, [$conf[23]]), '1obj instance anon property deviceport:alias');
+ok(check_acl($dip, ['ip:'.$conf[2]]), '1obj instance named property deviceport:ip');
+ok(check_acl($dip, ['!ip:'. $conf[23]]), '1obj negated instance named property deviceport:ip');
+is(check_acl($dip, ['port:'.$conf[2]]), 0, '1obj failed instance named property deviceport:ip');
+ok(check_acl($dip, ['port:.*GigabitEthernet.*']), '1obj instance named property regexp deviceport:port');
 
-ok(check_acl($dip, ['type:l3ipvlan']), 'related item field match');
-ok(check_acl($dip, ['remote_ip:']), 'related item field empty');
-ok(check_acl($dip, ['!type:']), 'related item field not empty');
-is(check_acl($dip, ['foobar:xyz']), 0, 'unknown property');
+ok(check_acl($dip, ['type:l3ipvlan']), '1obj related item field match');
+ok(check_acl($dip, ['remote_ip:']), '1obj related item field empty');
+ok(check_acl($dip, ['!type:']), '1obj related item field not empty');
+is(check_acl($dip, ['foobar:xyz']), 0, '1obj unknown property');
+
+my $dip2 = App::Netdisco::DB->resultset('DeviceIp')->new_result({
+   ip   => '127.0.0.1',
+   port => 'TenGigabitEthernet1/10',
+   alias => '192.0.2.1',
+});
+
+my $dp = App::Netdisco::DB->resultset('DevicePort')->new_result({
+    ip   => '127.0.0.1',
+    port => 'TenGigabitEthernet1/10',
+    type => 'l3ipvlan',
+});
+
+# device properties
+ok(check_acl([$dip2, $dp], [$conf[23]]), '2obj instance anon property deviceport:alias');
+ok(check_acl([$dip2, $dp], ['ip:'.$conf[2]]), '2obj instance named property deviceport:ip');
+ok(check_acl([$dip2, $dp], ['!ip:'. $conf[23]]), '2obj negated instance named property deviceport:ip');
+is(check_acl([$dip2, $dp], ['port:'.$conf[2]]), 0, '2obj failed instance named property deviceport:ip');
+ok(check_acl([$dip2, $dp], ['port:.*GigabitEthernet.*']), '2obj instance named property regexp deviceport:port');
+
+ok(check_acl([$dip2, $dp], ['type:l3ipvlan']), '2obj related item field match');
+ok(check_acl([$dip2, $dp], ['remote_ip:']), '2obj related item field empty');
+ok(check_acl([$dip2, $dp], ['!type:']), '2obj related item field not empty');
+is(check_acl([$dip2, $dp], ['foobar:xyz']), 0, '2obj unknown property');
+
+my $dip2c = { $dip2->get_inflated_columns };
+my $dpc = { $dp->get_inflated_columns };
+
+# device properties
+ok(check_acl([$dip2c, $dpc], [$conf[23]]), 'hh instance anon property deviceport:alias');
+ok(check_acl([$dip2c, $dpc], ['ip:'.$conf[2]]), 'hh instance named property deviceport:ip');
+ok(check_acl([$dip2c, $dpc], ['!ip:'. $conf[23]]), 'hh negated instance named property deviceport:ip');
+is(check_acl([$dip2c, $dpc], ['port:'.$conf[2]]), 0, 'hh failed instance named property deviceport:ip');
+ok(check_acl([$dip2c, $dpc], ['port:.*GigabitEthernet.*']), 'hh instance named property regexp deviceport:port');
+
+ok(check_acl([$dip2c, $dpc], ['type:l3ipvlan']), 'hh related item field match');
+ok(check_acl([$dip2c, $dpc], ['remote_ip:']), 'hh related item field empty');
+ok(check_acl([$dip2c, $dpc], ['!type:']), 'hh related item field not empty');
+is(check_acl([$dip2c, $dpc], ['foobar:xyz']), 0, 'hh unknown property');
+
+# device properties
+ok(check_acl([$dip2, $dpc], [$conf[23]]), 'oh instance anon property deviceport:alias');
+ok(check_acl([$dip2, $dpc], ['ip:'.$conf[2]]), 'oh instance named property deviceport:ip');
+ok(check_acl([$dip2, $dpc], ['!ip:'. $conf[23]]), 'oh negated instance named property deviceport:ip');
+is(check_acl([$dip2, $dpc], ['port:'.$conf[2]]), 0, 'oh failed instance named property deviceport:ip');
+ok(check_acl([$dip2, $dpc], ['port:.*GigabitEthernet.*']), 'oh instance named property regexp deviceport:port');
+
+ok(check_acl([$dip2, $dpc], ['type:l3ipvlan']), 'oh related item field match');
+ok(check_acl([$dip2, $dpc], ['remote_ip:']), 'oh related item field empty');
+ok(check_acl([$dip2, $dpc], ['!type:']), 'oh related item field not empty');
+is(check_acl([$dip2, $dpc], ['foobar:xyz']), 0, 'oh unknown property');
+
+# device properties
+ok(check_acl([$dip2c, $dp], [$conf[23]]), 'ho instance anon property deviceport:alias');
+ok(check_acl([$dip2c, $dp], ['ip:'.$conf[2]]), 'ho instance named property deviceport:ip');
+ok(check_acl([$dip2c, $dp], ['!ip:'. $conf[23]]), 'ho negated instance named property deviceport:ip');
+is(check_acl([$dip2c, $dp], ['port:'.$conf[2]]), 0, 'ho failed instance named property deviceport:ip');
+ok(check_acl([$dip2c, $dp], ['port:.*GigabitEthernet.*']), 'ho instance named property regexp deviceport:port');
+
+ok(check_acl([$dip2c, $dp], ['type:l3ipvlan']), 'ho related item field match');
+ok(check_acl([$dip2c, $dp], ['remote_ip:']), 'ho related item field empty');
+ok(check_acl([$dip2c, $dp], ['!type:']), 'ho related item field not empty');
+is(check_acl([$dip2c, $dp], ['foobar:xyz']), 0, 'ho unknown property');
 
 done_testing;

@@ -26,11 +26,12 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl_no( $ip | $instance, $setting_name | $acl_entry | \@acl )
+=head2 check_acl_no( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
-Given an IP address or object instance, returns true if the configuration
-setting C<$setting_name> matches, else returns false. If the content of the
-setting is undefined or empty, then C<check_acl_no> also returns false.
+Given an IP address, object instance, or hash, returns true if the
+configuration setting C<$setting_name> matches, else returns false. If the
+content of the setting is undefined or empty, then C<check_acl_no> also
+returns false.
 
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
@@ -48,11 +49,20 @@ sub check_acl_no {
   return check_acl($thing, $config);
 }
 
-=head2 check_acl_only( $ip | $instance, $setting_name | $acl_entry | \@acl )
+=head2 acl_matches( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
-Given an IP address or object instance, returns true if the configuration
-setting C<$setting_name> matches, else returns false. If the content of the
-setting is undefined or empty, then C<check_acl_only> also returns true.
+This is an alias for L<check_acl_no>.
+
+=cut
+
+sub acl_matches { goto &check_acl_no }
+
+=head2 check_acl_only( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
+
+Given an IP address, object instance, or hash, returns true if the
+configuration setting C<$setting_name> matches, else returns false. If the
+content of the setting is undefined or empty, then C<check_acl_only> also
+returns true.
 
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
@@ -73,14 +83,19 @@ sub check_acl_only {
   return check_acl($thing, $config);
 }
 
-=head2 check_acl( $ip | $instance, $acl_entry | \@acl )
+=head2 check_acl( $ip | $object | \%hash | \@item_list, $acl_entry | \@acl )
 
-Given an IP address or object instance, compares it to the items in C<< \@acl
->> then returns true or false. You can control whether any item must match or
-all must match, and items can be negated to invert the match logic.
+Given an IP address, object instance, or hash, compares it to the items in
+C<< \@acl >> then returns true or false. You can control whether any item must
+match or all must match, and items can be negated to invert the match logic.
 
-Accepts instances of classes representing Netdisco Devices, Netdisco Device
-IPs, and L<NetAddr::IP> family objects.
+Also accepts an array reference of multiple IP addresses, object instances,
+and hashes, and will test against each in turn, for each ACL rule.
+
+The slots C<alias>, C<ip>, C<switch>, and C<addr> are looked for in the
+instance or hash and used to compare a bare IP address (so it works with most
+Netdisco database classes, and the L<NetAddr::IP> class). Any instance or hash
+slot can be used as an ACL named property.
 
 There are several options for what C<< \@acl >> may contain. See
 L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
@@ -89,20 +104,31 @@ for the details.
 =cut
 
 sub check_acl {
-  my ($thing, $config) = @_;
-  return 0 unless defined $thing and defined $config;
+  my ($things, $config) = @_;
+  return 0 unless defined $things and defined $config;
+  return 0 if ref [] eq ref $things and not scalar @$things;
+  $things = [$things] if ref [] ne ref $things;
 
-  my $real_ip = $thing;
-  if (blessed $thing) {
-    $real_ip = (
-      $thing->can('alias') ? $thing->alias : (
-      $thing->can('ip')    ? $thing->ip    : (
-      $thing->can('addr')  ? $thing->addr  : $thing )));
+  my $real_ip = ''; # valid to be empty
+  ITEM: foreach my $item (@$things) {
+      foreach my $slot (qw/alias ip switch addr/) {
+          if (blessed $item) {
+              $real_ip = $item->$slot if $item->can($slot)
+                                         and eval { $item->$slot };
+          }
+          elsif (ref {} eq ref $item) {
+              $real_ip = $item->{$slot} if exists $item->{$slot}
+                                           and $item->{$slot};
+          }
+          last ITEM if $real_ip;
+      }
   }
-  return 0 if blessed $real_ip; # class we do not understand
-  $real_ip ||= ''; # valid to be empty
+  ITEM: foreach my $item (@$things) {
+      last ITEM if $real_ip;
+      $real_ip = $item if (ref $item eq q{}) and $item;
+  }
 
-  $config  = [$config] if ref q{} eq ref $config;
+  $config  = [$config] if ref $config eq q{};
   if (ref [] ne ref $config) {
     error "error: acl is not a single item or list (cannot compare to '$real_ip')";
     return 0;
@@ -118,116 +144,132 @@ sub check_acl {
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
   my $qref = ref qr//;
 
-  INLIST: foreach (@$config) {
-      my $item = $_; # must copy so that we can modify safely
-      next INLIST if !defined $item or $item eq 'op:and';
+  RULE: foreach (@$config) {
+      my $rule = $_; # must copy so that we can modify safely
+      next RULE if !defined $rule or $rule eq 'op:and';
 
-      if ($qref eq ref $item) {
+      if ($qref eq ref $rule) {
           # if no IP addr, cannot match its dns
-          next INLIST unless $addr;
+          next RULE unless $addr;
 
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
-          if ($name =~ $item) {
+          if ($name =~ $rule) {
             return 1 if not $all;
           }
           else {
             return 0 if $all;
           }
-          next INLIST;
+          next RULE;
       }
 
-      my $neg = ($item =~ s/^!//);
+      my $neg = ($rule =~ s/^!//);
 
-      if ($item =~ m/^group:(.+)$/) {
+      if ($rule =~ m/^group:(.+)$/) {
           my $group = $1;
           setting('host_groups')->{$group} ||= [];
 
-          if ($neg xor check_acl($thing, setting('host_groups')->{$group})) {
+          if ($neg xor check_acl($things, setting('host_groups')->{$group})) {
             return 1 if not $all;
           }
           else {
             return 0 if $all;
           }
-          next INLIST;
+          next RULE;
       }
 
-      if ($item =~ m/^([^:]+):([^:]*)$/) {
+      if ($rule =~ m/^([^:]+):([^:]*)$/) {
           my $prop  = $1;
           my $match = $2 || '';
 
-          # if not an object, we can't do much with properties
-          next INLIST unless blessed $thing;
-
           # prop:val
-          if ($neg xor ($thing->can($prop) and
-                          defined eval { $thing->$prop } and
-                          ref $thing->$prop eq q{}
-                          and $thing->$prop =~ m/^$match$/) ) {
-            return 1 if not $all;
+          ITEM: foreach my $item (@$things) {
+              if (blessed $item) {
+                  if ($neg xor ($item->can($prop) and
+                                  defined eval { $item->$prop } and
+                                  ref $item->$prop eq q{}
+                                  and $item->$prop =~ m/^$match$/) ) {
+                    return 1 if not $all;
+                    last ITEM;
+                  }
+                  # empty or missing property
+                  elsif ($neg xor ($match eq q{} and
+                                     (!defined eval { $item->$prop } or $item->$prop eq q{})) ) {
+                    return 1 if not $all;
+                    last ITEM;
+                  }
+              }
+              elsif (ref {} eq ref $item) {
+                  if ($neg xor (exists $item->{$prop} and
+                                  defined $item->{$prop} and
+                                  ref $item->{$prop} eq q{}
+                                  and $item->{$prop} =~ m/^$match$/) ) {
+                    return 1 if not $all;
+                    last ITEM;
+                  }
+                  # empty or missing property
+                  elsif ($neg xor ($match eq q{} and
+                                     (!defined $item->{$prop} or $item->{$prop} eq q{})) ) {
+                    return 1 if not $all;
+                    last ITEM;
+                  }
+              }
           }
-          # empty or missing property
-          elsif ($neg xor ($match eq q{} and
-                             (!defined eval { $thing->$prop } or $thing->$prop eq q{})) ) {
-            return 1 if not $all;
-          }
-          else {
-            return 0 if $all;
-          }
-          next INLIST;
+          return 0 if $all;
+          next RULE;
       }
 
-      if ($item =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
+      if ($rule =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
           my $last  = $2;
 
           # if no IP addr, cannot match IP range
-          next INLIST unless $addr;
+          next RULE unless $addr;
 
-          if ($item =~ m/:/) {
-              next INLIST if $addr->bits != 128 and not $all;
+          if ($rule =~ m/:/) {
+              next RULE if $addr->bits != 128 and not $all;
 
               $first = hex $first;
               $last  = hex $last;
 
-              (my $header = $item) =~ s/:[^:]+$/:/;
+              (my $header = $rule) =~ s/:[^:]+$/:/;
               foreach my $part ($first .. $last) {
                   my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
                     or next;
                   if ($neg xor ($ip == $addr)) {
                     return 1 if not $all;
-                    next INLIST;
+                    next RULE;
                   }
               }
               return 0 if (not $neg and $all);
               return 1 if ($neg and not $all);
           }
           else {
-              next INLIST if $addr->bits != 32 and not $all;
+              next RULE if $addr->bits != 32 and not $all;
 
-              (my $header = $item) =~ s/\.[^.]+$/./;
+              (my $header = $rule) =~ s/\.[^.]+$/./;
               foreach my $part ($first .. $last) {
                   my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
                     or next;
                   if ($neg xor ($ip == $addr)) {
                     return 1 if not $all;
-                    next INLIST;
+                    next RULE;
                   }
               }
               return 0 if (not $neg and $all);
               return 1 if ($neg and not $all);
           }
-          next INLIST;
+          next RULE;
       }
 
       # could be something in error, and IP/host is only option left
-      next INLIST if ref $item;
+      next RULE if ref $rule;
 
       # if no IP addr, cannot match IP prefix
-      next INLIST unless $addr;
+      next RULE unless $addr;
 
-      my $ip = NetAddr::IP::Lite->new($item)
-        or next INLIST;
-      next INLIST if $ip->bits != $addr->bits and not $all;
+      my $ip = NetAddr::IP::Lite->new($rule)
+        or next RULE;
+      next RULE if $ip->bits != $addr->bits and not $all;
 
       if ($neg xor ($ip->contains($addr))) {
         return 1 if not $all;
@@ -235,7 +277,7 @@ sub check_acl {
       else {
         return 0 if $all;
       }
-      next INLIST;
+      next RULE;
   }
 
   return ($all ? 1 : 0);
