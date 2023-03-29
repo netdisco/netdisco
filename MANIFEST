@@ -85,6 +85,7 @@ lib/App/Netdisco/DB/Result/Virtual/TastyJobs.pm
 lib/App/Netdisco/DB/Result/Virtual/UnDirEdgesAgg.pm
 lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm
 lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
+lib/App/Netdisco/DB/Result/Virtual/WalkJobs.pm
 lib/App/Netdisco/DB/ResultSet.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm

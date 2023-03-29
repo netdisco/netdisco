@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.060010'
+    version: '2.061000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -167,6 +167,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm
   App::Netdisco::DB::Result::Virtual::UserRole:
     file: lib/App/Netdisco/DB/Result/Virtual/UserRole.pm
+  App::Netdisco::DB::Result::Virtual::WalkJobs:
+    file: lib/App/Netdisco/DB/Result/Virtual/WalkJobs.pm
   App::Netdisco::DB::ResultSet:
     file: lib/App/Netdisco/DB/ResultSet.pm
   App::Netdisco::DB::ResultSet::Admin:
@@ -637,5 +639,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.060010'
+version: '2.061000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
