@@ -120,7 +120,7 @@ register_worker({ phase => 'main', driver => 'snmp',
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
-  my $interfaces = $snmp->interfaces;
+  my $interfaces = $snmp->interfaces || {};
   my $reverse_interfaces = { reverse %{ $interfaces } }; # might squash but prob not
   my $i_up       = $snmp->i_up;
   my $i_up_admin = $snmp->i_up_admin;
