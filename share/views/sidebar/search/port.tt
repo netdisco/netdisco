@@ -16,7 +16,16 @@
                   name="uplink"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.uplink %]/>
               </label>
               <label class="nd_checkboxlabel" for="port_uplink">
-                <span class="nd_searchcheckbox uneditable-input">Uplinks</span>
+                <span class="nd_searchcheckbox uneditable-input">Include Uplinks</span>
+              </label>
+            </div>
+            <div class="clearfix input-prepend">
+              <label class="add-on">
+                <input type="checkbox" id="port_descr"
+                  name="descr"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.descr %]/>
+              </label>
+              <label class="nd_checkboxlabel" for="port_descr">
+                <span class="nd_searchcheckbox uneditable-input">Search Description</span>
               </label>
             </div>
             <div class="clearfix input-prepend">

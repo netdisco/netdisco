@@ -17,7 +17,7 @@ register_search_tab({
     api_endpoint => 1,
     api_parameters => [
       q => {
-        description => 'Port name or VLAN or MAC address',
+        description => 'Port name, VLAN, or MAC address',
         required => 1,
       },
       partial => {
@@ -27,6 +27,11 @@ register_search_tab({
       },
       uplink => {
         description => 'Include uplinks in results',
+        type => 'boolean',
+        default => 'false',
+      },
+      descr => {
+        description => 'Search in the Port Description field',
         type => 'boolean',
         default => 'false',
       },
@@ -76,6 +81,9 @@ get '/ajax/content/search/port' => require_login sub {
               -and => [
                 -or => [
                   { "me.name" => ( param('partial') ? $likeclause : $q ) },
+                  ( param('descr') ? (
+                    { "me.descr" => ( param('partial') ? $likeclause : $q ) },
+                  ) : () ),
                   ( ((!defined $mac) or $mac->errstr)
                       ? \[ 'me.mac::text ILIKE ?', $likeval ]
                       : {  'me.mac' => $mac->as_ieee        }

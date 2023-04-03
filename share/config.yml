@@ -108,6 +108,7 @@ sidebar_defaults:
   search_port:
     partial:     { default: checked }
     uplink:      { default: null }
+    descr:       { default: null }
     ethernet:    { default: checked }
   search_device:
     matchall:    { default: checked }
