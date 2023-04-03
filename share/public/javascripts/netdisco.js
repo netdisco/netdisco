@@ -156,7 +156,7 @@ function device_form_state(e) {
     $(id).show();
 
     // if form still has any field val, set strikethough
-    if (e.parents('form[action="/search"]').length > 0 && with_val != 0) {
+    if (e.parents('form[action$="/search"]').length > 0 && with_val != 0) {
       $('#nq').css('text-decoration', 'line-through');
     }
 
