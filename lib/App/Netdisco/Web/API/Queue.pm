@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::JobQueue 'jq_insert';
 use Try::Tiny;
 
 swagger_path {
@@ -107,6 +108,59 @@ swagger_path {
   })->delete;
 
   return to_json { deleted => ($gone || 0)};
+};
+
+swagger_path {
+  tags => ['Queue'],
+  path => (setting('api_base') || '').'/queue/jobs',
+  description => 'Submit jobs to the queue',
+  parameters  => [
+    jobs => {
+      description => 'List of job specifications (action, device?, port?, extra?).',
+      default => '[]',
+      schema => {
+        type => 'array',
+        items => {
+          type => 'object',
+          properties => {
+            action => {
+              type => 'string',
+              required => 1,
+            },
+            device => {
+              type => 'string',
+              required => 0,
+            },
+            port => {
+              type => 'string',
+              required => 0,
+            },
+            extra => {
+              type => 'string',
+              required => 0,
+            }
+          }
+        }
+      },
+      in => 'body',
+    },
+  ],
+  responses => { default => {} },
+}, post '/api/v1/queue/jobs' => require_role api_admin => sub {
+  my $data = request->body || '';
+  my $jobs = (length $data ? try { from_json($data) } : []);
+
+  (ref [] eq ref $jobs) or send_error('Malformed body', 400);
+
+  foreach my $job (@$jobs) {
+      ref {} eq ref $job or send_error('Malformed job', 400);
+      $job->{username} = session('logged_in_user');
+      $job->{userip}   = request->remote_address;
+  }
+
+  my $happy = jq_insert($jobs);
+
+  return to_json { success => $happy };
 };
 
 true;
