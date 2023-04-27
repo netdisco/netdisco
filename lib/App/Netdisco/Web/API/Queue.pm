@@ -10,6 +10,19 @@ use Try::Tiny;
 
 swagger_path {
   tags => ['Queue'],
+  path => (setting('api_base') || '').'/queue/backends',
+  description => 'Return list of currently active backend names (usually FQDN)',
+  responses => { default => {} },
+}, get '/api/v1/queue/backends' => require_role api_admin => sub {
+  # from 1d988bbf7 this always returns an entry
+  my @names = schema(vars->{'tenant'})->resultset('DeviceSkip')
+    ->get_distinct_col('backend');
+
+  return to_json \@names;
+};
+
+swagger_path {
+  tags => ['Queue'],
   path => (setting('api_base') || '').'/queue/jobs',
   description => 'Return jobs in the queue, optionally filtered by fields',
   parameters  => [
