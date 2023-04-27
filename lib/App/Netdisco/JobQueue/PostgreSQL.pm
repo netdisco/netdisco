@@ -315,7 +315,7 @@ sub jq_userlog {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
     username => $user,
     log      => { '-not_like' => 'duplicate of %' },
-    finished => { '>' => \"(LOCALTIMESTAMP - interval '5 seconds')" },
+    finished => { '>' => \"(CURRENT_TIMESTAMP - interval '5 seconds')" },
   })->with_times->all;
 }
 

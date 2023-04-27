@@ -106,6 +106,7 @@ use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
 use App::Netdisco::Web::Report;
 use App::Netdisco::Web::API::Objects;
+use App::Netdisco::Web::API::Queue;
 use App::Netdisco::Web::AdminTask;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
@@ -405,6 +406,8 @@ $swagger_doc->{tags} = [
     description => 'Device, Port, and associated Node Data'},
   {name => 'Reports',
     description => 'Canned and Custom Reports'},
+  {name => 'Queue',
+    description => 'Operations on the Job Queue'},
 ];
 $swagger_doc->{securityDefinitions} = {
   APIKeyHeader =>

@@ -202,8 +202,8 @@ get '/logout' => sub {
     redirect uri_for(setting('web_home'))->path;
 };
 
-# user redirected here (POST -> GET) when login fails
-get qr{^/(?:login(?:/denied)?)?} => sub {
+# user redirected here when require_role does not succeed
+any qr{^/(?:login(?:/denied)?)?} => sub {
     my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     if ($api) {

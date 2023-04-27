@@ -46,6 +46,59 @@ foreach my $rel (qw/device_ips vlans ports modules port_vlans wireless_ports ssi
     };
 }
 
+swagger_path {
+  tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/device/{ip}/jobs',
+  description => 'Delete jobs and clear skiplist for a device, optionally filtered by fields',
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    port => {
+      description => 'Port field of the Job',
+    },
+    action => {
+      description => 'Action field of the Job',
+    },
+    status => {
+      description => 'Status field of the Job',
+    },
+    username => {
+      description => 'Username of the Job submitter',
+    },
+    userip => {
+      description => 'IP address of the Job submitter',
+    },
+    backend => {
+      description => 'Backend instance assigned the Job',
+    },
+  ],
+  responses => { default => {} },
+}, del '/api/v1/object/device/:ip/jobs' => require_role api_admin => sub {
+  my $device = try { schema(vars->{'tenant'})->resultset('Device')
+    ->find( params->{ip} ) } or send_error('Bad Device', 404);
+
+  my $gone = schema(vars->{'tenant'})->resultset('Admin')->search({
+    device => param('ip'),
+    ( param('port')     ? ( port     => param('port') )     : () ),
+    ( param('action')   ? ( action   => param('action') )   : () ),
+    ( param('status')   ? ( status   => param('status') )   : () ),
+    ( param('username') ? ( username => param('username') ) : () ),
+    ( param('userip')   ? ( userip   => param('userip') )   : () ),
+    ( param('backend')  ? ( backend  => param('backend') )  : () ),
+  })->delete;
+
+  schema(vars->{'tenant'})->resultset('DeviceSkip')->search({
+    device => param('ip'),
+    ( param('action')  ? ( actionset => { '&&' => \[ 'ARRAY[?]', param('action') ] } ) : () ),
+    ( param('backend') ? ( backend   => param('backend') ) : () ),
+  })->delete;
+
+  return to_json { deleted => ($gone || 0)};
+};
+
 foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age vlans logs/) {
     swagger_path {
       tags => ['Objects'],
