@@ -148,6 +148,7 @@ lib/App/Netdisco/Util/Worker.pm
 lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/API/Objects.pm
+lib/App/Netdisco/Web/API/Queue.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/CustomFields.pm
