@@ -74,8 +74,17 @@ ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_a
         port => param('archive'),
         subaction => (param('log') || 'no user log supplied'),
         username => session('logged_in_user'),
-        userip => request->remote_address,
+        userip => scalar eval {request->remote_address},
     }]);
+
+    schema(vars->{'tenant'})->resultset('UserLog')->create({
+      username => session('logged_in_user'),
+      userip => scalar eval {request->remote_address},
+      event => (sprintf
+        ($happy ? "Queued job to delete device %s" : "Failed to queue job to delete device %s"),
+        $device->addr),
+      details => (param('log') || 'no user log supplied'),
+    });
 
     return $happy;
 };
