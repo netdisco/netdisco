@@ -472,6 +472,7 @@ job_prio:
     - power
     - snapshot
     - vlan
+    - delete
   normal:
     - arpnip
     - arpwalk
@@ -493,6 +494,7 @@ worker_plugins:
   - 'Arpwalk'
   - 'Contact'
   - 'Delete'
+  - 'Delete::Hooks'
   - 'Discover'
   - 'Discover::CanonicalIP'
   - 'Discover::Entities'
