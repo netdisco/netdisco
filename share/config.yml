@@ -494,6 +494,7 @@ worker_plugins:
   - 'Arpwalk'
   - 'Contact'
   - 'Delete'
+  - 'Delete::Hooks'
   - 'Discover'
   - 'Discover::CanonicalIP'
   - 'Discover::Entities'
