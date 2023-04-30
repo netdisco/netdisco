@@ -66,7 +66,7 @@ sub get_device {
     ->find_or_new({ip => $ip});
 }
 
-=head2 delete_device( $ip, $archive? )
+=head2 delete_device( $ip, $archive?, $log_message? )
 
 Given an IP address, deletes the device from Netdisco, including all related
 data such as logs and nodes. If the C<$archive> parameter is true, then nodes
@@ -87,12 +87,15 @@ sub delete_device {
     schema(vars->{'tenant'})->resultset('Device')
       ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
 
-    schema(vars->{'tenant'})->resultset('UserLog')->create({
-      username => session('logged_in_user'),
-      userip => scalar eval {request->remote_address},
-      event => (sprintf "Delete device %s", $device->ip),
-      details => $log,
-    });
+    if ($log) {
+        # comes from the web
+        schema(vars->{'tenant'})->resultset('UserLog')->create({
+          username => session('logged_in_user'),
+          userip => scalar eval {request->remote_address},
+          event => (sprintf "Delete device %s", $device->ip),
+          details => $log,
+        });
+    }
 
     $happy = 1;
   });
