@@ -472,6 +472,7 @@ job_prio:
     - power
     - snapshot
     - vlan
+    - delete
   normal:
     - arpnip
     - arpwalk
