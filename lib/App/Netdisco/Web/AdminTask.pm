@@ -7,7 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::JobQueue 'jq_insert';
-use App::Netdisco::Util::Device qw/delete_device renumber_device/;
+use App::Netdisco::Util::Device qw/renumber_device/;
 
 sub add_job {
     my ($action, $device, $subaction) = @_;
@@ -68,9 +68,16 @@ ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_a
     send_error('Bad device', 400)
       if ! $device or $device->addr eq '0.0.0.0';
 
-    return delete_device(
-      $device->addr, param('archive'), param('log'),
-    );
+    my $happy = jq_insert([{
+        action => 'delete',
+        device => $device->addr,
+        port => param('archive'),
+        subaction => (param('log') || 'no user log supplied'),
+        username => session('logged_in_user'),
+        userip => request->remote_address,
+    }]);
+
+    return $happy;
 };
 
 ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
