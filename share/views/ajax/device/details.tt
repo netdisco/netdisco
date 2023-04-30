@@ -243,9 +243,9 @@
               </ul>
             </blockquote>
             <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
-              placeholder="Enter a log message" name="log"></textarea>
+              placeholder="Enter a log message" name="extra"></textarea>
             <label class="checkbox">
-              <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="archive">
+              <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="port">
               <h4 class="nd_unbolden">Archive Nodes</h4>
             </label>
             <input type="hidden" data-form="delete" value="[% d.ip | html_entity %]" name="device"/>

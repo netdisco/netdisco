@@ -14,14 +14,14 @@ register_worker({ phase => 'check' }, sub {
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
+  my ($device, $port) = map {$job->$_} qw/device port/;
 
   # support for Hooks
   vars->{'hook_data'} = { $device->get_columns };
   delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
 
   $port = ($port ? 1 : 0);
-  my $happy = delete_device($device, $port, $extra);
+  my $happy = delete_device($device, $port);
 
   if ($happy) {
       return Status->done("Deleted device: $device")
