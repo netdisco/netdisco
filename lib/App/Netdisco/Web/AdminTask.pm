@@ -18,7 +18,7 @@ sub add_job {
 
     my @hostlist = $device ? ($net->hostenum) : (undef);
 
-    jq_insert([map {{
+    my $happy = jq_insert([map {{
       ($_ ? (device => $_->addr) : ()),
       action => $action,
       ($subaction ? (subaction => $subaction) : ()),
@@ -26,7 +26,7 @@ sub add_job {
       userip => request->remote_address,
     }} @hostlist]);
 
-    true;
+    return $happy;
 }
 
 foreach my $action (@{ setting('job_prio')->{high} },

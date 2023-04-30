@@ -5,6 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Dancer::Plugin::DBIC 'schema';
+use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Statistics 'update_stats';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
@@ -13,11 +14,16 @@ register_worker({ phase => 'main' }, sub {
 
   if (setting('expire_devices') and setting('expire_devices') > 0) {
       schema('netdisco')->txn_do(sub {
-        schema('netdisco')->resultset('Device')->search({
-          -or => [ 'vendor' => undef, 'vendor' => { '!=' => 'netdisco' }],
+        my @hostlist = schema('netdisco')->resultset('Device')->search({
+          -not_bool => 'is_pseudo',
           last_discover => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_devices') * 86400)],
-        })->delete();
+        })->get_column('ip')->all;
+
+        my $happy = jq_insert([map {{
+          device => $_,
+          action => 'delete',
+        }} @hostlist]);
       });
   }
 
