@@ -1,3 +1,32 @@
+2.061001 - 2023-04-27
+
+  [ENHANCEMENTS]
+
+  * #1010 option to search port descriptions in global searches
+  * #1015 API job queue management - get list, submit, delete some or all, get backend names
+
+  [BUG FIXES]
+
+  * fix cosmetic bug in search text strikethrough when in tenant
+
+2.061000 - 2023-03-29
+
+  [NEW FEATURES]
+
+  * #29 sidebar support for custom reports with bind params; add show_sidebar setting
+  * #1001 support for FQDN node search while domain_suffix is set; add fallback to IPv4 host lookup search
+  * #1002 implement ignore_layers, force_macsuck, force_arpnip config settings
+
+  [ENHANCEMENTS]
+
+  * allow 3min for port last_change compare to uptime, do not assume wrapped
+
+  [BUG FIXES]
+
+  * fix nonimpacting error in template html
+  * #990 API error: Not Authorized due to time zone calc error
+  * #1013 undef error in Nodes interfaces
+
 2.060010 - 2023-03-10
 
   [ENHANCEMENTS]

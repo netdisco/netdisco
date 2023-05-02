@@ -176,7 +176,7 @@
             }
           }
           else {
-            toastr.success('Deleted device '+ tr.data('for-device'));
+            toastr.success('Queued job to delete '+ tr.data('for-device'));
           }
         }
         // skip any error reporting for now

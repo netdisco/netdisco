@@ -77,7 +77,7 @@ Returns true if the transaction completes, else returns false.
 =cut
 
 sub delete_device {
-  my ($ip, $archive, $log) = @_;
+  my ($ip, $archive) = @_;
   my $device = get_device($ip) or return 0;
   return 0 if not $device->in_storage;
 
@@ -86,13 +86,6 @@ sub delete_device {
     # will delete everything related too...
     schema(vars->{'tenant'})->resultset('Device')
       ->search({ ip => $device->ip })->delete({archive_nodes => $archive});
-
-    schema(vars->{'tenant'})->resultset('UserLog')->create({
-      username => session('logged_in_user'),
-      userip => scalar eval {request->remote_address},
-      event => (sprintf "Delete device %s", $device->ip),
-      details => $log,
-    });
 
     $happy = 1;
   });

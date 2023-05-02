@@ -7,10 +7,10 @@ use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::JobQueue 'jq_insert';
-use App::Netdisco::Util::Device qw/delete_device renumber_device/;
+use App::Netdisco::Util::Device qw/renumber_device/;
 
 sub add_job {
-    my ($action, $device, $subaction) = @_;
+    my ($action, $device, $extra, $port) = @_;
 
     my $net = NetAddr::IP->new($device);
     return if
@@ -18,15 +18,29 @@ sub add_job {
 
     my @hostlist = $device ? ($net->hostenum) : (undef);
 
-    jq_insert([map {{
-      ($_ ? (device => $_->addr) : ()),
+    my $happy = jq_insert([map {{
       action => $action,
-      ($subaction ? (subaction => $subaction) : ()),
+      ($_     ? (device => $_->addr) : ()),
+      ($port  ? (port   => $port)    : ()),
+      ($extra ? (extra  => $extra)   : ()),
       username => session('logged_in_user'),
-      userip => request->remote_address,
+      userip => scalar eval {request->remote_address},
     }} @hostlist]);
 
-    true;
+    foreach my $h (@hostlist) {
+        next unless defined $h;
+        my $msg = ($happy ? "Queued job to $action device \%s"
+                          : "Failed to queue job to $action device \%s");
+
+        schema(vars->{'tenant'})->resultset('UserLog')->create({
+          username => session('logged_in_user'),
+          userip => scalar eval {request->remote_address},
+          event => (sprintf $msg, $h->addr),
+          details => ($extra || 'no user log supplied'),
+        });
+    }
+
+    return $happy;
 }
 
 foreach my $action (@{ setting('job_prio')->{high} },
@@ -35,12 +49,12 @@ foreach my $action (@{ setting('job_prio')->{high} },
     next if $action and $action =~ m/^hook::/; # skip hooks
 
     ajax "/ajax/control/admin/$action" => require_role admin => sub {
-        add_job($action, param('device'), param('extra'))
+        add_job($action, param('device'), param('extra'), param('port'))
           or send_error('Bad device', 400);
     };
 
     post "/admin/$action" => require_role admin => sub {
-        add_job($action, param('device'), param('extra'))
+        add_job($action, param('device'), param('extra'), param('port'))
           ? redirect uri_for('/admin/jobqueue')->path
           : redirect uri_for('/')->path;
     };
@@ -59,18 +73,6 @@ ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => require_role setting('defanged
       if ! $newip or $newip->addr eq '0.0.0.0';
 
     return renumber_device( $device->addr, $newip->addr );
-};
-
-ajax qr{/ajax/control/admin/(?:\w+/)?delete} => require_role setting('defanged_admin') => sub {
-    send_error('Missing device', 400) unless param('device');
-
-    my $device = NetAddr::IP->new(param('device'));
-    send_error('Bad device', 400)
-      if ! $device or $device->addr eq '0.0.0.0';
-
-    return delete_device(
-      $device->addr, param('archive'), param('log'),
-    );
 };
 
 ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {

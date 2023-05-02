@@ -28,11 +28,11 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   UNION
   SELECT username, 'api' AS role FROM users
     WHERE token IS NOT NULL AND token_from IS NOT NULL
-          AND token_from > (EXTRACT(EPOCH FROM LOCALTIMESTAMP) - ?)
+          AND token_from > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) - ?)
   UNION
   SELECT username, 'api_admin' AS role FROM users
     WHERE token IS NOT NULL AND token_from IS NOT NULL
-          AND token_from > (EXTRACT(EPOCH FROM LOCALTIMESTAMP) - ?)
+          AND token_from > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) - ?)
           AND admin
 ENDSQL
 );

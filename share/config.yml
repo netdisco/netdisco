@@ -108,6 +108,7 @@ sidebar_defaults:
   search_port:
     partial:     { default: checked }
     uplink:      { default: null }
+    descr:       { default: null }
     ethernet:    { default: checked }
   search_device:
     matchall:    { default: checked }
@@ -471,6 +472,7 @@ job_prio:
     - power
     - snapshot
     - vlan
+    - delete
   normal:
     - arpnip
     - arpwalk
@@ -492,6 +494,7 @@ worker_plugins:
   - 'Arpwalk'
   - 'Contact'
   - 'Delete'
+  - 'Delete::Hooks'
   - 'Discover'
   - 'Discover::CanonicalIP'
   - 'Discover::Entities'
