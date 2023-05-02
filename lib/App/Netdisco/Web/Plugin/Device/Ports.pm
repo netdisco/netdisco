@@ -219,7 +219,7 @@ get '/ajax/content/device/ports' => require_login sub {
     if (not param('p_include_hidden')) {
         my $device_ips = {};
         map  { push @{ $device_ips->{$_->port} }, $_ }
-             $device->device_ips(undef, {prefetch => 'device_port'})->all;
+             $device->device_ips(undef, {prefetch => { device_port => 'properties' }})->all;
 
         map  { push @{ $device_ips->{$_->port} }, $_ }
         grep { ! exists $device_ips->{$_->port} }

@@ -8,6 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
 use Encode;
+use App::Netdisco::Util::Permission 'check_acl_no';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
 
@@ -131,6 +132,32 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{remote_serial} = $rem_serial->{ $idx };
   }
 
+  if (scalar @{ setting('ignore_deviceports') }) {
+    foreach my $port (keys %$device_ports) {
+        next unless exists $properties{$port};
+        $properties{$port}->{port} = $port;
+        $device_ports->{$port}->set_inflated_columns({ properties => $properties{$port} });
+    }
+
+    foreach my $map (@{ setting('ignore_deviceports')}) {
+        next unless ref {} eq ref $map;
+
+        foreach my $key (sort keys %$map) {
+            # lhs matches device, rhs matches port
+            next unless check_acl_no($device, $key);
+
+            foreach my $port (sort keys %$device_ports) {
+                next unless check_acl_no($device_ports->{$port}, $map->{$key});
+
+                debug sprintf ' [%s] properties - removing %s (config:ignore_deviceports)',
+                  $device->ip, $port;
+                $device_ports->{$port}->delete;
+                delete $properties{$port};
+            }
+        }
+    }
+  }
+
   foreach my $idx (keys %$interfaces) {
     next unless defined $idx;
     my $port = $interfaces->{$idx} or next;
@@ -155,7 +182,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->properties_ports->delete;
-    debug sprintf ' [%s] properties - removed %d ports with properties',
+    debug sprintf ' [%s] properties - removed %d port properties',
       $device->ip, $gone;
     $device->properties_ports->populate(
       [map {{ port => $_, %{ $properties{$_} } }} keys %properties] );

@@ -272,21 +272,29 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   if (scalar @{ setting('ignore_deviceports') }) {
+    # any L3 interfaces have the L2 port linked
     foreach my $port (keys %$device_ips) {
         if (!exists $deviceports{$port}) {
             delete $device_ips->{$port};
             next;
         }
         foreach my $dip (@{ $device_ips->{$port} }) {
-            $dip->set_inflated_columns({ device_port => $deviceports{$port} });
+            $dip->set_inflated_columns({ device_port => { %{ $deviceports{$port} } } });
         }
     }
+    # any L2 ports just get a device_port entry
     foreach my $port (keys %deviceports) {
         next if exists $device_ips->{$port};
         push @{ $device_ips->{$port} },
           schema('netdisco')->resultset('DevicePort')
                             ->new_result( $deviceports{$port} );
     }
+
+    # now %device_ips has all L3 interfaces with their port, and all L2 ports
+    # and each has slots ([ip, alias, subnet, port, dns], <all device_port slots>)
+
+    # NB that alias (L3) has prescedence over ip (device) field in check_acl
+    # and it's OK to mess with %device_ips as we don't use it again this sub
 
     foreach my $map (@{ setting('ignore_deviceports')}) {
         next unless ref {} eq ref $map;

@@ -54,7 +54,7 @@ __PACKAGE__->belongs_to( device_port => 'App::Netdisco::DB::Result::DevicePort',
 
 =head2 device_port fields
 
-All C<device_port> fields are mapped to accessors on this object.
+Useful C<device_port> fields are mapped to accessors on this object.
 
 =cut
 
@@ -77,11 +77,37 @@ foreach my $field (qw/
   remote_id
   vlan
   pvid
-  lastchange
+  manual_topo
+  is_uplink
+  slave_of
+  is_master
+  has_subinterfaces
     /) {
 
   Sub::Install::install_sub({
     code => sub { return eval { (shift)->device_port->$field } },
+    as   => $field,
+  });
+}
+
+=head2 device_port_properties fields
+
+Useful C<device_port_properties> fields are mapped to accessors on this object.
+
+=cut
+
+foreach my $field (qw/
+  remote_is_wap
+  remote_is_phone
+  remote_vendor
+  remote_model
+  remote_os_ver
+  remote_is_discoverable
+  remote_dns
+    /) {
+
+  Sub::Install::install_sub({
+    code => sub { return eval { (shift)->device_port->properties->$field } },
     as   => $field,
   });
 }

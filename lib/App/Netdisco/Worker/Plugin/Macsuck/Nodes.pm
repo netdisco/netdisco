@@ -37,7 +37,8 @@ register_worker({ phase => 'early',
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
-                          $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
+                          $device->ports(undef, {prefetch => ['properties',
+                                                              {neighbor_alias => 'device'}]})->all};
 });
 
 register_worker({ phase => 'main', driver => 'direct',
