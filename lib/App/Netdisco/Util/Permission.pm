@@ -10,7 +10,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/check_acl check_acl_no check_acl_only/;
+our @EXPORT_OK = qw/acl_matches check_acl check_acl_no check_acl_only/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -43,7 +43,7 @@ for details of what C<$acl> may contain.
 
 sub check_acl_no {
   my ($thing, $setting_name) = @_;
-  return 1 unless $thing and $setting_name;
+  return true unless $thing and $setting_name;
   my $config = (exists config->{"$setting_name"} ? setting($setting_name)
                                                  : $setting_name);
   return check_acl($thing, $config);
@@ -74,11 +74,11 @@ for details of what C<$acl> may contain.
 
 sub check_acl_only {
   my ($thing, $setting_name) = @_;
-  return 0 unless $thing and $setting_name;
+  return false unless $thing and $setting_name;
   # logic to make an empty config be equivalent to 'any' (i.e. a match)
   my $config = (exists config->{"$setting_name"} ? setting($setting_name)
                                                  : $setting_name);
-  return 1 if not $config # undef or empty string
+  return true if not $config # undef or empty string
               or ((ref [] eq ref $config) and not scalar @$config);
   return check_acl($thing, $config);
 }
@@ -105,8 +105,8 @@ for the details.
 
 sub check_acl {
   my ($things, $config) = @_;
-  return 0 unless defined $things and defined $config;
-  return 0 if ref [] eq ref $things and not scalar @$things;
+  return false unless defined $things and defined $config;
+  return false if ref [] eq ref $things and not scalar @$things;
   $things = [$things] if ref [] ne ref $things;
 
   my $real_ip = ''; # valid to be empty
@@ -131,13 +131,13 @@ sub check_acl {
   $config  = [$config] if ref $config eq q{};
   if (ref [] ne ref $config) {
     error "error: acl is not a single item or list (cannot compare to '$real_ip')";
-    return 0;
+    return false;
   }
   my $all  = (scalar grep {$_ eq 'op:and'} @$config);
 
   # common case of using plain IP in ACL, so string compare for speed
   my $find = (scalar grep {not reftype $_ and $_ eq $real_ip} @$config);
-  return 1 if $real_ip and $find and not $all;
+  return true if $real_ip and $find and not $all;
 
   my $addr = NetAddr::IP::Lite->new($real_ip);
   my $name = undef; # only look up once, and only if qr// is used
@@ -154,10 +154,10 @@ sub check_acl {
 
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
           if ($name =~ $rule) {
-            return 1 if not $all;
+            return true if not $all;
           }
           else {
-            return 0 if $all;
+            return false if $all;
           }
           next RULE;
       }
@@ -169,52 +169,68 @@ sub check_acl {
           setting('host_groups')->{$group} ||= [];
 
           if ($neg xor check_acl($things, setting('host_groups')->{$group})) {
-            return 1 if not $all;
+            return true if not $all;
           }
           else {
-            return 0 if $all;
+            return false if $all;
           }
           next RULE;
       }
 
+      # prop:val
       if ($rule =~ m/^([^:]+):([^:]*)$/) {
           my $prop  = $1;
           my $match = $2 || '';
+          my $found = false;
 
-          # prop:val
+          # property exists, undef is allowed to match empty string
           ITEM: foreach my $item (@$things) {
               if (blessed $item) {
                   if ($neg xor ($item->can($prop) and
-                                  defined eval { $item->$prop } and
-                                  ref $item->$prop eq q{}
-                                  and $item->$prop =~ m/^$match$/) ) {
-                    return 1 if not $all;
-                    last ITEM;
-                  }
-                  # empty or missing property
-                  elsif ($neg xor ($match eq q{} and
-                                     (!defined eval { $item->$prop } or $item->$prop eq q{})) ) {
-                    return 1 if not $all;
+                          ((!defined eval { $item->$prop } and $match eq q{})
+                           or
+                           (defined eval { $item->$prop } and ref $item->$prop eq q{} and $item->$prop =~ m/^$match$/)) )) {
+                    return true if not $all;
+                    $found = true;
                     last ITEM;
                   }
               }
               elsif (ref {} eq ref $item) {
                   if ($neg xor (exists $item->{$prop} and
-                                  defined $item->{$prop} and
-                                  ref $item->{$prop} eq q{}
-                                  and $item->{$prop} =~ m/^$match$/) ) {
-                    return 1 if not $all;
-                    last ITEM;
-                  }
-                  # empty or missing property
-                  elsif ($neg xor ($match eq q{} and
-                                     (!defined $item->{$prop} or $item->{$prop} eq q{})) ) {
-                    return 1 if not $all;
+                          ((!defined $item->{$prop} and $match eq q{})
+                           or
+                           (defined $item->{$prop} and ref $item->{$prop} eq q{} and $item->{$prop} =~ m/^$match$/)) )) {
+                    return true if not $all;
+                    $found = true;
                     last ITEM;
                   }
               }
           }
-          return 0 if $all;
+
+          # missing property matches empty string
+          # (which is done in a second pass to allow all @$things to be
+          # inspected for existing properties)
+          ITEM: foreach my $item (@$things) {
+              last ITEM if $found;
+
+              if (blessed $item) {
+                  if ($neg xor ($match eq q{} and ! $item->can($prop))) {
+                    return true if not $all;
+                    $found = true;
+                    last ITEM;
+                  }
+              }
+              elsif (ref {} eq ref $item) {
+                  # empty or missing property
+                  if ($neg xor ($match eq q{} and ! exists $item->{$prop})) {
+                    return true if not $all;
+                    $found = true;
+                    last ITEM;
+                  }
+              }
+          }
+
+          return false if $all;
           next RULE;
       }
 
@@ -236,12 +252,12 @@ sub check_acl {
                   my $ip = NetAddr::IP::Lite->new($header . sprintf('%x',$part) . '/128')
                     or next;
                   if ($neg xor ($ip == $addr)) {
-                    return 1 if not $all;
+                    return true if not $all;
                     next RULE;
                   }
               }
-              return 0 if (not $neg and $all);
-              return 1 if ($neg and not $all);
+              return false if (not $neg and $all);
+              return true if ($neg and not $all);
           }
           else {
               next RULE if $addr->bits != 32 and not $all;
@@ -251,12 +267,12 @@ sub check_acl {
                   my $ip = NetAddr::IP::Lite->new($header . $part . '/32')
                     or next;
                   if ($neg xor ($ip == $addr)) {
-                    return 1 if not $all;
+                    return true if not $all;
                     next RULE;
                   }
               }
-              return 0 if (not $neg and $all);
-              return 1 if ($neg and not $all);
+              return false if (not $neg and $all);
+              return true if ($neg and not $all);
           }
           next RULE;
       }
@@ -272,15 +288,15 @@ sub check_acl {
       next RULE if $ip->bits != $addr->bits and not $all;
 
       if ($neg xor ($ip->contains($addr))) {
-        return 1 if not $all;
+        return true if not $all;
       }
       else {
-        return 0 if $all;
+        return false if $all;
       }
       next RULE;
   }
 
-  return ($all ? 1 : 0);
+  return ($all ? true : false);
 }
 
-1;
+true;

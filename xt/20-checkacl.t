@@ -131,10 +131,11 @@ ok(check_acl($dip, ['!ip:'. $conf[23]]), '1obj negated instance named property d
 is(check_acl($dip, ['port:'.$conf[2]]), 0, '1obj failed instance named property deviceport:ip');
 ok(check_acl($dip, ['port:.*GigabitEthernet.*']), '1obj instance named property regexp deviceport:port');
 
-ok(check_acl($dip, ['type:l3ipvlan']), '1obj related item field match');
-ok(check_acl($dip, ['remote_ip:']), '1obj related item field empty');
-ok(check_acl($dip, ['!type:']), '1obj related item field not empty');
-is(check_acl($dip, ['foobar:xyz']), 0, '1obj unknown property');
+# DeviceIp no longer has DevicePort slot accessors
+#ok(check_acl($dip, ['type:l3ipvlan']), '1obj related item field match');
+#ok(check_acl($dip, ['remote_ip:']), '1obj related item field empty');
+#ok(check_acl($dip, ['!type:']), '1obj related item field not empty');
+#is(check_acl($dip, ['foobar:xyz']), 0, '1obj unknown property');
 
 my $dip2 = App::Netdisco::DB->resultset('DeviceIp')->new_result({
    ip   => '127.0.0.1',
