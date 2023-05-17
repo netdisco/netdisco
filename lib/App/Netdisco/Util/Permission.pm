@@ -10,7 +10,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/acl_matches check_acl check_acl_no check_acl_only/;
+our @EXPORT_OK = qw/acl_matches acl_matches_only/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -26,62 +26,81 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 check_acl_no( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
+=head2 acl_matches( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
 Given an IP address, object instance, or hash, returns true if the
 configuration setting C<$setting_name> matches, else returns false. If the
-content of the setting is undefined or empty, then C<check_acl_no> also
+content of the setting is undefined or empty, then C<acl_matches> also
 returns false.
 
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
+
+Usage of this function is strongly advised to be of the form:
+
+ QUIT/SKIP IF acl_matches
 
 See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 for details of what C<$acl> may contain.
 
 =cut
 
-sub check_acl_no {
+sub acl_matches {
   my ($thing, $setting_name) = @_;
+  # fail-safe so undef config should return true
   return true unless $thing and $setting_name;
   my $config = (exists config->{"$setting_name"} ? setting($setting_name)
                                                  : $setting_name);
   return check_acl($thing, $config);
 }
 
-=head2 acl_matches( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
+=head2 check_acl_no( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
-This is an alias for L<check_acl_no>.
+This is an alias for L<acl_matches>.
 
 =cut
 
-sub acl_matches { goto &check_acl_no }
+sub check_acl_no { goto &acl_matches }
 
-=head2 check_acl_only( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
+=head2 acl_matches_only( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
 Given an IP address, object instance, or hash, returns true if the
 configuration setting C<$setting_name> matches, else returns false. If the
-content of the setting is undefined or empty, then C<check_acl_only> also
-returns true.
+content of the setting is undefined or empty, then C<acl_matches_only> also
+returns false.
 
 If C<$setting_name> is a valid setting, then it will be resolved to the access
 control list, else we assume you passed an ACL entry or ACL.
+
+Usage of this function is strongly advised to be of the form:
+
+ QUIT/SKIP UNLESS acl_matches_only
 
 See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 for details of what C<$acl> may contain.
 
 =cut
 
-sub check_acl_only {
+sub acl_matches_only {
   my ($thing, $setting_name) = @_;
+  # fail-safe so undef config should return false
   return false unless $thing and $setting_name;
-  # logic to make an empty config be equivalent to 'any' (i.e. a match)
   my $config = (exists config->{"$setting_name"} ? setting($setting_name)
                                                  : $setting_name);
+  # logic to make an empty config be equivalent to 'any' (i.e. a match)
+  # empty list check means truth check passes for match or empty list
   return true if not $config # undef or empty string
               or ((ref [] eq ref $config) and not scalar @$config);
   return check_acl($thing, $config);
 }
+
+=head2 check_acl_only( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
+
+This is an alias for L<acl_matches_only>.
+
+=cut
+
+sub check_acl_only { goto &acl_matches_only }
 
 =head2 check_acl( $ip | $object | \%hash | \@item_list, $acl_entry | \@acl )
 
