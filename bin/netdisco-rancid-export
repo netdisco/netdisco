@@ -40,7 +40,7 @@ use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Permission ':all';
+use App::Netdisco::Util::Permission 'acl_matches';
 
 # silent exit unless explicitly requested
 exit(0) unless setting('use_legacy_rancidexport');
@@ -76,7 +76,7 @@ foreach my $d (@devices) {
   my $old = $d->get_column( 'old' );
   my $devgroup = 'other';
   foreach my $g (keys %$groups) {
-    if (check_acl_only( $d, $groups->{$g} )) {
+    if (acl_matches( $d, $groups->{$g} )) {
       $devgroup = $g;
       last;
     }

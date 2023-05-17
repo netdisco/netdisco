@@ -4,7 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::MAC;
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -138,9 +138,9 @@ Returns false if the host is not permitted to nbtstat the target node.
 sub is_nbtstatable {
   my $ip = shift;
 
-  return if check_acl_no($ip, 'nbtstat_no');
+  return if acl_matches($ip, 'nbtstat_no');
 
-  return unless check_acl_only($ip, 'nbtstat_only');
+  return unless acl_matches_only($ip, 'nbtstat_only');
 
   return 1;
 }

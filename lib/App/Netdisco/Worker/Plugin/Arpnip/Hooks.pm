@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Worker;
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
 register_worker({ phase => 'late' }, sub {
   my ($job, $workerconf) = @_;
@@ -21,8 +21,8 @@ register_worker({ phase => 'late' }, sub {
     my $no   = ($conf->{'filter'}->{'no'}   || []);
     my $only = ($conf->{'filter'}->{'only'} || []);
 
-    next if check_acl_no( $job->device, $no );
-    next unless check_acl_only( $job->device, $only);
+    next if acl_matches( $job->device, $no );
+    next unless acl_matches_only( $job->device, $only);
 
     if ($conf->{'event'} eq 'arpnip') {
       $count += queue_hook('arpnip', $conf);

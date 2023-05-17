@@ -3,7 +3,7 @@ package App::Netdisco::Worker::Plugin;
 use Dancer ':syntax';
 use Dancer::Plugin;
 
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use aliased 'App::Netdisco::Worker::Status';
 use Scope::Guard 'guard';
 use Storable 'dclone';
@@ -73,8 +73,8 @@ register 'register_worker' => sub {
       my $only = (exists $workerconf->{only} ? $workerconf->{only} : undef);
 
       return $job->add_status( Status->info('skip: acls restricted') )
-        if ($no and check_acl_no($job->device, $no))
-           or ($only and not check_acl_only($job->device, $only));
+        if ($no and acl_matches($job->device, $no))
+           or ($only and not acl_matches_only($job->device, $only));
 
       # reduce device_auth by driver and action filters
       foreach my $stanza (@userconf) {
