@@ -29,16 +29,17 @@ subroutines.
 =head2 acl_matches( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
 Given an IP address, object instance, or hash, returns true if the
-configuration setting C<$setting_name> matches, else returns false. If the
-content of the setting is undefined or empty, then C<acl_matches> also
-returns false.
-
-If C<$setting_name> is a valid setting, then it will be resolved to the access
-control list, else we assume you passed an ACL entry or ACL.
+configuration setting C<$setting_name> matches, else returns false.
 
 Usage of this function is strongly advised to be of the form:
 
  QUIT/SKIP IF acl_matches
+
+The function fails safe, so if the content of the setting or ACL is undefined
+or an empty string, then C<acl_matches> also returns true.
+
+If C<$setting_name> is a valid setting, then it will be resolved to the access
+control list, else we assume you passed an ACL entry or ACL.
 
 See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 for details of what C<$acl> may contain.
@@ -65,16 +66,20 @@ sub check_acl_no { goto &acl_matches }
 =head2 acl_matches_only( $ip | $object | \%hash | \@item_list, $setting_name | $acl_entry | \@acl )
 
 Given an IP address, object instance, or hash, returns true if the
-configuration setting C<$setting_name> matches, else returns false. If the
-content of the setting is undefined or empty, then C<acl_matches_only> also
-returns false.
-
-If C<$setting_name> is a valid setting, then it will be resolved to the access
-control list, else we assume you passed an ACL entry or ACL.
+configuration setting C<$setting_name> matches, else returns false.
 
 Usage of this function is strongly advised to be of the form:
 
  QUIT/SKIP UNLESS acl_matches_only
+
+The function fails safe, so if the content of the setting or ACL is undefined
+or an empty string, then C<acl_matches_only> also returns false.
+
+Further, if the setting or ACL resolves to a list but the list has no items,
+then C<acl_matches_only> returns true (as if there is a successful match).
+
+If C<$setting_name> is a valid setting, then it will be resolved to the access
+control list, else we assume you passed an ACL entry or ACL.
 
 See L<the Netdisco wiki|https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists>
 for details of what C<$acl> may contain.
