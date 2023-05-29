@@ -2,7 +2,7 @@ package App::Netdisco::Util::Device;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
 use File::Spec::Functions qw(catdir catfile);
 use File::Path 'make_path';
@@ -184,10 +184,10 @@ sub is_discoverable {
     if (match_to_setting($remote_type, 'discover_no_type'));
 
   return _bail_msg("is_discoverable: $device matched discover_no")
-    if check_acl_no($device, 'discover_no');
+    if acl_matches($device, 'discover_no');
 
   return _bail_msg("is_discoverable: $device failed to match discover_only")
-    unless check_acl_only($device, 'discover_only');
+    unless acl_matches_only($device, 'discover_only');
 
   return 1;
 }
@@ -236,14 +236,14 @@ sub is_arpnipable {
 
   return _bail_msg("is_arpnipable: $device has no layer 3 capability")
     if ($device->in_storage() and not ($device->has_layer(3)
-                                       or check_acl_no($device, 'force_arpnip')
-                                       or check_acl_no($device, 'ignore_layers')));
+                                       or acl_matches($device, 'force_arpnip')
+                                       or acl_matches($device, 'ignore_layers')));
 
   return _bail_msg("is_arpnipable: $device matched arpnip_no")
-    if check_acl_no($device, 'arpnip_no');
+    if acl_matches($device, 'arpnip_no');
 
   return _bail_msg("is_arpnipable: $device failed to match arpnip_only")
-    unless check_acl_only($device, 'arpnip_only');
+    unless acl_matches_only($device, 'arpnip_only');
 
   return 1;
 }
@@ -292,17 +292,17 @@ sub is_macsuckable {
 
   return _bail_msg("is_macsuckable: $device has no layer 2 capability")
     if ($device->in_storage() and not ($device->has_layer(2)
-                                       or check_acl_no($device, 'force_macsuck')
-                                       or check_acl_no($device, 'ignore_layers')));
+                                       or acl_matches($device, 'force_macsuck')
+                                       or acl_matches($device, 'ignore_layers')));
 
   return _bail_msg("is_macsuckable: $device matched macsuck_no")
-    if check_acl_no($device, 'macsuck_no');
+    if acl_matches($device, 'macsuck_no');
 
   return _bail_msg("is_macsuckable: $device matched macsuck_unsupported")
-    if check_acl_no($device, 'macsuck_unsupported');
+    if acl_matches($device, 'macsuck_unsupported');
 
   return _bail_msg("is_macsuckable: $device failed to match macsuck_only")
-    unless check_acl_only($device, 'macsuck_only');
+    unless acl_matches_only($device, 'macsuck_only');
 
   return 1;
 }

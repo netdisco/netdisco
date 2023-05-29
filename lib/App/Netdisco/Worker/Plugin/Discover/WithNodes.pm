@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::JobQueue 'jq_insert';
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
@@ -16,8 +16,8 @@ register_worker({ phase => 'main' }, sub {
   return unless $device->in_storage and $job->subaction eq 'with-nodes';
 
   if (!defined $device->last_macsuck and ($device->has_layer(2)
-                                          or check_acl_no($device, 'force_macsuck')
-                                          or check_acl_no($device, 'ignore_layers'))) {
+                                          or acl_matches($device, 'force_macsuck')
+                                          or acl_matches($device, 'ignore_layers'))) {
     jq_insert({
       device => $device->ip,
       action => 'macsuck',
@@ -28,8 +28,8 @@ register_worker({ phase => 'main' }, sub {
   }
 
   if (!defined $device->last_arpnip and ($device->has_layer(3)
-                                         or check_acl_no($device, 'force_arpnip')
-                                         or check_acl_no($device, 'ignore_layers'))) {
+                                         or acl_matches($device, 'force_arpnip')
+                                         or acl_matches($device, 'ignore_layers'))) {
     jq_insert({
       device => $device->ip,
       action => 'arpnip',

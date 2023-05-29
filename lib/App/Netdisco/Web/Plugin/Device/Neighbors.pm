@@ -7,7 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use List::Util 'first';
 use List::MoreUtils ();
-use App::Netdisco::Util::Permission 'check_acl_only';
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Web::Plugin;
 
 register_device_tab({ tag => 'netmap', label => 'Neighbors' });
@@ -228,11 +228,11 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
       # if host groups picked then use ACLs to filter
       my $first_hgrp =
-        first { check_acl_only($device, setting('host_groups')->{$_}) } @hgrplist;
+        first { acl_matches($device, setting('host_groups')->{$_}) } @hgrplist;
       next DEVICE if ((scalar @hgrplist) and (not $first_hgrp));
 
       # now reset first_hgroup to be the group matching the device, if any
-      $first_hgrp = first { check_acl_only($device, setting('host_groups')->{$_}) }
+      $first_hgrp = first { acl_matches($device, setting('host_groups')->{$_}) }
                           keys %{ setting('host_group_displaynames') || {} };
 
       ++$logvals{ $device->get_column('log') || 1 };

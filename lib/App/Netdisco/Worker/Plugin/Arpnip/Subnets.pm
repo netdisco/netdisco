@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 use Dancer::Plugin::DBIC 'schema';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
@@ -42,7 +42,7 @@ sub gather_subnets {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOOPBACK_ADDRESSES__');
+      next if acl_matches($ip, 'group:__LOOPBACK_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $netmask = $ip_netmask->{$addr} || $ip->bits();

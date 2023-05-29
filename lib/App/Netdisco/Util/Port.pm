@@ -4,7 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -107,9 +107,9 @@ sub port_reconfig_check {
 
   # check for limits on devices
   return "forbidden: device [$ip] is in denied ACL"
-    if check_acl_no($ip, 'portctl_no');
+    if acl_matches($ip, 'portctl_no');
   return "forbidden: device [$ip] is not in permitted ACL"
-    unless check_acl_only($ip, 'portctl_only');
+    unless acl_matches_only($ip, 'portctl_only');
 
   # only permitted to change interface name
   return "forbidden: not permitted to change port configuration"

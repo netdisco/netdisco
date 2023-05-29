@@ -90,7 +90,6 @@ Module::Build->new(
     'SNMP::Info' => '3.92',
     'SQL::Abstract' => '1.85',
     'SQL::Translator' => '0.11024',
-    'Sub::Install' => '0',
     'Sub::Util' => '1.40',
     'Template' => '2.24',
     'Template::AutoFilter' => '0',

@@ -5,7 +5,7 @@ use warnings;
 use Dancer ':script';
 
 use AnyEvent::DNS;
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -58,7 +58,7 @@ sub hostnames_resolve_async {
 
   IP: foreach my $hash_ref (@$ips) {
     my $ip = $hash_ref->{'ip'} || $hash_ref->{'alias'} || $hash_ref->{'device'};
-    next IP if check_acl_no($ip, $skip);
+    next IP if acl_matches($ip, $skip);
 
     # check /etc/hosts file and short-circuit if found
     foreach my $name (reverse sort keys %$ETCHOSTS) {

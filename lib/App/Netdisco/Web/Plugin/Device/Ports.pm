@@ -4,7 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::Port 'port_reconfig_check';
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
@@ -217,31 +217,33 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # filter out hidden ones
     if (not param('p_include_hidden')) {
-        my $device_ips = {};
-        map  { push @{ $device_ips->{$_->port} }, $_ }
-             $device->device_ips(undef, {prefetch => 'device_port'})->all;
+        my $port_map = {};
+        my %to_hide  = ();
 
-        map  { push @{ $device_ips->{$_->port} }, $_ }
-        grep { ! exists $device_ips->{$_->port} }
+        map { push @{ $port_map->{$_->port} }, $_ }
+             grep { $_->port }
              @results;
+
+        map { push @{ $port_map->{$_->port} }, $_ }
+            grep { $_->port }
+            $device->device_ips()->all;
 
         foreach my $map (@{ setting('hide_deviceports')}) {
             next unless ref {} eq ref $map;
 
             foreach my $key (sort keys %$map) {
                 # lhs matches device, rhs matches port
-                next unless check_acl_no($device, $key);
+                next unless $key and $map->{$key};
+                next unless acl_matches($device, $key);
 
-                PORT: foreach my $port (sort keys %$device_ips) {
-                    foreach my $thing (@{ $device_ips->{$port} }) {
-                        next unless check_acl_no($thing, $map->{$key});
-
-                        @results = grep { $_->port ne $port } @results;
-                        next PORT;
-                    }
+                foreach my $port (sort keys %$port_map) {
+                    next unless acl_matches($port_map->{$port}, $map->{$key});
+                    ++$to_hide{$port};
                 }
             }
         }
+
+        @results = grep { ! exists $to_hide{$_->port} } @results;
     }
 
     # sort ports

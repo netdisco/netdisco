@@ -5,14 +5,16 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
+use App::Netdisco::Util::Web 'sort_port';
 use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
 use NetAddr::IP::Lite ':lower';
+use Storable 'dclone';
 use Encode;
 
 register_worker({ phase => 'early', driver => 'snmp' }, sub {
@@ -66,7 +68,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       my $protect = setting('snmp_field_protection')->{'device'} || {};
       my %dirty = $device->get_dirty_columns;
       foreach my $field (keys %dirty) {
-          next unless check_acl_only($ip, $protect->{$field});
+          next unless acl_matches_only($ip, $protect->{$field});
           if (!defined $dirty{$field} or $dirty{$field} eq '') {
               return $job->cancel("discover cancelled: $ip failed to return valid $field");
           }
@@ -182,13 +184,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
-  # gather device_ips for use in ACLs later
-  my $device_ips = {};
-  foreach my $dip ($device->device_ips()->all) {
-      next unless defined $dip->port and $dip->port;
-      push @{ $device_ips->{ $dip->port } }, $dip;
-  }
-
   my $interfaces     = $snmp->interfaces;
   my $i_type         = $snmp->i_type;
   my $i_ignore       = $snmp->i_ignore;
@@ -272,38 +267,29 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   if (scalar @{ setting('ignore_deviceports') }) {
-    foreach my $port (keys %$device_ips) {
-        if (!exists $deviceports{$port}) {
-            delete $device_ips->{$port};
-            next;
-        }
-        foreach my $dip (@{ $device_ips->{$port} }) {
-            $dip->set_inflated_columns({ device_port => $deviceports{$port} });
-        }
-    }
-    foreach my $port (keys %deviceports) {
-        next if exists $device_ips->{$port};
-        push @{ $device_ips->{$port} },
-          schema('netdisco')->resultset('DevicePort')
-                            ->new_result( $deviceports{$port} );
-    }
+    my $port_map = {};
+
+    map { push @{ $port_map->{ $_->port } }, $_ }
+        grep { $_->port }
+        $device->device_ips()->all;
+
+    map { push @{ $port_map->{ $_->{port} } }, $_ }
+        values %{ dclone (\%deviceports || {}) };
 
     foreach my $map (@{ setting('ignore_deviceports')}) {
         next unless ref {} eq ref $map;
 
         foreach my $key (sort keys %$map) {
             # lhs matches device, rhs matches port
-            next unless check_acl_no($device, $key);
+            next unless $key and $map->{$key};
+            next unless acl_matches($device, $key);
 
-            PORT: foreach my $port (sort keys %$device_ips) {
-                foreach my $thing (@{ $device_ips->{$port} }) {
-                    next unless check_acl_no($thing, $map->{$key});
+            foreach my $port (sort { sort_port( $a, $b) } keys %$port_map) {
+                next unless acl_matches($port_map->{$port}, $map->{$key});
 
-                    debug sprintf ' [%s] interfaces - ignoring %s (config:ignore_deviceports)',
-                      $device->ip, $port;
-                    delete $deviceports{$port};
-                    next PORT;
-                }
+                debug sprintf ' [%s] interfaces - ignoring %s (config:ignore_deviceports)',
+                  $device->ip, $port;
+                delete $deviceports{$port};
             }
         }
     }
@@ -446,7 +432,7 @@ sub _get_ipv4_aliases {
       my $addr = $ip->addr;
 
       next if $addr eq '0.0.0.0';
-      next if check_acl_no($ip, 'group:__LOOPBACK_ADDRESSES__');
+      next if acl_matches($ip, 'group:__LOOPBACK_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
       my $iid = $ip_index->{$addr};
@@ -499,7 +485,7 @@ sub _get_ipv6_aliases {
       my $addr = $ip->addr;
 
       next if $addr eq '::0';
-      next if check_acl_no($ip, 'group:__LOOPBACK_ADDRESSES__');
+      next if acl_matches($ip, 'group:__LOOPBACK_ADDRESSES__');
 
       my $port   = $interfaces->{ $ipv6_index->{$iid} };
       my $subnet = $ipv6_pfxlen->{$iid}

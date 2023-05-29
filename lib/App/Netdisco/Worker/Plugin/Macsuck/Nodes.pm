@@ -5,11 +5,12 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::PortMAC 'get_port_macs';
 use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
+use App::Netdisco::Util::Web 'sort_port';
 
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
@@ -37,7 +38,8 @@ register_worker({ phase => 'early',
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
-                          $device->ports(undef, {prefetch => {neighbor_alias => 'device'}})->all};
+                          $device->ports(undef, {prefetch => ['properties',
+                                                              {neighbor_alias => 'device'}]})->all};
 });
 
 register_worker({ phase => 'main', driver => 'direct',
@@ -488,14 +490,15 @@ sub sanity_macs {
 
           foreach my $key (sort keys %$map) {
               # lhs matches device, rhs matches port
-              next unless check_acl_only($device, $key);
+              next unless $key and $map->{$key};
+              next unless acl_matches($device, $key);
 
-              foreach my $port (keys %{ $device_ports }) {
-                  next unless check_acl_only($device_ports->{$port}, $map->{$key});
+              foreach my $port (sort { sort_port($a, $b) } keys %{ $device_ports }) {
+                  next unless acl_matches($device_ports->{$port}, $map->{$key});
 
-                  ++$ignoreport->{$port};
                   debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceports',
                     $device->ip, $port;
+                  ++$ignoreport->{$port};
               }
           }
       }
@@ -559,7 +562,7 @@ sub sanity_macs {
               # with device lookups.
 
               my $neigh_cannot_macsuck = eval { # can fail
-                check_acl_no(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
+                acl_matches(($device_port->neighbor || "0 but true"), 'macsuck_unsupported') ||
                 match_to_setting($device_port->remote_type, 'macsuck_unsupported_type') };
 
               # here, is_uplink comes from Discover::Neighbors finding LLDP remnants

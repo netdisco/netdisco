@@ -6,7 +6,6 @@ use strict;
 use warnings;
 
 use base 'App::Netdisco::DB::Result';
-use Sub::Install;
 
 __PACKAGE__->table("device_ip");
 __PACKAGE__->add_columns(
@@ -51,39 +50,5 @@ routed port or virtual interface).
 
 __PACKAGE__->belongs_to( device_port => 'App::Netdisco::DB::Result::DevicePort',
   { 'foreign.port' => 'self.port', 'foreign.ip' => 'self.ip' } );
-
-=head2 device_port fields
-
-All C<device_port> fields are mapped to accessors on this object.
-
-=cut
-
-foreach my $field (qw/
-  descr
-  up
-  up_admin
-  type
-  duplex
-  duplex_admin
-  speed
-  speed_admin
-  name
-  mac
-  mtu
-  stp
-  remote_ip
-  remote_port
-  remote_type
-  remote_id
-  vlan
-  pvid
-  lastchange
-    /) {
-
-  Sub::Install::install_sub({
-    code => sub { return eval { (shift)->device_port->$field } },
-    as   => $field,
-  });
-}
 
 1;

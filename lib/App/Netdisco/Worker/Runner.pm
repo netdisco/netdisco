@@ -3,7 +3,7 @@ package App::Netdisco::Worker::Runner;
 use Dancer qw/:moose :syntax/;
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Permission qw/check_acl_no check_acl_only/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
@@ -43,8 +43,8 @@ sub run {
       my $no   = (exists $stanza->{no}   ? $stanza->{no}   : undef);
       my $only = (exists $stanza->{only} ? $stanza->{only} : undef);
 
-      next if $no and check_acl_no($job->device, $no);
-      next if $only and not check_acl_only($job->device, $only);
+      next if $no and acl_matches($job->device, $no);
+      next if $only and not acl_matches_only($job->device, $only);
 
       push @newuserconf, dclone $stanza;
     }
