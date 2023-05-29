@@ -221,11 +221,11 @@ get '/ajax/content/device/ports' => require_login sub {
         my %to_hide  = ();
 
         map { push @{ $port_map->{$_->port} }, $_ }
-             grep { defined $_->port }
+             grep { $_->port }
              @results;
 
         map { push @{ $port_map->{$_->port} }, $_ }
-            grep { defined $_->port }
+            grep { $_->port }
             $device->device_ips()->all;
 
         foreach my $map (@{ setting('hide_deviceports')}) {
@@ -233,6 +233,7 @@ get '/ajax/content/device/ports' => require_login sub {
 
             foreach my $key (sort keys %$map) {
                 # lhs matches device, rhs matches port
+                next unless $key and $map->{$key};
                 next unless acl_matches($device, $key);
 
                 foreach my $port (sort keys %$port_map) {

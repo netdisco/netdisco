@@ -8,7 +8,8 @@ use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
 use Encode;
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Web 'sort_port';
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
 
@@ -133,25 +134,21 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   if (scalar @{ setting('ignore_deviceports') }) {
-    foreach my $port (keys %$device_ports) {
-        next unless exists $properties{$port};
-        $properties{$port}->{port} = $port;
-        $device_ports->{$port}->set_inflated_columns({ properties => $properties{$port} });
-    }
-
     foreach my $map (@{ setting('ignore_deviceports')}) {
         next unless ref {} eq ref $map;
 
         foreach my $key (sort keys %$map) {
             # lhs matches device, rhs matches port
-            next unless check_acl_no($device, $key);
+            next unless $key and $map->{$key};
+            next unless acl_matches($device, $key);
 
-            foreach my $port (sort keys %$device_ports) {
-                next unless check_acl_no($device_ports->{$port}, $map->{$key});
+            foreach my $port (sort { sort_port($a, $b) } keys %properties) {
+                next unless acl_matches([$properties{$port}, $device_ports->{$port}],
+                                        $map->{$key});
 
                 debug sprintf ' [%s] properties - removing %s (config:ignore_deviceports)',
                   $device->ip, $port;
-                $device_ports->{$port}->delete;
+                $device_ports->{$port}->delete; # like, for real, in the DB
                 delete $properties{$port};
             }
         }

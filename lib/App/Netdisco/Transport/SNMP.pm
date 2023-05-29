@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::SNMP 'get_communities';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Permission ':all';
+use App::Netdisco::Util::Permission 'acl_matches';
 
 use SNMP::Info;
 use Try::Tiny;
@@ -97,7 +97,7 @@ sub test_connection {
 
   # avoid renumbering to localhost loopbacks
   return undef if $addr->addr eq '0.0.0.0'
-                  or check_acl_no($addr->addr, 'group:__LOOPBACK_ADDRESSES__');
+                  or acl_matches($addr->addr, 'group:__LOOPBACK_ADDRESSES__');
 
   my $device = schema(vars->{'tenant'})->resultset('Device')
     ->new_result({ ip => $addr->addr }) or return undef;
@@ -154,11 +154,11 @@ sub _snmp_connect_generic {
 
   # an override for RemotePort
   ($snmp_args{RemotePort}) =
-    (pairkeys pairfirst { check_acl_no($device, $b) }
+    (pairkeys pairfirst { acl_matches($device, $b) }
       %{setting('snmp_remoteport') || {}}) || 161;
 
   # an override for bulkwalk
-  $snmp_args{BulkWalk} = 0 if check_acl_no($device, 'bulkwalk_no');
+  $snmp_args{BulkWalk} = 0 if acl_matches($device, 'bulkwalk_no');
 
   # further protect against buggy Net-SNMP, and disable bulkwalk
   if ($snmp_args{BulkWalk}
@@ -197,9 +197,9 @@ sub _snmp_connect_generic {
 
   # which SNMP versions to try and in what order
   my @versions =
-    ( check_acl_no($device->ip, 'snmpforce_v3') ? (3)
-    : check_acl_no($device->ip, 'snmpforce_v2') ? (2)
-    : check_acl_no($device->ip, 'snmpforce_v1') ? (1)
+    ( acl_matches($device->ip, 'snmpforce_v3') ? (3)
+    : acl_matches($device->ip, 'snmpforce_v2') ? (2)
+    : acl_matches($device->ip, 'snmpforce_v1') ? (1)
     : (reverse (1 .. (setting('snmpver') || 3))) );
 
   # use existing or new device class

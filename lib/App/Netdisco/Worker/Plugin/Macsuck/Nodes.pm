@@ -10,6 +10,7 @@ use App::Netdisco::Util::PortMAC 'get_port_macs';
 use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
+use App::Netdisco::Util::Web 'sort_port';
 
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
@@ -489,14 +490,15 @@ sub sanity_macs {
 
           foreach my $key (sort keys %$map) {
               # lhs matches device, rhs matches port
+              next unless $key and $map->{$key};
               next unless acl_matches($device, $key);
 
-              foreach my $port (keys %{ $device_ports }) {
+              foreach my $port (sort { sort_port($a, $b) } keys %{ $device_ports }) {
                   next unless acl_matches($device_ports->{$port}, $map->{$key});
 
-                  ++$ignoreport->{$port};
                   debug sprintf ' [%s] macsuck %s - port suppressed by macsuck_no_deviceports',
                     $device->ip, $port;
+                  ++$ignoreport->{$port};
               }
           }
       }

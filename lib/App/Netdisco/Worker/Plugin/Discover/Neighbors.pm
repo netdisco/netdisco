@@ -6,7 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
 use List::MoreUtils ();
@@ -185,7 +185,7 @@ sub store_neighbors {
       # useable remote IP...
 
       if ((! $r_netaddr) or ($remote_ip eq '0.0.0.0') or
-        check_acl_no($remote_ip, 'group:__LOOPBACK_ADDRESSES__')) {
+        acl_matches($remote_ip, 'group:__LOOPBACK_ADDRESSES__')) {
 
           if ($remote_id) {
               my $devices = schema('netdisco')->resultset('Device');

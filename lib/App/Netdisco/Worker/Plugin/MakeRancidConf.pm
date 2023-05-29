@@ -12,7 +12,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use Path::Class;
 use List::Util qw/pairkeys pairfirst/;
 use File::Slurper qw/read_lines write_text/;
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
@@ -65,16 +65,16 @@ register_worker({ phase => 'main' }, sub {
   my $routerunicity = {};
   while (my $d = $devices->next) {
 
-    if (check_acl_no($d, $config->{excluded})) {
+    if (acl_matches($d, $config->{excluded})) {
       debug " skipping $d: device excluded of export";
       next 
     }
 
-    my $name = check_acl_no($d, $config->{by_ip}) ? $d->ip : ($d->dns || $d->name);
-    $name =~ s/$domain_suffix$// if check_acl_no($d, $config->{by_hostname});
+    my $name = acl_matches($d, $config->{by_ip}) ? $d->ip : ($d->dns || $d->name);
+    $name =~ s/$domain_suffix$// if acl_matches($d, $config->{by_hostname});
 
     my ($group) =
-      (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{groups} }) || $default_group;
+      (pairkeys pairfirst { acl_matches($d, $b) } %{ $config->{groups} }) || $default_group;
 
     if (exists($routerunicity->{$group}->{$name})) {
       debug " skipping $d: device excluded because already present in export list";
@@ -82,7 +82,7 @@ register_worker({ phase => 'main' }, sub {
     }
 
     my ($vendor) =
-      (pairkeys pairfirst { check_acl_no($d, $b) } %{ $config->{vendormap} })
+      (pairkeys pairfirst { acl_matches($d, $b) } %{ $config->{vendormap} })
         || $d->vendor;
 
     if (not ($name and $vendor)) {

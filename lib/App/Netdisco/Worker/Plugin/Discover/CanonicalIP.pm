@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Permission 'check_acl_no';
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::DNS 'ipv4_from_hostname';
 use App::Netdisco::Util::Device 'is_discoverable';
 use Dancer::Plugin::DBIC 'schema';
@@ -34,37 +34,39 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   if (scalar @{ setting('device_identity') }) {
     my @idmaps = @{ setting('device_identity') };
-    my $devips = $device->device_ips->order_by('alias');
+    my @devips = $device->device_ips->order_by('alias')->all;
 
-    ALIAS: while (my $alias = $devips->next) {
-      next if $alias->alias eq $old_ip;
+    # using ALIASMAP break so that we stop after first successful renumber
 
-      foreach my $map (@idmaps) {
-        next unless ref {} eq ref $map;
+    ALIASMAP: foreach my $map (@idmaps) {
+      next unless ref {} eq ref $map;
 
-        foreach my $key (sort keys %$map) {
-          # lhs matches device, rhs matches device_ip
-          if (check_acl_no($device, $key)
-                and check_acl_no($alias, $map->{$key})) {
+      foreach my $key (sort keys %$map) {
+        # lhs matches device, rhs matches device_ip
+        next unless $key and $map->{$key};
+        next unless acl_matches($device, $key);
 
-            if (not is_discoverable( $alias->alias )) {
-              debug sprintf ' [%s] device - cannot renumber to %s - not discoverable',
-                $old_ip, $alias->alias;
-              next;
-            }
+        foreach my $alias (@devips) {
+          next if $alias->alias eq $old_ip;
+          next unless acl_matches($alias, $map->{$key});
 
-            if (App::Netdisco::Transport::SNMP->test_connection( $alias->alias )) {
-              $new_ip = $alias->alias;
-              last ALIAS;
-            }
-            else {
-              debug sprintf ' [%s] device - cannot renumber to %s - SNMP connect failed',
-                $old_ip, $alias->alias;
-            }
+          if (not is_discoverable( $alias->alias )) {
+            debug sprintf ' [%s] device - cannot renumber to %s - not discoverable',
+              $old_ip, $alias->alias;
+            next;
+          }
+
+          if (App::Netdisco::Transport::SNMP->test_connection( $alias->alias )) {
+            $new_ip = $alias->alias;
+            last ALIASMAP;
+          }
+          else {
+            debug sprintf ' [%s] device - cannot renumber to %s - SNMP connect failed',
+              $old_ip, $alias->alias;
           }
         }
       }
-    } # ALIAS
+    }
   }
 
   return if $new_ip eq $old_ip;

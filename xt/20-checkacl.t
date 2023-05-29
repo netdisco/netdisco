@@ -152,6 +152,7 @@ my $dp = App::Netdisco::DB->resultset('DevicePort')->new_result({
 # device properties
 ok(acl_matches([$dip2, $dp], [$conf[23]]), '2obj instance anon property deviceport:alias');
 ok(acl_matches([$dip2, $dp], ['ip:'.$conf[2]]), '2obj instance named property deviceport:ip');
+ok(acl_matches([undef, $dip2, $dp], ['ip:'.$conf[2]]), '2obj instance named property after undef');
 ok(acl_matches([$dip2, $dp], ['!ip:'. $conf[23]]), '2obj negated instance named property deviceport:ip');
 is(acl_matches([$dip2, $dp], ['port:'.$conf[2]]), 0, '2obj failed instance named property deviceport:ip');
 ok(acl_matches([$dip2, $dp], ['port:.*GigabitEthernet.*']), '2obj instance named property regexp deviceport:port');
