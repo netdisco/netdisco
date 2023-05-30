@@ -59,7 +59,7 @@ jobs:
 
     - name: Install Perl deps
       run: |
-        sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader
+        sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader Test::Pod
         sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest --installdeps /github/workspace/netdisco/netdisco
 
     - name: Run Tests
