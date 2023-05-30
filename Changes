@@ -1,3 +1,17 @@
+2.062000 - 2023-05-30
+
+  [NEW FEATURES]
+
+  * #1006 new hook for device delete event
+
+  [ENHANCEMENTS]
+
+  * refactor ACL support with multi-object compare
+
+  [BUG FIXES]
+
+  * only queue hooks if their trigger job is successful
+
 2.061001 - 2023-04-27
 
   [ENHANCEMENTS]

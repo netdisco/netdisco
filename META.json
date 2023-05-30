@@ -102,7 +102,6 @@
             "Socket6" : "0.23",
             "Starman" : "0.4008",
             "Storable" : "0",
-            "Sub::Install" : "0",
             "Sub::Util" : "1.40",
             "Sys::SigAction" : "0",
             "Template" : "2.24",
@@ -136,7 +135,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.061001"
+         "version" : "2.062000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -763,6 +762,9 @@
       "App::Netdisco::Worker::Plugin::Delete" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Delete.pm"
       },
+      "App::Netdisco::Worker::Plugin::Delete::Hooks" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Delete/Hooks.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover.pm"
       },
@@ -929,6 +931,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.061001",
+   "version" : "2.062000",
    "x_serialization_backend" : "JSON::PP version 4.07"
 }

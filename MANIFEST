@@ -222,6 +222,7 @@ lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
 lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
 lib/App/Netdisco/Worker/Plugin/Contact.pm
 lib/App/Netdisco/Worker/Plugin/Delete.pm
+lib/App/Netdisco/Worker/Plugin/Delete/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Discover.pm
 lib/App/Netdisco/Worker/Plugin/Discover/CanonicalIP.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm

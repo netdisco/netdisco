@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.061001'
+    version: '2.062000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -441,6 +441,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Contact.pm
   App::Netdisco::Worker::Plugin::Delete:
     file: lib/App/Netdisco/Worker/Plugin/Delete.pm
+  App::Netdisco::Worker::Plugin::Delete::Hooks:
+    file: lib/App/Netdisco/Worker/Plugin/Delete/Hooks.pm
   App::Netdisco::Worker::Plugin::Discover:
     file: lib/App/Netdisco/Worker/Plugin/Discover.pm
   App::Netdisco::Worker::Plugin::Discover::CanonicalIP:
@@ -614,7 +616,6 @@ requires:
   Socket6: '0.23'
   Starman: '0.4008'
   Storable: '0'
-  Sub::Install: '0'
   Sub::Util: '1.40'
   Sys::SigAction: '0'
   Template: '2.24'
@@ -641,5 +642,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/bsd-license.php
   repository: https://github.com/netdisco/netdisco
-version: '2.061001'
+version: '2.062000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
