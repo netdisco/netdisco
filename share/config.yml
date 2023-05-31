@@ -359,14 +359,16 @@ macsuck_only: []
 macsuck_all_vlans: false
 macsuck_no_unnamed: false
 macsuck_no_vlan:
-  - 'fddi-default'
-  - 'token-ring-default'
-  - 'fddinet-default'
-  - 'trnet-default'
-  - 'fcoe-vsan-4048'
-  - 'SAM-vlan-boot'
   - 'SAM-vlan-appliance-management'
+  - 'SAM-vlan-boot'
   - 'SAM-vlan-management'
+  - 'fcoe-vsan-4048'
+  - 'fddi-default'
+  - 'fddinet-default'
+  - 'token-ring-default'
+  - 'trbrf-default'
+  - 'trcrf-default'
+  - 'trnet-default'
 macsuck_no_devicevlan: []
 macsuck_no_deviceports: []
 macsuck_unsupported: []
