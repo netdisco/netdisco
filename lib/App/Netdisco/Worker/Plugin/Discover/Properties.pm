@@ -410,6 +410,7 @@ sub _get_ipv4_aliases {
   my @aliases;
 
   my $ip_index   = $snmp->ip_index;
+  my $ip_table   = $snmp->ip_table;
   my $interfaces = $snmp->interfaces;
   my $ip_netmask = $snmp->ip_netmask;
 
@@ -420,6 +421,7 @@ sub _get_ipv4_aliases {
     foreach my $vrf (@vrf_list) {
       snmp_comm_reindex($snmp, $device, $vrf);
       $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
+      $ip_table   = { %$ip_table,   %{$snmp->ip_table}   };
       $interfaces = { %$interfaces, %{$snmp->interfaces} };
       $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask} };
     }
@@ -427,7 +429,7 @@ sub _get_ipv4_aliases {
 
   # build device aliases suitable for DBIC
   foreach my $entry (keys %$ip_index) {
-      my $ip = NetAddr::IP::Lite->new($entry)
+      my $ip = NetAddr::IP::Lite->new($ip_table->{$entry}) || NetAddr::IP::Lite->new($entry)
         or next;
       my $addr = $ip->addr;
 
@@ -435,10 +437,10 @@ sub _get_ipv4_aliases {
       next if acl_matches($ip, 'group:__LOOPBACK_ADDRESSES__');
       next if setting('ignore_private_nets') and $ip->is_rfc1918;
 
-      my $iid = $ip_index->{$addr};
+      my $iid = $ip_index->{$entry};
       my $port = $interfaces->{$iid};
-      my $subnet = $ip_netmask->{$addr}
-        ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$addr})->network->cidr
+      my $subnet = $ip_netmask->{$entry}
+        ? NetAddr::IP::Lite->new($addr, $ip_netmask->{$entry})->network->cidr
         : undef;
 
       debug sprintf ' [%s] device - aliased as %s', $device->ip, $addr;
