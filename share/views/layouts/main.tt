@@ -210,7 +210,7 @@
           [% END %]
             <li><a href="[% uri_for('/swagger-ui') | none %]" target="_blank">👉 Browse the API</a></li>
           [% IF user_has_role('admin') %]
-            <li><a href="https://github.com/netdisco/netdisco/wiki/Configuration" target="_blank">⚙️ Configuration Settings</a></li>
+            <li><a href="https://github.com/netdisco/netdisco/wiki/Configuration" target="_blank">⚙️ Configuration Reference</a></li>
             <li><a href="https://github.com/sponsors/netdisco" target="_blank">💜 Become a Sponsor</a></li>
           [% END %]
           [% IF NOT settings.no_auth %]
