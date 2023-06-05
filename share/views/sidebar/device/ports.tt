@@ -11,14 +11,14 @@
               <div class="clearfix input-prepend nd_port-partial">
                 <label class="add-on nd_port-partial-label">
                   <input type="checkbox" id="partial"
-                    name="partial"[% ' checked="checked"' IF params.partial %]/>
+                    name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.partial %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="partial">
                   <span class="nd_port-partial-checkbox uneditable-input">Partial Match</span>
                 </label>
                 <label class="add-on nd_port-invert-label">
                   <input type="checkbox" id="invert"
-                    name="invert"[% ' checked="checked"' IF params.invert %]/>
+                    name="invert"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.invert %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="invert">
                   <span class="nd_port-invert-checkbox uneditable-input">Not</span>
