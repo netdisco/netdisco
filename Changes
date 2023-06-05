@@ -1,3 +1,15 @@
+2.062001 - 2023-06-05
+
+  [ENHANCEMENTS]
+
+  * #1026 change the way to retrieve IP address of interface
+  * #1036 skip API login for trust_remote_user, trust_x_remote_user, no_auth
+  * #1037 add new names for vlan 1003 and 1005 in Cisco-land
+  * #1038 ability to set "partial" default "on" in device ports sidebar
+  * add links for API, config, sponsor, to user menu
+  * try to work around Test::Pod change from Perl 5.36.0 to 5.36.1
+  * upgrade jquery to 1.12.4 to fix XSS vuln
+
 2.062000 - 2023-05-30
 
   [NEW FEATURES]
