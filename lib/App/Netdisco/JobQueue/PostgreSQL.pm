@@ -324,7 +324,7 @@ sub jq_insert {
   $jobs = [$jobs] if ref [] ne ref $jobs;
 
   # bit of a hack for heroku hosting to avoid DB overload
-  return true if setting('defanged_admin') eq 'false_admin';
+  return true if setting('defanged_admin') ne 'admin';
 
   my $happy = false;
   try {

@@ -240,7 +240,7 @@ swagger_path {
     },
   ],
   responses => { default => {} },
-}, put '/api/v1/object/device/:ip/nodes' => require_role api_admin => sub {
+}, put '/api/v1/object/device/:ip/nodes' => require_role setting('defanged_api_admin') => sub {
 
   jq_insert([{
     action => 'macsuck',
@@ -317,7 +317,7 @@ swagger_path {
     },
   ],
   responses => { default => {} },
-}, put '/api/v1/object/device/:ip/arps' => require_role api_admin => sub {
+}, put '/api/v1/object/device/:ip/arps' => require_role setting('defanged_api_admin') => sub {
 
   jq_insert([{
     action => 'arpnip',
