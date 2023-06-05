@@ -32,22 +32,11 @@ hook 'before' => sub {
     # from the internals of Dancer::Plugin::Auth::Extensible
     my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
-    # API calls must conform strictly to path and header requirements
-    if (request_is_api) {
-        # Dancer will issue a cookie to the client which could be returned and
-        # cause API calls to succeed without passing token. Kill the session.
-        session->destroy;
+    # Dancer will issue a cookie to the client which could be returned and
+    # cause API calls to succeed without passing token. Kill the session.
+    session->destroy if request_is_api;
 
-        my $token = request->header('Authorization');
-        my $user = $provider->validate_api_token($token)
-          or return;
-
-        session(logged_in_user => $user);
-        session(logged_in_user_realm => 'users');
-        return;
-    }
-
-    # after checking API, we can short circuit if Dancer reads its cookie OK
+    # ...otherwise, we can short circuit if Dancer reads its cookie OK
     return if session('logged_in_user');
 
     if (setting('trust_x_remote_user')
@@ -72,8 +61,18 @@ hook 'before' => sub {
         session(logged_in_user => $user);
         session(logged_in_user_realm => 'users');
     }
+    # this works for API calls, too
     elsif (setting('no_auth')) {
         session(logged_in_user => 'guest');
+        session(logged_in_user_realm => 'users');
+    }
+    # API calls must conform strictly to path and header requirements
+    elsif (request_is_api) {
+        my $token = request->header('Authorization');
+        my $user = $provider->validate_api_token($token)
+          or return;
+
+        session(logged_in_user => $user);
         session(logged_in_user_realm => 'users');
     }
     else {
@@ -82,17 +81,7 @@ hook 'before' => sub {
     }
 };
 
-# override default login_handler so we can log access in the database
-swagger_path {
-  description => 'Obtain an API Key',
-  tags => ['General'],
-  path => (setting('url_base') ? setting('url_base')->with('/login')->path : '/login'),
-  parameters => [],
-  responses => { default => { examples => {
-    'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
-  },
-},
-post '/login' => sub {
+my $login_sub = sub {
     my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     # get authN data from BasicAuth header used by API, put into params
@@ -161,21 +150,7 @@ post '/login' => sub {
     }
 };
 
-# ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
-# must be after the path is declared, above.
-Dancer::Plugin::Swagger->instance->doc
-  ->{paths}->{ (setting('url_base') ? setting('url_base')->with('/login')->path : '/login') }
-  ->{post}->{security}->[0]->{BasicAuth} = [];
-
-# we override the default login_handler, so logout has to be handled as well
-swagger_path {
-  description => 'Destroy user API Key and session cookie',
-  tags => ['General'],
-  path => (setting('url_base') ? setting('url_base')->with('/logout')->path : '/logout'),
-  parameters => [],
-  responses => { default => { examples => { 'application/json' => {} } } },
-},
-get '/logout' => sub {
+my $logout_sub = sub {
     my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);
 
     # clear out API token
@@ -201,6 +176,44 @@ get '/logout' => sub {
 
     redirect uri_for(setting('web_home'))->path;
 };
+
+my $api_requires_key =
+  (setting('trust_remote_user') or setting('trust_x_remote_user') or setting('no_auth'))
+    eq '1' ? false : true;
+
+if ($api_requires_key) {
+    # override default login_handler so we can log access in the database
+    swagger_path {
+      description => 'Obtain an API Key',
+      tags => ['General'],
+      path => (setting('url_base') ? setting('url_base')->with('/login')->path : '/login'),
+      parameters => [],
+      responses => { default => { examples => {
+        'application/json' => { api_key => 'cc9d5c02d8898e5728b7d7a0339c0785' } } },
+      },
+    },
+    post '/login' => $login_sub;
+
+    # ugh, *puke*, but D::P::Swagger has no way to set this with swagger_path
+    # must be after the path is declared, above.
+    Dancer::Plugin::Swagger->instance->doc
+      ->{paths}->{ (setting('url_base') ? setting('url_base')->with('/login')->path : '/login') }
+      ->{post}->{security}->[0]->{BasicAuth} = [];
+
+    # we override the default login_handler, so logout has to be handled as well
+    swagger_path {
+      description => 'Destroy user API Key and session cookie',
+      tags => ['General'],
+      path => (setting('url_base') ? setting('url_base')->with('/logout')->path : '/logout'),
+      parameters => [],
+      responses => { default => { examples => { 'application/json' => {} } } },
+    },
+    get '/logout' => $logout_sub;
+}
+else {
+    post '/login' => $login_sub;
+    get '/logout' => $logout_sub;
+}
 
 # user redirected here when require_role does not succeed
 any qr{^/(?:login(?:/denied)?)?} => sub {

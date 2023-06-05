@@ -27,13 +27,14 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     WHERE tacacs
   UNION
   SELECT username, 'api' AS role FROM users
-    WHERE token IS NOT NULL AND token_from IS NOT NULL
-          AND token_from > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) - ?)
+    WHERE ( ? ::boolean = false ) OR
+          ( token IS NOT NULL AND token_from IS NOT NULL
+          AND token_from > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) - ?) )
   UNION
   SELECT username, 'api_admin' AS role FROM users
-    WHERE token IS NOT NULL AND token_from IS NOT NULL
-          AND token_from > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) - ?)
-          AND admin
+    WHERE admin AND (( ? ::boolean = false ) OR
+          ( token IS NOT NULL AND token_from IS NOT NULL
+          AND token_from > (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) - ?) ))
 ENDSQL
 );
 

@@ -95,9 +95,19 @@ sub get_user_roles {
     my $roles       = $settings->{roles_relationship} || 'roles';
     my $role_column = $settings->{role_column}        || 'role';
 
+    # this method returns a list of current user roles
+    # but for API with trust_remote_user, trust_x_remote_user, and no_auth
+    # we need to fake that there is a valid API key
+
+    my $api_requires_key =
+      (setting('trust_remote_user') or setting('trust_x_remote_user') or setting('no_auth'))
+        eq '1' ? 'false' : 'true';
+
     return [ try {
-      $user->$roles->search({}, { bind => [setting('api_token_lifetime'), setting('api_token_lifetime')] })
-        ->get_column( $role_column )->all;
+      $user->$roles->search({}, { bind => [
+          $api_requires_key, setting('api_token_lifetime'),
+          $api_requires_key, setting('api_token_lifetime'),
+        ] })->get_column( $role_column )->all;
     } ];
 }
 

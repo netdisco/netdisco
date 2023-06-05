@@ -391,6 +391,10 @@ hook 'after' => sub {
     }
 };
 
+my $api_requires_key =
+  (setting('trust_remote_user') or setting('trust_x_remote_user') or setting('no_auth'))
+    eq '1' ? false : true;
+
 # setup for swagger API
 my $swagger = Dancer::Plugin::Swagger->instance;
 my $swagger_doc = $swagger->doc;
@@ -398,8 +402,8 @@ my $swagger_doc = $swagger->doc;
 $swagger_doc->{consumes} = 'application/json';
 $swagger_doc->{produces} = 'application/json';
 $swagger_doc->{tags} = [
-  {name => 'General',
-    description => 'Log in and Log out'},
+  ($api_requires_key ?
+    ({name => 'General', description => 'Log in and Log out'}) : ()),
   {name => 'Search',
     description => 'Search Operations'},
   {name => 'Objects',
@@ -409,13 +413,16 @@ $swagger_doc->{tags} = [
   {name => 'Queue',
     description => 'Operations on the Job Queue'},
 ];
-$swagger_doc->{securityDefinitions} = {
-  APIKeyHeader =>
-    { type => 'apiKey', name => 'Authorization', in => 'header' },
-  BasicAuth =>
-    { type => 'basic'  },
-};
-$swagger_doc->{security} = [ { APIKeyHeader => [] } ];
+
+if ($api_requires_key) {
+    $swagger_doc->{securityDefinitions} = {
+      APIKeyHeader =>
+        { type => 'apiKey', name => 'Authorization', in => 'header' },
+      BasicAuth =>
+        { type => 'basic'  },
+    };
+    $swagger_doc->{security} = [ { APIKeyHeader => [] } ];
+}
 
 # manually install Swagger UI routes because plugin doesn't handle non-root
 # hosting, so we cannot use show_ui(1)
