@@ -418,6 +418,7 @@ phone_capabilities:
   - '(?i:phone)'
 phone_platforms:
   - '(?i:mitel.5\d{3})'
+  - '(?i:phone)'
 wap_capabilities:
   - 'wlanAccessPoint'
 wap_platforms:
