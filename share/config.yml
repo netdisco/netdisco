@@ -113,7 +113,7 @@ sidebar_defaults:
   search_device:
     matchall:    { default: checked }
   device_ports:
-    partial:        { default: checked }
+    partial:        { default: null }
     invert:         { default: null }
     c_admin:        { label: 'Port Control and Editing', default: null, idx: 0 }
     c_port:         { label: 'Port', default: checked, idx: 1 }
