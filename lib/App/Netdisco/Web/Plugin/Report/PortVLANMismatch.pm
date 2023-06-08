@@ -21,7 +21,7 @@ get '/ajax/content/report/portvlanmismatch' => require_login sub {
     my @results = schema(vars->{'tenant'})
       ->resultset('Virtual::PortVLANMismatch')->search({},{
           bind => [ setting('sidebar_defaults')->{'device_ports'}->{'p_hide1002'}->{'default'}
-                      ? (1002, 1003, 1004, 1005) : (0, 0, 0, 0) ],
+                      ? (1002, 1003, 1004, 1005, 1002, 1003, 1004, 1005, 1002, 1003, 1004, 1005, 1002, 1003, 1004, 1005) : (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) ],
       })
       ->hri->all;
 
