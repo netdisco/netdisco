@@ -1,3 +1,10 @@
+2.062003 - 2023-06-tbd
+
+  [ENHANCEMENTS]
+
+  * #1044 faster PortVLANMismatch query
+  * #1045 custom_fields are now indexed
+
 2.062002 - 2023-06-06
 
   [BUG FIXES]
