@@ -425,6 +425,20 @@ if ($api_requires_key) {
     $swagger_doc->{security} = [ { APIKeyHeader => [] } ];
 }
 
+if (setting('trust_x_remote_user')) {
+    foreach my $path (keys %{ $swagger_doc->{paths} }) {
+        foreach my $method (keys %{ $swagger_doc->{paths}->{$path} }) {
+            unshift @{ $swagger_doc->{paths}->{$path}->{$method}->{parameters} }, {
+              name => 'X-REMOTE_USER',
+              description => 'API client user name',
+              in => 'header',
+              required => true,
+              type => 'string',
+            };
+        }
+    }
+}
+
 # manually install Swagger UI routes because plugin doesn't handle non-root
 # hosting, so we cannot use show_ui(1)
 my $swagger_base = config->{plugins}->{Swagger}->{ui_url};
