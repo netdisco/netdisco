@@ -363,7 +363,8 @@ hook before_layout_render => sub {
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
 
-    if (request->path eq uri_for('/swagger.json')->path
+    if (request->path =~ m{/swagger\.json} and
+        request->path eq uri_for('/swagger.json')->path
           and ref {} eq ref $r->content) {
         my $spec = dclone $r->content;
 
