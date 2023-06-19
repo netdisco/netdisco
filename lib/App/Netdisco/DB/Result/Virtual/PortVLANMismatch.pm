@@ -60,7 +60,7 @@ FROM (
                 ON dpv.ip = dp.ip AND dpv.port = dp.port
 
             LEFT JOIN device_ip dip
-                ON dp.remote_ip = dip.alias
+                ON dp.remote_ip = dip.alias AND (SELECT count(*) FROM device_ip WHERE alias = dp.remote_ip) = 1
 
             UNION
 
@@ -74,7 +74,7 @@ FROM (
                 ON dp3.ip = dpv2.ip AND dp3.port = dpv2.port
 
             LEFT JOIN device_ip dip2
-                ON dp2.remote_ip = dip2.alias
+                ON dp2.remote_ip = dip2.alias AND (SELECT count(*) FROM device_ip WHERE alias = dp2.remote_ip) = 1
         ) alldpv
 
         WHERE vlan NOT IN ( ?, ?, ?, ? ) AND remote_ip IS NOT NULL
