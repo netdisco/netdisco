@@ -1,9 +1,16 @@
-2.062003 - 2023-06-tbd
+2.062003 - 2023-06-20
 
   [ENHANCEMENTS]
 
   * #1044 faster PortVLANMismatch query
-  * #1045 custom_fields are now indexed
+  * #1045 custom fields are now indexed in the DB
+  * add "phone" to phone_platforms default config
+  * swagger-ui allows adding X-REMOTE_USER header when behind proxy
+
+  [BUG FIXES]
+
+  * add missing validate_remote_user default setting to config
+  * fix for undef HTTP_SERVER and HTTP_PORT err when browsing swagger-ui
 
 2.062002 - 2023-06-06
 
