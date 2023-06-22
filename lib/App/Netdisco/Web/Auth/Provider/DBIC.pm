@@ -46,10 +46,11 @@ sub get_user_details {
 
     # each of these settings permits no user in the database
     # so create a pseudo user entry instead
-    if (not $user and not setting('validate_remote_user')
-                  and (setting('trust_remote_user')
-                    or setting('trust_x_remote_user')
-                    or setting('no_auth'))) {
+    if (not $user and
+        (setting('no_auth') or
+          (not setting('validate_remote_user')
+           and (setting('trust_remote_user') or setting('trust_x_remote_user')) ))) {
+
         $user = $database->resultset($users_table)
           ->new_result({username => $username});
     }
@@ -73,7 +74,7 @@ sub validate_api_token {
       $database->resultset($users_table)->find({ $token_column => $token });
     };
 
-    return $user->username
+    return $user
       if $user and $user->in_storage and $user->token_from
         and $user->token_from > (time - setting('api_token_lifetime'));
     return undef;
