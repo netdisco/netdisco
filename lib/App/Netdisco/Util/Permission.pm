@@ -10,7 +10,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/acl_matches acl_matches_only/;
+our @EXPORT_OK = qw/check_acl acl_matches acl_matches_only/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
