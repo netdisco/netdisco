@@ -426,7 +426,7 @@ if (setting('trust_x_remote_user')) {
               name => 'X-REMOTE_USER',
               description => 'API client user name',
               in => 'header',
-              required => true,
+              required => false,
               type => 'string',
             };
         }

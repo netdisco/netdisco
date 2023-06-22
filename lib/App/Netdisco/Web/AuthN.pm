@@ -78,7 +78,7 @@ hook 'before' => sub {
         request->path_info('/');
     }
     # API calls must conform strictly to path and header requirements
-    elsif (request_is_api) {
+    elsif (request_is_api and request->header('Authorization')) {
         # from the internals of Dancer::Plugin::Auth::Extensible
         my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
