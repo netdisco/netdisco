@@ -1,3 +1,9 @@
+2.062005 - 2023-06-26
+
+  [BUG FIXES]
+
+  * fix op:and not working for prop:value ACL rules
+
 2.062004 - 2023-06-26
 
   [ENHANCEMENTS]
