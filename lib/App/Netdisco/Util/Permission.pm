@@ -254,7 +254,7 @@ sub check_acl {
               }
           }
 
-          return false if $all;
+          return false if $all and not $found;
           next RULE;
       }
 
@@ -317,6 +317,7 @@ sub check_acl {
       else {
         return false if $all;
       }
+
       next RULE;
   }
 

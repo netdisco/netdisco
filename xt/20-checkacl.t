@@ -131,6 +131,9 @@ ok(acl_matches($dip, ['!ip:'. $conf[23]]), '1obj negated instance named property
 is(acl_matches($dip, ['port:'.$conf[2]]), 0, '1obj failed instance named property deviceport:ip');
 ok(acl_matches($dip, ['port:.*GigabitEthernet.*']), '1obj instance named property regexp deviceport:port');
 
+# AND device properties
+ok(acl_matches($dip, ['ip:'.$conf[2], '!ip:'. $conf[23], $conf[20]]), 'AND of 1obj instance and negated instance named property deviceport:ip');
+
 # DeviceIp no longer has DevicePort slot accessors
 #ok(acl_matches($dip, ['type:l3ipvlan']), '1obj related item field match');
 #ok(acl_matches($dip, ['remote_ip:']), '1obj related item field empty');
