@@ -2,6 +2,7 @@ package App::Netdisco::Worker::Plugin::GetAPIKey;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC 'schema';
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
@@ -22,8 +23,15 @@ register_worker({ phase => 'main' }, sub {
   return Status->error("No such user")
     unless $user and $user->in_storage;
 
-  $user->update({ token_from => time, token => \'md5(random()::text)' })
-    ->discard_changes();
+  # from the internals of Dancer::Plugin::Auth::Extensible
+  my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
+
+  # if there's a current valid token then reissue it and reset timer
+  $user->update({
+      token_from => time,
+      ($provider->validate_api_token($user->token)
+        ? () : (token => \'md5(random()::text)')),
+    })->discard_changes();
 
   return Status->done(
     sprintf 'Set token for user %s: %s', $username, $user->token);
