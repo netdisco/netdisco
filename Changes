@@ -1,3 +1,14 @@
+2.062004 - 2023-06-26
+
+  [ENHANCEMENTS]
+
+  * #843 redux - also refresh API token for getapikey
+  * #1036 redux - allow use of /login even when authN is delegated
+
+  [BUG FIXES]
+
+  * permit import of check_acl from Util::Permission
+
 2.062003 - 2023-06-20
 
   [ENHANCEMENTS]
