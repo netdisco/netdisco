@@ -251,7 +251,7 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # add acl on port config
     if (param('c_admin') and user_has_role('port_control')) {
-      map {$_->{portctl} = (port_reconfig_check($_) ? false : true)} @results;
+      map {$_->{portctl} = (port_reconfig_check($_, $device, logged_in_user) ? false : true)} @results;
     }
 
     # empty set would be a 'no records' msg

@@ -84,7 +84,7 @@ get '/device' => require_login sub {
 
     params->{'tab'} ||= 'details';
     template 'device', {
-      is_pseudo => $first->is_pseudo,
+      netdisco_device => $first,
       display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
       lgroup_list => [ schema(vars->{'tenant'})->resultset('Device')->get_distinct_col('location') ],
       hgroup_list => setting('host_group_displaynames'),

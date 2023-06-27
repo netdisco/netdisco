@@ -27,6 +27,8 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "port_control",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
+  "portctl_role",
+  { data_type => "text", is_nullable => 1 },
   "ldap",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
   "radius",

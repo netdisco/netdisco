@@ -52,6 +52,10 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
           )),
 
           port_control => (param('port_control') ? \'true' : \'false'),
+          portctl_role =>
+            ((param('port_control') and param('port_control') ne '_global_')
+              ? param('port_control') : ''),
+
           admin => (param('admin') ? \'true' : \'false'),
           note => param('note'),
         });
@@ -92,6 +96,10 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
         )),
 
         port_control => (param('port_control') ? \'true' : \'false'),
+        portctl_role =>
+          ((param('port_control') and param('port_control') ne '_global_')
+            ? param('port_control') : ''),
+
         admin => (param('admin') ? \'true' : \'false'),
         note => param('note'),
       });
@@ -110,9 +118,11 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
+    my @port_control_roles = sort keys %{ setting('portctl_by_role') || {} };
+
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
-            { results => \@results, },
+            { results => \@results, port_control_roles => \@port_control_roles },
             { layout  => undef };
     }
     else {

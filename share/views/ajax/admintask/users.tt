@@ -17,7 +17,7 @@
     <tr>
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="username" type="text"></td>
-      <td class="nd_center-cell"><input class="span2" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="span1" data-form="add" name="password" type="password"></td>
       <td class="nd_center-cell">
         <div class="form-group">
           <select class="span2 form-control" data-form="add" name="auth_method">
@@ -49,7 +49,7 @@
         <input class="span2" data-form="update" name="username" type="text" value="[% row.username | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="password" type="password" value="********">
+        <input class="span1" data-form="update" name="password" type="password" value="********">
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
@@ -62,7 +62,15 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="port_control" type="checkbox" [% ' checked="checked"' IF row.port_control %]>
+        <div class="form-group">
+          <select class="span2 form-control" data-form="update" name="port_control">
+            <option[% ' selected' IF NOT row.port_control %] value="">Off</option>
+            <option[% ' selected' IF row.port_control AND row.portctl_role == "" %] value="_global_">Enabled (any port)</option>
+            [% FOREACH role IN port_control_roles %]
+            <option[% ' selected' IF row.port_control AND row.portctl_role == role %] value="[% role | html_entity %]">Role: [% role | html_entity %]</option>
+            [% END %]
+          </select>
+        </div>
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="admin" type="checkbox" [% ' checked="checked"' IF row.admin %]>

@@ -49,7 +49,7 @@
                   <li><i class="icon-li icon-rss"></i>&nbsp; Wireless Access Point</li>
                   <li><i class="icon-li icon-book"></i>&nbsp; Archived Data</li>
                   <li><i class="icon-li icon-group"></i>&nbsp; Interface Group</li>
-                  [% IF user_has_role('port_control') %]
+                  [% IF user_has_role('port_control', netdisco_device) %]
                   <li><i class="icon-li icon-refresh icon-spin"></i>&nbsp; Click "Update View"</li>
                   [% END %]
                 </ul>
@@ -63,7 +63,7 @@
               <div id="nd_columns" class="collapse in">
                 <ul class="nd_inputs-list unstyled">
                   [% FOREACH item IN settings.port_columns %]
-                  [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control') %]
+                  [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control', netdisco_device) %]
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"

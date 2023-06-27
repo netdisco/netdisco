@@ -14,6 +14,7 @@ use NetAddr::IP::Lite ':lower';
 register_admin_task({
   tag => 'topology',
   label => 'Manual Device Topology',
+  roles => [qw/admin port_control/],
 });
 
 sub _sanity_ok {

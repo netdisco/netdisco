@@ -251,6 +251,7 @@ portctl_nowaps: false
 portctl_nophones: false
 portctl_vlans: false
 portctl_uplinks: false
+portctl_by_role: {}
 system_port_control_reasons:
   address:     'Address Allocation Abuse'
   copyright:   'Copyright Violation'

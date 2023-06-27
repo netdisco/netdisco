@@ -17,7 +17,7 @@ register_worker({ phase => 'check' }, sub {
     or return Status->error(sprintf "Unknown port name [%s] on device %s",
                               $job->port, $job->device);
 
-  my $port_reconfig_check = port_reconfig_check(vars->{'port'});
+  my $port_reconfig_check = port_reconfig_check(vars->{'port'}, $job->device, $job->username);
   return Status->error("Cannot alter port: $port_reconfig_check")
     if $port_reconfig_check;
 

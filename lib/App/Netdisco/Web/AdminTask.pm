@@ -105,23 +105,4 @@ ajax "/ajax/control/admin/snapshot_del" => require_role setting('defanged_admin'
     schema(vars->{'tenant'})->resultset('DeviceBrowser')->search({ip => $device->addr})->delete;
 };
 
-get '/admin/*' => require_role admin => sub {
-    my ($tag) = splat;
-
-    if (exists setting('_admin_tasks')->{ $tag }) {
-      # trick the ajax into working as if this were a tabbed page
-      params->{tab} = $tag;
-
-      var(nav => 'admin');
-      template 'admintask', {
-        task => setting('_admin_tasks')->{ $tag },
-      }, { layout => 'main' };
-    }
-    else {
-      var('notfound' => true);
-      status 'not_found';
-      template 'index', {}, { layout => 'main' };
-    }
-};
-
 true;

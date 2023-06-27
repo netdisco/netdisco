@@ -27,6 +27,7 @@ use App::Netdisco::Util::Web qw/
   request_is_api_report
   request_is_api_search
 /;
+use App::Netdisco::Util::Permission 'acl_matches';
 
 BEGIN {
   no warnings 'redefine';
@@ -137,6 +138,26 @@ if (setting('extra_web_plugins') and ref [] eq ref setting('extra_web_plugins'))
     unshift @INC, dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'site_plugins')->stringify;
     _load_web_plugins( setting('extra_web_plugins') );
 }
+
+foreach my $tag (keys %{ setting('_admin_tasks') }) {
+    my $code = sub {
+        # trick the ajax into working as if this were a tabbed page
+        params->{tab} = $tag;
+
+        var(nav => 'admin');
+        template 'admintask', {
+          task => setting('_admin_tasks')->{ $tag },
+        }, { layout => 'main' };
+    };
+
+    if (setting('_admin_tasks')->{ $tag }->{ 'roles' }) {
+        get "/admin/$tag" => require_any_role setting('_admin_tasks')->{ $tag }->{ 'roles' } => $code;
+    }
+    else {
+        get "/admin/$tag" => require_role admin => $code;
+    }
+}
+
 
 # after plugins are loaded, add our own template path
 push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
@@ -269,8 +290,33 @@ hook 'before_template' => sub {
       for grep {$_ ne 'return_url'} keys %{params()};
     $tokens->{my_query} = $queryuri->query();
 
-    # access to logged in user's roles
-    $tokens->{user_has_role}  = sub { user_has_role(@_) };
+    # access to logged in user's roles (modulo RBAC)
+    $tokens->{user_has_role}  = sub {
+        my ($role, $device) = @_;
+        return false unless $role;
+
+        return user_has_role($role) if $role ne 'port_control';
+        return false unless user_has_role('port_control');
+        return true if not $device;
+
+        my $user = logged_in_user or return false;
+        return true unless $user->portctl_role;
+
+        my $acl = setting('portctl_by_role')->{$user->portctl_role};
+        if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
+            return true if acl_matches($device, $acl);
+        }
+        elsif ($acl and ref $acl eq ref {}) {
+            foreach my $key (grep { defined } sort keys %$acl) {
+                # lhs matches device, rhs matches port
+                # but we are not interested in the ports
+                return true if acl_matches($device, $key);
+            }
+        }
+
+        # assigned an unknown role
+        return false;
+    };
 
     # create date ranges from within templates
     $tokens->{to_daterange}  = sub { interval_to_daterange(@_) };

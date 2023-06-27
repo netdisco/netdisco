@@ -1,4 +1,4 @@
-[% SET user_can_port_control = user_has_role('port_control') %]
+[% SET user_can_port_control = user_has_role('port_control', d) %]
 <table class="table table-condensed table-striped">
   <tbody>
     <tr>

@@ -63,7 +63,7 @@ sub vlan_reconfig_check {
   return;
 }
 
-=head2 port_reconfig_check( $port )
+=head2 port_reconfig_check( $port, $device?, $user? )
 
 =over 4
 
@@ -90,14 +90,19 @@ C<$port> has a phone connected.
 Permission check that C<portctl_vlans> is true if C<$port> is a vlan
 subinterface.
 
+=item *
+
+Permission check on C<portctl_by_role> if the device and user are provided. A
+bare username will be promoted to a user instance.
+
 =back
 
-Will return nothing if these checks pass OK.
+Will return false if these checks pass OK.
 
 =cut
 
 sub port_reconfig_check {
-  my $port = shift;
+  my ($port, $device, $user) = @_;
   my $ip = $port->ip;
   my $name = $port->port;
 
@@ -132,7 +137,50 @@ sub port_reconfig_check {
   return "forbidden: [$name] is a vlan interface on [$ip]"
     if $is_vlan and not setting('portctl_vlans');
 
-  return;
+  # portctl_by_role check
+  if ($device and ref $device and $user) {
+    $user = ref $user ? $user :
+      schema(vars->{'tenant'})->resultset('User')
+                              ->find({ username => $user });
+    my $username = $user->username;
+
+    # special case admin user allowed to continue, because
+    # they can submit port control jobs
+    return "forbidden: user [$username] has no right to reconfigure ports"
+      unless ($user->admin or $user->port_control);
+
+    my $role = $user->portctl_role;
+    my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
+
+    if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
+        # all ports are permitted when the role acl is a device acl
+        # but check the device anyway
+        return "forbidden: user [$username] has no right to reconfigure ports"
+          unless acl_matches($device, $acl);
+    }
+    elsif ($acl and ref $acl eq ref {}) {
+        my $found = false;
+        foreach my $key (sort keys %$acl) {
+            # lhs matches device, rhs matches port
+            next unless $key and $acl->{$key};
+            if (acl_matches($device, $key)
+                and acl_matches($port, $acl->{$key})) {
+
+                $found = true;
+                last;
+            }
+        }
+
+        return "forbidden: user [$username] role [$role] cannot reconfigure port [$name] on [$ip]"
+          unless $found;
+    }
+    elsif ($role) {
+        return "forbidden: user [$username] is assigned an unknown role"
+          unless $user->port_control;
+    }
+  }
+
+  return false;
 }
 
 =head2 get_port( $device, $portname )

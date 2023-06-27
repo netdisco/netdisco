@@ -1,6 +1,6 @@
 [% USE CSV -%]
 [% CSV.dump([ 'Full Name' 'Username'
-              'LDAP Auth' 'RADIUS Auth' 'TACACS+ Auth' 'Port Control' 'Administrator' 'Created'
+              'LDAP Auth' 'RADIUS Auth' 'TACACS+ Auth' 'Port Control' 'Port Control Role' 'Administrator' 'Created'
               'Last Login' 'Note']) %]
 
 [% FOREACH row IN results %]
@@ -11,6 +11,7 @@
   [% mylist.push(row.radius) %]
   [% mylist.push(row.tacacs) %]
   [% mylist.push(row.port_control) %]
+  [% mylist.push(row.portctl_role) %]
   [% mylist.push(row.admin) %]
   [% mylist.push(row.created) %]
   [% mylist.push(row.last_seen) %]
