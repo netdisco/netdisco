@@ -184,7 +184,7 @@
       $(this).qtip({
         overwrite: false,
         content: {
-          attr: 'data-content'
+          text: $('<span/>').text( $(this).attr("data-content") ).html()
         },
         show: {
           event: event.type,

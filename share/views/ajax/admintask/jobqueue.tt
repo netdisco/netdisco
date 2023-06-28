@@ -22,7 +22,7 @@
       [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]
       [% ' class="nd_jobqueueitem error"'   IF row.status == 'error' %]
       [% ' class="nd_jobqueueitem info"'    IF row.status.search('^queued-') %]
-      data-content="<pre>[% row.log | html_entity %]</pre>"
+      data-content="[% row.log | html_entity %]"
     >
       <td class="nd_center-cell">[% row.entered_stamp | html_entity %]</td>
       <td class="nd_center-cell">
