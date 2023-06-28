@@ -99,6 +99,27 @@ BEGIN {
     }
     return $self->{path};
   };
+
+  # implement same_site
+  # from https://github.com/PerlDancer/Dancer-Session-Cookie/issues/20
+  *Dancer::Session::Cookie::_cookie_params = sub {
+      my $self     = shift;
+      my $name     = $self->session_name;
+      my $duration = $self->_session_expires_as_duration;
+      my %cookie   = (
+          name      => $name,
+          value     => $self->_cookie_value,
+          path      => setting('session_cookie_path') || '/',
+          domain    => setting('session_domain'),
+          secure    => setting('session_secure'),
+          http_only => setting("session_is_http_only") // 1,
+          same_site => setting("session_same_site"),
+      );
+      if ( defined $duration ) {
+          $cookie{expires} = time + $duration;
+      }
+      return %cookie;
+  };
 }
 
 use App::Netdisco::Web::AuthN;

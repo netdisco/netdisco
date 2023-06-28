@@ -640,6 +640,7 @@ plugins:
         schema_name: 'netdisco'
 session: 'cookie'
 session_cookie_key: 'this_will_be_overridden_on_webapp_startup'
+session_same_site: 'Lax'
 template: 'netdisco_template_toolkit'
 route_cache: true
 appname: 'Netdisco'
