@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web (); # for sort_port
+use HTML::Entities 'encode_entities';
 
 ajax '/ajax/data/devicename/typeahead' => require_login sub {
     return '[]' unless setting('navbar_autocomplete');
@@ -14,7 +15,7 @@ ajax '/ajax/data/devicename/typeahead' => require_login sub {
     my $set = schema(vars->{'tenant'})->resultset('Device')->search_fuzzy($q);
 
     content_type 'application/json';
-    to_json [map {$_->dns || $_->name || $_->ip} $set->all];
+    to_json [map {encode_entities($_->dns || $_->name || $_->ip)} $set->all];
 };
 
 ajax '/ajax/data/deviceip/typeahead' => require_login sub {
