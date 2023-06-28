@@ -482,6 +482,7 @@ share/schema_versions/App-Netdisco-DB-75-76-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-76-77-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-77-78-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-78-79-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-79-80-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt

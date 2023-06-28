@@ -1,3 +1,9 @@
+2.063000 - 2023-06-28
+
+  [NEW FEATURES]
+
+  * #975 RBAC for port control with new portctl_by_role setting
+
 2.062005 - 2023-06-26
 
   [BUG FIXES]
