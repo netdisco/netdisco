@@ -1,3 +1,12 @@
+2.063001 - 2023-06-28
+
+  [BUG FIXES]
+
+  * avoid CSS vulnerability in Job Queue page
+  * avoid CSS vulnerability in Find Anything
+  * explicitly use SameSite=Lax Cookie Attribute for dancer.session cookies
+  * avoid open redirect vulnerability with return_url login helper
+
 2.063000 - 2023-06-28
 
   [NEW FEATURES]
