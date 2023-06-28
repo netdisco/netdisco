@@ -8,6 +8,7 @@ use Dancer::Plugin::Swagger;
 use App::Netdisco; # a safe noop but needed for standalone testing
 use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
+use URI::Based;
 
 # ensure that regardless of where the user is redirected, we have a link
 # back to the page they requested.
@@ -162,7 +163,7 @@ post '/login' => sub {
             return to_json { api_key => $user->token };
         }
 
-        redirect param('return_url');
+        redirect ((scalar URI::Based->new(param('return_url'))->path_query) || '/');
     }
     else {
         # invalidate session cookie
