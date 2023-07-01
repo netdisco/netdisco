@@ -46,7 +46,7 @@
           <div class="modal-body">
             <blockquote>
               <ul>
-                <li><p>This action is immediate and not reversible</p></li>
+                <li><p>A job will be queued to delete the device</p></li>
                 <li><p>All associated Nodes may be removed from the database</p></li>
               </ul>
             </blockquote>
