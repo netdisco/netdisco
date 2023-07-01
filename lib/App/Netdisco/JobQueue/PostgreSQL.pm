@@ -279,7 +279,7 @@ sub jq_complete {
         ->search({ job => $job->id }, { for => 'update' })
         ->update({
           status => $job->status,
-          log    => $job->log,
+          log    => (ref($job->log) eq ref('')) ? $job->log : '',
           started  => $job->started,
           finished => $job->finished,
           (($job->action eq 'hook') ? (subaction => $job->subaction) : ()),
