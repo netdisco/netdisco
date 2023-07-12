@@ -172,6 +172,10 @@ if ($ENV{NETDISCO_DOMAIN}) {
   }
 }
 
+# override SNMP bulkwalk from environment
+config->{'bulkwalk_off'} = true
+  if (exists $ENV{NETDISCO_SNMP_BULKWALK_OFF} and $ENV{NETDISCO_SNMP_BULKWALK_OFF});
+
 # check user's port_control_reasons
 
 config->{'port_control_reasons'} =

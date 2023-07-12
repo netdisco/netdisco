@@ -185,7 +185,8 @@ sub _snmp_connect_generic {
     $snmp_args{ $k } = setting('net_snmp_options')->{ $k };
   }
 
-  if (scalar keys %{ setting('net_snmp_options') }) {
+  if (scalar keys %{ setting('net_snmp_options') }
+      or not $snmp_args{BulkWalk}) {
     foreach my $k (sort keys %snmp_args) {
         next if $k eq 'MibDirs';
         debug sprintf 'snmp transport conf: %s => %s', $k, $snmp_args{ $k };
