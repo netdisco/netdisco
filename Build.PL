@@ -108,6 +108,7 @@ Module::Build->new(
   recommends => {
     'Graph' => '0',
     'GraphViz' => '0',
+    'Alien::SNMP' => '3.0509030000',
   },
   test_requires => {
     'Test::More' => '1.302083',
