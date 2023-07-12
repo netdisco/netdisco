@@ -425,7 +425,7 @@
           [% END %]
         [% END %]
         [% END %]
-        [% IF user_can_port_control AND params.c_admin AND row.portctl %]
+        [% IF settings.portctl_topology AND user_can_port_control AND params.c_admin AND row.portctl %]
         <a class="nd_log-icon"
           href="[% uri_for('/admin/topology') | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
           <i class="icon-link text-warning"
