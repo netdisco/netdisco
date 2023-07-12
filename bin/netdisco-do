@@ -191,7 +191,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 =head1 SYNOPSIS
 
- ~/bin/netdisco-do <action> [-DISQR] [--enqueue] [--quiet] [-d <device> [-p <port>] [-e <extra>]]
+ ~/bin/netdisco-do <action> [-DISQR] [--enqueue] [--force] [--quiet] [-d <device> [-p <port>] [-e <extra>]]
 
 =head1 DESCRIPTION
 
@@ -205,7 +205,8 @@ to do much when you trigger them. Everything else happens in real-time.
 
 However the "C<--enqueue>" option will force the queueing of the job,
 regardless of type. This may be useful for cron-driven actions, or for actions
-working across large IP spaces.
+working across large IP spaces. Netdisco will refuse to queue more than 512
+jobs at once unless you also add the "C<--force>" option.
 
 For any action, if you wish to run one of its individual worker stages, then
 pass C<action::stage> as the first argument to C<netdisco-do>, for example
