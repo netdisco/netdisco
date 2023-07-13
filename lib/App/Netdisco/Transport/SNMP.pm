@@ -210,22 +210,30 @@ sub _snmp_connect_generic {
   }
 
   my $info = undef;
-  COMMUNITY: foreach my $comm (@communities) {
-      next unless $comm;
+  my $orig_retries = $snmp_args{Retries};
+  my $orig_timeout = $snmp_args{Timeout};
+
+  CLASS: foreach my $class (@classes) {
+      next unless $class;
 
       VERSION: foreach my $ver (@versions) {
           next unless $ver;
+          my %local_args = (%snmp_args, Version => $ver);
 
-          next if $ver eq 3 and exists $comm->{community};
-          next if $ver ne 3 and !exists $comm->{community};
+          COMMUNITY: foreach my $comm (@communities) {
+              next unless $comm;
 
-          CLASS: foreach my $class (@classes) {
-              next unless $class;
+              next if $ver eq 3 and exists $comm->{community};
+              next if $ver ne 3 and !exists $comm->{community};
 
-              my %local_args = (%snmp_args, Version => $ver);
+              # $local_args{Retries} = $comm->{_tried} ? $orig_retries : 0;
+              # $local_args{Timeout} = $comm->{_tried} ? $orig_timeout : 500000;
+
               $info = _try_connect($device, $class, $comm, $mode, \%local_args,
                 ($useclass ? 0 : 1) );
-              last COMMUNITY if $info;
+              last CLASS if $info;
+
+              # ++$comm->{_tried};
           }
       }
   }
@@ -247,9 +255,10 @@ sub _try_connect {
 
   try {
       debug
-        sprintf '[%s:%s] try_connect with ver: %s, class: %s, comm: %s',
+        sprintf '[%s:%s] try_connect with v: %s, t: %s, r: %s, class: %s, comm: %s',
           $snmp_args->{DestHost}, $snmp_args->{RemotePort},
-          $snmp_args->{Version}, $class, $debug_comm;
+          $snmp_args->{Version}, ($snmp_args->{Timeout} / 1000000), $snmp_args->{Retries},
+          $class, $debug_comm;
       Module::Load::load $class;
 
       $info = $class->new(%$snmp_args, %comm_args) or return;
@@ -260,7 +269,7 @@ sub _try_connect {
       if ($reclass and $info and $info->device_type ne $class) {
           $class = $info->device_type;
           debug
-            sprintf '[%s:%s] try_connect with ver: %s, new class: %s, comm: %s',
+            sprintf '[%s:%s] try_connect with v: %s, new class: %s, comm: %s',
               $snmp_args->{DestHost}, $snmp_args->{RemotePort},
               $snmp_args->{Version}, $class, $debug_comm;
 
