@@ -246,7 +246,7 @@ sub jq_defer {
       # lock db row and update to show job is available
       schema(vars->{'tenant'})->resultset('Admin')
         ->search({ job => $job->id }, { for => 'update' })
-        ->update({ status => 'queued', started => undef });
+        ->update({ status => 'queued', started => undef, log => $job->log });
     });
     $happy = true;
   }

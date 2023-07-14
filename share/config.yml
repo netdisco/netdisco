@@ -345,6 +345,7 @@ snmpver: 3
 snmptimeout: 3000000
 snmpretries: 2
 net_snmp_options: {}
+snmp_try_slow_connect: true
 snmp_remoteport: {}
 snmp_field_protection:
   device:
@@ -527,6 +528,7 @@ worker_plugins:
   - 'Hook'
   - 'Hook::Exec'
   - 'Hook::HTTP'
+  - 'Internal::SNMPFastDiscover'
   - 'LoadMIBs'
   - 'Location'
   - 'Macsuck'

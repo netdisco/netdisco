@@ -31,27 +31,28 @@ sub load_workers {
       if $plugin !~ m/^\+/;
     $plugin =~ s/^\+//;
 
-    next unless $plugin =~ m/::Plugin::${action}(?:::|$)/i;
+    next unless $plugin =~ m/::Plugin::(?:${action}|Internal)(?:::|$)/i;
     $ENV{ND2_LOG_PLUGINS} && debug "loading worker plugin $plugin";
     Module::Load::load $plugin;
   }
 
   # now vars->{workers} is populated, we set the dispatch order
-  my $workers = vars->{'workers'}->{$action} || {};
+  my %workers = ( %{ vars->{'workers'}->{$action} || {} },
+    %{ vars->{'workers'}->{'internal'} || {} } );
   my $driverless_main = 0;
-  #use DDP; p vars->{'workers'};
+  # use DDP; p vars{'workers'}; p %workers;
 
   foreach my $phase (qw/check early main user store late/) {
     my $pname = "workers_${phase}";
     my @wset = ();
 
-    foreach my $namespace (sort keys %{ $workers->{$phase} }) {
+    foreach my $namespace (sort keys %{ $workers{$phase} }) {
       foreach my $priority (sort {$b <=> $a}
-                            keys %{ $workers->{$phase}->{$namespace} }) {
+                            keys %{ $workers{$phase}->{$namespace} }) {
 
         ++$driverless_main if $phase eq 'main'
           and ($priority == 0 or $priority == setting('driver_priority')->{'direct'});
-        push @wset, @{ $workers->{$phase}->{$namespace}->{$priority} };
+        push @wset, @{ $workers{$phase}->{$namespace}->{$priority} };
       }
     }
 

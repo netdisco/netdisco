@@ -209,9 +209,37 @@ sub _snmp_connect_generic {
       unshift @classes, $device->snmp_class;
   }
 
-  my $info = undef;
-  my $orig_retries = $snmp_args{Retries};
-  my $orig_timeout = $snmp_args{Timeout};
+  # first try the communities in a fast pass using best version
+
+  VERSION: foreach my $ver (3, 2) {
+      my %local_args = (%snmp_args,
+        Version => $ver, Retries => 0, Timeout => 200000);
+
+      COMMUNITY: foreach my $comm (@communities) {
+          next unless $comm;
+
+          next if $ver eq 3 and exists $comm->{community};
+          next if $ver ne 3 and !exists $comm->{community};
+
+          my $info = _try_connect($device, $classes[0], $comm, $mode, \%local_args,
+            ($useclass ? 0 : 1) );
+
+          # if successful, restore the default/user timeouts and return
+          if ($info) {
+              my $class = $info->device_type;
+              return $class->new(
+                %snmp_args, Version => $ver,
+                _mk_info_commargs($comm),
+              );
+          }
+      }
+  }
+
+  # then revert to conservative settings and repeat with all versions
+
+  # unless user wants just the fast connections for bulk discovery
+  # or we are on the first discovery attempt of a new device
+  return unless setting('snmp_try_slow_connect');
 
   CLASS: foreach my $class (@classes) {
       next unless $class;
@@ -226,19 +254,14 @@ sub _snmp_connect_generic {
               next if $ver eq 3 and exists $comm->{community};
               next if $ver ne 3 and !exists $comm->{community};
 
-              # $local_args{Retries} = $comm->{_tried} ? $orig_retries : 0;
-              # $local_args{Timeout} = $comm->{_tried} ? $orig_timeout : 500000;
-
-              $info = _try_connect($device, $class, $comm, $mode, \%local_args,
+              my $info = _try_connect($device, $class, $comm, $mode, \%local_args,
                 ($useclass ? 0 : 1) );
-              last CLASS if $info;
-
-              # ++$comm->{_tried};
+              return $info if $info;
           }
       }
   }
 
-  return $info;
+  return undef;
 }
 
 sub _try_connect {
