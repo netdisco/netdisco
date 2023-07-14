@@ -202,7 +202,7 @@ sub check_acl {
       }
 
       # prop:val
-      if ($rule =~ m/^([^:]+):([^:]*)$/) {
+      if ($rule =~ m/^([^:]+):(.*)$/) {
           my $prop  = $1;
           my $match = $2 || '';
           my $found = false;
