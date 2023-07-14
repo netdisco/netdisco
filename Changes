@@ -1,3 +1,18 @@
+2.063002 - 2023-07-14
+
+  [ENHANCEMENTS]
+
+  * #1059 NETDISCO_SNMP_BULKWALK_OFF environment to disable bulkwalk
+  * #1060 portctl_topology setting to enable manual topology for port control users
+  * #1066 faster device credentials discovery and snmp_try_slow_connect setting
+  * #1067 netdisco-do --force to enqueue more than 512 jobs
+  * deleting a device is now always a job, never done in the web engine
+  * update netdisco-do documentation
+
+  [BUG FIXES]
+
+  * #1058 error when the log string is empty
+
 2.063001 - 2023-06-28
 
   [BUG FIXES]

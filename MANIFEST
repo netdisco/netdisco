@@ -246,6 +246,7 @@ lib/App/Netdisco/Worker/Plugin/Graph.pm
 lib/App/Netdisco/Worker/Plugin/Hook.pm
 lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
 lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
+lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm
 lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm

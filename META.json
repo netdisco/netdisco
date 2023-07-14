@@ -29,6 +29,7 @@
       },
       "runtime" : {
          "recommends" : {
+            "Alien::SNMP" : "3.0509030000",
             "Graph" : "0",
             "GraphViz" : "0"
          },
@@ -93,7 +94,7 @@
             "Pod::Usage" : "0",
             "Regexp::Common" : "2017060201",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.92",
+            "SNMP::Info" : "3.93",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -135,7 +136,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.063001"
+         "version" : "2.063002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -834,6 +835,9 @@
       "App::Netdisco::Worker::Plugin::Hook::HTTP" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm"
       },
+      "App::Netdisco::Worker::Plugin::Internal::SNMPFastDiscover" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm"
+      },
       "App::Netdisco::Worker::Plugin::LoadMIBs" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm"
       },
@@ -923,7 +927,7 @@
       },
       "homepage" : "http://netdisco.org/",
       "license" : [
-         "http://opensource.org/licenses/bsd-license.php"
+         "http://opensource.org/licenses/BSD-3-Clause"
       ],
       "repository" : {
          "url" : "https://github.com/netdisco/netdisco"
@@ -931,6 +935,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.063001",
+   "version" : "2.063002",
    "x_serialization_backend" : "JSON::PP version 4.07"
 }
