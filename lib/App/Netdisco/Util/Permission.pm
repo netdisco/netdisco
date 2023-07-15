@@ -202,7 +202,8 @@ sub check_acl {
       }
 
       # prop:val
-      if ($rule =~ m/^([^:]+):(.*)$/) {
+      # with a check that prop isn't just the first part of a v6 addr
+      if ($rule =~ m/^([^:]+):(.*)$/ and $1 !~ m/^[a-f0-9]+$/i) {
           my $prop  = $1;
           my $match = $2 || '';
           my $found = false;
