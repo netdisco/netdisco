@@ -1,3 +1,10 @@
+2.063003 - 2023-07-15
+
+  [BUG FIXES]
+
+  * allow ACL property match to contain ":"
+  * fix skip long SNMP timeout for initial discover
+
 2.063002 - 2023-07-14
 
   [ENHANCEMENTS]
