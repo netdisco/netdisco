@@ -150,6 +150,12 @@ my $dp = App::Netdisco::DB->resultset('DevicePort')->new_result({
     ip   => '127.0.0.1',
     port => 'TenGigabitEthernet1/10',
     type => 'l3ipvlan',
+    tags => [qw/ foo bar baz /],
+});
+
+my $d = App::Netdisco::DB->resultset('Device')->new_result({
+    ip   => '127.0.0.1',
+    tags => [qw/ quux /],
 });
 
 # device properties
@@ -167,6 +173,7 @@ is(acl_matches([$dip2, $dp], ['foobar:xyz']), 0, '2obj unknown property');
 
 my $dip2c = { $dip2->get_inflated_columns };
 my $dpc = { $dp->get_inflated_columns };
+my $dc = { $d->get_inflated_columns };
 
 # device properties
 ok(acl_matches([$dip2c, $dpc], [$conf[23]]), 'hh instance anon property deviceport:alias');
@@ -203,5 +210,15 @@ ok(acl_matches([$dip2c, $dp], ['type:l3ipvlan']), 'ho related item field match')
 ok(acl_matches([$dip2c, $dp], ['remote_ip:']), 'ho related item field empty');
 ok(acl_matches([$dip2c, $dp], ['!type:']), 'ho related item field not empty');
 is(acl_matches([$dip2c, $dp], ['foobar:xyz']), 0, 'ho unknown property');
+
+# tags
+
+ok(acl_matches([$dip2, $dp], ['tag:foo']), '2obj tag exists');
+ok(acl_matches([$dip2, $dp], ['!tag:quux']), '2obj tag not existing');
+is(acl_matches([$dp], ['tag:quux']), 0, '1obh tag does not exist');
+
+ok(acl_matches([$dip2c, $dpc], ['tag:foo']), 'hh tag exists');
+ok(acl_matches([$dip2c, $dpc], ['!tag:quux']), 'hh tag not existing');
+is(acl_matches([$dpc], ['tag:quux']), 0, 'hh tag does not exist');
 
 done_testing;

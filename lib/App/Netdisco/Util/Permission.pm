@@ -201,6 +201,33 @@ sub check_acl {
           next RULE;
       }
 
+      if ($rule =~ m/^tag:(.+)$/) {
+          my $tag = $1;
+          my $found = false;
+
+          ITEM: foreach my $item (@$things) {
+              if (blessed $item) {
+                  if ($neg xor ($item->can('tags') and ref [] eq ref $item->tags
+                                and scalar grep {$_ eq $tag} @{ $item->tags })) {
+                    return true if not $all;
+                    $found = true;
+                    last ITEM;
+                  }
+              }
+              elsif (ref {} eq ref $item) {
+                  if ($neg xor (exists $item->{'tags'} and ref [] eq ref $item->{'tags'}
+                                and scalar grep {$_ eq $tag} @{ $item->{'tags'} })) {
+                    return true if not $all;
+                    $found = true;
+                    last ITEM;
+                  }
+              }
+          }
+
+          return false if $all and not $found;
+          next RULE;
+      }
+
       # prop:val
       # with a check that prop isn't just the first part of a v6 addr
       if ($rule =~ m/^([^:]+):(.*)$/ and $1 !~ m/^[a-f0-9]+$/i) {
