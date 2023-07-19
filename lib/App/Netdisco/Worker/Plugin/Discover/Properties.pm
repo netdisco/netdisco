@@ -11,6 +11,8 @@ use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use App::Netdisco::Util::Web 'sort_port';
+use App::Netdisco::Web::CustomFields;
+
 use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
 use NetAddr::IP::Lite ':lower';
@@ -73,6 +75,21 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
               return $job->cancel("discover cancelled: $ip failed to return valid $field");
           }
       }
+  }
+
+  # for existing device, filter custom_fields
+  if ($device->in_storage) {
+      # get the custom_fields
+      my $fields = from_json ($device->custom_fields || '{}');
+      my %ok_fields = map {$_ => 1} @{ setting('_device_custom_fields') || [] };
+
+      # filter custom_fields for current valid fields
+      foreach my $field (keys %$fields) {
+          delete $fields->{$field} unless exists $ok_fields{$field};
+      }
+
+      # set new custom_fields
+      $device->set_column( custom_fields => to_json $fields );
   }
 
   # support for Hooks
@@ -365,10 +382,23 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
   schema('netdisco')->resultset('DevicePort')->txn_do_locked(sub {
     # backup the custom_fields
-    my @fields = grep {exists $deviceports{$_->{port}}} $device->ports
-      ->search(undef, {columns => [qw/port custom_fields/]})->hri->all;
-    $deviceports{$_->{port}}->{custom_fields} = $_->{custom_fields}
-      for @fields;
+    my %fields = map  {($_->{port} => from_json ($_->{custom_fields} || '{}'))}
+                 grep {exists $deviceports{$_->{port}}}
+                      $device->ports
+                             ->search(undef, {columns => [qw/port custom_fields/]})
+                             ->hri->all;
+
+    my %ok_fields = map {$_ => 1} @{ setting('_device_port_custom_fields') || [] };
+
+    # filter custom_fields for current valid fields
+    foreach my $port (keys %fields) {
+        foreach my $field (keys %{ $fields{$port} }) {
+            delete $fields{$port}->{$field} unless exists $ok_fields{$field};
+        }
+
+        # set new custom_fields
+        $deviceports{$port}->{custom_fields} = to_json $fields{$port};
+    }
 
     my $gone = $device->ports->delete({keep_nodes => 1});
     debug sprintf ' [%s] interfaces - removed %d interfaces',
