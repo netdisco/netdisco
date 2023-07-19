@@ -336,6 +336,12 @@ use_legacy_sshcollector: false
 custom_fields:
   device: []
   device_port: []
+tags:
+  device: {}
+  device_port: {}
+hide_tags:
+  device: []
+  device_port: []
 get_credentials: ""
 bulkwalk_off: false
 bulkwalk_no: []
@@ -516,6 +522,7 @@ worker_plugins:
   - 'Discover::PortProperties'
   - 'Discover::PortProperties::PortAccessEntity'
   - 'Discover::Properties'
+  - 'Discover::Properties::Tags'
   - 'Discover::VLANs'
   - 'Discover::Wireless'
   - 'Discover::WithNodes'
