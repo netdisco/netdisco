@@ -79,6 +79,14 @@
       <td>Description</td>
       <td>[% d.description | html_entity | html_line_break %]</td>
     </tr>
+    <tr>
+      <td>Tags</td>
+      <td>
+        [% FOREACH t IN filtered_tags %]
+        <span class="badge badge-success">[% t | html_entity %]</span>
+        [% END %]
+      </td>
+    </tr>
     [% IF settings._extra_device_details.size %]
     [% FOREACH config IN settings._extra_device_details %]
     <tr>

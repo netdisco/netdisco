@@ -145,6 +145,14 @@
       </td>
       [% END %]
 
+      [% IF params.c_tags %]
+      <td>
+        [% FOREACH t IN row.filtered_tags.sort %]
+        <span class="badge badge-success">[% t | html_entity %]</span>
+        [% END %]
+      </td>
+      [% END %]
+
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
 

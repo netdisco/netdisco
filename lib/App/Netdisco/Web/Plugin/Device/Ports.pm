@@ -9,6 +9,8 @@ use App::Netdisco::Util::Port 'port_reconfig_check';
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
+use List::MoreUtils 'singleton';
+
 register_device_tab({ tag => 'ports', label => 'Ports', provides_csv => 1 });
 
 # device ports with a description (er, name) matching
@@ -253,6 +255,10 @@ get '/ajax/content/device/ports' => require_login sub {
     if (param('c_admin') and user_has_role('port_control')) {
       map {$_->{portctl} = (port_reconfig_check($_, $device, logged_in_user) ? false : true)} @results;
     }
+
+    # filter the tags by hide_tags setting
+    my @hide = @{ setting('hide_tags')->{'device_port'} };
+    map { $_->{filtered_tags} = [ singleton (@{ $_->tags || [] }, @hide, @hide) ] } @results;
 
     # empty set would be a 'no records' msg
     return unless scalar @results;

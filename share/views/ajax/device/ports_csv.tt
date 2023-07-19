@@ -67,6 +67,10 @@
     [% myport.push(row.name) %]
   [% END %]
 
+  [% IF params.c_tags %]
+    [% myport.push(row.filtered_tags.join(':')) %]
+  [% END %]
+
   [% FOREACH config IN settings._extra_device_port_cols %]
     [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
     [% TRY %]

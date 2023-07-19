@@ -7,6 +7,8 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 
+use List::MoreUtils 'singleton';
+
 register_device_tab({ tag => 'details', label => 'Details' });
 
 # device details table
@@ -40,10 +42,14 @@ ajax '/ajax/content/device/details' => require_login sub {
         ],
     })->order_by('pos')->get_column('serial')->all;
 
+    # filter the tags by hide_tags setting
+    my @hide = @{ setting('hide_tags')->{'device'} };
+
     content_type('text/html');
     template 'ajax/device/details.tt', {
       d => $results[0], p => \@power,
       interfaces => \@interfaces,
+      filtered_tags => [ singleton (@{ $device->tags || [] }, @hide, @hide) ],
       serials => [sort keys %{ { map {($_ => $_)} (@serials, ($device->serial ? $device->serial : ())) } }],
     }, { layout => undef };
 };
