@@ -343,6 +343,7 @@ sub jq_insert {
               $row = schema(vars->{'tenant'})->resultset('Device')
                                              ->find($spec->{device});
           }
+          undef $row unless $row->can($spec->{action});
           die 'failed to find row for custom field update' unless $row;
 
           $spec->{action} =~ s/^cf_//;
