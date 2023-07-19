@@ -26,6 +26,7 @@ register_worker({ phase => 'main' }, sub {
       push @tags_to_set, $tag;
   }
 
+  return unless scalar @tags_to_set;
   $device->update({ tags => \@tags_to_set });
   debug sprintf ' [%s] properties - set %s tag%s',
     $device->ip, scalar @tags_to_set, (scalar @tags_to_set > 1);
