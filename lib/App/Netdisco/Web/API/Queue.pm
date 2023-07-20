@@ -159,14 +159,19 @@ swagger_path {
     },
   ],
   responses => { default => {} },
-}, post '/api/v1/queue/jobs' => require_role api_admin => sub {
+}, post '/api/v1/queue/jobs' => require_any_role [qw(api_admin port_control)] => sub {
   my $data = request->body || '';
   my $jobs = (length $data ? try { from_json($data) } : []);
 
-  (ref [] eq ref $jobs) or send_error('Malformed body', 400);
+  send_error('Malformed body', 400) if ref $jobs ne ref [];
 
   foreach my $job (@$jobs) {
-      ref {} eq ref $job or send_error('Malformed job', 400);
+      send_error('Malformed job', 400) if ref $job ne ref {};
+      send_error('Malformed job', 400) if !defined $job->{action};
+      send_error('Not Authorized', 403)
+        if ($job->{action} =~ m/^cf_/ and not user_has_role('port_control'))
+        or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
+
       $job->{username} = session('logged_in_user');
       $job->{userip}   = request->remote_address;
   }
