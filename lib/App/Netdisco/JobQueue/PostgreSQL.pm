@@ -340,14 +340,18 @@ sub jq_insert {
                                              ->find($spec->{port}, $spec->{device});
               undef $row unless
                 scalar grep {('cf_'. $_) eq $spec->{action}}
-                            @{ setting('_device_port_custom_fields') || [] };
+                            grep {defined}
+                            map {$_->{name}}
+                            @{ setting('custom_fields')->{device_port} || [] };
           }
           else {
               $row = schema(vars->{'tenant'})->resultset('Device')
                                              ->find($spec->{device});
               undef $row unless
                 scalar grep {('cf_'. $_) eq $spec->{action}}
-                            @{ setting('_device_custom_fields') || [] };
+                            grep {defined}
+                            map {$_->{name}}
+                            @{ setting('custom_fields')->{device} || [] };
           }
 
           die 'failed to find row for custom field update' unless $row;

@@ -11,7 +11,6 @@ use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use App::Netdisco::Util::Web 'sort_port';
-use App::Netdisco::Web::CustomFields;
 
 use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
@@ -81,7 +80,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   if ($device->in_storage) {
       # get the custom_fields
       my $fields = from_json ($device->custom_fields || '{}');
-      my %ok_fields = map {$_ => 1} @{ setting('_device_custom_fields') || [] };
+      my %ok_fields = map {$_ => 1}
+                      grep {defined}
+                      map {$_->{name}}
+                      @{ setting('custom_fields')->{device} || [] };
 
       # filter custom_fields for current valid fields
       foreach my $field (keys %$fields) {
@@ -388,7 +390,10 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
                              ->search(undef, {columns => [qw/port custom_fields/]})
                              ->hri->all;
 
-    my %ok_fields = map {$_ => 1} @{ setting('_device_port_custom_fields') || [] };
+    my %ok_fields = map {$_ => 1}
+                    grep {defined}
+                    map {$_->{name}}
+                    @{ setting('custom_fields')->{device_port} || [] };
 
     # filter custom_fields for current valid fields
     foreach my $port (keys %fields) {

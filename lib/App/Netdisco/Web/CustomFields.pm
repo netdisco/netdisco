@@ -83,7 +83,4 @@ set('_inline_actions' => [
   map {'cf_' . $_} (@inline_device_actions, @inline_device_port_actions)
 ]);
 
-set('_device_custom_fields' => \@inline_device_actions);
-set('_device_port_custom_fields' => \@inline_device_port_actions);
-
 true;
