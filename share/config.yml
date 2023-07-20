@@ -503,6 +503,7 @@ job_prio:
     - stats
 
 worker_plugins:
+  - 'Internal::SNMPFastDiscover'
   - 'AddPseudoDevice'
   - 'Arpnip'
   - 'Arpnip::Hooks'
@@ -536,7 +537,6 @@ worker_plugins:
   - 'Hook'
   - 'Hook::Exec'
   - 'Hook::HTTP'
-  - 'Internal::SNMPFastDiscover'
   - 'LoadMIBs'
   - 'Location'
   - 'Macsuck'

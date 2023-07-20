@@ -2,6 +2,8 @@ package App::Netdisco::Worker::Runner;
 
 use Dancer qw/:moose :syntax/;
 use Dancer::Plugin::DBIC 'schema';
+
+use App::Netdisco::Util::CustomFields;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use aliased 'App::Netdisco::Worker::Status';

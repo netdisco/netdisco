@@ -6,6 +6,7 @@ use Dancer qw/:syntax :script/;
 
 use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
+
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
 use base 'Exporter';
