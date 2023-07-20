@@ -357,7 +357,7 @@ sub jq_insert {
           die 'failed to find row for custom field update' unless $row;
 
           $spec->{action} =~ s/^cf_//;
-          $spec->{subaction} = to_json( $spec->{subaction} );
+          $spec->{subaction} = to_json( $spec->{extra} || $spec->{subaction} );
           $row->make_column_dirty('custom_fields');
           $row->update({
             custom_fields => \['jsonb_set(custom_fields, ?, ?)'
