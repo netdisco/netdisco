@@ -1,5 +1,7 @@
 package App::Netdisco::Util::CustomFields;
 
+use App::Netdisco; # a no-op except needed for testing
+
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 

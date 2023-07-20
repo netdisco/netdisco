@@ -102,10 +102,10 @@ is($j9->_last_priority, 0, 'priority is for driverless action');
 is($j9->log, 'OK: second driverless action is successful.',
   'driverless actions always run');
 
-my $j9 = do_job('TestSeven');
-is($j9->best_status, 'error', 'status is error');
-is((scalar @{$j9->_statuslist}), 2, 'two workers ran');
-is($j9->_last_priority, 1000000, 'priority is for direct action');
+my $j10 = do_job('TestSeven');
+is($j10->best_status, 'error', 'status is error');
+is((scalar @{$j10->_statuslist}), 2, 'two workers ran');
+is($j10->_last_priority, 1000000, 'priority is for direct action');
 
 done_testing;
 
