@@ -207,21 +207,71 @@ sub check_acl {
           my $found = false;
 
           ITEM: foreach my $item (@$things) {
-              if (blessed $item) {
-                  if ($neg xor ($item->can('tags') and ref [] eq ref $item->tags
-                                and scalar grep {$_ eq $tag} @{ $item->tags })) {
+              if (blessed $item and $item->can('tags')) {
+                  if ($neg xor scalar grep {$_ eq $tag} @{ $item->tags || [] }) {
                     return true if not $all;
                     $found = true;
                     last ITEM;
                   }
               }
-              elsif (ref {} eq ref $item) {
-                  if ($neg xor (exists $item->{'tags'} and ref [] eq ref $item->{'tags'}
-                                and scalar grep {$_ eq $tag} @{ $item->{'tags'} })) {
+              elsif (ref {} eq ref $item and exists $item->{'tags'}) {
+                  if ($neg xor scalar grep {$_ eq $tag} @{ $item->{'tags'} || [] }) {
                     return true if not $all;
                     $found = true;
                     last ITEM;
                   }
+              }
+          }
+
+          return false if $all and not $found;
+          next RULE;
+      }
+
+      # cf:customfield:val
+      if ($rule =~ m/^cf:([^:]+):(.*)$/) {
+          my $prop  = $1;
+          my $match = $2 || '';
+          my $found = false;
+
+          # custom field exists, undef is allowed to match empty string
+          ITEM: foreach my $item (@$things) {
+              my $cf = {};
+              if (blessed $item and $item->can('custom_fields')) {
+                  $cf = from_json ($item->custom_fields || '{}');
+              }
+              elsif (ref {} eq ref $item and exists $item->{'custom_fields'}) {
+                  $cf = from_json ($item->{'custom_fields'} || '{}');
+              }
+
+              if ($neg xor (ref {} eq ref $cf and exists $cf->{$prop} and
+                      ((!defined $cf->{$prop} and $match eq q{})
+                       or
+                       (defined $cf->{$prop} and ref $cf->{$prop} eq q{} and $cf->{$prop} =~ m/^$match$/)) )) {
+                return true if not $all;
+                $found = true;
+                last ITEM;
+              }
+          }
+
+          # missing custom field matches empty string
+          # (which is done in a second pass to allow all @$things to be
+          # inspected for existing custom fields)
+          ITEM: foreach my $item (@$things) {
+              last ITEM if $found;
+
+              my $cf = {};
+              if (blessed $item and $item->can('custom_fields')) {
+                  $cf = from_json ($item->custom_fields || '{}');
+              }
+              elsif (ref {} eq ref $item and exists $item->{'custom_fields'}) {
+                  $cf = from_json ($item->{'custom_fields'} || '{}');
+              }
+
+              # empty or missing property
+              if ($neg xor ($match eq q{} and ! exists $cf->{$prop})) {
+                return true if not $all;
+                $found = true;
+                last ITEM;
               }
           }
 

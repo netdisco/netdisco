@@ -151,11 +151,13 @@ my $dp = App::Netdisco::DB->resultset('DevicePort')->new_result({
     port => 'TenGigabitEthernet1/10',
     type => 'l3ipvlan',
     tags => [qw/ foo bar baz /],
+    custom_fields => '{"baz": "quux"}',
 });
 
 my $d = App::Netdisco::DB->resultset('Device')->new_result({
     ip   => '127.0.0.1',
     tags => [qw/ quux /],
+    custom_fields => '{"foo": "bar"}',
 });
 
 # device properties
@@ -220,5 +222,18 @@ is(acl_matches([$dp], ['tag:quux']), 0, '1obh tag does not exist');
 ok(acl_matches([$dip2c, $dpc], ['tag:foo']), 'hh tag exists');
 ok(acl_matches([$dip2c, $dpc], ['!tag:quux']), 'hh tag not existing');
 is(acl_matches([$dpc], ['tag:quux']), 0, 'hh tag does not exist');
+
+# custom fields
+
+ok(acl_matches([$dip2, $dp], ['cf:baz:quux']), '2obj cf matches');
+ok(acl_matches([$dip2, $dp], ['!cf:baa:qd']), '2obj cf does not match');
+is(acl_matches([$dp], ['cf:baa:quux']), 0, '1obh cf does not exist');
+
+ok(acl_matches([$dip2c, $dpc], ['cf:baz:quux']), 'hh cf matches');
+ok(acl_matches([$dip2c, $dpc], ['!cf:baa:qd']), 'hh cf does not match');
+is(acl_matches([$dpc], ['cf:baa:quux']), 0, 'hh cf does not exist');
+
+ok(acl_matches([$d, $dp], ['op:and','cf:foo:bar','cf:baz:quux']), '2obj cf two rules match');
+is(acl_matches([$d, $dp], ['op:and','cf:foo:bar','cf:baa:qd']), 0, '2obj cf two rules do not match');
 
 done_testing;
