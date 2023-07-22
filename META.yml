@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.063004'
+    version: '2.064000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '80'
+    version: '81'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -249,6 +249,8 @@ provides:
     file: lib/App/Netdisco/Transport/SNMP.pm
   App::Netdisco::Transport::SSH:
     file: lib/App/Netdisco/Transport/SSH.pm
+  App::Netdisco::Util::CustomFields:
+    file: lib/App/Netdisco/Util/CustomFields.pm
   App::Netdisco::Util::DNS:
     file: lib/App/Netdisco/Util/DNS.pm
   App::Netdisco::Util::Device:
@@ -465,6 +467,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm
   App::Netdisco::Worker::Plugin::Discover::Properties:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
+  App::Netdisco::Worker::Plugin::Discover::Properties::Tags:
+    file: lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm
   App::Netdisco::Worker::Plugin::Discover::VLANs:
     file: lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
   App::Netdisco::Worker::Plugin::Discover::Wireless:
@@ -645,5 +649,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.063004'
+version: '2.064000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

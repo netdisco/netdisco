@@ -1,3 +1,19 @@
+2.064000 - 2023-07-22
+
+  [NEW FEATURES]
+
+  * #1063 allow ACLs to match custom_fields
+  * #1064 tags feature on devices and device ports (and ACLs)
+
+  [ENHANCEMENTS]
+
+  * #1072 remove stale custom fields keys on rediscover
+
+  [BUG FIXES]
+
+  * 1067b82d custom fields can only be set when device or port config matches
+  * #1062 fix job queue submit API to support extra field as subaction
+
 2.063004 - 2023-07-15
 
   [BUG FIXES]

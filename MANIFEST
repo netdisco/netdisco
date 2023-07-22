@@ -126,6 +126,7 @@ lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
 lib/App/Netdisco/Transport/SNMP.pm
 lib/App/Netdisco/Transport/SSH.pm
+lib/App/Netdisco/Util/CustomFields.pm
 lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DeviceAuth.pm
 lib/App/Netdisco/Util/DNS.pm
@@ -234,6 +235,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
+lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
 lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
@@ -485,6 +487,7 @@ share/schema_versions/App-Netdisco-DB-77-78-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-78-79-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-79-80-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-80-81-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
