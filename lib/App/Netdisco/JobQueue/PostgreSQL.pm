@@ -8,6 +8,7 @@ use App::Netdisco::Util::Device
 use App::Netdisco::Backend::Job;
 
 use Module::Load ();
+use JSON::PP ();
 use Try::Tiny;
 
 use base 'Exporter';
@@ -356,8 +357,9 @@ sub jq_insert {
 
           die 'failed to find row for custom field update' unless $row;
 
+          my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
+          $spec->{subaction} = $coder->encode( $spec->{extra} || $spec->{subaction} );
           $spec->{action} =~ s/^cf_//;
-          $spec->{subaction} = to_json( $spec->{extra} || $spec->{subaction} );
           $row->make_column_dirty('custom_fields');
           $row->update({
             custom_fields => \['jsonb_set(custom_fields, ?, ?)'
