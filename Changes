@@ -1,3 +1,10 @@
+2.064001 - 2023-07-25
+
+  [BUG FIXES]
+
+  * fix double encoding on JSON UTF-8 custom fields
+  * bump SNMP::Info dep to 3.94 for aggregate ports bug fix
+
 2.064000 - 2023-07-22
 
   [NEW FEATURES]
