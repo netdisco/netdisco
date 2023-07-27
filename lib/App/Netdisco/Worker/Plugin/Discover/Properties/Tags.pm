@@ -11,6 +11,7 @@ use App::Netdisco::Util::Permission 'acl_matches';
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
+  return unless $device->in_storage;
 
   return unless setting('tags')
     and ref {} eq ref setting('tags')
@@ -35,6 +36,7 @@ register_worker({ phase => 'main' }, sub {
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
+  return unless $device->in_storage;
 
   return unless setting('tags')
     and ref {} eq ref setting('tags')
