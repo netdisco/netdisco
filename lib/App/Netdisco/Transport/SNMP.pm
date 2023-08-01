@@ -3,7 +3,7 @@ package App::Netdisco::Transport::SNMP;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SNMP qw/get_communities get_cache_for_device/;
+use App::Netdisco::Util::SNMP qw/get_communities get_cache_for_device update_cache_from_instance/;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
 
@@ -223,6 +223,7 @@ sub _snmp_connect_generic {
               my $class = $info->device_type;
               return $class->new(
                 %snmp_args, Version => $ver,
+                ($info->{Offline} ? (Cache => $info->cache) : ()),
                 _mk_info_commargs($comm),
               );
           }
@@ -292,6 +293,7 @@ sub _try_connect {
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
+          update_cache_from_instance($info);
       }
   }
   catch {
@@ -306,7 +308,7 @@ sub _try_read {
 
   return undef unless (
     (not defined $info->error)
-    and (defined $info->uptime or defined $info->hrSystemUptime or defined $info->sysUpTime)
+    and (defined $info->uptime or defined $info->sysUpTimeInstance or defined $info->hrSystemUptime or defined $info->sysUpTime)
     and ($info->layers or $info->description)
     and $info->class
   );

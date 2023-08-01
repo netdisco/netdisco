@@ -10,6 +10,7 @@ use File::Slurper qw/read_lines read_text/;
 use File::Path 'make_path';
 use Sub::Util 'subname';
 use Storable qw/dclone nfreeze thaw/;
+use Scalar::Util 'blessed';
 use JSON::PP;
 
 use base 'Exporter';
@@ -19,6 +20,7 @@ our @EXPORT_OK = qw/
   snmp_comm_reindex
   convert_oids_to_cache
   get_cache_for_device
+  update_cache_from_instance
   get_oidmap
   get_munges
   sortable_oid
@@ -120,12 +122,15 @@ sub convert_oids_to_cache {
   my %oids = @_;
   return () unless scalar keys %oids;
 
+  my $cache = {};
+  my %oidmap = get_oidmap();
+
   # take the snmpwalk of the device which is numeric (no MIB translateObj),
   # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
   # instance cache
 
-  my (%tables, %leaves, @realoids) = ((), (), ());
-  OID: foreach my $orig_oid (keys %$walk) {
+  my (%tables, %leaves, @tableoids, @leafoids) = ((), (), ());
+  OID: foreach my $orig_oid (keys %oids) {
     my $oid = $orig_oid;
     my $idx = '';
 
@@ -137,67 +142,191 @@ sub convert_oids_to_cache {
     if (exists $oidmap{$oid}) {
       $idx =~ s/^\.//;
       my $leaf = $oidmap{$oid};
-
+      
       if ($idx eq 0) {
-        push @realoids, $oid;
-        $leaves{ $leaf } = $walk->{$orig_oid};
+        push @leafoids, $oid;
+        $leaves{ $leaf } = $oids{$orig_oid};
       }
       else {
-        push @realoids, $oid if !exists $tables{ $leaf };
-        $tables{ $leaf }->{$idx} = $walk->{$orig_oid};
+        push @tableoids, $oid if !exists $tables{ $leaf };
+        $tables{ $leaf }->{$idx} = $oids{$orig_oid};
       }
 
       # debug "snapshot $device - cached $oidmap{$oid}($idx) from $orig_oid";
       next OID;
     }
 
-    debug "snapshot $device - missing OID $orig_oid in netdisco-mibs";
+    debug "cache builder - missing OID $orig_oid in netdisco-mibs";
   }
 
-  $snmp->_cache($_, $leaves{$_}) for keys %leaves;
-  $snmp->_cache($_, $tables{$_}) for keys %tables;
+  foreach my $attr (keys %leaves) {
+      $cache->{"_$attr"} = $leaves{$attr};
+  }
+  foreach my $attr (keys %tables) {
+      $cache->{"_$attr"}++ unless exists $cache->{"_$attr"};
+      $cache->{'store'}->{$attr} = $tables{$attr};
+  }
 
-  # add in any GLOBALS and FUNCS aliases which users have created in the
-  # SNMP::Info device class, with binary copy of data so that it can be frozen
+  debug sprintf "convert_oids_to_cache cache size: %d", scalar keys %$cache;
 
-  my %cache   = %{ $snmp->cache() };
-  my %funcs   = %{ $snmp->funcs() };
-  my %globals = %{ $snmp->globals() };
+  # TODO resolve enum values in oids
+  #my $row = schema('netdisco')->resultset('SNMPObject')->find($oid) or next;
+  #my %emap = map { split m/\(/ }
+  #           map { s/\)//; $_ }
+  #           @{ $row->enum };
+  #if (scalar keys %emap and exists $emap{$val}) {
+  #    $val = $emap{$val};
+  #}
+
+  # put into the cache an oid ref to each leaf name
+  # this allows rebuild of browser data from a frozen cache
+  foreach my $oid (@leafoids) {
+      my $leaf = $oidmap{$oid} or next;
+      $cache->{"_$oid"} = $cache->{"_$leaf"} if exists $cache->{"_$leaf"};
+  }
+  foreach my $oid (@tableoids) {
+      my $leaf = $oidmap{$oid} or next;
+      $cache->{"_$oid"} = $cache->{"_$leaf"} if exists $cache->{"_$leaf"};
+      $cache->{'store'}->{$oid} = $cache->{'store'}->{$leaf} if exists $cache->{'store'}->{$leaf};
+  }
+
+  #use DDP;
+  #p $cache->{'store'}->{'ifDescr'};
+  #p $cache->{'store'}->{'_.1.3.6.1.2.1.2.2.1.2'};
+
+  debug sprintf "convert_oids_to_cache cache size: %d", scalar keys %$cache;
+
+  # inject a basic set of SNMP::Info globals and funcs aliases
+  # which are needed for initial device discovery
+  $cache = update_cache_from_instance($cache);
+
+  return $cache;
+}
+
+=head2 update_cache_from_instance( $snmp_info_instance | $snmp_info_cache )
+
+Add in any GLOBALS and FUNCS aliases from the SNMP::Info device class
+or else a set of defaults that allow specific device class discovery.
+
+=cut
+
+sub update_cache_from_instance {
+  my $arg = shift or return {};
+  my $cache = (blessed $arg) ? $arg->cache : $arg;
+
+  my %default_globals = (
+    # from SNMPv2-MIB
+    'id'           => 'sysObjectID',
+    'description'  => 'sysDescr',
+    'uptime'       => 'sysUpTime',
+    'contact'      => 'sysContact',
+    'name'         => 'sysName',
+    'location'     => 'sysLocation',
+    'layers'       => 'sysServices',
+    # IF-MIB
+    'ports'        => 'ifNumber',
+    # IP-MIB
+    'ipforwarding' => 'ipForwarding',
+  );
+
+  my %default_funcs = (
+    # IF-MIB::IfEntry
+    'interfaces' => 'ifIndex',
+    # IF-MIB::IfXEntry
+    'i_name'     => 'ifName',
+    # IF-MIB::IfEntry
+    'i_index'           => 'ifIndex',
+    'i_description'     => 'ifDescr',
+    'i_type'            => 'ifType',
+    'i_mtu'             => 'ifMtu',
+    'i_speed'           => 'ifSpeed',
+    'i_mac'             => 'ifPhysAddress',
+    'i_up_admin'        => 'ifAdminStatus',
+    'i_up'              => 'ifOperStatus',
+    'i_lastchange'      => 'ifLastChange',
+    'i_octet_in'        => 'ifInOctets',
+    'i_pkts_ucast_in'   => 'ifInUcastPkts',
+    'i_pkts_nucast_in'  => 'ifInNUcastPkts',
+    'i_discards_in'     => 'ifInDiscards',
+    'i_errors_in'       => 'ifInErrors',
+    'i_bad_proto_in'    => 'ifInUnknownProtos',
+    'i_octet_out'       => 'ifOutOctets',
+    'i_pkts_ucast_out'  => 'ifOutUcastPkts',
+    'i_pkts_nucast_out' => 'ifOutNUcastPkts',
+    'i_discards_out'    => 'ifOutDiscards',
+    'i_errors_out'      => 'ifOutErrors',
+    'i_qlen_out'        => 'ifOutQLen',
+    'i_specific'        => 'ifSpecific',
+    # IF-MIB::IfStackTable
+    'i_stack_status'    => 'ifStackStatus',
+    # IP-MIB::ipAddrTable (deprecated IPv4 address table)
+    'old_ip_index'     => 'ipAdEntIfIndex',
+    'old_ip_table'     => 'ipAdEntAddr',
+    'old_ip_netmask'   => 'ipAdEntNetMask',
+    'ip_broadcast'     => 'ipAdEntBcastAddr',
+    # IP-MIB::ipAddressTable
+    'new_ip_index'     => 'ipAddressIfIndex',
+    'new_ip_prefix'    => 'ipAddressPrefix',
+    'new_ip_type'      => 'ipAddressType',
+    # IF-MIB::ifXTable - Extension Table
+    'i_speed_high'       => 'ifHighSpeed',
+    'i_pkts_multi_in'    => 'ifInMulticastPkts',
+    'i_pkts_multi_out'   => 'ifOutMulticastPkts',
+    'i_pkts_bcast_in'    => 'ifInBroadcastPkts',
+    'i_pkts_bcast_out'   => 'ifOutBroadcastPkts',
+    'i_octet_in64'       => 'ifHCInOctets',
+    'i_octet_out64'      => 'ifHCOutOctets',
+    'i_pkts_ucast_in64'  => 'ifHCInUcastPkts',
+    'i_pkts_ucast_out64' => 'ifHCOutUcastPkts',
+    'i_pkts_multi_in64'  => 'ifHCInMulticastPkts',
+    'i_pkts_multi_out64' => 'ifHCOutMulticastPkts',
+    'i_pkts_bcast_in64'  => 'ifHCInBroadcastPkts',
+    'i_pkts_bcast_out64' => 'ifHCOutBroadcastPkts',
+    'i_alias'            => 'ifAlias',
+    # RFC-1213::ipRoute (deprecated Table IP Routing Table)
+    'ipr_route' => 'ipRouteDest',
+    'ipr_if'    => 'ipRouteIfIndex',
+    'ipr_1'     => 'ipRouteMetric1',
+    'ipr_2'     => 'ipRouteMetric2',
+    'ipr_3'     => 'ipRouteMetric3',
+    'ipr_4'     => 'ipRouteMetric4',
+    'ipr_5'     => 'ipRouteMetric5',
+    'ipr_dest'  => 'ipRouteNextHop',
+    'ipr_type'  => 'ipRouteType',
+    'ipr_proto' => 'ipRouteProto',
+    'ipr_age'   => 'ipRouteAge',
+    'ipr_mask'  => 'ipRouteMask',
+    'ipr_info'  => 'ipRouteInfo',
+  );
+
+  my %globals = (blessed $arg) ? %{ $arg->globals } : %default_globals;
+  my %funcs   = (blessed $arg) ? %{ $arg->funcs }   : %default_funcs;
 
   while (my ($alias, $leaf) = each %globals) {
-    if (exists $cache{"_$leaf"} and !exists $cache{"_$alias"}) {
-      $snmp->_cache($alias, $cache{"_$leaf"});
-    }
+      $cache->{"_$alias"} = $cache->{"_$leaf"} if exists $cache->{"_$leaf"};
   }
 
   while (my ($alias, $leaf) = each %funcs) {
-    if (exists $cache{store}->{$leaf} and !exists $cache{store}->{$alias}) {
-      $snmp->_cache($alias, dclone $cache{store}->{$leaf});
-    }
+    $cache->{"_$alias"} = $cache->{"_$leaf"} if exists $cache->{"_$leaf"};
+    $cache->{'store'}->{$alias} = $cache->{'store'}->{$leaf} if exists $cache->{'store'}->{$leaf};
   }
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
   # might call, but will not have data, we fake a cache entry to avoid
   # throwing errors
 
-  # refresh the cache
-  %cache = %{ $snmp->cache() };
-
   while (my $method = <DATA>) {
     $method =~ s/\s//g;
-    next unless length $method and !exists $cache{"_$method"};
+    next unless length $method and !exists $cache->{"_$method"};
 
-    $snmp->_cache($method, {}) if exists $funcs{$method};
-    $snmp->_cache($method, '') if exists $globals{$method};
+    $cache->{"_$method"} = '' if exists $globals{$method};
+
+    $cache->{"_$method"} = 1 if exists $funcs{$method};
+    $cache->{'store'}->{$method} = {} if exists $funcs{$method};
   }
 
-  # put into the cache an oid ref to each leaf name
-  # this allows rebuild of browser data from a frozen cache
-  foreach my $oid (@realoids) {
-      my $leaf = $oidmap{$oid} or next;
-      $snmp->_cache($oid, $snmp->$leaf);
-  }
-
+  debug sprintf "update_cache_from_instance cache size: %d", scalar keys %$cache;
+  return $cache;
 }
 
 =head2 get_cache_for_device( $device )
@@ -227,18 +356,12 @@ sub get_cache_for_device {
           # .1.0.8802.1.1.2.1.1.1.0 = INTEGER: 30
           my @lines = split /\n/, $content;
           foreach my $line (@lines) {
-              my ($oid, $val) = $line =~ m/^(\S+) = \w+: (.+)$/;
+              my ($oid, $val) = $line =~ m/^(\S+) = (?:.+: )?(.+)$/;
               next unless $oid and $val;
 
-              # resolve enum values in oids
-              my $row = schema('netdisco')->find($oid) or next;
-              my %emap = map { split m/\(/ }
-                         map { s/\)//; $_ }
-                         @{ $row->enum };
-
-              if (scalar keys %emap and exists $emap{$val}) {
-                  $val = $emap{$val};
-              }
+              # remote quotes from strings
+              $val =~ s/^"//;
+              $val =~ s/"$//;
 
               $oids{$oid} = $val;
           }
