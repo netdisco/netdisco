@@ -13,6 +13,8 @@ use Module::Load ();
 use Path::Class 'dir';
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
+use Storable 'nfreeze';
+use MIME::Base64 'encode_base64';
 
 use base 'Dancer::Object::Singleton';
 
@@ -294,6 +296,8 @@ sub _try_connect {
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
           update_cache_from_instance($info);
+          my $frozen = encode_base64( nfreeze( $info->cache ) );
+          $device->update_or_create_related('snapshot', { cache => $frozen });
       }
   }
   catch {
