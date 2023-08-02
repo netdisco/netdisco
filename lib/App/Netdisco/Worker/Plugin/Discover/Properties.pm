@@ -227,8 +227,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $i_subs         = $snmp->i_subinterfaces;
 
   # clear the cached uptime and get a new one
-  my $snmp_uptime = ($snmp->uptime || $snmp->sysUpTime || $snmp->hrSystemUptime || $snmp->sysUpTimeInstance);
-  my $dev_uptime = ($device->is_pseudo ? $snmp_uptime : $snmp->load_uptime);
+  my $dev_uptime = ($device->is_pseudo ? $snmp->uptime : $snmp->load_uptime);
   if (!defined $dev_uptime) {
       error sprintf ' [%s] interfaces - Error! Failed to get uptime from device!',
         $device->ip;

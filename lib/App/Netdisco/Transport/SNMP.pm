@@ -308,7 +308,7 @@ sub _try_read {
 
   return undef unless (
     (not defined $info->error)
-    and (defined $info->uptime or defined $info->sysUpTimeInstance or defined $info->hrSystemUptime or defined $info->sysUpTime)
+    and (defined $info->uptime or defined $info->hrSystemUptime or defined $info->sysUpTime)
     and ($info->layers or $info->description)
     and $info->class
   );

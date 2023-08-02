@@ -216,24 +216,22 @@ sub update_cache_from_instance {
   my %globals = %{ $info->globals };
   my %funcs   = %{ $info->funcs };
 
-# FIXME
-# bgpIdentifier.0
-# bgpLocalAs.0
-# .1.3.6.1.4.1.9.3.6.3.0
-# ospfRouterId.0
-# ifPhysAddress.1
-
   while (my ($alias, $leaf) = each %globals) {
-      # FIXME
       next if $leaf =~ m/\.\d+$/;
       $info->_cache($alias, $info->$leaf) if $info->$leaf;
   }
 
   while (my ($alias, $leaf) = each %funcs) {
-      # FIXME
-      next if $leaf =~ m/\.\d+$/;
       $info->_cache($alias, dclone $info->$leaf) if ref q{} ne ref $info->$leaf;
   }
+
+  # SNMP::Info::Layer3 has some weird aliases we can fix here
+  $info->_cache('serial1',      $info->chassisId->{''})         if $info->chassisId;
+  $info->_cache('router_ip',    $info->ospfRouterId->{''})      if $info->ospfRouterId;
+  $info->_cache('bgp_id',       $info->bgpIdentifier->{''})     if $info->bgpIdentifier;
+  $info->_cache('bgp_local_as', $info->bgpLocalAs->{''})        if $info->bgpLocalAs;
+  $info->_cache('sysUpTime',    $info->sysUpTimeInstance->{''}) if not $info->sysUpTime;
+  $info->_cache('mac',          $info->ifPhysAddress->{1})      if ref q{} ne ref $info->ifPhysAddress;
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
   # might call, but will not have data, we fake a cache entry to avoid
@@ -284,7 +282,7 @@ sub get_cache_for_device {
               # empty string makes the capture go wonky
               $val = '' if $val =~ m/^[^:]+: ?$/;
 
-              # remote quotes from strings
+              # remove quotes from strings
               $val =~ s/^"//;
               $val =~ s/"$//;
 
