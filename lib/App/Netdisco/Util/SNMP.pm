@@ -172,20 +172,31 @@ sub convert_oids_to_cache {
 
   foreach my $attr (keys %leaves) {
       my ($oid, $leaf) = split m/:/, $attr;
+      my $val = $leaves{$attr};
+
+      # resolve the enums if needed
+      my $row = schema('netdisco')->resultset('SNMPObject')->find($oid);
+      if ($row and $row->enum) {
+          my %emap = map { reverse split m/\(/ }
+                     map { s/\)//; $_ }
+                     @{ $row->enum };
+
+          if (ref q{} eq ref $val) {
+              $val = $emap{$val} if exists $emap{$val};
+          }
+          elsif (ref {} eq ref $val) {
+              foreach my $k (keys %$val) {
+                  $val->{$k} = $emap{ $val->{$k} }
+                    if exists $emap{ $val->{$k} };
+              }
+          }
+      }
+
       $info->_cache($oid,  $leaves{$attr});
       $info->_cache($leaf, $leaves{$attr});
   }
 
   debug sprintf "convert_oids_to_cache cache size: %d", scalar keys %{ $info->cache };
-
-  # TODO resolve enum values in oids
-  #my $row = schema('netdisco')->resultset('SNMPObject')->find($oid) or next;
-  #my %emap = map { split m/\(/ }
-  #           map { s/\)//; $_ }
-  #           @{ $row->enum };
-  #if (scalar keys %emap and exists $emap{$val}) {
-  #    $val = $emap{$val};
-  #}
 
   # inject a basic set of SNMP::Info globals and funcs aliases
   # which are needed for initial device discovery
@@ -291,6 +302,7 @@ sub get_cache_for_device {
 
           my $cache = convert_oids_to_cache(%oids);
 
+          # FIXME should this be here or in Transport?
           my $frozen = encode_base64( nfreeze( $cache ) );
           $device->update_or_create_related('snapshot', { cache => $frozen });
 
