@@ -8,22 +8,26 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::SNMP qw/sortable_oid get_oidmap get_munges/;
 use aliased 'App::Netdisco::Worker::Status';
 
-use Storable qw/dclone nfreeze thaw/;
-use MIME::Base64 qw/encode_base64 decode_base64/;
+use Storable 'nfreeze';
+use MIME::Base64 'encode_base64';
 
 register_worker({ phase => 'late' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
-  return unless $device->in_storage
-    and $device->snapshot and not $device->oids->count;
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
+  return unless $device->in_storage
+    and not $device->oids->count and $snmp->offline;
+
   my %oidmap = get_oidmap();
   my %munges = get_munges($snmp);
-  my $cache = thaw( decode_base64( $device->snapshot->cache ) );
+  my $cache  = $snmp->cache;
   my %seenoid = ();
+
+  my $frozen = encode_base64( nfreeze( $cache ) );
+  $device->update_or_create_related('snapshot', { cache => $frozen });
 
   my @oids = map {{
     oid => $_,
@@ -47,7 +51,7 @@ register_worker({ phase => 'late' }, sub {
   });
 
   return Status
-    ->info(sprintf ' [%s] snapshot - %d oids stored', $job->device, scalar @oids);
+    ->info(sprintf ' [%s] snapshot - oids and cache stored', $job->device);
 });
 
 true;

@@ -5,11 +5,11 @@ use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw/splitdir catdir catfile/;
-use MIME::Base64 qw/encode_base64 decode_base64/;
+use MIME::Base64 'decode_base64';
 use File::Slurper qw/read_lines read_text/;
 use File::Path 'make_path';
 use Sub::Util 'subname';
-use Storable qw/dclone nfreeze thaw/;
+use Storable qw/dclone thaw/;
 use Scalar::Util 'blessed';
 use SNMP::Info;
 use JSON::PP;
@@ -117,50 +117,51 @@ sub get_communities {
 
 =head2 convert_oids_to_cache ( %oids )
 
+Take the snmpwalk of the device which is numeric (no MIB translateObj),
+resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
+instance cache.
+
 =cut
 
 sub convert_oids_to_cache {
   my %oids = @_;
   return () unless scalar keys %oids;
 
+  # this comes from netdisco-mibs files and does not need database
   my %oidmap = get_oidmap();
-
-  # take the snmpwalk of the device which is numeric (no MIB translateObj),
-  # resolve to MIB identifiers using netdisco-mibs, then store in SNMP::Info
-  # instance cache
 
   my %leaves = ();
   OID: foreach my $orig_oid (keys %oids) {
-    my $oid = $orig_oid;
-    my $idx = '';
+      my $oid = $orig_oid;
+      my $idx = '';
 
-    while (length($oid) and !exists $oidmap{$oid}) {
-      $oid =~ s/\.(\d+)$//;
-      $idx = ((defined $idx and length $idx) ? "${1}.${idx}" : $1);
-    }
-
-    if (exists $oidmap{$oid}) {
-      $idx =~ s/^\.//;
-      my $leaf = $oidmap{$oid};
-      my $key = $oid .':'. $leaf;
-      
-      if ($idx eq 0) {
-        $leaves{$key} = $oids{$orig_oid};
-      }
-      else {
-        if (exists $leaves{$key}
-            and ref {} ne ref $leaves{$key}) {
-            debug sprintf "cache builder - error: seen %s:%s as leaf already", $oid, $leaf;
-            next OID;
-        }
-        $leaves{$key}->{$idx} = $oids{$orig_oid};
+      while (length($oid) and !exists $oidmap{$oid}) {
+          $oid =~ s/\.(\d+)$//;
+          $idx = ((defined $idx and length $idx) ? "${1}.${idx}" : $1);
       }
 
-      # debug "snapshot $device - cached $oidmap{$oid}($idx) from $orig_oid";
-      next OID;
-    }
+      if (exists $oidmap{$oid}) {
+          $idx =~ s/^\.//;
+          my $leaf = $oidmap{$oid};
+          my $key = $oid .':'. $leaf;
 
-    debug sprintf "cache builder - error:  missing OID %s in netdisco-mibs", $orig_oid;
+          if ($idx eq 0) {
+              $leaves{$key} = $oids{$orig_oid};
+          }
+          else {
+              if (exists $leaves{$key}
+                  and ref {} ne ref $leaves{$key}) {
+                  debug sprintf "cache builder - error: seen %s:%s as leaf already", $oid, $leaf;
+                  next OID;
+              }
+              $leaves{$key}->{$idx} = $oids{$orig_oid};
+          }
+
+          # debug "snapshot $device - cached $oidmap{$oid}($idx) from $orig_oid";
+          next OID;
+      }
+
+      debug sprintf "cache builder - error:  missing OID %s in netdisco-mibs", $orig_oid;
   }
 
   my $info = SNMP::Info->new({
@@ -270,8 +271,7 @@ sub get_cache_for_device {
 
   # ideally we have a cache in the db
   if ($device->is_pseudo and my $snapshot = $device->snapshot) {
-      my $cache = thaw( decode_base64( $snapshot->cache ) );
-      return $cache;
+      return thaw( decode_base64( $snapshot->cache ) );
   }
 
   # or we have a file on disk - could be cache or rows
@@ -300,23 +300,15 @@ sub get_cache_for_device {
               $oids{$oid} = $val;
           }
 
-          my $cache = convert_oids_to_cache(%oids);
-
-          # FIXME should this be here or in Transport?
-          my $frozen = encode_base64( nfreeze( $cache ) );
-          $device->update_or_create_related('snapshot', { cache => $frozen });
-
-          return $cache;
+          return convert_oids_to_cache(%oids);
       }
       else {
-          $device->update_or_create_related('snapshot', { cache => $content });
-          my $cache = thaw( decode_base64( $content ) );
-          return $cache;
+          return thaw( decode_base64( $content ) );
       }
 
-      # device now has a cache but no oids,
       # there is a late phase discover worker to generate the oids
-      # because that needs the device-specific SNMP::Info class
+      # and also to save the cache into the database, because we want
+      # to wait for device-specific SNMP::Info class and all its methods.
   }
 
   return {};
