@@ -59,11 +59,6 @@ sub reader_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
 
-  if ($device->in_storage and $device->is_pseudo and not ($device->oids->count or $device->snapshot)) {
-      error sprintf 'transport error - cannot act on pseudo-device [%s] without offline cache', $device->ip;
-      return undef;
-  }
-
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
 
