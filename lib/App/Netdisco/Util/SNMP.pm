@@ -460,7 +460,23 @@ sub decode_and_munge {
 
 # read in netdisco-mibs translation report and make an OID -> leafname map
 sub get_oidmap {
-  debug "-> loading netdisco-mibs object cache";
+  debug "-> loading netdisco-mibs object cache (database)";
+
+  my %oidmap = map {($_->{'oid'} => $_->{'leaf'})}
+               schema('netdisco')->resultset('SNMPObject')
+                                 ->search({}, {columns => [qw/oid leaf/]})
+                                 ->hri->all;
+
+  debug sprintf "-> loaded %d MIB objects",
+    scalar keys %oidmap;
+
+  return %oidmap;
+}
+
+# this is an older version of get_oidmap which uses disk file
+# test on my laptop shows this version is four seconds and the database takes two.
+sub get_oidmap_from_mibs_files {
+  debug "-> loading netdisco-mibs object cache (netdisco-mibs)";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my $reports = catdir( $home, 'EXTRAS', 'reports' );
@@ -483,7 +499,7 @@ sub get_oidmap {
     $oidmap{$oid} = $leaf;
   }
 
-  debug sprintf "-> loaded %d objects from netdisco-mibs",
+  debug sprintf "-> loaded %d MIB objects",
     scalar keys %oidmap;
   return %oidmap;
 }
