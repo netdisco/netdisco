@@ -86,6 +86,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my $snmpqleaf = $qleaf;
       $snmpqleaf =~ s/[-:]/_/g;
 
+      # this works because for funcs there is also a stub globals key created
+      next unless exists $cache->{'_'. $snmpqleaf};
+
       push @oids, {
         oid => $oidmap{$qleaf},
         oid_parts => [ grep {length} (split m/\./, $oidmap{$qleaf}) ],

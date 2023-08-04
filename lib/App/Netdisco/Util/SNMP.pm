@@ -127,10 +127,9 @@ sub convert_oids_to_cache {
   my %oids = @_;
   return () unless scalar keys %oids;
 
-  # this comes from netdisco-mibs files and does not need database
   my %oidmap = get_oidmap();
-
   my %leaves = ();
+
   OID: foreach my $orig_oid (keys %oids) {
       my $oid = $orig_oid;
       my $idx = '';
@@ -275,7 +274,6 @@ sub get_cache_for_device {
   }
 
   # or we have a file on disk - could be cache or rows
-  # so we make both the rows in oids and the cache
   my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
   if (-f $pseudo_cache and not $device->in_storage) {
       my $content = read_text($pseudo_cache);
