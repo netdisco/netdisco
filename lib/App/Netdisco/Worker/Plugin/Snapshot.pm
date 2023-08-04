@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
-use App::Netdisco::Util::SNMP 'sortable_oid';
+use App::Netdisco::Util::SNMP qw/sortable_oid get_oidmap get_munges update_cache_from_instance/;
 use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw(splitdir catdir catfile);
@@ -26,126 +26,92 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  my $save_browser = $job->extra;
-  my $save_file = $job->port;
-
-  # needed to avoid $var being returned with leafname and breaking loop checks
-  $SNMP::use_numeric = 1;
-
   # might restore a cache if there's one on disk
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("snapshot failed: could not SNMP connect to $device");
 
-  my %oidmap = getoidmap($device, $snmp);
+  if (not ($device->in_storage
+           and not $device->is_pseudo
+           and not $snmp->offline)) {
+      return Status->error('Can only snapshot a discovered device.');
+  }
+
+  # get MIBs loaded for device
+  my @mibs = keys %{ $snmp->mibs() };
+  debug sprintf "snapshot: loaded %d MIBs", scalar @mibs;
+
+  # get qualified leafs for those MIBs from snmp_object
+  my %oidmap = map { ((join '::', $_->{mib}, $_->{leaf}) => $_->{oid}) }
+               schema('netdisco')->resultset('SNMPObject')
+                                 ->search({
+                                     mib => { -in => \@mibs },
+                                     num_children => 0,
+                                     leaf => { '!~' => 'anonymous#\d+$' },
+                                     -or => [
+                                       type   => { '<>' => '' },
+                                       access => { '~' => '^(read|write)' },
+                                       \'oid_parts[array_length(oid_parts,1)] = 0'
+                                     ],
+                                   },{columns => [qw/mib oid leaf/], order_by => 'oid_parts'})
+                                 ->hri->all;
+
+  # gather each of the leafs
+  debug sprintf "snapshot: gathering %d MIB Objects", scalar keys %oidmap;
+  foreach my $qleaf (keys %oidmap) {
+      my $snmpqleaf = $qleaf;
+      $snmpqleaf =~ s/[-:]/_/g;
+      $snmp->$snmpqleaf;
+  }
+
   my %munges = get_munges($snmp);
+  my $cache  = $snmp->cache;
 
-  # only if not pseudo device
-  if (not $device->is_pseudo) {
-      my $walk_error = walk_and_store($device, $snmp, %oidmap);
-      return $walk_error if $walk_error;
-  }
-
-  # load the cache
-  my %cache = %{ $snmp->cache() };
-
-  # finally, freeze the cache, then base64 encode, store in the DB,
-  # optionally store browsing data, and optionally save file.
-
-  if ($save_browser) {
-      debug "snapshot $device - cacheing snapshot for browsing";
-      my %seenoid = ();
-
-      my @browser = map {{
-        oid => $_,
-        oid_parts => [ grep {length} (split m/\./, $_) ],
-        leaf  => $oidmap{$_},
-        munge => $munges{ $oidmap{$_} },
-        value => do { my $m = $oidmap{$_}; encode_base64( nfreeze( [$snmp->$m] ) ); },
-      }} sort {sortable_oid($a) cmp sortable_oid($b)}
-         grep {not $seenoid{$_}++}
-         grep {m/^\.1/}
-         map {s/^_//; $_}
-         keys %cache;
-
-      schema('netdisco')->txn_do(sub {
-        my $gone = $device->oids->delete;
-        debug sprintf 'snapshot %s - removed %d oids from db',
-          $device->ip, $gone;
-        $device->oids->populate(\@browser);
-        debug sprintf 'snapshot %s - added %d new oids to db',
-          $device->ip, scalar @browser;
-      });
-  }
-
-  debug "snapshot $device - cacheing snapshot bundle";
-  my $frozen = encode_base64( nfreeze( \%cache ) );
-  $device->update_or_create_related('snapshot', {cache => $frozen});
-
-  if ($save_file) {
+  # optional save to disk
+  if ($job->port) {
       my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
       make_path($target_dir);
       my $target_file = catfile($target_dir, $device->ip);
+
       debug "snapshot $device - saving snapshot to $target_file";
+      my $frozen = encode_base64( nfreeze( $cache ) );
       write_text($target_file, $frozen);
   }
+
+  # the cache has the qualified names like _SNMPv2_MIB__sysDescr
+  # so need to convert to something suitable for the device_browser table
+
+  my @oids = ();
+  foreach my $qleaf (sort {sortable_oid($oidmap{$a}) cmp sortable_oid($oidmap{$b})} keys %oidmap) {
+      my $leaf = $qleaf;
+      $leaf =~ s/.+:://;
+
+      my $snmpqleaf = $qleaf;
+      $snmpqleaf =~ s/[-:]/_/g;
+
+      push @oids, {
+        oid => $oidmap{$qleaf},
+        oid_parts => [ grep {length} (split m/\./, $oidmap{$qleaf}) ],
+        leaf  => $leaf,
+        munge => ($munges{$snmpqleaf} || $munges{$leaf}),
+        value => encode_base64( nfreeze( [(exists $cache->{'store'}{$snmpqleaf} ? $cache->{'store'}{$snmpqleaf}
+                                                                                : $cache->{'_'. $snmpqleaf})] ) ),
+      };
+  }
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->oids->delete;
+    debug sprintf 'snapshot %s - removed %d oids from db',
+      $device->ip, $gone;
+    $device->oids->populate(\@oids);
+    debug sprintf 'snapshot %s - added %d new oids to db',
+      $device->ip, scalar @oids;
+  });
 
   return Status->done(
     sprintf "Snapshot data captured from %s", $device->ip);
 });
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# read in netdisco-mibs translation report and make an OID -> leafname map
-sub getoidmap {
-  my ($device, $snmp) = @_;
-  debug "snapshot $device - loading netdisco-mibs object cache";
-
-  my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my $reports = catdir( $home, 'EXTRAS', 'reports' );
-  my @maps = map  { (splitdir($_))[-1] }
-             grep { ! m/^(?:EXTRAS)$/ }
-             grep { ! m/\./ }
-             grep { -f }
-             glob (catfile( $reports, '*_oids' ));
-
-  my @report = ();
-  push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
-    for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
-
-  my %oidmap = ();
-  foreach my $line (@report) {
-    my ($oid, $qual_leaf, $rest) = split m/,/, $line;
-    next unless defined $oid and defined $qual_leaf;
-    next if exists $oidmap{$oid};
-    my ($mib, $leaf) = split m/::/, $qual_leaf;
-    $oidmap{$oid} = $leaf;
-  }
-
-  debug sprintf "snapshot $device - loaded %d objects from netdisco-mibs",
-    scalar keys %oidmap;
-  return %oidmap;
-}
-
-sub get_munges {
-  my $snmp = shift;
-  my %munge_set = ();
-
-  my %munge   = %{ $snmp->munge() };
-  my %funcs   = %{ $snmp->funcs() };
-  my %globals = %{ $snmp->globals() };
-
-  while (my ($alias, $leaf) = each %globals) {
-    $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
-    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
-  }
-
-  while (my ($alias, $leaf) = each %funcs) {
-    $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
-    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
-  }
-
-  return %munge_set;
-}
 
 sub walk_and_store {
   my ($device, $snmp, %oidmap) = @_;
@@ -370,114 +336,3 @@ sub walker {
 }
 
 true;
-
-__DATA__
-agg_ports
-at_paddr
-bgp_peer_addr
-bp_index
-c_cap
-c_id
-c_if
-c_ip
-c_platform
-c_port
-cd11_mac
-cd11_port
-cd11_rateset
-cd11_rxbyte
-cd11_rxpkt
-cd11_sigqual
-cd11_sigstrength
-cd11_ssid
-cd11_txbyte
-cd11_txpkt
-cd11_txrate
-cd11_uptime
-class
-contact
-docs_if_cmts_cm_status_inet_address
-dot11_cur_tx_pwr_mw
-e_class
-e_descr
-e_fru
-e_fwver
-e_hwver
-e_index
-e_model
-e_name
-e_parent
-e_pos
-e_serial
-e_swver
-e_type
-eigrp_peers
-fw_mac
-fw_port
-has_topo
-i_80211channel
-i_alias
-i_description
-i_duplex
-i_duplex_admin
-i_err_disable_cause
-i_faststart_enabled
-i_ignore
-i_lastchange
-i_mac
-i_mtu
-i_name
-i_speed
-i_speed_admin
-i_speed_raw
-i_ssidbcast
-i_ssidlist
-i_ssidmac
-i_stp_state
-i_type
-i_up
-i_up_admin
-i_vlan
-i_vlan_membership
-i_vlan_membership_untagged
-i_vlan_type
-interfaces
-ip_index
-ip_netmask
-ipv6_addr
-ipv6_addr_prefixlength
-ipv6_index
-ipv6_n2p_mac
-ipv6_type
-isis_peers
-lldp_ipv6
-lldp_media_cap
-lldp_rem_model
-lldp_rem_serial
-lldp_rem_sw_rev
-lldp_rem_vendor
-location
-model
-name
-ospf_peer_id
-ospf_peers
-peth_port_admin
-peth_port_class
-peth_port_ifindex
-peth_port_power
-peth_port_status
-peth_power_status
-peth_power_watts
-ports
-qb_fw_vlan
-serial
-serial1
-snmpEngineID
-snmpEngineTime
-snmp_comm
-snmp_ver
-v_index
-v_name
-vrf_name
-vtp_d_name
-vtp_version

@@ -36,6 +36,7 @@ register_worker({ phase => 'late' }, sub {
     munge => $munges{ $oidmap{$_} },
     value => encode_base64( nfreeze( [(exists $cache->{'store'}{$_} ? $cache->{'store'}{$_} : $cache->{'_'. $_})] ) ),
   }} sort {sortable_oid($a) cmp sortable_oid($b)}
+     grep {exists $oidmap{$_}}
      grep {not $seenoid{$_}++}
      grep {m/^\.1/}
      map {s/^_//; $_}
