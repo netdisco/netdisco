@@ -41,7 +41,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
-    }] unless schema(vars->{'tenant'})->resultset('DeviceSnapshot')->find($device->ip);
+    }] unless $device->oids->count;
 
     return to_json [{
       text => 'No MIB data. Please run `~/bin/netdisco-do loadmibs`.',
