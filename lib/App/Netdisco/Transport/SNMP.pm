@@ -3,9 +3,10 @@ package App::Netdisco::Transport::SNMP;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SNMP qw/get_communities get_cache_for_device update_cache_from_instance/;
+use App::Netdisco::Util::SNMP qw/get_communities/;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Snapshot qw/get_cache_for_device add_snmpinfo_aliases/;
 
 use SNMP::Info;
 use Try::Tiny;
@@ -288,7 +289,7 @@ sub _try_connect {
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
-          update_cache_from_instance($info);
+          add_snmpinfo_aliases($info) if $info->offline;
       }
   }
   catch {
