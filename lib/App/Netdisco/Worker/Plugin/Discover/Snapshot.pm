@@ -5,7 +5,10 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Worker::Plugin;
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Snapshot 'gather_browserdata';
+use App::Netdisco::Util::Snapshot 'dump_cache_to_browserdata';
+
+use Storable 'nfreeze';
+use MIME::Base64 'encode_base64';
 
 use aliased 'App::Netdisco::Worker::Status';
 
@@ -19,7 +22,10 @@ register_worker({ phase => 'late' }, sub {
   return unless $device->in_storage
     and not $device->oids->count and $snmp->offline;
 
-  gather_browserdata( $device, $snmp );
+  dump_cache_to_browserdata( $device, $snmp );
+
+  my $frozen = encode_base64( nfreeze( $snmp->cache ) );
+  $device->update_or_create_related('snapshot', { cache => $frozen });
 
   return Status
     ->info(sprintf ' [%s] discover - oids and cache stored', $device);

@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::SNMP qw/get_communities/;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
-use App::Netdisco::Util::Snapshot qw/get_cache_for_device add_snmpinfo_aliases/;
+use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases/;
 
 use SNMP::Info;
 use Try::Tiny;
@@ -161,7 +161,7 @@ sub _snmp_connect_generic {
   }
 
   # support for offline cache
-  my $cache = get_cache_for_device($device);
+  my $cache = load_cache_for_device($device);
   if (scalar keys %$cache) {
       $snmp_args{Cache} = $cache;
       $snmp_args{Offline} = 1;
