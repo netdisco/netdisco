@@ -40,10 +40,10 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   gather_every_mib_object( $device, $snmp, split m/,/, ($job->extra || '') );
+  add_snmpinfo_aliases($snmp);
   dump_cache_to_browserdata( $device, $snmp );
 
   if ($job->port) {
-      add_snmpinfo_aliases($snmp);
       my $frozen = encode_base64( nfreeze( $snmp->cache ) );
 
       if ($job->port =~ m/^(?:both|db)$/) {
