@@ -5,6 +5,8 @@
     <div id="snmpnodecontainer" class="span8">
         <form id="nd_snmp_search_form" class="form-inline col-md-4">
           <span class="form-group">
+            <i id="nd_snmp_loading_spinner" class="icon-circle-blank icon-large"></i>
+
             <input id="nd_snmp_search_text" type="text"
              class="form-control nd_snmp_search_param span5"
              name="term" required placeholder="Search for label or OID">
@@ -127,10 +129,18 @@
         'ajax' : {
           'url' : '[% uri_base | none %]/ajax/data/snmp/nodesearch',
           'beforeSend' : function(jqXHR, settings) {
+            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-ok-sign text-success')
+                                         .addClass('icon-spinner text-warning icon-spin');
+
             if (document.getElementById('nd_snmp_search_partial').checked) {
               settings.url = settings.url + '&partial=on';
             }
+
             return true;
+          },
+          'error' : function() {
+            $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
+                                         .addClass('icon-exclamation-sign');
           }
         },
         'search_callback' : jstree_search_callback
@@ -157,6 +167,9 @@
         var path = $('#jstree').jstree().get_path(node[0], false, true);
         var parent = path[path.length - 2];
         document.getElementById( parent ).scrollIntoView();
+
+        $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
+                                     .addClass('icon-ok-sign text-success');
       }
     });
     $("#nd_snmp_search_form").submit(function(e) {
