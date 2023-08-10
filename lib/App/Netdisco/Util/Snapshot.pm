@@ -11,6 +11,7 @@ use File::Slurper qw/read_lines read_text/;
 use Sub::Util 'subname';
 use Storable qw/dclone nfreeze thaw/;
 use Scalar::Util 'blessed';
+use Module::Load ();
 use SNMP::Info;
 
 use base 'Exporter';
@@ -25,7 +26,7 @@ our @EXPORT_OK = qw/
 
   get_oidmap_from_database
   get_oidmap_from_mibs_files
-  get_mibs_for_vendors
+  get_mibs_for
   get_munges
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -196,24 +197,24 @@ sub snmpwalk_to_cache {
   return $info->cache;
 }
 
-=head2 gather_every_mib_object( $device, $snmp, @vendors? )
+=head2 gather_every_mib_object( $device, $snmp, @extramibs? )
 
 Gathers evey MIB Object in the MIBs loaded for the device and store
 to the database for SNMP browser.
 
-Optionally add any vendors for extra MIB Objects from the netdisco-mibs
-bundle.
+Optionally add a list of vendors, MIBs, or SNMP:Info class for extra MIB
+Objects from the netdisco-mibs bundle.
 
 The passed SNMP::Info instance has its cache update with the data.
 
 =cut
 
 sub gather_every_mib_object {
-  my ($device, $snmp, @vendors) = @_;
+  my ($device, $snmp, @extra) = @_;
 
   # get MIBs loaded for device
   my @mibs = keys %{ $snmp->mibs() };
-  my @extra_mibs = get_mibs_for_vendors(@vendors);
+  my @extra_mibs = get_mibs_for(@extra);
   debug sprintf "-> covering %d MIBs", (scalar @mibs + scalar @extra_mibs);
   SNMP::loadModules($_) for @extra_mibs;
 
@@ -449,20 +450,34 @@ sub get_oidmap_from_mibs_files {
   return %oidmap;
 }
 
-=head2 get_mibs_for_vendors( @vendors )
+=head2 get_mibs_for( @extra )
 
 =cut
 
-sub get_mibs_for_vendors {
-  my @vendors = @_;
+sub get_mibs_for {
+  my @extra = @_;
   my @mibs = ();
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my $cachedir = catdir( $home, 'EXTRAS', 'indexes', 'cache' );
 
-  foreach my $vendor (@vendors) {
-      push @mibs, map { (split m/\s+/)[0] }
-                  read_lines( catfile( $cachedir, $vendor ), 'latin-1' );
+  foreach my $item (@extra) {
+      next unless $item;
+      if ($item =~ m/^[a-z0-9-]+$/) {
+          push @mibs, map { (split m/\s+/)[0] }
+                      read_lines( catfile( $cachedir, $item ), 'latin-1' );
+      }
+      elsif ($item =~ m/::/) {
+          Module::Load::load $item;
+          $item .= '::MIBS';
+          {
+            no strict 'refs';
+            push @mibs, keys %${item};
+          }
+      }
+      else {
+          push @mibs, $item;
+      }
   }
 
   return @mibs;

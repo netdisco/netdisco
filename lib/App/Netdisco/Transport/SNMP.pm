@@ -380,7 +380,7 @@ sub _build_mibdirs {
 
 sub _get_mibdirs_content {
   my $home = shift;
-  my @list = map {s|$home/||; $_} grep {m/[a-z0-9]/} grep {-d} glob("$home/*");
+  my @list = map {s|$home/||; $_} grep { m|/[a-z0-9-]+$| } grep {-d} glob("$home/*");
   return \@list;
 }
 
