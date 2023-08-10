@@ -6,8 +6,8 @@
         <form id="nd_snmp_search_form" class="form-inline col-md-4">
           <span class="form-group">
             <input id="nd_snmp_search_text" type="text"
-             class="form-control nd_snmp_search_param"
-             name="term" size="30" required placeholder="Search for label or OID">
+             class="form-control nd_snmp_search_param span5"
+             name="term" required placeholder="Search for label or OID">
 
             <button type="submit" class="btn btn-default">Search</button>
 
