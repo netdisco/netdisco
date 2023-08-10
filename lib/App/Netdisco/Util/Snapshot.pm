@@ -60,7 +60,7 @@ sub load_cache_for_device {
       return thaw( decode_base64( $snapshot->cache ) );
   }
 
-  # or we have a file on disk - could be cache or rows
+  # or we have a file on disk - could be cache or walk
   my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
   if (-f $pseudo_cache and not $device->in_storage) {
       my $content = read_text($pseudo_cache);
@@ -88,9 +88,8 @@ sub load_cache_for_device {
           return snmpwalk_to_cache(%oids);
       }
       else {
-          # TODO parse the cache and see if it needs updating
-          # posibly by converting to %oids and calling snmpwalk_to_cache
-          return thaw( decode_base64( $content ) );
+          my $cache = thaw( decode_base64( $content ) );
+          return add_snmpinfo_aliases( $cache );
       }
 
       # there is a late phase discover worker to generate the oids
@@ -337,12 +336,13 @@ sub add_snmpinfo_aliases {
   }
 
   # SNMP::Info::Layer3 has some weird aliases we can fix here
-  $info->_cache('serial1',      $info->chassisId->{''})         if $info->chassisId;
-  $info->_cache('router_ip',    $info->ospfRouterId->{''})      if $info->ospfRouterId;
-  $info->_cache('bgp_id',       $info->bgpIdentifier->{''})     if $info->bgpIdentifier;
-  $info->_cache('bgp_local_as', $info->bgpLocalAs->{''})        if $info->bgpLocalAs;
-  $info->_cache('sysUpTime',    $info->sysUpTimeInstance->{''}) if $info->sysUpTimeInstance and not $info->sysUpTime;
-  $info->_cache('mac',          $info->ifPhysAddress->{1})      if ref q{} ne ref $info->ifPhysAddress;
+  $info->_cache('serial1',      $info->chassisId->{''})         if ref {} eq ref $info->chassisId;
+  $info->_cache('router_ip',    $info->ospfRouterId->{''})      if ref {} eq ref $info->ospfRouterId;
+  $info->_cache('bgp_id',       $info->bgpIdentifier->{''})     if ref {} eq ref $info->bgpIdentifier;
+  $info->_cache('bgp_local_as', $info->bgpLocalAs->{''})        if ref {} eq ref $info->bgpLocalAs;
+  $info->_cache('sysUpTime',    $info->sysUpTimeInstance->{''}) if ref {} eq ref $info->sysUpTimeInstance
+                                                                   and not $info->sysUpTime;
+  $info->_cache('mac',          $info->ifPhysAddress->{1})      if ref {} eq ref $info->ifPhysAddress;
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
   # might call, but will not have data, we fake a cache entry to avoid

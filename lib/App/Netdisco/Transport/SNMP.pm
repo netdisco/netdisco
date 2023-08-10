@@ -3,7 +3,7 @@ package App::Netdisco::Transport::SNMP;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SNMP qw/get_communities/;
+use App::Netdisco::Util::SNMP 'get_communities';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases/;

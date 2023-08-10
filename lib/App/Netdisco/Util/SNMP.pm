@@ -2,7 +2,6 @@ package App::Netdisco::Util::SNMP;
 
 use Dancer qw/:syntax :script !to_json !from_json/;
 use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
-use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 qw/decode_base64/;
