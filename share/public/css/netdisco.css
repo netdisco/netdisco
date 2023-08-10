@@ -68,8 +68,8 @@ div.content > div.tab-content table.nd_floatinghead thead {
     overflow: auto;
 }
 
-#snmpPartialSearch {
-  margin-top: -3px;
+.nd_snmp_search_param {
+  margin-top: -3px !important;
 }
 
 /* fake looks for form submit buttons embedded in bootstrap dropdowns */
