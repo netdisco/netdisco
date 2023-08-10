@@ -129,7 +129,7 @@
         'ajax' : {
           'url' : '[% uri_base | none %]/ajax/data/snmp/nodesearch',
           'beforeSend' : function(jqXHR, settings) {
-            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-ok-sign text-success')
+            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-exclamation-sign icon-ok-sign text-success')
                                          .addClass('icon-spinner text-warning icon-spin');
 
             if (document.getElementById('nd_snmp_search_partial').checked) {
