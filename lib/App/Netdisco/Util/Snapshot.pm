@@ -112,7 +112,7 @@ sub snmpwalk_to_cache {
   my %oids = @_;
   return () unless scalar keys %oids;
 
-  my %oidmap = get_oidmap_from_database();
+  my %oidmap = reverse get_oidmap_from_database();
   my %leaves = ();
 
   OID: foreach my $orig_oid (keys %oids) {
@@ -133,6 +133,9 @@ sub snmpwalk_to_cache {
               $leaves{$key} = $oids{$orig_oid};
           }
           else {
+              # on rare occasions a vendor returns .0 and .something
+              delete $leaves{$key}
+                if defined $leaves{$key} and ref q{} eq $leaves{$key};
               $leaves{$key}->{$idx} = $oids{$orig_oid};
           }
 
@@ -140,7 +143,8 @@ sub snmpwalk_to_cache {
           next OID;
       }
 
-      debug sprintf "cache builder - error:  missing OID %s in netdisco-mibs", $orig_oid;
+      # this is not too surprising
+      # debug sprintf "cache builder - error:  missing OID %s in netdisco-mibs", $orig_oid;
   }
 
   my $info = SNMP::Info->new({
@@ -336,7 +340,7 @@ sub add_snmpinfo_aliases {
   $info->_cache('router_ip',    $info->ospfRouterId->{''})      if $info->ospfRouterId;
   $info->_cache('bgp_id',       $info->bgpIdentifier->{''})     if $info->bgpIdentifier;
   $info->_cache('bgp_local_as', $info->bgpLocalAs->{''})        if $info->bgpLocalAs;
-  $info->_cache('sysUpTime',    $info->sysUpTimeInstance->{''}) if not $info->sysUpTime;
+  $info->_cache('sysUpTime',    $info->sysUpTimeInstance->{''}) if $info->sysUpTimeInstance and not $info->sysUpTime;
   $info->_cache('mac',          $info->ifPhysAddress->{1})      if ref q{} ne ref $info->ifPhysAddress;
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
