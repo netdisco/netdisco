@@ -6,6 +6,7 @@
         <form id="nd_snmp_search_form" class="form-inline col-md-4">
           <span class="form-group">
             <i id="nd_snmp_loading_spinner" class="icon-circle-blank icon-large"></i>
+            &nbsp;
 
             <input id="nd_snmp_search_text" type="text"
              class="form-control nd_snmp_search_param span5"
@@ -13,6 +14,7 @@
 
             <button type="submit" class="btn btn-default">Search</button>
 
+            &nbsp;
             <label class="checkbox-inline"
               rel="tooltip" data-placement="top" data-offset="5"
               data-title="Anchored to the beginning">
@@ -21,6 +23,7 @@
                 name="partial" class="nd_snmp_search_param"> Partial </input>
             </label>
 
+            &nbsp;
             <input type="checkbox" id="nd_snmp_search_deviceonly"
               name="deviceonly" class="nd_snmp_search_param"
               checked="checked"> Only this device </input>
@@ -129,7 +132,7 @@
         'ajax' : {
           'url' : '[% uri_base | none %]/ajax/data/snmp/nodesearch',
           'beforeSend' : function(jqXHR, settings) {
-            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-exclamation-sign icon-ok-sign text-success')
+            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-exclamation-sign text-success')
                                          .addClass('icon-spinner text-warning icon-spin');
 
             if (document.getElementById('nd_snmp_search_partial').checked) {
@@ -169,7 +172,7 @@
         document.getElementById( parent ).scrollIntoView();
 
         $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
-                                     .addClass('icon-ok-sign text-success');
+                                     .addClass('icon-circle-blank text-success');
       }
     });
     $("#nd_snmp_search_form").submit(function(e) {
