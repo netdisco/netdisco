@@ -62,12 +62,19 @@ ajax '/ajax/data/snmp/typeahead' => require_login sub {
     my $table = ($deviceonly ? 'DeviceBrowser' : 'SNMPObject');
 
     my @found = schema(vars->{'tenant'})->resultset($table)
-      ->search({ -or => [ oid => $term,
-                          oid => { -like => ($term .'.%') },
-                          leaf => { -ilike => ('%'. $term .'%') } ],
+      ->search({ -or => [ 'me.oid'  => $term,
+                          'me.oid'  => { -like => ($term .'.%') },
+                          'me.leaf' => { -ilike => ('%'. $term .'%') } ],
                  (($deviceonly and $device) ? (ip => $device) : ()), },
-               { rows => 25, columns => 'leaf', order_by => 'oid_parts' })
-      ->get_column('leaf')->all;
+               { select => [
+                    (($deviceonly and $device) ? \q{ oid_fields.mib || '::' || me.leaf }
+                                               : \q{ me.mib || '::' || me.leaf }),
+                 ],
+                 as => ['qleaf'],
+                 (($deviceonly and $device) ? (join => 'oid_fields') : ()),
+                 rows => 25, order_by => 'me.oid_parts' })
+      ->get_column('qleaf')->all;
+
     return to_json [] unless scalar @found;
 
     content_type 'application/json';
@@ -87,10 +94,12 @@ ajax '/ajax/data/snmp/nodesearch' => require_login sub {
                    { rows => 1, order_by => 'oid_parts' })->first;
     }
     else {
+        my ($mib, $leaf) = split m/::/, $to_match;
         $found = schema(vars->{'tenant'})->resultset('SNMPObject')
-          ->search({ -or => [ oid => $to_match,
-                              leaf => $to_match ] },
-                   { rows => 1, order_by => 'oid_parts' })->first;
+          ->search({
+            (($mib and $leaf) ? (-and => [mib => $mib, leaf => $leaf])
+                              : (-or  => [oid => $to_match, leaf => { -ilike => $to_match }])),
+            },{ rows => 1, order_by => 'oid_parts' })->first;
     }
     return to_json [] unless $found;
 
@@ -148,6 +157,8 @@ sub _get_snmp_data {
 
     my @items = map {{
         id => $_,
+        mib  => $meta{$_}->{mib},  # accessed via node.original.mib
+        leaf => $meta{$_}->{leaf}, # accessed via node.original.leaf
         text => ($meta{$_}->{leaf} .' ('. $meta{$_}->{oid_parts}->[-1] .')'),
 
         ($meta{$_}->{browser} ? (icon => 'icon-folder-close text-info')

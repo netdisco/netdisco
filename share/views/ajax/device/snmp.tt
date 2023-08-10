@@ -5,17 +5,26 @@
     <div id="snmpnodecontainer" class="span8">
         <form id="nd_snmp_search_form" class="form-inline col-md-4">
           <span class="form-group">
-            <input id="nd_snmp_search_text" type="text" class="form-control nd_snmp_search_param" name="term" size="30" required placeholder="Search for label or OID">
+            <input id="nd_snmp_search_text" type="text"
+             class="form-control nd_snmp_search_param"
+             name="term" size="30" required placeholder="Search for label or OID">
 
             <button type="submit" class="btn btn-default">Search</button>
 
             <label class="checkbox-inline"
-              rel="tooltip" data-placement="top" data-offset="5" data-title="Anchored to the beginning">
-              <input type="checkbox" id="nd_snmp_search_partial" name="partial" class="nd_snmp_search_param"> Partial </input>
+              rel="tooltip" data-placement="top" data-offset="5"
+              data-title="Anchored to the beginning">
+
+              <input type="checkbox" id="nd_snmp_search_partial"
+                name="partial" class="nd_snmp_search_param"> Partial </input>
             </label>
 
-            <input type="checkbox" id="nd_snmp_search_deviceonly" name="deviceonly" class="nd_snmp_search_param" checked="checked"> Only this device </input>
-            <input type="hidden" id="nd_snmp_search_ip" name="ip" class="nd_snmp_search_param" value="[% device %]" />
+            <input type="checkbox" id="nd_snmp_search_deviceonly"
+              name="deviceonly" class="nd_snmp_search_param"
+              checked="checked"> Only this device </input>
+
+            <input type="hidden" id="nd_snmp_search_ip"
+              name="ip" class="nd_snmp_search_param" value="[% device %]" />
           </span>
         </form>
         <div id="node">
@@ -74,12 +83,20 @@
 <script type="text/javascript">
   $(function () {
     var jstree_search_callback = function(str, node) {
-      var pattern = str.toLowerCase();
+      var mib  = str.replace(/::.+/,'');
+      var leaf = str.replace(/.+::/,'');
+
+      var pattern = str.replace(/.+::/,'').toLowerCase();
       var name = node.text.toLowerCase();
-      var oid = node.id.toLowerCase();
+      var oid  = node.id.toLowerCase();
 
       if (document.getElementById('nd_snmp_search_partial').checked) {
         if ((name.indexOf(pattern) == 0) || (oid.indexOf(pattern) == 0)) {
+          return true;
+        }
+      }
+      else if (mib.length && leaf.length && mib != leaf) {
+        if ((mib == node.original.mib) && (leaf == node.original.leaf)) {
           return true;
         }
       }

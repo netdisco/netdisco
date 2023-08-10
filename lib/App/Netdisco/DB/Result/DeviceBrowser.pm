@@ -47,4 +47,6 @@ __PACKAGE__->belongs_to(
   { join_type => 'RIGHT' }
 );
 
+__PACKAGE__->belongs_to( oid_fields => 'App::Netdisco::DB::Result::SNMPObject', 'oid' );
+
 1;

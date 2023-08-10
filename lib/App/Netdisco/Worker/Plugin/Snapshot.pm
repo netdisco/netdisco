@@ -5,7 +5,11 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
-use App::Netdisco::Util::Snapshot qw/gather_every_mib_object dump_cache_to_browserdata/;
+use App::Netdisco::Util::Snapshot qw/
+  gather_every_mib_object
+  dump_cache_to_browserdata
+  add_snmpinfo_aliases
+/;
 
 use MIME::Base64 qw/encode_base64/;
 use Storable qw/nfreeze/;
@@ -25,7 +29,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   if (not ($device->in_storage
            and not $device->is_pseudo)) {
-      return Status->error('Can only snapshot a discovered device.');
+      return Status->error('Can only snapshot a real discovered device.');
   }
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
@@ -39,6 +43,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   dump_cache_to_browserdata( $device, $snmp );
 
   if ($job->port) {
+      add_snmpinfo_aliases($snmp);
       my $frozen = encode_base64( nfreeze( $snmp->cache ) );
 
       if ($job->port =~ m/^(?:both|db)$/) {
