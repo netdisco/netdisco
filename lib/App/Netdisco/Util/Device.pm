@@ -166,9 +166,8 @@ sub is_discoverable {
   $remote_type ||= '';
   $remote_cap  ||= [];
 
-  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
   return _bail_msg("is_discoverable: $device is pseudo-device without offline cache")
-    if $device->is_pseudo and ! -f $pseudo_cache;
+    if $device->is_pseudo and not $device->oids->count;
 
   return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
     if ((not setting('discover_waps')) and

@@ -525,6 +525,7 @@ worker_plugins:
   - 'Discover::PortProperties::PortAccessEntity'
   - 'Discover::Properties'
   - 'Discover::Properties::Tags'
+  - 'Discover::Snapshot'
   - 'Discover::VLANs'
   - 'Discover::Wireless'
   - 'Discover::WithNodes'

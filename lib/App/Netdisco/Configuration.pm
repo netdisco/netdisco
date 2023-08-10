@@ -19,6 +19,21 @@ BEGIN {
   }
 }
 
+BEGIN {
+  no warnings 'redefine';
+  use SNMP;
+
+  # hardware exception on macOS at least when translateObj
+  # gets something like '.0.0' passed as arg
+
+  my $orig_translate = *SNMP::translateObj{'CODE'};
+  *SNMP::translateObj = sub {
+    my $arg = $_[0];
+    return undef unless defined $arg and $arg !~ m/^[.0]+$/;
+    return $orig_translate->(@_);
+  };
+}
+
 # set up database schema config from simple config vars
 if (ref {} eq ref setting('database')) {
     # override from env for docker

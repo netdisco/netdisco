@@ -6,16 +6,12 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::SNMP 'get_communities';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases/;
 
 use SNMP::Info;
 use Try::Tiny;
 use Module::Load ();
-use Storable 'thaw';
-use File::Slurper 'read_text';
-use MIME::Base64 'decode_base64';
 use Path::Class 'dir';
-use File::Path 'make_path';
-use File::Spec::Functions qw(catdir catfile);
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
 
@@ -63,12 +59,6 @@ Returns C<undef> if the connection fails.
 sub reader_for {
   my ($class, $ip, $useclass) = @_;
   my $device = get_device($ip) or return undef;
-
-  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
-  if ($device->in_storage and $device->is_pseudo and ! -f $pseudo_cache) {
-      error sprintf 'transport error - cannot act on pseudo-device [%s] without offline cache', $device->ip;
-      return undef;
-  }
 
   my $readers = $class->instance->readers or return undef;
   return $readers->{$device->ip} if exists $readers->{$device->ip};
@@ -171,13 +161,13 @@ sub _snmp_connect_generic {
   }
 
   # support for offline cache
-  my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
-  if (-f $pseudo_cache and ($device->is_pseudo or ! $device->in_storage)) {
-    $snmp_args{Cache} = thaw( decode_base64( read_text($pseudo_cache) ) );
-    $snmp_args{Offline} = 1;
-    # support pseudo/offline device renumber and also pseudo device autovivification
-    $device->set_column(is_pseudo => \'true') if ! $device->is_pseudo;
-    debug sprintf 'snmp transport running in offline mode for: [%s]', $device->ip;
+  my $cache = load_cache_for_device($device);
+  if (scalar keys %$cache) {
+      $snmp_args{Cache} = $cache;
+      $snmp_args{Offline} = 1;
+      # support pseudo/offline device renumber and also pseudo device autovivification
+      $device->set_column(is_pseudo => \'true') if not $device->is_pseudo;
+      debug sprintf 'snmp transport running in offline mode for: [%s]', $device->ip;
   }
 
   # any net-snmp options to add or override
@@ -229,6 +219,7 @@ sub _snmp_connect_generic {
               my $class = $info->device_type;
               return $class->new(
                 %snmp_args, Version => $ver,
+                ($info->offline ? (Cache => $info->cache) : ()),
                 _mk_info_commargs($comm),
               );
           }
@@ -298,6 +289,7 @@ sub _try_connect {
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
+          add_snmpinfo_aliases($info) if $info->offline;
       }
   }
   catch {
@@ -388,7 +380,7 @@ sub _build_mibdirs {
 
 sub _get_mibdirs_content {
   my $home = shift;
-  my @list = map {s|$home/||; $_} grep {m/[a-z0-9]/} grep {-d} glob("$home/*");
+  my @list = map {s|$home/||; $_} grep { m|/[a-z0-9-]+$| } grep {-d} glob("$home/*");
   return \@list;
 }
 
