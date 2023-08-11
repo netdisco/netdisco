@@ -15,25 +15,22 @@ register_worker({ phase => 'check' }, sub {
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
-  my ($device, $port, $extra) = map {$job->$_} qw/device port extra/;
+  my ($device, $class, $object) = map {$job->$_} qw/device port extra/;
 
-  $extra ||= 'interfaces'; my $class = undef;
-  my @values = split /::/, $extra;
-  $extra = pop @values;
-  if (scalar(@values)) {
-    $class = "SNMP::Info";
-    foreach my $v (@values) {
-      last if ($v eq '');
-      $class = $class.'::'.$v;
-    }
-  }
-
+  $class = 'SNMP::Info::'.$class if $class and $class !~ m/^SNMP::Info::/;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device, $class);
-  my $result = sub { eval { $snmp->$extra($port) } || undef };
+
+  $object ||= 'interfaces';
+  my $orig_object = $object;
+  my ($mib, $leaf) = split m/::/, $object;
+  SNMP::loadModules($mib) if $mib and $leaf and $mib ne $leaf;
+  $object =~ s/[-:]/_/g;
+
+  my $result = sub { eval { $snmp->$object() } || undef };
   Data::Printer::p( $result->() );
 
   return Status->done(
-    sprintf "Showed %s response from %s", $extra, $device->ip);
+    sprintf "Showed %s response from %s", $orig_object, $device->ip);
 });
 
 true;
