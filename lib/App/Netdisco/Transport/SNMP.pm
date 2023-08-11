@@ -216,7 +216,7 @@ sub _snmp_connect_generic {
 
           # if successful, restore the default/user timeouts and return
           if ($info) {
-              my $class = $info->device_type;
+              my $class = ($useclass ? $classes[0] : $info->device_type);
               return $class->new(
                 %snmp_args, Version => $ver,
                 ($info->offline ? (Cache => $info->cache) : ()),
