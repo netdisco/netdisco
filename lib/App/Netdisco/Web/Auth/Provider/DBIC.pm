@@ -247,20 +247,40 @@ sub _ldap_search {
 
 sub match_with_radius {
   my($self, $pass, $user) = @_;
-  return unless setting('radius') and ref [] eq ref setting('radius');
+  return unless setting('radius') and ref {} eq ref setting('radius');
 
   my $conf = setting('radius');
-  my $radius = Authen::Radius->new(@$conf);
+  my $servers = (ref [] eq ref $conf->{'server'}
+    ? $conf->{'server'} : [$conf->{'server'}]);
+  my $radius = Authen::Radius->new(
+    NodeList => $servers,
+    Secret   => $conf->{'secret'},
+    TimeOut  => $conf->{'timeout'} || 15,
+  );
   my $dict_dir = Path::Class::Dir->new( dist_dir('App-Netdisco') )
     ->subdir('contrib')->subdir('raddb')->file('dictionary')->stringify;
   Authen::Radius->load_dictionary($dict_dir);
 
   $radius->add_attributes(
      { Name => 'User-Name',         Value => $user },
-     { Name => 'User-Password',     Value => $pass },
-     { Name => 'h323-return-code',  Value => '0' }, # Cisco AV pair
-     { Name => 'Digest-Attributes', Value => { Method => 'REGISTER' } }
+     { Name => 'User-Password',     Value => $pass }
   );
+
+  if ($conf->{'vsa'}) {
+    foreach my $vsa (@{$conf->{'vsa'}}) {
+      $radius->add_attributes(
+        {
+          Name   => $vsa->{'name'},
+          Value  => $vsa->{'value'},
+          Type   => $vsa->{'type'},
+          Vendor => $vsa->{'vendor'},
+          Tag    => $vsa->{'tag'}
+        },
+      );
+    }
+  }
+
+
   $radius->send_packet(ACCESS_REQUEST);
 
   my $type = $radius->recv_packet();
