@@ -14,10 +14,10 @@ register_worker({ phase => 'check', driver => 'direct' }, sub {
       and (not blessed $job->device or not $job->device->in_storage)) {
 
       config->{'snmp_try_slow_connect'} = false;
-      return Status->info("-> running with fast SNMP timeouts for initial discover");
+      return Status->info("running with fast SNMP timeouts for initial discover");
   }
 
-  return Status->info("-> running with configured SNMP timeouts");
+  return Status->info("running with configured SNMP timeouts");
 });
 
 true;

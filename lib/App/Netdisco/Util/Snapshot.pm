@@ -214,12 +214,12 @@ sub gather_every_mib_object {
   # get MIBs loaded for device
   my @mibs = keys %{ $snmp->mibs() };
   my @extra_mibs = get_mibs_for(@extra);
-  debug sprintf "-> covering %d MIBs", (scalar @mibs + scalar @extra_mibs);
+  debug sprintf "covering %d MIBs", (scalar @mibs + scalar @extra_mibs);
   SNMP::loadModules($_) for @extra_mibs;
 
   # get qualified leafs for those MIBs from snmp_object
   my %oidmap = get_oidmap_from_database(@mibs, @extra_mibs);
-  debug sprintf "-> gathering %d MIB Objects", scalar keys %oidmap;
+  debug sprintf "gathering %d MIB Objects", scalar keys %oidmap;
 
   foreach my $qleaf (sort {sortable_oid($oidmap{$a}) cmp sortable_oid($oidmap{$b})} keys %oidmap) {
       my $leaf = $qleaf;
@@ -296,11 +296,11 @@ sub dump_cache_to_browserdata {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->oids->delete;
-    debug sprintf '-> removed %d oids from db', $gone;
+    debug sprintf 'removed %d oids from db', $gone;
     $device->oids->populate([ sort {sortable_oid($a->{oid}) cmp sortable_oid($b->{oid})}
                               map  { delete $_->{qleaf}; $_ }
                               map  { $oids{$_}->[0] } keys %oids ]);
-    debug sprintf '-> added %d new oids to db', scalar keys %oids;
+    debug sprintf 'added %d new oids to db', scalar keys %oids;
   });
 }
 
@@ -365,7 +365,7 @@ sub add_snmpinfo_aliases {
 =cut
 
 sub get_leaf_to_qleaf_map {
-  debug "-> loading database leaf to qleaf map";
+  debug "loading database leaf to qleaf map";
 
   my %oidmap = map { ( $_->{leaf} => (join '::', $_->{mib}, $_->{leaf}) ) }
                schema('netdisco')->resultset('SNMPObject')
@@ -380,7 +380,7 @@ sub get_leaf_to_qleaf_map {
                                    },{columns => [qw/mib leaf/], order_by => 'oid_parts'})
                                  ->hri->all;
 
-  debug sprintf "-> loaded %d mapped objects", scalar keys %oidmap;
+  debug sprintf "loaded %d mapped objects", scalar keys %oidmap;
   return %oidmap;
 }
 
@@ -390,7 +390,7 @@ sub get_leaf_to_qleaf_map {
 
 sub get_oidmap_from_database {
   my @mibs = @_;
-  debug "-> loading netdisco-mibs object cache (database)";
+  debug "loading netdisco-mibs object cache (database)";
 
   my %oidmap = map { ((join '::', $_->{mib}, $_->{leaf}) => $_->{oid}) }
                schema('netdisco')->resultset('SNMPObject')
@@ -407,7 +407,7 @@ sub get_oidmap_from_database {
                                  ->hri->all;
 
   if (not scalar @mibs) {
-      debug sprintf "-> loaded %d MIB objects", scalar keys %oidmap;
+      debug sprintf "loaded %d MIB objects", scalar keys %oidmap;
   }
 
   return %oidmap;
@@ -422,7 +422,7 @@ this version is four seconds and the database takes two.
 =cut
 
 sub get_oidmap_from_mibs_files {
-  debug "-> loading netdisco-mibs object cache (netdisco-mibs)";
+  debug "loading netdisco-mibs object cache (netdisco-mibs)";
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my $reports = catdir( $home, 'EXTRAS', 'reports' );
@@ -445,7 +445,7 @@ sub get_oidmap_from_mibs_files {
     $oidmap{$oid} = $leaf;
   }
 
-  debug sprintf "-> loaded %d MIB objects",
+  debug sprintf "loaded %d MIB objects",
     scalar keys %oidmap;
   return %oidmap;
 }
