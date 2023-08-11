@@ -84,7 +84,7 @@ ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
       if not schema(vars->{'tenant'})->resultset('SNMPObject')->count();
 
     # will store for download and for browsing
-    add_job('snapshot', $device->addr, 'yes') or send_error('Bad device', 400);
+    add_job('snapshot', $device->addr, undef, 'db') or send_error('Bad device', 400);
 };
 
 get "/ajax/content/admin/snapshot_get" => require_role admin => sub {
