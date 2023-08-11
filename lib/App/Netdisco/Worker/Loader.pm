@@ -39,6 +39,9 @@ sub load_workers {
   my $workers = vars->{'workers'}->{$action} || {};
 
   # need to merge in internal workers without overriding action workers
+  # we also drop any "stage" (sub-namespace) and install to "__internal__"
+  # which has higher run priority than "_base_" and any other.
+
   foreach my $phase (qw/check early main user store late/) {
     next unless exists vars->{'workers'}->{'internal'}
       and exists vars->{'workers'}->{'internal'}->{$phase};
@@ -46,7 +49,7 @@ sub load_workers {
 
     foreach my $namespace (keys %{ $internal->{$phase} }) {
       foreach my $priority (keys %{ $internal->{$phase}->{$namespace} }) {
-        push @{ $workers->{$phase}->{$namespace}->{$priority} },
+        push @{ $workers->{$phase}->{'__internal__'}->{$priority} },
           @{ $internal->{$phase}->{$namespace}->{$priority} };
       }
     }
