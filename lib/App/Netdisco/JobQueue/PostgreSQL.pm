@@ -236,9 +236,16 @@ sub jq_defer {
   # seeing as defer is only triggered by an SNMP connect failure, this
   # behaviour seems reasonable, to me (or desirable, perhaps).
 
+  # the deferrable_actions setting exists as a workaround to this behaviour
+  # should it be needed by any action (that is, per-device action but
+  # do not increment deferrals count and simply try to run again).
+
   try {
     schema(vars->{'tenant'})->txn_do(sub {
-      if ($job->device) {
+      if ($job->device
+          and not scalar grep { $job->action eq $_ }
+                              @{ setting('deferrable_actions') || [] }) {
+
         schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->increment_deferrals;

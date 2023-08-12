@@ -22,7 +22,7 @@ register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
     unless defined shift->device;
 
-  return Status->info("snapshot skipped: please run a loadmibs job first")
+  return Status->defer("snapshot skipped: please run a loadmibs job first")
     unless schema('netdisco')->resultset('SNMPObject')->count();
 
   return Status->done('Snapshot is able to run');

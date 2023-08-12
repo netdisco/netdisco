@@ -572,6 +572,9 @@ driver_priority:
   cli:      200
   snmp:     100
 
+deferrable_actions:
+  - 'snapshot'
+
 # ---------------
 # GraphViz Export
 # ---------------

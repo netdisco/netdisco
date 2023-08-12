@@ -67,10 +67,10 @@ sub _make_new {
   return $new;
 }
 
-sub done  { shift->_make_new('done', @_)  }
-sub info  { shift->_make_new('info', @_)  }
-sub defer { shift->_make_new('defer', @_) }
-sub error { shift->_make_new('error', @_) }
+sub done  { shift->_make_new('done', @_)  } # <- jq_complete
+sub info  { shift->_make_new('info', @_)  } # <- jq_complete
+sub defer { shift->_make_new('defer', @_) } # <- jq_defer
+sub error { shift->_make_new('error', @_) } # <- jq_complete
 
 =head2 is_ok
 
