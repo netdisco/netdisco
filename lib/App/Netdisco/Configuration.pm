@@ -211,18 +211,7 @@ else {
   config->{'domain_suffix'} = qr//;
 }
 
-# convert radius and tacacs from single to lists
-
-if (ref {} eq ref setting('radius')
-  and exists setting('radius')->{'secret'}) {
-
-  my $servers = (ref [] eq ref setting('radius')->{'server'}
-    ? setting('radius')->{'server'} : [setting('radius')->{'server'}]);
-  config->{'radius'} = [
-    Secret => setting('radius')->{'secret'},
-    NodeList => $servers,
-  ];
-}
+# convert tacacs from single to lists
 
 if (ref {} eq ref setting('tacacs')
   and exists setting('tacacs')->{'key'}) {
