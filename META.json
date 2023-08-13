@@ -136,7 +136,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.064001"
+         "version" : "2.065000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -526,6 +526,9 @@
       "App::Netdisco::Util::SNMP" : {
          "file" : "lib/App/Netdisco/Util/SNMP.pm"
       },
+      "App::Netdisco::Util::Snapshot" : {
+         "file" : "lib/App/Netdisco/Util/Snapshot.pm"
+      },
       "App::Netdisco::Util::Statistics" : {
          "file" : "lib/App/Netdisco/Util/Statistics.pm"
       },
@@ -805,6 +808,9 @@
       "App::Netdisco::Worker::Plugin::Discover::Properties::Tags" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm"
       },
+      "App::Netdisco::Worker::Plugin::Discover::Snapshot" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Snapshot.pm"
+      },
       "App::Netdisco::Worker::Plugin::Discover::VLANs" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm"
       },
@@ -941,6 +947,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.064001",
+   "version" : "2.065000",
    "x_serialization_backend" : "JSON::PP version 4.07"
 }

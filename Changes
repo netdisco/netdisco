@@ -1,3 +1,22 @@
+2.065000 - 2023-08-13
+
+  [NEW FEATURES]
+
+  * #910 implement import of snmpwalk and more robust snapshot handling (#1086)
+  * #1087 netdisco-do show handles qualified MIB leafs
+
+  [ENHANCEMENTS]
+
+  * better status reporting from SNMPFastDiscover
+  * check loadmibs has run before getting a snapshot
+  * allow deferrable_actions exceptions to device deferrals
+
+  [BUG FIXES]
+
+  * avoid tags worker if device not in storage
+  * make use of spefific device class in netdisco-do show work again
+  * fix bug with internal actions overriding job actions
+
 2.064001 - 2023-07-25
 
   [BUG FIXES]

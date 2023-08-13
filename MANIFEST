@@ -142,6 +142,7 @@ lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortAccessEntity.pm
 lib/App/Netdisco/Util/PortMAC.pm
+lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
 lib/App/Netdisco/Util/Web.pm
@@ -236,6 +237,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm
+lib/App/Netdisco/Worker/Plugin/Discover/Snapshot.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
 lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
