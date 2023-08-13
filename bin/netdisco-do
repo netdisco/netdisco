@@ -440,22 +440,27 @@ this to load Netdisco MIBs into the database. It only needs to be done once.
 
 =head2 snapshot
 
-Performs snmp walks from C<.1.3.6.1>, C<1.0.8802.1.1>, and C<1.3.111.2.802> on
-the device and builds a data structure which SNMP::Info can use to mimic the
-device.  The structure is saved into the C<device_snapshot> database table.
+Builds and saves a data structure which Netdisco can use to mimic the device
+(if shared) and also browse the SNMP Objects in the web.
 
-Optionally, pass a value to the C<-p> parameter (mnemonic: persist) and the
-base64 encoded data will also be saved to L<NETDISCO_HOME/logs/snapshots/IP>
-(where C<IP> is the canonical IP of the device passed). Netdisco will load
-this for any pseudo device with the same canonical IP.
+By default the command will gather Objects for web browsing. Use the C<-p>
+parameter (mnemonic: persist) to save the cache at
+L<NETDISCO_HOME/logs/snapshots/IP> (where C<IP> is the canonical IP of the
+device). You can share the file and it can be used to create a realistic
+pseudo device in another installation.
 
- ~/bin/netdisco-do snapshot -d 192.0.2.1 -p yes
+ ~/bin/netdisco-do snapshot -d 192.0.2.1 -p file
 
-Optionally, pass a value to the L<-e> parameter (mnemonic: explore> and the
-data is also saved into the Netdisco database for web browsing (under
-Device->SNMP tab).
+Optionally use the C<-e> parameter to request MIB Objects other than the
+defaults. This parameter takes a comma-separated list and supports three
+types of item: MIB names (the file name in netdisco-mibs), MIB vendor (in
+netdisco-mibs, will load all the MIBs within), or SNMP::Info class (loads all
+MIBs needed).
 
- ~/bin/netdisco-do snapshot -d 192.0.2.1 -e yes
+ ~/bin/nedisco-do snapshot -d 192.0.2.1 -e SNMP::Info::Layer3::Arista
+ ~/bin/nedisco-do snapshot -d 192.0.2.1 -e PICA-PRIVATE-MIB
+ ~/bin/nedisco-do snapshot -d 192.0.2.1 -e cisco,net-snmp
+ ~/bin/nedisco-do snapshot -d 192.0.2.1 -e SNMP::Info::Layer3,PICA-PRIVATE-MIB,net-snmp
 
 Note that to web browse the gathered SNMP data, you also first need to run
 the C<loadmibs> command.
