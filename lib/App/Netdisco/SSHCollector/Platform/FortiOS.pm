@@ -34,6 +34,13 @@ Returns a list of hashrefs in the format C<< { mac => MACADDR, ip => IPADDR } >>
 
 =cut
 
+# Notes by FortiNoob @rc9000 :
+# * This version with VDOM support was made without access to a device that does not use VDOMs. If you encounter issues, please revert to 
+#    https://github.com/netdisco/netdisco/blob/5cc876e2298783b3e4afc5c2d173103c595abce7/lib/App/Netdisco/SSHCollector/Platform/FortiOS.pm
+# * This requires permissions to enumerate vdoms and run diagnose commands. It should silently fail and continue if that's not the case,
+#   but not much testing was done for that.
+# * Tested only on FortiGate-6300F v6.4.12
+
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
@@ -63,8 +70,53 @@ sub arpnip {
     }
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
-    # IPv4 ARP
-    ##########
+    $expect->send("show\r");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    my $config_output = $before;
+
+    my %vdom_hash;
+    while ($config_output =~ /config vdom\s+edit (\S+)?/g) {
+        $vdom_hash{$1} = 1;
+    }
+    my @vdom_names = keys %vdom_hash;
+
+    debug "$hostlabel $$ discovered vdom names: <@vdom_names>";
+
+    my @arpentries;
+
+    # try ipv4 global
+    push @arpentries, @{$self->get_ipv4($hostlabel, $expect, $prompt, $timeout, undef)};
+    # try ipv4 vdoms
+    foreach my $vdom (@vdom_names) {
+        push @arpentries, @{$self->get_ipv4($hostlabel, $expect, $prompt, $timeout, $vdom)};
+    }
+
+    # try ipv6 global
+    push @arpentries, @{$self->get_ipv6($hostlabel, $expect, $prompt, $timeout, undef)};
+    # try ipv6 vdoms
+    foreach my $vdom (@vdom_names) {
+        push @arpentries, @{$self->get_ipv6($hostlabel, $expect, $prompt, $timeout, $vdom)};
+    }
+
+    $expect->send("exit\n");
+    $expect->soft_close();
+    return @arpentries; 
+
+}
+
+sub get_ipv4 {
+    my ($self, $hostlabel, $expect, $prompt, $timeout, $vdom) = @_;
+    my ($pos, $error, $match, $before, $after);
+
+    debug "$hostlabel $$ get ipv4 arp" . ($vdom ? " for vdom $vdom" : " (non-vdom)");
+
+    if ($vdom){
+        $expect->send("config vdom\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+        $expect->send("edit $vdom\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+    }
 
     $expect->send("get system arp\n");
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
@@ -72,9 +124,10 @@ sub arpnip {
     my @arpentries;
     my @data = split(/\R/, $before);
 
+    # sample:
     # fortigate # get system arp
-    # Address           Age(min)   Hardware Addr      Interface
-    # 2.6.0.5     0          00:40:46:f9:63:0f PLAY-0400
+    # Address      Age(min)   Hardware Addr      Interface
+    # 2.6.0.5      0          00:40:46:f9:63:0f PLAY-0400
     # 1.2.9.7      2          00:30:59:bc:f6:94 DEAD-3550
 
     foreach (@data) {
@@ -86,14 +139,35 @@ sub arpnip {
         }
     }
 
-    # IPv6 ND
-    ##########
+    if ($vdom){
+        $expect->send("end\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+    }
+
+    return \@arpentries;
+}
+
+sub get_ipv6 {
+
+    my ($self, $hostlabel, $expect, $prompt, $timeout, $vdom) = @_;
+    my ($pos, $error, $match, $before, $after);
+
+    debug "$hostlabel $$ get ipv6 neighbor-cache" . ($vdom ? " for vdom $vdom" : " (non-vdom)");
+
+    if ($vdom){
+        $expect->send("config vdom\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+        $expect->send("edit $vdom\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+    }
 
     $expect->send("diagnose ipv6 neighbor-cache list\n");
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
-    @data = split(/\R/, $before);
+    my @arpentries;
+    my @data = split(/\R/, $before);
 
+    # sample:
     # fortigate # diagnose ipv6 neighbor-cache list
     # ifindex=403 ifname=WORK-4016 fe80::abcd:1234:dead:f00d ab:cd:ef:01:23:45 state=00000004 use=42733 confirm=42733 update=41100 ref=3
     # ifindex=67 ifname=PLAY-4036 ff02::16 33:33:00:00:00:16 state=00000040 use=4765 confirm=10765 update=4765 ref=0
@@ -109,10 +183,12 @@ sub arpnip {
         }
     }
 
-    $expect->send("exit\n");
-    $expect->soft_close();
+    if ($vdom){
+        $expect->send("end\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+    }
 
-    return @arpentries;
+    return \@arpentries;
 }
 
 1;
