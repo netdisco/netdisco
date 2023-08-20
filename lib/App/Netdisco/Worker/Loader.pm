@@ -43,6 +43,8 @@ sub load_workers {
   # which has higher run priority than "_base_" and any other.
 
   foreach my $phase (qw/check early main user store late/) {
+    next if exists $workers->{$phase}->{'__internal__'};
+
     next unless exists vars->{'workers'}->{'internal'}
       and exists vars->{'workers'}->{'internal'}->{$phase};
     my $internal = vars->{'workers'}->{'internal'};
