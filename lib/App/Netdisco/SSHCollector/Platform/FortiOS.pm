@@ -16,6 +16,7 @@ use warnings;
 use Dancer ':script';
 use Moo;
 use Expect;
+use Regexp::Common qw(net);
 
 =head1 PUBLIC METHODS
 
@@ -33,6 +34,51 @@ Returns a list of hashrefs in the format C<< { mac => MACADDR, ip => IPADDR } >>
 =back
 
 =cut
+
+sub arpnip_context {
+    my ($expect, $prompt, $timeout, $arpentries) = @_;
+
+    # IPv4 ARP
+    ##########
+
+    $expect->send("get system arp\n");
+    my ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    my @data = split(/\R/, $before);
+
+    # fortigate # get system arp
+    # Address           Age(min)   Hardware Addr      Interface
+    # 2.6.0.5     0          00:40:46:f9:63:0f PLAY-0400
+    # 1.2.9.7      2          00:30:59:bc:f6:94 DEAD-3550
+
+    foreach (@data) {
+        if (/^($RE{net}{IPv4})\s*\d+\s*($RE{net}{MAC})\s*\S+$/) {
+            debug "\tfound IPv4: $1 => MAC: $2";
+            push(@$arpentries, { ip => $1, mac => $2 });
+        }
+    }
+
+    # IPv6 ND
+    ##########
+
+    $expect->send("diagnose ipv6 neighbor-cache list\n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    @data = split(/\R/, $before);
+
+    # fortigate # diagnose ipv6 neighbor-cache list
+    # ifindex=403 ifname=WORK-4016 fe80::abcd:1234:dead:f00d ab:cd:ef:01:23:45 state=00000004 use=42733 confirm=42733 update=41100 ref=3
+    # ifindex=67 ifname=PLAY-4036 ff02::16 33:33:00:00:00:16 state=00000040 use=4765 confirm=10765 update=4765 ref=0
+    # ifindex=28 ifname=root :: 00:00:00:00:00:00 state=00000040 use=589688110 confirm=589694110 update=589688110 ref=1
+    # ifindex=48 ifname=FUN-4024 2001:42:1234:fe80:1234:1234:1234:1234 b0:c1:e2:f3:a4:b5 state=00000008 use=12 confirm=2 update=12 ref=2
+
+    foreach (@data) {
+        if (/^ifindex=\d+\s+ifname=\S+\s+($RE{net}{IPv6}{-sep => ':'}{-style => 'HeX'})\s+($RE{net}{MAC}).*$/) {
+            debug "\tfound IPv6: $1 => MAC: $2";
+            push(@$arpentries, { ip => $1, mac => $2 });
+        }
+    }
+}
 
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
@@ -63,56 +109,49 @@ sub arpnip {
     }
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
-    # IPv4 ARP
-    ##########
-
-    $expect->send("get system arp\n");
+    # Check if we are in a VDOM context
+    $expect->send("get system status\n");
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
-    my @arpentries;
     my @data = split(/\R/, $before);
-
-    # fortigate # get system arp
-    # Address           Age(min)   Hardware Addr      Interface
-    # 2.6.0.5     0          00:40:46:f9:63:0f PLAY-0400
-    # 1.2.9.7      2          00:30:59:bc:f6:94 DEAD-3550
-
+    my $multi_vdom = 0;
     foreach (@data) {
-        my ($ip, $age, $mac, $iface) = split(/\s+/);
-
-        if ($ip && $ip =~ m/(\d{1,3}\.){3}\d{1,3}/
-            && $mac =~ m/([0-9a-f]{2}\:){5}[0-9a-f]{2}/i) {
-              push(@arpentries, { ip => $ip, mac => $mac });
+        if (/^Virtual domain configuration: multiple$/) {
+            $multi_vdom = 1;
+	    last;
         }
     }
-
-    # IPv6 ND
-    ##########
-
-    $expect->send("diagnose ipv6 neighbor-cache list\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
-
-    @data = split(/\R/, $before);
-
-    # fortigate # diagnose ipv6 neighbor-cache list
-    # ifindex=403 ifname=WORK-4016 fe80::abcd:1234:dead:f00d ab:cd:ef:01:23:45 state=00000004 use=42733 confirm=42733 update=41100 ref=3
-    # ifindex=67 ifname=PLAY-4036 ff02::16 33:33:00:00:00:16 state=00000040 use=4765 confirm=10765 update=4765 ref=0
-    # ifindex=28 ifname=root :: 00:00:00:00:00:00 state=00000040 use=589688110 confirm=589694110 update=589688110 ref=1
-    # ifindex=48 ifname=FUN-4024 2001:42:1234:fe80:1234:1234:1234:1234 b0:c1:e2:f3:a4:b5 state=00000008 use=12 confirm=2 update=12 ref=2
-
-    foreach (@data) {
-        my ($ifindex, $ifname, $ip, $mac, $state, $use, $confirm, $update, $ref) = split(/\s+/);
-
-        if ($ip && $ip =~ m/[0-9a-f]{0,4}:([0-9a-f]{0,4}:){0,6}:[0-9a-f]{0,4}/
-            && $mac =~ m/([0-9a-f]{2}\:){5}[0-9a-f]{2}/i) {
-              push(@arpentries, { ip => $ip, mac => $mac });
+    my $arpentries = [];
+    if ($multi_vdom) {
+        # Get list of all VDOM
+        $expect->send("config global\n");
+        $expect->expect($timeout, -re, $prompt);
+        $expect->send("get system vdom-property\n");
+        ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+        $expect->send("end\n");
+        $expect->expect($timeout, -re, $prompt);
+        @data = split(/\R/, $before);
+        my $vdoms = [];
+        foreach (@data) {
+            push(@$vdoms, $1) if (/^==\s*\[\s*(\S+)\s*\]$/);
         }
-    }
 
+        foreach (@$vdoms) {
+            $expect->send("config vdom\n");
+	    $expect->expect($timeout, -re, $prompt);
+	    $expect->send("edit $_\n");
+            $expect->expect($timeout, -re, $prompt);
+            arpnip_context($expect, $prompt, $timeout, $arpentries);
+            $expect->send("end\n");
+            $expect->expect($timeout, -re, $prompt);
+        }
+    } else {
+        arpnip_context($expect, $prompt, $timeout, $arpentries);
+    }
     $expect->send("exit\n");
     $expect->soft_close();
 
-    return @arpentries;
+    return @$arpentries;
 }
 
 1;
