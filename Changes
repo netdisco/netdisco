@@ -1,3 +1,9 @@
+2.tbd - TBD
+
+  [ENHANCEMENTS]
+
+  * VDOM support for FortiOS SSH collector (#1096)
+
 2.065001 - 2023-08-13
 
   [ENHANCEMENTS]
