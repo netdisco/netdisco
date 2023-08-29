@@ -294,6 +294,11 @@ sub search_by_field {
       and (($mac->as_ieee eq '00:00:00:00:00:00')
         or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
 
+    my @joins = (
+      ($mac ? qw/ports/ : ()),
+      (($p->{dns} or $p->{ip}) ? qw/device_ips/ : ()),
+    );
+
     return $rs
       ->search_rs({}, $attrs)
       ->search({
@@ -337,8 +342,8 @@ sub search_by_field {
       },
       {
         order_by => [qw/ me.dns me.ip /],
-        (($p->{dns} or $p->{ip}) ? (
-          join => [qw/device_ips ports/],
+        ((scalar @joins) ? (
+          join => \@joins,
           distinct => 1,
         ) : ()),
       }
