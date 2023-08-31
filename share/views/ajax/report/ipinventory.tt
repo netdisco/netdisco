@@ -6,7 +6,7 @@
       <th>Vendor</th>
       <th class="nd_center-cell">DNS</th>
       <th class="nd_center-cell">NetBIOS</th>
-      <th>Last Used</th>      
+      <th>Time Since Last Seen</th>      
     </tr>
   </thead>
 </table>
@@ -66,7 +66,7 @@ $(document).ready(function() {
         "data": 'age',
         "render": function(data, type, row, meta) {
           if (type == 'display') {
-            return he.encode(data || 'Never');
+            return he.encode(data || 'Never').replace(/:00$/,' mins').replace(':',' hours ');
           }
           else {
             // so that sorting works correctly on this column
