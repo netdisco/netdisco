@@ -270,7 +270,8 @@ devport_vlan_limit: 150
 login_logo: ""
 defanged_admin: 'admin'
 defanged_api_admin: 'api_admin'
-hide_deviceports: []
+hide_deviceports:
+    - 'group:__IGNORE_NOTPRESENT_TYPES__'
 
 # -------------
 # NETDISCO CORE
@@ -414,7 +415,6 @@ ignore_deviceports:
   'group:__ANY__':
     - 'group:__IGNORE_INTERFACES__'
     - 'group:__IGNORE_INTERFACE_TYPES__'
-    - 'group:__IGNORE_NOTPRESENT_TYPES__'
   'vendor:juniper':
     - 'subnet:128\.0\.0\.0/2'
     - 'port:.+\.1638\d'
