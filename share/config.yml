@@ -271,7 +271,8 @@ login_logo: ""
 defanged_admin: 'admin'
 defanged_api_admin: 'api_admin'
 hide_deviceports:
-    - 'group:__IGNORE_NOTPRESENT_TYPES__'
+  'group:__ANY__':
+    - 'group:__HIDE_NOTPRESENT_TYPES__'
 
 # -------------
 # NETDISCO CORE
@@ -321,13 +322,16 @@ host_groups:
     - 'port:ii\d\/\d\/\d+'
   __IGNORE_INTERFACE_TYPES__: []
   __NOTPRESENT_TYPES__:
-    - 'type:ethernetCsmacd'
     - 'type:tunnel'
     - 'type:ieee8023adLag'
   __IGNORE_NOTPRESENT_TYPES__:
     - 'op:and'
     - 'up:notPresent'
     - 'group:__NOTPRESENT_TYPES__'
+  __HIDE_NOTPRESENT_TYPES__:
+    - 'op:and'
+    - 'up:notPresent'
+    - 'type:ethernetCsmacd'
 host_group_displaynames: {}
 device_identity: []
 community: []
@@ -415,6 +419,7 @@ ignore_deviceports:
   'group:__ANY__':
     - 'group:__IGNORE_INTERFACES__'
     - 'group:__IGNORE_INTERFACE_TYPES__'
+    - 'group:__IGNORE_NOTPRESENT_TYPES__'
   'vendor:juniper':
     - 'subnet:128\.0\.0\.0/2'
     - 'port:.+\.1638\d'
