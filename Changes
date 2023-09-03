@@ -1,8 +1,16 @@
-2.tbd - TBD
+2.065002 - 2023-09-03
 
   [ENHANCEMENTS]
 
-  * VDOM support for FortiOS SSH collector (#1096)
+  * #1071 improve presentation of IP Inventory Last Seen column
+  * #1081 change ethernetCsmacd+notPresent ports from ignored to hidden
+  * #1096 VDOM support for FortiOS SSH collector
+  * update SNMP::Info dependency to 3.95
+
+  [BUG FIXES]
+
+  * #1095 fix with multiple netdisco-do -d, snmpfastdiscover runs multiple times
+  * #1099 missing join to device_port when searching for device using mac address
 
 2.065001 - 2023-08-13
 
