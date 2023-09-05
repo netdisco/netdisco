@@ -5,6 +5,7 @@ use Dancer qw/:moose :syntax :script/;
 use List::Util 'sum';
 use App::Netdisco::Util::MCE;
 
+use App::Netdisco::Backend::Job;
 use App::Netdisco::JobQueue
   qw/jq_locked jq_getsome jq_lock jq_warm_thrusters/;
 
@@ -21,8 +22,12 @@ sub worker_begin {
   debug "entering Manager ($wid) worker_begin()";
 
   # job queue initialisation
-  debug "mgr ($wid): building acl hints (please be patient...)";
+  # the expensive parts of this were moved to primeskiplist job
   jq_warm_thrusters;
+
+  # queue a job to rebuild the device action skip list
+  $self->{queue}->enqueuep(200,
+    App::Netdisco::Backend::Job->new({ job => 0, action => 'primeskiplist' }));
 
   # requeue jobs locally
   debug "mgr ($wid): searching for jobs booked to this processing node";
@@ -60,7 +65,7 @@ sub worker_body {
       my %seen_job = ();
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
-                     - $self->{queue}->pending();
+                      - $self->{queue}->pending();
       debug "mgr ($wid): getting potential jobs for $num_slots workers";
 
       foreach my $job ( jq_getsome($num_slots) ) {

@@ -17,6 +17,7 @@ our @EXPORT_OK = qw/
   is_discoverable is_discoverable_now
   is_arpnipable   is_arpnipable_now
   is_macsuckable  is_macsuckable_now
+  get_denied_actions
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -327,6 +328,41 @@ sub is_macsuckable_now {
   }
 
   return is_macsuckable(@_);
+}
+
+=head2 get_denied_actions( $device )
+
+Checks configured ACLs for the device on this backend and returns list
+of actions which are denied.
+
+=cut
+
+sub get_denied_actions {
+  my $device = shift;
+  my @badactions = ();
+  return @badactions unless $device;
+  $device = get_device($device); # might be no-op but is done in is_* anyway
+
+  if ($device->is_pseudo) {
+      # always let pseudo devices do contact|location|portname|snapshot
+      # and additionally if there's a snapshot cache, is_discoverable will let
+      # them do all other discover and high prio actions
+      push @badactions, ('discover', grep { $_ !~ m/^(?:contact|location|portname|snapshot)$/ }
+                                          @{ setting('job_prio')->{high} })
+        if not is_discoverable($device);
+  }
+  else {
+      push @badactions, ('discover', @{ setting('job_prio')->{high} })
+        if not is_discoverable($device);
+  }
+
+  push @badactions, (qw/macsuck nbtstat/)
+    if not is_macsuckable($device);
+
+  push @badactions, 'arpnip'
+    if not is_arpnipable($device);
+
+  return @badactions;
 }
 
 1;

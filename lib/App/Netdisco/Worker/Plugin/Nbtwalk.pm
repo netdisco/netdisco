@@ -7,6 +7,17 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
 
+register_worker({ phase => 'check' }, sub {
+  return Status->defer("nbtwalk skipped: have not yet primed skiplist")
+    unless schema(vars->{'tenant'})->resultset('DeviceSkip')
+      ->search({
+        backend => setting('workers')->{'BACKEND'},
+        device  => '255.255.255.255',
+      })->count();
+
+  return Status->done('Nbtwalk is able to run');
+});
+
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 

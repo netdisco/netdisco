@@ -3,11 +3,9 @@ package App::Netdisco::JobQueue::PostgreSQL;
 use Dancer qw/:moose :syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Device
-  qw/get_device is_discoverable is_macsuckable is_arpnipable/;
+use App::Netdisco::Util::Device 'get_denied_actions';
 use App::Netdisco::Backend::Job;
 
-use Module::Load ();
 use JSON::PP ();
 use Try::Tiny;
 
@@ -28,45 +26,8 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-# given a device, tests if any of the primary acls applies
-# returns a list of job actions to be denied/skipped on this host.
-sub _get_denied_actions {
-  my $device = shift;
-  my @badactions = ();
-  return @badactions unless $device;
-  $device = get_device($device); # might be no-op but is done in is_* anyway
-
-  if ($device->is_pseudo) {
-      # always let pseudo devices do contact|location|portname|snapshot
-      # and additionally if there's a snapshot cache, is_discoverable will let
-      # them do all other discover and high prio actions
-      push @badactions, ('discover', grep { $_ !~ m/^(?:contact|location|portname|snapshot)$/ }
-                                          @{ setting('job_prio')->{high} })
-        if not is_discoverable($device);
-  }
-  else {
-      push @badactions, ('discover', @{ setting('job_prio')->{high} })
-        if not is_discoverable($device);
-  }
-
-  push @badactions, (qw/macsuck nbtstat/)
-    if not is_macsuckable($device);
-
-  push @badactions, 'arpnip'
-    if not is_arpnipable($device);
-
-  return @badactions;
-}
-
 sub jq_warm_thrusters {
-  my @devices = schema(vars->{'tenant'})->resultset('Device')->all;
   my $rs = schema(vars->{'tenant'})->resultset('DeviceSkip');
-  my %actionset = ();
-
-  foreach my $d (@devices) {
-    my @badactions = _get_denied_actions($d);
-    $actionset{$d->ip} = \@badactions if scalar @badactions;
-  }
 
   schema(vars->{'tenant'})->txn_do(sub {
     $rs->search({
@@ -86,19 +47,6 @@ sub jq_warm_thrusters {
       actionset => { -value => [] }, # special syntax for matching empty ARRAY
       deferrals => 0,
     })->delete;
-
-    $rs->update_or_create({
-      backend => setting('workers')->{'BACKEND'},
-      device  => $_,
-      actionset => $actionset{$_},
-    }, { key => 'primary' }) for keys %actionset;
-
-    # add one faux record to allow *walk actions to see there is a backend running
-    $rs->update_or_create({
-      backend => setting('workers')->{'BACKEND'},
-      device  => '255.255.255.255',
-      last_defer => \'LOCALTIMESTAMP',
-    }, { key => 'primary' });
   });
 }
 
@@ -122,7 +70,7 @@ sub jq_getsome {
       # and the skiplist was primed. these should be checked against
       # the various acls and have device_skip entry added if needed,
       # and return false if it should have been skipped.
-      my @badactions = _get_denied_actions($job->device);
+      my @badactions = get_denied_actions($job->device);
       if (scalar @badactions) {
         schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
@@ -205,6 +153,7 @@ sub jq_queued {
 
 sub jq_lock {
   my $job = shift;
+  return true unless $job->id;
   my $happy = false;
 
   # lock db row and update to show job has been picked
@@ -250,6 +199,8 @@ sub jq_defer {
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->increment_deferrals;
       }
+
+      debug sprintf 'defer: job %s', ($job->id || 'unknown');
 
       # lock db row and update to show job is available
       schema(vars->{'tenant'})->resultset('Admin')
