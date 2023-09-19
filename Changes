@@ -1,3 +1,10 @@
+2.066000 - 2023-09-19
+
+  [ENHANCEMENTS]
+
+  * #1083 setting to make inventory collapsible when large variety of vendor/os
+  * #1084 device ACL skiplist build is now a job instead of blocking backend startup
+
 2.065002 - 2023-09-03
 
   [ENHANCEMENTS]

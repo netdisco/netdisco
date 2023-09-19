@@ -267,6 +267,7 @@ lib/App/Netdisco/Worker/Plugin/NodeMonitor.pm
 lib/App/Netdisco/Worker/Plugin/PortControl.pm
 lib/App/Netdisco/Worker/Plugin/PortName.pm
 lib/App/Netdisco/Worker/Plugin/Power.pm
+lib/App/Netdisco/Worker/Plugin/PrimeSkiplist.pm
 lib/App/Netdisco/Worker/Plugin/Psql.pm
 lib/App/Netdisco/Worker/Plugin/Renumber.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
