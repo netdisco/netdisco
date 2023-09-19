@@ -12,25 +12,54 @@
           </tr>
         </thead>
         <tbody>
-          [% FOREACH platform IN platforms %]
-          [% NEXT UNLESS platform.vendor OR platform.model %]
+          [% SET vendorcount = 0 %]
+          [% FOREACH vendor IN platforms %]
+          [% SET vendorcount = vendorcount + 1 %]
+          [% IF settings.inventory_collapse_threshold
+             AND platforms.size > settings.inventory_collapse_threshold
+             AND platform_totals.$vendor.rows > settings.inventory_platforms_collapse_threshold %]
           <tr>
             <th>
-              [% IF platform.vendor %]
               <a class="nd_linkcell"
-                href="[% search_device | none %]&q=[% platform.vendor | uri %]&vendor=[% platform.vendor | uri %]">
-                  [% platform.vendor | html_entity %]</a>
+                href="[% search_device | none %]&q=[% vendor | uri %]&vendor=[% vendor | uri %]">
+                  [% vendor | html_entity %]</a>
+            </th>
+            <th>
+              <span id="nd_platforms_[% vendorcount %]_chevron" class="icon-chevron-up"></span>
+              <a href="#" class="nd_collapse-inventory"
+                  data-chevron="#nd_platforms_[% vendorcount %]_chevron"
+                  data-target=".nd_platforms_[% vendorcount %]">
+                Show [% platform_totals.$vendor.rows  | html_entity %]
+              </a>
+            </th>
+            <th>[% platform_totals.$vendor.count | html_entity %]</th>
+          </tr>
+          [% END %]
+          [% FOREACH row IN platform_map.$vendor %]
+          [% IF settings.inventory_collapse_threshold
+             AND platforms.size > settings.inventory_collapse_threshold
+             AND platform_totals.$vendor.rows > settings.inventory_platforms_collapse_threshold %]
+          <tr class="nd_inventory_collapser nd_platforms_[% vendorcount %]">
+          [% ELSE %]
+          <tr>
+          [% END %]
+            <th>
+              [% IF row.vendor %]
+              <a class="nd_linkcell"
+                href="[% search_device | none %]&q=[% row.vendor | uri %]&vendor=[% row.vendor | uri %]">
+                  [% row.vendor | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
             <th>
-              [% IF platform.model %]
+              [% IF row.model %]
               <a class="nd_linkcell"
-                href="[% search_device | none %]&q=[% platform.model | uri %]&model=[% platform.model | uri %]">
-                  [% platform.model | html_entity %]</a>
+                href="[% search_device | none %]&q=[% row.model | uri %]&model=[% row.model | uri %]">
+                  [% row.model | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
-            <th>[% platform.count | html_entity %]</th>
+            <th>[% row.count | html_entity %]</th>
           </tr>
+          [% END %]
           [% END %]
         </tbody>
       </table>
@@ -46,25 +75,55 @@
           </tr>
         </thead>
         <tbody>
-          [% FOREACH release IN releases %]
-          [% NEXT UNLESS release.os OR release.os_ver %]
+          [% SET oscount = 0 %]
+          [% FOREACH os IN releases %]
+          [% SET oscount = oscount + 1 %]
+          [% IF settings.inventory_collapse_threshold
+             AND releases.size > settings.inventory_collapse_threshold
+             AND release_totals.$os.rows > settings.inventory_releases_collapse_threshold %]
           <tr>
             <th>
-              [% IF release.os %]
               <a class="nd_linkcell"
-                href="[% search_device | none %]&q=[% release.os | uri %]&os=[% release.os | uri %]">
-                  [% release.os | html_entity %]</a>
+                href="[% search_device | none %]&q=[% os | uri %]&vendor=[% os | uri %]">
+                  [% os | html_entity %]</a>
+            </th>
+            <th>
+              <span id="nd_releases_[% oscount %]_chevron" class="icon-chevron-up"></span>
+              <a href="#" class="nd_collapse-inventory"
+                  data-chevron="#nd_releases_[% oscount %]_chevron"
+                  data-target=".nd_releases_[% oscount %]">
+                Show [% release_totals.$os.rows | html_entity %]
+              </a>
+            </th>
+            <th>[% release_totals.$os.count | html_entity %]</th>
+          </tr>
+          <div>
+          [% END %]
+          [% FOREACH row IN release_map.$os %]
+          [% IF settings.inventory_collapse_threshold
+             AND releases.size > settings.inventory_collapse_threshold
+             AND release_totals.$os.rows > settings.inventory_releases_collapse_threshold %]
+          <tr class="nd_inventory_collapser nd_releases_[% oscount %]">
+          [% ELSE %]
+          <tr>
+          [% END %]
+            <th>
+              [% IF row.os %]
+              <a class="nd_linkcell"
+                href="[% search_device | none %]&q=[% row.os | uri %]&os=[% row.os | uri %]">
+                  [% row.os | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
             <th>
-              [% IF release.os_ver %]
+              [% IF row.os_ver %]
               <a class="nd_linkcell"
-                href="[% search_device | none %]&q=[% release.os_ver | uri %]&os_ver=[% release.os_ver | uri %]">
-                  [% release.os_ver | html_entity %]</a>
+                href="[% search_device | none %]&q=[% row.os_ver | uri %]&os_ver=[% row.os_ver | uri %]">
+                  [% row.os_ver | html_entity %]</a>
               [% ELSE %]unknown[% END %]
             </th>
-            <th>[% release.count | html_entity %]</th>
+            <th>[% row.count | html_entity %]</th>
           </tr>
+          [% END %]
           [% END %]
         </tbody>
       </table>
@@ -76,3 +135,22 @@
   </script>
   [% END %]
 </div>
+<script type="text/javascript">
+  $('.nd_inventory_collapser').toggle();
+
+  $('.nd_collapse-inventory').on('click', function () {
+    var target = $(this).attr('data-target');
+    var chevron = $(this).attr('data-chevron');
+
+    $(target).toggle();
+
+    if ($(chevron).hasClass('icon-chevron-up')) {
+        $(chevron).removeClass('icon-chevron-up');
+        $(chevron).addClass('icon-chevron-down');
+    }
+    else {
+        $(chevron).addClass('icon-chevron-up');
+        $(chevron).removeClass('icon-chevron-down');
+    }
+  });
+</script>
