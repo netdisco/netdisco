@@ -12,8 +12,12 @@
           </tr>
         </thead>
         <tbody>
+          [% SET vendorcount = 0 %]
           [% FOREACH vendor IN platforms %]
-          [% IF platform_totals.$vendor.rows > 5 %]
+          [% SET vendorcount = vendorcount + 1 %]
+          [% IF settings.inventory_collapse_threshold
+             AND platforms.size > settings.inventory_collapse_threshold
+             AND platform_totals.$vendor.rows > settings.inventory_platforms_collapse_threshold %]
           <tr>
             <th>
               <a class="nd_linkcell"
@@ -21,17 +25,24 @@
                   [% vendor | html_entity %]</a>
             </th>
             <th>
-              <span type="button" class="accordion-heading" data-toggle="collapse" data-target="#nd_platforms" id="nd_platforms_toggler">
-                <span class="icon-chevron-up"></span> Show
-              </span>
-              [% platform_totals.$vendor.rows  | html_entity %]
+              <span id="nd_platforms_[% vendorcount %]_chevron" class="icon-chevron-up"></span>
+              <a href="#" class="nd_collapse-inventory"
+                  data-chevron="#nd_platforms_[% vendorcount %]_chevron"
+                  data-target=".nd_platforms_[% vendorcount %]">
+                Show [% platform_totals.$vendor.rows  | html_entity %]
+              </a>
             </th>
             <th>[% platform_totals.$vendor.count | html_entity %]</th>
           </tr>
-          <div id="nd_platforms" class="collapse">
           [% END %]
           [% FOREACH row IN platform_map.$vendor %]
+          [% IF settings.inventory_collapse_threshold
+             AND platforms.size > settings.inventory_collapse_threshold
+             AND platform_totals.$vendor.rows > settings.inventory_platforms_collapse_threshold %]
+          <tr class="nd_inventory_collapser nd_platforms_[% vendorcount %]">
+          [% ELSE %]
           <tr>
+          [% END %]
             <th>
               [% IF row.vendor %]
               <a class="nd_linkcell"
@@ -49,9 +60,6 @@
             <th>[% row.count | html_entity %]</th>
           </tr>
           [% END %]
-          [% IF platform_totals.$vendor.rows > 5 %]
-          </div>
-          [% END %]
           [% END %]
         </tbody>
       </table>
@@ -67,8 +75,12 @@
           </tr>
         </thead>
         <tbody>
+          [% SET oscount = 0 %]
           [% FOREACH os IN releases %]
-          [% IF release_totals.$os.rows > 5 %]
+          [% SET oscount = oscount + 1 %]
+          [% IF settings.inventory_collapse_threshold
+             AND releases.size > settings.inventory_collapse_threshold
+             AND release_totals.$os.rows > settings.inventory_releases_collapse_threshold %]
           <tr>
             <th>
               <a class="nd_linkcell"
@@ -76,17 +88,25 @@
                   [% os | html_entity %]</a>
             </th>
             <th>
-              <span type="button" class="accordion-heading" data-toggle="collapse" data-target="#nd_platforms" id="nd_platforms_toggler">
-                <span class="icon-chevron-up"></span> Show
-              </span>
-              [% release_totals.$os.rows  | html_entity %]
+              <span id="nd_releases_[% oscount %]_chevron" class="icon-chevron-up"></span>
+              <a href="#" class="nd_collapse-inventory"
+                  data-chevron="#nd_releases_[% oscount %]_chevron"
+                  data-target=".nd_releases_[% oscount %]">
+                Show [% release_totals.$os.rows | html_entity %]
+              </a>
             </th>
             <th>[% release_totals.$os.count | html_entity %]</th>
           </tr>
-          <div id="nd_platforms" class="collapse">
+          <div>
           [% END %]
           [% FOREACH row IN release_map.$os %]
+          [% IF settings.inventory_collapse_threshold
+             AND releases.size > settings.inventory_collapse_threshold
+             AND release_totals.$os.rows > settings.inventory_releases_collapse_threshold %]
+          <tr class="nd_inventory_collapser nd_releases_[% oscount %]">
+          [% ELSE %]
           <tr>
+          [% END %]
             <th>
               [% IF row.os %]
               <a class="nd_linkcell"
@@ -104,9 +124,6 @@
             <th>[% row.count | html_entity %]</th>
           </tr>
           [% END %]
-          [% IF release_totals.$vendor.rows > 5 %]
-          </div>
-          [% END %]
           [% END %]
         </tbody>
       </table>
@@ -118,3 +135,22 @@
   </script>
   [% END %]
 </div>
+<script type="text/javascript">
+  $('.nd_inventory_collapser').toggle();
+
+  $('.nd_collapse-inventory').on('click', function () {
+    var target = $(this).attr('data-target');
+    var chevron = $(this).attr('data-chevron');
+
+    $(target).toggle();
+
+    if ($(chevron).hasClass('icon-chevron-up')) {
+        $(chevron).removeClass('icon-chevron-up');
+        $(chevron).addClass('icon-chevron-down');
+    }
+    else {
+        $(chevron).addClass('icon-chevron-up');
+        $(chevron).removeClass('icon-chevron-down');
+    }
+  });
+</script>
