@@ -44,11 +44,9 @@
           <tr>
           [% END %]
             <th>
-              [% IF row.vendor %]
               <a class="nd_linkcell"
                 href="[% search_device | none %]&q=[% row.vendor | uri %]&vendor=[% row.vendor | uri %]">
                   [% row.vendor | html_entity %]</a>
-              [% ELSE %]unknown[% END %]
             </th>
             <th>
               [% IF row.model %]
@@ -60,6 +58,9 @@
             <th>[% row.count | html_entity %]</th>
           </tr>
           [% END %]
+          [% END %]
+          [% IF unknown_platforms > 0 %]
+          <tr><th>Unknown</th><th>unknown</th><th>[% unknown_platforms %]</th></tr>
           [% END %]
         </tbody>
       </table>
@@ -108,11 +109,9 @@
           <tr>
           [% END %]
             <th>
-              [% IF row.os %]
               <a class="nd_linkcell"
                 href="[% search_device | none %]&q=[% row.os | uri %]&os=[% row.os | uri %]">
                   [% row.os | html_entity %]</a>
-              [% ELSE %]unknown[% END %]
             </th>
             <th>
               [% IF row.os_ver %]
@@ -124,6 +123,9 @@
             <th>[% row.count | html_entity %]</th>
           </tr>
           [% END %]
+          [% END %]
+          [% IF unknown_releases > 0 %]
+          <tr><th>Unknown</th><th>unknown</th><th>[% unknown_releases %]</th></tr>
           [% END %]
         </tbody>
       </table>

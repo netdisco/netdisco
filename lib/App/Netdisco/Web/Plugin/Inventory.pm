@@ -30,7 +30,6 @@ get '/inventory' => require_login sub {
 
     my %release_totals =
       map  { $_ => {rows => scalar @{ $release_map{$_} }, count => 0} }
-      grep { $_ }
            keys %release_map;
 
     foreach my $r (keys %release_totals) {
@@ -47,7 +46,6 @@ get '/inventory' => require_login sub {
 
     my %platform_totals =
       map  { $_ => {rows => scalar @{ $platform_map{$_} }, count => 0} }
-      grep { $_ }
            keys %platform_map;
 
     foreach my $r (keys %platform_totals) {
@@ -63,6 +61,8 @@ get '/inventory' => require_login sub {
       release_map  => \%release_map,
       platform_totals => \%platform_totals,
       release_totals  => \%release_totals,
+      unknown_platforms => (scalar grep { not $_->{vendor} } $platforms->hri->all),
+      unknown_releases => (scalar grep { not $_->{os} } $releases->hri->all),
     }, { layout => 'main' };
 };
 
