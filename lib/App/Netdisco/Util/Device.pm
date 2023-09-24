@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
+use List::MoreUtils ();
 use File::Spec::Functions qw(catdir catfile);
 use File::Path 'make_path';
 
@@ -362,7 +363,34 @@ sub get_denied_actions {
   push @badactions, 'arpnip'
     if not is_arpnipable($device);
 
-  return @badactions;
+  # add pseudo-actions for schedule entries with ACLs
+  my $schedule = setting('schedule') || {};
+  foreach my $label (keys %$schedule) {
+      my $sched = $schedule->{$label} || next;
+      next unless $sched->{only} or $sched->{no};
+
+      my $action = $sched->{action} || $label;
+      my $pseudo_action = "scheduled-$label";
+
+      # if this action is denied in global config then schedule should not run
+      if (scalar grep {$_ eq $action} @badactions) {
+          push @badactions, $pseudo_action;
+          next;
+      }
+
+      my $net = NetAddr::IP->new($sched->{device});
+      next if ($sched->{device}
+        and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
+
+      push @badactions, $pseudo_action
+        if $sched->{device} and not acl_matches_only($device, $net->cidr);
+      push @badactions, $pseudo_action
+        if $sched->{no} and acl_matches($device, $sched->{no});
+      push @badactions, $pseudo_action
+        if $sched->{only} and not acl_matches_only($device, $sched->{only});
+  }
+
+  return List::MoreUtils::uniq @badactions;
 }
 
 1;

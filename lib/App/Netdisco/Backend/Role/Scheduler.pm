@@ -68,21 +68,30 @@ sub worker_body {
             $win_start, $win_end, $sched->{when}->next_time($win_start);
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
-          my $net = NetAddr::IP->new($sched->{device});
-          next if ($sched->{device}
-            and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
-
-          my @hostlist = map { (ref $_) ? $_->addr : undef }
-            (defined $sched->{device} ? ($net->hostenum) : (undef));
           my @job_specs = ();
 
-          foreach my $host (@hostlist) {
-            push @job_specs, {
-              action => $real_action,
-              device => $host,
-              port   => $sched->{port},
-              subaction => $sched->{extra},
-            };
+          if ($sched->{only} or $sched->{no}) {
+              push @job_specs, {
+                action => 'scheduler',
+                subaction => $action,
+              };
+          }
+          else {
+              my $net = NetAddr::IP->new($sched->{device});
+              next if ($sched->{device}
+                and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
+
+              my @hostlist = map { (ref $_) ? $_->addr : undef }
+                (defined $sched->{device} ? ($net->hostenum) : (undef));
+
+              foreach my $host (@hostlist) {
+                push @job_specs, {
+                  action => $real_action,
+                  device => $host,
+                  port   => $sched->{port},
+                  subaction => $sched->{extra},
+                };
+              }
           }
 
           info sprintf 'sched (%s): queueing %s %s jobs',
