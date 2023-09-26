@@ -3,7 +3,8 @@ package App::Netdisco::Backend::Role::Scheduler;
 use Dancer qw/:moose :syntax :script/;
 
 use NetAddr::IP;
-use JSON::PP ();
+use MIME::Base64 'encode_base64';
+use Storable 'nfreeze';
 use Algorithm::Cron;
 
 use App::Netdisco::Util::MCE;
@@ -46,8 +47,6 @@ sub worker_body {
       return debug "sch ($wid): no need for scheduler... quitting"
   }
 
-  my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
-
   while (1) {
       # sleep until some point in the next minute
       my $naptime = 60 - (time % 60) + int(rand(45));
@@ -77,7 +76,7 @@ sub worker_body {
           if ($sched->{only} or $sched->{no}) {
               push @job_specs, {
                 action => 'scheduler',
-                subaction => $coder->encode($sched),
+                subaction => encode_base64( nfreeze( $sched ) ),
               };
           }
           else {
