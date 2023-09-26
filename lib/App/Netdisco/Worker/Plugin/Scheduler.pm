@@ -11,6 +11,11 @@ use MIME::Base64 'decode_base64';
 use Storable 'thaw';
 
 register_worker({ phase => 'check' }, sub {
+  my ($job, $workerconf) = @_;
+
+  return Status->error("Missing data of Sheduler entry")
+    unless $job->extra;
+
   return Status->defer("scheduler skipped: have not yet primed skiplist")
     unless schema(vars->{'tenant'})->resultset('DeviceSkip')
       ->search({
