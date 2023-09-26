@@ -589,14 +589,6 @@ deferrable_actions:
   - 'macwalk'
   - 'arpwalk'
   - 'discoverall'
-<<<<<<< Updated upstream
-=======
-  - 'macwalk'
-  - 'nbtwalk'
-  - 'primeskiplist'
-  - 'scheduler'
-  - 'snapshot'
->>>>>>> Stashed changes
 
 # ---------------
 # GraphViz Export
