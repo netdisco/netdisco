@@ -513,6 +513,7 @@ job_prio:
     - 'stats'
 
 worker_plugins:
+  - 'Internal::BackendFQDN'
   - 'Internal::SNMPFastDiscover'
   - 'AddPseudoDevice'
   - 'Arpnip'
@@ -589,6 +590,7 @@ deferrable_actions:
   - 'discoverall'
   - 'macwalk'
   - 'nbtwalk'
+  - 'primeskiplist'
   - 'scheduler'
   - 'snapshot'
 
