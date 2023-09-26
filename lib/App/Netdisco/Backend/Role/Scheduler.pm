@@ -74,6 +74,7 @@ sub worker_body {
           my @job_specs = ();
 
           if ($sched->{only} or $sched->{no}) {
+              $sched->{label} = $action;
               push @job_specs, {
                 action => 'scheduler',
                 subaction => encode_base64( nfreeze( $sched ) ),

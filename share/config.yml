@@ -509,6 +509,7 @@ job_prio:
     - 'macwalk'
     - 'nbtstat'
     - 'nbtwalk'
+    - 'scheduler'
     - 'stats'
 
 worker_plugins:
@@ -566,6 +567,7 @@ worker_plugins:
   - 'PrimeSkiplist'
   - 'Psql'
   - 'Renumber'
+  - 'Scheduler'
   - 'Show'
   - 'Snapshot'
   - 'Stats'
@@ -583,11 +585,12 @@ driver_priority:
   snmp:     100
 
 deferrable_actions:
-  - 'snapshot'
-  - 'nbtwalk'
-  - 'macwalk'
   - 'arpwalk'
   - 'discoverall'
+  - 'macwalk'
+  - 'nbtwalk'
+  - 'scheduler'
+  - 'snapshot'
 
 # ---------------
 # GraphViz Export
