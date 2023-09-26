@@ -512,6 +512,7 @@ job_prio:
     - 'stats'
 
 worker_plugins:
+  - 'Internal::BackendFQDN'
   - 'Internal::SNMPFastDiscover'
   - 'AddPseudoDevice'
   - 'Arpnip'
@@ -588,6 +589,14 @@ deferrable_actions:
   - 'macwalk'
   - 'arpwalk'
   - 'discoverall'
+<<<<<<< Updated upstream
+=======
+  - 'macwalk'
+  - 'nbtwalk'
+  - 'primeskiplist'
+  - 'scheduler'
+  - 'snapshot'
+>>>>>>> Stashed changes
 
 # ---------------
 # GraphViz Export
