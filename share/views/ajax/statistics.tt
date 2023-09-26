@@ -45,23 +45,23 @@
           </thead>
           <tbody>
             <tr>
-              <th><b><a href="http://netdisco.org">App::Netdisco</a></b></th>
+              <th><b><a href="http://netdisco.org" target="_blank">App::Netdisco</a></b></th>
               <th>[% stats.netdisco_ver | html_entity %]</th>
             </tr>
             <tr>
-              <th><a href="https://github.com/netdisco/snmp-info">SNMP::Info</a></th>
+              <th><a href="https://github.com/netdisco/snmp-info" target="_blank">SNMP::Info</a></th>
               <th>[% stats.snmpinfo_ver | html_entity %]</th>
             </tr>
             <tr>
-              <th><a href="https://metacpan.org/module/netdisco-db-deploy">DB Schema</a></th>
+              <th><a href="https://metacpan.org/module/netdisco-db-deploy" target="_blank">DB Schema</a></th>
               <th>[% stats.schema_ver | html_entity %]</th>
             </tr>
             <tr>
-              <th><a href="http://www.postgresql.org">PostgreSQL</a></th>
+              <th><a href="http://www.postgresql.org" target="_blank">PostgreSQL</a></th>
               <th>[% '<span class="badge alert-danger">' IF stats.pg_ver.remove('\.\d+') < 9.6 %][% stats.pg_ver | html_entity %][% '</span>' IF stats.pg_ver.remove('\.\d+') < 9.6 %]</th>
             </tr>
             <tr>
-              <th><a href="http://www.perl.org">Perl</a></th>
+              <th><a href="http://www.perl.org" target="_blank">Perl</a></th>
               <th>[% stats.perl_ver | html_entity %]</th>
             </tr>
           </tbody>
