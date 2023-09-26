@@ -37,7 +37,6 @@ register_worker({ phase => 'main' }, sub {
     map {{
       device => $_,
       action => $action,
-      device    => $sched->{device},
       port      => $sched->{port},
       subaction => $sched->{subaction},
       username => $job->username,
