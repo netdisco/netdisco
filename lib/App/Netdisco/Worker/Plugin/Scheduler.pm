@@ -7,13 +7,12 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
 
-use MIME::Base64 'decode_base64';
-use Storable 'thaw';
+use JSON::PP ();
 
 register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
 
-  return Status->error("Missing data of Sheduler entry")
+  return Status->error("Missing data of Scheduler entry")
     unless $job->extra;
 
   return Status->defer("scheduler skipped: have not yet primed skiplist")
@@ -28,8 +27,13 @@ register_worker({ phase => 'check' }, sub {
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  my $sched = thaw( decode_base64( $job->extra ) );
+
+  my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
+  my $sched = $coder->decode( $job->extra || {} );
   my $action = $sched->{action} || $sched->{label};
+
+  return Status->error("Missing label of Scheduler entry")
+    unless $action;
 
   my @walk = schema(vars->{'tenant'})->resultset('Virtual::WalkJobs')
     ->search(undef,{ bind => [
