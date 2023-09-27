@@ -3,7 +3,9 @@ package App::Netdisco::Backend::Role::Scheduler;
 use Dancer qw/:moose :syntax :script/;
 
 use NetAddr::IP;
+use JSON::PP ();
 use Algorithm::Cron;
+
 use App::Netdisco::Util::MCE;
 use App::Netdisco::JobQueue qw/jq_insert/;
 
@@ -22,6 +24,12 @@ sub worker_begin {
   foreach my $action (keys %{ setting('schedule') }) {
       my $config = setting('schedule')->{$action}
         or next;
+
+      if (not $config->{when}) {
+          error sprintf 'sch (%s): schedule %s is missing time spec',
+            $wid, $action;
+          next;
+      }
 
       # accept either single crontab format, or individual time fields
       $config->{when} = Algorithm::Cron->new(
@@ -43,6 +51,8 @@ sub worker_body {
       prctl sprintf 'nd2: #%s sched: inactive', $wid;
       return debug "sch ($wid): no need for scheduler... quitting"
   }
+
+  my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
 
   while (1) {
       # sleep until some point in the next minute
@@ -68,21 +78,31 @@ sub worker_body {
             $win_start, $win_end, $sched->{when}->next_time($win_start);
           next unless $sched->{when}->next_time($win_start) <= $win_end;
 
-          my $net = NetAddr::IP->new($sched->{device});
-          next if ($sched->{device}
-            and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
-
-          my @hostlist = map { (ref $_) ? $_->addr : undef }
-            (defined $sched->{device} ? ($net->hostenum) : (undef));
           my @job_specs = ();
 
-          foreach my $host (@hostlist) {
-            push @job_specs, {
-              action => $real_action,
-              device => $host,
-              port   => $sched->{port},
-              subaction => $sched->{extra},
-            };
+          if ($sched->{only} or $sched->{no}) {
+              $sched->{label} = $action;
+              push @job_specs, {
+                action => 'scheduler',
+                subaction => $coder->encode($sched),
+              };
+          }
+          else {
+              my $net = NetAddr::IP->new($sched->{device});
+              next if ($sched->{device}
+                and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
+
+              my @hostlist = map { (ref $_) ? $_->addr : undef }
+                (defined $sched->{device} ? ($net->hostenum) : (undef));
+
+              foreach my $host (@hostlist) {
+                push @job_specs, {
+                  action => $real_action,
+                  device => $host,
+                  port   => $sched->{port},
+                  subaction => $sched->{extra},
+                };
+              }
           }
 
           info sprintf 'sched (%s): queueing %s %s jobs',
