@@ -7,6 +7,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use List::MoreUtils ();
 use File::Spec::Functions qw(catdir catfile);
 use File::Path 'make_path';
+use NetAddr::IP;
 
 use base 'Exporter';
 our @EXPORT = ();

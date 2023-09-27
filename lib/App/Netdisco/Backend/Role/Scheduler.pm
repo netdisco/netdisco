@@ -25,6 +25,12 @@ sub worker_begin {
       my $config = setting('schedule')->{$action}
         or next;
 
+      if (not $config->{when}) {
+          error sprintf 'sch (%s): schedule %s is missing time spec',
+            $wid, $action;
+          next;
+      }
+
       # accept either single crontab format, or individual time fields
       $config->{when} = Algorithm::Cron->new(
         base => 'local',
