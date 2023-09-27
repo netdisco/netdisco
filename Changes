@@ -1,3 +1,9 @@
+2.067002 - 2023-09-27
+
+  [BUG FIXES]
+
+  * correct the Changes file from release 2.066000
+
 2.067001 - 2023-09-27
 
   [BUG FIXES]
@@ -20,6 +26,13 @@
 
   * make sure internal plugin asciibetical load order is preserved
   * instantiate helper SNMP::Info instances with better defaults
+
+2.066000 - 2023-09-19
+
+  [ENHANCEMENTS]
+
+  * #1083 setting to make inventory collapsible when large variety of vendor/os
+  * #1084 device ACL skiplist build is now a job instead of blocking backend startup
 
 2.065002 - 2023-09-03
 
