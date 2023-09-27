@@ -3,7 +3,7 @@ package App::Netdisco::Util::Snapshot;
 use Dancer qw/:syntax :script !to_json !from_json/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SNMP 'sortable_oid';
+use App::Netdisco::Util::SNMP qw/get_mibdirs sortable_oid/;
 
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 qw/encode_base64 decode_base64/;
@@ -150,8 +150,12 @@ sub snmpwalk_to_cache {
   my $info = SNMP::Info->new({
     Offline => 1,
     Cache => {},
-    AutoSpecify => 0,
     Session => {},
+    MibDirs => [ get_mibdirs() ],
+    AutoSpecify => 0,
+    IgnoreNetSNMPConf => 1,
+    Debug => ($ENV{INFO_TRACE} || 0),
+    DebugSNMP => ($ENV{SNMP_TRACE} || 0),
   });
 
   foreach my $attr (keys %leaves) {
@@ -318,8 +322,12 @@ sub add_snmpinfo_aliases {
       $info = SNMP::Info->new({
         Offline => 1,
         Cache => $info,
-        AutoSpecify => 0,
         Session => {},
+        MibDirs => [ get_mibdirs() ],
+        AutoSpecify => 0,
+        IgnoreNetSNMPConf => 1,
+        Debug => ($ENV{INFO_TRACE} || 0),
+        DebugSNMP => ($ENV{SNMP_TRACE} || 0),
       });
   }
 

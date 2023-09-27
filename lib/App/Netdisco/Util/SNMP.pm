@@ -3,6 +3,7 @@ package App::Netdisco::Util::SNMP;
 use Dancer qw/:syntax :script !to_json !from_json/;
 use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 
+use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 qw/decode_base64/;
 use Storable qw/thaw/;
@@ -14,6 +15,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_communities
   snmp_comm_reindex
+  get_mibdirs
   %ALL_MUNGERS
   decode_and_munge
   sortable_oid
@@ -140,6 +142,24 @@ sub snmp_comm_reindex {
 
   $snmp->cache({ _vtp_version => $vtp });
   return $snmp;
+}
+
+=head2 get_mibdirs
+
+Return a list of directories in the `netdisco-mibs` folder.
+
+=cut
+
+sub get_mibdirs {
+  my $home = (setting('mibhome') || dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
+  return map { dir($home, $_)->stringify }
+             @{ setting('mibdirs') || _get_mibdirs_content($home) };
+}
+
+sub _get_mibdirs_content {
+  my $home = shift;
+  my @list = map {s|$home/||; $_} grep { m|/[a-z0-9-]+$| } grep {-d} glob("$home/*");
+  return \@list;
 }
 
 our %ALL_MUNGERS = (

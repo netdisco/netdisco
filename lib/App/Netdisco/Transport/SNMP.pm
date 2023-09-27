@@ -3,7 +3,7 @@ package App::Netdisco::Transport::SNMP;
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::SNMP 'get_communities';
+use App::Netdisco::Util::SNMP qw/get_communities get_mibdirs/;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases/;
@@ -11,7 +11,6 @@ use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases/
 use SNMP::Info;
 use Try::Tiny;
 use Module::Load ();
-use Path::Class 'dir';
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
 
@@ -136,7 +135,7 @@ sub _snmp_connect_generic {
     BulkWalk => ((defined setting('bulkwalk_off') && setting('bulkwalk_off'))
                  ? 0 : 1),
     BulkRepeaters => (setting('bulkwalk_repeaters') || 20),
-    MibDirs => [ _build_mibdirs() ],
+    MibDirs => [ get_mibdirs() ],
     IgnoreNetSNMPConf => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
     DebugSNMP => ($ENV{SNMP_TRACE} || 0),
@@ -370,18 +369,6 @@ sub _mk_info_commargs {
       ) : ()),
     ) : ()),
   );
-}
-
-sub _build_mibdirs {
-  my $home = (setting('mibhome') || dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  return map { dir($home, $_)->stringify }
-             @{ setting('mibdirs') || _get_mibdirs_content($home) };
-}
-
-sub _get_mibdirs_content {
-  my $home = shift;
-  my @list = map {s|$home/||; $_} grep { m|/[a-z0-9-]+$| } grep {-d} glob("$home/*");
-  return \@list;
 }
 
 true;
