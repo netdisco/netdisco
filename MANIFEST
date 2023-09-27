@@ -250,6 +250,7 @@ lib/App/Netdisco/Worker/Plugin/Graph.pm
 lib/App/Netdisco/Worker/Plugin/Hook.pm
 lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
 lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
+lib/App/Netdisco/Worker/Plugin/Internal/BackendFQDN.pm
 lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm
 lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
@@ -270,6 +271,7 @@ lib/App/Netdisco/Worker/Plugin/Power.pm
 lib/App/Netdisco/Worker/Plugin/PrimeSkiplist.pm
 lib/App/Netdisco/Worker/Plugin/Psql.pm
 lib/App/Netdisco/Worker/Plugin/Renumber.pm
+lib/App/Netdisco/Worker/Plugin/Scheduler.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
 lib/App/Netdisco/Worker/Plugin/Snapshot.pm
 lib/App/Netdisco/Worker/Plugin/Stats.pm

@@ -1,9 +1,19 @@
-2.066000 - 2023-09-19
+2.067000 - 2023-09-27
+
+  [NEW FEATURES]
+
+  * #580 ACL support for scheduled jobs
 
   [ENHANCEMENTS]
 
-  * #1083 setting to make inventory collapsible when large variety of vendor/os
-  * #1084 device ACL skiplist build is now a job instead of blocking backend startup
+  * allow walk-type jobs to be run at the command-line
+  * show unknown/unknown platforms and releases counts in inventory
+  * #1104 hyperlinks in statistics panel will open in a new window/tab
+
+  [BUG FIXES]
+
+  * make sure internal plugin asciibetical load order is preserved
+  * instantiate helper SNMP::Info instances with better defaults
 
 2.065002 - 2023-09-03
 
