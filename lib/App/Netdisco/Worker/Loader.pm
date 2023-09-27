@@ -49,7 +49,9 @@ sub load_workers {
       and exists vars->{'workers'}->{'internal'}->{$phase};
     my $internal = vars->{'workers'}->{'internal'};
 
-    foreach my $namespace (keys %{ $internal->{$phase} }) {
+    # the namespace of an internal worker is actually the worker name so must
+    # be sorted in order to "preserve" the plugin load order
+    foreach my $namespace (sort keys %{ $internal->{$phase} }) {
       foreach my $priority (keys %{ $internal->{$phase}->{$namespace} }) {
         push @{ $workers->{$phase}->{'__internal__'}->{$priority} },
           @{ $internal->{$phase}->{$namespace}->{$priority} };

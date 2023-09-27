@@ -108,7 +108,7 @@ register 'register_worker' => sub {
   push @{ vars->{'workers'}->{$workerconf->{action}}
               ->{$workerconf->{phase}}
               ->{$workerconf->{namespace}}
-              ->{$workerconf->{priority}} }, $worker;
+              ->{$workerconf->{priority}} }, { conf => $workerconf, go => $worker };
 };
 
 sub _find_matchaction {
