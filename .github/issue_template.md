@@ -12,22 +12,17 @@ see netdisco-mibs: https://github.com/netdisco/netdisco-mibs/issues/new
 STOP! If you are running a netdisco docker setup,
 see netdisco-docker: https://github.com/netdisco/netdisco-docker/issues/new
 
+Everything else about Netdisco's behaviour is good, here :-D
 
+Provide a general summary of the issue in the Title above.
 
-everything else about Netdisco's behaviour is good, here :-D
-
-the more info you can provide, the easier it is for us the help you, so please
+The more info you can provide, the easier it is for us the help you, so please
 fill out as many of the items below as possible.
 
-Provide a general summary of the issue in the Title above
-
-when including netdisco config snippets, whitespace matters since it's a yaml file
-for github issues it really helps if you include the relevant config parts in a codeblock (code fencing)
-see the "code" subject on https://guides.github.com/features/mastering-markdown/ for that)
-this should preserve spaces in the issue tracker and make troubleshooting quicker
+If you can provide a "snapshot" of the device it really helps us reproduce the problem.
+See https://github.com/netdisco/netdisco/wiki/Snapshot#share-a-snapshot
 
 -->
-
 
 ## Expected Behavior
 <!--- If you're describing a bug, tell us what should happen -->
@@ -64,8 +59,6 @@ this should preserve spaces in the issue tracker and make troubleshooting quicke
 
 ## Device information
 <!--- if the issue relates to specific devices their info would be usefull -->
-<!--- do note that the following command might contain sensitive info, you can -->
-<!--- remove this but let us know if you did so -->
-<!--- change 1.1.1.1 in the below example with the problematic device's ip -->
+<!--- do note that the following command might contain sensitive info -->
 
-`netdisco-do show -d 1.1.1.1 -e specify -DI`
+https://github.com/netdisco/netdisco/wiki/Snapshot#share-a-snapshot
