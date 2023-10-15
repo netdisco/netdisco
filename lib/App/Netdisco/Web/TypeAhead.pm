@@ -7,6 +7,90 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web (); # for sort_port
 use HTML::Entities 'encode_entities';
+use List::MoreUtils ();
+
+ajax '/ajax/data/queue/typeahead/backend' => require_role admin => sub {
+    return '[]' unless setting('navbar_autocomplete');
+
+    my $q = quotemeta( param('query') || param('term') || param('backend') );
+    my @backends =
+     grep { $q ? m/$q/ : true }
+     List::MoreUtils::uniq
+     sort
+     grep { defined }
+     schema(vars->{'tenant'})->resultset('DeviceSkip')->get_distinct_col('backend');
+
+    content_type 'application/json';
+    to_json \@backends;
+};
+
+ajax '/ajax/data/queue/typeahead/username' => require_role admin => sub {
+    return '[]' unless setting('navbar_autocomplete');
+
+    my $q = quotemeta( param('query') || param('term') || param('username') );
+    my @users =
+     grep { $q ? m/$q/ : true }
+     List::MoreUtils::uniq
+     sort
+     grep { defined }
+     schema(vars->{'tenant'})->resultset('Admin')->get_distinct_col('username');
+
+    content_type 'application/json';
+    to_json \@users;
+};
+
+ajax '/ajax/data/queue/typeahead/action' => require_role admin => sub {
+    return '[]' unless setting('navbar_autocomplete');
+
+    my @actions = ();
+    my @core_plugins = @{ setting('worker_plugins') || [] };
+    my @user_plugins = @{ setting('extra_worker_plugins') || [] };
+
+    # load worker plugins for our action
+    foreach my $plugin (@user_plugins, @core_plugins) {
+      $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
+      $plugin = 'App::Netdisco::Worker::Plugin::'. $plugin
+        if $plugin !~ m/^\+/;
+      $plugin =~ s/^\+//;
+
+      next if $plugin =~ m/::Plugin::Internal::/;
+
+      if ($plugin =~ m/::Plugin::(Hook::[^:]+)/) {
+          push @actions, lc $1;
+          next;
+      }
+
+      next unless $plugin =~ m/::Plugin::([^:]+)::/;
+      push @actions, lc $1;
+    }
+
+    my $q = quotemeta( param('query') || param('term') || param('action') );
+    @actions =
+     grep { $q ? m/^$q/ : true }
+     List::MoreUtils::uniq
+     sort
+     grep { defined }
+     @actions,
+     schema(vars->{'tenant'})->resultset('Admin')->get_distinct_col('action');
+
+    content_type 'application/json';
+    to_json \@actions;
+};
+
+ajax '/ajax/data/queue/typeahead/status' => require_role admin => sub {
+    return '[]' unless setting('navbar_autocomplete');
+
+    my $q = quotemeta( param('query') || param('term') || param('status') );
+    my @actions =
+     grep { $q ? m/^$q/ : true }
+     List::MoreUtils::uniq
+     sort
+     grep { defined }
+     qw(Queued Done Info Deferred Error);
+
+    content_type 'application/json';
+    to_json \@actions;
+};
 
 ajax '/ajax/data/devicename/typeahead' => require_login sub {
     return '[]' unless setting('navbar_autocomplete');

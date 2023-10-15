@@ -1,0 +1,108 @@
+[% IF NOT results.size %]
+<div class="span2 alert alert-info">The job queue is empty.</div>
+[% ELSE %]
+<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Poller</th>
+      <th class="nd_center-cell">Action</th>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Submitted By</th>
+      <th class="nd_center-cell">Status</th>
+      <th class="nd_center-cell">Duration</th>
+      <th class="nd_center-cell">Details</th>
+      <th class="nd_center-cell">Cancel</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input data-form="filter" class="span2 nd_queue_ta" name="backend" type="text" value="[% params.backend | html_entity %]">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input data-form="filter" class="span2 nd_queue_ta" name="action" type="text" value="[% params.action | html_entity %]">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input data-form="filter" class="nd_topo_dev" name="device" type="text" value="[% params.device | html_entity %]">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input data-form="filter" class="span1 nd_queue_ta" name="username" type="text" value="[% params.username | html_entity %]">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        <div class="input-append">
+          <input data-form="filter" class="span1 nd_queue_ta" name="status" type="text" value="[% params.status | html_entity %]">
+          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+        </div>
+      </td>
+      <td class="nd_center-cell">
+        &gt;
+          <input data-form="filter" class="span1" name="duration" type="text" value="[% params.duration || 0 | html_entity %]">
+        mins
+      </td>
+      <td colspan="2" class="nd_center-cell">
+        <button class="btn btn-small nd_adminbutton" name="filter" type="submit"><i class="icon-search"></i> Filter</button>
+      </td>
+    </tr>
+    [% FOREACH row IN results %]
+    <tr
+      [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]
+      [% ' class="nd_jobqueueitem error"'   IF row.status == 'error' %]
+      [% ' class="nd_jobqueueitem info"'    IF row.status.search('^queued-') %]
+      data-content="[% row.log | html_entity %]"
+    >
+      [% IF row.status.search('^queued-') %]
+      <td class="nd_center-cell">[% row.status.remove('^queued-') | html_entity %]</td>
+      [% ELSE %]
+      <td class="nd_center-cell"></td>
+      [% END %]
+
+      <td class="nd_center-cell">
+        [% FOREACH word IN row.action.split('_') %]
+        [% word.ucfirst | html_entity %]&nbsp;
+        [% END %]
+      </td>
+
+      <td class="nd_center-cell">
+        [% IF row.action == 'discover' AND row.status == 'error' %]
+        <a href="[% uri_for('/') | none %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
+        [% ELSE %]
+        <a href="[% uri_for('/device') | none %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
+        [% END %]
+      </td>
+
+      <td class="nd_center-cell">[% row.username | html_entity %]</td>
+
+      [% IF row.status.search('^queued-') %]
+      <td class="nd_center-cell">Running</td>
+      [% ELSE %]
+      <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>
+      [% END %]
+
+      <td class="nd_center-cell">[% row.duration | html_entity %]</td>
+
+      <td class="nd_center-cell">
+        <button class="btn"><i class="icon-plus"></i></button>
+      </td>
+
+      <td class="nd_center-cell">
+        <input data-form="del" name="job" type="hidden" value="[% row.job | html_entity %]">
+        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+[% END %]
+

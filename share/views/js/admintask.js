@@ -13,7 +13,7 @@
   function inner_view_processing(tab) {
 
     // reload this table every 5 seconds
-    if (tab == 'jobqueue'
+    if ((tab == 'jobqueue' || tab == 'filteredjobqueue')
         && $('#nd_countdown-control-icon').hasClass('icon-play')) {
 
         $('#nd_countdown').text(timermax);
@@ -39,6 +39,19 @@
           $('#' + tab + '_form').trigger('submit');
         }, (timermax * 1000)));
     }
+
+    // activate typeahead on the topo boxes
+    $('.nd_queue_ta').autocomplete({
+      source: function (request, response)  {
+        var name = $(this.element)[0].name;
+        var query = $(this.element).serialize();
+        return $.get( uri_base + '/ajax/data/queue/typeahead/' + name, query, function (data) {
+          return response(data);
+        });
+      }
+      ,delay: 150
+      ,minLength: 0
+    });
 
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
@@ -80,6 +93,12 @@
   $(document).ready(function() {
     var tab = '[% task.tag | html_entity %]'
     var target = '#' + tab + '_pane';
+
+    // get autocomplete field on input focus
+    $(target).on('focus', '.nd_queue_ta', function(e) {
+      $(this).autocomplete('search', '%') });
+    $(target).on('click', '.nd_topo_dev_caret', function(e) {
+      $(this).siblings('.nd_queue_ta').autocomplete('search', '%') });
 
     // get all devices on device input focus
     $(target).on('focus', '.nd_topo_dev', function(e) {
