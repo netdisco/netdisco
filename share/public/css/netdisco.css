@@ -597,6 +597,17 @@ div.toggle.btn-small {
   width: 152px;
 }
 
+/* set the drop-down width */
+.nd_sidebar-narrow-dropdown {
+  margin-top: 4px;
+  width: 46px;
+}
+
+/* set the drop-down width */
+.nd_sidebar-dropdown {
+  width: 130px;
+}
+
 /* set the day/mon/year drop-down width */
 #nd_days-select {
   margin-top: 4px;

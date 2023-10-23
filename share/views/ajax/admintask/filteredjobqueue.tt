@@ -15,46 +15,6 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td class="nd_center-cell">
-        <div class="input-append">
-          <input data-form="filter" class="span2 nd_queue_ta" name="backend" type="text" value="[% params.backend | html_entity %]">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
-        </div>
-      </td>
-      <td class="nd_center-cell">
-        <div class="input-append">
-          <input data-form="filter" class="span2 nd_queue_ta" name="action" type="text" value="[% params.action | html_entity %]">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
-        </div>
-      </td>
-      <td class="nd_center-cell">
-        <div class="input-append">
-          <input data-form="filter" class="nd_topo_dev" name="device" type="text" value="[% params.device | html_entity %]">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
-        </div>
-      </td>
-      <td class="nd_center-cell">
-        <div class="input-append">
-          <input data-form="filter" class="span1 nd_queue_ta" name="username" type="text" value="[% params.username | html_entity %]">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
-        </div>
-      </td>
-      <td class="nd_center-cell">
-        <div class="input-append">
-          <input data-form="filter" class="span1 nd_queue_ta" name="status" type="text" value="[% params.status | html_entity %]">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
-        </div>
-      </td>
-      <td class="nd_center-cell">
-        &gt;
-          <input data-form="filter" class="span1" name="duration" type="text" value="[% params.duration || 0 | html_entity %]">
-        mins
-      </td>
-      <td colspan="2" class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="filter" type="submit"><i class="icon-search"></i> Filter</button>
-      </td>
-    </tr>
     [% FOREACH row IN results %]
     <tr
       [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]

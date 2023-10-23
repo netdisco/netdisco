@@ -40,7 +40,7 @@
         }, (timermax * 1000)));
     }
 
-    // activate typeahead on the topo boxes
+    // activate typeahead on the queue filter boxes
     $('.nd_queue_ta').autocomplete({
       source: function (request, response)  {
         var name = $(this.element)[0].name;
@@ -95,10 +95,16 @@
     var target = '#' + tab + '_pane';
 
     // get autocomplete field on input focus
-    $(target).on('focus', '.nd_queue_ta', function(e) {
+    $('.nd_sidebar').on('focus', '.nd_queue_ta', function(e) {
       $(this).autocomplete('search', '%') });
-    $(target).on('click', '.nd_topo_dev_caret', function(e) {
+    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
       $(this).siblings('.nd_queue_ta').autocomplete('search', '%') });
+
+    // get all devices on device input focus
+    $('.nd_sidebar').on('focus', '.nd_topo_dev', function(e) {
+      $(this).autocomplete('search', '%') });
+    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
+      $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
 
     // get all devices on device input focus
     $(target).on('focus', '.nd_topo_dev', function(e) {
