@@ -257,10 +257,25 @@ sub jq_complete {
 
 sub jq_log {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
-    'me.action' => { '-not_like' => 'hook::%' },
-    -or => [
-      { 'me.log' => undef },
-      { 'me.log' => { '-not_like' => 'duplicate of %' } },
+    (param('backend') ? (
+      'me.status' => { '=' => [
+        'done-'. param('backend'),
+        'queued-'. param('backend'),
+      ] },
+    ) : ()),
+    (param('action') ? ('me.action' => param('action')) : ()),
+    (param('device') ? (
+      -or => [
+        { 'me.device' => param('device') },
+        { 'target.ip' => param('device') },
+        # TODO suppprt using device IP aliases and DNS
+      ],
+    ) : ()),
+    (param('username') ? ('me.username' => param('username')) : ()),
+    (param('status') ? ('me.status' => lc(param('status'))) : ()),
+    'me.log' => [
+      { '=' => undef },
+      { '-not_like' => 'duplicate of %' },
     ],
   }, {
     prefetch => 'target',

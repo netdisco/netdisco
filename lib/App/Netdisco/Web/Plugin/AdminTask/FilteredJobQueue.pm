@@ -13,12 +13,12 @@ register_admin_task({
   label => 'Filtered Job Queue',
 });
 
-ajax '/ajax/control/admin/jobqueue/del' => require_role admin => sub {
+ajax '/ajax/control/admin/filteredjobqueue/del' => require_role admin => sub {
     send_error('Missing job', 400) unless param('job');
     jq_delete( param('job') );
 };
 
-ajax '/ajax/control/admin/jobqueue/delall' => require_role admin => sub {
+ajax '/ajax/control/admin/filteredjobqueue/delall' => require_role admin => sub {
     jq_delete();
 };
 
