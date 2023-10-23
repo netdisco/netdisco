@@ -43,7 +43,7 @@
 
             </div>
 
-            <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
+            <button id="[% task.tag | html_entity %]_submit" type="submit" class="btn btn-info">
                 <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
             Filter</button>
 

@@ -120,12 +120,25 @@
       $(this).siblings('.nd_topo_port').autocomplete('search');
     });
 
+    // job control sidebar submit should reset timer
+    $('#' + tab + '_submit').click(function(event) {
+      console.log('sfdasf');
+      for (var i = 0; i < nd_timers.length; i++) {
+          clearTimeout(nd_timers[i]);
+      }
+      // reset the timer cache
+      timercache = timermax - 1;
+    });
+
     // job control refresh icon should reload the page
     $('#nd_countdown-refresh').click(function(event) {
       event.preventDefault();
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
       }
+      // reset the timer cache
+      timercache = timermax - 1;
+      // and reload content
       $('#' + tab + '_form').trigger('submit');
     });
 
