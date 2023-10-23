@@ -259,7 +259,7 @@ sub jq_log {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
     (param('backend') ? (
       'me.status' => { '=' => [
-        'done-'. param('backend'),
+        # FIXME 'done-'. param('backend'),
         'queued-'. param('backend'),
       ] },
     ) : ()),
@@ -268,11 +268,25 @@ sub jq_log {
       -or => [
         { 'me.device' => param('device') },
         { 'target.ip' => param('device') },
-        # TODO suppprt using device IP aliases and DNS
       ],
     ) : ()),
     (param('username') ? ('me.username' => param('username')) : ()),
     (param('status') ? ('me.status' => lc(param('status'))) : ()),
+    (param('duration') ? (
+      -bool => [
+        -or => [
+          {
+            'me.finished' => undef,
+            'me.started'  => { '<' => \[q{(CURRENT_TIMESTAMP - ? ::interval)}, param('duration') .' minutes'] },
+          },
+          -and => [
+            { 'me.started'  => { '!=' => undef } },
+            { 'me.finished' => { '!=' => undef } },
+            \[ q{ (me.finished - me.started) > ? ::interval }, param('duration') .' minutes'],
+          ],
+        ],
+      ],
+    ) : ()),
     'me.log' => [
       { '=' => undef },
       { '-not_like' => 'duplicate of %' },
