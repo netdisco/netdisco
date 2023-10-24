@@ -86,8 +86,11 @@
 
     $('.nd_jobqueue-extra').click(function(event) {
       event.preventDefault();
+      var icon = $(this).children('i');
+      $(icon).toggleClass('icon-plus');
+      $(icon).toggleClass('icon-minus');
       var extra_id = $(this).data('extra');
-      var extra = $('#' + extra_id).toggle();
+      $('#' + extra_id).toggle();
     });
 
     // activate modals and tooltips
