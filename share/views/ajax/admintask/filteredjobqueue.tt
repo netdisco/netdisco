@@ -4,7 +4,7 @@
 <table class="table table-bordered table-condensed table-hover nd_floatinghead">
   <thead>
     <tr>
-      <th class="nd_center-cell">Poller</th>
+      <th class="nd_center-cell">Backend</th>
       <th class="nd_center-cell">Action</th>
       <th class="nd_center-cell">Device</th>
       <th class="nd_center-cell">Submitted By</th>

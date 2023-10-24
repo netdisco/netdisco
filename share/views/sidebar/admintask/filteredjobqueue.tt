@@ -5,7 +5,7 @@
             </div>
             <div class="clearfix">
 
-            <em class="muted">Poller:</em><br/>
+            <em class="muted">Backend:</em><br/>
             <div class="input-append">
               <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="backend" type="text" value="[% params.backend | html_entity %]">
               <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
