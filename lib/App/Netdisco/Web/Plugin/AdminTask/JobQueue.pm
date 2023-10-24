@@ -32,10 +32,14 @@ ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
     content_type('text/html');
 
     my $jq_total = schema(vars->{'tenant'})->resultset('Admin')->count();
-    my $jq_queued = schema(vars->{'tenant'})->resultset('Admin')->search({status => 'queued'})->count();
-    my $jq_running = schema(vars->{'tenant'})->resultset('Admin')->search({status => { -like =>  'queued-%'}})->count();
-    my $jq_done = schema(vars->{'tenant'})->resultset('Admin')->search({status => 'done'})->count();
-    my $jq_errored = schema(vars->{'tenant'})->resultset('Admin')->search({status => 'error'})->count();
+    my $jq_queued = schema(vars->{'tenant'})->resultset('Admin')
+      ->search({status => 'queued', backend => undef })->count();
+    my $jq_running = schema(vars->{'tenant'})->resultset('Admin')
+      ->search({status => 'queued', backend => { '!=' => undef }})->count();
+    my $jq_done = schema(vars->{'tenant'})->resultset('Admin')
+      ->search({status => 'done'})->count();
+    my $jq_errored = schema(vars->{'tenant'})->resultset('Admin')
+      ->search({status => 'error'})->count();
 
     template 'ajax/admintask/jobqueue.tt', {
       jq_total => commify($jq_total || 0),

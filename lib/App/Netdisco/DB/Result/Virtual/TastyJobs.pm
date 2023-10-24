@@ -16,6 +16,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
          ON (ds.backend = ? AND admin.device = ds.device
              AND admin.action = ANY (ds.actionset))
       WHERE admin.status = 'queued'
+        AND admin.backend IS NULL
         AND ds.device IS NULL)
 
   SELECT my_jobs.*,

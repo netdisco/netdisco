@@ -26,14 +26,10 @@
     <tr
       [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]
       [% ' class="nd_jobqueueitem error"'   IF row.status == 'error' %]
-      [% ' class="nd_jobqueueitem info"'    IF row.status.search('^queued-') %]
+      [% ' class="nd_jobqueueitem info"'    IF (row.status == 'queued' AND row.backend != '') %]
       data-content="[% row.log | html_entity %]"
     >
-      [% IF row.status.search('^queued-') %]
-      <td class="nd_center-cell">[% row.status.remove('^queued-') | html_entity %]</td>
-      [% ELSE %]
-      <td class="nd_center-cell"></td>
-      [% END %]
+      <td class="nd_center-cell">[% row.backend | html_entity %]</td>
 
       <td class="nd_center-cell">
         [% FOREACH word IN row.action.split('_') %]
@@ -51,7 +47,7 @@
 
       <td class="nd_center-cell">[% row.username | html_entity %]</td>
 
-      [% IF row.status.search('^queued-') %]
+      [% IF (row.status == 'queued' AND row.backend != '') %]
       <td class="nd_center-cell">Running</td>
       [% ELSE %]
       <td class="nd_center-cell">[% row.status.ucfirst | html_entity %]</td>

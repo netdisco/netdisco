@@ -730,7 +730,6 @@ sub delete {
 
   $schema->resultset('Admin')->search({
     device => { '-in' => $devices->as_query },
-    status => { '-not_like' => 'queued-%' },
   })->delete;
 
   $schema->resultset('DeviceSkip')->search(

@@ -15,6 +15,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
     LEFT OUTER JOIN admin ON (device.ip = admin.device
                               AND admin.status = 'queued'
+                              AND admin.backend IS NULL
                               AND admin.action = ?)
 
     FULL OUTER JOIN device_skip ON (device_skip.device = device.ip

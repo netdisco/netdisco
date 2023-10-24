@@ -112,7 +112,8 @@ sub jq_getsome {
           job => $job->id,
           -exists => $jobs->search({
             job => { '>' => $job->id },
-            status => { -like => 'queued-%' },
+            status => 'queued',
+            backend => { '!=' => undef },
             started => \[q/> (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
             %job_properties,
           })->as_query,
@@ -131,7 +132,8 @@ sub jq_getsome {
 sub jq_locked {
   my @returned = ();
   my $rs = schema(vars->{'tenant'})->resultset('Admin')->search({
-    status  => ('queued-'. setting('workers')->{'BACKEND'}),
+    status  => 'queued',
+    backend => setting('workers')->{'BACKEND'},
     started => \[q/> (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
   });
 
@@ -147,7 +149,7 @@ sub jq_queued {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
     device => { '!=' => undef},
     action => $job_type,
-    status => { -like => 'queued%' },
+    status => 'queued',
   })->get_column('device')->all;
 }
 
@@ -161,7 +163,8 @@ sub jq_lock {
     my $updated = schema(vars->{'tenant'})->resultset('Admin')
       ->search({ job => $job->id, status => 'queued' }, { for => 'update' })
       ->update({
-          status  => ('queued-'. setting('workers')->{'BACKEND'}),
+          status  => 'queued',
+          backend => setting('workers')->{'BACKEND'},
           started => \"LOCALTIMESTAMP",
       });
 
@@ -205,7 +208,7 @@ sub jq_defer {
       # lock db row and update to show job is available
       schema(vars->{'tenant'})->resultset('Admin')
         ->search({ job => $job->id }, { for => 'update' })
-        ->update({ status => 'queued', started => undef, log => $job->log });
+        ->update({ status => 'queued', backend => undef, started => undef, log => $job->log });
     });
     $happy = true;
   }
@@ -257,12 +260,7 @@ sub jq_complete {
 
 sub jq_log {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
-    (param('backend') ? (
-      'me.status' => { '=' => [
-        # FIXME 'done-'. param('backend'),
-        'queued-'. param('backend'),
-      ] },
-    ) : ()),
+    (param('backend') ? ('me.backend' => param('backend')) : ()),
     (param('action') ? ('me.action' => param('action')) : ()),
     (param('device') ? (
       -or => [
