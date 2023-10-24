@@ -257,10 +257,39 @@ sub jq_complete {
 
 sub jq_log {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
-    'me.action' => { '-not_like' => 'hook::%' },
-    -or => [
-      { 'me.log' => undef },
-      { 'me.log' => { '-not_like' => 'duplicate of %' } },
+    (param('backend') ? (
+      'me.status' => { '=' => [
+        # FIXME 'done-'. param('backend'),
+        'queued-'. param('backend'),
+      ] },
+    ) : ()),
+    (param('action') ? ('me.action' => param('action')) : ()),
+    (param('device') ? (
+      -or => [
+        { 'me.device' => param('device') },
+        { 'target.ip' => param('device') },
+      ],
+    ) : ()),
+    (param('username') ? ('me.username' => param('username')) : ()),
+    (param('status') ? ('me.status' => lc(param('status'))) : ()),
+    (param('duration') ? (
+      -bool => [
+        -or => [
+          {
+            'me.finished' => undef,
+            'me.started'  => { '<' => \[q{(CURRENT_TIMESTAMP - ? ::interval)}, param('duration') .' minutes'] },
+          },
+          -and => [
+            { 'me.started'  => { '!=' => undef } },
+            { 'me.finished' => { '!=' => undef } },
+            \[ q{ (me.finished - me.started) > ? ::interval }, param('duration') .' minutes'],
+          ],
+        ],
+      ],
+    ) : ()),
+    'me.log' => [
+      { '=' => undef },
+      { '-not_like' => 'duplicate of %' },
     ],
   }, {
     prefetch => 'target',

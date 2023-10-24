@@ -13,7 +13,7 @@
   function inner_view_processing(tab) {
 
     // reload this table every 5 seconds
-    if (tab == 'jobqueue'
+    if ((tab == 'jobqueue')
         && $('#nd_countdown-control-icon').hasClass('icon-play')) {
 
         $('#nd_countdown').text(timermax);
@@ -39,6 +39,19 @@
           $('#' + tab + '_form').trigger('submit');
         }, (timermax * 1000)));
     }
+
+    // activate typeahead on the queue filter boxes
+    $('.nd_queue_ta').autocomplete({
+      source: function (request, response)  {
+        var name = $(this.element)[0].name;
+        var query = $(this.element).serialize();
+        return $.get( uri_base + '/ajax/data/queue/typeahead/' + name, query, function (data) {
+          return response(data);
+        });
+      }
+      ,delay: 150
+      ,minLength: 0
+    });
 
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
@@ -71,6 +84,15 @@
       ,minLength: 0
     });
 
+    $('.nd_jobqueue-extra').click(function(event) {
+      event.preventDefault();
+      var icon = $(this).children('i');
+      $(icon).toggleClass('icon-plus');
+      $(icon).toggleClass('icon-minus');
+      var extra_id = $(this).data('extra');
+      $('#' + extra_id).toggle();
+    });
+
     // activate modals and tooltips
     $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});
@@ -80,6 +102,18 @@
   $(document).ready(function() {
     var tab = '[% task.tag | html_entity %]'
     var target = '#' + tab + '_pane';
+
+    // get autocomplete field on input focus
+    $('.nd_sidebar').on('focus', '.nd_queue_ta', function(e) {
+      $(this).autocomplete('search', '%') });
+    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
+      $(this).siblings('.nd_queue_ta').autocomplete('search', '%') });
+
+    // get all devices on device input focus
+    $('.nd_sidebar').on('focus', '.nd_topo_dev', function(e) {
+      $(this).autocomplete('search', '%') });
+    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
+      $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
 
     // get all devices on device input focus
     $(target).on('focus', '.nd_topo_dev', function(e) {
@@ -95,12 +129,29 @@
       $(this).siblings('.nd_topo_port').autocomplete('search');
     });
 
+    // job control sidebar submit should reset timer
+    // and update bookmark
+    $('#' + tab + '_submit').click(function(event) {
+      for (var i = 0; i < nd_timers.length; i++) {
+          clearTimeout(nd_timers[i]);
+      }
+      // reset the timer cache
+      timercache = timermax - 1;
+
+      // bookmark
+      var querystr = $('#' + tab + '_form').serialize();
+      $('#nd_jobqueue-bookmark').attr('href',uri_base + '/admin/' + tab + '?' + querystr);
+    });
+
     // job control refresh icon should reload the page
     $('#nd_countdown-refresh').click(function(event) {
       event.preventDefault();
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
       }
+      // reset the timer cache
+      timercache = timermax - 1;
+      // and reload content
       $('#' + tab + '_form').trigger('submit');
     });
 

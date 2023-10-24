@@ -1,0 +1,49 @@
+
+            <span class="nd_sidebar-title"><em>Job Queue Filters</em></span>
+
+            <div class="clearfix">
+            </div>
+            <div class="clearfix">
+
+            <em class="muted">Backend:</em><br/>
+            <div class="input-append">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="backend" type="text" value="[% params.backend | html_entity %]">
+              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            </div>
+
+            <em class="muted">Action:</em><br/>
+            <div class="input-append">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="action" type="text" value="[% params.action | html_entity %]">
+              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            </div>
+
+            <em class="muted">Device:</em><br/>
+            <div class="input-append">
+              <input data-form="filter" class="nd_topo_dev nd_sidebar-dropdown" name="device" type="text" value="[% params.device | html_entity %]">
+              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            </div>
+
+            <em class="muted">Submitted by:</em><br/>
+            <div class="input-append">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="username" type="text" value="[% params.username | html_entity %]">
+              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            </div>
+
+            <em class="muted">Job status:</em><br/>
+            <div class="input-append">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="status" type="text" value="[% params.status | html_entity %]">
+              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            </div>
+
+            <em class="muted">Duration:</em><br/>
+            <label><span id="nd_vlan-label-text">Longer than </span>
+              <input name="duration" class="nd_sidebar-narrow-dropdown" type="number" placeholder="0"
+                value="[% params.duration | html_entity %]" type="text"/> mins
+            </label>
+
+            </div>
+
+            <button id="[% task.tag | html_entity %]_submit" type="submit" class="btn btn-info">
+                <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
+            Filter</button>
+

@@ -46,6 +46,8 @@ will add the following additional synthesized columns to the result set:
 
 =item finished_stamp
 
+=item duration
+
 =back
 
 =cut
@@ -58,9 +60,10 @@ sub with_times {
     ->search({},
       {
         '+columns' => {
-          entered_stamp => \"to_char(entered, 'YYYY-MM-DD HH24:MI')",
-          started_stamp => \"to_char(started, 'YYYY-MM-DD HH24:MI')",
-          finished_stamp => \"to_char(finished, 'YYYY-MM-DD HH24:MI')",
+          entered_stamp => \"to_char(entered, 'YYYY-MM-DD HH24:MI:SS')",
+          started_stamp => \"to_char(started, 'YYYY-MM-DD HH24:MI:SS')",
+          finished_stamp => \"to_char(finished, 'YYYY-MM-DD HH24:MI:SS')",
+          duration => \"justify_interval(extract(epoch FROM (finished - started)) * interval '1 second')",
         },
       });
 }

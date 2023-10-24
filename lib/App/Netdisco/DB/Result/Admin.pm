@@ -155,4 +155,12 @@ between the date stamp and time stamp. That is:
 
 sub finished_stamp  { return (shift)->get_column('finished_stamp')  }
 
+=head2 duration
+
+Difference between started and finished.
+
+=cut
+
+sub duration  { return (shift)->get_column('duration')  }
+
 1;
