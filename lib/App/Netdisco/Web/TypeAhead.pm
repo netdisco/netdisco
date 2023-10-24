@@ -60,21 +60,20 @@ ajax '/ajax/data/queue/typeahead/action' => require_role admin => sub {
           next;
       }
 
-      next unless $plugin =~ m/::Plugin::([^:]+)::/;
+      next if $plugin =~ m/::Plugin::Hook$/;
+      next unless $plugin =~ m/::Plugin::([^:]+)(?:::|$)/;
+
       push @actions, lc $1;
     }
 
     my $q = quotemeta( param('query') || param('term') || param('action') );
-    @actions =
+    push @actions,
      grep { $q ? m/^$q/ : true }
-     List::MoreUtils::uniq
-     sort
      grep { defined }
-     @actions,
      schema(vars->{'tenant'})->resultset('Admin')->get_distinct_col('action');
 
     content_type 'application/json';
-    to_json \@actions;
+    to_json [ List::MoreUtils::uniq sort @actions ];
 };
 
 ajax '/ajax/data/queue/typeahead/status' => require_role admin => sub {
