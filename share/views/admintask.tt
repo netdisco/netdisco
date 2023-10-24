@@ -28,7 +28,7 @@
     <ul id="nd_search-results" class="nav nav-tabs">
       <li class="active"><a id="[% task.tag | html_entity %]_link" class="nd_single-tab"
         href="#[% task.tag | html_entity %]_pane">[% task.label | html_entity %]</a></li>
-      [% IF task.tag == 'jobqueue' OR task.tag == 'filteredjobqueue' %]
+      [% IF task.tag == 'jobqueue' %]
       <span id="nd_device-name">
         <span id="nd_countdown"></span>
         &nbsp;&nbsp;

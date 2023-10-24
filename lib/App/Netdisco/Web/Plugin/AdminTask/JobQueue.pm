@@ -24,6 +24,7 @@ ajax '/ajax/control/admin/jobqueue/delall' => require_role admin => sub {
 
 ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
     content_type('text/html');
+
     template 'ajax/admintask/jobqueue.tt', {
       results => [ jq_log ],
     }, { layout => undef };

@@ -13,7 +13,7 @@
   function inner_view_processing(tab) {
 
     // reload this table every 5 seconds
-    if ((tab == 'jobqueue' || tab == 'filteredjobqueue')
+    if ((tab == 'jobqueue')
         && $('#nd_countdown-control-icon').hasClass('icon-play')) {
 
         $('#nd_countdown').text(timermax);

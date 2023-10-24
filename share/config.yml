@@ -73,7 +73,6 @@ web_plugins:
   - Report::SubnetUtilization
   - Report::PortLog
   - AdminTask::JobQueue
-  - AdminTask::FilteredJobQueue
   - AdminTask::NodeMonitor
   - AdminTask::Topology
   - AdminTask::PollerPerformance
