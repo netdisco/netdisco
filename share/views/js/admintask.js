@@ -130,13 +130,17 @@
     });
 
     // job control sidebar submit should reset timer
+    // and update bookmark
     $('#' + tab + '_submit').click(function(event) {
-      console.log('sfdasf');
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
       }
       // reset the timer cache
       timercache = timermax - 1;
+
+      // bookmark
+      var querystr = $('#' + tab + '_form').serialize();
+      $('#nd_jobqueue-bookmark').attr('href',uri_base + '/admin/' + tab + '?' + querystr);
     });
 
     // job control refresh icon should reload the page
