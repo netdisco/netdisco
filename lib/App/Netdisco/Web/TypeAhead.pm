@@ -87,10 +87,7 @@ ajax '/ajax/data/queue/typeahead/status' => require_role admin => sub {
     my $q = quotemeta( param('query') || param('term') || param('status') );
     my @actions =
      grep { $q ? m/^$q/ : true }
-     List::MoreUtils::uniq
-     sort
-     grep { defined }
-     qw(Queued Done Info Deferred Error);
+     qw(Queued Running Done Info Deferred Error);
 
     content_type 'application/json';
     to_json \@actions;

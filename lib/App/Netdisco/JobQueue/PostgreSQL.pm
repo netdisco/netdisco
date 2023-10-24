@@ -269,7 +269,16 @@ sub jq_log {
       ],
     ) : ()),
     (param('username') ? ('me.username' => param('username')) : ()),
-    (param('status') ? ('me.status' => lc(param('status'))) : ()),
+    (param('status') ? (
+      (param('status') eq 'Running') ? (
+      -and => [
+        { 'me.backend' => { '!=' => undef } },
+        { 'me.status'  => 'queued' },
+      ],
+      ) : (
+      'me.status' => lc(param('status'))
+      )
+    ) : ()),
     (param('duration') ? (
       -bool => [
         -or => [
