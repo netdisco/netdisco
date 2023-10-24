@@ -53,12 +53,28 @@
       <td class="nd_center-cell">[% row.duration | html_entity %]</td>
 
       <td class="nd_center-cell">
-        <button class="btn"><i class="icon-plus"></i></button>
+        <button class="btn nd_jobqueue-extra" data-extra="nd_jobqueue_[% row.job | html_entity %]"><i class="icon-plus"></i></button>
       </td>
 
       <td class="nd_center-cell">
         <input data-form="del" name="job" type="hidden" value="[% row.job | html_entity %]">
         <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+      </td>
+    </tr>
+
+    <tr id="nd_jobqueue_[% row.job | html_entity %]" class="nd_collapse-pre-hidden">
+      <td colspan="8">
+        <table>
+        <tr><td class="span2">ID</td><td> [% row.job | html_entity %] </td></tr>
+        <tr><td>Entered</td><td> [% row.entered_stamp | html_entity %] </td></tr>
+        <tr><td>Started</td><td> [% row.started_stamp | html_entity %] </td></tr>
+        <tr><td>Finished</td><td> [% row.finished_stamp | html_entity %] </td></tr>
+        <tr><td>Port</td><td> [% row.port | html_entity %] </td></tr>
+        <tr><td>Subaction</td><td> [% row.subaction | html_entity %] </td></tr>
+        <tr><td>User IP</td><td> [% row.userip | html_entity %] </td></tr>
+        <tr><td>Device Key</td><td> [% row.device_key | html_entity %] </td></tr>
+        <tr><td>Log</td><td> [% row.log | html_entity %] </td></tr>
+        </table>
       </td>
     </tr>
     [% END %]

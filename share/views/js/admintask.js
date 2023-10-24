@@ -84,6 +84,12 @@
       ,minLength: 0
     });
 
+    $('.nd_jobqueue-extra').click(function(event) {
+      event.preventDefault();
+      var extra_id = $(this).data('extra');
+      var extra = $('#' + extra_id).toggle();
+    });
+
     // activate modals and tooltips
     $('.nd_modal').modal({show: false});
     $("[rel=tooltip]").tooltip({live: true});
