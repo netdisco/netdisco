@@ -171,7 +171,7 @@ sidebar_defaults:
 device_port_col_idx_left: 8
 device_port_col_idx_mid: 20
 device_port_col_idx_right: 24
-jobqueue_refresh: 10
+jobqueue_refresh: 5
 safe_password_store: true
 reports: []
 system_reports:

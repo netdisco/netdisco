@@ -22,10 +22,27 @@ ajax '/ajax/control/admin/jobqueue/delall' => require_role admin => sub {
     jq_delete();
 };
 
+sub commify {
+    my $text = reverse $_[0];
+    $text =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+    return scalar reverse $text;
+}
+
 ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
     content_type('text/html');
 
+    my $jq_total = schema(vars->{'tenant'})->resultset('Admin')->count();
+    my $jq_queued = schema(vars->{'tenant'})->resultset('Admin')->search({status => 'queued'})->count();
+    my $jq_running = schema(vars->{'tenant'})->resultset('Admin')->search({status => { -like =>  'queued-%'}})->count();
+    my $jq_done = schema(vars->{'tenant'})->resultset('Admin')->search({status => 'done'})->count();
+    my $jq_errored = schema(vars->{'tenant'})->resultset('Admin')->search({status => 'error'})->count();
+
     template 'ajax/admintask/jobqueue.tt', {
+      jq_total => commify($jq_total || 0),
+      jq_queued => commify($jq_queued || 0),
+      jq_running => commify($jq_running || 0),
+      jq_done => commify($jq_done || 0),
+      jq_errored => commify($jq_errored || 0),
       results => [ jq_log ],
     }, { layout => undef };
 };

@@ -1,6 +1,13 @@
 [% IF NOT results.size %]
 <div class="span2 alert alert-info">The job queue is empty.</div>
 [% ELSE %]
+<div class="alert alert-info">
+  Total: [% jq_total | html_entity %] /
+  Queued: [% jq_queued | html_entity %] /
+  Running: [% jq_running | html_entity %] /
+  Done: [% jq_done | html_entity %] /
+  Errored: [% jq_errored | html_entity %]
+</div>
 <table class="table table-bordered table-condensed table-hover nd_floatinghead">
   <thead>
     <tr>
