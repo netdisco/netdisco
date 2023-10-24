@@ -371,7 +371,6 @@ sub renumber {
 
   $schema->resultset('Admin')->search({
     device => $old_ip,
-    status => { '-not_like' => 'queued-%' },
   })->delete;
 
   $device->update({

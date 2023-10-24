@@ -46,6 +46,8 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 1 },
   "device_key",
   { data_type => "text", is_nullable => 1 },
+  "backend",
+  { data_type => "text", is_nullable => 1 },
 );
 
 
