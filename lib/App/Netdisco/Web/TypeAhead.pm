@@ -66,14 +66,19 @@ ajax '/ajax/data/queue/typeahead/action' => require_role admin => sub {
       push @actions, lc $1;
     }
 
-    my $q = quotemeta( param('query') || param('term') || param('action') );
     push @actions,
-     grep { $q ? m/^$q/ : true }
-     grep { defined }
      schema(vars->{'tenant'})->resultset('Admin')->get_distinct_col('action');
 
+    my $q = quotemeta( param('query') || param('term') || param('action') );
+
     content_type 'application/json';
-    to_json [ List::MoreUtils::uniq sort @actions ];
+    to_json [
+      grep { $q ? m/^$q/ : true }
+      grep { defined }
+      List::MoreUtils::uniq
+      sort
+      @actions
+    ];
 };
 
 ajax '/ajax/data/queue/typeahead/status' => require_role admin => sub {
