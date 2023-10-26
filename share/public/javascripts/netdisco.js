@@ -25,9 +25,11 @@ function do_search (event, tab) {
   }
 
   // in case of slow data load, let the user know
-  $(target).html(
-    '<div class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>'
-  );
+  if (tab != 'jobqueue') {
+    $(target).html(
+      '<div class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>'
+    );
+  }
 
   // submit the query and put results into the tab pane
   fetch( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
