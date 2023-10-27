@@ -493,6 +493,8 @@ share/schema_versions/App-Netdisco-DB-78-79-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-79-80-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-8-9-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-80-81-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-81-82-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-82-83-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
@@ -596,6 +598,7 @@ share/views/password.tt
 share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
+share/views/sidebar/admintask/jobqueue.tt
 share/views/sidebar/admintask/topology.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
