@@ -31,22 +31,44 @@ sub commify {
 ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
     content_type('text/html');
 
-    my $jq_total = schema(vars->{'tenant'})->resultset('Admin')->count();
-    my $jq_queued = schema(vars->{'tenant'})->resultset('Admin')
-      ->search({status => 'queued', backend => undef })->count();
-    my $jq_running = schema(vars->{'tenant'})->resultset('Admin')
+    my @backends = schema(vars->{'tenant'})->resultset('DeviceSkip')
+        ->search({device => '255.255.255.255'})->hri->all;
+
+    my $num_backends = scalar keys @backends;
+    my $tot_workers  = 0;
+    $tot_workers += $_->{deferrals} for @backends;
+
+    my $jq_locked = schema(vars->{'tenant'})->resultset('Admin')
       ->search({status => 'queued', backend => { '!=' => undef }})->count();
+
+    my $jq_backlog = schema(vars->{'tenant'})->resultset('Admin')
+      ->search({status => 'queued', backend => undef })->count();
+
     my $jq_done = schema(vars->{'tenant'})->resultset('Admin')
       ->search({status => 'done'})->count();
+
     my $jq_errored = schema(vars->{'tenant'})->resultset('Admin')
       ->search({status => 'error'})->count();
 
+    my $jq_stale = schema(vars->{'tenant'})->resultset('Admin')->search({
+        status => 'queued',
+        backend => { '!=' => undef },
+        started => \[q/<= (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after')],
+    })->count();
+
+    my $jq_total = schema(vars->{'tenant'})->resultset('Admin')->count();
+
     template 'ajax/admintask/jobqueue.tt', {
-      jq_total => commify($jq_total || 0),
-      jq_queued => commify($jq_queued || 0),
-      jq_running => commify($jq_running || 0),
-      jq_done => commify($jq_done || 0),
-      jq_errored => commify($jq_errored || 0),
+      num_backends => commify($num_backends || '?'),
+      tot_workers  => commify($tot_workers || '?'),
+
+      jq_running => commify($jq_locked - $jq_stale),
+      jq_backlog => commify($jq_backlog),
+      jq_done => commify($jq_done),
+      jq_errored => commify($jq_errored),
+      jq_stale => commify($jq_stale),
+      jq_total => commify($jq_total),
+
       results => [ jq_log ],
     }, { layout => undef };
 };

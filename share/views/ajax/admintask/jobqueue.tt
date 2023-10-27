@@ -2,10 +2,13 @@
 <div class="span2 alert alert-info">The job queue is empty.</div>
 [% ELSE %]
 <div class="alert alert-info">
+  Backends: [% num_backends | html_entity %] /
+  Workers: [% tot_workers | html_entity %] /
   Running: [% jq_running | html_entity %] /
-  Queued: [% jq_queued | html_entity %] /
+  Backlog: [% jq_backlog | html_entity %] /
   Done: [% jq_done | html_entity %] /
   Errored: [% jq_errored | html_entity %] /
+  Stale: [% jq_stale | html_entity %] /
   Total: [% jq_total | html_entity %]
 </div>
 <table class="table table-bordered table-condensed table-hover nd_floatinghead">

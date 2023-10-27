@@ -39,6 +39,7 @@ sub jq_warm_thrusters {
     my $deferrals = setting('workers')->{'max_deferrals'} - 1;
     $rs->search({
       backend => setting('workers')->{'BACKEND'},
+      device => { '!=' => '255.255.255.255' },
       deferrals => { '>' => $deferrals },
     }, { for => 'update' }, )->update({ deferrals => $deferrals });
 
@@ -46,6 +47,14 @@ sub jq_warm_thrusters {
       backend => setting('workers')->{'BACKEND'},
       actionset => { -value => [] }, # special syntax for matching empty ARRAY
       deferrals => 0,
+    })->delete;
+
+    # also clean out any previous backend hint
+    # primeskiplist action will then run to recreate it
+    $rs->search({
+      backend => setting('workers')->{'BACKEND'},
+      device => '255.255.255.255',
+      actionset => { -value => [] }, # special syntax for matching empty ARRAY
     })->delete;
   });
 }
