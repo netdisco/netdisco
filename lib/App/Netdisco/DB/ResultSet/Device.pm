@@ -126,7 +126,7 @@ sub search_aliases {
     # this helps us avoid triggering any DNS.
     my $by_ip = ($q =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i) ? 1 : 0;
 
-    my $clause;
+    my ($clause, $sorter);
     if ($by_ip) {
         my $ip = NetAddr::IP::Lite->new($q)
           or return undef; # could be a MAC address!
@@ -134,6 +134,7 @@ sub search_aliases {
             'me.ip'  => { '<<=' => $ip->cidr },
             'device_ips.alias' => { '<<=' => $ip->cidr },
         ];
+        $sorter = \[q{CASE WHEN (me.ip <<= ?) THEN 1 ELSE 0 END}, $ip->cidr];
     }
     else {
         $q = "\%$q\%" if ($options->{partial} and $q !~ m/\%/);
@@ -142,6 +143,7 @@ sub search_aliases {
             'me.dns'  => { '-ilike' => $q },
             'device_ips.dns' => { '-ilike' => $q },
         ];
+        $sorter = \[q{CASE WHEN (me.name ILIKE ? OR me.dns ILIKE ?) THEN 1 ELSE 0 END}, $q, $q];
     }
 
     return $rs->search(
@@ -149,7 +151,9 @@ sub search_aliases {
         -or => $clause,
       },
       {
-        order_by => [qw/ me.dns me.ip /],
+        '+select' => [ { coalesce => $sorter, -as => 'in_device' } ],
+        order_by => [{ -desc => 'in_device' }, { -asc => [qw/ me.dns me.ip /] } ],
+        group_by => ['me.ip'],
         join => 'device_ips',
         distinct => 1,
       }

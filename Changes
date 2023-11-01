@@ -4,6 +4,10 @@
 
   * installation instruction for SLES
 
+  [BUG FIXES]
+
+  * when searching for device always prefer matching on device to alias
+
 2.068000 - 2023-10-27
 
   [NEW FEATURES]
