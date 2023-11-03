@@ -50,18 +50,18 @@ sub get_paginated_output {
         if ($match) {
             if ($match =~ $more_pattern) {
                 $more_flag = 1;
-		        @lines = split(/\R/, $before);
-		        push(@alllines, grep {$_ =~ /\S/} @lines);
-		        debug("skipping through --More-- pagination");
+                @lines = split(/\R/, $before);
+                push(@alllines, grep {$_ =~ /\S/} @lines);
+                debug("skipping through --More-- pagination");
                 $expect->send(" ");
             } elsif ($match =~ $prompt) {
                 $more_flag = 0;
-		        @lines = split(/\R/, $before);
-		        push(@alllines, grep {$_ =~ /\S/} @lines);
-		        foreach my $line (@alllines) {
-		            debug("output collected: $line") if $line;
-		        }
-		        last;
+                @lines = split(/\R/, $before);
+                push(@alllines, grep {$_ =~ /\S/} @lines);
+                foreach my $line (@alllines) {
+                    debug("output collected: $line") if $line;
+                }
+                last;
             }
         }
     }
@@ -142,7 +142,7 @@ sub arpnip {
     foreach (@data) {
         if ($_ && /^Virtual domain configuration: multiple$/) {
             $multi_vdom = 1;
-	    last;
+        last;
         }
     }
     my $arpentries = [];
@@ -158,9 +158,9 @@ sub arpnip {
 
         foreach (@$vdoms) {
             $expect->send("config vdom\n");
-	        $expect->expect($timeout, -re, $prompt);
-	        $expect->send("edit $_\n");
-	        debug ("switched to config vdom; edit $_");
+            $expect->expect($timeout, -re, $prompt);
+            $expect->send("edit $_\n");
+            debug ("switched to config vdom; edit $_");
             $expect->expect($timeout, -re, $prompt);
             arpnip_context($expect, $prompt, $timeout, $arpentries);
             $expect->send("end\n");
