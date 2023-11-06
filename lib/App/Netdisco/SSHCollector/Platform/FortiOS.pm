@@ -159,6 +159,9 @@ sub arpnip {
             push(@$vdoms, $1) if $_ && (/^==\s*\[\s*(\S+)\s*\]$/);
         }
 
+        $expect->send("end\n");
+        $expect->expect($timeout, -re, $prompt);
+
         foreach (@$vdoms) {
             $expect->send("config vdom\n");
             $expect->expect($timeout, -re, $prompt);
