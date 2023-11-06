@@ -35,9 +35,9 @@ Returns a list of hashrefs in the format C<< { mac => MACADDR, ip => IPADDR } >>
 
 =cut
 
-our $prompt = qr/ [\$#] +$/;
-our $more_pattern = qr/--More--/;
-our $timeout = 10;
+my $prompt = qr/ [\$#] +$/;
+my $more_pattern = qr/--More--/;
+my $timeout = 10;
 
 sub get_paginated_output {
     my ($command, $expect) = @_;
@@ -82,8 +82,10 @@ sub arpnip_context {
     # 2.6.0.5     0          00:40:46:f9:63:0f PLAY-0400
     # 1.2.9.7      2          00:30:59:bc:f6:94 DEAD-3550
 
+    my $re_ipv4_arp = qr/^($RE{net}{IPv4})\s*\d+\s*($RE{net}{MAC})\s*\S+$/;
     foreach (@data) {
-        if ($_ && /^($RE{net}{IPv4})\s*\d+\s*($RE{net}{MAC})\s*\S+$/) {
+        #if (/^($RE{net}{IPv4})\s*\d+\s*($RE{net}{MAC})\s*\S+$/) {
+        if ($_ && /$re_ipv4_arp/) {
             debug "\tfound IPv4: $1 => MAC: $2";
             push(@$arpentries, { ip => $1, mac => $2 });
         }
@@ -102,8 +104,9 @@ sub arpnip_context {
 
     # might fail with: Unknown action 0 - this is a permission issue of the logged in user
 
+    my $re_ipv6_arp = qr/^ifindex=\d+\s+ifname=\S+\s+($RE{net}{IPv6}{-sep => ':'}{-style => 'HeX'})\s+($RE{net}{MAC}).*$/;
     foreach (@data) {
-        if ($_ && /^ifindex=\d+\s+ifname=\S+\s+($RE{net}{IPv6}{-sep => ':'}{-style => 'HeX'})\s+($RE{net}{MAC}).*$/) {
+        if ($_ && /$re_ipv6_arp/) {
             debug "\tfound IPv6: $1 => MAC: $2";
             push(@$arpentries, { ip => $1, mac => $2 });
         }
