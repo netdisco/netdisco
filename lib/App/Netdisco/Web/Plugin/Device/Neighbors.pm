@@ -30,7 +30,9 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
     my $mapshow = param('mapshow');
-    return if !defined $mapshow or $mapshow !~ m/^(?:all|neighbors)$/;
+    return if !defined $mapshow or $mapshow !~ m/^(?:all|cloud|depth)$/;
+    my $depth = param('depth') || 1;
+    return if $depth =~ m/^\d+$/;
 
     # list of groups selected by user and passed in param
     my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
@@ -56,7 +58,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     return unless scalar keys %clean;
 
     my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
-      device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
+      device => (($mapshow eq 'depth' and $depth == 1) ? $qdev->ip : undef),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
       vlan => ($vlan || 0),
@@ -67,7 +69,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
     else {
       schema(vars->{'tenant'})->resultset('NetmapPositions')->create({
-        device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
+        device => (($mapshow eq 'depth' and $depth == 1) ? $qdev->ip : undef),
         host_groups => [sort @hgrplist],
         locations   => [sort @lgrplist],
         vlan => ($vlan || 0),
@@ -143,8 +145,9 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
     my $colorby = (param('colorby') || 'speed');
-    my $mapshow = (param('mapshow') || 'neighbors');
-    $mapshow = 'neighbors' if $mapshow !~ m/^(?:all|neighbors)$/;
+    my $mapshow = (param('mapshow') || 'depth');
+    my $depth   = (param('depth')   || 1);
+    $mapshow = 'depth' if $mapshow !~ m/^(?:all|cloud|depth)$/;
     $mapshow = 'all' unless $qdev->in_storage;
 
     # list of groups selected by user and passed in param
@@ -169,7 +172,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
 
     my %seen_link = ();
     my $links = schema(vars->{'tenant'})->resultset('Virtual::DeviceLinks')->search({
-      ($mapshow eq 'neighbors' ? ( -or => [
+      (($mapshow eq 'depth' and $depth == 1) ? ( -or => [
           { left_ip  => $qdev->ip },
           { right_ip => $qdev->ip },
       ]) : ())
@@ -196,7 +199,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # DEVICES (NODES)
 
     my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
-      device => (($mapshow eq 'neighbors') ? $qdev->ip : undef),
+      device => (($mapshow eq 'depth' and $depth == 1) ? $qdev->ip : undef),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
       vlan => ($vlan || 0),
@@ -219,7 +222,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     DEVICE: while (my $device = $devices->next) {
       # if in neighbors mode then use %ok_dev to filter
       next DEVICE if ($device->ip ne $qdev->ip)
-        and ($mapshow eq 'neighbors')
+        and ($mapshow eq 'depth' and $depth == 1)
         and (not $ok_dev{$device->ip}); # showing only neighbors but no link
 
       # if location picked then filter
