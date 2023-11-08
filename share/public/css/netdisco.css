@@ -494,7 +494,12 @@ td > form.nd_inline-form {
   vertical-align: text-bottom;
 }
 #nd_vlan-entry {
+  margin-top: 7px;
   width: 45px;
+}
+#nd_mapshow-hops {
+  width: 30px;
+  margin-bottom: 0px;
 }
 
 /* netmap maximise icon */
