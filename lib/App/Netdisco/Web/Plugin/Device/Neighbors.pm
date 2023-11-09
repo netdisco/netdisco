@@ -138,7 +138,7 @@ sub make_link_infostring {
     $right_name, $_->[2], ($_->[3] || 'no description') } @zipped;
 }
 
-ajax '/ajax/data/device/netmap' => require_login sub {
+get '/ajax/data/device/netmap' => require_login sub {
     my $q = param('q');
     my $qdev = schema(vars->{'tenant'})->resultset('Device')
       ->search_for_device($q) or send_error('Bad device', 400);

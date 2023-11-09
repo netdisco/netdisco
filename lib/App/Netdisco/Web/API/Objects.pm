@@ -48,6 +48,39 @@ foreach my $rel (qw/device_ips vlans ports modules port_vlans wireless_ports ssi
 
 swagger_path {
   tags => ['Objects'],
+  path => setting('api_base')."/object/device/{ip}/neighbors",
+  description => 'Returns layer 2 neighbor relation data for a given device',
+  parameters => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+    scope => {
+      description => 'Scope of results, either "all", "cloud" (LLDP cloud), or "depth" (uses hops)',
+      default => 'depth',
+      in => 'query',
+    },
+    hops => {
+      description => 'When specifying Scope "depth", this is the number of hops',
+      default => '1',
+      in => 'query',
+    },
+    vlan => {
+      description => 'Limit results to devices carrying this numeric VLAN ID',
+    },
+  ],
+  responses => { default => {} },
+}, get "/api/v1/object/device/:ip/neighbors" => require_role api => sub {
+  forward "/ajax/data/device/netmap", {
+    q => params->{'ip'},
+    depth => params->{'hops'},
+    mapshow => params->{'scope'},
+  };
+};
+
+swagger_path {
+  tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}/jobs',
   description => 'Delete jobs and clear skiplist for a device, optionally filtered by fields',
   parameters  => [
