@@ -40,6 +40,7 @@ use Dancer qw/:moose :script/;
 use Try::Tiny;
 use Pod::Usage;
 use Scalar::Util 'blessed';
+use File::Slurper 'read_lines';
 use NetAddr::IP qw/:rfc3021 :lower/;
 
 use App::Netdisco::Backend::Job;
@@ -102,14 +103,37 @@ unless ($action) {
   use Moo;
   with 'App::Netdisco::Worker::Runner';
 }
+
+sub _test_device {
+  my $d = shift or return;
+  $d =~ s/\s//g;
+
+  my $net = NetAddr::IP->new($d);
+  if ($d and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
+      error sprintf 'unable to understand as host, IP, or prefix: %s', $d;
+      exit 1;
+  }
+
+  return ($d ? $net->hostenum : undef);
+}
+
 my @hostlist = ();
 foreach my $device (@$devices) {
-  my $net = NetAddr::IP->new($device);
-  if ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
-    info sprintf '%s: error - Bad host, IP or prefix: %s', $action, $device;
-    exit 1;
+  if (-f $device) {
+      my @dlist = read_lines $device;
+
+      if (0 == scalar @dlist) {
+          error sprintf 'unable to read from file: %s', $device;
+          exit 2;
+      }
+
+      foreach my $entry (@dlist) {
+          push(@hostlist, _test_device($entry)) if _test_device($entry);
+      }
   }
-  push(@hostlist,$net->hostenum) if defined $device;
+  else {
+      push(@hostlist, _test_device($device)) if _test_device($device);
+  }
 }
 
 my @job_specs = ();
@@ -215,7 +239,8 @@ C<discover::neighbors>.
 Any action taking a C<device> parameter can be passed either a hostname or IP
 address of any interface of a known or unknown device, or an IP prefix
 (subnet) which will cause C<netdisco-do> to run the action on all addresses in
-that range.
+that range. The C<device> parameter may also be a filename that Netdisco will
+open to read hostnames, IPs, or prefixes, one per line.
 
 The C<device> parameter may be passed multiple times. In this case, all
 addresses (after expanding IP Prefixes) will be handled one by one.
