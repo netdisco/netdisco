@@ -60,6 +60,7 @@
 
             <hr class="nd_sidebar-hr"/>
 
+            [% IF device_count < (vars.sidebar_defaults.device_netmap.too_many_devices || 1000) %]
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-all"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'all' %] value="all">
@@ -78,6 +79,7 @@
                   value="[% params.depth || vars.sidebar_defaults.device_netmap.hops || 1 | html_entity %]"/>
                 </label>
             </div>
+            [% END %]
 
             <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
               <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
