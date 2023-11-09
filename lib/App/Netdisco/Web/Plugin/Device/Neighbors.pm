@@ -32,7 +32,7 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     my $mapshow = param('mapshow');
     return if !defined $mapshow or $mapshow !~ m/^(?:all|cloud|depth)$/;
     my $depth = param('depth') || 1;
-    return if $depth =~ m/^\d+$/;
+    return if $depth !~ m/^\d+$/;
 
     # list of groups selected by user and passed in param
     my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
@@ -58,7 +58,8 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     return unless scalar keys %clean;
 
     my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
-      device => (($mapshow eq 'depth' and $depth == 1) ? $qdev->ip : undef),
+      device => ($mapshow ne 'all' ? $qdev->ip : undef),
+      depth  => ($mapshow eq 'depth' ? $depth : 0),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
       vlan => ($vlan || 0),
@@ -69,7 +70,8 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     }
     else {
       schema(vars->{'tenant'})->resultset('NetmapPositions')->create({
-        device => (($mapshow eq 'depth' and $depth == 1) ? $qdev->ip : undef),
+        device => ($mapshow ne 'all' ? $qdev->ip : undef),
+        depth  => ($mapshow eq 'depth' ? $depth : 0),
         host_groups => [sort @hgrplist],
         locations   => [sort @lgrplist],
         vlan => ($vlan || 0),
@@ -229,7 +231,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     # DEVICES (NODES)
 
     my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
-      device => (($mapshow eq 'depth' and $depth == 1) ? $qdev->ip : undef),
+      device => ($mapshow ne 'all' ? $qdev->ip : undef),
+      depth  => ($mapshow eq 'depth' ? $depth : 0),
       host_groups => \[ '= ?', [host_groups => [sort @hgrplist]] ],
       locations   => \[ '= ?', [locations   => [sort @lgrplist]] ],
       vlan => ($vlan || 0),

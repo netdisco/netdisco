@@ -17,6 +17,8 @@ __PACKAGE__->add_columns(
   { data_type => "text[]", is_nullable => 0 },
   "vlan",
   { data_type => "integer", is_nullable => 0, default => 0 },
+  "depth",
+  { data_type => "integer", is_nullable => 0, default => 0 },
   "positions",
   { data_type => "text", is_nullable => 0 },
 );
