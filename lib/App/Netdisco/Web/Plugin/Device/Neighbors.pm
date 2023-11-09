@@ -196,6 +196,36 @@ ajax '/ajax/data/device/netmap' => require_login sub {
       ++$seen_link{$link->{left_ip} ."\0". $link->{right_ip}};
     }
 
+    # filter by lldp cloud or depth
+    # this is O(N^2) or worse
+
+    my %cloud = ($qdev->ip => 1);
+    my $seen_cloud = scalar keys %cloud;
+    my $passes = ($mapshow eq 'cloud' ? 999 : $depth);
+
+    if ($mapshow eq 'cloud' or ($mapshow eq 'depth' and $depth > 1)) {
+        while ($seen_cloud > 0 and $passes > 0) {
+            --$passes;
+            $seen_cloud = 0;
+
+            foreach my $cip (keys %cloud) {
+                foreach my $okip (keys %ok_dev) {
+                    next if exists $cloud{$okip};
+
+                    if (exists $seen_link{$cip ."\0". $okip}
+                        or exists $seen_link{$okip ."\0". $cip}) {
+
+                        ++$cloud{$okip};
+                        ++$seen_cloud;
+                    }
+                }
+            }
+        }
+    }
+    elsif ($mapshow eq 'depth' and $depth == 1) {
+        %cloud = %ok_dev;
+    }
+
     # DEVICES (NODES)
 
     my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
@@ -222,8 +252,8 @@ ajax '/ajax/data/device/netmap' => require_login sub {
     DEVICE: while (my $device = $devices->next) {
       # if in neighbors mode then use %ok_dev to filter
       next DEVICE if ($device->ip ne $qdev->ip)
-        and ($mapshow eq 'depth' and $depth == 1)
-        and (not $ok_dev{$device->ip}); # showing only neighbors but no link
+        and ($mapshow ne 'all')
+        and (not $cloud{$device->ip}); # showing only neighbors but no link
 
       # if location picked then filter
       next DEVICE if ((scalar @lgrplist) and ((!defined $device->location)
