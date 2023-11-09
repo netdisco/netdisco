@@ -285,6 +285,7 @@ ajax '/ajax/data/device/netmap' => require_login sub {
         ID => $device->ip,
         SIZEVALUE => (param('dynamicsize') ? $color_lkp{speed} : 3000),
         ((exists $color_lkp{$colorby}) ? (COLORVALUE => $color_lkp{$colorby}) : ()),
+        (($device->ip eq $qdev->ip) ? (COLORVALUE => 'ROOTNODE') : ()),
         LABEL => (param('showips') ? ($device->ip .' '. $name) : $name),
         ORIG_LABEL => $name,
         INFOSTRING => make_node_infostring($device),
