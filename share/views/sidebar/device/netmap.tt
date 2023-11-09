@@ -60,26 +60,37 @@
 
             <hr class="nd_sidebar-hr"/>
 
+            [% IF device_count < (vars.sidebar_defaults.device_netmap.too_many_devices || 1000) %]
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-all"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'all' %] value="all">
                 <label for="nd_mapshow-all">All Devices</label>
             </div>
             <div class="radio radio-success">
-                <input type="radio" name="mapshow" id="nd_mapshow-neighbors"
-                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'neighbors' %] value="neighbors">
-                <label for="nd_mapshow-neighbors">Only Neighbors</label>
+                <input type="radio" name="mapshow" id="nd_mapshow-cloud"
+                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'cloud' %] value="cloud">
+                <label for="nd_mapshow-cloud">Neighbor Cloud</label>
             </div>
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-depth"
+                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth' %] value="depth">
+                <label for="nd_mapshow-depth">Neighbor Hops:
+                <input name="depth" id="nd_mapshow-hops" class="input-mini" type="number" placeholder="1"
+                  value="[% params.depth || vars.sidebar_defaults.device_netmap.hops || 1 | html_entity %]"/>
+                </label>
+            </div>
+            [% END %]
 
             <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
               <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
-                value="[% params.vlan | html_entity %]" type="text"/>
+                value="[% params.vlan | html_entity %]"/>
             </label>
 
             [% IF hgroup_list.size %]
+            <em class="muted">Device Groups:</em><br/>
             <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
               multiple name="hgroup" id="nd_hgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Host Groups">
+              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
               <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                 value="[% opt.key | html_entity %]">[% opt.value | html_entity %]</option>
@@ -87,6 +98,7 @@
             </select>
             [% END %]
             [% IF lgroup_list.size %]
+            <em class="muted">Device Locations:</em><br/>
             <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
               multiple name="lgroup" id="nd_lgroup-select"
               rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations">

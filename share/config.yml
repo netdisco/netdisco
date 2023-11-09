@@ -159,7 +159,9 @@ sidebar_defaults:
   device_netmap:
     showips:     { default: null }
     showspeed:   { default: null }
-    mapshow:     { default: neighbors }
+    mapshow:     { default: depth }
+    depth:       { default: 1 }
+    too_many_devices: { default: 1000 }
     colorby:     { default: speed }
     dynamicsize: { default: checked }
   report_moduleinventory:
