@@ -22,6 +22,8 @@
         [% row.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      <a href="#" class="nd_node-ext-link" target="_blank">
+           <span class="label label-info"><i class="icon-external-link"></i> External Thing</span></a>
       </td>
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell"><a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
