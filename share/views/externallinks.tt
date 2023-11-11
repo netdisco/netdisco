@@ -1,20 +1,27 @@
 [% BLOCK external_link %]
-<a href="[% link.url | evaltt %]" class="nd_node-ext-link" target="_blank">
+<a href="[% link.url | evaltt %]" target="_blank">
      <span class="label label-info"><i class="icon-external-link"></i> [% link.displayname | html_entity %]</span></a>
-<span class="nd_node-ext-link">&nbsp;</span>
 [% END %]
 [% BLOCK external_mac_links %]
   [% FOREACH link IN settings.external_links.node.reverse %]
     [% NEXT UNLESS link.for_mac %]
     [% mac_format = 'as_' _ (link.mac_format.lower || 'ieee') %]
     [% node = item.net_mac.$mac_format FILTER uri %]
-    [% PROCESS external_link %]
+    <span class="nd_node-ext-link">[% PROCESS external_link %]</span>
+    <span class="nd_node-ext-link">&nbsp;</span>
   [% END %]
 [% END %]
 [% BLOCK external_ip_links %]
   [% FOREACH link IN settings.external_links.node.reverse %]
     [% NEXT UNLESS link.for_ip %]
     [% node = item.ip FILTER uri %]
+    <span class="nd_node-ext-link">[% PROCESS external_link %]</span>
+    <span class="nd_node-ext-link">&nbsp;</span>
+  [% END %]
+[% END %]
+[% BLOCK external_device_links %]
+  [% FOREACH link IN settings.external_links.device.reverse %]
+    [% device = item.ip FILTER uri %]
     [% PROCESS external_link %]
   [% END %]
 [% END %]

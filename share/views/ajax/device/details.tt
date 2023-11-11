@@ -1,3 +1,4 @@
+[% PROCESS 'externallinks.tt' -%]
 [% SET user_can_port_control = user_has_role('port_control', d) %]
 <table class="table table-condensed table-striped">
   <tbody>
@@ -115,7 +116,7 @@
     [% END %]
     [% END %]
     <tr>
-      <td>Administration</td>
+      <td>External Links</td>
       <td>
         <a href="ssh://[% d.ip | uri %]" target="_blank">
           <span class="label label-info"><i class="icon-keyboard"></i> SSH</span></a>
@@ -123,6 +124,7 @@
           <span class="label label-info"><i class="icon-keyboard"></i> Telnet</span></a>
         <a href="https://[% d.ip | uri %]/" target="_blank">
           <span class="label label-info"><i class="icon-external-link"></i> Web</span></a>
+        [% INCLUDE external_device_links item = d %]
       </td>
     </tr>
     <tr>
