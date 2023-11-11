@@ -1,8 +1,5 @@
 [% USE Number.Format %]
-[% BLOCK extlinkmac %]
-<a href="[% link.url | evaltt %]" class="nd_node-ext-link" target="_blank">
-     <span class="label label-info"><i class="icon-external-link"></i> [% link.displayname | html_entity %]</span></a>
-[% END %]
+[% PROCESS 'externallinks.tt' -%]
 <table id="nsbm-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
@@ -26,17 +23,13 @@
         [% row.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
-      [% FOREACH link IN settings.external_links.node %]
-        [% NEXT UNLESS link.for_mac %]
-        [% mac_format = (('as_' _ link.mac_format.lower) || 'as_ieee') %]
-        [% mac = row.net_mac.$mac_format FILTER uri %]
-        [% PROCESS extlinkmac %]
-      [% END %]
+      [% INCLUDE external_mac_links item = row %]
       </td>
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell"><a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
+        <br/>[% INCLUDE external_ip_links item = row %]
       </td>
       [% IF params.stamps %]
       <td>[% row.time_first_stamp | html_entity %]</td>
@@ -56,6 +49,7 @@
         [% node.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = node %]
       </td>
       <td>Node on Port</td>
       <td class="nd_center-cell">
@@ -82,6 +76,7 @@
         [% port.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = port %]
       </td>
       <td>Device Port</td>
       <td class="nd_center-cell">
@@ -104,6 +99,7 @@
         [% nbt.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = nbt %]
       </td>
       <td>NetBIOS</td>
       <td class="nd_center-cell">\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
@@ -124,6 +120,7 @@
         [% wlan.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = wlan %]
       </td>
       <td>Wireless Info</td>
       <td class="nd_center-cell">SSID: [% wlan.ssid | html_entity %]<br>
