@@ -357,7 +357,8 @@ td > form.nd_inline-form {
 }
 
 /* for the tagged vlans total when hiding the full list */
-.nd_vlan-total {
+/* and external links from node search */
+.nd_vlan-total, .nd_node-ext-link {
   float: right;
 }
 

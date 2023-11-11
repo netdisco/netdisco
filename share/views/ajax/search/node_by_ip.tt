@@ -1,5 +1,6 @@
 [% USE date(format = '%Y-%m-%d %H:%M') %]
 [% USE Number.Format %]
+[% PROCESS 'externallinks.tt' -%]
 <table id="nsbi-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
@@ -23,6 +24,7 @@
         [% row.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = row %]
       </td>
       <td>NetBIOS</td>
       <td class="nd_linkcell nd_center-cell">\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% row.domain | uri %]" title="Devices in this Domain">[% row.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% row.nbname | uri %]">[% row.nbname | html_entity %]</a>
@@ -42,6 +44,7 @@
         [% row.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = row %]
       </td>
       <td>IP &rarr; MAC</td>
       <td class="nd_center-cell">
@@ -64,6 +67,7 @@
         [% nbt.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = nbt %]
       </td>
       <td>NetBIOS</td>
       <td class="nd_linkcell nd_center-cell">\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Devices in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
@@ -84,6 +88,7 @@
         [% ni.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = ni %]
       </td>
       <td>IP &rarr; MAC</td>
       <td class="nd_center-cell">
@@ -106,6 +111,7 @@
         [% node.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = node %]
       </td>
       <td>Node on Port</td>
       <td class="nd_center-cell">
@@ -129,6 +135,7 @@
         [% wlan.oui.company | html_entity %]</a> )
         [% END %]
         seen as:
+        [% INCLUDE external_mac_links item = wlan %]
         </td>
         <td>Wireless Info</td>
         <td class="nd_center-cell">SSID: [% wlan.ssid | html_entity %]<br>
@@ -153,12 +160,14 @@
         [% nodeip.oui.company | html_entity %]</a> )
       [% END %]
       seen as:
+      [% INCLUDE external_mac_links item = nodeip %]
       </td>
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell">
         <a href="[% search_node | none %]&q=[% nodeip.ip | uri %]">[% nodeip.ip | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT nodeip.active %]
         [% ' (' _ nodeip.dns.remove(settings.domain_suffix) _ ')' IF nodeip.dns %]
+        <br/>[% INCLUDE external_ip_links item = nodeip %]
       </td>
       [% IF params.stamps %]
       <td>[% nodeip.time_first_stamp | html_entity %]</td>
