@@ -1,6 +1,6 @@
 [% BLOCK external_link %]
 <a href="[% link.url | evaltt %]" target="_blank">
-     <span class="label label-info"><i class="icon-external-link"></i> [% link.displayname | html_entity %]</span></a>
+     <span class="label label-default"><i class="icon-external-link"></i> [% link.displayname | html_entity %]</span></a>
 [% END %]
 [% BLOCK external_mac_links %]
   [% FOREACH link IN settings.external_links.node.reverse %]
@@ -15,8 +15,7 @@
   [% FOREACH link IN settings.external_links.node.reverse %]
     [% NEXT UNLESS link.for_ip %]
     [% node = item.ip FILTER uri %]
-    <span class="nd_node-ext-link">[% PROCESS external_link %]</span>
-    <span class="nd_node-ext-link">&nbsp;</span>
+    [% PROCESS external_link %]
   [% END %]
 [% END %]
 [% BLOCK external_device_links %]
