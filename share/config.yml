@@ -278,6 +278,10 @@ defanged_api_admin: 'api_admin'
 hide_deviceports:
   'group:__ANY__':
     - 'group:__HIDE_NOTPRESENT_TYPES__'
+external_links:
+  node: []
+  device: []
+  device_port: []
 
 # -------------
 # NETDISCO CORE
