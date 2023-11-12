@@ -352,7 +352,7 @@ td > form.nd_inline-form {
 }
 
 /* set default state of collapsible lists as collapsed (hidden) */
-.nd_collapse-pre-hidden {
+.nd_collapse-pre-hidden, .nd_disabled-feature {
   display: none;
 }
 
