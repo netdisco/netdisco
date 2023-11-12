@@ -1,8 +1,15 @@
-2.tbd - tbd
+2.069000 - 2023-11-12
+
+  [NEW FEATURES]
+
+  * #1009 neighbour map depth and/or until end of lldp chains
+  * #1118 user configurable external links from node search and device details
+  * #1119 accept filename (of devices) to -d parameter on netdisco-do
 
   [ENHANCEMENTS]
 
   * FortiOS.pm pagination support
+  * #1112 API method for device neighbors
 
 2.068001 - 2023-11-01
 
