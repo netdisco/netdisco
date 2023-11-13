@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE vendor (
+CREATE TABLE manufacturer (
     "company"  text NOT NULL,
     "abbrev"   text NOT NULL,
     "base"     text NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE vendor (
     EXCLUDE USING GIST (range WITH &&)
 );
 
-CREATE INDEX idx_vendor_first ON vendor ("first");
+CREATE INDEX idx_manufacturer_first ON manufacturer ("first");
 
-CREATE INDEX idx_vendor_last  ON vendor ("last");
+CREATE INDEX idx_manufacturer_last  ON manufacturer ("last");
 
 COMMIT;

@@ -1,11 +1,11 @@
 use utf8;
-package App::Netdisco::DB::Result::Vendor;
+package App::Netdisco::DB::Result::Manufacturer;
 
 use strict;
 use warnings;
 
 use base 'App::Netdisco::DB::Result';
-__PACKAGE__->table("vendor");
+__PACKAGE__->table("manufacturer");
 
 __PACKAGE__->add_columns(
   "company",

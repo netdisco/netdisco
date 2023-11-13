@@ -84,8 +84,8 @@ my $txn_guard = $ENV{ND2_DB_ROLLBACK}
   ? schema('netdisco')->storage->txn_scope_guard : undef;
 
 schema('netdisco')->txn_do(sub{
-    schema('netdisco')->resultset('Vendor')->delete;
-    schema('netdisco')->resultset('Vendor')->populate([
+    schema('netdisco')->resultset('Manufacturer')->delete;
+    schema('netdisco')->resultset('Manufacturer')->populate([
         map {{
             company => $oui{$_}->{'Organization Name'},
             abbrev  => $oui{$_}->{abbrev},
