@@ -4,8 +4,6 @@ package App::Netdisco::DB::Result::Vendor;
 use strict;
 use warnings;
 
-# CREATE TABLE vendor (company text, abbrev text, base text PRIMARY KEY, bits integer, first macaddr, last macaddr, range int8range, oui varchar(8), EXCLUDE USING GIST (range WITH &&));
-
 use base 'App::Netdisco::DB::Result';
 __PACKAGE__->table("vendor");
 
