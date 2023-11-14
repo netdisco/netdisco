@@ -174,7 +174,7 @@ get '/ajax/content/device/ports' => require_login sub {
           if param('n_netbios');
 
         # retrieve vendor, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'oui'}] })
+        $set = $set->search({}, { prefetch => [{$nodes_name => 'manufacturer'}] })
           if param('n_vendor');
     }
 

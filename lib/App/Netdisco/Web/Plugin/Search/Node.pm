@@ -148,36 +148,36 @@ get '/ajax/content/search/node' => require_login sub {
       ->search({-and => [@where_mac, @active, @times]}, {
           order_by => {'-desc' => 'time_last'},
           '+columns' => [
-            'oui.company',
-            'oui.abbrev',
+            'manufacturer.company',
+            'manufacturer.abbrev',
             { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
             { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
           ],
-          join => 'oui'
+          join => 'manufacturer'
       });
 
     my $netbios = schema(vars->{'tenant'})->resultset('NodeNbt')
       ->search({-and => [@where_mac, @active, @times]}, {
           order_by => {'-desc' => 'time_last'},
           '+columns' => [
-            'oui.company',
-            'oui.abbrev',
+            'manufacturer.company',
+            'manufacturer.abbrev',
             { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
             { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
           ],
-          join => 'oui'
+          join => 'manufacturer'
       });
 
     my $wireless = schema(vars->{'tenant'})->resultset('NodeWireless')->search(
         { -and => [@where_mac, @wifitimes] },
         { order_by   => { '-desc' => 'time_last' },
           '+columns' => [
-            'oui.company',
-            'oui.abbrev',
+            'manufacturer.company',
+            'manufacturer.abbrev',
             {
               time_last_stamp => \"to_char(time_last, 'YYYY-MM-DD HH24:MI')"
             }],
-          join => 'oui'
+          join => 'manufacturer'
         }
     );
 
@@ -245,14 +245,14 @@ get '/ajax/content/search/node' => require_login sub {
             }
 
             # if the user selects Vendor search opt, then
-            # we'll try the OUI company name as a fallback
+            # we'll try the manufacturer company name as a fallback
 
             if (param('show_vendor') and not $have_rows) {
                 $set = schema(vars->{'tenant'})->resultset('NodeIp')
                   ->with_times
                   ->search(
-                    {'oui.company' => { -ilike => ''.sql_match($node)}, @times},
-                    {'prefetch' => 'oui'},
+                    {'manufacturer.company' => { -ilike => ''.sql_match($node)}, @times},
+                    {'prefetch' => 'manufacturer'},
                   );
                 ++$have_rows if $set->has_rows;
             }

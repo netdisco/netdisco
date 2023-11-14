@@ -8,15 +8,15 @@ __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::ExplicitLocking
 /);
 
-my $order_by_time_last_and_join_oui = {
+my $order_by_time_last_and_join_manufacturer = {
     order_by => {'-desc' => 'time_last'},
     '+columns' => [
-      'oui.company',
-      'oui.abbrev',
+      'manufacturer.company',
+      'manufacturer.abbrev',
       { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
       { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
     ],
-    join => 'oui'
+    join => 'manufacturer'
 };
 
 =head1 with_times
@@ -38,7 +38,7 @@ sub with_times {
   my ($rs, $cond, $attrs) = @_;
 
   return $rs
-    ->search_rs({}, $order_by_time_last_and_join_oui)
+    ->search_rs({}, $order_by_time_last_and_join_manufacturer)
     ->search($cond, $attrs);
 }
 
@@ -69,7 +69,7 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 =item *
 
-A JOIN is performed on the OUI table and the OUI C<company> column prefetched.
+A JOIN is performed on the Manufacturer table and the Manufacturer C<company> column prefetched.
 
 =back
 
@@ -93,7 +93,7 @@ sub search_by_ip {
     $cond->{ip} = { $op => $ip };
 
     return $rs
-      ->search_rs({}, $order_by_time_last_and_join_oui)
+      ->search_rs({}, $order_by_time_last_and_join_manufacturer)
       ->search($cond, $attrs);
 }
 
@@ -137,7 +137,7 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 =item *
 
-A JOIN is performed on the OUI table and the OUI C<company> column prefetched.
+A JOIN is performed on the Manufacturer table and the Manufacturer C<company> column prefetched.
 
 =back
 
@@ -183,7 +183,7 @@ sub search_by_dns {
 
     delete $cond->{suffix};
     return $rs
-      ->search_rs({}, $order_by_time_last_and_join_oui)
+      ->search_rs({}, $order_by_time_last_and_join_manufacturer)
       ->search($cond, $attrs);
 }
 
@@ -212,7 +212,7 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 =item *
 
-A JOIN is performed on the OUI table and the OUI C<company> column prefetched.
+A JOIN is performed on the Manufacturer table and the Manufacturer C<company> column prefetched.
 
 =back
 
@@ -227,7 +227,7 @@ sub search_by_mac {
       if ref {} ne ref $cond or !exists $cond->{mac};
 
     return $rs
-      ->search_rs({}, $order_by_time_last_and_join_oui)
+      ->search_rs({}, $order_by_time_last_and_join_manufacturer)
       ->search($cond, $attrs);
 }
 

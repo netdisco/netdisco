@@ -11,11 +11,11 @@ __PACKAGE__->load_components(qw/
 my $search_attr = {
     order_by => {'-desc' => 'time_last'},
     '+columns' => [
-      'oui.company',
+      'manufacturer.company',
       { time_first_stamp => \"to_char(time_first, 'YYYY-MM-DD HH24:MI')" },
       { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
     ],
-    join => 'oui'
+    join => 'manufacturer'
 };
 
 =head1 with_times
@@ -68,7 +68,7 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 =item *
 
-A JOIN is performed on the OUI table and the OUI C<company> column prefetched.
+A JOIN is performed on the Manufacturer table and the Manufacturer C<company> column prefetched.
 
 =back
 
@@ -121,7 +121,7 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 =item *
 
-A JOIN is performed on the OUI table and the OUI C<company> column prefetched.
+A JOIN is performed on the Manufacturer table and the Manufacturer C<company> column prefetched.
 
 =back
 
@@ -167,7 +167,7 @@ preformatted timestamps of the C<time_first> and C<time_last> fields.
 
 =item *
 
-A JOIN is performed on the OUI table and the OUI C<company> column prefetched.
+A JOIN is performed on the Manufacturer table and the Manufacturer C<company> column prefetched.
 
 =back
 

@@ -88,11 +88,11 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     my $rs2 = schema(vars->{'tenant'})->resultset('NodeIp')->search(
         undef,
-        {   join   => ['oui', 'netbios'],
+        {   join   => ['manufacturer', 'netbios'],
             columns   => [qw( ip mac time_first time_last dns active)],
             '+select' => [ \'true AS node',
                            \qq/replace( date_trunc( 'minute', age( LOCALTIMESTAMP, me.time_last ) ) ::text, 'mon', 'month') AS age/,
-                           'oui.company',
+                           'manufacturer.company',
                            'netbios.nbname',
                          ],
             '+as'     => [ 'node', 'age', 'vendor', 'nbname' ],
@@ -101,14 +101,14 @@ get '/ajax/content/report/ipinventory' => require_login sub {
 
     my $rs3 = schema(vars->{'tenant'})->resultset('NodeNbt')->search(
         undef,
-        {   join   => ['oui'], 
+        {   join   => ['manufacturer'],
             columns   => [qw( ip mac time_first time_last )],
             '+select' => [
                 \'null AS dns',
                 'active',
                 \'true AS node',
                 \qq/replace( date_trunc( 'minute', age( LOCALTIMESTAMP, time_last ) ) ::text, 'mon', 'month') AS age/,
-                'oui.company',
+                'manufacturer.company',
                 'nbname'
             ],
             '+as' => [ 'dns', 'active', 'node', 'age', 'vendor', 'nbname' ],

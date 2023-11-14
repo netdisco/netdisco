@@ -48,6 +48,8 @@ __PACKAGE__->set_primary_key("mac", "ssid");
 
 =head2 oui
 
+DEPRECATED: USE MANUFACTURER INSTEAD
+
 Returns the C<oui> table entry matching this Node. You can then join on this
 relation and retrieve the Company name from the related table.
 
@@ -64,6 +66,26 @@ __PACKAGE__->belongs_to( oui => 'App::Netdisco::DB::Result::Oui',
         };
     },
     { join_type => 'LEFT' }
+);
+
+=head2 manufacturer
+
+Returns the C<manufacturer> table entry matching this Node. You can then join on this
+relation and retrieve the Company name from the related table.
+
+The JOIN is of type LEFT, in case the Manufacturer table has not been populated.
+
+=cut
+
+__PACKAGE__->belongs_to( manufacturer => 'App::Netdisco::DB::Result::Manufacturer',
+  sub {
+      my $args = shift;
+      return {
+          "$args->{foreign_alias}.first" => { '<=' => \"$args->{self_alias}.mac" },
+          "$args->{foreign_alias}.last"  => { '>=' => \"$args->{self_alias}.mac" },
+      };
+  },
+  { join_type => 'LEFT' }
 );
 
 =head2 node
