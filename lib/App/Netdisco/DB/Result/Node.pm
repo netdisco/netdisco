@@ -19,7 +19,7 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "boolean", is_nullable => 1 },
   "oui",
-  { data_type => "varchar", is_nullable => 1, is_serializable => 0, size => 8 },
+  { data_type => "varchar", is_nullable => 1, is_serializable => 0, size => 9 },
   "time_first",
   {
     data_type     => "timestamp",

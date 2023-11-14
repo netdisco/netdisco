@@ -1,5 +1,7 @@
 BEGIN;
 
+UPDATE node SET oui = NULL;
+
 ALTER TABLE node ALTER COLUMN oui TYPE varchar(9);
 
 CREATE TABLE manufacturer (
