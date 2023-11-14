@@ -80,8 +80,8 @@ __PACKAGE__->belongs_to( manufacturer => 'App::Netdisco::DB::Result::Manufacture
   sub {
       my $args = shift;
       return {
-          "$args->{foreign_alias}.first" => { '<=' => \"$args->{self_alias}.mac" },
-          "$args->{foreign_alias}.last"  => { '>=' => \"$args->{self_alias}.mac" },
+        "$args->{foreign_alias}.range" => { '@>' =>
+          \qq{('x' || lpad( translate( $args->{self_alias}.mac ::text, ':', ''), 16, '0')) ::bit(64) ::bigint} },
       };
   },
   { join_type => 'LEFT' }
