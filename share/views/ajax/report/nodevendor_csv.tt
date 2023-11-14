@@ -5,7 +5,7 @@
   [% FOREACH row IN results %]
     [% mylist = [] %]
     [% device = row.device.dns || row.device.name || row.switch %]
-    [% FOREACH col IN [ row.mac.upper row.oui.company device row.port ] %]
+    [% FOREACH col IN [ row.mac.upper row.manufacturer.company device row.port ] %]
       [% mylist.push(col) %]
     [% END %]
     [% CSV.dump(mylist) %]

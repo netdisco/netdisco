@@ -19,7 +19,7 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "boolean", is_nullable => 1 },
   "oui",
-  { data_type => "varchar", is_nullable => 1, is_serializable => 0, size => 8 },
+  { data_type => "varchar", is_nullable => 1, is_serializable => 0, size => 9 },
   "time_first",
   {
     data_type     => "timestamp",
@@ -149,6 +149,8 @@ __PACKAGE__->has_many( wireless => 'App::Netdisco::DB::Result::NodeWireless',
 
 =head2 oui
 
+DEPRECATED: USE MANUFACTURER INSTEAD
+
 Returns the C<oui> table entry matching this Node. You can then join on this
 relation and retrieve the Company name from the related table.
 
@@ -158,6 +160,21 @@ The JOIN is of type LEFT, in case the OUI table has not been populated.
 
 __PACKAGE__->belongs_to( oui => 'App::Netdisco::DB::Result::Oui', 'oui',
   { join_type => 'LEFT' } );
+
+=head2 manufacturer
+
+Returns the C<manufacturer> table entry matching this Node. You can then join on this
+relation and retrieve the Company name from the related table.
+
+The JOIN is of type LEFT, in case the Manufacturer table has not been populated.
+
+=cut
+
+__PACKAGE__->belongs_to( manufacturer => 'App::Netdisco::DB::Result::Manufacturer', {
+    'foreign.base' => 'self.oui',
+  },
+  { join_type => 'LEFT' }
+);
 
 =head1 ADDITIONAL COLUMNS
 

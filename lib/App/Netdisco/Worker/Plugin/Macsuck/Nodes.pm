@@ -235,6 +235,13 @@ sub store_node {
   $now ||= 'LOCALTIMESTAMP';
   $vlan ||= 0;
 
+  # ideally we just store the first 36 bits of the mac in the oui field
+  # and then no need for this query. haven't yet worked out the SQL for that.
+  my $oui = schema('netdisco')->resultset('Manufacturer')
+    ->search({ range => { '@>' =>
+      \[q{('x' || lpad( translate( ? ::text, ':', ''), 16, '0')) ::bit(64) ::bigint}, $mac]} },
+      { rows => 1, columns => 'base' })->first;
+
   schema('netdisco')->txn_do(sub {
     my $nodes = schema('netdisco')->resultset('Node');
 
@@ -257,7 +264,7 @@ sub store_node {
         vlan => $vlan,
         mac => $mac,
         active => \'true',
-        oui => substr($mac,0,8),
+        oui => ($oui ? $oui->base : undef),
         time_last => \$now,
         (($old != 0) ? (time_recent => \$now) : ()),
       },

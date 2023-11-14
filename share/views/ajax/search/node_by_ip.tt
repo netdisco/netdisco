@@ -20,8 +20,8 @@
       <td>MAC <a href="[% search_node | none %]&q=[% row.net_mac.$mac_format_call | uri %]">
           [% row.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% row.oui.abbrev | uri %]">
-        [% row.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% row.manufacturer.abbrev | uri %]">
+        [% row.manufacturer.company | html_entity %]</a> )
       [% END %]
       seen as:
       [% INCLUDE external_mac_links item = row %]
@@ -40,8 +40,8 @@
       <td>MAC <a href="[% search_node | none %]&q=[% row.net_mac.$mac_format_call | uri %]">
           [% row.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% row.oui.abbrev | uri %]">
-        [% row.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% row.manufacturer.abbrev | uri %]">
+        [% row.manufacturer.company | html_entity %]</a> )
       [% END %]
       seen as:
       [% INCLUDE external_mac_links item = row %]
@@ -63,8 +63,8 @@
       <td>MAC <a href="[% search_node | none %]&q=[% nbt.net_mac.$mac_format_call | uri %]">
           [% nbt.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% nbt.oui.abbrev | uri %]">
-        [% nbt.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% nbt.manufacturer.abbrev | uri %]">
+        [% nbt.manufacturer.company | html_entity %]</a> )
       [% END %]
       seen as:
       [% INCLUDE external_mac_links item = nbt %]
@@ -84,8 +84,8 @@
       <td>MAC <a href="[% search_node | none %]&q=[% ni.net_mac.$mac_format_call | uri %]">
           [% ni.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% ni.oui.abbrev | uri %]">
-        [% ni.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% ni.manufacturer.abbrev | uri %]">
+        [% ni.manufacturer.company | html_entity %]</a> )
       [% END %]
       seen as:
       [% INCLUDE external_mac_links item = ni %]
@@ -107,8 +107,8 @@
       <td>MAC <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
           [% node.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% node.oui.abbrev | uri %]">
-        [% node.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% node.manufacturer.abbrev | uri %]">
+        [% node.manufacturer.company | html_entity %]</a> )
       [% END %]
       seen as:
       [% INCLUDE external_mac_links item = node %]
@@ -131,8 +131,8 @@
         <td>MAC <a href="[% search_node | none %]&q=[% wlan.net_mac.$mac_format_call | uri %]">
             [% wlan.net_mac.$mac_format_call | html_entity %]</a>
         [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% wlan.oui.abbrev | uri %]">
-        [% wlan.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% wlan.manufacturer.abbrev | uri %]">
+        [% wlan.manufacturer.company | html_entity %]</a> )
         [% END %]
         seen as:
         [% INCLUDE external_mac_links item = wlan %]
@@ -156,8 +156,8 @@
       <td>MAC <a href="[% search_node | none %]&q=[% nodeip.net_mac.$mac_format_call | uri %]">
           [% nodeip.net_mac.$mac_format_call | html_entity %]</a>
       [% IF params.show_vendor %]
-        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% nodeip.oui.abbrev | uri %]">
-        [% nodeip.oui.company | html_entity %]</a> )
+        ( <a href="[% uri_for('/report/nodevendor') | none %]?vendor=[% nodeip.manufacturer.abbrev | uri %]">
+        [% nodeip.manufacturer.company | html_entity %]</a> )
       [% END %]
       seen as:
       [% INCLUDE external_mac_links item = nodeip %]

@@ -406,10 +406,10 @@
             [% END %]
             )
           [% END %]
-          [% IF params.n_vendor AND node.oui.defined %]
+          [% IF params.n_vendor AND node.manufacturer.defined %]
             (Vendor:
-            [% FOREACH oui IN node.oui %]
-              <a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% oui.abbrev | uri %]">[% oui.abbrev | html_entity %]</a>
+            [% FOREACH manufacturer IN node.manufacturer %]
+              <a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>
             [% END %]
             )
           [% END %]

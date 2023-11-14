@@ -302,6 +302,8 @@ __PACKAGE__->many_to_many( vlans => 'port_vlans', 'vlan_entry' );
 
 =head2 oui
 
+DEPRECATED: USE MANUFACTURER INSTEAD
+
 Returns the C<oui> table entry matching this Port. You can then join on this
 relation and retrieve the Company name from the related table.
 
@@ -315,6 +317,26 @@ __PACKAGE__->belongs_to( oui => 'App::Netdisco::DB::Result::Oui',
       return {
           "$args->{foreign_alias}.oui" =>
             { '=' => \"substring(cast($args->{self_alias}.mac as varchar) for 8)" }
+      };
+  },
+  { join_type => 'LEFT' }
+);
+
+=head2 manufacturer
+
+Returns the C<manufacturer> table entry matching this Port. You can then join on this
+relation and retrieve the Company name from the related table.
+
+The JOIN is of type LEFT, in case the Manufacturer table has not been populated.
+
+=cut
+
+__PACKAGE__->belongs_to( manufacturer => 'App::Netdisco::DB::Result::Manufacturer',
+  sub {
+      my $args = shift;
+      return {
+        "$args->{foreign_alias}.range" => { '@>' =>
+          \qq{('x' || lpad( translate( $args->{self_alias}.mac ::text, ':', ''), 16, '0')) ::bit(64) ::bigint} },
       };
   },
   { join_type => 'LEFT' }

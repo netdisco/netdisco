@@ -224,109 +224,11 @@ sub get_userpass {
 }
 
 sub deploy_oui {
-  my $schema = schema('netdisco');
-  $schema->storage->disconnect;
-  my @lines = ();
-  my %data = ();
-
-  if (@ARGV) {
-      @lines = File::Slurper::read_lines($ARGV[0], 'iso-8859-1');
-  }
-  else {
-      my $url = 'https://raw.githubusercontent.com/netdisco/upstream-sources/master/ieee/oui.txt';
-      my $resp = HTTP::Tiny->new->get($url);
-      @lines = split /\n/, $resp->{content};
-  }
-
-  if (scalar @lines > 50) {
-      foreach my $line (@lines) {
-          if ($line =~ m/^\s*(.{2}-.{2}-.{2})\s+\(hex\)\s+(.*)\s*$/i) {
-              my ($oui, $company) = ($1, $2);
-              $oui =~ s/-/:/g;
-              $company =~ s/[\r\n]//g;
-              my $abbrev = shorten($company);
-              $data{lc($oui)}{'company'} = $company;
-              $data{lc($oui)}{'abbrev'}  = $abbrev;
-          }
-      }
-
-      if ((scalar keys %data) > 15_000) {
-          # roll everything back if we're testing
-          my $txn_guard = $ENV{ND2_DB_ROLLBACK}
-            ? schema('netdisco')->storage->txn_scope_guard : undef;
-
-          $schema->txn_do(sub{
-            $schema->resultset('Oui')->delete;
-            $schema->resultset('Oui')->populate([
-                          map {
-                              {   oui     => $_,
-                                  company => Encode::decode('UTF-8', $data{$_}{'company'}),
-                                  abbrev  => Encode::decode('UTF-8', $data{$_}{'abbrev'}),
-                              }
-                              } keys %data
-            ]);
-          });
-
-          if (scalar @ARGV > 1) {
-              my @sql_lines = ('COPY oui (oui, company, abbrev) FROM stdin;');
-              foreach my $oui (sort {$a cmp $b} keys %data) {
-                  push @sql_lines, sprintf "%s\t%s\t%s",
-                    $oui,
-                    Encode::decode('UTF-8', $data{$oui}{'company'}),
-                    Encode::decode('UTF-8', $data{$oui}{'abbrev'});
-              }
-              File::Slurper::write_text($ARGV[1], join "\n", @sql_lines, "\\.\n\n");
-          }
-      }
-
-      print color 'bold blue';
-      say 'OUI update complete.';
-  }
-  else {
-      print color 'bold red';
-      say 'OUI update failed!';
-  }
-
+  print color 'bold blue';
+  print 'Updating OUI... ';
+  system('ieee-oui-import') == 0 or die "\n";
+  say 'done.';
   print color 'reset';
-}
-
-# This subroutine is based on Wireshark's make-manuf
-# http://anonsvn.wireshark.org/wireshark/trunk/tools/make-manuf
-sub shorten {
-    my $manuf = shift;
-
-    $manuf = decode("utf8", $manuf, Encode::FB_CROAK);
-    $manuf = " " . $manuf . " ";
-
-    # Remove any punctuation
-    $manuf =~ tr/',.()/    /;
-
-    # & isn't needed when Standalone
-    $manuf =~ s/ \& / /g;
-
-    # remove junk whitespace
-    $manuf =~ s/\s+/ /g;
-
-    # Remove any "the", "inc", "plc" ...
-    $manuf
-        =~ s/\s(?:the|inc|incorporated|plc|systems|corp|corporation|s\/a|a\/s|ab|ag|kg|gmbh|co|company|limited|ltd|holding|spa)(?= )//gi;
-
-    # Convert to consistent case
-    $manuf =~ s/(\w+)/\u\L$1/g;
-
-    # Deviating from make-manuf for HP
-    $manuf =~ s/Hewlett[-]?Packard/Hp/;
-
-    # Truncate all names to first two words max 20 chars
-    if (length($manuf) > 21) {
-        my @twowords = grep {defined} (split ' ', $manuf)[0 .. 1];
-        $manuf = join ' ', @twowords;
-    }
-
-    # Remove all spaces
-    $manuf =~ s/\s+//g;
-
-    return encode( "utf8", $manuf );
 }
 
 sub deploy_mibs {

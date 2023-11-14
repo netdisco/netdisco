@@ -30,10 +30,10 @@ get '/report/*' => require_login sub {
         $vendor_list = [
             schema(vars->{'tenant'})->resultset('Node')->search(
                 {},
-                {   join     => 'oui',
-                    columns  => ['oui.abbrev'],
-                    order_by => 'oui.abbrev',
-                    group_by => 'oui.abbrev',
+                {   join     => 'manufacturer',
+                    columns  => ['manufacturer.abbrev'],
+                    order_by => 'manufacturer.abbrev',
+                    group_by => 'manufacturer.abbrev',
                 }
                 )->get_column('abbrev')->all
         ];

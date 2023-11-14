@@ -19,15 +19,15 @@ get '/ajax/content/report/nodemultiips' => require_login sub {
     my @results = schema(vars->{'tenant'})->resultset('Node')->search(
         {},
         {   select     => [ 'mac', 'switch', 'port' ],
-            join       => [qw/device ips oui/],
+            join       => [qw/device ips manufacturer/],
             '+columns' => [
                 { 'dns'      => 'device.dns' },
                 { 'name'     => 'device.name' },
                 { 'ip_count' => { count => 'ips.ip' } },
-                { 'vendor'   => 'oui.company' }
+                { 'vendor'   => 'manufacturer.company' }
             ],
             group_by => [
-                qw/ me.mac me.switch me.port device.dns device.name oui.company/
+                qw/ me.mac me.switch me.port device.dns device.name manufacturer.company/
             ],
             having => \[ 'count(ips.ip) > ?', [ count => 1 ] ],
             order_by => { -desc => [qw/count/] },

@@ -46,9 +46,9 @@ get '/ajax/content/report/nodevendor/data' => require_login sub {
 
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
-        $rs = $rs->search( { 'oui.abbrev' => $match },
-            {   '+columns' => [qw/ device.dns device.name oui.abbrev oui.company /],
-                join       => [qw/ oui device /],
+        $rs = $rs->search( { 'manufacturer.abbrev' => $match },
+            {   '+columns' => [qw/ device.dns device.name manufacturer.abbrev manufacturer.company /],
+                join       => [qw/ manufacturer device /],
                 collapse   => 1,
             });
 
@@ -85,9 +85,9 @@ get '/ajax/content/report/nodevendor' => require_login sub {
 
         my $match = $vendor eq 'blank' ? undef : $vendor;
 
-        $rs = $rs->search( { 'oui.abbrev' => $match },
-            {   '+columns' => [qw/ device.dns device.name oui.abbrev oui.company /],
-                join       => [qw/ oui device /],
+        $rs = $rs->search( { 'manufacturer.abbrev' => $match },
+            {   '+columns' => [qw/ device.dns device.name manufacturer.abbrev manufacturer.company /],
+                join       => [qw/ manufacturer device /],
                 collapse   => 1,
             });
 
@@ -101,10 +101,10 @@ get '/ajax/content/report/nodevendor' => require_login sub {
     elsif ( !defined $vendor ) {
         $rs = $rs->search(
             { },
-            {   join     => 'oui',
-                select   => [ 'oui.abbrev', 'oui.company', { count => {distinct => 'me.mac'}} ],
+            {   join     => 'manufacturer',
+                select   => [ 'manufacturer.abbrev', 'manufacturer.company', { count => {distinct => 'me.mac'}} ],
                 as       => [qw/ abbrev vendor count /],
-                group_by => [qw/ oui.abbrev oui.company /]
+                group_by => [qw/ manufacturer.abbrev manufacturer.company /]
             }
         )->order_by( { -desc => 'count' } );
 
