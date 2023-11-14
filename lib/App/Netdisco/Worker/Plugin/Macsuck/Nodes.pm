@@ -205,24 +205,6 @@ register_worker({ phase => 'store',
     })->update({ active => \'false' });
   }
 
-  schema('netdisco')->storage->dbh_do(
-    sub {
-      my ($storage, $dbh, @args) = @_;
-
-      local $dbh->{TraceLevel} =
-          ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
-
-      $dbh->do(qq{
-          UPDATE node SET oui = (
-            SELECT base FROM manufacturer
-              WHERE ('x' || lpad( translate( mac::text, ':', ''), 16, '0')) ::bit(64) ::bigint <@ range
-            LIMIT 1
-          )
-            WHERE switch = ? AND active AND time_last = $now
-      }, undef, $device->ip);
-    },
-  );
-
   debug sprintf ' [%s] macsuck - removed %d fwd table entries to archive',
     $device->ip, $archived;
 
@@ -253,6 +235,11 @@ sub store_node {
   $now ||= 'LOCALTIMESTAMP';
   $vlan ||= 0;
 
+  my $oui = schema('netdisco')->resultset('Manufacturer')
+    ->search({ range => { '@>' =>
+      \[q{('x' || lpad( translate( ? ::text, ':', ''), 16, '0')) ::bit(64) ::bigint}, $mac]} },
+      { rows => 1, columns => 'base' })->first;
+
   schema('netdisco')->txn_do(sub {
     my $nodes = schema('netdisco')->resultset('Node');
 
@@ -275,7 +262,7 @@ sub store_node {
         vlan => $vlan,
         mac => $mac,
         active => \'true',
-        oui => undef, # bulk set at the end of the macsuck run
+        oui => ($oui ? $oui->base : undef),
         time_last => \$now,
         (($old != 0) ? (time_recent => \$now) : ()),
       },
