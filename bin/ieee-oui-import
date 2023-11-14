@@ -73,8 +73,6 @@ foreach my $MA (sort keys %urls) {
         $row->{range} = '['. Math::BigInt->from_hex($row->{first})->as_int()
           .','. Math::BigInt->from_hex($row->{last})->as_int() .']';
 
-        $row->{oui} = lc join ':', ( substr($row->{first}, 0, 6) =~ m/../g );
-
         $oui{ $row->{base} } = $row;
     }
 }
@@ -85,6 +83,7 @@ my $txn_guard = $ENV{ND2_DB_ROLLBACK}
 
 schema('netdisco')->txn_do(sub{
     schema('netdisco')->resultset('Manufacturer')->delete;
+
     schema('netdisco')->resultset('Manufacturer')->populate([
         map {{
             company => $oui{$_}->{'Organization Name'},
@@ -94,9 +93,15 @@ schema('netdisco')->txn_do(sub{
             first   => $oui{$_}->{first},
             last    => $oui{$_}->{last},
             range   => $oui{$_}->{range},
-            oui     => $oui{$_}->{oui},
         }} sort keys %oui
     ]);
+
+    schema('netdisco')->storage->dbh_do(
+      sub {
+        my ($storage, $dbh, @args) = @_;
+        $dbh->do(q{UPDATE node SET oui = (SELECT base FROM manufacturer WHERE mac BETWEEN first AND last LIMIT 1)});
+      },
+    );
 });
 
 exit 0;

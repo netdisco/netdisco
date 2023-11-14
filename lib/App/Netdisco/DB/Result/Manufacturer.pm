@@ -22,8 +22,6 @@ __PACKAGE__->add_columns(
   { data_type => "macaddr", is_nullable => 1 },
   "range",
   { data_type => "int8range", is_nullable => 1 },
-  "oui",
-  { data_type => "varchar", is_nullable => 1, size => 8 },
 );
 
 __PACKAGE__->set_primary_key("base");
