@@ -99,7 +99,13 @@ schema('netdisco')->txn_do(sub{
     schema('netdisco')->storage->dbh_do(
       sub {
         my ($storage, $dbh, @args) = @_;
-        $dbh->do(q{UPDATE node SET oui = (SELECT base FROM manufacturer WHERE mac BETWEEN first AND last LIMIT 1)});
+        $dbh->do(q{
+            UPDATE node SET oui = (
+              SELECT base FROM manufacturer
+                WHERE ('x' || lpad( translate( mac::text, ':', ''), 16, '0')) ::bit(64) ::bigint <@ range
+              LIMIT 1
+            );
+        });
       },
     );
 });
