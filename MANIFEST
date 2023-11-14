@@ -1,3 +1,4 @@
+bin/ieee-oui-import
 bin/nd-dbic-versions
 bin/nd-import-topology
 bin/netdisco-backend
@@ -41,6 +42,7 @@ lib/App/Netdisco/DB/Result/DeviceSkip.pm
 lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
 lib/App/Netdisco/DB/Result/Log.pm
+lib/App/Netdisco/DB/Result/Manufacturer.pm
 lib/App/Netdisco/DB/Result/NetmapPositions.pm
 lib/App/Netdisco/DB/Result/Node.pm
 lib/App/Netdisco/DB/Result/NodeIp.pm
@@ -496,6 +498,7 @@ share/schema_versions/App-Netdisco-DB-80-81-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-81-82-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-82-83-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-83-84-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-84-85-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt

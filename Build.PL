@@ -97,6 +97,8 @@ Module::Build->new(
     'Template::Plugin::Number::Format' => '1.02',
     'Term::ReadLine' => '0',
     'Term::UI' => '0',
+    'Text::CSV' => '0',
+    'Text::CSV_XS' => '0',
     'Try::Tiny' => '0',
     'URI' => '0',
     'URI::Based' => '0',

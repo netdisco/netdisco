@@ -1,3 +1,9 @@
+2.070000 - 2023-11-14
+
+  [NEW FEATURES]
+
+  * #1111 Support for OUI28/MA-M and OUI36/MA-S (replace oui with manufacturer)
+
 2.069000 - 2023-11-12
 
   [NEW FEATURES]

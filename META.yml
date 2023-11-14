@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.069000'
+    version: '2.070000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -38,7 +38,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '84'
+    version: '85'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -79,6 +79,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
   App::Netdisco::DB::Result::Log:
     file: lib/App/Netdisco/DB/Result/Log.pm
+  App::Netdisco::DB::Result::Manufacturer:
+    file: lib/App/Netdisco/DB/Result/Manufacturer.pm
   App::Netdisco::DB::Result::NetmapPositions:
     file: lib/App/Netdisco/DB/Result/NetmapPositions.pm
   App::Netdisco::DB::Result::Node:
@@ -641,6 +643,8 @@ requires:
   Template::Plugin::Number::Format: '1.02'
   Term::ReadLine: '0'
   Term::UI: '0'
+  Text::CSV: '0'
+  Text::CSV_XS: '0'
   Try::Tiny: '0'
   URI: '0'
   URI::Based: '0'
@@ -659,5 +663,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.069000'
+version: '2.070000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
