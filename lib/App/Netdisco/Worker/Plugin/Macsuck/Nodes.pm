@@ -235,6 +235,8 @@ sub store_node {
   $now ||= 'LOCALTIMESTAMP';
   $vlan ||= 0;
 
+  # ideally we just store the first 36 bits of the mac in the oui field
+  # and then no need for this query. haven't yet worked out the SQL for that.
   my $oui = schema('netdisco')->resultset('Manufacturer')
     ->search({ range => { '@>' =>
       \[q{('x' || lpad( translate( ? ::text, ':', ''), 16, '0')) ::bit(64) ::bigint}, $mac]} },
