@@ -212,14 +212,14 @@ register_worker({ phase => 'store',
       local $dbh->{TraceLevel} =
           ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
 
-      $dbh->do(q{
+      $dbh->do(qq{
           UPDATE node SET oui = (
             SELECT base FROM manufacturer
               WHERE ('x' || lpad( translate( mac::text, ':', ''), 16, '0')) ::bit(64) ::bigint <@ range
             LIMIT 1
           )
-            WHERE switch = ? AND active AND time_last = ?
-      }, undef, $device->ip, $now);
+            WHERE switch = ? AND active AND time_last = $now
+      }, undef, $device->ip);
     },
   );
 
