@@ -119,6 +119,7 @@ Module::Build->new(
     'Test::File::ShareDir::Dist' => '0',
   },
   script_files => [
+    'bin/ieee-oui-import',
     'bin/nd-import-topology',
     'bin/netdisco-db-deploy',
     'bin/netdisco-deploy',
