@@ -18,7 +18,7 @@ Netdisco is written in Perl and is self-contained apart from the PostgreSQL data
 
 It includes a lightweight web server for the interface, a backend daemon to gather data from your network, and a command line interface for troubleshooting. There is a simple configuration file in YAML format.
 
-Please check out the [installation instructions](https://metacpan.org/pod/App::Netdisco) on CPAN.
+Please check out the [installation instructions](https://metacpan.org/pod/App::Netdisco) on CPAN. When upgrading, make sure to check the latest [Release Notes](https://github.com/netdisco/netdisco/wiki/Release-Notes).
 
 You can also speak to someone in the [`#netdisco@libera`](https://kiwiirc.com/nextclient/irc.libera.chat/netdisco) IRC channel, or on the [community email list](https://lists.sourceforge.net/lists/listinfo/netdisco-users).
 
