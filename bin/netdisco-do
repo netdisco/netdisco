@@ -104,20 +104,24 @@ unless ($action) {
   with 'App::Netdisco::Worker::Runner';
 }
 
-sub _test_device {
+# list of NetAddr::IP instances resolved from the -d params
+my @hostlist = ();
+
+sub _test_and_resolve_device {
   my $d = shift or return;
   $d =~ s/\s//g;
+  return unless $d;
 
   my $net = NetAddr::IP->new($d);
-  if ($d and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0')) {
+  if (!$net or $net->num == 0 or $net->addr eq '0.0.0.0') {
       error sprintf 'unable to understand as host, IP, or prefix: %s', $d;
       exit 1;
   }
 
-  return ($d ? $net->hostenum : undef);
+  push @hostlist, $net->hostenum;
+  return;
 }
 
-my @hostlist = ();
 foreach my $device (@$devices) {
   if (-f $device) {
       my @dlist = read_lines $device;
@@ -128,11 +132,11 @@ foreach my $device (@$devices) {
       }
 
       foreach my $entry (@dlist) {
-          push(@hostlist, _test_device($entry)) if _test_device($entry);
+          _test_and_resolve_device($entry);
       }
   }
   else {
-      push(@hostlist, _test_device($device)) if _test_device($device);
+      _test_and_resolve_device($device);
   }
 }
 
@@ -148,18 +152,9 @@ if (not $force and scalar @hostlist > 512) {
 @hostlist = (undef) if 0 == scalar @hostlist;
 
 foreach my $host (@hostlist) {
-  my $dev = $host
-            ? ((not ($queue_only and $force)) ? get_device($host->addr) : $host->addr)
-            : undef;
-  if ($dev and not (blessed $dev and $dev->in_storage) and $action !~ m/^(?:discover|addpseudodevice)/) {
-    info sprintf "%s: error - Don't know device: %s", $action, $host->addr;
-    next;
-  }
-
-  # what job are we asked to do?
   push @job_specs, {
     action => $action,
-    device => $dev,
+    device => $host ? $host->addr : undef,
     port   => $port,
     subaction => ($extra || (($action eq 'discover') ? 'with-nodes' : undef)),
     username => ($ENV{USER} || 'netdisco-do'),
@@ -178,7 +173,7 @@ else {
     $CONFIG->{$1."_min_age"} = 0 if $job->action =~ m/^(arpnip|macsuck|discover)$/;
 
     my $actiontext = (
-      ($job->device ? ('['.$job->device->ip.']') : '') .
+      ($job->device ? ('['.$job->device.']') : '') .
       ($job->action eq 'show' ? ('/'. ($job->subaction || 'interfaces')) : '')
     );
 
