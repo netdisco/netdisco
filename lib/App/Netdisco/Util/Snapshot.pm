@@ -135,7 +135,7 @@ sub snmpwalk_to_cache {
           else {
               # on rare occasions a vendor returns .0 and .something
               delete $leaves{$key}
-                if defined $leaves{$key} and ref q{} eq $leaves{$key};
+                if defined $leaves{$key} and ref q{} eq ref $leaves{$key};
               $leaves{$key}->{$idx} = $oids{$orig_oid};
           }
 
