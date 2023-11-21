@@ -403,8 +403,8 @@ sub jq_delete {
   }
   else {
       schema(vars->{'tenant'})->txn_do(sub {
-        schema(vars->{'tenant'})->resultset('Admin')->delete();
-        schema(vars->{'tenant'})->resultset('DeviceSkip')->delete();
+        schema(vars->{'tenant'})->resultset('Admin')
+          ->search({ action => { '!=' => 'primeskiplist'} })->delete();
       });
   }
 }
