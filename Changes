@@ -1,3 +1,16 @@
+2.070002 - 2023-11-21
+
+  [ENHANCEMENTS]
+
+  * #1126 acl skip_modules for problematic Entity MIB per device ACL
+
+  [BUG FIXES]
+
+  * #1124 netdisco-do --force --enqueue -d bigfile.txt does not work
+  * #1127 uninitialized value in Worker/Plugin/Discover/Entities.pm line 109
+  * #1129 no longer clear device_skip with empty job queue
+  * #1130 port control tick for new users should be dropdown
+
 2.070001 - 2023-11-15
 
   [BUG FIXES]
