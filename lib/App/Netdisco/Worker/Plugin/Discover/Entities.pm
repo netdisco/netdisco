@@ -100,13 +100,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   foreach my $m (@modules){
-    unless (!$m->{parent} || $seen_idx{$m->{parent}}){
+    if ($m->{parent} and not exists $seen_idx{ $m->{parent} }){
       # Some combined devices like Nexus with FEX or ASR with Satellites can return invalid
       # EntityMIB trees. This workaround relocates entitites with invalid parents to the root 
       # of the tree, so they are at least visible in the Modules tab (see #710)
       
       info sprintf ' [%s] Entity %s (%s) has invalid parent %s - attaching as root entity instead',
-          $device->ip, $m->{index}, $m->{name}, $m->{parent}; 
+          $device->ip, ($m->{index} || '"unknown index"'), ($m->{name} || '"unknown name"'), $m->{parent};
       $m->{parent} = undef;
     }
   }
