@@ -1,3 +1,9 @@
+2.070003 - 2023-11-24
+
+  [BUG FIXES]
+
+  * do not use 'DISTINCT' when a 'GROUP BY' is present (DBIx::Class dies)
+
 2.070002 - 2023-11-21
 
   [ENHANCEMENTS]

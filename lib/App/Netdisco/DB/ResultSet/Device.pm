@@ -155,7 +155,6 @@ sub search_aliases {
         order_by => [{ -desc => 'in_device' }, { -asc => [qw/ me.dns me.ip /] } ],
         group_by => ['me.ip'],
         join => 'device_ips',
-        distinct => 1,
       }
     );
 }
