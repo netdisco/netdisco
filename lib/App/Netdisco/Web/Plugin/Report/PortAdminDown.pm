@@ -9,7 +9,7 @@ use App::Netdisco::Web::Plugin;
 register_report(
     {   category     => 'Port',
         tag          => 'portadmindown',
-        label        => 'Ports administratively disabled',
+        label        => 'Ports Administratively Disabled',
         provides_csv => 1,
         api_endpoint => 1,
     }

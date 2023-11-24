@@ -9,7 +9,7 @@ use App::Netdisco::Web::Plugin;
 register_report(
     {   category     => 'Device',
         tag          => 'devicebylocation',
-        label        => 'By Location',
+        label        => 'Inventory by Location',
         provides_csv => 1,
         api_endpoint => 1,
     }

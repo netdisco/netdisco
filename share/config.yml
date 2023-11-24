@@ -178,7 +178,7 @@ safe_password_store: true
 reports: []
 system_reports:
   - tag: portserrordisabled
-    label: 'Error Disabled Ports'
+    label: 'Blocked - Error-Disabled'
     category: Port
     columns:
       - { ip: Device }

@@ -10,7 +10,7 @@ use List::MoreUtils qw/listcmp sort_by/;
 register_report(
     {   category => 'Port',
         tag      => 'portvlanmismatch',
-        label    => 'Port VLAN Mismatches',
+        label    => 'Mismatched VLANs',
         provides_csv => 1,
         api_endpoint => 1,
     }

@@ -9,7 +9,7 @@ use App::Netdisco::Web::Plugin;
 register_report(
     {   category     => 'Port',
         tag          => 'portblocking',
-        label        => 'Ports that are blocking',
+        label        => 'Blocked - Spanning Tree',
         provides_csv => 1,
         api_endpoint => 1,
     }

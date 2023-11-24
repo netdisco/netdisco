@@ -9,7 +9,7 @@ use App::Netdisco::Web::Plugin;
 register_report(
     {   category     => 'Port',
         tag          => 'duplexmismatch',
-        label        => 'Duplex Mismatches Between Devices',
+        label        => 'Mismatched Duplex',
         provides_csv => 1,
         api_endpoint => 1,
     }

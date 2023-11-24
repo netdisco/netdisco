@@ -9,7 +9,7 @@ use App::Netdisco::Web::Plugin;
 register_report(
     {   category     => 'Device',
         tag          => 'deviceaddrnodns',
-        label        => 'Addresses without DNS Entries',
+        label        => 'IPs without DNS Entries',
         provides_csv => 1,
         api_endpoint => 1,
     }
