@@ -242,6 +242,20 @@ system_reports:
         FROM device
         WHERE creation > (LOCALTIMESTAMP - COALESCE(NULLIF(?,''), '2 months')::interval)
         ORDER BY creation DESC
+  - tag: vlansonlyuplinks
+    category: VLAN
+    label: 'VLANs Only On Uplinks'
+    columns:
+      - { ip: 'Device IP', _searchable: true }
+      - { vlans: 'VLAN List' }
+    query: |
+      SELECT ip, array_to_string(array_agg(DISTINCT vlan::integer ORDER BY vlan::integer ASC), ', ') AS vlans
+        FROM device_port_vlan
+        WHERE native IS false
+          AND vlan NOT IN
+            (SELECT vlan FROM device_port_vlan WHERE native IS true)
+        GROUP BY ip
+        ORDER BY ip
 table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
