@@ -242,6 +242,20 @@ system_reports:
         FROM device
         WHERE creation > (LOCALTIMESTAMP - COALESCE(NULLIF(?,''), '2 months')::interval)
         ORDER BY creation DESC
+  - tag: portswithmostvlans
+    category: Port
+    label: 'Ports with the most VLANs'
+    columns:
+      - { ip: 'Device IP', _searchable: true }
+      - { port: 'Port' }
+      - { vlans: 'VLAN Count' }
+    bind_params: ['threshold']
+    query: |
+      SELECT ip, port, count(vlan) AS vlans
+        FROM device_port_vlan
+        GROUP BY ip, port
+        HAVING count(vlan) > COALESCE(NULLIF(?,''), '1') ::integer
+        ORDER BY vlans DESC, ip ASC, port ASC
   - tag: vlansonlyuplinks
     category: VLAN
     label: 'VLANs Only On Uplinks'
