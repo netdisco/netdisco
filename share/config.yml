@@ -289,6 +289,17 @@ system_reports:
           ) = 0
         GROUP BY dpv.ip
         ORDER BY dpv.ip
+  - tag: devicevlancount
+    category: VLAN
+    label: 'VLAN Count per Device'
+    columns:
+      - { ip: 'Device IP', _searchable: true }
+      - { vlans: 'VLAN Count' }
+    query: |
+      SELECT ip, count(vlan) AS vlans
+        FROM device_vlan
+        GROUP BY ip
+        ORDER BY vlans DESC
 table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
