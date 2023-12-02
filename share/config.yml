@@ -250,12 +250,45 @@ system_reports:
       - { vlans: 'VLAN List' }
     query: |
       SELECT ip, array_to_string(array_agg(DISTINCT vlan::integer ORDER BY vlan::integer ASC), ', ') AS vlans
-        FROM device_port_vlan
+        FROM device_port_vlan dpv
         WHERE native IS false
-          AND vlan NOT IN
-            (SELECT vlan FROM device_port_vlan WHERE native IS true)
+          AND vlan <> 1
+          AND (
+            SELECT count(*) FROM device_port_vlan dpv2
+              WHERE dpv2.ip = dpv.ip
+               AND dpv2.vlan = dpv.vlan
+               AND native IS true
+          ) = 0
         GROUP BY ip
         ORDER BY ip
+  - tag: vlansunused
+    category: VLAN
+    label: 'VLANs No Longer Used'
+    columns:
+      - { ip: 'Device IP', _searchable: true }
+      - { vlans: 'VLAN List' }
+    bind_params: ['free']
+    query: |
+      SELECT dpv.ip, array_to_string(array_agg(DISTINCT dpv.vlan::integer ORDER BY dpv.vlan::integer ASC), ', ') AS vlans
+        FROM device_port_vlan dpv
+        WHERE dpv.native IS false
+          AND dpv.vlan <> 1
+          AND (
+            SELECT count(*) FROM device_port_vlan dpv2
+              LEFT JOIN device_port dp USING (ip, port)
+              LEFT JOIN device d USING (ip)
+              WHERE dpv2.ip = dpv.ip
+                AND dpv2.vlan = dpv.vlan
+                AND native IS true
+                AND (
+                  dp.up_admin = 'up'
+                  OR age( LOCALTIMESTAMP,
+                          to_timestamp( extract( epoch FROM d.last_discover ) - ( d.uptime - dp.lastchange ) /100 ) ::timestamp )
+                    < COALESCE(NULLIF(?,''), '3 months') ::interval
+                )
+          ) = 0
+        GROUP BY dpv.ip
+        ORDER BY dpv.ip
 table_pagesize: 10
 table_showrecordsmenu:
   - [10, 25, 50, 100, '-1']
