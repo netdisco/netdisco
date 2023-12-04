@@ -275,6 +275,23 @@ system_reports:
           ) = 0
         GROUP BY ip
         ORDER BY ip
+  - tag: vlansneverconfigured
+    category: VLAN
+    label: 'VLANs Known but Not Configured'
+    columns:
+      - { ip: 'Device IP', _searchable: true }
+      - { vlans: 'VLAN List' }
+    query: |
+      SELECT ip, array_to_string(array_agg(DISTINCT dv.vlan::integer ORDER BY dv.vlan::integer ASC), ', ') AS vlans
+        FROM device_vlan dv
+        WHERE NOT EXISTS (
+          SELECT FROM device_port_vlan dpv
+            WHERE dpv.ip = dv.ip
+              AND dpv.vlan = dv.vlan
+          )
+          AND vlan NOT IN (1002, 1003, 1004, 1005)
+        GROUP BY ip
+        ORDER BY ip
   - tag: vlansunused
     category: VLAN
     label: 'VLANs No Longer Used'
