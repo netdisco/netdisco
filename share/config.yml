@@ -265,7 +265,7 @@ system_reports:
       - { count: 'Instances' }
       - { seen: 'Where Seen' }
     query: |
-      SELECT subnet, count(subnet), array_to_string(array_agg(host(alias)::text || ' on ' || host(ip)::text), ', ') AS seen
+      SELECT subnet, count(subnet), array_agg(host(alias)::text || ' on ' || host(ip)::text) AS seen
         FROM device_ip
         WHERE ip <> alias
           AND (masklen(subnet) <> 32 AND masklen(subnet) <> 128)

@@ -10,13 +10,16 @@
     [% FOREACH row IN results %]
     <tr>
       [% FOREACH col IN columns %]
-        [% IF column_options.$col._searchable %]
-        <td>
-          <a href="[% uri_for('/search') | none %]?q=[% row.item(col) | uri %]">[% row.item(col) | html_entity %]</a>
-        </td>
-        [% ELSE %]
-        <td>[% row.item(col) | html_entity %]</td>
+      <td>
+        [% FOREACH record IN row.item(col) %]
+          [% IF column_options.$col._searchable %]
+            <a href="[% uri_for('/search') | none %]?q=[% record | uri %]">[% record | html_entity %]</a>
+          [% ELSE %]
+            [% record | html_entity %]
+          [% END %]
+          [% '<br />' IF loop.size > 1 %]
         [% END %]
+      </td>
       [% END %]
     </tr>
     [% END %]
