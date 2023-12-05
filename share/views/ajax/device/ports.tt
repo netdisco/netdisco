@@ -1,3 +1,4 @@
+[% PROCESS 'externallinks.tt' -%]
 [% SET user_can_port_control = user_has_role('port_control', device) %]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0">
   <thead>
@@ -5,6 +6,7 @@
       <th></th>
       [% FOREACH item IN settings.port_columns %]
       [% NEXT IF item.name == 'c_admin'  %]
+      [% NEXT IF item.name == 'c_links' AND settings.external_links.device_port.empty %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
         [% SET th_class = '' %]
@@ -175,6 +177,15 @@
             </td>
         [% END %]
 
+      [% END %]
+
+      [% IF params.c_links AND settings.external_links.device_port.size > 0 %]
+      <td>
+        [% INCLUDE external_device_port_links
+          item = row
+          d = device
+        %]
+      </td>
       [% END %]
 
       [% IF params.c_speed_admin %]

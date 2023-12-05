@@ -2,6 +2,7 @@
 <a href="[% link.url | evaltt %]" target="_blank">
      <span class="label label-default"><i class="icon-external-link"></i> [% link.displayname | html_entity %]</span></a>
 [% END %]
+
 [% BLOCK external_mac_links %]
   [% FOREACH link IN settings.external_links.node.reverse %]
     [% NEXT UNLESS link.for_mac %]
@@ -11,6 +12,7 @@
     <span class="nd_node-ext-link">&nbsp;</span>
   [% END %]
 [% END %]
+
 [% BLOCK external_ip_links %]
   [% FOREACH link IN settings.external_links.node %]
     [% NEXT UNLESS link.for_ip %]
@@ -18,6 +20,7 @@
     [% PROCESS external_link %]
   [% END %]
 [% END %]
+
 [% BLOCK external_device_links %]
   [% FOREACH link IN settings.external_links.device %]
     [% device   = item.ip FILTER uri %]
@@ -29,6 +32,23 @@
     [% FOREACH config IN settings._extra_device_details %]
       [% NEXT UNLESS config.field.match('^cf_') %]
       [% ${config.field} = item.${config.field} FILTER uri %]
+    [% END %]
+    [% PROCESS external_link %]
+  [% END %]
+[% END %]
+
+[% BLOCK external_device_port_links %]
+  [% FOREACH link IN settings.external_links.device_port %]
+    [% device   = d.ip FILTER uri %]
+    [% fqdn     = d.dns FILTER uri %]
+    [% sysname  = d.name FILTER uri %]
+    [% hostname = d.dns.remove(settings.domain_suffix) FILTER uri %]
+    [% port     = item.port FILTER uri %]
+    [% mac      = item.mac FILTER uri %]
+    [% ifindex  = item.ifindex FILTER uri %]
+    [% FOREACH config IN settings._extra_device_port_cols %]
+      [% NEXT UNLESS config.field.match('^cf_') %]
+      [% ${config.field} = item.get_column(${config.field}) FILTER uri %]
     [% END %]
     [% PROCESS external_link %]
   [% END %]
