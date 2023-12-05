@@ -256,6 +256,26 @@ system_reports:
         GROUP BY ip, port
         HAVING count(vlan) > COALESCE(NULLIF(?,''), '1') ::integer
         ORDER BY vlans DESC, ip ASC, port ASC
+  - tag: duplicateprivatenetworks
+    category: Port
+    label: 'Duplicate Private Networks'
+    columns:
+      - { subnet: 'Subnet', _searchable: true }
+      - { count: 'Instances' }
+      - { seen: 'Where Seen' }
+    query: |
+      SELECT subnet, count(subnet), array_to_string(array_agg(host(alias)::text || ' on ' || host(ip)::text), ', ') AS seen
+        FROM device_ip
+        WHERE ip <> alias
+          AND (masklen(subnet) <> 32 AND masklen(subnet) <> 128)
+          AND (subnet << '10.0.0.0/8'
+          OR subnet << '172.16.0.0/12'
+          OR subnet << '192.168.0.0/16'
+          OR subnet << '100.64.0.0/10'
+          OR subnet << 'fd00::/8')
+        GROUP BY subnet
+        HAVING count(subnet) > 1
+        ORDER BY subnet
   - tag: vlansonlyuplinks
     category: VLAN
     label: 'VLANs Only On Uplinks'
