@@ -247,7 +247,7 @@ hook after_error_render => sub { setting('layout' => 'main') };
                                tag => $_->{'tag'},
                                path => config->{'url_base'}->with("/t/$_->{tag}")->path } ) }
             @{ setting('tenant_databases') },
-            { tag => 'netdisco', displayname => 'Default' }
+            { tag => 'netdisco', displayname => (setting('database')->{displayname} || 'Default') }
     });
     config->{'tenant_data'}->{'netdisco'}->{'path'}
       = URI::Based->new((config->{path} eq '/') ? '' : config->{path})->path;

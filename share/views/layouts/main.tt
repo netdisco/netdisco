@@ -176,7 +176,7 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">
             <i class="icon-home text-success"></i>
-            &nbsp;[% settings.tenant_data.$tenant.displayname || 'Default' | html_entity %]
+            &nbsp;[% (settings.tenant_data.$tenant.displayname || settings.database.displayname || 'Default') | html_entity %]
             <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
