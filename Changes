@@ -1,3 +1,28 @@
+2.071000 - 2023-12-07
+
+  [NEW FEATURES]
+
+  * device port external links support
+  * new preset fields and custom fields support for device external links
+  * custom reports returning array columns will be split over lines
+  * default database in tenancies can have a friendly name
+  * #1133 improve searchable generic report fields
+
+  [ENHANCEMENTS]
+
+  * tidied up the report menus and report names
+  * #830 subnets report can show all subnets to start with
+  * #920 unused VLANs report
+  * #999 device vlan count report
+  * #1018 VLANs with Multiple Names report
+  * #1022 VLANs Known but Not Configured report
+  * #1023 ports with most vlans report
+  * #1052 duplicate private networks report
+
+  [BUG FIXES]
+
+  * do not reverse the external links for IPs and Devices
+
 2.070003 - 2023-11-24
 
   [BUG FIXES]
