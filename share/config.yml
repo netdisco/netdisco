@@ -318,7 +318,8 @@ system_reports:
 
             SELECT DISTINCT ip, vlan
               FROM device_vlan dv
-              WHERE NOT EXISTS (
+              WHERE vlan <> 1
+                AND NOT EXISTS (
                 SELECT FROM device_port_vlan dpv
                   WHERE dpv.ip = dv.ip
                     AND dpv.vlan = dv.vlan
