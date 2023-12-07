@@ -82,7 +82,6 @@ foreach my $report (@{setting('reports')}) {
       my $rev4 = RE_net_IPv4(-keep);
       my $rev6 = RE_net_IPv6(-keep);
       my $remac = RE_net_MAC(-keep);
-      #my $redom = RE_net_domain(-keep, -nospace, -rfc1101);
 
       foreach my $row (@results) {
           foreach my $col (@column_order) {
@@ -90,28 +89,23 @@ foreach my $report (@{setting('reports')}) {
               my $fields = (ref $row->{$col} ? $row->{$col} : [$row->{$col}]);
 
               foreach my $f (@$fields) {
-                  # seems too sensitive match to be useful :-(
-                  #$f =~ s!\b${redom}\b!'<a href="'.
-                  #  uri_for('/search', {q => $1 .($2 ? "/$2" : '')})->path_query
-                  #  .'">'. encode_entities($1 .($2 ? "/$2" : '')) .'</a>'!gex;
+
+                  encode_entities($f);
 
                   $f =~ s!\b${recidr4}\b!'<a href="'.
                     uri_for('/search', {q => "$1/$2"})->path_query
-                    .'">'. encode_entities("$1/$2") .'</a>'!gex;
+                    .qq{">$1/$2</a>}!gex;
 
                   if (not $1 and not $2) {
                       $f =~ s!\b${rev4}\b!'<a href="'.
-                        uri_for('/search', {q => $1})->path_query
-                        .'">'. encode_entities($1) .'</a>'!gex;
+                        uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
                   }
 
                   $f =~ s!\b${rev6}\b!'<a href="'.
-                    uri_for('/search', {q => $1})->path_query
-                    .'">'. encode_entities($1) .'</a>'!gex;
+                    uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
 
                   $f =~ s!\b${remac}\b!'<a href="'.
-                    uri_for('/search', {q => $1})->path_query
-                    .'">'. encode_entities($1) .'</a>'!gex;
+                    uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
 
                   $row->{$col} = $f if not ref $row->{$col};
               }
