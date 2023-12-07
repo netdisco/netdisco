@@ -1,3 +1,10 @@
+2.071001 - 2023-12-07
+
+  [BUG FIXES]
+
+  * update vlansneverconfigured report to skip vlan 1
+  * better approach to HTML entity encoding in custom report searchable fields
+
 2.071000 - 2023-12-07
 
   [NEW FEATURES]
