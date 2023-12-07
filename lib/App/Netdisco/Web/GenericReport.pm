@@ -9,6 +9,10 @@ use Path::Class 'file';
 use Storable 'dclone';
 use Safe;
 
+use HTML::Entities 'encode_entities';
+use Regexp::Common qw( RE_net_IPv4 RE_net_IPv6 RE_net_MAC RE_net_domain );
+use Regexp::Common::net::CIDR ();
+
 our ($config, @data);
 
 foreach my $report (@{setting('reports')}) {
@@ -71,6 +75,48 @@ foreach my $report (@{setting('reports')}) {
       my $munger  = file(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'site_plugins', $r)->stringify;
       my @results = ((-f $munger) ? $compartment->rdo( $munger ) : @data);
       return if $@ or (0 == scalar @results);
+
+      # searchable field support..
+
+      my $recidr4 = $RE{net}{CIDR}{IPv4}{-keep}; #RE_net_CIDR_IPv4(-keep);
+      my $rev4 = RE_net_IPv4(-keep);
+      my $rev6 = RE_net_IPv6(-keep);
+      my $remac = RE_net_MAC(-keep);
+      #my $redom = RE_net_domain(-keep, -nospace, -rfc1101);
+
+      foreach my $row (@results) {
+          foreach my $col (@column_order) {
+              next unless $column_config{$col}->{_searchable};
+              my $fields = (ref $row->{$col} ? $row->{$col} : [$row->{$col}]);
+
+              foreach my $f (@$fields) {
+                  # seems too sensitive match to be useful :-(
+                  #$f =~ s!\b${redom}\b!'<a href="'.
+                  #  uri_for('/search', {q => $1 .($2 ? "/$2" : '')})->path_query
+                  #  .'">'. encode_entities($1 .($2 ? "/$2" : '')) .'</a>'!gex;
+
+                  $f =~ s!\b${recidr4}\b!'<a href="'.
+                    uri_for('/search', {q => "$1/$2"})->path_query
+                    .'">'. encode_entities("$1/$2") .'</a>'!gex;
+
+                  if (not $1 and not $2) {
+                      $f =~ s!\b${rev4}\b!'<a href="'.
+                        uri_for('/search', {q => $1})->path_query
+                        .'">'. encode_entities($1) .'</a>'!gex;
+                  }
+
+                  $f =~ s!\b${rev6}\b!'<a href="'.
+                    uri_for('/search', {q => $1})->path_query
+                    .'">'. encode_entities($1) .'</a>'!gex;
+
+                  $f =~ s!\b${remac}\b!'<a href="'.
+                    uri_for('/search', {q => $1})->path_query
+                    .'">'. encode_entities($1) .'</a>'!gex;
+
+                  $row->{$col} = $f if not ref $row->{$col};
+              }
+          }
+      }
 
       if (request->is_ajax) {
           template 'ajax/report/generic_report.tt',

@@ -13,7 +13,7 @@
       <td>
         [% FOREACH record IN row.item(col) %]
           [% IF column_options.$col._searchable %]
-            <a href="[% uri_for('/search') | none %]?q=[% record | uri %]">[% record | html_entity %]</a>
+            [% record | none %]
           [% ELSE %]
             [% record | html_entity %]
           [% END %]
