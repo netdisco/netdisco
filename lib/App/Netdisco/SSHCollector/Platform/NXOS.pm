@@ -106,7 +106,7 @@ sub arpnip {
 
         my ($addr, $age, $mac, $pref, $src, $iface) = split(/\s+/, $line);
         # Check to see if everything is on one line
-        if ($addr && $addr =~ /$RE{net}{IPv6}/) {
+        if ($addr && ($addr =~ /$RE{net}{IPv6}/ && $mac =~ m/([0-9a-f]{4}\.){2}[0-9a-f]{4}/i)) {
             push(@arpentries, { ip => $addr, mac => $mac });
         }
         # It's on two lines
