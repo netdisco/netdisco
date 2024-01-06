@@ -1,3 +1,9 @@
+2.071002 - 2024-01-06
+
+  [BUG FIXES]
+
+  * fix syntax error - array not hash in JobQueue.pm
+
 2.071001 - 2023-12-07
 
   [BUG FIXES]
