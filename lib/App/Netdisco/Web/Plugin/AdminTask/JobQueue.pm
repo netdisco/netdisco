@@ -34,7 +34,7 @@ ajax '/ajax/content/admin/jobqueue' => require_role admin => sub {
     my @backends = schema(vars->{'tenant'})->resultset('DeviceSkip')
         ->search({device => '255.255.255.255'})->hri->all;
 
-    my $num_backends = scalar keys @backends;
+    my $num_backends = scalar @backends;
     my $tot_workers  = 0;
     $tot_workers += $_->{deferrals} for @backends;
 
