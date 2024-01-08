@@ -75,6 +75,7 @@
         <tr><td>Entered</td><td> [% row.entered_stamp | html_entity %] </td></tr>
         <tr><td>Started</td><td> [% row.started_stamp | html_entity %] </td></tr>
         <tr><td>Finished</td><td> [% row.finished_stamp | html_entity %] </td></tr>
+        <tr><td>Device IP</td><td> [% row.device | html_entity %] </td></tr>
         <tr><td>Port</td><td> [% row.port | html_entity %] </td></tr>
         <tr><td>Subaction</td><td> [% row.subaction | html_entity %] </td></tr>
         <tr><td>User IP</td><td> [% row.userip | html_entity %] </td></tr>
