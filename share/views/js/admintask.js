@@ -186,12 +186,18 @@
       // what purpose - add/update/del
       var mode = $(this).attr('name');
 
+      // admin task name with special case(s)
+      var task = tab + '/';
+      if (tab == 'duplicatedevices') {
+        task = '';
+      }
+
       // submit the query and put results into the tab pane
       $.ajax({
         type: 'POST'
         ,async: true
         ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/admin/' + tab + '/' + mode
+        ,url: uri_base + '/ajax/control/admin/' + task + mode
         ,data: $(this).closest('tr').find('input[data-form="' + mode + '"],select[data-form="' + mode + '"]').serializeArray()
         ,beforeSend: function() {
           if (mode == 'add' || mode == 'delete') {
