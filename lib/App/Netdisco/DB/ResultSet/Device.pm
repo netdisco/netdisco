@@ -295,7 +295,7 @@ sub search_by_field {
     undef $mac if
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
-        or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
+        or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/)));
 
     my @joins = (
       ($mac ? qw/ports/ : ()),
@@ -417,7 +417,7 @@ sub search_fuzzy {
     undef $mac if
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
-        or ($mac->as_ieee !~ m/$RE{net}{MAC}/)));
+        or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/)));
     $mac = ($mac ? $mac->as_ieee : $q);
 
     return $rs->ports_with_mac($mac)
