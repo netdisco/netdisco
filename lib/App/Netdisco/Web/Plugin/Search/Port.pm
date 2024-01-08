@@ -73,7 +73,7 @@ get '/ajax/content/search/port' => require_login sub {
         undef $mac if
           ($mac and $mac->as_ieee
           and (($mac->as_ieee eq '00:00:00:00:00:00')
-            or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/)));
+            or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/i)));
 
         $rs = schema(vars->{'tenant'})->resultset('DevicePort')
                                 ->columns( [qw/ ip port name up up_admin speed /] )

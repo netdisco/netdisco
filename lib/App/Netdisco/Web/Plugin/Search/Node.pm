@@ -74,7 +74,7 @@ get '/ajax/content/search/node' => require_login sub {
     undef $mac if
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
-        or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/)));
+        or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/i)));
 
     my @active = (param('archived') ? () : (-bool => 'active'));
     my (@times, @wifitimes, @porttimes);
