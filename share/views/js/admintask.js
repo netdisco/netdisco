@@ -212,6 +212,7 @@
           else {
             toastr.success('Updated record');
           }
+          $('#' + tab + '_form').trigger('submit');
         }
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
