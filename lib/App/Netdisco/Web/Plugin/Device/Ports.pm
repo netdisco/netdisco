@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Permission 'acl_matches';
-use App::Netdisco::Util::Port 'port_reconfig_check';
+use App::Netdisco::Util::Port qw/port_acl_check port_reconfig_check/;
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
@@ -253,6 +253,9 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # add acl on port config
     if (param('c_admin') and user_has_role('port_control')) {
+      # for most actions except up/down status
+      map {$_->{portacl} = (port_acl_check($_, $device, logged_in_user) ? false : true)} @results;
+      # for up/odwn status as depends on port type
       map {$_->{portctl} = (port_reconfig_check($_, $device, logged_in_user) ? false : true)} @results;
     }
 

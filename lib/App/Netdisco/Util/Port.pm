@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  vlan_reconfig_check port_reconfig_check
+  vlan_reconfig_check port_acl_check port_reconfig_check
   get_port get_iid get_powerid
   is_vlan_interface port_has_phone port_has_wap
 /;
@@ -63,31 +63,9 @@ sub vlan_reconfig_check {
   return;
 }
 
-=head2 port_reconfig_check( $port, $device?, $user? )
-
-Checks if admin up/down status on a port can be changed.
+=head2 port_acl_check( $port, $device?, $user? )
 
 =over 4
-
-=item *
-
-Permission check that C<portctl_nophones> is not true in Netdisco config, if
-C<$port> has a phone connected.
-
-=item *
-
-Permission check that C<portctl_nowaps> is not true in Netdisco config, if
-C<$port> has a Wireless AP connected.
-
-=item *
-
-Permission check that C<portctl_uplinks> is true in Netdisco config, if
-C<$port> is an uplink.
-
-=item *
-
-Permission check that C<portctl_vlans> is true if C<$port> is a vlan
-subinterface.
 
 =item *
 
@@ -104,32 +82,10 @@ Will return false if these checks pass OK.
 
 =cut
 
-sub port_reconfig_check {
+sub port_acl_check {
   my ($port, $device, $user) = @_;
   my $ip = $port->ip;
   my $name = $port->port;
-
-  my $has_wap   = port_has_wap($port);
-  my $has_phone = port_has_phone($port);
-  my $is_vlan   = is_vlan_interface($port);
-
-  # phone check
-  return "forbidden: port [$name] on [$ip] is a phone"
-    if $has_phone and setting('portctl_nophones');
-
-  # wap check
-  return "forbidden: port [$name] on [$ip] is a wireless ap"
-    if $has_wap and setting('portctl_nowaps');
-
-  # uplink check
-  return "forbidden: port [$name] on [$ip] is an uplink"
-    if ($port->is_uplink or $port->remote_type)
-        and not setting('portctl_uplinks');
-
-  # vlan (routed) interface check
-  return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan
-        and not setting('portctl_vlans');
 
   # check for limits on devices
   return "forbidden: device [$ip] is in denied ACL"
@@ -181,6 +137,73 @@ sub port_reconfig_check {
   }
 
   return false;
+}
+
+=head2 port_reconfig_check( $port, $device?, $user? )
+
+Checks if admin up/down status on a port can be changed.
+
+=over 4
+
+=item *
+
+Permission check that C<portctl_nophones> is not true in Netdisco config, if
+C<$port> has a phone connected.
+
+=item *
+
+Permission check that C<portctl_nowaps> is not true in Netdisco config, if
+C<$port> has a Wireless AP connected.
+
+=item *
+
+Permission check that C<portctl_uplinks> is true in Netdisco config, if
+C<$port> is an uplink.
+
+=item *
+
+Permission check that C<portctl_vlans> is true if C<$port> is a vlan
+subinterface.
+
+=item *
+
+Also the checks from C<port_acl_check> above.
+
+=back
+
+Will return false if these checks pass OK.
+
+=cut
+
+sub port_reconfig_check {
+  my ($port, $device, $user) = @_;
+  my $ip = $port->ip;
+  my $name = $port->port;
+
+  my $has_wap   = port_has_wap($port);
+  my $has_phone = port_has_phone($port);
+  my $is_vlan   = is_vlan_interface($port);
+
+  # phone check
+  return "forbidden: port [$name] on [$ip] is a phone"
+    if $has_phone and setting('portctl_nophones');
+
+  # wap check
+  return "forbidden: port [$name] on [$ip] is a wireless ap"
+    if $has_wap and setting('portctl_nowaps');
+
+  # uplink check
+  return "forbidden: port [$name] on [$ip] is an uplink"
+    if ($port->is_uplink or $port->remote_type)
+        and not setting('portctl_uplinks');
+
+  # vlan (routed) interface check
+  return "forbidden: [$name] is a vlan interface on [$ip]"
+    if $is_vlan
+        and not setting('portctl_vlans');
+
+  # portctl_no, portctl_only, portctl_by_role
+  return port_acl_check(@_);
 }
 
 =head2 get_port( $device, $portname )
