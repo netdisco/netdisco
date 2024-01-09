@@ -298,8 +298,8 @@ config->{'devport_vlan_limit'} =
 delete config->{'deviceport_vlan_membership_threshold'};
 
 # portctl_native_vlan used to be called vlanctl
-setting('portctl_native_vlan') ||= setting('vlanctl');
-delete config->{'vlanctl'} if setting('vlanctl');
+config->{'portctl_native_vlan'} ||= config->{'vlanctl'};
+delete config->{'vlanctl'};
 
 config->{'schedule'} = config->{'housekeeping'}
   if setting('housekeeping') and not setting('schedule');
