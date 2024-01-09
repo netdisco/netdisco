@@ -21,6 +21,9 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("Cannot alter port: $port_reconfig_check")
     if $port_reconfig_check;
 
+  return Status->error("Cannot alter port: restricted function")
+    if setting('portctl_nameonly');
+
   return Status->done('PortControl is able to run');
 });
 

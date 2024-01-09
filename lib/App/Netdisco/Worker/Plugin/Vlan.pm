@@ -20,6 +20,9 @@ register_worker({ phase => 'check' }, sub {
   return Status->error("Cannot alter port: $port_reconfig_check")
     if $port_reconfig_check;
 
+  return Status->error("Cannot alter port: restricted function")
+    if setting('portctl_nameonly');
+
   my $vlan_reconfig_check = vlan_reconfig_check(vars->{'port'});
   return Status->error("Cannot alter vlan: $vlan_reconfig_check")
     if $vlan_reconfig_check;

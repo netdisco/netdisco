@@ -73,10 +73,6 @@ Permission check that C<portctl_no> and C<portctl_only> pass for the device.
 
 =item *
 
-Permission check that C<portctl_nameonly> is false in Netdisco config.
-
-=item *
-
 Permission check that C<portctl_uplinks> is true in Netdisco config, if
 C<$port> is an uplink.
 
@@ -115,10 +111,6 @@ sub port_reconfig_check {
     if acl_matches($ip, 'portctl_no');
   return "forbidden: device [$ip] is not in permitted ACL"
     unless acl_matches_only($ip, 'portctl_only');
-
-  # only permitted to change interface name
-  return "forbidden: not permitted to change port configuration"
-    if setting('portctl_nameonly');
 
   # uplink check
   return "forbidden: port [$name] on [$ip] is an uplink"
