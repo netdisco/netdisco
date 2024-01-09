@@ -65,16 +65,9 @@ sub vlan_reconfig_check {
 
 =head2 port_reconfig_check( $port, $device?, $user? )
 
+Checks if admin up/down status on a port can be changed.
+
 =over 4
-
-=item *
-
-Permission check that C<portctl_no> and C<portctl_only> pass for the device.
-
-=item *
-
-Permission check that C<portctl_uplinks> is true in Netdisco config, if
-C<$port> is an uplink.
 
 =item *
 
@@ -83,8 +76,22 @@ C<$port> has a phone connected.
 
 =item *
 
+Permission check that C<portctl_nowaps> is not true in Netdisco config, if
+C<$port> has a Wireless AP connected.
+
+=item *
+
+Permission check that C<portctl_uplinks> is true in Netdisco config, if
+C<$port> is an uplink.
+
+=item *
+
 Permission check that C<portctl_vlans> is true if C<$port> is a vlan
 subinterface.
+
+=item *
+
+Permission check that C<portctl_no> and C<portctl_only> pass for the device.
 
 =item *
 
@@ -106,28 +113,29 @@ sub port_reconfig_check {
   my $has_phone = port_has_phone($port);
   my $is_vlan   = is_vlan_interface($port);
 
-  # check for limits on devices
-  return "forbidden: device [$ip] is in denied ACL"
-    if acl_matches($ip, 'portctl_no');
-  return "forbidden: device [$ip] is not in permitted ACL"
-    unless acl_matches_only($ip, 'portctl_only');
-
-  # uplink check
-  return "forbidden: port [$name] on [$ip] is an uplink"
-    if ($port->is_uplink or $port->remote_type)
-        and not $has_phone and not setting('portctl_uplinks');
+  # phone check
+  return "forbidden: port [$name] on [$ip] is a phone"
+    if $has_phone and setting('portctl_nophones');
 
   # wap check
   return "forbidden: port [$name] on [$ip] is a wireless ap"
     if $has_wap and setting('portctl_nowaps');
 
-  # phone check
-  return "forbidden: port [$name] on [$ip] is a phone"
-    if $has_phone and setting('portctl_nophones');
+  # uplink check
+  return "forbidden: port [$name] on [$ip] is an uplink"
+    if ($port->is_uplink or $port->remote_type)
+        and not setting('portctl_uplinks');
 
   # vlan (routed) interface check
   return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan and not setting('portctl_vlans');
+    if $is_vlan
+        and not setting('portctl_vlans');
+
+  # check for limits on devices
+  return "forbidden: device [$ip] is in denied ACL"
+    if acl_matches($ip, 'portctl_no');
+  return "forbidden: device [$ip] is not in permitted ACL"
+    unless acl_matches_only($ip, 'portctl_only');
 
   # portctl_by_role check
   if ($device and ref $device and $user) {
