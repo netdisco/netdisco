@@ -38,7 +38,7 @@ Sanity check that C<$port> is not a vlan subinterface.
 
 =item *
 
-Permission check that C<vlanctl> is true in Netdisco config.
+Permission check that C<portctl_native_vlan> is true in Netdisco config.
 
 =back
 
@@ -58,7 +58,7 @@ sub vlan_reconfig_check {
     if $is_vlan;
 
   return "forbidden: not permitted to change native vlan"
-    if not setting('vlanctl');
+    if not setting('portctl_native_vlan');
 
   return;
 }

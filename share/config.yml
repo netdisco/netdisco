@@ -381,8 +381,8 @@ table_showrecordsmenu:
 inventory_collapse_threshold: 0
 inventory_platforms_collapse_threshold: 5
 inventory_releases_collapse_threshold: 5
-vlanctl: true
 portctl_nameonly: false
+portctl_native_vlan: true
 portctl_no: []
 portctl_only: []
 portctl_nowaps: false
