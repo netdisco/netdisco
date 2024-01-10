@@ -1,3 +1,17 @@
+2.071003 - 2024-01-10
+
+  [ENHANCEMENTS]
+
+  * also display job device IP in expanded jobqueue info
+
+  [BUG FIXES]
+
+  * set Text::CSV requirement to 2.04 to ensure ABI is met
+  * reload admin forms after making row changes
+  * fix order of device port columns so links not between speeds
+  * #1139 force anchor on all MAC address comparisons in search
+  * #1140 special case for queueing a job for delete device from duplicatedevices admin report
+
 2.071002 - 2024-01-06
 
   [BUG FIXES]
