@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  port_acl_check port_reconfig_check
+  port_acl_check port_acl_by_role_check port_reconfig_check
   get_port get_iid get_powerid
   is_vlan_interface port_has_phone port_has_wap
 /;
@@ -28,13 +28,9 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 port_acl_check( $port, $device?, $user? )
+=head2 port_acl_by_role_check( $port, $device?, $user? )
 
 =over 4
-
-=item *
-
-Permission check that C<portctl_no> and C<portctl_only> pass for the device.
 
 =item *
 
@@ -47,16 +43,10 @@ Will return false if these checks pass OK.
 
 =cut
 
-sub port_acl_check {
+sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
   my $ip = $port->ip;
   my $name = $port->port;
-
-  # check for limits on devices
-  return "forbidden: device [$ip] is in denied ACL"
-    if acl_matches($ip, 'portctl_no');
-  return "forbidden: device [$ip] is not in permitted ACL"
-    unless acl_matches_only($ip, 'portctl_only');
 
   # portctl_by_role check
   if ($device and ref $device and $user) {
@@ -104,6 +94,34 @@ sub port_acl_check {
   return false;
 }
 
+=head2 port_acl_check( $port, $device?, $user? )
+
+=over 4
+
+=item *
+
+Permission check that C<portctl_no> and C<portctl_only> pass for the device.
+
+=back
+
+Will return false if these checks pass OK.
+
+=cut
+
+sub port_acl_check {
+  my ($port, $device, $user) = @_;
+  my $ip = $port->ip;
+  my $name = $port->port;
+
+  # check for limits on devices
+  return "forbidden: device [$ip] is in denied ACL"
+    if acl_matches($ip, 'portctl_no');
+  return "forbidden: device [$ip] is not in permitted ACL"
+    unless acl_matches_only($ip, 'portctl_only');
+
+  return false;
+}
+
 =head2 port_reconfig_check( $port, $device?, $user? )
 
 Checks if admin up/down status on a port can be changed.
@@ -132,7 +150,7 @@ subinterface.
 
 =item *
 
-Also the checks from C<port_acl_check> above.
+Also the checks from C<port_acl_check> and C<port_acl_by_role_check> above.
 
 =back
 
@@ -168,7 +186,7 @@ sub port_reconfig_check {
         and not setting('portctl_vlans');
 
   # portctl_no, portctl_only, portctl_by_role
-  return port_acl_check(@_);
+  return (port_acl_check(@_) || port_acl_by_role_check(@_));
 }
 
 =head2 get_port( $device, $portname )
