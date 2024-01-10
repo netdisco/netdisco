@@ -4,7 +4,7 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-use App::Netdisco::Util::Port ':all';
+use App::Netdisco::Util::Port 'is_vlan_interface';
 
 register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
@@ -16,16 +16,14 @@ register_worker({ phase => 'check' }, sub {
   vars->{'port'} = get_port($device, $pn)
     or return Status->error("Unknown port name [$pn] on device $device");
 
-  my $port_reconfig_check = port_reconfig_check(vars->{'port'}, $device, $job->username);
-  return Status->error("Cannot alter port: $port_reconfig_check")
-    if $port_reconfig_check;
+  return Status->error("Cannot alter native vlan (portctl_native_vlan)")
+    unless setting('portctl_native_vlan');
 
-  return Status->error("Cannot alter port: restricted function")
+  return Status->error("Cannot alter port: restricted function (portctl_nameonly)")
     if setting('portctl_nameonly');
 
-  my $vlan_reconfig_check = vlan_reconfig_check(vars->{'port'});
-  return Status->error("Cannot alter vlan: $vlan_reconfig_check")
-    if $vlan_reconfig_check;
+  return Status->error("Cannot alter routed interface vlan")
+    if is_vlan_interface(vars->{'port'});
 
   return Status->done("Vlan is able to run.");
 });

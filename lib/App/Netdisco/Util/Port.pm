@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  vlan_reconfig_check port_acl_check port_reconfig_check
+  port_acl_check port_reconfig_check
   get_port get_iid get_powerid
   is_vlan_interface port_has_phone port_has_wap
 /;
@@ -27,41 +27,6 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
-
-=head2 vlan_reconfig_check( $port )
-
-=over 4
-
-=item *
-
-Sanity check that C<$port> is not a vlan subinterface.
-
-=item *
-
-Permission check that C<portctl_native_vlan> is true in Netdisco config.
-
-=back
-
-Will return nothing if these checks pass OK.
-
-=cut
-
-sub vlan_reconfig_check {
-  my $port = shift;
-  my $ip = $port->ip;
-  my $name = $port->port;
-
-  my $is_vlan = is_vlan_interface($port);
-
-  # vlan (routed) interface check
-  return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan;
-
-  return "forbidden: not permitted to change native vlan"
-    if not setting('portctl_native_vlan');
-
-  return;
-}
 
 =head2 port_acl_check( $port, $device?, $user? )
 
