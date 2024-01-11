@@ -182,6 +182,10 @@ get '/ajax/content/device/ports' => require_login sub {
     $set = $set->search({}, { prefetch => 'ssid' })
       if param('c_ssid');
 
+    # retrieve PoE info, if asked for
+    $set = $set->search({}, { prefetch => 'power' })
+      if param('c_power');
+
     # retrieve neighbor devices, if asked for
     #$set = $set->search({}, { prefetch => [{neighbor_alias => 'device'}] })
     #  if param('c_neighbors');
