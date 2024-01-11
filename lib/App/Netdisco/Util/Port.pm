@@ -9,7 +9,8 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  port_acl_check port_acl_by_role_check port_reconfig_check
+  port_acl_by_role_check port_acl_check
+  port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_interface port_has_phone port_has_wap
 /;
@@ -122,72 +123,65 @@ sub port_acl_check {
   return false;
 }
 
-=head2 port_reconfig_check( $port, $device?, $user? )
+=head2 port_acl_service( $port, $device?, $user? )
 
-Checks if admin up/down status on a port can be changed.
+Checks if admin up/down or PoE status on a port can be changed.
 
-=over 4
+Returns true if the request should be denied, false if OK to proceed.
 
-=item *
+First checks C<portctl_nameonly> and denies if true.
 
-Permission check that C<portctl_nophones> is not true in Netdisco config, if
-C<$port> has a phone connected.
-
-=item *
-
-Permission check that C<portctl_nowaps> is not true in Netdisco config, if
-C<$port> has a Wireless AP connected.
-
-=item *
-
-Permission check that C<portctl_uplinks> is true in Netdisco config, if
-C<$port> is an uplink.
-
-=item *
-
-Permission check that C<portctl_vlans> is true if C<$port> is a vlan
-subinterface.
-
-=item *
-
-Also the checks from C<port_acl_check> and C<port_acl_by_role_check> above.
-
-=back
-
-Will return false if these checks pass OK.
+Then checks according to C<port_acl_by_role_check> and C<port_acl_check> above.
 
 =cut
 
-sub port_reconfig_check {
+sub port_acl_service {
   my ($port, $device, $user) = @_;
   my $ip = $port->ip;
   my $name = $port->port;
 
-  my $has_wap   = port_has_wap($port);
-  my $has_phone = port_has_phone($port);
-  my $is_vlan   = is_vlan_interface($port);
+  return "forbidden: port [$name] on [$ip] cannot change admin or PoE status"
+    if setting('portctl_nameonly');
 
-  # phone check
-  return "forbidden: port [$name] on [$ip] is a phone"
-    if $has_phone and setting('portctl_nophones');
-
-  # wap check
-  return "forbidden: port [$name] on [$ip] is a wireless ap"
-    if $has_wap and setting('portctl_nowaps');
-
-  # uplink check
-  return "forbidden: port [$name] on [$ip] is an uplink"
-    if ($port->is_uplink or $port->remote_type)
-        and not setting('portctl_uplinks');
-
-  # vlan (routed) interface check
-  return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan
-        and not setting('portctl_vlans');
-
-  # portctl_no, portctl_only, portctl_by_role
-  return (port_acl_check(@_) || port_acl_by_role_check(@_));
+  return (port_acl_by_role_check(@_) || port_acl_check(@_));
 }
+
+=head2 port_acl_pvid( $port, $device?, $user? )
+
+Checks if native vlan (pvid) on a port can be changed.
+
+Returns true if the request should be denied, false if OK to proceed.
+
+First checks C<portctl_native_vlan> and denies if false;
+
+Then checks according to C<port_acl_service>.
+
+=cut
+
+sub port_acl_pvid {
+  my ($port, $device, $user) = @_;
+  my $ip = $port->ip;
+  my $name = $port->port;
+
+  return "forbidden: port [$name] on [$ip] cannot change native vlan"
+    if not setting('portctl_native_vlan');
+
+  return port_acl_service(@_);
+}
+
+=head2 port_acl_name( $port, $device?, $user? )
+
+Checks if name (description) on a port can be changed.
+
+Returns true if the request should be denied, false if OK to proceed.
+
+Only setting C<portctl_by_role> is checked.
+
+=cut
+
+sub port_acl_name { goto &port_acl_by_role_check }
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 =head2 get_port( $device, $portname )
 
