@@ -132,7 +132,7 @@ swagger_path {
   return to_json { deleted => ($gone || 0)};
 };
 
-foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age vlans logs/) {
+foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port_vlans vlans logs/) {
     swagger_path {
       tags => ['Objects'],
       description => "Returns $rel rows for a given port",
