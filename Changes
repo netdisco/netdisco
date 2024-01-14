@@ -1,3 +1,16 @@
+2.072000 - 2024-01-14
+
+  [ENHANCEMENTS]
+
+  * add port_vlans API endpoint to device ports
+  * set device ports with multiple vlans to be uplinks
+  * removed the redundant portctl_vlans setting (handled by portctl_uplinks)
+  * renamed vlanctl to be portctl_native_vlan
+
+  [BUG FIXES]
+
+  * #1150 rewritten port control acls
+
 2.071003 - 2024-01-10
 
   [ENHANCEMENTS]
