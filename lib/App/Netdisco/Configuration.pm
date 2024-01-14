@@ -297,6 +297,10 @@ config->{'devport_vlan_limit'} =
      and not setting('devport_vlan_limit');
 delete config->{'deviceport_vlan_membership_threshold'};
 
+# portctl_native_vlan used to be called vlanctl
+config->{'portctl_native_vlan'} ||= config->{'vlanctl'};
+delete config->{'vlanctl'};
+
 config->{'schedule'} = config->{'housekeeping'}
   if setting('housekeeping') and not setting('schedule');
 delete config->{'housekeeping'};

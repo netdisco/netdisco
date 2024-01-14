@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Permission 'acl_matches';
-use App::Netdisco::Util::Port 'port_reconfig_check';
+use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name/;
 use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
@@ -182,6 +182,10 @@ get '/ajax/content/device/ports' => require_login sub {
     $set = $set->search({}, { prefetch => 'ssid' })
       if param('c_ssid');
 
+    # retrieve PoE info, if asked for
+    $set = $set->search({}, { prefetch => 'power' })
+      if param('c_power');
+
     # retrieve neighbor devices, if asked for
     #$set = $set->search({}, { prefetch => [{neighbor_alias => 'device'}] })
     #  if param('c_neighbors');
@@ -253,7 +257,12 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # add acl on port config
     if (param('c_admin') and user_has_role('port_control')) {
-      map {$_->{portctl} = (port_reconfig_check($_, $device, logged_in_user) ? false : true)} @results;
+      # for native vlan change
+      map {$_->{port_acl_pvid} = port_acl_pvid($_, $device, logged_in_user)} @results;
+      # for name/descr change
+      map {$_->{port_acl_name} = port_acl_name($_, $device, logged_in_user)} @results;
+      # for up/down and poe
+      map {$_->{port_acl_service} = port_acl_service($_, $device, logged_in_user)} @results;
     }
 
     # filter the tags by hide_tags setting

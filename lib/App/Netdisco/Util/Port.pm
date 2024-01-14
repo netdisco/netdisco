@@ -9,9 +9,10 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  vlan_reconfig_check port_reconfig_check
+  port_acl_by_role_check port_acl_check
+  port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
-  is_vlan_interface port_has_phone port_has_wap
+  is_vlan_subinterface port_has_phone port_has_wap
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -28,67 +29,9 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 vlan_reconfig_check( $port )
+=head2 port_acl_by_role_check( $port, $device?, $user? )
 
 =over 4
-
-=item *
-
-Sanity check that C<$port> is not a vlan subinterface.
-
-=item *
-
-Permission check that C<vlanctl> is true in Netdisco config.
-
-=back
-
-Will return nothing if these checks pass OK.
-
-=cut
-
-sub vlan_reconfig_check {
-  my $port = shift;
-  my $ip = $port->ip;
-  my $name = $port->port;
-
-  my $is_vlan = is_vlan_interface($port);
-
-  # vlan (routed) interface check
-  return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan;
-
-  return "forbidden: not permitted to change native vlan"
-    if not setting('vlanctl');
-
-  return;
-}
-
-=head2 port_reconfig_check( $port, $device?, $user? )
-
-=over 4
-
-=item *
-
-Permission check that C<portctl_no> and C<portctl_only> pass for the device.
-
-=item *
-
-Permission check that C<portctl_nameonly> is false in Netdisco config.
-
-=item *
-
-Permission check that C<portctl_uplinks> is true in Netdisco config, if
-C<$port> is an uplink.
-
-=item *
-
-Permission check that C<portctl_nophones> is not true in Netdisco config, if
-C<$port> has a phone connected.
-
-=item *
-
-Permission check that C<portctl_vlans> is true if C<$port> is a vlan
-subinterface.
 
 =item *
 
@@ -97,45 +40,12 @@ bare username will be promoted to a user instance.
 
 =back
 
-Will return false if these checks pass OK.
+Will return false if these checks fail, otherwise true.
 
 =cut
 
-sub port_reconfig_check {
+sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
-  my $ip = $port->ip;
-  my $name = $port->port;
-
-  my $has_wap   = port_has_wap($port);
-  my $has_phone = port_has_phone($port);
-  my $is_vlan   = is_vlan_interface($port);
-
-  # check for limits on devices
-  return "forbidden: device [$ip] is in denied ACL"
-    if acl_matches($ip, 'portctl_no');
-  return "forbidden: device [$ip] is not in permitted ACL"
-    unless acl_matches_only($ip, 'portctl_only');
-
-  # only permitted to change interface name
-  return "forbidden: not permitted to change port configuration"
-    if setting('portctl_nameonly');
-
-  # uplink check
-  return "forbidden: port [$name] on [$ip] is an uplink"
-    if ($port->is_uplink or $port->remote_type)
-        and not $has_phone and not setting('portctl_uplinks');
-
-  # wap check
-  return "forbidden: port [$name] on [$ip] is a wireless ap"
-    if $has_wap and setting('portctl_nowaps');
-
-  # phone check
-  return "forbidden: port [$name] on [$ip] is a phone"
-    if $has_phone and setting('portctl_nophones');
-
-  # vlan (routed) interface check
-  return "forbidden: [$name] is a vlan interface on [$ip]"
-    if $is_vlan and not setting('portctl_vlans');
 
   # portctl_by_role check
   if ($device and ref $device and $user) {
@@ -146,8 +56,7 @@ sub port_reconfig_check {
 
     # special case admin user allowed to continue, because
     # they can submit port control jobs
-    return "forbidden: user [$username] has no right to reconfigure ports"
-      unless ($user->admin or $user->port_control);
+    return true if ($user->admin and $user->port_control);
 
     my $role = $user->portctl_role;
     my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
@@ -155,8 +64,7 @@ sub port_reconfig_check {
     if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
         # all ports are permitted when the role acl is a device acl
         # but check the device anyway
-        return "forbidden: user [$username] has no right to reconfigure ports"
-          unless acl_matches($device, $acl);
+        return true if acl_matches($device, $acl);
     }
     elsif ($acl and ref $acl eq ref {}) {
         my $found = false;
@@ -171,17 +79,103 @@ sub port_reconfig_check {
             }
         }
 
-        return "forbidden: user [$username] role [$role] cannot reconfigure port [$name] on [$ip]"
-          unless $found;
+        return true if $found;
     }
     elsif ($role) {
-        return "forbidden: user [$username] is assigned an unknown role"
-          unless $user->port_control;
+        # the config does not have an entry for user's role
+        return true if $user->port_control;
     }
   }
 
   return false;
 }
+
+=head2 port_acl_check( $port, $device?, $user? )
+
+=over 4
+
+=item *
+
+Permission check that C<portctl_no> and C<portctl_only> pass for the device.
+
+=back
+
+Will return false if these checks fail, otherwise true.
+
+=cut
+
+sub port_acl_check {
+  my ($port, $device, $user) = @_;
+  my $ip = $port->ip;
+
+  # check for limits on devices
+  return false if acl_matches($ip, 'portctl_no');
+  return false unless acl_matches_only($ip, 'portctl_only');
+
+  return true;
+}
+
+=head2 port_acl_service( $port, $device?, $user? )
+
+Checks if admin up/down or PoE status on a port can be changed.
+
+Returns false if the request should be denied, true if OK to proceed.
+
+First checks C<portctl_nameonly>, C<portctl_uplinks>, C<portctl_nowaps>, and
+C<portctl_nophones>.
+
+Then checks according to C<port_acl_check> and C<port_acl_by_role_check> above.
+
+=cut
+
+sub port_acl_service {
+  my ($port, $device, $user) = @_;
+
+  return false if setting('portctl_nameonly');
+
+  return false if setting('portctl_nowaps') and port_has_wap($port);
+  return false if setting('portctl_nophones') and port_has_phone($port);
+
+  return false if (not setting('portctl_uplinks')) and
+    (($port->is_uplink or $port->remote_type or is_vlan_subinterface($port)) and not
+     (port_has_wap($port) or port_has_phone($port)));
+
+  return false if not port_acl_check(@_);
+  return port_acl_by_role_check(@_);
+}
+
+=head2 port_acl_pvid( $port, $device?, $user? )
+
+Checks if native vlan (pvid) on a port can be changed.
+
+Returns false if the request should be denied, true if OK to proceed.
+
+First checks C<portctl_native_vlan>;
+
+Then checks according to C<port_acl_service>.
+
+=cut
+
+sub port_acl_pvid {
+  my ($port, $device, $user) = @_;
+
+  return false unless setting('portctl_native_vlan');
+  return port_acl_service(@_);
+}
+
+=head2 port_acl_name( $port, $device?, $user? )
+
+Checks if name (description) on a port can be changed.
+
+Returns false if the request should be denied, true if OK to proceed.
+
+Only setting C<portctl_by_role> is checked.
+
+=cut
+
+sub port_acl_name { goto &port_acl_by_role_check }
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 =head2 get_port( $device, $portname )
 
@@ -192,6 +186,9 @@ The device IP can also be passed as a Device C<DBIx::Class> object.
 
 Returns C<undef> if the device or port are not known to Netdisco.
 
+Returns C<($device_instance, $port_instance)> in list context, otherwise just
+C<$port_instance>.
+
 =cut
 
 sub get_port {
@@ -200,10 +197,14 @@ sub get_port {
   # accept either ip or dbic object
   $device = get_device($device);
 
+  return unless $device and $device->in_storage;
+
   my $port = schema(vars->{'tenant'})->resultset('DevicePort')->with_properties
     ->find({ip => $device->ip, port => $portname});
 
-  return $port;
+  return unless $port and $port->in_storage;
+
+  return ( wantarray ? ($device, $port) : $port );
 }
 
 =head2 get_iid( $info, $port )
@@ -255,18 +256,19 @@ sub get_powerid {
   return $powerid;
 }
 
-=head2 is_vlan_interface( $port )
+=head2 is_vlan_subinterface( $port )
 
 Returns true if the C<$port> L<DBIx::Class> object represents a vlan
-subinterface.
+subinterface or is the logical parent of such a port.
 
 This uses simple checks on the port I<type> and I<descr>, and therefore might
 sometimes returns a false-negative result.
 
 =cut
 
-sub is_vlan_interface {
+sub is_vlan_subinterface {
   my $port = shift;
+  return true if $port->has_subinterfaces;
 
   my $is_vlan  = (($port->type and
     $port->type =~ /^(53|propVirtual|l2vlan|l3ipvlan|135|136|137)$/i)
