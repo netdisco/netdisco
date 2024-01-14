@@ -186,6 +186,9 @@ The device IP can also be passed as a Device C<DBIx::Class> object.
 
 Returns C<undef> if the device or port are not known to Netdisco.
 
+Returns C<($device_instance, $port_instance)> in list context, otherwise just
+C<$port_instance>.
+
 =cut
 
 sub get_port {
@@ -194,10 +197,14 @@ sub get_port {
   # accept either ip or dbic object
   $device = get_device($device);
 
+  return unless $device and $device->in_storage;
+
   my $port = schema(vars->{'tenant'})->resultset('DevicePort')->with_properties
     ->find({ip => $device->ip, port => $portname});
 
-  return $port;
+  return unless $port and $port->in_storage;
+
+  return ( wantarray ? ($device, $port) : $port );
 }
 
 =head2 get_iid( $info, $port )

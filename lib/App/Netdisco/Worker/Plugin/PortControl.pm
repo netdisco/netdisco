@@ -9,20 +9,17 @@ use App::Netdisco::Util::Port ':all';
 
 register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
+  my ($device, $port, $data) = map {$job->$_} qw/device port extra/;
+
   return Status->error('Missing device (-d).') unless defined $job->device;
   return Status->error('Missing port (-p).') unless defined $job->port;
   return Status->error('Missing status (-e).') unless defined $job->subaction;
 
-  vars->{'port'} = get_port($job->device, $job->port)
-    or return Status->error(sprintf "Unknown port name [%s] on device %s",
-                              $job->port, $job->device);
+  ($device, vars->{'port'}) = get_port($device, $port)
+    or return Status->error("Unknown port name [$port] on device $device");
 
-  my $port_reconfig_check = port_reconfig_check(vars->{'port'}, $job->device, $job->username);
-  return Status->error("Cannot alter port: $port_reconfig_check")
-    if $port_reconfig_check;
-
-  return Status->error("Cannot alter port: restricted function")
-    if setting('portctl_nameonly');
+  return Status->error("Permission denied to change port status")
+    unless port_acl_service(vars->{'port'}, $device, $job->username);
 
   return Status->done('PortControl is able to run');
 });
