@@ -40,7 +40,7 @@ bare username will be promoted to a user instance.
 
 =back
 
-Will return false if these checks pass OK.
+Will return false if these checks fail, otherwise true.
 
 =cut
 
@@ -58,8 +58,7 @@ sub port_acl_by_role_check {
 
     # special case admin user allowed to continue, because
     # they can submit port control jobs
-    return "forbidden: user [$username] has no right to reconfigure ports"
-      unless ($user->admin or $user->port_control);
+    return true if ($user->admin and $user->port_control);
 
     my $role = $user->portctl_role;
     my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
@@ -67,8 +66,7 @@ sub port_acl_by_role_check {
     if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
         # all ports are permitted when the role acl is a device acl
         # but check the device anyway
-        return "forbidden: user [$username] has no right to reconfigure ports"
-          unless acl_matches($device, $acl);
+        return true if acl_matches($device, $acl);
     }
     elsif ($acl and ref $acl eq ref {}) {
         my $found = false;
@@ -83,12 +81,11 @@ sub port_acl_by_role_check {
             }
         }
 
-        return "forbidden: user [$username] role [$role] cannot reconfigure port [$name] on [$ip]"
-          unless $found;
+        return true if $found;
     }
     elsif ($role) {
-        return "forbidden: user [$username] is assigned an unknown role"
-          unless $user->port_control;
+        # the config does not have an entry for user's role
+        return true if $user->port_control;
     }
   }
 
@@ -105,7 +102,7 @@ Permission check that C<portctl_no> and C<portctl_only> pass for the device.
 
 =back
 
-Will return false if these checks pass OK.
+Will return false if these checks fail, otherwise true.
 
 =cut
 
@@ -115,23 +112,21 @@ sub port_acl_check {
   my $name = $port->port;
 
   # check for limits on devices
-  return "forbidden: device [$ip] is in denied ACL"
-    if acl_matches($ip, 'portctl_no');
-  return "forbidden: device [$ip] is not in permitted ACL"
-    unless acl_matches_only($ip, 'portctl_only');
+  return false if acl_matches($ip, 'portctl_no');
+  return false unless acl_matches_only($ip, 'portctl_only');
 
-  return false;
+  return true;
 }
 
 =head2 port_acl_service( $port, $device?, $user? )
 
 Checks if admin up/down or PoE status on a port can be changed.
 
-Returns true if the request should be denied, false if OK to proceed.
+Returns false if the request should be denied, true if OK to proceed.
 
-First checks C<portctl_nameonly> and denies if true.
+First checks C<portctl_nameonly>.
 
-Then checks according to C<port_acl_by_role_check> and C<port_acl_check> above.
+Then checks according to C<port_acl_check> and C<port_acl_by_role_check> above.
 
 =cut
 
@@ -140,19 +135,18 @@ sub port_acl_service {
   my $ip = $port->ip;
   my $name = $port->port;
 
-  return "forbidden: port [$name] on [$ip] cannot change admin or PoE status"
-    if setting('portctl_nameonly');
-
-  return (port_acl_by_role_check(@_) || port_acl_check(@_));
+  return false if setting('portctl_nameonly');
+  return false if not port_acl_check(@_);
+  return port_acl_by_role_check(@_);
 }
 
 =head2 port_acl_pvid( $port, $device?, $user? )
 
 Checks if native vlan (pvid) on a port can be changed.
 
-Returns true if the request should be denied, false if OK to proceed.
+Returns false if the request should be denied, true if OK to proceed.
 
-First checks C<portctl_native_vlan> and denies if false;
+First checks C<portctl_native_vlan>;
 
 Then checks according to C<port_acl_service>.
 
@@ -163,9 +157,7 @@ sub port_acl_pvid {
   my $ip = $port->ip;
   my $name = $port->port;
 
-  return "forbidden: port [$name] on [$ip] cannot change native vlan"
-    if not setting('portctl_native_vlan');
-
+  return false unless setting('portctl_native_vlan');
   return port_acl_service(@_);
 }
 
@@ -173,7 +165,7 @@ sub port_acl_pvid {
 
 Checks if name (description) on a port can be changed.
 
-Returns true if the request should be denied, false if OK to proceed.
+Returns false if the request should be denied, true if OK to proceed.
 
 Only setting C<portctl_by_role> is checked.
 
