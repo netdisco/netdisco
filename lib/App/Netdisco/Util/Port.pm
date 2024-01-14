@@ -12,7 +12,7 @@ our @EXPORT_OK = qw/
   port_acl_by_role_check port_acl_check
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
-  is_vlan_interface port_has_phone port_has_wap
+  is_vlan_subinterface port_has_phone port_has_wap
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -121,8 +121,8 @@ Checks if admin up/down or PoE status on a port can be changed.
 
 Returns false if the request should be denied, true if OK to proceed.
 
-First checks C<portctl_nameonly>, C<portctl_vlans>, C<portctl_uplinks>,
-C<portctl_nowaps>, and C<portctl_nophones>.
+First checks C<portctl_nameonly>, C<portctl_uplinks>, C<portctl_nowaps>, and
+C<portctl_nophones>.
 
 Then checks according to C<port_acl_check> and C<port_acl_by_role_check> above.
 
@@ -130,18 +130,15 @@ Then checks according to C<port_acl_check> and C<port_acl_by_role_check> above.
 
 sub port_acl_service {
   my ($port, $device, $user) = @_;
-  my $ip = $port->ip;
-  my $name = $port->port;
 
   return false if setting('portctl_nameonly');
 
-  return false if (not setting('portctl_vlans')) and is_vlan_interface($port);
-  return false if (not setting('portctl_uplinks')) and
-    ($port->is_uplink or $port->remote_type or
-     port_has_wap($port) or port_has_phone($port));
-
   return false if setting('portctl_nowaps') and port_has_wap($port);
   return false if setting('portctl_nophones') and port_has_phone($port);
+
+  return false if (not setting('portctl_uplinks')) and
+    (($port->is_uplink or $port->remote_type or is_vlan_subinterface($port)) and not
+     (port_has_wap($port) or port_has_phone($port)));
 
   return false if not port_acl_check(@_);
   return port_acl_by_role_check(@_);
@@ -252,18 +249,19 @@ sub get_powerid {
   return $powerid;
 }
 
-=head2 is_vlan_interface( $port )
+=head2 is_vlan_subinterface( $port )
 
 Returns true if the C<$port> L<DBIx::Class> object represents a vlan
-subinterface.
+subinterface or is the logical parent of such a port.
 
 This uses simple checks on the port I<type> and I<descr>, and therefore might
 sometimes returns a false-negative result.
 
 =cut
 
-sub is_vlan_interface {
+sub is_vlan_subinterface {
   my $port = shift;
+  return true if $port->has_subinterfaces;
 
   my $is_vlan  = (($port->type and
     $port->type =~ /^(53|propVirtual|l2vlan|l3ipvlan|135|136|137)$/i)
