@@ -46,8 +46,6 @@ Will return false if these checks fail, otherwise true.
 
 sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
-  my $ip = $port->ip;
-  my $name = $port->port;
 
   # portctl_by_role check
   if ($device and ref $device and $user) {
@@ -109,7 +107,6 @@ Will return false if these checks fail, otherwise true.
 sub port_acl_check {
   my ($port, $device, $user) = @_;
   my $ip = $port->ip;
-  my $name = $port->port;
 
   # check for limits on devices
   return false if acl_matches($ip, 'portctl_no');
@@ -124,7 +121,8 @@ Checks if admin up/down or PoE status on a port can be changed.
 
 Returns false if the request should be denied, true if OK to proceed.
 
-First checks C<portctl_nameonly>.
+First checks C<portctl_nameonly>, C<portctl_vlans>, C<portctl_uplinks>,
+C<portctl_nowaps>, and C<portctl_nophones>.
 
 Then checks according to C<port_acl_check> and C<port_acl_by_role_check> above.
 
@@ -136,6 +134,15 @@ sub port_acl_service {
   my $name = $port->port;
 
   return false if setting('portctl_nameonly');
+
+  return false if (not setting('portctl_vlans')) and is_vlan_interface($port);
+  return false if (not setting('portctl_uplinks')) and
+    ($port->is_uplink or $port->remote_type or
+     port_has_wap($port) or port_has_phone($port));
+
+  return false if setting('portctl_nowaps') and port_has_wap($port);
+  return false if setting('portctl_nophones') and port_has_phone($port);
+
   return false if not port_acl_check(@_);
   return port_acl_by_role_check(@_);
 }
@@ -154,8 +161,6 @@ Then checks according to C<port_acl_service>.
 
 sub port_acl_pvid {
   my ($port, $device, $user) = @_;
-  my $ip = $port->ip;
-  my $name = $port->port;
 
   return false unless setting('portctl_native_vlan');
   return port_acl_service(@_);
