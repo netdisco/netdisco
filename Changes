@@ -1,3 +1,9 @@
+2.072001 - 2024-01-15
+
+  [BUG FIXES]
+
+  * revert set is_uplink on ports with multiple vlans
+
 2.072000 - 2024-01-14
 
   [ENHANCEMENTS]
