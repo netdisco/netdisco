@@ -86,11 +86,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       }
   }
 
-  # set is_uplink on the ports with non-native vlans
-  foreach my $pv (@portvlans) {
-      next unless $pv->{native} and $pv->{native} eq 'f';
-      $device_ports->{$pv->{port}}->update({is_uplink => \'true'});
-  }
+  # # set is_uplink on the ports with non-native vlans
+  # foreach my $pv (@portvlans) {
+  #     next unless $pv->{native} and $pv->{native} eq 'f';
+  #     $device_ports->{$pv->{port}}->update({is_uplink => \'true'});
+  # }
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->port_vlans->delete;
