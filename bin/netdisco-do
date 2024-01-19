@@ -171,6 +171,7 @@ else {
     my $worker = MyWorker->new();
     my $job = App::Netdisco::Backend::Job->new({ job => 0, %$spec });
     $CONFIG->{$1."_min_age"} = 0 if $job->action =~ m/^(arpnip|macsuck|discover)$/;
+    $CONFIG->{ignore_layers} = 'group:__ANY__' if $force;
 
     my $actiontext = (
       ($job->device ? ('['.$job->device.']') : '') .
