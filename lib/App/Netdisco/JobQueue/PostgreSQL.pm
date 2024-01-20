@@ -217,7 +217,13 @@ sub jq_defer {
       # lock db row and update to show job is available
       schema(vars->{'tenant'})->resultset('Admin')
         ->search({ job => $job->id }, { for => 'update' })
-        ->update({ status => 'queued', backend => undef, started => undef, log => $job->log });
+        ->update({
+            device => $job->device, # if job had alias this sets to canonical
+            status => 'queued',
+            backend => undef,
+            started => undef,
+            log => $job->log,
+        });
     });
     $happy = true;
   }
