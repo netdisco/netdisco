@@ -1,3 +1,13 @@
+2.072002 - 2024-01-21
+
+  [ENHANCEMENTS]
+
+  * netdisco-do --force will ignore layers for macsuck/arpnip
+
+  [BUG FIXES]
+
+  * on defer reset job device to canonical IP to avoid missing dupes
+
 2.072001 - 2024-01-15
 
   [BUG FIXES]
