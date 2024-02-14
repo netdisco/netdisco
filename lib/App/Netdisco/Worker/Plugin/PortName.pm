@@ -11,15 +11,21 @@ register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port, $data) = map {$job->$_} qw/device port extra/;
 
-  return Status->error('Missing device (-d).') unless defined $job->device;
-  return Status->error('Missing port (-p).') unless defined $job->port;
-  return Status->error('Missing name (-e).') unless defined $job->subaction;
+  return Status->error('PortName failed: unable to interpret device param')
+    unless defined $device;
 
-  ($device, vars->{'port'}) = get_port($device, $port)
+  return Status->error("PortName skipped: $device not yet discovered")
+    unless $device->in_storage;
+
+  return Status->error('Missing port (-p).') unless defined $job->port;
+
+  vars->{'port'} = get_port($device, $port)
     or return Status->error("Unknown port name [$port] on device $device");
 
-  return Status->error("Permission denied to alter port description")
-    unless port_acl_name(vars->{'port'}, $device, $job->username);
+  return Status->error('Missing name (-e).') unless defined $job->subaction;
+
+  return Status->error("Permission denied to change port name")
+    unless port_acl_service(vars->{'port'}, $device, $job->username);
 
   return Status->done('PortName is able to run');
 });

@@ -50,8 +50,10 @@ sub port_acl_by_role_check {
   # portctl_by_role check
   if ($device and ref $device and $user) {
     $user = ref $user ? $user :
-      schema(vars->{'tenant'})->resultset('User')
-                              ->find({ username => $user });
+      schema('netdisco')->resultset('User')
+                        ->find({ username => $user });
+
+    return false unless $user;
     my $username = $user->username;
 
     # special case admin user allowed to continue, because
@@ -85,6 +87,9 @@ sub port_acl_by_role_check {
         # the config does not have an entry for user's role
         return true if $user->port_control;
     }
+
+    # the user has "Enabled (any port)" setting
+    return $user->port_control;
   }
 
   return false;
