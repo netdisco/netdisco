@@ -197,19 +197,11 @@ sub store_arp {
 
     if (! $row->in_storage) {
       $row->set_column(time_first => \$now);
-      # new insert, set custom_fields from scratch
-      $row->set_column(custom_fields => \[q{jsonb_build_object('seen', jsonb_build_object(?::text, CURRENT_TIMESTAMP))}, $device_ip]);
+      # jsonb_set can not be used on a row value that is currently inserted
+      $row->set_column(custom_fields => \[qq{jsonb_build_object('seen', jsonb_build_object(?::text, $now))}, $device_ip, ]);
       $row->insert;
     }else{
-      # update, merge custom_fields with jsonb_set
-      #$row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, ?::jsonb)' => (qq!{"seen"}!, qq!"flob2"!) ]);
-      #$row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, ?::jsonb)' => (qq!{"seen", "13.12.110.22"}!, qq!"flob2"!) ]); # almost ok
-      #$row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, to_jsonb(CURRENT_TIMESTAMP))' => (qq!{"seen", "23.12.110.22"}!) ]); # almost ok
-      $row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, to_jsonb(CURRENT_TIMESTAMP))' => (qq!{"seen", $device_ip}!) ]); # almost ok
-
-      #my $path = '{seen,' . $device_ip . '}';
-      #$row->set_column(custom_fields => \[q{jsonb_set(custom_fields, ARRAY[?], to_jsonb(CURRENT_TIMESTAMP))}, $path]);
-
+      $row->set_column(custom_fields => \[qq{jsonb_set(custom_fields, ?, to_jsonb($now))} => (qq!{"seen", $device_ip}!) ]); # almost ok
       $row->update;
     }
 
