@@ -165,7 +165,7 @@ C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is u
 =cut
 
 sub store_arp {
-  my ($hash_ref, $now) = @_;
+  my ($hash_ref, $now, $device_ip) = @_;
   $now ||= 'LOCALTIMESTAMP';
   my $ip   = $hash_ref->{'ip'};
   my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || $hash_ref->{'mac'} || ''));
@@ -173,10 +173,10 @@ sub store_arp {
 
   return if !defined $mac or $mac->errstr;
 
-  debug sprintf 'store_arp - mac %s ip %s', $mac->as_ieee, $ip;
+  debug sprintf 'store_arp - device %s mac %s ip %s', $device_ip, $mac->as_ieee, $ip;
 
   schema(vars->{'tenant'})->txn_do(sub {
-    schema(vars->{'tenant'})->resultset('NodeIp')
+    my $prev = schema(vars->{'tenant'})->resultset('NodeIp')
       ->search(
         { ip => $ip, -bool => 'active'},
         { columns => [qw/mac ip/] })->update({active => \'false'});
@@ -188,7 +188,7 @@ sub store_arp {
         ip => $ip,
         dns => $name,
         active => \'true',
-        time_last => \$now,
+        time_last => \$now
       },
       {
         key => 'primary',
@@ -196,9 +196,23 @@ sub store_arp {
       });
 
     if (! $row->in_storage) {
-        $row->set_column(time_first => \$now);
-        $row->insert;
+      $row->set_column(time_first => \$now);
+      # new insert, set custom_fields from scratch
+      $row->set_column(custom_fields => \[q{jsonb_build_object('seen', jsonb_build_object(?::text, CURRENT_TIMESTAMP))}, $device_ip]);
+      $row->insert;
+    }else{
+      # update, merge custom_fields with jsonb_set
+      #$row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, ?::jsonb)' => (qq!{"seen"}!, qq!"flob2"!) ]);
+      #$row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, ?::jsonb)' => (qq!{"seen", "13.12.110.22"}!, qq!"flob2"!) ]); # almost ok
+      #$row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, to_jsonb(CURRENT_TIMESTAMP))' => (qq!{"seen", "23.12.110.22"}!) ]); # almost ok
+      $row->set_column(custom_fields => \['jsonb_set(custom_fields, ?, to_jsonb(CURRENT_TIMESTAMP))' => (qq!{"seen", $device_ip}!) ]); # almost ok
+
+      #my $path = '{seen,' . $device_ip . '}';
+      #$row->set_column(custom_fields => \[q{jsonb_set(custom_fields, ARRAY[?], to_jsonb(CURRENT_TIMESTAMP))}, $path]);
+
+      $row->update;
     }
+
   });
 }
 
