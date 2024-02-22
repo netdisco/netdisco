@@ -145,7 +145,7 @@ sub is_nbtstatable {
   return 1;
 }
 
-=head2 store_arp( \%host, $now? )
+=head2 store_arp( \%host, $now?, $device_ip )
 
 Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
 and DNS host name. Host details are provided in a Hash ref:
@@ -161,6 +161,10 @@ no longer C<active>.
 
 Optionally a literal string can be passed in the second argument for the
 C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
+
+On which L3 devices an arp entry was found is tracked in the C<custom_fields.seen> 
+dictionary. It contains the time_last timestamp for every device this entry was ever
+found on.
 
 =cut
 

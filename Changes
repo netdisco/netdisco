@@ -1,3 +1,9 @@
+2.tbd - tbd
+
+  [ENHANCEMENTS]
+
+  * #1053 store origin device of node_ip entries in custom_fields.seen
+
 2.072003 - 2024-02-14
 
   [BUG FIXES]
