@@ -202,10 +202,10 @@ sub store_arp {
     if (! $row->in_storage) {
       $row->set_column(time_first => \$now);
       # jsonb_set can not be used on a row value that is currently inserted
-      $row->set_column(custom_fields => \[qq{jsonb_build_object('seen', jsonb_build_object(?::text, $now))}, $device_ip, ]);
+      $row->set_column(custom_fields => \[qq{jsonb_build_object('seen', jsonb_build_object(?::text, $now))}, $device_ip ]) if $device_ip;
       $row->insert;
     }else{
-      $row->set_column(custom_fields => \[qq{jsonb_set(custom_fields, ?, to_jsonb($now))} => (qq!{"seen", $device_ip}!) ]); # almost ok
+      $row->set_column(custom_fields => \[qq{jsonb_set(custom_fields, ?, to_jsonb($now))} => (qq!{"seen", $device_ip}!) ]) if $device_ip; 
       $row->update;
     }
 
