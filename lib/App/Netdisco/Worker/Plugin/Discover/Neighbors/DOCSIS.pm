@@ -13,6 +13,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   my $device = $job->device;
   return unless $device->in_storage;
+
+  if (acl_matches($device, 'skip_neighbors') or not setting('discover_neighbors')) {
+      return Status->info(
+        sprintf ' [%s] neigh - DOCSIS modems discovery is disabled on this device',
+        $device->ip);
+  }
+
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 

@@ -509,7 +509,6 @@ discover_only: []
 discover_no_type: []
 discover_waps: true
 discover_phones: false
-discover_routed_neighbors: true
 discover_min_age: 0
 ignore_layers: []
 force_macsuck: []
@@ -554,6 +553,9 @@ expire_jobs: 14
 expire_userlog: 365
 expire_nodeip_freshness: null
 store_wireless_clients: true
+skip_neighbors: []
+discover_neighbors: true
+discover_routed_neighbors: true
 skip_modules: []
 store_modules: true
 ignore_deviceports:
