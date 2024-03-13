@@ -6,6 +6,7 @@ use App::Netdisco::Transport::SNMP;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
+use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::JobQueue 'jq_insert';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
