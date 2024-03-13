@@ -1,4 +1,4 @@
-[% USE Number.Format %]
+[% USE Number.Format(THOUSANDS_SEP = ',') %]
     <div class="row">
     [% IF stats.day %]
       <div class="span5 offset1">
