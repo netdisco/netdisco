@@ -180,7 +180,7 @@ sub store_arp {
   debug sprintf 'store_arp - device %s mac %s ip %s', $device_ip, $mac->as_ieee, $ip;
 
   schema(vars->{'tenant'})->txn_do(sub {
-    my $prev = schema(vars->{'tenant'})->resultset('NodeIp')
+    schema(vars->{'tenant'})->resultset('NodeIp')
       ->search(
         { ip => $ip, -bool => 'active'},
         { columns => [qw/mac ip/] })->update({active => \'false'});
