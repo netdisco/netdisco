@@ -1,8 +1,21 @@
-2.tbd - tbd
+2.073000 - 2024-03-13
+
+  [NEW FEATURES]
+
+  * #1181 add settings skip_neighbors and discover_neighbors to suppress neighbor discovery
+
+  [ENHANCEMENTS]
+
+  * #1172 add first discovered stamp to device details
+  * #1176 make clear when netdisco-do -d is opening a file
 
   [BUG FIXES]
 
-  * #1177 fix vlan reports
+  * #1157 NX-OS SSHCollector errors out parsing output of some IPv6 neighbor entries on old versions of NX-OS
+  * #1173 revert #830 and suggest default for subnets report instead of forcing it
+  * #1175 separator for number formatting force to be comma
+  * #1175 sort subnet column correctly in subnets report
+  * #1177 fix vlan system reports
 
 2.072003 - 2024-02-14
 
