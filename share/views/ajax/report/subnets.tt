@@ -2,7 +2,7 @@
 <table id="data-table" class="table table-bordered table-condensed table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
-      <th class="nd_center-cell">Subnet</th>
+      <th class="nd_center-cell portsort">Subnet</th>
       <th class="nd_center-cell">Size</th>
       <th class="nd_center-cell">Number of Active Nodes</th>
       <th class="nd_center-cell">Percent Utilization</th>
@@ -25,6 +25,9 @@
 $(document).ready(function() {
   $('#data-table').dataTable({
     "order": [[ 3, 'desc' ]],
+    "columnDefs": [
+      { "type": 'portsort', "targets": [ 'portsort' ] }
+    ],
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
   } );
 } );
