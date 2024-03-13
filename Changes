@@ -1,3 +1,9 @@
+2.073001 - 2024-03-13
+
+  [BUG FIXES]
+
+  * fix missing dependency in DOCSIS module
+
 2.073000 - 2024-03-13
 
   [NEW FEATURES]
