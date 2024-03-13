@@ -1,4 +1,4 @@
-[% USE Number.Format %]
+[% USE Number.Format(THOUSANDS_SEP = ',') %]
 <table id="data-table" class="table table-bordered table-condensed table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
