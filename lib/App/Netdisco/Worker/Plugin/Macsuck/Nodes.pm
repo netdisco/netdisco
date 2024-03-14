@@ -112,6 +112,36 @@ register_worker({ phase => 'main', driver => 'direct',
   return Status->done("Received MAC addresses for $device");
 });
 
+reister_worker({ phase => 'main', driver => 'cli',
+  title => 'gather macs from CLI and set interfaces'}, sub {
+
+  my ($job, $workerconf) = @_;
+  
+  my $device = $job->device;
+  my $cli = App::Netdisco::Transport::SSH->session_for($device)
+    or return Status->defer("macsuck failed: could not SSH connect to $device");
+
+  # Retrieve data through SSH connection
+  my ($interfaces,$macentries) = $cli->macsuck;
+
+  # make sure ports reflect their latest state as reported by device
+  foreach my $port (keys %{ vars->{'device_ports'} }) {
+    my $iif = $interfaces->{$port} or next;
+
+    debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
+      $device->ip, $port, ($iif->{up_admin} || '-'), ($iif->{up} || '-');
+
+    vars->{'device_ports'}->{$port}->update({
+      up => $iif->{up} || '-',
+      up_admin => $iif->{up_admin} || '-',
+    });
+  }
+
+  # get forwarding table and populate fwtable
+  vars->{'fwtable'} = $macentries
+
+  return Status->done("Gathered MAC addresses for $device");
+});
 
 register_worker({ phase => 'main', driver => 'snmp',
   title => 'gather macs from snmp and set interfaces'}, sub {

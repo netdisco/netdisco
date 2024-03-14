@@ -52,6 +52,11 @@ Returns C<undef> if the connection fails.
     my $self = shift;
     $self->platform->arpnip(@_, $self->host, $self->ssh, $self->auth);
   }
+
+  sub macsuck {
+    my $self = shift;
+    $self->plateform->macsuck(@_, $self->host, $self->ssh, $self->auth);
+  }
 }
 
 sub session_for {
