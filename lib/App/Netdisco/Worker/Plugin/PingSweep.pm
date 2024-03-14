@@ -10,7 +10,7 @@ use Time::HiRes;
 use Sys::SigAction 'timeout_call';
 use Net::Ping;
 use Net::Ping::External;
-use NetAddr::IP;
+use NetAddr::IP qw/:rfc3021 :lower/;
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
