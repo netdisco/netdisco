@@ -95,16 +95,25 @@ sub arpnip {
     #                00:01:46  5c71.0d42.df3f  50   icmpv6     Vlan376
     #bff:a90:c405:120::52
     #                    3w0d  9440.c988.b6fd  50   icmpv6     Vlan376
-
+    # Occasionally it uses a one-line format
+    #2620:0:e50:1::b    1d01h  84b5.9ca0.bf39  50   icmpv6     Ethernet14/7
+    #2620:0:e50:1::f    1d01h  cce1.7f96.1139  50   icmpv6     Ethernet14/7
 
     my $prevline;
     foreach my $line (@data6) {
 
-        my (undef, $age, $mac, $pref, $src, $iface) = split(/\s+/, $line);
-        if ($mac && $mac =~ m/([0-9a-f]{4}\.){2}[0-9a-f]{4}/i && $prevline =~ /$RE{net}{IPv6}/) {
+        my ($addr, $age, $mac, $pref, $src, $iface) = split(/\s+/, $line);
+        # Check to see if everything is on one line
+        if ($addr and $addr =~ /$RE{net}{IPv6}/
+                  and $mac =~ m/([0-9a-f]{4}\.){2}[0-9a-f]{4}/i) {
+            push(@arpentries, { ip => $addr, mac => $mac });
+        }
+        # It's on two lines
+        elsif ($mac and $mac =~ m/([0-9a-f]{4}\.){2}[0-9a-f]{4}/i
+                    and $prevline =~ /$RE{net}{IPv6}/) {
             push(@arpentries, { ip => $prevline, mac => $mac });
         }
-
+        
         $prevline = $line;
     }
 

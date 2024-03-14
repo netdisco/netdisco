@@ -1,8 +1,8 @@
 
             <div class="clearfix">
               <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input"
-                placeholder="CIDR Prefix/Subnet" required="required"
-                name="subnet" value="[% params.subnet || '0.0.0.0/0' | html_entity %]" type="text" autocomplete="off"
+                placeholder="0.0.0.0/0" required="required"
+                name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
                 rel="tooltip" data-placement="left" data-offset="5" data-title="Prefix/Subnet in CIDR Format"/>
             </div>
 

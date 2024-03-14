@@ -11,12 +11,20 @@ use App::Netdisco::JobQueue 'jq_insert';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
-  return unless setting('discover_routed_neighbors');
-
   my $device = $job->device;
+
   return unless $device->in_storage and ($device->has_layer(3)
                                          or acl_matches($device, 'force_arpnip')
                                          or acl_matches($device, 'ignore_layers'));
+
+  if (acl_matches($device, 'skip_neighbors')
+      or not setting('discover_neighbors')
+      or not setting('discover_routed_neighbors')) {
+
+      return Status->info(
+        sprintf ' [%s] neigh - routed neighbor discovery is disabled on this device',
+        $device->ip);
+  }
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");

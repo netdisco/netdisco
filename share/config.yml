@@ -300,10 +300,10 @@ system_reports:
                      AND dpv2.vlan = dpv.vlan
                      AND native IS true
                 ) = 0
-            ORDER BY ip, vlan)
+            ORDER BY ip, vlan) s2
 
-        ) GROUP BY ip, chunk
-      ) GROUP BY ip ORDER BY ip
+        ) s1 GROUP BY ip, chunk
+      ) s0 GROUP BY ip ORDER BY ip
   - tag: vlansneverconfigured
     category: VLAN
     label: 'VLANs Known but Not Configured'
@@ -325,10 +325,10 @@ system_reports:
                     AND dpv.vlan = dv.vlan
                 )
                 AND vlan NOT IN (1002, 1003, 1004, 1005)
-              ORDER BY ip, vlan)
+              ORDER BY ip, vlan) s2
 
-        ) GROUP BY ip, chunk
-      ) GROUP BY ip ORDER BY ip
+        ) s0 GROUP BY ip, chunk
+      ) s1 GROUP BY ip ORDER BY ip
   - tag: vlansunused
     category: VLAN
     label: 'VLANs No Longer Used'
@@ -359,10 +359,10 @@ system_reports:
                           < COALESCE(NULLIF(?,''), '3 months') ::interval
                       )
                 ) = 0
-              ORDER BY dpv.ip, dpv.vlan)
+              ORDER BY dpv.ip, dpv.vlan) s2
 
-        ) GROUP BY ip, chunk
-      ) GROUP BY ip ORDER BY ip
+        ) s1 GROUP BY ip, chunk
+      ) s0 GROUP BY ip ORDER BY ip
   - tag: devicevlancount
     category: VLAN
     label: 'VLAN Count per Device'
@@ -509,7 +509,6 @@ discover_only: []
 discover_no_type: []
 discover_waps: true
 discover_phones: false
-discover_routed_neighbors: true
 discover_min_age: 0
 ignore_layers: []
 force_macsuck: []
@@ -554,6 +553,9 @@ expire_jobs: 14
 expire_userlog: 365
 expire_nodeip_freshness: null
 store_wireless_clients: true
+skip_neighbors: []
+discover_neighbors: true
+discover_routed_neighbors: true
 skip_modules: []
 store_modules: true
 ignore_deviceports:

@@ -148,15 +148,19 @@
       </td>
     </tr>
     <tr>
-      <td>Last Discover</td>
+      <td>First Discovered</td>
+      <td>[% d.first_seen_stamp | html_entity %]</td>
+    </tr>
+    <tr>
+      <td>Latest Discover</td>
       <td>[% d.last_discover_stamp | html_entity %]</td>
     </tr>
     <tr>
-      <td>Last Arpnip</td>
+      <td>Latest Arpnip</td>
       <td>[% d.last_arpnip_stamp | html_entity %]</td>
     </tr>
     <tr>
-      <td>Last Macsuck</td>
+      <td>Latest Macsuck</td>
       <td>[% d.last_macsuck_stamp | html_entity %]</td>
     </tr>
     <tr>
