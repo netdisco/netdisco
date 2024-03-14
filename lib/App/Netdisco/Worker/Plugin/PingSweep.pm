@@ -14,13 +14,15 @@ use NetAddr::IP;
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  my $extra = $job->extra
-    or return Status->error('missing parameter -e/extra/subaction with IP prefix');
+  my $targets = $job->port
+    or return Status->error('missing parameter -p/port with IP prefix');
 
-  my $net = NetAddr::IP->new($extra);
+  my $timeout = $job->extra || '0.1';
+
+  my $net = NetAddr::IP->new($targets);
   if (!$net or $net->num == 0 or $net->addr eq '0.0.0.0') {
       return Status->error(
-        sprintf 'unable to understand as host, IP, or prefix: %s', $extra)
+        sprintf 'unable to understand as host, IP, or prefix: %s', $targets)
   }
 
   my @job_specs = ();
@@ -36,7 +38,7 @@ register_worker({ phase => 'main' }, sub {
     my $addr = $net->nth($idx) or next;
     my $host = $addr->addr;
 
-    if (timeout_call('0.2', $pinger, $host)) {
+    if (timeout_call($timeout, $pinger, $host)) {
       debug sprintf 'pinged %s and timed out', $host;
       next;
     }
