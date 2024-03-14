@@ -702,6 +702,7 @@ worker_plugins:
   - 'Nbtstat::Core'
   - 'Nbtwalk'
   - 'NodeMonitor'
+  - 'PingSweep'
   - 'PortControl'
   - 'PortName'
   - 'Power'
