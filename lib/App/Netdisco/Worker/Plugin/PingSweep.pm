@@ -52,10 +52,8 @@ register_worker({ phase => 'main' }, sub {
   }
 
   jq_insert( \@job_specs );
-  debug sprintf 'pingsweep: queued %s jobs from %s hosts',
-    (scalar @job_specs), $net->num();
-
-  return Status->done('Finished ping sweep');
+  return Status->done(sprintf
+    'Finished ping sweep: queued %s jobs from %s hosts', (scalar @job_specs), $net->num());
 });
 
 true;
