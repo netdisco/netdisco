@@ -645,6 +645,7 @@ job_prio:
     - 'arpwalk'
     - 'discover'
     - 'discoverall'
+    - 'pingsweep'
     - 'expire'
     - 'macsuck'
     - 'macwalk'
