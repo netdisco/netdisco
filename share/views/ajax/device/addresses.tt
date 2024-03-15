@@ -42,7 +42,8 @@ $(document).ready(function() {
       }, {
         "data": 'subnet',
         "render": function(data, type, row, meta) {
-          return '<a href="[% search_device | none %]&q=' + encodeURIComponent(data) + '&ip=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '[% IF user_has_role('admin') %]<a class="nd_stealth-link nd_node-ext-link" href="[% uri_base | none %]/?sweep=' + encodeURIComponent(data) + '"><i class="icon-search"></i></a>&nbsp;[% END %]'
+            + '<a href="[% search_device | none %]&q=' + encodeURIComponent(data) + '&ip=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }
     ],

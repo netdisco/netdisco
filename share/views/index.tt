@@ -79,7 +79,7 @@
           </form>
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/pingsweep') | none %]">
             <div class="form-horizontal">
-              <input placeholder="IP prefix e.g. 192.0.2.0/24" class="span4" name="device" required="required" type="text"/>
+              <input placeholder="IP prefix e.g. 192.0.2.0/24" class="span4" name="device" required="required" value="[% params.sweep | html_entity %]" type="text"/>
               <button type="submit" class="btn btn-info">Ping Sweep Network for Devices</button>
             </div>
           </form>
