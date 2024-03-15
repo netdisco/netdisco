@@ -600,6 +600,7 @@ workers:
 # this one takes ages
 snapshot_timeout: 1200
 primeskiplist_timeout: 1200
+pingsweep_timeout: 7200
 
 # 50 minutes
 jobs_stale_after: 3000
@@ -644,6 +645,7 @@ job_prio:
     - 'arpwalk'
     - 'discover'
     - 'discoverall'
+    - 'pingsweep'
     - 'expire'
     - 'macsuck'
     - 'macwalk'
@@ -702,6 +704,7 @@ worker_plugins:
   - 'Nbtstat::Core'
   - 'Nbtwalk'
   - 'NodeMonitor'
+  - 'PingSweep'
   - 'PortControl'
   - 'PortName'
   - 'Power'
