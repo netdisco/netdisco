@@ -25,7 +25,7 @@ register_worker({ phase => 'main' }, sub {
         sprintf 'unable to understand as host, IP, or prefix: %s', $targets)
   }
 
-  my @job_specs = ();
+  my $job_count = 0;
   my $ping = Net::Ping->new({proto => 'external'});
 
   my $pinger = sub {
@@ -43,17 +43,18 @@ register_worker({ phase => 'main' }, sub {
       next;
     }
 
-    push @job_specs, {
+    jq_insert([{
       action => 'discover',
       device => $host,
       subaction => 'with-nodes',
       username => ($ENV{USER} || 'netdisco-do'),
-    };
+    }]);
+
+    ++$job_count;
   }
 
-  jq_insert( \@job_specs );
   return Status->done(sprintf
-    'Finished ping sweep: queued %s jobs from %s hosts', (scalar @job_specs), $net->num());
+    'Finished ping sweep: queued %s jobs from %s hosts', $job_count, $net->num());
 });
 
 true;
