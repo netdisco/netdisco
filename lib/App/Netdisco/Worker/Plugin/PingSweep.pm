@@ -14,8 +14,8 @@ use NetAddr::IP qw/:rfc3021 :lower/;
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  my $targets = $job->port
-    or return Status->error('missing parameter -p/port with IP prefix');
+  my $targets = $job->device
+    or return Status->error('missing parameter -d/device with IP prefix');
 
   my $timeout = $job->extra || '0.1';
 
