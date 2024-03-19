@@ -32,7 +32,7 @@ register_worker({ phase => 'early',
     : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
 
   # initialise the cache
-  vars->{'arps'} ||= [];
+  vars->{'arps'} = [];
 });
 
 register_worker({ phase => 'store' }, sub {

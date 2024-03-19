@@ -34,7 +34,7 @@ register_worker({ phase => 'early',
     : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
 
   # initialise the cache
-  vars->{'fwtable'} ||= {};
+  vars->{'fwtable'} = {};
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
