@@ -66,8 +66,8 @@ Module::Build->new(
     'Net::DNS' => '0.72',
     'Net::LDAP' => '0',
     'Net::OpenSSH' => '0',
-    'Net::Ping' => '0', # is core
-    'Net::Ping::External' => '0',
+    'Net::Ping' => '2.75', # is core
+    'Net::Ping::External' => '0.15',
     'NetAddr::MAC' => '0.93',
     'NetAddr::IP' => '4.068',
     'Opcode' => '1.07',
