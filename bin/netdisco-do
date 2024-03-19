@@ -259,6 +259,17 @@ Run a discover on two different devices (specified with C<-d>).
 
 Queue a discover for all known devices.
 
+=head2 pingsweep
+
+Scan an IP prefix (subnet) using ping utility (must be installed), any
+host responding has a C<discover> job queued. It is recommended to queue
+the C<pingsweep> job as well.
+
+ ~/bin/netdisco-do pingsweep -d 192.0.2.0/24 --enqueue
+
+The default ping timeout is 0.1 seconds. To change this, pass any number
+to the C<-e> parameter.
+
 =head2 macsuck
 
 Run a macsuck on the device (specified with C<-d>).
