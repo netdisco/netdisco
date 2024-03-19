@@ -1,3 +1,9 @@
+2.074001 - 2024-03-19
+
+  [BUG FIXES]
+
+  * require newer Net::Ping than older Perl Core
+
 2.074000 - 2024-03-19
 
   [NEW FEATURES]
