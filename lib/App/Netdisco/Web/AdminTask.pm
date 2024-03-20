@@ -55,7 +55,7 @@ foreach my $action (@{ setting('job_prio')->{high} },
     };
 
     post "/admin/$action" => require_role admin => sub {
-        add_job($action, param('device'), param('extra'), param('port'))
+        add_job($action, param('device'), (param('extra') || param('timeout')), param('port'))
           ? redirect uri_for('/admin/jobqueue')->path
           : redirect uri_for('/')->path;
     };

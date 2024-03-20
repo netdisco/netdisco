@@ -205,6 +205,7 @@ $(document).ready(function() {
                                           .attr('name', 'tab')
                                           .attr('value', $(this).data('tab'))
       ).submit();
+      return;
     }
     if ($('#nq').val()) {
       $(this).parents('form').append(
@@ -212,6 +213,15 @@ $(document).ready(function() {
                                           .attr('name', 'tab')
                                           .attr('value', $(this).data('tab'))
       ).submit();
+      return;
+    }
+    if ($('#sweepdev').val()) {
+      $(this).parents('form').append(
+        $(document.createElement('input')).attr('type', 'hidden')
+                                          .attr('name', 'timeout')
+                                          .attr('value', $(this).data('timeout'))
+      ).submit();
+      return;
     }
   });
 
