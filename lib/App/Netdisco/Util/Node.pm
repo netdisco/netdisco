@@ -4,8 +4,6 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::MAC;
-use JSON::XS;
-use POSIX qw(strftime);
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
 use base 'Exporter';
@@ -178,7 +176,7 @@ sub store_arp {
   my $name = $hash_ref->{'dns'};
 
   return if !defined $mac or $mac->errstr;
-
+  warning sprintf 'store_arp - deprecated usage, should be store_arp($hash_ref, $now, $device_ip)' unless $device_ip;
   debug sprintf 'store_arp - device %s mac %s ip %s', $device_ip // "n/a", $mac->as_ieee, $ip;
 
   schema(vars->{'tenant'})->txn_do(sub {
@@ -203,22 +201,21 @@ sub store_arp {
 
     if (! $row->in_storage) {
       $row->set_column(time_first => \$now);
+      if ($device_ip){
+        $row->set_column(seen_on_router_first => \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
+        $row->set_column(seen_on_router_last =>  \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
+      }
       $row->insert;
-    }
-
-    if ($device_ip){
-      my ($now_ts) = $now =~ /to_timestamp\((.*?)\)/; # can't use the passed $now in a json literal, extract value
-      my $json_now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime($now_ts)); # also works in LOCALTIMESTAMP case (ie undef)
-
-      my $cf = decode_json($row->custom_fields || '{}');
-      $cf->{_netdisco_seen_in_arp}->{$device_ip}->{time_first} = $json_now 
-        unless $cf->{_netdisco_seen_in_arp}->{$device_ip}->{time_first}; 
-      $cf->{_netdisco_seen_in_arp}->{$device_ip}->{time_last} = $json_now;
-      $row->custom_fields(encode_json($cf));
-      $row->update;
-    } else {
-      warning sprintf 'store_arp - deprecated usage, should be store_arp($hash_ref, $now, $device_ip)';
-
+    }else{
+      if ($device_ip){
+        $row->set_column(seen_on_router_last => \[qq{
+          jsonb_set(seen_on_router_last, ?, to_jsonb($now))} => (qq!{$device_ip}!) ]);
+        $row->set_column(seen_on_router_first => \[qq{
+          case when (seen_on_router_first->?) is not null  then seen_on_router_first
+          else jsonb_set(seen_on_router_first, ?, to_jsonb($now)) 
+          end } => ($device_ip, qq!{$device_ip}!) ]);
+        $row->update;
+      }
     }
 
   });
