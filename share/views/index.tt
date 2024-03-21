@@ -72,9 +72,15 @@
           [% IF user_has_role('admin') %]
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/discover') | none %]">
             <div class="form-horizontal">
-              <input placeholder="Device hostname or IP" class="span4" name="device" value="[% params.device | html_entity %]" type="text"/>
+              <input placeholder="Device hostname or IP address" class="span4" name="device" required="required" value="[% params.device | html_entity %]" type="text"/>
               <input type="hidden" name="extra" value="with-nodes"/>
-              <button type="submit" class="btn btn-info">Discover</button>
+              <button type="submit" class="btn btn-info">Discover Device and Neighbors</button>
+            </div>
+          </form>
+          <form class="nd_login-form" method="post" action="[% uri_for('/admin/pingsweep') | none %]">
+            <div class="form-horizontal">
+              <input placeholder="IP prefix e.g. 192.0.2.0/24" class="span4" name="device" required="required" value="[% params.sweep | html_entity %]" type="text"/>
+              <button type="submit" class="btn btn-info">Ping Sweep Network for Devices</button>
             </div>
           </form>
           [% END %]

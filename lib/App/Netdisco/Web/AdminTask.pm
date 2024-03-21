@@ -17,10 +17,11 @@ sub add_job {
       ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
 
     my @hostlist = $device ? ($net->hostenum) : (undef);
+    @hostlist = ($device) if $action eq 'pingsweep';
 
     my $happy = jq_insert([map {{
       action => $action,
-      ($_     ? (device => $_->addr) : ()),
+      ($_     ? (device => ($action eq 'pingsweep' ? $_ : $_->addr)) : ()),
       ($port  ? (port   => $port)    : ()),
       ($extra ? (extra  => $extra)   : ()),
       username => session('logged_in_user'),
@@ -35,7 +36,7 @@ sub add_job {
         schema(vars->{'tenant'})->resultset('UserLog')->create({
           username => session('logged_in_user'),
           userip => scalar eval {request->remote_address},
-          event => (sprintf $msg, $h->addr),
+          event => (sprintf $msg, ($action eq 'pingsweep' ? $h : $h->addr)),
           details => ($extra || 'no user log supplied'),
         });
     }
