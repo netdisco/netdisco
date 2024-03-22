@@ -215,11 +215,15 @@ $(document).ready(function() {
       ).submit();
       return;
     }
-    if ($('#sweepdev').val()) {
+    if ($('#discodevs').val()) {
       $(this).parents('form').append(
         $(document.createElement('input')).attr('type', 'hidden')
                                           .attr('name', 'timeout')
                                           .attr('value', $(this).data('timeout'))
+      ).append(
+        $(document.createElement('input')).attr('type', 'hidden')
+                                          .attr('name', 'action')
+                                          .attr('value', $(this).data('action'))
       ).submit();
       return;
     }
