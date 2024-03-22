@@ -173,6 +173,10 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #404040;
 }
 
+.nd_text-align-top {
+  vertical-align: text-top;
+}
+
 /* make room for the port log icon */
 .nd_this-port-only {
   margin-right: 15px;
