@@ -34,6 +34,8 @@ register_worker({ phase => 'main' }, sub {
     debug sprintf 'pinged %s successfully', $host;
   };
 
+  $SIG{CHLD} = 'IGNORE';
+
   foreach my $idx (0 .. $net->num()) {
     my $addr = $net->nth($idx) or next;
     my $host = $addr->addr;
