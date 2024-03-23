@@ -14,6 +14,7 @@ use strict;
 use warnings;
 
 use Dancer ':script';
+use NetAddr::MAC qw/mac_as_ieee/;
 use Moo;
 
 =head1 PUBLIC METHODS
@@ -30,6 +31,21 @@ Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADD
 =back
 
 =cut
+
+my $if_name_map = {
+  Vl => "Vlan",
+  Lo => "Loopback",
+  Fa => "FastEthernet",
+  Gi => "GigabitEthernet",
+  Tw => "TwoGigabitEthernet",
+  Fi => "FiveGigabitEthernet",
+  Te => "TenGigabitEthernet",
+  Twe => "TwentyFiveGigE",
+  Fo => "FortyGigabitEthernet",
+  Hu => "HundredGigE",
+  Po => "Port-channel",
+  Bl => "Bluetooth",
+};
 
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
@@ -49,6 +65,42 @@ sub arpnip {
     }
 
     return @arpentries;
+}
+
+sub macsuck {
+  my ($self, $hostlabel, $ssh, $args) = @_;
+  
+  debug "$hostlabel $$ macsuck()";
+  my $cmds = <<EOF;
+terminal length 0
+show interfaces description
+show mac address-table
+EOF
+  my @data = $ssh->capture({stdin_data => $cmds}); chomp @data;
+  if ($ssh->error) {
+    info "$hostlabel $$ error in SSH command " . $ssh->error;
+    return;
+  }
+
+  my $interfaces = {};
+  my $macentries = {};
+  my $re_interface_line = qr/^([a-z]+)([0-9\/\.]+)\s+(up|down|admin down)\s+(up|down)/i;
+  my $re_mac_line = qr/^\s*(All|[0-9]+)\s+([0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4})\s+\S+\s+([a-zA-Z]+)([0-9\/\.]+)/i;
+  my $port;
+  foreach (@data) {
+    if ($_ && /$re_interface_line/) {
+      $port = sprintf "%s%s", $if_name_map->{$1}, $2;
+      $interfaces->{$port} = {
+        up_admin => ($3 eq "admin down") ? "down" : "up",
+        up => ($3 eq "down") ? "down" : "up",
+      };
+    } elsif ($_ && /$re_mac_line/) {
+      $port = sprintf "%s%s", $if_name_map->{$3}, $4;
+      ++$macentries->{$1}->{$port}->{mac_as_ieee($2)};
+    }
+  }
+
+  return ($interfaces,$macentries);
 }
 
 1;
