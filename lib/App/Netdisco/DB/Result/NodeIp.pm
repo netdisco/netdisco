@@ -32,6 +32,10 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     original      => { default_value => \"LOCALTIMESTAMP" },
   },
+  "seen_on_router_first",
+  { data_type => "jsonb", is_nullable => 0, default_value => \"{}" },
+  "seen_on_router_last",
+  { data_type => "jsonb", is_nullable => 0, default_value => \"{}" },
 );
 __PACKAGE__->set_primary_key("mac", "ip");
 

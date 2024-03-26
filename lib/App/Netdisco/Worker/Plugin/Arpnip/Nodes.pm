@@ -57,7 +57,7 @@ register_worker({ phase => 'store' }, sub {
   }
 
   my $now = vars->{'timestamp'};
-  store_arp(\%$_, $now) for @{ vars->{'arps'} };
+  store_arp(\%$_, $now, $device->ip) for @{ vars->{'arps'} };
 
   debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
     $device->ip, $v4;
