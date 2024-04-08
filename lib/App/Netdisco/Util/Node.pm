@@ -162,8 +162,9 @@ no longer C<active>.
 Optionally a literal string can be passed in the second argument for the
 C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
 
-On which L3 devices an arp entry was found is tracked in the C<custom_fields.seen> 
-dictionary. It contains the time_last timestamp for every device this entry was ever
+On which L3 devices an arp entry was found is tracked in the
+C<seen_on_router_first> and C<seen_on_router_last> fields of the C<node_ip>.
+They contain a timestamp for the time window each router this entry was ever
 found on.
 
 =cut
