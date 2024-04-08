@@ -322,9 +322,7 @@ sub renumber {
   my $old_ip = $device->ip;
   my $new_ip = $new_addr->addr;
 
-  return
-    if $new_ip eq '0.0.0.0'
-    or $new_ip eq '127.0.0.1';
+  return if $new_ip eq '0.0.0.0';
 
   # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
