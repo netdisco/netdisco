@@ -61,6 +61,12 @@ foreach my $action (@{ setting('job_prio')->{high} },
     };
 }
 
+post "/admin/discodevs" => require_role admin => sub {
+    add_job((param('action') || 'discover'), param('device'), (param('timeout') || param('extra')), param('port'))
+      ? redirect uri_for('/admin/jobqueue')->path
+      : redirect uri_for('/')->path;
+};
+
 ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => require_role setting('defanged_admin') => sub {
     send_error('Missing device', 400) unless param('device');
     send_error('Missing new IP', 400) unless param('newip');

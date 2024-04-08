@@ -1,3 +1,19 @@
+2.074001 - 2024-03-19
+
+  [BUG FIXES]
+
+  * require newer Net::Ping than older Perl Core
+
+2.074000 - 2024-03-19
+
+  [NEW FEATURES]
+
+  * #1170 ping sweep utility worker to queue discover jobs from an IP prefix
+
+  [BUG FIXES]
+
+  * #1185 need to reset vars cache in early worker phase for multiple jobs
+
 2.073001 - 2024-03-13
 
   [BUG FIXES]

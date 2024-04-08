@@ -267,6 +267,7 @@ lib/App/Netdisco/Worker/Plugin/Nbtstat.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat/Core.pm
 lib/App/Netdisco/Worker/Plugin/Nbtwalk.pm
 lib/App/Netdisco/Worker/Plugin/NodeMonitor.pm
+lib/App/Netdisco/Worker/Plugin/PingSweep.pm
 lib/App/Netdisco/Worker/Plugin/PortControl.pm
 lib/App/Netdisco/Worker/Plugin/PortName.pm
 lib/App/Netdisco/Worker/Plugin/Power.pm
