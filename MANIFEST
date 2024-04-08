@@ -500,6 +500,7 @@ share/schema_versions/App-Netdisco-DB-81-82-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-82-83-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-83-84-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-84-85-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-85-86-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt

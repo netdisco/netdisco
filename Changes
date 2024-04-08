@@ -1,3 +1,14 @@
+2.075000 - 2024-04-08
+
+  [NEW FEATURES]
+
+  * #1174 store origin router of MAC-IP mappings in seen_on_router_first and seen_on_router_last
+
+  [ENHANCEMENTS]
+
+  * improve presentation on homepage of the ping sweep and discover choices
+  * #1193 update NXOS SSH collector for additional cli formats
+
 2.074001 - 2024-03-19
 
   [BUG FIXES]
