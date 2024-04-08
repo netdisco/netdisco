@@ -359,6 +359,30 @@ sub renumber {
     ->search({switch => $old_ip})
     ->update({switch => $new_ip});
 
+  # this whole shenanigans exists because I cannot work out how to
+  # pass an escaped SQL placeholder into DBIx::Class/SQL::Abstract
+  # see https://www.mail-archive.com/dbix-class@lists.scsys.co.uk/msg07079.html
+  $schema->storage->dbh_do(sub {
+    my ($storage, $dbh, @extra) = @_;
+    local $dbh->{TraceLevel} = ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
+    my $escaped_old_ip = $dbh->quote_identifier($old_ip);
+    my $escaped_new_ip = $dbh->quote_identifier($new_ip);
+
+    my $router_first_sql = q{
+      UPDATE node_ip
+        SET seen_on_router_first = seen_on_router_first - ?::text || jsonb_build_object(?::text, seen_on_router_first -> ?::text)
+        WHERE seen_on_router_first \? ?::text
+    };
+    $dbh->do($router_first_sql, undef, $old_ip, $new_ip, $old_ip, $old_ip);
+
+    my $router_last_sql = q{
+      UPDATE node_ip
+        SET seen_on_router_last = seen_on_router_last - ?::text || jsonb_build_object(?::text, seen_on_router_last -> ?::text)
+        WHERE seen_on_router_last \? ?::text
+    };
+    $dbh->do($router_last_sql, undef, $old_ip, $new_ip, $old_ip, $old_ip);
+  });
+
   $schema->resultset('Topology')
     ->search({dev1 => $old_ip})
     ->update({dev1 => $new_ip});
