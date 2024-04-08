@@ -202,19 +202,28 @@ sub store_arp {
 
     if (! $row->in_storage) {
       $row->set_column(time_first => \$now);
-      if ($device_ip){
+
+      if ($device_ip) {
+        # init the tracking, setting the first+last stamps to now
         $row->set_column(seen_on_router_first => \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
         $row->set_column(seen_on_router_last =>  \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
       }
+
       $row->insert;
-    }else{
-      if ($device_ip){
+    }
+    else {
+      if ($device_ip) {
+        # set or update the last seen for this router to now
         $row->set_column(seen_on_router_last => \[qq{
           jsonb_set(seen_on_router_last, ?, to_jsonb($now))} => (qq!{$device_ip}!) ]);
+
+        # add the first seen for this router if first time seen, else no-op
         $row->set_column(seen_on_router_first => \[qq{
-          case when (seen_on_router_first->?) is not null  then seen_on_router_first
-          else jsonb_set(seen_on_router_first, ?, to_jsonb($now)) 
-          end } => ($device_ip, qq!{$device_ip}!) ]);
+          CASE WHEN (seen_on_router_first->?) IS NOT NULL
+            THEN seen_on_router_first
+            ELSE jsonb_set(seen_on_router_first, ?, to_jsonb($now)) 
+          END } => ($device_ip, qq!{$device_ip}!) ]);
+
         $row->update;
       }
     }
