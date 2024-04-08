@@ -145,7 +145,7 @@ sub is_nbtstatable {
   return 1;
 }
 
-=head2 store_arp( \%host, $now? )
+=head2 store_arp( \%host, $now?, $device_ip )
 
 Stores a new entry to the C<node_ip> table with the given MAC, IP (v4 or v6)
 and DNS host name. Host details are provided in a Hash ref:
@@ -162,18 +162,23 @@ no longer C<active>.
 Optionally a literal string can be passed in the second argument for the
 C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
 
+On which L3 devices an arp entry was found is tracked in the
+C<seen_on_router_first> and C<seen_on_router_last> fields of the C<node_ip>.
+They contain a timestamp for the time window each router this entry was ever
+found on.
+
 =cut
 
 sub store_arp {
-  my ($hash_ref, $now) = @_;
+  my ($hash_ref, $now, $device_ip) = @_;
   $now ||= 'LOCALTIMESTAMP';
   my $ip   = $hash_ref->{'ip'};
   my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || $hash_ref->{'mac'} || ''));
   my $name = $hash_ref->{'dns'};
 
   return if !defined $mac or $mac->errstr;
-
-  debug sprintf 'store_arp - mac %s ip %s', $mac->as_ieee, $ip;
+  warning sprintf 'store_arp - deprecated usage, should be store_arp($hash_ref, $now, $device_ip)' unless $device_ip;
+  debug sprintf 'store_arp - device %s mac %s ip %s', $device_ip // "n/a", $mac->as_ieee, $ip;
 
   schema(vars->{'tenant'})->txn_do(sub {
     schema(vars->{'tenant'})->resultset('NodeIp')
@@ -188,7 +193,7 @@ sub store_arp {
         ip => $ip,
         dns => $name,
         active => \'true',
-        time_last => \$now,
+        time_last => \$now
       },
       {
         key => 'primary',
@@ -196,9 +201,33 @@ sub store_arp {
       });
 
     if (! $row->in_storage) {
-        $row->set_column(time_first => \$now);
-        $row->insert;
+      $row->set_column(time_first => \$now);
+
+      if ($device_ip) {
+        # init the tracking, setting the first+last stamps to now
+        $row->set_column(seen_on_router_first => \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
+        $row->set_column(seen_on_router_last =>  \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
+      }
+
+      $row->insert;
     }
+    else {
+      if ($device_ip) {
+        # set or update the last seen for this router to now
+        $row->set_column(seen_on_router_last => \[qq{
+          jsonb_set(seen_on_router_last, ?, to_jsonb($now))} => (qq!{$device_ip}!) ]);
+
+        # add the first seen for this router if first time seen, else no-op
+        $row->set_column(seen_on_router_first => \[qq{
+          CASE WHEN (seen_on_router_first->?) IS NOT NULL
+            THEN seen_on_router_first
+            ELSE jsonb_set(seen_on_router_first, ?, to_jsonb($now)) 
+          END } => ($device_ip, qq!{$device_ip}!) ]);
+
+        $row->update;
+      }
+    }
+
   });
 }
 
