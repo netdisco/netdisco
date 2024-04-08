@@ -219,7 +219,7 @@ get '/ajax/content/search/node' => require_login sub {
             and my $ip = NetAddr::IP::Lite->new($node)) {
 
             # search_by_ip() will extract cidr notation if necessary
-            $set = schema(vars->{'tenant'})->resultset('NodeIp')->with_router_ip
+            $set = schema(vars->{'tenant'})->resultset('NodeIp')->with_router
               ->search_by_ip({ip => $ip, @active, @times});
             ++$have_rows if $set->has_rows;
         }

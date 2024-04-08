@@ -42,7 +42,7 @@ sub with_times {
     ->search($cond, $attrs);
 }
 
-=head1 with_router_ip
+=head1 with_router
 
 This is a modifier for any C<search()> (including the helpers below) which
 will add the following additional synthesized column to the result set:
@@ -55,14 +55,16 @@ will add the following additional synthesized column to the result set:
 
 =cut
 
-sub with_router_ip {
+sub with_router {
   my ($rs, $cond, $attrs) = @_;
 
   return $rs
     ->search_rs({}, {
         '+columns' => [
-          { router_ip =>  \"(SELECT key FROM json_each_text(seen_on_router_last::json) ORDER BY value::timestamp DESC LIMIT 1)" },
+          { router_ip =>  \q{(SELECT key FROM json_each_text(seen_on_router_last::json) ORDER BY value::timestamp DESC LIMIT 1)} },
+          { router_name => \q{COALESCE(NULLIF(router.dns,''), NULLIF(router.name,''), '')} },
         ],
+        join => 'router'
       })
     ->search($cond, $attrs);
 }
@@ -115,7 +117,7 @@ sub search_by_ip {
         $op = '<<=';
         $ip = $ip->cidr;
     }
-    $cond->{ip} = { $op => $ip };
+    $cond->{'me.ip'} = { $op => $ip };
 
     return $rs
       ->search_rs({}, $order_by_time_last_and_join_manufacturer)

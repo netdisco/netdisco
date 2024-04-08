@@ -85,6 +85,26 @@ __PACKAGE__->belongs_to( manufacturer => 'App::Netdisco::DB::Result::Manufacture
   { join_type => 'LEFT' }
 );
 
+=head2 router
+
+Returns the C<device> table entry matching this Node's router. You can then join on
+this relation and retrieve the Device DNS name.
+
+The JOIN is of type LEFT, in case there's no recorded router on this record.
+
+=cut
+
+__PACKAGE__->belongs_to( router => 'App::Netdisco::DB::Result::Device',
+  sub {
+      my $args = shift;
+      return {
+        "host($args->{foreign_alias}.ip)" => { '=' =>
+          \q{(SELECT key FROM json_each_text(seen_on_router_last::json) ORDER BY value::timestamp DESC LIMIT 1)} },
+      };
+  },
+  { join_type => 'LEFT' }
+);
+
 =head2 node_ips
 
 Returns the set of all C<node_ip> entries which are associated together with
@@ -248,6 +268,16 @@ Returns the router IP that most recently reported this MAC-IP pair.
 =cut
 
 sub router_ip { return (shift)->get_column('router_ip') }
+
+=head2 router_name
+
+Returns the router DNS or SysName that most recently reported this MAC-IP pair.
+
+May be blank if there's no SysName or DNS name, so you have C<router_ip> as well.
+
+=cut
+
+sub router_name { return (shift)->get_column('router_name') }
 
 =head2 net_mac
 
