@@ -42,6 +42,31 @@ sub with_times {
     ->search($cond, $attrs);
 }
 
+=head1 with_router_ip
+
+This is a modifier for any C<search()> (including the helpers below) which
+will add the following additional synthesized column to the result set:
+
+=over 4
+
+=item router_ip
+
+=back
+
+=cut
+
+sub with_router_ip {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs({}, {
+        '+columns' => [
+          { router_ip =>  \"(SELECT key FROM json_each_text(seen_on_router_last::json) ORDER BY value::timestamp DESC LIMIT 1)" },
+        ],
+      })
+    ->search($cond, $attrs);
+}
+
 =head1 search_by_ip( \%cond, \%attrs? )
 
  my $set = $rs->search_by_ip({ip => '192.0.2.1', active => 1});

@@ -51,6 +51,9 @@
         <a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
+        [% IF row.router_ip %]
+        via <a href="[% search_device | none %]&q=[% row.router_ip | uri %]">[% row.router_ip | html_entity %]</a>
+        [% END %]
       </td>
       [% IF params.stamps %]
       <td>[% row.time_first_stamp | html_entity %]</td>

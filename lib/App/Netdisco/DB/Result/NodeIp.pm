@@ -241,6 +241,14 @@ between the date stamp and time stamp. That is:
 
 sub time_last_stamp  { return (shift)->get_column('time_last_stamp')  }
 
+=head2 router_ip
+
+Returns the router IP that most recently reported this MAC-IP pair.
+
+=cut
+
+sub router_ip { return (shift)->get_column('router_ip') }
+
 =head2 net_mac
 
 Returns the C<mac> column instantiated into a L<NetAddr::MAC> object.
