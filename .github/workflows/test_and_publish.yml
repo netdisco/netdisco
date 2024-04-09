@@ -5,19 +5,19 @@ on:
       success_irc_squawk:
         description: 'Squawk to IRC on successful tests'     
         required: false
-        default:  false
+        default:  'false'
       debug_test_enabled:
         description: 'With build and test debug'
         required: false
-        default:  false
+        default:  'false'
       debug_docker_enabled:
         description: 'With docker debug'
         required: false
-        default:  false
+        default:  'false'
       debug_dbdeploy_enabled:
         description: 'With db deploy debug'
         required: false
-        default:  false
+        default:  'false'
   push:
     branches:
       - master
@@ -76,16 +76,16 @@ jobs:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+          🤖 ${{ github.actor }} build_and_run_tests ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
           😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC test success notification
-      if: (steps.build_and_run_tests.outcome == 'success') && github.event.inputs.success_irc_squawk
+      if: (steps.build_and_run_tests.outcome == 'success') && github.event.inputs.success_irc_squawk == 'true'
       uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
         nickname: github-actions
         message: |-
-          🤖 ${{ github.actor }} pushed to ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
+          🤖 ${{ github.actor }} build_and_run_tests ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
 
     - name: Make release
       if: steps.build_and_run_tests.outcome == 'success'
@@ -126,7 +126,7 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_test_enabled
+      if: always() && github.event.inputs.debug_test_enabled == 'true'
       with:
         sudo: true
 
@@ -287,7 +287,7 @@ jobs:
           🤖 Failed to publish Netdisco release ${{ env.TAG }} to Docker Hub! 😭
           👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     - name: IRC DH upload success notification
-      if: (steps.upload_docker_hub.outcome == 'success') && github.event.inputs.success_irc_squawk
+      if: (steps.upload_docker_hub.outcome == 'success') && github.event.inputs.success_irc_squawk == 'true'
       uses: Gottox/irc-message-action@v2
       with:
         channel: '#netdisco'
@@ -297,7 +297,7 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_docker_enabled
+      if: always() && github.event.inputs.debug_docker_enabled == 'true'
       with:
         sudo: true
 
@@ -357,7 +357,7 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_dbdeploy_enabled
+      if: always() && github.event.inputs.debug_dbdeploy_enabled == 'true'
       with:
         sudo: true
 
