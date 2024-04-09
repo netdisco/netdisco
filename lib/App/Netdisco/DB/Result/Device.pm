@@ -370,22 +370,20 @@ sub renumber {
   $schema->storage->dbh_do(sub {
     my ($storage, $dbh, @extra) = @_;
     local $dbh->{TraceLevel} = ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
-    my $escaped_old_ip = $dbh->quote_identifier($old_ip);
-    my $escaped_new_ip = $dbh->quote_identifier($new_ip);
 
     my $router_first_sql = q{
       UPDATE node_ip
         SET seen_on_router_first = seen_on_router_first - ?::text || jsonb_build_object(?::text, seen_on_router_first -> ?::text)
         WHERE seen_on_router_first \? ?::text
     };
-    $dbh->do($router_first_sql, undef, $escaped_old_ip, $escaped_new_ip, $escaped_old_ip, $escaped_old_ip);
+    $dbh->do($router_first_sql, undef, $old_ip, $new_ip, $old_ip, $old_ip);
 
     my $router_last_sql = q{
       UPDATE node_ip
         SET seen_on_router_last = seen_on_router_last - ?::text || jsonb_build_object(?::text, seen_on_router_last -> ?::text)
         WHERE seen_on_router_last \? ?::text
     };
-    $dbh->do($router_last_sql, undef, $escaped_old_ip, $escaped_new_ip, $escaped_old_ip, $escaped_old_ip);
+    $dbh->do($router_last_sql, undef, $old_ip, $new_ip, $old_ip, $old_ip);
   });
 
   $schema->resultset('Topology')
