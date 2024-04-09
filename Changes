@@ -1,3 +1,15 @@
+2.075001 - 2024-04-09
+
+  [ENHANCEMENTS]
+
+  * show a node's router/gateway IP if it is known, in Node Search
+  * allow device renumber to 127.0.0.1
+  * update node_ip seen_on_router_first and seen_on_router_last when renumbering
+
+  [BUG FIXES]
+
+  * refactor device renumber to fix some alias edge case issues and make errors better
+
 2.075000 - 2024-04-08
 
   [NEW FEATURES]
