@@ -45,7 +45,7 @@ register_worker({ phase => 'main' }, sub {
   my $old_ip = $device->ip;
   my $new_ip = NetAddr::IP->new($extra);
 
-  renumber_device($device, $new_ip);
+  renumber_device($old_ip, $new_ip);
   return Status->done(sprintf 'Renumbered device %s to %s (%s).',
     $old_ip, $new_ip, ($device->dns || ''));
 });
