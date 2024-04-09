@@ -324,6 +324,11 @@ sub renumber {
 
   return if $new_ip eq '0.0.0.0';
 
+  # the special record in device_ip which is always there
+  $schema->resultset('DeviceIp')
+    ->search({ip => $old_ip, alias => $old_ip})
+    ->update({ip => $new_ip, alias => $new_ip});
+
   # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
     DeviceBrowser
