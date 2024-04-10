@@ -1,3 +1,14 @@
+2.075002 - 2024-04-10
+
+  [ENHANCEMENTS]
+
+  * #1197 store and display VTP mode from Cisco devices
+  * add error checking to delete action
+
+  [BUG FIXES]
+
+  * bug fix for node search by name with new router join
+
 2.075001 - 2024-04-09
 
   [ENHANCEMENTS]
