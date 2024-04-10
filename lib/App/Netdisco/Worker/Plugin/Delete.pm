@@ -16,6 +16,13 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my ($device, $port) = map {$job->$_} qw/device port/;
 
+  return Status->error('Missing device (-d).')
+    unless defined $device;
+
+  if (! $device->in_storage) {
+      return Status->error(sprintf "unknown device: %s.", $device);
+  }
+
   # support for Hooks
   vars->{'hook_data'} = { $device->get_columns };
   delete vars->{'hook_data'}->{'snmp_comm'}; # for privacy
