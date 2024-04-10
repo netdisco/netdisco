@@ -75,6 +75,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "vtp_domain",
   { data_type => "text", is_nullable => 1 },
+  "vtp_mode",
+  { data_type => "text", is_nullable => 1 },
   "last_discover",
   { data_type => "timestamp", is_nullable => 1 },
   "last_macsuck",

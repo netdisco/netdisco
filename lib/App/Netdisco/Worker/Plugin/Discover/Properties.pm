@@ -28,9 +28,12 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
-  my $vtpdomain;
   if (defined $vtpdomains and scalar values %$vtpdomains) {
       $device->set_column( vtp_domain => (values %$vtpdomains)[-1] );
+  }
+  my $vtpmodes = $snmp->vtp_d_mode;
+  if (defined $vtpmodes and scalar values %$vtpmodes) {
+      $device->set_column( vtp_mode => (values %$vtpmodes)[-1] );
   }
 
   my $hostname = hostname_from_ip($device->ip);

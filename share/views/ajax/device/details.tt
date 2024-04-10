@@ -191,8 +191,8 @@
       <td>[% d.mac | html_entity %]</td>
     </tr>
     <tr>
-      <td>VTP Domain</td>
-      <td>[% d.vtp_domain | html_entity %]</td>
+      <td>VTP Status</td>
+      <td>Mode: [% d.vtp_mode.ucfirst || 'n/a' | html_entity %]<br />Domain: [% d.vtp_domain || 'n/a' | html_entity %]</td>
     </tr>
     [% IF user_has_role('admin') %]
     <tr data-for-device="[% d.ip | html_entity %]">
