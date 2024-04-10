@@ -230,7 +230,7 @@ get '/ajax/content/search/node' => require_login sub {
                                       (dns => "${likeval}.\%", suffix => setting('domain_suffix'))),
                   @active,
                   @times,
-                });
+                })->with_router;
             ++$have_rows if $set->has_rows;
 
             # try DNS lookup as fallback

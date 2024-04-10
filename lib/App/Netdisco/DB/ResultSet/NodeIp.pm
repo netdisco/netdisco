@@ -51,6 +51,8 @@ will add the following additional synthesized column to the result set:
 
 =item router_ip
 
+=item router_name
+
 =back
 
 =cut
@@ -189,7 +191,7 @@ sub search_by_dns {
         $stripped_dns_field =~ s/$cond->{suffix}$// if $cond->{suffix};
         $stripped_dns_field .= '.%';
 
-        $cond->{dns} = [ -or =>
+        $cond->{'me.dns'} = [ -or =>
           [ -and =>
               { '-ilike' => $stripped_dns_field },
               { '~*' => "***:$suffix" },
@@ -202,10 +204,10 @@ sub search_by_dns {
         ];
     }
     elsif (q{} ne ref $dns_field) {
-        $cond->{dns} = $dns_field;
+        $cond->{'me.dns'} = $dns_field;
     }
     else {
-        $cond->{dns} = { '-ilike' => $dns_field };
+        $cond->{'me.dns'} = { '-ilike' => $dns_field };
     }
 
     delete $cond->{suffix};
