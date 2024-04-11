@@ -54,6 +54,36 @@ my %urls = (
 
 my %oui = ();
 
+# conflicts of registered ranges with locally administered addresses, we'll skip these
+
+# |company                            |abbrev                |base  |
+# |-----------------------------------|----------------------|------|
+# |RACAL-DATACOM                      |Racal-Datacom         |020701|
+# |PERQ SYSTEMS CORPORATION           |Perq                  |021c7c|
+# |LOGIC REPLACEMENT TECH. LTD.       |LogicReplacement      |026086|
+# |3COM                               |3com                  |02608c|
+# |RACAL-DATACOM                      |Racal-Datacom         |027001|
+# |M/A-COM INC. COMPANIES             |M/A-ComCompanies      |0270b0|
+# |DATA RECALL LTD.                   |DataRecall            |0270b3|
+# |CARDIAC RECORDERS, INC.            |CardiacRecorders      |029d8e|
+# |OLIVETTI TELECOMM SPA (OLTECO)     |OlivettiTelecomm      |02aa3c|
+# |OCTOTHORPE CORP.                   |Octothorpe            |02bb01|
+# |3COM                               |3com                  |02c08c|
+# |Communication Machinery Corporation|CommunicationMachinery|02cf1c|
+# |NIXDORF COMPUTER CORP.             |NixdorfComputer       |02e6d3|
+# |DIGITAL EQUIPMENT CORPORATION      |DigitalEquipment      |aa0000|
+# |DIGITAL EQUIPMENT CORPORATION      |DigitalEquipment      |aa0001|
+# |DIGITAL EQUIPMENT CORPORATION      |DigitalEquipment      |aa0002|
+# |DIGITAL EQUIPMENT CORPORATION      |DigitalEquipment      |aa0003|
+# |DIGITAL EQUIPMENT CORPORATION      |DigitalEquipment      |aa0004|
+
+my @conflict_bases = qw/
+020701 021c7c 026086 02608c 027001
+0270b0 0270b3 029d8e 02aa3c 02bb01
+02c08c 02cf1c 02e6d3 
+aa0000 aa0001 aa0002 aa0003 aa0004
+/;
+
 foreach my $MA (sort keys %urls) {
     my $resp = HTTP::Tiny->new->get($urls{$MA});
     my $content = $resp->{content};
@@ -65,6 +95,8 @@ foreach my $MA (sort keys %urls) {
         $row->{abbrev} = shorten($row->{'Organization Name'});
 
         $row->{base} = lc $row->{'Assignment'};
+
+        next if (grep { $_ eq $row->{base} } @conflict_bases);
         $row->{bits} = length($row->{base}) * 4;
 
         $row->{first} = $row->{'Assignment'} . '0' x ( 12 - length( $row->{'Assignment'} ) );
@@ -74,7 +106,31 @@ foreach my $MA (sort keys %urls) {
           .','. Math::BigInt->from_hex($row->{last})->as_int() .']';
 
         $oui{ $row->{base} } = $row;
+
     }
+}
+
+foreach my $localbit (qw/2 6 a e/) {
+  foreach my $firstdigit (qw/0 1 2 3 4 5 6 7 8 9 a b c d e f/){
+
+    my $bits = 8;
+    my $strbase = $firstdigit.$localbit.":00:00:00:00:00";
+    my $strlast = $firstdigit.$localbit.":ff:ff:ff:ff:ff";
+    my $assignment = $firstdigit.$localbit;
+
+    my $randrow = {
+      'Organization Name' => "randomized address [0-f][26ae]:...",
+      'abbrev' => "randomized",
+      'first' => $strbase,
+      'last' => $strlast,
+      'base' => $firstdigit.$localbit,
+      'bits' => $bits,
+      'range' => '['. Math::BigInt->from_hex($strbase =~ s/://gr)->as_int() .','. Math::BigInt->from_hex($strlast =~ s/://gr)->as_int() .']' 
+    };
+
+    #print "add local range $firstdigit$localbit:00:00:00:00:00 - $firstdigit$localbit:ff:ff:ff:ff:ff\n". Dumper($randrow);
+    $oui{ $randrow->{base} } = $randrow;
+  }
 }
 
 # roll everything back if we're testing
