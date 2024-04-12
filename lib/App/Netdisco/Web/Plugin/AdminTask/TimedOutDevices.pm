@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
+use App::Netdisco::DB::ExplicitLocking ':modes';
 
 register_admin_task({
   tag => 'timedoutdevices',
@@ -17,9 +18,11 @@ ajax '/ajax/control/admin/timedoutdevices/del' => require_role admin => sub {
     send_error('Missing backend', 400) unless param('backend');
     send_error('Missing device',  400) unless param('device');
 
-    schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
-      backend => param('backend'), device => param('device'),
-    },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
+    schema(vars->{'tenant'})->resultset('DeviceSkip')->txn_do_locked(EXCLUSIVE, sub {
+      schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
+        backend => param('backend'), device => param('device'),
+      },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
+    });
 };
 
 ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {

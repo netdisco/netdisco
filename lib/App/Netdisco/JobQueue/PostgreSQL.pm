@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_denied_actions';
 use App::Netdisco::Backend::Job;
+use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use JSON::PP ();
 use Try::Tiny;
@@ -81,9 +82,11 @@ sub jq_getsome {
       # and return false if it should have been skipped.
       my @badactions = get_denied_actions($job->device);
       if (scalar @badactions) {
-        schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
-          backend => setting('workers')->{'BACKEND'}, device => $job->device,
-        },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
+        schema(vars->{'tenant'})->resultset('DeviceSkip')->txn_do_locked(EXCLUSIVE, sub {
+            schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
+              backend => setting('workers')->{'BACKEND'}, device => $job->device,
+            },{ key => 'device_skip_pkey' })->add_to_actionset(@badactions);
+        });
 
         # will now not be selected in a future _getsome()
         next if scalar grep {$_ eq $job->action} @badactions;
@@ -202,7 +205,7 @@ sub jq_defer {
   # do not increment deferrals count and simply try to run again).
 
   try {
-    schema(vars->{'tenant'})->txn_do(sub {
+    schema(vars->{'tenant'})->resultset('DeviceSkip')->txn_do_locked(EXCLUSIVE, sub {
       if ($job->device
           and not scalar grep { $job->action eq $_ }
                               @{ setting('deferrable_actions') || [] }) {
@@ -245,7 +248,7 @@ sub jq_complete {
   # connection failures counter to forget about occasional connect glitches.
 
   try {
-    schema(vars->{'tenant'})->txn_do(sub {
+    schema(vars->{'tenant'})->resultset('DeviceSkip')->txn_do_locked(EXCLUSIVE, sub {
       if ($job->device and not $job->is_offline) {
         schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,

@@ -71,7 +71,7 @@ register_worker({ phase => 'main' }, sub {
   })->delete;
 
   if (setting('expire_jobs') and setting('expire_jobs') > 0) {
-      schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
+      schema('netdisco')->txn_do_locked('admin', EXCLUSIVE, sub {
         schema('netdisco')->resultset('Admin')->search({
           entered => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_jobs') * 86400)],
@@ -80,7 +80,7 @@ register_worker({ phase => 'main' }, sub {
   }
 
   if (setting('expire_userlog') and setting('expire_userlog') > 0) {
-      schema('netdisco')->txn_do_locked('admin', 'EXCLUSIVE', sub {
+      schema('netdisco')->txn_do_locked('admin', EXCLUSIVE, sub {
         schema('netdisco')->resultset('UserLog')->search({
           creation => \[q/< (LOCALTIMESTAMP - ?::interval)/,
               (setting('expire_userlog') * 86400)],
