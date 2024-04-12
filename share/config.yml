@@ -684,6 +684,7 @@ worker_plugins:
   - 'Discover::WithNodes'
   - 'DiscoverAll'
   - 'DumpConfig'
+  - 'DumpInfoCache'
   - 'Expire'
   - 'ExpireNodes'
   - 'GetAPIKey'
