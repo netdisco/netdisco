@@ -1,3 +1,14 @@
+2.075003 - 2024-04-12
+
+  [ENHANCEMENTS]
+
+  * #1198 ieee-oui-import also inserts ranges for randomized addresses
+
+  [BUG FIXES]
+
+  * #1192 issue with OUI data / node vendor inventory report
+  * #1200 fix bug in device alias renumbering
+
 2.075002 - 2024-04-10
 
   [ENHANCEMENTS]
