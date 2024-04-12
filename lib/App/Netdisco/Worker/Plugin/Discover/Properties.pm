@@ -11,6 +11,7 @@ use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use App::Netdisco::Util::Web 'sort_port';
+use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
