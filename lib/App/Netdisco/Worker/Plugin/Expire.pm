@@ -8,23 +8,31 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Statistics 'update_stats';
 use App::Netdisco::DB::ExplicitLocking ':modes';
+use App::Netdisco::Util::Permission 'acl_matches_only';
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
-  if (setting('expire_devices') and setting('expire_devices') > 0) {
-      schema('netdisco')->txn_do(sub {
-        my @hostlist = schema('netdisco')->resultset('Device')->search({
-          -not_bool => 'is_pseudo',
-          last_discover => \[q/< (LOCALTIMESTAMP - ?::interval)/,
-              (setting('expire_devices') * 86400)],
-        })->get_column('ip')->all;
+  if (setting('expire_devices') and ref {} eq ref setting('expire_devices')) {
+      foreach my $acl (keys %{ setting('expire_devices') }) {
+          my $days = setting('expire_devices')->{$acl};
 
-        my $happy = jq_insert([map {{
-          device => $_,
-          action => 'delete',
-        }} @hostlist]);
-      });
+          schema('netdisco')->txn_do(sub {
+            my @hostlist = schema('netdisco')->resultset('Device')->search({
+              -not_bool => 'is_pseudo',
+              last_discover => \[q/< (LOCALTIMESTAMP - ?::interval)/,
+                  ($days * 86400)],
+            })->get_column('ip')->all;
+
+            foreach my $ip (@hostlist) {
+                next unless acl_matches_only($ip, $acl);
+                jq_insert([{
+                  device => $ip,
+                  action => 'delete',
+                }]);
+            }
+          });
+      }
   }
 
   if (setting('expire_nodes') and setting('expire_nodes') > 0) {

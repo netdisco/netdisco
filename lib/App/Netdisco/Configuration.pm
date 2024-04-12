@@ -211,6 +211,13 @@ else {
   config->{'domain_suffix'} = qr//;
 }
 
+# convert expire_devices from single to dict
+
+if (q{} eq ref setting('expire_devices')) {
+  config->{'expire_devices'}
+    = { 'group:__ANY__' => setting('expire_devices') };
+}
+
 # convert tacacs from single to lists
 
 if (ref {} eq ref setting('tacacs')
