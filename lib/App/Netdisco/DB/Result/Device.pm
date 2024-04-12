@@ -330,6 +330,8 @@ sub renumber {
   $schema->resultset('DeviceIp')
     ->search({ip => $old_ip, alias => $old_ip})
     ->update({ip => $new_ip, alias => $new_ip});
+  $schema->resultset('DeviceIp')
+    ->search({ip => $old_ip, alias => $new_ip})->delete();
 
   # Community is not included as SNMP::test_connection will take care of it
   foreach my $set (qw/
