@@ -10,6 +10,7 @@ use Dancer::Plugin::DBIC 'schema';
 use Encode;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::PortAccessEntity 'update_pae_attributes';
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
 
@@ -179,14 +180,20 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   schema('netdisco')->txn_do(sub {
     my $gone = $device->properties_ports->delete;
+
     debug sprintf ' [%s] properties - removed %d port properties',
       $device->ip, $gone;
+
     $device->properties_ports->populate(
       [map {{ port => $_, %{ $properties{$_} } }} keys %properties] );
+
+    debug sprintf ' [%s] properties - updating Port Access Entity', $device->ip;
+    update_pae_attributes($device);
 
     return Status->info(sprintf ' [%s] properties - added %d new port properties',
       $device->ip, scalar keys %properties);
   });
+
 });
 
 true;
