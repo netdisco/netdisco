@@ -696,6 +696,7 @@ worker_plugins:
   - 'Macsuck'
   - 'Macsuck::Hooks'
   - 'Macsuck::Nodes'
+  - 'Macsuck::InterfacesStatus'
   - 'Macsuck::PortAccessEntity'
   - 'Macsuck::WirelessNodes'
   - 'Macwalk'

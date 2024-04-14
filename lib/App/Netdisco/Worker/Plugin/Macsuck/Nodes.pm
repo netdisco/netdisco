@@ -43,7 +43,7 @@ register_worker({ phase => 'early',
 });
 
 register_worker({ phase => 'main', driver => 'direct',
-  title => 'gather macs from file and set interfaces' }, sub {
+  title => 'gather macs from file' }, sub {
 
   my ($job, $workerconf) = @_;
   my $device = $job->device;
@@ -70,27 +70,6 @@ register_worker({ phase => 'main', driver => 'direct',
   debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
     $device->ip, scalar @fwtable;
 
-  # make sure ports are UP in netdisco (unless it's a lag master,
-  # because we can still see nodes without a functioning aggregate)
-
-  my %port_seen = ();
-  foreach my $node (@fwtable) {
-    my $port = $node->{port} or next;
-    next if $port_seen{$port};
-    next unless exists vars->{'device_ports'}->{$port};
-    next if vars->{'device_ports'}->{$port}->is_master;
-
-    debug sprintf ' [%s] macsuck - updating port %s status up/up due to node presence',
-      $device->ip, $port;
-
-    vars->{'device_ports'}->{$port}->update({
-      up => 'up',
-      up_admin => 'up',
-    });
-
-    ++$port_seen{$port};
-  }
-
   # rebuild fwtable in format for filtering more easily
   foreach my $node (@fwtable) {
       my $mac = NetAddr::MAC->new(mac => ($node->{'mac'} || ''));
@@ -102,19 +81,11 @@ register_worker({ phase => 'main', driver => 'direct',
                        ->{ $mac->as_ieee } += 1;
   }
 
-  # remove macs on forbidden vlans
-  my @vlans = (0, sanity_vlans($device, vars->{'fwtable'}, {}, {}));
-  foreach my $vlan (keys %{ vars->{'fwtable'} }) {
-      delete vars->{'fwtable'}->{$vlan}
-        unless scalar grep {$_ eq $vlan} @vlans;
-  }
-
   return Status->done("Received MAC addresses for $device");
 });
 
-
 register_worker({ phase => 'main', driver => 'snmp',
-  title => 'gather macs from snmp and set interfaces'}, sub {
+  title => 'gather macs from snmp'}, sub {
 
   my ($job, $workerconf) = @_;
   my $device = $job->device;
@@ -122,28 +93,12 @@ register_worker({ phase => 'main', driver => 'snmp',
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
-  my $interfaces = $snmp->interfaces || {};
-  my $reverse_interfaces = { reverse %{ $interfaces } }; # might squash but prob not
-  my $i_up       = $snmp->i_up;
-  my $i_up_admin = $snmp->i_up_admin;
-
-  # make sure ports reflect their latest state as reported by device
-  foreach my $port (keys %{ vars->{'device_ports'} }) {
-    my $iid = $reverse_interfaces->{$port} or next;
-
-    debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
-      $device->ip, $port, ($i_up_admin->{$iid} || '-'), ($i_up->{$iid} || '-');
-
-    vars->{'device_ports'}->{$port}->update({
-      up => $i_up->{$iid},
-      up_admin => $i_up_admin->{$iid},
-    });
-  }
-
   # get forwarding table data via basic snmp connection
+  my $interfaces = $snmp->interfaces || {};
   vars->{'fwtable'} = walk_fwtable($snmp, $device, $interfaces);
 
   # ...then per-vlan if supported
+  # this will duplicate call sanity_vlans (same as store) but helps efficiency
   my @vlan_list = get_vlan_list($snmp, $device);
   {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
@@ -165,12 +120,17 @@ register_worker({ phase => 'store',
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  # sanity filter the MAC addresses from the device
+  # remove macs on forbidden vlans
+  my @vlans = (0, sanity_vlans($device, vars->{'fwtable'}, {}, {}));
+  foreach my $vlan (keys %{ vars->{'fwtable'} }) {
+      delete vars->{'fwtable'}->{$vlan}
+        unless scalar grep {$_ eq $vlan} @vlans;
+  }
 
+  # sanity filter the MAC addresses from the device
   vars->{'fwtable'} = sanity_macs( $device, vars->{'fwtable'}, vars->{'device_ports'} );
 
   # reverse sort allows vlan 0 entries to be included only as fallback
-
   my $node_count = 0;
   foreach my $vlan (reverse sort keys %{ vars->{'fwtable'} }) {
       foreach my $port (keys %{ vars->{'fwtable'}->{$vlan} }) {

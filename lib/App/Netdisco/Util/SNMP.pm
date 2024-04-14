@@ -118,15 +118,15 @@ sub snmp_comm_reindex {
       $prefix ||= 'vlan-';
 
       if ($vlan =~ /^[0-9]+$/i && $vlan) {
-        debug sprintf '[%s] reindexing to "%s%s" (ver: %s, class: %s)',
+        debug sprintf ' [%s] reindexing to "%s%s" (ver: %s, class: %s)',
         $device->ip, $prefix, $vlan, $ver, $snmp->class;
         $snmp->update(Context => ($prefix . $vlan));
       } elsif ($vlan =~ /^[a-z0-9]+$/i && $vlan) {
-        debug sprintf '[%s] reindexing to "%s" (ver: %s, class: %s)',
+        debug sprintf ' [%s] reindexing to "%s" (ver: %s, class: %s)',
           $device->ip, $vlan, $ver, $snmp->class;
         $snmp->update(Context => ($vlan));
       } else {
-        debug sprintf '[%s] reindexing without context (ver: %s, class: %s)',
+        debug sprintf ' [%s] reindexing without context (ver: %s, class: %s)',
           $device->ip, $ver, $snmp->class;
         $snmp->update(Context => '');
       }
@@ -134,7 +134,7 @@ sub snmp_comm_reindex {
   else {
       my $comm = $snmp->snmp_comm;
 
-      debug sprintf '[%s] reindexing to vlan %s (ver: %s, class: %s)',
+      debug sprintf ' [%s] reindexing to vlan %s (ver: %s, class: %s)',
         $device->ip, $vlan, $ver, $snmp->class;
       $vlan ? $snmp->update(Community => $comm . '@' . $vlan)
             : $snmp->update(Community => $comm);
