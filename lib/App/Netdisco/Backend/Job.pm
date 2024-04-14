@@ -213,8 +213,9 @@ sub add_status {
   return unless ref $status eq 'App::Netdisco::Worker::Status';
   $status->phase( $job->_current_phase || '' );
   push @{ $job->_statuslist }, $status;
-  debug $status->log if $status->log
-    and (($status->phase eq 'check') or $status->not_ok);
+  if ($status->log) {
+      debug sprintf '(%s) %s', $status->status, $status->log;
+  }
 }
 
 =head1 ADDITIONAL COLUMNS
