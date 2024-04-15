@@ -55,7 +55,7 @@ Returns C<undef> if the connection fails.
 
   sub macsuck {
     my $self = shift;
-    $self->plateform->macsuck(@_, $self->host, $self->ssh, $self->auth);
+    $self->platform->macsuck(@_, $self->host, $self->ssh, $self->auth);
   }
 }
 
