@@ -101,7 +101,13 @@ register 'register_worker' => sub {
     # use DDP; p @newuserconf;
 
     # run worker
-    $code->($job, $workerconf);
+    if ($ENV{ND2_WORKER_ROLL_CALL}) {
+        use DDP; p $workerconf;
+        return Status->info('-');
+    }
+    else {
+        $code->($job, $workerconf);
+    }
   };
 
   # store the built worker as Worker.pm will build the dispatch order later on

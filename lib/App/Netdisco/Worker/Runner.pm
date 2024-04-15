@@ -70,7 +70,7 @@ sub run {
     $self->run_workers('workers_check');
 
     # run other phases
-    if ($job->check_passed) {
+    if ($job->check_passed or $ENV{ND2_WORKER_ROLL_CALL}) {
       $self->run_workers("workers_${_}") for qw/early main user store late/;
     }
   };
