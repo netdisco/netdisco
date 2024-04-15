@@ -86,8 +86,7 @@ EOF
 
   foreach my $line (@data) {
     if ($line && $line =~ m/$re_mac_line/) {
-      next unless exists $if_name_map->{$3};
-      my $port = sprintf "%s%s", $if_name_map->{$3}, $4;
+      my $port = sprintf "%s%s", ($if_name_map->{$3} || $3), $4;
       my $vlan = ($1 ? ($1 eq 'All' ? 0 : $1) : 0);
 
       ++$macentries->{$vlan}->{$port}->{mac_as_ieee($2)};
