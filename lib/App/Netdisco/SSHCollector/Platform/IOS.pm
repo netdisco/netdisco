@@ -69,11 +69,10 @@ sub arpnip {
 
 sub macsuck {
   my ($self, $hostlabel, $ssh, $args) = @_;
-  
+
   debug "$hostlabel $$ macsuck()";
   my $cmds = <<EOF;
 terminal length 0
-show interfaces description
 show mac address-table
 EOF
   my @data = $ssh->capture({stdin_data => $cmds}); chomp @data;
@@ -82,25 +81,20 @@ EOF
     return;
   }
 
-  my $interfaces = {};
   my $macentries = {};
-  my $re_interface_line = qr/^([a-z]+)([0-9\/\.]+)\s+(up|down|admin down)\s+(up|down)/i;
   my $re_mac_line = qr/^\s*(All|[0-9]+)\s+([0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4})\s+\S+\s+([a-zA-Z]+)([0-9\/\.]+)/i;
-  my $port;
-  foreach (@data) {
-    if ($_ && /$re_interface_line/) {
-      $port = sprintf "%s%s", $if_name_map->{$1}, $2;
-      $interfaces->{$port} = {
-        up_admin => ($3 eq "admin down") ? "down" : "up",
-        up => ($3 eq "down") ? "down" : "up",
-      };
-    } elsif ($_ && /$re_mac_line/) {
-      $port = sprintf "%s%s", $if_name_map->{$3}, $4;
-      ++$macentries->{$1}->{$port}->{mac_as_ieee($2)};
+
+  foreach my $line (@data) {
+    if ($line && $line =~ m/$re_mac_line/) {
+      next unless exists $if_name_map->{$3};
+      my $port = sprintf "%s%s", $if_name_map->{$3}, $4;
+      my $vlan = ($1 ? ($1 eq 'All' ? 0 : $1) : 0);
+
+      ++$macentries->{$vlan}->{$port}->{mac_as_ieee($2)};
     }
   }
 
-  return ($interfaces,$macentries);
+  return $macentries;
 }
 
 1;
