@@ -84,7 +84,7 @@ register_worker({ phase => 'main', driver => 'direct',
   return Status->done("Received MAC addresses for $device");
 });
 
-reister_worker({ phase => 'main', driver => 'cli',
+register_worker({ phase => 'main', driver => 'cli',
   title => 'gather macs from CLI'}, sub {
 
   my ($job, $workerconf) = @_;
