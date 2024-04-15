@@ -85,32 +85,32 @@ register_worker({ phase => 'main', driver => 'direct',
 });
 
 reister_worker({ phase => 'main', driver => 'cli',
-  title => 'gather macs from CLI and set interfaces'}, sub {
+  title => 'gather macs from CLI'}, sub {
 
   my ($job, $workerconf) = @_;
-  
   my $device = $job->device;
+
   my $cli = App::Netdisco::Transport::SSH->session_for($device)
     or return Status->defer("macsuck failed: could not SSH connect to $device");
 
   # Retrieve data through SSH connection
-  my ($interfaces,$macentries) = $cli->macsuck;
+  my $macs = $cli->macsuck;
 
-  # make sure ports reflect their latest state as reported by device
-  foreach my $port (keys %{ vars->{'device_ports'} }) {
-    my $iif = $interfaces->{$port} or next;
-
-    debug sprintf ' [%s] macsuck - updating port %s status : %s/%s',
-      $device->ip, $port, ($iif->{up_admin} || '-'), ($iif->{up} || '-');
-
-    vars->{'device_ports'}->{$port}->update({
-      up => $iif->{up} || '-',
-      up_admin => $iif->{up_admin} || '-',
-    });
+  my $nodecount = 0;
+  foreach my $vlan (keys %{ $macs }) {
+    foreach my $port (keys %{ $macs->{$vlan} }) {
+      $nodecount += scalar keys %{ $macs->{$vlan}->{$port} };
+    }
   }
 
+  return $job->cancel('data provided but 0 fwd entries found')
+    unless $nodecount;
+
+  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
+    $device->ip, $nodecount;
+
   # get forwarding table and populate fwtable
-  vars->{'fwtable'} = $macentries
+  vars->{'fwtable'} = $macs
 
   return Status->done("Gathered MAC addresses for $device");
 });
