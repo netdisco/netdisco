@@ -81,12 +81,22 @@ EOF
     return;
   }
 
+  #hostname#sh mac address-table
+  #          Mac Address Table
+  #-------------------------------------------
+  #
+  #Vlan    Mac Address       Type        Ports
+  #----    -----------       --------    -----
+  # All    0100.0ccc.cccc    STATIC      CPU
+  #  10    xxxx.7fc7.xxxx    DYNAMIC     Gi0/1/0
+  #  10    xxxx.027c.xxxx    STATIC      CPU
+
+  my $re_mac_line = qr/^\s*(All|[0-9]+)\s+([0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4})\s+\S+\s+([a-zA-Z]+)([0-9\/\.]*)/i;
   my $macentries = {};
-  my $re_mac_line = qr/^\s*(All|[0-9]+)\s+([0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4})\s+\S+\s+([a-zA-Z]+)([0-9\/\.]+)/i;
 
   foreach my $line (@data) {
     if ($line && $line =~ m/$re_mac_line/) {
-      my $port = sprintf "%s%s", ($if_name_map->{$3} || $3), $4;
+      my $port = sprintf '%s%s', ($if_name_map->{$3} || $3), ($4 || '');
       my $vlan = ($1 ? ($1 eq 'All' ? 0 : $1) : 0);
 
       ++$macentries->{$vlan}->{$port}->{mac_as_ieee($2)};
