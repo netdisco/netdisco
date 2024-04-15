@@ -110,7 +110,7 @@ reister_worker({ phase => 'main', driver => 'cli',
     $device->ip, $nodecount;
 
   # get forwarding table and populate fwtable
-  vars->{'fwtable'} = $macs
+  vars->{'fwtable'} = $macs;
 
   return Status->done("Gathered MAC addresses for $device");
 });
