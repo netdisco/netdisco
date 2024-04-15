@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::PortMAC 'get_port_macs';
