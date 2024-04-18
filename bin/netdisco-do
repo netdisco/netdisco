@@ -50,7 +50,7 @@ use App::Netdisco::Util::Device 'get_device';
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($port, $extra, $debug, $quiet, $queue_only, $force, $rollback);
+my ($port, $extra, $debug, $quiet, $queue_only, $force, $dryrun, $rollback);
 my ($devices, $infotrace, $snmptrace, $sqltrace) = ([], 0, 0, 0);
 
 my $result = GetOptions(
@@ -60,6 +60,7 @@ my $result = GetOptions(
   'debug|D'    => \$debug,
   'enqueue'    => \$queue_only,
   'force'      => \$force,
+  'dry-run'    => \$dryrun,
   'quiet'      => \$quiet,
   'rollback|R' => \$rollback,
   'infotrace|I+' => \$infotrace,
@@ -70,6 +71,11 @@ my $result = GetOptions(
   -verbose => 0,
   -exitval => 1,
 );
+
+if ($dryrun) {
+  $ENV{ND2_WORKER_ROLL_CALL} = 1;
+  $debug = 1;
+}
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
@@ -542,5 +548,9 @@ L<DBIx::Class> trace enabled.
 
 In case of issues with the colored output, setting the environment variable
 C<ANSI_COLORS_DISABLED> can be used to suppress it.
+
+The C<< --dry-run >> option can be provided to show the workers that will run
+without actually executing their content. Setting the C<ND2_WORKER_ROLL_CALL>
+environment variable does the same thing.
 
 =cut
