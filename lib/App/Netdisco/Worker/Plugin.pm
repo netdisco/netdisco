@@ -5,6 +5,8 @@ use Dancer::Plugin;
 
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use aliased 'App::Netdisco::Worker::Status';
+
+use Term::ANSIColor qw(:constants :constants256);
 use Scope::Guard 'guard';
 use Storable 'dclone';
 
@@ -17,6 +19,7 @@ register 'register_worker' => sub {
     unless ((ref sub {} eq ref $code) and (ref {} eq ref $workerconf));
 
   my $package = (caller)[0];
+  ($workerconf->{package} = $package) =~ s/^App::Netdisco::Worker::Plugin:://;
   if ($package =~ m/Plugin::(\w+)(?:::(\w+))?/) {
     $workerconf->{action}    = lc($1);
     $workerconf->{namespace} = lc($2) if $2;
@@ -24,7 +27,7 @@ register 'register_worker' => sub {
   return error "failed to parse action in '$package'"
     unless $workerconf->{action};
 
-  ( $workerconf->{title}   ||= lc($package) ) =~ s/.+plugin:://;
+  $workerconf->{title}     ||= '-';
   $workerconf->{phase}     ||= 'user';
   $workerconf->{namespace} ||= '_base_';
   $workerconf->{priority}  ||= (exists $workerconf->{driver}
@@ -34,8 +37,9 @@ register 'register_worker' => sub {
     my $job = shift or die 'missing job param';
     # use DDP; p $workerconf;
 
-    debug sprintf '-> run worker %s/%s "%s"',
-      @$workerconf{qw/phase priority title/};
+    debug YELLOW, '-> ', GREY10, 'run worker ', $workerconf->{package},
+      GREY10, ' p', MAGENTA, $workerconf->{priority}, GREY10, ' "',
+      BRIGHT_BLUE, $workerconf->{title}, GREY10, '"', RESET;
 
     if ($job->is_cancelled) {
       return $job->add_status( Status->info('skip: job is cancelled') );
@@ -102,7 +106,6 @@ register 'register_worker' => sub {
 
     # run worker
     if ($ENV{ND2_WORKER_ROLL_CALL}) {
-        use DDP; p $workerconf;
         return Status->info('-');
     }
     else {
