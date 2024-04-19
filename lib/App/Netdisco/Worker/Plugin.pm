@@ -27,7 +27,7 @@ register 'register_worker' => sub {
   return error "failed to parse action in '$package'"
     unless $workerconf->{action};
 
-  $workerconf->{title}     ||= '-';
+  $workerconf->{title}     ||= '';
   $workerconf->{phase}     ||= 'user';
   $workerconf->{namespace} ||= '_base_';
   $workerconf->{priority}  ||= (exists $workerconf->{driver}
@@ -38,8 +38,9 @@ register 'register_worker' => sub {
     # use DDP; p $workerconf;
 
     debug YELLOW, '-> ', GREY10, 'run worker ', $workerconf->{package},
-      GREY10, ' p', MAGENTA, $workerconf->{priority}, GREY10, ' "',
-      BRIGHT_BLUE, $workerconf->{title}, GREY10, '"', RESET;
+      GREY10, ' p', MAGENTA, $workerconf->{priority},
+      ($workerconf->{title} ? (GREY10, ' "', BRIGHT_BLUE, $workerconf->{title}, GREY10, '"') : ''),
+      RESET;
 
     if ($job->is_cancelled) {
       return $job->add_status( Status->info('skip: job is cancelled') );
