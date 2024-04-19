@@ -37,7 +37,7 @@ register 'register_worker' => sub {
     my $job = shift or die 'missing job param';
     # use DDP; p $workerconf;
 
-    debug YELLOW, '-> ', GREY10, 'run worker ', $workerconf->{package},
+    debug YELLOW, "\N{RIGHTWARDS BLACK ARROW} worker ", GREY10, $workerconf->{package},
       GREY10, ' p', MAGENTA, $workerconf->{priority},
       ($workerconf->{title} ? (GREY10, ' "', BRIGHT_BLUE, $workerconf->{title}, GREY10, '"') : ''),
       RESET;
