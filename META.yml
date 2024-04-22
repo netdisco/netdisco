@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.075003'
+    version: '2.076000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -189,6 +189,8 @@ provides:
     file: lib/App/Netdisco/DB/ResultSet/DevicePortSsid.pm
   App::Netdisco::DB::ResultSet::DevicePower:
     file: lib/App/Netdisco/DB/ResultSet/DevicePower.pm
+  App::Netdisco::DB::ResultSet::DeviceSkip:
+    file: lib/App/Netdisco/DB/ResultSet/DeviceSkip.pm
   App::Netdisco::DB::ResultSet::Node:
     file: lib/App/Netdisco/DB/ResultSet/Node.pm
   App::Netdisco::DB::ResultSet::NodeIp:
@@ -467,8 +469,6 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
   App::Netdisco::Worker::Plugin::Discover::PortProperties:
     file: lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
-  App::Netdisco::Worker::Plugin::Discover::PortProperties::PortAccessEntity:
-    file: lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm
   App::Netdisco::Worker::Plugin::Discover::Properties:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
   App::Netdisco::Worker::Plugin::Discover::Properties::Tags:
@@ -485,6 +485,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
   App::Netdisco::Worker::Plugin::DumpConfig:
     file: lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
+  App::Netdisco::Worker::Plugin::DumpInfoCache:
+    file: lib/App/Netdisco/Worker/Plugin/DumpInfoCache.pm
   App::Netdisco::Worker::Plugin::Expire:
     file: lib/App/Netdisco/Worker/Plugin/Expire.pm
   App::Netdisco::Worker::Plugin::ExpireNodes:
@@ -511,10 +513,12 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck.pm
   App::Netdisco::Worker::Plugin::Macsuck::Hooks:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
+  App::Netdisco::Worker::Plugin::Macsuck::InterfacesStatus:
+    file: lib/App/Netdisco/Worker/Plugin/Macsuck/InterfacesStatus.pm
   App::Netdisco::Worker::Plugin::Macsuck::Nodes:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
-  App::Netdisco::Worker::Plugin::Macsuck::Nodes::PortAccessEntity:
-    file: lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes/PortAccessEntity.pm
+  App::Netdisco::Worker::Plugin::Macsuck::PortAccessEntity:
+    file: lib/App/Netdisco/Worker/Plugin/Macsuck/PortAccessEntity.pm
   App::Netdisco::Worker::Plugin::Macsuck::WirelessNodes:
     file: lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
   App::Netdisco::Worker::Plugin::Macwalk:
@@ -668,5 +672,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.075003'
+version: '2.076000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

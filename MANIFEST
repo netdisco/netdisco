@@ -97,6 +97,7 @@ lib/App/Netdisco/DB/ResultSet/DevicePort.pm
 lib/App/Netdisco/DB/ResultSet/DevicePortLog.pm
 lib/App/Netdisco/DB/ResultSet/DevicePortSsid.pm
 lib/App/Netdisco/DB/ResultSet/DevicePower.pm
+lib/App/Netdisco/DB/ResultSet/DeviceSkip.pm
 lib/App/Netdisco/DB/ResultSet/Node.pm
 lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
@@ -236,7 +237,6 @@ lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
-lib/App/Netdisco/Worker/Plugin/Discover/PortProperties/PortAccessEntity.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Snapshot.pm
@@ -245,6 +245,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
 lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
 lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
 lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
+lib/App/Netdisco/Worker/Plugin/DumpInfoCache.pm
 lib/App/Netdisco/Worker/Plugin/Expire.pm
 lib/App/Netdisco/Worker/Plugin/ExpireNodes.pm
 lib/App/Netdisco/Worker/Plugin/GetAPIKey.pm
@@ -258,8 +259,9 @@ lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
+lib/App/Netdisco/Worker/Plugin/Macsuck/InterfacesStatus.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes.pm
-lib/App/Netdisco/Worker/Plugin/Macsuck/Nodes/PortAccessEntity.pm
+lib/App/Netdisco/Worker/Plugin/Macsuck/PortAccessEntity.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/WirelessNodes.pm
 lib/App/Netdisco/Worker/Plugin/Macwalk.pm
 lib/App/Netdisco/Worker/Plugin/MakeRancidConf.pm

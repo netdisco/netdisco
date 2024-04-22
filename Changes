@@ -1,3 +1,20 @@
+2.076000 - 2024-04-22
+
+  [NEW FEATURES]
+
+  * #1164 per acl-group expire_devices setting
+  * #1190 SSH macsuck (supported on IOS only, for now)
+
+  [ENHANCEMENTS]
+
+  * colorized debug output for worker logs
+  * ND2_WORKER_ROLL_CALL environment and --dry-run options for netdisco-do
+  * #1178 add dumpinfocache worker to dump device cache for SNMP::Info testing
+
+  [BUG FIXES]
+
+  * #1199 wrap find_or_create in EXCLUSIVE table lock transactions
+
 2.075003 - 2024-04-12
 
   [ENHANCEMENTS]
