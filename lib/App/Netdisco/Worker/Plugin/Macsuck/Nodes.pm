@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::PortMAC 'get_port_macs';
@@ -82,6 +83,37 @@ register_worker({ phase => 'main', driver => 'direct',
   }
 
   return Status->done("Received MAC addresses for $device");
+});
+
+register_worker({ phase => 'main', driver => 'cli',
+  title => 'gather macs from CLI'}, sub {
+
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  my $cli = App::Netdisco::Transport::SSH->session_for($device)
+    or return Status->defer("macsuck failed: could not SSH connect to $device");
+
+  # Retrieve data through SSH connection
+  my $macs = $cli->macsuck;
+
+  my $nodecount = 0;
+  foreach my $vlan (keys %{ $macs }) {
+    foreach my $port (keys %{ $macs->{$vlan} }) {
+      $nodecount += scalar keys %{ $macs->{$vlan}->{$port} };
+    }
+  }
+
+  return $job->cancel('data provided but 0 fwd entries found')
+    unless $nodecount;
+
+  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
+    $device->ip, $nodecount;
+
+  # get forwarding table and populate fwtable
+  vars->{'fwtable'} = $macs;
+
+  return Status->done("Gathered MAC addresses for $device");
 });
 
 register_worker({ phase => 'main', driver => 'snmp',

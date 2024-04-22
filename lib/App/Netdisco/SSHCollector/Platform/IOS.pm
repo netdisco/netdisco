@@ -14,6 +14,7 @@ use strict;
 use warnings;
 
 use Dancer ':script';
+use NetAddr::MAC qw/mac_as_ieee/;
 use Moo;
 
 =head1 PUBLIC METHODS
@@ -30,6 +31,21 @@ Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADD
 =back
 
 =cut
+
+my $if_name_map = {
+  Vl => "Vlan",
+  Lo => "Loopback",
+  Fa => "FastEthernet",
+  Gi => "GigabitEthernet",
+  Tw => "TwoGigabitEthernet",
+  Fi => "FiveGigabitEthernet",
+  Te => "TenGigabitEthernet",
+  Twe => "TwentyFiveGigE",
+  Fo => "FortyGigabitEthernet",
+  Hu => "HundredGigE",
+  Po => "Port-channel",
+  Bl => "Bluetooth",
+};
 
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
@@ -49,6 +65,45 @@ sub arpnip {
     }
 
     return @arpentries;
+}
+
+sub macsuck {
+  my ($self, $hostlabel, $ssh, $args) = @_;
+
+  debug "$hostlabel $$ macsuck()";
+  my $cmds = <<EOF;
+terminal length 0
+show mac address-table
+EOF
+  my @data = $ssh->capture({stdin_data => $cmds}); chomp @data;
+  if ($ssh->error) {
+    info "$hostlabel $$ error in SSH command " . $ssh->error;
+    return;
+  }
+
+  #hostname#sh mac address-table
+  #          Mac Address Table
+  #-------------------------------------------
+  #
+  #Vlan    Mac Address       Type        Ports
+  #----    -----------       --------    -----
+  # All    0100.0ccc.cccc    STATIC      CPU
+  #  10    xxxx.7fc7.xxxx    DYNAMIC     Gi0/1/0
+  #  10    xxxx.027c.xxxx    STATIC      CPU
+
+  my $re_mac_line = qr/^\s*(All|[0-9]+)\s+([0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4})\s+\S+\s+([a-zA-Z]+)([0-9\/\.]*)/i;
+  my $macentries = {};
+
+  foreach my $line (@data) {
+    if ($line && $line =~ m/$re_mac_line/) {
+      my $port = sprintf '%s%s', ($if_name_map->{$3} || $3), ($4 || '');
+      my $vlan = ($1 ? ($1 eq 'All' ? 0 : $1) : 0);
+
+      ++$macentries->{$vlan}->{$port}->{mac_as_ieee($2)};
+    }
+  }
+
+  return $macentries;
 }
 
 1;
