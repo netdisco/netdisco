@@ -1,3 +1,13 @@
+2.076001 - 2024-04-24
+
+  [ENHANCEMENTS]
+
+  * add note on NO_COLOR to netdisco-do
+
+  [BUG FIXES]
+
+  * add Term::ANSIColor to dependencies (dual life) and set min ver to ensure :constants256 support
+
 2.076000 - 2024-04-22
 
   [NEW FEATURES]

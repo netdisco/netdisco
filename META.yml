@@ -23,7 +23,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.076000'
+    version: '2.076001'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -650,6 +650,7 @@ requires:
   Template::AutoFilter: '0'
   Template::Plugin::CSV: '0.04'
   Template::Plugin::Number::Format: '1.02'
+  Term::ANSIColor: '5.01'
   Term::ReadLine: '0'
   Term::UI: '0'
   Text::CSV: '2.04'
@@ -672,5 +673,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.076000'
+version: '2.076001'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
