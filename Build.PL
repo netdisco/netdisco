@@ -98,6 +98,7 @@ Module::Build->new(
     'Template::AutoFilter' => '0',
     'Template::Plugin::CSV' => '0.04',
     'Template::Plugin::Number::Format' => '1.02',
+    'Term::ANSIColor' => '5.01',
     'Term::ReadLine' => '0',
     'Term::UI' => '0',
     'Text::CSV' => '2.04',
