@@ -547,7 +547,7 @@ L<DBIx::Class> trace enabled.
 =back
 
 In case of issues with the colored output, setting the environment variable
-C<ANSI_COLORS_DISABLED> can be used to suppress it.
+C<ANSI_COLORS_DISABLED> or C<NO_COLOR> can be used to suppress it.
 
 The C<< --dry-run >> option can be provided to show the workers that will run
 without actually executing their content. Setting the C<ND2_WORKER_ROLL_CALL>
