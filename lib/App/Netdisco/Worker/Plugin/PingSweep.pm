@@ -10,6 +10,7 @@ use Time::HiRes;
 use Sys::SigAction 'timeout_call';
 use Net::Ping;
 use Net::Ping::External;
+use Proc::ProcessTable;
 use NetAddr::IP qw/:rfc3021 :lower/;
 
 register_worker({ phase => 'main' }, sub {
@@ -35,6 +36,7 @@ register_worker({ phase => 'main' }, sub {
   };
 
   $SIG{CHLD} = 'IGNORE';
+  debug sprintf 'I am PID %s', $$;
 
   foreach my $idx (0 .. $net->num()) {
     my $addr = $net->nth($idx) or next;
@@ -42,6 +44,22 @@ register_worker({ phase => 'main' }, sub {
 
     if (timeout_call($timeout, $pinger, $host)) {
       debug sprintf 'pinged %s and timed out', $host;
+      my $t = Proc::ProcessTable->new;
+      foreach my $p ( @{$t->table} ) {
+          if ($p->ppid() and $p->ppid() == $$) {
+              my $pid = $p->pid();
+
+              foreach my $c ( @{$t->table} ) {
+                  if ($c->ppid() and $c->ppid() == $pid) {
+                      debug sprintf 'killing fork %s (%s) of %s', $c->pid(), $c->cmndline(), $p->pid();
+                      kill 1, $c->pid();
+                  }
+              }
+
+              debug sprintf 'killing fork %s (%s) of %s', $p->pid(), $p->cmndline(), $$;
+              kill 1, $p->pid();
+          }
+      }
       next;
     }
 

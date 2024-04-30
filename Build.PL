@@ -80,6 +80,7 @@ Module::Build->new(
     'Plack::Middleware::Headers' => '0',
     'Plack::Middleware::ReverseProxy' => '0.15',
     'Pod::Usage' => 0,
+    'Proc::ProcessTable' => '0.636',
     'Regexp::Common' => 2017060201,
     'Regexp::Common::net::CIDR' => 0,
     'Role::Tiny' => '1.002005',
