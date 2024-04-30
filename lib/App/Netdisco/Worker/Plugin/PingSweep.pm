@@ -35,15 +35,19 @@ register_worker({ phase => 'main' }, sub {
     debug sprintf 'pinged %s successfully', $host;
   };
 
+  # this is needed to allow bash/shell subprocess to exit
   $SIG{CHLD} = 'IGNORE';
-  debug sprintf 'I am PID %s', $$;
+  # debug sprintf 'I am PID %s', $$;
 
-  foreach my $idx (0 .. $net->num()) {
+  ADDRESS: foreach my $idx (0 .. $net->num()) {
     my $addr = $net->nth($idx) or next;
     my $host = $addr->addr;
 
     if (timeout_call($timeout, $pinger, $host)) {
       debug sprintf 'pinged %s and timed out', $host;
+
+      # this is a bit gross, but needed because Net::Ping::External doesn't
+      # provide any cleanup/management or access to child PID
       my $t = Proc::ProcessTable->new;
       foreach my $p ( @{$t->table} ) {
           if ($p->ppid() and $p->ppid() == $$) {
@@ -51,16 +55,17 @@ register_worker({ phase => 'main' }, sub {
 
               foreach my $c ( @{$t->table} ) {
                   if ($c->ppid() and $c->ppid() == $pid) {
-                      debug sprintf 'killing fork %s (%s) of %s', $c->pid(), $c->cmndline(), $p->pid();
+                      # debug sprintf 'killing fork %s (%s) of %s', $c->pid(), $c->cmndline(), $p->pid();
                       kill 1, $c->pid();
                   }
               }
 
-              debug sprintf 'killing fork %s (%s) of %s', $p->pid(), $p->cmndline(), $$;
+              # debug sprintf 'killing fork %s (%s) of %s', $p->pid(), $p->cmndline(), $$;
               kill 1, $p->pid();
           }
       }
-      next;
+
+      next ADDRESS;
     }
 
     jq_insert([{
