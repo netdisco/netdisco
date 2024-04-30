@@ -1,3 +1,9 @@
+2.076002 - 2024-04-30
+
+  [BUG FIXES]
+
+  * better clean-up child processes of pingsweep
+
 2.076001 - 2024-04-24
 
   [ENHANCEMENTS]
