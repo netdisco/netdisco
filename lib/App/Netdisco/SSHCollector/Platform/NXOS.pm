@@ -33,6 +33,13 @@ Returns a list of hashrefs in the format C<< { mac => MACADDR, ip => IPADDR } >>
 
 =cut
 
+my $if_name_map = {
+  Vl => "Vlan",
+  Lo => "Loopback",
+  Eth => "Ethernet",
+  Po => "Port-channel",
+};
+
 sub arpnip {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
@@ -101,7 +108,6 @@ sub arpnip {
 
     my $prevline;
     foreach my $line (@data6) {
-
         my ($addr, $age, $mac, $pref, $src, $iface) = split(/\s+/, $line);
         # Check to see if everything is on one line
         if ($addr and $addr =~ /$RE{net}{IPv6}/
@@ -118,6 +124,49 @@ sub arpnip {
     }
 
     return @arpentries;
+}
+
+sub macsuck {
+    my ($self, $hostlabel, $ssh, $args) = @_;
+
+    debug "$hostlabel $$ macsuck()";
+    my $cmds = <<EOF;
+terminal length 0
+show mac address-table
+EOF
+    my @data = $ssh->capture({stdin_data => $cmds}); chomp @data;
+    if ($ssh->error) {
+        info "$hostlabel $$ error in SSH command " . $ssh->error;
+        return
+    }
+
+    #hostname# show mac address-table
+    #Legend:
+    #        * - primary entry, G - Gateway MAC, (R) - Routed MAC, O - Overlay MAC
+    #        age - seconds since last seen,+ - primary entry using vPC Peer-Link,
+    #        (T) - True, (F) - False, C - ControlPlane MAC, ~ - vsan,
+    #        (NA)- Not Applicable
+    #   VLAN     MAC Address      Type      age     Secure NTFY Ports
+    #---------+-----------------+--------+---------+------+----+------------------
+    #+  234     d239.ea50.166a   dynamic  NA         F      F    Po1122
+    #C    3     0050.5650.66d8   dynamic  NA         F      F    nve1(192.168.64.2)
+    #G    -     0200.c0a8.4003   static   -         F      F    sup-eth1(R)
+    #G 1024     648f.3e48.aa4b   static   -         F      F    vPC Peer-Link(R)
+    #* 1509     246e.9618.bc72   dynamic  NA         F      F    Eth1/12
+    
+    my $re_mac_line = qr/^[CG\*\+]\s+([-0-9]+)\s+([0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4})\s+\S+\s+([0-9]+|-|NA)\s+[FT]\s+[FT]\s+(([a-zA-Z]+)([0-9\/\.]*).*)$/i;
+    my $macentries = {};
+
+    foreach my $line (@data) {
+        if ($line && $line =~ m/$re_mac_line/) {
+            my $port = sprintf '%s%s', ($if_name_map->{$5} || $4), ($6 || '');
+            my $vlan = ($1 ? ($1 eq '-' ? 0 : $1) : 0);
+
+            ++$macentries->{$vlan}->{$port}->{mac_as_ieee($2)};
+        }
+    }
+
+    return $macentries;
 }
 
 1;
