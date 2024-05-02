@@ -4,8 +4,9 @@
       <th>Status</th>
       <th>Name</th>
       <th>Port</th>
-      <th>VLAN</th>
+      <th>VLANs</th>
       <th>Speed</th>
+      <th>Connected Device</th>
       <th>Last Change</th>
     </tr>
   </thead>
@@ -25,6 +26,7 @@ $(document).ready(function() {
     "columns": [{
         "data": 'up',
         "className": "nd_center-cell nd_devport-icon",
+        "width": "unset",
         "render": function(data, type, row, meta) {
           if (row.up_admin != "up") {
             return'<i class="icon-remove"></i>';
@@ -54,12 +56,17 @@ $(document).ready(function() {
             + ' [' + he.encode(row.port) + ']</a>' + ddns;
         }
       }, {
-        "data": 'port_vlans.vlan',
+        "data": 'vlan_agg',
         "render": function(data, type, row, meta) {
           return data || '';
         }
       }, {
         "data": 'speed',
+        "render": function(data, type, row, meta) {
+          return data || '';
+        }
+      }, {
+        "data": 'properties.remote_dns',
         "render": function(data, type, row, meta) {
           return data || '';
         }

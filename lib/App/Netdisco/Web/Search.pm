@@ -59,9 +59,11 @@ get '/search' => require_login sub {
                 params->{'tab'} = 'device';
             }
             elsif ($s->resultset('DevicePort')
+                     ->with_properties
                      ->search({
                        -or => [
-                         {name => $likeclause},
+                         { name => $likeclause },
+                         { 'properties.remote_dns' => $likeclause },
                          (((!defined $mac) or $mac->errstr)
                             ? \['mac::text ILIKE ?', $likeval]
                             : {mac => $mac->as_ieee}),

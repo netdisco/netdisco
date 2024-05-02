@@ -76,7 +76,7 @@ get '/ajax/content/search/port' => require_login sub {
             or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/i)));
 
         $rs = schema(vars->{'tenant'})->resultset('DevicePort')
-                                ->columns( [qw/ ip port name up up_admin speed /] )
+                                ->columns( [qw/ ip port name up up_admin speed properties.remote_dns /] )
                                 ->search({
               -and => [
                 -or => [
@@ -88,12 +88,14 @@ get '/ajax/content/search/port' => require_login sub {
                       ? \[ 'me.mac::text ILIKE ?', $likeval ]
                       : {  'me.mac' => $mac->as_ieee        }
                   ),
+                  { "properties.remote_dns" => $likeclause },
                   ( param('uplink') ? (
                     { "me.remote_id"   => $likeclause },
                     { "me.remote_type" => $likeclause },
                   ) : () ),
                 ],
                 ( param('uplink') ? () : (-or => [
+                  { "properties.remote_dns" => $likeclause },
                   {-not_bool => "properties.remote_is_discoverable"},
                   {-or => [
                     {-not_bool => "me.is_uplink"},
@@ -103,8 +105,9 @@ get '/ajax/content/search/port' => require_login sub {
                 ( param('ethernet') ? ("me.type" => 'ethernetCsmacd') : () ),
               ]
             },
-            {   '+columns' => [qw/ device.dns device.name port_vlans.vlan /],
-                join       => [qw/ properties port_vlans device /]
+            {   '+columns' => [qw/ device.dns device.name /, {vlan_agg => q{array_to_string(array_agg(port_vlans.vlan), ', ')}} ],
+                join       => [qw/ properties port_vlans device /],
+                group_by => [qw/me.ip me.port me.name me.up me.up_admin me.speed device.dns device.name device.last_discover device.uptime properties.remote_dns/],
             }
             )->with_times;
     }
