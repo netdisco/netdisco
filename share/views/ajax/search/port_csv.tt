@@ -1,10 +1,10 @@
 [% USE CSV -%]
-[% CSV.dump([ 'Name' 'Port' 'Description' 'VLAN' ]) %]
+[% CSV.dump([ 'Name' 'Port' 'Description' 'VLANs' ]) %]
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
   [% myport = "$row.ip [ $row.port ] (" _ (row.device.dns || row.device.name) _ ")" IF (row.device.dns || row.device.name) %]
-  [% FOREACH col IN [ row.name myport row.descr row.port_vlans.vlan ] %]
+  [% FOREACH col IN [ row.name myport row.descr row.vlan_agg ] %]
     [% mylist.push(col) %]
   [% END %]
   [% CSV.dump(mylist) %]
