@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Port 'to_speed';
 use App::Netdisco::Util::Web 'sql_match';
 
 use Regexp::Common 'net';
@@ -114,6 +115,7 @@ get '/ajax/content/search/port' => require_login sub {
 
     my @results = $rs->hri->all;
     return unless scalar @results;
+    map { $_->{speed} = to_speed( $_->{speed} ) } @results;
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );

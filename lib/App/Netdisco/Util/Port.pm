@@ -13,6 +13,7 @@ our @EXPORT_OK = qw/
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
+  to_speed
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -307,6 +308,43 @@ sub port_has_wap {
   return $row->remote_is_wap if $row->can('remote_is_wap');
   my $properties = $row->properties;
   return ($properties ? $properties->remote_is_wap : undef);
+}
+
+# copied from SNMP::Info to avoid introducing dependency to web frontend
+sub munge_highspeed {
+    my $speed = shift;
+    my $fmt   = "%d Mbps";
+
+    if ( $speed > 9999999 ) {
+        $fmt = "%d Tbps";
+        $speed /= 1000000;
+    }
+    elsif ( $speed > 999999 ) {
+        $fmt = "%.1f Tbps";
+        $speed /= 1000000.0;
+    }
+    elsif ( $speed > 9999 ) {
+        $fmt = "%d Gbps";
+        $speed /= 1000;
+    }
+    elsif ( $speed > 999 ) {
+        $fmt = "%.1f Gbps";
+        $speed /= 1000.0;
+    }
+    return sprintf( $fmt, $speed );
+}
+
+=head2 to_speed( $speed )
+
+Incorporate SNMP::Info C<munge_highspeed> to avoid extra dependency on web frontend.
+
+=cut
+
+sub to_speed {
+  my $speed = shift or return '';
+  return $speed if $speed =~ m/\D/;
+  ($speed = munge_highspeed($speed / 1_000_000)) =~ s/\.0 ?//g;
+  return $speed;
 }
 
 1;

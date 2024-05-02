@@ -271,6 +271,8 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # empty set would be a 'no records' msg
     return unless scalar @results;
+    use App::Netdisco::Util::Port 'to_speed';
+    map { $_->{speed_running} = to_speed( $_->speed ) } @results;
 
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
