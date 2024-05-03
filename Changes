@@ -1,8 +1,16 @@
-2.076002 - 2024-04-30
+2.076003 - 2024-05-03
+
+  [ENHANCEMENTS]
+
+  * better rendering of some port speeds in a couple of web pages
+  * make device renumber always a job and not inline on web frontend
+  * allow jq_insert to run on demo but not for inline jobs
+  * #1205 include device remote_dns in search (port search)
 
   [BUG FIXES]
 
-  * better clean-up child processes of pingsweep
+  * some protection against SNMP::Info scalar-as-hash issues
+  * #1207 fix bug in CSV and API on custom reports with searchable fields
 
 2.076001 - 2024-04-24
 
