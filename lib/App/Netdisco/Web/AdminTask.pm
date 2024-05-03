@@ -7,7 +7,6 @@ use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::JobQueue 'jq_insert';
-use App::Netdisco::Util::Device qw/renumber_device/;
 
 sub add_job {
     my ($action, $device, $extra, $port) = @_;
@@ -67,7 +66,7 @@ post "/admin/discodevs" => require_role admin => sub {
       : redirect uri_for('/')->path;
 };
 
-ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => require_role setting('defanged_admin') => sub {
+ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => 'admin' => sub {
     send_error('Missing device', 400) unless param('device');
     send_error('Missing new IP', 400) unless param('newip');
 
@@ -79,7 +78,24 @@ ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => require_role setting('defanged
     send_error('Bad new IP', 400)
       if ! $newip or $newip->addr eq '0.0.0.0';
 
-    return renumber_device( $device->addr, $newip->addr );
+    my $happy = jq_insert([{
+      action => 'renumber',
+      device => $device->addr,
+      extra  => $newip->addr,
+      username => session('logged_in_user'),
+      userip => scalar eval {request->remote_address},
+    }]);
+
+    my $msg = ($happy ? 'Queued job to renumber device %s to %s'
+                      : 'Failed to queue job to renumber device %s to %s');
+
+    schema(vars->{'tenant'})->resultset('UserLog')->create({
+      username => session('logged_in_user'),
+      userip => scalar eval {request->remote_address},
+      event => (sprintf $msg, $device->addr, $newip->addr),
+    });
+
+    return $happy;
 };
 
 ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
