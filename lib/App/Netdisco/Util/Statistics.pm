@@ -73,7 +73,7 @@ sub update_stats {
           {columns => 'mac', distinct => 1})->count_rs->as_query,
 
       netdisco_ver => pretty_version($App::Netdisco::VERSION, 3),
-      snmpinfo_ver => $snmpinfo_ver,
+      snmpinfo_ver => pretty_version($snmpinfo_ver, 3),
       schema_ver   => $schema->schema_version,
       perl_ver     => pretty_version($], 3),
       pg_ver       => $postgres_ver,
