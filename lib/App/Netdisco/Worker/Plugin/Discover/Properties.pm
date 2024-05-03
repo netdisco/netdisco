@@ -50,17 +50,28 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   /;
 
   foreach my $property (@properties) {
-      $device->set_column( $property => $snmp->$property );
+      my $val = $snmp->$property;
+      $val = [values %$val]->[0] if ref $val eq 'HASH';
+      $val = undef if $val and $val =~ m/^HASH\(/;
+      $device->set_column( $property => $val );
   }
 
-  (my $model  = Encode::decode('UTF-8', ($snmp->model  || ''))) =~ s/\s+$//;
-  (my $serial = Encode::decode('UTF-8', ($snmp->serial || ''))) =~ s/\s+$//;
-  (my $chassis_id = Encode::decode('UTF-8', ($snmp->serial1 || ''))) =~ s/\s+$//;
-  $device->set_column( model  => $model  );
-  $device->set_column( serial => $serial );
-  $device->set_column( chassis_id => (($chassis_id ne $serial) ? $chassis_id : '') );
-  $device->set_column( contact => Encode::decode('UTF-8', $snmp->contact) );
-  $device->set_column( location => Encode::decode('UTF-8', $snmp->location) );
+  my %utf8_properties = (
+    qw( model    model
+        serial   serial
+        serial1  chassis_id
+        contact  contact
+        location location
+    ),
+  );
+
+  foreach my $property (keys %utf8_properties) {
+      my $val = $snmp->$property;
+      $val = [values %$val]->[0] if ref $val eq 'HASH';
+      ($val = Encode::decode('UTF-8', ($val || ''))) =~ s/\s+$//;
+      $val = undef if $val and $val =~ m/^HASH\(/;
+      $device->set_column( $utf8_properties{$property} => $val );
+  }
 
   $device->set_column( num_ports  => ($snmp->ports || 0) );
   $device->set_column( snmp_class => $snmp->class );

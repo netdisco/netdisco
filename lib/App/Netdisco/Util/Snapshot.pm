@@ -343,14 +343,30 @@ sub add_snmpinfo_aliases {
       $info->_cache($alias, dclone $info->$leaf) if ref q{} ne ref $info->$leaf;
   }
 
-  # SNMP::Info::Layer3 has some weird aliases we can fix here
-  $info->_cache('serial1',      $info->chassisId->{''})         if ref {} eq ref $info->chassisId;
-  $info->_cache('router_ip',    $info->ospfRouterId->{''})      if ref {} eq ref $info->ospfRouterId;
-  $info->_cache('bgp_id',       $info->bgpIdentifier->{''})     if ref {} eq ref $info->bgpIdentifier;
-  $info->_cache('bgp_local_as', $info->bgpLocalAs->{''})        if ref {} eq ref $info->bgpLocalAs;
-  $info->_cache('sysUpTime',    $info->sysUpTimeInstance->{''}) if ref {} eq ref $info->sysUpTimeInstance
-                                                                   and not $info->sysUpTime;
-  $info->_cache('mac',          $info->ifPhysAddress->{1})      if ref {} eq ref $info->ifPhysAddress;
+  # SNMP::Info::Layer3 has some weird structures we can try to fix here
+
+  my %propfix = (
+    chassisId     => 'serial1',
+    ospfRouterId  => 'router_ip',
+    bgpIdentifier => 'bgp_id',
+    bgpLocalAs    => 'bgp_local_as',
+    ifPhysAddress => 'mac',
+    qw(
+      model  model
+      serial serial
+      os_ver os_ver
+      os     os
+    ),
+  );
+
+  foreach my $prop (keys %propfix) {
+      my $val = $info->$prop;
+      $val = [values %$val]->[0] if ref $val eq 'HASH';
+      $info->_cache($propfix{$prop}, $val);
+  }
+
+  $info->_cache('sysUpTime', $info->sysUpTimeInstance->{''}) if ref {} eq ref $info->sysUpTimeInstance
+                                                                and not $info->sysUpTime;
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
   # might call, but will not have data, we fake a cache entry to avoid
