@@ -76,43 +76,43 @@ foreach my $report (@{setting('reports')}) {
       my @results = ((-f $munger) ? $compartment->rdo( $munger ) : @data);
       return if $@ or (0 == scalar @results);
 
-      # searchable field support..
+      if (request->is_ajax) {
+          # searchable field support..
 
-      my $recidr4 = $RE{net}{CIDR}{IPv4}{-keep}; #RE_net_CIDR_IPv4(-keep);
-      my $rev4 = RE_net_IPv4(-keep);
-      my $rev6 = RE_net_IPv6(-keep);
-      my $remac = RE_net_MAC(-keep);
+          my $recidr4 = $RE{net}{CIDR}{IPv4}{-keep}; #RE_net_CIDR_IPv4(-keep);
+          my $rev4 = RE_net_IPv4(-keep);
+          my $rev6 = RE_net_IPv6(-keep);
+          my $remac = RE_net_MAC(-keep);
 
-      foreach my $row (@results) {
-          foreach my $col (@column_order) {
-              next unless $column_config{$col}->{_searchable};
-              my $fields = (ref $row->{$col} ? $row->{$col} : [$row->{$col}]);
+          foreach my $row (@results) {
+              foreach my $col (@column_order) {
+                  next unless $column_config{$col}->{_searchable};
+                  my $fields = (ref $row->{$col} ? $row->{$col} : [$row->{$col}]);
 
-              foreach my $f (@$fields) {
+                  foreach my $f (@$fields) {
 
-                  encode_entities($f);
+                      encode_entities($f);
 
-                  $f =~ s!\b${recidr4}\b!'<a href="'.
-                    uri_for('/search', {q => "$1/$2"})->path_query
-                    .qq{">$1/$2</a>}!gex;
+                      $f =~ s!\b${recidr4}\b!'<a href="'.
+                        uri_for('/search', {q => "$1/$2"})->path_query
+                        .qq{">$1/$2</a>}!gex;
 
-                  if (not $1 and not $2) {
-                      $f =~ s!\b${rev4}\b!'<a href="'.
+                      if (not $1 and not $2) {
+                          $f =~ s!\b${rev4}\b!'<a href="'.
+                            uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
+                      }
+
+                      $f =~ s!\b${rev6}\b!'<a href="'.
                         uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
+
+                      $f =~ s!\b${remac}\b!'<a href="'.
+                        uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
+
+                      $row->{$col} = $f if not ref $row->{$col};
                   }
-
-                  $f =~ s!\b${rev6}\b!'<a href="'.
-                    uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
-
-                  $f =~ s!\b${remac}\b!'<a href="'.
-                    uri_for('/search', {q => $1})->path_query .qq{">$1</a>}!gex;
-
-                  $row->{$col} = $f if not ref $row->{$col};
               }
           }
-      }
 
-      if (request->is_ajax) {
           template 'ajax/report/generic_report.tt',
               { results => \@results,
                 is_custom_report => true,
