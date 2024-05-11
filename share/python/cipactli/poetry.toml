@@ -1,0 +1,3 @@
+[virtualenvs]
+in-project = false
+prefer-active-python = true
