@@ -16,6 +16,7 @@ use warnings;
 use Dancer ':script';
 use Moo;
 use Expect;
+use NetAddr::MAC qw/mac_as_ieee/;
 use Regexp::Common 'net';
 
 =head1 PUBLIC METHODS
