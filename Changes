@@ -1,3 +1,14 @@
+2.076005 - 2024-05-20
+
+  [ENHANCEMENTS]
+
+  * #1208 SSH macsuck for the NXOS platform
+  * pretty print the SNMP::Info version in statistics panel
+
+  [BUG FIXES]
+
+  * #1175 add thousands_separator setting to allow localised separator
+
 2.076004 - 2024-05-03
 
   [BUG FIXES]
