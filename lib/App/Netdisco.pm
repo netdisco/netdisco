@@ -269,7 +269,7 @@ Then the process below should be run for each installation:
 
 Furthermore, whenever you upgrade your Operating System, you must delete the
 C<~/perl5> directory and re-run the following command, to update Netdisco's C
-library bindings:
+library bindings (and then run all of the above upgrade commands again):
 
  curl -L https://cpanmin.us/ | perl - --notest --local-lib ~/perl5 App::Netdisco
 
