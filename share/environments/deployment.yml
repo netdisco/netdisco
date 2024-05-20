@@ -63,6 +63,9 @@ device_auth:
 #    p_vlan_names: { default: checked }
 #    p_hide1002:   { default: checked }
 
+# separator for displaying numbers larger than 1000 (e.g. "," or ".")
+#thousands_separator: ""
+
 # this is the schedule for automatically keeping netdisco up-to-date;
 # these are good defaults, so only uncomment if needing to change.
 # (or set "schedule: null" if you wish to disable the scheduler)

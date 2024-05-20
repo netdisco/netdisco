@@ -403,7 +403,8 @@ system_port_control_reasons:
   resolved:    'Issue Resolved'
 check_userlog: false
 devport_vlan_limit: 150
-login_logo: ""
+thousands_separator: ''
+login_logo: ''
 defanged_admin: 'admin'
 defanged_api_admin: 'api_admin'
 hide_deviceports:

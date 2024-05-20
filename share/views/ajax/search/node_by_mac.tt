@@ -1,4 +1,4 @@
-[% USE Number.Format(THOUSANDS_SEP = ',') %]
+[% USE Number.Format(THOUSANDS_SEP = settings.thousands_separator) %]
 [% PROCESS 'externallinks.tt' -%]
 <table id="nsbm-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
   <thead>
