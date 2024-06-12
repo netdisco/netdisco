@@ -64,12 +64,9 @@ sub arpnip {
 
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
-    $expect->send("terminal length 0\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
-
     # we filter on the : in Age as the output header of the command may contain prompt chars, e.g.
     # Flags:   # - Adjacencies Throttled for Glean
-    $expect->send("show ip arp vrf all | inc :\n");
+    $expect->send("show ip arp vrf all | inc : | no-more\n");
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
     my @arpentries;
@@ -90,7 +87,7 @@ sub arpnip {
         }
     }
 
-    $expect->send("show ipv6 neighbor vrf all | exclude Flags:\n");
+    $expect->send("show ipv6 neighbor vrf all | exclude Flags: | no-more\n");
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
     my @data6 = split(/\R/, $before);
@@ -132,8 +129,7 @@ sub macsuck {
 
     debug "$hostlabel $$ macsuck()";
     my $cmds = <<EOF;
-terminal length 0
-show mac address-table
+show mac address-table | no-more
 EOF
     my @data = $ssh->capture({stdin_data => $cmds}); chomp @data;
     if ($ssh->error) {
