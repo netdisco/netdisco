@@ -664,6 +664,7 @@ worker_plugins:
   - 'Arpnip::Nodes'
   - 'Arpnip::Subnets'
   - 'Arpwalk'
+  - 'CheckConfig'
   - 'Contact'
   - 'Delete'
   - 'Delete::Hooks'

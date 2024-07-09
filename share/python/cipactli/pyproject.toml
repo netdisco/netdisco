@@ -7,8 +7,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-netmiko = "^4.3.0"
-ntc-templates = "^5.0.0"
+yamllint = "^1.35.1"
+yamale = "^5.2.1"
 
 [build-system]
 requires = ["poetry-core"]
