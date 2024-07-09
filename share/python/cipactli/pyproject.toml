@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cipactli"
+version = "1.0.0"
+description = "Python code and dependencies for Netdisco"
+authors = ["Netdisco Developers"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+netmiko = "^4.3.0"
+ntc-templates = "^5.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
