@@ -1,8 +1,25 @@
 use strict;
 use warnings;
-use Module::Build;
 
-Module::Build->new(
+{
+  package Netdisco::Builder;
+  use Module::Build;
+  @Netdisco::Builder::ISA = qw(Module::Build);
+
+  sub ACTION_poetry {
+      my $self = shift;
+      require App::Netdisco::Util::Python;
+      $self->do_system( App::Netdisco::Util::Python::py_install() );
+  }
+
+  sub ACTION_install {
+      my $self = shift;
+      $self->SUPER::ACTION_install;
+      $self->ACTION_poetry;
+  }
+}
+
+Netdisco::Builder->new(
   module_name => 'App::Netdisco',
   license     => 'bsd',
   dynamic_config => 1,
@@ -11,6 +28,7 @@ Module::Build->new(
     'Module::Build' => '0.42',
   },
   build_requires => {
+    'Alien::poetry' => '1.000001',
     'ExtUtils::Config' => '0',
     'ExtUtils::Helpers' => '0',
     'ExtUtils::InstallPaths' => '0',
@@ -21,7 +39,6 @@ Module::Build->new(
     'namespace::clean' => '0.24',
     'version' => '0.9902',
     'Algorithm::Cron' => '0.07',
-    'Alien::poetry' => '1.000001',
     'AnyEvent' => '7.05',
     'AnyEvent::DNS::EtcHosts' => '0',
     'App::cpanminus' => '1.6108',

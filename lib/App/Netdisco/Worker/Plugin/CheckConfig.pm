@@ -4,25 +4,19 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-use Path::Class;
-use File::ShareDir 'dist_dir';
-
-use Alien::poetry;
+use App::Netdisco::Util::Python qw/py_cmd/;
 use Command::Runner;
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
-  my $poetry = Alien::poetry->poetry;
-  my $cipactli = Path::Class::Dir->new( dist_dir('App-Netdisco') )
-    ->subdir('python')->subdir('cipactli')->stringify;
   my $config = Path::Class::Dir->new( $ENV{DANCER_ENVDIR} )
-    ->file( $ENV{DANCER_ENVIRONMENT} .'.yml' );
+    ->file( $ENV{DANCER_ENVIRONMENT} .'.yml' )->stringify;
   my $lintconf =
     q/{extends: relaxed, rules: {empty-lines: disable}}/;
 
   my $result = Command::Runner->new(
-    command => [ $poetry, '-C', $cipactli, 'run', 'yamllint', '-d', $lintconf, $config ],
+    command => [ py_cmd('yamllint'), '-d', $lintconf, $config ],
     timeout => 60,
   )->run();
 
