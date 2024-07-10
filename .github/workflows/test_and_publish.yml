@@ -45,7 +45,7 @@ jobs:
     - name: Install base packages
       run: apk add tmux bash curl sudo xz
     - name: Install other packages
-      run: apk add openssh-client gcc make musl-dev musl-obstack-dev perl-dev unzip
+      run: apk add openssh-client gcc make musl-dev musl-obstack-dev python3 perl-dev unzip
     - name: Install fake apt-get
       run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
 
@@ -322,7 +322,7 @@ jobs:
     - name: Install base packages
       run: apk add tmux bash curl sudo xz
     - name: Install packages
-      run: apk add openssh-client gcc make musl-dev musl-obstack-dev perl-dev unzip
+      run: apk add openssh-client gcc make musl-dev musl-obstack-dev python3 perl-dev unzip
     - name: Install fake apt-get
       run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
 
