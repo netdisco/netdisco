@@ -13,7 +13,7 @@ App::Netdisco::Builder->new(
     'Module::Build' => '0.42',
   },
   build_requires => {
-    'Alien::poetry' => '1.000001',
+    'Alien::poetry' => '1.000002',
     'ExtUtils::Config' => '0',
     'ExtUtils::Helpers' => '0',
     'ExtUtils::InstallPaths' => '0',
