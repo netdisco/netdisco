@@ -13,3 +13,6 @@ yamale = "^5.2.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+run_worker = "cipactli.runner:main"
