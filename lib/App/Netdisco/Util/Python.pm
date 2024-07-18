@@ -47,6 +47,7 @@ sub py_worker {
       ND2_RUNTIME_CONFIGURATION => $coder->encode( config() ),
     },
     command => [ cipactli(), 'run', 'run_worker', $action ],
+    stdout  => sub { print $_[0] },
     stderr  => sub { debug $_[0] },
     timeout => 540,
   );
@@ -55,13 +56,11 @@ sub py_worker {
   my $result = $cmd->run();
   debug sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s", $action;
 
-  info $result->{stdout} if $result->{stdout};
-
   if (not $result->{'result'}) {
-    return Status->done('Configuration OK');
+    return Status->done(sprintf '%s exit OK', $action);
   }
   else {
-    return Status->error('Configuration Errors');
+    return Status->error(sprintf '%s exit with status %s', $action, $result->{result});
   }
 }
 
