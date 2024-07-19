@@ -1,9 +1,8 @@
 [tool.poetry]
-name = "cipactli"
+name = "netdisco"
 version = "1.0.0"
 description = "Python code and dependencies for Netdisco"
 authors = ["Netdisco Developers"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -15,4 +14,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-run_worker = "cipactli.runner:main"
+run_worker = "netdisco.runner:main"
