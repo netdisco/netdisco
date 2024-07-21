@@ -10,8 +10,11 @@ import logging
 from os import getpid
 from .configuration import setting
 
-def debug(message):
-  logging.basicConfig(format=('['+ str(getpid()) +'] %(message)s'), level=getattr(logging, setting('log').upper()))
-  log = logging.getLogger(__name__)
-  log.debug(message)
+logging.basicConfig(
+    format=('[' + str(getpid()) + '] %(message)s'), level=getattr(logging, setting('log').upper())
+)
+log = logging.getLogger(__name__)
 
+
+def debug(message):
+    log.debug(message)

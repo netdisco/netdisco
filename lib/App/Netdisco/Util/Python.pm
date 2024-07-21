@@ -43,8 +43,8 @@ sub py_worker {
   my $cmd = Command::Runner->new(
     env => {
       ND2_JOB_CONFIGURATION     => $coder->encode( { %$job } ),
-      ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
       ND2_RUNTIME_CONFIGURATION => $coder->encode( config() ),
+      # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
     },
     command => [ cipactli(), 'run', 'run_worker', $action ],
     stdout  => sub { print $_[0] },
