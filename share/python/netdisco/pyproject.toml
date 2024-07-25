@@ -31,3 +31,7 @@ optional = true
 [tool.poetry.group.test.dependencies]
 ruff = "^0.5.4"
 
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
