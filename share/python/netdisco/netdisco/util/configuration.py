@@ -17,9 +17,14 @@ from dataclasses import dataclass, InitVar
 logging.basicConfig(format=('[' + str(getpid()) + '] %(message)s'), level=getattr(logging, 'DEBUG'))
 log = logging.getLogger(__name__)
 
+ND2_JOB_VARS = json.loads(os.environ['ND2_JOB_VARS'])
 ND2_JOB_CONFIGURATION = json.loads(os.environ['ND2_JOB_CONFIGURATION'])
 ND2_RUNTIME_CONFIGURATION = json.loads(os.environ['ND2_RUNTIME_CONFIGURATION'])
 # ND2_WORKER_CONFIGURATION  = json.loads(os.environ['ND2_WORKER_CONFIGURATION'])
+
+
+def vars(name):
+    return ND2_JOB_VARS[name]
 
 
 def setting(name):

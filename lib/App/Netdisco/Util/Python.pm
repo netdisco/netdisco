@@ -42,6 +42,7 @@ sub py_worker {
 
   my $cmd = Command::Runner->new(
     env => {
+      ND2_JOB_VARS              => $coder->encode( vars() ),
       ND2_JOB_CONFIGURATION     => $coder->encode( { %$job } ),
       ND2_RUNTIME_CONFIGURATION => $coder->encode( config() ),
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
