@@ -9,6 +9,7 @@ use File::ShareDir 'dist_dir';
 use Command::Runner;
 use Alien::poetry;
 use JSON::PP ();
+use YAML::XS ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -49,7 +50,6 @@ sub py_worker {
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
     },
     command => [ cipactli(), 'run', 'run_worker', $action ],
-    stdout  => sub { print $_[0] },
     stderr  => sub { debug $_[0] },
     timeout => 540,
   );
@@ -58,12 +58,17 @@ sub py_worker {
   my $result = $cmd->run();
   debug sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s", $action;
 
-  if (not $result->{'result'}) {
-    return Status->done(sprintf '%s exit OK', $action);
-  }
-  else {
-    return Status->error(sprintf '%s exit with status %s', $action, $result->{result});
-  }
+  my $stdout = $result->{'stdout'};
+  $stdout =~ s/\n.*//;
+  $stdout =~ s/.*\n//s;
+  my $retdata = YAML::XS::Load($stdout); # might explode
+
+  my $status = $retdata->{status} || ($result->{'result'} ? 'error' : 'done');
+  my $log = $retdata->{log}
+    || ($status eq 'done' ? (sprintf '%s exit OK', $action)
+                          : (sprintf '%s exit with status %s', $action, $result->{result}));
+
+  return Status->$status($log);
 }
 
 true;
