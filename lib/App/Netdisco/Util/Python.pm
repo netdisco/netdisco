@@ -32,7 +32,8 @@ sub py_cmd {
 }
 
 sub py_worker {
-  my ($action, $job, $workerconf) = @_;
+  my ($job, $workerconf) = @_;
+  my $action = $workerconf->{action};
 
   my $coder = JSON::PP->new->utf8(1)
                            ->allow_nonref(1)

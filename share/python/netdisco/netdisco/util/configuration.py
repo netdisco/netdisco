@@ -23,7 +23,7 @@ ND2_RUNTIME_CONFIGURATION = json.loads(os.environ['ND2_RUNTIME_CONFIGURATION'])
 # ND2_WORKER_CONFIGURATION  = json.loads(os.environ['ND2_WORKER_CONFIGURATION'])
 
 
-def vars(name):
+def stash(name):
     return ND2_JOB_VARS[name]
 
 

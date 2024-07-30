@@ -17,4 +17,4 @@ log = logging.getLogger(__name__)
 
 
 def debug(message):
-    log.debug(message)
+    log.debug(str(message))
