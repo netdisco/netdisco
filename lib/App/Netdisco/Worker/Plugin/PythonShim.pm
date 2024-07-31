@@ -16,26 +16,24 @@ sub _register_python_workers {
   my ($action, $config) = @_;
   return unless $config;
 
-  foreach my $stage (keys %{ $config }) {
-    foreach my $worker (@{ $config->{$stage} || [] }) {
+  foreach my $namespace (keys %{ $config }) {
+    foreach my $worker (@{ $config->{$namespace} || [] }) {
 
-      die "missing tag on python_workers when multiple stage workers are configured"
-        if scalar @{ $config->{$stage} || {} } > 1
+      die "missing tag on python_workers when multiple namespace workers are configured"
+        if scalar @{ $config->{$namespace} || {} } > 1
            and !exists $worker->{tag};
 
       $ENV{ND2_LOG_PLUGINS} &&
-        debug sprintf '...registering python worker %s%s/%s',
-          $stage,
-          (exists $worker->{tag} ? '/'.$worker->{tag} : ''),
-          (exists $worker->{phase} ? ''.$worker->{phase} : 'main');
+        debug sprintf '...registering python worker %s.%s%s in %s',
+          $action, $namespace,
+          (exists $worker->{tag} ? '.'.$worker->{tag} : ''),
+          (exists $worker->{phase} ? $worker->{phase} : 'user');
 
       register_worker({
           action => $action,
-          namespace => $stage,
+          namespace => $namespace,
           %{ $worker },
-      }, sub {
-        return py_worker(@_);
-      });
+      }, sub { py_worker(@_) });
 
     }
   }

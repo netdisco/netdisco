@@ -41,6 +41,13 @@ sub py_worker {
                            ->allow_unknown(1)
                            ->allow_blessed(1)
                            ->allow_bignum(1);
+  my @module = ( $action,
+    ((not $workerconf->{namespace}
+      or $workerconf->{namespace} eq '_base_') ? ()
+                                               : $workerconf->{namespace}),
+    ($workerconf->{tag} ? $workerconf->{tag}
+                        : ()),
+  );
 
   my $cmd = Command::Runner->new(
     env => {
@@ -49,14 +56,20 @@ sub py_worker {
       ND2_RUNTIME_CONFIGURATION => $coder->encode( config() ),
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
     },
-    command => [ cipactli(), 'run', 'run_worker', $action ],
+    command => [ cipactli(), 'run', 'run_worker', @module ],
     stderr  => sub { debug $_[0] },
     timeout => 540,
   );
 
-  debug sprintf "\N{RIGHTWARDS ARROW WITH HOOK} \N{SNAKE} dispatching to \%s", $action;
+  debug
+    sprintf "\N{RIGHTWARDS ARROW WITH HOOK} \N{SNAKE} dispatching to \%s",
+    join('.', @module);
+
   my $result = $cmd->run();
-  debug sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s", $action;
+
+  debug
+    sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s",
+    join('.', @module);
 
   my $stdout = $result->{'stdout'};
   $stdout =~ s/\n.*//;
@@ -67,6 +80,9 @@ sub py_worker {
   my $log = $retdata->{log}
     || ($status eq 'done' ? (sprintf '%s exit OK', $action)
                           : (sprintf '%s exit with status %s', $action, $result->{result}));
+
+  # TODO support merging more deeply
+  var($_ => $retdata->{vars}->{$_}) for keys %{ $retdata->{vars} || {} };
 
   return Status->$status($log);
 }
