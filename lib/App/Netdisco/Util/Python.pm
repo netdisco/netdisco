@@ -10,6 +10,7 @@ use Command::Runner;
 use Alien::poetry;
 use JSON::PP ();
 use YAML::XS ();
+use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -68,13 +69,14 @@ sub py_worker {
   my $result = $cmd->run();
 
   debug
-    sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s",
-    join('.', @module);
+    sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s pid \%s exit \%s",
+    join('.', @module), $result->{'pid'}, $result->{'result'};
 
-  my $stdout = $result->{'stdout'};
-  $stdout =~ s/\n.*//;
+  chomp(my $stdout = $result->{'stdout'});
   $stdout =~ s/.*\n//s;
-  my $retdata = YAML::XS::Load($stdout); # might explode
+
+  my $retdata = try { YAML::XS::Load($stdout) }; # might explode
+  $retdata = {} if not ref $retdata or 'HASH' ne ref $retdata;
 
   my $status = $retdata->{status} || ($result->{'result'} ? 'error' : 'done');
   my $log = $retdata->{log}

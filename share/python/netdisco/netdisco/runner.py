@@ -6,7 +6,7 @@ def main():
     target = ['netdisco', 'worker']
 
     if len(sys.argv) > 1:
-        target.append(sys.argv[1])
+        target.extend(sys.argv[1:])
     else:
         raise Exception('missing worker name to runner')
 
