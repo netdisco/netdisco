@@ -656,9 +656,7 @@ job_prio:
     - 'stats'
 
 python_worker_plugins:
-  linter:
-    _base_:
-      - phase: main
+  linter: {}
 
 extra_python_worker_plugins: {}
 

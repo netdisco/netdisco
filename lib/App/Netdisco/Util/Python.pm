@@ -42,12 +42,13 @@ sub py_worker {
                            ->allow_unknown(1)
                            ->allow_blessed(1)
                            ->allow_bignum(1);
-  my @module = ( $action,
+  my @module = (
+    $action,
     ((not $workerconf->{namespace}
       or $workerconf->{namespace} eq '_base_') ? ()
                                                : $workerconf->{namespace}),
-    ($workerconf->{tag} ? $workerconf->{tag}
-                        : ()),
+    $workerconf->{phase},
+    ($workerconf->{driver} ? $workerconf->{driver} : ()),
   );
 
   my $cmd = Command::Runner->new(
