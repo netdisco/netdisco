@@ -1,8 +1,8 @@
-import json
 import yamllint
 from yamllint.config import YamlLintConfig
 from netdisco.util.log import debug
 from netdisco.util.configuration import stash, job
+from netdisco.util.status import Status
 
 
 def main():
@@ -15,13 +15,11 @@ def main():
         found_issues = True
         debug(f'{p.line}: ({p.rule}) {p.desc}')
 
-    # TODO provide a helper util for this
-    retval = {
-        'status': 'error' if found_issues else 'done',
-        'log': 'Lint errors, view with --debug' if found_issues else 'Linted OK',
-        'vars': {'a_new_key': 'a_new_value'},
-    }
-    print(json.dumps(retval, default=str))
+    # TODO still need a helper to make this more elegant
+    globals()['status'] = (
+        Status.error('Lint errors, view with --debug') if found_issues else Status.done('Linted OK')
+    )
+    globals()['stash'] = {'a_new_key': 'a_new_value'}
 
 
 if __name__ == '__main__':
