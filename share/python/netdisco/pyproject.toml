@@ -17,7 +17,7 @@ yamllint = "^1.35.1"
 yamale = "^5.2.1"
 
 [tool.poetry.scripts]
-run_worker = "netdisco.runner:main"
+run_worklet = "netdisco.runner:main"
 
 [tool.poetry.group.develop]
 optional = true

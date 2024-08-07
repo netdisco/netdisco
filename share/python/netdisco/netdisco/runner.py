@@ -4,12 +4,12 @@ from netdisco.util.perl import return_to_perl
 
 
 def main():
-    target = ['netdisco', 'worker']
+    target = ['netdisco', 'worklet']
 
     if len(sys.argv) > 1:
         target.extend(sys.argv[1:])
     else:
-        raise Exception('missing worker name to runner')
+        raise Exception('missing worklet name to runner')
 
     gd = run_module('.'.join(target), run_name='__main__')
     print(return_to_perl(status=gd['status'], stash=gd['stash']))

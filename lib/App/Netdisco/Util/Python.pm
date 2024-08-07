@@ -14,7 +14,7 @@ use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/py_install py_cmd py_worker/;
+our @EXPORT_OK = qw/py_install py_cmd py_worklet/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 sub cipactli {
@@ -33,7 +33,7 @@ sub py_cmd {
   return (cipactli(), 'run', @_);
 }
 
-sub py_worker {
+sub py_worklet {
   my ($job, $workerconf) = @_;
   my $action = $workerconf->{action};
 
@@ -58,7 +58,7 @@ sub py_worker {
       ND2_RUNTIME_CONFIGURATION => $coder->encode( config() ),
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
     },
-    command => [ cipactli(), 'run', 'run_worker', @module ],
+    command => [ cipactli(), 'run', 'run_worklet', @module ],
     stderr  => sub { debug $_[0] },
     timeout => 540,
   );
