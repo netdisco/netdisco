@@ -12,7 +12,7 @@ def main():
         raise Exception('missing worklet name to runner')
 
     gd = run_module('.'.join(target), run_name='__main__')
-    print(return_to_perl(status=gd['status'], stash=gd['stash']))
+    print(return_to_perl(gd['c']))
 
 
 if __name__ == '__main__':

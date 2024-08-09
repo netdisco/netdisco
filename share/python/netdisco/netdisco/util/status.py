@@ -1,15 +1,18 @@
-class Status:
-    def __init__(self, log, status=''):
-        self.status = status
-        self.log = log or ''
+from dataclasses import dataclass
 
-    def is_ok(self):
+
+@dataclass
+class Status:
+    status: str = ''
+    log: str = ''
+
+    def is_ok(self) -> bool:
         return True if self.status == 'done' else False
 
-    def not_ok(self):
+    def not_ok(self) -> bool:
         return not self.is_ok()
 
-    def level(self):
+    def level(self) -> int:
         return (
             4
             if self.status == 'error'
@@ -22,18 +25,18 @@ class Status:
             else 0
         )
 
-    @classmethod
-    def done(cls, *args):
-        return cls(args, status='done')
+    def error(self, msg):
+        self.status = 'error'
+        self.log = msg
 
-    @classmethod
-    def info(cls, *args):
-        return cls(args, status='info')
+    def done(self, msg):
+        self.status = 'done'
+        self.log = msg
 
-    @classmethod
-    def defer(cls, *args):
-        return cls(args, status='defer')
+    def defer(self, msg):
+        self.status = 'defer'
+        self.log = msg
 
-    @classmethod
-    def error(cls, *args):
-        return cls(args, status='error')
+    def info(self, msg):
+        self.status = 'info'
+        self.log = msg

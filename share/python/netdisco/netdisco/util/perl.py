@@ -1,6 +1,6 @@
 import json
 
 
-def return_to_perl(status, stash):
-    retval = {'status': status.status, 'log': status.log, 'vars': stash}
+def return_to_perl(c):
+    retval = {'status': c.status.status, 'log': c.status.log, 'vars': c.stash.store}
     print(json.dumps(retval, default=str))
