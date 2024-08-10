@@ -546,6 +546,13 @@ sub _get_ipv6_aliases {
       next if $addr eq '::0';
       next if acl_matches($ip, 'group:__LOOPBACK_ADDRESSES__');
 
+      if (acl_matches($ip, 'group:__LOCAL_ADDRESSES__')) {
+        debug sprintf
+          ' [%s] device - skipping alias %s as potentially not unique',
+          $device->ip, $addr;
+        next;
+      }
+
       my $port   = $interfaces->{ $ipv6_index->{$iid} };
       my $subnet = $ipv6_pfxlen->{$iid}
         ? NetAddr::IP::Lite->new($addr .'/'. $ipv6_pfxlen->{$iid})->network->cidr
