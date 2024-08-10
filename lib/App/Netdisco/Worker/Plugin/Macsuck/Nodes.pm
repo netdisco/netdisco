@@ -526,10 +526,6 @@ sub sanity_macs {
               }
 
               if (exists $ignoreport->{$port}) {
-                  # stash in the neighborport so that node search works for neighbor
-                  # (besides this, neighborport is not used for ignoreport ports)
-                  $neighborport->{$port} = [ $vlan, $mac ] if exists $port_macs->{$mac};
-
                   debug sprintf
                     ' [%s] macsuck %s - port %s is suppressed by config - skipping.',
                     $device->ip, $mac, $port;
