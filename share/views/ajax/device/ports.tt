@@ -5,7 +5,7 @@
       <th></th>
       [% FOREACH item IN settings.port_columns %]
       [% NEXT IF item.name == 'c_admin'  %]
-      [% NEXT IF item.name == 'c_links' AND settings.external_links.device_port.empty %]
+      [% NEXT IF item.name == 'c_links' AND settings.external_links.device_port.size == 0 %]
       [% NEXT IF item.name == 'c_nodes' AND params.c_nodes AND params.c_neighbors %]
         [% NEXT UNLESS params.${item.name} %]
         [% SET th_class = '' %]
