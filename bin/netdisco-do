@@ -201,7 +201,7 @@ else {
 
     if ($job->log eq 'failed to report from any worker!' and not $job->only_namespace) {
       pod2usage(
-        -msg => (sprintf 'error: %s is not a valid action', $action),
+        -msg => (sprintf 'error: %s is not a valid action (no worker status recorded)', $action),
         -verbose => 2,
         -exitval => 3,
       );
