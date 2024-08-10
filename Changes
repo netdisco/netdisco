@@ -1,3 +1,15 @@
+2.076006 - 2024-08-10
+
+  [BUG FIXES]
+
+  * #1213 add missing ->with_router to NodeIp searches
+  * #1217 add subnet entry for each seen L3 interface CIDR
+  * #1219 fix for settings.external_links.device_port.size and datatables
+  * #1222 use no-more instead of terminal length 0 to avoid user rights issue
+  * #1232 skip device IP aliases in ['fe80::/64','169.254.0.0/16'] as nonunique
+  * #1234 macsuck_no_deviceports ports getting a random other device MAC added
+  * #1237 admin users should not be able to delete user logs
+
 2.076005 - 2024-05-20
 
   [ENHANCEMENTS]

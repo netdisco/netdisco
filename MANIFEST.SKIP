@@ -19,6 +19,7 @@ logs/.*
 \bSCCS\b
 ,v$
 \B\.svn\b
+\B\.ruff_cache\b
 \B\.git\b
 \B\.gitignore\b
 \B\.gitattributes\b
