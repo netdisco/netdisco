@@ -8,7 +8,6 @@
       <th class="nd_center-cell">User</th>
       <th class="nd_center-cell">User IP</th>
       <th class="nd_center-cell">Event</th>
-      <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
 </table>
@@ -43,15 +42,6 @@ $(document).ready(function() {
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
         return he.encode(data || '');
-      }
-    }, {
-      "data": 'entry',
-      "className": "nd_center-cell",
-      "searchable": false,
-      "orderable": false,
-      "render": function(data, type, row, meta) {
-        return '<input data-form="del" name="entry" type="hidden" value="' + encodeURIComponent(data) + 
-        '"><button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>';
       }
     }
   ],

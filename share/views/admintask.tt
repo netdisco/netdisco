@@ -42,10 +42,6 @@
         &nbsp;&nbsp;
         <a id="nd_jobqueue-bookmark" href="#"><i class="icon-bookmark icon-large"></i></a>
       </span>
-      [% ELSIF task.tag == 'userlog' %]
-      <span id="nd_device-name">
-        <a class="nd_adminbutton" name="delall" href="#"><i class="icon-trash text-error"></i></a>
-      </span>
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">

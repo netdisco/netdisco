@@ -38,25 +38,6 @@ ajax '/ajax/control/admin/userlog/data' => require_role admin => sub {
     );
 };
 
-ajax '/ajax/control/admin/userlog/del' => require_role admin => sub {
-    send_error( 'Missing entry', 400 ) unless param('entry');
-
-    schema(vars->{'tenant'})->txn_do(
-        sub {
-            my $device = schema(vars->{'tenant'})->resultset('UserLog')
-                ->search( { entry => param('entry') } )->delete;
-        }
-    );
-};
-
-ajax '/ajax/control/admin/userlog/delall' => require_role admin => sub {
-    schema(vars->{'tenant'})->txn_do(
-        sub {
-            my $device = schema(vars->{'tenant'})->resultset('UserLog')->delete;
-        }
-    );
-};
-
 ajax '/ajax/content/admin/userlog' => require_role admin => sub {
 
     content_type('text/html');
