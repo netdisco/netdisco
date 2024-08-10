@@ -219,8 +219,8 @@ get '/ajax/content/search/node' => require_login sub {
             and my $ip = NetAddr::IP::Lite->new($node)) {
 
             # search_by_ip() will extract cidr notation if necessary
-            $set = schema(vars->{'tenant'})->resultset('NodeIp')->with_router
-              ->search_by_ip({ip => $ip, @active, @times});
+            $set = schema(vars->{'tenant'})->resultset('NodeIp')
+              ->search_by_ip({ip => $ip, @active, @times})->with_router;
             ++$have_rows if $set->has_rows;
         }
         else {
@@ -239,7 +239,7 @@ get '/ajax/content/search/node' => require_login sub {
 
                 if ($resolved_ip) {
                     $set = schema(vars->{'tenant'})->resultset('NodeIp')
-                      ->search_by_ip({ip => $resolved_ip, @active, @times});
+                      ->search_by_ip({ip => $resolved_ip, @active, @times})->with_router;
                     ++$have_rows if $set->has_rows;
                 }
             }
@@ -253,7 +253,7 @@ get '/ajax/content/search/node' => require_login sub {
                   ->search(
                     {'manufacturer.company' => { -ilike => ''.sql_match($node)}, @times},
                     {'prefetch' => 'manufacturer'},
-                  );
+                  )->with_router;
                 ++$have_rows if $set->has_rows;
             }
         }
