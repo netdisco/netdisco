@@ -76,11 +76,11 @@ further down the road.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl curl postgresql build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl python3 curl postgresql build-essential
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel curl postgresql-server postgresql-contrib make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel python3 curl postgresql-server postgresql-contrib make automake gcc
  root:~# postgresql-setup initdb
  root:~# systemctl start postgresql
  root:~# systemctl enable postgresql
@@ -88,12 +88,12 @@ On Fedora/Red-Hat:
 On openSUSE:
 
  root:~# zypper refresh
- root:~# zypper install curl automake gcc make postgresql postgresql-server openssh openssl net-snmp perl perl-DBD-Pg perl-SNMP
+ root:~# zypper install curl automake gcc make postgresql postgresql-server openssh openssl python3 net-snmp perl perl-DBD-Pg perl-SNMP
 
 On SUSE Linux Enterprise Server 15 and later:
 
  root:~# zypper refresh
- root:~# zypper install postgresql postgresql-devel postgresql-server postgresql-server-devel libdbi-drivers-dbd-pgsql perl-DBI perl-DBD-Pg perl-SNMP perl-HTTP-Parser-XS perl-Module-Install net-snmp net-snmp-devel curl make automake gcc
+ root:~# zypper install postgresql postgresql-devel postgresql-server postgresql-server-devel libdbi-drivers-dbd-pgsql perl-DBI perl-DBD-Pg perl-SNMP perl-HTTP-Parser-XS perl-Module-Install net-snmp net-snmp-devel python3 curl make automake gcc
 
 On FreeBSD systems please see L<our FreeBSD tips|https://github.com/netdisco/netdisco/wiki/FreeBSD-Install>.
 
