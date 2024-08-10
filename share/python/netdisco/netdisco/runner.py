@@ -1,6 +1,7 @@
 import sys
 from runpy import run_module
-from netdisco.util.perl import return_to_perl
+from netdisco.util.log import debug
+from netdisco.util.perl import marshal_for_perl
 
 
 def main():
@@ -12,7 +13,9 @@ def main():
         raise Exception('missing worklet name to runner')
 
     gd = run_module('.'.join(target), run_name='__main__')
-    print(return_to_perl(gd['c'] if 'c' in gd else gd['context']))
+    retval = marshal_for_perl(gd['c'] if 'c' in gd else gd['context'])
+    debug(retval)
+    print(retval)
 
 
 if __name__ == '__main__':

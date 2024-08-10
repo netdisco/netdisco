@@ -2,13 +2,13 @@
 netdisco.util.perl
 ~~~~~~~~~~~~~~~~~~
 
-This module provides a utility function return_to_perl() to marshall a Python worklet's
+This module provides a utility function marshal_for_perl() to marshall a Python worklet's
 status and stash for passing back to Netdisco Perl-side.
 """
 
 import json
 
 
-def return_to_perl(c):
+def marshal_for_perl(c):
     retval = {'status': c.status.status, 'log': c.status.log, 'vars': c.stash.store}
-    print(json.dumps(retval, default=str))
+    return json.dumps(retval, default=str)
