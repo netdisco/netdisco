@@ -53,9 +53,9 @@ sub py_worklet {
 
   my $cmd = Command::Runner->new(
     env => {
-      ND2_JOB_VARS              => $coder->encode( vars() ),
-      ND2_JOB_CONFIGURATION     => $coder->encode( { %$job } ),
-      ND2_RUNTIME_CONFIGURATION => $coder->encode( config() ),
+      ND2_VARS          => $coder->encode( vars() ),
+      ND2_JOB_METADATA  => $coder->encode( { %$job } ),
+      ND2_CONFIGURATION => $coder->encode( config() ),
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
     },
     command => [ cipactli(), 'run', 'run_worklet', @module ],
