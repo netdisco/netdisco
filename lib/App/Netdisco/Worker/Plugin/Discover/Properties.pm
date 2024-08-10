@@ -17,6 +17,7 @@ use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
 use NetAddr::IP::Lite ':lower';
 use Storable 'dclone';
+use List::MoreUtils ();
 use JSON::PP ();
 use Encode;
 
@@ -37,6 +38,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $device->set_column( vtp_mode => (values %$vtpmodes)[-1] );
   }
 
+  my $now = vars->{'timestamp'};
   my $hostname = hostname_from_ip($device->ip);
   $device->set_column( dns => $hostname ) if $hostname;
 
@@ -77,7 +79,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   $device->set_column( snmp_class => $snmp->class );
   $device->set_column( snmp_engineid => unpack('H*', ($snmp->snmpEngineID || '')) );
 
-  $device->set_column( last_discover => \'LOCALTIMESTAMP' );
+  $device->set_column( last_discover => \$now );
 
   # protection for failed SNMP gather
   if ($device->in_storage and not $device->is_pseudo) {
@@ -185,9 +187,13 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
+  my $now = vars->{'timestamp'};
+
   my @aliases = ();
   push @aliases, _get_ipv4_aliases($device, $snmp);
   push @aliases, _get_ipv6_aliases($device, $snmp);
+
+  my @subnets = List::MoreUtils::uniq grep {defined} map {$_->{subnet}} @aliases;
 
   debug sprintf ' resolving %d aliases with max %d outstanding requests',
       scalar @aliases, $ENV{'PERL_ANYEVENT_MAX_OUTSTANDING_DNS'};
@@ -207,8 +213,12 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->device_ips->populate($resolved_aliases);
 
-    return Status->info(sprintf ' [%s] aliases - added %d new aliases',
-      $device->ip, scalar @aliases);
+    schema('netdisco')->resultset('Subnet')
+      ->update_or_create({ net => $_, last_discover => \$now },
+                         { for => 'update' }) for @subnets;
+
+    return Status->info(sprintf ' [%s] aliases - added %d new aliases and %d subnets',
+      $device->ip, scalar @aliases, scalar @subnets);
   });
 });
 
