@@ -8,6 +8,7 @@ use File::ShareDir 'dist_dir';
 
 use Command::Runner;
 use Alien::poetry;
+use MIME::Base64 'decode_base64';
 use JSON::PP ();
 use YAML::XS ();
 use Try::Tiny;
@@ -76,7 +77,7 @@ sub py_worklet {
   chomp(my $stdout = $result->{'stdout'});
   $stdout =~ s/.*\n//s;
 
-  my $retdata = try { YAML::XS::Load($stdout) }; # might explode
+  my $retdata = try { YAML::XS::Load(decode_base64($stdout)) }; # might explode
   $retdata = {} if not ref $retdata or 'HASH' ne ref $retdata;
 
   my $status = $retdata->{status} || ($result->{'result'} ? 'error' : 'done');

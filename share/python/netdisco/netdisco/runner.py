@@ -1,6 +1,5 @@
 import sys
 from runpy import run_module
-from netdisco.util.log import debug
 from netdisco.util.perl import marshal_for_perl
 
 
@@ -14,7 +13,6 @@ def main():
 
     gd = run_module('.'.join(target), run_name='__main__')
     retval = marshal_for_perl(gd['c'] if 'c' in gd else gd['context'] if 'context' in gd else None)
-    debug(retval)
     print(retval)
 
 
