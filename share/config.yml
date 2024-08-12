@@ -667,6 +667,9 @@ enable_python_worklets: false
 
 python_worker_plugins:
   linter: {}
+  expire:
+    pyver:
+      early: []
   stats:
     pyver:
       early: []
