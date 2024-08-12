@@ -76,6 +76,7 @@ sub update_stats {
       snmpinfo_ver => pretty_version($snmpinfo_ver, 3),
       schema_ver   => $schema->schema_version,
       perl_ver     => pretty_version($], 3),
+      python_ver   => vars->{'python_ver'},
       pg_ver       => $postgres_ver,
 
     }, { key => 'primary' });

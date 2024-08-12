@@ -61,8 +61,8 @@
               <th>[% '<span class="badge alert-danger">' IF stats.pg_ver.remove('\.\d+') < 9.6 %][% stats.pg_ver | html_entity %][% '</span>' IF stats.pg_ver.remove('\.\d+') < 9.6 %]</th>
             </tr>
             <tr>
-              <th><a href="http://www.perl.org" target="_blank">Perl</a></th>
-              <th>[% stats.perl_ver | html_entity %]</th>
+              <th><a href="https://www.perl.org" target="_blank">Perl</a> / <a href="https://www.python.org" target="_blank">Python</a></th>
+              <th>[% stats.perl_ver || 'n/a' | html_entity %] / [% stats.python_ver || 'n/a' | html_entity %]</th>
             </tr>
           </tbody>
         </table>

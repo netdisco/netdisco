@@ -13,7 +13,7 @@ def main():
         raise Exception('missing worklet name to runner')
 
     gd = run_module('.'.join(target), run_name='__main__')
-    retval = marshal_for_perl(gd['c'] if 'c' in gd else gd['context'])
+    retval = marshal_for_perl(gd['c'] if 'c' in gd else gd['context'] if 'context' in gd else None)
     debug(retval)
     print(retval)
 

@@ -656,8 +656,21 @@ job_prio:
     - 'stats'
 
 enable_python_worklets: false
+
+# actionname: {} # main phase, py file
+# actionname:    # check phase, required, py file
+#   stage_namespace: {} # main phase, py file
+#   stage_namespace:
+#     early: [] # priority 0, py file
+#     main:
+#       - snmp  # priority 100, py file
+
 python_worker_plugins:
   linter: {}
+  stats:
+    pyver:
+      early: []
+
 extra_python_worker_plugins: {}
 
 worker_plugins:

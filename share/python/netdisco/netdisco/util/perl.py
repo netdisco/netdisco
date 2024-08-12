@@ -10,5 +10,8 @@ import json
 
 
 def marshal_for_perl(c):
-    retval = {'status': c.status.status, 'log': c.status.log, 'vars': c.stash.store}
-    return json.dumps(retval, default=str)
+    if c is None:
+        return json.dumps({}, default=str)
+    else:
+        retval = {'status': c.status.status, 'log': c.status.log, 'vars': c.stash.store}
+        return json.dumps(retval, default=str)
