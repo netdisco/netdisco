@@ -43,15 +43,8 @@ sub py_worklet {
                            ->allow_unknown(1)
                            ->allow_blessed(1)
                            ->allow_bignum(1);
-  my @module = (
-    $action,
-    ((not $workerconf->{namespace}
-      or $workerconf->{namespace} eq '_base_') ? ()
-                                               : $workerconf->{namespace}),
-    $workerconf->{phase},
-    ($workerconf->{driver} ? $workerconf->{driver} : ()),
-  );
 
+  my @module = split /\./, $workerconf->{pyworklet};
   my $cmd = Command::Runner->new(
     env => {
       ND2_VARS          => $coder->encode( vars() ),

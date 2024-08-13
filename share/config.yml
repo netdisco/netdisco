@@ -657,24 +657,19 @@ job_prio:
 
 enable_python_worklets: false
 
-# actionname: {} # main phase, py file
-# actionname:    # check phase, required, py file
-#   stage_namespace: {} # main phase, py file
-#   stage_namespace:
-#     early: [] # priority 0, py file
-#     main:
-#       - snmp  # priority 100, py file
-
 python_worker_plugins:
-  linter: {}
-  expire:
-    pyver:
-      early: []
-  stats:
-    pyver:
-      early: []
+  - 'linter.main'
+  - 'expire.early'
+  - 'stats.early'
+#  - 'arpnip.check'
+#  - 'arpnip.nodes.early'
+#  - 'arpnip.nodes.main': ['direct', 'cli', 'snmp']
+#  - 'arpnip.nodes.extra.main'
+#  - 'arpnip.nodes.store'
+#  - 'arpnip.subnets.main': ['snmp']
+#  - 'arpnip.hooks.late'
 
-extra_python_worker_plugins: {}
+extra_python_worker_plugins: []
 
 worker_plugins:
   - 'Internal::BackendFQDN'

@@ -350,17 +350,6 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
 # add system_reports onto reports
 config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 
-# TODO not needed for internal workers and can be re-engineered for when
-# we support user plugin workers.
-#
-# make sure python_workers include _base_ if needed
-# foreach my $pysetting (qw/python_worker_plugins extra_python_worker_plugins/) {
-#     foreach my $action (keys %{ setting($pysetting) }) {
-#         next if scalar keys %{ setting($pysetting)->{$action} };
-#         config->{$pysetting}->{$action}->{'_base_'} = {main => []};
-#     }
-# }
-
 # set swagger ui location
 #config->{plugins}->{Swagger}->{ui_dir} =
   #dir(dist_dir('App-Netdisco'), 'share', 'public', 'swagger-ui')->absolute;

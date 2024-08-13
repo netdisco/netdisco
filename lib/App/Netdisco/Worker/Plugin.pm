@@ -38,6 +38,7 @@ register 'register_worker' => sub {
     # use DDP; p $workerconf;
 
     debug YELLOW, "\N{RIGHTWARDS BLACK ARROW} worker ", GREY10, $workerconf->{package},
+      ($workerconf->{pyworklet} ? (' '. $workerconf->{pyworklet}) : ''),
       GREY10, ' p', MAGENTA, $workerconf->{priority},
       ($workerconf->{title} ? (GREY10, ' "', BRIGHT_BLUE, $workerconf->{title}, GREY10, '"') : ''),
       RESET;

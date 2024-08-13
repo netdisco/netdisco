@@ -38,10 +38,9 @@ sub load_workers {
 
   # also load a shim for any configured python worker
   if (setting('enable_python_worklets')) {
-      if (exists setting('python_worker_plugins')->{$action}
-          or exists setting('extra_python_worker_plugins')->{$action}) {
+      if (scalar grep {m/^${action}\./} @{setting('python_worker_plugins')}
+          or scalar grep {m/^${action}\./} @{setting('extra_python_worker_plugins')}) {
 
-          $ENV{ND2_LOG_PLUGINS} && debug "loading python shim for $action";
           # the way this works is to pass the action name to import()
           Module::Load::load 'App::Netdisco::Worker::Plugin::PythonShim', $action;
       }
