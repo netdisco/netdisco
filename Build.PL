@@ -10,6 +10,7 @@ App::Netdisco::Builder->new(
   dynamic_config => 1,
   configure_requires => {
     'DBIx::Class' => '0.082810',
+    'File::Spec' => 0, # core
     'Module::Build' => '0.42',
   },
   build_requires => {

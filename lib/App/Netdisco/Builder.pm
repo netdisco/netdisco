@@ -3,8 +3,16 @@ package App::Netdisco::Builder;
 use strict;
 use warnings;
 
+use File::Spec; # core
 use Module::Build;
 @App::Netdisco::Builder::ISA = qw(Module::Build);
+
+our $home;
+
+BEGIN {
+    $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+    $ENV{POETRY_CACHE_DIR} ||= File::Spec->catdir($home, 'python', 'cache', 'pypoetry');
+}
 
 sub ACTION_poetry {
     my $self = shift;

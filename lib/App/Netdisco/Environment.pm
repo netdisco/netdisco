@@ -31,6 +31,8 @@ BEGIN {
 
       $ENV{DANCER_PUBLIC} ||= $auto->subdir('public')->stringify;
       $ENV{DANCER_VIEWS}  ||= $auto->subdir('views')->stringify;
+
+      $ENV{POETRY_CACHE_DIR} ||= dir($home, 'python', 'cache', 'pypoetry')->stringify;
   }
 
   {
