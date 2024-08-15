@@ -1,19 +1,25 @@
 use strict;
 use warnings;
-use Module::Build;
 
-Module::Build->new(
+use lib q(./lib);
+use App::Netdisco::Builder;
+
+App::Netdisco::Builder->new(
   module_name => 'App::Netdisco',
   license     => 'bsd',
   dynamic_config => 1,
   configure_requires => {
     'DBIx::Class' => '0.082810',
+    'File::Spec' => 0, # core
     'Module::Build' => '0.42',
   },
   build_requires => {
+    'Alien::poetry' => '1.000003',
     'ExtUtils::Config' => '0',
     'ExtUtils::Helpers' => '0',
     'ExtUtils::InstallPaths' => '0',
+    'File::ShareDir' => '1.03',
+    'Path::Class' => '0.32',
   },
   requires => {
     'aliased' => '0',
@@ -21,6 +27,7 @@ Module::Build->new(
     'namespace::clean' => '0.24',
     'version' => '0.9902',
     'Algorithm::Cron' => '0.07',
+    'Alien::poetry' => '1.000003',
     'AnyEvent' => '7.05',
     'AnyEvent::DNS::EtcHosts' => '0',
     'App::cpanminus' => '1.6108',

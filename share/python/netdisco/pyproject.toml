@@ -1,0 +1,37 @@
+[project]
+requires-python = ">=3.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "netdisco"
+version = "1.0.0"
+description = "Python code and dependencies for Netdisco"
+authors = ["Netdisco Developers"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+yamllint = "^1.35.1"
+yamale = "^5.2.1"
+
+[tool.poetry.scripts]
+run_worklet = "netdisco.runner:main"
+
+[tool.poetry.group.develop]
+optional = true
+
+[tool.poetry.group.develop.dependencies]
+pre-commit = "^3.7.1"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+ruff = "^0.5.4"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]

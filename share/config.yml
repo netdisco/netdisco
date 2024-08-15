@@ -610,7 +610,7 @@ jobs_qdepth: 50
 dns:
   max_outstanding: 50
   hosts_file: '/etc/hosts'
-  no: ['group:__LOCAL_ADDRESSES__','group:__LOOPBACK_ADDRESSES__']
+  no: ['group:__LOCAL_ADDRESSES__', 'group:__LOOPBACK_ADDRESSES__']
 
 hooks: []
 
@@ -655,6 +655,22 @@ job_prio:
     - 'scheduler'
     - 'stats'
 
+enable_python_worklets: true
+
+python_worker_plugins:
+  - 'linter.main'
+  - 'expire.early'
+  - 'stats.early'
+#  - 'arpnip.check'
+#  - 'arpnip.nodes.early'
+#  - 'arpnip.nodes.main': ['direct', 'cli', 'snmp']
+#  - 'arpnip.nodes.extra.main'
+#  - 'arpnip.nodes.store'
+#  - 'arpnip.subnets.main': ['snmp']
+#  - 'arpnip.hooks.late'
+
+extra_python_worker_plugins: []
+
 worker_plugins:
   - 'Internal::BackendFQDN'
   - 'Internal::SNMPFastDiscover'
@@ -692,6 +708,7 @@ worker_plugins:
   - 'Hook'
   - 'Hook::Exec'
   - 'Hook::HTTP'
+  - 'Linter'
   - 'LoadMIBs'
   - 'Location'
   - 'Macsuck'
@@ -805,10 +822,10 @@ engines:
 layout: 'noop'
 plugins:
   Swagger:
-     main_api_module: 'App::Netdisco'
-     ui_url: '/swagger-ui'
-     show_ui: false
-     ui_dir: '/dev/null'
+    main_api_module: 'App::Netdisco'
+    ui_url: '/swagger-ui'
+    show_ui: false
+    ui_dir: '/dev/null'
   Auth::Extensible:
     no_api_change_warning: true
     no_default_pages: true

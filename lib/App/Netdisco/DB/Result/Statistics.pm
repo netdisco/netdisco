@@ -35,6 +35,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "perl_ver",
   { data_type => "text", is_nullable => 1 },
+  "python_ver",
+  { data_type => "text", is_nullable => 1 },
   "pg_ver",
   { data_type => "text", is_nullable => 1 },
 );

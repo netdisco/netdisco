@@ -1,0 +1,18 @@
+# Set the maximum line length to 100.
+line-length = 100
+
+[lint]
+extend-select = [
+  "E501", # add `line-too-long` rule to the enforced rule set
+  "UP",  # pyupgrade
+#  "D",   # pydocstyle
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+line-ending = "lf"
+quote-style = "single"
+skip-magic-trailing-comma = true
+# docstring-code-format = true

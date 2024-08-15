@@ -21,8 +21,8 @@ register 'register_worker' => sub {
   my $package = (caller)[0];
   ($workerconf->{package} = $package) =~ s/^App::Netdisco::Worker::Plugin:://;
   if ($package =~ m/Plugin::(\w+)(?:::(\w+))?/) {
-    $workerconf->{action}    = lc($1);
-    $workerconf->{namespace} = lc($2) if $2;
+    $workerconf->{action}    ||= lc($1);
+    $workerconf->{namespace} ||= lc($2) if $2;
   }
   return error "failed to parse action in '$package'"
     unless $workerconf->{action};
@@ -38,6 +38,7 @@ register 'register_worker' => sub {
     # use DDP; p $workerconf;
 
     debug YELLOW, "\N{RIGHTWARDS BLACK ARROW} worker ", GREY10, $workerconf->{package},
+      ($workerconf->{pyworklet} ? (' '. $workerconf->{pyworklet}) : ''),
       GREY10, ' p', MAGENTA, $workerconf->{priority},
       ($workerconf->{title} ? (GREY10, ' "', BRIGHT_BLUE, $workerconf->{title}, GREY10, '"') : ''),
       RESET;

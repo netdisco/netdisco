@@ -126,7 +126,7 @@ sub finalise_status {
 
   foreach my $status (reverse @{ $job->_statuslist }) {
     next if $status->phase
-      and $status->phase !~ m/^(?:check|early|main|store|late)$/;
+      and $status->phase !~ m/^(?:check|early|main|user|store|late)$/;
 
     # done() from check phase should not be the action's done()
     next if $status->phase eq 'check' and $status->is_ok;
