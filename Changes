@@ -1,3 +1,10 @@
+2.077003 - 2024-08-15
+
+  [BUG FIXES]
+
+  * refactor python helpers that are fixed classes
+  * re-enable POETRY_CACHE_DIR and python worklets
+
 2.077002 - 2024-08-15
 
   [BUG FIXES]
