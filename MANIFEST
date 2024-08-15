@@ -20,6 +20,7 @@ lib/App/Netdisco/Backend/Job.pm
 lib/App/Netdisco/Backend/Role/Manager.pm
 lib/App/Netdisco/Backend/Role/Poller.pm
 lib/App/Netdisco/Backend/Role/Scheduler.pm
+lib/App/Netdisco/Builder.pm
 lib/App/Netdisco/Configuration.pm
 lib/App/Netdisco/DB.pm
 lib/App/Netdisco/DB/ExplicitLocking.pm
@@ -145,6 +146,7 @@ lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortAccessEntity.pm
 lib/App/Netdisco/Util/PortMAC.pm
+lib/App/Netdisco/Util/Python.pm
 lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
@@ -255,6 +257,7 @@ lib/App/Netdisco/Worker/Plugin/Hook/Exec.pm
 lib/App/Netdisco/Worker/Plugin/Hook/HTTP.pm
 lib/App/Netdisco/Worker/Plugin/Internal/BackendFQDN.pm
 lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm
+lib/App/Netdisco/Worker/Plugin/Linter.pm
 lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
@@ -275,6 +278,7 @@ lib/App/Netdisco/Worker/Plugin/PortName.pm
 lib/App/Netdisco/Worker/Plugin/Power.pm
 lib/App/Netdisco/Worker/Plugin/PrimeSkiplist.pm
 lib/App/Netdisco/Worker/Plugin/Psql.pm
+lib/App/Netdisco/Worker/Plugin/PythonShim.pm
 lib/App/Netdisco/Worker/Plugin/Renumber.pm
 lib/App/Netdisco/Worker/Plugin/Scheduler.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
@@ -419,6 +423,23 @@ share/public/swagger-ui/swagger-ui.css.map
 share/public/swagger-ui/swagger-ui.js
 share/public/swagger-ui/swagger-ui.js.map
 share/public/swagger-ui/version-3.20.3
+share/python/netdisco/.pre-commit-config.yaml
+share/python/netdisco/netdisco/runner.py
+share/python/netdisco/netdisco/util/config.py
+share/python/netdisco/netdisco/util/job.py
+share/python/netdisco/netdisco/util/log.py
+share/python/netdisco/netdisco/util/perl.py
+share/python/netdisco/netdisco/util/stash.py
+share/python/netdisco/netdisco/util/status.py
+share/python/netdisco/netdisco/util/worklet.py
+share/python/netdisco/netdisco/worklet/expire/early.py
+share/python/netdisco/netdisco/worklet/linter/main.py
+share/python/netdisco/netdisco/worklet/stats/early.py
+share/python/netdisco/poetry.lock
+share/python/netdisco/poetry.toml
+share/python/netdisco/pyproject.toml
+share/python/netdisco/ruff.toml
+share/python/netdisco/tests/__init__.py
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
@@ -504,6 +525,7 @@ share/schema_versions/App-Netdisco-DB-83-84-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-84-85-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-85-86-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-86-87-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-87-88-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt

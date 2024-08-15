@@ -3,15 +3,19 @@ abstract: 'An open source web-based network management tool.'
 author:
   - 'Oliver Gorwits <oliver@cpan.org>'
 build_requires:
+  Alien::poetry: '1.000003'
   Env::Path: '0'
   ExtUtils::Config: '0'
   ExtUtils::Helpers: '0'
   ExtUtils::InstallPaths: '0'
+  File::ShareDir: '1.03'
+  Path::Class: '0.32'
   Test::Compile: '0'
   Test::File::ShareDir::Dist: '0'
   Test::More: '1.302083'
 configure_requires:
   DBIx::Class: '0.082810'
+  File::Spec: '0'
   Module::Build: '0.42'
 dynamic_config: 1
 generated_by: 'Module::Build version 0.4234, CPAN::Meta::Converter version 2.150010'
@@ -23,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.076006'
+    version: '2.077000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -34,11 +38,13 @@ provides:
     file: lib/App/Netdisco/Backend/Role/Poller.pm
   App::Netdisco::Backend::Role::Scheduler:
     file: lib/App/Netdisco/Backend/Role/Scheduler.pm
+  App::Netdisco::Builder:
+    file: lib/App/Netdisco/Builder.pm
   App::Netdisco::Configuration:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '87'
+    version: '88'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -285,6 +291,8 @@ provides:
     file: lib/App/Netdisco/Util/PortAccessEntity.pm
   App::Netdisco::Util::PortMAC:
     file: lib/App/Netdisco/Util/PortMAC.pm
+  App::Netdisco::Util::Python:
+    file: lib/App/Netdisco/Util/Python.pm
   App::Netdisco::Util::SNMP:
     file: lib/App/Netdisco/Util/SNMP.pm
   App::Netdisco::Util::Snapshot:
@@ -505,6 +513,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Internal/BackendFQDN.pm
   App::Netdisco::Worker::Plugin::Internal::SNMPFastDiscover:
     file: lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm
+  App::Netdisco::Worker::Plugin::Linter:
+    file: lib/App/Netdisco/Worker/Plugin/Linter.pm
   App::Netdisco::Worker::Plugin::LoadMIBs:
     file: lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
   App::Netdisco::Worker::Plugin::Location:
@@ -545,6 +555,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/PrimeSkiplist.pm
   App::Netdisco::Worker::Plugin::Psql:
     file: lib/App/Netdisco/Worker/Plugin/Psql.pm
+  App::Netdisco::Worker::Plugin::PythonShim:
+    file: lib/App/Netdisco/Worker/Plugin/PythonShim.pm
   App::Netdisco::Worker::Plugin::Renumber:
     file: lib/App/Netdisco/Worker/Plugin/Renumber.pm
   App::Netdisco::Worker::Plugin::Scheduler:
@@ -573,6 +585,7 @@ recommends:
   GraphViz: '0'
 requires:
   Algorithm::Cron: '0.07'
+  Alien::poetry: '1.000003'
   AnyEvent: '7.05'
   AnyEvent::DNS::EtcHosts: '0'
   App::cpanminus: '1.6108'
@@ -674,5 +687,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.076006'
+version: '2.077000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

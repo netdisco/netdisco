@@ -16,14 +16,18 @@
    "prereqs" : {
       "build" : {
          "requires" : {
+            "Alien::poetry" : "1.000003",
             "ExtUtils::Config" : "0",
             "ExtUtils::Helpers" : "0",
-            "ExtUtils::InstallPaths" : "0"
+            "ExtUtils::InstallPaths" : "0",
+            "File::ShareDir" : "1.03",
+            "Path::Class" : "0.32"
          }
       },
       "configure" : {
          "requires" : {
             "DBIx::Class" : "0.082810",
+            "File::Spec" : "0",
             "Module::Build" : "0.42"
          }
       },
@@ -35,6 +39,7 @@
          },
          "requires" : {
             "Algorithm::Cron" : "0.07",
+            "Alien::poetry" : "1.000003",
             "AnyEvent" : "7.05",
             "AnyEvent::DNS::EtcHosts" : "0",
             "App::cpanminus" : "1.6108",
@@ -143,7 +148,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.076006"
+         "version" : "2.077000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -160,12 +165,15 @@
       "App::Netdisco::Backend::Role::Scheduler" : {
          "file" : "lib/App/Netdisco/Backend/Role/Scheduler.pm"
       },
+      "App::Netdisco::Builder" : {
+         "file" : "lib/App/Netdisco/Builder.pm"
+      },
       "App::Netdisco::Configuration" : {
          "file" : "lib/App/Netdisco/Configuration.pm"
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "87"
+         "version" : "88"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -536,6 +544,9 @@
       "App::Netdisco::Util::PortMAC" : {
          "file" : "lib/App/Netdisco/Util/PortMAC.pm"
       },
+      "App::Netdisco::Util::Python" : {
+         "file" : "lib/App/Netdisco/Util/Python.pm"
+      },
       "App::Netdisco::Util::SNMP" : {
          "file" : "lib/App/Netdisco/Util/SNMP.pm"
       },
@@ -866,6 +877,9 @@
       "App::Netdisco::Worker::Plugin::Internal::SNMPFastDiscover" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm"
       },
+      "App::Netdisco::Worker::Plugin::Linter" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Linter.pm"
+      },
       "App::Netdisco::Worker::Plugin::LoadMIBs" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm"
       },
@@ -926,6 +940,9 @@
       "App::Netdisco::Worker::Plugin::Psql" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Psql.pm"
       },
+      "App::Netdisco::Worker::Plugin::PythonShim" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/PythonShim.pm"
+      },
       "App::Netdisco::Worker::Plugin::Renumber" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Renumber.pm"
       },
@@ -975,6 +992,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.076006",
+   "version" : "2.077000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
