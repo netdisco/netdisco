@@ -7,11 +7,11 @@ of a Python worklet along with convenience methods to set the status. A fresh
 instance of the Status class has an empty message and null (empty string) message.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
-@dataclass
-class Status:
+@dataclass(frozen=True)
+class StatusManager:
     status: str = ''
     log: str = ''
 
@@ -49,3 +49,5 @@ class Status:
     def info(self, msg):
         self.status = 'info'
         self.log = msg
+
+status = StatusManager()

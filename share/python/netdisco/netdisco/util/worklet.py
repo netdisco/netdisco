@@ -11,25 +11,14 @@ from dataclasses import dataclass, field
 import netdisco.util.log as log
 import netdisco.util.job as job
 import netdisco.util.stash as stash
-from netdisco.util.status import Status
-
-
-@dataclass
-class Stash:
-    store: dict = field(default_factory=dict)
-
-    def get(self, key):
-        return stash.stash(key) or self.store[key]
-
-    def set(self, key, val):
-        self.store[key] = val
+import netdisco.util.status as status
 
 
 @dataclass(frozen=True)
 class Context:
     job: object = job.job
-    stash: Stash = Stash()
-    status: Status = Status()
+    stash: object = stash.stash
+    status: object = status.status
 
 
 debug = log.debug

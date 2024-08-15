@@ -13,7 +13,7 @@ ND2_JOB_METADATA = json.loads(os.environ['ND2_JOB_METADATA'])
 
 
 @dataclass(frozen=True)
-class Job:
+class JobManager:
     job: int
     action: str
     entered: str = ''
@@ -41,4 +41,4 @@ class Job:
         return self.job
 
 
-job = Job(**ND2_JOB_METADATA)
+job = JobManager(**ND2_JOB_METADATA)
