@@ -34,20 +34,25 @@ class StatusManager:
             else 0
         )
 
+    # this is pretty disgusting and must TODO come back and rework it
+
     def error(self, msg):
-        self.status = 'error'
-        self.log = msg
+        object.__setattr__(self, 'status', 'error')
+        object.__setattr__(self, 'log', msg)
 
     def done(self, msg):
-        self.status = 'done'
-        self.log = msg
+        object.__setattr__(self, 'status', 'done')
+        object.__setattr__(self, 'log', msg)
+
 
     def defer(self, msg):
-        self.status = 'defer'
-        self.log = msg
+        object.__setattr__(self, 'status', 'defer')
+        object.__setattr__(self, 'log', msg)
+
 
     def info(self, msg):
-        self.status = 'info'
-        self.log = msg
+        object.__setattr__(self, 'status', 'info')
+        object.__setattr__(self, 'log', msg)
+
 
 status = StatusManager()
