@@ -15,7 +15,6 @@ build_requires:
   Test::More: '1.302083'
 configure_requires:
   DBIx::Class: '0.082810'
-  File::Spec: '0'
   Module::Build: '0.42'
 dynamic_config: 1
 generated_by: 'Module::Build version 0.4234, CPAN::Meta::Converter version 2.150010'
@@ -27,7 +26,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.077000'
+    version: '2.077001'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -687,5 +686,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.077000'
+version: '2.077001'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

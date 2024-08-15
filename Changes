@@ -1,3 +1,9 @@
+2.077001 - 2024-08-15
+
+  [BUG FIXES]
+
+  * revert POETRY_CACHE_DIR override
+
 2.077000 - 2024-08-15
 
   [NEW FEATURES]
