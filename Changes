@@ -1,3 +1,9 @@
+2.077004 - 2024-08-15
+
+  [BUG FIXES]
+
+  * amend github action for demo deploy to create python venv
+
 2.077003 - 2024-08-15
 
   [BUG FIXES]
