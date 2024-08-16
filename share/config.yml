@@ -655,7 +655,7 @@ job_prio:
     - 'scheduler'
     - 'stats'
 
-enable_python_worklets: true
+enable_python_worklets: false
 
 python_worker_plugins:
   - 'linter.main'
