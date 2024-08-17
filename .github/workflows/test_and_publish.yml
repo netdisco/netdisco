@@ -353,9 +353,6 @@ jobs:
         NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
       run: |
         /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
-        $(/home/netdisco/bin/localenv perl -MAlien::poetry -e 'print Alien::poetry->poetry') \
-          -C $(/home/netdisco/bin/localenv perl -MFile::ShareDir -E 'say File::ShareDir::dist_dir("App-Netdisco") ."/python/netdisco"') \
-          install --sync
         /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
 
     - name: Setup tmate session
