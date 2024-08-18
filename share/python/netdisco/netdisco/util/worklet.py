@@ -12,6 +12,7 @@ import netdisco.util.log as log
 import netdisco.util.job as job
 import netdisco.util.stash as stash
 import netdisco.util.status as status
+import netdisco.util.config as config
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,7 @@ class Context:
     job: object = job.job
     stash: object = stash.stash
     status: object = status.status
+    setting: function = config.setting
 
 
 debug = log.debug

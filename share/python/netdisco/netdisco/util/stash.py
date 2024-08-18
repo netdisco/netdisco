@@ -21,7 +21,7 @@ class StashManager:
         elif key in self.store:
             return self.store[key]
         else:
-            raise KeyError('cannot find key in Perl/Dancer vars or Python stash')
+            raise KeyError(f'cannot find key "{key}" in Perl/Dancer vars or Python stash')
 
     def set(self, key, val):
         self.store[key] = val
