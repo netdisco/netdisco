@@ -4,42 +4,12 @@
 
   * allow temporary root installation to see python libs during demo deploy
 
-2.077006 - 2024-08-18
-
-  [BUG FIXES]
-
-  * revert workarounds needed for containerised builds
-
-2.077005 - 2024-08-16
-
-  [BUG FIXES]
-
-  * change default for python worklets
-
-2.077004 - 2024-08-15
-
-  [BUG FIXES]
-
-  * amend github action for demo deploy to create python venv
-
 2.077003 - 2024-08-15
 
   [BUG FIXES]
 
   * refactor python helpers that are fixed classes
   * re-enable POETRY_CACHE_DIR and python worklets
-
-2.077002 - 2024-08-15
-
-  [BUG FIXES]
-
-  * change default for python worklets
-
-2.077001 - 2024-08-15
-
-  [BUG FIXES]
-
-  * revert POETRY_CACHE_DIR override
 
 2.077000 - 2024-08-15
 
