@@ -1,3 +1,9 @@
+2.077007 - 2024-08-18
+
+  [BUG FIXES]
+
+  * allow temporary root installation to see python libs during demo deploy
+
 2.077006 - 2024-08-18
 
   [BUG FIXES]
