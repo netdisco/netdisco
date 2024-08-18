@@ -352,6 +352,7 @@ jobs:
         NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
         NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
       run: |
+        ln -s /home/netdisco/python /root/python
         /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
         /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
 
