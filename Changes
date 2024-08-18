@@ -1,3 +1,9 @@
+2.077006 - 2024-08-18
+
+  [BUG FIXES]
+
+  * revert workarounds needed for containerised builds
+
 2.077005 - 2024-08-16
 
   [BUG FIXES]
