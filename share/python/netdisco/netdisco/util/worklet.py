@@ -20,7 +20,10 @@ class Context:
     job = job.job
     stash = stash.stash
     status = status.status
-    setting = config.setting
+
+    @staticmethod
+    def setting(name):
+        return config.setting(name)
 
 
 debug = log.debug
