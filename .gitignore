@@ -20,3 +20,5 @@ yarn.lock
 package.json
 .stylelintrc
 .vscode
+*__pycache__*
+.ruff_cache
