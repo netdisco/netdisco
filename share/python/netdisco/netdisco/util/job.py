@@ -39,6 +39,9 @@ class JobManager:
 
     def id(self) -> int:
         return self.job
+    
+    def extra(self) -> str:
+        return self.subaction
 
 
 job = JobManager(**ND2_JOB_METADATA)
