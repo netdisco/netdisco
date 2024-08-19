@@ -1,3 +1,11 @@
+2.077009 - 2024-08-19
+
+  [BUG FIXES]
+
+  * remove unnecessary test of stash set
+  * bump Alien::poetry again due to bad packaging
+  * swap order of Python stash search - stash then vars
+
 2.077008 - 2024-08-19
 
   [ENHANCEMENTS]
