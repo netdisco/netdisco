@@ -1,3 +1,13 @@
+2.077008 - 2024-08-19
+
+  [ENHANCEMENTS]
+
+  * add setting() to Python worklet context helper
+
+  [BUG FIXES]
+
+  * check key is in Python vars/stash else raise KeyError
+
 2.077007 - 2024-08-18
 
   [BUG FIXES]

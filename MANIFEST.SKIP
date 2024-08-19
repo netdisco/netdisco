@@ -83,3 +83,6 @@ SECURITY.md
 \B\.idea
 # ignore vscode directory
 \B\.vscode
+
+# python stuff
+\b__pycache__
