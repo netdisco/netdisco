@@ -13,8 +13,6 @@ def main():
         found_issues = True
         debug(f'{p.line}: ({p.rule}) {p.desc}')
 
-    c.stash.set('a_new_key', 'a_new_value')
-
     if found_issues:
         c.status.error('Lint errors, view with --debug')
     else:
