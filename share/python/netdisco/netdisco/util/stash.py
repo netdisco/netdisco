@@ -17,12 +17,12 @@ class StashManager:
     store: dict = field(default_factory=dict)
 
     def get(self, key):
-        if key in ND2_VARS:
-            return ND2_VARS[key]
-        elif key in self.store:
+        if key in self.store:
             return self.store[key]
+        elif key in ND2_VARS:
+            return ND2_VARS[key]
         else:
-            raise KeyError(f'cannot find key "{key}" in Perl/Dancer vars or Python stash')
+            raise KeyError(f'cannot find key "{key}" in Python stash or Perl/Dancer vars')
 
     def set(self, key, val):
         self.store[key] = val
