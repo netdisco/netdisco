@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 ND2_VARS = json.loads(os.environ['ND2_VARS'])
 
+
 @dataclass(frozen=True)
 class StashManager:
     store: dict = field(default_factory=dict)
@@ -25,5 +26,6 @@ class StashManager:
 
     def set(self, key, val):
         self.store[key] = val
+
 
 stash = StashManager()

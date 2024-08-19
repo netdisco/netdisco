@@ -7,7 +7,7 @@ of a Python worklet along with convenience methods to set the status. A fresh
 instance of the Status class has an empty message and null (empty string) message.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ class StatusManager:
             else 0
         )
 
-    # this is pretty disgusting and must TODO come back and rework it
+    # this is pretty disgusting and must TODO come back and rework it
 
     def error(self, msg):
         object.__setattr__(self, 'status', 'error')
@@ -44,11 +44,9 @@ class StatusManager:
         object.__setattr__(self, 'status', 'done')
         object.__setattr__(self, 'log', msg)
 
-
     def defer(self, msg):
         object.__setattr__(self, 'status', 'defer')
         object.__setattr__(self, 'log', msg)
-
 
     def info(self, msg):
         object.__setattr__(self, 'status', 'info')
