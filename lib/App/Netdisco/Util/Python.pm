@@ -47,10 +47,11 @@ sub py_worklet {
   my @module = split /\./, $workerconf->{pyworklet};
   my $cmd = Command::Runner->new(
     env => {
+      # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
       ND2_VARS          => $coder->encode( vars() ),
       ND2_JOB_METADATA  => $coder->encode( { %$job } ),
       ND2_CONFIGURATION => $coder->encode( config() ),
-      # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
+      %ENV, # for some reason Command::Runner cleans the environment
     },
     command => [ cipactli(), 'run', 'run_worklet', @module ],
     stderr  => sub { debug $_[0] },
