@@ -661,12 +661,17 @@ python_worker_plugins:
   - 'linter.main'
   - 'expire.early'
   - 'stats.early'
+
 #  - 'arpnip.check'
 #  - 'arpnip.nodes.early'
 #  - 'arpnip.nodes.main': ['direct', 'cli', 'snmp']
+#  - 'arpnip.nodes.main':
+#      priority: 250
+#      only: ['vendor:cisco', 'os:ios-xr']
 #  - 'arpnip.nodes.extra.main'
 #  - 'arpnip.nodes.store'
-#  - 'arpnip.subnets.main': ['snmp']
+#  - 'arpnip.subnets.main.snmp'
+#  - 'arpnip.subnets.main.snmp.onlycatos'
 #  - 'arpnip.hooks.late'
 
 extra_python_worker_plugins: []
