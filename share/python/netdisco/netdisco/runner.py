@@ -4,7 +4,7 @@ from netdisco.util.perl import marshal_for_perl
 
 
 def main():
-    target = ['netdisco', 'worklet']
+    target = []
 
     if len(sys.argv) > 1:
         target.extend(sys.argv[1:])

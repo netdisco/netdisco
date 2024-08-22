@@ -674,6 +674,7 @@ python_worker_plugins:
 #  - 'arpnip.subnets.main.snmp.onlycatos'
 #  - 'arpnip.hooks.late'
 
+extra_python_worker_package_namespace: 'netdiscox'
 extra_python_worker_plugins: []
 
 worker_plugins:

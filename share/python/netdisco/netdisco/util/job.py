@@ -39,7 +39,7 @@ class JobManager:
 
     def id(self) -> int:
         return self.job
-    
+
     def extra(self) -> str:
         return self.subaction
 
