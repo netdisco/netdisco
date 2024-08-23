@@ -9,7 +9,7 @@ import os
 import json
 from dataclasses import dataclass, field
 
-ND2_VARS = json.loads(os.environ['ND2_VARS'])
+ND2_VARS = json.loads(os.environ.get('ND2_VARS', '{}'))
 
 
 @dataclass(frozen=True)

@@ -8,7 +8,7 @@ Access to Netdisco runtime configuration.
 import os
 import json
 
-ND2_CONFIGURATION = json.loads(os.environ['ND2_CONFIGURATION'])
+ND2_CONFIGURATION = json.loads(os.environ.get('ND2_CONFIGURATION', '{}'))
 
 
 def setting(name):
