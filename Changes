@@ -1,3 +1,16 @@
+2.077010 - 2024-08-23
+
+  [ENHANCEMENTS]
+
+  * allow Python worklets to be run independent of Netdisco
+  * Python worklets have "extra" alias of Job subaction
+  * support additional Python worklet config like only/no ACLs and priority
+  * user's Python worklets live in netdiscox namespace, or extra_python_worker_package_namespace
+
+  [BUG FIXES]
+
+  * copy full %ENV into Python worklet environment
+
 2.077009 - 2024-08-19
 
   [BUG FIXES]
