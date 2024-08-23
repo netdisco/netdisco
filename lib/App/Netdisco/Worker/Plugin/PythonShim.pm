@@ -54,13 +54,11 @@ sub _find_python_worklets {
           my $rhs = (values %$entry)[0];
           if (ref [] eq ref $rhs) {
               foreach my $driver (@{ $rhs }) {
-                  $base{driver} = $driver;
-                  _register_python_worklet({ %base });
+                  _register_python_worklet({ %base, driver => $driver });
               }
           }
           else {
-              %base = (%base, %$rhs);
-              _register_python_worklet({ %base });
+              _register_python_worklet({ %base, %$rhs });
           }
       }
       else {
