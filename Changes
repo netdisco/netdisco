@@ -1,3 +1,9 @@
+2.077011 - 2024-08-23
+
+  [BUG FIXES]
+
+  * set POETRY_CACHE_DIR in github action for demo site
+
 2.077010 - 2024-08-23
 
   [ENHANCEMENTS]
