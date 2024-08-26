@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::Discover::Neighbors::Routed;
+package App::Netdisco::Worker::Plugin::Discover::NextHopNeighbors;
 use Dancer ':syntax';
 
 use App::Netdisco::Worker::Plugin;
@@ -40,23 +40,48 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
             or (scalar values %$bgp_peers) or (scalar values %$eigrp_peers)
             or (scalar values %$isis_peers));
 
-  my $count = 0;
   foreach my $ip ((values %$ospf_peers), (values %$ospf_routers),
                   (values %$bgp_peers), (values %$eigrp_peers),
                   (values %$isis_peers)) {
-    my $peer = get_device($ip);
-    next if $peer->in_storage or not is_discoverable($peer);
-    next if vars->{'queued'}->{$ip};
 
-    jq_insert({
-      device => $ip,
-      action => 'discover',
-      subaction => 'with-nodes',
-    });
+      push @{ vars->{'next_hops'} }, $ip;
+  }
 
-    $count++;
-    vars->{'queued'}->{$ip} += 1;
-    debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $ip;
+  return Status->info(sprintf " [%s] neigh - found %s routed peers.",
+    $device, scalar @{ vars->{'next_hops'} });
+});
+
+register_worker({ phase => 'store' }, sub {
+  my ($job, $workerconf) = @_;
+  my $device = $job->device;
+
+  my $nh = vars->{'next_hops'};
+  return unless ref [] eq ref $nh and scalar @$nh;
+
+  my $count = 0;
+  foreach my $host (@$nh) {
+      my $ip = NetAddr::IP->new($host);
+      if (not $ip or $ip->addr eq '0.0.0.0'
+          or acl_matches($ip->addr, 'group:__LOOPBACK_ADDRESSES__')) {
+
+          debug sprintf ' [%s] neigh - skipping routed peer %s is not valid',
+            $device, $host;
+          next;
+      }
+
+      my $peer = get_device($ip);
+      next if $peer->in_storage or not is_discoverable($peer);
+      next if vars->{'queued'}->{$ip};
+
+      jq_insert({
+        device => $ip,
+        action => 'discover',
+        subaction => 'with-nodes',
+      });
+
+      $count++;
+      vars->{'queued'}->{$ip} += 1;
+      debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $ip;
   }
 
   return Status->info(" [$device] neigh - $count peers added to queue.");

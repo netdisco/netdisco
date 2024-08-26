@@ -14,7 +14,7 @@ def main():
 
     # debug(neighbors)
     c.stash.set('next_hops', neighbors)
-    c.status.done('gathered route neighbors')
+    c.status.info('gathered route neighbors')
 
 
 if __name__ == '__main__':
