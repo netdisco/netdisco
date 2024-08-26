@@ -661,6 +661,8 @@ python_worker_plugins:
   - 'linter.main'
   - 'expire.early'
   - 'stats.early'
+  - 'discover.neighbors.routed.main.cli.juniper_junos':
+      only: 'route-server.ip.att.net'
 
 #  - 'arpnip.check'
 #  - 'arpnip.nodes.early'
