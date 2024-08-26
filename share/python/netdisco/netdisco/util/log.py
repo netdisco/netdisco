@@ -16,6 +16,10 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+if setting('paramiko_logging') is not True:
+    logging.getLogger('paramiko').setLevel(logging.CRITICAL+1)
+if setting('netmiko_logging') is not True:
+    logging.getLogger('netmiko').setLevel(logging.CRITICAL+1)
 
 def debug(message):
     log.debug(str(message))
