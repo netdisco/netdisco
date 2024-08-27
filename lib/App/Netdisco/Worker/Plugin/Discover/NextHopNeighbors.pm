@@ -8,6 +8,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::JobQueue 'jq_insert';
+use NetAddr::IP;
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
