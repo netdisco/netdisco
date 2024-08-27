@@ -12,4 +12,5 @@
 Template, Hostname, Platform, Command
 
 # show route forwarding-table | match ucst | match /32
+juniper_junos_show_bgp_summary.textfsm, .*, juniper_junos, sh[[ow]] bgp sum[[mary]]
 juniper_junos_show_route_forwarding-table.textfsm, .*, juniper_junos, show route forwarding-table
