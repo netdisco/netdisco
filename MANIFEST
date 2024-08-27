@@ -236,7 +236,7 @@ lib/App/Netdisco/Worker/Plugin/Discover/Entities.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm
-lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm
+lib/App/Netdisco/Worker/Plugin/Discover/NextHopNeighbors.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
@@ -429,9 +429,11 @@ share/python/netdisco/netdisco/util/config.py
 share/python/netdisco/netdisco/util/job.py
 share/python/netdisco/netdisco/util/log.py
 share/python/netdisco/netdisco/util/perl.py
+share/python/netdisco/netdisco/util/ssh.py
 share/python/netdisco/netdisco/util/stash.py
 share/python/netdisco/netdisco/util/status.py
 share/python/netdisco/netdisco/util/worklet.py
+share/python/netdisco/netdisco/worklet/discover/nexthopneighbors/main/cli/juniper_junos.py
 share/python/netdisco/netdisco/worklet/expire/early.py
 share/python/netdisco/netdisco/worklet/linter/main.py
 share/python/netdisco/netdisco/worklet/stats/early.py
@@ -440,6 +442,9 @@ share/python/netdisco/poetry.toml
 share/python/netdisco/pyproject.toml
 share/python/netdisco/ruff.toml
 share/python/netdisco/tests/__init__.py
+share/python/tfsm/index
+share/python/tfsm/juniper_junos_show_bgp_summary.textfsm
+share/python/tfsm/juniper_junos_show_route_forwarding-table.textfsm
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql

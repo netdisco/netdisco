@@ -1,3 +1,13 @@
+2.078000 - 2024-08-27
+
+  [NEW FEATURES]
+
+  * SSH collector implementation for Python worklets
+
+  [BUG FIXES]
+
+  * smarter checks for existing object instance in get_device
+
 2.077011 - 2024-08-23
 
   [BUG FIXES]

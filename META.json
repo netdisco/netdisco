@@ -148,7 +148,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.077011"
+         "version" : "2.078000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -814,8 +814,8 @@
       "App::Netdisco::Worker::Plugin::Discover::Neighbors::DOCSIS" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/DOCSIS.pm"
       },
-      "App::Netdisco::Worker::Plugin::Discover::Neighbors::Routed" : {
-         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/Neighbors/Routed.pm"
+      "App::Netdisco::Worker::Plugin::Discover::NextHopNeighbors" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Discover/NextHopNeighbors.pm"
       },
       "App::Netdisco::Worker::Plugin::Discover::PortPower" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm"
@@ -992,6 +992,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.077011",
+   "version" : "2.078000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
