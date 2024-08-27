@@ -82,7 +82,7 @@ register_worker({ phase => 'store' }, sub {
 
       $count++;
       vars->{'queued'}->{$peer->ip} += 1;
-      debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $peer->ip;
+      debug sprintf ' [%s] neigh - queued %s for discovery (peer)', $device, $peer->ip;
   }
 
   return Status->info(" [$device] neigh - $count peers added to queue.");
