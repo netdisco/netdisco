@@ -7,6 +7,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use List::MoreUtils ();
 use File::Spec::Functions qw(catdir catfile);
 use File::Path 'make_path';
+use Scalar::Util 'blessed';
 use NetAddr::IP;
 
 use base 'Exporter';
@@ -42,7 +43,8 @@ Given an IP address, returns a L<DBIx::Class::Row> object for the Device in
 the Netdisco database. The IP can be for any interface on the device.
 
 If for any reason C<$ip> is already a C<DBIx::Class> Device object, then it is
-simply returned.
+simply returned. If C<$ip> can C<addr> or C<ip> then those methods are called
+to get an IP address to locate in the database.
 
 If the device or interface IP is not known to Netdisco a new Device object is
 created for the IP, and returned. This object is in-memory only and not yet
@@ -54,8 +56,21 @@ sub get_device {
   my $ip = shift;
   return unless $ip;
 
-  # naive check for existing DBIC object
-  return $ip if ref $ip;
+  if (blessed $ip) {
+    return $ip if blessed $ip eq 'App::Netdisco::DB::Result::Device';
+
+    if ($ip->can('addr')) {
+        $ip = $ip->addr;
+    }
+    elsif ($ip->can('ip')) {
+        $ip = $ip->ip;
+    }
+    else {
+        die sprintf 'unknown class %s passed to get_device', blessed $ip;
+    }
+  }
+
+  die 'reference passed to get_device' if ref $ip;
 
   # in case the management IP of one device is in use on another device,
   # we first try to get an exact match for the IP as mgmt interface.
