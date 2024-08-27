@@ -72,17 +72,17 @@ register_worker({ phase => 'store' }, sub {
 
       my $peer = get_device($ip);
       next if $peer->in_storage or not is_discoverable($peer);
-      next if vars->{'queued'}->{$ip};
+      next if vars->{'queued'}->{$peer->ip};
 
       jq_insert({
-        device => $ip,
+        device => $peer->ip,
         action => 'discover',
         subaction => 'with-nodes',
       });
 
       $count++;
-      vars->{'queued'}->{$ip} += 1;
-      debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $ip;
+      vars->{'queued'}->{$peer->ip} += 1;
+      debug sprintf ' [%s] queue - queued %s for discovery (peer)', $device, $peer->ip;
   }
 
   return Status->info(" [$device] neigh - $count peers added to queue.");
