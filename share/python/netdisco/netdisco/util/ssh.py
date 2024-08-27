@@ -13,7 +13,7 @@ from netdisco.util.config import setting
 from netdisco.util.job import job
 
 if 'ND2_FSM_TEMPLATES' in os.environ:
-    os.environ["NET_TEXTFSM"] = os.environ['ND2_FSM_TEMPLATES']
+    os.environ['NET_TEXTFSM'] = os.environ['ND2_FSM_TEMPLATES']
 
 device_auth_setting = setting('device_auth')
 if not isinstance(device_auth_setting, list):
