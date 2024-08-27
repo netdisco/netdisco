@@ -15,4 +15,4 @@ def setting(name):
     if name in ND2_CONFIGURATION:
         return ND2_CONFIGURATION[name]
     else:
-        raise KeyError(f'unable to find setting "{name}" in Netdisco configuration')
+        return None

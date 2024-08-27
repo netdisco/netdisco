@@ -38,12 +38,8 @@ sub load_workers {
 
   # also load a shim for any configured python worker
   if (setting('enable_python_worklets')) {
-      if (scalar grep {m/^${action}\./} @{setting('python_worker_plugins')}
-          or scalar grep {m/^${action}\./} @{setting('extra_python_worker_plugins')}) {
-
-          # the way this works is to pass the action name to import()
-          Module::Load::load 'App::Netdisco::Worker::Plugin::PythonShim', $action;
-      }
+      # the way this works is to pass the action name to import()
+      Module::Load::load 'App::Netdisco::Worker::Plugin::PythonShim', $action;
   }
 
   my $workers = vars->{'workers'}->{$action} || {};

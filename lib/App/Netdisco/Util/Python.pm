@@ -49,8 +49,10 @@ sub py_worklet {
     env => {
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
       ND2_VARS          => $coder->encode( vars() ),
-      ND2_JOB_METADATA  => $coder->encode( { %$job } ),
+      ND2_JOB_METADATA  => $coder->encode( { %$job, device => ($job->device .'') } ),
       ND2_CONFIGURATION => $coder->encode( config() ),
+      ND2_FSM_TEMPLATES => Path::Class::Dir->new( dist_dir('App-Netdisco') )
+                             ->subdir('python')->subdir('tfsm')->stringify,
       %ENV, # for some reason Command::Runner cleans the environment
     },
     command => [ cipactli(), 'run', 'run_worklet', @module ],

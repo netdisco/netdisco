@@ -1,0 +1,15 @@
+# Destination        Type RtRef Next hop           Type Index    NhRef Netif
+# 12.0.1.25/32       dest     0 52:54:0:8b:0:f4    ucst      528     1 em0.0
+#
+Value DESTINATION (\S+)
+Value RTYPE (\S+)
+Value ROUTEREF (\S+)
+Value NEXT_HOP (\S+)
+Value TYPE (\S+)
+Value INDEX (\d+)
+Value NHREF (\d+)
+Value INTERFACE (\S+)
+
+Start
+  ^${DESTINATION}\s+${RTYPE}\s+${ROUTEREF}\s+${NEXT_HOP}\s+${TYPE}\s+${INDEX}\s+${NHREF}\s+${INTERFACE} -> Record
+  ^. -> Error

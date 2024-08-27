@@ -661,6 +661,8 @@ python_worker_plugins:
   - 'linter.main'
   - 'expire.early'
   - 'stats.early'
+  - 'discover.nexthopneighbors.main.cli.juniper_junos':
+      only: 'route-server.ip.att.net'
 
 #  - 'arpnip.check'
 #  - 'arpnip.nodes.early'
@@ -695,7 +697,7 @@ worker_plugins:
   - 'Discover::Hooks'
   - 'Discover::Neighbors'
   - 'Discover::Neighbors::DOCSIS'
-  - 'Discover::Neighbors::Routed'
+  - 'Discover::NextHopNeighbors'
   - 'Discover::PortPower'
   - 'Discover::PortProperties'
   - 'Discover::Properties'

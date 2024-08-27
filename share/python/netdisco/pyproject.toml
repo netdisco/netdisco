@@ -15,6 +15,7 @@ authors = ["Netdisco Developers"]
 python = "^3.9"
 yamllint = "^1.35.1"
 yamale = "^5.2.1"
+netmiko = "^4.4.0"
 
 [tool.poetry.scripts]
 run_worklet = "netdisco.runner:main"

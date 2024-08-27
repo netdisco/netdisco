@@ -70,11 +70,13 @@ sub _find_python_worklets {
 sub _register_python_worklet {
   my $workerconf = shift;
   $workerconf->{pyworklet} .= _build_pyworklet(%$workerconf);
-  $workerconf->{namespace} = join '::', @{ $workerconf->{namespace} }
+  $workerconf->{full_namespace} = join '::', @{ $workerconf->{namespace} }
+    if exists $workerconf->{namespace};
+  $workerconf->{namespace} = $workerconf->{namespace}->[0]
     if exists $workerconf->{namespace};
 
   $ENV{ND2_LOG_PLUGINS} &&
-    debug sprintf '...registering python worklet a:%s s:%s p:%s d:%s/p:%s',
+    debug sprintf 'loading python worklet a:%s s:%s p:%s d:%s/p:%s',
       (exists $workerconf->{action}    ? ($workerconf->{action}    || '?') : '-'),
       (exists $workerconf->{namespace} ? ($workerconf->{namespace} || '?') : '-'),
       (exists $workerconf->{phase}     ? ($workerconf->{phase}     || '?') : '-'),
