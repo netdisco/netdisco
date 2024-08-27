@@ -26,9 +26,9 @@ if not isinstance(device_auth, dict):
     raise Exception('device_auth[0] is not a dictionary')
 
 target = {
-    'device_type': 'juniper_junos',
     'host': job.device,
     'username': device_auth['username'],
     'password': device_auth['password'],
+    'device_type': device_auth['device_type'],
 }
 net_connect = ConnectHandler(**target)
