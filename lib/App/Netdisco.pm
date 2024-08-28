@@ -69,10 +69,11 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
-Netdisco has several Perl library dependencies which will be automatically
-installed. However it's required that you first install the following
-operating system packages, if not the installation will most likely fail
-further down the road.
+Netdisco requires Perl (5.10+), Python (3.9+), and PostgreSQL (9.6+).
+
+Most other dependencies will be automatically installed, but we require that
+the following items are installed using your own operating system, to get the
+most compatible versions. Please run the commands below.
 
 On Ubuntu/Debian:
 
@@ -250,6 +251,8 @@ Before installing or upgrading please always review the latest
 L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
+
+Netdisco requires Perl (5.10+), Python (3.9+), and PostgreSQL (9.6+).
 
 Always review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 Then the process below should be run for each installation:
