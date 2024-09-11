@@ -84,6 +84,7 @@ $CONFIG->{log} = ($debug ? 'debug' : ($quiet ? 'error' : 'info'));
 $ENV{INFO_TRACE} ||= $infotrace;
 $ENV{SNMP_TRACE} ||= $snmptrace;
 $ENV{DBIC_TRACE} ||= $sqltrace;
+$ENV{ND2_DO_QUIET} ||= $quiet;
 $ENV{ND2_DB_ROLLBACK} ||= $rollback;
 
 # reconfigure logging to force console output

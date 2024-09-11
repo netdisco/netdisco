@@ -27,7 +27,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   $object =~ s/[-:]/_/g;
 
   my $result = sub { eval { $snmp->$object() } || undef };
-  Data::Printer::p( $result->() );
+  my @options = ($ENV{ND2_DO_QUIET} ? (scalar_quotes => undef, colored => 0) : ());
+
+  Data::Printer::p( $result->(), @options );
 
   return Status->done(
     sprintf "Showed %s response from %s", $orig_object, $device->ip);
