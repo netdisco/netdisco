@@ -26,7 +26,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   SNMP::loadModules($mib) if $mib and $leaf and $mib ne $leaf;
   $object =~ s/[-:]/_/g;
 
-  my $result = sub { eval { $snmp->$object() } || undef };
+  my $result = sub { eval { $snmp->$object() } || ($ENV{ND2_DO_QUIET} ? q{} : undef) };
   my @options = ($ENV{ND2_DO_QUIET} ? (scalar_quotes => undef, colored => 0) : ());
 
   Data::Printer::p( $result->(), @options );
