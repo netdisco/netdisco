@@ -77,7 +77,7 @@ most compatible versions. Please run the commands below.
 
 On Ubuntu/Debian:
 
- root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl python3 curl postgresql build-essential
+ root:~# apt-get install libdbd-pg-perl libsnmp-perl libssl-dev libio-socket-ssl-perl python3 python3-venv curl postgresql build-essential
 
 On Fedora/Red-Hat:
 
