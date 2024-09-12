@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use JSON::PP ();
 use Data::Printer ();
 use App::Netdisco::Transport::SNMP;
 
@@ -26,10 +27,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   SNMP::loadModules($mib) if $mib and $leaf and $mib ne $leaf;
   $object =~ s/[-:]/_/g;
 
-  my $result = sub { eval { $snmp->$object() } || ($ENV{ND2_DO_QUIET} ? q{} : undef) };
-  my @options = ($ENV{ND2_DO_QUIET} ? (scalar_quotes => undef, colored => 0) : ());
+  my $result = sub { eval { $snmp->$object() } // ($ENV{ND2_DO_QUIET} ? {} : undef) };
 
-  Data::Printer::p( $result->(), @options );
+  if ($ENV{ND2_DO_QUIET}) {
+      my $coder = JSON::PP->new->utf8(1)
+                               ->allow_nonref(1)
+                               ->allow_unknown(1)
+                               ->allow_blessed(1)
+                               ->allow_bignum(1);
+      print $coder->encode( $result->() );
+  }
+  else {
+      Data::Printer::p( $result->() );
+  }
 
   return Status->done(
     sprintf "Showed %s response from %s", $orig_object, $device->ip);
