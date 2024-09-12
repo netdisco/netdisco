@@ -27,7 +27,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   SNMP::loadModules($mib) if $mib and $leaf and $mib ne $leaf;
   $object =~ s/[-:]/_/g;
 
-  my $result = sub { eval { $snmp->$object() } // ($ENV{ND2_DO_QUIET} ? {} : undef) };
+  my $result = sub { eval { $snmp->$object() } };
 
   if ($ENV{ND2_DO_QUIET}) {
       my $coder = JSON::PP->new->utf8(1)
