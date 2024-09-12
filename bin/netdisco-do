@@ -391,6 +391,9 @@ specified device.
 
  ~/bin/netdisco-do show -d 192.0.2.1 -e specify
 
+Passing the "C< --quiet >" command line flag will cause C<show> to return
+data in a compact JSON format (suitable for piping to C<jq>, for example).
+
 This command works well with the "C<-I>" debug flag on L<SNMP::Info> (or
 "C<-II>").
 

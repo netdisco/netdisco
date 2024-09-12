@@ -1,3 +1,20 @@
+2.079000 - 2024-09-12
+
+  [NEW FEATURES]
+
+  * netdisco-do show --quiet will output json representation
+  * support "json_list" on device custom fields to make lists in the web
+
+  [ENHANCEMENTS]
+
+  * bump SNMP::Info dependency
+  * documentation enhancements
+
+  [BUG FIXES]
+
+  * fix netdisco-do show for returned value "0"
+  * dependabot#7 pyca/cryptography has a vulnerable OpenSSL
+
 2.078000 - 2024-08-27
 
   [NEW FEATURES]
