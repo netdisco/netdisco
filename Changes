@@ -1,3 +1,11 @@
+2.079001 - 2024-09-13
+
+  [ENHANCEMENTS]
+
+  * device custom_fields with snmp_object creates a hook
+  * netdisco-do --extra '-' will take the value from standard input
+  * bump SNMP::Info dependency 3.972000
+
 2.079000 - 2024-09-12
 
   [NEW FEATURES]
