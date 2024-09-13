@@ -98,7 +98,7 @@ App::Netdisco::Builder->new(
     'Starman' => '0.4008',
     'Storable' => '0',
     'Sys::SigAction' => '0',
-    'SNMP::Info' => '3.971000',
+    'SNMP::Info' => '3.972000',
     'SQL::Abstract' => '1.85',
     'SQL::Translator' => '0.11024',
     'Sub::Util' => '1.40',
