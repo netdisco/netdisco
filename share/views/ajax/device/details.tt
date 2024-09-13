@@ -109,13 +109,9 @@
         [% ELSE %]
           <td>
         [% END %]
-          [% IF config.json_list %]
           [% FOREACH record IN d.${config.field} %]
           [% record | html_entity %]
           [% '<br />' IF loop.size > 1 %]
-          [% END %]
-          [% ELSE %]
-          [% d.${config.field} | html_entity %]
           [% END %]
           </td>
       [% END %]
