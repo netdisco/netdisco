@@ -4,6 +4,8 @@ use App::Netdisco::Environment;
 use App::Netdisco::Util::DeviceAuth ();
 use Dancer ':script';
 
+use FindBin;
+use File::Spec;
 use Path::Class 'dir';
 use Net::Domain 'hostdomain';
 use File::ShareDir 'dist_dir';
@@ -364,6 +366,10 @@ config->{api_base}
 # device custom_fields with snmp_object creates a hook
 my @new_dcf = ();
 my @new_hooks = @{ setting('hooks') };
+
+FindBin::again();
+my $me = File::Spec->catfile($FindBin::RealBin, 'netdisco-do');
+
 foreach my $field (@{ setting('custom_fields')->{'device'} }) {
     next unless $field->{'name'};
 
@@ -383,11 +389,11 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
         with => {
                             # get JSON format of the snmp_object
             cmd => (sprintf q!%s show -d '[%% ip %%]' -e %s --quiet !
-                            # this jq will: promote null to [], promote bare string to [""], and sort
+                            # this jq will: promote null to [], promote bare string to [""], collapse object to list
                             .q!| jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort' !
-                            # send the JSON output into device custom_field (action inline)
+                            # NB -0 is vital; send the JSON output into device custom_field (action inline)
                             .q!| xargs -0 -I{} %s %s --enqueue -d '[%% ip %%]' -e '{}' --quiet!,
-                            'netdisco-do', $field->{'snmp_object'}, 'netdisco-do', ('cf_'. $field->{'name'})),
+                            $me, $field->{'snmp_object'}, $me, ('cf_'. $field->{'name'})),
         },
         filter => {
             no => $field->{'no'},
