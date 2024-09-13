@@ -361,4 +361,43 @@ config->{url_base}
 config->{api_base}
   = config->{url_base}->with('/api/v1')->path;
 
+# device custom_fields with snmp_object creates a hook
+my @new_dcf = ();
+my @new_hooks = @{ setting('hooks') };
+foreach my $field (@{ setting('custom_fields')->{'device'} }) {
+    next unless $field->{'name'};
+
+    if (not exists $field->{'snmp_object'} or not $field->{'snmp_object'}) {
+        push @new_dcf, $field;
+        next;
+    }
+
+    # snmp_object implies JSON content in the field
+    $field->{'json_list'} = true;
+    # snmp_object implies user should not edit in the web
+    $field->{'editable'} = false;
+
+    push @new_hooks, {
+        type => 'exec',
+        event => 'discover',
+        with => {
+                            # get JSON format of the snmp_object
+            cmd => (sprintf q!%s show -d '[%% ip %%]' -e %s --quiet !
+                            # this jq will: promote null to [], promote bare string to [""], and sort
+                            .q!| jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort' !
+                            # send the JSON output into device custom_field (action inline)
+                            .q!| xargs -0 -I{} %s %s --enqueue -d '[%% ip %%]' -e '{}' --quiet!,
+                            'netdisco-do', $field->{'snmp_object'}, 'netdisco-do', ('cf_'. $field->{'name'})),
+        },
+        filter => {
+            no => $field->{'no'},
+            only => $field->{'only'},
+        },
+    };
+    push @new_dcf, $field;
+}
+
+config->{'hooks'} = \@new_hooks;
+config->{'custom_fields'}->{'device'} = \@new_dcf;
+
 true;
