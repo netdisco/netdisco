@@ -398,6 +398,10 @@ specified device.
 Passing the "C< --quiet >" command line flag will cause C<show> to return
 data in a compact JSON format (suitable for piping to C<jq>, for example).
 
+If the output is very long, you may see a "skipping..." message. Work
+around this by passing "C< --quiet >" and then pipe the output to
+"C<jq .>".
+
 This command works well with the "C<-I>" debug flag on L<SNMP::Info> (or
 "C<-II>").
 
