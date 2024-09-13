@@ -159,6 +159,10 @@ if (not $force and scalar @hostlist > 512) {
     exit 1;
 }
 
+if ($extra and $extra eq '-') {
+    $extra = do { local $/; <STDIN> };
+}
+
 # some actions do not take a device parameter
 @hostlist = (undef) if 0 == scalar @hostlist;
 

@@ -388,11 +388,11 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
         event => 'discover',
         with => {
                             # get JSON format of the snmp_object
-            cmd => (sprintf q!%s show -d '[%% ip %%]' -e %s --quiet !
-                            # this jq will: promote null to [], promote bare string to [""], collapse object to list
-                            .q!| jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort' !
-                            # NB -0 is vital; send the JSON output into device custom_field (action inline)
-                            .q!| xargs -0 -I{} %s %s --enqueue -d '[%% ip %%]' -e '{}' --quiet!,
+            cmd => (sprintf q!%s show -d '[%% ip %%]' -e %s --quiet!
+                            # this jq will: promote null to [], promote bare string to ["str"], collapse obj to list
+                            .q! | jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort'!
+                            # send the JSON output into device custom_field (action inline)
+                            .q! | %s %s --enqueue -d '[%% ip %%]' -e '-' --quiet!,
                             $me, $field->{'snmp_object'}, $me, ('cf_'. $field->{'name'})),
         },
         filter => {
