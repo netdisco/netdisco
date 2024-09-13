@@ -159,7 +159,7 @@ if (not $force and scalar @hostlist > 512) {
     exit 1;
 }
 
-if ($extra and $extra eq '-') {
+if ($action =~ m/^cf_/ and $quiet and $extra and $extra eq '-') {
     $extra = do { local $/; <STDIN> };
 }
 
