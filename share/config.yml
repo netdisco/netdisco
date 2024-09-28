@@ -179,6 +179,70 @@ jobqueue_refresh: 5
 safe_password_store: true
 reports: []
 system_reports:
+  - tag: deviceinventory
+    label: 'Device Inventory'
+    category: Device
+    columns:
+      - {device_name: 'Device Name'}
+      - {device_details: 'Device Details'}
+      - {ip: 'IP Address', _searchable: true}
+      - {location: 'Location'}
+      - {model: 'Model'}
+      - {serial: 'Serial'}
+      - {vendor: 'Vendor'}
+      - {os: 'Operating System'}
+      - {version: 'OS Version'}
+    query: |
+      WITH ranked_devices AS (
+        SELECT
+          d.name AS device_name,
+          CASE
+            WHEN dm.ip IS NOT NULL AND dm.class = 'chassis' THEN dm.name
+            ELSE NULL
+          END AS device_details,
+          d.ip AS ip,
+          d.location AS location,
+          COALESCE(dm.serial, d.serial) AS serial,
+          d.vendor AS vendor,
+          d.os AS os,
+          COALESCE(
+            CASE
+              WHEN dm.model IS NOT NULL
+                AND LOWER(REGEXP_REPLACE(dm.model, '[^a-zA-Z0-9]', '', 'g')) <> LOWER(REGEXP_REPLACE(d.model, '[^a-zA-Z0-9]', '', 'g'))
+              THEN dm.model || '|' || d.model
+              ELSE COALESCE(dm.model, d.model)
+            END, d.model
+          ) AS model,
+          CASE
+            WHEN dm.sw_ver IS NOT NULL AND dm.sw_ver <> '' THEN dm.sw_ver
+            ELSE d.os_ver
+          END AS version,
+          ROW_NUMBER() OVER (
+            PARTITION BY d.name, COALESCE(dm.serial, d.serial)
+            ORDER BY d.ip
+          ) AS rn
+        FROM
+          device d
+        LEFT JOIN
+          device_module dm
+          ON d.ip = dm.ip AND dm.class = 'chassis'
+      )
+      SELECT
+        device_name,
+        device_details,
+        ip,
+        location,
+        model,
+        serial,
+        vendor,
+        os,
+        version
+      FROM
+        ranked_devices
+      WHERE
+        rn = 1
+      ORDER BY
+        device_name, serial
   - tag: portserrordisabled
     label: 'Blocked - Error-Disabled'
     category: Port
