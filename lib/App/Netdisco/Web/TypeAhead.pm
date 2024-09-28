@@ -10,8 +10,6 @@ use HTML::Entities 'encode_entities';
 use List::MoreUtils ();
 
 ajax '/ajax/data/queue/typeahead/backend' => require_role admin => sub {
-    return '[]' unless setting('navbar_autocomplete');
-
     my $q = quotemeta( param('query') || param('term') || param('backend') );
     my @backends =
      grep { $q ? m/$q/ : true }
@@ -25,8 +23,6 @@ ajax '/ajax/data/queue/typeahead/backend' => require_role admin => sub {
 };
 
 ajax '/ajax/data/queue/typeahead/username' => require_role admin => sub {
-    return '[]' unless setting('navbar_autocomplete');
-
     my $q = quotemeta( param('query') || param('term') || param('username') );
     my @users =
      grep { $q ? m/$q/ : true }
@@ -40,8 +36,6 @@ ajax '/ajax/data/queue/typeahead/username' => require_role admin => sub {
 };
 
 ajax '/ajax/data/queue/typeahead/action' => require_role admin => sub {
-    return '[]' unless setting('navbar_autocomplete');
-
     my @actions = ();
     my @core_plugins = @{ setting('worker_plugins') || [] };
     my @user_plugins = @{ setting('extra_worker_plugins') || [] };
@@ -82,8 +76,6 @@ ajax '/ajax/data/queue/typeahead/action' => require_role admin => sub {
 };
 
 ajax '/ajax/data/queue/typeahead/status' => require_role admin => sub {
-    return '[]' unless setting('navbar_autocomplete');
-
     my $q = quotemeta( param('query') || param('term') || param('status') );
     my @actions =
      grep { $q ? m/^$q/ : true }
