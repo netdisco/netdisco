@@ -14,6 +14,10 @@ sub add_job {
     my $net = NetAddr::IP->new($device);
     return if
       ($device and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
+    return if
+      (($action eq 'discover' or $action eq 'pingsweep') and $device and
+        (($net->version == 6 and $net->masklen != 128)
+         or ($net->version == 4 and $net->masklen < 22)));
 
     my @hostlist = $device ? ($net->hostenum) : (undef);
     @hostlist = ($device) if $action eq 'pingsweep';
