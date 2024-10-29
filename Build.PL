@@ -132,6 +132,7 @@ App::Netdisco::Builder->new(
   },
   script_files => [
     'bin/ieee-oui-import',
+    'bin/ieee-enterprise-import',
     'bin/nd-import-topology',
     'bin/netdisco-db-deploy',
     'bin/netdisco-deploy',
