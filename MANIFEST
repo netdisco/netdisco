@@ -1,3 +1,4 @@
+bin/ieee-enterprise-import
 bin/ieee-oui-import
 bin/nd-dbic-versions
 bin/nd-import-topology
@@ -42,6 +43,7 @@ lib/App/Netdisco/DB/Result/DevicePower.pm
 lib/App/Netdisco/DB/Result/DeviceSkip.pm
 lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
+lib/App/Netdisco/DB/Result/Enterprise.pm
 lib/App/Netdisco/DB/Result/Log.pm
 lib/App/Netdisco/DB/Result/Manufacturer.pm
 lib/App/Netdisco/DB/Result/NetmapPositions.pm
@@ -113,6 +115,7 @@ lib/App/Netdisco/JobQueue.pm
 lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
 lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
+lib/App/Netdisco/SSHCollector/Platform/ArubaCont.pm
 lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
@@ -531,6 +534,7 @@ share/schema_versions/App-Netdisco-DB-84-85-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-85-86-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-86-87-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-87-88-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-88-89-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt

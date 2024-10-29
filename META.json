@@ -148,7 +148,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.079001"
+         "version" : "2.080000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -173,7 +173,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "88"
+         "version" : "89"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -231,6 +231,9 @@
       },
       "App::Netdisco::DB::Result::DeviceVlan" : {
          "file" : "lib/App/Netdisco/DB/Result/DeviceVlan.pm"
+      },
+      "App::Netdisco::DB::Result::Enterprise" : {
+         "file" : "lib/App/Netdisco/DB/Result/Enterprise.pm"
       },
       "App::Netdisco::DB::Result::Log" : {
          "file" : "lib/App/Netdisco/DB/Result/Log.pm"
@@ -450,6 +453,9 @@
       },
       "App::Netdisco::SSHCollector::Platform::Aruba" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/Aruba.pm"
+      },
+      "App::Netdisco::SSHCollector::Platform::ArubaCont" : {
+         "file" : "lib/App/Netdisco/SSHCollector/Platform/ArubaCont.pm"
       },
       "App::Netdisco::SSHCollector::Platform::BigIP" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/BigIP.pm"
@@ -992,6 +998,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.079001",
+   "version" : "2.080000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
