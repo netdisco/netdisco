@@ -228,6 +228,9 @@ sub deploy_oui {
   print 'Updating OUI... ';
   system('ieee-oui-import') == 0 or die "\n";
   say 'done.';
+  print 'Updating Enterprises... ';
+  system('ieee-enterprise-import') == 0 or die "\n";
+  say 'done.';
   print color 'reset';
 }
 
