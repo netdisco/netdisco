@@ -70,7 +70,7 @@ post "/admin/discodevs" => require_role admin => sub {
       : redirect uri_for('/')->path;
 };
 
-ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => 'admin' => sub {
+ajax qr{/ajax/control/admin/(?:\w+/)?renumber} => require_role admin => sub {
     send_error('Missing device', 400) unless param('device');
     send_error('Missing new IP', 400) unless param('newip');
 

@@ -27,12 +27,12 @@ register_worker({ phase => 'check' }, sub {
   debug sprintf 'renumber -   to IP: %s (param: %s)', $new_ip->addr, $extra;
 
   if ($new_ip->addr eq $device->ip) {
-      return Status->error('old and new are the same device (use device_identity instead).');
+      return Status->error('old and new are the same IP.');
   }
 
   my $new_dev = get_device($new_ip->addr);
-  if ($new_dev and $new_dev->in_storage and ($new_ip->addr ne $device->ip)) {
-      return Status->error(sprintf "already know new device as: %s (use device_identity instead).", $new_dev->ip);
+  if ($new_dev and $new_dev->in_storage and ($new_dev->ip ne $device->ip)) {
+      return Status->error(sprintf "already know new device as: %s.", $new_dev->ip);
   }
 
   return Status->done('Renumber is able to run');
