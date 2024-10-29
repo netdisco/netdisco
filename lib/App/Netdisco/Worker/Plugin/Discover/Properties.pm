@@ -94,6 +94,13 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       }
   }
 
+  # fix up unknown vendor (enterprise number -> organization)
+  if ($device->vendor and $device->vendor =~ m/^enterprises\.(\d+)$/) {
+      my $number = $1;
+      my $ent = schema('netdisco')->enterprise->find($number);
+      $device->set_column( vendor => $ent->organization ) if $ent;
+  }
+
   # for existing device, filter custom_fields
   if ($device->in_storage) {
       my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
