@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::DNS qw/hostname_from_ip get_txt_record/;
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::DB::ExplicitLocking ':modes';
@@ -99,6 +99,20 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       my $number = $1;
       my $ent = schema('netdisco')->enterprise->find($number);
       $device->set_column( vendor => $ent->organization ) if $ent;
+  }
+
+  # fix up unknown model using netdisco-mibs.net
+  if (not $device->model or $device->model =~ m/(?:enterprises\.|products\.)\.\d+/ ) {
+      if (my $id = $snmp->id) {
+          # e.g. ".1.3.6.1.4.1.2636.1.1.1.4.131.3"
+          $id =~ s/^\.1\.3\.6\.1\.4\.1\.//;
+          $id = join '.', reverse split m/\./, $id;
+          $id .= '.products.netdisco-mibs.net';
+          # now looks like 3.131.4.1.1.1.2636.products.netdisco-mibs.net
+          my $txt = get_txt_record($id);
+          $device->set_column( model => $txt ) if $txt;
+          # hopefully jnxProductEX3400port24P
+      }
   }
 
   # for existing device, filter custom_fields
