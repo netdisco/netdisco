@@ -56,8 +56,8 @@ register_worker({ phase => 'main' }, sub {
       $response->{'status'}, $response->{'reason'});
   }
   else {
-    return Status->error(sprintf 'HTTP Hook: %s %s',
-      $response->{'status'}, $response->{'reason'});
+    return Status->error(sprintf 'HTTP Hook: %s %s (%s)',
+      $response->{'status'}, $response->{'reason'}, ($response->{'content'} || 'no content'));
   }
 });
 
