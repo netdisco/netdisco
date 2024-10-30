@@ -1,3 +1,9 @@
+2.080002 - 2024-10-30
+
+  [ENHANCEMENTS]
+
+  * show content field from HTTP::Tiny when error on HTTP Hook
+
 2.080001 - 2024-10-29
 
   [BUG FIXES]
