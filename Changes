@@ -1,3 +1,9 @@
+2.080003 - 2024-10-30
+
+  [BUG FIXES]
+
+  * #1259 UTF-8 encode the body of Hook HTTP requests
+
 2.080002 - 2024-10-30
 
   [ENHANCEMENTS]
