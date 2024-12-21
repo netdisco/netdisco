@@ -10,7 +10,7 @@ use NetAddr::IP::Lite ':lower';
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/hostname_from_ip ipv4_from_hostname/;
+our @EXPORT_OK = qw/hostname_from_ip ipv4_from_hostname get_txt_record/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -75,6 +75,50 @@ sub hostname_from_ip {
       foreach my $rr ($query->answer) {
           next unless $rr->type eq "PTR";
           return $rr->ptrdname;
+      }
+  }
+
+  return undef;
+}
+
+=head2 get_txt_record( $name, \%opts? )
+
+Given a name, return the TXT record value.
+
+C<< %opts >> can override the various timeouts available in
+L<Net::DNS::Resolver>, and we use these values:
+
+=over 4
+
+=item C<tcp_timeout>: 2 (seconds)
+
+=item C<udp_timeout>: 2 (seconds)
+
+=item C<retry>: 1 (attempts)
+
+=item C<retrans>: 1 (timeout)
+
+=back
+
+Returns C<undef> if no TXT record exists for the name.
+
+=cut
+
+sub get_txt_record {
+  my ($name, $opts) = @_;
+  return unless $name;
+
+  my $res = Net::DNS::Resolver->new;
+  $res->tcp_timeout($opts->{tcp_timeout} || 2);
+  $res->udp_timeout($opts->{udp_timeout} || 2);
+  $res->retry($opts->{retry} || 1);
+  $res->retrans($opts->{retrans} || 1);
+  my $query = $res->search($name);
+
+  if ($query) {
+      foreach my $rr ($query->answer) {
+          next unless $rr->type eq "TXT";
+          return scalar $rr->txtdata;
       }
   }
 
