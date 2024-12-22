@@ -28,7 +28,7 @@ register_worker({ phase => 'main' }, sub {
 
   my @report = ();
   if ($vendor) {
-      push @report, read_lines( catfile( $reports, $vendor ), 'latin-1' );
+      push @report, read_lines( catfile( $reports, "${vendor}_oids" ), 'latin-1' );
   }
   else {
       push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )

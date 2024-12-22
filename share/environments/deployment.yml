@@ -48,7 +48,6 @@ device_auth:
 #
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
 
-
 # discover Wireless Access Points, but not IP Phones
 # usually these are visible as device neighbors but don't support
 # SNMP, which just clogs up the job queue.
@@ -65,6 +64,9 @@ device_auth:
 
 # separator for displaying numbers larger than 1000 (e.g. "," or ".")
 #thousands_separator: ""
+
+# Netdisco includes an SNMP MIB Browser in the web
+#enable_mib_browser: false
 
 # this is the schedule for automatically keeping netdisco up-to-date;
 # these are good defaults, so only uncomment if needing to change.
