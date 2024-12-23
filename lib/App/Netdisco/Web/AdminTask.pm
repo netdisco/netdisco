@@ -107,9 +107,10 @@ ajax "/ajax/control/admin/snapshot_req" => require_role admin => sub {
     send_error('Bad device', 400)
       if ! $device or $device->addr eq '0.0.0.0';
 
-    add_job('loadmibs')
-      if not schema(vars->{'tenant'})->resultset('SNMPObject')->count();
-
+    # unfortunately mibs data is required to do a snapshot
+    # will bloat the DB by about 300MB, TODO: find a way to avoid this.
+    add_job('loadmibs') if ! setting('enable_mib_browser');
+    
     # will store for download and for browsing
     add_job('snapshot', $device->addr, undef, 'db') or send_error('Bad device', 400);
 };

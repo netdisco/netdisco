@@ -149,20 +149,19 @@ else {
 
 my $snmpobjects = schema('netdisco')->resultset('SNMPObject')->count() || 0;
 # load all mib data, about 600k rows at 300MB
-if (setting('enable_mib_browser') or $snmpobjects > 250_000) {
+if (setting('enable_mib_browser')) {
     jq_insert([{
       action => 'loadmibs',
       username => ($ENV{USER} || 'netdisco-do'),
-    }])
-
+    }]);
 }
 # always load the products mibs data, 42k rows, 14MB
-elsif ($snmpobjects > 0) {
+else {
     jq_insert([{
       action => 'loadmibs',
       subaction => 'products',
       username => ($ENV{USER} || 'netdisco-do'),
-    }])
+    }]);
 }
 
 sub deploy_db {

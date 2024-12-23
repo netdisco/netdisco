@@ -44,11 +44,11 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     }] unless $device->oids->count;
 
     return to_json [{
-      text => 'No MIB data. Please run `~/bin/netdisco-do loadmibs`.',
+      text => 'No MIB objects. Please set enable_mib_browser and run netdisco-deploy.',
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
-    }] unless schema(vars->{'tenant'})->resultset('SNMPObject')->count();
+    }] unless setting('enable_mib_browser');
 
     my $items = _get_snmp_data($device->ip, $base);
     to_json $items;
