@@ -147,22 +147,25 @@ else {
     deploy_mibs($default_mibhome) if $bool;
 }
 
-my $snmpobjects = schema('netdisco')->resultset('SNMPObject')->count() || 0;
-# load all mib data, about 600k rows at 300MB
-if (setting('enable_mib_browser')) {
-    jq_insert([{
-      action => 'loadmibs',
-      username => ($ENV{USER} || 'netdisco-do'),
-    }]);
-}
+print color 'bold blue';
 # always load the products mibs data, 42k rows, 14MB
-else {
+if (! setting('enable_mib_browser')
+  or ! schema('netdisco')->resultset('SNMPObject')->count()) {
+
+    print 'Syncing product MIBs to database... ';
+    system('netdisco-do loadmibs --quiet -e products') == 0 or die "\n";
+    say 'done.';
+}
+# load all mib data, about 600k rows at 300MB
+elsif (setting('enable_mib_browser')) {
+
+    say 'Queueing priority job to sync MIB browser objects.';
     jq_insert([{
       action => 'loadmibs',
-      subaction => 'products',
       username => ($ENV{USER} || 'netdisco-do'),
     }]);
 }
+print color 'reset';
 
 sub deploy_db {
   system('netdisco-db-deploy') == 0 or die "\n";
