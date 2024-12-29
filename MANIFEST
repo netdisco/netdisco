@@ -1,4 +1,3 @@
-bin/ieee-oui-import
 bin/nd-dbic-versions
 bin/nd-import-topology
 bin/netdisco-backend
