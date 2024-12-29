@@ -445,6 +445,7 @@ table_showrecordsmenu:
 inventory_collapse_threshold: 0
 inventory_platforms_collapse_threshold: 5
 inventory_releases_collapse_threshold: 5
+enable_mib_browser: false
 portctl_nameonly: false
 portctl_native_vlan: true
 portctl_no: []

@@ -42,7 +42,6 @@ use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Passphrase;
 use App::Netdisco::Util::Statistics ();
-use App::Netdisco::JobQueue 'jq_insert';
 
 info "App::Netdisco $App::Netdisco::VERSION loaded.";
 
@@ -147,26 +146,6 @@ else {
     deploy_mibs($default_mibhome) if $bool;
 }
 
-print color 'bold blue';
-# always load the products mibs data, 42k rows, 14MB
-if (! setting('enable_mib_browser')
-  or ! schema('netdisco')->resultset('SNMPObject')->count()) {
-
-    print 'Syncing product MIBs to database... ';
-    system('netdisco-do loadmibs --quiet -e products') == 0 or die "\n";
-    say 'done.';
-}
-# load all mib data, about 600k rows at 300MB
-elsif (setting('enable_mib_browser')) {
-
-    say 'Queueing priority job to sync MIB browser objects.';
-    jq_insert([{
-      action => 'loadmibs',
-      username => ($ENV{USER} || 'netdisco-do'),
-    }]);
-}
-print color 'reset';
-
 sub deploy_db {
   system('netdisco-db-deploy') == 0 or die "\n";
   print color 'bold blue';
@@ -246,12 +225,23 @@ sub get_userpass {
 
 sub deploy_oui {
   print color 'bold blue';
-  print 'Updating OUI... ';
-  system('ieee-oui-import') == 0 or die "\n";
-  say 'done.';
-  print 'Updating Enterprises... ';
-  system('ieee-enterprise-import') == 0 or die "\n";
-  say 'done.';
+  print 'Updating OUI, Manufacturers, Enterprises, and Products... ';
+
+  my $latest = 'https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
+  my $file = file($home, 'netdisco-lookup-tables.sql');
+  my $resp = HTTP::Tiny->new->mirror($latest, $file);
+
+  if ($resp->{success}) {
+      # by loading App::Netdisco, Configuration has set necessary psql env vars
+      system("psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -q -f ${file}");
+      unlink $file;
+      say 'done.';
+  }
+  else {
+      print color 'bold red';
+      say 'SQL download failed!';
+  }
+
   print color 'reset';
 }
 
