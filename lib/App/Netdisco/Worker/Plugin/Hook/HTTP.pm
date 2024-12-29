@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use Encode 'encode';
 use MIME::Base64 'decode_base64';
 use HTTP::Tiny;
 use Template;
@@ -48,7 +49,7 @@ register_worker({ phase => 'main' }, sub {
   my $response = $http->request(
     ($action_conf->{'method'} || 'POST'), $url,
     { headers => $action_conf->{'custom_headers'},
-      content => $body },
+      content => encode('UTF-8', $body ) },
   );
 
   if ($action_conf->{'ignore_failure'} or $response->{'success'}) {
@@ -56,8 +57,8 @@ register_worker({ phase => 'main' }, sub {
       $response->{'status'}, $response->{'reason'});
   }
   else {
-    return Status->error(sprintf 'HTTP Hook: %s %s',
-      $response->{'status'}, $response->{'reason'});
+    return Status->error(sprintf 'HTTP Hook: %s %s (%s)',
+      $response->{'status'}, $response->{'reason'}, ($response->{'content'} || 'no content'));
   }
 });
 

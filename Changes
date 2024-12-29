@@ -1,8 +1,38 @@
-2.08000 - TBD
+2.080003 - 2024-10-30
+
+  [BUG FIXES]
+
+  * #1259 UTF-8 encode the body of Hook HTTP requests
+
+2.080002 - 2024-10-30
+
+  [ENHANCEMENTS]
+
+  * show content field from HTTP::Tiny when error on HTTP Hook
+
+2.080001 - 2024-10-29
+
+  [BUG FIXES]
+
+  * packaging error for ieee-enterprise-import
+
+2.080000 - 2024-10-29
 
   [NEW FEATURES]
 
   * add sshcollector for Aruba Controllers (ArubaCont.pm) by @alcatron #1258
+
+  [ENHANCEMENTS]
+
+  * Device Inventory report contributed by Muris Boric
+  * store IEEE SMI Enterprise numbers in the DB
+
+  [BUG FIXES]
+
+  * fixes to renumber to allow again renumber to other IP on same device
+  * navbar_autocomplete should not suppress job queue status/action/username
+  * #1238 avoid web crash on large prefix discover request
+  * #1239 VLAN missing from node vendor inventory report
 
 2.079001 - 2024-09-13
 

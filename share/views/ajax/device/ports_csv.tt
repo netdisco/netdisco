@@ -4,6 +4,7 @@
 [% SET c_nodes_pos = -1 %]
 [% FOREACH item IN settings.port_columns %]
   [% NEXT IF item.name == 'c_admin' %]
+  [% NEXT IF item.name == 'c_links' %]
   [% NEXT UNLESS params.${item.name} %]
 
   [% IF item.name == 'c_power' %]

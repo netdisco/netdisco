@@ -27,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.079001'
+    version: '2.080003'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -44,7 +44,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '88'
+    version: '89'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -83,6 +83,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
   App::Netdisco::DB::Result::DeviceVlan:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
+  App::Netdisco::DB::Result::Enterprise:
+    file: lib/App/Netdisco/DB/Result/Enterprise.pm
   App::Netdisco::DB::Result::Log:
     file: lib/App/Netdisco/DB/Result/Log.pm
   App::Netdisco::DB::Result::Manufacturer:
@@ -229,6 +231,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
   App::Netdisco::SSHCollector::Platform::Aruba:
     file: lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
+  App::Netdisco::SSHCollector::Platform::ArubaCont:
+    file: lib/App/Netdisco/SSHCollector/Platform/ArubaCont.pm
   App::Netdisco::SSHCollector::Platform::BigIP:
     file: lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
   App::Netdisco::SSHCollector::Platform::CPVSX:
@@ -649,7 +653,7 @@ requires:
   Regexp::Common: '2017060201'
   Regexp::Common::net::CIDR: '0'
   Role::Tiny: '1.002005'
-  SNMP::Info: '3.972000'
+  SNMP::Info: '3.972002'
   SQL::Abstract: '1.85'
   SQL::Translator: '0.11024'
   Scope::Guard: '0'
@@ -687,5 +691,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.079001'
+version: '2.080003'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
