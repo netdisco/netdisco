@@ -97,7 +97,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   # fix up unknown vendor (enterprise number -> organization)
   if ($device->vendor and $device->vendor =~ m/^enterprises\.(\d+)$/) {
       my $number = $1;
-      my $ent = schema('netdisco')->enterprise->find($number);
+      debug sprintf ' searching for Enterprise Number "%s"', ($number || '?');
+      my $ent = schema('netdisco')->resultset('Enterprise')->find($number);
       $device->set_column( vendor => $ent->organization ) if $ent;
   }
 
@@ -105,7 +106,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   if (not $device->model or $device->model =~ m/(?:enterprises\.|products\.)\.\d+/ ) {
       if (my $oid = $snmp->id) {
           # e.g. ".1.3.6.1.4.1.2636.1.1.1.4.131.3"
-          my $object = schema('netdisco')->resultset('SNMPObject')->find($oid);
+          debug sprintf ' searching for Product ID "%s"', ($oid || '');
+          my $object = schema('netdisco')->resultset('Product')->find($oid);
           $device->set_column( model => $object->leaf ) if $object;
       }
   }
