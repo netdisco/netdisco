@@ -339,8 +339,8 @@ jobs:
         PGHOST:     ${{ secrets.DEMO_PGHOST }}
         PGDATABASE: ${{ secrets.DEMO_PGDATABASE }}
       run: |
-        psql -c "drop owned by $PGUSER"
-        psql -c "create schema public"
+        psql -c "DROP OWNED BY $PGUSER CASCADE"
+        psql -c "CREATE SCHEMA public"
         curl -LO https://github.com/netdisco/netdisco2-demo/raw/master/netdisco2-demo-cumulus-clean.db.bin
         pg_restore -x -O -1 -d ${{ env.PGDATABASE }} netdisco2-demo-cumulus-clean.db.bin
 
