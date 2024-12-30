@@ -66,7 +66,8 @@ sub worker_body {
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
                       - $self->{queue}->pending();
-      debug "mgr ($wid): getting potential jobs for $num_slots workers";
+      debug "mgr ($wid): getting potential jobs for $num_slots workers"
+        if not $ENV{ND2_SINGLE_WORKER};
 
       foreach my $job ( jq_getsome($num_slots) ) {
           next if $seen_job{ $memoize->($job) }++;
@@ -85,7 +86,7 @@ sub worker_body {
       #  use DDP; debug p %seen_job;
       #}
 
-      debug "mgr ($wid): sleeping now...";
+      debug "mgr ($wid): sleeping now..." if not $ENV{ND2_SINGLE_WORKER};
       prctl sprintf 'nd2: #%s mgr: idle', $wid;
       sleep( setting('workers')->{sleep_time} || 1 );
   }

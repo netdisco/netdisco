@@ -48,7 +48,6 @@ device_auth:
 #
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
 
-
 # discover Wireless Access Points, but not IP Phones
 # usually these are visible as device neighbors but don't support
 # SNMP, which just clogs up the job queue.

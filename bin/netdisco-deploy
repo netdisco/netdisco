@@ -225,12 +225,23 @@ sub get_userpass {
 
 sub deploy_oui {
   print color 'bold blue';
-  print 'Updating OUI... ';
-  system('ieee-oui-import') == 0 or die "\n";
-  say 'done.';
-  print 'Updating Enterprises... ';
-  system('ieee-enterprise-import') == 0 or die "\n";
-  say 'done.';
+  print 'Updating OUI, Manufacturers, Enterprises, and Products... ';
+
+  my $latest = 'https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
+  my $file = file($home, 'netdisco-lookup-tables.sql');
+  my $resp = HTTP::Tiny->new->mirror($latest, $file);
+
+  if ($resp->{success}) {
+      # by loading App::Netdisco, Configuration has set necessary psql env vars
+      system("psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -q -f ${file}");
+      unlink $file;
+      say 'done.';
+  }
+  else {
+      print color 'bold red';
+      say 'SQL download failed!';
+  }
+
   print color 'reset';
 }
 

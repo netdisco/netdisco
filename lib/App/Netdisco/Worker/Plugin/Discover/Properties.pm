@@ -94,6 +94,24 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       }
   }
 
+  # fix up unknown vendor (enterprise number -> organization)
+  if ($device->vendor and $device->vendor =~ m/^enterprises\.(\d+)$/) {
+      my $number = $1;
+      debug sprintf ' searching for Enterprise Number "%s"', ($number || '?');
+      my $ent = schema('netdisco')->resultset('Enterprise')->find($number);
+      $device->set_column( vendor => $ent->organization ) if $ent;
+  }
+
+  # fix up unknown model using products OID cache
+  if (not $device->model or $device->model =~ m/(?:enterprises\.|products\.)\.\d+/ ) {
+      if (my $oid = $snmp->id) {
+          # e.g. ".1.3.6.1.4.1.2636.1.1.1.4.131.3"
+          debug sprintf ' searching for Product ID "%s"', ($oid || '');
+          my $object = schema('netdisco')->resultset('Product')->find($oid);
+          $device->set_column( model => $object->leaf ) if $object;
+      }
+  }
+
   # for existing device, filter custom_fields
   if ($device->in_storage) {
       my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);

@@ -14,7 +14,9 @@ use File::Temp;
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
-  debug "loadmibs - loading netdisco-mibs object cache";
+  my $vendor = $job->extra;
+  debug sprintf 'loadmibs - loading netdisco-mibs object cache%s',
+    ($vendor ? (sprintf ' for vendor "%s"', $vendor) : '');
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my $reports = catdir( $home, 'EXTRAS', 'reports' );
@@ -25,9 +27,14 @@ register_worker({ phase => 'main' }, sub {
              glob (catfile( $reports, '*_oids' ));
 
   my @report = ();
-  push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
-    for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
-
+  if ($vendor) {
+      push @report, read_lines( catfile( $reports, "${vendor}_oids" ), 'latin-1' );
+  }
+  else {
+      push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
+        for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
+  }
+  
   my @browser = ();
   my %children = ();
   my %seenoid = ();

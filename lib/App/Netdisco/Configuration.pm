@@ -63,6 +63,27 @@ if (ref {} eq ref setting('database')) {
     my $dsn = "dbi:Pg:dbname=${name}";
     $dsn .= ";host=${host}" if $host;
 
+    my $portnum = undef;
+    if ($host and $host =~ m/([^;]+);(.+)/) {
+        my $params = $2;
+        my @opts = split(/;/, $params);
+        foreach my $opt (@opts) {
+            if ($opt =~ m/port=(\d+)/) {
+                $portnum = $1;
+            } else {
+                # Unhandled connection option, ignore for now
+            }
+        }
+    }
+
+    # activate environment variables so that "psql" can be called
+    $ENV{PGHOST} = $host if $host;
+    $ENV{PGPORT} = $portnum if defined $portnum;
+    $ENV{PGDATABASE} = $name;
+    $ENV{PGUSER} = $user;
+    $ENV{PGPASSWORD} = $pass;
+    $ENV{PGCLIENTENCODING} = 'UTF8';
+
     # set up the netdisco schema now we have access to the config
     # but only if it doesn't exist from an earlier config style
     setting('plugins')->{DBIC}->{'default'} ||= {
