@@ -65,9 +65,6 @@ device_auth:
 # separator for displaying numbers larger than 1000 (e.g. "," or ".")
 #thousands_separator: ""
 
-# Netdisco includes an SNMP MIB Browser in the web
-#enable_mib_browser: false
-
 # this is the schedule for automatically keeping netdisco up-to-date;
 # these are good defaults, so only uncomment if needing to change.
 # (or set "schedule: null" if you wish to disable the scheduler)
