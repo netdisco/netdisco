@@ -1,3 +1,13 @@
+2.081000 - 2024-12-30
+
+  [NEW FEATURES]
+
+  * Resolve unknown enterprise numbers from database cache (#1273)
+
+  [BUG FIXES]
+
+  * #1264 exclude external links from device ports csv output
+
 2.080003 - 2024-10-30
 
   [BUG FIXES]

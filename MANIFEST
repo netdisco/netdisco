@@ -52,6 +52,7 @@ lib/App/Netdisco/DB/Result/NodeNbt.pm
 lib/App/Netdisco/DB/Result/NodeWireless.pm
 lib/App/Netdisco/DB/Result/Oui.pm
 lib/App/Netdisco/DB/Result/Process.pm
+lib/App/Netdisco/DB/Result/Product.pm
 lib/App/Netdisco/DB/Result/Session.pm
 lib/App/Netdisco/DB/Result/SNMPObject.pm
 lib/App/Netdisco/DB/Result/Statistics.pm
@@ -533,6 +534,7 @@ share/schema_versions/App-Netdisco-DB-85-86-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-86-87-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-87-88-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-88-89-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-89-90-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
