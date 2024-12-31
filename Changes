@@ -1,3 +1,9 @@
+2.081002 - 2024-12-31
+
+  [ENHANCEMENTS]
+
+  * move to plaintext demo db deploy and add loadmibs for snmp browser
+
 2.081001 - 2024-12-30
 
   [BUG FIXES]
