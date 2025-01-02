@@ -44,31 +44,30 @@ sub py_worklet {
                            ->allow_blessed(1)
                            ->allow_bignum(1);
 
-  my @module = split /\./, $workerconf->{pyworklet};
   my $cmd = Command::Runner->new(
     env => {
       # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
       ND2_VARS          => $coder->encode( vars() ),
-      ND2_JOB_METADATA  => $coder->encode( { %$job, device => ($job->device .'') } ),
+      ND2_JOB_METADATA  => $coder->encode( { %$job, device => (($job->device || '') .'') } ),
       ND2_CONFIGURATION => $coder->encode( config() ),
       ND2_FSM_TEMPLATES => Path::Class::Dir->new( dist_dir('App-Netdisco') )
                              ->subdir('python')->subdir('tfsm')->stringify,
       %ENV, # for some reason Command::Runner cleans the environment
     },
-    command => [ cipactli(), 'run', 'run_worklet', @module ],
+    command => [ cipactli(), 'run', 'run_worklet', $action, $workerconf->{pyworklet} ],
     stderr  => sub { debug $_[0] },
     timeout => 540,
   );
 
   debug
     sprintf "\N{RIGHTWARDS ARROW WITH HOOK} \N{SNAKE} dispatching to \%s",
-    join('.', @module);
+      $workerconf->{pyworklet};
 
   my $result = $cmd->run();
 
   debug
     sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s pid \%s exit \%s",
-    join('.', @module), $result->{'pid'}, $result->{'result'};
+      $workerconf->{pyworklet}, $result->{'pid'}, $result->{'result'};
 
   chomp(my $stdout = $result->{'stdout'});
   $stdout =~ s/.*\n//s;
