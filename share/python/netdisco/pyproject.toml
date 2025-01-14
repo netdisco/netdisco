@@ -17,6 +17,7 @@ yamllint = "^1.35.1"
 yamale = "^5.2.1"
 netmiko = "^4.4.0"
 cryptography = "^43.0.1"
+virtualenv = ">=20.26.6"
 
 [tool.poetry.scripts]
 run_worklet = "netdisco.runner:main"
