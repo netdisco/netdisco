@@ -65,6 +65,7 @@ if (ref {} eq ref setting('database')) {
 
     my $portnum = undef;
     if ($host and $host =~ m/([^;]+);(.+)/) {
+        $host = $1;
         my $params = $2;
         my @opts = split(/;/, $params);
         foreach my $opt (@opts) {
