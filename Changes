@@ -1,3 +1,14 @@
+2.081004 - 2025-01-19
+
+  [ENHANCEMENTS]
+
+  * support multiple worklets passed to python runner
+
+  [BUG FIXES]
+
+  * #1281 netdisco-deploy OUI data update fails with psql port
+  * resolve https://github.com/netdisco/netdisco/security/dependabot/8
+
 2.081003 - 2024-12-31
 
   [ENHANCEMENTS]
