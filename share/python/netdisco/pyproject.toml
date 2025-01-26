@@ -18,6 +18,8 @@ yamale = "^5.2.1"
 netmiko = "^4.4.0"
 cryptography = "^43.0.1"
 virtualenv = ">=20.26.6"
+sqlalchemy = "^2.0.37"
+psycopg = "^3.2.4"
 
 [tool.poetry.scripts]
 run_worklet = "netdisco.runner:main"
