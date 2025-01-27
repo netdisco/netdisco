@@ -4,6 +4,7 @@ use Dancer qw/:moose :syntax/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::CustomFields;
+use App::Netdisco::Transport::Python ();
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use aliased 'App::Netdisco::Worker::Status';
@@ -33,8 +34,12 @@ sub run {
   $job->device( get_device($job->device) );
   $self->load_workers();
 
-  # finalise job status when we exit
-  my $statusguard = guard { $job->finalise_status };
+  # clean up and finalise job status when we exit
+  my $statusguard = guard {
+    try { App::Netdisco::Transport::Python->runner->finish };
+    try { App::Netdisco::Transport::Python->runner->kill_kill };
+    $job->finalise_status;
+};
 
   my @newuserconf = ();
   my @userconf = @{ dclone (setting('device_auth') || []) };

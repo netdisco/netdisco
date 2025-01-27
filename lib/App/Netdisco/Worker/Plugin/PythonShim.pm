@@ -3,7 +3,7 @@ package App::Netdisco::Worker::Plugin::PythonShim;
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 
-use App::Netdisco::Util::Python qw/py_worklet/;
+use App::Netdisco::Transport::Python ();
 
 sub import {
   my ($pkg, $action) = @_;
@@ -83,7 +83,7 @@ sub _register_python_worklet {
       (exists $workerconf->{driver}    ? ($workerconf->{driver}    || '?') : '-'),
       (exists $workerconf->{priority}  ? ($workerconf->{priority}  || '?') : '-');
 
-  register_worker($workerconf, sub { py_worklet(@_) });
+  register_worker($workerconf, sub { App::Netdisco::Transport::Python->py_worklet(@_) });
 }
 
 sub _build_pyworklet {

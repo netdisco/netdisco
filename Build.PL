@@ -58,6 +58,7 @@ App::Netdisco::Builder->new(
     'Guard' => '1.022',
     'HTML::Parser' => '3.70',
     'HTTP::Tiny' => '0.029',
+    'IPC::Run' => '20231003.0',
     'IO::Socket::INET6' => '2.72',
     'IO::Socket::SSL' => '2.048',
     'JSON' => '2.90',
