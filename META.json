@@ -67,11 +67,13 @@
             "File::ShareDir" : "1.03",
             "File::Slurper" : "0.009",
             "File::Spec::Functions" : "0",
+            "File::Temp" : "0.2311",
             "Guard" : "1.022",
             "HTML::Parser" : "3.70",
             "HTTP::Tiny" : "0.029",
             "IO::Socket::INET6" : "2.72",
             "IO::Socket::SSL" : "2.048",
+            "IPC::Run" : "20231003.0",
             "JSON" : "2.90",
             "JSON::PP" : "0",
             "JSON::XS" : "3.01",
@@ -148,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.081004"
+         "version" : "2.082000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -498,6 +500,9 @@
       },
       "App::Netdisco::SSHCollector::Platform::VOSS" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/VOSS.pm"
+      },
+      "App::Netdisco::Transport::Python" : {
+         "file" : "lib/App/Netdisco/Transport/Python.pm"
       },
       "App::Netdisco::Transport::SNMP" : {
          "file" : "lib/App/Netdisco/Transport/SNMP.pm"
@@ -1001,6 +1006,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.081004",
+   "version" : "2.082000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }

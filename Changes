@@ -1,3 +1,14 @@
+2.082000 - 2025-01-28
+
+  [NEW FEATURES]
+
+  * Python worklets now have access to the database
+
+  [ENHANCEMENTS]
+
+  * Python much more efficient: one Python process for all job worklets
+  * Perl -> Python worklet limitation on data transfer size is removed
+
 2.081004 - 2025-01-19
 
   [ENHANCEMENTS]

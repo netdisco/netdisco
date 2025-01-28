@@ -130,6 +130,7 @@ lib/App/Netdisco/SSHCollector/Platform/Linux.pm
 lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
+lib/App/Netdisco/Transport/Python.pm
 lib/App/Netdisco/Transport/SNMP.pm
 lib/App/Netdisco/Transport/SSH.pm
 lib/App/Netdisco/Util/CustomFields.pm
@@ -428,6 +429,7 @@ share/public/swagger-ui/version-3.20.3
 share/python/netdisco/.pre-commit-config.yaml
 share/python/netdisco/netdisco/runner.py
 share/python/netdisco/netdisco/util/config.py
+share/python/netdisco/netdisco/util/database.py
 share/python/netdisco/netdisco/util/job.py
 share/python/netdisco/netdisco/util/log.py
 share/python/netdisco/netdisco/util/perl.py
