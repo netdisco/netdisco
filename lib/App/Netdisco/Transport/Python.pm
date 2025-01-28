@@ -42,6 +42,7 @@ sub init {
   $instance->stash( File::Temp->new() );
 
   my $cmd = [ py_cmd('run_worklet'), $instance->stash->filename ];
+  debug "\N{SNAKE} starting persistent Python worklet subprocess";
 
   $instance->runner( harness(
     ($ENV{ND2_PYTHON_HARNESS_DEBUG} ? (debug => 1) : ()),
@@ -82,17 +83,9 @@ sub py_worklet {
   my $inref  = $self->stdin;
   my $outref = $self->stdout;
   
-  debug
-    sprintf "\N{RIGHTWARDS ARROW WITH HOOK} \N{SNAKE} dispatching to \%s",
-      $workerconf->{pyworklet};
-
   $$outref = ''; # necessary before running, but do first to aid debugging
   $$inref = $workerconf->{pyworklet} ."\n";
   $self->runner->pump until ($$outref and $$outref =~ /^\.\Z/m);
-
-  debug
-    sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s",
-      $workerconf->{pyworklet};
 
   my $stash = read_text($self->stash->filename);
   truncate($self->stash, 0); # do not leave things lying around on disk
