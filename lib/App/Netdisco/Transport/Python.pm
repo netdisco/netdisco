@@ -10,7 +10,7 @@ use IPC::Run 'harness';
 use MIME::Base64 'decode_base64';
 use Path::Class;
 use File::ShareDir 'dist_dir';
-use File::Slurper 'read_text';
+use File::Slurper qw/read_text write_text/;
 use File::Temp ();
 use JSON::PP ();
 use YAML::XS ();
@@ -31,7 +31,7 @@ instruction to run worklets.
 
 =cut
 
-__PACKAGE__->attributes(qw/ runner stdin stdout stash /);
+__PACKAGE__->attributes(qw/ runner stdin stdout context /);
 
 sub init {
   my ( $class, $instance ) = @_;
@@ -39,9 +39,9 @@ sub init {
   my ( $stdin, $stdout );
   $instance->stdin( \$stdin );
   $instance->stdout( \$stdout );
-  $instance->stash( File::Temp->new() );
+  $instance->context( File::Temp->new() );
 
-  my $cmd = [ py_cmd('run_worklet'), $instance->stash->filename ];
+  my $cmd = [ py_cmd('run_worklet'), $instance->context->filename ];
   debug "\N{SNAKE} starting persistent Python worklet subprocess";
 
   $instance->runner( harness(
@@ -52,7 +52,7 @@ sub init {
     '2>', sub { debug $_[0] },
   ) );
 
-  debug $instance->stash if $ENV{ND2_PYTHON_HARNESS_DEBUG};
+  debug $instance->context if $ENV{ND2_PYTHON_HARNESS_DEBUG};
   return $instance;
 }
 
@@ -83,17 +83,22 @@ sub py_worklet {
   my $inref  = $self->stdin;
   my $outref = $self->stdout;
   
-  $$outref = ''; # necessary before running, but do first to aid debugging
+  # copy latest vars to the worklet
+  write_text($self->context->filename, $coder->encode( { vars => vars() } ));
+  # necessary before running, but do first (instead of after) to aid debugging
+  $$outref = '';
+
   $$inref = $workerconf->{pyworklet} ."\n";
   $self->runner->pump until ($$outref and $$outref =~ /^\.\Z/m);
 
-  my $stash = read_text($self->stash->filename);
-  truncate($self->stash, 0); # do not leave things lying around on disk
+  my $context = read_text($self->context->filename);
+  truncate($self->context, 0); # do not leave things lying around on disk
 
-  my $retdata = try { YAML::XS::Load(decode_base64($stash)) }; # might explode
+  my $retdata = try { YAML::XS::Load(decode_base64($context)) }; # might explode
   $retdata = {} if not ref $retdata or 'HASH' ne ref $retdata;
 
   # use DDP;
+  # p $$outref;
   # p $retdata;
 
   my $status = $retdata->{status} || '';
@@ -102,7 +107,7 @@ sub py_worklet {
                           : (sprintf '%s exit with status "%s"', $action, $status));
 
   # TODO support merging more deeply
-  var($_ => $retdata->{vars}->{$_}) for keys %{ $retdata->{vars} || {} };
+  var($_ => $retdata->{stash}->{$_}) for keys %{ $retdata->{stash} || {} };
 
   return Status->$status($log);
 }

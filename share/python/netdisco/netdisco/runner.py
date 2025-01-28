@@ -1,11 +1,12 @@
 import os
 import sys
 from runpy import run_module
+from netdisco.util.worklet import context as c
 from netdisco.util.perl import marshal_for_perl
 
 if len(sys.argv) < 2 or len(sys.argv[1]) == 0:
-    raise Exception('Missing temporary filename or "-" for stash transfer')
-stashfile = sys.argv[1]
+    raise Exception('Missing temporary filename or "-" for context transfer')
+contextfile = sys.argv[1]
 
 while True:
     try:
@@ -20,16 +21,16 @@ while True:
         action = worklet.split('.')[2]
         os.environ['ND2_JOB_METADATA'] = f'{{"action":"{action}"}}'
 
+    c.stash.load_stash()
     gd = run_module(worklet, run_name='__main__')
 
     context = gd['c'] if 'c' in gd else gd['context'] if 'context' in gd else None
     retval = marshal_for_perl(context)
 
-    if stashfile == '-':
+    if contextfile == '-':
         print(retval)
     else:
-        stash = open(stashfile, 'w')
-        stash.write(retval)
-        stash.close()
+        with open(contextfile, 'w') as cf:
+            cf.write(retval)
 
     print('.')
