@@ -1,7 +1,7 @@
 import os
 import sys
 from runpy import run_module
-from netdisco.util.worklet import context as c
+from netdisco.util.stash import stash
 from netdisco.util.perl import marshal_for_perl
 
 if len(sys.argv) < 2 or len(sys.argv[1]) == 0:
@@ -21,7 +21,7 @@ while True:
         action = worklet.split('.')[2]
         os.environ['ND2_JOB_METADATA'] = f'{{"action":"{action}"}}'
 
-    c.stash.load_stash()
+    stash.load_vars()
     gd = run_module(worklet, run_name='__main__')
 
     context = gd['c'] if 'c' in gd else gd['context'] if 'context' in gd else None

@@ -1,6 +1,5 @@
 import platform
-from netdisco.util.log import debug
-from netdisco.util.worklet import context as c
+from netdisco.util.worklet import debug, context as c
 
 
 def main():
