@@ -8,7 +8,6 @@ use Dancer::Plugin::DBIC 'schema';
 
 use File::Spec::Functions qw(splitdir catfile catdir);
 use File::Slurper qw(read_lines write_text);
-use File::Temp;
 # use DDP;
 
 register_worker({ phase => 'main' }, sub {

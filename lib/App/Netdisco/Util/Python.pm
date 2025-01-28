@@ -1,21 +1,14 @@
 package App::Netdisco::Util::Python;
 
 use Dancer qw/:syntax :script/;
-use aliased 'App::Netdisco::Worker::Status';
 
 use Path::Class;
 use File::ShareDir 'dist_dir';
-
-use Command::Runner;
 use Alien::poetry;
-use MIME::Base64 'decode_base64';
-use JSON::PP ();
-use YAML::XS ();
-use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/py_install py_cmd py_worklet/;
+our @EXPORT_OK = qw/py_install py_cmd/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 sub cipactli {
@@ -32,58 +25,6 @@ sub py_install {
 
 sub py_cmd {
   return (cipactli(), 'run', @_);
-}
-
-sub py_worklet {
-  my ($job, $workerconf) = @_;
-  my $action = $workerconf->{action};
-
-  my $coder = JSON::PP->new->utf8(1)
-                           ->allow_nonref(1)
-                           ->allow_unknown(1)
-                           ->allow_blessed(1)
-                           ->allow_bignum(1);
-
-  my $cmd = Command::Runner->new(
-    env => {
-      # ND2_WORKER_CONFIGURATION  => $coder->encode( $workerconf ),
-      ND2_VARS          => $coder->encode( vars() ),
-      ND2_JOB_METADATA  => $coder->encode( { %$job, device => (($job->device || '') .'') } ),
-      ND2_CONFIGURATION => $coder->encode( config() ),
-      ND2_FSM_TEMPLATES => Path::Class::Dir->new( dist_dir('App-Netdisco') )
-                             ->subdir('python')->subdir('tfsm')->stringify,
-      %ENV, # for some reason Command::Runner cleans the environment
-    },
-    command => [ cipactli(), 'run', 'run_worklet', $action, $workerconf->{pyworklet} ],
-    stderr  => sub { debug $_[0] },
-    timeout => 540,
-  );
-
-  debug
-    sprintf "\N{RIGHTWARDS ARROW WITH HOOK} \N{SNAKE} dispatching to \%s",
-      $workerconf->{pyworklet};
-
-  my $result = $cmd->run();
-
-  debug
-    sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s pid \%s exit \%s",
-      $workerconf->{pyworklet}, $result->{'pid'}, $result->{'result'};
-
-  chomp(my $stdout = $result->{'stdout'});
-  $stdout =~ s/.*\n//s;
-
-  my $retdata = try { YAML::XS::Load(decode_base64($stdout)) }; # might explode
-  $retdata = {} if not ref $retdata or 'HASH' ne ref $retdata;
-
-  my $status = $retdata->{status} || ($result->{'result'} ? 'error' : 'done');
-  my $log = $retdata->{log}
-    || ($status eq 'done' ? (sprintf '%s exit OK', $action)
-                          : (sprintf '%s exit with status %s', $action, $result->{result}));
-
-  # TODO support merging more deeply
-  var($_ => $retdata->{vars}->{$_}) for keys %{ $retdata->{vars} || {} };
-
-  return Status->$status($log);
 }
 
 true;

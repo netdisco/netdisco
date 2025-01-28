@@ -78,6 +78,7 @@ if (ref {} eq ref setting('database')) {
     }
 
     # activate environment variables so that "psql" can be called
+    # and also used by python worklets to connect (to avoid reparsing config)
     $ENV{PGHOST} = $host if $host;
     $ENV{PGPORT} = $portnum if defined $portnum;
     $ENV{PGDATABASE} = $name;

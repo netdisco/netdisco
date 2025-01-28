@@ -15,7 +15,7 @@ def marshal_for_perl(c):
     retval = {}
 
     if c is not None:
-        retval = {'status': c.status.status, 'log': c.status.log, 'vars': c.stash.store}
+        retval = {'status': c.status.status, 'log': c.status.log, 'stash': c.stash.store}
 
     jstr = json.dumps(retval, default=str)
     # debug('returning: ' + jstr)
