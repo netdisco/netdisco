@@ -15,15 +15,15 @@ def refresh_vars():
     contextfile = sys.argv[1]
     if contextfile == '-':
         return dict()
-    
-    # this is pretty sloppy but works for now
+
+    # this is pretty sloppy but works for now
     try:
-        with open(contextfile, 'r') as cf:
+        with open(contextfile) as cf:
             vars = json.loads(cf.read())['vars']
         with open(contextfile, 'w') as cf:
             cf.truncate(0)
         return vars
-    except Exception as e:
+    except Exception:
         return dict()
 
 
