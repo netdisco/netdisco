@@ -55,6 +55,7 @@ App::Netdisco::Builder->new(
     'File::Spec::Functions' => '0',
     'File::ShareDir' => '1.03',
     'File::Slurper' => '0.009',
+    'File::Temp' => '0.2311',
     'Guard' => '1.022',
     'HTML::Parser' => '3.70',
     'HTTP::Tiny' => '0.029',

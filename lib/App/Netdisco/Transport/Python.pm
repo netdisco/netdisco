@@ -10,6 +10,8 @@ use IPC::Run 'harness';
 use MIME::Base64 'decode_base64';
 use Path::Class;
 use File::ShareDir 'dist_dir';
+use File::Slurper 'read_text';
+use File::Temp ();
 use JSON::PP ();
 use YAML::XS ();
 use Try::Tiny;
@@ -29,26 +31,27 @@ instruction to run worklets.
 
 =cut
 
-__PACKAGE__->attributes(qw/ runner stdin stdout /);
+__PACKAGE__->attributes(qw/ runner stdin stdout stash /);
 
 sub init {
   my ( $class, $instance ) = @_;
 
-  my $cmd = [ py_cmd('run_worklet') ];
-  my ($stdin, $stdout);
+  my ( $stdin, $stdout );
+  $instance->stdin( \$stdin );
+  $instance->stdout( \$stdout );
+  $instance->stash( File::Temp->new() );
 
-  my $harness = harness(
+  my $cmd = [ py_cmd('run_worklet'), $instance->stash->filename ];
+
+  $instance->runner( harness(
     ($ENV{ND2_PYTHON_HARNESS_DEBUG} ? (debug => 1) : ()),
     $cmd,
     '<',  \$stdin,
     '1>', \$stdout,
     '2>', sub { debug $_[0] },
-  );
+  ) );
 
-  $instance->runner( $harness );
-  $instance->stdin( \$stdin );
-  $instance->stdout( \$stdout );
-
+  debug $instance->stash if $ENV{ND2_PYTHON_HARNESS_DEBUG};
   return $instance;
 }
 
@@ -83,6 +86,7 @@ sub py_worklet {
     sprintf "\N{RIGHTWARDS ARROW WITH HOOK} \N{SNAKE} dispatching to \%s",
       $workerconf->{pyworklet};
 
+  $$outref = ''; # necessary before running, but do first to aid debugging
   $$inref = $workerconf->{pyworklet} ."\n";
   $self->runner->pump until ($$outref and $$outref =~ /^\.\Z/m);
 
@@ -90,11 +94,10 @@ sub py_worklet {
     sprintf "\N{LEFTWARDS ARROW WITH HOOK} \N{SNAKE} returned from \%s",
       $workerconf->{pyworklet};
 
-  chomp(my $stdout = $$outref);
-  $stdout =~ s/\n\.//s;
-  $$outref = ''; # this is important for the next worklet to run
+  my $stash = read_text($self->stash->filename);
+  truncate($self->stash, 0); # do not leave things lying around on disk
 
-  my $retdata = try { YAML::XS::Load(decode_base64($stdout)) }; # might explode
+  my $retdata = try { YAML::XS::Load(decode_base64($stash)) }; # might explode
   $retdata = {} if not ref $retdata or 'HASH' ne ref $retdata;
 
   # use DDP;

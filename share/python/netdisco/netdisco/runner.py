@@ -3,6 +3,9 @@ import sys
 from runpy import run_module
 from netdisco.util.perl import marshal_for_perl
 
+if len(sys.argv) < 2 or len(sys.argv[1]) == 0:
+    raise Exception('Missing temporary filename or "-" for stash transfer')
+stashfile = sys.argv[1]
 
 while True:
     try:
@@ -21,5 +24,12 @@ while True:
 
     context = gd['c'] if 'c' in gd else gd['context'] if 'context' in gd else None
     retval = marshal_for_perl(context)
-    print(retval)
+
+    if stashfile == '-':
+        print(retval)
+    else:
+        stash = open(stashfile, 'w')
+        stash.write(retval)
+        stash.close()
+
     print('.')

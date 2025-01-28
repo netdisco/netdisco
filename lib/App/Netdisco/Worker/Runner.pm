@@ -38,6 +38,7 @@ sub run {
   my $statusguard = guard {
     try { App::Netdisco::Transport::Python->runner->finish };
     try { App::Netdisco::Transport::Python->runner->kill_kill };
+    try { unlink App::Netdisco::Transport::Python->stash->filename };
     $job->finalise_status;
 };
 
