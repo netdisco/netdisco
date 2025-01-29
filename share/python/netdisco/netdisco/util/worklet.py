@@ -13,13 +13,14 @@ import netdisco.util.job as job
 import netdisco.util.stash as stash
 import netdisco.util.status as status
 import netdisco.util.config as config
-
+import netdisco.util.database as database
 
 @dataclass(frozen=True)
 class Context:
     job = job.job
     stash = stash.stash
     status = status.status
+    db = database.engine
 
     @staticmethod
     def setting(name):
