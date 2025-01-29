@@ -7,24 +7,27 @@ Access to Netdisco vars() stash.
 
 import json
 import sys
+import os
 from dataclasses import dataclass, field
 
 
 def refresh_vars():
     # this is safe because runner will have died if sys.arg[1] missing
     contextfile = sys.argv[1]
-    if contextfile == '-':
-        return dict()
+    vars = dict()
 
-    # this is pretty sloppy but works for now
-    try:
-        with open(contextfile) as cf:
-            vars = json.loads(cf.read())['vars']
-        with open(contextfile, 'w') as cf:
-            cf.truncate(0)
-        return vars
-    except Exception:
-        return dict()
+    if contextfile == '-':
+        vars = json.loads(os.environ.get('ND2_VARS', '{}'))
+    else:
+        try:
+            with open(contextfile) as cf:
+                vars = json.loads(cf.read())['vars']
+            with open(contextfile, 'w') as cf:
+                cf.truncate(0)
+        except Exception:
+            pass
+
+    return vars
 
 
 @dataclass(frozen=True)

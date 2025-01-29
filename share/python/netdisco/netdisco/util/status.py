@@ -34,8 +34,6 @@ class StatusManager:
             else 0
         )
 
-    # this is pretty disgusting and must TODO come back and rework it
-
     def error(self, msg):
         object.__setattr__(self, 'status', 'error')
         object.__setattr__(self, 'log', msg)

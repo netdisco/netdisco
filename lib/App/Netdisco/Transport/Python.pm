@@ -106,7 +106,6 @@ sub py_worklet {
     || ($status eq 'done' ? (sprintf '%s exit OK', $action)
                           : (sprintf '%s exit with status "%s"', $action, $status));
 
-  # TODO support merging more deeply
   var($_ => $retdata->{stash}->{$_}) for keys %{ $retdata->{stash} || {} };
 
   return Status->$status($log);
