@@ -9,7 +9,7 @@ use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
-use List::MoreUtils ();
+use List::Util 'pairs';
 use NetAddr::IP::Lite ();
 use NetAddr::MAC;
 use Encode;
@@ -145,7 +145,9 @@ sub store_neighbors {
   # allow fallback from v6 to try v4
   my %success_with_index = ();
 
-  NEIGHBOR: while (my ($entry, $c_ip_entry) = each %{ %c_ipv6, %$c_ip }) {
+  NEIGHBOR: foreach my $pair (pairs %c_ipv6, %$c_ip) {
+      my ($entry, $c_ip_entry) = (@$pair);
+      next unless defined $entry and defined $c_ip_entry;
 
       if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
