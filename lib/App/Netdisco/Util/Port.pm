@@ -48,6 +48,10 @@ Will return false if these checks fail, otherwise true.
 sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
 
+  # skip user acls for netdisco-do --force jobs
+  # this avoids the need to create a netdisco user in the DB and give rights
+  return true if $ENV{ND2_DO_FORCE};
+
   # portctl_by_role check
   if ($device and ref $device and $user) {
     $user = ref $user ? $user :
