@@ -141,10 +141,12 @@ sub store_neighbors {
 
   # remove keys with undef values, as c_ip does
   delete @c_ipv6{ grep { not defined $c_ipv6{$_} } keys %c_ipv6 };
-  # now combine them, v6 wins
-  $c_ip = { %$c_ip, %c_ipv6 };
 
-  NEIGHBOR: foreach my $entry (sort (List::MoreUtils::uniq( keys %$c_ip ))) {
+  # allow fallback from v6 to try v4
+  my %success_with_index = ();
+
+  NEIGHBOR: while (my ($entry, $c_ip_entry) = each %{ %c_ipv6, %$c_ip }) {
+
       if (!defined $c_if->{$entry} or !defined $interfaces->{ $c_if->{$entry} }) {
           debug sprintf ' [%s] neigh - port for IID:%s not resolved, skipping',
             $device->ip, $entry;
@@ -161,7 +163,7 @@ sub store_neighbors {
           next NEIGHBOR;
       }
 
-      if (ref $c_ip->{$entry}) {
+      if (ref $c_ip_entry) {
           debug sprintf ' [%s] neigh - port %s has multiple neighbors - skipping',
             $device->ip, $port;
           next NEIGHBOR;
@@ -173,7 +175,7 @@ sub store_neighbors {
           next NEIGHBOR;
       }
 
-      my $remote_ip   = $c_ip->{$entry};
+      my $remote_ip   = $c_ip_entry;
       my $remote_port = undef;
       my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
       my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
@@ -186,6 +188,12 @@ sub store_neighbors {
         debug sprintf ' [%s] neigh - IP on %s: using %s as canonical form of %s',
           $device->ip, $port, $r_netaddr->addr, $remote_ip;
         $remote_ip = $r_netaddr->addr;
+      }
+
+      if ($remote_ip and acl_matches($remote_ip, 'group:__LOCAL_ADDRESSES__')) {
+          debug sprintf ' [%s] neigh - %s is a non-unique local address - skipping',
+            $device->ip, $remote_ip;
+          next NEIGHBOR;
       }
 
       # a bunch of heuristics to search known devices if we do not have a
@@ -251,6 +259,12 @@ sub store_neighbors {
                 $device->ip, $remote_ip, $port;
               next NEIGHBOR;
           }
+      }
+
+      if (++$success_with_index{$entry} > 1) {
+          debug sprintf ' [%s] neigh - port for IID:%s already got a neighbor, skipping',
+            $device->ip, $entry;
+          next NEIGHBOR;
       }
 
       # what we came here to do.... discover the neighbor
