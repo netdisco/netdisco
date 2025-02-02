@@ -36,9 +36,11 @@ sub run {
 
   # clean up and finalise job status when we exit
   my $statusguard = guard {
-    try { App::Netdisco::Transport::Python->runner->finish };
-    try { App::Netdisco::Transport::Python->runner->kill_kill };
-    try { unlink App::Netdisco::Transport::Python->stash->filename };
+    if (var('live_python')) {
+      try { App::Netdisco::Transport::Python->runner->finish };
+      try { App::Netdisco::Transport::Python->runner->kill_kill };
+      try { unlink App::Netdisco::Transport::Python->context->filename };
+    }
     $job->finalise_status;
 };
 

@@ -58,9 +58,7 @@ sub init {
 
 =head1 py_worklet( )
 
-Returns an object instance with a live Python subprocess.
-
-Will die if Python cannot be run.
+Contacts a live Python worklet runner to run a job and retrieve output.
 
 =cut
 
@@ -107,6 +105,7 @@ sub py_worklet {
                           : (sprintf '%s exit with status "%s"', $action, $status));
 
   var($_ => $retdata->{stash}->{$_}) for keys %{ $retdata->{stash} || {} };
+  var(live_python => true);
 
   return Status->$status($log);
 }
