@@ -1,0 +1,17 @@
+Value REV_DNS (\S+)
+Value IP_ADDRESS (\S+)
+Value MAC_ADDRESS (\S+)
+Value HW_TYPE (\S+)
+Value INTERFACE (\S+)
+
+# macos
+# ? (192.168.86.1) at 8:b4:b1:66:9a:b7 on en0 ifscope [ethernet]
+# mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en0 ifscope permanent [ethernet]
+
+Start
+  ^${REV_DNS}\s+\(${IP_ADDRESS}\)\s+at\s+${MAC_ADDRESS}\s+on\s+${INTERFACE}\s+ifscope\s+permanent\s+\[${HW_TYPE}\]$$ -> Record
+  ^${REV_DNS}\s+\(${IP_ADDRESS}\)\s+at\s+${MAC_ADDRESS}\s+on\s+${INTERFACE}\s+ifscope\s+\[${HW_TYPE}\]$$ -> Record
+  ^${REV_DNS}\s+\(${IP_ADDRESS}\)\s+\S+\s+${MAC_ADDRESS}\s+\[${HW_TYPE}\]\s+\S+\s+${INTERFACE}$$ -> Record
+  ^${REV_DNS}\s+\(${IP_ADDRESS}\)\s+\S+\s+<${MAC_ADDRESS}>\s+\S+\s+${INTERFACE}$$ -> Record
+  ^\s*\S*\s*$$
+  ^. -> Error

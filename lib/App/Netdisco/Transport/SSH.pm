@@ -75,6 +75,11 @@ sub session_for {
   }
   $auth = $auth->[0];
 
+  if (!defined $auth->{platform}) {
+    error sprintf " [%s] Perl SSH platform not specified, assuming Python", $device->ip;
+    return undef;
+  }
+
   my @master_opts = qw(-o BatchMode=no);
   push(@master_opts, @{$auth->{ssh_master_opts}})
     if $auth->{ssh_master_opts};
