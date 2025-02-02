@@ -1,3 +1,17 @@
+2.082002 - 2025-02-02
+
+  [ENHANCEMENTS]
+
+  * Python worklets can access the database at context.db
+  * support ND2_VARS for transfer vars to Python in testing
+  * add optional Linux arp gather in python+textfsm
+
+  [BUG FIXES]
+
+  * #1269 netdisco-do --force will now skip user acls on port control actions
+  * #1284 skip neighbor remote_ip in fe80::/64 and allow fallback to ipv4 if advertised
+  * only tidy Python subprocess if it starts
+
 2.082001 - 2025-01-28
 
   [BUG FIXES]

@@ -437,6 +437,7 @@ share/python/netdisco/netdisco/util/ssh.py
 share/python/netdisco/netdisco/util/stash.py
 share/python/netdisco/netdisco/util/status.py
 share/python/netdisco/netdisco/util/worklet.py
+share/python/netdisco/netdisco/worklet/arpnip/nodes/main/cli/linux.py
 share/python/netdisco/netdisco/worklet/discover/nexthopneighbors/main/cli/juniper_junos.py
 share/python/netdisco/netdisco/worklet/expire/early.py
 share/python/netdisco/netdisco/worklet/linter/main.py
@@ -449,6 +450,7 @@ share/python/netdisco/tests/__init__.py
 share/python/tfsm/index
 share/python/tfsm/juniper_junos_show_bgp_summary.textfsm
 share/python/tfsm/juniper_junos_show_route_forwarding-table.textfsm
+share/python/tfsm/linux_arp_-a.textfsm
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
