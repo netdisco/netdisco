@@ -22,6 +22,7 @@ foreach my $slot (qw/
       userip
       log
       device_key
+      backend
       job_priority
       is_cancelled
       is_offline

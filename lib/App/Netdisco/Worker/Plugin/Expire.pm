@@ -26,10 +26,18 @@ register_worker({ phase => 'main' }, sub {
 
             foreach my $ip (@hostlist) {
                 next unless acl_matches_only($ip, $acl);
+
                 jq_insert([{
                   device => $ip,
                   action => 'delete',
                 }]);
+
+                schema('netdisco')->resultset('UserLog')->create({
+                  username => ($ENV{USER} || 'scheduled'),
+                  userip => ($job->backend || setting('workers')->{'BACKEND'}),
+                  event => 'expire_devices',
+                  details => $ip,
+                });
             }
           });
       }
