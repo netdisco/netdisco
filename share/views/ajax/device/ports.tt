@@ -156,6 +156,7 @@
 
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
+        [% NEXT UNLESS permitted_custom_field(row, config) %]
 
         [% TRY %]
           <td>
@@ -328,6 +329,7 @@
 
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
+        [% NEXT UNLESS permitted_custom_field(row, config) %]
 
         [% TRY %]
           <td>
@@ -466,6 +468,7 @@
 
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
+        [% NEXT UNLESS permitted_custom_field(row, config) %]
 
         [% TRY %]
           <td>

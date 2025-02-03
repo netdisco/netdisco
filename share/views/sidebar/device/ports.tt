@@ -64,6 +64,7 @@
                 <ul class="nd_inputs-list unstyled">
                   [% FOREACH item IN settings.port_columns %]
                   [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control', netdisco_device) %]
+                  [% NEXT IF item.field.match('^cf_') AND NOT permitted_custom_field(netdisco_device, item) %]
                   <li>
                     <label class="checkbox">
                       <input type="checkbox" id="[% item.name | html_entity %]"

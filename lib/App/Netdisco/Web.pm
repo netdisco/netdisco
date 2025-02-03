@@ -27,7 +27,7 @@ use App::Netdisco::Util::Web qw/
   request_is_api_report
   request_is_api_search
 /;
-use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 
 BEGIN {
   no warnings 'redefine';
@@ -311,8 +311,18 @@ hook 'before_template' => sub {
       for grep {$_ ne 'return_url'} keys %{params()};
     $tokens->{my_query} = $queryuri->query();
 
+    # hide custom fields according to only/no settings
+    $tokens->{permitted_custom_field} = sub {
+        my ($thing, $config) = @_;
+        return false unless $thing and $config;
+
+        return if acl_matches($thing, ($config->{no} || []));
+        return unless acl_matches_only($thing, ($config->{only} || []));
+        return true;
+    };
+
     # access to logged in user's roles (modulo RBAC)
-    $tokens->{user_has_role}  = sub {
+    $tokens->{user_has_role} = sub {
         my ($role, $device) = @_;
         return false unless $role;
 
