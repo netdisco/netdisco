@@ -18,8 +18,11 @@ def main():
             })
 
     # debug(arps)
-    c.stash.set('arps', arps)
-    c.status.done('Gathered arp caches from ' + c.job.device)
+    if len(arps) > 0:
+        c.stash.set('arps', arps)
+        c.status.done('Gathered arp caches from ' + c.job.device)
+    else:
+        c.status.info('No arp cache retrieved from ' + c.job.device)
 
 
 if __name__ == '__main__':

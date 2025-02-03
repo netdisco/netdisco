@@ -14,8 +14,11 @@ def main():
             neighbors.append(record['peer_ip'])
 
     # debug(neighbors)
-    c.stash.set('next_hops', neighbors)
-    c.status.info('gathered bgp next hops')
+    if len(neighbors) > 0:
+        c.stash.set('next_hops', neighbors)
+        c.status.info('Gathered BGP next hops from ' + c.job.device)
+    else:
+        c.status.info('No BGP next hops on ' + c.job.device)
 
 
 if __name__ == '__main__':
