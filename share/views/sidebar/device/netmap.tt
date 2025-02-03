@@ -73,6 +73,9 @@
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'cloud' %] value="cloud">
                 <label for="nd_mapshow-cloud">Neighbor Cloud</label>
             </div>
+            [% IF device_count > (vars.sidebar_defaults.device_netmap.too_many_devices || 1000) %]
+            </span>
+            [% END %]
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-depth"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth' %] value="depth">
@@ -81,9 +84,6 @@
                   value="[% params.depth || vars.sidebar_defaults.device_netmap.hops || 1 | html_entity %]"/>
                 </label>
             </div>
-            [% IF device_count > (vars.sidebar_defaults.device_netmap.too_many_devices || 1000) %]
-            </span>
-            [% END %]
 
             <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
               <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
