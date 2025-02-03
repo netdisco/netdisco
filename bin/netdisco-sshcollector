@@ -229,6 +229,8 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
 
+=item * L<App::Netdisco::SSHCollector::Platform::OS10> - Dell OS10
+
 =item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
 
 =item * L<App::Netdisco::SSHCollector::Platform::FreeBSD> - FreeBSD

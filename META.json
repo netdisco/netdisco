@@ -495,6 +495,9 @@
       "App::Netdisco::SSHCollector::Platform::NXOS" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/NXOS.pm"
       },
+      "App::Netdisco::SSHCollector::Platform::OS10" : {
+         "file" : "lib/App/Netdisco/SSHCollector/Platform/OS10.pm"
+      },
       "App::Netdisco::SSHCollector::Platform::PaloAlto" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm"
       },
