@@ -71,6 +71,12 @@ sub update_stats {
       node_active_count =>
         $schema->resultset('Node')->search({-bool => 'active'},
           {columns => 'mac', distinct => 1})->count_rs->as_query,
+      phone_count =>
+        $schema->resultset('DevicePortProperties')->
+          search({-bool => 'remote_is_phone'})->count_rs->as_query,
+      wap_count =>
+        $schema->resultset('DevicePortProperties')->
+          search({-bool => 'remote_is_wap'})->count_rs->as_query,
 
       netdisco_ver => pretty_version($App::Netdisco::VERSION, 3),
       snmpinfo_ver => pretty_version($snmpinfo_ver, 3),
