@@ -541,6 +541,7 @@ share/schema_versions/App-Netdisco-DB-87-88-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-88-89-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-89-90-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-90-91-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
 share/views/ajax/admintask/jobqueue.tt

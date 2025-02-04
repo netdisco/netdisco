@@ -1,3 +1,22 @@
+2.082003 - 2025-02-04
+
+  [NEW FEATURES]
+
+  * #1288 OS10 SSHCollector (nathancarlson)
+
+  [ENHANCEMENTS]
+
+  * #1080 add phones and waps count to stats
+  * #1252 only/no acl param on custom_fields hides from web
+  * #1280 add userlog item on device deletion from expiry
+  * #1283 cron support in ACLs
+  * #1289 add no/only acl support for external_links hides from web
+
+  [BUG FIXES]
+
+  * #1240 always show depth control in netmap
+  * python worklet only write arp and next hops if there are any
+
 2.082002 - 2025-02-02
 
   [ENHANCEMENTS]
