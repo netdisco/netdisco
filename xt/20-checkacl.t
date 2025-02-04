@@ -34,6 +34,13 @@ my @conf = (
   '!group:groupreftest', # 22
 
   '192.0.2.1', #23
+
+  '1 1 1 1 1', #24
+  '* * * * *', #25
+  '1 1 1 1 1 *', #26
+  '* * * * * *', #27
+  '!1 1 1 1 1', #28
+  '!* * * * *', #29
 );
 
 # name, ipv4, ipv6, v4 prefix, v6 prefix
@@ -235,5 +242,16 @@ is(acl_matches([$dpc], ['cf:baa:quux']), 0, 'hh cf does not exist');
 
 ok(acl_matches([$d, $dp], ['op:and','cf:foo:bar','cf:baz:quux']), '2obj cf two rules match');
 is(acl_matches([$d, $dp], ['op:and','cf:foo:bar','cf:baa:qd']), 0, '2obj cf two rules do not match');
+
+# cron spec
+
+ok(acl_matches('localhost',[$conf[25]]), 'current time');
+is(acl_matches('localhost',[$conf[24]]), 0, 'not current time');
+
+ok(acl_matches('localhost',[$conf[27]]), 'current time');
+is(acl_matches('localhost',[$conf[26]]), 0, 'not current time');
+
+is(acl_matches('localhost',[$conf[29]]), 0, '!current time');
+ok(acl_matches('localhost',[$conf[28]]), '! not current time');
 
 done_testing;

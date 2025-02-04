@@ -6,6 +6,7 @@ use Dancer qw/:syntax :script/;
 
 use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
+use Algorithm::Cron;
 
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
@@ -334,6 +335,23 @@ sub check_acl {
           }
 
           return false if $all and not $found;
+          next RULE;
+      }
+
+      if ($rule =~ m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+/i) {
+          my $win_start = time - (time % 60) - 1;
+          my $win_end   = $win_start + 60;
+          my $cron = Algorithm::Cron->new(
+            base => 'local',
+            crontab => $rule,
+          ) or next RULE;
+
+          if ($neg xor ($cron->next_time($win_start) <= $win_end)) {
+              return true if not $all;
+          }
+          else {
+              return false if $all;
+          }
           next RULE;
       }
 
