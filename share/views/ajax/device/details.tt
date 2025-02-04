@@ -90,7 +90,7 @@
     </tr>
     [% IF settings._extra_device_details.size %]
     [% FOREACH config IN settings._extra_device_details %]
-    [% NEXT UNLESS permitted_custom_field(d, config) %]
+    [% NEXT UNLESS permitted_by_acl(d, config) %]
     <tr>
       <td>
           [% config.label | html_entity %]

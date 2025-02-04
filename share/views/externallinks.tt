@@ -23,6 +23,7 @@
 
 [% BLOCK external_device_links %]
   [% FOREACH link IN settings.external_links.device %]
+    [% NEXT UNLESS permitted_by_acl(item, link) %]
     [% device   = item.ip FILTER uri %]
     [% fqdn     = item.dns FILTER uri %]
     [% sysname  = item.name FILTER uri %]
@@ -39,6 +40,7 @@
 
 [% BLOCK external_device_port_links %]
   [% FOREACH link IN settings.external_links.device_port %]
+    [% NEXT UNLESS permitted_by_acl(item, link) %]
     [% device   = d.ip FILTER uri %]
     [% fqdn     = d.dns FILTER uri %]
     [% sysname  = d.name FILTER uri %]

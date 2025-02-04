@@ -312,7 +312,7 @@ hook 'before_template' => sub {
     $tokens->{my_query} = $queryuri->query();
 
     # hide custom fields according to only/no settings
-    $tokens->{permitted_custom_field} = sub {
+    $tokens->{permitted_by_acl} = sub {
         my ($thing, $config) = @_;
         return false unless $thing and $config;
 
