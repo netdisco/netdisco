@@ -11,11 +11,9 @@ def main():
     if output is not None:
         # debug(output)
         for record in output:
-            arps.append({
-                'dns': record['rev_dns'],
-                'ip':  record['ip_address'],
-                'mac': record['mac_address'],
-            })
+            arps.append(
+                {'dns': record['rev_dns'], 'ip': record['ip_address'], 'mac': record['mac_address']}
+            )
 
     # debug(arps)
     if len(arps) > 0:

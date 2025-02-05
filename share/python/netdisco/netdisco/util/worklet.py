@@ -15,6 +15,7 @@ import netdisco.util.status as status
 import netdisco.util.config as config
 import netdisco.util.database as database
 
+
 @dataclass(frozen=True)
 class Context:
     job = job.job
