@@ -1,3 +1,9 @@
+2.083001 - 2025-02-06
+
+  [BUG FIXES]
+
+  * try to clean uv lock before updating demo db stats
+
 2.083000 - 2025-02-06
 
   [NEW FEATURES]
