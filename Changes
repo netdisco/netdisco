@@ -1,3 +1,9 @@
+2.083000 - 2025-02-06
+
+  [NEW FEATURES]
+
+  * migrate from poetry provided by Alien::poetry to uv provided by Alien::ultraviolet
+
 2.082003 - 2025-02-04
 
   [NEW FEATURES]

@@ -3,7 +3,7 @@ abstract: 'An open source web-based network management tool.'
 author:
   - 'Oliver Gorwits <oliver@cpan.org>'
 build_requires:
-  Alien::poetry: '1.000006'
+  Alien::ultraviolet: '1.000000'
   Env::Path: '0'
   ExtUtils::Config: '0'
   ExtUtils::Helpers: '0'
@@ -27,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.082003'
+    version: '2.083000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -595,7 +595,7 @@ recommends:
   GraphViz: '0'
 requires:
   Algorithm::Cron: '0.07'
-  Alien::poetry: '1.000006'
+  Alien::ultraviolet: '1.000000'
   AnyEvent: '7.05'
   AnyEvent::DNS::EtcHosts: '0'
   App::cpanminus: '1.6108'
@@ -699,5 +699,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.082003'
+version: '2.083000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
