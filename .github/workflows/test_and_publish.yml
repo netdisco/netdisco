@@ -339,7 +339,6 @@ jobs:
         PGHOST:     ${{ secrets.DEMO_PGHOST }}
         PGDATABASE: ${{ secrets.DEMO_PGDATABASE }}
         NETDISCO_HOME: /github/workspace/netdisco/netdisco
-        POETRY_CACHE_DIR: /home/netdisco/python/cache/pypoetry
         NETDISCO_DB_USER: ${{ secrets.DEMO_PGUSER }}
         NETDISCO_DB_PASS: ${{ secrets.DEMO_PGPASSWORD }}
         NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}

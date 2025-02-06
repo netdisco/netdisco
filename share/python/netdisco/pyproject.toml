@@ -1,43 +1,40 @@
 [project]
 name = "netdisco"
-requires-python = ">=3.8"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
-name = "netdisco"
 version = "1.0.0"
 description = "Python code and dependencies for Netdisco"
-authors = ["Netdisco Developers"]
+authors = [{ name = "Netdisco Developers" }]
+requires-python = ">=3.9"
+dependencies = [
+    "yamllint>=1.35.1,<2",
+    "yamale>=5.2.1,<6",
+    "netmiko>=4.4.0,<5",
+    "cryptography>=43.0.1,<44",
+    "virtualenv>=20.26.6",
+    "sqlalchemy>=2.0.37,<3",
+    "psycopg>=3.2.4,<4",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-yamllint = "^1.35.1"
-yamale = "^5.2.1"
-netmiko = "^4.4.0"
-cryptography = "^43.0.1"
-virtualenv = ">=20.26.6"
-sqlalchemy = "^2.0.37"
-psycopg = "^3.2.4"
-
-[tool.poetry.scripts]
+[project.scripts]
 run_worklet = "netdisco.runner:main"
 
-[tool.poetry.group.develop]
-optional = true
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.group.develop.dependencies]
-pre-commit = "^3.7.1"
+[dependency-groups]
+develop = ["pre-commit>=3.7.1,<4"]
+test = ["ruff>=0.5.4,<0.6"]
 
-[tool.poetry.group.test]
-optional = true
-
-[tool.poetry.group.test.dependencies]
-ruff = "^0.5.4"
+[tool.uv]
+default-groups = [
+    "develop",
+    "test",
+]
 
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["netdisco"]
