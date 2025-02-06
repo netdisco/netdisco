@@ -422,21 +422,24 @@ Updates Netdisco's statistics on number of devices, nodes, etc, for today.
 =head2 location
 
 Set the SNMP location field on the device (specified with C<-d>). Pass the
-location string in the C<-e> extra parameter.
+location string in the C<-e> extra parameter. Use C<--force> to bypass
+user access controls.
 
  ~/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
 
 =head2 contact
 
 Set the SNMP contact field on the device (specified with C<-d>). Pass the
-contact name in the C<-e> extra parameter.
+contact name in the C<-e> extra parameter. Use C<--force> to bypass
+user access controls.
 
  ~/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
 
 =head2 portname
 
 Set the description on a device port. Requires the C<-d> parameter (device),
-C<-p> parameter (port), and C<-e> parameter (description).
+C<-p> parameter (port), and C<-e> parameter (description). Use C<--force> to
+bypass user access controls.
 
  ~/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
 
@@ -444,6 +447,7 @@ C<-p> parameter (port), and C<-e> parameter (description).
 
 Set the up/down status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
+Use C<--force> to bypass user access controls.
 
  ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
  ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
@@ -451,7 +455,8 @@ Set the up/down status on a device port. Requires the C<-d> parameter
 =head2 vlan
 
 Set the native VLAN on a device port. Requires the C<-d> parameter (device),
-C<-p> parameter (port), and C<-e> parameter (VLAN number).
+C<-p> parameter (port), and C<-e> parameter (VLAN number). Use C<--force> to
+bypass user access controls.
 
  ~/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
 
@@ -459,6 +464,7 @@ C<-p> parameter (port), and C<-e> parameter (VLAN number).
 
 Set the PoE on/off status on a device port. Requires the C<-d> parameter
 (device), C<-p> parameter (port), and C<-e> parameter ("on" or "off").
+Use C<--force> to bypass user access controls.
 
  ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
  ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off

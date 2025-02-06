@@ -69,7 +69,7 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
-Netdisco requires Perl (5.10+), Python (3.9+), and PostgreSQL (9.6+).
+Netdisco requires Perl (5.10+) and PostgreSQL (9.6+).
 
 Most other dependencies will be automatically installed, but we require that
 the following items are installed using your own operating system, to get the
