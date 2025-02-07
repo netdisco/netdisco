@@ -428,7 +428,7 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
 
 # #1040 change with-nodes to be job hook
 foreach my $action (qw(macsuck arpnip)) {
-    push @new_hooks {
+    push @new_hooks, {
         type => 'exec',
         event => 'new_device',
         with => {
