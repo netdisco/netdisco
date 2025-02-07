@@ -426,6 +426,17 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
     push @new_dcf, $field;
 }
 
+# #1040 change with-nodes to be job hook
+foreach my $action (qw(macsuck arpnip)) {
+    push @new_hooks {
+        type => 'exec',
+        event => 'new_device',
+        with => {
+            cmd => (sprintf q!%s %s --enqueue -d '[%% ip %%]' --quiet!, $me, $action)
+        }
+    };
+}
+
 config->{'hooks'} = \@new_hooks;
 config->{'custom_fields'}->{'device'} = \@new_dcf;
 

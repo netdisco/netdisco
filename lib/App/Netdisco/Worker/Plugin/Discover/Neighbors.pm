@@ -76,7 +76,6 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       jq_insert({
         device => $ip,
         action => 'discover',
-        subaction => 'with-nodes',
         ($remote_id ? (device_key => $remote_id) : ()),
       });
 

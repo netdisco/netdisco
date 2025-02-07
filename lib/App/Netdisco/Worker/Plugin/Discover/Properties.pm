@@ -150,8 +150,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
-  return unless $device->in_storage;
-  return unless $job->subaction eq 'with-nodes';
+  return unless $device->in_storage and vars->{'new_device'};
 
   my $db_device = get_device($device->ip);
   if ($device->ip ne $db_device->ip) {

@@ -76,7 +76,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       ip => $new_ip, vendor => $device->vendor, serial => $device->serial,
     });
 
-    if (($job->subaction eq 'with-nodes') and $existing->count) {
+    if (vars->{'new_device'} and $existing->count) {
       $device->delete;
       return $job->cancel(
         " [$old_ip] device - cancelling fresh discover: already known as $new_ip");

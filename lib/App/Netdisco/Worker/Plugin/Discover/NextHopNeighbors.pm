@@ -77,7 +77,6 @@ register_worker({ phase => 'store' }, sub {
       jq_insert({
         device => $peer->ip,
         action => 'discover',
-        subaction => 'with-nodes',
       });
 
       $count++;

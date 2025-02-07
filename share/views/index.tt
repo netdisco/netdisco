@@ -73,7 +73,6 @@
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/discodevs') | none %]">
             <div class="form-horizontal">
               <input placeholder="Device hostname, IP address, or IPv4 prefix >= /22" class="span4" id="discodevs" name="device" required="required" value="[% params.device | html_entity %]" type="text"/>
-              <input type="hidden" name="extra" value="with-nodes"/>
               <div class="btn-group">
                 <button type="submit" class="btn btn-info">Discover</button>
                 <button class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

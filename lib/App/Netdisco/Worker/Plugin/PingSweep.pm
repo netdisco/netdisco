@@ -71,7 +71,6 @@ register_worker({ phase => 'main' }, sub {
     jq_insert([{
       action => 'discover',
       device => $host,
-      subaction => 'with-nodes',
       username => ($ENV{USER} || 'netdisco-do'),
     }]);
 
