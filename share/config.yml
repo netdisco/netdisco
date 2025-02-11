@@ -769,7 +769,6 @@ worker_plugins:
   - 'Discover::Snapshot'
   - 'Discover::VLANs'
   - 'Discover::Wireless'
-  - 'Discover::WithNodes'
   - 'DiscoverAll'
   - 'DumpConfig'
   - 'DumpInfoCache'
