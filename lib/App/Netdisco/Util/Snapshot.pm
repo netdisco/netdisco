@@ -7,27 +7,18 @@ use App::Netdisco::Util::SNMP qw/get_mibdirs sortable_oid/;
 
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 qw/encode_base64 decode_base64/;
-use File::Slurper qw/read_lines read_text/;
+use File::Slurper 'read_lines';
 use Sub::Util 'subname';
 use Storable qw/dclone nfreeze thaw/;
 use Scalar::Util 'blessed';
-use Module::Load ();
 use SNMP::Info;
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   load_cache_for_device
-  snmpwalk_to_cache
-
-  gather_every_mib_object
-  dump_cache_to_browserdata
   add_snmpinfo_aliases
-
-  get_oidmap_from_database
-  get_oidmap_from_mibs_files
-  get_mibs_for
-  get_munges
+  dump_cache_to_browserdata
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -60,37 +51,31 @@ sub load_cache_for_device {
       return thaw( decode_base64( $snapshot->cache ) );
   }
 
-  # or we have a file on disk - could be cache or walk
+  # or we have an snmpwalk file on disk
   my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
   if (-f $pseudo_cache and not $device->in_storage) {
-      my $content = read_text($pseudo_cache);
+      my @lines = read_lines($pseudo_cache);
+      my %oids = ();
 
-      if ($content =~ m/^\.1/) {
-          my %oids = ();
+      # parse the snmpwalk output which looks like
+      # .1.0.8802.1.1.2.1.1.1.0 = INTEGER: 30
+      foreach my $line (@lines) {
+          my ($oid, $val) = $line =~ m/^(\S+) = (?:[^:]+: )?(.+)$/;
+          next unless $oid and $val;
 
-          # parse the snmpwalk output which looks like
-          # .1.0.8802.1.1.2.1.1.1.0 = INTEGER: 30
-          my @lines = split /\n/, $content;
-          foreach my $line (@lines) {
-              my ($oid, $val) = $line =~ m/^(\S+) = (?:[^:]+: )?(.+)$/;
-              next unless $oid and $val;
+          # empty string makes the capture go wonky
+          $val = '' if $val =~ m/^[^:]+: ?$/;
 
-              # empty string makes the capture go wonky
-              $val = '' if $val =~ m/^[^:]+: ?$/;
+          # remove quotes from strings
+          $val =~ s/^"//;
+          $val =~ s/"$//;
 
-              # remove quotes from strings
-              $val =~ s/^"//;
-              $val =~ s/"$//;
-
-              $oids{$oid} = $val;
-          }
-
-          return snmpwalk_to_cache(%oids);
+          $oids{$oid} = $val;
       }
-      else {
-          my $cache = thaw( decode_base64( $content ) );
-          return add_snmpinfo_aliases( $cache );
-      }
+
+      # inject a basic set of SNMP::Info globals and funcs aliases
+      # which are needed for initial device discovery
+      return add_snmpinfo_aliases( snmpwalk_to_cache(%oids) );
 
       # there is a late phase discover worker to generate the oids
       # and also to save the cache into the database, because we want
@@ -192,120 +177,7 @@ sub snmpwalk_to_cache {
   }
 
   debug sprintf "snmpwalk_to_cache: cache size: %d", scalar keys %{ $info->cache };
-
-  # inject a basic set of SNMP::Info globals and funcs aliases
-  # which are needed for initial device discovery
-  add_snmpinfo_aliases($info);
-
   return $info->cache;
-}
-
-=head2 gather_every_mib_object( $device, $snmp, @extramibs? )
-
-Gathers evey MIB Object in the MIBs loaded for the device and store
-to the database for SNMP browser.
-
-Optionally add a list of vendors, MIBs, or SNMP:Info class for extra MIB
-Objects from the netdisco-mibs bundle.
-
-The passed SNMP::Info instance has its cache update with the data.
-
-=cut
-
-sub gather_every_mib_object {
-  my ($device, $snmp, @extra) = @_;
-
-  # get MIBs loaded for device
-  my @mibs = keys %{ $snmp->mibs() };
-  my @extra_mibs = get_mibs_for(@extra);
-  debug sprintf "covering %d MIBs", (scalar @mibs + scalar @extra_mibs);
-  SNMP::loadModules($_) for @extra_mibs;
-
-  # get qualified leafs for those MIBs from snmp_object
-  my %oidmap = get_oidmap_from_database(@mibs, @extra_mibs);
-  debug sprintf "gathering %d MIB Objects", scalar keys %oidmap;
-
-  foreach my $qleaf (sort {sortable_oid($oidmap{$a}) cmp sortable_oid($oidmap{$b})} keys %oidmap) {
-      my $leaf = $qleaf;
-      $leaf =~ s/.+:://;
-
-      my $snmpqleaf = $qleaf;
-      $snmpqleaf =~ s/[-:]/_/g;
-
-      # gather the leaf
-      $snmp->$snmpqleaf;
-
-      # skip any leaf which did not return data from device
-      # this works for both funcs and globals as funcs create stub global
-      next unless exists $snmp->cache->{'_'. $snmpqleaf};
-
-      # store a short name alias which is needed for netdisco actions
-      $snmp->_cache($leaf, $snmp->$snmpqleaf);
-  }
-}
-
-=head2 dump_cache_to_browserdata( $device, $snmp )
-
-Dumps any valid MIB leaf from the passed SNMP::Info instance's cache into
-the Netdisco database SNMP Browser table.
-
-Ideally the leafs are fully qualified, but if not then a best effort will
-be made to find their correct MIB.
-
-=cut
-
-sub dump_cache_to_browserdata {
-  my ($device, $snmp) = @_;
-
-  my %qoidmap = get_oidmap_from_database();
-  my %oidmap  = get_leaf_to_qleaf_map();
-  my %munges  = get_munges($snmp);
-
-  my $cache = $snmp->cache;
-  my %oids = ();
-
-  foreach my $key (keys %$cache) {
-      next unless $key and $key =~ m/^_/;
-
-      my $snmpqleaf = $key;
-      $snmpqleaf =~ s/^_//;
-
-      my $qleaf = $snmpqleaf;
-      $qleaf =~ s/__/::/;
-      $qleaf =~ s/_/-/g;
-
-      my $leaf = $qleaf;
-      $leaf =~ s/.+:://;
-
-      next unless exists $qoidmap{$qleaf}
-                  or (exists $oidmap{$leaf} and exists $qoidmap{ $oidmap{$leaf} });
-
-      my $oid  = exists $qoidmap{$qleaf} ? $qoidmap{$qleaf} : $qoidmap{ $oidmap{$leaf} };
-      my $data = exists $cache->{'store'}{$snmpqleaf} ? $cache->{'store'}{$snmpqleaf}
-                                                      : $cache->{$key};
-      next unless defined $data;
-
-      push @{ $oids{$oid} }, {
-        oid => $oid,
-        oid_parts => [ grep {length} (split m/\./, $oid) ],
-        leaf  => $leaf,
-        qleaf => $qleaf,
-        munge => ($munges{$snmpqleaf} || $munges{$leaf}),
-        value => encode_base64( nfreeze( [$data] ) ),
-      };
-  }
-
-  %oids = map { ($_ => [sort {length($b->{qleaf}) <=> length($a->{qleaf})} @{ $oids{$_} }]) }
-          keys %oids;
-
-  schema('netdisco')->txn_do(sub {
-    my $gone = $device->oids->delete;
-    debug sprintf 'removed %d oids from db', $gone;
-    $device->oids->populate([ sort {sortable_oid($a->{oid}) cmp sortable_oid($b->{oid})}
-                              map  { delete $_->{qleaf}; $_ }
-                              map  { $oids{$_}->[0] } keys %oids ]);
-    debug sprintf 'added %d new oids to db', scalar keys %oids;
-  });
 }
 
 =head2 add_snmpinfo_aliases( $snmp_info_instance | $snmp_info_cache )
@@ -384,9 +256,69 @@ sub add_snmpinfo_aliases {
   return $info->cache;
 }
 
-=head2 get_leaf_to_qleaf_map( )
+=head2 dump_cache_to_browserdata( $device, $snmp )
+
+Dumps any valid MIB leaf from the passed SNMP::Info instance's cache into
+the Netdisco database SNMP Browser table.
+
+Ideally the leafs are fully qualified, but if not then a best effort will
+be made to find their correct MIB.
 
 =cut
+
+sub dump_cache_to_browserdata {
+  my ($device, $snmp) = @_;
+
+  my %qoidmap = get_oidmap_from_database();
+  my %oidmap  = get_leaf_to_qleaf_map();
+  my %munges  = get_munges($snmp);
+
+  my $cache = $snmp->cache;
+  my %oids = ();
+
+  foreach my $key (keys %$cache) {
+      next unless $key and $key =~ m/^_/;
+
+      my $snmpqleaf = $key;
+      $snmpqleaf =~ s/^_//;
+
+      my $qleaf = $snmpqleaf;
+      $qleaf =~ s/__/::/;
+      $qleaf =~ s/_/-/g;
+
+      my $leaf = $qleaf;
+      $leaf =~ s/.+:://;
+
+      next unless exists $qoidmap{$qleaf}
+                  or (exists $oidmap{$leaf} and exists $qoidmap{ $oidmap{$leaf} });
+
+      my $oid  = exists $qoidmap{$qleaf} ? $qoidmap{$qleaf} : $qoidmap{ $oidmap{$leaf} };
+      my $data = exists $cache->{'store'}{$snmpqleaf} ? $cache->{'store'}{$snmpqleaf}
+                                                      : $cache->{$key};
+      next unless defined $data;
+
+      push @{ $oids{$oid} }, {
+        oid => $oid,
+        oid_parts => [ grep {length} (split m/\./, $oid) ],
+        leaf  => $leaf,
+        qleaf => $qleaf,
+        munge => ($munges{$snmpqleaf} || $munges{$leaf}),
+        value => encode_base64( nfreeze( [$data] ) ),
+      };
+  }
+
+  %oids = map { ($_ => [sort {length($b->{qleaf}) <=> length($a->{qleaf})} @{ $oids{$_} }]) }
+          keys %oids;
+
+  schema('netdisco')->txn_do(sub {
+    my $gone = $device->oids->delete;
+    debug sprintf 'removed %d oids from db', $gone;
+    $device->oids->populate([ sort {sortable_oid($a->{oid}) cmp sortable_oid($b->{oid})}
+                              map  { delete $_->{qleaf}; $_ }
+                              map  { $oids{$_}->[0] } keys %oids ]);
+    debug sprintf 'added %d new oids to db', scalar keys %oids;
+  });
+}
 
 sub get_leaf_to_qleaf_map {
   debug "loading database leaf to qleaf map";
@@ -407,10 +339,6 @@ sub get_leaf_to_qleaf_map {
   debug sprintf "loaded %d mapped objects", scalar keys %oidmap;
   return %oidmap;
 }
-
-=head2 get_oidmap_from_database( @mibs? )
-
-=cut
 
 sub get_oidmap_from_database {
   my @mibs = @_;
@@ -436,80 +364,6 @@ sub get_oidmap_from_database {
 
   return %oidmap;
 }
-
-=head2 get_oidmap_from_mibs_files( @vendors? )
-
-Read in netdisco-mibs translation report and make an OID -> leafname map this
-is an older version of get_oidmap which uses disk file test on my laptop shows
-this version is four seconds and the database takes two.
-
-=cut
-
-sub get_oidmap_from_mibs_files {
-  debug "loading netdisco-mibs object cache (netdisco-mibs)";
-
-  my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my $reports = catdir( $home, 'EXTRAS', 'reports' );
-  my @maps = map  { (splitdir($_))[-1] }
-             grep { ! m/^(?:EXTRAS)$/ }
-             grep { ! m/\./ }
-             grep { -f }
-             glob (catfile( $reports, '*_oids' ));
-
-  my @report = ();
-  push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
-    for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
-
-  my %oidmap = ();
-  foreach my $line (@report) {
-    my ($oid, $qual_leaf, $rest) = split m/,/, $line;
-    next unless defined $oid and defined $qual_leaf;
-    next if exists $oidmap{$oid};
-    my ($mib, $leaf) = split m/::/, $qual_leaf;
-    $oidmap{$oid} = $leaf;
-  }
-
-  debug sprintf "loaded %d MIB objects",
-    scalar keys %oidmap;
-  return %oidmap;
-}
-
-=head2 get_mibs_for( @extra )
-
-=cut
-
-sub get_mibs_for {
-  my @extra = @_;
-  my @mibs = ();
-
-  my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my $cachedir = catdir( $home, 'EXTRAS', 'indexes', 'cache' );
-
-  foreach my $item (@extra) {
-      next unless $item;
-      if ($item =~ m/^[a-z0-9-]+$/) {
-          push @mibs, map { (split m/\s+/)[0] }
-                      read_lines( catfile( $cachedir, $item ), 'latin-1' );
-      }
-      elsif ($item =~ m/::/) {
-          Module::Load::load $item;
-          $item .= '::MIBS';
-          {
-            no strict 'refs';
-            push @mibs, keys %${item};
-          }
-      }
-      else {
-          push @mibs, $item;
-      }
-  }
-
-  return @mibs;
-}
-
-=head2 get_munges( $snmpinfo )
-
-=cut
 
 sub get_munges {
   my $snmp = shift;
