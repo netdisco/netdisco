@@ -8,11 +8,12 @@ messages are prefixed with the current process ID.
 """
 
 import logging
-from os import getpid
+from os import getpid, environ
 from netdisco.util.config import setting
 
 logging.basicConfig(
-    format=('[' + str(getpid()) + '] %(message)s'), level=getattr(logging, setting('log').upper())
+    format=('[' + str(getpid()) + '] %(message)s'),
+    level=getattr(logging, environ.get('ND2_LOG_LEVEL', setting('log')).upper()),
 )
 log = logging.getLogger(__name__)
 

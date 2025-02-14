@@ -50,5 +50,9 @@ class StatusManager:
         object.__setattr__(self, 'status', 'info')
         object.__setattr__(self, 'log', msg)
 
+    def reset(self):
+        object.__setattr__(self, 'status', '')
+        object.__setattr__(self, 'log', '')
+
 
 status = StatusManager()

@@ -722,11 +722,12 @@ job_prio:
 enable_python_worklets: true
 
 python_worker_plugins:
-  - 'linter.main'
-  - 'expire.early'
-  - 'stats.early'
   - 'discover.nexthopneighbors.main.cli.juniper_junos':
       only: 'route-server.ip.att.net'
+  - 'expire.early'
+  - 'linter.main'
+  - 'snapshot.main.snmp'
+  - 'stats.early'
 
 #  - 'arpnip.check'
 #  - 'arpnip.nodes.early'
