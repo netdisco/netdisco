@@ -726,7 +726,7 @@ python_worker_plugins:
       only: 'route-server.ip.att.net'
   - 'expire.early'
   - 'linter.main'
-  - 'snapshot.main.snmp'
+  - 'snapshot.main'
   - 'stats.early'
 
 #  - 'arpnip.check'
