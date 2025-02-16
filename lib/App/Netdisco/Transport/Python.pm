@@ -107,7 +107,7 @@ sub py_worklet {
   var($_ => $retdata->{stash}->{$_}) for keys %{ $retdata->{stash} || {} };
   var(live_python => true);
 
-  return Status->$status($log);
+  return ($status ? Status->$status($log) : Status->info('worklet returned no status'));
 }
 
 true;

@@ -1,4 +1,6 @@
 import asyncio
+from pysnmp.error import PySnmpError
+from pyasn1.error import PyAsn1Error
 from pysnmp.hlapi.v3arch.asyncio import (
     bulk_cmd,
     SnmpEngine,
@@ -14,13 +16,7 @@ from sqlalchemy import text
 from netdisco.util.worklet import debug, context as c
 
 
-def main():
-    nonRepeaters = 0
-    maxRepetitions = c.setting('bulkwalk_repeaters') or 20
-
-    if c.setting('bulkwalk_off'):
-        return c.status.info('snapshot skipped: snmp bulkwalk is disabled')
-
+async def run():
     transport = (
         UdpTransportTarget.create((c.job.device, 161))
         if '.' in c.job.device
@@ -43,9 +39,14 @@ def main():
         else:
             authdata = UsmUserData()
 
-    async def run():
-        errorIndication, errorStatus, errorIndex, varBindTable = await bulk_cmd(
-            SnmpEngine(),
+    nonRepeaters = 0
+    maxRepetitions = c.setting('bulkwalk_repeaters') or 20
+    snmp_engine = SnmpEngine()
+    varBinds = []
+
+    try:
+        errorIndication, errorStatus, errorIndex, varBinds = await bulk_cmd(
+            snmp_engine,
             authdata,
             await transport,
             ContextData(),
@@ -54,18 +55,37 @@ def main():
             ObjectType(ObjectIdentity('1.0')),
             lookupMib=False,
         )
-        if errorIndication or errorStatus:
-            debug('there was an error')
-        else:
-            debug(varBindTable)
 
-    try:
-        asyncio.run(run())
-        debug('finished bulkwalk')
+    except PySnmpError as e:
+        c.status.error(f'PySnmpError error: {e}')
+    except PyAsn1Error as e:
+        c.status.error(f'PyAsn1Error error: {e}')
+    else:
+        if errorIndication:
+            c.status.error(f'SNMP engine error: {errorIndication}')
+        elif errorStatus:
+            c.status.error(
+                'SNMP PDU error: {} at {}'.format(
+                    errorStatus.prettyPrint(),
+                    errorIndex and varBinds[int(errorIndex) - 1][0] or '?',
+                )
+            )
+    finally:
+        snmp_engine.transport_dispatcher.close_dispatcher()
+
+    return varBinds
+
+
+def main():
+    if c.setting('bulkwalk_off'):
+        return c.status.info('snapshot skipped: SNMP bulkwalk is disabled')
+
+    result = asyncio.run(run())
+    if c.status.level() == 0:
+        # debug(result)
         c.status.done('finished bulkwalk')
-    except Exception as e:
-        debug(e)
-        c.status.error('failed bulkwalk')
+    else:
+        debug(c.status.log)
 
 
 if __name__ == '__main__':
