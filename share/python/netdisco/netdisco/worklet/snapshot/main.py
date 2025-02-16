@@ -81,9 +81,13 @@ def main():
         return c.status.info('snapshot skipped: SNMP bulkwalk is disabled')
 
     result = asyncio.run(run())
+
     if c.status.level() == 0:
-        # debug(result)
-        c.status.done('finished bulkwalk')
+        snapshot = []
+        for row in result:
+            snapshot.append({'oid': row[0], 'value': row[1]})
+        c.stash.set('snapshot', snapshot)
+        c.status.done(f'stashed {len(snapshot)} items from bulkwalk')
     else:
         debug(c.status.log)
 
