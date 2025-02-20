@@ -32,4 +32,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("oid");
 
+__PACKAGE__->might_have( device_browser => 'App::Netdisco::DB::Result::DeviceBrowser', 'oid' );
+
 1;
