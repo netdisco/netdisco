@@ -271,7 +271,6 @@ sub dump_cache_to_browserdata {
 
   my %qoidmap = get_oidmap_from_database();
   my %oidmap  = get_leaf_to_qleaf_map();
-  my %munges  = get_munges($snmp);
 
   my $cache = $snmp->cache;
   my %oids = ();
@@ -302,7 +301,6 @@ sub dump_cache_to_browserdata {
         oid_parts => [ grep {length} (split m/\./, $oid) ],
         leaf  => $leaf,
         qleaf => $qleaf,
-        munge => ($munges{$snmpqleaf} || $munges{$leaf}),
         value => encode_base64( nfreeze( [$data] ) ),
       };
   }
@@ -363,27 +361,6 @@ sub get_oidmap_from_database {
   }
 
   return %oidmap;
-}
-
-sub get_munges {
-  my $snmp = shift;
-  my %munge_set = ();
-
-  my %munge   = %{ $snmp->munge() };
-  my %funcs   = %{ $snmp->funcs() };
-  my %globals = %{ $snmp->globals() };
-
-  while (my ($alias, $leaf) = each %globals) {
-    $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
-    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
-  }
-
-  while (my ($alias, $leaf) = each %funcs) {
-    $munge_set{$leaf} = subname($munge{$leaf}) if exists $munge{$leaf};
-    $munge_set{$leaf} = subname($munge{$alias}) if exists $munge{$alias};
-  }
-
-  return %munge_set;
 }
 
 true;

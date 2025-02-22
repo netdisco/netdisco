@@ -12,11 +12,7 @@ __PACKAGE__->add_columns(
   "oid",
   { data_type => "text", is_nullable => 0 },
   "oid_parts",
-  { data_type => "integer[]", is_nullable => 0 },
-  "leaf",
   { data_type => "text", is_nullable => 0 },
-  "munge",
-  { data_type => "text", is_nullable => 1 },
   "value",
   { data_type => "text", is_nullable => 1 },
 );

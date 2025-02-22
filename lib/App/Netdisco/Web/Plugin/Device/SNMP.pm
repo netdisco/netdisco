@@ -10,7 +10,7 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::SNMP qw(%ALL_MUNGERS decode_and_munge);
+use App::Netdisco::Util::SNMP 'decode_and_munge';
 use Module::Load ();
 use Try::Tiny;
 
@@ -36,7 +36,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     content_type 'application/json';
 
     return to_json [{
-      text => 'No data for this device. You can request a snapshot in the Details tab.',
+      text => 'No data for this device. Admins can request a snapshot in the Details tab.',
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
@@ -100,8 +100,8 @@ ajax '/ajax/data/snmp/nodesearch' => require_login sub {
     else {
         $found = schema(vars->{'tenant'})->resultset('SNMPObject')
           ->search({
-            (($mib and $leaf) ? (-and => [mib => $mib, leaf => $leaf])
-                              : (-or  => [oid => $to_match, leaf => $to_match])),
+            (($mib and $leaf) ? (-and => ['me.mib' => $mib, 'me.leaf' => $leaf])
+                              : (-or  => ['me.oid' => $to_match, 'me.leaf' => $to_match])),
             (($device and $deviceonly) ? ('device_browser.ip' => $device, 'device_browser.value' => { -not => undef }) : ()),
             },{ rows => 1, join => 'device_browser', order_by => 'oid_parts' })->first;
     }
@@ -128,21 +128,30 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
     my $oid = param('oid');
     $oid =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID', 404);
 
-    my $object = schema(vars->{'tenant'})->resultset('DeviceBrowser')
-      ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
+    my $object = schema(vars->{'tenant'})->resultset('SNMPObject')
+      ->find({'me.oid' => $oid},
+               {join => ['snmp_filter'], prefetch => ['snmp_filter']})
       or send_error('Bad OID', 404);
 
-    my $munge = (param('munge') and exists $ALL_MUNGERS{param('munge')})
-      ? param('munge') : $object->munge;
+    my $munge = (param('munge') ||
+                 ($object->snmp_filter ? $object->snmp_filter->subname : undef));
+
+    # this is a bit lazy, could be a join on above with some effort
+    my $value = schema(vars->{'tenant'})->resultset('DeviceBrowser')
+      ->find({'me.oid' => $oid, 'me.ip' => $device});
 
     my %data = (
       $object->get_columns,
-      snmp_object => { $object->snmp_object->get_columns },
-      value => decode_and_munge( $munge, $object->value ),
+      snmp_object => { $object->get_columns },
+      value => decode_and_munge( $munge, ($value ? $value->value : undef) ),
     );
 
+    my @mungers = schema(vars->{'tenant'})->resultset('SNMPFilter')
+                                          ->search({},{ distinct => 1, order_by => 'subname' })
+                                          ->get_column('subname')->all;
+
     template 'ajax/device/snmpnode.tt',
-        { node => \%data, munge => $munge, mungers => [sort keys %ALL_MUNGERS] },
+        { node => \%data, munge => $munge, mungers => \@mungers },
         { layout => 'noop' };
 };
 
