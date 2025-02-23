@@ -187,12 +187,6 @@ sub decode_and_munge {
     my $data = undef;
     if ($encoded =~ m/^\[/) {
         $data = (@{ $json->decode($encoded) })[0]; # jsonb -> perl
-        if (ref {} eq ref $data) {
-            $data->{$_} = decode_base64($data->{$_}) for keys %$data;
-        }
-        else {
-            $data = decode_base64($data);
-        }
     }
     else {
         $data = (@{ thaw( decode_base64( $encoded ) ) })[0]; # base64 -> storable -> perl
