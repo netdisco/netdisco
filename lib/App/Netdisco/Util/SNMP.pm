@@ -6,7 +6,6 @@ use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 qw/decode_base64/;
-use Storable qw/thaw/;
 use SNMP::Info;
 use JSON::PP;
 
@@ -163,9 +162,9 @@ sub _get_mibdirs_content {
 
 =head2 decode_and_munge( $method, $data )
 
-Takes some data from L<SNMP::Info> cache that has been Base64 encoded
-and frozen with Storable, decodes it and then munge to handle data format,
-before finally pretty render in JSON format.
+Takes some data from L<SNMP::Info> cache that has been Base64 encoded,
+decodes it and then munge to handle data format, before finally pretty
+render in JSON format.
 
 =cut
 
@@ -180,18 +179,7 @@ sub decode_and_munge {
     my $json = JSON::PP->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
     $json->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
 
-    # encoded will have an ascii char as first character:
-    #  either [ if jsonb, or anything else if base64
-    # we can use this to preserve back-compat
-
-    my $data = undef;
-    if ($encoded =~ m/^\[/) {
-        $data = (@{ $json->decode($encoded) })[0]; # jsonb -> perl
-    }
-    else {
-        $data = (@{ thaw( decode_base64( $encoded ) ) })[0]; # base64 -> storable -> perl
-    }
-
+    my $data = (@{ $json->decode($encoded) })[0]; # jsonb -> perl
     return $json->encode( $data ) if not $munger;
 
     my $sub   = sub_name($munger);
@@ -203,13 +191,13 @@ sub decode_and_munge {
         foreach my $key ( keys %$data ) {
             my $value = $data->{$key};
             next unless defined $value;
-            $munged{$key} = $class->can($sub)->($value);
+            $munged{$key} = $class->can($sub)->(decode_base64($value));
         }
         return $json->encode( \%munged );
     }
     else {
         return unless $data;
-        return $json->encode( $class->can($sub)->($data) );
+        return $json->encode( $class->can($sub)->(decode_base64($data)) );
     }
 }
 

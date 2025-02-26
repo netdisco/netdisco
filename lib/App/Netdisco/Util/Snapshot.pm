@@ -8,7 +8,7 @@ use App::Netdisco::Util::SNMP qw/get_mibdirs sortable_oid/;
 use File::Spec::Functions qw/catdir catfile/;
 use MIME::Base64 qw/encode_base64 decode_base64/;
 use File::Slurper 'read_lines';
-use Storable qw/dclone thaw/;
+use Storable qw/dclone/;
 use Scalar::Util 'blessed';
 use SNMP::Info;
 
@@ -17,6 +17,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   load_cache_for_device
   add_snmpinfo_aliases
+  make_snmpwalk_browsable
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -44,22 +45,24 @@ sub load_cache_for_device {
   my $device = shift;
   return {} unless ($device->is_pseudo or not $device->in_storage);
 
+  # user cannot load caches and work offline without doing a loadmibs
+  return {} unless schema('netdisco')->resultset('SNMPObject')->count;
+
   my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
   my %oids = ();
 
   # ideally we have a cache in the db
-  if ($device->is_pseudo and $device->oids->count) {
+  if ($device->is_pseudo and $device->oids->search({-bool => \'array_length(oid_parts, 1) > 0'})->count) {
       my @rows = $device->oids->search({},{
           join => 'oid_fields',
           columns => [qw/oid value/],
           select => [qw/oid_fields.mib oid_fields.leaf/], as => [qw/mib leaf/],
       })->hri->all;
 
-      # b64 -> storable -> array-ref -> value
+      # b64 -> array-ref -> value
       $oids{$_->{oid}} = {
           %{ $_ },
-          value => ($_->{value} =~ m/^\[/) ? (@{ from_json($_->{value}) })[0]
-                                           : (@{ thaw( decode_base64($_->{value}) ) })[0]
+          value => (@{ from_json($_->{value}) })[0],
       } for @rows;
   }
   # or we have an snmpwalk file on disk
@@ -67,13 +70,13 @@ sub load_cache_for_device {
       debug sprintf "importing snmpwalk from disk ($pseudo_cache)";
 
       my @lines = read_lines($pseudo_cache);
-      my @bulk_insert_device_browser = ();
+      my %store = ();
 
       # parse the snmpwalk output which looks like
       # .1.0.8802.1.1.2.1.1.1.0 = INTEGER: 30
       foreach my $line (@lines) {
-          my ($oid, $value) = $line =~ m/^(\S+) = (?:[^:]+: )?(.+)$/;
-          next unless $oid and $value;
+          my ($oid, $type, $value) = $line =~ m/^(\S+)\s+=\s+([^:]+):\s+(.+)$/;
+          next unless $oid and $type and $value;
 
           # empty string makes the capture go wonky
           $value = '' if $value =~ m/^[^:]+: ?$/;
@@ -82,60 +85,76 @@ sub load_cache_for_device {
           $value =~ s/^"//;
           $value =~ s/"$//;
 
-          push @bulk_insert_device_browser, [
+          $store{$oid} = {
             oid       => $oid,
             oid_parts => [], # not needed temporarily 
-            value     => encode_base64($value)
-          ];
+            value     => ($type eq 'BASE64' ? $value : encode_base64($value, '')),
+          };
       }
 
       # put into the database (temporarily)
+      # this MUST happen here and not be refactored into make_snmpwalk_browsable
+      # because make_snmpwalk_browsable is also called from snapshot job
+      schema('netdisco')->txn_do(sub {
+        $device->oids->delete;
+        $device->oids->populate([values %store]);
+      });
+
       # get back out of the database with related snmp_object (for the enum)
-      my @working_rows = ();
-      schema('netdisco')->txn_do(sub {
-        $device->oids->delete;
-        $device->oids->populate(\@bulk_insert_device_browser);
-
-        @working_rows = $device->oids->search({},{
-            join => 'oid_fields',
-            columns => [qw/oid value/],
-            select => [qw/oid_fields.mib oid_fields.leaf oid_fields.enum/], as => [qw/mib leaf enum/],
-        })->hri->all;
-
-        $device->oids->delete;
-      });
-
-      $oids{$_->{oid}} = {
-          %{ $_ },
-          value => decode_base64($_->{value})
-      } for @working_rows;
-
-      %oids = collapse_snmp_tables(%oids);
-      %oids = resolve_enums(%oids);
-
-      # walk leaves and table leaves to b64 encode again
-      # build the oid_parts list
-      foreach my $k (keys %oids) {
-          my $value = $oids{$k}->{value};
-          if (ref {} eq ref $value) {
-              $oids{$k}->{value} = { map {($_ => encode_base64($value->{$_}))} keys %{ $value } };
-          }
-          else {
-              $oids{$k}->{value} = encode_base64($value);
-          }
-          $oids{$k}->{oid_parts} = [ grep {length} (split m/\./, $oids{$k}->{oid}) ];
-      }
-
-      # store the device cache for real, now
-      schema('netdisco')->txn_do(sub {
-        $device->oids->delete;
-        $device->oids->populate(values %oids);
-        debug sprintf 'added %d new oids to db', scalar keys %oids;
-      });
+      %oids = make_snmpwalk_browsable($device);
   }
 
   # inflate the cache to an SNMP::Info cache instance
   return snmpwalk_to_snmpinfo_cache(%oids);
+}
+
+=head2 make_snmpwalk_browsable( $device )
+
+Takes the device_browser rows for a device and rewrites them to have
+enums translated and oid_parts filled.
+
+=cut
+
+sub make_snmpwalk_browsable {
+  my $device = shift;
+  my %oids = ();
+
+  my @working_rows = $device->oids->search({},{
+      join => 'oid_fields',
+      columns => [qw/oid value/],
+      select => [qw/oid_fields.mib oid_fields.leaf oid_fields.enum/], as => [qw/mib leaf enum/],
+  })->hri->all;
+
+  $oids{$_->{oid}} = {
+      %{ $_ },
+      value => decode_base64($_->{value})
+  } for @working_rows;
+
+  %oids = collapse_snmp_tables(%oids);
+  %oids = resolve_enums(%oids);
+
+  # walk leaves and table leaves to b64 encode again
+  # build the oid_parts list
+  foreach my $k (keys %oids) {
+      my $value = $oids{$k}->{value};
+      # always a JSON array of single element
+      if (ref {} eq ref $value) {
+          $oids{$k}->{value} = to_json([{ map {($_ => encode_base64($value->{$_}, ''))} keys %{ $value } }]);
+      }
+      else {
+          $oids{$k}->{value} = to_json([encode_base64($value, '')]);
+      }
+      $oids{$k}->{oid_parts} = [ grep {length} (split m/\./, $oids{$k}->{oid}) ];
+  }
+
+  # store the device cache for real, now
+  schema('netdisco')->txn_do(sub {
+    $device->oids->delete;
+    $device->oids->populate([values %oids]);
+    debug sprintf 'added %d new oids to db', scalar keys %oids;
+  });
+
+  return %oids;
 }
 
 =head2 collapse_snmp_tables ( %oids )
