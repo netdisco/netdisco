@@ -64,6 +64,7 @@ sub load_cache_for_device {
           %{ $_ },
           value => (@{ from_json($_->{value}) })[0],
       } for @rows;
+      # TODO STORABLE FIX
   }
   # or we have an snmpwalk file on disk
   elsif (-f $pseudo_cache and not $device->in_storage) {

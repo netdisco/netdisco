@@ -720,7 +720,6 @@ sub delete {
     DeviceIp
     DeviceModule
     DevicePower
-    DeviceSnapshot
     DeviceVlan
   /) {
       my $gone = $schema->resultset($set)->search(
@@ -768,7 +767,6 @@ device_browser
 device_ip
 device_module
 device_power
-device_snapshot
 device_vlan
 
 # use 'device' as PK

@@ -14,7 +14,7 @@ __PACKAGE__->add_columns(
   "oid_parts",
   { data_type => "text", is_nullable => 0 },
   "value",
-  { data_type => "text", is_nullable => 1 },
+  { data_type => "jsonb", is_nullable => 1, default_value => \"[]" },
 );
 __PACKAGE__->set_primary_key("ip", "oid");
 

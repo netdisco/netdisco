@@ -6,6 +6,7 @@ use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 qw/decode_base64/;
+use Storable 'thaw';
 use SNMP::Info;
 use JSON::PP;
 
@@ -179,7 +180,11 @@ sub decode_and_munge {
     my $json = JSON::PP->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
     $json->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
 
-    my $data = (@{ $json->decode($encoded) })[0]; # jsonb -> perl
+    # TODO STORABLE FIX
+    # the legacy looks like encode_base64( nfreeze( [$data] ) )
+    my $data = ($encoded !~ m/^\[/)
+      ? (@{ thaw(decode_base64($encoded)) })[0]
+      : (@{ $json->decode($encoded) })[0]; # jsonb -> perl
     return $json->encode( $data ) if not $munger;
 
     my $sub   = sub_name($munger);
