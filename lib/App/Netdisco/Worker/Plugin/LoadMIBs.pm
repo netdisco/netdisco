@@ -6,6 +6,8 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Dancer::Plugin::DBIC 'schema';
 
+use Storable 'thaw';
+use MIME::Base64 qw/encode_base64 decode_base64/;
 use File::Spec::Functions qw(splitdir catfile catdir);
 use File::Slurper qw(read_lines write_text);
 # use DDP;
@@ -85,6 +87,31 @@ register_worker({ phase => 'main' }, sub {
     debug sprintf 'loadmibs - removed %d filters', $gone;
     schema('netdisco')->resultset('SNMPFilter')->populate(\@filters);
     debug sprintf 'loadmibs - added %d new filters', scalar @filters;
+  });
+
+  # legacy snapshot upgrade
+  schema('netdisco')->txn_do(sub {
+    my $legacy_rs = schema('netdisco')
+          ->resultset('DeviceBrowser')
+          ->search({ -bool => \q{ jsonb_typeof(value) != 'array' } });
+
+    if ($legacy_rs->count) {
+        my @rows = $legacy_rs->hri->all;
+        my $gone = $legacy_rs->delete;
+        
+        # the legacy looks like encode_base64( nfreeze( [$data] ) )
+        foreach my $row (@rows) {
+            my $value = (@{ thaw( decode_base64( from_json($row->{value}) ) ) })[0];
+            $value = (ref {} eq ref $value)
+              ? { map {($_ => (defined $value->{$_} ? encode_base64($value->{$_}, '') : undef))}
+                  keys %$value }
+              : (defined $value ? encode_base64($value, '') : undef);
+            $row->{value} = to_json([$value]);
+        }
+
+        schema('netdisco')->resultset('DeviceBrowser')->populate(\@rows);
+        debug sprintf 'loadmibs - updated %d legacy snapshot rows', scalar @rows;
+    }
   });
 
   return Status->done('Loaded MIBs');

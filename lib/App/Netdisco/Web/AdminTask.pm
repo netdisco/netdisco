@@ -117,9 +117,15 @@ get "/ajax/content/admin/snapshot_get" => require_role admin => sub {
       if ! $device or $device->addr eq '0.0.0.0';
 
     my @rows = schema(vars->{'tenant'})->resultset('DeviceBrowser')
-                                       ->search({ip => $device->addr})
-                                       ->hri->all;
-    
+                                       ->search({
+                                          ip => $device->addr,
+                                          -and => [-bool => \q{ array_length(oid_parts, 1) > 0 },
+                                                   -bool => \q{ jsonb_typeof(value) = 'array' }],
+                                       })->hri->all;
+
+    send_error('No snapshot', 400)
+      if 0 == scalar @rows;
+
     my @snmpwalk = ();
     foreach my $row (@rows) {
         $row->{value} = from_json($row->{value});

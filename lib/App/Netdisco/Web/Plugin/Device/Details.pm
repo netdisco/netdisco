@@ -46,7 +46,11 @@ ajax '/ajax/content/device/details' => require_login sub {
     template 'ajax/device/details.tt', {
       d => $results[0], p => \@power,
       interfaces => \@interfaces,
-      has_snapshot => $device->oids->count,
+      has_snapshot =>
+        $device->oids->search({
+          -and => [-bool => \q{ array_length(oid_parts, 1) > 0 },
+                   -bool => \q{ jsonb_typeof(value) = 'array' }],
+        })->count,
       filtered_tags => [ singleton (@{ $device->tags || [] }, @hide, @hide) ],
       serials => [sort keys %{ { map {($_ => $_)} (@serials, ($device->serial ? $device->serial : ())) } }],
     }, { layout => undef };

@@ -282,6 +282,12 @@ sub deploy_mibs {
   else {
     print color 'bold blue';
     say 'MIBs update complete.';
+
+    if (schema('netdisco')->resultset('SNMPObject')->count) {
+      print 'Updating SNMP Browser... ';
+      system('netdisco-do loadmibs --quiet');
+      say 'done.';
+    }
   }
 
   print color 'reset';

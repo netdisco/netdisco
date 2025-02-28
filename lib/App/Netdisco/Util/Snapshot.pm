@@ -8,7 +8,7 @@ use App::Netdisco::Util::SNMP qw/get_mibdirs sortable_oid/;
 use File::Spec::Functions qw/catdir catfile/;
 use MIME::Base64 qw/encode_base64 decode_base64/;
 use File::Slurper 'read_lines';
-use Storable qw/dclone/;
+use Storable 'dclone';
 use Scalar::Util 'blessed';
 use SNMP::Info;
 
@@ -52,19 +52,21 @@ sub load_cache_for_device {
   my %oids = ();
 
   # ideally we have a cache in the db
-  if ($device->is_pseudo and $device->oids->search({-bool => \'array_length(oid_parts, 1) > 0'})->count) {
+  if ($device->is_pseudo
+      and not $device->oids->search({ -or => [
+        -bool => \q{ array_length(oid_parts, 1) = 0 },
+        -bool => \q{ jsonb_typeof(value) != 'array' }, ] })->count) {
+
       my @rows = $device->oids->search({},{
           join => 'oid_fields',
           columns => [qw/oid value/],
           select => [qw/oid_fields.mib oid_fields.leaf/], as => [qw/mib leaf/],
       })->hri->all;
 
-      # b64 -> array-ref -> value
       $oids{$_->{oid}} = {
           %{ $_ },
           value => (@{ from_json($_->{value}) })[0],
       } for @rows;
-      # TODO STORABLE FIX
   }
   # or we have an snmpwalk file on disk
   elsif (-f $pseudo_cache and not $device->in_storage) {
@@ -111,8 +113,8 @@ sub load_cache_for_device {
 
 =head2 make_snmpwalk_browsable( $device )
 
-Takes the device_browser rows for a device and rewrites them to have
-enums translated and oid_parts filled.
+Takes the device_browser rows for a device and rewrites them to convert
+table rows to hashref, enum values translated, and oid_parts filled.
 
 =cut
 
@@ -128,7 +130,7 @@ sub make_snmpwalk_browsable {
 
   $oids{$_->{oid}} = {
       %{ $_ },
-      value => decode_base64($_->{value})
+      value => (defined $_->{value} ? decode_base64($_->{value}) : undef),
   } for @working_rows;
 
   %oids = collapse_snmp_tables(%oids);
@@ -137,7 +139,8 @@ sub make_snmpwalk_browsable {
   # walk leaves and table leaves to b64 encode again
   # build the oid_parts list
   foreach my $k (keys %oids) {
-      my $value = $oids{$k}->{value};
+      my $value = (defined $oids{$k}->{value} ? $oids{$k}->{value} : q{});
+
       # always a JSON array of single element
       if (ref {} eq ref $value) {
           $oids{$k}->{value} = to_json([{ map {($_ => encode_base64($value->{$_}, ''))} keys %{ $value } }]);
@@ -145,6 +148,7 @@ sub make_snmpwalk_browsable {
       else {
           $oids{$k}->{value} = to_json([encode_base64($value, '')]);
       }
+
       $oids{$k}->{oid_parts} = [ grep {length} (split m/\./, $oids{$k}->{oid}) ];
   }
 

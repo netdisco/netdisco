@@ -138,12 +138,14 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
 
     # this is a bit lazy, could be a join on above with some effort
     my $value = schema(vars->{'tenant'})->resultset('DeviceBrowser')
+      ->search({-and => [-bool => \q{ array_length(oid_parts, 1) > 0 },
+                         -bool => \q{ jsonb_typeof(value) = 'array' }]})
       ->find({'me.oid' => $oid, 'me.ip' => $device});
 
     my %data = (
       $object->get_columns,
       snmp_object => { $object->get_columns },
-      value => decode_and_munge( $munge, ($value ? $value->value : undef) ),
+      value => ( defined $value ? decode_and_munge( $munge, $value->value ) : undef ),
     );
 
     my @mungers = schema(vars->{'tenant'})->resultset('SNMPFilter')

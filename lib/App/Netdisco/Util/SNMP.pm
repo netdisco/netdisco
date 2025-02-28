@@ -1,14 +1,13 @@
 package App::Netdisco::Util::SNMP;
 
-use Dancer qw/:syntax :script !to_json !from_json/;
+use Dancer qw/:syntax :script/;
 use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 
 use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
-use MIME::Base64 qw/decode_base64/;
-use Storable 'thaw';
+use MIME::Base64 'decode_base64';
 use SNMP::Info;
-use JSON::PP;
+use JSON::PP ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -163,7 +162,7 @@ sub _get_mibdirs_content {
 
 =head2 decode_and_munge( $method, $data )
 
-Takes some data from L<SNMP::Info> cache that has been Base64 encoded,
+Takes some data from snmpwalk cache that has been Base64 encoded,
 decodes it and then munge to handle data format, before finally pretty
 render in JSON format.
 
@@ -180,30 +179,26 @@ sub decode_and_munge {
     my $json = JSON::PP->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
     $json->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
 
-    # TODO STORABLE FIX
-    # the legacy looks like encode_base64( nfreeze( [$data] ) )
-    my $data = ($encoded !~ m/^\[/)
-      ? (@{ thaw(decode_base64($encoded)) })[0]
-      : (@{ $json->decode($encoded) })[0]; # jsonb -> perl
+    return undef if $encoded !~ m/^\[/; # legacy format double protection for web crash
+    my $data = (@{ from_json($encoded) })[0];
+
+    $data = (ref {} eq ref $data)
+      ? { map {($_ => (defined $data->{$_} ? decode_base64($data->{$_}) : undef))}
+              keys %$data }
+      : (defined $data ? decode_base64($data) : undef);
+
     return $json->encode( $data ) if not $munger;
 
     my $sub   = sub_name($munger);
     my $class = class_name($munger);
     Module::Load::load $class;
 
-    if (ref {} eq ref $data) {
-        my %munged;
-        foreach my $key ( keys %$data ) {
-            my $value = $data->{$key};
-            next unless defined $value;
-            $munged{$key} = $class->can($sub)->(decode_base64($value));
-        }
-        return $json->encode( \%munged );
-    }
-    else {
-        return unless $data;
-        return $json->encode( $class->can($sub)->(decode_base64($data)) );
-    }
+    $data = (ref {} eq ref $data)
+      ? { map {($_ => (defined $data->{$_} ? $class->can($sub)->($data->{$_}) : undef))}
+              keys %$data }
+      : (defined $data ? $class->can($sub)->($data) : undef);
+
+    return $json->encode( $data );
 }
 
 =head2 sortable_oid( $oid, $seglen? )
