@@ -128,8 +128,7 @@ get "/ajax/content/admin/snapshot_get" => require_role admin => sub {
 
     my @snmpwalk = ();
     foreach my $row (@rows) {
-        $row->{value} = from_json($row->{value});
-        # TODO STORABLE FIX
+        $row->{value} = (@{ from_json($row->{value}) })[0];
         if (ref {} eq ref $row->{value}) {
             foreach my $k (keys %{ $row->{value} }) {
                 push @snmpwalk, [($row->{oid} .'.'. $k), $row->{value}->{$k}];
