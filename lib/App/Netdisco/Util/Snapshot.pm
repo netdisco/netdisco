@@ -106,6 +106,8 @@ sub load_cache_for_device {
 
       # get back out of the database as tables with related snmp_object (for the enum)
       %oids = make_snmpwalk_browsable($device);
+      $oids{$_}->{value} = (@{ from_json( $oids{$_}->{value} ) })[0]
+        for keys %oids;
   }
 
   # inflate the cache to an SNMP::Info cache instance
@@ -171,15 +173,14 @@ sub make_snmpwalk_browsable {
       }
 
       $oids{$k}->{oid_parts} = [ grep {length} (split m/\./, $oids{$k}->{oid}) ];
-
-      # need to clean before bulk insert
-      delete $oids{$k}->{$_} for qw/mib leaf enum/;
   }
 
   # store the device cache for real, now
   schema('netdisco')->txn_do(sub {
     $device->oids->delete;
-    $device->oids->populate([values %oids]);
+    $device->oids->populate([map {
+        { oid => $_->{oid}, oid_parts => $_->{oid_parts}, value => $_->{value} }
+    } values %oids]);
     debug sprintf 'replaced %d browsable oids in db', scalar keys %oids;
   });
 
@@ -231,7 +232,8 @@ sub collapse_snmp_tables {
 
   # remove temporary entries added to resolve table names
   delete $oids{$_}
-    for grep {!defined $oids{$_}->{value} or ref q{} eq ref $oids{$_}->{value}}
+    for grep {!defined $oids{$_}->{value}
+              or (ref q{} eq ref $oids{$_}->{value} and $oids{$_}->{value} eq '')}
              keys %oids;
 
   return %oids;
@@ -280,6 +282,21 @@ instance using that as the cache.
 sub snmpwalk_to_snmpinfo_cache {
   my %walk = @_;
   return () unless scalar keys %walk;
+
+  # unpack the values
+  foreach my $oid (keys %walk) {
+      my $value = $walk{$oid}->{value};
+
+      if (ref q{} eq ref $value) {
+          $walk{$oid}->{value} = decode_base64($walk{$oid}->{value});
+      }
+      elsif (ref {} eq ref $value) {
+          foreach my $k (keys %$value) {
+              $walk{$oid}->{value}->{$k}
+                = decode_base64($walk{$oid}->{value}->{$k});
+          }
+      }
+  }
 
   my $info = SNMP::Info->new({
     Offline => 1,
