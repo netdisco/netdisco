@@ -91,19 +91,20 @@ sub load_cache_for_device {
           $store{$oid} = {
             oid       => $oid,
             oid_parts => [], # not needed temporarily 
-            value     => ($type eq 'BASE64' ? $value : encode_base64($value, '')),
+            value     => to_json([ ($type eq 'BASE64' ? $value : encode_base64($value, '')) ]),
           };
       }
 
       # put into the database (temporarily)
       # this MUST happen here and not be refactored into make_snmpwalk_browsable
-      # because make_snmpwalk_browsable is also called from snapshot job
+      # because make_snmpwalk_browsable is also called from snapshot job.
+      # it will all be cleaned up after
       schema('netdisco')->txn_do(sub {
         $device->oids->delete;
         $device->oids->populate([values %store]);
       });
 
-      # get back out of the database with related snmp_object (for the enum)
+      # get back out of the database as tables with related snmp_object (for the enum)
       %oids = make_snmpwalk_browsable($device);
   }
 
@@ -122,7 +123,26 @@ sub make_snmpwalk_browsable {
   my $device = shift;
   my %oids = ();
 
-  my @working_rows = $device->oids->search({},{
+  # to get relation from device_browser to snmp_object working for tables
+  # we need to temporarily populate device_browser with potential table oids.
+  # it will all be cleaned up after
+  my %value_oids = map {($_ => 1)} $device->oids->get_column('oid')->all;
+  my %table_oids = ();
+
+  foreach my $orig_oid (keys %value_oids) {
+      (my $oid = $orig_oid) =~ s/\.\d+$//;
+      my $new_oid = '';
+
+      while (length($oid)) {
+          $oid =~ s/^(\.\d+)//;
+          $new_oid .= $1;
+          $table_oids{$new_oid} = {oid => $new_oid, oid_parts => []}
+            unless exists $value_oids{$new_oid};
+      }
+  }
+
+  $device->oids->populate([values %table_oids]);
+  my @rows = $device->oids->search({},{
       join => 'oid_fields',
       columns => [qw/oid value/],
       select => [qw/oid_fields.mib oid_fields.leaf oid_fields.enum/], as => [qw/mib leaf enum/],
@@ -130,12 +150,13 @@ sub make_snmpwalk_browsable {
 
   $oids{$_->{oid}} = {
       %{ $_ },
-      value => (defined $_->{value} ? decode_base64($_->{value}) : undef),
-  } for @working_rows;
+      value => (defined $_->{value} ? decode_base64( (@{ from_json($_->{value}) })[0] ) : q{}),
+  } for grep {$_->{leaf} or length( (@{ from_json($_->{value}) })[0] )}
+             @rows;
 
   %oids = collapse_snmp_tables(%oids);
   %oids = resolve_enums(%oids);
-
+  
   # walk leaves and table leaves to b64 encode again
   # build the oid_parts list
   foreach my $k (keys %oids) {
@@ -150,13 +171,16 @@ sub make_snmpwalk_browsable {
       }
 
       $oids{$k}->{oid_parts} = [ grep {length} (split m/\./, $oids{$k}->{oid}) ];
+
+      # need to clean before bulk insert
+      delete $oids{$k}->{$_} for qw/mib leaf enum/;
   }
 
   # store the device cache for real, now
   schema('netdisco')->txn_do(sub {
     $device->oids->delete;
     $device->oids->populate([values %oids]);
-    debug sprintf 'added %d new oids to db', scalar keys %oids;
+    debug sprintf 'replaced %d browsable oids in db', scalar keys %oids;
   });
 
   return %oids;
@@ -177,32 +201,38 @@ sub collapse_snmp_tables {
       my $oid = $orig_oid;
       my $idx = '';
 
+      # walk down the oid until we hit a known leaf
       while (length($oid) and !defined $oids{$oid}->{leaf}) {
           $oid =~ s/\.(\d+)$//;
-          $idx = ((defined $idx and length $idx) ? "${1}.${idx}" : $1);
+          $idx = (length $idx ? "${1}.${idx}" : $1);
       }
 
-      if (defined $oids{$oid}->{leaf}) {
-          $idx =~ s/^\.//;
-
-          if ($idx eq 0) {
-              $oids{$oid}->{value} = $oids{$orig_oid}->{value};
-          }
-          else {
-              # on rare occasions a vendor returns .0 and .something
-              # this will overwrite the .0 (requires the sorting above)
-              $oids{$oid}->{value} = {} if ref {} ne ref $oids{$oid}->{value};
-              $oids{$oid}->{value}->{$idx} = $oids{$orig_oid}->{value};
-          }
-
-          # debug "snapshot $device - cached $oidmap{$oid}($idx) from $orig_oid";
+      if (0 == length($oid)) {
+          # we never found a leaf, delete it and move on
           delete $oids{$orig_oid};
           next OID;
       }
 
-      # this is not too surprising
-      # debug sprintf "cache builder - error:  missing OID %s in netdisco-mibs", $orig_oid;
+      $idx ||= '.0';
+      $idx =~ s/^\.//;
+
+      if ($idx eq '0') {
+          $oids{$oid}->{value} = $oids{$orig_oid}->{value};
+      }
+      else {
+          # on rare occasions a vendor returns .0 and .something
+          # this will overwrite the .0 (requires the sorting above)
+          $oids{$oid}->{value} = {} if ref {} ne ref $oids{$oid}->{value};
+          $oids{$oid}->{value}->{$idx} = $oids{$orig_oid}->{value};
+      }
+
+      delete $oids{$orig_oid} if $orig_oid ne $oid;
   }
+
+  # remove temporary entries added to resolve table names
+  delete $oids{$_}
+    for grep {!defined $oids{$_}->{value} or ref q{} eq ref $oids{$_}->{value}}
+             keys %oids;
 
   return %oids;
 }

@@ -43,7 +43,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     my $errornum = 0;
     my %store = ();
 
+    debug sprintf 'bulkwalking %s from %s', $device->ip, ($extra || '.1');
     ($vars) = $sess->bulkwalk( 0, $snmp->{BulkRepeaters}, $from );
+
     if ( $sess->{ErrorNum} ) {
         return Status->error(
             sprintf 'snmp fatal error - %s', $sess->{ErrorStr});
@@ -74,20 +76,22 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         $store{$idx} = {
           oid       => $idx,
           oid_parts => [], # intentional, is inflated via make_snmpwalk_browsable()
-          value     => encode_base64($val, ''),
+          value     => to_json([encode_base64($val, '')]),
         };
     }
+    debug sprintf 'walked %d rows', scalar keys %store;
 
     schema('netdisco')->txn_do(sub {
       my $gone = $device->oids->delete;
-      debug sprintf 'removed %d oids', $gone;
+      debug sprintf 'removed %d old oids', $gone;
       $device->oids->populate([values %store]);
-      debug sprintf 'added %d new oids', scalar keys %store;
     });
 
     # loadmibs is only optional for getting snapshots
-    make_snmpwalk_browsable($device)
-      if schema('netdisco')->resultset('SNMPObject')->count;
+    if (schema('netdisco')->resultset('SNMPObject')->count) {
+        debug 'you have run loadmibs. promoting oids to browser data...';
+        make_snmpwalk_browsable($device);
+    }
 
     return Status->done(
       sprintf 'completed bulkwalk of %s entries from %s for %s', (scalar keys %store), ($extra || '.1'), $device->ip);

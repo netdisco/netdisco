@@ -14,7 +14,7 @@ __PACKAGE__->add_columns(
   "oid_parts",
   { data_type => "text", is_nullable => 0 },
   "value",
-  { data_type => "jsonb", is_nullable => 1, default_value => \"[]" },
+  { data_type => "jsonb", is_nullable => 1, default_value => \q{[""]} },
 );
 __PACKAGE__->set_primary_key("ip", "oid");
 
@@ -43,6 +43,6 @@ __PACKAGE__->belongs_to(
   { join_type => 'RIGHT' }
 );
 
-__PACKAGE__->belongs_to( oid_fields => 'App::Netdisco::DB::Result::SNMPObject', 'oid' );
+__PACKAGE__->belongs_to( oid_fields => 'App::Netdisco::DB::Result::SNMPObject', 'oid', { join_type => 'left' } );
 
 1;
