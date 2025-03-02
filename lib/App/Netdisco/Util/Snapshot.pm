@@ -81,6 +81,9 @@ sub load_cache_for_device {
           my ($oid, $type, $value) = $line =~ m/^(\S+)\s+=\s+([^:]+):\s+(.+)$/;
           next unless $oid and $type and $value;
 
+          # sometimes we're given a snapshot with iso. instead of .1.
+          $oid =~ s/^iso/.1/;
+
           # empty string makes the capture go wonky
           $value = '' if $value =~ m/^[^:]+: ?$/;
 
