@@ -106,7 +106,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       # EntityMIB trees. This workaround relocates entitites with invalid parents to the root 
       # of the tree, so they are at least visible in the Modules tab (see #710)
       
-      info sprintf ' [%s] Entity %s (%s) has invalid parent %s - attaching as root entity instead',
+      debug sprintf ' [%s] Entity %s (%s) has invalid parent %s - attaching as root entity instead',
           $device->ip, ($m->{index} || '"unknown index"'), ($m->{name} || '"unknown name"'), $m->{parent};
       $m->{parent} = undef;
     }
