@@ -45,10 +45,15 @@ sub load_cache_for_device {
   my $device = shift;
   return {} unless ($device->is_pseudo or not $device->in_storage);
 
-  # user cannot load caches and work offline without doing a loadmibs
-  return {} unless schema('netdisco')->resultset('SNMPObject')->count;
-
   my $pseudo_cache = catfile( catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots'), $device->ip );
+  my $loadmibs = schema('netdisco')->resultset('SNMPObject')->count;
+
+  if (-f $pseudo_cache and not $loadmibs) {
+      warning "device snapshot exists ($pseudo_cache) but no MIB data available.";
+      warning 'skipping offline cache load - run a "loadmibs" job if you want this!';
+      return {};
+  }
+
   my %oids = ();
 
   # ideally we have a cache in the db
