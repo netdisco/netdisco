@@ -27,7 +27,8 @@ ajax '/ajax/control/admin/timedoutdevices/del' => require_role admin => sub {
 
 ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
     my @set = schema(vars->{'tenant'})->resultset('DeviceSkip')->search({
-      deferrals => { '>' => 0 }
+      deferrals => { '>' => 0 },
+      device => { '!=' => '255.255.255.255' },
     },{ rows => (setting('dns')->{max_outstanding} || 50), order_by =>
       [{ -desc => 'deferrals' }, { -asc => [qw/device backend/] }]
     })->hri->all;
