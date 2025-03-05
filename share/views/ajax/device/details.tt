@@ -137,7 +137,7 @@
     </tr>
     <tr>
       <td>Uptime</td>
-      <td>[% d.uptime_age | html_entity %]</td>
+      <td>[% d.uptime_age | html_entity %][% ' at last poll' IF d.uptime_age %]</td>
     </tr>
     <tr>
       <td>Layers</td>
