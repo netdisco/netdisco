@@ -65,7 +65,7 @@ ajax '/ajax/data/snmp/typeahead' => require_login sub {
       ->search({ -or => [ 'me.oid'  => $term,
                           'me.oid'  => { -like => ($term .'.%') },
                           -and => [(($mib and $leaf) ? ('me.mib' => $mib, 'me.leaf' => { -ilike => ($leaf .'%') })
-                                                     : ('me.leaf' => { -ilike => ($term .'%') }))] ],
+                                                     : ('me.leaf' => { -ilike => ('%'. $term .'%') }))] ],
                 (($device and $deviceonly) ? ('device_browser.ip' => $device, 'device_browser.value' => { -not => undef }) : ()) },
               { select => [\q{ me.mib || '::' || me.leaf }],
                 as => ['qleaf'],
