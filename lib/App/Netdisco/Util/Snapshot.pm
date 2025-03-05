@@ -59,7 +59,7 @@ sub load_cache_for_device {
   # ideally we have a cache in the db
   if ($device->is_pseudo
       and not $device->oids->search({ -or => [
-        -bool => \q{ array_length(oid_parts, 1) = 0 },
+        -bool => \q{ array_length(oid_parts, 1) IS NULL },
         -bool => \q{ jsonb_typeof(value) != 'array' }, ] })->count) {
 
       my @rows = $device->oids->search({},{

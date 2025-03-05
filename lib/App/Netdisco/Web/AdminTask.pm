@@ -119,8 +119,7 @@ get "/ajax/content/admin/snapshot_get" => require_role admin => sub {
     my @rows = schema(vars->{'tenant'})->resultset('DeviceBrowser')
                                        ->search({
                                           ip => $device->addr,
-                                          -and => [-bool => \q{ array_length(oid_parts, 1) > 0 },
-                                                   -bool => \q{ jsonb_typeof(value) = 'array' }],
+                                          -bool => \q{ jsonb_typeof(value) = 'array' },
                                        })->hri->all;
 
     send_error('No snapshot', 400)

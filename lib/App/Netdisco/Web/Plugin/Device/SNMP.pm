@@ -138,7 +138,7 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
 
     # this is a bit lazy, could be a join on above with some effort
     my $value = schema(vars->{'tenant'})->resultset('DeviceBrowser')
-      ->search({-and => [-bool => \q{ array_length(oid_parts, 1) > 0 },
+      ->search({-and => [-bool => \q{ array_length(oid_parts, 1) IS NOT NULL },
                          -bool => \q{ jsonb_typeof(value) = 'array' }]})
       ->find({'me.oid' => $oid, 'me.ip' => $device});
 

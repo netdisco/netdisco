@@ -10,6 +10,9 @@ use Storable 'thaw';
 use MIME::Base64 qw/encode_base64 decode_base64/;
 use File::Spec::Functions qw(splitdir catfile catdir);
 use File::Slurper qw(read_lines write_text);
+
+use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Snapshot 'make_snmpwalk_browsable';
 # use DDP;
 
 register_worker({ phase => 'main' }, sub {
@@ -87,6 +90,21 @@ register_worker({ phase => 'main' }, sub {
     debug sprintf 'loadmibs - removed %d filters', $gone;
     schema('netdisco')->resultset('SNMPFilter')->populate(\@filters);
     debug sprintf 'loadmibs - added %d new filters', scalar @filters;
+  });
+
+  # promote snapshots prior to loadmibs to be browsable
+  schema('netdisco')->txn_do(sub {
+    my @devices = schema('netdisco')
+          ->resultset('DeviceBrowser')
+          ->search({ -bool => \q{ array_length(oid_parts, 1) IS NULL } })
+          ->distinct('ip')->get_column('ip')->all;
+
+    foreach my $ip (@devices) {
+        my $dev = get_device($ip);
+        next unless $dev->in_storage;
+        debug sprintf 'loadmibs - promoting snapshot for %s to be browsable', $dev->ip;
+        make_snmpwalk_browsable($dev);
+    }
   });
 
   # legacy snapshot upgrade
