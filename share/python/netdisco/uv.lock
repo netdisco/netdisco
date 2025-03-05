@@ -274,7 +274,6 @@ dependencies = [
     { name = "cryptography" },
     { name = "netmiko" },
     { name = "psycopg" },
-    { name = "pysnmp" },
     { name = "sqlalchemy" },
     { name = "virtualenv" },
     { name = "yamale" },
@@ -294,7 +293,6 @@ requires-dist = [
     { name = "cryptography", specifier = ">=43.0.1,<44" },
     { name = "netmiko", specifier = ">=4.4.0,<5" },
     { name = "psycopg", specifier = ">=3.2.4,<4" },
-    { name = "pysnmp", specifier = ">=7.1.16" },
     { name = "sqlalchemy", specifier = ">=2.0.37,<3" },
     { name = "virtualenv", specifier = ">=20.26.6" },
     { name = "yamale", specifier = ">=5.2.1,<6" },
@@ -407,15 +405,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyasn1"
-version = "0.6.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ba/e9/01f1a64245b89f039897cb0130016d79f77d52669aae6ee7b159a6c4c018/pyasn1-0.6.1.tar.gz", hash = "sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034", size = 145322 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/f1/d6a797abb14f6283c0ddff96bbdd46937f64122b8c925cab503dd37f8214/pyasn1-0.6.1-py3-none-any.whl", hash = "sha256:0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629", size = 83135 },
-]
-
-[[package]]
 name = "pycparser"
 version = "2.22"
 source = { registry = "https://pypi.org/simple" }
@@ -460,18 +449,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1e/7d/ae3f0a63f41e4d2f6cb66a5b57197850f919f59e558159a4dd3a818f5082/pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb", size = 159125 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/bc/587a445451b253b285629263eb51c2d8e9bcea4fc97826266d186f96f558/pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0", size = 90585 },
-]
-
-[[package]]
-name = "pysnmp"
-version = "7.1.16"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyasn1" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/b1/c94dac49a002eed96e2cb7aeb1d148b1c98826e5cd1f6e8eebb4a20f8d49/pysnmp-7.1.16.tar.gz", hash = "sha256:51581c70e410e456eb3faa24c42a094c82acfa961d16ad659b57c5818379dfcb", size = 379606 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/6a/96/b723c1a4f0c8fe77ad32d977c4693b0edc9697d37f0dc7c2d90eaf9a7374/pysnmp-7.1.16-py3-none-any.whl", hash = "sha256:e4769afdc7cc6438f07411c242a99a50cdfd7ab5a37c6668accb8f303d8cef73", size = 340997 },
 ]
 
 [[package]]
