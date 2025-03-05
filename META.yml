@@ -27,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.083001'
+    version: '2.084000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -44,7 +44,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '91'
+    version: '93'
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -79,8 +79,6 @@ provides:
     file: lib/App/Netdisco/DB/Result/DevicePower.pm
   App::Netdisco::DB::Result::DeviceSkip:
     file: lib/App/Netdisco/DB/Result/DeviceSkip.pm
-  App::Netdisco::DB::Result::DeviceSnapshot:
-    file: lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
   App::Netdisco::DB::Result::DeviceVlan:
     file: lib/App/Netdisco/DB/Result/DeviceVlan.pm
   App::Netdisco::DB::Result::Enterprise:
@@ -107,6 +105,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Process.pm
   App::Netdisco::DB::Result::Product:
     file: lib/App/Netdisco/DB/Result/Product.pm
+  App::Netdisco::DB::Result::SNMPFilter:
+    file: lib/App/Netdisco/DB/Result/SNMPFilter.pm
   App::Netdisco::DB::Result::SNMPObject:
     file: lib/App/Netdisco/DB/Result/SNMPObject.pm
   App::Netdisco::DB::Result::Session:
@@ -155,8 +155,6 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
   App::Netdisco::DB::Result::Virtual::NodesDiscovered:
     file: lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
-  App::Netdisco::DB::Result::Virtual::OidChildren:
-    file: lib/App/Netdisco/DB/Result/Virtual/OidChildren.pm
   App::Netdisco::DB::Result::Virtual::OrphanedDevices:
     file: lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
   App::Netdisco::DB::Result::Virtual::PollerPerformance:
@@ -491,14 +489,10 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
   App::Netdisco::Worker::Plugin::Discover::Properties::Tags:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm
-  App::Netdisco::Worker::Plugin::Discover::Snapshot:
-    file: lib/App/Netdisco/Worker/Plugin/Discover/Snapshot.pm
   App::Netdisco::Worker::Plugin::Discover::VLANs:
     file: lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
   App::Netdisco::Worker::Plugin::Discover::Wireless:
     file: lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
-  App::Netdisco::Worker::Plugin::Discover::WithNodes:
-    file: lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
   App::Netdisco::Worker::Plugin::DiscoverAll:
     file: lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
   App::Netdisco::Worker::Plugin::DumpConfig:
@@ -699,5 +693,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.083001'
+version: '2.084000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

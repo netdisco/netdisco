@@ -1,3 +1,20 @@
+2.084000 - 2025-03-05
+
+  [NEW FEATURES]
+
+  * Device Snapshot has been rewritten to use SNMP bulkwalk and more portable
+
+  [ENHANCEMENTS]
+
+  * #1300 presentation of device uptime made clear it's at last poll
+  * #1040 change with-nodes to be job hook
+
+  [BUG FIXES]
+
+  * #1302 255.255.255.255 should not appear in the SNMP Connect Failures report
+  * quiet the log line about entity invalid parent
+  * bugfix for removing Discover::WithNodes
+
 2.083001 - 2025-02-06
 
   [BUG FIXES]

@@ -39,7 +39,6 @@ lib/App/Netdisco/DB/Result/DevicePortVlan.pm
 lib/App/Netdisco/DB/Result/DevicePortWireless.pm
 lib/App/Netdisco/DB/Result/DevicePower.pm
 lib/App/Netdisco/DB/Result/DeviceSkip.pm
-lib/App/Netdisco/DB/Result/DeviceSnapshot.pm
 lib/App/Netdisco/DB/Result/DeviceVlan.pm
 lib/App/Netdisco/DB/Result/Enterprise.pm
 lib/App/Netdisco/DB/Result/Log.pm
@@ -54,6 +53,7 @@ lib/App/Netdisco/DB/Result/Oui.pm
 lib/App/Netdisco/DB/Result/Process.pm
 lib/App/Netdisco/DB/Result/Product.pm
 lib/App/Netdisco/DB/Result/Session.pm
+lib/App/Netdisco/DB/Result/SNMPFilter.pm
 lib/App/Netdisco/DB/Result/SNMPObject.pm
 lib/App/Netdisco/DB/Result/Statistics.pm
 lib/App/Netdisco/DB/Result/Subnet.pm
@@ -77,7 +77,6 @@ lib/App/Netdisco/DB/Result/Virtual/NodeIp6.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/Virtual/NodesDiscovered.pm
 lib/App/Netdisco/DB/Result/Virtual/NodeWithAge.pm
-lib/App/Netdisco/DB/Result/Virtual/OidChildren.pm
 lib/App/Netdisco/DB/Result/Virtual/OrphanedDevices.pm
 lib/App/Netdisco/DB/Result/Virtual/PollerPerformance.pm
 lib/App/Netdisco/DB/Result/Virtual/PortMacs.pm
@@ -245,10 +244,8 @@ lib/App/Netdisco/Worker/Plugin/Discover/PortPower.pm
 lib/App/Netdisco/Worker/Plugin/Discover/PortProperties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Properties/Tags.pm
-lib/App/Netdisco/Worker/Plugin/Discover/Snapshot.pm
 lib/App/Netdisco/Worker/Plugin/Discover/VLANs.pm
 lib/App/Netdisco/Worker/Plugin/Discover/Wireless.pm
-lib/App/Netdisco/Worker/Plugin/Discover/WithNodes.pm
 lib/App/Netdisco/Worker/Plugin/DiscoverAll.pm
 lib/App/Netdisco/Worker/Plugin/DumpConfig.pm
 lib/App/Netdisco/Worker/Plugin/DumpInfoCache.pm
@@ -541,6 +538,8 @@ share/schema_versions/App-Netdisco-DB-88-89-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-89-90-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-90-91-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-91-92-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-92-93-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
 share/views/ajax/admintask/jobqueue.tt
