@@ -80,14 +80,17 @@ sub load_cache_for_device {
       my @lines = read_lines($pseudo_cache);
       my %store = ();
 
+      # sometimes we're given a snapshot with iso. instead of .1.
+      if ($lines[0] !~ m/^.\d/) {
+          warning 'snapshot file rejected - has translated names/values instead of numeric';
+          return {};
+      }
+
       # parse the snmpwalk output which looks like
       # .1.0.8802.1.1.2.1.1.1.0 = INTEGER: 30
       foreach my $line (@lines) {
-          my ($oid, $type, $value) = $line =~ m/^(\S+)\s+=\s+([^:]+):\s+(.+)$/;
-          next unless $oid and $type and $value;
-
-          # sometimes we're given a snapshot with iso. instead of .1.
-          $oid =~ s/^iso/.1/;
+          my ($oid, $type, $value) = $line =~ m/^(\S+)\s+=\s+(?:([^:]+):\s+)?(.+)$/;
+          next unless $oid and $value;
 
           # empty string makes the capture go wonky
           $value = '' if $value =~ m/^[^:]+: ?$/;
@@ -99,7 +102,8 @@ sub load_cache_for_device {
           $store{$oid} = {
             oid       => $oid,
             oid_parts => [], # not needed temporarily 
-            value     => to_json([ ($type eq 'BASE64' ? $value : encode_base64($value, '')) ]),
+            value     => to_json([ ((defined $type and $type eq 'BASE64') ? $value
+                                                                          : encode_base64($value, '')) ]),
           };
       }
 
@@ -226,7 +230,14 @@ sub collapse_snmp_tables {
       $idx =~ s/^\.//;
 
       if ($idx eq '0') {
-          $oids{$oid}->{value} = $oids{$orig_oid}->{value};
+          if ($oid eq $orig_oid and $oid =~ m/\.0$/) {
+              # generally considered to be a bad idea, sometimes the OID
+              # is standardised with .0 e.g. .1.3.6.1.2.1.1.3.0 sysUpTimeInstance
+              # - do nothing as the value is already OK
+          }
+          else {
+              $oids{$oid}->{value} = $oids{$orig_oid}->{value};
+          }
       }
       else {
           # on rare occasions a vendor returns .0 and .something
@@ -386,8 +397,19 @@ sub add_snmpinfo_aliases {
       $info->_cache($propfix{$prop}, $val);
   }
 
-  $info->_cache('sysUpTime', $info->sysUpTimeInstance->{''}) if ref {} eq ref $info->sysUpTimeInstance
-                                                                and not $info->sysUpTime;
+  # netdisco will try uptime or hrSystemUptime or sysUptime (but not sysUptimeInstance)
+  if (defined $info->sysUpTimeInstance) {
+      my $uptime = (ref {} eq ref $info->sysUpTimeInstance)
+        ? ($info->sysUpTimeInstance->{0} || $info->sysUpTimeInstance->{''})
+        : $info->sysUpTimeInstance;
+      
+      if (!defined $info->uptime) {
+          $info->_cache('uptime', $uptime);
+      }
+      if (!defined $info->sysUpTime) {
+          $info->_cache('sysUpTime', $uptime);
+      }
+  }
 
   # now for any other SNMP::Info method in GLOBALS or FUNCS which Netdisco
   # might call, but will not have data, we fake a cache entry to avoid
