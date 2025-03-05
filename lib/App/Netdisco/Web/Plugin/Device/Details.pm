@@ -19,13 +19,10 @@ ajax '/ajax/content/device/details' => require_login sub {
 
     my @results
         = schema(vars->{'tenant'})->resultset('Device')
-        ->search({ 'me.ip' => $device->ip },
-          {
-            '+select' => ['snapshot.ip'],
-            '+as' => ['has_snapshot'],
-            join => 'snapshot',
-          },
-        )->with_times->with_custom_fields->hri->all;
+                                  ->search({ 'me.ip' => $device->ip })
+                                  ->with_times
+                                  ->with_custom_fields
+                                  ->hri->all;
 
     my @power
         = schema(vars->{'tenant'})->resultset('DevicePower')
@@ -49,6 +46,8 @@ ajax '/ajax/content/device/details' => require_login sub {
     template 'ajax/device/details.tt', {
       d => $results[0], p => \@power,
       interfaces => \@interfaces,
+      has_snapshot =>
+        $device->oids->search({-bool => \q{ jsonb_typeof(value) = 'array' }})->count,
       filtered_tags => [ singleton (@{ $device->tags || [] }, @hide, @hide) ],
       serials => [sort keys %{ { map {($_ => $_)} (@serials, ($device->serial ? $device->serial : ())) } }],
     }, { layout => undef };

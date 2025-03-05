@@ -10,12 +10,11 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::SNMP qw(%ALL_MUNGERS decode_and_munge);
+use App::Netdisco::Util::SNMP 'decode_and_munge';
 use Module::Load ();
 use Try::Tiny;
 
-register_device_tab({ tag => 'snmp', label => 'SNMP',
-  render_if => sub { schema(vars->{'tenant'})->resultset('DeviceBrowser')->count() } });
+register_device_tab({ tag => 'snmp', label => 'SNMP' });
 
 get '/ajax/content/device/snmp' => require_login sub {
     my $device = try { schema(vars->{'tenant'})->resultset('Device')
@@ -37,12 +36,13 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
     content_type 'application/json';
 
     return to_json [{
-      text => 'No data for this device. You can request a snapshot in the Details tab.',
+      text => 'No data for this device. Admins can request a snapshot in the Details tab.',
       children => \0,
       state => { disabled => \1 },
       icon => 'icon-search',
     }] unless $device->oids->count;
 
+    # snapshot should run a loadmibs, but just in case that didn't happen...
     return to_json [{
       text => 'No MIB objects. Please run a loadmibs job.',
       children => \0,
@@ -59,20 +59,18 @@ ajax '/ajax/data/snmp/typeahead' => require_login sub {
 
     my $device = param('ip');
     my $deviceonly = param('deviceonly');
-    my $table = ($deviceonly ? 'DeviceBrowser' : 'SNMPObject');
+    my ($mib, $leaf) = split m/::/, $term;
 
-    my @found = schema(vars->{'tenant'})->resultset($table)
+    my @found = schema(vars->{'tenant'})->resultset('SNMPObject')
       ->search({ -or => [ 'me.oid'  => $term,
                           'me.oid'  => { -like => ($term .'.%') },
-                          'me.leaf' => { -ilike => ('%'. $term .'%') } ],
-                 (($deviceonly and $device) ? (ip => $device) : ()), },
-               { select => [
-                    (($deviceonly and $device) ? \q{ oid_fields.mib || '::' || me.leaf }
-                                               : \q{ me.mib || '::' || me.leaf }),
-                 ],
-                 as => ['qleaf'],
-                 (($deviceonly and $device) ? (join => 'oid_fields') : ()),
-                 rows => 25, order_by => 'me.oid_parts' })
+                          -and => [(($mib and $leaf) ? ('me.mib' => $mib, 'me.leaf' => { -ilike => ($leaf .'%') })
+                                                     : ('me.leaf' => { -ilike => ('%'. $term .'%') }))] ],
+                (($device and $deviceonly) ? ('device_browser.ip' => $device, 'device_browser.value' => { -not => undef }) : ()) },
+              { select => [\q{ me.mib || '::' || me.leaf }],
+                as => ['qleaf'],
+                join => 'device_browser',
+                rows => 25, order_by => 'me.oid_parts' })
       ->get_column('qleaf')->all;
 
     return to_json [] unless scalar @found;
@@ -84,22 +82,28 @@ ajax '/ajax/data/snmp/typeahead' => require_login sub {
 ajax '/ajax/data/snmp/nodesearch' => require_login sub {
     my $to_match = param('str') or return to_json [];
     my $partial = param('partial');
+    my $device = param('ip');
+    my $deviceonly = param('deviceonly');
 
+    my ($mib, $leaf) = split m/::/, $to_match;
     my $found = undef;
+
     if ($partial) {
         $found = schema(vars->{'tenant'})->resultset('SNMPObject')
-          ->search({ -or => [ oid => $to_match,
-                              oid => { -like => ($to_match .'.%') },
-                              leaf => { -ilike => ($to_match .'%') } ] },
-                   { rows => 1, order_by => 'oid_parts' })->first;
+          ->search({ -or => [ 'me.oid' => $to_match,
+                              'me.oid' => { -like => ($to_match .'.%') },
+                              -and => [(($mib and $leaf) ? ('me.mib' => $mib, 'me.leaf' => { -ilike => ($leaf .'%') })
+                                                         : ('me.leaf' => { -ilike => ($to_match .'%') }))] ],
+                     (($device and $deviceonly) ? ('device_browser.ip' => $device, 'device_browser.value' => { -not => undef }) : ()),
+                   }, { rows => 1, join => 'device_browser', order_by => 'oid_parts' })->first;
     }
     else {
-        my ($mib, $leaf) = split m/::/, $to_match;
         $found = schema(vars->{'tenant'})->resultset('SNMPObject')
           ->search({
-            (($mib and $leaf) ? (-and => [mib => $mib, leaf => $leaf])
-                              : (-or  => [oid => $to_match, leaf => { -ilike => $to_match }])),
-            },{ rows => 1, order_by => 'oid_parts' })->first;
+            (($mib and $leaf) ? (-and => ['me.mib' => $mib, 'me.leaf' => $leaf])
+                              : (-or  => ['me.oid' => $to_match, 'me.leaf' => $to_match])),
+            (($device and $deviceonly) ? ('device_browser.ip' => $device, 'device_browser.value' => { -not => undef }) : ()),
+            },{ rows => 1, join => 'device_browser', order_by => 'oid_parts' })->first;
     }
     return to_json [] unless $found;
 
@@ -124,21 +128,32 @@ ajax '/ajax/content/device/:ip/snmpnode/:oid' => require_login sub {
     my $oid = param('oid');
     $oid =~ m/^\.1(\.\d+)*$/ or send_error('Bad OID', 404);
 
-    my $object = schema(vars->{'tenant'})->resultset('DeviceBrowser')
-      ->with_snmp_object($device->ip)->find({ 'snmp_object.oid' => $oid })
+    my $object = schema(vars->{'tenant'})->resultset('SNMPObject')
+      ->find({'me.oid' => $oid},
+               {join => ['snmp_filter'], prefetch => ['snmp_filter']})
       or send_error('Bad OID', 404);
 
-    my $munge = (param('munge') and exists $ALL_MUNGERS{param('munge')})
-      ? param('munge') : $object->munge;
+    my $munge = (param('munge') ||
+                 ($object->snmp_filter ? $object->snmp_filter->subname : undef));
+
+    # this is a bit lazy, could be a join on above with some effort
+    my $value = schema(vars->{'tenant'})->resultset('DeviceBrowser')
+      ->search({-and => [-bool => \q{ array_length(oid_parts, 1) IS NOT NULL },
+                         -bool => \q{ jsonb_typeof(value) = 'array' }]})
+      ->find({'me.oid' => $oid, 'me.ip' => $device});
 
     my %data = (
       $object->get_columns,
-      snmp_object => { $object->snmp_object->get_columns },
-      value => decode_and_munge( $munge, $object->value ),
+      snmp_object => { $object->get_columns },
+      value => ( defined $value ? decode_and_munge( $munge, $value->value ) : undef ),
     );
 
+    my @mungers = schema(vars->{'tenant'})->resultset('SNMPFilter')
+                                          ->search({},{ distinct => 1, order_by => 'subname' })
+                                          ->get_column('subname')->all;
+
     template 'ajax/device/snmpnode.tt',
-        { node => \%data, munge => $munge, mungers => [sort keys %ALL_MUNGERS] },
+        { node => \%data, munge => $munge, mungers => \@mungers },
         { layout => 'noop' };
 };
 
@@ -160,6 +175,7 @@ sub _get_snmp_data {
         mib  => $meta{$_}->{mib},  # accessed via node.original.mib
         leaf => $meta{$_}->{leaf}, # accessed via node.original.leaf
         text => ($meta{$_}->{leaf} .' ('. $meta{$_}->{oid_parts}->[-1] .')'),
+        has_value => $meta{$_}->{browser},
 
         ($meta{$_}->{browser} ? (icon => 'icon-folder-close text-info')
                               : (icon => 'icon-folder-close-alt muted')),

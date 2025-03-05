@@ -183,7 +183,9 @@ sub _snmp_connect_generic {
   }
 
   # get the community string(s)
-  my @communities = get_communities($device, $mode);
+  my @communities = $snmp_args{Offline}
+    ? ({read => 1, write => 0, only => $device->ip, community => 'public'})
+    : get_communities($device, $mode);
 
   # which SNMP versions to try and in what order
   my @versions =
@@ -267,7 +269,7 @@ sub _try_connect {
   my $info = undef;
 
   try {
-      debug
+      $snmp_args->{Offline} || debug
         sprintf '[%s:%s] try_connect with v: %s, t: %s, r: %s, class: %s, comm: %s',
           $snmp_args->{DestHost}, $snmp_args->{RemotePort},
           $snmp_args->{Version}, ($snmp_args->{Timeout} / 1000000), $snmp_args->{Retries},
@@ -281,7 +283,7 @@ sub _try_connect {
       # first time a device is discovered, re-instantiate into specific class
       if ($reclass and $info and $info->device_type ne $class) {
           $class = $info->device_type;
-          debug
+          $info->offline || debug
             sprintf '[%s:%s] try_connect with v: %s, new class: %s, comm: %s',
               $snmp_args->{DestHost}, $snmp_args->{RemotePort},
               $snmp_args->{Version}, $class, $debug_comm;
@@ -308,6 +310,8 @@ sub _try_read {
     and $info->class
   );
 
+  return $info if $info->offline;
+  
   $device->in_storage
     ? $device->update({snmp_ver => $info->snmp_ver})
     : $device->set_column(snmp_ver => $info->snmp_ver);

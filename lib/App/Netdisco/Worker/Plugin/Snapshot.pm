@@ -2,72 +2,99 @@ package App::Netdisco::Worker::Plugin::Snapshot;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
+
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Util::Snapshot 'make_snmpwalk_browsable';
 use App::Netdisco::Transport::SNMP;
-use App::Netdisco::Util::Snapshot qw/
-  gather_every_mib_object
-  dump_cache_to_browserdata
-  add_snmpinfo_aliases
-/;
-
-use MIME::Base64 qw/encode_base64/;
-use Storable qw/nfreeze/;
-use File::Spec::Functions qw(catdir catfile);
-use File::Slurper 'write_text';
-use File::Path 'make_path';
+use MIME::Base64 'encode_base64';
 
 register_worker({ phase => 'check' }, sub {
-  return Status->error('Missing device (-d).')
-    unless defined shift->device;
+    my ($job, $workerconf) = @_;
+    my $device = $job->device;
 
-  return Status->defer("snapshot skipped: please run a loadmibs job first")
-    unless schema('netdisco')->resultset('SNMPObject')->count();
+    return Status->error('Missing device (-d).')
+      unless defined $device;
 
-  return Status->done('Snapshot is able to run');
+    return Status->error(sprintf 'Unknown device: %s', ($device || ''))
+      unless $device and $device->in_storage;
+
+    return Status->done('Bulkwalk is able to run');
 });
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
-  my ($job, $workerconf) = @_;
-  my $device = $job->device;
+    my ($job, $workerconf) = @_;
+    my ($device, $extra) = map {$job->$_} qw/device extra/;
 
-  if (not ($device->in_storage
-           and not $device->is_pseudo)) {
-      return Status->error('Can only snapshot a real discovered device.');
-  }
+    set(net_snmp_options => {
+      %{ setting('net_snmp_options') },
+      'UseLongNames' => 1,	   # Return full OID tags
+      'UseSprintValue' => 0,
+      'UseEnums'	=> 0,	   # Don't use enumerated vals
+      'UseNumeric' => 1,	   # Return dotted decimal OID
+    });
 
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
-    or return Status->defer("snapshot failed: could not SNMP connect to $device");
+    my $snmp = App::Netdisco::Transport::SNMP->reader_for($device);
+    my $sess = $snmp->session();
+    my $from = SNMP::Varbind->new([ $extra || '.1' ]);
 
-  if ($snmp->offline) {
-      return Status->error('Can only snapshot a real device.');
-  }
+    my $vars = [];
+    my $errornum = 0;
+    my %store = ();
 
-  gather_every_mib_object( $device, $snmp, split m/,/, ($job->extra || '') );
-  add_snmpinfo_aliases($snmp);
-  dump_cache_to_browserdata( $device, $snmp );
+    debug sprintf 'bulkwalking %s from %s', $device->ip, ($extra || '.1');
+    ($vars) = $sess->bulkwalk( 0, $snmp->{BulkRepeaters}, $from );
 
-  if ($job->port) {
-      my $frozen = encode_base64( nfreeze( $snmp->cache ) );
+    if ( $sess->{ErrorNum} ) {
+        return Status->error(
+            sprintf 'snmp fatal error - %s', $sess->{ErrorStr});
+    }
 
-      if ($job->port =~ m/^(?:both|db)$/) {
-          debug "snapshot $device - saving snapshot to database";
-          $device->update_or_create_related('snapshot', { cache => $frozen });
-      }
+    while (not $errornum) {
+        my $var = shift @$vars or last;
+        my $idx = $var->[0];
+        $idx .= '.'. $var->[1] if $var->[1]; # ignore .0
+        my $val = $var->[2];
 
-      if ($job->port =~ m/^(?:both|file)$/) {
-          my $target_dir = catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'logs', 'snapshots');
-          make_path($target_dir);
-          my $target_file = catfile($target_dir, $device->ip);
+        # Check if last element, V2 devices may report ENDOFMIBVIEW even if
+        # instance or object doesn't exist.
+        last if $val eq 'ENDOFMIBVIEW';
 
-          debug "snapshot $device - saving snapshot to $target_file";
-          write_text($target_file, $frozen);
-      }
-  }
+        if ($val eq 'NOSUCHOBJECT') {
+            return Status->error('snmp fatal error - NOSUCHOBJECT');
+        }
+        if ( $val eq 'NOSUCHINSTANCE' ) {
+            return Status->error('snmp fatal error - NOSUCHINSTANCE');
+        }
 
-  return Status->done(
-    sprintf "Snapshot data captured from %s", $device->ip);
+        # Check to see if we've already seen this IID (looping)
+        if (defined $store{$idx} and $store{$idx}) {
+            return Status->error(sprintf 'snmp fatal error - looping at %s', $idx);
+        }
+
+        $store{$idx} = {
+          oid       => $idx,
+          oid_parts => [], # intentional, is inflated via make_snmpwalk_browsable()
+          value     => to_json([encode_base64($val, '')]),
+        };
+    }
+    debug sprintf 'walked %d rows', scalar keys %store;
+
+    schema('netdisco')->txn_do(sub {
+      my $gone = $device->oids->delete;
+      debug sprintf 'removed %d old oids', $gone;
+      $device->oids->populate([values %store]);
+    });
+
+    # loadmibs is only optional for getting snapshots
+    if (schema('netdisco')->resultset('SNMPObject')->count) {
+        debug 'you have run loadmibs. promoting oids to browser data...';
+        make_snmpwalk_browsable($device);
+    }
+
+    return Status->done(
+      sprintf 'completed bulkwalk of %s entries from %s for %s', (scalar keys %store), ($extra || '.1'), $device->ip);
 });
 
 true;

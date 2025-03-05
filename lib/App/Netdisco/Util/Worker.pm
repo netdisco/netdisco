@@ -25,7 +25,7 @@ sub queue_hook {
 
   jq_insert({
     action => ('hook::'. lc($conf->{'type'})),
-    extra  => encode_base64( encode('UTF-8', to_json( $extra )) ),
+    extra  => encode_base64( encode('UTF-8', to_json( $extra )), '' ),
   });
 
   return 1;

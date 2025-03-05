@@ -88,25 +88,38 @@
 <script type="text/javascript">
   $(function () {
     var jstree_search_callback = function(str, node) {
-      var mib  = str.replace(/::.+/,'');
-      var leaf = str.replace(/.+::/,'');
+      var pattern = str.toLowerCase();
+      var mib_pat = str.replace(/::.+/,'').toLowerCase();
+      var leaf_pat = str.replace(/.+::/,'').toLowerCase();
+      var mib_lc = node.original.mib.toLowerCase();
+      var leaf_lc = node.original.leaf.toLowerCase();
+      var oid = node.id.toLowerCase();
 
-      var pattern = str.replace(/.+::/,'').toLowerCase();
-      var name = node.text.toLowerCase();
-      var oid  = node.id.toLowerCase();
+      if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+        if (node.original.has_value == 0) { return false; }
+      }
 
+      // partial is ticked, check OID base, or mib + leaf root, or just leaf
       if (document.getElementById('nd_snmp_search_partial').checked) {
-        if ((name.indexOf(pattern) == 0) || (oid.indexOf(pattern) == 0)) {
+        if (pattern.includes('.')) {
+          if (oid.indexOf(pattern) == 0) { return true; }
+        }
+        else if (pattern.includes('::')) {
+          if ((mib_lc == mib_pat) && (leaf_lc.indexOf(leaf_pat) == 0)) { return true; }
+        }
+        else if (leaf_lc.indexOf(pattern) == 0) {
           return true;
         }
       }
-      else if (mib.length && leaf.length && mib != leaf) {
-        if ((mib == node.original.mib) && (leaf == node.original.leaf)) {
+      // user supplies a qualified leaf
+      else if (pattern.includes('::')) {
+        if ((mib_lc == mib_pat) && (leaf_lc == leaf_pat)) {
           return true;
         }
       }
+      // user supplies an unqualified leaf, or an OID
       else {
-        if ((name.indexOf(pattern + ' ') == 0) || (oid == pattern)) {
+        if ((leaf_lc == pattern) || (oid == pattern)) {
           return true;
         }
       }
@@ -137,6 +150,10 @@
 
             if (document.getElementById('nd_snmp_search_partial').checked) {
               settings.url = settings.url + '&partial=on';
+            }
+
+            if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+              settings.url = settings.url + '&deviceonly=on&ip=[% device %]';
             }
 
             return true;

@@ -1,14 +1,13 @@
 package App::Netdisco::Util::SNMP;
 
-use Dancer qw/:syntax :script !to_json !from_json/;
+use Dancer qw/:syntax :script/;
 use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 
 use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
-use MIME::Base64 qw/decode_base64/;
-use Storable qw/thaw/;
+use MIME::Base64 'decode_base64';
 use SNMP::Info;
-use JSON::PP;
+use JSON::PP ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -16,7 +15,6 @@ our @EXPORT_OK = qw/
   get_communities
   snmp_comm_reindex
   get_mibdirs
-  %ALL_MUNGERS
   decode_and_munge
   sortable_oid
 /;
@@ -162,57 +160,11 @@ sub _get_mibdirs_content {
   return \@list;
 }
 
-our %ALL_MUNGERS = (
-    'SNMP::Info::munge_speed' => \&SNMP::Info::munge_speed,
-    'SNMP::Info::munge_highspeed' => \&SNMP::Info::munge_highspeed,
-    'SNMP::Info::munge_ip' => \&SNMP::Info::munge_ip,
-    'SNMP::Info::munge_mac' => \&SNMP::Info::munge_mac,
-    'SNMP::Info::munge_prio_mac' => \&SNMP::Info::munge_prio_mac,
-    'SNMP::Info::munge_prio_port' => \&SNMP::Info::munge_prio_port,
-    'SNMP::Info::munge_octet2hex' => \&SNMP::Info::munge_octet2hex,
-    'SNMP::Info::munge_dec2bin' => \&SNMP::Info::munge_dec2bin,
-    'SNMP::Info::munge_bits' => \&SNMP::Info::munge_bits,
-    'SNMP::Info::munge_counter64' => \&SNMP::Info::munge_counter64,
-    'SNMP::Info::munge_i_up' => \&SNMP::Info::munge_i_up,
-    'SNMP::Info::munge_port_list' => \&SNMP::Info::munge_port_list,
-    'SNMP::Info::munge_null' => \&SNMP::Info::munge_null,
-    'SNMP::Info::munge_e_type' => \&SNMP::Info::munge_e_type,
-    'SNMP::Info::Airespace::munge_64bits' => \&SNMP::Info::Airespace::munge_64bits,
-    'SNMP::Info::CDP::munge_power' => \&SNMP::Info::CDP::munge_power,
-    'SNMP::Info::CiscoAgg::munge_port_ifindex' => \&SNMP::Info::CiscoAgg::munge_port_ifindex,
-    'SNMP::Info::CiscoPortSecurity::munge_pae_capabilities' => \&SNMP::Info::CiscoPortSecurity::munge_pae_capabilities,
-    'SNMP::Info::CiscoStack::munge_port_status' => \&SNMP::Info::CiscoStack::munge_port_status,
-    'SNMP::Info::EtherLike::munge_el_duplex' => \&SNMP::Info::EtherLike::munge_el_duplex,
-    'SNMP::Info::IPv6::munge_physaddr' => \&SNMP::Info::IPv6::munge_physaddr,
-    'SNMP::Info::Layer2::Airespace::munge_cd11n_ch_bw' => \&SNMP::Info::Layer2::Airespace::munge_cd11n_ch_bw,
-    'SNMP::Info::Layer2::Airespace::munge_cd11_proto' => \&SNMP::Info::Layer2::Airespace::munge_cd11_proto,
-    'SNMP::Info::Layer2::Airespace::munge_cd11_rateset' => \&SNMP::Info::Layer2::Airespace::munge_cd11_rateset,
-    'SNMP::Info::Layer2::Aironet::munge_cd11_txrate' => \&SNMP::Info::Layer2::Aironet::munge_cd11_txrate,
-    'SNMP::Info::Layer2::HP::munge_hp_c_id' => \&SNMP::Info::Layer2::HP::munge_hp_c_id,
-    'SNMP::Info::Layer2::Nexans::munge_i_duplex' => \&SNMP::Info::Layer2::Nexans::munge_i_duplex,
-    'SNMP::Info::Layer2::Nexans::munge_i_duplex_admin' => \&SNMP::Info::Layer2::Nexans::munge_i_duplex_admin,
-    'SNMP::Info::Layer3::Altiga::munge_alarm' => \&SNMP::Info::Layer3::Altiga::munge_alarm,
-    'SNMP::Info::Layer3::Aruba::munge_aruba_fqln' => \&SNMP::Info::Layer3::Aruba::munge_aruba_fqln,
-    'SNMP::Info::Layer3::BayRS::munge_hw_rev' => \&SNMP::Info::Layer3::BayRS::munge_hw_rev,
-    'SNMP::Info::Layer3::BayRS::munge_wf_serial' => \&SNMP::Info::Layer3::BayRS::munge_wf_serial,
-    'SNMP::Info::Layer3::Extreme::munge_true_ok' => \&SNMP::Info::Layer3::Extreme::munge_true_ok,
-    'SNMP::Info::Layer3::Extreme::munge_power_stat' => \&SNMP::Info::Layer3::Extreme::munge_power_stat,
-    'SNMP::Info::Layer3::Huawei::munge_hw_peth_admin' => \&SNMP::Info::Layer3::Huawei::munge_hw_peth_admin,
-    'SNMP::Info::Layer3::Huawei::munge_hw_peth_power' => \&SNMP::Info::Layer3::Huawei::munge_hw_peth_power,
-    'SNMP::Info::Layer3::Huawei::munge_hw_peth_class' => \&SNMP::Info::Layer3::Huawei::munge_hw_peth_class,
-    'SNMP::Info::Layer3::Huawei::munge_hw_peth_status' => \&SNMP::Info::Layer3::Huawei::munge_hw_peth_status,
-    'SNMP::Info::Layer3::Timetra::munge_tmnx_state' => \&SNMP::Info::Layer3::Timetra::munge_tmnx_state,
-    'SNMP::Info::Layer3::Timetra::munge_tmnx_e_class' => \&SNMP::Info::Layer3::Timetra::munge_tmnx_e_class,
-    'SNMP::Info::Layer3::Timetra::munge_tmnx_e_swver' => \&SNMP::Info::Layer3::Timetra::munge_tmnx_e_swver,
-    'SNMP::Info::MAU::munge_int2bin' => \&SNMP::Info::MAU::munge_int2bin,
-    'SNMP::Info::NortelStack::munge_ns_grp_type' => \&SNMP::Info::NortelStack::munge_ns_grp_type,
-);
-
 =head2 decode_and_munge( $method, $data )
 
-Takes some data from L<SNMP::Info> cache that has been Base64 encoded
-and frozen with Storable, decodes it and then munge to handle data format,
-before finally pretty render in JSON format.
+Takes some data from snmpwalk cache that has been Base64 encoded,
+decodes it and then munge to handle data format, before finally pretty
+render in JSON format.
 
 =cut
 
@@ -224,31 +176,29 @@ sub decode_and_munge {
     my ($munger, $encoded) = @_;
     return undef unless defined $encoded and length $encoded;
 
-    my $coder = JSON::PP->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
-    $coder->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
+    my $json = JSON::PP->new->utf8->pretty->allow_nonref->allow_unknown->canonical;
+    $json->sort_by( sub { sortable_oid($JSON::PP::a) cmp sortable_oid($JSON::PP::b) } );
 
-    my $data = (@{ thaw( decode_base64( $encoded ) ) })[0];
-    return $coder->encode( $data )
-      unless $munger and exists $ALL_MUNGERS{$munger};
+    return undef if $encoded !~ m/^\[/; # legacy format double protection for web crash
+    my $data = (@{ from_json($encoded) })[0];
+
+    $data = (ref {} eq ref $data)
+      ? { map {($_ => (defined $data->{$_} ? decode_base64($data->{$_}) : undef))}
+              keys %$data }
+      : (defined $data ? decode_base64($data) : undef);
+
+    return $json->encode( $data ) if not $munger;
 
     my $sub   = sub_name($munger);
     my $class = class_name($munger);
     Module::Load::load $class;
 
-    if (ref {} eq ref $data) {
-        my %munged;
-        foreach my $key ( keys %$data ) {
-            my $value = $data->{$key};
-            next unless defined $value;
-            $munged{$key} = $ALL_MUNGERS{$munger}->($value);
-        }
-        return $coder->encode( \%munged );
-    }
-    else {
-        return unless $data;
-        return $coder->encode( $ALL_MUNGERS{$munger}->($data) );
-    }
+    $data = (ref {} eq ref $data)
+      ? { map {($_ => (defined $data->{$_} ? $class->can($sub)->($data->{$_}) : undef))}
+              keys %$data }
+      : (defined $data ? $class->can($sub)->($data) : undef);
 
+    return $json->encode( $data );
 }
 
 =head2 sortable_oid( $oid, $seglen? )

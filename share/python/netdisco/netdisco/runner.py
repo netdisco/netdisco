@@ -2,7 +2,8 @@ import os
 import sys
 from runpy import run_module
 from netdisco.util.stash import stash
-from netdisco.util.perl import marshal_for_perl
+from netdisco.util.status import status
+from netdisco.util.perl import piped_return, marshal_for_perl
 
 if len(sys.argv) < 2 or len(sys.argv[1]) == 0:
     raise Exception('Missing temporary filename or "-" for context transfer')
@@ -28,9 +29,10 @@ while True:
     retval = marshal_for_perl(context)
 
     if contextfile == '-':
-        print(retval)
+        print(piped_return(retval))
     else:
         with open(contextfile, 'w') as cf:
             cf.write(retval)
 
+    status.reset()
     print('.')

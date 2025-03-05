@@ -32,4 +32,8 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("oid");
 
+__PACKAGE__->might_have( device_browser => 'App::Netdisco::DB::Result::DeviceBrowser', 'oid' );
+
+__PACKAGE__->might_have( snmp_filter => 'App::Netdisco::DB::Result::SNMPFilter', { 'foreign.leaf' => 'self.leaf' } );
+
 1;
