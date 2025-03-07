@@ -84,6 +84,7 @@ register_worker({ phase => 'main' }, sub {
   my @filters = <DATA>;
   $_ = [split m/\t/, $_] for @filters;
   $_ = {leaf => $_->[0], subname => $_->[1]} for @filters;
+  chomp( $_->{subname} ) for @filters;
 
   schema('netdisco')->txn_do(sub {
     my $gone = schema('netdisco')->resultset('SNMPFilter')->delete;
