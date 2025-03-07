@@ -1,0 +1,66 @@
+name: Demo Database Redeploy
+on:
+  workflow_dispatch:
+    inputs:
+      debug_dbdeploy_enabled:
+        type: boolean
+        description: 'With db deploy debug'
+        required: false
+        default:  false
+jobs:
+  demo_db_redeploy:
+    name: Redeploy Demo DB
+    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    container:
+      image: 'netdisco/netdisco:latest-do'
+      options: '--user root --entrypoint /bin/ash'
+      volumes:
+        - '/home/runner/work:/github/workspace'
+    defaults:
+      run:
+        working-directory: /github/workspace/netdisco/netdisco
+    steps:
+    - name: Install base packages
+      run: apk add tmux bash curl sudo xz
+    - name: Install packages
+      run: apk add openssh-client gcc make musl-dev musl-obstack-dev python3 perl-dev unzip gzip
+    - name: Install fake apt-get
+      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+
+    - name: Check out latest code
+      uses: actions/checkout@v1
+
+    - name: Fix owner of checkout
+      run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
+
+    - name: Download and upload db content
+      env:
+        PGUSER:     ${{ secrets.DEMO_PGUSER }}
+        PGPASSWORD: ${{ secrets.DEMO_PGPASSWORD }}
+        PGHOST:     ${{ secrets.DEMO_PGHOST }}
+        PGDATABASE: ${{ secrets.DEMO_PGDATABASE }}
+        NETDISCO_HOME: /github/workspace/netdisco/netdisco
+        NETDISCO_DB_USER: ${{ secrets.DEMO_PGUSER }}
+        NETDISCO_DB_PASS: ${{ secrets.DEMO_PGPASSWORD }}
+        NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
+        NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
+      run: |
+        curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
+        curl -LO https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
+        curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
+        psql -c "DROP OWNED BY $PGUSER CASCADE"
+        psql -c "CREATE SCHEMA public"
+        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-cumulus-clean.db.sql
+        /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
+        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco-lookup-tables.sql
+        gunzip netdisco2-demo-snmp-object-data.sql.gz
+        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-snmp-object-data.sql
+        rm /tmp/uv* && /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: always() && github.event.inputs.debug_dbdeploy_enabled == 'true'
+      with:
+        sudo: true
+
