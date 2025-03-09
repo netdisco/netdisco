@@ -234,7 +234,7 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
 
-Netdisco requires Perl (5.10+), Python (3.9+), and PostgreSQL (9.6+).
+Netdisco requires Perl (5.10+) and PostgreSQL (9.6+).
 
 Always review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 Then the process below should be run for each installation:
