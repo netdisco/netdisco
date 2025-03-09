@@ -1,3 +1,14 @@
+2.084001 - 2025-03-09
+
+  [ENHANCEMENTS]
+
+  * documentation improvements for python and postgresql
+  * ability to deploy demo database independent of a release
+
+  [BUG FIXES]
+
+  * remove newline from snmp filter subname
+
 2.084000 - 2025-03-05
 
   [NEW FEATURES]
