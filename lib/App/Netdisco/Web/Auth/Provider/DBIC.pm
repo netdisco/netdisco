@@ -30,29 +30,38 @@ sub authenticate_user {
 
 sub get_user_details {
     my ($self, $username) = @_;
+    return unless defined $username;
 
     my $settings = $self->realm_settings;
     my $database = schema($settings->{schema_name})
         or die "No database connection";
 
-    my $users_table     = $settings->{users_resultset}       || 'User';
+    my $users_table     = $settings->{users_resultset}      || 'User';
     my $username_column = $settings->{users_username_column} || 'username';
 
+    # first try to find the user in the database
     my $user = try {
       $database->resultset($users_table)->find({
           $username_column => { -ilike => quotemeta($username) },
       });
     };
 
-    # each of these settings permits no user in the database
-    # so create a pseudo user entry instead
-    if (not $user and
-        (setting('no_auth') or
-          (not setting('validate_remote_user')
-           and (setting('trust_remote_user') or setting('trust_x_remote_user')) ))) {
-
-        $user = $database->resultset($users_table)
-          ->new_result({username => $username});
+    # if user not found, we need to decide what to do based on settings
+    if (not $user) {
+        if (setting('no_auth')) {
+            # no_auth always allows pseudo users
+            $user = $database->resultset($users_table)
+              ->new_result({username => $username});
+        }
+        elsif ((setting('trust_remote_user') or setting('trust_x_remote_user'))) {
+            if (not setting('validate_remote_user')) {
+                # create pseudo user only if we don't need to validate
+                $user = $database->resultset($users_table)
+                  ->new_result({username => $username});
+            }
+            # else: validate_remote_user is true and user not found,
+            # so we return undef to fail authentication
+        }
     }
 
     return $user;
@@ -97,7 +106,7 @@ sub get_user_roles {
     my $role_column = $settings->{role_column}        || 'role';
 
     # this method returns a list of current user roles
-    # but for API with trust_remote_user, trust_x_remote_user, and no_auth
+    # but for API with trust_remote_user, trust_x_remote_user, and no_auth
     # we need to fake that there is a valid API key
 
     my $api_requires_key =
