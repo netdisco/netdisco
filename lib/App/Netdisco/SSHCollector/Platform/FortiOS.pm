@@ -143,7 +143,7 @@ sub arpnip {
     my @data = get_paginated_output("get system status", $expect);
     my $multi_vdom = 0;
     foreach (@data) {
-        if ($_ && /^Virtual domain configuration: multiple$/) {
+        if ($_ && /^Virtual domain configuration: (multiple|split-task)$/) {
             $multi_vdom = 1;
         last;
         }
