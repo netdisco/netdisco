@@ -18,6 +18,7 @@ use Authen::TacacsPlus;
 use Path::Class;
 use File::ShareDir 'dist_dir';
 use Try::Tiny;
+use Data::Dumper;
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
@@ -52,12 +53,19 @@ sub get_user_details {
             # no_auth always allows pseudo users
             $user = $database->resultset($users_table)
               ->new_result({username => $username});
-        }
-        elsif ((setting('trust_remote_user') or setting('trust_x_remote_user'))) {
+        } elsif ((setting('trust_remote_user') or setting('trust_x_remote_user'))) {
             if (not setting('validate_remote_user')) {
-                # create pseudo user only if we don't need to validate
-                $user = $database->resultset($users_table)
-                  ->new_result({username => $username});
+
+               print STDERR Dumper("remote roles from proxy");
+               my $remote_roles = get_trust_remote_roles();
+               my %role_flags = map { $_ => 1 } @$remote_roles;
+               print STDERR Dumper($remote_roles);
+
+               $user = $database->resultset($users_table)->new_result({
+                   username     => $username,
+                   admin        => $role_flags{admin}     ? 1 : 0,
+                   port_control => $role_flags{portctl}   ? 1 : 0,
+               });
             }
             # else: validate_remote_user is true and user not found,
             # so we return undef to fail authentication
@@ -65,6 +73,61 @@ sub get_user_details {
     }
 
     return $user;
+}
+
+sub get_trust_remote_roles {
+
+    my @roles_list;
+
+    foreach my $role (qw(port_control admin)) {
+        my $header_setting = "trust_remote_user_${role}_header";
+        my $regex_setting = "trust_remote_user_${role}_re";
+
+        if (setting($header_setting)) {
+            my $header_value = request->header(setting($header_setting));
+            my $regex = setting($regex_setting);
+            if ($header_value && $header_value =~ /$regex/) {
+                push(@roles_list, $role);
+            }
+        }
+    } 
+
+    print Dumper(['roles_list_get', \@roles_list]);
+    return \@roles_list;
+}
+
+sub get_user_roles {
+    my ($self, $username) = @_;
+    return unless defined $username;
+
+    my $settings = $self->realm_settings;
+    my $database = schema($settings->{schema_name})
+        or die "No database connection";
+
+    my $user = $self->get_user_details($username)
+        or return;
+
+    my $roles       = $settings->{roles_relationship} || 'roles';
+    my $role_column = $settings->{role_column}        || 'role';
+
+    my $api_requires_key =
+      (setting('trust_remote_user') or setting('trust_x_remote_user') or setting('no_auth'))
+        eq '1' ? 'false' : 'true';
+
+    my @roles_list = try {
+        $user->$roles->search({}, { bind => [
+            $api_requires_key, setting('api_token_lifetime'),
+            $api_requires_key, setting('api_token_lifetime'),
+        ] })->get_column($role_column)->all;
+    };
+
+    my $remote_roles = get_trust_remote_roles();
+    my %unique_roles = map { $_ => 1 } (@roles_list, @$remote_roles);
+    print STDERR Dumper(["addremoteroles", $remote_roles]);
+
+    @roles_list = keys %unique_roles;
+
+    return \@roles_list;
 }
 
 sub validate_api_token {
@@ -89,37 +152,6 @@ sub validate_api_token {
     return undef;
 }
 
-sub get_user_roles {
-    my ($self, $username) = @_;
-    return unless defined $username;
-
-    my $settings = $self->realm_settings;
-    my $database = schema($settings->{schema_name})
-        or die "No database connection";
-
-    # Get details of the user first; both to check they exist, and so we have
-    # their ID to use.
-    my $user = $self->get_user_details($username)
-        or return;
-
-    my $roles       = $settings->{roles_relationship} || 'roles';
-    my $role_column = $settings->{role_column}        || 'role';
-
-    # this method returns a list of current user roles
-    # but for API with trust_remote_user, trust_x_remote_user, and no_auth
-    # we need to fake that there is a valid API key
-
-    my $api_requires_key =
-      (setting('trust_remote_user') or setting('trust_x_remote_user') or setting('no_auth'))
-        eq '1' ? 'false' : 'true';
-
-    return [ try {
-      $user->$roles->search({}, { bind => [
-          $api_requires_key, setting('api_token_lifetime'),
-          $api_requires_key, setting('api_token_lifetime'),
-        ] })->get_column( $role_column )->all;
-    } ];
-}
 
 sub match_password {
     my($self, $password, $user) = @_;
@@ -319,3 +351,4 @@ sub match_with_tacacs {
 }
 
 1;
+
