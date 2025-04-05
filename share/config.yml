@@ -647,7 +647,7 @@ wap_capabilities:
 wap_platforms:
   - '(?i:\bwap\b)'
   - 'cisco\s+AIR-[L|C]?AP'
-  - '-K9W8-'
+  - '-(?i:K9W8)-?'
 
 # --------------
 # BACKEND DAEMON
