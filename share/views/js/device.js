@@ -187,6 +187,32 @@
       });
     });
 
+    $('#details_pane').on('click', '.nd_nonadminbutton', function(event) {
+      // stop form from submitting normally
+      event.preventDefault();
+
+      // what purpose - discover/macsuck/arpnip
+      var mode = $(this).attr('name');
+      var tr = $(this).closest('tr');
+
+      // submit the query
+      $.ajax({
+        type: 'POST'
+        ,async: true
+        ,dataType: 'html'
+        ,url: uri_base + '/ajax/control/nonadmin/' + mode
+        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
+        ,success: function() {
+          toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
+        }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
+        ,error: function() {
+          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
+        }
+      });
+    });
+
     // clear any values in the delete confirm dialog
     $('#details_pane').on('hidden', '.nd_modal', function () {
       $('#nd_devdel-log').val('');

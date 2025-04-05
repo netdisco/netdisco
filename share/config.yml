@@ -720,8 +720,14 @@ job_prio:
     - 'scheduler'
     - 'stats'
 
-enable_python_worklets: true
+enable_nonadmin_actions: true
+nonadmin_actions:
+  - discover
+  - arpnip
+  - macsuck
+  - nbtstat
 
+enable_python_worklets: true
 python_worker_plugins:
   - 'discover.nexthopneighbors.main.cli.juniper_junos':
       only: 'route-server.ip.att.net'

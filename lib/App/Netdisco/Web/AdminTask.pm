@@ -64,6 +64,19 @@ foreach my $action (@{ setting('job_prio')->{high} },
     };
 }
 
+if (setting('enable_nonadmin_actions')) {
+    foreach my $action (@{ setting('nonadmin_actions') }) {
+        ajax "/ajax/control/nonadmin/$action" => sub {
+            add_job($action, param('device'), param('extra'), param('port'))
+              or send_error('Bad device', 400);
+        };
+        post "/nonadmin/$action" => sub {
+            add_job($action, param('device'), param('extra'), param('port'));
+            redirect uri_for('/device', {tab => 'details', q => param('device')});
+        };
+    }
+}
+
 post "/admin/discodevs" => require_role admin => sub {
     add_job((param('action') || 'discover'), param('device'), (param('timeout') || param('extra')), param('port'))
       ? redirect uri_for('/admin/jobqueue')->path
