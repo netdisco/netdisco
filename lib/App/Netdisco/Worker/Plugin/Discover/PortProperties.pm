@@ -99,9 +99,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     my $remote_cap  = $c_cap->{$idx} || [];
     my $remote_type = Encode::decode('UTF-8', $c_platform->{$idx} || '');
 
-    $properties{ $port }->{remote_is_wap} = 'false';
-    $properties{ $port }->{remote_is_phone} = 'false';
-    $properties{ $port }->{remote_is_discoverable} = 'true';
+    $properties{ $port }->{remote_is_wap} ||= 'false';
+    $properties{ $port }->{remote_is_phone} ||= 'false';
+    $properties{ $port }->{remote_is_discoverable} ||= 'true';
 
     if (scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap
         or match_to_setting($remote_type, 'wap_platforms')) {
