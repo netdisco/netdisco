@@ -50,12 +50,14 @@ Returns C<undef> if the connection fails.
 
   sub arpnip {
     my $self = shift;
-    $self->platform->arpnip(@_, $self->host, $self->ssh, $self->auth);
+    $self->platform->arpnip(@_, $self->host, $self->ssh, $self->auth)
+      if $self->platform->can('arpnip');
   }
 
   sub macsuck {
     my $self = shift;
-    $self->platform->macsuck(@_, $self->host, $self->ssh, $self->auth);
+    $self->platform->macsuck(@_, $self->host, $self->ssh, $self->auth)
+      if $self->platform->can('macsuck');
   }
 }
 
