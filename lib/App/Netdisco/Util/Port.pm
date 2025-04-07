@@ -147,7 +147,8 @@ sub port_acl_service {
   return false if setting('portctl_nophones') and port_has_phone($port);
 
   return false if (not setting('portctl_uplinks')) and
-    (($port->is_uplink or $port->remote_type or is_vlan_subinterface($port)) and not
+    (($port->is_uplink or $port->remote_type
+      or $port->is_master or is_vlan_subinterface($port)) and not
      (port_has_wap($port) or port_has_phone($port)));
 
   return false if not port_acl_check(@_);
