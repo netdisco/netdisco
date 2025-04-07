@@ -41,19 +41,22 @@ if (ref {} eq ref setting('database')) {
     # override from env for docker
 
     setting('database')->{name} =
-      ($ENV{NETDISCO_DB_NAME} || $ENV{NETDISCO_DBNAME} || setting('database')->{name});
+      ($ENV{NETDISCO_DB_NAME} || $ENV{NETDISCO_DBNAME} || $ENV{PGDATABASE} || setting('database')->{name});
 
     setting('database')->{host} =
-      ($ENV{NETDISCO_DB_HOST} || setting('database')->{host});
+      ($ENV{NETDISCO_DB_HOST} || $ENV{PGHOST} || setting('database')->{host});
 
-    setting('database')->{host} .= (';'. $ENV{NETDISCO_DB_PORT})
-      if (setting('database')->{host} and $ENV{NETDISCO_DB_PORT});
+    my $portnum = ($ENV{NETDISCO_DB_PORT} || $ENV{PGPORT});
+    setting('database')->{host} .= (';port='. $portnum)
+      if (setting('database')->{host} and $portnum);
+    # at one time we required the user to add port=
+    setting('database')->{host} =~ s/port=port=/port=/ if $portnum;
 
     setting('database')->{user} =
-      ($ENV{NETDISCO_DB_USER} || setting('database')->{user});
+      ($ENV{NETDISCO_DB_USER} || $ENV{PGUSER} || setting('database')->{user});
 
     setting('database')->{pass} =
-      ($ENV{NETDISCO_DB_PASS} || setting('database')->{pass});
+      ($ENV{NETDISCO_DB_PASS} || $ENV{PGPASSWORD} || setting('database')->{pass});
 
     my $name = setting('database')->{name};
     my $host = setting('database')->{host};
@@ -62,29 +65,6 @@ if (ref {} eq ref setting('database')) {
 
     my $dsn = "dbi:Pg:dbname=${name}";
     $dsn .= ";host=${host}" if $host;
-
-    my $portnum = undef;
-    if ($host and $host =~ m/([^;]+);(.+)/) {
-        $host = $1;
-        my $params = $2;
-        my @opts = split(/;/, $params);
-        foreach my $opt (@opts) {
-            if ($opt =~ m/port=(\d+)/) {
-                $portnum = $1;
-            } else {
-                # Unhandled connection option, ignore for now
-            }
-        }
-    }
-
-    # activate environment variables so that "psql" can be called
-    # and also used by python worklets to connect (to avoid reparsing config)
-    $ENV{PGHOST} = $host if $host;
-    $ENV{PGPORT} = $portnum if defined $portnum;
-    $ENV{PGDATABASE} = $name;
-    $ENV{PGUSER} = $user;
-    $ENV{PGPASSWORD} = $pass;
-    $ENV{PGCLIENTENCODING} = 'UTF8';
 
     # set up the netdisco schema now we have access to the config
     # but only if it doesn't exist from an earlier config style
@@ -100,14 +80,6 @@ if (ref {} eq ref setting('database')) {
         },
         schema_class => 'App::Netdisco::DB',
     };
-
-    foreach my $c (@{setting('external_databases')}) {
-        my $schema = delete $c->{tag} or next;
-        next if exists setting('plugins')->{DBIC}->{$schema};
-        setting('plugins')->{DBIC}->{$schema} = $c;
-        setting('plugins')->{DBIC}->{$schema}->{schema_class}
-          ||= 'App::Netdisco::GenericDB';
-    }
 
     foreach my $c (@{setting('tenant_databases')}) {
         my $schema = $c->{tag} or next;
@@ -144,6 +116,31 @@ if (ref {} eq ref setting('database')) {
      if $ENV{NETDISCO_DB_TENANT}
         and $ENV{NETDISCO_DB_TENANT} ne 'netdisco'
         and exists setting('plugins')->{DBIC}->{$ENV{NETDISCO_DB_TENANT}};
+
+    # activate environment variables so that "psql" can be called
+    # and also used by python worklets to connect (to avoid reparsing config)
+    # must happen after tenants as this rewrites env if NETDISCO_DB_TENANT in play
+    my $default = setting('plugins')->{DBIC}->{'default'};
+    if ($default->{dsn} =~ m/dbname=([^;]+)/) {
+        $ENV{PGDATABASE} = $1;
+    }
+    if ($default->{dsn} =~ m/host=([^;]+)/) {
+        $ENV{PGHOST} = $1;
+    }
+    if ($default->{dsn} =~ m/port=(\d+)/) {
+        $ENV{PGPORT} = $1;
+    }
+    $ENV{PGUSER} = $default->{user};
+    $ENV{PGPASSWORD} = $default->{password};
+    $ENV{PGCLIENTENCODING} = 'UTF8';
+
+    foreach my $c (@{setting('external_databases')}) {
+        my $schema = delete $c->{tag} or next;
+        next if exists setting('plugins')->{DBIC}->{$schema};
+        setting('plugins')->{DBIC}->{$schema} = $c;
+        setting('plugins')->{DBIC}->{$schema}->{schema_class}
+          ||= 'App::Netdisco::GenericDB';
+    }
 }
 
 # always set this
