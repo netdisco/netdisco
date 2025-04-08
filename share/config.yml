@@ -623,7 +623,6 @@ discover_neighbors: true
 discover_routed_neighbors: true
 skip_modules: []
 store_modules: true
-dotted_vlan_subinterfaces: true
 ignore_deviceports:
   'group:__ANY__':
     - 'group:__IGNORE_INTERFACES__'

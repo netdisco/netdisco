@@ -405,7 +405,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
       $deviceports{$master}->{is_master} = 'true';
   }
 
-  # also for VLAN subinterfaces (using SNMP::Info vlan subinterfaces table)
+  # also for VLAN subinterfaces
   foreach my $pidx (keys %$i_subs) {
       my $parent = $interfaces->{$pidx} or next;
       # parent without subinterfaces?
@@ -419,22 +419,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           my $sub = $interfaces->{$sidx} or next;
           next unless exists $deviceports{$sub};
           $deviceports{$sub}->{slave_of} = $parent;
-      }
-  }
-
-  # also for VLAN subinterfaces (using simple regexp and sanity check)
-  if (setting('dotted_vlan_subinterfaces')) {
-      foreach my $port (sort keys %deviceports) {
-          next if defined $deviceports{$port}->{slave_of}
-            or $deviceports{$port}->{has_subinterfaces} eq 'true';
-
-          next unless $port =~ m/^(.+)\.\d+$/;
-          my $parent = $1;
-          next unless exists $deviceports{$parent};
-          next unless $deviceports{$parent}->{type} eq 'ethernetCsmacd';
-
-          $deviceports{$parent}->{has_subinterfaces} = 'true';
-          $deviceports{$port}->{slave_of} = $parent;
       }
   }
 
