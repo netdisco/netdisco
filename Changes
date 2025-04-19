@@ -1,8 +1,18 @@
-2.084002 - TBD
+2.084002 - 2025-04-19
 
   [ENHANCEMENTS]
 
   * FortiOS "Virtual domain configuration: split-task" support
+  * allow NETDISCO_DB_TENANT to work with netdisco-do and netdisco-deploy
+  * allow PostgreSQL standard env vars to work with netdisco
+  * #1231 polling buttons for nonadmin users with new enable_nonadmin_actions setting and nonadmin_actions list
+  * #1293 identify Cisco 9120 wireless APs as WAPs
+
+  [BUG FIXES]
+
+  * #1316 handle multiple passes on interfaces
+  * #1317 handle missing macsuck or arpnip methods in SSH collector platform modules
+  * #1320 fix for broken Mismatched VLANs report CSV export
 
 2.084001 - 2025-03-09
 

@@ -14,7 +14,7 @@ App::Netdisco::Builder->new(
     'Module::Build' => '0.42',
   },
   build_requires => {
-    'Alien::ultraviolet' => '1.000000',
+    'Alien::ultraviolet' => '1.001001',
     'ExtUtils::Config' => '0',
     'ExtUtils::Helpers' => '0',
     'ExtUtils::InstallPaths' => '0',
@@ -27,7 +27,7 @@ App::Netdisco::Builder->new(
     'namespace::clean' => '0.24',
     'version' => '0.9902',
     'Algorithm::Cron' => '0.07',
-    'Alien::ultraviolet' => '1.000000',
+    'Alien::ultraviolet' => '1.001001',
     'AnyEvent' => '7.05',
     'AnyEvent::DNS::EtcHosts' => '0',
     'App::cpanminus' => '1.6108',
