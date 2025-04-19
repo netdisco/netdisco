@@ -3,12 +3,12 @@
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
-  [% mylist.push(row.left_device) %]
+  [% mylist.push(row.left_ip) %]
   [% mylist.push(row.left_port) %]
-  [% mylist.push(row.left_vlans) %]
-  [% mylist.push(row.right_device) %]
+  [% mylist.push(row.only_left_vlans) %]
+  [% mylist.push(row.right_ip) %]
   [% mylist.push(row.right_port) %]
-  [% mylist.push(row.right_vlans) %]
+  [% mylist.push(row.only_right_vlans) %]
   [% CSV.dump(mylist) %]
 
 [% END %]
