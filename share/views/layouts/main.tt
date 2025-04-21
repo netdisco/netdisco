@@ -76,7 +76,7 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="[% uri_for('/') %]">[% IF !settings.branding_text; "Netdisco"; ELSE; settings.branding_text; END %]</a>
+      <a class="brand" href="[% uri_for('') %]">[% IF !settings.branding_text; "Netdisco"; ELSE; settings.branding_text; END %]</a>
       [% IF session.logged_in_user %]
       <ul class="nav">
         [% FOREACH ni IN settings._navbar_items %]
