@@ -59,6 +59,12 @@ Returns C<undef> if the connection fails.
     $self->platform->macsuck(@_, $self->host, $self->ssh, $self->auth)
       if $self->platform->can('macsuck');
   }
+
+  sub subnets {
+    my $self = shift;
+    $self->platform->subnets(@_, $self->host, $self->ssh, $self->auth)
+        if $self->platform->can('subnets');
+  }
 }
 
 sub session_for {

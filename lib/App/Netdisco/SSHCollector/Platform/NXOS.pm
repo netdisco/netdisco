@@ -166,6 +166,58 @@ EOF
     return $macentries;
 }
 
+sub subnets {
+    my ($self, $hostlabel, $ssh, $args) = @_;
+
+    debug "$hostlabel $$ subnets()";
+
+    my ($pty, $pid) = $ssh->open2pty;
+    unless ($pty) {
+        warn "unable to run remote command [$hostlabel] " . $ssh->error;
+        return ();
+    }
+
+    #$Expect::Debug = 1;
+    #$Expect::Exp_Internal = 1;
+
+    my $expect = Expect->init($pty);
+    $expect->raw_pty(1);
+
+    my ($pos, $error, $match, $before, $after);
+    my $prompt = qr/# +$/;
+    my $timeout = 10;
+
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    #    IP Route Table for VRF "xyz"
+    #'*' denotes best ucast next-hop
+    #'**' denotes best mcast next-hop
+    #'[x/y]' denotes [preference/metric]
+    #'%<string>' in via output denotes VRF <string>
+    #
+    #0.0.0.0/0, ubest/mbest: 1/0 time
+    #    *via 10.255.254.17, [1/0], 7w1d, static
+    #10.1.1.0/24, ubest/mbest: 1/0 time, attached
+    #    *via 10.1.1.2, Vlan1234, [0/0], 1y13w, direct
+    #10.1.1.1/32, ubest/mbest: 1/0 time, attached
+    #    *via 10.1.1.1, Vlan1234, [0/0], 1y13w, hsrp
+
+    # include only lines with "attached" and exclude /32 subnets
+    $expect->send("show ip route vrf all | inc attached | exc /32 | no-more \n");
+    ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
+
+    my @subnets;
+    my @data = split(/\R/, $before);
+    foreach (@data) {
+        # subnet cidr is the first part before the comma and space
+        my ($cidr, $rest) = split(/,\s+/);
+        if ($cidr && $cidr =~ m/(\d{1,3}\.){3}\d{1,3}\/\d{1,2}/) {
+              push(@subnets, $cidr);
+        }
+    }
+    return @subnets;
+}
+
 1;
 
 
