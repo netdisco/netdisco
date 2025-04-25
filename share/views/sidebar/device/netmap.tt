@@ -60,25 +60,31 @@
 
             <hr class="nd_sidebar-hr"/>
 
-            [% IF device_count > (vars.sidebar_defaults.device_netmap.max_devices_for_showing_all || 1000) %]
-            <span class="nd_disabled-feature">
-            [% END %]
             <div class="radio radio-success">
+                [% IF device_count > (vars.sidebar_defaults.device_netmap.netmap_performance_limit_max_devices || 1000) %]
+                <input disabled type="radio" name="mapshow" id="nd_mapshow-all" value="all">
+                <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
+                [% ELSE %]
                 <input type="radio" name="mapshow" id="nd_mapshow-all"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'all' %] value="all">
                 <label for="nd_mapshow-all">All Devices</label>
+                [% END %]
             </div>
             <div class="radio radio-success">
+                [% IF device_count > (vars.sidebar_defaults.device_netmap.netmap_performance_limit_max_devices || 1000) %]
+                <input disabled type="radio" name="mapshow" id="nd_mapshow-cloud" value="cloud">
+                <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
+                [% ELSE %]
                 <input type="radio" name="mapshow" id="nd_mapshow-cloud"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'cloud' %] value="cloud">
                 <label for="nd_mapshow-cloud">Neighbor Cloud</label>
+                [% END %]
             </div>
-            [% IF device_count > (vars.sidebar_defaults.device_netmap.max_devices_for_showing_all || 1000) %]
-            </span>
-            [% END %]
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-depth"
-                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth' %] value="depth">
+                [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth'
+                  OR device_count > (vars.sidebar_defaults.device_netmap.netmap_performance_limit_max_devices || 1000) %]
+                value="depth">
                 <label for="nd_mapshow-depth">Neighbor Hops:
                 <input name="depth" id="nd_mapshow-hops" class="input-mini" type="number" placeholder="1"
                   value="[% params.depth || vars.sidebar_defaults.device_netmap.depth || 1 | html_entity %]"/>
