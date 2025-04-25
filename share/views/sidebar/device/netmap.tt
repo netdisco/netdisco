@@ -81,7 +81,7 @@
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth' %] value="depth">
                 <label for="nd_mapshow-depth">Neighbor Hops:
                 <input name="depth" id="nd_mapshow-hops" class="input-mini" type="number" placeholder="1"
-                  value="[% params.depth || vars.sidebar_defaults.device_netmap.hops || 1 | html_entity %]"/>
+                  value="[% params.depth || vars.sidebar_defaults.device_netmap.depth || 1 | html_entity %]"/>
                 </label>
             </div>
 
