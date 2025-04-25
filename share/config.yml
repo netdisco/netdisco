@@ -25,6 +25,7 @@ tenant_databases: []
 # ------------
 
 domain_suffix: []
+branding_text: Netdisco
 no_auth: false
 suggest_guest: false
 navbar_autocomplete: true
