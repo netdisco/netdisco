@@ -320,6 +320,10 @@ foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
 
 # legacy config item names
 
+config->{'sidebar_defaults'}->{'device_netmap'}->{'netmap_performance_limit_max_devices'}->{'default'} =
+  config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'};
+delete config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'};
+
 config->{'devport_vlan_limit'} =
   config->{'deviceport_vlan_membership_threshold'}
   if setting('deviceport_vlan_membership_threshold')
