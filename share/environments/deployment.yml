@@ -42,10 +42,6 @@ device_auth:
 # ````````````````````````````````````````````````````````````
 #session_secure: true
 
-# change the branding in the web UI "brand" html class. Default is "Netdisco"
-# ```````````````````````````````````````````````````````
-#branding_text: Netdisco
-
 # ¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸.·´¯`·.¸¸
 #
 # SOME MORE INTERESTING SETTINGS WHERE THE DEFAULTS ARE PROBABLY OKAY
