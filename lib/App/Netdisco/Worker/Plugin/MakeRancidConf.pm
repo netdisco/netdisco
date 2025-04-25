@@ -50,7 +50,7 @@ register_worker({ phase => 'main' }, sub {
       \['age(LOCALTIMESTAMP, last_discover) > ?::interval', $down_age] },
   });
 
-  $config->{groups}    ||= { default => 'any' };
+  $config->{groups}    ||= { $default_group => 'group:__ANY__' };
   $config->{vendormap} ||= {};
   $config->{excluded}    ||= [];
   $config->{by_ip}       ||= [];
