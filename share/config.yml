@@ -164,7 +164,7 @@ sidebar_defaults:
     showspeed:   { default: null }
     mapshow:     { default: depth }
     depth:       { default: 1 }
-    netmap_performance_limit_max_devices: { default: 10 }
+    netmap_performance_limit_max_devices: { default: 1000 }
     colorby:     { default: speed }
     dynamicsize: { default: checked }
   report_moduleinventory:
