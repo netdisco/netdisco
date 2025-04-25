@@ -60,7 +60,7 @@
 
             <hr class="nd_sidebar-hr"/>
 
-            [% IF device_count > (vars.sidebar_defaults.device_netmap.too_many_devices || 1000) %]
+            [% IF device_count > (vars.sidebar_defaults.device_netmap.max_devices_for_showing_all || 1000) %]
             <span class="nd_disabled-feature">
             [% END %]
             <div class="radio radio-success">
@@ -73,7 +73,7 @@
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'cloud' %] value="cloud">
                 <label for="nd_mapshow-cloud">Neighbor Cloud</label>
             </div>
-            [% IF device_count > (vars.sidebar_defaults.device_netmap.too_many_devices || 1000) %]
+            [% IF device_count > (vars.sidebar_defaults.device_netmap.max_devices_for_showing_all || 1000) %]
             </span>
             [% END %]
             <div class="radio radio-success">
