@@ -22,7 +22,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
          ) AS elapsed
     FROM admin
     WHERE action IN ( 'discover', 'macsuck', 'arpnip', 'nbtstat' ) 
-    GROUP BY action, entered 
+    GROUP BY action, entered_group 
     HAVING count( device ) > 1
       AND SUM( CASE WHEN status = 'queued' THEN 1 ELSE 0 END ) = 0
     ORDER BY entered DESC, elapsed DESC
