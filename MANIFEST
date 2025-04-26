@@ -66,6 +66,7 @@ lib/App/Netdisco/DB/Result/Virtual/ApRadioChannelPower.pm
 lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
+lib/App/Netdisco/DB/Result/Virtual/DevicePlatforms.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePortSpeed.pm
 lib/App/Netdisco/DB/Result/Virtual/DuplexMismatch.pm

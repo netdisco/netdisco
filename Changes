@@ -1,3 +1,22 @@
+2.085000 - 2025-04-26
+
+  [NEW FEATURES]
+
+  * #1321 branding_text setting for customising the header bar "Netdisco"
+  * #1324 retrieve subnets from NXOS devices via cli
+
+  [ENHANCEMENTS]
+
+  * #1163 rename too_many_devices to be netmap_performance_limit_max_devices
+  * #1229 inventory device count to include stack members
+  * #1292 #794 remove requirement that chassis are FRU when listing serials
+  * #1322 add device DNS names to ports with mismatched VLANs report
+
+  [BUG FIXES]
+
+  * #1079 group jobs in poller performance report to minute granularity
+  * #1204 makerancidconf default group bug
+
 2.084002 - 2025-04-19
 
   [ENHANCEMENTS]
