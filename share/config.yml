@@ -164,7 +164,6 @@ sidebar_defaults:
     showspeed:   { default: null }
     mapshow:     { default: depth }
     depth:       { default: 1 }
-    netmap_performance_limit_max_devices: { default: 1000 }
     colorby:     { default: speed }
     dynamicsize: { default: checked }
   report_moduleinventory:
@@ -173,6 +172,7 @@ sidebar_defaults:
   report_portutilization:
     age_num:      { default: 3 }
     age_unit:     { default: months }
+netmap_performance_limit_max_devices: 1000
 device_port_col_idx_left: 8
 device_port_col_idx_mid: 21
 device_port_col_idx_right: 25

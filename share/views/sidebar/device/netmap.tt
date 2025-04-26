@@ -61,7 +61,7 @@
             <hr class="nd_sidebar-hr"/>
 
             <div class="radio radio-success">
-                [% IF device_count > (vars.sidebar_defaults.device_netmap.netmap_performance_limit_max_devices || 1000) %]
+                [% IF device_count > settings.netmap_performance_limit_max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-all" value="all">
                 <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
                 [% ELSE %]
@@ -71,7 +71,7 @@
                 [% END %]
             </div>
             <div class="radio radio-success">
-                [% IF device_count > (vars.sidebar_defaults.device_netmap.netmap_performance_limit_max_devices || 1000) %]
+                [% IF device_count > settings.netmap_performance_limit_max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-cloud" value="cloud">
                 <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
                 [% ELSE %]
@@ -83,11 +83,11 @@
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-depth"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth'
-                  OR device_count > (vars.sidebar_defaults.device_netmap.netmap_performance_limit_max_devices || 1000) %]
+                  OR device_count > settings.netmap_performance_limit_max_devices %]
                 value="depth">
                 <label for="nd_mapshow-depth">Neighbor Hops:
                 <input name="depth" id="nd_mapshow-hops" class="input-mini" type="number" placeholder="1"
-                  value="[% params.depth || vars.sidebar_defaults.device_netmap.depth || 1 | html_entity %]"/>
+                  value="[% params.depth || vars.sidebar_defaults.device_netmap.depth | html_entity %]"/>
                 </label>
             </div>
 

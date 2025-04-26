@@ -320,8 +320,12 @@ foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
 
 # legacy config item names
 
-config->{'sidebar_defaults'}->{'device_netmap'}->{'netmap_performance_limit_max_devices'}->{'default'} =
-  config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'};
+# if user has previously configured too_many_devices away from 1000 default,
+# then copy it into netmap_performance_limit_max_devices
+config->{'netmap_performance_limit_max_devices'} =
+  config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'}
+  if config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'}
+    and config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'} != 1000;
 delete config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'};
 
 config->{'devport_vlan_limit'} =
