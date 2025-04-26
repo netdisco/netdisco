@@ -32,7 +32,6 @@ ajax '/ajax/content/device/details' => require_login sub {
 
     my @serials = $device->modules->search({
         class => 'chassis',
-        -bool => 'fru',
         -and => [
           { serial => { '!=' => '' } },
           { serial => { '!=' => undef } },
