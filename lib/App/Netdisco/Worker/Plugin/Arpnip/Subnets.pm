@@ -28,6 +28,24 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $device->ip, scalar @subnets);
 });
 
+register_worker({ phase => 'main', driver => 'cli' }, sub {
+  my ($job, $workerconf) = @_;
+
+  my $device = $job->device;
+  my $cli = App::Netdisco::Transport::SSH->session_for($device)
+    or return Status->defer("arpnip (cli) failed: could not SSH connect to $device");
+
+  my @subnets = $cli->subnets;
+
+  my $now = 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
+
+  debug sprintf ' [%s] arpnip (cli) - found subnet %s', $device->ip, $_ for @subnets;
+  store_subnet($_, $now) for @subnets;
+
+  return Status->info(sprintf ' [%s] arpnip (cli) - processed %s Subnet entries',
+    $device->ip, scalar @subnets);
+});
+
 # gathers device subnets
 sub gather_subnets {
   my $device = shift;
