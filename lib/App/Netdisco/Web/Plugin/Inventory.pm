@@ -13,7 +13,7 @@ register_navbar_item({
 });
 
 get '/inventory' => require_login sub {
-    my $platforms = schema(vars->{'tenant'})->resultset('Device')->get_platforms();
+    my $platforms = schema(vars->{'tenant'})->resultset('Virtual::DevicePlatforms');
     my $releases = schema(vars->{'tenant'})->resultset('Device')->get_releases();
 
     my %release_version_map = (
