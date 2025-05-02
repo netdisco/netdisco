@@ -35,10 +35,9 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   my $cli = App::Netdisco::Transport::SSH->session_for($device)
     or return Status->defer("arpnip (cli) failed: could not SSH connect to $device");
 
-  my @subnets = $cli->subnets;
+  my @subnets = grep { defined and length } $cli->subnets;
 
   my $now = 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
-
   debug sprintf ' [%s] arpnip (cli) - found subnet %s', $device->ip, $_ for @subnets;
   store_subnet($_, $now) for @subnets;
 
@@ -78,6 +77,7 @@ sub gather_subnets {
 # update subnets with new networks
 sub store_subnet {
   my ($subnet, $now) = @_;
+  return unless $subnet;
 
   schema('netdisco')->txn_do(sub {
     schema('netdisco')->resultset('Subnet')->update_or_create(
