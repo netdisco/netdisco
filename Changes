@@ -1,3 +1,10 @@
+2.085001 - 2025-05-02
+
+  [BUG FIXES]
+
+  * revert changes to poller performance report
+  * #1331 make sure arpnip subnets are valid before processing
+
 2.085000 - 2025-04-26
 
   [NEW FEATURES]
