@@ -11,7 +11,7 @@ __PACKAGE__->table('poller_performance');
 __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
   SELECT action,
-         entered,
+         to_char( entered, 'YYYY-MM-DD HH24:MI' )    AS entered_group,
          to_char( entered, 'YYYY-MM-DD HH24:MI:SS' ) AS entered_stamp,
          COUNT( device ) AS number,
          MIN( started ) AS start,
@@ -33,8 +33,8 @@ ENDSQL
 __PACKAGE__->add_columns(
   "action",
   { data_type => "text", is_nullable => 1 },
-  "entered",
-  { data_type => "timestamp", is_nullable => 1 },
+  "entered_group",
+  { data_type => "text", is_nullable => 1 },
   "entered_stamp",
   { data_type => "text", is_nullable => 1 },
   "number",
