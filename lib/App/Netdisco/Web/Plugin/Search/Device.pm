@@ -92,8 +92,11 @@ get '/ajax/content/search/device' => require_login sub {
         $rs = $rs_columns->with_times->search_fuzzy($q);
     }
 
-    my @results = $rs->hri->all;
+    my @results = $rs->search(undef, { join => 'module_serials', prefetch => 'module_serials' })
+                     ->hri->all;
     return unless scalar @results;
+
+    map {$_->{module_serials} = [ List::MoreUtils::uniq ($_->{serial}, $_->{chassis_id}, ( map { $_->{serial} } @{ $_->{module_serials} } )) ]} @results;
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );

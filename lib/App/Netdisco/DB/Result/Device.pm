@@ -166,6 +166,27 @@ __PACKAGE__->has_many( ports_by_mac => 'App::Netdisco::DB::Result::DevicePort',
   { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
+=head2 module_serials
+
+Returns the set chassis modules on this Device.
+
+=cut
+
+__PACKAGE__->has_many( module_serials => 'App::Netdisco::DB::Result::DeviceModule',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
+      "$args->{foreign_alias}.class" => 'chassis',
+      -and => [
+        "$args->{foreign_alias}.serial" => { '!=' => undef },
+        "$args->{foreign_alias}.serial" => { '!=' => '' },
+      ],
+    };
+  },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
+
 =head2 modules
 
 Returns the set chassis modules on this Device.
