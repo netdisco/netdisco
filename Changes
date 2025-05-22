@@ -1,3 +1,13 @@
+2.085002 - 2025-05-22
+
+  [ENHANCEMENTS]
+
+  * #974 show all stack serials in device search results
+
+  [BUG FIXES]
+
+  * #1079 #1329 fix poller performance report and group to minute
+
 2.085001 - 2025-05-02
 
   [BUG FIXES]
