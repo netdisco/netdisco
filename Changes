@@ -1,3 +1,9 @@
+2.085003 - 2025-05-24
+
+  [BUG FIXES]
+
+  * #1334 fix regression in search after adding module serials relation
+
 2.085002 - 2025-05-22
 
   [ENHANCEMENTS]
