@@ -92,10 +92,15 @@ get '/ajax/content/search/device' => require_login sub {
         $rs = $rs_columns->with_times->search_fuzzy($q);
     }
 
-    my @results = $rs->search(undef, { join => 'module_serials', prefetch => 'module_serials' })
+    my @results = $rs->with_module_serials # must come after search_fuzzy
                      ->hri->all;
     return unless scalar @results;
 
+    # deduplicate the results as no longer distinct after with_module_serials
+    my %seen = ();
+    @results = grep { ! $seen{$_->{ip}}++ } @results;
+
+    # flatten device serial, device chassis_id, and module serial(s), and deduplicate
     map {$_->{module_serials} = [ List::MoreUtils::uniq ($_->{serial}, $_->{chassis_id}, ( map { $_->{serial} } @{ $_->{module_serials} } )) ]} @results;
 
     if ( request->is_ajax ) {

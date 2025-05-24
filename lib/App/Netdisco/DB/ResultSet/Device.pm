@@ -32,6 +32,23 @@ sub device_ips_with_address_or_name {
   });
 }
 
+=head2 with_module_serials
+
+Adds the C<module_serials.serial> field to the results using
+C<module_serials> relation.
+
+=cut
+
+sub with_module_serials {
+  my $rs = shift;
+  return $rs->search(undef, {
+    join => 'module_serials',
+    '+columns' => [ qw/ module_serials.ip module_serials.index module_serials.serial / ],
+    collapse => 1,
+    distinct => 0,
+  });
+}
+
 =head2 ports_with_mac( $mac )
 
 Returns a correlated subquery for the set of C<device_port> entries for each
@@ -431,10 +448,7 @@ sub search_fuzzy {
           'me.location'    => { '-ilike' => $q },
           'me.name'        => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
-          'me.ip' => { '-in' =>
-            $rs->search({ 'modules.serial' => $qc },
-                        { join => 'modules', columns => 'ip' })->as_query()
-          },
+          'modules.serial' => $qc,
           -or => [
             'me.mac::text' => { '-ilike' => $mac},
             'ports_by_mac.mac::text' => { '-ilike' => $mac},
@@ -447,6 +461,7 @@ sub search_fuzzy {
         ],
       },
       {
+        join => 'modules',
         order_by => [qw/ me.dns me.ip /],
         distinct => 1,
       }
