@@ -1,3 +1,18 @@
+2.08x00x - 2025-05-xx
+
+  [NEW FEATURES]
+
+  * #1055 device custom fields can be included on the neighbors map
+
+  [ENHANCEMENTS]
+
+  * make sure the stats table always has same number of rows
+
+  [BUG FIXES]
+
+  * fix JS error when undef serial numbers are encountered
+  * make HTML-safe the rendering of nodes (device) and links in neighbor map
+
 2.085003 - 2025-05-24
 
   [BUG FIXES]
