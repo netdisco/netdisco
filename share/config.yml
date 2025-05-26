@@ -355,7 +355,7 @@ system_reports:
     bind_params: ['chunk_size']
     query: |
       SELECT ip, array_agg(vlans) AS vlans FROM (
-        SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / COALESCE(NULLIF(?,''), '20') ::integer) AS chunk FROM (
+        SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / ((COALESCE(NULLIF(?,''), '20') ::integer) + 1)) AS chunk FROM (
           SELECT *, (row_number() over (partition by ip)) AS x FROM (
 
             SELECT DISTINCT ip, vlan
@@ -381,7 +381,7 @@ system_reports:
     bind_params: ['chunk_size']
     query: |
       SELECT ip, array_agg(vlans) AS vlans FROM (
-        SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / COALESCE(NULLIF(?,''), '20') ::integer) AS chunk FROM (
+        SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / ((COALESCE(NULLIF(?,''), '20') ::integer) + 1)) AS chunk FROM (
           SELECT *, (row_number() over (partition by ip)) AS x FROM (
 
             SELECT DISTINCT ip, vlan
@@ -406,7 +406,7 @@ system_reports:
     bind_params: ['chunk_size', 'free']
     query: |
       SELECT ip, array_agg(vlans) AS vlans FROM (
-        SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / COALESCE(NULLIF(?,''), '20') ::integer) AS chunk FROM (
+        SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / ((COALESCE(NULLIF(?,''), '20') ::integer) + 1)) AS chunk FROM (
           SELECT *, (row_number() over (partition by ip)) AS x FROM (
 
             SELECT DISTINCT ip, vlan
