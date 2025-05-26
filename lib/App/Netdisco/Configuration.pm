@@ -380,6 +380,13 @@ if (setting('reports') and ref {} eq ref setting('reports')) {
 # add system_reports onto reports
 config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 
+# upgrade bare bind_params to dict
+foreach my $r ( @{setting('reports')} ) {
+    next unless exists $r->{bind_params};
+    my $new_bind_params = [ map {ref ? $_ : {param => $_}} @{ $r->{bind_params} } ];
+    $r->{'bind_params'} = $new_bind_params;
+}
+
 # set swagger ui location
 #config->{plugins}->{Swagger}->{ui_dir} =
   #dir(dist_dir('App-Netdisco'), 'share', 'public', 'swagger-ui')->absolute;
