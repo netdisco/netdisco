@@ -305,7 +305,8 @@ system_reports:
       - { location: 'Location' }
       - { contact: 'Contact' }
       - { serial: 'Serial' }
-    bind_params: ['since']
+    bind_params:
+      - { param: 'since', default: '2 months' }
     query: |
       SELECT ip, COALESCE(NULLIF(dns,''), NULLIF(name,''), '') AS devname,
           model, vendor, creation, os, os_ver, location, contact, serial
@@ -319,7 +320,8 @@ system_reports:
       - { ip: 'Device IP', _searchable: true }
       - { port: 'Port' }
       - { vlans: 'VLAN Count' }
-    bind_params: ['threshold']
+    bind_params:
+      - { param: 'threshold', default: 1, type: 'number' }
     query: |
       SELECT ip, port, count(vlan) AS vlans
         FROM device_port_vlan
@@ -352,7 +354,8 @@ system_reports:
     columns:
       - { ip: 'Device IP', _searchable: true }
       - { vlans: 'VLAN List' }
-    bind_params: ['chunk_size']
+    bind_params:
+      - { param: 'chunk_size', default: 20, type: 'number' }
     query: |
       SELECT ip, array_agg(vlans) AS vlans FROM (
         SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / COALESCE(NULLIF(?,''), '20') ::integer) AS chunk FROM (
@@ -378,7 +381,8 @@ system_reports:
     columns:
       - { ip: 'Device IP', _searchable: true }
       - { vlans: 'VLAN List' }
-    bind_params: ['chunk_size']
+    bind_params:
+      - { param: 'chunk_size', default: 20, type: 'number' }
     query: |
       SELECT ip, array_agg(vlans) AS vlans FROM (
         SELECT ip, array_to_string(array_agg(vlan), ', ') AS vlans, (x / COALESCE(NULLIF(?,''), '20') ::integer) AS chunk FROM (
