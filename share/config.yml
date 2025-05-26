@@ -173,6 +173,9 @@ sidebar_defaults:
     age_num:      { default: 3 }
     age_unit:     { default: months }
 netmap_performance_limit_max_devices: 1000
+netmap_custom_fields:
+  device: []
+  device_port: []
 device_port_col_idx_left: 8
 device_port_col_idx_mid: 21
 device_port_col_idx_right: 25

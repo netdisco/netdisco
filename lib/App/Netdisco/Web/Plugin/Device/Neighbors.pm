@@ -7,8 +7,9 @@ use Dancer::Plugin::Auth::Extensible;
 
 use List::Util 'first';
 use List::MoreUtils ();
+use HTML::Entities 'encode_entities';
 use App::Netdisco::Util::Port 'to_speed';
-use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Web::Plugin;
 
 register_device_tab({ tag => 'netmap', label => 'Neighbors' });
@@ -85,12 +86,29 @@ sub make_node_infostring {
   my $node = shift or return '';
   my $fmt = ('<b>%s</b> is %s <b>%s %s</b><br>running <b>%s %s</b><br>Serial: <b>%s</b><br>'
     .'Uptime: <b>%s</b><br>Location: <b>%s</b><br>Contact: <b>%s</b>');
+  
+  my @field_values = ();
+  if (ref [] eq ref setting('netmap_custom_fields')->{device}) {
+      foreach my $field (@{ setting('netmap_custom_fields')->{device} }) {
+          foreach my $config (@{ setting('custom_fields')->{device} }) {
+              next unless $config->{'name'} and $config->{'name'} eq $field;
+
+              next if $config->{json_list};
+              next if acl_matches($node->ip, ($config->{no} || []));
+              next unless acl_matches_only($node->ip, ($config->{only} || []));
+              $fmt .= sprintf '<br>%s: <b>%%s</b>', ($config->{label} || ucfirst($config->{name}));
+              push @field_values, ('cf_'. $config->{name});
+          }
+      }
+  }
+
   return sprintf $fmt, $node->ip,
     ((($node->vendor || '') =~ m/^[aeiou]/i) ? 'an' : 'a'),
-    ucfirst($node->vendor || ''),
-    map {defined $_ ? $_ : ''}
-    map {$node->$_}
-        (qw/model os os_ver serial uptime_age location contact/);
+    encode_entities(ucfirst($node->vendor || '')),
+    (map {defined $_ ? encode_entities($_) : ''}
+        map {$node->$_}
+            (qw/model os os_ver serial uptime_age location contact/)),
+    map {encode_entities($node->get_column($_) || '')} @field_values;
 }
 
 sub make_link_infostring {
@@ -105,8 +123,8 @@ sub make_link_infostring {
     @{$link->{right_port}}, @{$link->{right_descr}};
 
   return join '<br><br>', map { sprintf '<b>%s:%s</b> (%s)<br><b>%s:%s</b> (%s)',
-    $left_name, $_->[0], ($_->[1] || 'no description'),
-    $right_name, $_->[2], ($_->[3] || 'no description') } @zipped;
+    encode_entities($left_name), encode_entities($_->[0]), encode_entities(($_->[1] || 'no description')),
+    encode_entities($right_name), encode_entities($_->[2]), encode_entities(($_->[3] || 'no description')) } @zipped;
 }
 
 get '/ajax/data/device/netmap' => require_login sub {
@@ -213,7 +231,7 @@ get '/ajax/data/device/netmap' => require_login sub {
     my $devices = schema(vars->{'tenant'})->resultset('Device')->search({}, {
       '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
       join => 'throughput', distinct => 1,
-    })->with_times;
+    })->with_times->with_custom_fields;
 
     # filter by vlan for all or neighbors only
     if ($vlan) {
