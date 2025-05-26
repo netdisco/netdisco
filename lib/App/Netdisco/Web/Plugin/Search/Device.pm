@@ -101,7 +101,16 @@ get '/ajax/content/search/device' => require_login sub {
     @results = grep { ! $seen{$_->{ip}}++ } @results;
 
     # flatten device serial, device chassis_id, and module serial(s), and deduplicate
-    map {$_->{module_serials} = [ List::MoreUtils::uniq ($_->{serial}, $_->{chassis_id}, ( map { $_->{serial} } @{ $_->{module_serials} } )) ]} @results;
+    map {$_->{module_serials} = [ List::MoreUtils::uniq
+                                  sort
+                                  grep {defined} (
+                                    $_->{serial},
+                                    $_->{chassis_id},
+                                    ( map { $_->{serial} }
+                                          @{ $_->{module_serials} } )
+                                  )
+                                ]} @results;
+    use DDP; p @results;
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
