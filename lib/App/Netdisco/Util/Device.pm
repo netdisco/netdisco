@@ -361,15 +361,17 @@ sub get_denied_actions {
   $device = get_device($device); # might be no-op but is done in is_* anyway
 
   if ($device->is_pseudo) {
-      # always let pseudo devices do contact|location|portname|snapshot
+      # always let pseudo devices do contact|location|portname|snapshot|delete
       # and additionally if there's a snapshot cache, is_discoverable will let
       # them do all other discover and high prio actions
-      push @badactions, ('discover', grep { $_ !~ m/^(?:contact|location|portname|snapshot)$/ }
+      push @badactions, ('discover', grep { $_ !~ m/^(?:contact|location|portname|snapshot|delete)$/ }
                                           @{ setting('job_prio')->{high} })
         if not is_discoverable($device);
   }
   else {
-      push @badactions, ('discover', @{ setting('job_prio')->{high} })
+      # #1335 always let delete run
+      push @badactions, ('discover', grep { $_ !~ m/^(?:delete)$/ }
+                                          @{ setting('job_prio')->{high} })
         if not is_discoverable($device);
   }
 
