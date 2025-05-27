@@ -42,7 +42,7 @@ $(document).ready(function() {
       }, {
         "data": 'subnet',
         "render": function(data, type, row, meta) {
-          return '[% IF user_has_role('admin') %]<a class="nd_stealth-link nd_node-ext-link" href="[% uri_base | none %]/?device=' + encodeURIComponent(data) + '"><i class="icon-search"></i></a>&nbsp;[% END %]'
+          return '[% IF user_has_role('admin') %]<a class="nd_stealth-link" href="[% uri_base | none %]/report/ipinventory?subnet=' + encodeURIComponent(data) + '"><i rel="tooltip" data-placement="left" data-offset="5" data-title="Node Inventory" class="icon-laptop"></i></a> <a class="nd_stealth-link nd_node-ext-link" href="[% uri_base | none %]/?device=' + encodeURIComponent(data) + '"><i rel="tooltip" data-placement="left" data-offset="5" data-title="Discover Devices here" class="icon-search"></i></a>&nbsp;[% END %]'
             + '<a href="[% search_device | none %]&q=' + encodeURIComponent(data) + '&ip=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
         }
       }
