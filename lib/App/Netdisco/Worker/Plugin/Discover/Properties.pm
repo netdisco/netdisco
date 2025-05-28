@@ -81,19 +81,6 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
   $device->set_column( last_discover => \$now );
 
-  # protection for failed SNMP gather
-  if ($device->in_storage and not $device->is_pseudo) {
-      my $ip = $device->ip;
-      my $protect = setting('snmp_field_protection')->{'device'} || {};
-      my %dirty = $device->get_dirty_columns;
-      foreach my $field (keys %dirty) {
-          next unless acl_matches_only($ip, $protect->{$field});
-          if (!defined $dirty{$field} or $dirty{$field} eq '') {
-              return $job->cancel("discover cancelled: $ip failed to return valid $field");
-          }
-      }
-  }
-
   # fix up unknown vendor (enterprise number -> organization)
   if ($device->vendor and $device->vendor =~ m/^enterprises\.(\d+)$/) {
       my $number = $1;
@@ -109,6 +96,19 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
           debug sprintf ' searching for Product ID "%s"', ($oid || '');
           my $object = schema('netdisco')->resultset('Product')->find($oid);
           $device->set_column( model => $object->leaf ) if $object;
+      }
+  }
+
+  # protection for failed SNMP gather
+  if ($device->in_storage and not $device->is_pseudo) {
+      my $ip = $device->ip;
+      my $protect = setting('snmp_field_protection')->{'device'} || {};
+      my %dirty = $device->get_dirty_columns;
+      foreach my $field (keys %dirty) {
+          next unless acl_matches_only($ip, $protect->{$field});
+          if (!defined $dirty{$field} or $dirty{$field} eq '') {
+              return $job->cancel("discover cancelled: $ip failed to return valid $field");
+          }
       }
   }
 
