@@ -102,7 +102,7 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   # protection for failed SNMP gather
   if ($device->in_storage and not $device->is_pseudo) {
       my $ip = $device->ip;
-      my $protect = setting('snmp_field_protection')->{'device'} || {};
+      my $protect = setting('field_protection')->{'device'} || {};
       my %dirty = $device->get_dirty_columns;
       foreach my $field (keys %dirty) {
           next unless acl_matches_only($ip, $protect->{$field});
