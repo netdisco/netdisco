@@ -1,17 +1,25 @@
-2.08x00x - 2025-05-xx
+2.086000 - 2025-06-03
 
   [NEW FEATURES]
 
   * #1055 device custom fields can be included on the neighbors map
+  * #1162 custom reports - support defaults and data type in sidebar fields
+  * #1336 new report Devices missing Model or OS and link to that from unknown Inventory entries
 
   [ENHANCEMENTS]
 
-  * make sure the stats table always has same number of rows
+  * #1224 link to IP inventory from Device Addresses IP prefixes
+  * #1335 allow any backend to run delete jobs ignoring ACLs (but not hooks)
+  * rename snmp_field_protection to be field_protection
 
   [BUG FIXES]
 
+  * #1337 fix bug in expire job and DNS library when Netdisco cannot resolve a name
+  * make sure the stats table always has a balanced number of rows
   * fix JS error when undef serial numbers are encountered
   * make HTML-safe the rendering of nodes (device) and links in neighbor map
+  * field protection should happen after vendor and model fixups
+  * fix broken "unknown" vendor or model count in inventory
 
 2.085003 - 2025-05-24
 
