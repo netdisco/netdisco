@@ -53,14 +53,21 @@
               <a class="nd_linkcell"
                 href="[% search_device | none %]&q=[% row.model | uri %]&model=[% row.model | uri %]">
                   [% row.model | html_entity %]</a>
-              [% ELSE %]unknown[% END %]
+              [% ELSE %]
+              <a class="nd_linkcell"
+                href="[% uri_for("/report/devicesmissingmodeloros") %]">unknown</a>
+              [% END %]
             </th>
             <th>[% row.count | html_entity %]</th>
           </tr>
           [% END %]
           [% END %]
           [% IF unknown_platforms > 0 %]
-          <tr><th>Unknown</th><th>unknown</th><th>[% unknown_platforms %]</th></tr>
+          <tr>
+            <th><a class="nd_linkcell" href="[% uri_for("/report/devicesmissingmodeloros") %]">Unknown</a></th>
+            <th><a class="nd_linkcell" href="[% uri_for("/report/devicesmissingmodeloros") %]">unknown</a></th>
+            <th>[% unknown_platforms %]</th>
+          </tr>
           [% END %]
         </tbody>
       </table>
@@ -118,14 +125,21 @@
               <a class="nd_linkcell"
                 href="[% search_device | none %]&q=[% row.os_ver | uri %]&os_ver=[% row.os_ver | uri %]">
                   [% row.os_ver | html_entity %]</a>
-              [% ELSE %]unknown[% END %]
+              [% ELSE %]
+              <a class="nd_linkcell"
+                href="[% uri_for("/report/devicesmissingmodeloros") %]">unknown</a>
+              [% END %]
             </th>
             <th>[% row.count | html_entity %]</th>
           </tr>
           [% END %]
           [% END %]
           [% IF unknown_releases > 0 %]
-          <tr><th>Unknown</th><th>unknown</th><th>[% unknown_releases %]</th></tr>
+          <tr>
+            <th><a class="nd_linkcell" href="[% uri_for("/report/devicesmissingmodeloros") %]">Unknown</a></th>
+            <th><a class="nd_linkcell" href="[% uri_for("/report/devicesmissingmodeloros") %]">unknown</a></th>
+            <th>[% unknown_releases %]</th>
+          </tr>
           [% END %]
         </tbody>
       </table>
