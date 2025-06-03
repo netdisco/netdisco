@@ -61,8 +61,8 @@ get '/inventory' => require_login sub {
       release_map  => \%release_map,
       platform_totals => \%platform_totals,
       release_totals  => \%release_totals,
-      unknown_platforms => (scalar grep { not $_->{vendor} } $platforms->hri->all),
-      unknown_releases => (scalar grep { not $_->{os} } $releases->hri->all),
+      unknown_platforms => ([grep { not $_->{vendor} } $platforms->hri->all]->[0]->{count} || 0),
+      unknown_releases => ([grep { not $_->{os} } $releases->hri->all]->[0]->{count} || 0),
     }, { layout => 'main' };
 };
 
