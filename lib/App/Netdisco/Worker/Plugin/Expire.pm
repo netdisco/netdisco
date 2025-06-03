@@ -7,6 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Statistics 'update_stats';
+use App::Netdisco::Util::DNS 'ipv4_from_hostname';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 use App::Netdisco::Util::Permission 'acl_matches_only';
 
@@ -34,7 +35,7 @@ register_worker({ phase => 'main' }, sub {
 
                 schema('netdisco')->resultset('UserLog')->create({
                   username => ($ENV{USER} || 'scheduled'),
-                  userip => ($job->backend || setting('workers')->{'BACKEND'}),
+                  userip => ipv4_from_hostname($job->backend || setting('workers')->{'BACKEND'}),
                   event => 'expire_devices',
                   details => $ip,
                 });

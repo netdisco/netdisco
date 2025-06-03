@@ -91,7 +91,7 @@ Returns C<undef> if no A record exists for the name.
 
 sub ipv4_from_hostname {
   my $name = shift;
-  return unless $name;
+  return undef unless $name;
   my $ETCHOSTS = setting('dns')->{'ETCHOSTS'};
 
   # check /etc/hosts file and short-circuit if found

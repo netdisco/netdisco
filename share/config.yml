@@ -912,7 +912,7 @@ deferrable_actions:
   - 'nbtwalk'
   - 'primeskiplist'
   - 'scheduler'
-  - 'snapshot'
+  - 'expire'
 
 # ---------------
 # GraphViz Export
