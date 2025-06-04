@@ -110,7 +110,6 @@ get '/ajax/content/search/device' => require_login sub {
                                           @{ $_->{module_serials} } )
                                   )
                                 ]} @results;
-    use DDP; p @results;
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
