@@ -321,7 +321,8 @@ foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
 # legacy config item names
 
 # rename snmp_field_protection to just be field_protection
-config->{'field_protection'} = config->{'snmp_field_protection'};
+config->{'field_protection'} = config->{'snmp_field_protection'}
+  if exists config->{'snmp_field_protection'};
 
 # if user has previously configured too_many_devices away from 1000 default,
 # then copy it into netmap_performance_limit_max_devices
