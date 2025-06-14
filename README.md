@@ -6,7 +6,7 @@
 Why ? We use Netdisco where I work to delegate administration permissions on 600+ switches of multiple constructors.
 We regularly create/delete roles and change what that role can administrate in `deployment.yml`. 
 But modifying that file triggers a restart of both web and backend, which is sorta blocking. 
-Hence why want the DB to store portctl roles and ACLs.
+Hence why I'd like the DB to store portctl roles and ACLs.
 I hope this can be usefull to some more people.
 
 

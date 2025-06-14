@@ -1,0 +1,90 @@
+[% IF NOT results.size %]
+
+<div class="span4 alert alert-info">No duplicate devices found.</div>
+
+[% ELSE %]
+<div id="nd_devrole" class="nd_modal nd_deep-horizon modal hide fade" style="height: 80%;" tabindex="-1"
+role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+    <h3 id="nd_devrole-label">Edit Devices</h3>
+  </div>
+  <div class="modal-body">
+    <blockquote>
+      <ul>
+        <li><p>Modify what this role can administrate</p></li>
+        <li><button id="checkall">Toggle checkboxes</button></li>
+      </ul>
+    </blockquote>
+      <table id="search" class="table data-table table-striped table-bordered" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Device</th>
+          </tr>
+        </thead>
+        <tbody>
+          [% FOREACH row in devices %]
+        <tr>
+          <td class="nd_center-cell hstgrp">
+            <input class="device-selection checkbox" data-form="device" type="checkbox" name="[% row.name %]">
+          </td>
+          <td class="nd_center-cell">
+            <label for="[% row.name %]">[% row.name || row.ip %]</label><br>
+          </td>
+        </tr>
+        [% END %]
+      </tbody>
+      </table>
+      <input type="hidden" id="hidden-role" data-form="hidden-role" value="[% group | html_entity %]" name="role"/>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button class="btn btn-success nd_role_device" name="show-form" data-dismiss="modal">Confirm</button>
+  </div>
+</div>
+
+<table id="data-table" class="table data-table table-striped table-bordered" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Host Group</th>
+      <th class="nd_center-cell">Group devices</th>
+    </tr>
+  </thead>
+  <tbody>
+    [% FOREACH role IN results.keys.sort %]
+      [% IF NOT role.search('__') %]
+        <tr>
+          <td class="nd_center-cell"><a href="/admin/deviceportctl?q=[% role %]" >[% role | html_entity %]</a></td>
+          <td class="nd_center-cell" id="list-[% role | html_entity %]">
+            [% FOREACH device in results.$role %]
+            <p>[% device.device_name %]</p>
+            [% END %]
+            <button class="btn btn-small portpem"
+            data-toggle="modal" data-target="#nd_devrole" data-role="[% role | html_entity %]" type="button">
+            <i class="icon-edit-sign text-danger"></i>
+          </button>
+          </td>
+        </tr>
+      [% END %]
+    [% END %]
+  </tbody>
+</table>
+
+[% END %]
+
+
+<script>
+  $(document).ready(function() {
+    $('#data-table').dataTable({
+      [% INCLUDE 'ajax/datatabledefaults.tt' -%]
+    } );
+    var search_table = $('#search').dataTable({
+      [% INCLUDE 'ajax/datatabledefaults.tt' -%]
+  
+      } );
+  } );
+  
+</script>
+
+

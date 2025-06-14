@@ -20,7 +20,8 @@ CREATE TABLE portctl_role_device_port (
     PRIMARY KEY (role_name, device_ip, port)
 );
 
-CREATE INDEX idx_role_device_port ON role_device_port_permission(role, device_ip, port);
+CREATE INDEX idx_role_device_port ON portctl_role_device_port(role_name, device_ip, port);
 
+INSERT INTO portctl_role (role_name) VALUES ('_global_');
 
 COMMIT;
