@@ -6,7 +6,6 @@ use Dancer qw/:syntax :script/;
 
 use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
-use Algorithm::Cron;
 
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
@@ -134,7 +133,7 @@ sub check_acl {
   return false unless defined $things and defined $config;
   return false if ref [] eq ref $things and not scalar @$things;
   $things = [$things] if ref [] ne ref $things;
-
+  
   my $real_ip = ''; # valid to be empty
   ITEM: foreach my $item (@$things) {
       foreach my $slot (qw/alias ip switch addr/) {
@@ -175,9 +174,9 @@ sub check_acl {
       next RULE if !defined $rule or $rule eq 'op:and';
 
       if ($qref eq ref $rule) {
+
           # if no IP addr, cannot match its dns
           next RULE unless $addr;
-
           $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
           if ($name =~ $rule) {
             return true if not $all;
@@ -189,7 +188,6 @@ sub check_acl {
       }
 
       my $neg = ($rule =~ s/^!//);
-
       if ($rule =~ m/^group:(.+)$/) {
           my $group = $1;
           setting('host_groups')->{$group} ||= [];
@@ -208,6 +206,7 @@ sub check_acl {
           my $found = false;
 
           ITEM: foreach my $item (@$things) {
+
               if (blessed $item and $item->can('tags')) {
                   if ($neg xor scalar grep {$_ eq $tag} @{ $item->tags || [] }) {
                     return true if not $all;
@@ -237,6 +236,7 @@ sub check_acl {
           # custom field exists, undef is allowed to match empty string
           ITEM: foreach my $item (@$things) {
               my $cf = {};
+
               if (blessed $item and $item->can('custom_fields')) {
                   $cf = from_json ($item->custom_fields || '{}');
               }
@@ -286,7 +286,6 @@ sub check_acl {
           my $prop  = $1;
           my $match = $2 || '';
           my $found = false;
-
           # property exists, undef is allowed to match empty string
           ITEM: foreach my $item (@$things) {
               if (blessed $item) {
@@ -304,61 +303,45 @@ sub check_acl {
                           ((!defined $item->{$prop} and $match eq q{})
                            or
                            (defined $item->{$prop} and ref $item->{$prop} eq q{} and $item->{$prop} =~ m/^$match$/)) )) {
+
                     return true if not $all;
                     $found = true;
                     last ITEM;
                   }
               }
           }
-
           # missing property matches empty string
           # (which is done in a second pass to allow all @$things to be
           # inspected for existing properties)
+          
           ITEM: foreach my $item (@$things) {
-              last ITEM if $found;
-
-              if (blessed $item) {
-                  if ($neg xor ($match eq q{} and ! $item->can($prop))) {
-                    return true if not $all;
-                    $found = true;
-                    last ITEM;
-                  }
-              }
-              elsif (ref {} eq ref $item) {
-                  # empty or missing property
-                  if ($neg xor ($match eq q{} and ! exists $item->{$prop})) {
-                    return true if not $all;
-                    $found = true;
-                    last ITEM;
-                  }
-              }
+            last ITEM if $found;
+            if (blessed $item) {
+                if ($match eq q{} and ! $item->can($prop)) {
+                  return true if not $all;
+                  $found = true;
+                  last ITEM;
+                }
+            }
+            elsif (ref {} eq ref $item) {
+                # empty or missing property
+                if  ($match eq q{} and ! exists $item->{$prop}) {
+                  return true if not $all;
+                  $found = true;
+                  last ITEM;
+                }
+            }
           }
-
           return false if $all and not $found;
           next RULE;
       }
 
-      if ($rule =~ m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+/i) {
-          my $win_start = time - (time % 60) - 1;
-          my $win_end   = $win_start + 60;
-          my $cron = Algorithm::Cron->new(
-            base => 'local',
-            crontab => $rule,
-          ) or next RULE;
 
-          if ($neg xor ($cron->next_time($win_start) <= $win_end)) {
-              return true if not $all;
-          }
-          else {
-              return false if $all;
-          }
-          next RULE;
-      }
-
+      
       if ($rule =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
           my $last  = $2;
-
+          
           # if no IP addr, cannot match IP range
           next RULE unless $addr;
 
