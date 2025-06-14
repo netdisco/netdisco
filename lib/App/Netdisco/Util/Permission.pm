@@ -336,7 +336,21 @@ sub check_acl {
           next RULE;
       }
 
-
+      if ($rule =~ m/^\S+\s+\S+\s+\S+\s+\S+\s+\S+/i) {
+          my $win_start = time - (time % 60) - 1;
+          my $win_end   = $win_start + 60;
+          my $cron = Algorithm::Cron->new(
+            base => 'local',
+            crontab => $rule,
+          ) or next RULE;
+          if ($neg xor ($cron->next_time($win_start) <= $win_end)) {
+              return true if not $all;
+          }
+          else {
+              return false if $all;
+          }
+          next RULE;
+      }
       
       if ($rule =~ m/[:.]([a-f0-9]+)-([a-f0-9]+)$/i) {
           my $first = $1;
