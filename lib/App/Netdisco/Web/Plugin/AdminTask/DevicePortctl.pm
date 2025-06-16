@@ -5,7 +5,6 @@ use Dancer;
 use App::Netdisco::Util::Permission 'acl_matches';
 use Dancer::Plugin::DBIC;
 
-use App::Netdisco::Util::Port 'port_acl_by_role_check';
 
 use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::Web::Plugin;
@@ -21,6 +20,24 @@ register_admin_task({
 
 register_javascript('deviceportctl');
 
+
+sub port_acl_by_role_check {  
+  my ($port, $device, $role) = @_;
+  return true if $ENV{ND2_DO_FORCE};
+
+  # portctl_by_role check
+  if ($device and ref $device and $role) {
+
+    my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
+      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
+      ->single;
+    if ($acl){
+      return false unless $acl->can_admin;
+    }
+    return true;
+  }
+  return false;
+}
 
 ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
     # Ok, this is really clunky tbh

@@ -2,13 +2,13 @@ BEGIN;
 
 CREATE TABLE portctl_role (
     role_name text PRIMARY KEY
-)
+);
 
 
 CREATE TABLE portctl_role_device (
     role_name       text NOT NULL,
     device_ip  inet NOT NULL,
-    PRIMARY KEY (role_name, device_ip),
+    PRIMARY KEY (role_name, device_ip)
 );
 
 -- Table for port-level permissions (unique id, plus role, device_ip, port)
@@ -21,7 +21,5 @@ CREATE TABLE portctl_role_device_port (
 );
 
 CREATE INDEX idx_role_device_port ON portctl_role_device_port(role_name, device_ip, port);
-
-INSERT INTO portctl_role (role_name) VALUES ('_global_');
 
 COMMIT;
