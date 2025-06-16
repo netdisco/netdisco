@@ -14,9 +14,12 @@ use Dancer::Plugin::Ajax;
 
 register_admin_task({
     tag => "deviceportctl",
+    label => "Device Port Control",
+    
     hidden => true,
 });
 
+register_javascript('deviceportctl');
 
 
 ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
@@ -37,9 +40,11 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
         "hundredgige"     => "Hu"
     };
 
-    my $role = param("q");
+    my $role = param('q');
     my @devices = schema(vars->{'tenant'})
-        ->resultset('PortctlRoleDevice')->get_role_permissions($role);
+        ->resultset('PortctlRoleDevice')->role_can_admin($role);
+
+    
 
     foreach my $dev (@devices) {
       my $device = schema(vars->{'tenant'})->resultset('Device')->search_for_device($dev->device_ip);
@@ -79,7 +84,7 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
       @results = grep { ! exists $to_hide{$_->port} } @results;
 
       my %final_ports;
-      foreach my $port (@ports) {
+      foreach my $port (@results) {
           my $vendor = $device->vendor;
           my $port_name = $port->port;
           my $stack_number = 0;
@@ -103,7 +108,7 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
               }
           }
 
-          my $can_admin = port_acl_by_role_check($port->port, $device, $role);
+          my $can_admin = port_acl_by_role_check($port, $device, $role);
           push @{ $final_ports{$stack_number} }, {
               short     => $port_name,
               long      => $port->port,
@@ -144,13 +149,13 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
       }
 
       $dev->{ports} = \@results;
-      $dev->{modules} = \%$final_ports;
+      $dev->{modules} = \%final_ports;
       $dev->{stack} = \@chassis_indexes;
     }
     
 
     content_type('text/html');
-    template 'ajax/admintask/portpermissions/grouptodevicemapping.tt', {
+    template 'ajax/admintask/deviceportctl.tt', {
       results => \@devices,
       role => $role,
     }, { layout => undef };
@@ -158,39 +163,60 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
 };
 
 
-post '/ajax/control/admin/deviceportctl' => require_role admin => sub {
-    my $req_json = param("data");
-    $req_json = from_json($req_json);
-    my $device = $req_json->{device};
-    my $role = $req_json->{group};
+ajax '/ajax/control/admin/deviceportctl/portctl' => require_role admin => sub {
+    my $device = param("device");
 
-    my $device_ports = $req_json->{ports};
+    my $role = param("role");
+
     unless ($device and $role) {
       send_error('Bad request', 400);
     }
-    my $device_ip = schema(vars->{'tenant'})->resultset('Device')->find({ name => $device  })->get_column('ip');
+    
+    # get the prefix of the device name
+    $device =~ s/\..*//;
 
-    my $rs = schema(vars->{'tenant'})->resultset('RoleDevicePortPermission');
-    my $port_control = $rs->search({ device_ip => $device_ip, role => $role });
+    # those will be the denied ports by default (saves some db space)
+    my $port_list = param("port-list-$device"); 
 
-    foreach my $port (keys %$device_ports) {
-        my $port_name = $port;
+    # Re-assign the correct device name for searching in the Device dataset
+    $device = param("device"); 
 
-        my $can_admin = $device_ports->{$port_name};
 
-        my $existing_port = $port_control->find({ port => $port_name });
+    my $dev = schema(vars->{'tenant'})->resultset('Device')->find({ name => $device  });
 
-        if ($existing_port) {
-            $existing_port->update({ can_admin => $can_admin });
+    my $device_ip = $dev ? $dev->ip : undef;
+
+    my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort');
+    my $port_control = $rs->search({ device_ip => $device_ip, role_name => $role });
+    
+    my @device_ports = split /,/, $port_list;
+    my $device_ports = { map { $_ => 1 } grep { $_ } @device_ports };
+    
+    # remove records of a port if it is not in the new list
+    foreach my $row ($port_control->all) {
+        my $port = $row->port;
+        if (exists $device_ports->{$port}) {
+            delete $device_ports->{$port};
         } else {
-            $rs->create({
-                role => $role,
-                device_ip => $device_ip,
-                port => $port_name,
-                can_admin => $can_admin,
-            });
+            $row->delete;
         }
     }
+
+    # add new records for ports that are not in the current list
+    foreach my $port (keys %$device_ports) {
+        next unless $port;
+        $rs->create({
+            device_ip => $device_ip,
+            port      => $port,
+            role_name      => $role,
+            can_admin => 0,
+        });
+    }
+    
+    return to_json({
+        success => 1,
+        message => "Port control updated successfully",
+    });
 };
 
 true;

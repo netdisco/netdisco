@@ -47,19 +47,34 @@ Will return false if these checks fail, otherwise true.
 
 sub port_acl_by_role_check {  
   my ($port, $device, $user) = @_;
-  return true if $user->portctl_role eq '_global_';
-  return false unless $user->portctl_role;
+  return true if $ENV{ND2_DO_FORCE};
 
-  if ($device and ref $device) {
+  # portctl_by_role check
+  if ($device and ref $device and $user) {
+    $user = ref $user ? $user :
+      schema('netdisco')->resultset('User')
+                        ->find({ username => $user });
+
+    return false unless $user;
+    # special case admin user allowed to continue, because
+    # they can submit port control jobs
+    return true if ($user->admin and $user->port_control);
+
+    my $role = $user->portctl_role;
+    
     my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
-      ->search({ role => $user->portctl_role, device_ip => $device->ip, port => $port->port })
+      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
       ->single;
-    if (defined $acl){
+    if ($acl){
       return true if $acl->can_admin;
-    } else {
-      return true if schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
-        ->search({ role => $user->portctl_role, device_ip => $device->ip })
-        ->count > 0;
+    } elsif ($role){
+      my $acl2 = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
+        ->search({ role_name => $role, device_ip => $device->ip })
+        ->single;
+      return true if $acl2;
+    } 
+    else {
+        return true if $user->port_control;
     }
   }
   return false;

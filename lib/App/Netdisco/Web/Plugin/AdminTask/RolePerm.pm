@@ -6,13 +6,15 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Ajax;
 use App::Netdisco::Web::Plugin;
 
+register_javascript('roleperm');
 
 register_admin_task({
     tag => "roleperm",
     label => "Role Permissions"
 });
 
-register_javascript('roleperm');
+
+
 
 ajax '/ajax/content/admin/roleperm' => require_role admin => sub {
 
@@ -37,10 +39,10 @@ ajax '/ajax/content/admin/roleperm' => require_role admin => sub {
     }
 
     my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevice');
-    my $port_control = $rs->search({}, { order_by => 'role' });
+    my $port_control = $rs->search({}, { order_by => 'role_name' });
 
     while (my $row = $port_control->next) {
-        my $role = $row->role;
+        my $role = $row->role_name;
         my $device_ip = $row->device_ip;
         my $device = schema(vars->{'tenant'})->resultset('Device')->find({ ip => $device_ip });
         my $device_name = $device ? $device->name : $device_ip;
@@ -59,11 +61,26 @@ ajax '/ajax/content/admin/roleperm' => require_role admin => sub {
 };
 
 
-post '/ajax/content/admin/roleperm' => require_role admin => sub {
-  
+
+ajax '/ajax/control/admin/roleperm/add' => require_role admin => sub {
+    my $role = param('role');
+    return { success => 0, message => "Role name cannot be empty" } unless $role;
+    # check if the role already exists
+    my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
+    if ($existing_role) {
+        return { success => 0, message => "Role '$role' already exists" };
+    }
+    # create the new role
+    my $new_role = schema(vars->{'tenant'})->resultset('PortctlRole')->create({ role_name => $role });
+    return to_json({ success => 1, message => "Role '$role' created successfully" });
+};
+
+
+ajax '/ajax/control/admin/roleperm/devices' => require_role admin => sub {
+
     my $device_ips = param('device-list'); # this is a string containing device names delimited by commas
     my $role = param('role');
-    my @current_perm = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role => $role })->all;
+    my @current_perm = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $role })->all;
 
 
     my @device_ips = split /,/ , $device_ips;
@@ -78,7 +95,7 @@ post '/ajax/content/admin/roleperm' => require_role admin => sub {
         unless ($new_ips{lc $current_ip}) {
             my $permission = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->find({
                 device_ip => $current_ip,
-                role => $role,
+                role_name => $role,
             });
             if ($permission) {
                 $permission->delete;
@@ -92,13 +109,13 @@ post '/ajax/content/admin/roleperm' => require_role admin => sub {
             if ($device) {
                 schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->create({
                     device_ip => $new_ip,
-                    role => $role,
+                    role_name => $role,
                 });
             }
         }
     }
 
-    return { success => 1, message => "Permission updated successfully" };
+    return to_json({ success => 1, message => "Permission updated successfully" });
 
 };
 ####################

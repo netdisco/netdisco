@@ -164,17 +164,23 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
     my $code = sub {
         # trick the ajax into working as if this were a tabbed page
         params->{tab} = $tag;
+        my $q = param("q") || '';
+        $q =~ s/^\s+|\s+$//g; # trim whitespace
 
         var(nav => 'admin');
         template 'admintask', {
           task => setting('_admin_tasks')->{ $tag },
+          q => $q,
         }, { layout => 'main' };
     };
+
+    
 
     if (setting('_admin_tasks')->{ $tag }->{ 'roles' }) {
         get "/admin/$tag" => require_any_role setting('_admin_tasks')->{ $tag }->{ 'roles' } => $code;
     }
     else {
+        
         get "/admin/$tag" => require_role admin => $code;
     }
 }
@@ -335,8 +341,8 @@ hook 'before_template' => sub {
 
         my $device_ip = ref $device eq 'HASH' ? $device->{ip} : $device;
 
-        my $acl = schema(vars->{'tenant'})->resultset('RoleDevicePermission')
-          ->search({ role => $user->portctl_role, device_ip => $device_ip })
+        my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
+          ->search({ role_name => $user->portctl_role, device_ip => $device_ip })
           ->single;
         return true if $acl;
 

@@ -3,6 +3,7 @@
 <div class="span4 alert alert-info">No duplicate devices found.</div>
 
 [% ELSE %]
+
 <div id="nd_devrole" class="nd_modal nd_deep-horizon modal hide fade" style="height: 80%;" tabindex="-1"
 role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
   <div class="modal-header">
@@ -25,22 +26,34 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
         </thead>
         <tbody>
           [% FOREACH row in devices %]
-        <tr>
-          <td class="nd_center-cell hstgrp">
-            <input class="device-selection checkbox" data-form="device" type="checkbox" name="[% row.name %]">
+        <tr class="device-row">
+          <td class="nd_center-cell ">
+            <input class="device-selection checkbox" type="checkbox" name="[% row.name %]" data-inet="[% row.ip %]">
           </td>
           <td class="nd_center-cell">
             <label for="[% row.name %]">[% row.name || row.ip %]</label><br>
           </td>
         </tr>
         [% END %]
+
       </tbody>
       </table>
-      <input type="hidden" id="hidden-role" data-form="hidden-role" value="[% group | html_entity %]" name="role"/>
+
   </div>
   <div class="modal-footer">
-    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button class="btn btn-success nd_role_device" name="show-form" data-dismiss="modal">Confirm</button>
+    <table>
+        <tr>
+          <td>
+            <input type="hidden" id="devices-checked" data-form="devices" value="" name="device-list"/>
+            <input type="hidden" id="hidden-role" data-form="devices" value="" name="role"/>
+          </td>
+          <td>
+                <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-success nd_adminbutton" name="devices" data-dismiss="modal">Confirm</button>
+          </td>
+        </tr>
+    </table>
+
   </div>
 </div>
 
@@ -52,7 +65,15 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
     </tr>
   </thead>
   <tbody>
+          <tr>
+      <td class="nd_center-cell">
+      <input data-form="add" name="role" type="text">
+      <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+      </td>
+      <td></td>
+    </tr>
     [% FOREACH role IN results.keys.sort %]
+
       [% IF NOT role.search('__') %]
         <tr>
           <td class="nd_center-cell"><a href="/admin/deviceportctl?q=[% role %]" >[% role | html_entity %]</a></td>
