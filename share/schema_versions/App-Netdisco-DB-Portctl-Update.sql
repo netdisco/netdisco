@@ -11,7 +11,6 @@ CREATE TABLE portctl_role_device (
     PRIMARY KEY (role_name, device_ip)
 );
 
--- Table for port-level permissions (unique id, plus role, device_ip, port)
 CREATE TABLE portctl_role_device_port (
     role_name       text NOT NULL,
     device_ip  inet NOT NULL,
