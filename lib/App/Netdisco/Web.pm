@@ -164,12 +164,9 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
     my $code = sub {
         # trick the ajax into working as if this were a tabbed page
         params->{tab} = $tag;
-        my $q = param("q") || '';
-        $q =~ s/^\s+|\s+$//g; # trim whitespace
         var(nav => 'admin');
         template 'admintask', {
           task => setting('_admin_tasks')->{ $tag },
-          q => $q,
         }, { layout => 'main' };
     };
 
@@ -265,7 +262,6 @@ hook 'before' => sub {
   }
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
   var(sidebar_key => $key);
-
   # trim whitespace
   params->{'q'} =~ s/^\s+|\s+$//g if param('q');
 
