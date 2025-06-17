@@ -1,8 +1,4 @@
-[% IF NOT results.size %]
 
-<div class="span4 alert alert-info">No duplicate devices found.</div>
-
-[% ELSE %]
 
 <div id="nd_devrole" class="nd_modal nd_deep-horizon modal hide fade" style="height: 80%;" tabindex="-1"
 role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
@@ -128,7 +124,6 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
   </tbody>
 </table>
 
-[% END %]
 
 
 <script>
