@@ -8,10 +8,9 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
   </div>
   <div class="modal-body">
     <blockquote>
-      <ul>
-        <li><p>Modify what this role can administrate</p></li>
-        <li><button id="checkall">Toggle checkboxes</button></li>
-      </ul>
+        <p>Modify what this role can administrate</p> <br>
+        <button class="btn" id="checkall" data-device="[% shortname %]">Check All</button>
+        <button class="btn" id="uncheckall" data-device="[% shortname %]">Uncheck All</button>
     </blockquote>
       <table id="search" class="table data-table table-striped table-bordered" width="100%" cellspacing="0">
         <thead>

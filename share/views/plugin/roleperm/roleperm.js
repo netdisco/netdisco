@@ -34,6 +34,13 @@ $(document).ready(function() {
     });
   });
 
+  $('.content').on('click', '#uncheckall', function(event){
+    let displayedDevices = $("#search").find(".device-selection");
+    displayedDevices.each(function() {
+      this.checked = false;
+      $(this).trigger('change');
+    });
+  });
 
 
   

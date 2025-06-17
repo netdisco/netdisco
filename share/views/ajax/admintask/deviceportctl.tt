@@ -28,9 +28,9 @@
             <input type="hidden" data-form="portctl" name="device" value="[% name %]">
             <input type="hidden" data-form="portctl" name="role" value="[% role %]">
 
-            <button class="nd_deny" data-device="[% shortname %]">Set all to Deny</button>
-            <button class="nd_permit" data-device="[% shortname %]">Set all to Permit</button>
-            <button class="nd_adminbutton" name="portctl" data-device="[% shortname %]">Save</button>
+            <button class="btn nd_deny" data-device="[% shortname %]">Set all to Deny</button>
+            <button class="btn nd_permit" data-device="[% shortname %]">Set all to Permit</button>
+            <button class="btn btn-primary nd_adminbutton" name="portctl" data-device="[% shortname %]">Save</button>
           </td>
           <td class="">
             <div unselectable="on"  onselectstart="return false;" onmousedown="return false;" style="border: 1px solid #ccc; padding: 5px; margin: 5px; font-size:2em;" 
