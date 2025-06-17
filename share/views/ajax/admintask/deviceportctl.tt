@@ -24,7 +24,7 @@
         <tr>
           <td class="nd_center-cell">
             [% name %] <br>
-            <input type="hidden" data-form="portctl" id="port-list-[% shortname %]" name="port-list-[% shortname %]" value="">
+            <input type="hidden" data-form="portctl" id="port-list-[% shortname %]" name="port-list" value="">
             <input type="hidden" data-form="portctl" name="device" value="[% name %]">
             <input type="hidden" data-form="portctl" name="role" value="[% role %]">
 

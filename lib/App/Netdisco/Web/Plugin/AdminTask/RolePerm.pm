@@ -68,13 +68,77 @@ ajax '/ajax/control/admin/roleperm/add' => require_role admin => sub {
     # check if the role already exists
     my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
     if ($existing_role) {
+        debug '/rolepemp/add: Role already exists';
         return { success => 0, message => "Role '$role' already exists" };
     }
     # create the new role
     my $new_role = schema(vars->{'tenant'})->resultset('PortctlRole')->create({ role_name => $role });
+    debug '/roleperm/add: Created new role ' . $role;
     return to_json({ success => 1, message => "Role '$role' created successfully" });
 };
 
+
+ajax '/ajax/control/admin/roleperm/update' => require_role admin => sub {
+    my $role = param('role');
+    my $old_role_name = param('old-role');
+    return { success => 0, message => "Role name cannot be empty" } unless $role;
+    # check if the role already exists
+    if ($role ne $old_role_name) {
+        my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
+        if ($existing_role) {
+            debug '/roleperm/update: Role already exists';
+            return { success => 0, message => "Role '$role' already exists" };
+        }
+        # update the role name
+        my $role_rs = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $old_role_name });
+        if ($role_rs) {
+            $role_rs->update({ role_name => $role });
+            # update all permissions associated with the old role name
+            my $device_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $old_role_name });
+            while (my $perm = $device_perms->next) {
+                $perm->update({ role_name => $role });
+            }
+            my $port_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $old_role_name });
+            while (my $perm = $port_perms->next) {
+                $perm->update({ role_name => $role });
+            }
+            debug '/roleperm/update: Updated role ' . $old_role_name . ' to ' . $role;
+            return to_json({ success => 1, message => "Updated $old_role_name to $role" });
+
+        } else {
+            debug '/roleperm/update: Role does not exist';
+            return to_json({ success => 0, message => "Role '$old_role_name' does not exist" });
+        }
+    }
+
+    # bad request if we reach here
+    send_error('Bad Request', 400)
+ 
+
+    # create the new role
+};
+
+ajax '/ajax/control/admin/roleperm/del' => require_role admin => sub {
+    my $role = param('role');
+    return { success => 0, message => "Role name cannot be empty" } unless $role;
+    # check if the role exists
+    my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
+    if ($existing_role) {
+        $existing_role->delete;
+        foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $role })->all) {
+            $permission->delete;
+        }
+        foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $role })->all) {
+            $permission->delete;
+        }
+        debug '/roleperm/del: Deleted role ' . $role;
+        return to_json({ success => 1, message => "Role '$role' deleted successfully" });
+    } else {
+        debug '/roleperm/del: Role does not exist';
+        return to_json({ success => 0, message => "Role '$role' does not exist" });
+    }
+    send_error('Bad Request', 400)
+};
 
 ajax '/ajax/control/admin/roleperm/devices' => require_role admin => sub {
 
@@ -114,8 +178,9 @@ ajax '/ajax/control/admin/roleperm/devices' => require_role admin => sub {
             }
         }
     }
-
-    return to_json({ success => 1, message => "Permission updated successfully" });
+    # count the number of devices in the role
+    debug '/roleperm/devices: Updated permissions for role ' . $role . ' with  ' . scalar(keys %new_ips) . ' devices';
+    return to_json({ success => 1, message => "Permissions updated successfully" });
 
 };
 ####################

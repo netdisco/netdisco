@@ -40,7 +40,7 @@ sub port_acl_by_role_check {
 }
 
 ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
-    # Ok, this is really clunky tbh
+    # Ok, this is a really messy way to make a device ports view
     # Making a pseudo device ports view based solely on port names is really not optimal but it works, will change it later :)
 
     my $reverse_mapping = {
@@ -61,7 +61,6 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
     my @devices = schema(vars->{'tenant'})
         ->resultset('PortctlRoleDevice')->role_can_admin($role);
 
-    
 
     foreach my $dev (@devices) {
       my $device = schema(vars->{'tenant'})->resultset('Device')->search_for_device($dev->device_ip);
@@ -181,24 +180,15 @@ ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
 
 
 ajax '/ajax/control/admin/deviceportctl/portctl' => require_role admin => sub {
-    my $device = param("device");
-
-    my $role = param("role");
+    my $device = param("device"); 
+    my $role = param("role");  # those are the ports with can_admin set to false (saves some db space)
+    my $port_list = param("port-list"); 
 
     unless ($device and $role) {
       send_error('Bad request', 400);
     }
     
-    # get the prefix of the device name
-    $device =~ s/\..*//;
-
-    # those will be the denied ports by default (saves some db space)
-    my $port_list = param("port-list-$device"); 
-
-    # Re-assign the correct device name for searching in the Device dataset
-    $device = param("device"); 
-
-
+    
     my $dev = schema(vars->{'tenant'})->resultset('Device')->find({ name => $device  });
 
     my $device_ip = $dev ? $dev->ip : undef;
@@ -208,6 +198,8 @@ ajax '/ajax/control/admin/deviceportctl/portctl' => require_role admin => sub {
     
     my @device_ports = split /,/, $port_list;
     my $device_ports = { map { $_ => 1 } grep { $_ } @device_ports };
+
+    debug "Device port control for $device_ip with role $role: " . join(', ', keys %$device_ports);
     
     # remove records of a port if it is not in the new list
     foreach my $row ($port_control->all) {
