@@ -45,7 +45,7 @@ Will return false if these checks fail, otherwise true.
 
 =cut
 
-sub port_acl_by_role_check {  
+sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
   return true if $ENV{ND2_DO_FORCE};
 
@@ -79,8 +79,6 @@ sub port_acl_by_role_check {
   }
   return false;
 }
-
-
 
 =head2 port_acl_check( $port, $device?, $user? )
 
@@ -129,7 +127,8 @@ sub port_acl_service {
   return false if setting('portctl_nophones') and port_has_phone($port);
 
   return false if (not setting('portctl_uplinks')) and
-    (($port->is_uplink or $port->remote_type or is_vlan_subinterface($port)) and not
+    (($port->is_uplink or $port->remote_type
+      or $port->is_master or is_vlan_subinterface($port))and not
      (port_has_wap($port) or port_has_phone($port)));
 
   return false if not port_acl_check(@_);

@@ -166,7 +166,6 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
         params->{tab} = $tag;
         my $q = param("q") || '';
         $q =~ s/^\s+|\s+$//g; # trim whitespace
-
         var(nav => 'admin');
         template 'admintask', {
           task => setting('_admin_tasks')->{ $tag },
@@ -174,13 +173,10 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
         }, { layout => 'main' };
     };
 
-    
-
     if (setting('_admin_tasks')->{ $tag }->{ 'roles' }) {
         get "/admin/$tag" => require_any_role setting('_admin_tasks')->{ $tag }->{ 'roles' } => $code;
     }
     else {
-        
         get "/admin/$tag" => require_role admin => $code;
     }
 }
