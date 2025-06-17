@@ -47,9 +47,6 @@ Will return false if these checks fail, otherwise true.
 
 sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
-
-  # skip user acls for netdisco-do --force jobs
-  # this avoids the need to create a netdisco user in the DB and give rights
   return true if $ENV{ND2_DO_FORCE};
 
   # portctl_by_role check
@@ -59,44 +56,27 @@ sub port_acl_by_role_check {
                         ->find({ username => $user });
 
     return false unless $user;
-    my $username = $user->username;
-
     # special case admin user allowed to continue, because
     # they can submit port control jobs
     return true if ($user->admin and $user->port_control);
 
     my $role = $user->portctl_role;
-    my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
-
-    if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
-        # all ports are permitted when the role acl is a device acl
-        # but check the device anyway
-        return true if acl_matches($device, $acl);
-    }
-    elsif ($acl and ref $acl eq ref {}) {
-        my $found = false;
-        foreach my $key (sort keys %$acl) {
-            # lhs matches device, rhs matches port
-            next unless $key and $acl->{$key};
-            if (acl_matches($device, $key)
-                and acl_matches($port, $acl->{$key})) {
-
-                $found = true;
-                last;
-            }
-        }
-
-        return true if $found;
-    }
-    elsif ($role) {
-        # the config does not have an entry for user's role
+    
+    my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
+      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
+      ->single;
+    if ($acl){
+      return true if $acl->can_admin;
+    } elsif ($role){
+      my $acl2 = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
+        ->search({ role_name => $role, device_ip => $device->ip })
+        ->single;
+      return true if $acl2;
+    } 
+    else {
         return true if $user->port_control;
     }
-
-    # the user has "Enabled (any port)" setting
-    return $user->port_control;
   }
-
   return false;
 }
 
@@ -148,7 +128,7 @@ sub port_acl_service {
 
   return false if (not setting('portctl_uplinks')) and
     (($port->is_uplink or $port->remote_type
-      or $port->is_master or is_vlan_subinterface($port)) and not
+      or $port->is_master or is_vlan_subinterface($port))and not
      (port_has_wap($port) or port_has_phone($port)));
 
   return false if not port_acl_check(@_);

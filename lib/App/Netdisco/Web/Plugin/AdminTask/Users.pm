@@ -118,7 +118,11 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    my @port_control_roles = sort keys %{ setting('portctl_by_role') || {} };
+    my @port_control_roles =  schema(vars->{'tenant'})->resultset('PortctlRole')
+      ->search(undef, {
+        order_by => 'role_name',
+      })->search({ role_name => { '!=', '_global_' } })
+      ->get_column('role_name')->all;
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
