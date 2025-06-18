@@ -103,6 +103,7 @@ get '/ajax/content/search/device' => require_login sub {
     # flatten device serial, device chassis_id, and module serial(s), and deduplicate
     map {$_->{module_serials} = [ List::MoreUtils::uniq
                                   sort
+                                  grep {length}
                                   grep {defined} (
                                     $_->{serial},
                                     $_->{chassis_id},
