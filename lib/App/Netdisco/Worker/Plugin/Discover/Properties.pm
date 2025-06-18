@@ -100,13 +100,20 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   # protection for failed SNMP gather
-  if ($device->in_storage and not $device->is_pseudo) {
-      my $ip = $device->ip;
-      my $protect = setting('field_protection')->{'device'} || {};
+  if (not $device->is_pseudo) {
+      my $category = ($device->in_storage ? 'device' : 'new_device');
+      my $protect = setting('field_protection')->{$category} || {};
+
       my %dirty = $device->get_dirty_columns;
+      my $ip = $device->ip;
       foreach my $field (keys %dirty) {
           next unless acl_matches_only($ip, $protect->{$field});
-          if (!defined $dirty{$field} or $dirty{$field} eq '') {
+
+          if ($field eq 'snmp_class') { # cannot be empty but can be SNMP::Info
+              return $job->cancel("discover cancelled: $ip returned unwanted class SNMP::Info")
+                if $dirty{$field} eq 'SNMP::Info';
+          }
+          elsif (!defined $dirty{$field} or $dirty{$field} eq '') {
               return $job->cancel("discover cancelled: $ip failed to return valid $field");
           }
       }
