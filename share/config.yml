@@ -83,6 +83,8 @@ web_plugins:
   - AdminTask::UndiscoveredNeighbors
   - AdminTask::OrphanedDevices
   - AdminTask::DuplicateDevices
+  - AdminTask::RolePerm
+  - AdminTask::DevicePortctl
   - AdminTask::TimedOutDevices
   - AdminTask::UserLog
   - AdminTask::Users

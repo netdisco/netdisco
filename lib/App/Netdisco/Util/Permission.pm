@@ -315,23 +315,22 @@ sub check_acl {
           # (which is done in a second pass to allow all @$things to be
           # inspected for existing properties)
           ITEM: foreach my $item (@$things) {
-              last ITEM if $found;
-
-              if (blessed $item) {
-                  if ($neg xor ($match eq q{} and ! $item->can($prop))) {
-                    return true if not $all;
-                    $found = true;
-                    last ITEM;
-                  }
-              }
-              elsif (ref {} eq ref $item) {
-                  # empty or missing property
-                  if ($neg xor ($match eq q{} and ! exists $item->{$prop})) {
-                    return true if not $all;
-                    $found = true;
-                    last ITEM;
-                  }
-              }
+            last ITEM if $found;
+            if (blessed $item) {
+                if ($match eq q{} and ! $item->can($prop)) {
+                  return true if not $all;
+                  $found = true;
+                  last ITEM;
+                }
+            }
+            elsif (ref {} eq ref $item) {
+                # empty or missing property
+                if  ($match eq q{} and ! exists $item->{$prop}) {
+                  return true if not $all;
+                  $found = true;
+                  last ITEM;
+                }
+            }
           }
 
           return false if $all and not $found;
