@@ -448,7 +448,10 @@ sub search_fuzzy {
           'me.location'    => { '-ilike' => $q },
           'me.name'        => { '-ilike' => $q },
           'me.description' => { '-ilike' => $q },
-          'modules.serial' => $qc,
+          'me.ip' => { '-in' =>
+            $rs->search({ 'modules.serial' => $qc },
+                        { join => 'modules', columns => 'ip' })->as_query()
+          },
           -or => [
             'me.mac::text' => { '-ilike' => $mac},
             'ports_by_mac.mac::text' => { '-ilike' => $mac},
@@ -461,7 +464,6 @@ sub search_fuzzy {
         ],
       },
       {
-        join => 'modules',
         order_by => [qw/ me.dns me.ip /],
         distinct => 1,
       }
