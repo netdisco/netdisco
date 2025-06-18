@@ -1,3 +1,10 @@
+2.086002 - 2025-06-18
+
+  [BUG FIXES]
+
+  * #1351 revert to alternate search for module serial
+  * omit zero-length serials in device search results
+
 2.086001 - 2025-06-04
 
   [BUG FIXES]
