@@ -244,35 +244,39 @@ sub check_acl {
                   $cf = from_json ($item->{'custom_fields'} || '{}');
               }
 
-              if ($neg xor (ref {} eq ref $cf and exists $cf->{$prop} and
-                      ((!defined $cf->{$prop} and $match eq q{})
-                       or
-                       (defined $cf->{$prop} and ref $cf->{$prop} eq q{} and $cf->{$prop} =~ m/^$match$/)) )) {
-                return true if not $all;
-                $found = true;
-                last ITEM;
+              if (ref {} eq ref $cf and exists $cf->{$prop}) {
+                  if ($neg xor
+                          ((!defined $cf->{$prop} and $match eq q{})
+                          or
+                          (defined $cf->{$prop} and ref $cf->{$prop} eq q{} and $cf->{$prop} =~ m/^$match$/)) ) {
+                    return true if not $all;
+                    $found = true;
+                    last ITEM;
+                  }
               }
           }
 
           # missing custom field matches empty string
+          # #1348 or matches string if $neg is set
           # (which is done in a second pass to allow all @$things to be
           # inspected for existing custom fields)
-          ITEM: foreach my $item (@$things) {
-              last ITEM if $found;
+          if (! $found and ($match eq q{} and not $neg) or (length $match and $neg)) {
 
-              my $cf = {};
-              if (blessed $item and $item->can('custom_fields')) {
-                  $cf = from_json ($item->custom_fields || '{}');
-              }
-              elsif (ref {} eq ref $item and exists $item->{'custom_fields'}) {
-                  $cf = from_json ($item->{'custom_fields'} || '{}');
-              }
+              ITEM: foreach my $item (@$things) {
+                  my $cf = {};
+                  if (blessed $item and $item->can('custom_fields')) {
+                      $cf = from_json ($item->custom_fields || '{}');
+                  }
+                  elsif (ref {} eq ref $item and exists $item->{'custom_fields'}) {
+                      $cf = from_json ($item->{'custom_fields'} || '{}');
+                  }
 
-              # empty or missing property
-              if ($neg xor ($match eq q{} and ! exists $cf->{$prop})) {
-                return true if not $all;
-                $found = true;
-                last ITEM;
+                  # empty or missing property
+                  if (ref {} eq ref $cf and ! exists $cf->{$prop}) {
+                      return true if not $all;
+                      $found = true;
+                      last ITEM;
+                  }
               }
           }
 
@@ -289,21 +293,21 @@ sub check_acl {
 
           # property exists, undef is allowed to match empty string
           ITEM: foreach my $item (@$things) {
-              if (blessed $item) {
-                  if ($neg xor ($item->can($prop) and
+              if (blessed $item and $item->can($prop)) {
+                  if ($neg xor
                           ((!defined eval { $item->$prop } and $match eq q{})
                            or
-                           (defined eval { $item->$prop } and ref $item->$prop eq q{} and $item->$prop =~ m/^$match$/)) )) {
+                           (defined eval { $item->$prop } and ref $item->$prop eq q{} and $item->$prop =~ m/^$match$/)) ) {
                     return true if not $all;
                     $found = true;
                     last ITEM;
                   }
               }
-              elsif (ref {} eq ref $item) {
-                  if ($neg xor (exists $item->{$prop} and
+              elsif (ref {} eq ref $item and exists $item->{$prop}) {
+                  if ($neg xor
                           ((!defined $item->{$prop} and $match eq q{})
                            or
-                           (defined $item->{$prop} and ref $item->{$prop} eq q{} and $item->{$prop} =~ m/^$match$/)) )) {
+                           (defined $item->{$prop} and ref $item->{$prop} eq q{} and $item->{$prop} =~ m/^$match$/)) ) {
                     return true if not $all;
                     $found = true;
                     last ITEM;
@@ -312,24 +316,21 @@ sub check_acl {
           }
 
           # missing property matches empty string
+          # #1348 or matches string if $neg is set
           # (which is done in a second pass to allow all @$things to be
           # inspected for existing properties)
-          ITEM: foreach my $item (@$things) {
-              last ITEM if $found;
+          if (! $found and ($match eq q{} and not $neg) or (length $match and $neg)) {
 
-              if (blessed $item) {
-                  if ($neg xor ($match eq q{} and ! $item->can($prop))) {
-                    return true if not $all;
-                    $found = true;
-                    last ITEM;
+              ITEM: foreach my $item (@$things) {
+                  if (blessed $item and ! $item->can($prop)) {
+                      return true if not $all;
+                      $found = true;
+                      last ITEM;
                   }
-              }
-              elsif (ref {} eq ref $item) {
-                  # empty or missing property
-                  if ($neg xor ($match eq q{} and ! exists $item->{$prop})) {
-                    return true if not $all;
-                    $found = true;
-                    last ITEM;
+                  elsif (ref {} eq ref $item and ! exists $item->{$prop}) {
+                      return true if not $all;
+                      $found = true;
+                      last ITEM;
                   }
               }
           }
