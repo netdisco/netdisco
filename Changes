@@ -1,3 +1,14 @@
+2.086003 - 2025-06-21
+
+  [ENHANCEMENTS]
+
+  * #1141 implement field protection for SNMP::Info device class and new devices specifically
+
+  [BUG FIXES]
+
+  * #1348 Negation of ACL for prop:val does not yield the correct result
+  * quiet bug error in acl test file
+
 2.086002 - 2025-06-18
 
   [BUG FIXES]
