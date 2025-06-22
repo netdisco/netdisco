@@ -1,16 +1,7 @@
-
-
-
-
-## Reworking of how portctl is made
-Why ? We use Netdisco where I work to delegate administration permissions on 600+ switches of multiple constructors.
-We regularly create/delete roles and change what that role can administrate in `deployment.yml`. 
-But modifying that file triggers a restart of both web and backend, which is sorta blocking. 
-Hence why I'd like the DB to store portctl roles and ACLs.
-I hope this can be usefull to some more people.
-
-
-
+[![CPAN version](https://badge.fury.io/pl/App-Netdisco.svg)](https://metacpan.org/pod/App::Netdisco)
+[![Release date](https://img.shields.io/github/release-date/netdisco/netdisco.svg?label=released)](https://metacpan.org/pod/App::Netdisco)
+[![Tests Status](https://github.com/netdisco/netdisco/actions/workflows/test_and_publish.yml/badge.svg?event=push)](https://github.com/netdisco/netdisco/actions/workflows/test_and_publish.yml)
+[![Docker Image](https://img.shields.io/badge/docker%20images-ready-blue.svg)](https://store.docker.com/community/images/netdisco/netdisco)
 
 **Netdisco** is a web-based network management tool suitable for small to very large networks. IP and MAC address data is collected into a PostgreSQL database using SNMP, CLI, or device APIs. Some of the things you can do with Netdisco:
 
@@ -30,4 +21,3 @@ It includes a lightweight web server for the interface, a backend daemon to gath
 Please check out the [installation instructions](https://metacpan.org/pod/App::Netdisco) on CPAN. When upgrading, make sure to check the latest [Release Notes](https://github.com/netdisco/netdisco/wiki/Release-Notes).
 
 You can also speak to someone in the [`#netdisco@libera`](https://kiwiirc.com/nextclient/irc.libera.chat/netdisco) IRC channel, or on the [community email list](https://lists.sourceforge.net/lists/listinfo/netdisco-users).
-

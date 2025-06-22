@@ -45,8 +45,9 @@ ajax '/ajax/content/admin/roleperm' => require_role admin => sub {
         my $role = $row->role_name;
         my $device_ip = $row->device_ip;
         my $device = schema(vars->{'tenant'})->resultset('Device')->find({ ip => $device_ip });
+        next unless $device;
+
         my $device_name = $device ? $device->name : $device_ip;
-        
         # Push the device info into the role's array
         push @{$set{$role}}, {
             device_ip => $device_ip,

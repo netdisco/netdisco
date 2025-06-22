@@ -1,5 +1,3 @@
-
-
 <div id="nd_devrole" class="nd_modal nd_deep-horizon modal hide fade" style="height: 80%;" tabindex="-1"
 role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
   <div class="modal-header">
@@ -55,13 +53,13 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
 <table id="data-table" class="table data-table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
     <tr>
-      <th class="nd_center-cell">Host Group</th>
-      <th class="nd_center-cell">Group devices</th>
+      <th class="nd_center-cell">Role Name</th>
+      <th class="nd_center-cell">Devices</th>
       <th></th>
     </tr>
   </thead>
   <tbody>
-          <tr>
+    <tr>
       <td class="nd_center-cell">
       <input data-form="add" name="role" type="text">
       </td>
@@ -69,8 +67,7 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
       <td class="nd_center-cell">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
 
-      </td>
-
+    </td>
     </tr>
     [% SET count = 0 %]
     [% FOREACH role IN results.keys.sort %]
@@ -84,9 +81,20 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
           <a href="/admin/deviceportctl?q=[% role %]" >Edit permissions on ports</a>
         </td>
           <td class="nd_center-cell" id="list-[% role | html_entity %]">
+          <div>
+          [% IF results.$role.size > 10 %] [%# TODO make this a settable variable %]
+            <div class="nd_vlan-total">([% results.$role.size %])</div><span class="nd_linkcell nd_collapse-devices" style="padding-bottom: 10px;">
+            <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show devices</span>
+            <div class="nd_collapsing nd_collapse-pre-hidden">
+          [% END %]
             [% FOREACH device in results.$role %]
               <p>[% device.device_name %]</p>
             [% END %]
+          [% IF results.$role.size > 10 %] [%# TODO make this a settable variable %]
+            <br>
+            </div>
+          [% END %]
+          </div>
             <button class="btn btn-small portpem"
             data-toggle="modal" data-target="#nd_devrole" data-role="[% role | html_entity %]" type="button">
               <i class="icon-edit-sign text-danger"></i>
