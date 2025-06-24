@@ -10,6 +10,7 @@ use MIME::Base64 qw/encode_base64 decode_base64/;
 use File::Slurper 'read_lines';
 use Storable 'dclone';
 use Scalar::Util 'blessed';
+use String::Util 'trim';
 use SNMP::Info;
 
 use base 'Exporter';
@@ -104,7 +105,7 @@ sub load_cache_for_device {
             oid       => $oid,
             oid_parts => [], # not needed temporarily 
             value     => to_json([ ((defined $type and $type eq 'BASE64') ? $value
-                                                                          : encode_base64($value, '')) ]),
+                                                                          : encode_base64(trim($value), '')) ]),
           };
       }
 
@@ -179,10 +180,10 @@ sub make_snmpwalk_browsable {
 
       # always a JSON array of single element
       if (ref {} eq ref $value) {
-          $oids{$k}->{value} = to_json([{ map {($_ => encode_base64($value->{$_}, ''))} keys %{ $value } }]);
+          $oids{$k}->{value} = to_json([{ map {($_ => encode_base64(trim($value->{$_}), ''))} keys %{ $value } }]);
       }
       else {
-          $oids{$k}->{value} = to_json([encode_base64($value, '')]);
+          $oids{$k}->{value} = to_json([encode_base64(trim($value), '')]);
       }
 
       $oids{$k}->{oid_parts} = [ grep {length} (split m/\./, $oids{$k}->{oid}) ];
@@ -443,7 +444,7 @@ sub fixup_browser_from_aliases {
   if (scalar keys %$e_type) {
       my $row = $device->oids->find({ oid => '.1.3.6.1.2.1.47.1.1.1.1.3' });
       $row->update({ value =>
-        to_json([{ map {($_ => encode_base64($e_type->{$_}, ''))} keys %{ $e_type } }]) });
+        to_json([{ map {($_ => encode_base64(trim($e_type->{$_}), ''))} keys %{ $e_type } }]) });
   }
 }
 

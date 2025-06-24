@@ -7,6 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'acl_matches';
 use Dancer::Plugin::DBIC 'schema';
+use String::Util 'trim';
 use Encode;
 
 my $clean = sub {
@@ -86,16 +87,16 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           index  => $e_index->{$entry},
           type   => $e_type->{$entry},
           parent => $e_parent->{$entry},
-          name   => Encode::decode('UTF-8', $e_name->{$entry}),
+          name   => trim(Encode::decode('UTF-8', $e_name->{$entry})),
           class  => $e_class->{$entry},
           pos    => $e_pos->{$entry},
-          hw_ver => Encode::decode('UTF-8', $e_hwver->{$entry}),
-          fw_ver => Encode::decode('UTF-8', $e_fwver->{$entry}),
-          sw_ver => Encode::decode('UTF-8', $e_swver->{$entry}),
-          model  => Encode::decode('UTF-8', $e_model->{$entry}),
-          serial => Encode::decode('UTF-8', $e_serial->{$entry}),
+          hw_ver => trim(Encode::decode('UTF-8', $e_hwver->{$entry})),
+          fw_ver => trim(Encode::decode('UTF-8', $e_fwver->{$entry})),
+          sw_ver => trim(Encode::decode('UTF-8', $e_swver->{$entry})),
+          model  => trim(Encode::decode('UTF-8', $e_model->{$entry})),
+          serial => trim(Encode::decode('UTF-8', $e_serial->{$entry})),
           fru    => $e_fru->{$entry},
-          description => Encode::decode('UTF-8', $e_descr->{$entry}),
+          description => trim(Encode::decode('UTF-8', $e_descr->{$entry})),
           last_discover => \'LOCALTIMESTAMP',
       };
   }
