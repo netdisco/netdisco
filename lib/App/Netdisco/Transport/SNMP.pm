@@ -290,10 +290,14 @@ sub _try_connect {
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
+
           if ($info->offline) {
               add_snmpinfo_aliases($info);
               fixup_browser_from_aliases($device, $info);
           }
+      }
+      else {
+          add_snmpinfo_aliases($info) if $info->offline;
       }
   }
   catch {
