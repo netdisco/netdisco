@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::SNMP qw/get_communities get_mibdirs/;
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
-use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases/;
+use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases fixup_browser_from_aliases/;
 
 use SNMP::Info;
 use Try::Tiny;
@@ -290,7 +290,10 @@ sub _try_connect {
 
           Module::Load::load $class;
           $info = $class->new(%$snmp_args, %comm_args);
-          add_snmpinfo_aliases($info) if $info->offline;
+          if ($info->offline) {
+              add_snmpinfo_aliases($info);
+              fixup_browser_from_aliases($device, $info);
+          }
       }
   }
   catch {
