@@ -504,27 +504,14 @@ this to load Netdisco MIBs into the database. It only needs to be done once.
 Builds and saves a data structure which Netdisco can use to mimic the device
 (if shared) and also browse the SNMP Objects in the web.
 
-By default the command will gather Objects for web browsing. Use the C<-p>
-parameter (mnemonic: persist) to save the cache at
-L<NETDISCO_HOME/logs/snapshots/IP> (where C<IP> is the canonical IP of the
-device). You can share the file and it can be used to create a realistic
-pseudo device in another installation.
+By default the command will gather Objects which can be downloaded from the
+web under Device Details tab. This allows another user to mimic your device.
 
- ~/bin/netdisco-do snapshot -d 192.0.2.1 -p file
+If you previously ran the C<loadmibs> action before running this action,
+the Objects also become browsable in the web (under Device SNMP tab).
 
-Optionally use the C<-e> parameter to request MIB Objects other than the
-defaults. This parameter takes a comma-separated list and supports three
-types of item: MIB names (the file name in netdisco-mibs), MIB vendor (in
-netdisco-mibs, will load all the MIBs within), or SNMP::Info class (loads all
-MIBs needed).
-
- ~/bin/nedisco-do snapshot -d 192.0.2.1 -e SNMP::Info::Layer3::Arista
- ~/bin/nedisco-do snapshot -d 192.0.2.1 -e PICA-PRIVATE-MIB
- ~/bin/nedisco-do snapshot -d 192.0.2.1 -e cisco,net-snmp
- ~/bin/nedisco-do snapshot -d 192.0.2.1 -e SNMP::Info::Layer3,PICA-PRIVATE-MIB,net-snmp
-
-Note that to web browse the gathered SNMP data, you also first need to run
-the C<loadmibs> command.
+Normally the SNMP Objects are all gathered from C<.1> root but you can use
+C<-e> parameter to change this.
 
 =head2 addpseudodevice
 
