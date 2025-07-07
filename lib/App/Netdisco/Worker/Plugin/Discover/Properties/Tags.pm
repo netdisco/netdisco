@@ -8,7 +8,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::Permission 'acl_matches';
 
-register_worker({ phase => 'main' }, sub {
+register_worker({ phase => 'main', title => 'device tags' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
   return unless $device->in_storage;
@@ -33,7 +33,7 @@ register_worker({ phase => 'main' }, sub {
     $device->ip, scalar @tags_to_set, (scalar @tags_to_set > 1);
 });
 
-register_worker({ phase => 'main' }, sub {
+register_worker({ phase => 'main', title => 'device port tags' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
   return unless $device->in_storage;

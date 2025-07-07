@@ -21,7 +21,8 @@ use List::MoreUtils ();
 use JSON::PP ();
 use Encode;
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'initial device creation and basic device details'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -153,7 +154,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   });
 });
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'cancel if device canonical IP is known to another device'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -170,7 +172,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   return Status->info(" [$device] device - OK to continue discover (not a duplicate)");
 });
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'cancel if no valid interfaces found'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -203,7 +206,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   return $job->cancel("discover cancelled: $device failed to return valid interfaces");
 });
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'get device IP aliases and their subnets'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -248,7 +252,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
 
 # NOTE must come after the IP Aliases gathering for ignore ACLs to work
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'get port details'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
