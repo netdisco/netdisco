@@ -1,3 +1,18 @@
+2.087000 - 2025-07-14
+
+  This release is made in memory of Matt S. Trout.
+
+  [ENHANCEMENTS]
+
+  * whitespace trim entities text for better search matches
+  * better debug titles of the discover job worklets
+  * updated netdisco-do docs
+
+  [BUG FIXES]
+
+  * #1354 snapshot devces rediscovered lose entities mib
+  * disable munge_e_type() as it fails noisily on some values
+
 2.086003 - 2025-06-21
 
   [ENHANCEMENTS]
