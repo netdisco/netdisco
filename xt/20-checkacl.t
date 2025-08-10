@@ -8,7 +8,7 @@ use Test::More 1.302083;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 
 BEGIN {
-  use_ok( 'App::Netdisco::Configuration', 'acl_matches' );
+  use_ok( 'App::Netdisco::Configuration' );
   use_ok( 'App::Netdisco::Util::Permission', 'acl_matches' );
 }
 
@@ -41,6 +41,9 @@ my @conf = (
   '* * * * * *', #27
   '!1 1 1 1 1', #28
   '!* * * * *', #29
+
+  '!port:TwentyFiveGigE\d\/\d\/\d+', #30
+  '!port:TenGigabitEthernet\d\/\d+', #31 
 );
 
 # name, ipv4, ipv6, v4 prefix, v6 prefix
@@ -253,5 +256,17 @@ is(acl_matches('localhost',[$conf[26]]), 0, 'not current time');
 
 is(acl_matches('localhost',[$conf[29]]), 0, '!current time');
 ok(acl_matches('localhost',[$conf[28]]), '! not current time');
+
+# from bug reports
+ok(acl_matches({port => 'FastEthernet10'},[$conf[20],$conf[30],$conf[31]]), '#1348 anded negated prop:val mismatch');
+is(acl_matches($dp,[$conf[20],$conf[30],$conf[31]]), 0, '#1348 anded negated prop:val match');
+
+ok(acl_matches({foo => 'FastEthernet10'},[$conf[20],$conf[30],$conf[31]]), '#1348 missing prop matches string if neg is set');
+ok(acl_matches($dp,'bar:'), '#1348 missing prop will match if neg is not set');
+is(acl_matches($dp,'!bar:'), 0, '#1348 missing prop cannot match if neg is set');
+
+ok(acl_matches($dp,'!cf:foo:asdfasfd'), '#1348 missing cf matches string if neg is set');
+ok(acl_matches($dp,'cf:foo:'), '#1348 missing cf will match if neg is not set');
+is(acl_matches($dp,'!cf:foo:'), 0, '#1348 missing cf cannot match if neg is set');
 
 done_testing;

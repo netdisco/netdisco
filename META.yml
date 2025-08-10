@@ -27,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.086001'
+    version: '2.087000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -666,6 +666,7 @@ requires:
   Socket6: '0.23'
   Starman: '0.4008'
   Storable: '0'
+  String::Util: '1.35'
   Sub::Util: '1.40'
   Sys::SigAction: '0'
   Template: '2.24'
@@ -695,5 +696,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.086001'
+version: '2.087000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

@@ -1,3 +1,36 @@
+2.087000 - 2025-07-14
+
+  This release is made in memory of Matt S. Trout.
+
+  [ENHANCEMENTS]
+
+  * whitespace trim entities text for better search matches
+  * better debug titles of the discover job worklets
+  * updated netdisco-do docs
+
+  [BUG FIXES]
+
+  * #1354 snapshot devces rediscovered lose entities mib
+  * disable munge_e_type() as it fails noisily on some values
+
+2.086003 - 2025-06-21
+
+  [ENHANCEMENTS]
+
+  * #1141 implement field protection for SNMP::Info device class and new devices specifically
+
+  [BUG FIXES]
+
+  * #1348 Negation of ACL for prop:val does not yield the correct result
+  * quiet bug error in acl test file
+
+2.086002 - 2025-06-18
+
+  [BUG FIXES]
+
+  * #1351 revert to alternate search for module serial
+  * omit zero-length serials in device search results
+
 2.086001 - 2025-06-04
 
   [BUG FIXES]

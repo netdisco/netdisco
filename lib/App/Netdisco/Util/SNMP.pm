@@ -193,6 +193,9 @@ sub decode_and_munge {
     my $class = class_name($munger);
     Module::Load::load $class;
 
+    # munge_e_type seems broken, noop it
+    return $json->encode( $data ) if $sub eq 'munge_e_type' and $class eq 'SNMP::Info';
+
     $data = (ref {} eq ref $data)
       ? { map {($_ => (defined $data->{$_} ? $class->can($sub)->($data->{$_}) : undef))}
               keys %$data }

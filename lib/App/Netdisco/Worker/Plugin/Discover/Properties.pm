@@ -21,7 +21,8 @@ use List::MoreUtils ();
 use JSON::PP ();
 use Encode;
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'initial device creation and basic device details'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -100,13 +101,20 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   }
 
   # protection for failed SNMP gather
-  if ($device->in_storage and not $device->is_pseudo) {
-      my $ip = $device->ip;
-      my $protect = setting('field_protection')->{'device'} || {};
+  if (not $device->is_pseudo) {
+      my $category = ($device->in_storage ? 'device' : 'new_device');
+      my $protect = setting('field_protection')->{$category} || {};
+
       my %dirty = $device->get_dirty_columns;
+      my $ip = $device->ip;
       foreach my $field (keys %dirty) {
           next unless acl_matches_only($ip, $protect->{$field});
-          if (!defined $dirty{$field} or $dirty{$field} eq '') {
+
+          if ($field eq 'snmp_class') { # cannot be empty but can be SNMP::Info
+              return $job->cancel("discover cancelled: $ip returned unwanted class SNMP::Info")
+                if $dirty{$field} eq 'SNMP::Info';
+          }
+          elsif (!defined $dirty{$field} or $dirty{$field} eq '') {
               return $job->cancel("discover cancelled: $ip failed to return valid $field");
           }
       }
@@ -146,7 +154,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   });
 });
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'cancel if device canonical IP is known to another device'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -163,7 +172,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   return Status->info(" [$device] device - OK to continue discover (not a duplicate)");
 });
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'cancel if no valid interfaces found'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -196,7 +206,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
   return $job->cancel("discover cancelled: $device failed to return valid interfaces");
 });
 
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'get device IP aliases and their subnets'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -241,7 +252,8 @@ register_worker({ phase => 'early', driver => 'snmp' }, sub {
 
 
 # NOTE must come after the IP Aliases gathering for ignore ACLs to work
-register_worker({ phase => 'early', driver => 'snmp' }, sub {
+register_worker({ phase => 'early', driver => 'snmp',
+    title => 'get port details'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
