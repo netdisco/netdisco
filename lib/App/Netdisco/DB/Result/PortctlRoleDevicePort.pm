@@ -25,7 +25,7 @@ __PACKAGE__->add_columns(
   "port",
   { data_type => "text", is_nullable => 0 },
   "can_admin",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "boolean", is_nullable => 0 },
 );
 
 __PACKAGE__->set_primary_key("role_name", "device_ip", "port");

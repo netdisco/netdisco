@@ -14,9 +14,7 @@ __PACKAGE__->load_components(qw/
 
 sub role_can_admin { 
     my ($self, $role) = @_;
-    return $self->search({ role_name => $role })->all;
+    return $self->search({ role_name => $role, can_admin => 1 })->all;
 }
-
-
 
 1;
