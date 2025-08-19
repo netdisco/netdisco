@@ -132,13 +132,13 @@ register_worker({ phase => 'early', driver => 'snmp',
                       @{ setting('custom_fields')->{device} || [] };
 
       # filter custom_fields for current valid fields
-      foreach my $field (keys %$fields) {
-          delete $fields->{$field} unless exists $ok_fields{$field};
-          $fields->{$field} = Encode::decode('UTF-8', $fields->{$field});
+      foreach my $field (keys %ok_fields) {
+          $ok_fields{$field} = exists $fields->{$field}
+            ? Encode::decode('UTF-8', $fields->{$field}) : undef;
       }
 
       # set new custom_fields
-      $device->set_column( custom_fields => $coder->encode($fields) );
+      $device->set_column( custom_fields => $coder->encode(\%ok_fields) );
   }
 
   # support for Hooks
@@ -457,13 +457,15 @@ register_worker({ phase => 'early', driver => 'snmp',
 
     # filter custom_fields for current valid fields
     foreach my $port (keys %fields) {
-        foreach my $field (keys %{ $fields{$port} }) {
-            delete $fields{$port}->{$field} unless exists $ok_fields{$field};
-            $fields{$port}->{$field} = Encode::decode('UTF-8', $fields{$port}->{$field});
+        my %new_fields = ();
+
+        foreach my $field (keys %ok_fields) {
+            $new_fields{$field} = exists $fields{$port}->{$field}
+              ? Encode::decode('UTF-8', $fields{$port}->{$field}) : undef;
         }
 
         # set new custom_fields
-        $deviceports{$port}->{custom_fields} = $coder->encode($fields{$port});
+        $deviceports{$port}->{custom_fields} = $coder->encode(\%new_fields);
     }
 
     my $gone = $device->ports->delete({keep_nodes => 1});
