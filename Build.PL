@@ -65,7 +65,7 @@ App::Netdisco::Builder->new(
     'JSON' => '2.90',
     'JSON::PP' => '0',
     'JSON::XS' => '3.01',
-    'List::Util' => '1.49',
+    'List::Util' => '1.70',
     'List::MoreUtils' => '0.428',
     'MIME::Base64' => '3.13',
     'Module::Load' => '0.32',

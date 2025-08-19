@@ -144,7 +144,9 @@ sub store_neighbors {
   # allow fallback from v6 to try v4
   my %success_with_index = ();
 
-  NEIGHBOR: foreach my $pair (pairs %c_ipv6, %$c_ip) {
+  NEIGHBOR: foreach my $pair ((sort { $a->key <=> $b->key } pairs %c_ipv6),
+                              (sort { $a->key <=> $b->key } pairs %$c_ip)) {
+
       my ($entry, $c_ip_entry) = (@$pair);
       next unless defined $entry and defined $c_ip_entry;
 
