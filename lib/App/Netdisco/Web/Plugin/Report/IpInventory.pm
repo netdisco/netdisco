@@ -31,7 +31,7 @@ register_report(
           limit => {
             description => 'Maximum number of historical records',
             enum => [qw/32 64 128 256 512 1024 2048 4096 8192/],
-            default => '256',
+            default => '2048',
           },
           never => {
             description => 'Include in the report IPs never seen',

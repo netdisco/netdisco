@@ -6,6 +6,8 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use Path::Class 'dir';
+use List::Util 'pairs';
+use Storable 'dclone';
 
 set(
   '_additional_css'         => [],
@@ -203,6 +205,8 @@ register 'register_report' => sub {
 
           if ($config->{api_endpoint}) {
               (my $category_path = lc $config->{category}) =~ s/ /-/g;
+              my $params_copy = dclone ($config->{api_parameters} || []); # swagger plugin nukes it?
+
               swagger_path {
                 tags => ['Reports'],
                 path => setting('api_base')."/report/$category_path/$tag",
@@ -212,7 +216,22 @@ register 'register_report' => sub {
                   ($config->{bind_params} ? [map { $_ => {} } @{ $config->{bind_params} }] : [])),
                 responses => 
                   ($config->{api_responses} || { default => {} }),
-              }, get "/api/v1/report/$category_path/$tag" => require_role api => sub {
+              },
+
+              get "/api/v1/report/$category_path/$tag" => require_role api => sub {
+                # #1360 workaround for swagger missing that False is false
+                foreach my $spec (pairs @{ $params_copy }) {
+                    my ($param, $conf) = @$spec;
+                    next unless exists $conf->{type} and $conf->{type} eq 'boolean';
+                    next unless exists request->{'_query_params'}->{$param}
+                      and defined request->{'_query_params'}->{$param}
+                      and ref q{} eq ref request->{'_query_params'}->{$param}; # multiple params are arrayref
+
+                    if (request->{'_query_params'}->{$param} eq 'False') {
+                        delete request->{'_query_params'}->{$param};
+                        delete params->{$param};
+                    }
+                }
                 forward "/ajax/content/report/$tag";
               };
           }
