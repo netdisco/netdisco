@@ -387,7 +387,7 @@ config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 # upgrade bare bind_params to dict
 foreach my $r ( @{setting('reports')} ) {
     next unless exists $r->{bind_params};
-    my $new_bind_params = [ map {ref ? $_ : {param => $_}} @{ $r->{bind_params} } ];
+    my $new_bind_params = [ map {ref $_ ? $_ : {param => $_}} @{ $r->{bind_params} } ];
     $r->{'bind_params'} = $new_bind_params;
 }
 
