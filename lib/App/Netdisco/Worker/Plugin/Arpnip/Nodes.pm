@@ -63,9 +63,11 @@ register_worker({ phase => 'store' }, sub {
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
     $device->ip, $v6;
 
-  $device->update({last_arpnip => \$now});
-
   my $status = $job->best_status;
+  if (Status->$status->level == Status->done->level) {
+      $device->update({last_arpnip => \$now});
+  }
+
   return Status->$status("Ended arpnip for $device");
 });
 

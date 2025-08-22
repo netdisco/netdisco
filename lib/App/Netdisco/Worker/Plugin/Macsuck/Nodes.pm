@@ -190,9 +190,11 @@ register_worker({ phase => 'store',
   debug sprintf ' [%s] macsuck - removed %d fwd table entries to archive',
     $device->ip, $archived;
 
-  $device->update({last_macsuck => \$now});
-
   my $status = $job->best_status;
+  if (Status->$status->level == Status->done->level) {
+      $device->update({last_macsuck => \$now});
+  }
+
   return Status->$status("Ended macsuck for $device");
 });
 
