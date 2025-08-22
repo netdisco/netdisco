@@ -63,7 +63,7 @@ if (ref {} eq ref setting('database')) {
     my $user = setting('database')->{user};
     my $pass = setting('database')->{pass};
 
-    my $dsn = "dbi:Pg:dbname=${name}";
+    my $dsn = sprintf 'dbi:Pg:dbname=%s', ($name || '');
     $dsn .= ";host=${host}" if $host;
 
     # set up the netdisco schema now we have access to the config
