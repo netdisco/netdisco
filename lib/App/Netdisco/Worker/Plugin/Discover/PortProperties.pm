@@ -103,19 +103,27 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{remote_is_phone} ||= 'false';
     $properties{ $port }->{remote_is_discoverable} ||= 'true';
 
-    if (scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap
-        or match_to_setting($remote_type, 'wap_platforms')) {
-
+    if (match_to_setting($remote_type, 'wap_platforms')) {
         $properties{ $port }->{remote_is_wap} = 'true';
-        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a WAP',
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a WAP by wap_platforms',
           $device->ip, $port;
     }
 
-    if (scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap
-        or match_to_setting($remote_type, 'phone_platforms')) {
+    if (scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap) {
+        $properties{ $port }->{remote_is_wap} = 'true';
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a WAP by wap_capabilities',
+          $device->ip, $port;
+    }
 
+    if (match_to_setting($remote_type, 'phone_platforms')) {
         $properties{ $port }->{remote_is_phone} = 'true';
-        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a Phone',
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a Phone by phone_platforms',
+          $device->ip, $port;
+    }
+
+    if (scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap) {
+        $properties{ $port }->{remote_is_phone} = 'true';
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is a Phone by phone_capabilities',
           $device->ip, $port;
     }
 
