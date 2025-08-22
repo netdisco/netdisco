@@ -406,9 +406,6 @@ config->{api_base}
 my @new_dcf = ();
 my @new_hooks = @{ setting('hooks') };
 
-FindBin::again();
-my $me = File::Spec->catfile($FindBin::RealBin, 'netdisco-do');
-
 foreach my $field (@{ setting('custom_fields')->{'device'} }) {
     next unless $field->{'name'};
 
@@ -427,12 +424,12 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
         event => 'discover',
         with => {
                             # get JSON format of the snmp_object
-            cmd => (sprintf q!%s show -d '[%% ip %%]' -e %s --quiet!
+            cmd => (sprintf q![%% ndo %%] show -d '[%% ip %%]' -e %s --quiet!
                             # this jq will: promote null to [], promote bare string to ["str"], collapse obj to list
                             .q! | jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort'!
                             # send the JSON output into device custom_field (action inline)
-                            .q! | %s %s --enqueue -d '[%% ip %%]' -e '-' --quiet!,
-                            $me, $field->{'snmp_object'}, $me, ('cf_'. $field->{'name'})),
+                            .q! | [%% ndo %%] %s --enqueue -d '[%% ip %%]' -e '-' --quiet!,
+                            $field->{'snmp_object'}, ('cf_'. $field->{'name'})),
         },
         filter => {
             no => $field->{'no'},
@@ -448,7 +445,7 @@ foreach my $action (qw(macsuck arpnip)) {
         type => 'exec',
         event => 'new_device',
         with => {
-            cmd => (sprintf q!%s %s --enqueue -d '[%% ip %%]' --quiet!, $me, $action)
+            cmd => (sprintf q![%% ndo %%] %s --enqueue -d '[%% ip %%]' --quiet!, $action)
         }
     };
 }
