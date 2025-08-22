@@ -428,7 +428,7 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
                             # this jq will: promote null to [], promote bare string to ["str"], collapse obj to list
                             .q! | jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort'!
                             # send the JSON output into device custom_field (action inline)
-                            .q! | [%% ndo %%] %s --enqueue -d '[%% ip %%]' -e '-' --quiet!,
+                            .q! | [%% ndo %%] %s --enqueue -d '[%% ip %%]' -e '@-' --quiet!,
                             $field->{'snmp_object'}, ('cf_'. $field->{'name'})),
         },
         filter => {

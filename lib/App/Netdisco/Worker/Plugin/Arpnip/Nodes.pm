@@ -12,7 +12,6 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
-use File::Slurper 'read_text';
 use NetAddr::IP::Lite ':lower';
 use Regexp::Common 'net';
 use NetAddr::MAC ();
@@ -127,15 +126,6 @@ register_worker({ phase => 'main', driver => 'direct' }, sub {
 
   # load cache from file or copy from job param
   my $data = $job->extra;
-
-  if ($job->port) {
-    return $job->cancel(sprintf 'could not open data source "%s"', $job->port)
-      unless -f $job->port;
-
-    $data = read_text($job->port)
-      or return $job->cancel(sprintf 'problem reading from file "%s"', $job->port);
-  }
-
   my @arps = (length $data ? @{ from_json($data) } : ());
 
   return $job->cancel('data provided but 0 arp entries found')

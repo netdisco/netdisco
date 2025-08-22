@@ -15,7 +15,6 @@ use App::Netdisco::Util::Web 'sort_port';
 
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
-use File::Slurper 'read_text';
 use Scope::Guard 'guard';
 use Regexp::Common 'net';
 use NetAddr::MAC ();
@@ -54,15 +53,6 @@ register_worker({ phase => 'main', driver => 'direct',
 
   # load cache from file or copy from job param
   my $data = $job->extra;
-
-  if ($job->port) {
-    return $job->cancel(sprintf 'could not open data source "%s"', $job->port)
-      unless -f $job->port;
-
-    $data = read_text($job->port)
-      or return $job->cancel(sprintf 'problem reading from file "%s"', $job->port);
-  }
-
   my @fwtable = (length $data ? @{ from_json($data) } : ());
 
   return $job->cancel('data provided but 0 fwd entries found')
