@@ -5,7 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::Device qw/get_device is_discoverable/;
+use App::Netdisco::Util::Device qw/get_device is_discoverable match_to_setting/;
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
@@ -196,6 +196,12 @@ sub store_neighbors {
       if ($remote_ip and acl_matches($remote_ip, 'group:__LOCAL_ADDRESSES__')) {
           debug sprintf ' [%s] neigh - %s is a non-unique local address - skipping',
             $device->ip, $remote_ip;
+          next NEIGHBOR;
+      }
+
+      if ($remote_type and match_to_setting($remote_type, 'neighbor_no_type')) {
+          debug sprintf ' [%s] neigh - %s has type %s matching neighbor_no_type - skipping',
+            $device->ip, $remote_ip, $remote_type;
           next NEIGHBOR;
       }
 
