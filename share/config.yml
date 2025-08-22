@@ -645,6 +645,7 @@ snmpretries: 2
 net_snmp_options: {}
 snmp_try_slow_connect: true
 snmp_remoteport: {}
+delete_duplicate_serials: false
 field_protection:
   device:
     serial: ['group:__ANY__']

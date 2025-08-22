@@ -149,6 +149,13 @@ register_worker({ phase => 'early', driver => 'snmp',
   vars->{'new_device'} = 1 if not $device->in_storage;
 
   schema('netdisco')->txn_do(sub {
+    if (setting('delete_duplicate_serials')) {
+        my $gone = schema('netdisco')->resultset('Device')->search({
+          ip => { '!=' => $device->ip }, serial => $device->serial,
+        })->delete;
+        debug sprintf ' removed %s devices with the same serial number', ($gone || '0');
+    }
+
     $device->update_or_insert(undef, {for => 'update'});
     return Status->done("Ended discover for $device");
   });

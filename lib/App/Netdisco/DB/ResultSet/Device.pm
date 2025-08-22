@@ -729,6 +729,7 @@ sub delete {
     try { $ip ||= $devices->{attrs}->{where}->{ip} };
     try { $ip ||= $devices->{attrs}->{where}->{'me.ip'} };
   }
+  $ip = ((ref {} eq ref $ip) ? [%$ip]->[1] : $ip);
   $ip ||= 'netdisco';
 
   foreach my $set (qw/
