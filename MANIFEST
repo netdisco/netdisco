@@ -50,6 +50,9 @@ lib/App/Netdisco/DB/Result/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/NodeNbt.pm
 lib/App/Netdisco/DB/Result/NodeWireless.pm
 lib/App/Netdisco/DB/Result/Oui.pm
+lib/App/Netdisco/DB/Result/PortctlRoleDevice.pm
+lib/App/Netdisco/DB/Result/PortctlRoleDevicePort.pm
+lib/App/Netdisco/DB/Result/PortctlRole.pm
 lib/App/Netdisco/DB/Result/Process.pm
 lib/App/Netdisco/DB/Result/Product.pm
 lib/App/Netdisco/DB/Result/Session.pm
@@ -104,6 +107,9 @@ lib/App/Netdisco/DB/ResultSet/Node.pm
 lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
 lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
+lib/App/Netdisco/DB/ResultSet/PortctlRoleDevice.pm
+lib/App/Netdisco/DB/ResultSet/PortctlRoleDevicePort.pm
+lib/App/Netdisco/DB/ResultSet/PortctlRole.pm
 lib/App/Netdisco/DB/ResultSet/Subnet.pm
 lib/App/Netdisco/DB/SchemaVersioned.pm
 lib/App/Netdisco/DB/SetOperations.pm
@@ -167,12 +173,14 @@ lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/GenericReport.pm
 lib/App/Netdisco/Web/Password.pm
 lib/App/Netdisco/Web/Plugin.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/DevicePortctl.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/DuplicateDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/NodeMonitor.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/OrphanedDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/RolePerm.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/TimedOutDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
@@ -356,6 +364,8 @@ share/public/images/glyphicons-halflings.png
 share/public/images/glyphicons_072_bookmark.png
 share/public/images/matte_basic_pin.png
 share/public/images/navbar_disco.png
+share/public/images/port_deny.png
+share/public/images/port_permit.png
 share/public/images/sort_asc.png
 share/public/images/sort_asc_disabled.png
 share/public/images/sort_both.png
@@ -541,7 +551,9 @@ share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-90-91-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-91-92-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-92-93-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-Portctl-Update.sql
 share/views/admintask.tt
+share/views/ajax/admintask/deviceportctl.tt
 share/views/ajax/admintask/duplicatedevices.tt
 share/views/ajax/admintask/jobqueue.tt
 share/views/ajax/admintask/nodemonitor.tt
@@ -549,6 +561,7 @@ share/views/ajax/admintask/orphaned.tt
 share/views/ajax/admintask/orphaned_csv.tt
 share/views/ajax/admintask/performance.tt
 share/views/ajax/admintask/pseudodevice.tt
+share/views/ajax/admintask/roleperm.tt
 share/views/ajax/admintask/slowdevices.tt
 share/views/ajax/admintask/timedoutdevices.tt
 share/views/ajax/admintask/topology.tt
@@ -644,6 +657,8 @@ share/views/layouts/main.tt
 share/views/layouts/noop.tt
 share/views/password.tt
 share/views/plugin.tt
+share/views/plugin/deviceportctl/deviceportctl.js
+share/views/plugin/roleperm/roleperm.js
 share/views/report.tt
 share/views/search.tt
 share/views/sidebar/admintask/jobqueue.tt
