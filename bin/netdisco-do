@@ -233,6 +233,8 @@ else {
 
 exit $exitstatus;
 
+=encoding UTF-8
+
 =head1 NAME
 
 netdisco-do - Run any Netdisco job from the command-line.
