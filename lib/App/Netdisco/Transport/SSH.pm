@@ -97,7 +97,11 @@ sub session_for {
     $device->ip,
     user => $auth->{username},
     password => $auth->{password},
-    timeout => 30,
+    key_path => $auth->{key_path},
+    passphrase => $auth->{passphrase},
+    port => $auth->{port},
+    batch_mode => $auth->{batch_mode},
+    timeout => $auth->{timeout} ? $auth->{timeout} : 30,
     async => 0,
     default_stderr_file => '/dev/null',
     master_opts => \@master_opts
