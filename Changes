@@ -18,6 +18,7 @@
   * #1360 workaround for swagger missing that False is false
   * #1376 only update last_macsuck and last_arpnip on successful job
   * #1381 add stack serials to device search CSV export
+  * field_protection should protect serial on new devices as well as existing
   * add encoding to netdisco-do POD
 
 2.087001 - 2025-08-20
