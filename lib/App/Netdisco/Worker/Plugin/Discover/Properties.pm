@@ -110,7 +110,7 @@ register_worker({ phase => 'early', driver => 'snmp',
       foreach my $field (keys %dirty) {
           next unless acl_matches_only($ip, $protect->{$field});
 
-          if ($field eq 'snmp_class') { # cannot be empty but can be SNMP::Info
+          if ($field eq 'snmp_class') { # reject SNMP::Info (it would not be empty)
               return $job->cancel("discover cancelled: $ip returned unwanted class SNMP::Info")
                 if $dirty{$field} eq 'SNMP::Info';
           }

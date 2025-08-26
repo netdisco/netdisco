@@ -649,6 +649,8 @@ delete_duplicate_serials: false
 field_protection:
   device:
     serial: ['group:__ANY__']
+  new_device:
+    serial: ['group:__ANY__']
 devices_no: []
 devices_only: []
 discover_no: []
