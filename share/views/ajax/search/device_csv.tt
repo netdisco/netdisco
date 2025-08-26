@@ -1,11 +1,11 @@
 [% USE CSV -%]
-[% CSV.dump(['Device','Location','System Name','Model','OS Version','Management IP','Serial','First Seen','Last Discovered']) %]
+[% CSV.dump(['Device','Location','System Name','Model','OS Version','Management IP','Serials','First Seen','Last Discovered']) %]
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
   [% device = row.dns || row.ip %]
-  [% FOREACH col IN [ device row.location row.name row.model row.os_ver row.ip row.serial row.first_seen_stamp row.last_discover_stamp] %]
-    [% mylist.push(col) %]
+  [% FOREACH col IN [ device row.location row.name row.model row.os_ver row.ip row.module_serials row.first_seen_stamp row.last_discover_stamp] %]
+    [% mylist.push(col.list.join(',')) %]
   [% END %]
   [% CSV.dump(mylist) %]
 
