@@ -368,6 +368,22 @@ Run an nbtstat on the node (specified with C<-d>).
 
 Queue an nbtstat for all known nodes.
 
+=head2 Custom Field update
+
+Update a Device or Device Port custom field using `netdisco-do`. Specify
+the field name as the "action" prefixed with `cf_`. The content can be
+passed in the command, or taken from a file, or from standard input.
+
+ # pass directly
+ ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e 'field value'
+ # pipe from standard input
+ ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@-'
+ # read from a file
+ ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@/tmp/myfield'
+
+Note that `--enqueue ` is *required* for the feature to work. The change
+is, however, applied instanty in the database when `netdisco-do` runs.
+
 =head2 expire
 
 Run Device and Node expiry actions according to configuration.
