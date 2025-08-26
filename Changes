@@ -1,8 +1,24 @@
-2.087002 - tbd
+2.088000 - 2025-08-26
+
+  [NEW FEATURES]
+
+  * #1370 add neighbor_no_type setting to ignore neighbors of given type
+  * #1374 netdisco-do --extra accepts content or stdin or file, for arpnip/macsuck/cf_
 
   [ENHANCEMENTS]
 
-  * #1378 SSH transport pubkey authentication support
+  * #1363 new setting delete_duplicate_serials to clean duplicates on device discovery
+  * #1365 make clear in logs the LLDP capabilities and platforms matching
+  * #1375 path-to-netdisco-do available as template variable "ndo" in Hooks
+  * #1378 SSH transport public key authentication support
+  * allow dsn name to be empty for testing purposes
+
+  [BUG FIXES]
+
+  * #1360 workaround for swagger missing that False is false
+  * #1376 only update last_macsuck and last_arpnip on successful job
+  * #1381 add stack serials to device search CSV export
+  * add encoding to netdisco-do POD
 
 2.087001 - 2025-08-20
 
