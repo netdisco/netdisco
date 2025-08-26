@@ -1,3 +1,9 @@
+2.088001 - 2025-08-26
+
+  [BUG FIXES]
+
+  * revert mistaken field_protection should protect serial on new devices
+
 2.088000 - 2025-08-26
 
   [NEW FEATURES]
