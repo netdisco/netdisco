@@ -1,3 +1,9 @@
+2.087002 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1378 SSH transport pubkey authentication support
+
 2.087001 - 2025-08-20
 
   [BUG FIXES]
