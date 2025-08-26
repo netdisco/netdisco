@@ -25,7 +25,7 @@
   [BUG FIXES]
 
   * #1366 add sorting by index to neighbor processing
-  * fix bug in custom_fields refresh for device (device_ports fix to come)
+  * fix bug in custom_fields refresh for device
   * fix ambiguous ref() found by new Perls
 
 2.087000 - 2025-07-14
