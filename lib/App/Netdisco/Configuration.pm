@@ -8,6 +8,7 @@ use FindBin;
 use File::Spec;
 use Path::Class 'dir';
 use Net::Domain 'hostdomain';
+use AnyEvent::Loop; # avoid EV
 use File::ShareDir 'dist_dir';
 use URI::Based;
 
@@ -184,6 +185,7 @@ setting('dns')->{'ETCHOSTS'} = {};
 {
   # AE::DNS::EtcHosts only works for A/AAAA/SRV, but we want PTR.
   # this loads+parses /etc/hosts file using AE. dirty hack.
+  use AnyEvent::Loop;
   use AnyEvent::Socket 'format_address';
   use AnyEvent::DNS::EtcHosts;
   AnyEvent::DNS::EtcHosts::_load_hosts_unless(sub{},AE::cv);
