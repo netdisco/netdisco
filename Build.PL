@@ -49,7 +49,7 @@ App::Netdisco::Builder->new(
     'Dancer::Plugin::Passphrase' => '2.0.1',
     'Dancer::Plugin::Swagger' => '0',
     'Dancer::Session::Cookie' => '0.27',
-    'EV' => '0',
+    'EV' => '4.34_002',
     'Expect' => '0',
     'File::Path' => '0',
     'File::Spec::Functions' => '0',
