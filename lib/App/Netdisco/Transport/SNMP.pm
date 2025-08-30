@@ -301,7 +301,7 @@ sub _try_connect {
       }
   }
   catch {
-      debug $_;
+      debug sprintf 'caught error in try_connect: %s', $_;
   };
 
   return $info;
