@@ -231,7 +231,7 @@ sub _snmp_connect_generic {
 
   # unless user wants just the fast connections for bulk discovery
   # or we are on the first discovery attempt of a new device
-  return unless setting('snmp_try_slow_connect');
+  return if setting('snmp_try_slow_connect') == false;
 
   CLASS: foreach my $class (@classes) {
       next unless $class;
