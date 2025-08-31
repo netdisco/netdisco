@@ -87,7 +87,7 @@ sub run {
     ? setting($job->action .'_timeout') : setting('workers')->{'timeout'});
 
   # add some slack to timeout if the device is new and needs auth walkthrough
-  $maxtime += (40 * scalar @newuserconf) if not $job->device->in_storage;
+  $maxtime += (40 * scalar @newuserconf) if ref $job->device and not $job->device->in_storage;
 
   if ($maxtime) {
     debug sprintf '%s: running with timeout %ss', $job->action, $maxtime;
