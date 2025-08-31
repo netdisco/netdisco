@@ -302,6 +302,9 @@ sub _try_connect {
   }
   catch {
       debug sprintf 'caught error in try_connect: %s', $_;
+      undef $info;
+      die "exception in SNMP - could be job timeout or crash\n";
+      # use DDP; debug p $_;
   };
 
   return $info;
