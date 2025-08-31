@@ -297,7 +297,7 @@ sub _try_connect {
           }
       }
       else {
-          add_snmpinfo_aliases($info) if $info->offline;
+          add_snmpinfo_aliases($info) if $info and $info->offline;
       }
   }
   catch {
