@@ -1,3 +1,14 @@
+2.088002 - 2025-08-31
+
+  [BUG FIXES]
+
+  * #1377 avoid EV dependency as it is incompatible with Perl > 5.22
+  * bail out discovery if device fails to report uptime
+  * add uptime to field_protection (on discovery and rediscovery)
+  * fixes to field_protection so that new device is not written to db on fail
+  * avoid job timeouts for new devices needing long device_auth walkthrough
+  * avoid having to always try snmp v3 when known good v2 tag exists
+
 2.088001 - 2025-08-26
 
   [BUG FIXES]
