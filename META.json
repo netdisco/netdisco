@@ -61,7 +61,6 @@
             "Dancer::Session::Cookie" : "0.27",
             "Data::Printer" : "0",
             "Data::Visitor::Tiny" : "0",
-            "EV" : "0",
             "Expect" : "0",
             "File::Path" : "0",
             "File::ShareDir" : "1.03",
@@ -151,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.088000"
+         "version" : "2.088002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -1004,6 +1003,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.087001",
+   "version" : "2.088001",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
