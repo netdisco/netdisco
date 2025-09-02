@@ -647,10 +647,7 @@ snmp_try_slow_connect: true
 snmp_remoteport: {}
 delete_duplicate_serials: false
 field_protection:
-  new_device:
-    uptime: ['group:__ANY__']
   device:
-    uptime: ['group:__ANY__']
     serial: ['group:__ANY__']
 devices_no: []
 devices_only: []

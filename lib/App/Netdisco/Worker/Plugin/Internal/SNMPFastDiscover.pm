@@ -16,9 +16,8 @@ register_worker({ phase => 'check', driver => 'direct' }, sub {
       config->{'snmp_try_slow_connect'} = false;
       debug "running with fast SNMP timeouts for initial discover";
   }
-  else {
-      debug "running with configured SNMP timeouts";
-  }
+
+  debug "running with configured SNMP timeouts";
 });
 
 true;

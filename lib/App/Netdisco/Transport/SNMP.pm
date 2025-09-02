@@ -200,36 +200,7 @@ sub _snmp_connect_generic {
       unshift @classes, $device->snmp_class;
   }
 
-  # try last known-good by tag if it's stored
-  # this gets in the way of SNMP version upgrade (2 to 3)
-  # but can use only/no to get around that
-
-  my $tag_name = 'snmp_auth_tag_'. $mode;
-  my $stored_tag = eval { $device->community->$tag_name };
-
-  if ($device->in_storage and $stored_tag) {
-      debug sprintf '[%s:%s] try_connect with cached tag %s',
-          $snmp_args{DestHost}, $snmp_args{RemotePort}, $stored_tag;
-
-      my $comm = $communities[0];
-      my $ver = (exists $comm->{community} ? 2 : 3);
-      my %local_args = (%snmp_args,
-        Version => $ver, Retries => 0, Timeout => 200000);
-        
-      my $info = _try_connect($device, $classes[0], $comm, $mode, \%local_args,
-            ($useclass ? 0 : 1) );
-      # if successful, restore the default/user timeouts and return
-      if ($info) {
-          my $class = ($useclass ? $classes[0] : $info->device_type);
-          return $class->new(
-            %snmp_args, Version => $ver,
-            ($info->offline ? (Cache => $info->cache) : ()),
-            _mk_info_commargs($comm),
-          );
-      }
-  }
-
-  # try the communities in a fast pass using best version
+  # first try the communities in a fast pass using best version
 
   VERSION: foreach my $ver (3, 2) {
       my %local_args = (%snmp_args,
@@ -260,7 +231,7 @@ sub _snmp_connect_generic {
 
   # unless user wants just the fast connections for bulk discovery
   # or we are on the first discovery attempt of a new device
-  return if setting('snmp_try_slow_connect') == false;
+  return unless setting('snmp_try_slow_connect');
 
   CLASS: foreach my $class (@classes) {
       next unless $class;
@@ -326,14 +297,11 @@ sub _try_connect {
           }
       }
       else {
-          add_snmpinfo_aliases($info) if $info and $info->offline;
+          add_snmpinfo_aliases($info) if $info->offline;
       }
   }
   catch {
-      debug sprintf 'caught error in try_connect: %s', $_;
-      undef $info;
-      die "exception in SNMP - could be job timeout or crash\n";
-      # use DDP; debug p $_;
+      debug $_;
   };
 
   return $info;
