@@ -1,3 +1,9 @@
+2.088003 - 2025-09-02
+
+  [BUG FIXES]
+
+  * Revert "fixes for workflow errors and performance (#1383)"
+
 2.088002 - 2025-08-31
 
   [BUG FIXES]
