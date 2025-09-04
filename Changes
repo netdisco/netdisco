@@ -1,3 +1,9 @@
+2.088004 - tbd
+
+  [ENHANCEMENTS]
+
+  * new SNMP::Info and netdisco-mibs improve Stormshield, Aruba and Fortinet support
+
 2.088003 - 2025-09-02
 
   [BUG FIXES]
