@@ -104,7 +104,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   }
 
   # protection for failed SNMP gather
-  if (not $device->is_pseudo) {
+  if (setting('enable_field_protection') and not $device->is_pseudo) {
       my $category = ($device->in_storage ? 'device' : 'new_device');
       my $protect = setting('field_protection')->{$category} || {};
 
