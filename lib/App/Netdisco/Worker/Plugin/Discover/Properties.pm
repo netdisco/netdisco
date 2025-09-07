@@ -119,8 +119,9 @@ register_worker({ phase => 'early', driver => 'snmp',
                 if $dirty{$field} eq 'SNMP::Info';
           }
           else {
-              if (not $device->in_storage and !defined $dirty{$field}) { # new
-                  return $job->cancel("discover cancelled: $ip failed to return valid $field");
+              if (not $device->in_storage) { # new
+                  return $job->cancel("discover cancelled: $ip failed to return valid $field")
+                    if !defined $dirty{$field} or not length $dirty{$field};
               }
               elsif ($device->in_storage
                      and ($orig_device->{$field} or length $orig_device->{$field})) { # existing
