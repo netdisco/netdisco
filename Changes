@@ -1,3 +1,10 @@
+2.089001 - 2025-09-07
+
+  [ENHANCEMENTS]
+
+  * add feature flag enable_field_protection (true)
+  * better check for new_device field_protection
+
 2.089000 - 2025-09-07
 
   [ENHANCEMENTS]
