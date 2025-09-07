@@ -111,6 +111,7 @@ register_worker({ phase => 'early', driver => 'snmp',
       my %dirty = $device->get_dirty_columns;
       my $ip = $device->ip;
       foreach my $field (keys %$protect) {
+          next if $device->in_storage and !exists $dirty{$field}; # field didn't change
           next unless acl_matches_only($ip, $protect->{$field});
 
           if ($field eq 'snmp_class') { # reject SNMP::Info (it would not be empty)
