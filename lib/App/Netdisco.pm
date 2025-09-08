@@ -96,9 +96,9 @@ On SUSE Linux Enterprise Server 15 and later:
  root:~# zypper refresh
  root:~# zypper install postgresql postgresql-devel postgresql-server postgresql-server-devel libdbi-drivers-dbd-pgsql perl-DBI perl-DBD-Pg perl-SNMP perl-HTTP-Parser-XS perl-Module-Install net-snmp net-snmp-devel python3 curl make automake gcc
 
-On FreeBSD systems please see L<our FreeBSD tips|https://github.com/netdisco/netdisco/wiki/FreeBSD-Install>.
-
 On OpenBSD systems please see L<our OpenBSD tips|https://github.com/netdisco/netdisco/wiki/openbsd-install>.
+
+On FreeBSD systems please install as below or use a containerised version (the ports have been removed).
 
 With those installed, please check that your system's clock is correct. We
 also recommend that you run Netdisco in UTC (time zone +0) if possible, to
