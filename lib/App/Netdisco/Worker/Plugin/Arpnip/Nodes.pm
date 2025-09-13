@@ -12,7 +12,6 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Node qw/check_mac store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
-use File::Slurper 'read_text';
 use NetAddr::IP::Lite ':lower';
 use Regexp::Common 'net';
 use NetAddr::MAC ();
@@ -64,9 +63,11 @@ register_worker({ phase => 'store' }, sub {
   debug sprintf ' [%s] arpnip - processed %s IPv6 Neighbor Cache entries',
     $device->ip, $v6;
 
-  $device->update({last_arpnip => \$now});
-
   my $status = $job->best_status;
+  if (Status->$status->level == Status->done->level) {
+      $device->update({last_arpnip => \$now});
+  }
+
   return Status->$status("Ended arpnip for $device");
 });
 
@@ -127,15 +128,6 @@ register_worker({ phase => 'main', driver => 'direct' }, sub {
 
   # load cache from file or copy from job param
   my $data = $job->extra;
-
-  if ($job->port) {
-    return $job->cancel(sprintf 'could not open data source "%s"', $job->port)
-      unless -f $job->port;
-
-    $data = read_text($job->port)
-      or return $job->cancel(sprintf 'problem reading from file "%s"', $job->port);
-  }
-
   my @arps = (length $data ? @{ from_json($data) } : ());
 
   return $job->cancel('data provided but 0 arp entries found')

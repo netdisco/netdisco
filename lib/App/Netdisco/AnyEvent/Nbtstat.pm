@@ -7,6 +7,7 @@ use Socket qw(AF_INET SOCK_DGRAM inet_aton sockaddr_in);
 use List::Util ();
 use Carp       ();
 
+use AnyEvent::Loop;
 use AnyEvent (); BEGIN { AnyEvent::common_sense }
 use AnyEvent::Util ();
 

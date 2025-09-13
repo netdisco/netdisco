@@ -189,13 +189,19 @@ sub is_discoverable {
 
   return _bail_msg("is_discoverable: $device matches wap_platforms but discover_waps is not enabled")
     if ((not setting('discover_waps')) and
-        (match_to_setting($remote_type, 'wap_platforms') or
-         scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap));
+        match_to_setting($remote_type, 'wap_platforms'));
+
+  return _bail_msg("is_discoverable: $device matches wap_capabilities but discover_waps is not enabled")
+    if ((not setting('discover_waps')) and
+        (scalar grep {match_to_setting($_, 'wap_capabilities')} @$remote_cap));
 
   return _bail_msg("is_discoverable: $device matches phone_platforms but discover_phones is not enabled")
     if ((not setting('discover_phones')) and
-        (match_to_setting($remote_type, 'phone_platforms') or
-         scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap));
+        match_to_setting($remote_type, 'phone_platforms'));
+
+  return _bail_msg("is_discoverable: $device matches phone_capabilities but discover_phones is not enabled")
+    if ((not setting('discover_phones')) and
+        (scalar grep {match_to_setting($_, 'phone_capabilities')} @$remote_cap));
 
   return _bail_msg("is_discoverable: $device matched discover_no_type")
     if (match_to_setting($remote_type, 'discover_no_type'));

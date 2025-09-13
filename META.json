@@ -61,7 +61,6 @@
             "Dancer::Session::Cookie" : "0.27",
             "Data::Printer" : "0",
             "Data::Visitor::Tiny" : "0",
-            "EV" : "0",
             "Expect" : "0",
             "File::Path" : "0",
             "File::ShareDir" : "1.03",
@@ -78,7 +77,7 @@
             "JSON::PP" : "0",
             "JSON::XS" : "3.01",
             "List::MoreUtils" : "0.428",
-            "List::Util" : "1.49",
+            "List::Util" : "1.70",
             "MCE" : "1.866",
             "MIME::Base64" : "3.13",
             "Module::Load" : "0.32",
@@ -105,7 +104,7 @@
             "Regexp::Common" : "2017060201",
             "Regexp::Common::net::CIDR" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.972002",
+            "SNMP::Info" : "3.974000",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -151,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.087000"
+         "version" : "2.089002"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -1004,6 +1003,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.087000",
-   "x_serialization_backend" : "JSON::PP version 4.16"
+   "version" : "2.089002",
+   "x_serialization_backend" : "JSON::PP version 4.06"
 }

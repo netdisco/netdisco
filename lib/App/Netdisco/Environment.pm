@@ -17,6 +17,8 @@ BEGIN {
       my $home = ($ENV{NETDISCO_HOME} || (getpwuid($uid))[7] || $ENV{HOME});
       $ENV{NETDISCO_HOME} ||= $home;
 
+      $ENV{NETDISCO_DO} ||= File::Spec->catfile($FindBin::RealBin, 'netdisco-do');
+
       my $auto = dir(dist_dir('App-Netdisco'))->absolute;
 
       $ENV{DANCER_APPDIR}  ||= $auto->stringify;

@@ -25,7 +25,7 @@ foreach my $report (@{setting('reports')}) {
     ($report->{hidden} ? (hidden => true) : ()),
     provides_csv => true,
     api_endpoint => true,
-    bind_params  => [ map {ref ? $_->{param} : $_} @{ $report->{bind_params} } ],
+    bind_params  => [ map {ref $_ ? $_->{param} : $_} @{ $report->{bind_params} } ],
     api_parameters => $report->{api_parameters},
   });
 
@@ -61,7 +61,7 @@ foreach my $report (@{setting('reports')}) {
         ->search(undef, {
           result_class => 'DBIx::Class::ResultClass::HashRefInflator',
           ( (exists $report->{bind_params})
-            ? (bind => [map { param($_) } map {ref ? $_->{param} : $_} @{ $report->{bind_params} }]) : () ),
+            ? (bind => [map { param($_) } map {ref $_ ? $_->{param} : $_} @{ $report->{bind_params} }]) : () ),
         });
       @data = $set->all;
 

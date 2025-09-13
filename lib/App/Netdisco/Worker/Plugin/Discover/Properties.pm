@@ -22,12 +22,15 @@ use JSON::PP ();
 use Encode;
 
 register_worker({ phase => 'early', driver => 'snmp',
-    title => 'initial device creation and basic device details'}, sub {
+    title => 'basic device details (and creation)'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
+
+  # for field_protection
+  my $orig_device = { $device->get_columns };
 
   # VTP Management Domain -- assume only one.
   my $vtpdomains = $snmp->vtp_d_name;
@@ -101,21 +104,30 @@ register_worker({ phase => 'early', driver => 'snmp',
   }
 
   # protection for failed SNMP gather
-  if (not $device->is_pseudo) {
+  if (setting('enable_field_protection') and not $device->is_pseudo) {
       my $category = ($device->in_storage ? 'device' : 'new_device');
       my $protect = setting('field_protection')->{$category} || {};
 
       my %dirty = $device->get_dirty_columns;
       my $ip = $device->ip;
-      foreach my $field (keys %dirty) {
+      foreach my $field (keys %$protect) {
+          next if $device->in_storage and !exists $dirty{$field}; # field didn't change
           next unless acl_matches_only($ip, $protect->{$field});
 
-          if ($field eq 'snmp_class') { # cannot be empty but can be SNMP::Info
+          if ($field eq 'snmp_class') { # reject SNMP::Info (it would not be empty)
               return $job->cancel("discover cancelled: $ip returned unwanted class SNMP::Info")
                 if $dirty{$field} eq 'SNMP::Info';
           }
-          elsif (!defined $dirty{$field} or $dirty{$field} eq '') {
-              return $job->cancel("discover cancelled: $ip failed to return valid $field");
+          else {
+              if (not $device->in_storage) { # new
+                  return $job->cancel("discover cancelled: $ip failed to return valid $field")
+                    if !defined $dirty{$field} or not length $dirty{$field};
+              }
+              elsif ($device->in_storage
+                     and ($orig_device->{$field} or length $orig_device->{$field})) { # existing
+                  return $job->cancel("rediscover cancelled: $ip failed to return valid $field")
+                    if !defined $dirty{$field} or ($orig_device->{$field} and not $dirty{$field});
+              }
           }
       }
   }
@@ -132,13 +144,13 @@ register_worker({ phase => 'early', driver => 'snmp',
                       @{ setting('custom_fields')->{device} || [] };
 
       # filter custom_fields for current valid fields
-      foreach my $field (keys %$fields) {
-          delete $fields->{$field} unless exists $ok_fields{$field};
-          $fields->{$field} = Encode::decode('UTF-8', $fields->{$field});
+      foreach my $field (keys %ok_fields) {
+          $ok_fields{$field} = exists $fields->{$field}
+            ? Encode::decode('UTF-8', $fields->{$field}) : undef;
       }
 
       # set new custom_fields
-      $device->set_column( custom_fields => $coder->encode($fields) );
+      $device->set_column( custom_fields => $coder->encode(\%ok_fields) );
   }
 
   # support for Hooks
@@ -149,8 +161,16 @@ register_worker({ phase => 'early', driver => 'snmp',
   vars->{'new_device'} = 1 if not $device->in_storage;
 
   schema('netdisco')->txn_do(sub {
+    if ($device->serial and setting('delete_duplicate_serials')) {
+        my $gone = schema('netdisco')->resultset('Device')->search({
+          ip => { '!=' => $device->ip }, serial => $device->serial,
+        })->delete;
+        debug sprintf ' removed %s devices with the same serial number', ($gone || '0');
+    }
+
+    my $new = ($device->in_storage ? 'existing' : 'new');
     $device->update_or_insert(undef, {for => 'update'});
-    return Status->done("Ended discover for $device");
+    return Status->done(sprintf 'Successful discover for %s device %s', $new, $device->ip);
   });
 });
 
@@ -165,7 +185,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   if ($device->ip ne $db_device->ip) {
     return schema('netdisco')->txn_do(sub {
       $device->delete;
-      return $job->cancel("fresh discover cancelled: $device already known as $db_device");
+      return $job->cancel("discover cancelled: $device already known as $db_device");
     });
   }
 
@@ -181,6 +201,12 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
+
+  # clear the cached uptime and get a new one
+  my $dev_uptime = ($device->is_pseudo ? $snmp->uptime : $snmp->load_uptime);
+  if (!defined $dev_uptime) {
+      return $job->cancel("discover cancelled: $device cannot report its uptime");
+  }
 
   my $pass = Status->info(" [$device] device - OK to continue discover (valid interfaces)");
   my $interfaces = $snmp->interfaces;
@@ -283,9 +309,8 @@ register_worker({ phase => 'early', driver => 'snmp',
   # clear the cached uptime and get a new one
   my $dev_uptime = ($device->is_pseudo ? $snmp->uptime : $snmp->load_uptime);
   if (!defined $dev_uptime) {
-      error sprintf ' [%s] interfaces - Error! Failed to get uptime from device!',
-        $device->ip;
-      return Status->error("discover failed: no uptime from device $device!");
+      return Status->info(sprintf ' [%s] interfaces - skipped, no uptime from device',
+        $device->ip);
   }
 
   # used to track how many times the device uptime wrapped
@@ -372,7 +397,7 @@ register_worker({ phase => 'early', driver => 'snmp',
     }
   }
 
-  # #981 must do this after filtering %deviceports to avoid weird data
+  # 981 must do this after filtering %deviceports to avoid weird data
   UPTIME: foreach my $entry (sort keys %$interfaces) {
       my $port = $interfaces->{$entry};
       next unless exists $deviceports{$port};
@@ -457,13 +482,15 @@ register_worker({ phase => 'early', driver => 'snmp',
 
     # filter custom_fields for current valid fields
     foreach my $port (keys %fields) {
-        foreach my $field (keys %{ $fields{$port} }) {
-            delete $fields{$port}->{$field} unless exists $ok_fields{$field};
-            $fields{$port}->{$field} = Encode::decode('UTF-8', $fields{$port}->{$field});
+        my %new_fields = ();
+
+        foreach my $field (keys %ok_fields) {
+            $new_fields{$field} = exists $fields{$port}->{$field}
+              ? Encode::decode('UTF-8', $fields{$port}->{$field}) : undef;
         }
 
         # set new custom_fields
-        $deviceports{$port}->{custom_fields} = $coder->encode($fields{$port});
+        $deviceports{$port}->{custom_fields} = $coder->encode(\%new_fields);
     }
 
     my $gone = $device->ports->delete({keep_nodes => 1});

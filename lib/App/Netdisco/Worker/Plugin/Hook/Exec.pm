@@ -12,7 +12,7 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $extra = from_json( decode_base64( $job->extra || '' ) );
 
-  my $event_data  = $extra->{'event_data'};
+  my $event_data  = { ('ndo' => $ENV{NETDISCO_DO}), %{ $extra->{'event_data'} || {} } };
   my $action_conf = $extra->{'action_conf'};
 
   return Status->error('missing cmd parameter to exec Hook')
@@ -36,6 +36,7 @@ register_worker({ phase => 'main' }, sub {
   }
   $cmd ||= $orig_cmd;
 
+  # debug sprintf(q{cmd: '%s'}, $cmd) if $ENV{ND2_SHOW_COMMUNITY};
   my $result = Command::Runner->new(
     command => $cmd,
     timeout => ($action_conf->{'timeout'} || 60),

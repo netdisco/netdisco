@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.087000';
+our $VERSION = '2.089002';
 use App::Netdisco::Configuration;
 
 =head1 NAME
@@ -52,7 +52,7 @@ See the demo at: L<https://netdisco2-demo.herokuapp.com/>
 
 =item *
 
-L<Docker images|https://store.docker.com/community/images/netdisco/netdisco> are also available
+L<Docker images|https://hub.docker.com/r/netdisco/netdisco> are also available
 
 =back
 
@@ -96,9 +96,9 @@ On SUSE Linux Enterprise Server 15 and later:
  root:~# zypper refresh
  root:~# zypper install postgresql postgresql-devel postgresql-server postgresql-server-devel libdbi-drivers-dbd-pgsql perl-DBI perl-DBD-Pg perl-SNMP perl-HTTP-Parser-XS perl-Module-Install net-snmp net-snmp-devel python3 curl make automake gcc
 
-On FreeBSD systems please see L<our FreeBSD tips|https://github.com/netdisco/netdisco/wiki/FreeBSD-Install>.
+On FreeBSD systems please install as below or use a L<containerised version|https://hub.docker.com/r/netdisco/netdisco>.
 
-On OpenBSD systems please see L<our OpenBSD tips|https://github.com/netdisco/netdisco/wiki/openbsd-install>.
+Support for OpenBSD is currently limited to running the L<containerised versions|https://hub.docker.com/r/netdisco/netdisco>.
 
 With those installed, please check that your system's clock is correct. We
 also recommend that you run Netdisco in UTC (time zone +0) if possible, to

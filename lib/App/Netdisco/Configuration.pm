@@ -8,6 +8,7 @@ use FindBin;
 use File::Spec;
 use Path::Class 'dir';
 use Net::Domain 'hostdomain';
+use AnyEvent::Loop; # avoid EV
 use File::ShareDir 'dist_dir';
 use URI::Based;
 
@@ -63,7 +64,7 @@ if (ref {} eq ref setting('database')) {
     my $user = setting('database')->{user};
     my $pass = setting('database')->{pass};
 
-    my $dsn = "dbi:Pg:dbname=${name}";
+    my $dsn = sprintf 'dbi:Pg:dbname=%s', ($name || '');
     $dsn .= ";host=${host}" if $host;
 
     # set up the netdisco schema now we have access to the config
@@ -184,6 +185,7 @@ setting('dns')->{'ETCHOSTS'} = {};
 {
   # AE::DNS::EtcHosts only works for A/AAAA/SRV, but we want PTR.
   # this loads+parses /etc/hosts file using AE. dirty hack.
+  use AnyEvent::Loop;
   use AnyEvent::Socket 'format_address';
   use AnyEvent::DNS::EtcHosts;
   AnyEvent::DNS::EtcHosts::_load_hosts_unless(sub{},AE::cv);
@@ -387,7 +389,7 @@ config->{'reports'} = [ @{setting('system_reports')}, @{setting('reports')} ];
 # upgrade bare bind_params to dict
 foreach my $r ( @{setting('reports')} ) {
     next unless exists $r->{bind_params};
-    my $new_bind_params = [ map {ref ? $_ : {param => $_}} @{ $r->{bind_params} } ];
+    my $new_bind_params = [ map {ref $_ ? $_ : {param => $_}} @{ $r->{bind_params} } ];
     $r->{'bind_params'} = $new_bind_params;
 }
 
@@ -405,9 +407,6 @@ config->{api_base}
 # device custom_fields with snmp_object creates a hook
 my @new_dcf = ();
 my @new_hooks = @{ setting('hooks') };
-
-FindBin::again();
-my $me = File::Spec->catfile($FindBin::RealBin, 'netdisco-do');
 
 foreach my $field (@{ setting('custom_fields')->{'device'} }) {
     next unless $field->{'name'};
@@ -427,12 +426,12 @@ foreach my $field (@{ setting('custom_fields')->{'device'} }) {
         event => 'discover',
         with => {
                             # get JSON format of the snmp_object
-            cmd => (sprintf q!%s show -d '[%% ip %%]' -e %s --quiet!
+            cmd => (sprintf q![%% ndo %%] show -d '[%% ip %%]' -e %s --quiet!
                             # this jq will: promote null to [], promote bare string to ["str"], collapse obj to list
                             .q! | jq -cjM '. // [] | if type=="string" then [.] else . end | [ .[] ] | sort'!
                             # send the JSON output into device custom_field (action inline)
-                            .q! | %s %s --enqueue -d '[%% ip %%]' -e '-' --quiet!,
-                            $me, $field->{'snmp_object'}, $me, ('cf_'. $field->{'name'})),
+                            .q! | [%% ndo %%] %s --enqueue -d '[%% ip %%]' -e '@-' --quiet!,
+                            $field->{'snmp_object'}, ('cf_'. $field->{'name'})),
         },
         filter => {
             no => $field->{'no'},
@@ -448,7 +447,7 @@ foreach my $action (qw(macsuck arpnip)) {
         type => 'exec',
         event => 'new_device',
         with => {
-            cmd => (sprintf q!%s %s --enqueue -d '[%% ip %%]' --quiet!, $me, $action)
+            cmd => (sprintf q![%% ndo %%] %s --enqueue -d '[%% ip %%]' --quiet!, $action)
         }
     };
 }

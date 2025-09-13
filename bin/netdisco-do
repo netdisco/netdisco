@@ -40,7 +40,7 @@ use Dancer qw/:moose :script/;
 use Try::Tiny;
 use Pod::Usage;
 use Scalar::Util 'blessed';
-use File::Slurper 'read_lines';
+use File::Slurper qw/read_lines read_text/;
 use NetAddr::IP qw/:rfc3021 :lower/;
 
 use App::Netdisco::Backend::Job;
@@ -160,8 +160,20 @@ if (not $force and scalar @hostlist > 512) {
     exit 1;
 }
 
-if ($action =~ m/^cf_/ and $quiet and $extra and $extra eq '-') {
-    $extra = do { local $/; <STDIN> };
+if ($action =~ m/^(?:cf_|macsuck|arpnip)/ and $extra) {
+    if ($extra eq '@-' or ($quiet and $extra eq '-')) {
+        $extra = do { local $/; <STDIN> };
+    }
+    elsif ($extra =~ m/^@(.+)/) {
+        my $filename = $1;
+        if (-f $filename) {
+            $extra = read_text($filename);
+        }
+        else {
+            error sprintf 'unable to read from file: %s', $filename;
+            exit 2;
+        }
+    }
 }
 
 # some actions do not take a device parameter
@@ -220,6 +232,8 @@ else {
 }
 
 exit $exitstatus;
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -288,10 +302,15 @@ Run a macsuck on the device (specified with C<-d>).
 
  ~/bin/netdisco-do macsuck -d 192.0.2.1
 
-Submit macsuck results directly to Netdisco by putting the JSON data in a
-file and using the C<-p> option (see API web docs for data format example):
+Submit macsuck data directly to Netdisco in JSON format (see API web
+docs for data format example):
 
- ~/bin/netdisco-do macsuck -d 192.0.2.1 -p /tmp/mac-address-table.json
+ # pipe to standard input
+ ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '@-'
+ # read from a file
+ ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '@/tmp/mac-address-table.json'
+ # pass directly
+ ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '[{"ip": "string", "mac": "string", "dns": "string"}]'
 
 =head2 macwalk
 
@@ -303,10 +322,15 @@ Run an arpnip on the device (specified with C<-d>).
 
  ~/bin/netdisco-do arpnip -d 192.0.2.1
 
-Submit arpnip results directly to Netdisco by putting the JSON data in a
-file and using the C<-p> option (see API web docs for data format example):
+Submit arpnip data directly to Netdisco in JSON format (see API web
+docs for data format example):
 
- ~/bin/netdisco-do arpnip -d 192.0.2.1 -p /tmp/arp-table.json
+ # pipe to standard input
+ ~/bin/netdisco-do arpnip -d 192.0.2.1 -e '@-'
+ # read from a file
+ ~/bin/netdisco-do arpnip -d 192.0.2.1 -e '@/tmp/mac-address-table.json'
+ # pass directly
+ ~/bin/netdisco-do arpnip -d 192.0.2.1 -e '[{"ip": "string", "mac": "string", "dns": "string"}]'
 
 =head2 arpwalk
 
@@ -343,6 +367,22 @@ Run an nbtstat on the node (specified with C<-d>).
 =head2 nbtwalk
 
 Queue an nbtstat for all known nodes.
+
+=head2 Custom Field update
+
+Update a Device or Device Port custom field using `netdisco-do`. Specify
+the field name as the "action" prefixed with `cf_`. The content can be
+passed in the command, or taken from a file, or from standard input.
+
+ # pass directly
+ ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e 'field value'
+ # pipe from standard input
+ ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@-'
+ # read from a file
+ ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@/tmp/myfield'
+
+Note that `--enqueue ` is *required* for the feature to work. The change
+is, however, applied instanty in the database when `netdisco-do` runs.
 
 =head2 expire
 

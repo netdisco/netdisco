@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Dancer ':script';
 
+use AnyEvent::Loop;
 use AnyEvent::DNS;
 use App::Netdisco::Util::Permission 'acl_matches';
 
