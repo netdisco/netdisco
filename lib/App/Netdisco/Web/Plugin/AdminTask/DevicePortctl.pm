@@ -3,6 +3,7 @@ package App::Netdisco::Web::Plugin::AdminTask::DevicePortctl;
 use Dancer ':syntax';
 use Dancer;
 use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Port 'database_port_acl_by_role_check'
 use Dancer::Plugin::DBIC;
 
 
@@ -19,25 +20,6 @@ register_admin_task({
 });
 
 register_javascript('deviceportctl');
-
-
-sub port_acl_by_role_check {  
-  my ($port, $device, $role) = @_;
-  return true if $ENV{ND2_DO_FORCE};
-
-  # portctl_by_role check
-  if ($device and ref $device and $role) {
-
-    my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
-      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
-      ->single;
-    if ($acl){
-      return false unless $acl->can_admin;
-    }
-    return true;
-  }
-  return false;
-}
 
 ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
     # Ok, this is a really messy way to make a device ports view
@@ -202,25 +184,30 @@ ajax '/ajax/control/admin/deviceportctl/portctl' => require_role admin => sub {
     debug "Device port control for $device_ip with role $role: " . join(', ', keys %$device_ports);
     
     # remove records of a port if it is not in the new list
-    foreach my $row ($port_control->all) {
-        my $port = $row->port;
-        if (exists $device_ports->{$port}) {
-            delete $device_ports->{$port};
-        } else {
-            $row->delete;
+    schema(vars->{'tenant'})->txn_do(sub {
+        foreach my $row ($port_control->all) {
+            my $port = $row->port;
+            if (exists $device_ports->{$port}) {
+                delete $device_ports->{$port};
+            } else {
+                $row->delete;
+            }
         }
-    }
+    });
+
 
     # add new records for ports that are not in the current list
-    foreach my $port (keys %$device_ports) {
-        next unless $port;
-        $rs->create({
-            device_ip => $device_ip,
-            port      => $port,
-            role_name      => $role,
-            can_admin => 0,
-        });
-    }
+    schema(vars->{'tenant'})->txn_do(sub {
+        foreach my $port (keys %$device_ports) {
+            next unless $port;
+            $rs->create({
+                device_ip => $device_ip,
+                port      => $port,
+                role_name      => $role,
+                can_admin => 0,
+            });
+        }
+    });
     
     return to_json({
         success => 1,
