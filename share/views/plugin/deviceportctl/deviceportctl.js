@@ -56,4 +56,17 @@ $(document).ready(function() {
         }
     });
 
+    $(".content").on("click", '.nd_show-device', function(event){
+        const shortname = $(this).data('shortname');
+        $.ajax({
+            url: uri_base + '/ajax/content/admin/deviceportctl/device',
+            data: {"device": $(this).data('device'), "role": $(this).data('role')},
+            method: 'POST',
+            success: function(data) {
+                console.log("#device-physical-view-" +  shortname);
+                $("#device-physical-view-" +  shortname).html(data);
+            }
+        });
+    });
+
 });

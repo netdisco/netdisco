@@ -18,7 +18,8 @@
   </thead>
   <tbody>
     [% FOREACH row IN results %]
-      [% SET name = row.name %]
+
+      [% SET name = row %]
       [% NEXT if not name %]
       [% set shortname = name.split('\.').0 %]
         <tr>
@@ -32,51 +33,11 @@
             <button class="btn nd_permit" data-device="[% shortname %]">Set all to Permit</button>
             <button class="btn btn-primary nd_adminbutton" name="portctl" data-device="[% shortname %]">Save</button>
           </td>
-          <td class="">
+          <td class="nd_center-cell">
             <div unselectable="on"  onselectstart="return false;" onmousedown="return false;" style="border: 1px solid #ccc; padding: 5px; margin: 5px; font-size:2em;" 
             class="switch switch-view-[% shortname %]" data-device="[% shortname %]">
-              <p>
-              [% FOREACH stack IN row.stack %]
-                <table style="border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 5px;">
-                  <tr>
-                    [% FOREACH port in row.modules.$stack.odd %]
-                      <td class="port" id="[% port.long %]" style="width: 20px;border-left: none;">
-                        [% IF port.long == 'empty' %]
-                        [% ELSE %]
-                        [% set long = port.long %]
-                        [% SET port_name = port.short %]
-                        <p style="font-size: 12px;">[% port_name %]</p>
-                          [% IF port.can_admin %]
-                          <img  class="permit" width="40" src="../images/port_permit.png" alt="■">
-                          [% ELSE %]
-                          <img  class="deny" width="40" src="../images/port_deny.png" alt="■">
-
-                          [% END %]
-                        [% END %]
-
-                      </td>
-
-
-                  [% END %]
-                  </tr>
-                  <tr>
-                  [% FOREACH port in row.modules.$stack.even %]
-                      <td class="port" id="[% port.long %]" style="width: 20px;border-left: none;">
-                        [% IF  port.long == 'empty' %]
-                        [% ELSE %]
-                        [% SET port_name = port.short %]
-                          [% IF port.can_admin %]
-                          <img  class="permit" width="40" src="../images/port_permit.png" alt="■">
-                          [% ELSE %]
-                          <img  class="deny" width="40" src="../images/port_deny.png" alt="■">
-                          [% END %]
-                          <p style="font-size: 12px;">[% port_name %]</p>
-                        [% END %]
-                      </td>
-                  [% END %]
-                  </tr>
-                </table>
-              [% END %]
+              <p id="device-physical-view-[% shortname %]">
+                <button class="btn btn-mini nd_show-device" data-device="[% name %]" data-shortname="[% shortname %]" data-role="[% role %]" data-toggle="popover" data-html="true">Show device physical view</button>
               </p>
             </div>
           </td>

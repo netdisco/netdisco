@@ -12,6 +12,7 @@ our @EXPORT_OK = qw/
   port_acl_by_role_check port_acl_check
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
+  database_port_acl_by_role_check
   is_vlan_subinterface port_has_phone port_has_wap
   to_speed
 /;
@@ -30,26 +31,38 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 port_acl_by_role_check( $port, $device?, $user? )
+=head2 database_port_acl_by_role_check( $port, $device, $user_or_role, $what_to_check? )
 
 =over 4
 
 =item *
 
-Permission check on C<portctl_by_role> if the device and user are provided. A
-bare username will be promoted to a user instance.
+Permission check on C<portctl_by_role> if the device and user are provided. This
+checks for ACLs defined in the database. Either a bare username or a role name
+can be supplied.
 
 =back
-
 Will return false if these checks fail, otherwise true.
-
 =cut
 
 sub database_port_acl_by_role_check {
-  my ($port, $device, $role) = @_;
-  # always assume that a role is passed here and not a username
+  my ($port, $device, $user_or_role, $what_to_check) = @_;
+  my $role;
+  
+  if ($what_to_check and $what_to_check eq "user") {
+    return false unless $user_or_role;
 
-  # portctl_by_role check
+    my $user = ref $user_or_role ? $user_or_role :
+      schema('netdisco')->resultset('User')
+                        ->find({ username => $user_or_role });
+    return false unless $user;
+    $role = $user->portctl_role;
+    return false unless $role;
+  }
+  else {
+    $role = $user_or_role;
+  }
+
   if ($device and ref $device and $role) {
     my $device_acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
       ->search({ role_name => $role, device_ip => $device->ip })
@@ -62,13 +75,28 @@ sub database_port_acl_by_role_check {
     my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
       ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
       ->single;
+  
     if ($acl){
       return false unless $acl->can_admin;
     }
-    return true;
+
+    return true; # no specific port acl found but device acl passed: allow portctl for every port of said device
   }
+
   return false;
 }
+
+
+=head2 config_port_acl_by_role_check( $port, $device?, $user? )
+
+=over 4
+
+=item *
+Permission check on C<portctl_by_role> if the device and user are provided. A
+bare username will be promoted to a user instance.
+=back
+Will return false if these checks fail, otherwise true.
+=cut
 
 sub config_port_acl_by_role_check {
   my ($port, $device, $user) = @_;
@@ -122,6 +150,22 @@ sub config_port_acl_by_role_check {
   return false;
 }
 
+
+=head2 port_acl_by_role_check( $port, $device?, $user? )
+
+=over 4
+
+=item *
+
+Permission check on C<portctl_by_role> if the device and user are provided. A
+bare username will be promoted to a user instance.
+
+=back
+
+Will return false if these checks fail, otherwise true.
+
+=cut
+
 sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
 
@@ -131,11 +175,11 @@ sub port_acl_by_role_check {
   my $permission_mode = setting('permission_mode');
 
   if ($mode eq 'hybrid'){
-    return (database_port_acl_by_role_check($port, $device, $user) or
+    return (database_port_acl_by_role_check($port, $device, $user, "user") or
             config_port_acl_by_role_check($port, $device, $user));
   }
   elsif ($mode eq 'database') {
-    return database_port_acl_by_role_check($port, $device, $user);
+    return database_port_acl_by_role_check($port, $device, $user, "user");
   } # use ACLs defined in DB
   else {
     return config_port_acl_by_role_check($port, $device, $user);
