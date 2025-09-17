@@ -2,7 +2,7 @@ $(document).ready(function() {
 
     function setToPermit(port, device){
         var imgSrc = $(port).find("img")[0];
-        imgSrc.src = "../images/port_permit.png";
+        imgSrc.src = "../images/port_permit.svg";
         imgSrc.classList.remove("deny");
         imgSrc.classList.add("permit");
         var portList = $("#port-list-" +device).val();
@@ -13,7 +13,7 @@ $(document).ready(function() {
 
     function setToDeny(port, device){
         var imgSrc = $(port).find("img")[0];
-        imgSrc.src = "../images/port_deny.png";
+        imgSrc.src = "../images/port_deny.svg";
         imgSrc.classList.remove("permit");
         imgSrc.classList.add("deny");
         var portList = $("#port-list-" +device).val();

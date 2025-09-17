@@ -10,9 +10,9 @@
         [% SET port_name = port.short %]
         <p style="font-size: 12px;">[% port_name %]</p>
             [% IF port.can_admin %]
-            <img  class="permit" width="40" src="../images/port_permit.png" alt="■">
+            <img  class="permit" width="40" src="../images/port_permit.svg" alt="■">
             [% ELSE %]
-            <img  class="deny" width="40" src="../images/port_deny.png" alt="■">
+            <img  class="deny" width="40" src="../images/port_deny.svg" alt="■">
 
             [% END %]
         [% END %]
@@ -29,9 +29,9 @@
         [% ELSE %]
         [% SET port_name = port.short %]
             [% IF port.can_admin %]
-            <img  class="permit" width="40" src="../images/port_permit.png" alt="■">
+            <img  class="permit" width="40" src="../images/port_permit.svg" alt="■">
             [% ELSE %]
-            <img  class="deny" width="40" src="../images/port_deny.png" alt="■">
+            <img  class="deny" width="40" src="../images/port_deny.svg" alt="■">
             [% END %]
             <p style="font-size: 12px;">[% port_name %]</p>
         [% END %]
