@@ -58,13 +58,22 @@ $(document).ready(function() {
 
     $(".content").on("click", '.nd_show-device', function(event){
         const shortname = $(this).data('shortname');
+        var td = $(this).closest('td');
+        $(this).addClass('hidden');
         $.ajax({
             url: uri_base + '/ajax/content/admin/deviceportctl/device',
             data: {"device": $(this).data('device'), "role": $(this).data('role')},
             method: 'POST',
             success: function(data) {
-                console.log("#device-physical-view-" +  shortname);
+                // remove the button
+                // find closest td and find within the list of buttons the nd_deny, nd_permit and save buttons and show them
+
+                console.log(td);
+                td.find('.nd_deny').removeClass('hidden').prop('disabled', false);
+                td.find('.nd_permit').removeClass('hidden').prop('disabled', false);
+                td.find('.nd_adminbutton').removeClass('hidden').prop('disabled', false);
                 $("#device-physical-view-" +  shortname).html(data);
+                $("#device-physical-view-" +  shortname).parent().css('display', 'block');
             }
         });
     });
