@@ -161,8 +161,6 @@ sub build_port_map_for_device {
         };
     }
 
-    # Sort stack indexes and convert them to string
-
     my @chassis_indexes = map { "$_" } sort { $a <=> $b } keys %final_ports;
 
     # Split ports into odd/even for each stack/module
@@ -194,19 +192,12 @@ ajax '/ajax/content/admin/deviceportctl/device' => require_role admin => sub {
 };
 
 ajax '/ajax/content/admin/deviceportctl' => require_role admin => sub {
-    # Ok, this is a really messy way to make a device ports view
-    # Making a pseudo device ports view based solely on port names is really not optimal but it works, will change it later :)
-
-
     my $role = param('q');
     my @devices = schema(vars->{'tenant'})
         ->resultset('PortctlRoleDevice')->role_can_admin($role);
-    # just get device ip then search for device name and only get device->name
     @devices = map { schema(vars->{'tenant'})->resultset('Device')->search_for_device($_->device_ip) } @devices;
-    # filter out undefined devices
     @devices = grep { defined $_ } @devices;
     @devices = map { $_->name } @devices;
-    # print content of devices
     content_type('text/html');
     template 'ajax/admintask/deviceportctl.tt', {
       results => \@devices,

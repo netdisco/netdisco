@@ -22,7 +22,6 @@ $(document).ready(function() {
 
     function togglePort(block){
         var imgSrc = $(block).find("img")[0];
-        // Get the device from  a parent div data-device attribute
         const device =  $(block).closest('.switch').data('device');
         if (imgSrc.classList.contains("deny")) {
             setToPermit(block, device);
@@ -32,7 +31,6 @@ $(document).ready(function() {
     }
 
     $(".content").on("click", ".port", function(event){
-
         togglePort(this);
     });
 
@@ -65,10 +63,6 @@ $(document).ready(function() {
             data: {"device": $(this).data('device'), "role": $(this).data('role')},
             method: 'POST',
             success: function(data) {
-                // remove the button
-                // find closest td and find within the list of buttons the nd_deny, nd_permit and save buttons and show them
-
-                console.log(td);
                 td.find('.nd_deny').removeClass('hidden').prop('disabled', false);
                 td.find('.nd_permit').removeClass('hidden').prop('disabled', false);
                 td.find('.nd_adminbutton').removeClass('hidden').prop('disabled', false);
