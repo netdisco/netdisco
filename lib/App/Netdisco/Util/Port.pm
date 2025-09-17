@@ -12,6 +12,7 @@ our @EXPORT_OK = qw/
   port_acl_by_role_check port_acl_check
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
+  database_port_acl_by_role_check
   is_vlan_subinterface port_has_phone port_has_wap
   to_speed
 /;
@@ -30,6 +31,126 @@ subroutines.
 
 =head1 EXPORT_OK
 
+=head2 database_port_acl_by_role_check( $port, $device, $user_or_role, $what_to_check? )
+
+=over 4
+
+=item *
+
+Permission check on C<portctl_by_role> if the device and user are provided. This
+checks for ACLs defined in the database. Either a bare username or a role name
+can be supplied.
+
+=back
+Will return false if these checks fail, otherwise true.
+=cut
+
+sub database_port_acl_by_role_check {
+  my ($port, $device, $user_or_role, $what_to_check) = @_;
+  my $role;
+  
+  if ($what_to_check and $what_to_check eq "user") {
+    return false unless $user_or_role;
+
+    my $user = ref $user_or_role ? $user_or_role :
+      schema('netdisco')->resultset('User')
+                        ->find({ username => $user_or_role });
+    return false unless $user;
+    $role = $user->portctl_role;
+    return false unless $role;
+  }
+  else {
+    $role = $user_or_role;
+  }
+
+  if ($device and ref $device and $role) {
+    my $device_acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
+      ->search({ role_name => $role, device_ip => $device->ip })
+      ->single;
+
+    if ($device_acl){
+      return false unless $device_acl->can_admin;
+    }
+
+    my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
+      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
+      ->single;
+  
+    if ($acl){
+      return false unless $acl->can_admin;
+    }
+
+    return true; # no specific port acl found but device acl passed: allow portctl for every port of said device
+  }
+
+  return false;
+}
+
+
+=head2 config_port_acl_by_role_check( $port, $device?, $user? )
+
+=over 4
+
+=item *
+Permission check on C<portctl_by_role> if the device and user are provided. A
+bare username will be promoted to a user instance.
+=back
+Will return false if these checks fail, otherwise true.
+=cut
+
+sub config_port_acl_by_role_check {
+  my ($port, $device, $user) = @_;
+
+
+  # portctl_by_role check
+  if ($device and ref $device and $user) {
+    $user = ref $user ? $user :
+      schema('netdisco')->resultset('User')
+                        ->find({ username => $user });
+
+    return false unless $user;
+    my $username = $user->username;
+
+    # special case admin user allowed to continue, because
+    # they can submit port control jobs
+    return true if ($user->admin and $user->port_control);
+
+    my $role = $user->portctl_role;
+    my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
+
+    if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
+        # all ports are permitted when the role acl is a device acl
+        # but check the device anyway
+        return true if acl_matches($device, $acl);
+    }
+    elsif ($acl and ref $acl eq ref {}) {
+        my $found = false;
+        foreach my $key (sort keys %$acl) {
+            # lhs matches device, rhs matches port
+            next unless $key and $acl->{$key};
+            if (acl_matches($device, $key)
+                and acl_matches($port, $acl->{$key})) {
+
+                $found = true;
+                last;
+            }
+        }
+
+        return true if $found;
+    }
+    elsif ($role) {
+        # the config does not have an entry for user's role
+        return false;
+    }
+
+    # the user has "Enabled (any port)" setting
+    return $user->port_control;
+  }
+
+  return false;
+}
+
+
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 
 =over 4
@@ -47,36 +168,23 @@ Will return false if these checks fail, otherwise true.
 
 sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
+
+  # skip user acls for netdisco-do --force jobs
+  # this avoids the need to create a netdisco user in the DB and give rights
   return true if $ENV{ND2_DO_FORCE};
+  my $permission_mode = setting('permission_mode');
 
-  # portctl_by_role check
-  if ($device and ref $device and $user) {
-    $user = ref $user ? $user :
-      schema('netdisco')->resultset('User')
-                        ->find({ username => $user });
-
-    return false unless $user;
-    # special case admin user allowed to continue, because
-    # they can submit port control jobs
-    return true if ($user->admin and $user->port_control);
-
-    my $role = $user->portctl_role;
-    
-    my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
-      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
-      ->single;
-    if ($acl){
-      return true if $acl->can_admin;
-    } elsif ($role){
-      my $acl2 = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
-        ->search({ role_name => $role, device_ip => $device->ip })
-        ->single;
-      return true if $acl2;
-    } 
-    else {
-        return true if $user->port_control;
-    }
+  if ($mode eq 'hybrid'){
+    return (database_port_acl_by_role_check($port, $device, $user, "user") or
+            config_port_acl_by_role_check($port, $device, $user));
   }
+  elsif ($mode eq 'database') {
+    return database_port_acl_by_role_check($port, $device, $user, "user");
+  } # use ACLs defined in DB
+  else {
+    return config_port_acl_by_role_check($port, $device, $user);
+  } # use ACLs defined in deployment.yml
+
   return false;
 }
 

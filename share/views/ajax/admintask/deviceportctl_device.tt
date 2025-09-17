@@ -1,0 +1,42 @@
+[% FOREACH stack IN dev.stack %]
+<table style="border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 5px;">
+    <tr>
+    [% set curr = dev.modules.$stack %]
+    [% FOREACH port in curr.odd %]
+        <td class="port" id="[% port.long %]" style="width: 20px;border-left: none;">
+        [% IF port.long == 'empty' %]
+        [% ELSE %]
+        [% set long = port.long %]
+        [% SET port_name = port.short %]
+        <p style="font-size: 12px;">[% port_name %]</p>
+            [% IF port.can_admin %]
+            <img  class="permit" width="40" src="../images/port_permit.svg" alt="■">
+            [% ELSE %]
+            <img  class="deny" width="40" src="../images/port_deny.svg" alt="■">
+
+            [% END %]
+        [% END %]
+
+        </td>
+
+
+    [% END %]
+    </tr>
+    <tr>
+    [% FOREACH port in curr.even %]
+        <td class="port" id="[% port.long %]" style="width: 20px;border-left: none;">
+        [% IF  port.long == 'empty' %]
+        [% ELSE %]
+        [% SET port_name = port.short %]
+            [% IF port.can_admin %]
+            <img  class="permit" width="40" src="../images/port_permit.svg" alt="■">
+            [% ELSE %]
+            <img  class="deny" width="40" src="../images/port_deny.svg" alt="■">
+            [% END %]
+            <p style="font-size: 12px;">[% port_name %]</p>
+        [% END %]
+        </td>
+    [% END %]
+    </tr>
+</table>
+[% END %]

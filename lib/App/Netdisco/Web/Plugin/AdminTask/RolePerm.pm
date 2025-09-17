@@ -73,7 +73,9 @@ ajax '/ajax/control/admin/roleperm/add' => require_role admin => sub {
         return { success => 0, message => "Role '$role' already exists" };
     }
     # create the new role
-    my $new_role = schema(vars->{'tenant'})->resultset('PortctlRole')->create({ role_name => $role });
+    schema(vars->{'tenant'})->txn_do(sub {
+        my $new_role = schema(vars->{'tenant'})->resultset('PortctlRole')->create({ role_name => $role });
+    });
     debug '/roleperm/add: Created new role ' . $role;
     return to_json({ success => 1, message => "Role '$role' created successfully" });
 };
@@ -93,16 +95,18 @@ ajax '/ajax/control/admin/roleperm/update' => require_role admin => sub {
         # update the role name
         my $role_rs = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $old_role_name });
         if ($role_rs) {
-            $role_rs->update({ role_name => $role });
-            # update all permissions associated with the old role name
-            my $device_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $old_role_name });
-            while (my $perm = $device_perms->next) {
-                $perm->update({ role_name => $role });
-            }
-            my $port_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $old_role_name });
-            while (my $perm = $port_perms->next) {
-                $perm->update({ role_name => $role });
-            }
+            schema(vars->{'tenant'})->txn_do(sub {
+                $role_rs->update({ role_name => $role });
+                # update all permissions associated with the old role name
+                my $device_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $old_role_name });
+                while (my $perm = $device_perms->next) {
+                    $perm->update({ role_name => $role });
+                }
+                my $port_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $old_role_name });
+                while (my $perm = $port_perms->next) {
+                    $perm->update({ role_name => $role });
+                }
+            });
             debug '/roleperm/update: Updated role ' . $old_role_name . ' to ' . $role;
             return to_json({ success => 1, message => "Updated $old_role_name to $role" });
 
@@ -125,13 +129,15 @@ ajax '/ajax/control/admin/roleperm/del' => require_role admin => sub {
     # check if the role exists
     my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
     if ($existing_role) {
-        $existing_role->delete;
-        foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $role })->all) {
-            $permission->delete;
-        }
-        foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $role })->all) {
-            $permission->delete;
-        }
+        schema(vars->{'tenant'})->txn_do(sub {
+            $existing_role->delete;
+            foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $role })->all) {
+                $permission->delete;
+            }
+            foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $role })->all) {
+                $permission->delete;
+            }
+        });
         debug '/roleperm/del: Deleted role ' . $role;
         return to_json({ success => 1, message => "Role '$role' deleted successfully" });
     } else {

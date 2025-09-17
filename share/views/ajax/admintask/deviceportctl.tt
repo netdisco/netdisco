@@ -1,118 +1,79 @@
-[% IF NOT results.size %]
-<div class="span4 alert alert-info">No devices found.</div>
-[% ELSE %]
-<style>
-  .permit {
-    color: green;
-  }
-  .deny {
-    color: red;
-  }
-</style>
-<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
-  <thead>
-    <tr>
-      <th class="nd_center-cell">[% role %] devices</th>
-      <th class="nd_center-cell">Device ports</th>
-    </tr>
-  </thead>
-  <tbody>
-    [% FOREACH row IN results %]
-      [% SET name = row.name %]
-      [% NEXT if not name %]
-      [% set shortname = name.split('\.').0 %]
-        <tr>
-          <td class="nd_center-cell">
-            [% name %] <br>
-            <input type="hidden" data-form="portctl" id="port-list-[% shortname %]" name="port-list" value="">
-            <input type="hidden" data-form="portctl" name="device" value="[% name %]">
-            <input type="hidden" data-form="portctl" name="role" value="[% role %]">
+  [% IF NOT results.size %]
+  <div class="span4 alert alert-info">No devices found.</div>
+  [% ELSE %]
+  <style>
+    .permit {
+      color: green;
+    }
+    .deny {
+      color: red;
+    }
+  </style>
+  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+    <thead>
+      <tr>
+        <th class="nd_center-cell">[% role %] devices</th>
+        <th class="nd_center-cell">Device ports</th>
+      </tr>
+    </thead>
+    <tbody>
+      [% FOREACH row IN results %]
 
-            <button class="btn nd_deny" data-device="[% shortname %]">Set all to Deny</button>
-            <button class="btn nd_permit" data-device="[% shortname %]">Set all to Permit</button>
-            <button class="btn btn-primary nd_adminbutton" name="portctl" data-device="[% shortname %]">Save</button>
-          </td>
-          <td class="">
-            <div unselectable="on"  onselectstart="return false;" onmousedown="return false;" style="border: 1px solid #ccc; padding: 5px; margin: 5px; font-size:2em;" 
-            class="switch switch-view-[% shortname %]" data-device="[% shortname %]">
-              <p>
-              [% FOREACH stack IN row.stack %]
-                <table style="border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 5px;">
-                  <tr>
-                    [% FOREACH port in row.modules.$stack.odd %]
-                      <td class="port" id="[% port.long %]" style="width: 20px;border-left: none;">
-                        [% IF port.long == 'empty' %]
-                        [% ELSE %]
-                        [% set long = port.long %]
-                        [% SET port_name = port.short %]
-                        <p style="font-size: 12px;">[% port_name %]</p>
-                          [% IF port.can_admin %]
-                          <img  class="permit" width="40" src="../images/port_permit.png" alt="■">
-                          [% ELSE %]
-                          <img  class="deny" width="40" src="../images/port_deny.png" alt="■">
+        [% SET name = row %]
+        [% NEXT if not name %]
+        [% set shortname = name.split('\.').0 %]
+          <tr>
+            <td class="nd_center-cell">
+              [% name %] <br>
+              <input type="hidden" data-form="portctl" id="port-list-[% shortname %]" name="port-list" value="">
+              <input type="hidden" data-form="portctl" name="device" value="[% name %]">
+              <input type="hidden" data-form="portctl" name="role" value="[% role %]">
+              <button class="btn btn-mini nd_show-device" data-device="[% name %]" data-shortname="[% shortname %]" data-role="[% role %]" data-toggle="popover" data-html="true">Show device physical view</button>
+              
+              <button class="btn nd_deny hidden" disabled data-device="[% shortname %]">Set all to Deny</button>
+              <button class="btn nd_permit hidden" disabled data-device="[% shortname %]">Set all to Permit</button>
+              <button class="btn btn-primary nd_adminbutton hidden" disabled name="portctl" data-device="[% shortname %]">Save</button>
+            </td>
+            <td class="nd_center-cell">
+              <div unselectable="on"  onselectstart="return false;" onmousedown="return false;" style="border: 1px solid #ccc; padding: 5px; margin: 5px; font-size:2em;display:none;" 
+              class="switch switch-view-[% shortname %]" data-device="[% shortname %]">
+                <p id="device-physical-view-[% shortname %]">
+                </p>
+              </div>
+            </td>
+          </tr>
+      [% END %]
+    </tbody>
+  </table>
+  [% END %]
 
-                          [% END %]
-                        [% END %]
-
-                      </td>
-
-
-                  [% END %]
-                  </tr>
-                  <tr>
-                  [% FOREACH port in row.modules.$stack.even %]
-                      <td class="port" id="[% port.long %]" style="width: 20px;border-left: none;">
-                        [% IF  port.long == 'empty' %]
-                        [% ELSE %]
-                        [% SET port_name = port.short %]
-                          [% IF port.can_admin %]
-                          <img  class="permit" width="40" src="../images/port_permit.png" alt="■">
-                          [% ELSE %]
-                          <img  class="deny" width="40" src="../images/port_deny.png" alt="■">
-                          [% END %]
-                          <p style="font-size: 12px;">[% port_name %]</p>
-                        [% END %]
-                      </td>
-                  [% END %]
-                  </tr>
-                </table>
-              [% END %]
-              </p>
-            </div>
-          </td>
-        </tr>
-    [% END %]
-  </tbody>
-</table>
-[% END %]
-
-<script>
-    const switches = $('.switch');
-    switches.each(function(index, switchElement) {
-        const device = $(switchElement).data('device');
-        
-        // get all current denied ports
-        var ports = $('.switch-view-' + device);
-        var all_ports = ports.find('.port');
-        var portList = "";
-        for (var i = 0; i < all_ports.length; i++) {
-            var port = all_ports[i];
-            const portImg = $(port).find("img")[0];
-            if (portImg){
-              if (portImg.classList.contains("deny")) {
-                  portList += port.id + ",";
+  <script>
+      const switches = $('.switch');
+      switches.each(function(index, switchElement) {
+          const device = $(switchElement).data('device');
+          
+          // get all current denied ports
+          var ports = $('.switch-view-' + device);
+          var all_ports = ports.find('.port');
+          var portList = "";
+          for (var i = 0; i < all_ports.length; i++) {
+              var port = all_ports[i];
+              const portImg = $(port).find("img")[0];
+              if (portImg){
+                if (portImg.classList.contains("deny")) {
+                    portList += port.id + ",";
+                }
               }
-            }
-        }
-        // set the port list in the hidden input
-        $("#port-list-" + device).val(portList);
-    });
-  </script>
+          }
+          // set the port list in the hidden input
+          $("#port-list-" + device).val(portList);
+      });
+    </script>
 
-<script>
-$(document).ready(function() {
-  $('#data-table').dataTable({
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
+  <script>
+  $(document).ready(function() {
+    $('#data-table').dataTable({
+  [% INCLUDE 'ajax/datatabledefaults.tt' -%]
+    } );
   } );
-} );
-</script>
+  </script>

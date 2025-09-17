@@ -536,6 +536,7 @@ portctl_nowaps: false
 portctl_nophones: false
 portctl_uplinks: false
 portctl_topology: false
+portctl_mode: 'config'
 portctl_by_role: {}
 system_port_control_reasons:
   address:     'Address Allocation Abuse'
