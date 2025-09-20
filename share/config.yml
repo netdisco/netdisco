@@ -162,6 +162,7 @@ sidebar_defaults:
   device_netmap:
     showips:     { default: null }
     showspeed:   { default: null }
+    autosave:    { default: checked }
     mapshow:     { default: depth }
     depth:       { default: 1 }
     colorby:     { default: speed }

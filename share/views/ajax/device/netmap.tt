@@ -195,7 +195,7 @@ function spin(selection, duration) {
   duration = duration || 1500;
   if (! graph.inspect().status.forceRunning) {
     d3.select('#nd2_netmap-spinner').style('fill', '#CCFFCC').attr('d', circle);
-    saveMapPositions();
+    [% 'saveMapPositions();' IF params.autosave == 'on' %]
     return;
   }
   d3.select('#nd2_netmap-spinner').style('fill', '#FFE4B5').attr('d', arc);

@@ -28,6 +28,15 @@
                   <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
                 </label>
               </div>
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="autosave" id="nd_autosave"
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave %]
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="On" data-off="Off" data-onstyle="success">
+                  <span onclick="$('#nd_autosave').bootstrapToggle('toggle')">&nbsp;Auto Save</span>
+                </label>
+              </div>
             </div>
 
             <label><span id="">Positions: </span>
