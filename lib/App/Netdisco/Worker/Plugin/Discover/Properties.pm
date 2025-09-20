@@ -85,22 +85,27 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   $device->set_column( last_discover => \$now );
 
+  my $enterprises_mib = qr/(?:\.?1.3.6.1.4.1|enterprises)\.\d+/;
+  my $try_vendor =
+    ($device->model and $device->model =~ m/^${enterprises_mib}/) ? $device->model
+    : ($device->vendor and $device->vendor =~ m/^${enterprises_mib}/) ? $device->vendor
+    : ($device->id and $device->id =~ m/^${enterprises_mib}/) ? $device->id : undef;
+  $try_vendor =~ s/^(?:\.?1.3.6.1.4.1|enterprises)// if $try_vendor;
+
   # fix up unknown vendor (enterprise number -> organization)
-  if ($device->vendor and $device->vendor =~ m/^enterprises\.(\d+)$/) {
+  if ($try_vendor and $try_vendor =~ m/^\.(\d+)/) {
       my $number = $1;
-      debug sprintf ' searching for Enterprise Number "%s"', ($number || '?');
+      debug sprintf ' searching for Enterprise Number "%s"', $number;
       my $ent = schema('netdisco')->resultset('Enterprise')->find($number);
       $device->set_column( vendor => $ent->organization ) if $ent;
   }
 
   # fix up unknown model using products OID cache
-  if (not $device->model or $device->model =~ m/(?:enterprises\.|products\.)\.\d+/ ) {
-      if (my $oid = $snmp->id) {
-          # e.g. ".1.3.6.1.4.1.2636.1.1.1.4.131.3"
-          debug sprintf ' searching for Product ID "%s"', ($oid || '');
-          my $object = schema('netdisco')->resultset('Product')->find($oid);
-          $device->set_column( model => $object->leaf ) if $object;
-      }
+  if ($try_vendor) {
+      my $oid = '.1.3.6.1.4.1' . $try_vendor;
+      debug sprintf ' searching for Product ID "%s"', ('enterprises.' . $try_vendor);
+      my $object = schema('netdisco')->resultset('Product')->find($oid);
+      $device->set_column( model => $object->leaf ) if $object;
   }
 
   # protection for failed SNMP gather
