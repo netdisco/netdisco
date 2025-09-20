@@ -898,6 +898,7 @@ worker_plugins:
   - 'Show'
   - 'Snapshot'
   - 'Stats'
+  - 'TastyJobs'
   - 'Vlan'
   - 'Vlan::Core'
 
@@ -919,6 +920,7 @@ deferrable_actions:
   - 'primeskiplist'
   - 'scheduler'
   - 'expire'
+  - 'tastyjobs'
 
 # ---------------
 # GraphViz Export
