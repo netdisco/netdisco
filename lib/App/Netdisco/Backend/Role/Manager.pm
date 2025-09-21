@@ -74,12 +74,12 @@ sub worker_body {
       debug "mgr ($wid): getting potential jobs for $num_slots workers"
         if not $ENV{ND2_SINGLE_WORKER};
 
-      foreach my $job ( jq_getsome($num_slots) ) {
+      JOB: foreach my $job ( jq_getsome($num_slots) ) {
           my $display_name = $job->action .' '. ($job->device || '');
 
           if ($seen_job{ $memoize->($job) }++) {
               debug "mgr ($wid): duplicate queue job detected: $display_name";
-              next;
+              next JOB;
           }
 
           # 1392 check for any of the same job running already
@@ -87,12 +87,12 @@ sub worker_body {
               if ($p->cmndline
                     and $p->cmndline =~ m/nd2: #\d+ poll: #\d+: ${display_name}/) {
                   debug "mgr ($wid): duplicate running job detected: $display_name";
-                  next;
+                  next JOB;
               }
           }
 
           # mark job as running
-          next unless jq_lock($job);
+          jq_lock($job) or next JOB;
           info sprintf "mgr (%s): job %s booked out for this processing node",
             $wid, $job->id;
 
