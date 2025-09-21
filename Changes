@@ -1,3 +1,13 @@
+2.090000 - 2025-09-21
+
+  [NEW FEATURES]
+
+  * #1379 add ArubaOS-CX support (Jethro Binks)
+
+  [BUG FIXES]
+
+  * #1392 another check for any of the same job running already
+
 2.089004 - 2025-09-21
 
   [ENHANCEMENTS]

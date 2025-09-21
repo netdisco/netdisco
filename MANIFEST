@@ -115,6 +115,7 @@ lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
 lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
 lib/App/Netdisco/SSHCollector/Platform/ArubaCont.pm
+lib/App/Netdisco/SSHCollector/Platform/ArubaCX.pm
 lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm

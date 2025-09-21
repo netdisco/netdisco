@@ -27,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.089004'
+    version: '2.090000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -233,6 +233,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
   App::Netdisco::SSHCollector::Platform::Aruba:
     file: lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
+  App::Netdisco::SSHCollector::Platform::ArubaCX:
+    file: lib/App/Netdisco/SSHCollector/Platform/ArubaCX.pm
   App::Netdisco::SSHCollector::Platform::ArubaCont:
     file: lib/App/Netdisco/SSHCollector/Platform/ArubaCont.pm
   App::Netdisco::SSHCollector::Platform::BigIP:
@@ -697,5 +699,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.089004'
+version: '2.090000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
