@@ -87,9 +87,10 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   my $enterprises_mib = qr/(?:\.?1.3.6.1.4.1|enterprises)\.\d+/;
   my $try_vendor =
-    ($device->model and $device->model =~ m/^${enterprises_mib}/) ? $device->model
+    ($device->id and $device->id =~ m/^${enterprises_mib}/) ? $device->id
+    : ($device->model and $device->model =~ m/^${enterprises_mib}/) ? $device->model
     : ($device->vendor and $device->vendor =~ m/^${enterprises_mib}/) ? $device->vendor
-    : ($device->id and $device->id =~ m/^${enterprises_mib}/) ? $device->id : undef;
+    : undef;
   $try_vendor =~ s/^(?:\.?1.3.6.1.4.1|enterprises)// if $try_vendor;
 
   # fix up unknown vendor (enterprise number -> organization)
