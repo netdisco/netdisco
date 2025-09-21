@@ -97,15 +97,21 @@ register_worker({ phase => 'early', driver => 'snmp',
       my $number = $1;
       debug sprintf ' searching for Enterprise Number "%s"', $number;
       my $ent = schema('netdisco')->resultset('Enterprise')->find($number);
-      $device->set_column( vendor => $ent->organization ) if $ent;
+      if ($ent) {
+          debug sprintf ' ... found Enterprise "%s"', $ent->organization;
+          $device->set_column( vendor => $ent->organization );
+      }
   }
 
   # fix up unknown model using products OID cache
   if ($try_vendor) {
       my $oid = '.1.3.6.1.4.1' . $try_vendor;
-      debug sprintf ' searching for Product ID "%s"', ('enterprises.' . $try_vendor);
+      debug sprintf ' searching for Product ID "%s"', ('enterprises' . $try_vendor);
       my $object = schema('netdisco')->resultset('Product')->find($oid);
-      $device->set_column( model => $object->leaf ) if $object;
+      if ($object) {
+          debug sprintf ' ... found Product "%s"', $object->leaf;
+          $device->set_column( model => $object->leaf );
+      }
   }
 
   # protection for failed SNMP gather
