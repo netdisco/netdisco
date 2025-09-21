@@ -286,6 +286,7 @@ lib/App/Netdisco/Worker/Plugin/Scheduler.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
 lib/App/Netdisco/Worker/Plugin/Snapshot.pm
 lib/App/Netdisco/Worker/Plugin/Stats.pm
+lib/App/Netdisco/Worker/Plugin/TastyJobs.pm
 lib/App/Netdisco/Worker/Plugin/Vlan.pm
 lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
 lib/App/Netdisco/Worker/Runner.pm

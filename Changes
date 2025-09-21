@@ -1,8 +1,20 @@
+2.089003 - 2025-09-21
+
+  [ENHANCEMENTS]
+
+  * #1372 config item to control network map positions auto save
+  * add tastyjobs action worker to show which jobs would be picked from the queue
+
+  [BUG FIXES]
+
+  * fix and improve unknown vendor and model resolving from db
+  * removed OpenBSD documentation reference as it's no longer working
+
 2.089002 - 2025-09-12
 
   [ENHANCEMENTS]
 
-  * upgrade SNMP::Info 
+  * upgrade SNMP::Info dependency to 3.974000
 
 2.089001 - 2025-09-07
 
