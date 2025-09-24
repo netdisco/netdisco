@@ -42,7 +42,7 @@ sub run {
       try { unlink App::Netdisco::Transport::Python->context->filename };
     }
     $job->finalise_status;
-};
+  };
 
   my @newuserconf = ();
   my @userconf = @{ dclone (setting('device_auth') || []) };
