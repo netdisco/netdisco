@@ -61,7 +61,7 @@ sub arpnip {
     $expect->send("no page\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
 
-    $expect->send("show arp\n");
+    $expect->send("show arp all-vrfs\n");
     ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
     my @lines= split(m/\n/,$before);
 
