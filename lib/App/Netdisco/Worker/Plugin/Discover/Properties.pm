@@ -93,7 +93,9 @@ register_worker({ phase => 'early', driver => 'snmp',
   $try_vendor =~ s/^(?:\.?1.3.6.1.4.1|enterprises)// if $try_vendor;
 
   # fix up unknown vendor (enterprise number -> organization)
-  if (not $device->vendor and $try_vendor and $try_vendor =~ m/^\.(\d+)/) {
+  if ((not $device->vendor or $device->vendor eq 'unknown')
+        and $try_vendor and $try_vendor =~ m/^\.(\d+)/) {
+
       my $number = $1;
       debug sprintf ' searching for Enterprise Number "%s"', $number;
       my $ent = schema('netdisco')->resultset('Enterprise')->find($number);
