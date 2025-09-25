@@ -1,3 +1,16 @@
+2.090001 - 2025-09-25
+
+  [ENHANCEMENTS]
+
+  * #1393 support for drop-down option lists in custom report sidebar
+  * #869 update ArubaOS-CX ssh collector to retrieve from all VRFs
+  * restored OpenBSD and FreeBSD documentation as we have working installs again
+
+  [BUG FIXES]
+
+  * #1388 fix web submitted job requests are not prioritised
+  * fix SNMP::Info returns "unknown" for vendor - resolve to enterprise
+
 2.090000 - 2025-09-21
 
   [NEW FEATURES]
