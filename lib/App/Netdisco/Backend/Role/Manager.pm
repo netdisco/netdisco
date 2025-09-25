@@ -67,7 +67,7 @@ sub worker_body {
 
       # this does have a race condition, but the jobs we're protecting
       # against are likely to be long running
-      my $t = Proc::ProcessTable->new;
+      my $t = Proc::ProcessTable->new( 'enable_ttys' => 0 );
 
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
                       - $self->{queue}->pending();
