@@ -1,3 +1,9 @@
+2.090002 - 2025-09-25
+
+  [BUG FIXES]
+
+  * #1392 only check for duplicate running jobs when the job is on a specific device
+
 2.090001 - 2025-09-25
 
   [ENHANCEMENTS]
