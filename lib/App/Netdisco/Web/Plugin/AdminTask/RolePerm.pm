@@ -95,7 +95,14 @@ ajax '/ajax/control/admin/roleperm/update' => require_role admin => sub {
         # update the role name
         my $role_rs = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $old_role_name });
         if ($role_rs) {
+
             schema(vars->{'tenant'})->txn_do(sub {
+                # update role of users that have this role
+                my $user_rs = schema(vars->{'tenant'})->resultset('User')->search({ portctl_role => $old_role_name });
+                while (my $user = $user_rs->next) {
+                    $user->update({ portctl_role => $role });
+                }
+                # update the role name
                 $role_rs->update({ role_name => $role });
                 # update all permissions associated with the old role name
                 my $device_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $old_role_name });
