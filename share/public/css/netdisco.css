@@ -349,7 +349,7 @@ td > form.nd_inline-form {
 }
 
 /* vlans collapser also clickable and deep grey but with no link styling */
-.nd_collapse-vlans {
+.nd_collapse-vlans, .nd_collapse-devices {
   cursor: pointer;
   color: #0088CC;
   text-decoration: none !important;
