@@ -20,7 +20,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
         AND ds.device IS NULL)
 
   SELECT my_jobs.*,
-         CASE WHEN ( (my_jobs.username IS NOT NULL AND ((ds.deferrals IS NULL AND ds.last_defer IS NULL)
+         CASE WHEN ( (my_jobs.username IS NOT NULL AND (((ds.deferrals = 0 OR ds.deferrals IS NULL) AND ds.last_defer IS NULL)
                                                         OR my_jobs.entered > ds.last_defer))
                     OR (my_jobs.action = ANY (string_to_array(btrim(?, '{"}'), '","'))) )
               THEN 100

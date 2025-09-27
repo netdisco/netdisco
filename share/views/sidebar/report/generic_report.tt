@@ -4,9 +4,18 @@
   [% FOREACH p IN report.rconfig.bind_params %]
   <div class="clearfix nd_netmap-sidebar">
     <em class="muted nd_sidebar-label">[% p.param.ucfirst | html_entity %]</em><br/>
+    [% IF p.defined('type') AND p.type == 'list' %]
+    <select id="nd_port-query" placeholder=""
+      name="[% p.param | html_entity %]">
+      [% FOREACH opt IN p.options %]
+      <option value="[% opt | html_entity %]" [% IF opt == params.${p.param} OR (NOT params.defined(p.param) AND opt == p.default) %]selected[% END %]>[% opt %]</option>
+      [% END %]
+    </select>
+    [% ELSE %]
     <input id="nd_port-query" placeholder=""
       name="[% p.param | html_entity %]" value="[% params.${p.param} || p.default | html_entity %]" type="[% p.type || 'text' | html_entity %]"
       rel="tooltip" data-placement="left" data-offset="5" data-title="[% p.param.ucfirst | html_entity %]"/>
+    [% END %]
   </div>
   [% END %]
 

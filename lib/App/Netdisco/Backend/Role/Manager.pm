@@ -3,6 +3,7 @@ package App::Netdisco::Backend::Role::Manager;
 use Dancer qw/:moose :syntax :script/;
 
 use List::Util 'sum';
+use Proc::ProcessTable;
 use App::Netdisco::Util::MCE;
 
 use App::Netdisco::Backend::Job;
@@ -64,16 +65,36 @@ sub worker_body {
       my $num_slots = 0;
       my %seen_job = ();
 
+      # this does have a race condition, but the jobs we're protecting
+      # against are likely to be long running
+      my $t = Proc::ProcessTable->new( 'enable_ttys' => 0 );
+
       $num_slots = parse_max_workers( setting('workers')->{tasks} )
                       - $self->{queue}->pending();
       debug "mgr ($wid): getting potential jobs for $num_slots workers"
         if not $ENV{ND2_SINGLE_WORKER};
 
-      foreach my $job ( jq_getsome($num_slots) ) {
-          next if $seen_job{ $memoize->($job) }++;
+      JOB: foreach my $job ( jq_getsome($num_slots) ) {
+          my $display_name = $job->action .' '. ($job->device || '');
+
+          if ($seen_job{ $memoize->($job) }++) {
+              debug "mgr ($wid): duplicate queue job detected: $display_name";
+              next JOB;
+          }
+
+          # 1392 check for any of the same job running already
+          if ($job->device) {
+              foreach my $p ( @{$t->table} ) {
+                  if ($p->cmndline
+                        and $p->cmndline =~ m/nd2: #\d+ poll: #\d+: ${display_name}/) {
+                      debug "mgr ($wid): duplicate running job detected: $display_name";
+                      next JOB;
+                  }
+              }
+          }
 
           # mark job as running
-          next unless jq_lock($job);
+          jq_lock($job) or next JOB;
           info sprintf "mgr (%s): job %s booked out for this processing node",
             $wid, $job->id;
 

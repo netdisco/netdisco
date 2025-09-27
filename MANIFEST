@@ -121,6 +121,7 @@ lib/App/Netdisco/JobQueue/PostgreSQL.pm
 lib/App/Netdisco/SSHCollector/Platform/ACE.pm
 lib/App/Netdisco/SSHCollector/Platform/Aruba.pm
 lib/App/Netdisco/SSHCollector/Platform/ArubaCont.pm
+lib/App/Netdisco/SSHCollector/Platform/ArubaCX.pm
 lib/App/Netdisco/SSHCollector/Platform/ASA.pm
 lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
@@ -294,6 +295,7 @@ lib/App/Netdisco/Worker/Plugin/Scheduler.pm
 lib/App/Netdisco/Worker/Plugin/Show.pm
 lib/App/Netdisco/Worker/Plugin/Snapshot.pm
 lib/App/Netdisco/Worker/Plugin/Stats.pm
+lib/App/Netdisco/Worker/Plugin/TastyJobs.pm
 lib/App/Netdisco/Worker/Plugin/Vlan.pm
 lib/App/Netdisco/Worker/Plugin/Vlan/Core.pm
 lib/App/Netdisco/Worker/Runner.pm

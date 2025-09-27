@@ -215,29 +215,7 @@ Currently, ARP tables can be retrieved from the following device classes:
 
 =over 4
 
-=item * L<App::Netdisco::SSHCollector::Platform::GAIAEmbedded> - Check Point GAIA Embedded
-
-=item * L<App::Netdisco::SSHCollector::Platform::CPVSX> - Check Point VSX
-
-=item * L<App::Netdisco::SSHCollector::Platform::ACE> - Cisco ACE
-
-=item * L<App::Netdisco::SSHCollector::Platform::ASA> - Cisco ASA
-
-=item * L<App::Netdisco::SSHCollector::Platform::IOS> - Cisco IOS
-
-=item * L<App::Netdisco::SSHCollector::Platform::IOSXR> - Cisco IOS XR
-
-=item * L<App::Netdisco::SSHCollector::Platform::NXOS> - Cisco NXOS
-
-=item * L<App::Netdisco::SSHCollector::Platform::OS10> - Dell OS10
-
-=item * L<App::Netdisco::SSHCollector::Platform::BigIP> - F5 Networks BigIP
-
-=item * L<App::Netdisco::SSHCollector::Platform::FreeBSD> - FreeBSD
-
-=item * L<App::Netdisco::SSHCollector::Platform::Linux> - Linux
-
-=item * L<App::Netdisco::SSHCollector::Platform::PaloAlto> - Palo Alto
+=item * L<https://github.com/netdisco/netdisco/wiki/SSH-Platforms> - All Supported Platforms
 
 =back
 
