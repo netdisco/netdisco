@@ -366,8 +366,8 @@ share/public/images/glyphicons-halflings.png
 share/public/images/glyphicons_072_bookmark.png
 share/public/images/matte_basic_pin.png
 share/public/images/navbar_disco.png
-share/public/images/port_deny.png
-share/public/images/port_permit.png
+share/public/images/port_deny.svg
+share/public/images/port_permit.svg
 share/public/images/sort_asc.png
 share/public/images/sort_asc_disabled.png
 share/public/images/sort_both.png
@@ -553,7 +553,7 @@ share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-90-91-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-91-92-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-92-93-PostgreSQL.sql
-share/schema_versions/App-Netdisco-DB-Portctl-Update.sql
+share/schema_versions/App-Netdisco-DB-93-94-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/deviceportctl.tt
 share/views/ajax/admintask/duplicatedevices.tt

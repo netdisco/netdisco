@@ -42,7 +42,9 @@ checks for ACLs defined in the database. Either a bare username or a role name
 can be supplied.
 
 =back
+
 Will return false if these checks fail, otherwise true.
+
 =cut
 
 sub database_port_acl_by_role_check {
@@ -86,16 +88,19 @@ sub database_port_acl_by_role_check {
   return false;
 }
 
-
 =head2 config_port_acl_by_role_check( $port, $device?, $user? )
 
 =over 4
 
 =item *
+
 Permission check on C<portctl_by_role> if the device and user are provided. A
 bare username will be promoted to a user instance.
+
 =back
+
 Will return false if these checks fail, otherwise true.
+
 =cut
 
 sub config_port_acl_by_role_check {
@@ -146,10 +151,8 @@ sub config_port_acl_by_role_check {
     # the user has "Enabled (any port)" setting
     return $user->port_control;
   }
-
   return false;
 }
-
 
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 
