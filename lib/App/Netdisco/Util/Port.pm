@@ -174,11 +174,11 @@ sub port_acl_by_role_check {
   return true if $ENV{ND2_DO_FORCE};
   my $permission_mode = setting('permission_mode');
 
-  if ($mode eq 'hybrid'){
+  if ($permission_mode eq 'hybrid'){
     return (database_port_acl_by_role_check($port, $device, $user, "user") or
             config_port_acl_by_role_check($port, $device, $user));
   }
-  elsif ($mode eq 'database') {
+  elsif ($permission_mode eq 'database') {
     return database_port_acl_by_role_check($port, $device, $user, "user");
   } # use ACLs defined in DB
   else {
