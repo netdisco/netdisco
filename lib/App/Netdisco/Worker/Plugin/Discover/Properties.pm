@@ -106,7 +106,9 @@ register_worker({ phase => 'early', driver => 'snmp',
   }
 
   # fix up model using products OID cache
-  if ($try_vendor) {
+  if ((not $device->model or $device->model eq 'unknown'
+        or $device->model =~ m/(?:product|enterprise|1\.3\.6\.1)/i) and $try_vendor) {
+
       my $oid = '.1.3.6.1.4.1' . $try_vendor;
       debug sprintf ' searching for Product ID "%s"', ('enterprises' . $try_vendor);
       my $object = schema('netdisco')->resultset('Product')->find($oid);
