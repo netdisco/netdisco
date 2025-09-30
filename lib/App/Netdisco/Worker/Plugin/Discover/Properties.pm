@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex get_mibdirs_shortnames/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
@@ -116,6 +116,21 @@ register_worker({ phase => 'early', driver => 'snmp',
           debug sprintf ' ... found Product "%s" (replaced "%s")',
             $object->leaf, ($device->model || '');
           $device->set_column( model => $object->leaf );
+      }
+  }
+
+  # remove superfluous vendor names from model names
+  if ($device->model) {
+      my @extravendors = qw/jnxProduct jnxProductName/;
+      my @vendors = sort {length($b) <=> length($a)} (@extravendors, @{ get_mibdirs_shortnames() });
+      my $vend_pat = '^(?:' . join('|', @vendors) . ')';
+      my $vend_re = qr/$vend_pat/;
+
+      (my $model = $device->model) =~ s/$vend_re//i;
+      if ($model and $model ne $device->model) {
+          debug sprintf ' fixing Product Name to be "%s" (was "%s")',
+            $model, $device->model;
+          $device->set_column( model => $model );
       }
   }
 
