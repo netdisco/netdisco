@@ -20,7 +20,7 @@ sub cipactli {
 }
 
 sub py_install {
-  return (cipactli(), 'sync');
+  return (cipactli(), 'sync', '--link-mode=copy');
 }
 
 sub py_cmd {

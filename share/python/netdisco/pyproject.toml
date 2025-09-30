@@ -36,6 +36,9 @@ addopts = [
     "--import-mode=importlib",
 ]
 
+[tool.uv]
+link-mode = "copy"
+
 [tool.uv.build-backend]
 module-name = "netdisco"
 module-root = ""
