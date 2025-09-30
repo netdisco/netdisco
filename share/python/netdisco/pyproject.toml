@@ -36,5 +36,6 @@ addopts = [
     "--import-mode=importlib",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["netdisco"]
+[tool.uv.build-backend]
+module-name = "netdisco"
+module-root = ""
