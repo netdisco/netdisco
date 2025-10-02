@@ -100,8 +100,12 @@ post '/ajax/control/admin/deviceportctl/update' => require_role admin => sub {
     if ($portctl_acl) {
         schema(vars->{'tenant'})->txn_do(sub {
             $portctl_acl->update({
-                ($device ne $new_device ? device_ip => $device_ip: ()),
-                ($acl ne $new_acl ? acl => $acl)
+                (($device ne $new_device)
+                  ? (device_ip => $device_ip)
+                : ()),
+                (($acl ne $new_acl)
+                  ?(acl => $acl)
+                 : ())
             });
         });
     }
