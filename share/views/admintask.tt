@@ -16,8 +16,6 @@
             <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 1;</script>
             [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
             [% CATCH %]
-            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-
             <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 0;</script>
             [% END %]
           </form>

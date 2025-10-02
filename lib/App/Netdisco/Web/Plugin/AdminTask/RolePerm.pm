@@ -14,8 +14,6 @@ register_admin_task({
 });
 
 
-
-
 ajax '/ajax/content/admin/roleperm' => require_role admin => sub {
 
     # to chose which devices to add/remove from the role permissions

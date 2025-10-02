@@ -66,19 +66,17 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
       <td></td>
       <td class="nd_center-cell">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
-
-    </td>
+      </td>
     </tr>
     [% SET count = 0 %]
     [% FOREACH role IN results.keys.sort %]
 
-      [% IF NOT role.search('__') %]
         <tr>
           <td class="nd_center-cell">
             <input data-form="update" name="old-role" type="hidden" value="[% role | html_entity %]">
             <input data-form="update" name="role" type="text" value="[% role | html_entity %]">
             <br><br>
-          <a href="/admin/deviceportctl?q=[% role %]" >Edit permissions on ports</a>
+            <a href="/admin/deviceportctl?role=[% role %]" >Edit permissions on ports</a>
         </td>
           <td class="nd_center-cell" id="list-[% role | html_entity %]">
           <div>
@@ -88,17 +86,19 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
             <div class="nd_collapsing nd_collapse-pre-hidden">
           [% END %]
             [% FOREACH device in results.$role %]
+            
               <p>[% device.device_name %]</p>
             [% END %]
+            <button class="btn btn-small portpem"
+            data-toggle="modal" data-target="#nd_devrole" data-role="[% role | html_entity %]" type="button">
+              <i class="icon-edit-sign text-danger"></i>
+            </button>
           [% IF results.$role.size > 10 %] [%# TODO make this a settable variable %]
             <br>
             </div>
           [% END %]
           </div>
-            <button class="btn btn-small portpem"
-            data-toggle="modal" data-target="#nd_devrole" data-role="[% role | html_entity %]" type="button">
-              <i class="icon-edit-sign text-danger"></i>
-            </button>
+
           </td>
           <td nowrap class="nd_center-cell">
             <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
@@ -126,7 +126,6 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
           </td>
         </tr>
         [% SET count = count + 1 %]
-      [% END %]
     [% END %]
   </tbody>
 </table>
