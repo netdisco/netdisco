@@ -12,4 +12,9 @@ __PACKAGE__->load_components(qw/
 
 =cut
 
+sub get_acls {
+  my ($self, $role) = @_;
+  return $self->search({ role_name => $role })->all;
+}
+
 1;

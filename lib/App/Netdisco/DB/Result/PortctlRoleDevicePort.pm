@@ -22,13 +22,11 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "device_ip",
   { data_type => "inet", is_nullable => 0 },
-  "port",
+  "acl",
   { data_type => "text", is_nullable => 0 },
-  "can_admin",
-  { data_type => "boolean", is_nullable => 0 },
 );
 
-__PACKAGE__->set_primary_key("role_name", "device_ip", "port");
+__PACKAGE__->set_primary_key("role_name", "device_ip", "acl");
 
 
 1;
