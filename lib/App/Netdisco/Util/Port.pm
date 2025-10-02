@@ -71,20 +71,19 @@ sub database_port_acl_by_role_check {
       ->single;
 
     if ($device_acl){
-      return false unless $device_acl->can_admin;
+      return false unless $device_acl;
     }
 
-    my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
-      ->search({ role_name => $role, device_ip => $device->ip, port => $port->port })
-      ->single;
-  
-    if ($acl){
-      return false unless $acl->can_admin;
-    }
+    my @portctl_acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
+      ->search({ role_name => $role, device_ip => $device->ip })
+      ->all;
 
-    return true; # no specific port acl found but device acl passed: allow portctl for every port of said device
+    return true unless @portctl_acl; # no acl for this device's ports, all ports permitted
+
+    my @acl = map { $_->acl } @portctl_acl;
+
+    return acl_matches($port, @acl);
   }
-
   return false;
 }
 
@@ -175,13 +174,13 @@ sub port_acl_by_role_check {
   # skip user acls for netdisco-do --force jobs
   # this avoids the need to create a netdisco user in the DB and give rights
   return true if $ENV{ND2_DO_FORCE};
-  my $permission_mode = setting('permission_mode');
+  my $portctl_mode = setting('portctl_mode');
 
-  if ($permission_mode eq 'hybrid'){
+  if ($portctl_mode eq 'hybrid'){
     return (database_port_acl_by_role_check($port, $device, $user, "user") or
             config_port_acl_by_role_check($port, $device, $user));
   }
-  elsif ($permission_mode eq 'database') {
+  elsif ($portctl_mode eq 'database') {
     return database_port_acl_by_role_check($port, $device, $user, "user");
   } # use ACLs defined in DB
   else {
