@@ -92,7 +92,7 @@
         </a>
         [% IF row.has_subinterface_group %]
         <span class="nd_log-icon nd_row-collapser-toggle" data-collapsed-group="[% row.port %]">
-          [% IF (params.p_fold_dotzero AND row.is_dot_zero_subinterface)
+          [% IF (params.p_fold_dotzero AND row.has_only_dot_zero_subinterface)
               OR params.p_fold_subinterfaces %]
           <i class="icon-list-ol"
           [% ELSE %]
