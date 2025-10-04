@@ -29,7 +29,18 @@
   <tbody>
     [% FOREACH row IN results %]
     [% SET portname = row.port %]
-    <tr>
+    <tr
+      [% IF row.subinterface_group %]
+        class="nd_collapsible"
+        data-collapsed-group="[% row.subinterface_group %]"
+        [% IF (params.p_fold_dotzero AND row.is_dot_zero_subinterface)
+            OR params.p_fold_subinterfaces %]
+        data-is-collapsed="true"
+        [% ELSE %]
+        data-is-collapsed="false"
+        [% END %]
+      [% END %] >
+
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove icon-large"></i>
@@ -79,6 +90,18 @@
             rel="tooltip" data-placement="top" data-offset="3"
             data-animation="" data-title="View Port Log"></i>
         </a>
+        [% IF row.has_subinterface_group %]
+        <span class="nd_log-icon nd_row-collapser-toggle" data-collapsed-group="[% row.port %]">
+          [% IF (params.p_fold_dotzero AND row.has_only_dot_zero_subinterface)
+              OR params.p_fold_subinterfaces %]
+          <i class="icon-list-ol"
+          [% ELSE %]
+          <i class="icon-sort-by-attributes-alt icon-rotate-180"
+          [% END %]
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Toggle Subinterfaces"></i>
+        </span>
+        [% END %]
       [% IF params.c_admin AND row.port_acl_service %]
       [% IF row.up_admin == 'up' %]
         <span class="nd_hand-icon">
@@ -529,5 +552,14 @@ $(document).ready(function() {
         "order": [[ 1, 'asc' ]],
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
     } );
+
+    // always rebind datatables row visibility toggle on tab load
+    var [iplen, ipnum] = dataTablesDisablePaging();
+    $('.nd_row-collapser-toggle').unbind('click', dataTablesRowGroupVisibilityToggle);
+    $('.nd_row-collapser-toggle').bind('click', dataTablesRowGroupVisibilityToggle);
+
+    // install row group filter and restore paging
+    dataTablesPushRowGroupVisibilityFilter();
+    dataTablesRestorePage(iplen, ipnum);
 } );
 </script>

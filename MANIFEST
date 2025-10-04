@@ -127,11 +127,13 @@ lib/App/Netdisco/SSHCollector/Platform/ASAContext.pm
 lib/App/Netdisco/SSHCollector/Platform/BigIP.pm
 lib/App/Netdisco/SSHCollector/Platform/Clavister.pm
 lib/App/Netdisco/SSHCollector/Platform/CPVSX.pm
+lib/App/Netdisco/SSHCollector/Platform/EOS.pm
 lib/App/Netdisco/SSHCollector/Platform/FortiOS.pm
 lib/App/Netdisco/SSHCollector/Platform/FreeBSD.pm
 lib/App/Netdisco/SSHCollector/Platform/FTD.pm
 lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
 lib/App/Netdisco/SSHCollector/Platform/IOS.pm
+lib/App/Netdisco/SSHCollector/Platform/IOSXEMac.pm
 lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
 lib/App/Netdisco/SSHCollector/Platform/Linux.pm
 lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
@@ -438,6 +440,7 @@ share/public/swagger-ui/swagger-ui.js
 share/public/swagger-ui/swagger-ui.js.map
 share/public/swagger-ui/version-3.20.3
 share/python/netdisco/.pre-commit-config.yaml
+share/python/netdisco/netdisco/__init__.py
 share/python/netdisco/netdisco/runner.py
 share/python/netdisco/netdisco/util/config.py
 share/python/netdisco/netdisco/util/database.py
