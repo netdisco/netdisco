@@ -252,6 +252,40 @@ get '/ajax/content/device/ports' => require_login sub {
         @results = grep { ! exists $to_hide{$_->port} } @results;
     }
 
+    # empty set would be a 'no records' msg
+    return unless scalar @results;
+
+    # collapsible subinterface groups
+    my %port_has_dot_zero = ();
+    my %port_subinterface_count = ();
+    my $subinterfaces_match = (setting('subinterfaces_match') || qr/(.+)\.\d+/i);
+
+    foreach my $port (@results) {
+        if ($port->port =~ m/^${subinterfaces_match}$/) {
+            my $parent = $1;
+            next unless defined $parent;
+            ++$port_subinterface_count{$parent};
+            ++$port_has_dot_zero{$parent}
+              if $port->port =~ m/\.0$/
+                and ($port->type and $port->type =~ m/^(?:propVirtual|ieee8023adLag)$/i);
+            $port->{subinterface_group} = $parent;
+        }
+    }
+
+    foreach my $parent (keys %port_subinterface_count) {
+        my $parent_port = [grep {$_->port eq $parent} @results]->[0];
+        $parent_port->{has_subinterface_group} = true;
+        $parent_port->{has_only_dot_zero_subinterface} = true
+          if exists $port_has_dot_zero{$parent}
+            and $port_subinterface_count{$parent} == 1
+            and ($parent_port->type
+              and $parent_port->type =~ m/^(?:ethernetCsmacd|ieee8023adLag)$/i);
+        if ($parent_port->{has_only_dot_zero_subinterface}) {
+            my $dotzero_port = [grep {$_->port eq "${parent}.0"} @results]->[0];
+            $dotzero_port->{is_dot_zero_subinterface} = true;
+        }
+    }
+
     # sort ports
     @results = sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } @results;
 
@@ -269,8 +303,7 @@ get '/ajax/content/device/ports' => require_login sub {
     my @hide = @{ setting('hide_tags')->{'device_port'} };
     map { $_->{filtered_tags} = [ singleton (@{ $_->tags || [] }, @hide, @hide) ] } @results;
 
-    # empty set would be a 'no records' msg
-    return unless scalar @results;
+    # pretty print the port running speed
     use App::Netdisco::Util::Port 'to_speed';
     map { $_->{speed_running} = to_speed( $_->speed ) } @results;
 
