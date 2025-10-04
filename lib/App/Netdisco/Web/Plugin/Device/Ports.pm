@@ -258,7 +258,7 @@ get '/ajax/content/device/ports' => require_login sub {
     # collapsible subinterface groups
     my %port_has_dot_zero = ();
     my %port_subinterface_count = ();
-    my $subinterfaces_match = (setting('subinterfaces_match') || qr/(.+)\.\d+/i);
+    my $subinterfaces_match = (setting('subinterfaces_match') || qr/(.+)\.\d+/);
 
     foreach my $port (@results) {
         if ($port->port =~ m/^${subinterfaces_match}$/) {

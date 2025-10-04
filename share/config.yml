@@ -621,6 +621,7 @@ host_groups:
     - 'op:and'
     - 'up:notPresent'
     - 'type:ethernetCsmacd'
+subinterfaces_match: '(.+)\.\d+'
 host_group_displaynames: {}
 device_identity: []
 community: []
