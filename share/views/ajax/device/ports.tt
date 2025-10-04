@@ -29,7 +29,9 @@
   <tbody>
     [% FOREACH row IN results %]
     [% SET portname = row.port %]
-    <tr>
+    <tr class="nd_collapsible"
+        data-is-collapsed="[% IF loop.even %]true[% ELSE %]false[% END %]"
+        data-collapsed-group="[% IF loop.even %]evens[% ELSE %]odds[% END %]">
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
         <i class="icon-remove icon-large"></i>
@@ -109,6 +111,11 @@
           <a class="nd_this-port-only" href="[% device_ports | none %]&q=[% params.q | uri %]&f=[% row.slave_of | uri %]&prefer=port">
           [% row.slave_of | html_entity %]</a>
         [% END %]
+        <span class="nd_log-icon nd_row-collapser-toggle">
+          <i class="icon-plus"
+            rel="tooltip" data-placement="top" data-offset="3"
+            data-animation="" data-title="Show Subinterfaces"></i>
+        </span>
       </td>
       [% END %]
 
@@ -529,5 +536,36 @@ $(document).ready(function() {
         "order": [[ 1, 'asc' ]],
 [% INCLUDE 'ajax/datatabledefaults.tt' -%]
     } );
+
+    $.fn.dataTable.ext.search.pop(); // removes filters already in place
+    $.fn.dataTable.ext.search.push(
+      function(settings, data, dataIndex) {
+          return $($('#dp-data-table').DataTable().row(dataIndex).node()).attr('data-is-collapsed') == 'false';
+      }
+    );
+    $('#dp-data-table').DataTable().draw();
+
+    // datatables row visibility toggle
+    $('#dp-data-table').on('click', '.nd_row-collapser-toggle', function() {
+        $.fn.dataTable.ext.search.pop(); // removes filters already in place
+        $('#dp-data-table').DataTable().draw();
+        $.fn.dataTable.ext.search.push(
+          function(settings, data, dataIndex) {
+              return $($('#dp-data-table').DataTable().row(dataIndex).node()).attr('data-is-collapsed') == 'false';
+          }
+        );
+
+        $('.nd_collapsible').each(function(index) { 
+            if ($(this).attr('data-is-collapsed') == 'true') {
+                $(this).attr('data-is-collapsed', 'false');
+            }
+            else {
+                $(this).attr('data-is-collapsed', 'true');
+            }
+        });
+        $('#dp-data-table').DataTable().draw();
+    });
+
+
 } );
 </script>
