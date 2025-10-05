@@ -44,15 +44,12 @@ post '/ajax/control/admin/deviceportctl/add' => require_role admin => sub {
       send_error('Bad request', 400);
     }
 
-    my $device_ip = schema(vars->{'tenant'})->resultset('Device')->search_for_device($device)->ip;
-
     my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort');
-    my $port_control = $rs->search({ device_ip => $device_ip, role_name => $role, acl => $acl})->single;
-
+    my $port_control = $rs->search({ device_ip => $device, role_name => $role, acl => $acl})->single;
     return if $port_control;
     schema(vars->{'tenant'})->txn_do(sub {
         $rs->create({
-            device_ip => $device_ip,
+            device_ip => $device,
             role_name => $role,
             acl => $acl,
         });
@@ -70,11 +67,9 @@ post '/ajax/control/admin/deviceportctl/del' => require_role admin => sub {
       send_error('Bad request', 400);
     }
 
-    my $device_ip = schema(vars->{'tenant'})->resultset('Device')->search_for_device($device)->ip;
-
     schema(vars->{'tenant'})->txn_do(sub {
         schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
-          ->find({ device_ip => $device_ip, role_name => $role, acl => $acl })->delete
+          ->find({ device_ip => $device, role_name => $role, acl => $acl })->delete
     });
 };
 
@@ -88,12 +83,8 @@ post '/ajax/control/admin/deviceportctl/update' => require_role admin => sub {
     unless ($device and $role and $acl) {
       send_error('Bad request', 400);
     }
-
-
-    my $device_ip = schema(vars->{'tenant'})->resultset('Device')->search_for_device($device)->ip;
-
     my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort');
-    my $portctl_acl = $rs->find({ device_ip => $device_ip, role_name => $role, acl => $acl});
+    my $portctl_acl = $rs->find({ device_ip => $device, role_name => $role, acl => $acl});
 
     return unless $portctl_acl;
 
@@ -101,10 +92,10 @@ post '/ajax/control/admin/deviceportctl/update' => require_role admin => sub {
         schema(vars->{'tenant'})->txn_do(sub {
             $portctl_acl->update({
                 (($device ne $new_device)
-                  ? (device_ip => $device_ip)
+                  ? (device_ip => $new_device)
                 : ()),
                 (($acl ne $new_acl)
-                  ?(acl => $acl)
+                  ?(acl => $new_acl)
                  : ())
             });
         });

@@ -12,11 +12,11 @@
     <tr>
       <input type="hidden" data-form="add" name="role" type="text" value="[% role | html_entity %]">
       <td class="nd_center-cell">
-        <input class="span2" data-form="add" name="device" type="text">
+        <input class="device-search span2" data-form="add" name="device" type="search" autocomplete="off">
       </td>
       <td class="nd_center-cell">
 
-        <input class="span2" data-form="add" name="acl" type="text" value="port:">
+        <input class="span4" data-form="add" name="acl" type="text" value="port:">
       </td>
       <td nowrap class="nd_center-cell">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
@@ -28,15 +28,13 @@
     [% SET count = count + 1 %]
     <tr>
       <input data-form="update" name="acl" type="hidden" value="[% row.acl | html_entity %]">
-      <input data-form="update" name="device" type="hidden" value="[% row.device_name | html_entity %]">
-      <input data-form="update" name="role" type="hidden" value="[% role | html_entity %]">
-
+      <input data-form="update" name="device" type="hidden" value="[% row.device_ip | html_entity %]">
       <input data-form="update" name="role" type="hidden" value="[% role | html_entity %]">
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="new-device" type="text" value="[% row.device_name | html_entity %]">
+        <input class="span2 device-search" data-form="update" name="new-device" type="text" value="[% row.device_ip | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="new-acl" type="text" value="[% row.acl | html_entity %]">
+        <input class="span4" data-form="update" name="new-acl" type="text" value="[% row.acl | html_entity %]">
       </td>
 
       <td nowrap class="nd_center-cell">
@@ -56,7 +54,7 @@
               <p class="text-info">ACL &quot;[% row.acl | html_entity %]&quot; will be deleted.</p>
             </blockquote>
             <input data-form="del" name="acl" type="hidden" value="[% row.acl | html_entity %]">
-            <input data-form="del" name="device" type="hidden" value="[% row.device_name | html_entity %]">
+            <input data-form="del" name="device" type="hidden" value="[% row.device_ip | html_entity %]">
             <input data-form="del" name="role" type="hidden" value="[% role | html_entity %]">
           </div>
           <div class="modal-footer">
