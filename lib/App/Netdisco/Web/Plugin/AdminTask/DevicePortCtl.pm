@@ -19,7 +19,7 @@ register_admin_task({
 get '/ajax/content/admin/deviceportctl' => require_role admin => sub {
     my $role = param('role');
     my @device_netdisco_acls = schema(vars->{'tenant'})
-        ->resultset('PortctlRoleDevicePort')->get_acls($role);
+        ->resultset('PortCtlRoleDevicePort')->get_acls($role);
     my @results;
     foreach (@device_netdisco_acls)
     {
@@ -44,7 +44,7 @@ post '/ajax/control/admin/deviceportctl/add' => require_role admin => sub {
       send_error('Bad request', 400);
     }
 
-    my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort');
+    my $rs = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort');
     my $port_control = $rs->search({ device_ip => $device, role_name => $role, acl => $acl})->single;
     return if $port_control;
     schema(vars->{'tenant'})->txn_do(sub {
@@ -68,7 +68,7 @@ post '/ajax/control/admin/deviceportctl/del' => require_role admin => sub {
     }
 
     schema(vars->{'tenant'})->txn_do(sub {
-        schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
+        schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')
           ->find({ device_ip => $device, role_name => $role, acl => $acl })->delete
     });
 };
@@ -83,7 +83,7 @@ post '/ajax/control/admin/deviceportctl/update' => require_role admin => sub {
     unless ($device and $role and $acl) {
       send_error('Bad request', 400);
     }
-    my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort');
+    my $rs = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort');
     my $portctl_acl = $rs->find({ device_ip => $device, role_name => $role, acl => $acl});
 
     return unless $portctl_acl;

@@ -1,4 +1,4 @@
-package App::Netdisco::DB::ResultSet::PortctlRoleDevice;
+package App::Netdisco::DB::ResultSet::PortCtlRoleDevicePort;
 use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
@@ -12,9 +12,9 @@ __PACKAGE__->load_components(qw/
 
 =cut
 
-sub role_can_admin { 
-    my ($self, $role) = @_;
-    return $self->search({ role_name => $role, can_admin => 1 })->all;
+sub get_acls {
+  my ($self, $role) = @_;
+  return $self->search({ role_name => $role })->all;
 }
 
 1;

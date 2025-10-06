@@ -50,9 +50,9 @@ lib/App/Netdisco/DB/Result/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/NodeNbt.pm
 lib/App/Netdisco/DB/Result/NodeWireless.pm
 lib/App/Netdisco/DB/Result/Oui.pm
-lib/App/Netdisco/DB/Result/PortctlRoleDevice.pm
-lib/App/Netdisco/DB/Result/PortctlRoleDevicePort.pm
-lib/App/Netdisco/DB/Result/PortctlRole.pm
+lib/App/Netdisco/DB/Result/PortCtlRoleDevice.pm
+lib/App/Netdisco/DB/Result/PortCtlRoleDevicePort.pm
+lib/App/Netdisco/DB/Result/PortCtlRole.pm
 lib/App/Netdisco/DB/Result/Process.pm
 lib/App/Netdisco/DB/Result/Product.pm
 lib/App/Netdisco/DB/Result/Session.pm
@@ -107,9 +107,9 @@ lib/App/Netdisco/DB/ResultSet/Node.pm
 lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
 lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
-lib/App/Netdisco/DB/ResultSet/PortctlRoleDevice.pm
-lib/App/Netdisco/DB/ResultSet/PortctlRoleDevicePort.pm
-lib/App/Netdisco/DB/ResultSet/PortctlRole.pm
+lib/App/Netdisco/DB/ResultSet/PortCtlRoleDevice.pm
+lib/App/Netdisco/DB/ResultSet/PortCtlRoleDevicePort.pm
+lib/App/Netdisco/DB/ResultSet/PortCtlRole.pm
 lib/App/Netdisco/DB/ResultSet/Subnet.pm
 lib/App/Netdisco/DB/SchemaVersioned.pm
 lib/App/Netdisco/DB/SetOperations.pm
@@ -176,7 +176,7 @@ lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/GenericReport.pm
 lib/App/Netdisco/Web/Password.pm
 lib/App/Netdisco/Web/Plugin.pm
-lib/App/Netdisco/Web/Plugin/AdminTask/DevicePortctl.pm
+lib/App/Netdisco/Web/Plugin/AdminTask/DevicePortCtl.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/DuplicateDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/NodeMonitor.pm

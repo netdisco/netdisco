@@ -118,7 +118,7 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    my @port_control_roles =  schema(vars->{'tenant'})->resultset('PortctlRole')
+    my @port_control_roles =  schema(vars->{'tenant'})->resultset('PortCtlRole')
       ->search(undef, {
         order_by => 'role_name',
       })->search({ role_name => { '!=', '_global_' } })

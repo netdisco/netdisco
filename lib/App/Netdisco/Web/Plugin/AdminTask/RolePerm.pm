@@ -29,14 +29,14 @@ ajax '/ajax/content/admin/roleperm' => require_role admin => sub {
     }, { columns => [qw/ip dns name/] })
       ->with_times->hri->all;
     
-    my @roles = schema(vars->{'tenant'})->resultset('PortctlRole')->get_roles;
+    my @roles = schema(vars->{'tenant'})->resultset('PortCtlRole')->get_roles;
 
     my %set;
     foreach my $role (@roles) {
         $set{$role} = [];
     }
 
-    my $rs = schema(vars->{'tenant'})->resultset('PortctlRoleDevice');
+    my $rs = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice');
     my $port_control = $rs->search({}, { order_by => 'role_name' });
 
     while (my $row = $port_control->next) {
@@ -65,14 +65,14 @@ ajax '/ajax/control/admin/roleperm/add' => require_role admin => sub {
     my $role = param('role');
     return { success => 0, message => "Role name cannot be empty" } unless $role;
     # check if the role already exists
-    my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
+    my $existing_role = schema(vars->{'tenant'})->resultset('PortCtlRole')->find({ role_name => $role });
     if ($existing_role) {
         debug '/rolepemp/add: Role already exists';
         return { success => 0, message => "Role '$role' already exists" };
     }
     # create the new role
     schema(vars->{'tenant'})->txn_do(sub {
-        my $new_role = schema(vars->{'tenant'})->resultset('PortctlRole')->create({ role_name => $role });
+        my $new_role = schema(vars->{'tenant'})->resultset('PortCtlRole')->create({ role_name => $role });
     });
     debug '/roleperm/add: Created new role ' . $role;
     return to_json({ success => 1, message => "Role '$role' created successfully" });
@@ -85,13 +85,13 @@ ajax '/ajax/control/admin/roleperm/update' => require_role admin => sub {
     return { success => 0, message => "Role name cannot be empty" } unless $role;
     # check if the role already exists
     if ($role ne $old_role_name) {
-        my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
+        my $existing_role = schema(vars->{'tenant'})->resultset('PortCtlRole')->find({ role_name => $role });
         if ($existing_role) {
             debug '/roleperm/update: Role already exists';
             return { success => 0, message => "Role '$role' already exists" };
         }
         # update the role name
-        my $role_rs = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $old_role_name });
+        my $role_rs = schema(vars->{'tenant'})->resultset('PortCtlRole')->find({ role_name => $old_role_name });
         if ($role_rs) {
 
             schema(vars->{'tenant'})->txn_do(sub {
@@ -103,11 +103,11 @@ ajax '/ajax/control/admin/roleperm/update' => require_role admin => sub {
                 # update the role name
                 $role_rs->update({ role_name => $role });
                 # update all permissions associated with the old role name
-                my $device_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $old_role_name });
+                my $device_perms = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')->search({ role_name => $old_role_name });
                 while (my $perm = $device_perms->next) {
                     $perm->update({ role_name => $role });
                 }
-                my $port_perms = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $old_role_name });
+                my $port_perms = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')->search({ role_name => $old_role_name });
                 while (my $perm = $port_perms->next) {
                     $perm->update({ role_name => $role });
                 }
@@ -132,14 +132,14 @@ ajax '/ajax/control/admin/roleperm/del' => require_role admin => sub {
     my $role = param('role');
     return { success => 0, message => "Role name cannot be empty" } unless $role;
     # check if the role exists
-    my $existing_role = schema(vars->{'tenant'})->resultset('PortctlRole')->find({ role_name => $role });
+    my $existing_role = schema(vars->{'tenant'})->resultset('PortCtlRole')->find({ role_name => $role });
     if ($existing_role) {
         schema(vars->{'tenant'})->txn_do(sub {
             $existing_role->delete;
-            foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $role })->all) {
+            foreach my $permission (schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')->search({ role_name => $role })->all) {
                 $permission->delete;
             }
-            foreach my $permission (schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')->search({ role_name => $role })->all) {
+            foreach my $permission (schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')->search({ role_name => $role })->all) {
                 $permission->delete;
             }
         });
@@ -156,7 +156,7 @@ ajax '/ajax/control/admin/roleperm/devices' => require_role admin => sub {
 
     my $device_ips = param('device-list'); # this is a string containing device names delimited by commas
     my $role = param('role');
-    my @current_perm = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->search({ role_name => $role })->all;
+    my @current_perm = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')->search({ role_name => $role })->all;
 
 
     my @device_ips = split /,/ , $device_ips;
@@ -169,7 +169,7 @@ ajax '/ajax/control/admin/roleperm/devices' => require_role admin => sub {
     # remove entries if some devices are not in the new list anymore
     foreach my $current_ip (keys %current_ips) {
         unless ($new_ips{lc $current_ip}) {
-            my $permission = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->find({
+            my $permission = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')->find({
                 device_ip => $current_ip,
                 role_name => $role,
             });
@@ -183,7 +183,7 @@ ajax '/ajax/control/admin/roleperm/devices' => require_role admin => sub {
         unless ($current_ips{lc $new_ip}) {
             my $device = schema(vars->{'tenant'})->resultset('Device')->find({ ip => $new_ip });
             if ($device) {
-                schema(vars->{'tenant'})->resultset('PortctlRoleDevice')->create({
+                schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')->create({
                     device_ip => $new_ip,
                     role_name => $role,
                 });

@@ -51,7 +51,7 @@ sub database_port_acl_by_role_check {
   my ($port, $device, $user) = @_;
   my $role = $user->portctl_role;
 
-  my $device_acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
+  my $device_acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')
     ->search({ role_name => $role, device_ip => $device->ip })
     ->single;
 
@@ -59,7 +59,7 @@ sub database_port_acl_by_role_check {
     return false unless $device_acl;
   }
 
-  my @portctl_acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevicePort')
+  my @portctl_acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')
     ->search({ role_name => $role, device_ip => $device->ip })
     ->all;
 

@@ -333,7 +333,7 @@ hook 'before_template' => sub {
 
         my $device_ip = ref $device eq 'HASH' ? $device->{ip} : $device;
 
-        my $acl = schema(vars->{'tenant'})->resultset('PortctlRoleDevice')
+        my $acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')
           ->search({ role_name => $user->portctl_role, device_ip => $device_ip })
           ->single;
         return true if $acl;
