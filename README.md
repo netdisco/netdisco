@@ -21,3 +21,4 @@ It includes a lightweight web server for the interface, a backend daemon to gath
 Please check out the [installation instructions](https://metacpan.org/pod/App::Netdisco) on CPAN. When upgrading, make sure to check the latest [Release Notes](https://github.com/netdisco/netdisco/wiki/Release-Notes).
 
 You can also speak to someone in the [`#netdisco@libera`](https://kiwiirc.com/nextclient/irc.libera.chat/netdisco) IRC channel, or on the [community email list](https://lists.sourceforge.net/lists/listinfo/netdisco-users).
+
