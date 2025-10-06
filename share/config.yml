@@ -84,7 +84,7 @@ web_plugins:
   - AdminTask::OrphanedDevices
   - AdminTask::DuplicateDevices
   - AdminTask::RolePerm
-  - AdminTask::DevicePortctl
+  - AdminTask::DevicePortCtl
   - AdminTask::TimedOutDevices
   - AdminTask::UserLog
   - AdminTask::Users

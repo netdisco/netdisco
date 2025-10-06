@@ -1,4 +1,4 @@
-package App::Netdisco::Web::Plugin::AdminTask::DevicePortctl;
+package App::Netdisco::Web::Plugin::AdminTask::DevicePortCtl;
 
 use Dancer ':syntax';
 use Dancer;
