@@ -26,6 +26,7 @@ __PACKAGE__->attributes(qw/ sessions /);
 
 sub init {
   my ( $class, $self ) = @_;
+  $SIG{CHLD} = 'IGNORE';
   $self->sessions( {} );
   return $self;
 }
