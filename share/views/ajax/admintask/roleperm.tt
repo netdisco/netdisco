@@ -76,7 +76,7 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
             <input data-form="update" name="old-role" type="hidden" value="[% role | html_entity %]">
             <input data-form="update" name="role" type="text" value="[% role | html_entity %]">
             <br><br>
-            <a href="/admin/deviceportctl?role=[% role %]" >Edit permissions on ports</a>
+            <a href="[% uri_for('/admin/deviceportctl') | none %]?role=[% role %]" >Edit permissions on ports</a>
         </td>
           <td class="nd_center-cell" id="list-[% role | html_entity %]">
           <div>

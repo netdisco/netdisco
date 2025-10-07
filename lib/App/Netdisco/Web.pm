@@ -164,6 +164,7 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
     my $code = sub {
         # trick the ajax into working as if this were a tabbed page
         params->{tab} = $tag;
+
         var(nav => 'admin');
         template 'admintask', {
           task => setting('_admin_tasks')->{ $tag },
@@ -262,6 +263,7 @@ hook 'before' => sub {
   }
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
   var(sidebar_key => $key);
+
   # trim whitespace
   params->{'q'} =~ s/^\s+|\s+$//g if param('q');
 
@@ -320,6 +322,7 @@ hook 'before_template' => sub {
     };
 
     # access to logged in user's roles (modulo RBAC)
+    # role will be "admin" "port_control" "radius" or "ldap"
     $tokens->{user_has_role} = sub {
         my ($role, $device) = @_;
         return false unless $role;
@@ -331,8 +334,7 @@ hook 'before_template' => sub {
         my $user = logged_in_user or return false;
         return true unless $user->portctl_role;
 
-        my $device_ip = ref $device eq 'HASH' ? $device->{ip} : $device;
-
+        my $device_ip = ref $device eq 'HASH' ? $device->{ip} : "${device}";
         my $acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')
           ->search({ role_name => $user->portctl_role, device_ip => $device_ip })
           ->single;

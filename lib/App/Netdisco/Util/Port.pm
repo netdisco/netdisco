@@ -9,10 +9,8 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  port_acl_by_role_check port_acl_check
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
-  database_port_acl_by_role_check
   is_vlan_subinterface port_has_phone port_has_wap
   to_speed
 /;
@@ -55,18 +53,16 @@ sub database_port_acl_by_role_check {
     ->search({ role_name => $role, device_ip => $device->ip })
     ->single;
 
-  if ($device_acl){
-    return false unless $device_acl;
-  }
+  return false unless $device_acl;
 
   my @portctl_acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')
     ->search({ role_name => $role, device_ip => $device->ip })
     ->all;
 
-  return true unless @portctl_acl; # no acl for this device's ports, all ports permitted
+  # no acl for this device's ports, all ports permitted
+  return true unless scalar @portctl_acl;
 
-  my @acl = map { $_->acl } @portctl_acl;
-  return acl_matches($port, \@acl);
+  return acl_matches($port, [ map { $_->acl } @portctl_acl ]);
 }
 
 =head2 config_port_acl_by_role_check( $port, $device?, $user? )
@@ -152,18 +148,19 @@ sub port_acl_by_role_check {
     # they can submit port control jobs
     return true if ($user->admin and $user->port_control);
 
-
     my $portctl_mode = setting('portctl_mode');
-
-    if ($portctl_mode eq 'hybrid'){
-      return (database_port_acl_by_role_check($port, $device, $user) || config_port_acl_by_role_check($port, $device, $user));
+    if ($portctl_mode eq 'hybrid') {
+      return (database_port_acl_by_role_check($port, $device, $user)
+        or config_port_acl_by_role_check($port, $device, $user));
     }
     elsif ($portctl_mode eq 'database') {
+      # use ACLs defined in DB
       return database_port_acl_by_role_check($port, $device, $user);
-    } # use ACLs defined in DB
+    }
     else {
+      # use ACLs defined in deployment.yml
       return config_port_acl_by_role_check($port, $device, $user);
-    } # use ACLs defined in deployment.yml
+    }
   }
   return false;
 }
