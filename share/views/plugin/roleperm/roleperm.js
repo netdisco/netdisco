@@ -1,7 +1,12 @@
 $(document).ready(function() {
 
-  
-
+  $('.content').on('click', '#nd_devrole', function(event){
+    let displayedDevices = $("#search").find(".device-selection");
+    displayedDevices.each(function() {
+      this.checked = false;
+      $(this).trigger('change');
+    });
+  });
 
   $('.content').on('click', '.portpem', function(event){
     // this auto-checks the checkbox for the device if it's in the role's device list
@@ -25,7 +30,7 @@ $(document).ready(function() {
       );
     });
   });
-
+  
   $('.content').on('click', '#checkall', function(event){
     let displayedDevices = $("#search").find(".device-selection");
     displayedDevices.each(function() {
@@ -41,9 +46,6 @@ $(document).ready(function() {
       $(this).trigger('change');
     });
   });
-
-
-  
   $('.content').on('change', '.device-selection', function(event) {
     let inet = $(this).data('inet');
     let devicesChecked = $('#devices-checked');
