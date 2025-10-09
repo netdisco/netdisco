@@ -1,4 +1,4 @@
-package App::Netdisco::DB::ResultSet::PortCtlRoleDevicePort;
+package App::Netdisco::DB::ResultSet::AccessControlList;
 use base 'App::Netdisco::DB::ResultSet';
 
 use strict;
@@ -11,10 +11,5 @@ __PACKAGE__->load_components(qw/
 =head1 ADDITIONAL METHODS
 
 =cut
-
-sub get_acls {
-  my ($self, $role) = @_;
-  return $self->search({ role_name => $role })->all;
-}
 
 1;

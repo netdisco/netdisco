@@ -12,9 +12,9 @@ __PACKAGE__->load_components(qw/
 
 =cut
 
-sub get_roles  {
-    my ($self) = @_;
-    return $self->get_column('role_name')->all;
+sub role_names  {
+    my $self = shift;
+    return $self->get_column('name')->all;
 }
 
 

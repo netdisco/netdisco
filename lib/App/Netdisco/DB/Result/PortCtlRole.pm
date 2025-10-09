@@ -7,7 +7,7 @@ use base 'App::Netdisco::DB::Result';
 
 =head1 NAME
 
-App::Netdisco::DB::Result::PortControl
+App::Netdisco::DB::Result::PortCtlRole
 
 =head1 DESCRIPTION
 
@@ -18,8 +18,12 @@ PortControl permissions for device ports by role.
 __PACKAGE__->table('portctl_role');
 
 __PACKAGE__->add_columns(
-  "role_name",
+  "name",
   { data_type => "text", is_nullable => 0 },
+  "device_acl",
+  { data_type => "integer", is_nullable => 0 },
+  "port_acl",
+  { data_type => "integer", is_nullable => 1 },
 );
 
 __PACKAGE__->set_primary_key("role_name");
