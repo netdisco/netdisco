@@ -131,7 +131,7 @@ sub _test_and_resolve_device {
 }
 
 foreach my $device (@$devices) {
-  if ($action eq 'pingsweep') {
+  if (scalar grep {$action eq $_} @{ setting('job_targets_prefix') }) {
       push @hostlist, $device;
   }
   elsif (-f $device) {

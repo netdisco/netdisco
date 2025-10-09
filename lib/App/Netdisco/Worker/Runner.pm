@@ -31,7 +31,8 @@ sub run {
     unless ref $job eq 'App::Netdisco::Backend::Job';
 
   $self->job($job);
-  $job->device( get_device($job->device) );
+  $job->device( get_device($job->device) )
+    unless scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') };
   $self->load_workers();
 
   # clean up and finalise job status when we exit
