@@ -814,6 +814,9 @@ job_prio:
     - 'scheduler'
     - 'stats'
 
+job_targets_prefix:
+  - pingsweep
+
 enable_nonadmin_actions: true
 nonadmin_actions:
   - discover

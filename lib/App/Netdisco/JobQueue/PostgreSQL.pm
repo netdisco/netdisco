@@ -75,7 +75,9 @@ sub jq_getsome {
     ]});
 
   while (my $job = $tasty->next) {
-    if ($job->device) {
+    if ($job->device
+      and not scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') }) {
+
       # need to handle device discovered since backend daemon started
       # and the skiplist was primed. these should be checked against
       # the various acls and have device_skip entry added if needed,
@@ -249,7 +251,9 @@ sub jq_complete {
 
   try {
     schema(vars->{'tenant'})->resultset('DeviceSkip')->txn_do_locked(EXCLUSIVE, sub {
-      if ($job->device and not $job->is_offline) {
+      if ($job->device and not $job->is_offline
+            and not scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') }) {
+
         schema(vars->{'tenant'})->resultset('DeviceSkip')->find_or_create({
           backend => setting('workers')->{'BACKEND'}, device => $job->device,
         },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });

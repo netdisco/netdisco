@@ -1,3 +1,14 @@
+2.091001 - 2025-10-09
+
+  [ENHANCEMENTS]
+
+  * #1409 interface folding for subinterfaces
+  * #1411 scheduler takes IP Prefix in "device" param and multiple "device" params
+
+  [BUG FIXES]
+
+  * #1408 ignore SIGCHLD in perl ssh collector to avoid zombie processes
+
 2.091000 - 2025-09-30
 
   [NEW FEATURES]
