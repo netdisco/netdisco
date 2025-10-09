@@ -39,7 +39,7 @@
           $('#' + tab + '_form').trigger('submit');
         }, (timermax * 1000)));
     }
-
+    
     // activate typeahead on the queue filter boxes
     $('.nd_queue_ta').autocomplete({
       source: function (request, response)  {
@@ -49,6 +49,13 @@
           return response(data);
         });
       }
+      ,delay: 150
+      ,minLength: 0
+    });
+
+    // activate typeahead on /deviceportctl boxes
+    $('.device-search').autocomplete({
+      source: uri_base + '/ajax/data/deviceip/typeahead'
       ,delay: 150
       ,minLength: 0
     });
