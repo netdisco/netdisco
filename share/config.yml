@@ -74,18 +74,18 @@ web_plugins:
   - Report::VlanInventory
   - Report::SubnetUtilization
   - Report::PortLog
+  - AdminTask::DevicePortCtl
+  - AdminTask::DuplicateDevices
   - AdminTask::JobQueue
   - AdminTask::NodeMonitor
-  - AdminTask::Topology
+  - AdminTask::OrphanedDevices
   - AdminTask::PollerPerformance
+  - AdminTask::PortCtlRole
   - AdminTask::PseudoDevice
   - AdminTask::SlowDevices
-  - AdminTask::UndiscoveredNeighbors
-  - AdminTask::OrphanedDevices
-  - AdminTask::DuplicateDevices
-  - AdminTask::RolePerm
-  - AdminTask::DevicePortCtl
   - AdminTask::TimedOutDevices
+  - AdminTask::Topology
+  - AdminTask::UndiscoveredNeighbors
   - AdminTask::UserLog
   - AdminTask::Users
   - Search::Device

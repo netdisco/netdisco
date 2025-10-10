@@ -20,12 +20,18 @@ __PACKAGE__->table('portctl_role');
 __PACKAGE__->add_columns(
   "name",
   { data_type => "text", is_nullable => 0 },
-  "device_acl",
+  "device_acl_id",
   { data_type => "integer", is_nullable => 0 },
-  "port_acl",
-  { data_type => "integer", is_nullable => 1 },
+  "port_acl_id",
+  { data_type => "integer", is_nullable => 0 },
 );
 
-__PACKAGE__->set_primary_key("role_name");
+__PACKAGE__->set_primary_key("name");
+
+__PACKAGE__->belongs_to( device_acl => 'App::Netdisco::DB::Result::AccessControlList',
+  { 'foreign.id' => 'self.device_acl_id' }, { cascade_delete => 1 } );
+
+__PACKAGE__->belongs_to( port_acl => 'App::Netdisco::DB::Result::AccessControlList',
+  { 'foreign.id' => 'self.port_acl_id' }, { cascade_delete => 1 } );
 
 1;

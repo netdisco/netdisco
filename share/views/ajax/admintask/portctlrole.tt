@@ -1,61 +1,9 @@
-<div id="nd_devrole" class="nd_modal nd_deep-horizon modal hide fade" style="height: 80%;" tabindex="-1"
-role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h3 id="nd_devrole-label">Edit Devices</h3>
-  </div>
-  <div class="modal-body">
-    <blockquote>
-        <p>Modify what this role can administrate</p> <br>
-        <button class="btn" id="checkall" data-device="[% shortname %]">Check All</button>
-        <button class="btn" id="uncheckall" data-device="[% shortname %]">Uncheck All</button>
-    </blockquote>
-      <table id="search" class="table data-table table-striped table-bordered" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Device</th>
-          </tr>
-        </thead>
-        <tbody>
-          [% FOREACH row in devices %]
-        <tr class="device-row">
-          <td class="nd_center-cell ">
-            <input class="device-selection checkbox" type="checkbox" name="[% row.name %]" data-inet="[% row.ip %]">
-          </td>
-          <td class="nd_center-cell">
-            <label for="[% row.name %]">[% row.name || row.ip %]</label><br>
-          </td>
-        </tr>
-        [% END %]
-
-      </tbody>
-      </table>
-
-  </div>
-  <div class="modal-footer">
-    <table>
-        <tr>
-          <td>
-            <input type="hidden" id="devices-checked" data-form="devices" value="" name="device-list"/>
-            <input type="hidden" id="hidden-role" data-form="devices" value="" name="role"/>
-          </td>
-          <td>
-                <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                <button class="btn btn-success nd_adminbutton" name="devices" data-dismiss="modal">Confirm</button>
-          </td>
-        </tr>
-    </table>
-
-  </div>
-</div>
-
-<table id="data-table" class="table data-table table-striped table-bordered" width="100%" cellspacing="0">
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Role Name</th>
-      <th class="nd_center-cell">Devices</th>
-      <th></th>
+      <th class="nd_center-cell">Device and Port ACLs</th>
+      <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
   <tbody>
@@ -68,81 +16,61 @@ role="dialog" aria-labelledby="nd_devrole-label" aria-hidden="true">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
-    [% SET count = 0 %]
-    [% FOREACH role IN results.keys.sort %]
 
-        <tr>
-          <td class="nd_center-cell">
-            <input data-form="update" name="old-role" type="hidden" value="[% role | html_entity %]">
-            <input data-form="update" name="role" type="text" value="[% role | html_entity %]">
-            <br><br>
-            <a href="[% uri_for('/admin/deviceportctl') | none %]?role=[% role %]" >Edit permissions on ports</a>
-        </td>
-          <td class="nd_center-cell" id="list-[% role | html_entity %]">
-          <div>
-          [% IF results.$role.size > 10 %] [%# TODO make this a settable variable %]
-            <div class="nd_vlan-total">([% results.$role.size %])</div><span class="nd_linkcell nd_collapse-devices" style="padding-bottom: 10px;">
-            <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show devices</span>
-            <div class="nd_collapsing nd_collapse-pre-hidden">
-          [% END %]
-            [% FOREACH device in results.$role %]
-            
-              <p>[% device.device_name %]</p>
-            [% END %]
-            <button class="btn btn-small portpem"
-            data-toggle="modal" data-target="#nd_devrole" data-role="[% role | html_entity %]" type="button">
-              <i class="icon-edit-sign text-danger"></i>
-            </button>
-          [% IF results.$role.size > 10 %] [%# TODO make this a settable variable %]
-            <br>
-            </div>
-          [% END %]
+    [% SET count = 0 %]
+    [% FOREACH role IN results %]
+    [% SET count = count + 1 %]
+    <tr>
+      <td class="nd_center-cell">
+        <input data-form="update" name="role" type="text" value="[% role | html_entity %]">
+      </td>
+
+      <td class="nd_center-cell"><a class="btn"
+        href="[% uri_for('/admin/deviceportctl') | none %]?role=[% role | uri %]"><i class="icon-list-ul icon-large icon-border"></i> Edit Rules</a></td>
+
+      <td class="nd_center-cell">
+        <input data-form="update" name="old-role" type="hidden" value="[% role | html_entity %]">
+        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+
+        <button class="btn" data-toggle="modal"
+          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+          </div>
+          <div class="modal-body">
+            <blockquote>
+              <p class="text-info">
+                The role &quot;[% role | html_entity %]&quot; will be deleted.</p>
+            </blockquote>
+            <input data-form="delete" name="role" type="hidden" value="[% role | html_entity %]">
           </div>
 
-          </td>
-          <td nowrap class="nd_center-cell">
-            <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
-
-            <button class="btn" data-toggle="modal"
-              data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
-
-            <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-              role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
-              </div>
-              <div class="modal-body">
-                <blockquote>
-                  <p class="text-info">Role &quot;[% role | html_entity %]&quot; will be deleted.</p>
-                </blockquote>
-                <input data-form="del" name="role" type="hidden" value="[% role | html_entity %]">
-              </div>
-              <div class="modal-footer">
-                <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
-              </div>
-            </div>
-          </td>
-        </tr>
-        [% SET count = count + 1 %]
+          <div class="modal-footer">
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
+      </td>
+    </tr>
     [% END %]
   </tbody>
 </table>
 
-
-
 <script>
   $(document).ready(function() {
     $('#data-table').dataTable({
+    "columnDefs": [ {
+        "targets": [ 1, 2 ],
+        "orderable": false,
+        "searchable": false
+      } ],
       [% INCLUDE 'ajax/datatabledefaults.tt' -%]
     } );
-    var search_table = $('#search').dataTable({
-      [% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  
-      } );
   } );
-  
 </script>
 
 
