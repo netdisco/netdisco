@@ -62,6 +62,9 @@ ajax '/ajax/control/admin/portctlrole/update' => require_role admin => sub {
       schema(vars->{'tenant'})->resultset('PortCtlRole')
                               ->search({ role_name => $old_role })
                               ->update({ role_name => $role });
+      schema(vars->{'tenant'})->resultset('User')
+                              ->search({ portctl_role => $old_role })
+                              ->update({ portctl_role => $role });
     });
 };
 
