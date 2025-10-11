@@ -18,18 +18,18 @@
     </tr>
 
     [% SET count = 0 %]
-    [% FOREACH role IN results %]
+    [% FOREACH role_name IN results %]
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell">
-        <input data-form="update" name="role" type="text" value="[% role | html_entity %]">
+        <input data-form="update" name="role" type="text" value="[% role_name | html_entity %]">
       </td>
 
       <td class="nd_center-cell"><a class="btn"
-        href="[% uri_for('/admin/deviceportctl') | none %]?role=[% role | uri %]"><i class="icon-list-ul icon-large icon-border"></i> Edit Rules</a></td>
+        href="[% uri_for('/admin/deviceportctl') | none %]?role=[% role_name | uri %]"><i class="icon-list-ul icon-large icon-border"></i> Edit Rules</a></td>
 
       <td class="nd_center-cell">
-        <input data-form="update" name="old-role" type="hidden" value="[% role | html_entity %]">
+        <input data-form="update" name="old-role" type="hidden" value="[% role_name | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
@@ -44,9 +44,9 @@
           <div class="modal-body">
             <blockquote>
               <p class="text-info">
-                The role &quot;[% role | html_entity %]&quot; will be deleted.</p>
+                The role &quot;[% role_name | html_entity %]&quot; will be deleted.</p>
             </blockquote>
-            <input data-form="delete" name="role" type="hidden" value="[% role | html_entity %]">
+            <input data-form="delete" name="role" type="hidden" value="[% role_name | html_entity %]">
           </div>
 
           <div class="modal-footer">

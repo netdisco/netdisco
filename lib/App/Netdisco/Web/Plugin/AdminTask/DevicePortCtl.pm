@@ -22,7 +22,7 @@ get '/ajax/content/admin/deviceportctl' => require_role admin => sub {
       or send_error('Bad Request', 400);
 
     template 'ajax/admintask/deviceportctl.tt', {
-      role => $role,
+      role_name => $role,
       results => $rows,
     }, { layout => undef };
     
