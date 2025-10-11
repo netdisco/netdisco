@@ -53,13 +53,6 @@
       ,minLength: 0
     });
 
-    // activate typeahead on /deviceportctl boxes
-    $('.device-search').autocomplete({
-      source: uri_base + '/ajax/data/deviceip/typeahead'
-      ,delay: 150
-      ,minLength: 0
-    });
-
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
       source: uri_base + '/ajax/data/deviceip/typeahead'
