@@ -1,3 +1,0 @@
-
-            <input name="role" value="[% params.role | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["deviceportctl"] = 0;</script>

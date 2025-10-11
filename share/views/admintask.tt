@@ -42,7 +42,7 @@
         &nbsp;&nbsp;
         <a id="nd_jobqueue-bookmark" href="#"><i class="icon-bookmark icon-large"></i></a>
       </span>
-      [% ELSIF task.tag == 'deviceportctl' %]
+      [% ELSIF task.tag == 'rolepermissionseditor' %]
       <span id="nd_device-name">
         Editing Role: <span class="badge badge-important">[% params.role | html_entity %]</span>
       </span>

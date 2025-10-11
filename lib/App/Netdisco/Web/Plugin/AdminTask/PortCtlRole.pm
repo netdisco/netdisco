@@ -28,7 +28,6 @@ ajax '/ajax/control/admin/portctlrole/add' => require_role admin => sub {
       if schema(vars->{'tenant'})->resultset('PortCtlRole')
                                  ->search({name => $role})->count();
 
-    # create the new role
     schema(vars->{'tenant'})->txn_do(sub {
       schema(vars->{'tenant'})->resultset('PortCtlRole')
                               ->create({

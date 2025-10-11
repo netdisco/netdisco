@@ -1,4 +1,4 @@
-package App::Netdisco::Web::Plugin::AdminTask::DevicePortCtl;
+package App::Netdisco::Web::Plugin::AdminTask::RolePermissionsEditor;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
@@ -8,12 +8,12 @@ use Dancer::Plugin::Ajax;
 use App::Netdisco::Web::Plugin;
 
 register_admin_task({
-    tag => "deviceportctl",
+    tag => "rolepermissionseditor",
     label => "Role Permissions Editor",
     hidden => true,
 });
 
-get '/ajax/content/admin/deviceportctl' => require_role admin => sub {
+get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
     my $role = param('role');
     send_error('Bad Request', 400) unless $role;
 
@@ -21,14 +21,13 @@ get '/ajax/content/admin/deviceportctl' => require_role admin => sub {
       ->search({'me.name' => $role}, { prefetch => [qw/device_acl port_acl/] })
       or send_error('Bad Request', 400);
 
-    template 'ajax/admintask/deviceportctl.tt', {
+    template 'ajax/admintask/rolepermissionseditor.tt', {
       role_name => $role,
       results => $rows,
     }, { layout => undef };
-    
 };
 
-post '/ajax/control/admin/deviceportctl/add' => require_role admin => sub {
+post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => sub {
     my $role = param("role");
     my $device_rule = param("device_rule");
     my $port_rule = param("port_rule");
@@ -52,7 +51,7 @@ post '/ajax/control/admin/deviceportctl/add' => require_role admin => sub {
     });
 };
 
-post '/ajax/control/admin/deviceportctl/del' => require_role admin => sub {
+post '/ajax/control/admin/rolepermissionseditor/del' => require_role admin => sub {
     my $acl = param("acl");
     my $device = param("device");
     my $role = param("role");
@@ -67,7 +66,7 @@ post '/ajax/control/admin/deviceportctl/del' => require_role admin => sub {
     });
 };
 
-post '/ajax/control/admin/deviceportctl/update' => require_role admin => sub {
+post '/ajax/control/admin/rolepermissionseditor/update' => require_role admin => sub {
     my $acl = param("acl");
     my $new_acl = param("new-acl");
     my $device = param("device");
