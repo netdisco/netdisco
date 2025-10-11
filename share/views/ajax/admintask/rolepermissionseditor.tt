@@ -1,6 +1,7 @@
 <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
     <tr>
+      <th class="nd_center-cell">ID</th>
       <th class="nd_center-cell">Match Devices</th>
       <th class="nd_center-cell">Match Ports</th>
       <th class="nd_center-cell">Action</th>
@@ -8,11 +9,12 @@
   </thead>
   <tbody>
     <tr>
+      <td></td>
       <td class="nd_center-cell">
         <input class="span3" data-form="add" name="device_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
       </td>
       <td class="nd_center-cell">
-        <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name or property:value (optional)">
+        <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name, IP, or property:value (optional)">
       </td>
       <td class="nd_center-cell">
         <input data-form="add" name="role_name" type="hidden" value="[% role_name | html_entity %]">
@@ -20,10 +22,10 @@
       </td>
     </tr>
 
-    [% SET count = 0 %]
     [% WHILE (pair = results.next) %]
-    [% SET count = count + 1 %]
     <tr>
+      <td class="nd_center-cell">[% pair.id | html_entity %]</td>
+
       <td class="nd_center-cell">
         <input class="span2" data-form="update" name="device_rule" type="text" placeholder="add rule">
         [% FOREACH rule IN pair.device_acl.rules %]
@@ -39,24 +41,24 @@
       </td>
 
       <td class="nd_center-cell">
-        <input data-form="update" name="old-role_name" type="hidden" value="[% role_name | html_entity %]">
+        <input data-form="update" name="id" type="hidden" value="[% pair.id | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+          data-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
 
-        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
-          role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
+        <div id="nd_devdel-[% pair.id | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% pair.id | html_entity %]" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+            <h3 id="nd_devdel-label-[% pair.id | html_entity %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
             <blockquote>
               <p class="text-info">
-                The role &quot;[% role_name | html_entity %]&quot; will be deleted.</p>
+                This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
             </blockquote>
-            <input data-form="delete" name="role_name" type="hidden" value="[% role_name | html_entity %]">
+            <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
           </div>
 
           <div class="modal-footer">
@@ -74,7 +76,7 @@
   $(document).ready(function() {
     $('#data-table').dataTable({
     "columnDefs": [ {
-        "targets": [ 0, 1, 2 ],
+        "targets": [ 0, 1, 2, 3 ],
         "orderable": false,
         "searchable": false
       } ],

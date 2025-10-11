@@ -18,7 +18,8 @@ get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
     send_error('Bad Request', 400) unless $role;
 
     my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-      ->search({'me.role_name' => $role}, { prefetch => [qw/device_acl port_acl/] })
+      ->search({role_name => $role}, { prefetch => [qw/device_acl port_acl/],
+                                       order_by => 'me.id' })
       or send_error('Bad Request', 400);
 
     template 'ajax/admintask/rolepermissionseditor.tt', {
@@ -51,18 +52,18 @@ post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => su
     });
 };
 
-post '/ajax/control/admin/rolepermissionseditor/del' => require_role admin => sub {
-    my $acl = param("acl");
-    my $device = param("device");
-    my $role = param("role");
+post '/ajax/control/admin/rolepermissionseditor/delete' => require_role admin => sub {
+    my $id = param("id");
+    send_error('Bad Request', 400) unless $id;
     
-    unless ($device and $role and $acl) {
-      send_error('Bad request', 400);
-    }
-
     schema(vars->{'tenant'})->txn_do(sub {
-        schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')
-          ->find({ device_ip => $device, role_name => $role, acl => $acl })->delete
+        my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
+          ->find($id);
+        schema(vars->{'tenant'})->resultset('AccessControlList')
+          ->find($row->device_acl_id)->delete;
+        schema(vars->{'tenant'})->resultset('AccessControlList')
+          ->find($row->port_acl_id)->delete;
+        $row->delete;
     });
 };
 
