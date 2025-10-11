@@ -30,8 +30,7 @@ ajax '/ajax/control/admin/portctlrole/add' => require_role admin => sub {
       schema(vars->{'tenant'})->resultset('PortCtlRole')
                               ->find_or_create({
                                 name => $role,
-                                device_acl => {},
-                                port_acl => {},
+                                device_acl => {}, port_acl => {},
                               });
     });
 };
@@ -41,12 +40,14 @@ ajax '/ajax/control/admin/portctlrole/delete' => require_role admin => sub {
     send_error('Bad Request', 400) unless $role;
 
     schema(vars->{'tenant'})->txn_do(sub {
-      my $role = schema(vars->{'tenant'})->resultset('PortCtlRole')
-                                         ->find({ name => $role })
+      my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
+                                         ->search({ name => $role })
         or return;
-      $role->device_acl->delete;
-      $role->port_acl->delete;
-      $role->delete;
+      schema(vars->{'tenant'})->resultset('AccessControlList')
+        ->search({id => { -in => [ $rows->device_acls ] }})->delete;
+      schema(vars->{'tenant'})->resultset('AccessControlList')
+        ->search({id => { -in => [ $rows->port_acls ] }})->delete;
+      $rows->delete;
     });
 };
 
@@ -56,9 +57,9 @@ ajax '/ajax/control/admin/portctlrole/update' => require_role admin => sub {
     send_error('Bad Request', 400) unless $role and $old_role;
 
     schema(vars->{'tenant'})->txn_do(sub {
-      my $role = schema(vars->{'tenant'})->resultset('PortCtlRole')
-                                         ->find({ name => $old_role })
-                                         ->update({ name => $role });
+      schema(vars->{'tenant'})->resultset('PortCtlRole')
+                              ->search({ name => $old_role })
+                              ->update({ name => $role });
     });
 };
 

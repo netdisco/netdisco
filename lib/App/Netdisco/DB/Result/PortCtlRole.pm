@@ -26,7 +26,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
 );
 
-__PACKAGE__->set_primary_key("name");
+__PACKAGE__->set_primary_key("name", "device_acl_id", "port_acl_id");
 
 __PACKAGE__->belongs_to( device_acl => 'App::Netdisco::DB::Result::AccessControlList',
   { 'foreign.id' => 'self.device_acl_id' }, { cascade_delete => 1 } );

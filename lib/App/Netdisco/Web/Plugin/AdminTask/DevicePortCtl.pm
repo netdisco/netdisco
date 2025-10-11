@@ -1,36 +1,29 @@
 package App::Netdisco::Web::Plugin::AdminTask::DevicePortCtl;
 
 use Dancer ':syntax';
-use Dancer;
 use Dancer::Plugin::DBIC;
-
-
 use Dancer::Plugin::Auth::Extensible;
-use App::Netdisco::Web::Plugin;
 use Dancer::Plugin::Ajax;
 
+use App::Netdisco::Web::Plugin;
 
 register_admin_task({
     tag => "deviceportctl",
-    label => "Device Port Control",
+    label => "Role Permissions Editor",
     hidden => true,
 });
 
 get '/ajax/content/admin/deviceportctl' => require_role admin => sub {
     my $role = param('role');
-    my @device_netdisco_acls = schema(vars->{'tenant'})
-        ->resultset('PortCtlRoleDevicePort')->get_acls($role);
-    my @results;
-    foreach (@device_netdisco_acls)
-    {
-        my $temp = { device_ip => $_->device_ip, acl => $_->acl, role_name => $_->role_name, device_name => schema(vars->{'tenant'})->resultset('Device')->search_for_device($_->device_ip)->name };
-        push(@results, $temp);
-    }
+    send_error('Bad Request', 400) unless $role;
 
-    content_type('text/html');
+    my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      ->search({'me.name' => $role}, { prefetch => [qw/device_acl port_acl/] })
+      or send_error('Bad Request', 400);
+
     template 'ajax/admintask/deviceportctl.tt', {
-      results => \@results,
       role => $role,
+      results => $rows,
     }, { layout => undef };
     
 };
