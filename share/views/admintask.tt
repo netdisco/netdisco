@@ -44,7 +44,7 @@
       </span>
       [% ELSIF task.tag == 'rolepermissionseditor' %]
       <span id="nd_device-name">
-        Editing Role: <span class="badge badge-important">[% params.role | html_entity %]</span>
+        Editing Role: <span class="badge badge-important">[% params.role_name | html_entity %]</span>
       </span>
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">

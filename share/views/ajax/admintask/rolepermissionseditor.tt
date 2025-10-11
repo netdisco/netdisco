@@ -15,7 +15,7 @@
         <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name or property:value (optional)">
       </td>
       <td class="nd_center-cell">
-        <input data-form="add" name="role" type="hidden" value="[% role_name | html_entity %]">
+        <input data-form="add" name="role_name" type="hidden" value="[% role_name | html_entity %]">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
@@ -39,7 +39,7 @@
       </td>
 
       <td class="nd_center-cell">
-        <input data-form="update" name="old-role" type="hidden" value="[% role_name | html_entity %]">
+        <input data-form="update" name="old-role_name" type="hidden" value="[% role_name | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
@@ -56,7 +56,7 @@
               <p class="text-info">
                 The role &quot;[% role_name | html_entity %]&quot; will be deleted.</p>
             </blockquote>
-            <input data-form="delete" name="role" type="hidden" value="[% role_name | html_entity %]">
+            <input data-form="delete" name="role_name" type="hidden" value="[% role_name | html_entity %]">
           </div>
 
           <div class="modal-footer">

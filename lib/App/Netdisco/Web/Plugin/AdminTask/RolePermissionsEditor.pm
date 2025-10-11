@@ -14,11 +14,11 @@ register_admin_task({
 });
 
 get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
-    my $role = param('role');
+    my $role = param('role_name');
     send_error('Bad Request', 400) unless $role;
 
     my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-      ->search({'me.name' => $role}, { prefetch => [qw/device_acl port_acl/] })
+      ->search({'me.role_name' => $role}, { prefetch => [qw/device_acl port_acl/] })
       or send_error('Bad Request', 400);
 
     template 'ajax/admintask/rolepermissionseditor.tt', {
@@ -28,7 +28,7 @@ get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
 };
 
 post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => sub {
-    my $role = param("role");
+    my $role = param("role_name");
     my $device_rule = param("device_rule");
     my $port_rule = param("port_rule");
 
@@ -39,7 +39,7 @@ post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => su
     schema(vars->{'tenant'})->txn_do(sub {
         my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
             ->create({
-              name => $role,
+              role_name => $role,
               device_acl => {}, port_acl => {},
             });
         $row->device_acl->update({
