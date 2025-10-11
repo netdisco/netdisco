@@ -1,3 +1,12 @@
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // to tell whether bootstrap's modal had Submit button pressed :(
 var nd_save_ok = false;
 
@@ -157,13 +166,13 @@ $(document).ready(function() {
         $('#nd_portlog').modal('show');
       }
       else if (td.data('field') == 'nd_device-acl-rule-field') {
-        td.append('&nbsp;<span class="label nd_device-acl-rule-label">'+ $(this).val() +' <a class="nd_delete-me" href="#">⛌</a></span>')
-        td.append('<input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="'+ $(this).val() +'">')
+        td.append('&nbsp;<span class="label nd_device-acl-rule-label">'+ escapeHtml($(this).val()) +' <a class="nd_delete-me" href="#">⛌</a></span>')
+        td.append('<input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="'+ window.btoa($(this).val()) +'">')
         $(this).val('');
       }
       else if (td.data('field') == 'nd_port-acl-rule-field') {
-        td.append('&nbsp;<span class="label nd_port-acl-rule-label">'+ $(this).val() +' <a class="nd_delete-me" href="#">⛌</a></span>')
-        td.append('<input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="'+ $(this).val() +'">')
+        td.append('&nbsp;<span class="label nd_port-acl-rule-label">'+ escapeHtml($(this).val()) +' <a class="nd_delete-me" href="#">⛌</a></span>')
+        td.append('<input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="'+ window.btoa($(this).val()) +'">')
         $(this).val('');
       }
       else {

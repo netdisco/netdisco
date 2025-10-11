@@ -7,6 +7,8 @@ use Dancer::Plugin::Ajax;
 
 use App::Netdisco::Web::Plugin;
 
+use MIME::Base64 'decode_base64';
+
 register_admin_task({
     tag => "rolepermissionseditor",
     label => "Role Permissions Editor",
@@ -71,8 +73,8 @@ post '/ajax/control/admin/rolepermissionseditor/update' => require_role admin =>
     my $id = param("id");
     send_error('Bad Request', 400) unless $id;
 
-    my @device_rules = @{ param('device_rule') || [] };
-    my @port_rules   = @{ param('port_rule') || [] };
+    my @device_rules = map {decode_base64($_)} @{ param('device_rule') || [] };
+    my @port_rules   = map {decode_base64($_)} @{ param('port_rule') || [] };
 
     schema(vars->{'tenant'})->txn_do(sub {
         my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')

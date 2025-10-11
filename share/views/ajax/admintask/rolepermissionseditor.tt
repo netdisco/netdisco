@@ -16,7 +16,7 @@
         <input class="span3 nd_acl-rule" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
         [% FOREACH rule IN pair.device_acl.rules %]
         &nbsp;<span class="label nd_device-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#">⛌</a></span>
-        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% rule | html_entity %]">
+        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule) | none %]">
         [% END %]
       </td>
 
@@ -24,7 +24,7 @@
         <input class="span3 nd_acl-rule" contenteditable="true" data-form="" name="port_rule" type="text" placeholder="port:name, IP, or property:value (optional)">
         [% FOREACH rule IN pair.port_acl.rules %]
         &nbsp;<span class="label nd_port-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#">⛌</a></span>
-        <input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="[% rule | html_entity %]">
+        <input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="[% atob(rule) | none %]">
         [% END %]
       </td>
 

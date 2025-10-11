@@ -14,6 +14,7 @@ use URI ();
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
+use MIME::Base64 'encode_base64';
 use Path::Class 'dir';
 use Module::Load ();
 use Data::Visitor::Tiny;
@@ -295,6 +296,9 @@ hook 'before_template' => sub {
 
 hook 'before_template' => sub {
     my $tokens = shift;
+
+    # quick b64 encode
+    $tokens->{atob} = sub { encode_base64(shift, '') };
 
     # allow portable static content
     $tokens->{uri_base} = request->base->path
