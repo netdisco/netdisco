@@ -15,6 +15,7 @@
         <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name or property:value (optional)">
       </td>
       <td class="nd_center-cell">
+        <input data-form="add" name="role" type="hidden" value="[% role | html_entity %]">
         <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
       </td>
     </tr>
@@ -24,16 +25,16 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="newdeviceacl" type="text" placeholder="add rule">
+        <input class="span2" data-form="update" name="device_rule" type="text" placeholder="add rule">
         [% FOREACH rule IN pair.device_acl.rules %]
-        <span class="label">[% rule %]</span>
+        <span class="label">[% rule | html_entity %]</span>
         [% END %]
       </td>
 
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="newportacl" type="text" placeholder="add rule">
+        <input class="span2" data-form="update" name="port_rule" type="text" placeholder="add rule">
         [% FOREACH rule IN pair.port_acl.rules %]
-        <span class="label">[% rule %]</span>
+        <span class="label">[% rule | html_entity %]</span>
         [% END %]
       </td>
 

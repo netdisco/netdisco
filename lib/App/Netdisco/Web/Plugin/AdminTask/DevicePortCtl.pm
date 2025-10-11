@@ -29,26 +29,27 @@ get '/ajax/content/admin/deviceportctl' => require_role admin => sub {
 };
 
 post '/ajax/control/admin/deviceportctl/add' => require_role admin => sub {
-    my $acl = param("acl");
-    my $device = param("device");
     my $role = param("role");
+    my $device_rule = param("device_rule");
+    my $port_rule = param("port_rule");
 
-    unless ($device and $role and $acl) {
+    unless ($role and $device_rule) {
       send_error('Bad request', 400);
     }
 
-    my $rs = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort');
-    my $port_control = $rs->search({ device_ip => $device, role_name => $role, acl => $acl})->single;
-    return if $port_control;
     schema(vars->{'tenant'})->txn_do(sub {
-        $rs->create({
-            device_ip => $device,
-            role_name => $role,
-            acl => $acl,
+        my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
+            ->create({
+              name => $role,
+              device_acl => {}, port_acl => {},
+            });
+        $row->device_acl->update({
+              rules => [ $device_rule ],
         });
+        $row->port_acl->update({
+              rules => [ $port_rule ],
+        }) if $port_rule;
     });
-    
-    return 200;
 };
 
 post '/ajax/control/admin/deviceportctl/del' => require_role admin => sub {

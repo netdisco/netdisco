@@ -24,11 +24,14 @@ ajax '/ajax/content/admin/portctlrole' => require_role admin => sub {
 ajax '/ajax/control/admin/portctlrole/add' => require_role admin => sub {
     my $role = param('role');
     send_error('Bad Request', 400) unless $role;
+    send_error('Bad Request', 400)
+      if schema(vars->{'tenant'})->resultset('PortCtlRole')
+                                 ->search({name => $role})->count();
 
     # create the new role
     schema(vars->{'tenant'})->txn_do(sub {
       schema(vars->{'tenant'})->resultset('PortCtlRole')
-                              ->find_or_create({
+                              ->create({
                                 name => $role,
                                 device_acl => {}, port_acl => {},
                               });
