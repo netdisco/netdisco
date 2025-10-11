@@ -68,32 +68,20 @@ post '/ajax/control/admin/rolepermissionseditor/delete' => require_role admin =>
 };
 
 post '/ajax/control/admin/rolepermissionseditor/update' => require_role admin => sub {
-    my $acl = param("acl");
-    my $new_acl = param("new-acl");
-    my $device = param("device");
-    my $new_device = param("new-device");
-    my $role = param("role");
+    my $id = param("id");
+    send_error('Bad Request', 400) unless $id;
 
-    unless ($device and $role and $acl) {
-      send_error('Bad request', 400);
-    }
-    my $rs = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort');
-    my $portctl_acl = $rs->find({ device_ip => $device, role_name => $role, acl => $acl});
+    my @device_rules = @{ param('device_rule') || [] };
+    my @port_rules   = @{ param('port_rule') || [] };
 
-    return unless $portctl_acl;
-
-    if ($portctl_acl) {
-        schema(vars->{'tenant'})->txn_do(sub {
-            $portctl_acl->update({
-                (($device ne $new_device)
-                  ? (device_ip => $new_device)
-                : ()),
-                (($acl ne $new_acl)
-                  ?(acl => $new_acl)
-                 : ())
-            });
-        });
-    }
+    schema(vars->{'tenant'})->txn_do(sub {
+        my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
+          ->find($id);
+        schema(vars->{'tenant'})->resultset('AccessControlList')
+          ->find($row->device_acl_id)->update({rules => \@device_rules });
+        schema(vars->{'tenant'})->resultset('AccessControlList')
+          ->find($row->port_acl_id)->update({rules => \@port_rules });
+    });
 };
 
 true;

@@ -26,17 +26,19 @@
     <tr>
       <td class="nd_center-cell">[% pair.id | html_entity %]</td>
 
-      <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="device_rule" type="text" placeholder="add rule">
+      <td class="nd_center-cell" data-field="nd_device-acl-rule-field">
+        <input class="span2 nd_acl-rule" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
         [% FOREACH rule IN pair.device_acl.rules %]
-        <span class="label">[% rule | html_entity %]</span>
+        &nbsp;<span class="label nd_device-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#">⛌</a></span>
+        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% rule | html_entity %]">
         [% END %]
       </td>
 
-      <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="port_rule" type="text" placeholder="add rule">
+      <td class="nd_center-cell" data-field="nd_port-acl-rule-field">
+        <input class="span2 nd_acl-rule" contenteditable="true" data-form="" name="port_rule" type="text" placeholder="add rule">
         [% FOREACH rule IN pair.port_acl.rules %]
-        <span class="label">[% rule | html_entity %]</span>
+        &nbsp;<span class="label nd_port-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#">⛌</a></span>
+        <input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="[% rule | html_entity %]">
         [% END %]
       </td>
 
@@ -82,6 +84,12 @@
       } ],
       [% INCLUDE 'ajax/datatabledefaults.tt' -%]
     } );
+
+    $('.tab-content').on('click', '.nd_delete-me', function() {
+      var label = $(this).closest('span.nd_device-acl-rule-label, span.nd_port-acl-rule-label');
+      $(label).next('input.nd_device-acl-rule-field, input.nd_port-acl-rule-field').remove();
+      $(label).remove();
+    });
   } );
 </script>
 

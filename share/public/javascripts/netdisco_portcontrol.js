@@ -156,6 +156,16 @@ $(document).ready(function() {
         });
         $('#nd_portlog').modal('show');
       }
+      else if (td.data('field') == 'nd_device-acl-rule-field') {
+        td.append('&nbsp;<span class="label nd_device-acl-rule-label">'+ $(this).val() +' <a class="nd_delete-me" href="#">⛌</a></span>')
+        td.append('<input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="'+ $(this).val() +'">')
+        $(this).val('');
+      }
+      else if (td.data('field') == 'nd_port-acl-rule-field') {
+        td.append('&nbsp;<span class="label nd_port-acl-rule-label">'+ $(this).val() +' <a class="nd_delete-me" href="#">⛌</a></span>')
+        td.append('<input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="'+ $(this).val() +'">')
+        $(this).val('');
+      }
       else {
         // no confirm for port descr change
         nd_save_ok = true;

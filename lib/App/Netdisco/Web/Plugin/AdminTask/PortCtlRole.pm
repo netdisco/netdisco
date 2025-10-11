@@ -13,11 +13,11 @@ register_admin_task({
 });
 
 ajax '/ajax/content/admin/portctlrole' => require_role admin => sub {
-    my @roles = sort schema(vars->{'tenant'})->resultset('PortCtlRole')
-                                             ->role_names;
+    my @roles = schema(vars->{'tenant'})->resultset('PortCtlRole')
+                                        ->role_names;
 
     template 'ajax/admintask/portctlrole.tt', {
-      results => \@roles,
+      results => [sort @roles],
     }, { layout => undef };
 };
 
