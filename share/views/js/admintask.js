@@ -39,7 +39,7 @@
           $('#' + tab + '_form').trigger('submit');
         }, (timermax * 1000)));
     }
-    
+
     // activate typeahead on the queue filter boxes
     $('.nd_queue_ta').autocomplete({
       source: function (request, response)  {
