@@ -338,27 +338,19 @@ hook 'before_template' => sub {
         my $user = logged_in_user or return false;
         return true unless $user->portctl_role;
 
-        my $portctl_mode = setting('portctl_mode');
-        if ($portctl_mode eq "config" or $portctl_mode eq "hybrid") {
-          my $acl = setting('portctl_by_role')->{$user->portctl_role};
-          if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
-              return true if acl_matches($device, $acl);
-          }
-          elsif ($acl and ref $acl eq ref {}) {
-              foreach my $key (grep { defined } sort keys %$acl) {
-                  # lhs matches device, rhs matches port
-                  # but we are not interested in the ports
-                  return true if acl_matches($device, $key);
-              }
-          }
+        # this has the merged yaml and database config
+        my $acl = setting('portctl_by_role')->{$user->portctl_role};
+        if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
+            return true if acl_matches($device, $acl);
         }
-        elsif ($portctl_mode eq "database" or $portctl_mode eq "hybrid") {
-          my $device_ip = ref $device eq 'HASH' ? $device->{ip} : "${device}";
-          my $acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')
-            ->search({ role_name => $user->portctl_role, device_ip => $device_ip })
-            ->single;
-          return true if $acl;
+        elsif ($acl and ref $acl eq ref {}) {
+            foreach my $key (grep { defined } sort keys %$acl) {
+                # lhs matches device, rhs matches port
+                # but we are not interested in the ports
+                return true if acl_matches($device, $key);
+            }
         }
+
         # assigned an unknown role
         return false;
     };

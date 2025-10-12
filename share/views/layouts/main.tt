@@ -43,10 +43,7 @@
     var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
   </script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js"></script>
-
-  [% IF user_has_role('port_control') %]
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js"></script>
-  [% END %]
 
   [% FOREACH add_js IN settings._additional_javascript %]
   <script type="text/javascript" src="[% uri_base | none %]/plugin/[% add_js | none %]/[% add_js | none %].js"></script>

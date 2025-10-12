@@ -82,6 +82,22 @@ get '/device' => require_login sub {
     my $first = $dev->first;
     my $others = ($devices->search({dns => $first->dns})->count() - 1);
 
+    # load and cache device port control configuration
+    # convert LHS device ACLs to named groups
+    my $user = logged_in_user;
+    if ($user->portctl_role) {
+        my $role = $user->portctl_role;
+        my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
+          ->search({ role_name => $role },
+                   { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' });
+        while (my $pair = $rows->next) {
+            my $group = 'synthesized_group_'. $pair->device_acl->id;
+            config->{host_groups}->{$group} = $pair->device_acl->rules;
+            config->{portctl_by_role}->{$role}->{'group:'. $group}
+              = $pair->port_acl->rules;
+        }
+    }
+
     params->{'tab'} ||= 'details';
     template 'device', {
       netdisco_device => $first,
