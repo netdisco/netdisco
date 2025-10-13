@@ -9,6 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  port_acl_by_role_check port_acl_check
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
@@ -29,92 +30,6 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 database_port_acl_by_role_check( $port, $device, $user_or_role, $what_to_check? )
-
-=over 4
-
-=item *
-
-Permission check on C<portctl_by_role> if the device and user are provided. This
-checks for ACLs defined in the database. Either a bare username or a role name
-can be supplied.
-
-=back
-
-Will return false if these checks fail, otherwise true.
-
-=cut
-
-sub database_port_acl_by_role_check {
-  my ($port, $device, $user) = @_;
-  my $role = $user->portctl_role;
-
-  my $device_acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevice')
-    ->search({ role_name => $role, device_ip => $device->ip })
-    ->single;
-
-  return false unless $device_acl;
-
-  my @portctl_acl = schema(vars->{'tenant'})->resultset('PortCtlRoleDevicePort')
-    ->search({ role_name => $role, device_ip => $device->ip })
-    ->all;
-
-  # no acl for this device's ports, all ports permitted
-  return true unless scalar @portctl_acl;
-
-  return acl_matches($port, [ map { $_->acl } @portctl_acl ]);
-}
-
-=head2 config_port_acl_by_role_check( $port, $device?, $user? )
-
-=over 4
-
-=item *
-
-Permission check on C<portctl_by_role> if the device and user are provided. A
-bare username will be promoted to a user instance.
-
-=back
-
-Will return false if these checks fail, otherwise true.
-
-=cut
-
-sub config_port_acl_by_role_check {
-  my ($port, $device, $user) = @_;
-  my $role = $user->portctl_role;
-
-  my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
-
-  if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
-      # all ports are permitted when the role acl is a device acl
-      # but check the device anyway
-      return true if acl_matches($device, $acl);
-  }
-  elsif ($acl and ref $acl eq ref {}) {
-      my $found = false;
-      foreach my $key (sort keys %$acl) {
-          # lhs matches device, rhs matches port
-          next unless $key and $acl->{$key};
-          if (acl_matches($device, $key)
-              and acl_matches($port, $acl->{$key})) {
-
-              $found = true;
-              last;
-          }
-      }
-
-      return true if $found;
-  }
-  elsif ($role) {
-      # the config does not have an entry for user's role
-      return true if $user->port_control;
-  }
-
-  # the user has "Enabled (any port)" setting
-  return $user->port_control;
-}
-
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 
 =over 4
@@ -132,10 +47,12 @@ Will return false if these checks fail, otherwise true.
 
 sub port_acl_by_role_check {
   my ($port, $device, $user) = @_;
+
   # skip user acls for netdisco-do --force jobs
   # this avoids the need to create a netdisco user in the DB and give rights
   return true if $ENV{ND2_DO_FORCE};
 
+  # portctl_by_role check
   if ($device and ref $device and $user) {
     $user = ref $user ? $user :
       schema('netdisco')->resultset('User')
@@ -148,20 +65,38 @@ sub port_acl_by_role_check {
     # they can submit port control jobs
     return true if ($user->admin and $user->port_control);
 
-    my $portctl_mode = setting('portctl_mode');
-    if ($portctl_mode eq 'hybrid') {
-      return (database_port_acl_by_role_check($port, $device, $user)
-        or config_port_acl_by_role_check($port, $device, $user));
+    my $role = $user->portctl_role;
+    my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
+
+    if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
+        # all ports are permitted when the role acl is a device acl
+        # but check the device anyway
+        return true if acl_matches($device, $acl);
     }
-    elsif ($portctl_mode eq 'database') {
-      # use ACLs defined in DB
-      return database_port_acl_by_role_check($port, $device, $user);
+    elsif ($acl and ref $acl eq ref {}) {
+        my $found = false;
+        foreach my $key (sort keys %$acl) {
+            # lhs matches device, rhs matches port
+            next unless $key and $acl->{$key};
+            if (acl_matches($device, $key)
+                and acl_matches($port, $acl->{$key})) {
+
+                $found = true;
+                last;
+            }
+        }
+
+        return true if $found;
     }
-    else {
-      # use ACLs defined in deployment.yml
-      return config_port_acl_by_role_check($port, $device, $user);
+    elsif ($role) {
+        # the config does not have an entry for user's role
+        return true if $user->port_control;
     }
+
+    # the user has "Enabled (any port)" setting
+    return $user->port_control;
   }
+
   return false;
 }
 
@@ -213,7 +148,7 @@ sub port_acl_service {
 
   return false if (not setting('portctl_uplinks')) and
     (($port->is_uplink or $port->remote_type
-      or $port->is_master or is_vlan_subinterface($port))and not
+      or $port->is_master or is_vlan_subinterface($port)) and not
      (port_has_wap($port) or port_has_phone($port)));
 
   return false if not port_acl_check(@_);
