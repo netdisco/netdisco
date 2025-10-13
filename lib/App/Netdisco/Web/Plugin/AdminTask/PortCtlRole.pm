@@ -29,11 +29,12 @@ ajax '/ajax/control/admin/portctlrole/add' => require_role admin => sub {
                                  ->search({role_name => $role})->count();
 
     schema(vars->{'tenant'})->txn_do(sub {
-      schema(vars->{'tenant'})->resultset('PortCtlRole')
-                              ->create({
-                                role_name => $role,
-                                device_acl => {}, port_acl => {},
-                              });
+      my $new = schema(vars->{'tenant'})->resultset('PortCtlRole')
+        ->create({
+          role_name => $role,
+          device_acl => {}, port_acl => {},
+        });
+      $new->device_acl->update({ rules => ['group:__ANY__'] });
     });
 };
 

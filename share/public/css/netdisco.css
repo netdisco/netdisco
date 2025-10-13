@@ -132,10 +132,19 @@ div.content > div.tab-content table.nd_floatinghead thead {
 .nd_device-acl-rule-label, .nd_port-acl-rule-label {
   font-size: 13px;
   margin-left: 0.5em;
-  margin-top: 3px;
+  margin-bottom: 3px;
   font-weight: normal;
   font-family: monospace;
   line-height: 15px;
+}
+
+td.nd_acl-rule-list {
+  text-align: center;
+}
+
+div.nd_acl-rule-list {
+  display: inline-block;
+  text-align: right;
 }
 
 .nd_delete-me, .nd_delete-me:hover, .nd_delete-me:focus {
@@ -211,7 +220,7 @@ div.content > div.tab-content table.nd_floatinghead thead {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
-.table td {
+.table td:not(.nd_acl-rule-list) {
   vertical-align: baseline;
 }
 

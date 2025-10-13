@@ -3,7 +3,7 @@
     <tr>
       <th class="nd_center-cell">ID</th>
       <th class="nd_center-cell">Match Devices</th>
-      <th class="nd_center-cell">Match Ports</th>
+      <th class="nd_center-cell">Match Ports (optional)</th>
       <th class="nd_center-cell">Action</th>
     </tr>
   </thead>
@@ -14,7 +14,7 @@
         <input class="span3 nd_acl_host_searcher" data-form="add" name="device_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
       </td>
       <td>
-        <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name, IP, or property:value (optional)">
+        <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name, IP, or property:value">
       </td>
       <td class="nd_center-cell">
         <input data-form="add" name="role_name" type="hidden" value="[% role_name | html_entity %]">
@@ -23,23 +23,27 @@
     </tr>
 
     [% WHILE (pair = results.next) %]
-    <tr>
+    <tr class="nd_acl-rule-list">
       <td class="nd_center-cell">[% pair.id | html_entity %]</td>
 
-      <td data-field="nd_device-acl-rule-field">
-        <input class="span2 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
+      <td class="nd_acl-rule-list" data-field="nd_device-acl-rule-field">
+        <div class="nd_acl-rule-list">
         [% FOREACH rule IN pair.device_acl.rules %]
         <span class="label label-inverse nd_device-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
-        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule) | none %]">
+        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule) | none %]"><br/>
         [% END %]
+        <input class="span2 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
+        </div>
       </td>
 
-      <td data-field="nd_port-acl-rule-field">
-        <input class="span2 nd_acl-rule" contenteditable="true" data-form="" name="port_rule" type="text" placeholder="add rule">
+      <td class="nd_acl-rule-list" data-field="nd_port-acl-rule-field">
+        <div class="nd_acl-rule-list">
         [% FOREACH rule IN pair.port_acl.rules %]
         <span class="label label-info nd_port-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
-        <input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="[% atob(rule) | none %]">
+        <input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="[% atob(rule) | none %]"><br/>
         [% END %]
+        <input class="span2 nd_acl-rule" contenteditable="true" data-form="" name="port_rule" type="text" placeholder="add rule">
+        </div>
       </td>
 
       <td class="nd_center-cell">
