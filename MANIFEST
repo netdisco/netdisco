@@ -24,7 +24,6 @@ lib/App/Netdisco/Configuration.pm
 lib/App/Netdisco/DB.pm
 lib/App/Netdisco/DB/ExplicitLocking.pm
 lib/App/Netdisco/DB/Result.pm
-lib/App/Netdisco/DB/Result/AccessControlList.pm
 lib/App/Netdisco/DB/Result/Admin.pm
 lib/App/Netdisco/DB/Result/Community.pm
 lib/App/Netdisco/DB/Result/Device.pm
@@ -51,7 +50,6 @@ lib/App/Netdisco/DB/Result/NodeMonitor.pm
 lib/App/Netdisco/DB/Result/NodeNbt.pm
 lib/App/Netdisco/DB/Result/NodeWireless.pm
 lib/App/Netdisco/DB/Result/Oui.pm
-lib/App/Netdisco/DB/Result/PortCtlRole.pm
 lib/App/Netdisco/DB/Result/Process.pm
 lib/App/Netdisco/DB/Result/Product.pm
 lib/App/Netdisco/DB/Result/Session.pm
@@ -106,7 +104,6 @@ lib/App/Netdisco/DB/ResultSet/Node.pm
 lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
 lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
-lib/App/Netdisco/DB/ResultSet/PortCtlRole.pm
 lib/App/Netdisco/DB/ResultSet/Subnet.pm
 lib/App/Netdisco/DB/SchemaVersioned.pm
 lib/App/Netdisco/DB/SetOperations.pm
@@ -178,9 +175,7 @@ lib/App/Netdisco/Web/Plugin/AdminTask/JobQueue.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/NodeMonitor.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/OrphanedDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm
-lib/App/Netdisco/Web/Plugin/AdminTask/PortCtlRole.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm
-lib/App/Netdisco/Web/Plugin/AdminTask/RolePermissionsEditor.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/TimedOutDevices.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm
@@ -551,7 +546,6 @@ share/schema_versions/App-Netdisco-DB-9-10-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-90-91-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-91-92-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-92-93-PostgreSQL.sql
-share/schema_versions/App-Netdisco-DB-93-94-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
 share/views/ajax/admintask/jobqueue.tt
@@ -559,9 +553,7 @@ share/views/ajax/admintask/nodemonitor.tt
 share/views/ajax/admintask/orphaned.tt
 share/views/ajax/admintask/orphaned_csv.tt
 share/views/ajax/admintask/performance.tt
-share/views/ajax/admintask/portctlrole.tt
 share/views/ajax/admintask/pseudodevice.tt
-share/views/ajax/admintask/rolepermissionseditor.tt
 share/views/ajax/admintask/slowdevices.tt
 share/views/ajax/admintask/timedoutdevices.tt
 share/views/ajax/admintask/topology.tt
@@ -660,7 +652,6 @@ share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
 share/views/sidebar/admintask/jobqueue.tt
-share/views/sidebar/admintask/rolepermissionseditor.tt
 share/views/sidebar/admintask/topology.tt
 share/views/sidebar/device/netmap.tt
 share/views/sidebar/device/ports.tt
