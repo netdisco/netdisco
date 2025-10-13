@@ -115,6 +115,49 @@ ajax '/ajax/data/deviceip/typeahead' => require_login sub {
     to_json \@data;
 };
 
+ajax '/ajax/data/devices/typeahead' => require_login sub {
+    my $q = (param('query') || param('term')) or return '[]';
+
+    content_type 'application/json';
+    my @data = ();
+
+    # TODO add in entries from the database
+    my @host_groups = sort {$a cmp $b}
+                      grep {$_ !~ m/^synthesized_group_/}
+                      keys %{ setting('host_groups')};
+
+    # if q starts group: then search for host groups (excluding synthesized)
+    if ($q =~ m/^(?:group:|acl:)/i) {
+       return to_json [ map { 'group:'. $_ } @host_groups ];
+    }
+
+    if (scalar grep { $_ =~ m/\Q$q\E/i } @host_groups) {
+        push @data, map { 'group:'. $_ }
+                    grep { $_ =~ m/\Q$q\E/i } @host_groups
+    }
+
+    my $set = schema(vars->{'tenant'})->resultset('Device')
+      ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
+
+    while (my $d = $set->next) {
+        my $label = $d->ip;
+        
+        if ($d->dns or $d->name) {
+            $label = sprintf '%s (%s)',
+              ($d->dns || $d->name), $d->ip;
+        }
+
+        # elsif q starts digit or contains : then value is the IP
+        # else value is the label
+        push @data, {
+          label => $label,
+          value => (($q =~ m/^\d/ or $q =~ m/:/) ? $d->ip : ($d->dns || $d->ip)),
+        };
+    }
+
+    return to_json \@data;
+};
+
 ajax '/ajax/data/port/typeahead' => require_login sub {
     my $dev  = param('dev1')  || param('dev2');
     my $port = param('port1') || param('port2');

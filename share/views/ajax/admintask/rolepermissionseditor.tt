@@ -11,7 +11,7 @@
     <tr>
       <td></td>
       <td>
-        <input class="span3" data-form="add" name="device_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
+        <input class="span3 nd_acl_host_searcher" data-form="add" name="device_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
       </td>
       <td>
         <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name, IP, or property:value (optional)">
@@ -27,7 +27,7 @@
       <td class="nd_center-cell">[% pair.id | html_entity %]</td>
 
       <td data-field="nd_device-acl-rule-field">
-        <input class="span2 nd_acl-rule" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
+        <input class="span2 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
         [% FOREACH rule IN pair.device_acl.rules %]
         <span class="label label-inverse nd_device-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
         <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule) | none %]">

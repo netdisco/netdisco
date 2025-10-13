@@ -158,6 +158,7 @@ $(document).ready(function() {
     }
     else if (nl) {
       event.preventDefault();
+      if ($(this).val() == 0) { return }
 
       if (td.data('field') == 'c_pvid') {
         $('#nd_portlog').one('hidden', function() {
