@@ -29,6 +29,7 @@ branding_text: Netdisco
 no_auth: false
 suggest_guest: false
 navbar_autocomplete: true
+max_typeahead_rows: 50
 trust_remote_user: false
 trust_x_remote_user: false
 validate_remote_user: false

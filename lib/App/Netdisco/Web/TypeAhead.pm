@@ -40,7 +40,7 @@ ajax '/ajax/data/queue/typeahead/action' => require_role admin => sub {
     my @core_plugins = @{ setting('worker_plugins') || [] };
     my @user_plugins = @{ setting('extra_worker_plugins') || [] };
 
-    # load worker plugins for our action
+    # scan worker plugins for our action
     foreach my $plugin (@user_plugins, @core_plugins) {
       $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
       $plugin = 'App::Netdisco::Worker::Plugin::'. $plugin
@@ -89,7 +89,8 @@ ajax '/ajax/data/devicename/typeahead' => require_login sub {
     return '[]' unless setting('navbar_autocomplete');
 
     my $q = param('query') || param('term');
-    my $set = schema(vars->{'tenant'})->resultset('Device')->search_fuzzy($q);
+    my $set = schema(vars->{'tenant'})->resultset('Device')
+      ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
 
     content_type 'application/json';
     to_json [map {encode_entities($_->dns || $_->name || $_->ip)} $set->all];
@@ -97,7 +98,8 @@ ajax '/ajax/data/devicename/typeahead' => require_login sub {
 
 ajax '/ajax/data/deviceip/typeahead' => require_login sub {
     my $q = param('query') || param('term');
-    my $set = schema(vars->{'tenant'})->resultset('Device')->search_fuzzy($q);
+    my $set = schema(vars->{'tenant'})->resultset('Device')
+      ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
 
     my @data = ();
     while (my $d = $set->next) {
@@ -140,7 +142,7 @@ ajax '/ajax/data/subnet/typeahead' => require_login sub {
     $q = "$q\%" if $q !~ m/\%/;
     my $nets = schema(vars->{'tenant'})->resultset('Subnet')->search(
            { 'me.net::text'  => { '-ilike' => $q }},
-           { columns => ['net'], order_by => 'net' } );
+           { columns => ['net'], order_by => 'net', rows => setting('max_typeahead_rows') } );
 
     content_type 'application/json';
     to_json [map {$_->net} $nets->all];
