@@ -44,7 +44,7 @@
 
       <td class="nd_center-cell">
         <input data-form="update" name="id" type="hidden" value="[% pair.id | html_entity %]">
-        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
           data-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
@@ -86,9 +86,11 @@
     } );
 
     $('.tab-content').on('click', '.nd_delete-me', function() {
+      var btn = $(this).closest('tr').find('button.nd_adminbutton[name="update"]');
       var label = $(this).closest('span.nd_device-acl-rule-label, span.nd_port-acl-rule-label');
       $(label).next('input.nd_device-acl-rule-field, input.nd_port-acl-rule-field').remove();
       $(label).remove();
+      $(btn).click(); // the label is deleted so need to use saved btn
     });
   } );
 </script>

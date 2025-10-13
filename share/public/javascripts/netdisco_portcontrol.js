@@ -167,14 +167,12 @@ $(document).ready(function() {
         $('#nd_portlog').modal('show');
       }
       else if (td.data('field') == 'nd_device-acl-rule-field') {
-        td.append('<span class="label label-inverse nd_device-acl-rule-label">'+ escapeHtml($(this).val()) +' <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>')
         td.append('<input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="'+ window.btoa($(this).val()) +'">')
-        $(this).val('');
+        $(this).closest('tr').find('button.nd_adminbutton[name="update"]').click();
       }
       else if (td.data('field') == 'nd_port-acl-rule-field') {
-        td.append('<span class="label label-info nd_port-acl-rule-label">'+ escapeHtml($(this).val()) +' <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>')
         td.append('<input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="'+ window.btoa($(this).val()) +'">')
-        $(this).val('');
+        $(this).closest('tr').find('button.nd_adminbutton[name="update"]').click();
       }
       else {
         // no confirm for port descr change
