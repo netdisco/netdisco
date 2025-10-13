@@ -31,7 +31,7 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 merge_portctl_roles_from_db()
+=head2 merge_portctl_roles_from_db( $job->username ?)
 
 Loads Port Control Roles from the database and merges them into the
 C<portctl_role> config. This should only be done lazily and near to the
@@ -40,7 +40,9 @@ time of use, to be efficient and also to get latest ACL settings.
 =cut
 
 sub merge_portctl_roles_from_db {
-  my $user = logged_in_user or return;
+  my $user = logged_in_user
+    or schema('netdisco')->resultset('User')->find({ username => shift })
+    or return;
 
   if ($user->portctl_role) {
       my $role = $user->portctl_role;
