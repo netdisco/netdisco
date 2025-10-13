@@ -51,6 +51,10 @@ ajax '/ajax/control/admin/portctlrole/delete' => require_role admin => sub {
       schema(vars->{'tenant'})->resultset('AccessControlList')
         ->search({id => { -in => [ $rows->port_acls ] }})->delete;
       $rows->delete;
+
+      schema(vars->{'tenant'})->resultset('User')
+        ->search({portctl_role => $role})
+        ->update({portctl_role => undef, port_control => \'false'});
     });
 };
 
