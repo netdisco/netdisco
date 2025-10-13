@@ -9,7 +9,6 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  port_acl_by_role_check port_acl_check
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
@@ -57,9 +56,7 @@ sub port_acl_by_role_check {
     $user = ref $user ? $user :
       schema('netdisco')->resultset('User')
                         ->find({ username => $user });
-
     return false unless $user;
-    my $username = $user->username;
 
     # special case admin user allowed to continue, because
     # they can submit port control jobs
