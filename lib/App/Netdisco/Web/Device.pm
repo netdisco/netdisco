@@ -9,6 +9,7 @@ use URI ();
 use URL::Encode 'url_params_mixed';
 use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Port 'merge_portctl_roles_from_db';
+use App::Netdisco::Util::Web 'request_is_device';
 
 # build view settings for port connected nodes and devices
 set('connected_properties' => [
@@ -22,6 +23,12 @@ set('port_display_properties' => [
   map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
   grep { $_ =~ m/^p_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
 ]);
+
+# load and cache device port control configuration
+hook 'before' => sub {
+  return unless request_is_device;
+  merge_portctl_roles_from_db();
+};
 
 hook 'before_template' => sub {
   my $tokens = shift;
@@ -82,9 +89,6 @@ get '/device' => require_login sub {
     # and use only ip for q param, if there are duplicates.
     my $first = $dev->first;
     my $others = ($devices->search({dns => $first->dns})->count() - 1);
-
-    # load and cache device port control configuration
-    merge_portctl_roles_from_db();
 
     params->{'tab'} ||= 'details';
     template 'device', {
