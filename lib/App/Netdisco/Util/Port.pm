@@ -2,6 +2,7 @@ package App::Netdisco::Util::Port;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
@@ -9,6 +10,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  merge_portctl_roles_from_db
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
@@ -28,6 +30,33 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 merge_portctl_roles_from_db()
+
+Loads Port Control Roles from the database and merges them into the
+C<portctl_role> config. This should only be done lazily and near to the
+time of use, to be efficient and also to get latest ACL settings.
+
+=cut
+
+sub merge_portctl_roles_from_db {
+  my $user = logged_in_user or return;
+
+  if ($user->portctl_role) {
+      my $role = $user->portctl_role;
+      my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
+        ->search({ role_name => $role },
+                  { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' });
+
+      # convert LHS device ACLs to named groups
+      while (my $pair = $rows->next) {
+          my $group = 'synthesized_group_'. $pair->device_acl->id;
+          config->{host_groups}->{$group} = $pair->device_acl->rules;
+          config->{portctl_by_role}->{$role}->{'group:'. $group}
+            = $pair->port_acl->rules;
+      }
+  }
+}
 
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 

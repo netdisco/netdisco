@@ -8,6 +8,7 @@ use Dancer::Plugin::Auth::Extensible;
 use URI ();
 use URL::Encode 'url_params_mixed';
 use App::Netdisco::Util::Device 'match_to_setting';
+use App::Netdisco::Util::Port 'merge_portctl_roles_from_db';
 
 # build view settings for port connected nodes and devices
 set('connected_properties' => [
@@ -83,20 +84,7 @@ get '/device' => require_login sub {
     my $others = ($devices->search({dns => $first->dns})->count() - 1);
 
     # load and cache device port control configuration
-    # convert LHS device ACLs to named groups
-    my $user = logged_in_user;
-    if ($user->portctl_role) {
-        my $role = $user->portctl_role;
-        my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-          ->search({ role_name => $role },
-                   { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' });
-        while (my $pair = $rows->next) {
-            my $group = 'synthesized_group_'. $pair->device_acl->id;
-            config->{host_groups}->{$group} = $pair->device_acl->rules;
-            config->{portctl_by_role}->{$role}->{'group:'. $group}
-              = $pair->port_acl->rules;
-        }
-    }
+    merge_portctl_roles_from_db();
 
     params->{'tab'} ||= 'details';
     template 'device', {

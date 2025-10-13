@@ -290,6 +290,7 @@ get '/ajax/content/device/ports' => require_login sub {
     @results = sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } @results;
 
     # add acl on port config
+    # this has the merged yaml and database config
     if (param('c_admin') and user_has_role('port_control')) {
       # for native vlan change
       map {$_->{port_acl_pvid} = port_acl_pvid($_, $device, logged_in_user)} @results;
