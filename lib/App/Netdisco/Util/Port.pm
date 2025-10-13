@@ -99,7 +99,7 @@ sub port_acl_by_role_check {
     if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
         # all ports are permitted when the role acl is a device acl
         # but check the device anyway
-        return true if acl_matches($device, $acl);
+        return acl_matches($device, $acl);
     }
     elsif ($acl and ref $acl eq ref {}) {
         my $found = false;
@@ -113,15 +113,10 @@ sub port_acl_by_role_check {
                 last;
             }
         }
-
-        return true if $found;
-    }
-    elsif ($role) {
-        # the config does not have an entry for user's role
-        return true if $user->port_control;
+        return $found;
     }
 
-    # the user has "Enabled (any port)" setting
+    # if the user has "Enabled (any port)" setting
     return $user->port_control;
   }
 

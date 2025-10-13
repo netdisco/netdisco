@@ -119,7 +119,6 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    
     my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
     push @port_control_roles,
       schema(vars->{'tenant'})->resultset('PortCtlRole')->role_names;
