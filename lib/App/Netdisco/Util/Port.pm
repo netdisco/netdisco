@@ -37,6 +37,10 @@ Loads Port Control Roles from the database and merges them into the
 C<portctl_role> config. This should only be done lazily and near to the
 time of use, to be efficient and also to get latest ACL settings.
 
+If there exists an entry in C<portctl_role> config from C<deployment.yml>
+with the same name as a database role, then the database role overwrites
+it.
+
 =cut
 
 sub merge_portctl_roles_from_db {
@@ -48,7 +52,8 @@ sub merge_portctl_roles_from_db {
       my $role = $user->portctl_role;
       my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
         ->search({ role_name => $role },
-                  { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' });
+                 { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' });
+      delete config->{portctl_by_role}->{$role} if $rows->count();
 
       # convert LHS device ACLs to named groups
       while (my $pair = $rows->next) {
