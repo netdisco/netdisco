@@ -44,7 +44,9 @@ sub request_is_device {
   return (
     index(request->path, uri_for('/device')->path) == 0
       or
-    index(request->path, uri_for('/ajax/content/device')->path) == 0
+    index(request->path, uri_for('/ajax/content/device/details')->path) == 0
+      or
+    index(request->path, uri_for('/ajax/content/device/ports')->path) == 0
   );
 }
 
