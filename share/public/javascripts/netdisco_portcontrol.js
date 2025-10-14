@@ -1,12 +1,3 @@
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 // to tell whether bootstrap's modal had Submit button pressed :(
 var nd_save_ok = false;
 
