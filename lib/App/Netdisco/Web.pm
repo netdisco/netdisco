@@ -344,7 +344,7 @@ hook 'before_template' => sub {
             return true if acl_matches($device, $acl);
         }
         elsif ($acl and ref $acl eq ref {}) {
-            foreach my $key (grep { defined } sort keys %$acl) {
+            foreach my $key (grep { defined } keys %$acl) {
                 # lhs matches device, rhs matches port
                 # but we are not interested in the ports
                 return true if acl_matches($device, $key);

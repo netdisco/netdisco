@@ -100,6 +100,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
         portctl_role =>
           ((param('port_control') and param('port_control') ne '_global_')
             ? param('port_control') : ''),
+        portctl_checkpoint => ($user->portctl_checkpoint + 1),
 
         admin => (param('admin') ? \'true' : \'false'),
         note => param('note'),

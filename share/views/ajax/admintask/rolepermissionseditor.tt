@@ -48,6 +48,7 @@
 
       <td class="nd_center-cell">
         <input data-form="update" name="id" type="hidden" value="[% pair.id | html_entity %]">
+        <input data-form="update" name="role_name" type="hidden" value="[% role_name | html_entity %]">
         <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="icon-save text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
@@ -65,6 +66,7 @@
                 This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
             </blockquote>
             <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
+            <input data-form="delete" name="role_name" type="hidden" value="[% role_name | html_entity %]">
           </div>
 
           <div class="modal-footer">

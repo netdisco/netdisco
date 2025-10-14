@@ -40,6 +40,7 @@ sub get_user_details {
 
     my $user = try {
       $database->resultset($users_table)->find({
+          # FIXME: ILIKE to get case insensitive match on username, no wildcards
           $username_column => { -ilike => quotemeta($username) },
       });
     };

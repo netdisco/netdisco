@@ -47,20 +47,29 @@ sub merge_portctl_roles_from_db {
   my $user = logged_in_user
     or schema('netdisco')->resultset('User')->find({ username => shift })
     or return;
+  return unless $user->portctl_checkpoint > setting('portctl_checkpoint');
+  config->{portctl_checkpoint} = $user->portctl_checkpoint;
 
   if ($user->portctl_role) {
       my $role = $user->portctl_role;
-      my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      my @rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
         ->search({ role_name => $role },
-                 { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' });
-      delete config->{portctl_by_role}->{$role} if $rows->count();
+                 { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' })->all;
 
-      # convert LHS device ACLs to named groups
-      while (my $pair = $rows->next) {
-          my $group = 'synthesized_group_'. $pair->device_acl->id;
-          config->{host_groups}->{$group} = $pair->device_acl->rules;
-          config->{portctl_by_role}->{$role}->{'group:'. $group}
-            = $pair->port_acl->rules;
+      if (scalar @rows) {
+          config->{portctl_by_role}->{$role} = {};
+
+          foreach my $pair (@rows) {
+              # convert LHS device ACLs to named groups
+              my $group = 'synthesized_group_'. $pair->device_acl->id;
+              config->{host_groups}->{$group} = $pair->device_acl->rules;
+              config->{portctl_by_role}->{$role}->{'group:'. $group}
+                = $pair->port_acl->rules;
+          }
+      }
+      else {
+          config->{'portctl_by_role'}->{$role}
+            = (setting('portctl_by_role_shadow')->{$role} || '!group:__ANY__');
       }
   }
 }
@@ -108,11 +117,11 @@ sub port_acl_by_role_check {
     }
     elsif ($acl and ref $acl eq ref {}) {
         my $found = false;
-        foreach my $key (sort keys %$acl) {
+        foreach my $key (keys %$acl) {
             # lhs matches device, rhs matches port
             next unless $key and $acl->{$key};
             if (acl_matches($device, $key)
-                and acl_matches($port, $acl->{$key})) {
+                and acl_matches_only($port, $acl->{$key})) {
 
                 $found = true;
                 last;
