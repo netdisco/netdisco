@@ -57,8 +57,8 @@
     $('.nd_acl_host_searcher').autocomplete({
       source: uri_base + '/ajax/data/devices/typeahead'
       ,select: function( event, ui ) {
-        event.preventDefault();
         if (event.which == 13) { return };
+        event.preventDefault();
         $(this).val(ui.item.value);
         $(this).trigger(jQuery.Event('keydown', { which: 13 }));
       }
