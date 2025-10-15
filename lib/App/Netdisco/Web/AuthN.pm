@@ -150,7 +150,6 @@ post '/login' => sub {
           details => param('return_url'),
         });
         $user->update({ last_on => \'LOCALTIMESTAMP' });
-        config->{'portctl_checkpoint'} = 0; # per user per role
 
         if ($api) {
             header('Content-Type' => 'application/json');

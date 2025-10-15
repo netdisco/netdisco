@@ -221,9 +221,9 @@ config->{'bulkwalk_off'} = true
 config->{'port_control_reasons'} =
   config->{'port_control_reasons'} || config->{'system_port_control_reasons'};
 
-# checkpoint for updating database portctl_roles
+# for managing database portctl_roles
 
-config->{'portctl_checkpoint'} = 0;
+config->{'portctl_checkpoint'} = {};
 config->{'portctl_by_role_shadow'}
   = dclone (setting('portctl_by_role') || {});
 

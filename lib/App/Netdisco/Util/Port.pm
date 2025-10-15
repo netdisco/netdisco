@@ -47,8 +47,10 @@ sub merge_portctl_roles_from_db {
   (my $user = (logged_in_user
     || schema('netdisco')->resultset('User')->find({ username => shift })))
     or return;
-  return unless $user->portctl_checkpoint > setting('portctl_checkpoint');
-  config->{portctl_checkpoint} = $user->portctl_checkpoint;
+
+  setting('portctl_checkpoint')->{$user} ||= 0;
+  return unless $user->portctl_checkpoint > setting('portctl_checkpoint')->{$user};
+  setting('portctl_checkpoint')->{$user} = $user->portctl_checkpoint;
 
   if ($user->portctl_role) {
       my $role = $user->portctl_role;
