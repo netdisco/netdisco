@@ -149,7 +149,6 @@ $(document).ready(function() {
     }
     else if (nl) {
       event.preventDefault();
-      if ($(this).val() == 0) { return }
 
       if (td.data('field') == 'c_pvid') {
         $('#nd_portlog').one('hidden', function() {
@@ -158,10 +157,12 @@ $(document).ready(function() {
         $('#nd_portlog').modal('show');
       }
       else if (td.data('field') == 'nd_device-acl-rule-field') {
+        if ($(this).val().length == 0) { return }
         td.append('<input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="'+ window.btoa($(this).val()) +'">')
         $(this).closest('tr').find('button.nd_adminbutton[name="update"]').click();
       }
       else if (td.data('field') == 'nd_port-acl-rule-field') {
+        if ($(this).val().length == 0) { return }
         td.append('<input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="'+ window.btoa($(this).val()) +'">')
         $(this).closest('tr').find('button.nd_adminbutton[name="update"]').click();
       }
