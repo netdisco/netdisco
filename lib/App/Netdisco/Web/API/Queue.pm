@@ -169,6 +169,7 @@ swagger_path {
       send_error('Malformed job', 400) if ref $job ne ref {};
       send_error('Malformed job', 400) if !defined $job->{action};
       send_error('Not Authorized', 403)
+        # TODO make this aware of port control roles per device/port
         if ($job->{action} =~ m/^cf_/ and not user_has_role('port_control'))
         or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
 

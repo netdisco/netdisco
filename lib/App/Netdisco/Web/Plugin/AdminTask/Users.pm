@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Passphrase;
 
 use App::Netdisco::Web::Plugin;
+use List::MoreUtils 'uniq';
 use Digest::MD5 ();
 
 register_admin_task({
@@ -56,6 +57,9 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
             ((param('port_control') and param('port_control') ne '_global_')
               ? param('port_control') : ''),
 
+          ((param('port_control') and param('port_control') ne '_global_')
+            ? (portctl_checkpoint => 1) : ()),
+
           admin => (param('admin') ? \'true' : \'false'),
           note => param('note'),
         });
@@ -100,6 +104,9 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
           ((param('port_control') and param('port_control') ne '_global_')
             ? param('port_control') : ''),
 
+        (((param('port_control') || '') ne ($user->portctl_role || ''))
+          ? (portctl_checkpoint => ($user->portctl_checkpoint + 1)) : ()),
+
         admin => (param('admin') ? \'true' : \'false'),
         note => param('note'),
       });
@@ -118,11 +125,13 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    my @port_control_roles = sort keys %{ setting('portctl_by_role') || {} };
+    my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
+    push @port_control_roles,
+      schema(vars->{'tenant'})->resultset('PortCtlRole')->role_names;
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
-            { results => \@results, port_control_roles => \@port_control_roles },
+            { results => \@results, port_control_roles => [ uniq sort {$a cmp $b} @port_control_roles ] },
             { layout  => undef };
     }
     else {
