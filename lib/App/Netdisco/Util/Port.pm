@@ -44,8 +44,8 @@ it.
 =cut
 
 sub merge_portctl_roles_from_db {
-  my $user = logged_in_user
-    or schema('netdisco')->resultset('User')->find({ username => shift })
+  (my $user = (logged_in_user
+    || schema('netdisco')->resultset('User')->find({ username => shift })))
     or return;
   return unless $user->portctl_checkpoint > setting('portctl_checkpoint');
   config->{portctl_checkpoint} = $user->portctl_checkpoint;
