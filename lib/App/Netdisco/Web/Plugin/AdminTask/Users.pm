@@ -57,6 +57,9 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
             ((param('port_control') and param('port_control') ne '_global_')
               ? param('port_control') : ''),
 
+          ((param('port_control') and param('port_control') ne '_global_')
+            ? (portctl_checkpoint => 1) : ()),
+
           admin => (param('admin') ? \'true' : \'false'),
           note => param('note'),
         });
