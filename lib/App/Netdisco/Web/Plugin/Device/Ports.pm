@@ -294,10 +294,11 @@ get '/ajax/content/device/ports' => require_login sub {
     if (param('c_admin') and user_has_role('port_control')) {
       # for native vlan change
       map {$_->{port_acl_pvid} = port_acl_pvid($_, $device, logged_in_user)} @results;
-      # for name/descr change
-      map {$_->{port_acl_name} = port_acl_name($_, $device, logged_in_user)} @results;
       # for up/down and poe
       map {$_->{port_acl_service} = port_acl_service($_, $device, logged_in_user)} @results;
+      # for name/descr change
+      map {$_->{port_acl_name} = ($_->{port_acl_service} || # if service true then this is OK
+                                  port_acl_name($_, $device, logged_in_user))} @results;
     }
 
     # filter the tags by hide_tags setting
