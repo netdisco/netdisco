@@ -24,7 +24,7 @@ register_worker({ phase => 'check' }, sub {
 
   return Status->error('Missing name (-e).') unless defined $job->subaction;
 
-  merge_portctl_roles_from_db($job->username);
+  sync_portctl_roles();
   return Status->error("Permission denied to change port name")
     unless port_acl_service(vars->{'port'}, $device, $job->username);
 

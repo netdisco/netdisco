@@ -8,7 +8,7 @@ use Dancer::Plugin::Auth::Extensible;
 use URI ();
 use URL::Encode 'url_params_mixed';
 use App::Netdisco::Util::Device 'match_to_setting';
-use App::Netdisco::Util::Port 'merge_portctl_roles_from_db';
+use App::Netdisco::Util::Port 'sync_portctl_roles';
 use App::Netdisco::Util::Web 'request_is_device';
 
 # build view settings for port connected nodes and devices
@@ -27,7 +27,7 @@ set('port_display_properties' => [
 # load and cache device port control configuration
 hook 'before' => sub {
   return unless request_is_device;
-  merge_portctl_roles_from_db();
+  sync_portctl_roles();
 };
 
 hook 'before_template' => sub {

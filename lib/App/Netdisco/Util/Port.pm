@@ -10,7 +10,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  merge_portctl_roles_from_db
+  sync_portctl_roles
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
@@ -31,7 +31,7 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 merge_portctl_roles_from_db( $job->username ?)
+=head2 sync_portctl_roles()
 
 Loads Port Control Roles from the database and merges them into the
 C<portctl_role> config. This should only be done lazily and near to the
@@ -39,39 +39,32 @@ time of use, to be efficient and also to get latest ACL settings.
 
 If there exists an entry in C<portctl_role> config from C<deployment.yml>
 with the same name as a database role, then the database role overwrites
-it.
+it. If such a role is removed, then a backup of the original is restored.
 
 =cut
 
-sub merge_portctl_roles_from_db {
-  (my $user = (logged_in_user
-    || schema('netdisco')->resultset('User')->find({ username => shift })))
-    or return;
+sub sync_portctl_roles {
+  my @db_roles = schema(vars->{'tenant'})
+    ->resultset('PortCtlRole')->role_names;
+  config->{'portctl_by_role'} = {};
 
-  setting('portctl_checkpoint')->{$user} ||= 0;
-  return unless $user->portctl_checkpoint > setting('portctl_checkpoint')->{$user};
-  setting('portctl_checkpoint')->{$user} = $user->portctl_checkpoint;
+  foreach my $role (sort {$a cmp $b} keys %{ setting('portctl_by_role_shadow') }) {
+      config->{'portctl_by_role'}->{$role}
+        = (setting('portctl_by_role_shadow')->{$role} || '!group:__ANY__');
+  }
 
-  if ($user->portctl_role) {
-      my $role = $user->portctl_role;
+  foreach my $role (@db_roles) {
       my @rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
         ->search({ role_name => $role },
                  { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' })->all;
 
-      if (scalar @rows) {
-          config->{portctl_by_role}->{$role} = {};
-
-          foreach my $pair (@rows) {
-              # convert LHS device ACLs to named groups
-              my $group = 'synthesized_group_'. $pair->device_acl->id;
-              config->{host_groups}->{$group} = $pair->device_acl->rules;
-              config->{portctl_by_role}->{$role}->{'group:'. $group}
-                = $pair->port_acl->rules;
-          }
-      }
-      else {
-          config->{'portctl_by_role'}->{$role}
-            = (setting('portctl_by_role_shadow')->{$role} || '!group:__ANY__');
+      config->{'portctl_by_role'}->{$role} = {};
+      foreach my $pair (@rows) {
+          # convert LHS device ACLs to named groups
+          my $group = 'synthesized_group_'. $pair->device_acl->id;
+          config->{'host_groups'}->{$group} = $pair->device_acl->rules;
+          config->{'portctl_by_role'}->{$role}->{'group:'. $group}
+            = $pair->port_acl->rules;
       }
   }
 }

@@ -223,7 +223,6 @@ config->{'port_control_reasons'} =
 
 # for managing database portctl_roles
 
-config->{'portctl_checkpoint'} = {};
 config->{'portctl_by_role_shadow'}
   = dclone (setting('portctl_by_role') || {});
 

@@ -14,7 +14,7 @@ __PACKAGE__->load_components(qw/
 
 sub role_names  {
     my $self = shift;
-    return $self->distinct('role_name')->get_column('role_name')->all;
+    return $self->distinct('role_name')->order_by('role_name')->get_column('role_name')->all;
 }
 
 sub device_acls {

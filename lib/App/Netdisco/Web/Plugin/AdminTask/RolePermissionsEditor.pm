@@ -49,10 +49,6 @@ post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => su
       $row->port_acl->update({
             rules => [ $port_rule ],
       }) if $port_rule;
-
-      schema(vars->{'tenant'})->resultset('User')
-        ->search({ portctl_role => $role })
-        ->update({ portctl_checkpoint => \'(portctl_checkpoint + 1)' });
     });
 };
 
@@ -82,10 +78,6 @@ post '/ajax/control/admin/rolepermissionseditor/delete' => require_role admin =>
             });
           $new->device_acl->update({ rules => ['group:__ANY__'] });
       }
-
-      schema(vars->{'tenant'})->resultset('User')
-        ->search({ portctl_role => $role })
-        ->update({ portctl_checkpoint => \'(portctl_checkpoint + 1)' });
     });
 };
 
@@ -111,10 +103,6 @@ post '/ajax/control/admin/rolepermissionseditor/update' => require_role admin =>
         ->find($row->device_acl_id)->update({rules => \@device_rules });
       schema(vars->{'tenant'})->resultset('AccessControlList')
         ->find($row->port_acl_id)->update({rules => \@port_rules });
-
-      schema(vars->{'tenant'})->resultset('User')
-        ->search({ portctl_role => $role })
-        ->update({ portctl_checkpoint => \'(portctl_checkpoint + 1)' });
     });
 };
 
