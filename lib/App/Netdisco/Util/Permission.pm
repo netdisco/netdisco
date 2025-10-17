@@ -154,6 +154,21 @@ sub check_acl {
       $real_ip = $item if (ref $item eq q{}) and $item;
   }
 
+  my $real_name = '';
+  ITEM: foreach my $item (@$things) {
+      foreach my $slot (qw/dns name/) {
+        if (blessed $item) {
+            $real_name = $item->$slot if $item->can($slot)
+                                          and eval { $item->$slot };
+        }
+        elsif (ref {} eq ref $item) {
+            $real_name = $item->{$slot} if exists $item->{$slot}
+                                            and $item->{$slot};
+        }
+        last ITEM if $real_name;
+    }
+  }
+
   $config  = [$config] if ref $config eq q{};
   if (ref [] ne ref $config) {
     error "error: acl is not a single item or list (cannot compare to '$real_ip')";
@@ -401,6 +416,15 @@ sub check_acl {
 
       # could be something in error, and IP/host is only option left
       next RULE if ref $rule;
+
+      if ($real_name ne '') {
+        if ($neg xor ($real_name =~ m/^$rule$/)) {
+          return true if not $all;
+        }
+        else {
+          return false if $all;
+        }
+      }
 
       # if no IP addr, cannot match IP prefix
       next RULE unless $addr;
