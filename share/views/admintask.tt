@@ -27,7 +27,11 @@
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
       <li class="active"><a id="[% task.tag | html_entity %]_link" class="nd_single-tab"
-        href="#[% task.tag | html_entity %]_pane">[% task.label | html_entity %]</a></li>
+        href="#[% task.tag | html_entity %]_pane">[% task.label | html_entity %]
+      [% IF task.tag == 'rolepermissionseditor' %]
+        : <span class="badge badge-important">[% params.role_name | html_entity %]</span>
+      [% END %]
+      </a></li>
       [% IF task.tag == 'jobqueue' %]
       <span id="nd_device-name">
         <span id="nd_countdown"></span>
@@ -42,11 +46,6 @@
         &nbsp;&nbsp;
         <a id="nd_jobqueue-bookmark" href="#"><i class="icon-bookmark icon-large"></i></a>
       </span>
-      [% ELSIF task.tag == 'rolepermissionseditor' %]
-      <span id="nd_device-name">
-        Editing Role: <span class="badge badge-important">[% params.role_name | html_entity %]</span>
-      </span>
-      [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
           <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"

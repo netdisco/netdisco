@@ -178,6 +178,8 @@ sidebar_defaults:
   report_portutilization:
     age_num:      { default: 3 }
     age_unit:     { default: months }
+  admintask_rolepermissionseditor:
+    aclhost:     { default: ip }
 netmap_performance_limit_max_devices: 1000
 netmap_custom_fields:
   device: []

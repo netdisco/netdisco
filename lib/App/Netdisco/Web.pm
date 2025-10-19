@@ -371,6 +371,9 @@ hook 'before_template' => sub {
         elsif ($mode =~ m/^report$/) {
             $tokens->{$sidebar_key} = uri_for("/$mode/$report");
         }
+        elsif ($mode =~ m/^admintask$/) {
+            $tokens->{$sidebar_key} = uri_for("/$mode/$report");
+        }
 
         foreach my $col (keys %{ var('sidebar_defaults')->{$sidebar_key} }) {
             $tokens->{$sidebar_key}->query_param($col,

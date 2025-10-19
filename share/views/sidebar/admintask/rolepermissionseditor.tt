@@ -1,3 +1,26 @@
 
-            <input name="role_name" value="[% params.role_name | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["rolepermissionseditor"] = 0;</script>
+    <span class="nd_sidebar-title"><em>Host Preference</em></span>
+    <input name="role_name" value="[% params.role_name | html_entity %]" type="hidden"/>
+    <div class="clearfix nd_netmap-sidebar">
+        <ul class="muted nd_netmap-sidebar-help">
+        <li>When you select an autocomplete item, this controls what Netdisco adds to the ACL.</li>
+        <li>'Follow' uses IP if you search by IP, or DNS/Host if you search by name.</li>
+        <li>The default can be set in configuration.</li>
+        <li>tip: Using IP addresses makes ACLs faster.</li>
+        </ul>
+    </div>
+    <div class="radio radio-success">
+        <input type="radio" name="aclhost" id="nd_aclhost-ip"
+        [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'ip' %] value="ip">
+        <label for="nd_aclhost-ip">IP Address</label>
+    </div>
+    <div class="radio radio-success">
+        <input type="radio" name="aclhost" id="nd_aclhost-dynamic"
+        [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'dynamic' %] value="dynamic">
+        <label for="nd_aclhost-dynamic">Follow what you type</label>
+    </div>
+    <div class="radio radio-success">
+        <input type="radio" name="aclhost" id="nd_aclhost-name"
+        [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'name' %] value="name">
+        <label for="nd_aclhost-name">FQDN or Name</label>
+    </div>
