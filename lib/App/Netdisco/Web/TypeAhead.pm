@@ -116,7 +116,11 @@ ajax '/ajax/data/deviceip/typeahead' => require_login sub {
 };
 
 ajax '/ajax/data/devices/typeahead' => require_login sub {
-    my $q = (param('query') || param('term')) or return '[]';
+    my $q = param('device_rule') or return '[]';
+    my $mode = param('aclhost') || 'ip';
+    if ($mode eq 'dynamic') {
+        $mode = (($q =~ m/^\d/ or $q =~ m/:/) ? 'ip' : 'name');
+    }
 
     content_type 'application/json';
     my @data = ();
@@ -140,19 +144,14 @@ ajax '/ajax/data/devices/typeahead' => require_login sub {
       ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
 
     while (my $d = $set->next) {
-        my $label = $d->ip;
-        
-        if ($d->dns or $d->name) {
-            $label = sprintf '%s (%s)',
-              ($d->dns || $d->name), $d->ip;
-        }
+        my $name = ($d->dns || $d->name);
 
-        # elsif q starts digit or contains : then value is the IP
-        # else value is the label
-        push @data, {
-          label => $label,
-          value => (($q =~ m/^\d/ or $q =~ m/:/) ? $d->ip : ($d->dns || $d->ip)),
-        };
+        if (not $name or $mode eq 'ip') {
+            push @data, { value => $d->ip, label => ($name ? sprintf('%s (%s)', $d->ip, $name) : $d->ip)  };
+        }
+        elsif ($mode eq 'name') {
+            push @data, { value => $name, label => sprintf('%s (%s)', $name, $d->ip) };
+        }
     }
 
     return to_json \@data;

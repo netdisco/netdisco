@@ -55,7 +55,13 @@
 
     // activate typeahead on access control list editors
     $('.nd_acl_host_searcher').autocomplete({
-      source: uri_base + '/ajax/data/devices/typeahead'
+      source: function (request, response)  {
+        var query = $('.nd_sidebar-form').serializeArray();
+        query.push($(this.element).serializeArray()[0]);
+        return $.get( uri_base + '/ajax/data/devices/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
       ,select: function( event, ui ) {
         if (event.which == 13) { return };
         event.preventDefault();
