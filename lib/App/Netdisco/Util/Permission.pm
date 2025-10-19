@@ -180,13 +180,14 @@ sub check_acl {
         }
         last ITEM if $name;
     }
-    next ITEM unless $addr;
   }
 
-  unless ($name){
-    $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
+  # reverse dns lookup as last resort
+  if (not defined $name) {
+      $name = hostname_from_ip($addr->addr, $ropt) if $addr;
+      $name = $name || '!!none!!';
   }
-  
+
   my $qref = ref qr//;
 
   RULE: foreach (@$config) {
