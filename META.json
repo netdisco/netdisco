@@ -150,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.091001"
+         "version" : "2.092000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -175,13 +175,16 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "93"
+         "version" : "94"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
       },
       "App::Netdisco::DB::Result" : {
          "file" : "lib/App/Netdisco/DB/Result.pm"
+      },
+      "App::Netdisco::DB::Result::AccessControlList" : {
+         "file" : "lib/App/Netdisco/DB/Result/AccessControlList.pm"
       },
       "App::Netdisco::DB::Result::Admin" : {
          "file" : "lib/App/Netdisco/DB/Result/Admin.pm"
@@ -261,6 +264,9 @@
       "App::Netdisco::DB::Result::Oui" : {
          "file" : "lib/App/Netdisco/DB/Result/Oui.pm"
       },
+      "App::Netdisco::DB::Result::PortCtlRole" : {
+         "file" : "lib/App/Netdisco/DB/Result/PortCtlRole.pm"
+      },
       "App::Netdisco::DB::Result::Process" : {
          "file" : "lib/App/Netdisco/DB/Result/Process.pm"
       },
@@ -290,6 +296,9 @@
       },
       "App::Netdisco::DB::Result::UserLog" : {
          "file" : "lib/App/Netdisco/DB/Result/UserLog.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::ACLEntriesWithDNS" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/ACLEntriesWithDNS.pm"
       },
       "App::Netdisco::DB::Result::Virtual::ActiveNode" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/ActiveNode.pm"
@@ -422,6 +431,9 @@
       },
       "App::Netdisco::DB::ResultSet::NodeWireless" : {
          "file" : "lib/App/Netdisco/DB/ResultSet/NodeWireless.pm"
+      },
+      "App::Netdisco::DB::ResultSet::PortCtlRole" : {
+         "file" : "lib/App/Netdisco/DB/ResultSet/PortCtlRole.pm"
       },
       "App::Netdisco::DB::ResultSet::Subnet" : {
          "file" : "lib/App/Netdisco/DB/ResultSet/Subnet.pm"
@@ -636,8 +648,14 @@
       "App::Netdisco::Web::Plugin::AdminTask::PollerPerformance" : {
          "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/PollerPerformance.pm"
       },
+      "App::Netdisco::Web::Plugin::AdminTask::PortCtlRole" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/PortCtlRole.pm"
+      },
       "App::Netdisco::Web::Plugin::AdminTask::PseudoDevice" : {
          "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/PseudoDevice.pm"
+      },
+      "App::Netdisco::Web::Plugin::AdminTask::RolePermissionsEditor" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/RolePermissionsEditor.pm"
       },
       "App::Netdisco::Web::Plugin::AdminTask::SlowDevices" : {
          "file" : "lib/App/Netdisco/Web/Plugin/AdminTask/SlowDevices.pm"
