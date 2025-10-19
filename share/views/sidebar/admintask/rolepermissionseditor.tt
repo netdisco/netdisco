@@ -1,26 +1,42 @@
 
     <span class="nd_sidebar-title"><em>Host Preference</em></span>
     <input name="role_name" value="[% params.role_name | html_entity %]" type="hidden"/>
-    <div class="clearfix nd_netmap-sidebar">
-        <ul class="muted nd_netmap-sidebar-help">
-        <li>When you select an autocomplete item, this controls what Netdisco adds to the ACL.</li>
-        <li>'Follow' uses IP if you search by IP, or DNS/Host if you search by name.</li>
-        <li>The default can be set in configuration.</li>
-        <li>tip: Using IP addresses makes ACLs faster.</li>
-        </ul>
-    </div>
+
+    <label><span id="">&nbsp;</span></label>
+    <label><span id="">When you select an autocomplete item, this controls what Netdisco adds for the rule:</span></label>
+
     <div class="radio radio-success">
         <input type="radio" name="aclhost" id="nd_aclhost-ip"
         [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'ip' %] value="ip">
         <label for="nd_aclhost-ip">IP Address</label>
     </div>
     <div class="radio radio-success">
+        <input type="radio" name="aclhost" id="nd_aclhost-name"
+        [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'name' %] value="name">
+        <label for="nd_aclhost-name">FQDN or Device Name</label>
+    </div>
+    <div class="radio radio-success">
         <input type="radio" name="aclhost" id="nd_aclhost-dynamic"
         [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'dynamic' %] value="dynamic">
         <label for="nd_aclhost-dynamic">Follow what you type</label>
     </div>
-    <div class="radio radio-success">
-        <input type="radio" name="aclhost" id="nd_aclhost-name"
-        [% 'checked' IF vars.sidebar_defaults.admintask_rolepermissionseditor.aclhost == 'name' %] value="name">
-        <label for="nd_aclhost-name">FQDN or Name</label>
+    <div class="clearfix nd_netmap-sidebar">
+        <ul class="muted nd_netmap-sidebar-help">
+        <li>'Follow' uses IP if you search by IP, or DNS/Host if you search by name.</li>
+        </ul>
+    </div>
+
+    <label><span id="">&nbsp;</span></label>
+    <label><span id="">Rules may contain:</span></label>
+    <div class="clearfix nd_netmap-sidebar">
+        <ul class="muted nd_netmap-sidebar-help">
+        <li>Hostname, IP address, IP prefix (i.e. subnet)</li>
+        <li>IP address range, using a hyphen on the last octet/hextet</li>
+        <li>property:regexp to match the complete value of any device or device port property</li>
+        <li>cf:fieldname:regexp to match the complete value of any device or device port custom field</li>
+        <li>tag:tagname to match a tag exactly</li>
+        <li>group:groupname to reference an ACL</li>
+        <li>ctrontab(5) notation</li>
+        <li>op:and to require all rules for the ruleset ID match</li>
+        </ul>
     </div>
