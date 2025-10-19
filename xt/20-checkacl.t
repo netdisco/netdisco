@@ -180,8 +180,6 @@ my $d_no_dns = App::Netdisco::DB->resultset('Device')->new_result({
     custom_fields => '{"foo": "bar"}',
 });
 
-
-
 # device properties
 ok(acl_matches([$dip2, $dp], [$conf[23]]), '2obj instance anon property deviceport:alias');
 ok(acl_matches([$dip2, $dp], ['ip:'.$conf[2]]), '2obj instance named property deviceport:ip');
