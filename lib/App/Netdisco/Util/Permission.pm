@@ -154,21 +154,6 @@ sub check_acl {
       $real_ip = $item if (ref $item eq q{}) and $item;
   }
 
-  my $real_name = '';
-  ITEM: foreach my $item (@$things) {
-      foreach my $slot (qw/dns name/) {
-        if (blessed $item) {
-            $real_name = $item->$slot if $item->can($slot)
-                                          and eval { $item->$slot };
-        }
-        elsif (ref {} eq ref $item) {
-            $real_name = $item->{$slot} if exists $item->{$slot}
-                                            and $item->{$slot};
-        }
-        last ITEM if $real_name;
-    }
-  }
-
   $config  = [$config] if ref $config eq q{};
   if (ref [] ne ref $config) {
     error "error: acl is not a single item or list (cannot compare to '$real_ip')";
@@ -181,26 +166,39 @@ sub check_acl {
   return true if $real_ip and $find and not $all;
 
   my $addr = NetAddr::IP::Lite->new($real_ip);
-  my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
+  my $name = undef;
+  ITEM: foreach my $item (@$things) {
+      foreach my $slot (qw/dns name/) {
+        if (blessed $item) {
+            $name = $item->$slot if $item->can($slot)
+                                          and eval { $item->$slot };
+        }
+        elsif (ref {} eq ref $item) {
+            $name = $item->{$slot} if exists $item->{$slot}
+                                            and $item->{$slot};
+        }
+        last ITEM if $name;
+    }
+    next ITEM unless $addr;
+    $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
+  }
+
   my $qref = ref qr//;
 
   RULE: foreach (@$config) {
       my $rule = $_; # must copy so that we can modify safely
       next RULE if !defined $rule or $rule eq 'op:and';
-
+      
       if ($qref eq ref $rule) {
-          # if no IP addr, cannot match its dns
-          next RULE unless $addr;
-
-          $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
-          if ($name =~ $rule) {
-            return true if not $all;
-          }
-          else {
-            return false if $all;
-          }
-          next RULE;
+        next RULE unless $name;
+        if ($name =~ $rule) {
+          return true if not $all;
+        }
+        else {
+          return false if $all;
+        }
+        next RULE;
       }
 
       my $neg = ($rule =~ s/^!//);
@@ -417,13 +415,15 @@ sub check_acl {
       # could be something in error, and IP/host is only option left
       next RULE if ref $rule;
 
-      if ($real_name ne '') {
-        if ($neg xor ($real_name =~ m/^$rule$/)) {
+      if ($name ne '!!none!!') {
+        next RULE unless $name;
+        if ($neg xor ($name =~ m/^$rule$/)) {
           return true if not $all;
         }
         else {
           return false if $all;
         }
+        next RULE;
       }
 
       # if no IP addr, cannot match IP prefix

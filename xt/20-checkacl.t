@@ -168,10 +168,18 @@ my $dp = App::Netdisco::DB->resultset('DevicePort')->new_result({
 my $d = App::Netdisco::DB->resultset('Device')->new_result({
     ip   => '127.0.0.1',
     dns => 'localhost',
-    name => 'mymachine'
+    name => 'mymachine',
     tags => [qw/ quux /],
     custom_fields => '{"foo": "bar"}',
 });
+
+my $d_no_dns = App::Netdisco::DB->resultset('Device')->new_result({
+    ip   => '127.0.0.1',
+    name => 'mymachine',
+    tags => [qw/ quux /],
+    custom_fields => '{"foo": "bar"}',
+});
+
 
 
 # device properties
