@@ -164,8 +164,18 @@ my $dp = App::Netdisco::DB->resultset('DevicePort')->new_result({
     custom_fields => '{"baz": "quux"}',
 });
 
+
 my $d = App::Netdisco::DB->resultset('Device')->new_result({
     ip   => '127.0.0.1',
+    dns => 'localhost',
+    name => 'mymachine',
+    tags => [qw/ quux /],
+    custom_fields => '{"foo": "bar"}',
+});
+
+my $d_no_dns = App::Netdisco::DB->resultset('Device')->new_result({
+    ip   => '127.0.0.1',
+    name => 'mymachine',
     tags => [qw/ quux /],
     custom_fields => '{"foo": "bar"}',
 });
@@ -256,6 +266,16 @@ is(acl_matches('localhost',[$conf[26]]), 0, 'not current time');
 
 is(acl_matches('localhost',[$conf[29]]), 0, '!current time');
 ok(acl_matches('localhost',[$conf[28]]), '! not current time');
+
+# device name/dns matching
+
+ok(acl_matches($d, ['local.*']), 'device dns is supposed to match');
+is(acl_matches($d, ['notlocalhost']), 0, 'device dns is not supposed to match');
+ok(acl_matches($d, ['loc.*host']), 'device dns is supposed to match');
+
+is(acl_matches($d_no_dns, ['local*']), 0, 'device name is not supposed to match');
+ok(acl_matches($d_no_dns, ['mymachine']), 'device name is supposed to match name');
+is(acl_matches($d_no_dns, ['my*hine']), 0, 'device is supposed to match');
 
 # from bug reports
 ok(acl_matches({port => 'FastEthernet10'},[$conf[20],$conf[30],$conf[31]]), '#1348 anded negated prop:val mismatch');

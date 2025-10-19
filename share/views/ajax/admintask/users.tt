@@ -30,7 +30,7 @@
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="update" name="port_control">
+          <select class="span2 form-control" data-form="add" name="port_control">
             <option value="" selected>Off</option>
             <option value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]

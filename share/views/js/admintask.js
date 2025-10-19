@@ -53,6 +53,25 @@
       ,minLength: 0
     });
 
+    // activate typeahead on access control list editors
+    $('.nd_acl_host_searcher').autocomplete({
+      source: function (request, response)  {
+        var query = $('.nd_sidebar-form').serializeArray();
+        query.push($(this.element).serializeArray()[0]);
+        return $.get( uri_base + '/ajax/data/devices/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
+      ,select: function( event, ui ) {
+        if (event.which == 13) { return };
+        event.preventDefault();
+        $(this).val(ui.item.value);
+        $(this).trigger(jQuery.Event('keydown', { which: 13 }));
+      }
+      ,delay: 150
+      ,minLength: 0
+    });
+
     // activate typeahead on the topo boxes
     $('.nd_topo_dev').autocomplete({
       source: uri_base + '/ajax/data/deviceip/typeahead'
@@ -116,6 +135,8 @@
       $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
 
     // get all devices on device input focus
+    $(target).on('focus', '.nd_acl_host_searcher', function(e) {
+      $(this).autocomplete('search', '%') });
     $(target).on('focus', '.nd_topo_dev', function(e) {
       $(this).autocomplete('search', '%') });
     $(target).on('click', '.nd_topo_dev_caret', function(e) {

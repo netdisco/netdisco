@@ -128,6 +128,29 @@ div.content > div.tab-content table.nd_floatinghead thead {
   background-color: #eeeeee;
 }
 
+/* for access control list rules */
+.nd_device-acl-rule-label, .nd_port-acl-rule-label {
+  font-size: 13px;
+  margin-left: 0.5em;
+  margin-bottom: 4px;
+  font-weight: normal;
+  font-family: monospace;
+  line-height: 15px;
+}
+
+td.nd_acl-rule-list {
+  text-align: left;
+}
+
+div.nd_acl-rule-list {
+  display: inline-block;
+  text-align: left;
+}
+
+.nd_delete-me, .nd_delete-me:hover, .nd_delete-me:focus {
+  text-decoration: none;
+  color: white;
+}
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
 
@@ -197,7 +220,7 @@ div.content > div.tab-content table.nd_floatinghead thead {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
-.table td {
+.table td:not(.nd_acl-rule-list) {
   vertical-align: baseline;
 }
 

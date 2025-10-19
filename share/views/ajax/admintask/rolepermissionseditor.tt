@@ -1,0 +1,105 @@
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">ID</th>
+      <th class="nd_center-cell">Match Devices</th>
+      <th class="nd_center-cell">Match Ports (optional)</th>
+      <th class="nd_center-cell">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td></td>
+      <td>
+        <input class="span3 nd_acl_host_searcher" data-form="add" name="device_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
+      </td>
+      <td>
+        <input class="span3" data-form="add" name="port_rule" type="text" placeholder="port:name, IP, or property:value">
+      </td>
+      <td class="nd_center-cell">
+        <input data-form="add" name="role_name" type="hidden" value="[% role_name | html_entity %]">
+        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+      </td>
+    </tr>
+
+    [% WHILE (pair = results.next) %]
+    <tr class="nd_acl-rule-list">
+      <td class="nd_center-cell">[% pair.id | html_entity %]</td>
+
+      <td class="nd_acl-rule-list" data-field="nd_device-acl-rule-field">
+        <div class="nd_acl-rule-list">
+        [% FOREACH rule IN pair.device_acl_with_dns.ruleset %]
+        <span class="label label-inverse nd_device-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+        [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
+        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule.first) | none %]"><br/>
+        [% END %]
+        <input class="span2 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
+        </div>
+      </td>
+
+      <td class="nd_acl-rule-list" data-field="nd_port-acl-rule-field">
+        <div class="nd_acl-rule-list">
+        [% FOREACH rule IN pair.port_acl.rules %]
+        <span class="label label-info nd_port-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+        <input class="nd_port-acl-rule-field" data-form="update" name="port_rule" type="hidden" value="[% atob(rule) | none %]"><br/>
+        [% END %]
+        <input class="span2 nd_acl-rule" contenteditable="true" data-form="" name="port_rule" type="text" placeholder="add rule">
+        </div>
+      </td>
+
+      <td class="nd_center-cell">
+        <input data-form="update" name="id" type="hidden" value="[% pair.id | html_entity %]">
+        <input data-form="update" name="role_name" type="hidden" value="[% role_name | html_entity %]">
+        <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+
+        <button class="btn" data-toggle="modal"
+          data-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+
+        <div id="nd_devdel-[% pair.id | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label-[% pair.id | html_entity %]" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="nd_devdel-label-[% pair.id | html_entity %]">Are you sure?</h3>
+          </div>
+          <div class="modal-body">
+            <blockquote>
+              <p class="text-info">
+                This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
+            </blockquote>
+            <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
+            <input data-form="delete" name="role_name" type="hidden" value="[% role_name | html_entity %]">
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
+      </td>
+    </tr>
+    [% END %]
+  </tbody>
+</table>
+
+<script>
+  $(document).ready(function() {
+    $('#data-table').dataTable({
+    "columnDefs": [ {
+        "targets": [ 0, 1, 2, 3 ],
+        "orderable": false,
+        "searchable": false
+      } ],
+      [% INCLUDE 'ajax/datatabledefaults.tt' -%]
+    } );
+
+    $('.tab-content').on('click', '.nd_delete-me', function() {
+      var btn = $(this).closest('tr').find('button.nd_adminbutton[name="update"]');
+      var label = $(this).closest('span.nd_device-acl-rule-label, span.nd_port-acl-rule-label');
+      $(label).next('input.nd_device-acl-rule-field, input.nd_port-acl-rule-field').remove();
+      $(label).remove();
+      $(btn).click(); // the label is deleted so need to use saved btn
+    });
+  } );
+</script>
+
+

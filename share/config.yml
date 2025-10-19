@@ -29,6 +29,7 @@ branding_text: Netdisco
 no_auth: false
 suggest_guest: false
 navbar_autocomplete: true
+max_typeahead_rows: 50
 trust_remote_user: false
 trust_x_remote_user: false
 validate_remote_user: false
@@ -74,16 +75,18 @@ web_plugins:
   - Report::VlanInventory
   - Report::SubnetUtilization
   - Report::PortLog
-  - AdminTask::JobQueue
-  - AdminTask::NodeMonitor
-  - AdminTask::Topology
-  - AdminTask::PollerPerformance
-  - AdminTask::PseudoDevice
-  - AdminTask::SlowDevices
-  - AdminTask::UndiscoveredNeighbors
-  - AdminTask::OrphanedDevices
   - AdminTask::DuplicateDevices
+  - AdminTask::JobQueue
+  - AdminTask::Topology
+  - AdminTask::NodeMonitor
+  - AdminTask::OrphanedDevices
+  - AdminTask::PollerPerformance
+  - AdminTask::PortCtlRole
+  - AdminTask::PseudoDevice
+  - AdminTask::RolePermissionsEditor
+  - AdminTask::SlowDevices
   - AdminTask::TimedOutDevices
+  - AdminTask::UndiscoveredNeighbors
   - AdminTask::UserLog
   - AdminTask::Users
   - Search::Device
@@ -175,6 +178,8 @@ sidebar_defaults:
   report_portutilization:
     age_num:      { default: 3 }
     age_unit:     { default: months }
+  admintask_rolepermissionseditor:
+    aclhost:     { default: ip }
 netmap_performance_limit_max_devices: 1000
 netmap_custom_fields:
   device: []

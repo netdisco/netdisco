@@ -14,6 +14,7 @@ our @EXPORT_OK = qw/
   sort_port sort_modules
   interval_to_daterange
   sql_match
+  request_is_device
   request_is_api
   request_is_api_report
   request_is_api_search
@@ -32,6 +33,22 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 request_is_device
+
+Client has requested device content under C<.../device> or C<.../device/ports>.
+
+=cut
+
+sub request_is_device {
+  return (
+    index(request->path, uri_for('/device')->path) == 0
+      or
+    index(request->path, uri_for('/ajax/content/device/details')->path) == 0
+      or
+    index(request->path, uri_for('/ajax/content/device/ports')->path) == 0
+  );
+}
 
 =head2 request_is_api
 

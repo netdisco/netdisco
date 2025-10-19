@@ -7,6 +7,8 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Passphrase;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Port 'sync_portctl_roles';
+use List::MoreUtils 'uniq';
 use Digest::MD5 ();
 
 register_admin_task({
@@ -118,11 +120,14 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    my @port_control_roles = sort keys %{ setting('portctl_by_role') || {} };
+    sync_portctl_roles();
+    my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
+    push @port_control_roles,
+      schema(vars->{'tenant'})->resultset('PortCtlRole')->role_names;
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
-            { results => \@results, port_control_roles => \@port_control_roles },
+            { results => \@results, port_control_roles => [ uniq sort {$a cmp $b} @port_control_roles ] },
             { layout  => undef };
     }
     else {

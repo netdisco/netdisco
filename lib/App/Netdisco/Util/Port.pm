@@ -2,6 +2,7 @@ package App::Netdisco::Util::Port;
 
 use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
+use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
@@ -9,7 +10,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  port_acl_by_role_check port_acl_check
+  sync_portctl_roles
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
@@ -29,6 +30,44 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
+
+=head2 sync_portctl_roles()
+
+Loads Port Control Roles from the database and merges them into the
+C<portctl_role> config. This should only be done lazily and near to the
+time of use, to be efficient and also to get latest ACL settings.
+
+If there exists an entry in C<portctl_role> config from C<deployment.yml>
+with the same name as a database role, then the database role overwrites
+it. If such a role is removed, then a backup of the original is restored.
+
+=cut
+
+sub sync_portctl_roles {
+  my @db_roles = schema(vars->{'tenant'})
+    ->resultset('PortCtlRole')->role_names;
+  config->{'portctl_by_role'} = {};
+
+  foreach my $role (sort {$a cmp $b} keys %{ setting('portctl_by_role_shadow') }) {
+      config->{'portctl_by_role'}->{$role}
+        = (setting('portctl_by_role_shadow')->{$role} || '!group:__ANY__');
+  }
+
+  foreach my $role (@db_roles) {
+      my @rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
+        ->search({ role_name => $role },
+                 { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' })->all;
+
+      config->{'portctl_by_role'}->{$role} = {};
+      foreach my $pair (@rows) {
+          # convert LHS device ACLs to named groups
+          my $group = 'synthesized_group_'. $pair->device_acl->id;
+          config->{'host_groups'}->{$group} = $pair->device_acl->rules;
+          config->{'portctl_by_role'}->{$role}->{'group:'. $group}
+            = $pair->port_acl->rules;
+      }
+  }
+}
 
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 
@@ -57,9 +96,7 @@ sub port_acl_by_role_check {
     $user = ref $user ? $user :
       schema('netdisco')->resultset('User')
                         ->find({ username => $user });
-
     return false unless $user;
-    my $username = $user->username;
 
     # special case admin user allowed to continue, because
     # they can submit port control jobs
@@ -71,29 +108,24 @@ sub port_acl_by_role_check {
     if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
         # all ports are permitted when the role acl is a device acl
         # but check the device anyway
-        return true if acl_matches($device, $acl);
+        return acl_matches($device, $acl);
     }
     elsif ($acl and ref $acl eq ref {}) {
         my $found = false;
-        foreach my $key (sort keys %$acl) {
+        foreach my $key (keys %$acl) {
             # lhs matches device, rhs matches port
             next unless $key and $acl->{$key};
             if (acl_matches($device, $key)
-                and acl_matches($port, $acl->{$key})) {
+                and acl_matches_only($port, $acl->{$key})) {
 
                 $found = true;
                 last;
             }
         }
-
-        return true if $found;
-    }
-    elsif ($role) {
-        # the config does not have an entry for user's role
-        return true if $user->port_control;
+        return $found;
     }
 
-    # the user has "Enabled (any port)" setting
+    # if the user has "Enabled (any port)" setting
     return $user->port_control;
   }
 
