@@ -181,9 +181,12 @@ sub check_acl {
         last ITEM if $name;
     }
     next ITEM unless $addr;
-    $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
   }
 
+  unless ($name){
+    $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
+  }
+  
   my $qref = ref qr//;
 
   RULE: foreach (@$config) {
