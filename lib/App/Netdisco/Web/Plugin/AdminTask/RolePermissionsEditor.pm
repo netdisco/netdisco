@@ -20,7 +20,7 @@ get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
     send_error('Bad Request', 400) unless $role;
 
     my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-      ->search({role_name => $role}, { prefetch => [qw/device_acl port_acl/],
+      ->search({role_name => $role}, { prefetch => [qw/device_acl_with_dns port_acl/],
                                        order_by => 'me.id' })
       or send_error('Bad Request', 400);
 
