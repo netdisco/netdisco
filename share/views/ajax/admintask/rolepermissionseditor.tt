@@ -28,9 +28,10 @@
 
       <td class="nd_acl-rule-list" data-field="nd_device-acl-rule-field">
         <div class="nd_acl-rule-list">
-        [% FOREACH rule IN pair.device_acl.rules %]
-        <span class="label label-inverse nd_device-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
-        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule) | none %]"><br/>
+        [% FOREACH rule IN pair.device_acl_with_dns.ruleset %]
+        <span class="label label-inverse nd_device-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+        [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
+        <input class="nd_device-acl-rule-field" data-form="update" name="device_rule" type="hidden" value="[% atob(rule.first) | none %]"><br/>
         [% END %]
         <input class="span2 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="device_rule" type="text" placeholder="add rule">
         </div>

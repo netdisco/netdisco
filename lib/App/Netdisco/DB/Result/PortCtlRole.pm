@@ -33,7 +33,13 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to( device_acl => 'App::Netdisco::DB::Result::AccessControlList',
   { 'foreign.id' => 'self.device_acl_id' }, { cascade_delete => 1 } );
 
+__PACKAGE__->belongs_to( device_acl_with_dns => 'App::Netdisco::DB::Result::Virtual::ACLEntriesWithDNS',
+  { 'foreign.id' => 'self.device_acl_id' }, { cascade_delete => 1 } );
+
 __PACKAGE__->belongs_to( port_acl => 'App::Netdisco::DB::Result::AccessControlList',
+  { 'foreign.id' => 'self.port_acl_id' }, { cascade_delete => 1 } );
+
+__PACKAGE__->belongs_to( port_acl_with_dns => 'App::Netdisco::DB::Result::Virtual::ACLEntriesWithDNS',
   { 'foreign.id' => 'self.port_acl_id' }, { cascade_delete => 1 } );
 
 1;
