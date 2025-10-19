@@ -189,7 +189,7 @@ sub check_acl {
   RULE: foreach (@$config) {
       my $rule = $_; # must copy so that we can modify safely
       next RULE if !defined $rule or $rule eq 'op:and';
-      
+
       if ($qref eq ref $rule) {
         next RULE unless $name;
         if ($name =~ $rule) {
