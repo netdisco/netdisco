@@ -166,21 +166,8 @@ sub check_acl {
   return true if $real_ip and $find and not $all;
 
   my $addr = NetAddr::IP::Lite->new($real_ip);
+  my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
-  my $name = undef;
-  ITEM: foreach my $item (@$things) {
-      foreach my $slot (qw/dns name/) {
-        if (blessed $item) {
-            $name = $item->$slot if $item->can($slot)
-                                          and eval { $item->$slot };
-        }
-        elsif (ref {} eq ref $item) {
-            $name = $item->{$slot} if exists $item->{$slot}
-                                            and $item->{$slot};
-        }
-        last ITEM if $name;
-    }
-  }
 
   # reverse dns lookup as last resort
   if (not defined $name) {
@@ -195,14 +182,17 @@ sub check_acl {
       next RULE if !defined $rule or $rule eq 'op:and';
 
       if ($qref eq ref $rule) {
-        next RULE unless $name;
-        if ($name =~ $rule) {
-          return true if not $all;
-        }
-        else {
-          return false if $all;
-        }
-        next RULE;
+          # if no IP addr, cannot match its dns
+          next RULE unless $addr;
+
+          $name = ($name || hostname_from_ip($addr->addr, $ropt) || '!!none!!');
+          if ($name =~ $rule) {
+            return true if not $all;
+          }
+          else {
+            return false if $all;
+          }
+          next RULE;
       }
 
       my $neg = ($rule =~ s/^!//);
