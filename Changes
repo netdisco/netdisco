@@ -1,3 +1,10 @@
+2.092001 - 2025-10-21
+
+  [BUG FIXES]
+
+  * revert ce93987c to fix ACL handling
+  * #netdisco-docker/issues/87 add uv-build dependency
+
 2.092000 - 2025-10-19
 
   [NEW FEATURES]
