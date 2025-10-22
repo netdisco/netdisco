@@ -168,13 +168,6 @@ sub check_acl {
   my $addr = NetAddr::IP::Lite->new($real_ip);
   my $name = undef; # only look up once, and only if qr// is used
   my $ropt = { retry => 1, retrans => 1, udp_timeout => 1, tcp_timeout => 2 };
-
-  # reverse dns lookup as last resort
-  if (not defined $name) {
-      $name = hostname_from_ip($addr->addr, $ropt) if $addr;
-      $name = $name || '!!none!!';
-  }
-
   my $qref = ref qr//;
 
   RULE: foreach (@$config) {
@@ -408,17 +401,6 @@ sub check_acl {
 
       # could be something in error, and IP/host is only option left
       next RULE if ref $rule;
-
-      if ($name ne '!!none!!') {
-        next RULE unless $name;
-        if ($neg xor ($name =~ m/^$rule$/)) {
-          return true if not $all;
-        }
-        else {
-          return false if $all;
-        }
-        next RULE;
-      }
 
       # if no IP addr, cannot match IP prefix
       next RULE unless $addr;
