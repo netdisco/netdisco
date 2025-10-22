@@ -1,3 +1,10 @@
+2.092002 - 2025-10-22
+
+  [BUG FIXES]
+
+  * revert other change in ACL processing from 8b912dde
+  * add netdisco-env helper script to load database connection environment
+
 2.092001 - 2025-10-21
 
   [BUG FIXES]

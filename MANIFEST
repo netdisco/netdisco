@@ -7,6 +7,7 @@ bin/netdisco-daemon-fg
 bin/netdisco-db-deploy
 bin/netdisco-deploy
 bin/netdisco-do
+bin/netdisco-env
 bin/netdisco-rancid-export
 bin/netdisco-sshcollector
 bin/netdisco-web

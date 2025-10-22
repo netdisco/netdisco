@@ -137,6 +137,7 @@ App::Netdisco::Builder->new(
     'bin/netdisco-db-deploy',
     'bin/netdisco-deploy',
     'bin/netdisco-do',
+    'bin/netdisco-env',
     'bin/netdisco-backend-fg',
     'bin/netdisco-backend',
     'bin/netdisco-daemon-fg',
