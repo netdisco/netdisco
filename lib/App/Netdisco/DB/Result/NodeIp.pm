@@ -36,8 +36,10 @@ __PACKAGE__->add_columns(
   { data_type => "jsonb", is_nullable => 0, default_value => \"{}" },
   "seen_on_router_last",
   { data_type => "jsonb", is_nullable => 0, default_value => \"{}" },
+  "vrf",
+  { data_type => "text", is_nullable => 0, default => '' },
 );
-__PACKAGE__->set_primary_key("mac", "ip");
+__PACKAGE__->set_primary_key("mac", "ip", "vrf");
 
 
 

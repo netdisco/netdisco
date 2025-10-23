@@ -174,23 +174,25 @@ sub store_arp {
   $now ||= 'LOCALTIMESTAMP';
   my $ip   = $hash_ref->{'ip'};
   my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || $hash_ref->{'mac'} || ''));
+  my $vrf  = $hash_ref->{'vrf'} || '';
   my $name = $hash_ref->{'dns'};
 
   return if !defined $mac or $mac->errstr;
   warning sprintf 'store_arp - deprecated usage, should be store_arp($hash_ref, $now, $device_ip)' unless $device_ip;
-  debug sprintf 'store_arp - device %s mac %s ip %s', $device_ip // "n/a", $mac->as_ieee, $ip;
+  debug sprintf 'store_arp - device %s mac %s ip %s vrf "%s"', $device_ip // "n/a", $mac->as_ieee, $ip, $vrf;
 
   schema(vars->{'tenant'})->txn_do(sub {
     schema(vars->{'tenant'})->resultset('NodeIp')
       ->search(
         { ip => $ip, -bool => 'active'},
-        { columns => [qw/mac ip/] })->update({active => \'false'});
+        { columns => [qw/mac ip vrf/] })->update({active => \'false'});
 
     my $row = schema(vars->{'tenant'})->resultset('NodeIp')
       ->update_or_new(
       {
         mac => $mac->as_ieee,
         ip => $ip,
+        vrf => $vrf,
         dns => $name,
         active => \'true',
         time_last => \$now
