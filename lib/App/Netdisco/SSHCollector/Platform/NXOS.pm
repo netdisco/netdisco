@@ -66,7 +66,7 @@ sub arpnip {
 
     # we filter on the : in Age as the output header of the command may contain prompt chars, e.g.
     # Flags:   # - Adjacencies Throttled for Glean
-    $expect->send("show ip arp vrf all | inc : | no-more\n");
+    $expect->send("show ip arp vrf all | inc ^[1-9] | no-more\n");
     ($pos, $error, $match, $before, $after) = $expect->expect($timeout, -re, $prompt);
 
     my @arpentries;
