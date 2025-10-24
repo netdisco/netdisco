@@ -170,10 +170,10 @@ jobs:
     - name: Reconfigure Docker for containerd store
       run: |
         sudo mkdir -p /etc/docker
-        sudo echo '{"features": {"containerd-snapshotter": true}}' > /etc/docker/daemon.json
-        sudo kill $(cat /var/run/docker.pid) && rm -rf /var/run/docker.pid
-        sudo nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
-        sleep 2
+        sudo su - root -c 'echo "{\"features\": {\"containerd-snapshotter\": true}}" > /etc/docker/daemon.json'
+        ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
+        sudo su - root -c 'rm -rf /var/run/docker.pid'
+        sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock --storage-driver=overlay2 &'
 
     - name: Build netdisco-postgresql
       run: |
