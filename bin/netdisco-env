@@ -37,4 +37,4 @@ BEGIN {
 use App::Netdisco;
 use Dancer qw/:moose :script/;
 
-exec $ARGV[0];
+exec @ARGV;
