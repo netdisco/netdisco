@@ -1,3 +1,19 @@
+2.093000 - 2025-10-24
+
+  [NEW FEATURES]
+
+  * #1048 add VRF Column to Node IP table
+
+  [ENHANCEMENTS]
+
+  * set NETDISCO_DB_* environment once there is a full db config
+  * netdisco-env execs to list
+
+  [BUG FIXES]
+
+  * #1417 SSHcollector module NXOS.pm partial ARP entries collector
+  * fix bug in template for csv icon in job queue
+
 2.092002 - 2025-10-22
 
   [BUG FIXES]
