@@ -125,15 +125,20 @@ if (ref {} eq ref setting('database')) {
     my $default = setting('plugins')->{DBIC}->{'default'};
     if ($default->{dsn} =~ m/dbname=([^;]+)/) {
         $ENV{PGDATABASE} = $1;
+        $ENV{NETDISCO_DB_NAME} = $ENV{PGDATABASE};
     }
     if ($default->{dsn} =~ m/host=([^;]+)/) {
         $ENV{PGHOST} = $1;
+        $ENV{NETDISCO_DB_HOST} = $ENV{PGHOST};
     }
     if ($default->{dsn} =~ m/port=(\d+)/) {
         $ENV{PGPORT} = $1;
+        $ENV{NETDISCO_DB_PORT} = $ENV{PGPORT};
     }
     $ENV{PGUSER} = $default->{user};
+    $ENV{NETDISCO_DB_USER} = $ENV{PGUSER};
     $ENV{PGPASSWORD} = $default->{password};
+    $ENV{NETDISCO_DB_PASS} = $ENV{PGPASSWORD};
     $ENV{PGCLIENTENCODING} = 'UTF8';
 
     foreach my $c (@{setting('external_databases')}) {
