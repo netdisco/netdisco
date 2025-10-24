@@ -173,7 +173,7 @@ jobs:
         sudo su - root -c 'echo "{\"features\": {\"containerd-snapshotter\": true}}" > /etc/docker/daemon.json'
         ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
         sudo su - root -c 'rm -rf /var/run/docker.pid'
-        sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock --storage-driver=overlay2 &'
+        sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock &'
 
     - name: Build netdisco-postgresql
       run: |
