@@ -46,6 +46,7 @@
         &nbsp;&nbsp;
         <a id="nd_jobqueue-bookmark" href="#"><i class="icon-bookmark icon-large"></i></a>
       </span>
+      [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
           <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
