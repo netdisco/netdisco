@@ -159,6 +159,21 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        install: true
+        platforms: |
+          linux/amd64
+          linux/arm64
+        driver-opts: |
+          default-load=true
+
+    - name: Reconfigure Docker for containerd store
+      run: |
+        sudo mkdir -p /etc/docker
+        sudo echo '{"features": {"containerd-snapshotter": true}}' > /etc/docker/daemon.json
+        sudo kill $(cat /var/run/docker.pid) && rm -rf /var/run/docker.pid
+        sudo nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+        sleep 2
 
     - name: Build netdisco-postgresql
       run: |
