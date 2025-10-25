@@ -178,7 +178,7 @@ jobs:
       run: |
         cd netdisco-postgresql
         docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-postgresql
+              --tag localhost:5000/${IMAGE_ROOT}-postgresql \
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
@@ -190,7 +190,7 @@ jobs:
       run: |
         cd netdisco-base
         docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-base
+              --tag localhost:5000/${IMAGE_ROOT}-base \
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
@@ -202,7 +202,7 @@ jobs:
       run: |
         cd netdisco-backend
         docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-backend
+              --tag localhost:5000/${IMAGE_ROOT}-backend \
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
@@ -214,7 +214,7 @@ jobs:
       run: |
         cd netdisco-web
         docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-web
+              --tag localhost:5000/${IMAGE_ROOT}-web \
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
@@ -226,7 +226,7 @@ jobs:
       run: |
         cd netdisco-demo
         docker build \
-              --tag localhost:5000/${IMAGE_ROOT}-demo
+              --tag localhost:5000/${IMAGE_ROOT}-demo \
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-demo \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
@@ -239,7 +239,7 @@ jobs:
       run: |
         cd netdisco-do
         docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-do
+              --tag localhost:5000/${IMAGE_ROOT}-do \
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-do \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
