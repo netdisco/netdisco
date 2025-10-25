@@ -1,3 +1,9 @@
+2.094000 - 2025-10-25
+
+  [NEW FEATURES]
+
+  * (testing) container images built for linux/arm64 and linux/amd64
+
 2.093001 - 2025-10-24
 
   [BUG FIXES]
