@@ -30,7 +30,7 @@ get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
     }, { layout => undef };
 };
 
-post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => sub {
+post '/ajax/control/admin/rolepermissionseditor/add' => require_role setting('defanged_admin') => sub {
     my $role = param("role_name");
     my $device_rule = param("device_rule");
     my $port_rule = param("port_rule");
@@ -52,7 +52,7 @@ post '/ajax/control/admin/rolepermissionseditor/add' => require_role admin => su
     });
 };
 
-post '/ajax/control/admin/rolepermissionseditor/delete' => require_role admin => sub {
+post '/ajax/control/admin/rolepermissionseditor/delete' => require_role setting('defanged_admin') => sub {
     my $id = param("id");
     my $role = param("role_name");
     send_error('Bad Request', 400) unless $id and $role;
@@ -81,7 +81,7 @@ post '/ajax/control/admin/rolepermissionseditor/delete' => require_role admin =>
     });
 };
 
-post '/ajax/control/admin/rolepermissionseditor/update' => require_role admin => sub {
+post '/ajax/control/admin/rolepermissionseditor/update' => require_role setting('defanged_admin') => sub {
     my $id = param("id");
     my $role = param("role_name");
     send_error('Bad Request', 400) unless $id and $role;

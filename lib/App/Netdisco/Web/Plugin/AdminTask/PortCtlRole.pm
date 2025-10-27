@@ -21,7 +21,7 @@ ajax '/ajax/content/admin/portctlrole' => require_role admin => sub {
     }, { layout => undef };
 };
 
-ajax '/ajax/control/admin/portctlrole/add' => require_role admin => sub {
+ajax '/ajax/control/admin/portctlrole/add' => require_role setting('defanged_admin') => sub {
     my $role = param('role_name');
     send_error('Bad Request', 400) unless $role;
     send_error('Bad Request', 400)
@@ -38,7 +38,7 @@ ajax '/ajax/control/admin/portctlrole/add' => require_role admin => sub {
     });
 };
 
-ajax '/ajax/control/admin/portctlrole/delete' => require_role admin => sub {
+ajax '/ajax/control/admin/portctlrole/delete' => require_role setting('defanged_admin') => sub {
     my $role = param('role_name');
     send_error('Bad Request', 400) unless $role;
 
@@ -63,7 +63,7 @@ ajax '/ajax/control/admin/portctlrole/delete' => require_role admin => sub {
     });
 };
 
-ajax '/ajax/control/admin/portctlrole/update' => require_role admin => sub {
+ajax '/ajax/control/admin/portctlrole/update' => require_role setting('defanged_admin') => sub {
     my $role = param('role_name');
     my $old_role = param('old-role_name');
     send_error('Bad Request', 400) unless $role and $old_role;
