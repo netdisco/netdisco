@@ -19,7 +19,7 @@
   // this is nice for when you have multiple netdisco pages open in the
   // browser
   function update_page_title (tab) {
-    var pgtitle = 'Netdisco';
+    var pgtitle = default_pgtitle;
     if ($.trim($('#nd_device-name').text()).length) {
       pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
     }

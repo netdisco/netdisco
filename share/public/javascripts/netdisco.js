@@ -90,9 +90,9 @@ function update_content(from, to) {
   var from_form = '#' + from + '_form';
 
   // page title
-  var pgtitle = 'Netdisco';
+  var pgtitle = default_pgtitle;
   if ($('#nd_device-name').text().length) {
-    var pgtitle = $('#nd_device-name').text() +' - '+ $('#'+ to + '_link').text();
+    var pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ to + '_link').text();
   }
 
   // navbar text decoration special case

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
   <link rel="shortcut icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
   <link rel="icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
-  <title>Netdisco</title>
+  <title>[% settings.branding_text %]</title>
 
   <!-- HTML5 shim, for IE6-8 support of HTML elements -->
   <!--[if lt IE 9]>
@@ -41,6 +41,7 @@
   <script type="text/javascript">
     var uri_base = '[% uri_base | none %]';
     var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
+    var default_pgtitle = '[% settings.branding_text %]';
   </script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js"></script>
