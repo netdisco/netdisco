@@ -1,3 +1,15 @@
+2.094001 - 2025-10-25
+
+  [ENHANCEMENTS]
+
+  * #1326 change the window title according to branding
+  * #1429 prefer device port search before device search match
+
+  [BUG FIXES]
+
+  * #1425 check defanged_admin in new admintask for port roles
+  * #1435 schema version needs to be bumped to make 2.093001 fix be redeployed
+
 2.094000 - 2025-10-25
 
   [NEW FEATURES]
