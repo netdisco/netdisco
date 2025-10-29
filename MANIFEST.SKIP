@@ -87,3 +87,4 @@ SECURITY.md
 # python stuff
 \b__pycache__
 \b.venv
+\buv.lock

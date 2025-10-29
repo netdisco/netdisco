@@ -456,7 +456,6 @@ share/python/netdisco/netdisco/worklet/stats/early.py
 share/python/netdisco/pyproject.toml
 share/python/netdisco/ruff.toml
 share/python/netdisco/tests/__init__.py
-share/python/netdisco/uv.lock
 share/python/tfsm/index
 share/python/tfsm/juniper_junos_show_bgp_summary.textfsm
 share/python/tfsm/juniper_junos_show_route_forwarding-table.textfsm

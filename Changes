@@ -1,3 +1,9 @@
+2.094002 - 2025-10-25
+
+  [BUG FIXES]
+
+  * #1439 including uv.lock prevents Python subsystem installation
+
 2.094001 - 2025-10-25
 
   [ENHANCEMENTS]
