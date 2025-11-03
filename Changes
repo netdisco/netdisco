@@ -1,3 +1,13 @@
+2.094003 - 2025-11-03
+
+  [ENHANCEMENTS]
+
+  * #1444 Connected Nodes sort by vlan ID should be numeric
+
+  [BUG FIXES]
+
+  * couple of small undef protections
+
 2.094002 - 2025-10-25
 
   [BUG FIXES]
