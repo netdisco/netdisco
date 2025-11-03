@@ -32,6 +32,7 @@ sub get_port_macs {
     my ($fw_mac_list) = $_[0];
     my $port_macs = {};
     return {} unless ref [] eq ref $fw_mac_list and @{$fw_mac_list} >= 1;
+    $fw_mac_list = [ grep {defined and length} @$fw_mac_list ];
 
     my $bindarray = [ { sqlt_datatype => "array" }, $fw_mac_list ];
 

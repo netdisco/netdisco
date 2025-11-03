@@ -421,6 +421,7 @@ sub walk_fwtable {
 
   MAC: while (my ($idx, $mac) = each %$fw_mac) {
       my $bp_id = $fw_port->{$idx};
+      next unless defined $mac;
 
       unless (defined $bp_id) {
           debug sprintf
