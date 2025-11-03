@@ -163,7 +163,11 @@ get '/ajax/content/device/ports' => require_login sub {
     if (param('c_nodes')) {
         # retrieve active/all connected nodes, if asked for
         $set = $set->search({}, { prefetch => [{$nodes_name => $ips_name}] });
-        $set = $set->search({}, { order_by => ["${nodes_name}.vlan", "${nodes_name}.mac", "${ips_name}.ip"] });
+        $set = $set->search({}, { order_by => [
+          \qq{regexp_replace(COALESCE(${nodes_name}.vlan, '0'), '[^0-9]*' ,'0') :: integer},
+          "${nodes_name}.mac",
+          "${ips_name}.ip",
+        ] });
 
         # retrieve wireless SSIDs, if asked for
         $set = $set->search({}, { prefetch => [{$nodes_name => 'wireless'}] })
