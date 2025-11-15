@@ -14,7 +14,7 @@ See the demo at: [https://netdisco2-demo.herokuapp.com/](https://netdisco2-demo.
 
 ##  Installation
 
-Netdisco is written in Perl and Python and is self-contained apart from the PostgreSQL database, so is very easy to install and runs well on any linux or unix system. We also have [docker images](https://store.docker.com/community/images/netdisco/netdisco) if you prefer.
+Netdisco is written in Perl and Python and is self-contained apart from the PostgreSQL database, so is very easy to install and runs well on any linux or unix system. We also have [container images](https://store.docker.com/community/images/netdisco/netdisco) if you prefer.
 
 It includes a lightweight web server for the interface, a backend daemon to gather data from your network, and a command line interface for troubleshooting. There is a simple configuration file in YAML format.
 

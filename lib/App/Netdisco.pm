@@ -52,7 +52,7 @@ See the demo at: L<https://netdisco2-demo.herokuapp.com/>
 
 =item *
 
-L<Docker images|https://hub.docker.com/r/netdisco/netdisco> are also available
+L<Container images|https://hub.docker.com/r/netdisco/netdisco> are also available
 
 =back
 
