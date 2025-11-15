@@ -278,7 +278,7 @@ jobs:
       id: upload_docker_hub
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql backend web do; do
+        for image in postgresql postgresql-13 backend web do; do
           docker push netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
           docker push netdisco/netdisco:latest-$image
@@ -296,7 +296,7 @@ jobs:
       id: upload_github_packages
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql backend web do; do
+        for image in postgresql postgresql-13 backend web do; do
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
