@@ -1,3 +1,13 @@
+2.095000 - 2025-11-15
+
+  [NEW FEATURES]
+
+  * Docker Compose support now (hopefully) upgrades postgresql
+
+  [BUG FIXES]
+
+  * #1446 update IRC support links in docs
+
 2.094003 - 2025-11-03
 
   [ENHANCEMENTS]
