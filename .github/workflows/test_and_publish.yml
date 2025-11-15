@@ -182,9 +182,24 @@ jobs:
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} --load .
+              --build-arg COMMITTISH=${TAG} \
+              --load .
         docker tag localhost:5000/${IMAGE_ROOT}-postgresql ${IMAGE_ROOT}-postgresql
         docker tag localhost:5000/${IMAGE_ROOT}-postgresql netdisco/${IMAGE_ROOT}-postgresql
+
+    - name: Build netdisco-postgresql-13
+      run: |
+        cd netdisco-postgresql
+        docker build --platform linux/amd64,linux/arm64 \
+              --tag localhost:5000/${IMAGE_ROOT}-postgresql-13 \
+              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql-13 \
+              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+              --build-arg TAG=${TAG} \
+              --build-arg COMMITTISH=${TAG} \
+              --build-arg PGVER=13.4 \
+              --load .
+        docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 ${IMAGE_ROOT}-postgresql-13
+        docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 netdisco/${IMAGE_ROOT}-postgresql-13
 
     - name: Build netdisco-base
       run: |
@@ -194,7 +209,8 @@ jobs:
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} --load .
+              --build-arg COMMITTISH=${TAG} \
+              --load .
         docker tag localhost:5000/${IMAGE_ROOT}-base ${IMAGE_ROOT}-base
         docker tag localhost:5000/${IMAGE_ROOT}-base netdisco/${IMAGE_ROOT}-base
 
@@ -206,7 +222,8 @@ jobs:
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} --load .
+              --build-arg COMMITTISH=${TAG} \
+              --load .
         docker tag localhost:5000/${IMAGE_ROOT}-backend ${IMAGE_ROOT}-backend
         docker tag localhost:5000/${IMAGE_ROOT}-backend netdisco/${IMAGE_ROOT}-backend
 
@@ -218,7 +235,8 @@ jobs:
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} --load .
+              --build-arg COMMITTISH=${TAG} \
+              --load .
         docker tag localhost:5000/${IMAGE_ROOT}-web ${IMAGE_ROOT}-web
         docker tag localhost:5000/${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
 
@@ -230,7 +248,8 @@ jobs:
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-demo \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} --load .
+              --build-arg COMMITTISH=${TAG} \
+              --load .
         docker tag localhost:5000/${IMAGE_ROOT}-demo ${IMAGE_ROOT}-demo
         docker tag localhost:5000/${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
         echo "DEMO_IMAGE_ID=$(docker inspect registry.heroku.com/netdisco2-demo/web --format={{.Id}})" >> $GITHUB_ENV
@@ -243,7 +262,8 @@ jobs:
               --output type=registry,name=localhost:5000/${IMAGE_ROOT}-do \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} --load .
+              --build-arg COMMITTISH=${TAG} \
+              --load .
         docker tag localhost:5000/${IMAGE_ROOT}-do ${IMAGE_ROOT}-do
         docker tag localhost:5000/${IMAGE_ROOT}-do netdisco/${IMAGE_ROOT}-do
 
