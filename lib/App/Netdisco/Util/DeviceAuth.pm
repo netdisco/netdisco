@@ -96,13 +96,13 @@ sub fixup_device_auth {
 
   push @new_stanzas, map {{
     read => 1, write => 0,
-    no => [], only => ['any'],
+    no => [], only => ['group:__ANY__'],
     community => $_,
   }} @{setting('community') || []};
 
   push @new_stanzas, map {{
     write => 1, read => 0,
-    no => [], only => ['any'],
+    no => [], only => ['group:__ANY__'],
     community => $_,
   }} @{setting('community_rw') || []};
 

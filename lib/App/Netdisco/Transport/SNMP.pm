@@ -202,7 +202,7 @@ sub _snmp_connect_generic {
 
   # try last known-good by tag if it's stored
   # this gets in the way of SNMP version upgrade (2 to 3)
-  # but can use only/no to get around that
+  # but can use only/no or snmpforce_v* to get around that
 
   my $tag_name = 'snmp_auth_tag_'. $mode;
   my $stored_tag = eval { $device->community->$tag_name };

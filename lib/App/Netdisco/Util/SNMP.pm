@@ -66,14 +66,6 @@ sub get_communities {
     }
   }
 
-  # clean the community table of obsolete tags
-  eval { $device->community->update({$tag_name => undef}) }
-    if $device->in_storage
-       and (not $stored_tag or !exists $seen_tags->{ $stored_tag });
-
-  # make sure all tagged will come before legacy communities
-  push @communities, @$config;
-
   # try last-known-good v2 read
   push @communities, {
     read => 1, write => 0, driver => 'snmp',
@@ -89,7 +81,12 @@ sub get_communities {
     community => $snmp_comm_rw,
   } if $snmp_comm_rw and $mode eq 'write';
 
-  return @communities;
+  # clean the community table of obsolete tags
+  eval { $device->community->update({$tag_name => undef}) }
+    if $device->in_storage
+       and (not $stored_tag or !exists $seen_tags->{ $stored_tag });
+
+  return return ( @communities, @$config );
 }
 
 =head2 snmp_comm_reindex( $snmp, $device, $vlan )
