@@ -1,3 +1,9 @@
+2.095002 - 2025-11-16
+
+  [BUG FIXES]
+
+  * #1422 ensure known good community string always tried before config communities
+
 2.095001 - 2025-11-15
 
   [BUG FIXES]
