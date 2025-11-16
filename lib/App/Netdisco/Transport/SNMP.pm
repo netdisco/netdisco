@@ -356,9 +356,11 @@ sub _try_read {
     : $device->set_column(snmp_ver => $info->snmp_ver);
 
   if ($comm->{community}) {
+      my $new_comm = (($info->snmp_ver and ($info->snmp_ver == 3))
+        ? undef : $comm->{community});
       $device->in_storage
-        ? $device->update({snmp_comm => $comm->{community}})
-        : $device->set_column(snmp_comm => $comm->{community});
+        ? $device->update({snmp_comm => $new_comm})
+        : $device->set_column(snmp_comm => $new_comm);
   }
 
   # regardless of device in storage, save the hint
