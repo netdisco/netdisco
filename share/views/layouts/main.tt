@@ -5,7 +5,7 @@
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
   <link rel="shortcut icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
   <link rel="icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
-  <title>[% settings.branding_text %]</title>
+  <title>[% settings.branding_text | none %]</title>
 
   <!-- HTML5 shim, for IE6-8 support of HTML elements -->
   <!--[if lt IE 9]>
@@ -41,7 +41,7 @@
   <script type="text/javascript">
     var uri_base = '[% uri_base | none %]';
     var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
-    var default_pgtitle = '[% settings.branding_text %]';
+    var default_pgtitle = '[% settings.branding_text | none %]';
   </script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js"></script>
@@ -74,7 +74,7 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="[% uri_for('') | none %]">[% settings.branding_text %]</a>
+      <a class="brand" href="[% uri_for('') | none %]">[% settings.branding_text | none %]</a>
       [% IF session.logged_in_user %]
       <ul class="nav">
         [% FOREACH ni IN settings._navbar_items %]
