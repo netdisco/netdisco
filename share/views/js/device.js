@@ -86,12 +86,12 @@
     // VLANs column list collapser trigger
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('#ports_pane').on('click', '.nd_collapse-vlans', function() {
-        $(this).siblings('.nd_collapsing').toggle();
-        if ($(this).find('.nd_arrow-up-down-left').hasClass('icon-chevron-up')) {
-          $(this).html('<div class="nd_arrow-up-down-left icon-chevron-down icon-large"></div>Hide VLANs');
+        $(this).closest('.nd_nodes-total').next('.nd_collapsing').toggle();
+        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('icon-plus-sign-alt')) {
+          $(this).html('Hide <div class="nd_arrow-up-down-left-up icon-minus-sign-alt"></div>&nbsp;');
         }
         else {
-          $(this).html('<div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs');
+          $(this).html('Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;');
         }
     });
 

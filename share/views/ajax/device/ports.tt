@@ -271,16 +271,20 @@
           [% SET vlan_count = vlans.$portname.vlan_count %]
           [% IF params.p_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set %]
             [% ELSE %][% SET vlanlist = vlans.$portname.vlan_set %][% END %]
-          [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
-            <div class="nd_vlan-total">([% vlan_count %])</div><span class="nd_linkcell nd_collapse-vlans">
-            <div class="nd_arrow-up-down-left icon-chevron-up icon-large"></div>Show VLANs</span>
+          [% IF vlan_count > settings.devport_vlans_collapse_threshold %]
+            <div class="nd_nodes-total">
+              <strong>[% vlan_count %] VLANs</strong>
+              <span class="nd_collapse-vlans">
+                Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
+              </span>
+            </div>
             <div class="nd_collapsing nd_collapse-pre-hidden">
           [% END %]
           [% FOREACH vlan IN vlanlist %]
             <a href="[% uri_for('/search') %]?tab=vlan&q=[% vlan | uri %]">[% vlan | html_entity %]</a>
             [% ', ' IF NOT loop.last %]
           [% END %]
-          [% IF vlan_count > 10 %] [%# TODO make this a settable variable %]
+          [% IF vlan_count > settings.devport_vlans_collapse_threshold %]
             </div>
           [% END %]
         [% ELSE %]
@@ -425,7 +429,17 @@
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
+        [% IF (row.$nodes.max + 1) > settings.devport_nodes_collapse_threshold %]
+        <div class="nd_nodes-total">
+          <strong>[% row.$nodes.max + 1 %] nodes</strong>
+          <span class="nd_collapse-vlans">
+            Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
+          </span>
+        </div>
+        <div class="nd_collapsing nd_collapse-pre-hidden">
+        [% END %]
         [% FOREACH node IN row.$nodes %]
+          <div class="nd_div-closer">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
           [% '<i class="icon-signal"></i>&nbsp;' IF node.wireless.defined %]
@@ -450,8 +464,18 @@
           [% END %]
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip4 OR params.n_ip6 %]
+            [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
+            <div class="nd_nodes-total">
+              &nbsp;&nbsp;<strong>[% (node.$ips.max + 1) %] IPs</strong>
+              <span class="nd_collapse-vlans">
+                Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
+              </span>
+            </div>
+            <div class="nd_collapsing nd_collapse-pre-hidden">
+            [% END %]
             [% FOREACH ip IN node.$ips %]
-            <br/>&nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
+            [% '<br/>' IF (((node.$ips.max + 1) <= settings.devport_ips_collapse_threshold) OR NOT loop.first) %]
+            &nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
               <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% dns | html_entity %] ([% ip.ip | html_entity %])</a>
@@ -459,6 +483,12 @@
               <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
               [% END %]
             [% END %]
+            [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
+            </div>
+            [% ELSIF (node.$ips.max + 1) > 0 AND (node.$ips.max + 1) <= settings.devport_ips_collapse_threshold %]
+            <br/>
+            [% END %]
+            </div>
           [% END %]
           [% IF params.n_netbios %]
             [% FOREACH nbt IN node.netbios %]
@@ -466,6 +496,9 @@
             <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node | none %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
             [% END %]
           [% END %]
+        [% END %]
+        [% IF (row.$nodes.max + 1) > settings.devport_nodes_collapse_threshold %]
+        </div>
         [% END %]
         [% END %]
         [% IF params.c_admin AND settings.portctl_topology AND row.port_acl_service %]

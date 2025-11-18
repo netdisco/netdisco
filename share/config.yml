@@ -556,6 +556,9 @@ system_port_control_reasons:
   resolved:    'Issue Resolved'
 check_userlog: false
 devport_vlan_limit: 150
+devport_vlans_collapse_threshold: 10
+devport_nodes_collapse_threshold: 20
+devport_ips_collapse_threshold: 5
 thousands_separator: ''
 login_logo: ''
 defanged_admin: 'admin'

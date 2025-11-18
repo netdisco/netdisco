@@ -383,9 +383,8 @@ td > form.nd_inline-form {
   display: none;
 }
 
-/* for the tagged vlans total when hiding the full list */
-/* and external links from node search */
-.nd_vlan-total, .nd_node-ext-link {
+/* for external links from node search */
+.nd_node-ext-link {
   float: right;
 }
 
@@ -398,10 +397,16 @@ td > form.nd_inline-form {
 }
 
 /* little up arrow to the left of a label for collapsed list */
-.nd_arrow-up-down-left {
-  float: left;
-  margin-right: 6px;
-  color: #555;
+.nd_arrow-up-down-left-down {
+  color: #a3a01e;
+}
+.nd_arrow-up-down-left-up {
+  color: #783f03;
+}
+
+/* space out long lists */
+.nd_div-closer {
+  margin-top: -14px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
