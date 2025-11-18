@@ -1,3 +1,13 @@
+2.095003 - 2025-11-18
+
+  [ENHANCEMENTS]
+
+  * #1427 collapse large numbers of MAC and IP addresses in device ports
+
+  [BUG FIXES]
+
+  * #1452 fix problem with accented letters in the window title
+
 2.095002 - 2025-11-16
 
   [BUG FIXES]
