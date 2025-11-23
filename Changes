@@ -1,3 +1,9 @@
+2.095004 - 2025-11-23
+
+  [ENHANCEMENTS]
+
+  * #1456 render arrays as multi-line cells in CSV exports
+
 2.095003 - 2025-11-18
 
   [ENHANCEMENTS]
