@@ -96,7 +96,7 @@ On SUSE Linux Enterprise Server 15 and later:
  root:~# zypper refresh
  root:~# zypper install postgresql postgresql-devel postgresql-server postgresql-server-devel libdbi-drivers-dbd-pgsql perl-DBI perl-DBD-Pg perl-SNMP perl-HTTP-Parser-XS perl-Module-Install net-snmp net-snmp-devel python3 curl make automake gcc
 
-We also have a L<FreBSD guide|https://github.com/netdisco/netdisco/wiki/FreeBSD-Install>
+We also have a L<FreeBSD guide|https://github.com/netdisco/netdisco/wiki/FreeBSD-Install>
 and L<OpenBSD guide|https://github.com/netdisco/netdisco/wiki/OpenBSD-Install>.
 
 With those installed, please check that your system's clock is correct. We
