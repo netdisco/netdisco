@@ -45,9 +45,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   # build device port power info suitable for DBIC
   my @portpower;
+  my %seen_pp = ();
   foreach my $entry (keys %$p_ifindex) {
-      # WRT #475 this is SAFE because we check against known ports below
+      # WRT 475 this is SAFE because we check against known ports below
       my $port = $interfaces->{ $p_ifindex->{$entry} } or next;
+
+      # 1463 sometimes see second entry for the same port
+      next if $seen_pp{$port};
 
       if (!defined $device_ports->{$port}) {
           debug sprintf ' [%s] power - local port %s already skipped, ignoring',
@@ -65,6 +69,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           power  => $p_power->{$entry},
 
       };
+      ++$seen_pp{$port};
   }
 
   schema('netdisco')->txn_do(sub {
