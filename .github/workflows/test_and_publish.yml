@@ -31,7 +31,7 @@ jobs:
     if: github.repository == 'netdisco/netdisco'
     runs-on: ubuntu-latest
     container:
-      image: 'netdisco/netdisco:latest-do'
+      image: 'netdisco/netdisco:latest-backend'
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
@@ -356,7 +356,7 @@ jobs:
     if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     container:
-      image: 'netdisco/netdisco:latest-do'
+      image: 'netdisco/netdisco:latest-backend'
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
