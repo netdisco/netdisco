@@ -254,19 +254,6 @@ jobs:
         docker tag localhost:5000/${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
         echo "DEMO_IMAGE_ID=$(docker inspect registry.heroku.com/netdisco2-demo/web --format={{.Id}})" >> $GITHUB_ENV
 
-    - name: Build netdisco-do
-      run: |
-        cd netdisco-do
-        docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-do \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-do \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-do ${IMAGE_ROOT}-do
-        docker tag localhost:5000/${IMAGE_ROOT}-do netdisco/${IMAGE_ROOT}-do
-
     - name: Login to DH
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -278,7 +265,7 @@ jobs:
       id: upload_docker_hub
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql postgresql-13 backend web do; do
+        for image in postgresql postgresql-13 backend web; do
           docker push netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
           docker push netdisco/netdisco:latest-$image
@@ -296,7 +283,7 @@ jobs:
       id: upload_github_packages
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        for image in postgresql postgresql-13 backend web do; do
+        for image in postgresql postgresql-13 backend web; do
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
           docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
