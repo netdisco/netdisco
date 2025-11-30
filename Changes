@@ -1,3 +1,9 @@
+2.095005 - 2025-11-27
+
+  [BUG FIXES]
+
+  * #1463 avoid error when seeing two power reports for the same device port
+
 2.095004 - 2025-11-23
 
   [ENHANCEMENTS]
