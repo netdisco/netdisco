@@ -34,7 +34,7 @@ register_worker({ phase => 'early',
   vars->{'arps'} = [];
 });
 
-register_worker({ phase => 'store' }, sub {
+register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
