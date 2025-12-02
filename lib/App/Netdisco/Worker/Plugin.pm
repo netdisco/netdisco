@@ -113,7 +113,7 @@ register 'register_worker' => sub {
     }
   };
 
-  # store the built worker as Worker.pm will build the dispatch order later on
+  # store the built worker as Worker::Loader will build the dispatch order
   push @{ vars->{'workers'}->{$workerconf->{action}}
               ->{$workerconf->{phase}}
               ->{$workerconf->{namespace}}
