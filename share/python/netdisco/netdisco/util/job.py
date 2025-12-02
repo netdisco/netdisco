@@ -33,8 +33,6 @@ class JobManager:
     is_offline: bool = False
 
     _current_phase: InitVar[str] = ''
-    _last_namespace: InitVar[str] = ''
-    _last_priority: InitVar[int] = 0
     _statuslist: InitVar[list] = []  # field(default_factory=list)
 
     def id(self) -> int:

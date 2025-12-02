@@ -55,11 +55,6 @@ register 'register_worker' => sub {
       return $job->add_status( Status->info('skip: networked worker but job is running offline') );
     }
 
-    # check to see if this namespace has already passed at higher priority
-    # and also update job's record of namespace and priority
-    return $job->add_status( Status->info('skip: namespace passed at higher priority') )
-      if $job->namespace_passed($workerconf);
-
     # support part-actions via action::namespace
     if ($job->only_namespace and $workerconf->{phase} ne 'check') {
       # skip namespaces not the requested ::namespace

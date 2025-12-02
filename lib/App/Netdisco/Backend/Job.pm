@@ -28,8 +28,6 @@ foreach my $slot (qw/
       is_offline
 
       _current_phase
-      _last_namespace
-      _last_priority
     /) {
 
   has $slot => (
@@ -163,30 +161,6 @@ sub check_passed {
   return false;
 }
 
-=head2 namespace_passed( \%workerconf )
-
-Returns true when, for the namespace specified in the given configuration, a
-worker of a higher priority level has already succeeded.
-
-=cut
-
-sub namespace_passed {
-  my ($job, $workerconf) = @_;
-
-  if ($job->_last_namespace) {
-    foreach my $status (@{ $job->_statuslist }) {
-      next unless ($status->phase eq $workerconf->{phase})
-              and ($workerconf->{namespace} eq $job->_last_namespace)
-              and ($workerconf->{priority} < $job->_last_priority);
-      return true if $status->is_ok;
-    }
-  }
-
-  $job->_last_namespace( $workerconf->{namespace} );
-  $job->_last_priority( $workerconf->{priority} );
-  return false;
-}
-
 =head2 enter_phase( $phase )
 
 Pass the name of the phase being entered.
@@ -198,9 +172,6 @@ sub enter_phase {
 
   $job->_current_phase( $phase );
   debug BRIGHT_CYAN, "//// ", uc($phase), ' \\\\\\\\ ', GREY10, 'phase', RESET;
-
-  $job->_last_namespace( undef );
-  $job->_last_priority( undef );
 }
 
 =head2 add_status
