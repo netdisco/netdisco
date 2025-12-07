@@ -1,3 +1,13 @@
+2.096000 - 2025-12-07
+
+  [NEW FEATURES]
+
+  * #1467 run all transports in priority order instead of only highest priority one
+
+  [BUG FIXES]
+
+  * #1462 incorrect row height in Firefox
+
 2.095006 - 2025-11-27
 
   [BUG FIXES]
