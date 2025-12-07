@@ -11,6 +11,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   check_mac
   is_nbtstatable
+  memoize_arp
   store_arp
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -143,6 +144,20 @@ sub is_nbtstatable {
   return unless acl_matches_only($ip, 'nbtstat_only');
 
   return 1;
+}
+
+=head2 memoize_arp ( \%host )
+
+Returns a unique string to memoize the arp entry, using node or mac keys
+and the ip key.
+
+=cut
+
+sub memoize_arp {
+  my $host = shift or return;
+  no warnings 'uninitialized';
+  return join chr(28), map {$host->{$_}}
+    (($host->{node} ? 'node' : 'mac'), 'ip');
 }
 
 =head2 store_arp( \%host, $now?, $device_ip )

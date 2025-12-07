@@ -9,7 +9,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 
-use App::Netdisco::Util::Node qw/check_mac store_arp/;
+use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
 use NetAddr::IP::Lite ':lower';
@@ -31,14 +31,18 @@ register_worker({ phase => 'early',
     : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
 
   # initialise the cache
-  vars->{'arps'} = [];
+  vars->{'arps'} = {};
 });
 
 register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  vars->{'arps'} = [ grep { check_mac(($_->{mac} || $_->{node}), $device) }
+  # convert cache to a list, now that we've gathererd all of them
+  # it just makes the rest of the "store" code easier
+  vars->{'arps'} = [ values %{ vars->{'arps'} } ];
+
+  vars->{'arps'} = [ grep { check_mac(($_->{node} || $_->{mac}), $device) }
                           @{ vars->{'arps'} } ];
 
   debug sprintf ' resolving %d ARP entries with max %d outstanding requests',
@@ -79,12 +83,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
   # cache v4 arp table
-  push @{ vars->{'arps'} },
-    get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
+  map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
+      get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
 
   # cache v6 neighbor cache
-  push @{ vars->{'arps'} },
-    get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
+      get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   return Status->done("Gathered arp caches from $device");
 });
@@ -114,7 +118,8 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
     or return Status->defer("arpnip failed: could not SSH connect to $device");
 
   # should be both v4 and v6
-  vars->{'arps'} = [ $cli->arpnip ];
+  map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
+      $cli->arpnip;
 
   return Status->done("Gathered arp caches from $device");
 });
@@ -145,7 +150,7 @@ register_worker({ phase => 'main', driver => 'direct' }, sub {
       next if (($ip->addr eq '0.0.0.0') or ($ip !~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i));
       next if (($mac->as_ieee eq '00:00:00:00:00:00') or ($mac->as_ieee !~ m{^$RE{net}{MAC}$}i));
 
-      push @{ vars->{'arps'} }, $a_entry;
+      vars->{'arps'}->{ memoize_arp($a_entry) } = $a_entry;
   }
 
   return Status->done("Received arp cache for $device");
