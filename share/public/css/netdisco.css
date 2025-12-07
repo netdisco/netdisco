@@ -409,6 +409,12 @@ td > form.nd_inline-form {
   margin-top: -14px;
 }
 
+@-moz-document url-prefix() {
+  .nd_div-closer-last {
+    margin-bottom: 14px;
+  }
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles for sidebar placement and sizing */
 

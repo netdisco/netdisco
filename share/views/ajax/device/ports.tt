@@ -439,7 +439,7 @@
         <div class="nd_collapsing nd_collapse-pre-hidden">
         [% END %]
         [% FOREACH node IN row.$nodes %]
-          <div class="nd_div-closer">
+          <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
           [% '<i class="icon-signal"></i>&nbsp;' IF node.wireless.defined %]
