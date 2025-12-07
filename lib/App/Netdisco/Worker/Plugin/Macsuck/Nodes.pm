@@ -90,18 +90,17 @@ register_worker({ phase => 'main', driver => 'cli',
   my $nodecount = 0;
   foreach my $vlan (keys %{ $macs }) {
     foreach my $port (keys %{ $macs->{$vlan} }) {
-      $nodecount += scalar keys %{ $macs->{$vlan}->{$port} };
+      foreach my $node (keys %{ $macs->{$vlan}->{$port} }) {
+        vars->{'fwtable'}->{ $vlan }
+                         ->{ $port }
+                         ->{ $node } = $macs->{$vlan}->{$port}->{$node};
+        $nodecount += 1;
+      }
     }
   }
 
-  return $job->cancel('data provided but 0 fwd entries found')
-    unless $nodecount;
-
-  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
+  debug sprintf ' [%s] macsuck (ssh) - %s forwarding table entries provided',
     $device->ip, $nodecount;
-
-  # get forwarding table and populate fwtable
-  vars->{'fwtable'} = $macs;
 
   return Status->done("Gathered MAC addresses for $device");
 });
@@ -117,7 +116,17 @@ register_worker({ phase => 'main', driver => 'snmp',
 
   # get forwarding table data via basic snmp connection
   my $interfaces = $snmp->interfaces || {};
-  vars->{'fwtable'} = walk_fwtable($snmp, $device, $interfaces);
+  my $macs = walk_fwtable($snmp, $device, $interfaces);
+
+  foreach my $vlan (keys %{ $macs }) {
+    foreach my $port (keys %{ $macs->{$vlan} }) {
+      foreach my $node (keys %{ $macs->{$vlan}->{$port} }) {
+        vars->{'fwtable'}->{ $vlan }
+                         ->{ $port }
+                         ->{ $node } = $macs->{$vlan}->{$port}->{$node};
+      }
+    }
+  }
 
   # ...then per-vlan if supported
   # this will duplicate call sanity_vlans (same as store) but helps efficiency
@@ -128,13 +137,21 @@ register_worker({ phase => 'main', driver => 'snmp',
       snmp_comm_reindex($snmp, $device, $vlan);
       my $pv_fwtable =
         walk_fwtable($snmp, $device, $interfaces, $vlan);
-      vars->{'fwtable'} = {%{ vars->{'fwtable'} }, %$pv_fwtable};
+
+      foreach my $vlan (keys %{ $pv_fwtable }) {
+        foreach my $port (keys %{ $pv_fwtable->{$vlan} }) {
+          foreach my $node (keys %{ $pv_fwtable->{$vlan}->{$port} }) {
+            vars->{'fwtable'}->{ $vlan }
+                             ->{ $port }
+                             ->{ $node } = $pv_fwtable->{$vlan}->{$port}->{$node};
+          }
+        }
+      }
     }
   }
 
   return Status->done("Gathered MAC addresses for $device");
 });
-
 
 register_worker({ phase => 'store',
   title => 'save macs to database'}, sub {

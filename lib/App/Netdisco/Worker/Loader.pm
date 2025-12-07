@@ -75,7 +75,8 @@ sub load_workers {
     my @wset = ();
 
     foreach my $namespace (sort keys %{ $workers->{$phase} }) {
-      foreach my $priority (sort {$b <=> $a}
+      # priorities are run backwards, low to high, to allow data overriding
+      foreach my $priority (sort {$a <=> $b}
                             keys %{ $workers->{$phase}->{$namespace} }) {
 
         ++$driverless_main if $phase eq 'main'
