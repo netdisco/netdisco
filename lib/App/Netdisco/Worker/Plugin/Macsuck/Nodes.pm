@@ -99,10 +99,7 @@ register_worker({ phase => 'main', driver => 'cli',
     }
   }
 
-  return $job->cancel('data provided but 0 fwd entries found')
-    unless $nodecount;
-
-  debug sprintf ' [%s] macsuck - %s forwarding table entries provided',
+  debug sprintf ' [%s] macsuck (ssh) - %s forwarding table entries provided',
     $device->ip, $nodecount;
 
   return Status->done("Gathered MAC addresses for $device");
