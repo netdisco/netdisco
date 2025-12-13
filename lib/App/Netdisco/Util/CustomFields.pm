@@ -34,7 +34,7 @@ foreach my $config (@{ setting('custom_fields')->{'device_port'} || [] }) {
       ->search({},
         { '+columns' => {
             map {( ('cf_'. $_) => \[
-              ($device_fields_json{$_} ? q{ARRAY(SELECT json_array_elements_text((me.custom_fields ->> ?) ::json))::text[]}
+              ($device_fields_json{$_} ? q{ARRAY(SELECT json_array_elements_text( COALESCE(NULLIF((me.custom_fields ->> ?),''),'[]') ::json))::text[]}
                                        : 'me.custom_fields ->> ?')
               => $_ ] )} @inline_device_actions
         }});
