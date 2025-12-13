@@ -231,7 +231,10 @@ get '/ajax/data/device/netmap' => require_login sub {
     my $devices = schema(vars->{'tenant'})->resultset('Device')->search({}, {
       '+select' => [\'floor(log(throughput.total))'], '+as' => ['log'],
       join => 'throughput', distinct => 1,
-    })->with_times->with_custom_fields;
+    })->with_times;
+    
+    $devices = $devices->with_custom_fields
+      if scalar @{ setting('netmap_custom_fields')->{'device'} };
 
     # filter by vlan for all or neighbors only
     if ($vlan) {
