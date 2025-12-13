@@ -28,6 +28,7 @@ domain_suffix: []
 branding_text: Netdisco
 no_auth: false
 suggest_guest: false
+login_banner_message: null
 navbar_autocomplete: true
 max_typeahead_rows: 50
 trust_remote_user: false

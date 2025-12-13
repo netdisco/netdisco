@@ -26,6 +26,11 @@
           <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="icon-bug"></i>&nbsp;Report a Bug?</a>
       </div>
       [% END %]
+      [% IF settings.login_banner_message AND NOT session.logged_in_user %]
+      <div class="alert alert-info fade in">
+        <a class="close" data-dismiss="alert">×</a> [% settings.login_banner_message | none %]
+      </div>
+      [% END %]
       [% IF settings.suggest_guest AND NOT session.logged_in_user %]
       <div class="alert alert-info fade in">
         <a class="close" data-dismiss="alert">×</a>
