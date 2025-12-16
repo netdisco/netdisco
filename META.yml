@@ -27,7 +27,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.096001'
+    version: '2.097000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -263,8 +263,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
   App::Netdisco::SSHCollector::Platform::IOS:
     file: lib/App/Netdisco/SSHCollector/Platform/IOS.pm
-  App::Netdisco::SSHCollector::Platform::IOSXEMac:
-    file: lib/App/Netdisco/SSHCollector/Platform/IOSXEMac.pm
+  App::Netdisco::SSHCollector::Platform::IOSXE:
+    file: lib/App/Netdisco/SSHCollector/Platform/IOSXE.pm
   App::Netdisco::SSHCollector::Platform::IOSXR:
     file: lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
   App::Netdisco::SSHCollector::Platform::Linux:
@@ -715,5 +715,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.096001'
+version: '2.097000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

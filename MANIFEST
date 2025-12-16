@@ -132,7 +132,7 @@ lib/App/Netdisco/SSHCollector/Platform/FreeBSD.pm
 lib/App/Netdisco/SSHCollector/Platform/FTD.pm
 lib/App/Netdisco/SSHCollector/Platform/GAIAEmbedded.pm
 lib/App/Netdisco/SSHCollector/Platform/IOS.pm
-lib/App/Netdisco/SSHCollector/Platform/IOSXEMac.pm
+lib/App/Netdisco/SSHCollector/Platform/IOSXE.pm
 lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm
 lib/App/Netdisco/SSHCollector/Platform/Linux.pm
 lib/App/Netdisco/SSHCollector/Platform/NXOS.pm

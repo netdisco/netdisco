@@ -1,3 +1,13 @@
+2.097000 - 2025-12-16
+
+  [NEW FEATURES]
+
+  * IOS-XE: add SSH ARP (multi-VRF) and MAC collectors (replaces IOSXEMac collector)
+
+  [ENHANCEMENTS]
+
+  * #1473 get_credentials can now also open a plain file
+
 2.096001 - 2025-12-13
 
   [ENHANCEMENTS]

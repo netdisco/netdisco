@@ -150,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.096001"
+         "version" : "2.097000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -504,8 +504,8 @@
       "App::Netdisco::SSHCollector::Platform::IOS" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/IOS.pm"
       },
-      "App::Netdisco::SSHCollector::Platform::IOSXEMac" : {
-         "file" : "lib/App/Netdisco/SSHCollector/Platform/IOSXEMac.pm"
+      "App::Netdisco::SSHCollector::Platform::IOSXE" : {
+         "file" : "lib/App/Netdisco/SSHCollector/Platform/IOSXE.pm"
       },
       "App::Netdisco::SSHCollector::Platform::IOSXR" : {
          "file" : "lib/App/Netdisco/SSHCollector/Platform/IOSXR.pm"
@@ -1033,6 +1033,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.096001",
+   "version" : "2.097000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
