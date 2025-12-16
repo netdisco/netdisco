@@ -136,7 +136,7 @@ sub get_external_credentials {
       $cmd =~ s/\%HOST\%/$host/egi;
       $cmd =~ s/\%IP\%/$ip/egi;
 
-      my $result = `$cmd`; # BACKTICKS
+      my $result = (-r $cmd && ! -x $cmd) ? do { local (@ARGV, $/) = $cmd; <> } : `$cmd`;    # BACKTICKS
       return () unless defined $result and length $result;
 
       my @lines = split (m/\n/, $result);
