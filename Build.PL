@@ -76,7 +76,7 @@ App::Netdisco::Builder->new(
     'Net::OpenSSH' => '0',
     'Net::Ping' => '2.75', # is core
     'Net::Ping::External' => '0.15',
-    'NetAddr::MAC' => '0.93',
+    'NetAddr::MAC' => '0.99',
     'NetAddr::IP' => '4.068',
     'Opcode' => '1.07',
     'Package::DeprecationManager' => '0',
