@@ -922,9 +922,10 @@ extra_worker_plugins: []
 
 driver_priority:
   direct:   1000000
-  restconf: 500
-  netconf:  400
-  eapi:     300
+  restconf: 600
+  netconf:  500
+  eapi:     400
+  api:      300
   cli:      200
   snmp:     100
 
