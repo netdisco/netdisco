@@ -88,7 +88,7 @@
                   <li><a class="nd_navsearchgo-specific" href="" data-action="pingsweep" data-timeout="0.5">Ping Sweep with High Latency 250ms</a></li>
                 </ul>
               </div>
-              <a target="_blank" href="https://github.com/netdisco/netdisco/wiki/Concepts#discovery">
+              <a target="_blank" href="https://github.com/netdisco/netdisco/wiki/Concepts#discovery-and-ping-sweep">
                 <i class="icon-question-sign icon-large nd_stealth-link nd_text-align-top"
                   rel="tooltip" data-placement="bottom" data-offset="3" data-title="What does this do?"></i>
               </a>
