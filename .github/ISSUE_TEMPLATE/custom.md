@@ -1,6 +1,6 @@
 ---
-name: Custom issue template
-about: Issue Template
+name: Report an Issue or Ask a Question
+about: Choose this option
 title: ''
 labels: ''
 assignees: ''
