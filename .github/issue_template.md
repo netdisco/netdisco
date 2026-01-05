@@ -4,15 +4,12 @@ READ THIS FIRST!
 ----------------
 
 STOP! If your ticket is about a device not being detected correctly,
-see SNMP::Info: https://github.com/netdisco/snmp-info/issues/new
+see https://github.com/netdisco/netdisco/wiki/Troubleshooting-Discovery
 
-STOP! If you have new MIBs to submit,
-see netdisco-mibs: https://github.com/netdisco/netdisco-mibs/issues/new
+STOP! If you are new to Netdisco,
+see https://github.com/netdisco/netdisco/wiki/Concepts
 
-STOP! If you are running a netdisco docker setup,
-see netdisco-docker: https://github.com/netdisco/netdisco-docker/issues/new
-
-Everything else about Netdisco's behaviour is good, here :-D
+Lots more documentation here: https://github.com/netdisco/netdisco/wiki
 
 Provide a general summary of the issue in the Title above.
 
@@ -51,14 +48,7 @@ See https://github.com/netdisco/netdisco/wiki/Snapshot#share-a-snapshot
 ## Your Environment
 <!--- Include as many relevant details about the environment you experienced the bug in -->
 * Netdisco version used: 
-* SNMP::Info version used: 
 
 ## Config info (deployment.yml)
-<!--- if possible include all options you added to your deployment.yml file, since -->
-<!--- some options can change the behaviour in drastic ways -->
+<!--- if possible include all options you added to your deployment.yml file -->
 
-## Device information
-<!--- if the issue relates to specific devices their info would be usefull -->
-<!--- do note that the following command might contain sensitive info -->
-
-https://github.com/netdisco/netdisco/wiki/Snapshot#share-a-snapshot
