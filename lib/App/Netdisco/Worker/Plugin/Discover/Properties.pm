@@ -93,8 +93,9 @@ register_worker({ phase => 'early', driver => 'snmp',
   $try_vendor =~ s/^(?:\.?1.3.6.1.4.1|enterprises)// if $try_vendor;
 
   # fix up unknown vendor (enterprise number -> organization)
-  if ((not $device->vendor or $device->vendor eq 'unknown')
-        and $try_vendor and $try_vendor =~ m/^\.(\d+)/) {
+  if ((not $device->vendor or $device->vendor eq 'unknown'
+        or $device->vendor =~ m/^${enterprises_mib}/)
+      and $try_vendor and $try_vendor =~ m/^\.(\d+)/) {
 
       my $number = $1;
       debug sprintf ' searching for Enterprise Number "%s"', $number;
@@ -107,7 +108,8 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   # fix up model using products OID cache
   if ((not $device->model or $device->model eq 'unknown'
-        or $device->model =~ m/(?:product|enterprise|1\.3\.6\.1)/i) and $try_vendor) {
+        or $device->model =~ m/(?:product|enterprise|1\.3\.6\.1)/i)
+      and $try_vendor) {
 
       my $oid = '.1.3.6.1.4.1' . $try_vendor;
       debug sprintf ' searching for Product ID "%s"', ('enterprises' . $try_vendor);
