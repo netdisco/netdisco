@@ -433,6 +433,32 @@ column by applying the C<with_port_count()> modifier to C<search()>.
 
 sub port_count { return (shift)->get_column('port_count') }
 
+=head2 is_discoverable
+
+Returns the number of backends able to discover the device. Enable this
+column by applying the C<with_layer_features()> modifier to C<search()>.
+
+=cut
+
+sub is_discoverable { return (shift)->get_column('is_discoverable') }
+
+=head2 is_macsuckable
+
+Returns the number of backends able to macsuck the device. Enable this
+column by applying the C<with_layer_features()> modifier to C<search()>.
+
+=cut
+
+sub is_macsuckable { return (shift)->get_column('is_macsuckable') }
+
+=head2 is_arpnipable
+
+Returns the number of backends able to arpnip the device. Enable this
+column by applying the C<with_layer_features()> modifier to C<search()>.
+
+=cut
+
+sub is_arpnipable { return (shift)->get_column('is_arpnipable') }
 
 =head2 uptime_age
 

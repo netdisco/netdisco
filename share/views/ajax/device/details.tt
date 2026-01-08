@@ -202,25 +202,31 @@
     <tr data-for-device="[% d.ip | html_entity %]">
       <td>Admin Tasks</td>
       <td>
+        [% IF d.is_discoverable %]
         <input type="hidden" data-form="discover" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="discover">Discover</button>
+        [% ELSE %]
+        <button class="btn btn-default btn-small disabled">Discover</button>
+        [% END %]
 
-        [% IF d.layers.substr(5,1) %]
+        [% IF d.is_arpnipable %]
         <input type="hidden" data-form="arpnip" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="arpnip">Arpnip</button>
         [% ELSE %]
         <button class="btn btn-default btn-small disabled">Arpnip</button>
         [% END %]
 
-        [% IF d.layers.substr(6,1) %]
+        [% IF d.is_macsuckable %]
         <input type="hidden" data-form="macsuck" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="macsuck">Macsuck</button>
-        [% ELSE %]
-        <button class="btn btn-default btn-small disabled">Macsuck</button>
-        [% END %]
 
         <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
         <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
+        [% ELSE %]
+        <button class="btn btn-default btn-small disabled">Macsuck</button>
+
+        <button class="btn btn-default btn-small disabled">NBTstat</button>
+        [% END %]
 
         <span class="dropdown">
           <button class="nd_snap_btn btn [% has_snapshot ? 'btn-success' : 'btn-info' %] btn-small dropdown-toggle" type="button" id="snapshotmenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">

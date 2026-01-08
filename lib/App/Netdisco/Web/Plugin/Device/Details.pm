@@ -22,6 +22,7 @@ ajax '/ajax/content/device/details' => require_login sub {
                                   ->search({ 'me.ip' => $device->ip })
                                   ->with_times
                                   ->with_custom_fields
+                                  ->with_layer_features
                                   ->hri->all;
 
     my @power
