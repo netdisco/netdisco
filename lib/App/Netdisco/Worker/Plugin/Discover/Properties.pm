@@ -19,6 +19,7 @@ use NetAddr::IP::Lite ':lower';
 use Storable 'dclone';
 use List::MoreUtils ();
 use JSON::PP ();
+use Path::Class qw/file dir/;
 use Encode;
 
 register_worker({ phase => 'early', driver => 'snmp',
@@ -115,9 +116,22 @@ register_worker({ phase => 'early', driver => 'snmp',
       debug sprintf ' searching for Product ID "%s"', ('enterprises' . $try_vendor);
       my $object = schema('netdisco')->resultset('Product')->find($oid);
       if ($object) {
-          debug sprintf ' ... found Product "%s" (replaced "%s")',
+          debug sprintf ' ...found Product "%s" (replaced "%s")',
             $object->leaf, ($device->model || '');
           $device->set_column( model => $object->leaf );
+      }
+      else {
+          debug '  also searching netdisco-mibs...';
+          my $file = file((setting('mibhome') || dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs')),
+            'EXTRAS', 'reports', 'all_leafs_only');
+          my $target = quotemeta($oid);
+          my $leaf = `grep -E '^$target,' '$file' | cut -d, -f2`; # BACKTICKS
+          if ($leaf) {
+              chomp($leaf);
+              debug sprintf '  ...found Product "%s" (replaced "%s")',
+                $leaf, ($device->model || '');
+              $device->set_column( model => $leaf );
+          }
       }
   }
 
