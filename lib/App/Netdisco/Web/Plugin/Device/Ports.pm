@@ -277,7 +277,8 @@ get '/ajax/content/device/ports' => require_login sub {
     }
 
     foreach my $parent (keys %port_subinterface_count) {
-        my $parent_port = [grep {$_->port eq $parent} @results]->[0];
+        my $parent_port = [grep {$_->port eq $parent} @results]->[0]
+          or next; # 1479 we've seen subinterfaces without parents
         $parent_port->{has_subinterface_group} = true;
         $parent_port->{has_only_dot_zero_subinterface} = true
           if exists $port_has_dot_zero{$parent}
