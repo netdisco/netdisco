@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.097000';
+our $VERSION = '2.097001';
 use App::Netdisco::Configuration;
 
 =head1 NAME
@@ -345,7 +345,7 @@ built upon.
 
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2011-2023 by The Netdisco Developer Team.
+This software is copyright (c) 2003-2026 by The Netdisco Developer Team.
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:

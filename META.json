@@ -89,7 +89,7 @@
             "Net::Ping" : "2.75",
             "Net::Ping::External" : "0.15",
             "NetAddr::IP" : "4.068",
-            "NetAddr::MAC" : "0.93",
+            "NetAddr::MAC" : "0.99",
             "Opcode" : "1.07",
             "Package::DeprecationManager" : "0",
             "Path::Class" : "0.32",
@@ -150,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.097000"
+         "version" : "2.097001"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -1033,6 +1033,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.097000",
+   "version" : "2.097001",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }

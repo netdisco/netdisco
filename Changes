@@ -1,3 +1,17 @@
+2.097001 - 2026-01-08
+
+  [ENHANCEMENTS]
+
+  * #1477 macsuck, arpnip, discover web buttons should follow is_* acls
+  * search for enterprise product number in netdisco-mibs
+  * add plain api driver type and adjust driver priorities
+  * update NetAddr::MAC dependency to 0.99
+
+  [BUG FIXES]
+
+  * #1479 error to GET /ajax/content/device/ports when subinterface without parent
+  * #1478 fixes vendor not known by netdisco
+
 2.097000 - 2025-12-16
 
   [NEW FEATURES]
