@@ -124,7 +124,7 @@ register_worker({ phase => 'early', driver => 'snmp',
           debug '  also searching netdisco-mibs...';
           my $file = file((setting('mibhome') || dir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs')),
             'EXTRAS', 'reports', 'all_leafs_only');
-          my $target = quotemeta($oid);
+          (my $target = quotemeta($try_vendor)) =~ s/^\\\.//;
           my $leaf = `grep -E '^$target,' '$file' | cut -d, -f2`; # BACKTICKS
           if ($leaf) {
               chomp($leaf);
