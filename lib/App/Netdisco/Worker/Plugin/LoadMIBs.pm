@@ -81,18 +81,6 @@ register_worker({ phase => 'main' }, sub {
     debug sprintf 'loadmibs - added %d new oids', scalar @browser;
   });
 
-  my @filters = <DATA>;
-  $_ = [split m/\t/, $_] for @filters;
-  $_ = {leaf => $_->[0], subname => $_->[1]} for @filters;
-  chomp( $_->{subname} ) for @filters;
-
-  schema('netdisco')->txn_do(sub {
-    my $gone = schema('netdisco')->resultset('SNMPFilter')->delete;
-    debug sprintf 'loadmibs - removed %d filters', $gone;
-    schema('netdisco')->resultset('SNMPFilter')->populate(\@filters);
-    debug sprintf 'loadmibs - added %d new filters', scalar @filters;
-  });
-
   # promote snapshots prior to loadmibs to be browsable
   schema('netdisco')->txn_do(sub {
     my @devices = schema('netdisco')
