@@ -6,7 +6,7 @@ App::Netdisco::SSHCollector::Platform::NXOS
 
 =head1 DESCRIPTION
 
-Collect ARP entries from Cisco NXOS devices.
+Collect ARP, MAC table, and connected subnet data from Cisco NXOS devices.
 
 =cut
 
@@ -29,6 +29,32 @@ Retrieve ARP entries from device. C<$host> is the hostname or IP address
 of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
 Returns a list of hashrefs in the format C<< { mac => MACADDR, ip => IPADDR } >>.
+Entries from all VRFs are flattened into a single returned list.
+Example:
+C<< [ { ip => '192.0.2.10', mac => '0011.2233.4455' },
+      { ip => '2001:db8::1', mac => 'aabb.ccdd.eeff' } ] >>.
+
+=item B<macsuck($host, $ssh)>
+
+Retrieve MAC address table entries from device. C<$host> is the hostname or
+IP address of the device. C<$ssh> is a Net::OpenSSH connection to the device.
+
+Returns a hashref keyed by VLAN and interface, where leaf keys are MAC
+addresses, in the format
+C<< { VLAN => { PORT => { MACADDR => COUNT } } } >>.
+Example:
+C<< { 10 => { 'Ethernet1/1' => { '00:11:22:33:44:55' => 1 } },
+      20 => { 'Port-channel12' => { 'aa:bb:cc:dd:ee:ff' => 2 } } } >>.
+
+=item B<subnets($host, $ssh)>
+
+Retrieve directly connected IPv4 subnets from device routing tables. C<$host>
+is the hostname or IP address of the device. C<$ssh> is a Net::OpenSSH
+connection to the device.
+
+Returns a list of IPv4 CIDR strings in the format C<< X.X.X.X/NN >>.
+Example:
+C<< [ '10.1.1.0/24', '192.0.2.0/25' ] >>.
 
 =back
 
@@ -219,5 +245,3 @@ sub subnets {
 }
 
 1;
-
-
