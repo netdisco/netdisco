@@ -103,7 +103,7 @@ App::Netdisco::Builder->new(
     'Storable' => '0',
     'String::Util' => '1.35',
     'Sub::Util' => '1.40',
-    'Sys::SigAction' => '0',
+    'Sys::SigAction' => '0.24',
     'Template' => '2.24',
     'Template::AutoFilter' => '0',
     'Template::Plugin::CSV' => '0.04',
