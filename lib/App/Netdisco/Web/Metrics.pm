@@ -100,7 +100,7 @@ get '/metrics' => sub {
 
     # Counts by status
     foreach my $st (qw/queued done error/) {
-      my $count = try { $rs->search({ status => $st })->count } // 0;
+      my $count = try { $rs->search({ status => $st })->count } catch { 0 };
       $output .= _gauge('netdisco_jobs_total',
         'Number of jobs in the queue by status',
         $count, tenant => $tenant, status => $st);
@@ -109,7 +109,7 @@ get '/metrics' => sub {
     # Running (queued + assigned to backend)
     my $running = try {
       $rs->search({ status => 'queued', backend => { '!=' => undef } })->count;
-    } // 0;
+    } catch { 0 };
     $output .= _gauge('netdisco_jobs_running',
       'Number of jobs currently running',
       $running, tenant => $tenant);
