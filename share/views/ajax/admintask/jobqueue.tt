@@ -16,7 +16,7 @@
     <tr>
       <th class="nd_center-cell">Backend</th>
       <th class="nd_center-cell">Action</th>
-      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Device / Info</th>
       <th class="nd_center-cell">Submitted By</th>
       <th class="nd_center-cell">Status</th>
       <th class="nd_center-cell">Duration</th>
@@ -41,10 +41,14 @@
       </td>
 
       <td class="nd_center-cell">
-        [% IF row.action == 'discover' AND row.status == 'error' %]
-        <a href="[% uri_for('/') | none %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
+        [% IF row.device %]
+          [% IF row.action == 'discover' AND row.status == 'error' %]
+          <a href="[% uri_for('/') | none %]?device=[% row.device | uri %]">[% row.device | html_entity %]</a>
+          [% ELSE %]
+          <a href="[% uri_for('/device') | none %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
+          [% END %]
         [% ELSE %]
-        <a href="[% uri_for('/device') | none %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
+        <span title="[% row.log | html_entity %]">[% row.log.substr(0, 40) | html_entity %][% '...' IF row.log.length > 40 %]</span>
         [% END %]
       </td>
 
