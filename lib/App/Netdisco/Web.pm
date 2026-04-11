@@ -130,6 +130,7 @@ use App::Netdisco::Web::Device;
 use App::Netdisco::Web::Report;
 use App::Netdisco::Web::API::Objects;
 use App::Netdisco::Web::API::Queue;
+use App::Netdisco::Web::API::Statistics;
 use App::Netdisco::Web::AdminTask;
 use App::Netdisco::Web::TypeAhead;
 use App::Netdisco::Web::PortControl;
