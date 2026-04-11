@@ -14,6 +14,17 @@ our @EXPORT = ('queue_hook');
 
 sub queue_hook {
   my ($hook, $conf) = @_;
+
+  unless ($conf->{'type'}) {
+    warning sprintf ' hooks - missing type in hook config for event "%s", skipping', ($hook || '?');
+    return 0;
+  }
+
+  unless (lc($conf->{'type'}) =~ m/^(?:http|exec)$/) {
+    warning sprintf ' hooks - unknown hook type "%s" for event "%s", skipping', $conf->{'type'}, ($hook || '?');
+    return 0;
+  }
+
   my $hook_data = dclone (vars->{'hook_data'} || {});
   my $extra = { action_conf => dclone ($conf->{'with'} || {}),
                 event_data  => dclone ($hook_data) };
