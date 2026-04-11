@@ -6,15 +6,18 @@ use Dancer::Plugin::DBIC;
 use App::Netdisco::Util::Permission 'acl_matches';
 use Try::Tiny;
 
-# Emit a gauge metric line with optional labels
-sub _gauge {
-  my ($name, $help, $value, %labels) = @_;
+sub _header {
+  my ($name, $help) = @_;
+  return sprintf("# HELP %s %s\n# TYPE %s gauge\n", $name, $help, $name);
+}
+
+sub _sample {
+  my ($name, $value, %labels) = @_;
   my $label_str = '';
   if (%labels) {
     $label_str = '{'. join(',', map { qq($_="$labels{$_}") } sort keys %labels) .'}';
   }
-  return sprintf("# HELP %s %s\n# TYPE %s gauge\n%s%s %s\n",
-    $name, $help, $name, $name, $label_str, $value // 0);
+  return sprintf("%s%s %s\n", $name, $label_str, $value // 0);
 }
 
 get '/metrics' => sub {
@@ -49,74 +52,62 @@ get '/metrics' => sub {
   my $output = '';
 
   # -- Statistics metrics (one row per tenant) -------------------------------
-  my %stat_metrics = (
-    netdisco_devices_total        => 'Total number of discovered devices',
-    netdisco_device_ips_total     => 'Total number of device IP addresses',
-    netdisco_device_links_total   => 'Total number of layer2 links between devices',
-    netdisco_device_ports_total   => 'Total number of device ports',
-    netdisco_device_ports_up      => 'Total number of device ports with up/up status',
-    netdisco_ip_table_total       => 'Total number of IP table entries',
-    netdisco_ip_active_total      => 'Total number of active IP entries',
-    netdisco_nodes_total          => 'Total number of node entries',
-    netdisco_nodes_active_total   => 'Total number of active nodes',
-    netdisco_phones_total         => 'Total number of discovered VoIP phones',
-    netdisco_waps_total           => 'Total number of discovered wireless access points',
+  my @stat_metrics = (
+    [ netdisco_devices_total      => 'device_count',        'Total number of discovered devices' ],
+    [ netdisco_device_ips         => 'device_ip_count',     'Total number of device IP addresses' ],
+    [ netdisco_device_links       => 'device_link_count',   'Total number of layer2 links between devices' ],
+    [ netdisco_device_ports       => 'device_port_count',   'Total number of device ports' ],
+    [ netdisco_device_ports_up    => 'device_port_up_count','Total number of device ports with up/up status' ],
+    [ netdisco_ip_table           => 'ip_table_count',      'Total number of IP table entries' ],
+    [ netdisco_ip_active          => 'ip_active_count',     'Total number of active IP entries' ],
+    [ netdisco_nodes              => 'node_table_count',    'Total number of node entries' ],
+    [ netdisco_nodes_active       => 'node_active_count',   'Total number of active nodes' ],
+    [ netdisco_phones             => 'phone_count',         'Total number of discovered VoIP phones' ],
+    [ netdisco_waps               => 'wap_count',           'Total number of discovered wireless access points' ],
   );
 
-  my %stat_columns = (
-    netdisco_devices_total        => 'device_count',
-    netdisco_device_ips_total     => 'device_ip_count',
-    netdisco_device_links_total   => 'device_link_count',
-    netdisco_device_ports_total   => 'device_port_count',
-    netdisco_device_ports_up      => 'device_port_up_count',
-    netdisco_ip_table_total       => 'ip_table_count',
-    netdisco_ip_active_total      => 'ip_active_count',
-    netdisco_nodes_total          => 'node_table_count',
-    netdisco_nodes_active_total   => 'node_active_count',
-    netdisco_phones_total         => 'phone_count',
-    netdisco_waps_total           => 'wap_count',
-  );
-
-  foreach my $metric (sort keys %stat_metrics) {
-    $output .= sprintf("# HELP %s %s\n# TYPE %s gauge\n",
-      $metric, $stat_metrics{$metric}, $metric);
-
+  foreach my $m (@stat_metrics) {
+    my ($metric, $col, $help) = @$m;
+    $output .= _header($metric, $help);
     foreach my $tenant (@tenants) {
       my $stats = try {
         schema($tenant)->resultset('Statistics')
           ->search(undef, { order_by => { -desc => 'day' }, rows => 1 })->first;
       };
       next unless $stats;
-      my $col = $stat_columns{$metric};
-      $output .= sprintf("%s{tenant=\"%s\"} %s\n",
-        $metric, $tenant, $stats->$col // 0);
+      $output .= _sample($metric, $stats->$col // 0, tenant => $tenant);
     }
     $output .= "\n";
   }
 
   # -- Job queue metrics (live, per tenant) ----------------------------------
+
+  # Counts by status
+  $output .= _header('netdisco_jobs', 'Number of jobs in the queue by status');
   foreach my $tenant (@tenants) {
     my $rs = try { schema($tenant)->resultset('Admin') } or next;
-
-    # Counts by status
     foreach my $st (qw/queued done error/) {
       my $count = try { $rs->search({ status => $st })->count } catch { 0 };
-      $output .= _gauge('netdisco_jobs_total',
-        'Number of jobs in the queue by status',
-        $count, tenant => $tenant, status => $st);
+      $output .= _sample('netdisco_jobs', $count, tenant => $tenant, status => $st);
     }
+  }
+  $output .= "\n";
 
-    # Running (queued + assigned to backend)
+  # Running jobs
+  $output .= _header('netdisco_jobs_running', 'Number of jobs currently running');
+  foreach my $tenant (@tenants) {
+    my $rs = try { schema($tenant)->resultset('Admin') } or next;
     my $running = try {
       $rs->search({ status => 'queued', backend => { '!=' => undef } })->count;
     } catch { 0 };
-    $output .= _gauge('netdisco_jobs_running',
-      'Number of jobs currently running',
-      $running, tenant => $tenant);
+    $output .= _sample('netdisco_jobs_running', $running, tenant => $tenant);
+  }
+  $output .= "\n";
 
-    # Counts by action+status
-    $output .= "# HELP netdisco_jobs_by_action Number of jobs grouped by action and status\n";
-    $output .= "# TYPE netdisco_jobs_by_action gauge\n";
+  # Counts by action+status
+  $output .= _header('netdisco_jobs_by_action', 'Number of jobs grouped by action and status');
+  foreach my $tenant (@tenants) {
+    my $rs = try { schema($tenant)->resultset('Admin') } or next;
     my @by_action = try {
       $rs->search(undef, {
         select   => ['action', 'status', { count => '*', -as => 'cnt' }],
@@ -124,16 +115,17 @@ get '/metrics' => sub {
         group_by => [qw/action status/],
       })->hri->all;
     } catch { () };
-
     foreach my $row (@by_action) {
-      $output .= sprintf(qq(netdisco_jobs_by_action{tenant="%s",action="%s",status="%s"} %s\n),
-        $tenant, $row->{action}, $row->{status}, $row->{cnt});
+      $output .= _sample('netdisco_jobs_by_action', $row->{cnt},
+        tenant => $tenant, action => $row->{action}, status => $row->{status});
     }
-    $output .= "\n";
+  }
+  $output .= "\n";
 
-    # Average duration of completed jobs by action (in seconds)
-    $output .= "# HELP netdisco_job_duration_seconds Average duration of completed jobs by action\n";
-    $output .= "# TYPE netdisco_job_duration_seconds gauge\n";
+  # Average duration of completed jobs by action
+  $output .= _header('netdisco_job_duration_seconds', 'Average duration of completed jobs by action in seconds');
+  foreach my $tenant (@tenants) {
+    my $rs = try { schema($tenant)->resultset('Admin') } or next;
     my @durations = try {
       $rs->search(
         { status => 'done', started => { '!=' => undef }, finished => { '!=' => undef } },
@@ -145,14 +137,13 @@ get '/metrics' => sub {
         }
       )->hri->all;
     } catch { () };
-
     foreach my $row (@durations) {
       next unless defined $row->{avg_duration};
       $output .= sprintf(qq(netdisco_job_duration_seconds{tenant="%s",action="%s"} %.3f\n),
         $tenant, $row->{action}, $row->{avg_duration});
     }
-    $output .= "\n";
   }
+  $output .= "\n";
 
   return $output;
 };
