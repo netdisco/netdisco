@@ -229,6 +229,61 @@ get '/metrics' => sub {
   }
   $output .= "\n";
 
+  # -- Slow devices (top 20 per tenant, bounded cardinality) -----------------
+  $output .= _header('netdisco_slow_device_duration_seconds',
+    'Duration of last completed job for the 20 slowest devices by action (discover/macsuck/arpnip)');
+  foreach my $tenant (@tenants) {
+    my @rows = try {
+      schema($tenant)->resultset('Virtual::SlowDevices')->search(undef)->hri->all;
+    } catch { () };
+    foreach my $row (@rows) {
+      next unless defined $row->{device} and defined $row->{elapsed};
+      # elapsed is a PG interval string like "00:00:45.2" - convert to seconds
+      my $secs = 0;
+      if ($row->{elapsed} =~ m/(\d+):(\d+):(\d+(?:\.\d+)?)/) {
+        $secs = $1 * 3600 + $2 * 60 + $3;
+      }
+      $output .= sprintf(
+        qq(netdisco_slow_device_duration_seconds{tenant="%s",device="%s",action="%s"} %.3f\n),
+        $tenant, $row->{device}, $row->{action}, $secs);
+    }
+  }
+  $output .= "\n";
+
+  # -- SNMP connect failures (DeviceSkip table) ------------------------------
+  $output .= _header('netdisco_snmp_failures_devices',
+    'Number of devices with at least one SNMP connect failure');
+  foreach my $tenant (@tenants) {
+    my $count = try {
+      schema($tenant)->resultset('DeviceSkip')->search({
+        deferrals => { '>' => 0 },
+        device    => { '!=' => '255.255.255.255' },
+      })->count;
+    } catch { 0 };
+    $output .= _sample('netdisco_snmp_failures_devices', $count, tenant => $tenant);
+  }
+  $output .= "\n";
+
+  $output .= _header('netdisco_snmp_failures_by_device',
+    'Number of SNMP connect failures per device and backend (top 50 by failure count)');
+  foreach my $tenant (@tenants) {
+    my @rows = try {
+      schema($tenant)->resultset('DeviceSkip')->search({
+        deferrals => { '>' => 0 },
+        device    => { '!=' => '255.255.255.255' },
+      }, {
+        order_by => { -desc => 'deferrals' },
+        rows     => 50,
+      })->hri->all;
+    } catch { () };
+    foreach my $row (@rows) {
+      $output .= sprintf(
+        qq(netdisco_snmp_failures_by_device{tenant="%s",device="%s",backend="%s"} %s\n),
+        $tenant, $row->{device}, $row->{backend}, $row->{deferrals});
+    }
+  }
+  $output .= "\n";
+
   return $output;
 };
 
