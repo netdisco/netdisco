@@ -21,7 +21,8 @@ sub _sample {
   return sprintf("%s%s %s\n", $name, $label_str, $value // 0);
 }
 
-get '/metrics' => sub {
+if (my $metrics_path = setting('metrics_path')) {
+get $metrics_path => sub {
   # Optional IP range restriction
   my $allow = setting('metrics_allow');
   if ($allow and ref $allow eq ref []) {
@@ -199,13 +200,13 @@ get '/metrics' => sub {
   foreach my $tenant (@tenants) {
     my @rows = try {
       schema($tenant)->resultset('Device')->search(undef, {
-        select   => [ 'mftr', { count => '*', -as => 'cnt' } ],
-        as       => [qw/mftr cnt/],
-        group_by => ['mftr'],
+        select   => [ 'vendor', { count => '*', -as => 'cnt' } ],
+        as       => [qw/vendor cnt/],
+        group_by => ['vendor'],
       })->hri->all;
     } catch { () };
     foreach my $row (@rows) {
-      my $vendor = $row->{mftr} // 'unknown';
+      my $vendor = $row->{vendor} // 'unknown';
       $output .= _sample('netdisco_devices_by_vendor', $row->{cnt},
         tenant => $tenant, vendor => $vendor);
     }
@@ -323,5 +324,6 @@ get '/metrics' => sub {
 
   return $output;
 };
+}
 
 true;
