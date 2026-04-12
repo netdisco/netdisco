@@ -229,6 +229,43 @@ get '/metrics' => sub {
   }
   $output .= "\n";
 
+  # -- Stale discovery (devices not polled recently) ------------------------
+  foreach my $action (
+    [ netdisco_devices_discover_stale => 'last_discover' => 'Number of devices not discovered in the last 24 hours' ],
+    [ netdisco_devices_macsuck_stale  => 'last_macsuck'  => 'Number of devices not macsucked in the last 24 hours'  ],
+    [ netdisco_devices_arpnip_stale   => 'last_arpnip'   => 'Number of devices not arpniped in the last 24 hours'   ],
+  ) {
+    my ($metric, $col, $help) = @$action;
+    $output .= _header($metric, $help);
+    foreach my $tenant (@tenants) {
+      my $count = try {
+        schema($tenant)->resultset('Device')->search({
+          -or => [
+            $col => undef,
+            $col => { '<' => \q|(now() - interval '24 hours')| },
+          ],
+        })->count;
+      } catch { 0 };
+      $output .= _sample($metric, $count, tenant => $tenant);
+    }
+    $output .= "\n";
+  }
+
+  # -- Live MAC and ARP counts -----------------------------------------------
+  $output .= _header('netdisco_mac_entries', 'Live count of MAC address entries in the node table');
+  foreach my $tenant (@tenants) {
+    my $count = try { schema($tenant)->resultset('Node')->count } catch { 0 };
+    $output .= _sample('netdisco_mac_entries', $count, tenant => $tenant);
+  }
+  $output .= "\n";
+
+  $output .= _header('netdisco_arp_entries', 'Live count of ARP entries in the node_ip table');
+  foreach my $tenant (@tenants) {
+    my $count = try { schema($tenant)->resultset('NodeIp')->count } catch { 0 };
+    $output .= _sample('netdisco_arp_entries', $count, tenant => $tenant);
+  }
+  $output .= "\n";
+
   # -- Slow devices (top 20 per tenant, bounded cardinality) -----------------
   $output .= _header('netdisco_slow_device_duration_seconds',
     'Duration of last completed job for the 20 slowest devices by action (discover/macsuck/arpnip)');
