@@ -59,6 +59,8 @@ hook 'before' => sub {
       or request->path eq uri_for('/logout')->path
       or request->path eq uri_for('/swagger.json')->path
       or index(request->path, uri_for('/swagger-ui')->path) == 0
+      or request->path eq uri_for('/health')->path
+      or request->path eq uri_for('/metrics')->path
     );
 
     # Dancer will issue a cookie to the client which could be returned and
