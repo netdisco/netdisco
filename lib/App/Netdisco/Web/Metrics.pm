@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
 use App::Netdisco::Util::Permission 'acl_matches';
+use POSIX 'floor';
 use Try::Tiny;
 
 sub _header {
@@ -53,17 +54,17 @@ get '/metrics' => sub {
 
   # -- Statistics metrics (one row per tenant) -------------------------------
   my @stat_metrics = (
-    [ netdisco_devices_total      => 'device_count',        'Total number of discovered devices' ],
-    [ netdisco_device_ips         => 'device_ip_count',     'Total number of device IP addresses' ],
-    [ netdisco_device_links       => 'device_link_count',   'Total number of layer2 links between devices' ],
-    [ netdisco_device_ports       => 'device_port_count',   'Total number of device ports' ],
-    [ netdisco_device_ports_up    => 'device_port_up_count','Total number of device ports with up/up status' ],
-    [ netdisco_ip_table           => 'ip_table_count',      'Total number of IP table entries' ],
-    [ netdisco_ip_active          => 'ip_active_count',     'Total number of active IP entries' ],
-    [ netdisco_nodes              => 'node_table_count',    'Total number of node entries' ],
-    [ netdisco_nodes_active       => 'node_active_count',   'Total number of active nodes' ],
-    [ netdisco_phones             => 'phone_count',         'Total number of discovered VoIP phones' ],
-    [ netdisco_waps               => 'wap_count',           'Total number of discovered wireless access points' ],
+    [ netdisco_devices        => 'device_count',        'Total number of discovered devices' ],
+    [ netdisco_device_ips     => 'device_ip_count',     'Total number of device IP addresses' ],
+    [ netdisco_device_links   => 'device_link_count',   'Total number of layer2 links between devices' ],
+    [ netdisco_device_ports   => 'device_port_count',   'Total number of device ports' ],
+    [ netdisco_device_ports_up => 'device_port_up_count','Total number of device ports with up/up status' ],
+    [ netdisco_ip_table       => 'ip_table_count',      'Total number of IP table entries' ],
+    [ netdisco_ip_active      => 'ip_active_count',     'Total number of active IP entries' ],
+    [ netdisco_nodes          => 'node_table_count',    'Total number of node entries' ],
+    [ netdisco_nodes_active   => 'node_active_count',   'Total number of active nodes' ],
+    [ netdisco_phones         => 'phone_count',         'Total number of discovered VoIP phones' ],
+    [ netdisco_waps           => 'wap_count',           'Total number of discovered wireless access points' ],
   );
 
   foreach my $m (@stat_metrics) {
@@ -80,6 +81,39 @@ get '/metrics' => sub {
     $output .= "\n";
   }
 
+  # Age of latest statistics row in seconds
+  $output .= _header('netdisco_stats_age_seconds', 'Age of the latest statistics snapshot in seconds');
+  foreach my $tenant (@tenants) {
+    my $age = try {
+      schema($tenant)->resultset('Statistics')->search(undef, {
+        select => [ \"extract(epoch FROM (now() - max(day)::timestamp))" ],
+        as     => ['age'],
+      })->first->get_column('age');
+    };
+    next unless defined $age;
+    $output .= _sample('netdisco_stats_age_seconds', floor($age), tenant => $tenant);
+  }
+  $output .= "\n";
+
+  # -- Backend / worker health -----------------------------------------------
+  $output .= _header('netdisco_backends', 'Number of active backend instances');
+  $output .= _header('netdisco_workers',  'Total number of worker slots across all backends');
+
+  my $backends_output = '';
+  my $workers_output  = '';
+  foreach my $tenant (@tenants) {
+    my @backends = try {
+      schema($tenant)->resultset('DeviceSkip')
+        ->search({ device => '255.255.255.255' })->hri->all;
+    } catch { () };
+    my $tot_workers = 0;
+    $tot_workers += $_->{deferrals} for @backends;
+    $backends_output .= _sample('netdisco_backends', scalar @backends, tenant => $tenant);
+    $workers_output  .= _sample('netdisco_workers',  $tot_workers,     tenant => $tenant);
+  }
+  $output .= $backends_output . "\n";
+  $output .= $workers_output  . "\n";
+
   # -- Job queue metrics (live, per tenant) ----------------------------------
 
   # Counts by status
@@ -93,7 +127,7 @@ get '/metrics' => sub {
   }
   $output .= "\n";
 
-  # Running jobs
+  # Running and stale jobs
   $output .= _header('netdisco_jobs_running', 'Number of jobs currently running');
   foreach my $tenant (@tenants) {
     my $rs = try { schema($tenant)->resultset('Admin') } or next;
@@ -101,6 +135,20 @@ get '/metrics' => sub {
       $rs->search({ status => 'queued', backend => { '!=' => undef } })->count;
     } catch { 0 };
     $output .= _sample('netdisco_jobs_running', $running, tenant => $tenant);
+  }
+  $output .= "\n";
+
+  $output .= _header('netdisco_jobs_stale', 'Number of stale jobs (running longer than jobs_stale_after)');
+  foreach my $tenant (@tenants) {
+    my $rs = try { schema($tenant)->resultset('Admin') } or next;
+    my $stale = try {
+      $rs->search({
+        status  => 'queued',
+        backend => { '!=' => undef },
+        started => \[ q/<= (LOCALTIMESTAMP - ?::interval)/, setting('jobs_stale_after') ],
+      })->count;
+    } catch { 0 };
+    $output .= _sample('netdisco_jobs_stale', $stale, tenant => $tenant);
   }
   $output .= "\n";
 
@@ -141,6 +189,42 @@ get '/metrics' => sub {
       next unless defined $row->{avg_duration};
       $output .= sprintf(qq(netdisco_job_duration_seconds{tenant="%s",action="%s"} %.3f\n),
         $tenant, $row->{action}, $row->{avg_duration});
+    }
+  }
+  $output .= "\n";
+
+  # -- Device inventory metrics ----------------------------------------------
+
+  $output .= _header('netdisco_devices_by_vendor', 'Number of devices grouped by vendor');
+  foreach my $tenant (@tenants) {
+    my @rows = try {
+      schema($tenant)->resultset('Device')->search(undef, {
+        select   => [ 'mftr', { count => '*', -as => 'cnt' } ],
+        as       => [qw/mftr cnt/],
+        group_by => ['mftr'],
+      })->hri->all;
+    } catch { () };
+    foreach my $row (@rows) {
+      my $vendor = $row->{mftr} // 'unknown';
+      $output .= _sample('netdisco_devices_by_vendor', $row->{cnt},
+        tenant => $tenant, vendor => $vendor);
+    }
+  }
+  $output .= "\n";
+
+  $output .= _header('netdisco_devices_by_os', 'Number of devices grouped by OS version');
+  foreach my $tenant (@tenants) {
+    my @rows = try {
+      schema($tenant)->resultset('Device')->search(undef, {
+        select   => [ 'os', { count => '*', -as => 'cnt' } ],
+        as       => [qw/os cnt/],
+        group_by => ['os'],
+      })->hri->all;
+    } catch { () };
+    foreach my $row (@rows) {
+      my $os = $row->{os} // 'unknown';
+      $output .= _sample('netdisco_devices_by_os', $row->{cnt},
+        tenant => $tenant, os => $os);
     }
   }
   $output .= "\n";
