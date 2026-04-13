@@ -23,7 +23,40 @@ swagger_path {
 }, get '/api/v1/object/device/:ip' => require_role api => sub {
   my $device = try { schema(vars->{'tenant'})->resultset('Device')
     ->find( params->{ip} ) } or send_error('Bad Device', 404);
-  return to_json $device->TO_JSON;
+
+  my $data = $device->TO_JSON;
+
+  my @modules = try {
+    schema(vars->{'tenant'})->resultset('DevicePower')
+      ->search({ 'me.ip' => $device->ip })->with_poestats->hri->all;
+  } catch { () };
+
+  if (@modules) {
+    my %totals = (
+      modules             => scalar @modules,
+      power_total         => 0,
+      poe_capable_ports   => 0,
+      poe_powered_ports   => 0,
+      poe_disabled_ports  => 0,
+      poe_errored_ports   => 0,
+      poe_power_committed => 0,
+      poe_power_delivering => 0,
+    );
+    for my $m (@modules) {
+      $totals{power_total}          += $m->{power}               // 0;
+      $totals{poe_capable_ports}    += $m->{poe_capable_ports}   // 0;
+      $totals{poe_powered_ports}    += $m->{poe_powered_ports}   // 0;
+      $totals{poe_disabled_ports}   += $m->{poe_disabled_ports}  // 0;
+      $totals{poe_errored_ports}    += $m->{poe_errored_ports}   // 0;
+      $totals{poe_power_committed}  += $m->{poe_power_committed} // 0;
+      $totals{poe_power_delivering} += $m->{poe_power_delivering} // 0;
+    }
+    $data->{poe} = \%totals;
+  } else {
+    $data->{poe} = undef;
+  }
+
+  return to_json $data;
 };
 
 foreach my $rel (qw/device_ips vlans ports modules port_vlans wireless_ports ssids powered_ports/) {
