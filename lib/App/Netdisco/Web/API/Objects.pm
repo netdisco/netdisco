@@ -48,6 +48,28 @@ foreach my $rel (qw/device_ips vlans ports modules port_vlans wireless_ports ssi
 
 swagger_path {
   tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/device/{ip}/power_modules',
+  description => 'Returns PoE module status and aggregated port statistics for a given device',
+  parameters  => [
+    ip => {
+      description => 'Canonical IP of the Device. Use Search methods to find this.',
+      required => 1,
+      in => 'path',
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/object/device/:ip/power_modules' => require_role api => sub {
+  my $device = try { schema(vars->{'tenant'})->resultset('Device')
+    ->find( params->{ip} ) } or send_error('Bad Device', 404);
+  my @rows = try {
+    schema(vars->{'tenant'})->resultset('DevicePower')
+      ->search({ 'me.ip' => $device->ip })->with_poestats->hri->all;
+  } catch { () };
+  return to_json \@rows;
+};
+
+swagger_path {
+  tags => ['Objects'],
   path => setting('api_base')."/object/device/{ip}/neighbors",
   description => 'Returns layer 2 neighbor relation data for a given device',
   parameters => [
