@@ -1,3 +1,21 @@
+2.098000 - 2026-04-16
+
+  [NEW FEATURES]
+
+  * #1492 add /api/v1/statistics API endpoint
+  * #1494 /health and /metrics endpoints for monitoring or load balancing
+  * #1496 add power_modules API endpoint and add PoE info to device API endpoint
+
+  [ENHANCEMENTS]
+
+  * #1493 check parameters to Hooks to avoid errors
+  * Improve documentation for NXOS SSH collector
+
+  [BUG FIXES]
+
+  * #1484 add the device IP to scheduled Hooks
+  * require Sys::SigAction 0.24
+
 2.097003 - 2026-02-21
 
   [ENHANCEMENTS]
