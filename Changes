@@ -1,3 +1,9 @@
+2.098001 - 2026-04-16
+
+  [BUG FIXES]
+
+  * add IO::Pty to build dependencies
+
 2.098000 - 2026-04-16
 
   [NEW FEATURES]

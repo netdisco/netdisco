@@ -20,6 +20,7 @@ App::Netdisco::Builder->new(
     'ExtUtils::InstallPaths' => '0',
     'File::ShareDir' => '1.03',
     'Path::Class' => '0.32',
+    'IO::Pty' => '1.25',
   },
   requires => {
     'aliased' => '0',
