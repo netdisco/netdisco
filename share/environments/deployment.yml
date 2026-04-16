@@ -106,3 +106,21 @@ device_auth:
 # `````````````````````````````````````````````````````````
 #safe_password_store: true
 
+# enable a health check endpoint for use with load balancers and container
+# health probes (Docker, Kubernetes). returns JSON with db and backend status.
+# responds HTTP 200 when healthy, 503 when the database is unreachable.
+# no authentication is required. disabled by default.
+# ``````````````````````````````````````````````````````````````````````
+#health_path: '/health'
+
+# enable a Prometheus metrics endpoint for scraping inventory and job queue
+# statistics. disabled by default - set a path to enable.
+# metrics_token: require "Authorization: Bearer <token>" header if set.
+# metrics_allow: restrict by source IP, same format as other netdisco ACLs.
+# `````````````````````````````````````````````````````````````````````````
+#metrics_path: '/metrics'
+#metrics_token: 'changeme'
+#metrics_allow:
+#  - '127.0.0.0/8'
+#  - '::1'
+
