@@ -115,7 +115,7 @@
             "Storable" : "0",
             "String::Util" : "1.35",
             "Sub::Util" : "1.40",
-            "Sys::SigAction" : "0",
+            "Sys::SigAction" : "0.24",
             "Template" : "2.24",
             "Template::AutoFilter" : "0",
             "Template::Plugin::CSV" : "0.04",
@@ -150,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.097003"
+         "version" : "2.098000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -609,6 +609,9 @@
       "App::Netdisco::Web::API::Queue" : {
          "file" : "lib/App/Netdisco/Web/API/Queue.pm"
       },
+      "App::Netdisco::Web::API::Statistics" : {
+         "file" : "lib/App/Netdisco/Web/API/Statistics.pm"
+      },
       "App::Netdisco::Web::AdminTask" : {
          "file" : "lib/App/Netdisco/Web/AdminTask.pm"
       },
@@ -626,6 +629,12 @@
       },
       "App::Netdisco::Web::GenericReport" : {
          "file" : "lib/App/Netdisco/Web/GenericReport.pm"
+      },
+      "App::Netdisco::Web::Health" : {
+         "file" : "lib/App/Netdisco/Web/Health.pm"
+      },
+      "App::Netdisco::Web::Metrics" : {
+         "file" : "lib/App/Netdisco/Web/Metrics.pm"
       },
       "App::Netdisco::Web::Password" : {
          "file" : "lib/App/Netdisco/Web/Password.pm"
@@ -1033,6 +1042,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.097003",
-   "x_serialization_backend" : "JSON::PP version 4.06"
+   "version" : "2.098000",
+   "x_serialization_backend" : "JSON::PP version 4.16"
 }

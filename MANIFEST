@@ -168,11 +168,14 @@ lib/App/Netdisco/Web.pm
 lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/API/Objects.pm
 lib/App/Netdisco/Web/API/Queue.pm
+lib/App/Netdisco/Web/API/Statistics.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/CustomFields.pm
 lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/GenericReport.pm
+lib/App/Netdisco/Web/Health.pm
+lib/App/Netdisco/Web/Metrics.pm
 lib/App/Netdisco/Web/Password.pm
 lib/App/Netdisco/Web/Plugin.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/DuplicateDevices.pm
