@@ -381,6 +381,14 @@
 
       [% IF params.c_nodes OR params.c_neighbors %]
       <td>
+        [% SET neighbor_mac = '' %]
+        [% IF row.remote_ip %]
+          [% FOREACH _n IN row.$nodes %]
+            [% FOREACH _nip IN _n.$ips %]
+              [% IF _nip.ip == row.remote_ip AND NOT neighbor_mac; neighbor_mac = _n.net_mac.$mac_format_call; END %]
+            [% END %]
+          [% END %]
+        [% END %]
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.get_column('neighbor_ip') %]
             <i class="icon-link[% ' text-warning' IF row.manual_topo %]" title="[% row.manual_topo ? 'Manually configured topology link' : 'Discovered neighbor' %]"></i>
@@ -390,7 +398,7 @@
               <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]">
-                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>[% IF row.remote_port %]@<a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">[% row.remote_port | html_entity %]</a>[% END %]
+                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>[% IF row.remote_port %]@<a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">[% row.remote_port | html_entity %]</a>[% END %][% IF neighbor_mac %] <span class="text-muted">[% neighbor_mac | html_entity %]</span>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -408,7 +416,7 @@
             [% ELSIF row.remote_is_wap %]
               <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
-            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">[% row.remote_type | html_entity %]</span>[% END %]
+            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">[% row.remote_type | html_entity %]</span>[% END %][% IF neighbor_mac %] <span class="text-muted">[% neighbor_mac | html_entity %]</span>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -432,6 +440,9 @@
         <div class="nd_collapsing nd_collapse-pre-hidden">
         [% END %]
         [% FOREACH node IN row.$nodes %]
+          [% SET _node_is_neighbor = 0 %]
+          [% FOREACH _nip IN node.$ips; _node_is_neighbor = 1 IF _nip.ip == row.remote_ip; END %]
+          [% NEXT IF _node_is_neighbor %]
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
