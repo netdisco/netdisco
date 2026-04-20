@@ -385,9 +385,9 @@
           [% IF row.get_column('neighbor_ip') %]
             <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
             [% IF row.remote_is_phone %]
-              <i class="icon-phone"></i>&nbsp;
+              <i class="icon-phone" title="VoIP Phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-rss"></i>&nbsp;
+              <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]">
                 [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
@@ -406,17 +406,21 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
-            <i class="icon-[% row.remote_is_discoverable ? 'unlink' : 'eye-close' %] text-error"></i>&nbsp;
+            <i class="icon-[% row.remote_is_discoverable ? 'unlink' : 'eye-close' %] text-error"
+               title="[% row.remote_is_discoverable ? 'Neighbor not yet discovered' : 'Not discoverable (WAP/phone discovery disabled)' %]"></i>&nbsp;
             [% IF row.remote_is_phone %]
-              <i class="icon-phone"></i>&nbsp;
+              <i class="icon-phone" title="VoIP Phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-rss"></i>&nbsp;
+              <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>
             [% IF row.remote_port %]
               - [% row.remote_port | html_entity %]
             [% END %]
             <br/>
+            [% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %]
+              <span class="text-muted">[% row.remote_type | html_entity %]</span><br/>
+            [% END %]
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
             [% END %]
