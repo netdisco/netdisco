@@ -1,3 +1,9 @@
+2.098002 - 2026-04-20
+
+  [BUG FIXES]
+
+  * #1498 fix numeric warning when job log is NULL in jobqueue template
+
 2.098001 - 2026-04-16
 
   [BUG FIXES]
