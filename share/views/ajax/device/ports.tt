@@ -390,12 +390,7 @@
               <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]">
-                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
-            [% IF row.remote_port %]
-                -
-                <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
-                    [% row.remote_port | html_entity %]</a>
-            [% END %]
+                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>[% IF row.remote_port %]@<a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">[% row.remote_port | html_entity %]</a>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -413,7 +408,7 @@
             [% ELSIF row.remote_is_wap %]
               <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
-            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">([% row.remote_type | html_entity %])</span>[% END %]
+            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">([% row.remote_type | html_entity %])</span>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -440,7 +435,7 @@
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
-          [% '<i class="icon-signal" title="Wireless node"></i>&nbsp;' IF node.wireless.defined %]
+          [% IF node.wireless.defined %]<i class="icon-signal" title="Wireless client"></i>&nbsp;[% ELSE %]<i class="icon-laptop" title="Wired client"></i>&nbsp;[% END %]
           <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
