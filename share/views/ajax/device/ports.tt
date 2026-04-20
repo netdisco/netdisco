@@ -408,7 +408,7 @@
             [% ELSIF row.remote_is_wap %]
               <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
-            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">([% row.remote_type | html_entity %])</span>[% END %]
+            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">[% row.remote_type | html_entity %]</span>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -435,13 +435,13 @@
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
-          [% IF node.wireless.defined %]<i class="icon-signal" title="Wireless client"></i>&nbsp;[% ELSE %]<i class="icon-laptop" title="Wired client"></i>&nbsp;[% END %]
+          [% IF node.wireless_port %]<i class="icon-signal" title="Wireless client"></i>&nbsp;[% ELSE %]<i class="icon-laptop" title="Wired client"></i>&nbsp;[% END %]
           <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
             (on vlan [% node.vlan | html_entity %])
           [% END %]            
-          [% IF params.n_ssid AND node.wireless.defined %]
+          [% IF params.n_ssid AND node.wireless_port %]
             (SSID:
             [% FOREACH wlan IN node.wireless %]
               <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
@@ -467,14 +467,7 @@
             <div class="nd_collapsing nd_collapse-pre-hidden">
             [% END %]
             [% FOREACH ip IN node.$ips %]
-            [% '<br/>' IF (((node.$ips.max + 1) <= settings.devport_ips_collapse_threshold) OR NOT loop.first) %]
-            &nbsp; [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
-              [% SET dns = ip.dns %]
-              [% IF dns %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
-              [% ELSE %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
-              [% END %]
+            [% IF loop.first %] [% ELSE %]<br/>&nbsp; [% END %][% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %][% SET dns = ip.dns %][% IF dns %]<a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>[% ELSE %]<a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>[% END %]
             [% END %]
             [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
             </div>
