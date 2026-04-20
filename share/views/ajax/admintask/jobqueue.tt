@@ -48,7 +48,7 @@
           <a href="[% uri_for('/device') | none %]?q=[% row.device | uri %]">[% row.target.dns || row.device | html_entity %]</a>
           [% END %]
         [% ELSE %]
-        <span title="[% row.log | html_entity %]">[% row.log.substr(0, 40) | html_entity %][% '...' IF row.log.length > 40 %]</span>
+        <span title="[% row.log | html_entity %]">[% row.log.substr(0, 40) | html_entity %][% '...' IF row.log AND row.log.length > 40 %]</span>
         [% END %]
       </td>
 
