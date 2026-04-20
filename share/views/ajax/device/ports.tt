@@ -413,14 +413,8 @@
             [% ELSIF row.remote_is_wap %]
               <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
-            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>
-            [% IF row.remote_port %]
-              - [% row.remote_port | html_entity %]
-            [% END %]
+            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">([% row.remote_type | html_entity %])</span>[% END %]
             <br/>
-            [% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %]
-              <span class="text-muted">[% row.remote_type | html_entity %]</span><br/>
-            [% END %]
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
             [% END %]
@@ -482,7 +476,7 @@
             &nbsp; [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
               [% SET dns = ip.dns %]
               [% IF dns %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% dns | html_entity %] ([% ip.ip | html_entity %])</a>
+              <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
               [% ELSE %]
               <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
               [% END %]
