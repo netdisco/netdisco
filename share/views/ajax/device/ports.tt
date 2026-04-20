@@ -435,7 +435,7 @@
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
           [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
-          [% IF node.wireless_port %]<i class="icon-signal" title="Wireless client"></i>&nbsp;[% ELSE %]<i class="icon-laptop" title="Wired client"></i>&nbsp;[% END %]
+          <i class="icon-laptop" title="Client"></i>&nbsp;
           <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
