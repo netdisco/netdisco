@@ -68,9 +68,14 @@ if (! -e $app_config) {
 my $netdisco = file($FindBin::RealBin, 'netdisco-backend-fg');
 my @args = (scalar @ARGV > 1 ? @ARGV[1 .. $#ARGV] : ());
 
+my $foreground = (@ARGV and $ARGV[0] eq 'foreground');
+
 my $log_dir = dir($home, 'logs');
-mkdir $log_dir if ! -d $log_dir;
-my $log_file = file($log_dir, 'netdisco-backend.log');
+my $log_file;
+if (!$foreground) {
+  mkdir $log_dir if ! -d $log_dir;
+  $log_file = file($log_dir, 'netdisco-backend.log');
+}
 
 my $uid = (stat($netdisco->stringify))[4] || 0;
 my $gid = (stat($netdisco->stringify))[5] || 0;
@@ -84,8 +89,10 @@ Daemon::Control->new({
   program  => \&restarter,
   program_args => [@args],
   pid_file => $new_pid,
-  stderr_file => $log_file,
-  stdout_file => $log_file,
+  ($foreground ? () : (
+    stderr_file => $log_file,
+    stdout_file => $log_file,
+  )),
   redirect_before_fork => 0,
   uid => $uid, gid => $gid,
 })->run;
@@ -99,7 +106,10 @@ sub restarter {
   $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;
 
-  my $watcher = Filesys::Notify::Simple->new([$ENV{DANCER_ENVDIR}, $log_dir]);
+  my $watcher = Filesys::Notify::Simple->new([
+    $ENV{DANCER_ENVDIR},
+    ($foreground ? () : $log_dir),
+  ]);
   warn "config watcher: watching $ENV{DANCER_ENVDIR} for updates.\n";
 
   local $SIG{TERM} = sub { $child = signal_child('TERM', $child); exit(0); };
@@ -110,7 +120,7 @@ sub restarter {
       # this is blocking
       $watcher->wait(sub {
           my @events = @_;
-          @events = grep {$_->{path} eq $log_file or
+          @events = grep {($log_file and $_->{path} eq $log_file) or
                           file($_->{path})->basename eq $config} @events;
           return unless @events;
           @restart = @events;
@@ -120,7 +130,7 @@ sub restarter {
       next unless @restart;
 
       foreach my $f (@restart) {
-          if ($f->{path} eq $log_file) {
+          if ($log_file and $f->{path} eq $log_file) {
               ++$rotate;
           }
           else {

@@ -73,18 +73,23 @@ if (exists $ENV{PORT} and 0 == scalar grep { $_ =~ m/port/ } @args) {
     push @args, "--port=$ENV{PORT}";
 }
 
+my $foreground = (@ARGV and $ARGV[0] eq 'foreground');
+
 my $uid = (stat($netdisco->stringify))[4] || 0;
 my $gid = (stat($netdisco->stringify))[5] || 0;
 
 my $log_dir = dir($home, 'logs');
-mkdir $log_dir if ! -d $log_dir;
-chown $uid, $gid, $log_dir;
+my $log_file;
+if (!$foreground) {
+  mkdir $log_dir if ! -d $log_dir;
+  chown $uid, $gid, $log_dir;
+  $log_file = file($log_dir, 'netdisco-web.log');
+}
 
 my $pid_file = file($home, 'netdisco-web.pid');
-my $log_file = file($log_dir, 'netdisco-web.log');
 
 # change ownership of key files to be netdisco user
-foreach my $file ($pid_file, $log_file) {
+foreach my $file ($pid_file, ($foreground ? () : $log_file)) {
     unless (-e $file) {
         sysopen my $fh, $file, O_WRONLY|O_CREAT|O_NONBLOCK|O_NOCTTY;
         print $fh '0' if $file eq $pid_file;
@@ -106,8 +111,10 @@ Daemon::Control->new({
     @args, $netdisco->stringify
   ],
   pid_file => $pid_file,
-  stderr_file => $log_file,
-  stdout_file => $log_file,
+  ($foreground ? () : (
+    stderr_file => $log_file,
+    stdout_file => $log_file,
+  )),
   redirect_before_fork => 0,
   ((scalar grep { $_ =~ m/port/ } @args) ? ()
                                          : (uid => $uid, gid => $gid)),
@@ -121,7 +128,10 @@ sub restarter {
   my $child = fork_and_start($daemon, @program_args);
   exit(1) unless $child;
 
-  my $watcher = Filesys::Notify::Simple->new([$ENV{DANCER_ENVDIR}, $log_dir]);
+  my $watcher = Filesys::Notify::Simple->new([
+    $ENV{DANCER_ENVDIR},
+    ($foreground ? () : $log_dir),
+  ]);
   warn "config watcher: watching $ENV{DANCER_ENVDIR} for updates.\n";
 
   # TODO: starman also supports TTIN,TTOU,INT,QUIT
@@ -134,7 +144,7 @@ sub restarter {
       # this is blocking
       $watcher->wait(sub {
           my @events = @_;
-          @events = grep {$_->{path} eq $log_file or
+          @events = grep {($log_file and $_->{path} eq $log_file) or
                           file($_->{path})->basename eq $config} @events;
           return unless @events;
           @restart = @events;
@@ -144,7 +154,7 @@ sub restarter {
       next unless @restart;
 
       foreach my $f (@restart) {
-          if ($f->{path} eq $log_file) {
+          if ($log_file and $f->{path} eq $log_file) {
               ++$rotate;
           }
           else {
