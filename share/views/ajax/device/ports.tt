@@ -429,9 +429,9 @@
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
-        [% IF (row.$nodes.max + 1) > settings.devport_nodes_collapse_threshold %]
+        [% IF row.$nodes.size > settings.devport_nodes_collapse_threshold %]
         <div class="nd_nodes-total">
-          <strong>[% row.$nodes.max + 1 %] nodes</strong>
+          <strong>[% row.$nodes.size %] nodes</strong>
           <span class="nd_collapse-vlans">
             Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
           </span>
@@ -497,7 +497,7 @@
             [% END %]
           [% END %]
         [% END %]
-        [% IF (row.$nodes.max + 1) > settings.devport_nodes_collapse_threshold %]
+        [% IF row.$nodes.size > settings.devport_nodes_collapse_threshold %]
         </div>
         [% END %]
         [% END %]
