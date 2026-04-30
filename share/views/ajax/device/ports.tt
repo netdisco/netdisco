@@ -43,29 +43,29 @@
 
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
-        <i class="icon-remove icon-large"></i>
+        <i class="icon-remove icon-large" title="Port disabled (admin down)"></i>
         [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
-        <i class="icon-ban-circle text-info icon-large"></i>
+        <i class="icon-ban-circle text-info icon-large" title="STP blocking"></i>
         [% ELSIF row.error_disable_cause %]
-        <i class="icon-exclamation-sign text-error icon-large"></i>
+        <i class="icon-exclamation-sign text-error icon-large" title="Error disabled: [% row.error_disable_cause | html_entity %]"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
-        <i class="icon-circle-arrow-down text-success icon-large"></i>
+        <i class="icon-circle-arrow-down text-success icon-large" title="Port free (no active nodes)"></i>
         [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
           [% IF params.port_state == 'free' %]
-          <i class="icon-circle-arrow-down text-success icon-large"></i>
+          <i class="icon-circle-arrow-down text-success icon-large" title="Port free (no active nodes)"></i>
           [% ELSE %]
-          <i class="icon-arrow-down text-error icon-large"></i>
+          <i class="icon-arrow-down text-error icon-large" title="Port down (link lost)"></i>
           [% END %]
         [% ELSE %]
-        <i class="icon-angle-up text-success icon-large"></i>
+        <i class="icon-angle-up text-success icon-large" title="Port up"></i>
         [% END %]
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <small><i class="icon-group muted"></i></small>
+            <small><i class="icon-group muted" title="LAG member — aggregate disabled"></i></small>
           [% ELSIF row.get_column('agg_master_up') == 'up' %]
-            <small><i class="icon-group text-success"></i></small>
+            <small><i class="icon-group text-success" title="LAG member — aggregate up"></i></small>
           [% ELSE %]
-            <small><i class="icon-group text-error"></i></small>
+            <small><i class="icon-group text-error" title="LAG member — aggregate down"></i></small>
           [% END %]
         [% END %]
       </td>
@@ -347,7 +347,7 @@
           rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_port_status %]"></i>
         <i class="icon-[% row.pae_authconfig_state == 'authenticated' ? 'link' : 'unlink' %]"
           rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_state %]"></i>
-        <i class="icon-[% row.pae_authsess_mab ? 'laptop' : 'user' %]"></i>
+        <i class="icon-[% row.pae_authsess_mab ? 'laptop' : 'user' %]" title="[% row.pae_authsess_mab ? 'MAC Authentication Bypass (MAB)' : '802.1X user authentication' %]"></i>
         [% SET sessuser = (row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)) %]
         <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
       [% END %]
@@ -381,21 +381,24 @@
 
       [% IF params.c_nodes OR params.c_neighbors %]
       <td>
+        [% SET neighbor_mac = '' %]
+        [% IF row.remote_ip %]
+          [% FOREACH _n IN row.$nodes %]
+            [% FOREACH _nip IN _n.$ips %]
+              [% IF _nip.ip == row.remote_ip AND NOT neighbor_mac; neighbor_mac = _n.net_mac.$mac_format_call; END %]
+            [% END %]
+          [% END %]
+        [% END %]
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.get_column('neighbor_ip') %]
-            <i class="icon-link[% ' text-warning' IF row.manual_topo %]"></i>
+            <i class="icon-link[% ' text-warning' IF row.manual_topo %]" title="[% row.manual_topo ? 'Manually configured topology link' : 'Discovered neighbor' %]"></i>
             [% IF row.remote_is_phone %]
-              <i class="icon-phone"></i>&nbsp;
+              <i class="icon-phone" title="VoIP Phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-rss"></i>&nbsp;
+              <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]">
-                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
-            [% IF row.remote_port %]
-                -
-                <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">
-                    [% row.remote_port | html_entity %]</a>
-            [% END %]
+                [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>[% IF row.remote_port %]@<a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]&f=[% row.remote_port | uri %]&prefer=port">[% row.remote_port | html_entity %]</a>[% END %][% IF neighbor_mac %] <a href="[% search_node | none %]&q=[% neighbor_mac | uri %]" class="text-muted">[% neighbor_mac | html_entity %]</a>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -406,16 +409,14 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
-            <i class="icon-[% row.remote_is_discoverable ? 'unlink' : 'eye-close' %] text-error"></i>&nbsp;
+            <i class="icon-[% row.remote_is_discoverable ? 'unlink' : 'eye-close' %] text-error"
+               title="[% row.remote_is_discoverable ? 'Neighbor not yet discovered' : 'Not discoverable (WAP/phone discovery disabled)' %]"></i>&nbsp;
             [% IF row.remote_is_phone %]
-              <i class="icon-phone"></i>&nbsp;
+              <i class="icon-phone" title="VoIP Phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-rss"></i>&nbsp;
+              <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
-            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>
-            [% IF row.remote_port %]
-              - [% row.remote_port | html_entity %]
-            [% END %]
+            <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>[% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]@[% row.remote_port | html_entity %][% END %][% IF (row.remote_is_wap OR row.remote_is_phone) AND row.remote_type %] <span class="text-muted">[% row.remote_type | html_entity %]</span>[% END %][% IF neighbor_mac %] <a href="[% search_node | none %]&q=[% neighbor_mac | uri %]" class="text-muted">[% neighbor_mac | html_entity %]</a>[% END %]
             <br/>
             [% IF params.n_inventory and row.remote_inventory %]
               [% row.remote_inventory | html_entity %]<br/>
@@ -425,7 +426,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            <i class="icon-unlink text-error"></i>&nbsp; (possible uplink)
+            <i class="icon-unlink text-error" title="Possible uplink — neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
@@ -439,16 +440,19 @@
         <div class="nd_collapsing nd_collapse-pre-hidden">
         [% END %]
         [% FOREACH node IN row.$nodes %]
+          [% SET _node_is_neighbor = 0 %]
+          [% FOREACH _nip IN node.$ips; _node_is_neighbor = 1 IF _nip.ip == row.remote_ip; END %]
+          [% NEXT IF _node_is_neighbor %]
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
-          [% '<i class="icon-book"></i>&nbsp; ' IF NOT node.active %]
-          [% '<i class="icon-signal"></i>&nbsp;' IF node.wireless.defined %]
+          [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
+          <i class="icon-laptop" title="Client"></i>&nbsp;
           <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
             (on vlan [% node.vlan | html_entity %])
           [% END %]            
-          [% IF params.n_ssid AND node.wireless.defined %]
+          [% IF params.n_ssid AND node.wireless_port %]
             (SSID:
             [% FOREACH wlan IN node.wireless %]
               <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
@@ -474,19 +478,10 @@
             <div class="nd_collapsing nd_collapse-pre-hidden">
             [% END %]
             [% FOREACH ip IN node.$ips %]
-            [% '<br/>' IF (((node.$ips.max + 1) <= settings.devport_ips_collapse_threshold) OR NOT loop.first) %]
-            &nbsp; [% '<i class="icon-book"></i>&nbsp; ' IF NOT ip.active %]
-              [% SET dns = ip.dns %]
-              [% IF dns %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% dns | html_entity %] ([% ip.ip | html_entity %])</a>
-              [% ELSE %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
-              [% END %]
+            [% IF loop.first %] [% ELSE %]<br/>&nbsp; [% END %][% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %][% SET dns = ip.dns %][% IF dns %]<a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>[% ELSE %]<a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>[% END %]
             [% END %]
             [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
             </div>
-            [% ELSIF (node.$ips.max + 1) > 0 AND (node.$ips.max + 1) <= settings.devport_ips_collapse_threshold %]
-            <br/>
             [% END %]
             </div>
           [% END %]
