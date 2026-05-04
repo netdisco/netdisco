@@ -480,9 +480,9 @@
           [% END %]
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip4 OR params.n_ip6 %]
-            [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
+            [% IF node.$ips.size AND node.$ips.size > settings.devport_ips_collapse_threshold %]
             <div class="nd_nodes-total">
-              &nbsp;&nbsp;<strong>[% (node.$ips.max + 1) %] IPs</strong>
+              &nbsp;&nbsp;<strong>[% node.$ips.size %] IPs</strong>
               <span class="nd_collapse-vlans">
                 Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
               </span>
@@ -491,7 +491,7 @@
             [% END %]
             [% FOREACH ip IN node.$ips %]
             [% IF loop.first %]
-              [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
+              [% IF (node.$ips.size) > settings.devport_ips_collapse_threshold %]
                 &nbsp;
               [% END %]
             [% ELSE %]
@@ -510,7 +510,7 @@
               <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
             [% END %]
             [% END %]
-            [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
+            [% IF node.$ips.size AND node.$ips.size > settings.devport_ips_collapse_threshold %]
             </div>
             [% END %]
             </div>
