@@ -154,10 +154,11 @@ sidebar_defaults:
     n_age:          { label: 'Age Stamp', default: null, idx: 2 }
     n_ip4:          { label: 'IPv4 Addresses', default: checked, idx: 3 }
     n_ip6:          { label: 'IPv6 Addresses', default: checked, idx: 4 }
-    n_netbios:      { label: 'NetBIOS Name', default: checked, idx: 5 }
-    n_ssid:         { label: 'SSID', default: checked, idx: 6 }
-    n_vendor:       { label: 'Vendor', default: null, idx: 7 }
-    n_archived:     { label: 'Archived Data', default: null, idx: 8 }
+    n_dns:          { label: 'Show IP with DNS', default: checked, idx: 5 }
+    n_netbios:      { label: 'NetBIOS Name', default: checked, idx: 6 }
+    n_ssid:         { label: 'SSID', default: checked, idx: 7 }
+    n_vendor:       { label: 'Vendor', default: null, idx: 8 }
+    n_archived:     { label: 'Archived Data', default: null, idx: 9 }
     age_num:        { default: 3 }
     age_unit:       { default: months }
     p_fold_dotzero: { label: 'Fold .0 subinterfaces', default: checked, idx: 0 }

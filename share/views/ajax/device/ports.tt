@@ -490,13 +490,22 @@
             <div class="nd_collapsing nd_collapse-pre-hidden">
             [% END %]
             [% FOREACH ip IN node.$ips %]
-            [% IF NOT loop.first %]
+            [% IF loop.first %]
+              [% IF (node.$ips.max + 1) > settings.devport_ips_collapse_threshold %]
+                &nbsp;
+              [% END %]
+            [% ELSE %]
               <br/>&nbsp;
             [% END %]
             [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
             [% SET dns = ip.dns %]
             [% IF dns %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
+              [% IF params.n_dns %]
+                <a href="[% search_node | none %]&q=[% dns | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
+                <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% dns | html_entity %]">([% ip.ip | html_entity %])</a>
+              [% ELSE %]
+                <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
+              [% END %]
             [% ELSE %]
               <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
             [% END %]
