@@ -476,11 +476,7 @@
             )
           [% END %]
           [% IF params.n_vendor AND node.manufacturer.defined %]
-            (Vendor:
-            [% FOREACH manufacturer IN node.manufacturer %]
-              <a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>
-            [% END %]
-            )
+            ([% FOREACH manufacturer IN node.manufacturer %]<a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>[% END %])
           [% END %]
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip4 OR params.n_ip6 %]
