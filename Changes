@@ -1,3 +1,16 @@
+2.098003 - 2026-05-05
+
+  [ENHANCEMENTS]
+
+  * #1499 device port node display improvements
+  * #1500 skip log file redirection when running in foreground mode
+  * #1504 skip privilege drop when already running unprivileged
+
+  [BUG FIXES]
+
+  * #1497 numeric warnings when nodes list is empty in ports template
+  * #1503 Custom Fields cannot be used in External Links
+
 2.098002 - 2026-04-20
 
   [BUG FIXES]
