@@ -91,6 +91,7 @@
     [% IF settings._extra_device_details.size %]
     [% FOREACH config IN settings._extra_device_details %]
     [% NEXT UNLESS permitted_by_acl(d, config) %]
+    [% NEXT IF config.hidden %]
     <tr>
       <td>
           [% config.label | html_entity %]

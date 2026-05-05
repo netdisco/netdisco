@@ -180,6 +180,7 @@
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
         [% NEXT UNLESS permitted_by_acl(row, config) %]
+        [% NEXT IF config.hidden %]
 
         [% TRY %]
           <td>
@@ -357,6 +358,7 @@
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
         [% NEXT UNLESS permitted_by_acl(row, config) %]
+        [% NEXT IF config.hidden %]
 
         [% TRY %]
           <td>
@@ -550,6 +552,7 @@
       [% FOREACH config IN settings._extra_device_port_cols %]
         [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
         [% NEXT UNLESS permitted_by_acl(row, config) %]
+        [% NEXT IF config.hidden %]
 
         [% TRY %]
           <td>
