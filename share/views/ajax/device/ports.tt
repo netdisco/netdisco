@@ -470,7 +470,7 @@
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
             (on vlan [% node.vlan | html_entity %])
           [% END %]            
-          [% IF params.n_ssid AND node.wireless_port %]
+          [% IF params.n_ssid AND node.wireless AND node.wireless.size %]
             (SSID:
             [% FOREACH wlan IN node.wireless %]
               <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
