@@ -471,11 +471,9 @@
             (on vlan [% node.vlan | html_entity %])
           [% END %]            
           [% IF params.n_ssid AND node.wireless AND node.wireless.size %]
-            (SSID:
-            [% FOREACH wlan IN node.wireless %]
+            (SSID: [% FOREACH wlan IN node.wireless %]
               <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
-            [% END %]
-            )
+            [% END %])
           [% END %]
           [% IF params.n_vendor AND node.manufacturer.defined %]
             ([% FOREACH manufacturer IN node.manufacturer %]<a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>[% END %])
@@ -495,6 +493,8 @@
             [% IF loop.first %]
               [% IF (node.$ips.size) > settings.devport_ips_collapse_threshold %]
                 &nbsp;
+              [% ELSE %]
+                <br/>&nbsp;
               [% END %]
             [% ELSE %]
               <br/>&nbsp;
@@ -519,7 +519,8 @@
           [% END %]
           [% IF params.n_netbios %]
             [% FOREACH nbt IN node.netbios %]
-            <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
+            [% '<br/>' IF NOT loop.first %]
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
             <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node | none %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
             [% END %]
           [% END %]
