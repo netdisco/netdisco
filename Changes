@@ -1,3 +1,11 @@
+2.098004 - 2026-05-08
+
+  [BUG FIXES]
+
+  * #1507 errors in netdisco-web.log
+  * fix unnecessary SQL query per node when node SSID is requested
+  * some whitespace formatting in device ports template
+
 2.098003 - 2026-05-05
 
   [ENHANCEMENTS]
