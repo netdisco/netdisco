@@ -182,6 +182,10 @@ sidebar_defaults:
     age_unit:     { default: months }
   admintask_rolepermissionseditor:
     aclhost:     { default: ip }
+health_path: ''
+metrics_path: ''
+metrics_token: ''
+metrics_allow: []
 netmap_performance_limit_max_devices: 1000
 netmap_custom_fields:
   device: []
