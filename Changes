@@ -1,3 +1,13 @@
+2.098005 - 2026-05-10
+
+  [ENHANCEMENTS]
+
+  * is_discoverable check after retrieving additional device context (SNMP fields)
+
+  [BUG FIXES]
+
+  * #1508 nested try catch for CSV to skip synthesized table view columns
+
 2.098004 - 2026-05-08
 
   [BUG FIXES]
