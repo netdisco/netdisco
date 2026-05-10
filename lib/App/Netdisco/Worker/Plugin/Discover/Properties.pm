@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
-use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex get_mibdirs_shortnames/;
 use App::Netdisco::Util::Web 'sort_port';
@@ -177,6 +177,11 @@ register_worker({ phase => 'early', driver => 'snmp',
               }
           }
       }
+  }
+
+  # check discover_no again, now that we have SNMP fields, to allow nuanced filtering
+  if (not $device->is_pseudo and not is_discoverable($device)) {
+      return $job->cancel("discover cancelled: not discoverable after retrieving device context");
   }
 
   # for existing device, filter custom_fields
