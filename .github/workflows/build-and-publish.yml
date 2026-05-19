@@ -315,6 +315,7 @@ jobs:
 
   redeploy_demo_db:
     name: Redeploy Demo DB
+    #needs: build_containers
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -416,7 +417,11 @@ jobs:
 
   build_demo_container:
     name: Build Container Images
+    #needs: redeploy_demo_db
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /github/workspace/netdisco2-demo/netdisco2-demo
 
     steps:
       - name: Check out latest dockerfile
