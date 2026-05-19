@@ -59,6 +59,9 @@ jobs:
 
     - name: Check out latest code
       uses: actions/checkout@v1
+      with:
+        ref: 'master'
+
     - name: Fix owner of checkout
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
 
@@ -331,6 +334,8 @@ jobs:
 
     - name: Check out latest code
       uses: actions/checkout@v1
+      with:
+        ref: 'master'
 
     - name: Fix owner of checkout
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
