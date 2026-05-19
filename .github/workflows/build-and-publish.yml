@@ -1,4 +1,4 @@
-name: Test and Publish Netdisco
+name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
@@ -6,18 +6,23 @@ on:
         description: 'Squawk to IRC on successful tests'     
         required: false
         default:  'false'
-      debug_test_enabled:
+      debug_tests:
         description: 'With build and test debug'
         required: false
         default:  'false'
-      debug_docker_enabled:
-        description: 'With docker debug'
+      debug_containers:
+        description: 'With container debug'
         required: false
         default:  'false'
-      debug_dbdeploy_enabled:
+      debug_dbdeploy:
         description: 'With db deploy debug'
         required: false
         default:  'false'
+      debug_demo:
+        description: 'With demo container debug'
+        required: false
+        default:  'false'
+
   push:
     branches:
       - master
@@ -126,7 +131,7 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_test_enabled == 'true'
+      if: always() && github.event.inputs.debug_tests == 'true'
       with:
         sudo: true
 
@@ -134,7 +139,7 @@ jobs:
       if: always() && (steps.build_and_run_tests.outcome == 'failure')
       run: exit 1
 
-  build_docker_images:
+  build_containers:
     name: Build Container Images
     needs: test_netdisco
     if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
@@ -240,20 +245,6 @@ jobs:
         docker tag localhost:5000/${IMAGE_ROOT}-web ${IMAGE_ROOT}-web
         docker tag localhost:5000/${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
 
-    - name: Build netdisco-demo
-      run: |
-        cd netdisco-demo
-        docker build \
-              --tag localhost:5000/${IMAGE_ROOT}-demo \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-demo \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-demo ${IMAGE_ROOT}-demo
-        docker tag localhost:5000/${IMAGE_ROOT}-demo registry.heroku.com/netdisco2-demo/web
-        echo "DEMO_IMAGE_ID=$(docker inspect registry.heroku.com/netdisco2-demo/web --format={{.Id}})" >> $GITHUB_ENV
-
     - name: Login to DH
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -294,34 +285,6 @@ jobs:
     - name: Logout from GHP
       run: docker logout
 
-    - name: Login to Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: |
-        echo '${{ env.HEROKU_API_KEY }}' | docker login registry.heroku.com --username=_ --password-stdin
-
-    - name: Upload to Heroku
-      id: upload_heroku_packages
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        docker push registry.heroku.com/netdisco2-demo/web
-      continue-on-error: true
-
-    - name: Logout from Heroku
-      run: docker logout
-
-    - name: Release on Heroku
-      if: (github.event_name == 'workflow_dispatch') || (steps.upload_heroku_packages.outcome == 'success')
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: |
-        curl -X PATCH https://api.heroku.com/apps/netdisco2-demo/formation \
-          -d "{ \"updates\": [ { \"type\": \"web\", \"docker_image\": \"$DEMO_IMAGE_ID\" } ] }" \
-          -H "Content-Type: application/json" \
-          -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
-          -H "Authorization: Bearer $HEROKU_API_KEY"
-      continue-on-error: true
-
     - name: IRC DH upload failure notification
       if: steps.upload_docker_hub.outcome == 'failure'
       uses: Gottox/irc-message-action@v2
@@ -342,7 +305,7 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_docker_enabled == 'true'
+      if: always() && github.event.inputs.debug_containers == 'true'
       with:
         sudo: true
 
@@ -350,10 +313,8 @@ jobs:
       if: always() && (steps.upload_docker_hub.outcome == 'failure')
       run: exit 1
 
-  demo_db_redeploy:
+  redeploy_demo_db:
     name: Redeploy Demo DB
-    needs: build_docker_images
-    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -364,12 +325,8 @@ jobs:
       run:
         working-directory: /github/workspace/netdisco/netdisco
     steps:
-    - name: Install base packages
-      run: apk add tmux bash curl sudo xz
     - name: Install packages
-      run: apk add openssh-client gcc make musl-dev musl-obstack-dev python3 perl-dev unzip gzip
-    - name: Install fake apt-get
-      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+      run: apk add curl gzip sudo
 
     - name: Check out latest code
       uses: actions/checkout@v1
@@ -377,33 +334,119 @@ jobs:
     - name: Fix owner of checkout
       run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
 
-    - name: Download and upload db content
-      env:
-        PGUSER:     ${{ secrets.DEMO_PGUSER }}
-        PGPASSWORD: ${{ secrets.DEMO_PGPASSWORD }}
-        PGHOST:     ${{ secrets.DEMO_PGHOST }}
-        PGDATABASE: ${{ secrets.DEMO_PGDATABASE }}
-        NETDISCO_HOME: /github/workspace/netdisco/netdisco
-        NETDISCO_DB_USER: ${{ secrets.DEMO_PGUSER }}
-        NETDISCO_DB_PASS: ${{ secrets.DEMO_PGPASSWORD }}
-        NETDISCO_DB_HOST: ${{ secrets.DEMO_PGHOST }}
-        NETDISCO_DB_NAME: ${{ secrets.DEMO_PGDATABASE }}
+    - name: Add IP address as trusted source (managed database)
+      uses: rachelallyson/add-ip-to-digital-ocean-database@v1.0
+      with:
+        action: "add"
+        database_id: ${{ secrets.DIGITALOCEAN_DEMO_DB_ID }}
+        digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: Download db content
       run: |
         curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
         curl -LO https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
         curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
-        psql -c "DROP OWNED BY $PGUSER CASCADE"
-        psql -c "CREATE SCHEMA public"
-        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-cumulus-clean.db.sql
-        /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-db-deploy
-        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco-lookup-tables.sql
         gunzip netdisco2-demo-snmp-object-data.sql.gz
+
+    - name: Upload cumulus demo
+      env:
+        PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+        PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+        PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+        PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+        PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+      run: |
+        psql -c "DROP OWNED BY $PGUSER CASCADE"
+        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-cumulus-clean.db.sql
+
+    - name: Update schema
+      env:
+        NETDISCO_HOME: /github/workspace/netdisco/netdisco
+        NETDISCO_DB_USER: ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+        NETDISCO_DB_PASS: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+        NETDISCO_DB_HOST: ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+        NETDISCO_DB_PORT: ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+        NETDISCO_DB_NAME: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+      run: |
+        /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-db-deploy
+
+    - name: Upload IANA/IEEE tables
+      env:
+        PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+        PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+        PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+        PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+        PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+      run: |
+        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco-lookup-tables.sql
+
+    - name: Upload SNMP Objects
+      env:
+        PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+        PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+        PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+        PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+        PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+      run: |
         psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-snmp-object-data.sql
-        rm /tmp/uv* && /home/netdisco/bin/localenv /github/workspace/netdisco/netdisco/bin/netdisco-do stats -D
+
+    - name: Update statistics
+      env:
+        NETDISCO_HOME: /github/workspace/netdisco/netdisco
+        NETDISCO_DB_USER: ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+        NETDISCO_DB_PASS: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+        NETDISCO_DB_HOST: ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+        NETDISCO_DB_PORT: ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+        NETDISCO_DB_NAME: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+      run: |
+        rm /tmp/uv* && /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-do stats -D
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_dbdeploy_enabled == 'true'
+      if: always() && github.event.inputs.debug_dbdeploy == 'true'
       with:
         sudo: true
+
+    - name: Remove IP address as trusted source (managed database)
+      uses: rachelallyson/add-ip-to-digital-ocean-database@v1.0
+      with:
+        action: "remove"
+        database_id: ${{ secrets.DIGITALOCEAN_DEMO_DB_ID }}
+        digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+  build_demo_container:
+    name: Build Container Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out latest dockerfile
+        uses: actions/checkout@v1
+        with:
+          repository: 'netdisco/netdisco2-demo'
+          ref: 'master'
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Build netdisco-demo container image
+        run: |
+          cd docker
+          docker build --tag registry.digitalocean.com/netdisco-demo-webonly/demo:latest .
+
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push registry.digitalocean.com/netdisco-demo-webonly/demo:latest
+
+      - name: Logout from DigitalOcean
+        run: docker logout
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: always() && github.event.inputs.debug_demo == 'true'
+        with:
+          sudo: true
 
