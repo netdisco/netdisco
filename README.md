@@ -10,7 +10,7 @@
 * Inventory your network hardware by model, vendor, software and operating system
 * Pretty pictures of your network
 
-See the demo at: [https://netdisco2-demo.herokuapp.com/](https://netdisco2-demo.herokuapp.com/)
+See the demo at: [https://netdisco-demo-jyxhs.ondigitalocean.app/](https://netdisco-demo-jyxhs.ondigitalocean.app/)
 
 ##  Installation
 

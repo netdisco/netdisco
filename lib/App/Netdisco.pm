@@ -48,7 +48,7 @@ interactive requests such as changing port or device properties.
 
 =item *
 
-See the demo at: L<https://netdisco2-demo.herokuapp.com/>
+See the demo at: L<https://netdisco-demo-jyxhs.ondigitalocean.app/>
 
 =item *
 
