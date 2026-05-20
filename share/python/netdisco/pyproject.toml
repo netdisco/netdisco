@@ -11,7 +11,7 @@ dependencies = [
     "cryptography>=43.0.1,<44",
     "virtualenv>=20.26.6",
     "sqlalchemy>=2.0.37,<3",
-    "psycopg>=3.2.4,<4",
+    "psycopg>=3.2.13,<4",
     "uv-build>=0.9.4,<0.10.0",
 ]
 
