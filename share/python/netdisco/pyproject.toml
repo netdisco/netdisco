@@ -7,7 +7,7 @@ requires-python = ">=3.9"
 dependencies = [
     "yamllint>=1.35.1,<2",
     "yamale>=5.2.1,<6",
-    "netmiko>=4.4.0,<5",
+    "netmiko>=4.6.0,<5",
     "cryptography>=43.0.1,<44",
     "virtualenv>=20.26.6",
     "sqlalchemy>=2.0.37,<3",
