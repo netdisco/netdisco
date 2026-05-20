@@ -58,7 +58,7 @@ jobs:
       run: echo "127.0.0.1 localhost" >> /etc/hosts
 
     - name: Check out latest code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v6.0.2
       with:
         ref: 'master'
 
@@ -152,7 +152,7 @@ jobs:
         working-directory: /home/runner/work/netdisco/netdisco-docker
     steps:
     - name: Check out latest code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v6.0.2
       with:
         repository: 'netdisco/netdisco-docker'
         ref: 'master'
@@ -333,7 +333,7 @@ jobs:
       run: apk add curl gzip sudo
 
     - name: Check out latest code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v6.0.2
       with:
         ref: 'master'
 

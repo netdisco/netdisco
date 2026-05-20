@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6.0.2
       - name: Get the Tag
         id: get_tag
         run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3.0.0
         with:
           name: Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}
