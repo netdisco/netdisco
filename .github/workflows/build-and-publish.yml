@@ -318,7 +318,7 @@ jobs:
 
   redeploy_demo_db:
     name: Redeploy Demo DB
-    #needs: build_containers
+    needs: build_containers
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -386,7 +386,7 @@ jobs:
       run: |
         psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco-lookup-tables.sql
 
-    - name: Upload SNMP Objects
+    - name: Upload SNMP Objects and Analze all tables
       env:
         PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
         PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
@@ -395,6 +395,7 @@ jobs:
         PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
       run: |
         psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-snmp-object-data.sql
+        psql -c "VACUUM ANALYZE"
 
     - name: Update statistics
       env:
