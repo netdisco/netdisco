@@ -318,7 +318,7 @@ jobs:
 
   redeploy_demo_db:
     name: Redeploy Demo DB
-    #needs: build_containers
+    needs: build_containers
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -424,15 +424,13 @@ jobs:
     name: Build Container Images
     #needs: redeploy_demo_db
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: /github/workspace/netdisco2-demo/netdisco2-demo
 
     steps:
       - name: Check out latest dockerfile
-        uses: actions/checkout@v1
+        uses: actions/checkout@v6.0.2
         with:
           repository: 'netdisco/netdisco2-demo'
+          path: 'netdisco2-demo'
           ref: 'master'
 
       - name: Install doctl
@@ -442,7 +440,7 @@ jobs:
 
       - name: Build netdisco-demo container image
         run: |
-          cd docker
+          cd ${GITHUB_WORKSPACE}/netdisco2-demo
           docker build --tag registry.digitalocean.com/netdisco-demo-webonly/demo:latest .
 
       - name: Log in to DigitalOcean Container Registry with short-lived credentials
