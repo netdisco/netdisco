@@ -2,10 +2,6 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
-      success_irc_squawk:
-        description: 'Squawk to IRC on successful tests'     
-        required: false
-        default:  'false'
       debug_tests:
         description: 'With build and test debug'
         required: false
@@ -30,6 +26,7 @@ on:
       - '2.[0-9][0-9][0-9][0-9][0-9][0-9]'
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   test_netdisco:
     name: Test and CPAN Upload
@@ -40,386 +37,312 @@ jobs:
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
-    defaults:
-      run:
-        working-directory: /github/workspace/netdisco/netdisco
+
     steps:
-    - name: Get the Tag or Branch
-      run: echo "GH_REF_SHORT=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+      - name: Get the Tag or Branch
+        run: echo "GH_REF_SHORT=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
-    - name: Install base packages
-      run: apk add tmux bash curl sudo xz
-    - name: Install other packages
-      run: apk add openssh-client gcc make musl-dev musl-obstack-dev python3 perl-dev unzip
-    - name: Install fake apt-get
-      run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
+      - name: Install base packages
+        run: apk add tmux bash curl sudo xz
+      - name: Install other packages
+        run: apk add openssh-client gcc make musl-dev musl-obstack-dev python3 perl-dev unzip
+      - name: Install fake apt-get
+        run: echo 'if [ "$1" == "update" ]; then exec apk update; else exec apk add openssh-client xz; fi' > /usr/local/bin/apt-get && chmod +x /usr/local/bin/apt-get
 
-    - name: Add localhost
-      run: echo "127.0.0.1 localhost" >> /etc/hosts
+      - name: Add localhost
+        run: echo "127.0.0.1 localhost" >> /etc/hosts
 
-    - name: Check out latest code
-      uses: actions/checkout@v6.0.2
-      with:
-        ref: 'master'
+      - name: Check out latest code
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: 'master'
 
-    - name: Fix owner of checkout
-      run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
+      - name: Fix owner of checkout
+        run: chown -R netdisco:netdisco ${GITHUB_WORKSPACE}/netdisco
 
-    - name: Install Perl deps
-      run: |
-        sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader Test::Pod
-        sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest --installdeps /github/workspace/netdisco/netdisco
+      - name: Install Perl deps
+        run: |
+          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader Test::Pod
+          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest --installdeps ${GITHUB_WORKSPACE}/netdisco
 
-    - name: Run Tests
-      id: build_and_run_tests
-      run: |
-        sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
-        sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
-      continue-on-error: true
+      - name: Run Tests
+        id: build_and_run_tests
+        run: |
+          sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
+          sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
 
-    - name: IRC test failure notification
-      if: (steps.build_and_run_tests.outcome == 'failure') && (github.event_name != 'workflow_dispatch') && (github.event_name != 'pull_request')
-      uses: Gottox/irc-message-action@v2
-      with:
-        channel: '#netdisco'
-        nickname: github-actions
-        message: |-
-          🤖 ${{ github.actor }} build_and_run_tests ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-          😭 TESTS have FAILED! 👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    - name: IRC test success notification
-      if: (steps.build_and_run_tests.outcome == 'success') && github.event.inputs.success_irc_squawk == 'true'
-      uses: Gottox/irc-message-action@v2
-      with:
-        channel: '#netdisco'
-        nickname: github-actions
-        message: |-
-          🤖 ${{ github.actor }} build_and_run_tests ${{ env.GH_REF_SHORT }}: https://github.com/${{ github.repository }}/commit/${{ github.sha }} (tests PASSED 🎉)
+      - name: Make release
+        if: steps.build_and_run_tests.outcome == 'success'
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          sudo -u netdisco /home/netdisco/bin/localenv rm ./MANIFEST
+          sudo -u netdisco /home/netdisco/bin/localenv ./Build manifest
+          sudo -u netdisco /home/netdisco/bin/localenv ./Build distmeta
+          sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
 
-    - name: Make release
-      if: steps.build_and_run_tests.outcome == 'success'
-      run: |
-        sudo -u netdisco /home/netdisco/bin/localenv rm ./MANIFEST
-        sudo -u netdisco /home/netdisco/bin/localenv ./Build manifest
-        sudo -u netdisco /home/netdisco/bin/localenv ./Build distmeta
-        sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
+      - name: Upload to CPAN
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
+          PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
+        run: |
+          bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
+          sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
 
-    - name: Upload to CPAN
-      id: upload_to_cpan
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        PAUSE_USERNAME: ${{ secrets.PAUSE_USERNAME }}
-        PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
-      run: |
-        bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
-        sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
-      continue-on-error: true
-
-    - name: IRC upload failure notification
-      if: steps.upload_to_cpan.outcome == 'failure'
-      uses: Gottox/irc-message-action@v2
-      with:
-        channel: '#netdisco'
-        nickname: github-actions
-        message: |-
-          🤖 Failed to upload Netdisco release ${{ env.GH_REF_SHORT }} to CPAN! 😭
-          👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    - name: IRC upload success notification
-      if: steps.upload_to_cpan.outcome == 'success'
-      uses: Gottox/irc-message-action@v2
-      with:
-        channel: '#netdisco'
-        nickname: github-actions
-        message: |-
-          🤖 Uploaded Netdisco release ${{ env.GH_REF_SHORT }} to CPAN 🎉
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_tests == 'true'
-      with:
-        sudo: true
-
-    - name: Preserve status from tests
-      if: always() && (steps.build_and_run_tests.outcome == 'failure')
-      run: exit 1
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: always() && github.event.inputs.debug_tests == 'true'
+        with:
+          sudo: true
 
   build_containers:
     name: Build Container Images
     needs: test_netdisco
     if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: /home/runner/work/netdisco/netdisco-docker
+
     steps:
-    - name: Check out latest code
-      uses: actions/checkout@v6.0.2
-      with:
-        repository: 'netdisco/netdisco-docker'
-        ref: 'master'
+      - name: Check out latest dockerfiles
+        uses: actions/checkout@v6.0.2
+        with:
+          repository: 'netdisco/netdisco-docker'
+          path: 'netdisco-docker'
+          ref: 'master'
 
-    - name: Get the Tag
-      run: |
-        echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
-        echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+      - name: Get the Tag
+        run: |
+          echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+          echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v4
-      with:
-        install: true
-        driver-opts: |
-          network=host
-          default-load=true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          install: true
+          driver-opts: |
+            network=host
+            default-load=true
 
-    - name: Reconfigure Docker with containerd and local registry
-      run: |
-        sudo mkdir -p /etc/docker
-        sudo su - root -c 'echo "{\"features\": {\"containerd-snapshotter\": true}}" > /etc/docker/daemon.json'
-        ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
-        sudo su - root -c 'rm -rf /var/run/docker.pid'
-        sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock &'
-        docker run -d -p 5000:5000 --restart always --name registry registry:3
+      - name: Reconfigure Docker with containerd and local registry
+        run: |
+          sudo mkdir -p /etc/docker
+          sudo su - root -c 'echo "{\"features\": {\"containerd-snapshotter\": true}}" > /etc/docker/daemon.json'
+          ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
+          sudo su - root -c 'rm -rf /var/run/docker.pid'
+          sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock &'
+          docker run -d -p 5000:5000 --restart always --name registry registry:3
 
-    - name: Build netdisco-postgresql
-      run: |
-        cd netdisco-postgresql
-        docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-postgresql \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-postgresql ${IMAGE_ROOT}-postgresql
-        docker tag localhost:5000/${IMAGE_ROOT}-postgresql netdisco/${IMAGE_ROOT}-postgresql
+      - name: Build netdisco-postgresql
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
+          docker build --platform linux/amd64,linux/arm64 \
+                --tag localhost:5000/${IMAGE_ROOT}-postgresql \
+                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} \
+                --load .
+          docker tag localhost:5000/${IMAGE_ROOT}-postgresql ${IMAGE_ROOT}-postgresql
+          docker tag localhost:5000/${IMAGE_ROOT}-postgresql netdisco/${IMAGE_ROOT}-postgresql
 
-    - name: Build netdisco-postgresql-13
-      run: |
-        cd netdisco-postgresql
-        docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-postgresql-13 \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql-13 \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --build-arg PGVER=13.4 \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 ${IMAGE_ROOT}-postgresql-13
-        docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 netdisco/${IMAGE_ROOT}-postgresql-13
+      - name: Build netdisco-postgresql-13
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
+          docker build --platform linux/amd64,linux/arm64 \
+                --tag localhost:5000/${IMAGE_ROOT}-postgresql-13 \
+                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql-13 \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} \
+                --build-arg PGVER=13.4 \
+                --load .
+          docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 ${IMAGE_ROOT}-postgresql-13
+          docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 netdisco/${IMAGE_ROOT}-postgresql-13
 
-    - name: Build netdisco-base
-      run: |
-        cd netdisco-base
-        docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-base \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-base ${IMAGE_ROOT}-base
-        docker tag localhost:5000/${IMAGE_ROOT}-base netdisco/${IMAGE_ROOT}-base
+      - name: Build netdisco-base
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-base
+          docker build --platform linux/amd64,linux/arm64 \
+                --tag localhost:5000/${IMAGE_ROOT}-base \
+                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} \
+                --load .
+          docker tag localhost:5000/${IMAGE_ROOT}-base ${IMAGE_ROOT}-base
+          docker tag localhost:5000/${IMAGE_ROOT}-base netdisco/${IMAGE_ROOT}-base
 
-    - name: Build netdisco-backend
-      run: |
-        cd netdisco-backend
-        docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-backend \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-backend ${IMAGE_ROOT}-backend
-        docker tag localhost:5000/${IMAGE_ROOT}-backend netdisco/${IMAGE_ROOT}-backend
+      - name: Build netdisco-backend
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-backend
+          docker build --platform linux/amd64,linux/arm64 \
+                --tag localhost:5000/${IMAGE_ROOT}-backend \
+                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} \
+                --load .
+          docker tag localhost:5000/${IMAGE_ROOT}-backend ${IMAGE_ROOT}-backend
+          docker tag localhost:5000/${IMAGE_ROOT}-backend netdisco/${IMAGE_ROOT}-backend
 
-    - name: Build netdisco-web
-      run: |
-        cd netdisco-web
-        docker build --platform linux/amd64,linux/arm64 \
-              --tag localhost:5000/${IMAGE_ROOT}-web \
-              --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
-              --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-              --build-arg TAG=${TAG} \
-              --build-arg COMMITTISH=${TAG} \
-              --load .
-        docker tag localhost:5000/${IMAGE_ROOT}-web ${IMAGE_ROOT}-web
-        docker tag localhost:5000/${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
+      - name: Build netdisco-web
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-web
+          docker build --platform linux/amd64,linux/arm64 \
+                --tag localhost:5000/${IMAGE_ROOT}-web \
+                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
+                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+                --build-arg TAG=${TAG} \
+                --build-arg COMMITTISH=${TAG} \
+                --load .
+          docker tag localhost:5000/${IMAGE_ROOT}-web ${IMAGE_ROOT}-web
+          docker tag localhost:5000/${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
 
-    - name: Login to DH
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        echo '${{ env.DOCKER_PASSWORD }}' | docker login -u '${{ env.DOCKER_USERNAME }}' --password-stdin
+      - name: Login to DH
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo '${{ env.DOCKER_PASSWORD }}' | docker login -u '${{ env.DOCKER_USERNAME }}' --password-stdin
 
-    - name: Upload to Docker Hub
-      id: upload_docker_hub
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        for image in postgresql postgresql-13 backend web; do
-          docker push netdisco/${IMAGE_ROOT}-$image
-          docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
-          docker push netdisco/netdisco:latest-$image
-        done
-      continue-on-error: true
+      - name: Upload to Docker Hub
+        id: upload_docker_hub
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          for image in postgresql postgresql-13 backend web; do
+            docker push netdisco/${IMAGE_ROOT}-$image
+            docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
+            docker push netdisco/netdisco:latest-$image
+          done
 
-    - name: Logout from DH
-      run: docker logout
+      - name: Logout from DH
+        run: docker logout
 
-    - name: Login to GHP
-      run: |
-        echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+      - name: Login to GHP
+        run: |
+          echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
 
-    - name: Upload to GitHub Packages
-      id: upload_github_packages
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        for image in postgresql postgresql-13 backend web; do
-          docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
-          docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
-          docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
-          docker push ghcr.io/netdisco/netdisco:latest-$image
-        done
-      continue-on-error: true
+      - name: Upload to GitHub Packages
+        id: upload_github_packages
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          for image in postgresql postgresql-13 backend web; do
+            docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
+            docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
+            docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
+            docker push ghcr.io/netdisco/netdisco:latest-$image
+          done
 
-    - name: Logout from GHP
-      run: docker logout
+      - name: Logout from GHP
+        run: docker logout
 
-    - name: IRC DH upload failure notification
-      if: steps.upload_docker_hub.outcome == 'failure'
-      uses: Gottox/irc-message-action@v2
-      with:
-        channel: '#netdisco'
-        nickname: github-actions
-        message: |-
-          🤖 Failed to publish Netdisco release ${{ env.TAG }} to Docker Hub! 😭
-          👀 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    - name: IRC DH upload success notification
-      if: (steps.upload_docker_hub.outcome == 'success') && github.event.inputs.success_irc_squawk == 'true'
-      uses: Gottox/irc-message-action@v2
-      with:
-        channel: '#netdisco'
-        nickname: github-actions
-        message: |-
-          🤖 Published Netdisco release ${{ env.TAG }} to Docker Hub! 🎉
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_containers == 'true'
-      with:
-        sudo: true
-
-    - name: Fix job exit status
-      if: always() && (steps.upload_docker_hub.outcome == 'failure')
-      run: exit 1
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: always() && github.event.inputs.debug_containers == 'true'
+        with:
+          sudo: true
 
   redeploy_demo_db:
     name: Redeploy Demo DB
     needs: build_containers
+    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
       options: '--user root --entrypoint /bin/ash'
       volumes:
         - '/home/runner/work:/github/workspace'
-    defaults:
-      run:
-        working-directory: /github/workspace/netdisco/netdisco
+
     steps:
-    - name: Install packages
-      run: apk add curl gzip sudo
+      - name: Install packages
+        run: apk add curl gzip sudo
 
-    - name: Check out latest code
-      uses: actions/checkout@v6.0.2
-      with:
-        ref: 'master'
+      - name: Add IP address as trusted source (managed database)
+        uses: rachelallyson/add-ip-to-digital-ocean-database@v1.0
+        with:
+          action: "add"
+          database_id: ${{ secrets.DIGITALOCEAN_DEMO_DB_ID }}
+          digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-    - name: Fix owner of checkout
-      run: chown -R netdisco:netdisco /github/workspace/netdisco/netdisco
+      - name: Download db content
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
+          curl -LO https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
+          curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
+          gunzip netdisco2-demo-snmp-object-data.sql.gz
 
-    - name: Add IP address as trusted source (managed database)
-      uses: rachelallyson/add-ip-to-digital-ocean-database@v1.0
-      with:
-        action: "add"
-        database_id: ${{ secrets.DIGITALOCEAN_DEMO_DB_ID }}
-        digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Upload cumulus demo
+        env:
+          PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+          PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+          PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+          PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+          PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          psql -c "DROP OWNED BY $PGUSER CASCADE"
+          psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-cumulus-clean.db.sql
 
-    - name: Download db content
-      run: |
-        curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
-        curl -LO https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
-        curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
-        gunzip netdisco2-demo-snmp-object-data.sql.gz
+      - name: Update schema
+        env:
+          NETDISCO_HOME: /github/workspace/netdisco/netdisco
+          NETDISCO_DB_USER: ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+          NETDISCO_DB_PASS: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+          NETDISCO_DB_HOST: ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+          NETDISCO_DB_PORT: ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+          NETDISCO_DB_NAME: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+        run: |
+          /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-db-deploy
 
-    - name: Upload cumulus demo
-      env:
-        PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
-        PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
-        PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
-        PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
-        PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
-      run: |
-        psql -c "DROP OWNED BY $PGUSER CASCADE"
-        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-cumulus-clean.db.sql
+      - name: Upload IANA/IEEE tables
+        env:
+          PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+          PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+          PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+          PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+          PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco-lookup-tables.sql
 
-    - name: Update schema
-      env:
-        NETDISCO_HOME: /github/workspace/netdisco/netdisco
-        NETDISCO_DB_USER: ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
-        NETDISCO_DB_PASS: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
-        NETDISCO_DB_HOST: ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
-        NETDISCO_DB_PORT: ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
-        NETDISCO_DB_NAME: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
-      run: |
-        /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-db-deploy
+      - name: Upload SNMP Objects and Analze all tables
+        env:
+          PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+          PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+          PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+          PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+          PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-snmp-object-data.sql
+          psql -c "VACUUM ANALYZE"
 
-    - name: Upload IANA/IEEE tables
-      env:
-        PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
-        PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
-        PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
-        PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
-        PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
-      run: |
-        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco-lookup-tables.sql
+      - name: Update statistics
+        env:
+          NETDISCO_HOME: /github/workspace/netdisco/netdisco
+          NETDISCO_DB_USER: ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
+          NETDISCO_DB_PASS: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
+          NETDISCO_DB_HOST: ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
+          NETDISCO_DB_PORT: ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
+          NETDISCO_DB_NAME: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
+        run: |
+          rm /tmp/uv* && /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-do stats -D
 
-    - name: Upload SNMP Objects and Analze all tables
-      env:
-        PGUSER:     ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
-        PGPASSWORD: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
-        PGHOST:     ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
-        PGPORT:     ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
-        PGDATABASE: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
-      run: |
-        psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -d ${{ env.PGDATABASE }} -f netdisco2-demo-snmp-object-data.sql
-        psql -c "VACUUM ANALYZE"
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: always() && github.event.inputs.debug_dbdeploy == 'true'
+        with:
+          sudo: true
 
-    - name: Update statistics
-      env:
-        NETDISCO_HOME: /github/workspace/netdisco/netdisco
-        NETDISCO_DB_USER: ${{ secrets.DIGITALOCEAN_DEMO_DB_USER }}
-        NETDISCO_DB_PASS: ${{ secrets.DIGITALOCEAN_DEMO_DB_PASS }}
-        NETDISCO_DB_HOST: ${{ secrets.DIGITALOCEAN_DEMO_DB_HOST }}
-        NETDISCO_DB_PORT: ${{ secrets.DIGITALOCEAN_DEMO_DB_PORT }}
-        NETDISCO_DB_NAME: ${{ secrets.DIGITALOCEAN_DEMO_DB_NAME }}
-      run: |
-        rm /tmp/uv* && /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-do stats -D
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: always() && github.event.inputs.debug_dbdeploy == 'true'
-      with:
-        sudo: true
-
-    - name: Remove IP address as trusted source (managed database)
-      uses: rachelallyson/add-ip-to-digital-ocean-database@v1.0
-      with:
-        action: "remove"
-        database_id: ${{ secrets.DIGITALOCEAN_DEMO_DB_ID }}
-        digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Remove IP address as trusted source (managed database)
+        uses: rachelallyson/add-ip-to-digital-ocean-database@v1.0
+        with:
+          action: "remove"
+          database_id: ${{ secrets.DIGITALOCEAN_DEMO_DB_ID }}
+          digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
   build_demo_container:
     name: Build Demo Container
