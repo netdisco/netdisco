@@ -421,7 +421,7 @@ jobs:
         digitalocean_token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
   build_demo_container:
-    name: Build Container Images
+    name: Build Demo Container
     #needs: redeploy_demo_db
     runs-on: ubuntu-latest
 
@@ -440,7 +440,7 @@ jobs:
 
       - name: Build netdisco-demo container image
         run: |
-          cd ${GITHUB_WORKSPACE}/netdisco2-demo
+          cd ${GITHUB_WORKSPACE}/netdisco2-demo/docker
           docker build --tag registry.digitalocean.com/netdisco-demo-webonly/demo:latest .
 
       - name: Log in to DigitalOcean Container Registry with short-lived credentials
