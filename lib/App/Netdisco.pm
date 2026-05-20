@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.098005';
+our $VERSION = '2.099000';
 use App::Netdisco::Configuration;
 
 =head1 NAME

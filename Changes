@@ -1,3 +1,13 @@
+2.099000 - 2026-05-20
+
+  [ENHANCEMENTS]
+
+  * demo website is now deployed to DigitalOcean (was previously Heroku)
+
+  [BUG FIXES]
+
+  * update Python dependencies for security patches
+
 2.098005 - 2026-05-10
 
   [ENHANCEMENTS]
