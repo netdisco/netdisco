@@ -55,7 +55,7 @@ jobs:
       - name: Check out latest code
         uses: actions/checkout@v6.0.2
         with:
-          ref: 'master'
+          ref: ${{ github.ref }}
           path: 'netdisco'
 
       - name: Fix owner of checkout
@@ -93,7 +93,7 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.21
         if: always() && github.event.inputs.debug_tests == 'true'
         with:
           sudo: true
@@ -135,6 +135,19 @@ jobs:
           ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
           sudo su - root -c 'rm -rf /var/run/docker.pid'
           sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock &'
+          # Wait for Docker daemon to be ready
+          for i in {1..30}; do
+            if docker info > /dev/null 2>&1; then
+              echo "Docker daemon ready"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Docker daemon failed to start"
+              exit 1
+            fi
+            echo "Waiting for Docker daemon... ($i/30)"
+            sleep 1
+          done
           docker run -d -p 5000:5000 --restart always --name registry registry:3
 
       - name: Build netdisco-postgresql
@@ -232,7 +245,7 @@ jobs:
         run: docker logout
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.21
         if: always() && github.event.inputs.debug_containers == 'true'
         with:
           sudo: true
@@ -325,7 +338,7 @@ jobs:
           rm /tmp/uv* && /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-do stats -D
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.21
         if: always() && github.event.inputs.debug_dbdeploy == 'true'
         with:
           sudo: true
@@ -370,7 +383,7 @@ jobs:
         run: docker logout
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.21
         if: always() && github.event.inputs.debug_demo == 'true'
         with:
           sudo: true
