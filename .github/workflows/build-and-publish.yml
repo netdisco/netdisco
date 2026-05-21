@@ -127,6 +127,8 @@ jobs:
           driver-opts: |
             network=host
             default-load=false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Reconfigure Docker with containerd and local registry
         run: |
@@ -153,9 +155,11 @@ jobs:
       - name: Build netdisco-postgresql
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
-          docker build --platform linux/amd64,linux/arm64 \
+          docker buildx build --platform linux/amd64,linux/arm64 \
                 --tag localhost:5000/${IMAGE_ROOT}-postgresql \
                 --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
+                --cache-from type=gha \
+                --cache-to type=gha,mode=max \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
@@ -164,9 +168,11 @@ jobs:
       - name: Build netdisco-postgresql-13
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
-          docker build --platform linux/amd64,linux/arm64 \
+          docker buildx build --platform linux/amd64,linux/arm64 \
                 --tag localhost:5000/${IMAGE_ROOT}-postgresql-13 \
                 --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql-13 \
+                --cache-from type=gha \
+                --cache-to type=gha,mode=max \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
@@ -176,9 +182,11 @@ jobs:
       - name: Build netdisco-base
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-base
-          docker build --platform linux/amd64,linux/arm64 \
+          docker buildx build --platform linux/amd64,linux/arm64 \
                 --tag localhost:5000/${IMAGE_ROOT}-base \
                 --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
+                --cache-from type=gha \
+                --cache-to type=gha,mode=max \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
@@ -187,9 +195,11 @@ jobs:
       - name: Build netdisco-backend
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-backend
-          docker build --platform linux/amd64,linux/arm64 \
+          docker buildx build --platform linux/amd64,linux/arm64 \
                 --tag localhost:5000/${IMAGE_ROOT}-backend \
                 --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
+                --cache-from type=gha \
+                --cache-to type=gha,mode=max \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
@@ -198,9 +208,11 @@ jobs:
       - name: Build netdisco-web
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-web
-          docker build --platform linux/amd64,linux/arm64 \
+          docker buildx build --platform linux/amd64,linux/arm64 \
                 --tag localhost:5000/${IMAGE_ROOT}-web \
                 --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
+                --cache-from type=gha \
+                --cache-to type=gha,mode=max \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
