@@ -126,7 +126,7 @@ jobs:
           install: true
           driver-opts: |
             network=host
-            default-load=true
+            default-load=false
 
       - name: Reconfigure Docker with containerd and local registry
         run: |
@@ -146,9 +146,7 @@ jobs:
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
-                --load .
-          docker tag localhost:5000/${IMAGE_ROOT}-postgresql ${IMAGE_ROOT}-postgresql
-          docker tag localhost:5000/${IMAGE_ROOT}-postgresql netdisco/${IMAGE_ROOT}-postgresql
+                .
 
       - name: Build netdisco-postgresql-13
         run: |
@@ -160,9 +158,7 @@ jobs:
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
                 --build-arg PGVER=13.4 \
-                --load .
-          docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 ${IMAGE_ROOT}-postgresql-13
-          docker tag localhost:5000/${IMAGE_ROOT}-postgresql-13 netdisco/${IMAGE_ROOT}-postgresql-13
+                .
 
       - name: Build netdisco-base
         run: |
@@ -173,9 +169,7 @@ jobs:
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
-                --load .
-          docker tag localhost:5000/${IMAGE_ROOT}-base ${IMAGE_ROOT}-base
-          docker tag localhost:5000/${IMAGE_ROOT}-base netdisco/${IMAGE_ROOT}-base
+                .
 
       - name: Build netdisco-backend
         run: |
@@ -186,9 +180,7 @@ jobs:
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
-                --load .
-          docker tag localhost:5000/${IMAGE_ROOT}-backend ${IMAGE_ROOT}-backend
-          docker tag localhost:5000/${IMAGE_ROOT}-backend netdisco/${IMAGE_ROOT}-backend
+                .
 
       - name: Build netdisco-web
         run: |
@@ -199,9 +191,10 @@ jobs:
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg TAG=${TAG} \
                 --build-arg COMMITTISH=${TAG} \
-                --load .
-          docker tag localhost:5000/${IMAGE_ROOT}-web ${IMAGE_ROOT}-web
-          docker tag localhost:5000/${IMAGE_ROOT}-web netdisco/${IMAGE_ROOT}-web
+                .
+
+      - name: Install skopeo
+        run: sudo apt-get update && sudo apt-get install -y skopeo
 
       - name: Login to DH
         env:
@@ -215,9 +208,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            docker push netdisco/${IMAGE_ROOT}-$image
-            docker tag ${IMAGE_ROOT}-$image netdisco/netdisco:latest-$image
-            docker push netdisco/netdisco:latest-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://docker.io/netdisco/netdisco:${TAG}-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://docker.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from DH
@@ -232,10 +224,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/${IMAGE_ROOT}-$image
-            docker push ghcr.io/netdisco/${IMAGE_ROOT}-$image
-            docker tag ${IMAGE_ROOT}-$image ghcr.io/netdisco/netdisco:latest-$image
-            docker push ghcr.io/netdisco/netdisco:latest-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://ghcr.io/netdisco/netdisco:${TAG}-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from GHP
@@ -384,4 +374,3 @@ jobs:
         if: always() && github.event.inputs.debug_demo == 'true'
         with:
           sudo: true
-
