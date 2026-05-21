@@ -93,7 +93,7 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3.21
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_tests == 'true'
         with:
           sudo: true
@@ -257,7 +257,7 @@ jobs:
         run: docker logout
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3.21
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_containers == 'true'
         with:
           sudo: true
@@ -350,7 +350,7 @@ jobs:
           rm /tmp/uv* && /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-do stats -D
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3.21
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_dbdeploy == 'true'
         with:
           sudo: true
@@ -395,7 +395,7 @@ jobs:
         run: docker logout
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3.21
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_demo == 'true'
         with:
           sudo: true
