@@ -104,6 +104,11 @@ jobs:
     if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
+    services:
+      registry:
+        image: registry:3
+        ports: ["5000:5000"]
+
     steps:
       - name: Check out latest dockerfiles
         uses: actions/checkout@v6.0.2
@@ -117,6 +122,17 @@ jobs:
           echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v5.1.0
+        with:
+          daemon-config: |
+            {
+              "debug": true,
+              "features": {
+                "containerd-snapshotter": true
+              }
+            }
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
@@ -127,30 +143,6 @@ jobs:
           driver-opts: |
             network=host
             default-load=false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Reconfigure Docker with containerd and local registry
-        run: |
-          sudo mkdir -p /etc/docker
-          sudo su - root -c 'echo "{\"features\": {\"containerd-snapshotter\": true}}" > /etc/docker/daemon.json'
-          ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
-          sudo su - root -c 'rm -rf /var/run/docker.pid'
-          sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock &'
-          # Wait for Docker daemon to be ready
-          for i in {1..30}; do
-            if docker info > /dev/null 2>&1; then
-              echo "Docker daemon ready"
-              break
-            fi
-            if [ $i -eq 30 ]; then
-              echo "Docker daemon failed to start"
-              exit 1
-            fi
-            echo "Waiting for Docker daemon... ($i/30)"
-            sleep 1
-          done
-          docker run -d -p 5000:5000 --restart always --name registry registry:3
 
       - name: Build netdisco-postgresql
         run: |
