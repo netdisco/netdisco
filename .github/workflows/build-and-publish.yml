@@ -2,10 +2,6 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
-      run_tests:
-        description: 'Run tests'
-        required: false
-        default:  'true'
       debug_tests:
         description: 'With build and test debug'
         required: false
@@ -34,7 +30,7 @@ on:
 jobs:
   test_netdisco:
     name: Test and CPAN Upload
-    if: ((github.event_name == 'workflow_dispatch') && (github.event.inputs.debug_tests == 'true')) || github.repository == 'netdisco/netdisco'
+    if: github.repository == 'netdisco/netdisco'
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
