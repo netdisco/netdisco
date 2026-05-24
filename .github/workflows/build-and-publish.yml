@@ -149,7 +149,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          source: ${GITHUB_WORKSPACE}/netdisco-docker
+          source: ${{ env.GITHUB_WORKSPACE }}/netdisco-docker
           files: ./compose.build.yaml
           targets: |
             netdisco-postgresql
