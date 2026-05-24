@@ -165,6 +165,7 @@ jobs:
           targets: |
             netdisco-postgresql
             netdisco-postgresql-13
+            netdisco-base
             netdisco-backend
             netdisco-web
           push: false
@@ -175,6 +176,7 @@ jobs:
             *.platform=linux/amd64,linux/arm64
             netdisco-postgresql.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
             netdisco-postgresql-13.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
+            netdisco-base.tags=localhost:5000/${{ env.IMAGE_ROOT }}-base
             netdisco-backend.tags=localhost:5000/${{ env.IMAGE_ROOT }}-backend
             netdisco-web.tags=localhost:5000/${{ env.IMAGE_ROOT }}-web
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
@@ -182,6 +184,7 @@ jobs:
             *.args.COMMITTISH=${{ env.TAG }}
             netdisco-postgresql.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
             netdisco-postgresql-13.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
+            netdisco-base.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-base
             netdisco-backend.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-backend
             netdisco-web.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-web
 
