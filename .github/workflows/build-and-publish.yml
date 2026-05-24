@@ -2,6 +2,10 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default:  'true'
       debug_tests:
         description: 'With build and test debug'
         required: false
@@ -30,7 +34,7 @@ on:
 jobs:
   test_netdisco:
     name: Test and CPAN Upload
-    if: github.repository == 'netdisco/netdisco'
+    if: ((github.event_name == 'workflow_dispatch') && (github.event.inputs.debug_tests == 'true')) || github.repository == 'netdisco/netdisco'
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -121,6 +125,7 @@ jobs:
         run: |
           echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
       - name: Set up Docker
         uses: docker/setup-docker-action@v5.1.0
@@ -144,71 +149,35 @@ jobs:
             network=host
             default-load=false
 
-      - name: Build netdisco-postgresql
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
-          docker buildx build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-postgresql \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
-                --cache-from type=gha \
-                --cache-to type=gha,mode=max \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
-
-      - name: Build netdisco-postgresql-13
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
-          docker buildx build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-postgresql-13 \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql-13 \
-                --cache-from type=gha \
-                --cache-to type=gha,mode=max \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                --build-arg PGVER=13.4 \
-                .
-
-      - name: Build netdisco-base
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-base
-          docker buildx build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-base \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
-                --cache-from type=gha \
-                --cache-to type=gha,mode=max \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
-
-      - name: Build netdisco-backend
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-backend
-          docker buildx build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-backend \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
-                --cache-from type=gha \
-                --cache-to type=gha,mode=max \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
-
-      - name: Build netdisco-web
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-web
-          docker buildx build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-web \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
-                --cache-from type=gha \
-                --cache-to type=gha,mode=max \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
+      - name: Build images with Bake and Cache
+        uses: docker/bake-action@v7.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          source: ${GITHUB_WORKSPACE}/netdisco-docker
+          files: ./compose.build.yaml
+          targets: |
+            netdisco-postgresql
+            netdisco-postgresql-13
+            netdisco-backend
+            netdisco-web
+          push: false
+          load: false
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            *.platforms=linux/amd64,linux/arm64
+            netdisco-postgresql.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
+            netdisco-postgresql-13.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
+            netdisco-backend.tags=localhost:5000/${{ env.IMAGE_ROOT }}-backend
+            netdisco-web.tags=localhost:5000/${{ env.IMAGE_ROOT }}-web
+            *.args.BUILD_DATE=${{ env.BUILD_DATE }}
+            *.args.TAG=${{ env.TAG }}
+            *.args.COMMITTISH=${{ env.TAG }}
+            netdisco-postgresql.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
+            netdisco-postgresql-13.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
+            netdisco-backend.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-backend
+            netdisco-web.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-web
 
       - name: Install skopeo
         run: sudo apt-get update && sudo apt-get install -y skopeo
