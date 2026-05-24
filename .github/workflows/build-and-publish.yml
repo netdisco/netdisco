@@ -172,7 +172,7 @@ jobs:
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
-            *.platforms=linux/amd64,linux/arm64
+            *.platform=linux/amd64,linux/arm64
             netdisco-postgresql.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
             netdisco-postgresql-13.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
             netdisco-backend.tags=localhost:5000/${{ env.IMAGE_ROOT }}-backend
