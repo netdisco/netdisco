@@ -2,6 +2,10 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default:  'true'
       debug_tests:
         description: 'With build and test debug'
         required: false
@@ -30,7 +34,9 @@ on:
 jobs:
   test_netdisco:
     name: Test and CPAN Upload
-    if: github.repository == 'netdisco/netdisco'
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests == 'true')
+      || (github.event_name != 'workflow_dispatch' && github.repository == 'netdisco/netdisco')
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -101,7 +107,12 @@ jobs:
   build_containers:
     name: Build Container Images
     needs: test_netdisco
-    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
+    if: |
+      always() && 
+      !cancelled() && 
+      !failure() &&
+      (needs.test_netdisco.result == 'success' || needs.test_netdisco.result == 'skipped') &&
+      (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     services:
@@ -149,7 +160,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          source: ${{ env.GITHUB_WORKSPACE }}/netdisco-docker
+          source: /home/runner/work/netdisco/netdisco/netdisco-docker
           files: ./compose.build.yaml
           targets: |
             netdisco-postgresql
