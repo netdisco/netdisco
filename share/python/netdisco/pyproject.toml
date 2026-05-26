@@ -5,7 +5,7 @@ description = "Python code and dependencies for Netdisco"
 authors = [{ name = "Netdisco Developers" }]
 requires-python = ">=3.10"
 dependencies = [
-    "yamllint>=1.37.1,<2",
+    "yamllint>=1.38.0,<2",
     "yamale>=6.1.0,<7",
     "netmiko>=4.6.0,<5",
     "cryptography>=48.0.0,<49",
