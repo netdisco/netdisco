@@ -2,6 +2,15 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
+      netdisco_docker_committish:
+        description: 'netdisco-docker REF to use'
+        required: false
+        type: string
+        default: 'master'
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default:  'true'
       debug_tests:
         description: 'With build and test debug'
         required: false
@@ -30,7 +39,9 @@ on:
 jobs:
   test_netdisco:
     name: Test and CPAN Upload
-    if: github.repository == 'netdisco/netdisco'
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests == 'true')
+      || (github.event_name != 'workflow_dispatch' && github.repository == 'netdisco/netdisco')
     runs-on: ubuntu-latest
     container:
       image: 'netdisco/netdisco:latest-backend'
@@ -39,9 +50,6 @@ jobs:
         - '/home/runner/work:/github/workspace'
 
     steps:
-      - name: Get the Tag or Branch
-        run: echo "GH_REF_SHORT=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
-
       - name: Install base packages
         run: apk add tmux bash curl sudo xz
       - name: Install other packages
@@ -55,8 +63,8 @@ jobs:
       - name: Check out latest code
         uses: actions/checkout@v6.0.2
         with:
-          ref: 'master'
           path: 'netdisco'
+          ref: ${{ github.ref }}
 
       - name: Fix owner of checkout
         run: chown -R netdisco:netdisco ${GITHUB_WORKSPACE}/netdisco
@@ -93,7 +101,7 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_tests == 'true'
         with:
           sudo: true
@@ -101,8 +109,18 @@ jobs:
   build_containers:
     name: Build Container Images
     needs: test_netdisco
-    if: (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
+    if: |
+      always() && 
+      !cancelled() && 
+      !failure() &&
+      (needs.test_netdisco.result == 'success' || needs.test_netdisco.result == 'skipped') &&
+      (github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+
+    services:
+      registry:
+        image: registry:3
+        ports: ["5000:5000"]
 
     steps:
       - name: Check out latest dockerfiles
@@ -110,88 +128,51 @@ jobs:
         with:
           repository: 'netdisco/netdisco-docker'
           path: 'netdisco-docker'
-          ref: 'master'
+          ref: ${{ ((github.event.inputs.netdisco_docker_committish != '') && github.event.inputs.netdisco_docker_committish) || 'master' }}
 
       - name: Get the Tag
         run: |
-          echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+          echo "COMMITTISH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v5.1.0
+        with:
+          daemon-config: |
+            {
+              "debug": true,
+              "features": {
+                "containerd-snapshotter": true
+              }
+            }
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.1.0
         with:
-          install: true
           driver-opts: |
             network=host
             default-load=false
 
-      - name: Reconfigure Docker with containerd and local registry
-        run: |
-          sudo mkdir -p /etc/docker
-          sudo su - root -c 'echo "{\"features\": {\"containerd-snapshotter\": true}}" > /etc/docker/daemon.json'
-          ps axf | grep docker | grep -v grep | awk '{print "kill -9 " $1}' | sudo sh
-          sudo su - root -c 'rm -rf /var/run/docker.pid'
-          sudo su - root -c 'nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock &'
-          docker run -d -p 5000:5000 --restart always --name registry registry:3
-
-      - name: Build netdisco-postgresql
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
-          docker build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-postgresql \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
-
-      - name: Build netdisco-postgresql-13
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-postgresql
-          docker build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-postgresql-13 \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-postgresql-13 \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                --build-arg PGVER=13.4 \
-                .
-
-      - name: Build netdisco-base
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-base
-          docker build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-base \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-base \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
-
-      - name: Build netdisco-backend
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-backend
-          docker build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-backend \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-backend \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
-
-      - name: Build netdisco-web
-        run: |
-          cd ${GITHUB_WORKSPACE}/netdisco-docker/netdisco-web
-          docker build --platform linux/amd64,linux/arm64 \
-                --tag localhost:5000/${IMAGE_ROOT}-web \
-                --output type=registry,name=localhost:5000/${IMAGE_ROOT}-web \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg TAG=${TAG} \
-                --build-arg COMMITTISH=${TAG} \
-                .
+      - name: Build images with Bake and Cache
+        uses: docker/bake-action@v7.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMITTISH: ${{ env.COMMITTISH }}
+        with:
+          source: /home/runner/work/netdisco/netdisco/netdisco-docker
+          files: docker-bake.hcl
+          targets: all
+          push: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            *.platform=linux/amd64,linux/arm64
+            *.args.BUILD_DATE=${{ env.BUILD_DATE }}
+            *.args.COMMITTISH=${{ env.COMMITTISH }}
 
       - name: Install skopeo
         run: sudo apt-get update && sudo apt-get install -y skopeo
@@ -208,8 +189,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://docker.io/netdisco/netdisco:${TAG}-$image
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://docker.io/netdisco/netdisco:latest-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:${COMMITTISH}-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from DH
@@ -224,15 +205,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://ghcr.io/netdisco/netdisco:${TAG}-$image
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:${COMMITTISH}-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from GHP
         run: docker logout
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_containers == 'true'
         with:
           sudo: true
@@ -325,7 +306,7 @@ jobs:
           rm /tmp/uv* && /home/netdisco/bin/localenv /home/netdisco/bin/netdisco-do stats -D
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_dbdeploy == 'true'
         with:
           sudo: true
@@ -370,7 +351,7 @@ jobs:
         run: docker logout
 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3.23
         if: always() && github.event.inputs.debug_demo == 'true'
         with:
           sudo: true
