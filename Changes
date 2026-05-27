@@ -1,3 +1,14 @@
+2.099001 - 2026-05-27
+
+  [ENHANCEMENTS]
+
+  * update Python minimum version from 3.9 to 3.10
+  * new demo website links to DigitalOcean hosting
+
+  [BUG FIXES]
+
+  * update Python dependencies for security patches
+
 2.099000 - 2026-05-20
 
   [ENHANCEMENTS]
