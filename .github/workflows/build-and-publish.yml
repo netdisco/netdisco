@@ -2,6 +2,11 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
+      netdisco_docker_committish:
+        description: 'netdisco-docker REF to use'
+        required: false
+        type: string
+        default: 'master'
       run_tests:
         description: 'Run tests'
         required: false
@@ -61,8 +66,8 @@ jobs:
       - name: Check out latest code
         uses: actions/checkout@v6.0.2
         with:
-          ref: ${{ github.ref }}
           path: 'netdisco'
+          ref: ${{ github.ref }}
 
       - name: Fix owner of checkout
         run: chown -R netdisco:netdisco ${GITHUB_WORKSPACE}/netdisco
@@ -126,7 +131,7 @@ jobs:
         with:
           repository: 'netdisco/netdisco-docker'
           path: 'netdisco-docker'
-          ref: 'master'
+          ref: ${{ ((github.event.inputs.netdisco_docker_committish != '') && github.event.inputs.netdisco_docker_committish) || 'master' }}
 
       - name: Get the Tag
         run: |
@@ -159,34 +164,52 @@ jobs:
         uses: docker/bake-action@v7.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMITTISH: ${{ steps.args.outputs.committish }}
         with:
           source: /home/runner/work/netdisco/netdisco/netdisco-docker
-          files: ./compose.build.yaml
-          targets: |
-            netdisco-postgresql
-            netdisco-postgresql-13
-            netdisco-base
-            netdisco-backend
-            netdisco-web
-          push: false
-          load: false
+          files: docker-bake.hcl
+          targets: all
+          push: true
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
             *.platform=linux/amd64,linux/arm64
-            netdisco-postgresql.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
-            netdisco-postgresql-13.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
-            netdisco-base.tags=localhost:5000/${{ env.IMAGE_ROOT }}-base
-            netdisco-backend.tags=localhost:5000/${{ env.IMAGE_ROOT }}-backend
-            netdisco-web.tags=localhost:5000/${{ env.IMAGE_ROOT }}-web
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.TAG=${{ env.TAG }}
             *.args.COMMITTISH=${{ env.TAG }}
-            netdisco-postgresql.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
-            netdisco-postgresql-13.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
-            netdisco-base.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-base
-            netdisco-backend.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-backend
-            netdisco-web.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-web
+
+      # - name: Build images with Bake and Cache
+      #   uses: docker/bake-action@v7.2.0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     source: /home/runner/work/netdisco/netdisco/netdisco-docker
+      #     files: ./compose.build.yaml
+      #     targets: |
+      #       netdisco-postgresql
+      #       netdisco-postgresql-13
+      #       netdisco-base
+      #       netdisco-backend
+      #       netdisco-web
+      #     push: false
+      #     load: false
+      #     set: |
+      #       *.cache-from=type=gha
+      #       *.cache-to=type=gha,mode=max
+      #       *.platform=linux/amd64,linux/arm64
+      #       netdisco-postgresql.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
+      #       netdisco-postgresql-13.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
+      #       netdisco-base.tags=localhost:5000/${{ env.IMAGE_ROOT }}-base
+      #       netdisco-backend.tags=localhost:5000/${{ env.IMAGE_ROOT }}-backend
+      #       netdisco-web.tags=localhost:5000/${{ env.IMAGE_ROOT }}-web
+      #       *.args.BUILD_DATE=${{ env.BUILD_DATE }}
+      #       *.args.TAG=${{ env.TAG }}
+      #       *.args.COMMITTISH=${{ env.TAG }}
+      #       netdisco-postgresql.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
+      #       netdisco-postgresql-13.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
+      #       netdisco-base.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-base
+      #       netdisco-backend.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-backend
+      #       netdisco-web.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-web
 
       - name: Install skopeo
         run: sudo apt-get update && sudo apt-get install -y skopeo
