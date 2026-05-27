@@ -189,8 +189,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:${COMMITTISH}-$image
-            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:latest-$image
+            skopeo copy --src-tls-verify=false --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:${COMMITTISH}-$image
+            skopeo copy --src-tls-verify=false --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from DH
@@ -205,8 +205,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:${COMMITTISH}-$image
-            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
+            skopeo copy --src-tls-verify=false --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:${COMMITTISH}-$image
+            skopeo copy --src-tls-verify=false --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from GHP
