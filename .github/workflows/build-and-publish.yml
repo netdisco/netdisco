@@ -50,9 +50,6 @@ jobs:
         - '/home/runner/work:/github/workspace'
 
     steps:
-      - name: Get the Tag or Branch
-        run: echo "GH_REF_SHORT=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
-
       - name: Install base packages
         run: apk add tmux bash curl sudo xz
       - name: Install other packages
@@ -135,7 +132,7 @@ jobs:
 
       - name: Get the Tag
         run: |
-          echo "TAG=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+          echo "COMMITTISH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
@@ -164,7 +161,7 @@ jobs:
         uses: docker/bake-action@v7.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMITTISH: ${{ env.TAG }}
+          COMMITTISH: ${{ env.COMMITTISH }}
         with:
           source: /home/runner/work/netdisco/netdisco/netdisco-docker
           files: docker-bake.hcl
@@ -175,41 +172,7 @@ jobs:
             *.cache-to=type=gha,mode=max
             *.platform=linux/amd64,linux/arm64
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
-            *.args.TAG=${{ env.TAG }}
-            *.args.COMMITTISH=${{ env.TAG }}
-
-      # - name: Build images with Bake and Cache
-      #   uses: docker/bake-action@v7.2.0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     source: /home/runner/work/netdisco/netdisco/netdisco-docker
-      #     files: ./compose.build.yaml
-      #     targets: |
-      #       netdisco-postgresql
-      #       netdisco-postgresql-13
-      #       netdisco-base
-      #       netdisco-backend
-      #       netdisco-web
-      #     push: false
-      #     load: false
-      #     set: |
-      #       *.cache-from=type=gha
-      #       *.cache-to=type=gha,mode=max
-      #       *.platform=linux/amd64,linux/arm64
-      #       netdisco-postgresql.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
-      #       netdisco-postgresql-13.tags=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
-      #       netdisco-base.tags=localhost:5000/${{ env.IMAGE_ROOT }}-base
-      #       netdisco-backend.tags=localhost:5000/${{ env.IMAGE_ROOT }}-backend
-      #       netdisco-web.tags=localhost:5000/${{ env.IMAGE_ROOT }}-web
-      #       *.args.BUILD_DATE=${{ env.BUILD_DATE }}
-      #       *.args.TAG=${{ env.TAG }}
-      #       *.args.COMMITTISH=${{ env.TAG }}
-      #       netdisco-postgresql.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql
-      #       netdisco-postgresql-13.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-postgresql-13
-      #       netdisco-base.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-base
-      #       netdisco-backend.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-backend
-      #       netdisco-web.output=type=registry,name=localhost:5000/${{ env.IMAGE_ROOT }}-web
+            *.args.COMMITTISH=${{ env.COMMITTISH }}
 
       - name: Install skopeo
         run: sudo apt-get update && sudo apt-get install -y skopeo
@@ -226,8 +189,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://docker.io/netdisco/netdisco:${TAG}-$image
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://docker.io/netdisco/netdisco:latest-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:${COMMITTISH}-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://docker.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from DH
@@ -242,8 +205,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://ghcr.io/netdisco/netdisco:${TAG}-$image
-            skopeo copy --all docker://localhost:5000/netdisco:${TAG}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:${COMMITTISH}-$image
+            skopeo copy --all docker://localhost:5000/netdisco:${COMMITTISH}-$image docker://ghcr.io/netdisco/netdisco:latest-$image
           done
 
       - name: Logout from GHP
