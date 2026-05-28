@@ -137,7 +137,7 @@ jobs:
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
       - name: Set up Docker
-        uses: docker/setup-docker-action@v5.1.0
+        uses: docker/setup-docker-action@v5.2.0
         with:
           daemon-config: |
             {
