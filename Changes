@@ -1,3 +1,9 @@
+2.099004 - 2026-05-29
+
+  [BUG FIXES]
+
+  * update Python dependencies and GitHub actions cache
+
 2.099003 - 2026-05-28
 
   [BUG FIXES]
