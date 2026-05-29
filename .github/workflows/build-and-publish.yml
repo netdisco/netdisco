@@ -171,9 +171,11 @@ jobs:
             *.platform=linux/amd64,linux/arm64
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-web-global;type=gha,scope=netdisco-backend-global
+            netdisco-web.cache-from=type=gha,scope=netdisco-backend-global
+            netdisco-web.cache-from=type=gha,scope=netdisco-web-global
             netdisco-web.cache-to=type=gha,mode=max,scope=netdisco-web-global-${{ github.run_id }}-${{ github.run_attempt }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global;type=gha,scope=netdisco-web-global
+            netdisco-backend.cache-from=type=gha,scope=netdisco-web-global
+            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global
             netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Install skopeo
