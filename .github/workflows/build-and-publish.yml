@@ -169,6 +169,7 @@ jobs:
           targets: all
           push: true
           set: |
+            *.output=type=registry
             *.platform=linux/amd64,linux/arm64
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
