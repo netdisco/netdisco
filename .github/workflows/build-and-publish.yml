@@ -2,6 +2,11 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
+      platforms:
+        description: 'Target platforms to build (comma-separated)'
+        required: true
+        type: string
+        default: 'linux/amd64,linux/arm64'
       netdisco_docker_committish:
         description: 'netdisco-docker REF to use'
         required: false
@@ -170,7 +175,7 @@ jobs:
           push: true
           set: |
             *.output=type=registry
-            *.platform=linux/amd64,linux/arm64
+            *.platform=${{ github.event.inputs.platforms || 'linux/amd64,linux/arm64' }}
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
             netdisco-web.cache-from=type=gha,scope=netdisco-backend-global
