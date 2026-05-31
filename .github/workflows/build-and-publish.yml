@@ -2,11 +2,6 @@ name: Build and Publish Netdisco
 on:
   workflow_dispatch:
     inputs:
-      platforms:
-        description: 'Target platforms to build (comma-separated)'
-        required: true
-        type: string
-        default: 'linux/amd64,linux/arm64'
       netdisco_docker_committish:
         description: 'netdisco-docker REF to use'
         required: false
@@ -121,12 +116,15 @@ jobs:
       !failure() &&
       (needs.test_netdisco.result == 'success' || needs.test_netdisco.result == 'skipped') &&
       ((github.event_name == 'workflow_dispatch') || startsWith(github.ref, 'refs/tags/'))
-    runs-on: ubuntu-latest
 
-    services:
-      registry:
-        image: registry:3
-        ports: ["5000:5000"]
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            builder: ubuntu-24.04
+          - arch: arm64
+            builder: ubuntu-24.04-arm
+    runs-on: ${{ matrix.builder }}
 
     steps:
       - name: Check out latest dockerfiles
@@ -142,6 +140,16 @@ jobs:
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
+      - name: Create Transport Stage
+        run: mkdir -p /tmp/transport-stage-${{ matrix.arch }}
+
+      # Prepare the cache registration BEFORE building to lock down the key
+      - name: Register Cache Transport Vehicle
+        uses: actions/cache/save@v5.0.5
+        with:
+          path: /tmp/transport-stage-${{ matrix.arch }}
+          key: transport-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+
       - name: Set up Docker
         uses: docker/setup-docker-action@v5.2.0
         with:
@@ -153,14 +161,10 @@ jobs:
               }
             }
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.1.0
         with:
           driver-opts: |
-            network=host
             default-load=false
 
       - name: Build images with Bake and Cache
@@ -174,19 +178,73 @@ jobs:
           targets: all
           push: true
           set: |
-            *.output=type=registry
-            *.platform=${{ github.event.inputs.platforms || 'linux/amd64,linux/arm64' }}
+            *.platform=linux/${{ matrix.arch }}
+            netdisco-web.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-web.tar
+            netdisco-backend.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-backend.tar
+            netdisco-postgresql.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-postgresql.tar
+            netdisco-postgresql-13.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-postgresql-13.tar
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-backend-global
-            netdisco-web.cache-from=type=gha,scope=netdisco-web-global
-            netdisco-web.cache-to=type=gha,mode=max,scope=netdisco-web-global-${{ github.run_id }}-${{ github.run_attempt }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-web-global
-            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global
-            netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ github.run_id }}-${{ github.run_attempt }}
+            netdisco-web.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
+            netdisco-web.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
+            netdisco-web.cache-to=type=gha,mode=max,scope=netdisco-web-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+            netdisco-backend.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
+            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
+            netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+  publish_to_registry:
+    needs: build_containers
+    runs-on: ubuntu-latest
+
+    services:
+      registry:
+        image: registry:3
+        ports:
+          - 5000:5000
+
+    steps:
+      - name: Restore AMD64 Image from Cache
+        uses: actions/cache/restore@v5.0.5
+        with:
+          path: /tmp/transport-stage-amd64
+          key: transport-amd64-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+
+      - name: Restore ARM64 Image from Cache
+        uses: actions/cache/restore@v5.0.5
+        with:
+          path: /tmp/transport-stage-arm64
+          key: transport-arm64-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
 
       - name: Install skopeo
         run: sudo apt-get update && sudo apt-get install -y skopeo
+
+      - name: Upload images to registry
+        env:
+          COMMITTISH: ${{ env.COMMITTISH }}
+        run: |
+          for image in postgresql postgresql-13 backend web; do
+            skopeo copy --dest-tls-verify=false \
+              oci-archive:/tmp/transport-stage-amd64/netdisco-$image.tar \
+              docker://localhost:5000/netdisco:amd64-${COMMITTISH}-$image
+            skopeo copy --dest-tls-verify=false \
+              oci-archive:/tmp/transport-stage-arm64/netdisco-$image.tar \
+              docker://localhost:5000/netdisco:arm64-${COMMITTISH}-$image
+          done
+
+      - name: Push Multi-Arch Index
+        env:
+          COMMITTISH: ${{ env.COMMITTISH }}
+        run: |
+          for image in postgresql postgresql-13 backend web; do
+            docker manifest create --insecure \
+                localhost:5000/netdisco:${COMMITTISH}-$image \
+                localhost:5000/netdisco:amd64-${COMMITTISH}-$image \
+                localhost:5000/netdisco:arm64-${COMMITTISH}-$image
+            docker manifest push --insecure localhost:5000/netdisco:${COMMITTISH}-$image
+            docker manifest inspect --insecure localhost:5000/netdisco:${COMMITTISH}-$image
+          done
 
       - name: Login to DH
         env:
@@ -231,7 +289,7 @@ jobs:
 
   redeploy_demo_db:
     name: Redeploy Demo DB
-    needs: build_containers
+    needs: publish_to_registry
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     container:
