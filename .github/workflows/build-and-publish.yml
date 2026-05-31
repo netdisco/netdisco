@@ -193,7 +193,8 @@ jobs:
             netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
 
   publish_to_registry:
-    needs: build_containers
+    name: Gather and Publish Images
+    needs: [build_containers]
     runs-on: ubuntu-latest
 
     services:
