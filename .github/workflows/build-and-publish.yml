@@ -158,7 +158,9 @@ jobs:
             default-load=false
 
       - name: Create staging area
-        run: mkdir -p /tmp/transport-stage-${{ matrix.arch }}
+        run: |
+          mkdir -p /tmp/transport-stage-pre-${{ matrix.arch }}
+          mkdir -p /tmp/transport-stage-${{ matrix.arch }}
 
       - name: Build images with Bake and Cache
         uses: docker/bake-action@v7.2.0
@@ -172,10 +174,10 @@ jobs:
           push: true
           set: |
             *.platform=linux/${{ matrix.arch }}
-            netdisco-web.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-web.tar
-            netdisco-backend.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-backend.tar
-            netdisco-postgresql.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-postgresql.tar
-            netdisco-postgresql-13.output=type=oci,dest=/tmp/transport-stage-${{ matrix.arch }}/netdisco-postgresql-13.tar
+            netdisco-web.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-web.tar
+            netdisco-backend.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-backend.tar
+            netdisco-postgresql.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql.tar
+            netdisco-postgresql-13.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql-13.tar
             *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
             netdisco-web.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
@@ -184,6 +186,16 @@ jobs:
             netdisco-backend.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
             netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
             netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Extract arch image from multi-arch image
+        run: |
+          ls -l /tmp/transport-stage-pre-${{ matrix.arch }}
+          for image in postgresql postgresql-13 backend web; do
+            skopeo copy --multi-arch=system \
+              oci-archive:/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-$image.tar \
+              oci-archive:/tmp/transport-stage-${{ matrix.arch }}/netdisco-$image.tar
+          done
+          ls -l /tmp/transport-stage-${{ matrix.arch }}
 
       - name: Upload staged files to GHA cache
         uses: actions/cache/save@v5.0.5
@@ -208,6 +220,9 @@ jobs:
           - 5000:5000
 
     steps:
+      - name: Get the Tag
+        run: echo "COMMITTISH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+
       - name: Restore AMD64 Image from GHA Cache
         uses: actions/cache/restore@v5.0.5
         with:
@@ -229,10 +244,10 @@ jobs:
           ls -l /tmp/transport-stage-amd64
           ls -l /tmp/transport-stage-arm64
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --dest-tls-verify=false \
+            skopeo copy --all --dest-tls-verify=false \
               oci-archive:/tmp/transport-stage-amd64/netdisco-$image.tar \
               docker://localhost:5000/netdisco:amd64-${COMMITTISH}-$image
-            skopeo copy --dest-tls-verify=false \
+            skopeo copy --all --dest-tls-verify=false \
               oci-archive:/tmp/transport-stage-arm64/netdisco-$image.tar \
               docker://localhost:5000/netdisco:arm64-${COMMITTISH}-$image
           done
