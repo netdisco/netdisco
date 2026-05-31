@@ -1,3 +1,9 @@
+2.099005 - 2026-05-31
+
+  [ENHANCEMENTS]
+
+  * migrate github build from qemu to matrix for multi-arch
+
 2.099004 - 2026-05-29
 
   [BUG FIXES]
