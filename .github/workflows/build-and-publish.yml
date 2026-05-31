@@ -140,16 +140,6 @@ jobs:
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
-      - name: Create Transport Stage
-        run: mkdir -p /tmp/transport-stage-${{ matrix.arch }}
-
-      # Prepare the cache registration BEFORE building to lock down the key
-      - name: Register Cache Transport Vehicle
-        uses: actions/cache/save@v5.0.5
-        with:
-          path: /tmp/transport-stage-${{ matrix.arch }}
-          key: transport-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-
       - name: Set up Docker
         uses: docker/setup-docker-action@v5.2.0
         with:
@@ -166,6 +156,9 @@ jobs:
         with:
           driver-opts: |
             default-load=false
+
+      - name: Create staging area
+        run: mkdir -p /tmp/transport-stage-${{ matrix.arch }}
 
       - name: Build images with Bake and Cache
         uses: docker/bake-action@v7.2.0
@@ -192,6 +185,12 @@ jobs:
             netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
             netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
 
+      - name: Upload staged files to GHA cache
+        uses: actions/cache/save@v5.0.5
+        with:
+          path: /tmp/transport-stage-${{ matrix.arch }}
+          key: transport-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+
   publish_to_registry:
     name: Gather and Publish Images
     needs: [build_containers]
@@ -209,14 +208,14 @@ jobs:
           - 5000:5000
 
     steps:
-      - name: Restore AMD64 Image from Cache
+      - name: Restore AMD64 Image from GHA Cache
         uses: actions/cache/restore@v5.0.5
         with:
           path: /tmp/transport-stage-amd64
           key: transport-amd64-${{ github.run_id }}-${{ github.run_attempt }}
           fail-on-cache-miss: true
 
-      - name: Restore ARM64 Image from Cache
+      - name: Restore ARM64 Image from GHA Cache
         uses: actions/cache/restore@v5.0.5
         with:
           path: /tmp/transport-stage-arm64
@@ -227,6 +226,8 @@ jobs:
         env:
           COMMITTISH: ${{ env.COMMITTISH }}
         run: |
+          ls -l /tmp/transport-stage-amd64
+          ls -l /tmp/transport-stage-arm64
           for image in postgresql postgresql-13 backend web; do
             skopeo copy --dest-tls-verify=false \
               oci-archive:/tmp/transport-stage-amd64/netdisco-$image.tar \
