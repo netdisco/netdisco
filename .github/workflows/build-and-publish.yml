@@ -223,9 +223,6 @@ jobs:
           key: transport-arm64-${{ github.run_id }}-${{ github.run_attempt }}
           fail-on-cache-miss: true
 
-      - name: Install skopeo
-        run: sudo apt-get update && sudo apt-get install -y skopeo
-
       - name: Upload images to registry
         env:
           COMMITTISH: ${{ env.COMMITTISH }}
