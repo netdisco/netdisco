@@ -244,10 +244,10 @@ jobs:
           ls -l /tmp/transport-stage-amd64
           ls -l /tmp/transport-stage-arm64
           for image in postgresql postgresql-13 backend web; do
-            skopeo copy --all --dest-tls-verify=false \
+            skopeo --override-arch=amd64 copy --dest-tls-verify=false \
               oci-archive:/tmp/transport-stage-amd64/netdisco-$image.tar \
               docker://localhost:5000/netdisco:amd64-${COMMITTISH}-$image
-            skopeo copy --all --dest-tls-verify=false \
+            skopeo --override-arch=arm64 copy --dest-tls-verify=false \
               oci-archive:/tmp/transport-stage-arm64/netdisco-$image.tar \
               docker://localhost:5000/netdisco:arm64-${COMMITTISH}-$image
           done
