@@ -1,3 +1,9 @@
+2.099005 - 2026-05-31
+
+  [BUG FIXES]
+
+  * reengineer GH builder workflow to migrate from qemu to matrix native
+
 2.099004 - 2026-05-29
 
   [BUG FIXES]
