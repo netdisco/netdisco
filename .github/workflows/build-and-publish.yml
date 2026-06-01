@@ -178,7 +178,10 @@ jobs:
             netdisco-backend.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-backend.tar
             netdisco-postgresql.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql.tar
             netdisco-postgresql-13.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql-13.tar
-            *.args.BUILD_DATE=${{ env.BUILD_DATE }}
+            netdisco-web.args.BUILD_DATE=${{ env.BUILD_DATE }}
+            netdisco-backend.args.BUILD_DATE=${{ env.BUILD_DATE }}
+            netdisco-postgresql.args.BUILD_DATE=${{ env.BUILD_DATE }}
+            netdisco-postgresql-13.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
             netdisco-web.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
             netdisco-web.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
