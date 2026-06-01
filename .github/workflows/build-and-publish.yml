@@ -183,12 +183,8 @@ jobs:
             netdisco-postgresql.args.BUILD_DATE=${{ env.BUILD_DATE }}
             netdisco-postgresql-13.args.BUILD_DATE=${{ env.BUILD_DATE }}
             *.args.COMMITTISH=${{ env.COMMITTISH }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
-            netdisco-web.cache-to=type=gha,mode=max,scope=netdisco-web-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
-            netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+            netdisco-base.cache-from=type=gha,scope=netdisco-base-global-${{ matrix.arch }}
+            netdisco-base.cache-to=type=gha,mode=max,scope=netdisco-base-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Extract arch image from multi-arch image
         run: |
