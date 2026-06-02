@@ -146,6 +146,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMITTISH: ${{ env.COMMITTISH }}
+          BUILDKIT_STEP_LOG_MAX_SIZE: 10000000
+          ACTIONS_STEP_DEBUG: true
         with:
           source: https://github.com/netdisco/netdisco-docker.git#${{ ((github.event.inputs.netdisco_docker_committish != '') && github.event.inputs.netdisco_docker_committish) || 'master' }}
           files: docker-bake.hcl
