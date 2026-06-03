@@ -127,35 +127,14 @@ jobs:
     runs-on: ${{ matrix.builder }}
 
     steps:
-      - name: Check out latest dockerfiles
-        uses: actions/checkout@v6.0.2
-        with:
-          repository: 'netdisco/netdisco-docker'
-          path: 'netdisco-docker'
-          ref: ${{ ((github.event.inputs.netdisco_docker_committish != '') && github.event.inputs.netdisco_docker_committish) || 'master' }}
-
       - name: Get the Tag
         run: |
           echo "COMMITTISH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "IMAGE_ROOT=netdisco:$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
-      - name: Set up Docker
-        uses: docker/setup-docker-action@v5.2.0
-        with:
-          daemon-config: |
-            {
-              "debug": false,
-              "features": {
-                "containerd-snapshotter": true
-              }
-            }
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.1.0
-        with:
-          driver-opts: |
-            default-load=false
 
       - name: Create staging area
         run: |
@@ -168,24 +147,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMITTISH: ${{ env.COMMITTISH }}
         with:
-          source: /home/runner/work/netdisco/netdisco/netdisco-docker
+          source: https://github.com/netdisco/netdisco-docker.git#${{ ((github.event.inputs.netdisco_docker_committish != '') && github.event.inputs.netdisco_docker_committish) || 'master' }}
           files: docker-bake.hcl
           targets: all
           push: true
           set: |
             *.platform=linux/${{ matrix.arch }}
+            *.args.COMMITTISH=${{ env.COMMITTISH }}
+            *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             netdisco-web.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-web.tar
             netdisco-backend.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-backend.tar
             netdisco-postgresql.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql.tar
             netdisco-postgresql-13.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql-13.tar
-            *.args.BUILD_DATE=${{ env.BUILD_DATE }}
-            *.args.COMMITTISH=${{ env.COMMITTISH }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
-            netdisco-web.cache-to=type=gha,mode=max,scope=netdisco-web-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-web-global-${{ matrix.arch }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-global-${{ matrix.arch }}
-            netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Extract arch image from multi-arch image
         run: |
