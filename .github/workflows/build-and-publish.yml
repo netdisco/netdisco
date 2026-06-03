@@ -146,8 +146,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMITTISH: ${{ env.COMMITTISH }}
-          BUILDKIT_STEP_LOG_MAX_SIZE: 10000000
-          ACTIONS_STEP_DEBUG: true
         with:
           source: https://github.com/netdisco/netdisco-docker.git#${{ ((github.event.inputs.netdisco_docker_committish != '') && github.event.inputs.netdisco_docker_committish) || 'master' }}
           files: docker-bake.hcl
@@ -155,23 +153,12 @@ jobs:
           push: true
           set: |
             *.platform=linux/${{ matrix.arch }}
+            *.args.COMMITTISH=${{ env.COMMITTISH }}
+            *.args.BUILD_DATE=${{ env.BUILD_DATE }}
             netdisco-web.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-web.tar
             netdisco-backend.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-backend.tar
             netdisco-postgresql.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql.tar
             netdisco-postgresql-13.output=type=oci,dest=/tmp/transport-stage-pre-${{ matrix.arch }}/netdisco-postgresql-13.tar
-            netdisco-web.args.BUILD_DATE=${{ env.BUILD_DATE }}
-            netdisco-backend.args.BUILD_DATE=${{ env.BUILD_DATE }}
-            netdisco-postgresql.args.BUILD_DATE=${{ env.BUILD_DATE }}
-            netdisco-postgresql-13.args.BUILD_DATE=${{ env.BUILD_DATE }}
-            *.args.COMMITTISH=${{ env.COMMITTISH }}
-            netdisco-base.cache-from=type=gha,scope=netdisco-base-${{ matrix.arch }}
-            netdisco-base.cache-to=type=gha,mode=max,scope=netdisco-base-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-            netdisco-web.cache-from=type=gha,scope=netdisco-web-${{ matrix.arch }}
-            netdisco-web.cache-to=type=gha,mode=max,scope=netdisco-web-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-            netdisco-backend.cache-from=type=gha,scope=netdisco-backend-${{ matrix.arch }}
-            netdisco-backend.cache-to=type=gha,mode=max,scope=netdisco-backend-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
-            *.cache-from=type=gha,scope=netdisco-global-${{ matrix.arch }}
-            *.cache-to=type=gha,mode=max,scope=netdisco-global-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Extract arch image from multi-arch image
         run: |
