@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
       - name: Get the Tag
         id: get_tag
         run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
