@@ -440,6 +440,13 @@ sub walk_fwtable {
       my $bp_id = $fw_port->{$idx};
       next unless defined $mac;
 
+      # SNMP glitch: some macs have a mis-encoded MacAddress in the OID.
+      # The MacAddress in the OID is required to be 6 bytes long
+      # if it's 7 bytes with a leading 0x06 then it's pretty obviously mis-encoded
+      if ($mac ~= m{^06:($RE{net}{MAC})$}i) {
+          $mac = $1;
+      }
+
       unless (defined $bp_id) {
           debug sprintf
             ' [%s] macsuck %s - %s has no fw_port mapping - skipping.',
