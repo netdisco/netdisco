@@ -61,7 +61,7 @@ jobs:
         run: echo "127.0.0.1 localhost" >> /etc/hosts
 
       - name: Check out latest code
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           path: 'netdisco'
           ref: ${{ github.ref }}
@@ -386,7 +386,7 @@ jobs:
 
     steps:
       - name: Check out latest dockerfile
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           repository: 'netdisco/netdisco2-demo'
           path: 'netdisco2-demo'
