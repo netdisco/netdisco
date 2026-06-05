@@ -1,3 +1,9 @@
+2.099006 - 2026-06-05
+
+  [ENHANCEMENTS]
+
+  * #1282 #1466 fix mis-encoded MACs 7 bytes with a leading 0x06
+
 2.099005 - 2026-05-31
 
   [ENHANCEMENTS]
