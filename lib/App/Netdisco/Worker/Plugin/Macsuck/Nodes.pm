@@ -443,7 +443,7 @@ sub walk_fwtable {
       # SNMP glitch: some macs have a mis-encoded MacAddress in the OID.
       # The MacAddress in the OID is required to be 6 bytes long
       # if it's 7 bytes with a leading 0x06 then it's pretty obviously mis-encoded
-      if ($mac ~= m{^06:($RE{net}{MAC})$}i) {
+      if ($mac =~ m{^06:($RE{net}{MAC})$}i) {
           $mac = $1;
       }
 
