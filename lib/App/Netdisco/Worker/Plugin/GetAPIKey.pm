@@ -19,10 +19,7 @@ register_worker({ phase => 'main' }, sub {
   my $flag      = $job->port || '';
 
   my $user = schema('netdisco')->resultset('User')
-    ->find({ username => $username });
-
-  return Status->error("No such user")
-    unless $user and $user->in_storage;
+    ->find_or_create({ username => $username });
 
   if ($flag eq 'revoke') {
     $user->update({ token => undef, token_from => undef, token_no_expire => \"false" });
