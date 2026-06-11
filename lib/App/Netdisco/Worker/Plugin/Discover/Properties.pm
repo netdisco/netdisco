@@ -27,7 +27,8 @@ register_worker({ phase => 'early', driver => 'snmp',
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
-  my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
+  my $snmp = App::Netdisco::Transport::SNMP->reader_for(
+      $device, undef, $job->params->{snmp_tag})
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
   # for field_protection
