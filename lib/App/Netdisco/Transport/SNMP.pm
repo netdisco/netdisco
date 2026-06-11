@@ -56,7 +56,7 @@ Returns C<undef> if the connection fails.
 =cut
 
 sub reader_for {
-  my ($class, $ip, $useclass) = @_;
+  my ($class, $ip, $useclass, $tag_hint) = @_;
   my $device = get_device($ip) or return undef;
 
   my $readers = $class->instance->readers or return undef;
@@ -64,7 +64,7 @@ sub reader_for {
 
   debug sprintf 'snmp reader cache warm: [%s]', $device->ip;
   return ($readers->{$device->ip}
-    = _snmp_connect_generic('read', $device, $useclass));
+    = _snmp_connect_generic('read', $device, $useclass, $tag_hint));
 }
 
 =head1 test_connection( $ip )
@@ -122,7 +122,7 @@ sub writer_for {
 }
 
 sub _snmp_connect_generic {
-  my ($mode, $device, $useclass) = @_;
+  my ($mode, $device, $useclass, $tag_hint) = @_;
   $mode ||= 'read';
 
   my %snmp_args = (
@@ -185,7 +185,7 @@ sub _snmp_connect_generic {
   # get the community string(s)
   my @communities = $snmp_args{Offline}
     ? ({read => 1, write => 0, only => $device->ip, community => 'public'})
-    : get_communities($device, $mode);
+    : get_communities($device, $mode, $tag_hint);
 
   # which SNMP versions to try and in what order
   my @versions =
@@ -207,7 +207,7 @@ sub _snmp_connect_generic {
   my $tag_name = 'snmp_auth_tag_'. $mode;
   my $stored_tag = eval { $device->community->$tag_name };
 
-  if ($device->in_storage and $stored_tag) {
+  if (!$tag_hint and $device->in_storage and $stored_tag) {
       debug sprintf '[%s:%s] try_connect with cached tag %s',
           $snmp_args{DestHost}, $snmp_args{RemotePort}, $stored_tag;
 
