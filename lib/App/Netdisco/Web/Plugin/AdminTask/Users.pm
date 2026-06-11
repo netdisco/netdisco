@@ -40,17 +40,22 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
       my $user = schema(vars->{'tenant'})->resultset('User')
         ->create({
           username => param('username'),
-          password => _make_password(param('password')),
           fullname => param('fullname'),
 
-          (param('auth_method') ? (
-            (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
-            (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
-            (tacacs => (param('auth_method') eq 'tacacs' ? \'true' : \'false')),
+          (param('auth_method') eq 'token' ? (
+            password => undef,
+            ldap => \'false', radius => \'false', tacacs => \'false',
           ) : (
-            ldap => \'false',
-            radius => \'false',
-            tacacs => \'false',
+            password => _make_password(param('password')),
+            (param('auth_method') ? (
+              (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
+              (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
+              (tacacs => (param('auth_method') eq 'tacacs' ? \'true' : \'false')),
+            ) : (
+              ldap => \'false',
+              radius => \'false',
+              tacacs => \'false',
+            )),
           )),
 
           port_control => (param('port_control') ? \'true' : \'false'),
@@ -82,19 +87,24 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
       return unless $user;
 
       $user->update({
-        ((param('password') ne '********')
-          ? (password => _make_password(param('password')))
-          : ()),
         fullname => param('fullname'),
 
-        (param('auth_method') ? (
-          (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
-          (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
-          (tacacs => (param('auth_method') eq 'tacacs' ? \'true' : \'false')),
+        (param('auth_method') eq 'token' ? (
+          password => undef,
+          ldap => \'false', radius => \'false', tacacs => \'false',
         ) : (
-          ldap => \'false',
-          radius => \'false',
-          tacacs => \'false',
+          ((param('password') and param('password') ne '********')
+            ? (password => _make_password(param('password')))
+            : ()),
+          (param('auth_method') ? (
+            (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
+            (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
+            (tacacs => (param('auth_method') eq 'tacacs' ? \'true' : \'false')),
+          ) : (
+            ldap => \'false',
+            radius => \'false',
+            tacacs => \'false',
+          )),
         )),
 
         port_control => (param('port_control') ? \'true' : \'false'),

@@ -17,14 +17,15 @@
     <tr>
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="username" type="text"></td>
-      <td class="nd_center-cell"><input class="span1" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="span1 nd_pw_field" data-form="add" name="password" type="password"></td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="add" name="auth_method">
+          <select class="span2 form-control nd_auth_method" data-form="add" name="auth_method">
             <option value="" selected>Netdisco Password</option>
             <option value="ldap">LDAP</option>
             <option value="radius">RADIUS</option>
             <option value="tacacs">TACACS</option>
+            <option value="token">Token only</option>
           </select>
         </div>
       </td>
@@ -59,15 +60,17 @@
         <input class="span2" data-form="update" name="username" type="text" value="[% row.username | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input class="span1" data-form="update" name="password" type="password" value="********">
+        <input class="span1 nd_pw_field" data-form="update" name="password" type="password"
+          [%- IF NOT row.ldap AND NOT row.radius AND NOT row.tacacs AND NOT row.password %] disabled placeholder="N/A"[% ELSE %] value="********"[% END %]>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="update" name="auth_method">
-            <option value="">Netdisco Password</option>
+          <select class="span2 form-control nd_auth_method" data-form="update" name="auth_method">
+            <option[% ' selected' IF NOT row.ldap AND NOT row.radius AND NOT row.tacacs AND row.password %] value="">Netdisco Password</option>
             <option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>
             <option[% ' selected' IF row.radius %] value="radius">RADIUS</option>
             <option[% ' selected' IF row.tacacs %] value="tacacs">TACACS</option>
+            <option[% ' selected' IF NOT row.ldap AND NOT row.radius AND NOT row.tacacs AND NOT row.password %] value="token">Token only</option>
           </select>
         </div>
       </td>
@@ -122,6 +125,17 @@
 
 <script>
 $(document).ready(function() {
+  function togglePasswordField(select) {
+    var pw = $(select).closest('tr').find('.nd_pw_field');
+    if ($(select).val() === 'token') {
+      pw.val('').prop('disabled', true).attr('placeholder', 'N/A');
+    } else {
+      pw.prop('disabled', false).attr('placeholder', '');
+    }
+  }
+  $('.nd_auth_method').each(function() { togglePasswordField(this); });
+  $(document).on('change', '.nd_auth_method', function() { togglePasswordField(this); });
+
   $('#data-table').dataTable({
     "columnDefs": [ 
       {
