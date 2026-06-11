@@ -80,7 +80,7 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
       $token = _provision_token($user) if param('auth_method') eq 'token';
     });
 
-    return to_json { api_key => $token } if $token;
+    return "<span data-nd-api-key=\"$token\"></span>" if $token;
 };
 
 ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') => sub {
@@ -133,7 +133,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
       $token = _provision_token($user) if param('auth_method') eq 'token';
     });
 
-    return to_json { api_key => $token } if $token;
+    return "<span data-nd-api-key=\"$token\"></span>" if $token;
 };
 
 get '/ajax/content/admin/users' => require_role admin => sub {
