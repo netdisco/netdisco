@@ -35,6 +35,7 @@ trust_remote_user: false
 trust_x_remote_user: false
 validate_remote_user: false
 api_token_lifetime: 3600
+allow_permanent_tokens: false
 tacacs: {}
 radius: {}
 ldap: {}

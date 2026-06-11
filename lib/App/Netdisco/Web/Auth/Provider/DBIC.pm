@@ -18,6 +18,7 @@ use Authen::TacacsPlus;
 use Path::Class;
 use File::ShareDir 'dist_dir';
 use Try::Tiny;
+use NetAddr::IP::Lite ':lower';
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
@@ -75,11 +76,18 @@ sub validate_api_token {
       $database->resultset($users_table)->find({ $token_column => $token });
     };
 
-    return $user
-      if $user and $user->in_storage and $user->token_from
-        and ($user->token_no_expire
-          or $user->token_from > (time - setting('api_token_lifetime')));
-    return undef;
+    return undef unless $user and $user->in_storage and $user->token_from
+      and ($user->token_no_expire
+        or $user->token_from > (time - setting('api_token_lifetime')));
+
+    if ($user->token_allowed_ips and scalar @{$user->token_allowed_ips}) {
+      my $client = NetAddr::IP::Lite->new(request->remote_address);
+      return undef unless $client
+        and grep { $client->within(NetAddr::IP::Lite->new($_)) }
+                 @{$user->token_allowed_ips};
+    }
+
+    return $user;
 }
 
 sub get_user_roles {
