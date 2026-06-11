@@ -33,9 +33,20 @@ sub _make_password {
   }
 }
 
+sub _provision_token {
+  my $user = shift;
+  my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
+  unless ($provider->validate_api_token($user->token)) {
+    $user->update({ token => \'md5(random()::text)', token_from => time });
+    $user->discard_changes();
+  }
+  return $user->token;
+}
+
 ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
+    my $token;
     schema(vars->{'tenant'})->txn_do(sub {
       my $user = schema(vars->{'tenant'})->resultset('User')
         ->create({
@@ -66,7 +77,10 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
           admin => (param('admin') ? \'true' : \'false'),
           note => param('note'),
         });
+      $token = _provision_token($user) if param('auth_method') eq 'token';
     });
+
+    return to_json { api_key => $token } if $token;
 };
 
 ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') => sub {
@@ -81,6 +95,7 @@ ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') =
 ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
+    my $token;
     schema(vars->{'tenant'})->txn_do(sub {
       my $user = schema(vars->{'tenant'})->resultset('User')
         ->find({username => param('username')});
@@ -115,7 +130,10 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
         admin => (param('admin') ? \'true' : \'false'),
         note => param('note'),
       });
+      $token = _provision_token($user) if param('auth_method') eq 'token';
     });
+
+    return to_json { api_key => $token } if $token;
 };
 
 get '/ajax/content/admin/users' => require_role admin => sub {

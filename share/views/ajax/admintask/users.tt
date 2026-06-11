@@ -123,6 +123,23 @@
   </tbody>
 </table>
 
+<div id="nd_token-reveal" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1" role="dialog">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">x</button>
+    <h3>API Token</h3>
+  </div>
+  <div class="modal-body">
+    <p class="text-info">Copy this token — it will not be shown again unless you re-save with Token only selected.</p>
+    <div class="input-append">
+      <input id="nd_token-value" type="text" class="span4" readonly>
+      <button class="btn" id="nd_token-copy" type="button"><i class="icon-copy"></i> Copy</button>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-success" data-dismiss="modal">Done</button>
+  </div>
+</div>
+
 <script>
 $(document).ready(function() {
   function togglePasswordField(select) {
@@ -135,6 +152,49 @@ $(document).ready(function() {
   }
   $('.nd_auth_method').each(function() { togglePasswordField(this); });
   $(document).on('change', '.nd_auth_method', function() { togglePasswordField(this); });
+
+  $('#nd_token-reveal').modal({show: false});
+  $('#nd_token-copy').on('click', function() {
+    navigator.clipboard.writeText($('#nd_token-value').val());
+    $(this).html('<i class="icon-ok"></i> Copied');
+  });
+
+  // Intercept add/update for Token only rows — fires before the generic
+  // admintask.js handler because we bind on a closer ancestor (#data-table)
+  $('#data-table').on('click', '.nd_adminbutton', function(event) {
+    var mode = $(this).attr('name');
+    if (mode === 'del') return;
+    var authMethod = $(this).closest('tr').find('select[name="auth_method"]').val();
+    if (authMethod !== 'token') return;
+
+    event.stopImmediatePropagation();
+    event.preventDefault();
+
+    var task = 'users/';
+    $.ajax({
+      type: 'POST',
+      url: uri_base + '/ajax/control/admin/' + task + mode,
+      data: $(this).closest('tr').find('input[data-form="' + mode + '"],select[data-form="' + mode + '"]').serializeArray(),
+      success: function(data) {
+        try {
+          var json = JSON.parse(data);
+          if (json && json.api_key) {
+            $('#nd_token-value').val(json.api_key);
+            $('#nd_token-copy').html('<i class="icon-copy"></i> Copy');
+            $('#nd_token-reveal').modal('show');
+          } else {
+            toastr.success(mode === 'add' ? 'Added record' : 'Updated record');
+          }
+        } catch(e) {
+          toastr.success(mode === 'add' ? 'Added record' : 'Updated record');
+        }
+        $('#users_form').trigger('submit');
+      },
+      error: function() {
+        toastr.error(mode === 'add' ? 'Failed to add record' : 'Failed to update record');
+      }
+    });
+  });
 
   $('#data-table').dataTable({
     "columnDefs": [ 
