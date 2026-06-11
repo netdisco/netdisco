@@ -1,3 +1,24 @@
+[%- SET has_ldap   = settings.ldap   AND settings.ldap.keys.size   > 0 -%]
+[%- SET has_radius = settings.radius AND settings.radius.keys.size > 0 -%]
+[%- SET has_tacacs = settings.tacacs AND settings.tacacs.size       > 0 -%]
+
+<dl class="dl-horizontal" style="font-size:12px;margin-bottom:1em">
+  <dt class="muted">Backends</dt>
+  <dd>[% IF has_ldap %]LDAP [% END %][% IF has_radius %]RADIUS [% END %][% IF has_tacacs %]TACACS[% END %][% IF NOT (has_ldap OR has_radius OR has_tacacs) %]local only[% END %]</dd>
+  [% IF settings.no_auth %]
+  <dt class="muted">Auth</dt>
+  <dd><i class="icon-warning-sign text-warning"></i> no_auth — bypassed</dd>
+  [% END %]
+  [% IF NOT settings.safe_password_store %]
+  <dt class="muted">Passwords</dt>
+  <dd><i class="icon-warning-sign text-error"></i> MD5 — unsafe</dd>
+  [% END %]
+  <dt class="muted">Session token</dt>
+  <dd>expires after [% settings.api_token_lifetime %]s</dd>
+  <dt class="muted">Permanent token</dt>
+  <dd>[% IF settings.allow_permanent_tokens %]enabled[% ELSE %]<i class="icon-warning-sign text-warning"></i> disabled[% END %]</dd>
+</dl>
+
 <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
     <tr>
@@ -5,6 +26,7 @@
       <th class="nd_center-cell">Username</th>
       <th class="nd_center-cell">Password</th>
       <th class="nd_center-cell">Auth Method</th>
+      <th class="nd_center-cell">Allowed IPs</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
       <th class="nd_center-cell">Created</th>
@@ -17,16 +39,20 @@
     <tr>
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="username" type="text"></td>
-      <td class="nd_center-cell"><input class="span1" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="span1 nd_pw_field" data-form="add" name="password" type="password"></td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="add" name="auth_method">
+          <select class="span2 form-control nd_auth_method" data-form="add" name="auth_method">
             <option value="" selected>Netdisco Password</option>
             <option value="ldap">LDAP</option>
             <option value="radius">RADIUS</option>
             <option value="tacacs">TACACS</option>
+            <option value="token">Token only</option>
           </select>
         </div>
+      </td>
+      <td class="nd_center-cell">
+        <input class="span2 nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
@@ -51,6 +77,7 @@
     [% SET count = 0 %]
     [% FOREACH row IN results %]
     [% SET count = count + 1 %]
+    [% SET is_token = row.token_auth_only %]
     <tr>
       <td class="nd_center-cell">
         <input data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
@@ -59,17 +86,25 @@
         <input class="span2" data-form="update" name="username" type="text" value="[% row.username | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input class="span1" data-form="update" name="password" type="password" value="********">
+        <input class="span1 nd_pw_field" data-form="update" name="password" type="password"
+          [%- IF is_token %] style="display:none" disabled[% ELSIF row.password %] value="********"[% ELSE %] disabled placeholder="N/A"[% END %]>
+        <small class="nd_token_hint muted"[% IF NOT is_token %] style="display:none"[% END %]>[% IF row.token_hint %]...[% row.token_hint | html_entity %][% ELSE %]no token[% END %]</small>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="update" name="auth_method">
-            <option value="">Netdisco Password</option>
+          <select class="span2 form-control nd_auth_method" data-form="update" name="auth_method">
+            <option[% ' selected' IF NOT row.token_auth_only AND NOT row.ldap AND NOT row.radius AND NOT row.tacacs %] value="">Netdisco Password</option>
             <option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>
             <option[% ' selected' IF row.radius %] value="radius">RADIUS</option>
             <option[% ' selected' IF row.tacacs %] value="tacacs">TACACS</option>
+            <option[% ' selected' IF row.token_auth_only %] value="token">Token only</option>
           </select>
         </div>
+      </td>
+      <td class="nd_center-cell">
+        <input class="span2 nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
+          value="[% row.token_allowed_ips.join(', ') IF row.token_allowed_ips %]"
+          [% IF NOT is_token %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
@@ -93,6 +128,8 @@
 
       <td nowrap class="nd_center-cell">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+
+        [% IF is_token %]<button class="btn nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token"><i class="icon-key"></i></button>[% END %]
 
         <button class="btn" data-toggle="modal"
           data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
@@ -120,16 +157,82 @@
   </tbody>
 </table>
 
+<div id="nd_token-reveal" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1" role="dialog">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">x</button>
+    <h3>API Token</h3>
+  </div>
+  <div class="modal-body">
+    <p class="text-info">Copy this token — it will not be shown again.</p>
+    <div class="input-append">
+      <input id="nd_token-value" type="text" class="span4" readonly>
+      <button class="btn" id="nd_token-copy" type="button"><i class="icon-copy"></i> Copy</button>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-success" data-dismiss="modal">Done</button>
+  </div>
+</div>
+
 <script>
 $(document).ready(function() {
+  function toggleTokenFields(select) {
+    var row  = $(select).closest('tr');
+    var pw   = row.find('.nd_pw_field');
+    var hint = row.find('.nd_token_hint');
+    var ips  = row.find('.nd_allowed_ips_field');
+    if ($(select).val() === 'token') {
+      pw.hide().val('').prop('disabled', true);
+      hint.show();
+      ips.prop('disabled', false);
+    } else {
+      pw.show().prop('disabled', false).attr('placeholder', '');
+      hint.hide();
+      ips.val('').prop('disabled', true);
+    }
+  }
+  $('.nd_auth_method').each(function() { toggleTokenFields(this); });
+  $(document).on('change', '.nd_auth_method', function() { toggleTokenFields(this); });
+
+  $('#nd_token-reveal').modal({show: false});
+  $('#nd_token-copy').on('click', function() {
+    navigator.clipboard.writeText($('#nd_token-value').val());
+    $(this).html('<i class="icon-ok"></i> Copied');
+  });
+
+  // Called by admintask.js when the server returns a data-nd-api-key span
+  window.nd_show_api_token = function(apiKey) {
+    $('#nd_token-value').val(apiKey);
+    $('#nd_token-copy').html('<i class="icon-copy"></i> Copy');
+    $('#nd_token-reveal').one('hidden', function() {
+      var tab = '[% task.tag | html_entity %]';
+      $('#' + tab + '_form').trigger('submit');
+    });
+    $('#nd_token-reveal').modal('show');
+  };
+
+  $(document).on('click', '.nd_tokenbutton', function() {
+    var username = $(this).data('username');
+    $.get(uri_base + '/ajax/control/admin/users/token', { username: username }, function(apiKey) {
+      apiKey = $.trim(apiKey);
+      if (apiKey && typeof window.nd_show_api_token === 'function') {
+        window.nd_show_api_token(apiKey);
+      } else {
+        toastr.error('Could not retrieve token');
+      }
+    }, 'text').fail(function() {
+      toastr.error('Could not retrieve token');
+    });
+  });
+
   $('#data-table').dataTable({
-    "columnDefs": [ 
+    "columnDefs": [
       {
-        "targets": [ 2, 3, 4, 5, 6, 7, 8, 9 ],
+        "targets": [ 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
         "searchable": false
       },
       {
-        "targets": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
+        "targets": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
         "orderable": false
       }
     ],

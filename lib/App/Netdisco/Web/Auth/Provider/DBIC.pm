@@ -18,6 +18,7 @@ use Authen::TacacsPlus;
 use Path::Class;
 use File::ShareDir 'dist_dir';
 use Try::Tiny;
+use NetAddr::IP::Lite ':lower';
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
@@ -70,15 +71,23 @@ sub validate_api_token {
     my $users_table  = $settings->{users_resultset}    || 'User';
     my $token_column = $settings->{users_token_column} || 'token';
 
-    $token =~ s/^Apikey //i; # should be there but swagger-ui doesn't add it
+    $token =~ s/^(?:Apikey|Bearer) //i; # swagger-ui omits scheme; also accept Bearer
     my $user = try {
       $database->resultset($users_table)->find({ $token_column => $token });
     };
 
-    return $user
-      if $user and $user->in_storage and $user->token_from
-        and $user->token_from > (time - setting('api_token_lifetime'));
-    return undef;
+    return undef unless $user and $user->in_storage and $user->token_from
+      and ($user->token_no_expire
+        or $user->token_from > (time - setting('api_token_lifetime')));
+
+    if ($user->token_allowed_ips and scalar @{$user->token_allowed_ips}) {
+      my $client = NetAddr::IP::Lite->new(request->remote_address);
+      return undef unless $client
+        and grep { $client->within(NetAddr::IP::Lite->new($_)) }
+                 @{$user->token_allowed_ips};
+    }
+
+    return $user;
 }
 
 sub get_user_roles {

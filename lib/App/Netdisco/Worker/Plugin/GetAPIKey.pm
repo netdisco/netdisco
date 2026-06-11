@@ -15,26 +15,33 @@ register_worker({ phase => 'check' }, sub {
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
-  my $username = $job->extra;
+  my $username  = $job->extra;
+  my $flag      = $job->port || '';
 
   my $user = schema('netdisco')->resultset('User')
-    ->find({ username => $username });
+    ->find_or_create({ username => $username });
 
-  return Status->error("No such user")
-    unless $user and $user->in_storage;
+  if ($flag eq 'revoke') {
+    $user->update({ token => undef, token_from => undef, token_no_expire => \"false" });
+    return Status->done(sprintf 'Revoked API token for user %s', $username);
+  }
 
   # from the internals of Dancer::Plugin::Auth::Extensible
   my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
-  # if there's a current valid token then reissue it and reset timer
-  $user->update({
-      token_from => time,
-      ($provider->validate_api_token($user->token)
-        ? () : (token => \'md5(random()::text)')),
-    })->discard_changes();
+  my %updates = (
+    token_from     => time,
+    token_no_expire => ($flag eq 'permanent' ? \"true" : \"false"),
+    ($provider->validate_api_token($user->token)
+      ? () : (token => \'md5(random()::text)')),
+  );
+
+  $user->update(\%updates)->discard_changes();
 
   return Status->done(
-    sprintf 'Set token for user %s: %s', $username, $user->token);
+    sprintf 'Set %s token for user %s: %s',
+      ($flag eq 'permanent' ? 'permanent' : 'session'),
+      $username, $user->token);
 });
 
 true;
