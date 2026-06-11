@@ -151,6 +151,7 @@ swagger_path {
             extra => {
               type => 'string',
               required => 0,
+              description => 'Optional job parameter. For discover: a plain string or JSON object. Plain string is treated as snmp_tag (e.g. "site-a-creds"). JSON allows named params, e.g. {"snmp_tag": "site-a-creds"}. The snmp_tag value must match a tag set on a device_auth entry in the configuration.',
             }
           }
         }
