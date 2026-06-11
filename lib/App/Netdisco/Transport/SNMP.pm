@@ -299,10 +299,11 @@ sub _try_connect {
 
   try {
       $snmp_args->{Offline} || debug
-        sprintf '[%s:%s] try_connect with v: %s, t: %s, r: %s, class: %s, comm: %s',
+        sprintf '[%s:%s] try_connect with v: %s, t: %s, r: %s, class: %s%s, comm: %s',
           $snmp_args->{DestHost}, $snmp_args->{RemotePort},
           $snmp_args->{Version}, ($snmp_args->{Timeout} / 1000000), $snmp_args->{Retries},
-          $class, $debug_comm;
+          $class,
+          ($comm->{tag} ? ', tag: '. $comm->{tag} : ''), $debug_comm;
       Module::Load::load $class;
 
       $info = $class->new(%$snmp_args, %comm_args) or return;
