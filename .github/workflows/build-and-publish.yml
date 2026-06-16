@@ -28,6 +28,7 @@ on:
         required: false
         default:  'false'
 
+  workflow_call: # allow other workflows to run this
   push:
     branches:
       - master
