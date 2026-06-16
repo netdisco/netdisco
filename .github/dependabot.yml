@@ -5,6 +5,10 @@ updates:
     directory: "/share/python/netdisco/"
     schedule:
       interval: "daily"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"             # Bundles ALL python dependencies into one PR
 
   - package-ecosystem: "github-actions"
     # Workflow files stored in the default location of `.github/workflows`
@@ -12,3 +16,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"             # Bundles ALL GitHub Actions into one PR
