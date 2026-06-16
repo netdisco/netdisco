@@ -3,19 +3,19 @@
 [%- SET has_tacacs = settings.tacacs AND settings.tacacs.size       > 0 -%]
 
 <dl class="dl-horizontal" style="font-size:12px;margin-bottom:1em">
-  <dt class="muted">Backends</dt>
+  <dt class="muted" title="ldap / radius / tacacs">Backends</dt>
   <dd>[% IF has_ldap %]LDAP [% END %][% IF has_radius %]RADIUS [% END %][% IF has_tacacs %]TACACS[% END %][% IF NOT (has_ldap OR has_radius OR has_tacacs) %]local only[% END %]</dd>
   [% IF settings.no_auth %]
-  <dt class="muted">Auth</dt>
+  <dt class="muted" title="no_auth">Auth</dt>
   <dd><i class="icon-warning-sign text-warning"></i> no_auth — bypassed</dd>
   [% END %]
   [% IF NOT settings.safe_password_store %]
-  <dt class="muted">Passwords</dt>
+  <dt class="muted" title="safe_password_store">Passwords</dt>
   <dd><i class="icon-warning-sign text-error"></i> MD5 — unsafe</dd>
   [% END %]
-  <dt class="muted">Session token</dt>
+  <dt class="muted" title="api_token_lifetime">Session token</dt>
   <dd>expires after [% settings.api_token_lifetime %]s</dd>
-  <dt class="muted">Permanent token</dt>
+  <dt class="muted" title="allow_permanent_tokens">Permanent token</dt>
   <dd>[% IF settings.allow_permanent_tokens %]enabled[% ELSE %]<i class="icon-warning-sign text-warning"></i> disabled[% END %]</dd>
 </dl>
 
