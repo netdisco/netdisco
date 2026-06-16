@@ -8,9 +8,9 @@ dependencies = [
     "yamllint>=1.38.0,<2",
     "yamale>=6.1.0,<7",
     "netmiko>=4.7.0,<5",
-    "cryptography>=48.0.1,<49",
+    "cryptography>=49.0.0,<50",
     "virtualenv>=21.5.0",
-    "sqlalchemy>=2.0.50,<3",
+    "sqlalchemy>=2.0.51,<3",
     "psycopg>=3.3.4,<4",
     "uv-build>=0.11.21,<0.12.0",
 ]
