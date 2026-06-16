@@ -8,23 +8,23 @@ dependencies = [
     "yamllint>=1.38.0,<2",
     "yamale>=6.1.0,<7",
     "netmiko>=4.7.0,<5",
-    "cryptography>=48.0.1,<49",
-    "virtualenv>=21.4.2",
-    "sqlalchemy>=2.0.50,<3",
+    "cryptography>=49.0.0,<50",
+    "virtualenv>=21.5.0",
+    "sqlalchemy>=2.0.51,<3",
     "psycopg>=3.3.4,<4",
-    "uv-build>=0.11.20,<0.12.0",
+    "uv-build>=0.11.21,<0.12.0",
 ]
 
 [project.scripts]
 run_worklet = "netdisco.runner:main"
 
 [build-system]
-requires = ["uv_build>=0.11.20,<0.12.0"]
+requires = ["uv_build>=0.11.21,<0.12.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
 develop = ["pre-commit>=4.6.0,<5"]
-test = ["ruff>=0.15.16,<0.16"]
+test = ["ruff>=0.15.17,<0.16"]
 
 [tool.uv]
 default-groups = [
