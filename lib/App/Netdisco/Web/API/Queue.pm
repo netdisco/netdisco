@@ -151,7 +151,7 @@ swagger_path {
             extra => {
               type => 'string',
               required => 0,
-              description => 'Optional job parameter. For discover: a plain string or JSON object. Plain string is treated as snmp_tag (e.g. "site-a-creds"). JSON allows named params, e.g. {"snmp_tag": "site-a-creds"}. The snmp_tag value must match a tag set on a device_auth entry in the configuration.',
+              description => 'Optional job parameter. For discover: a plain string or JSON object. Plain string is treated as snmp_tag. Supported JSON params: snmp_tag (string, must match a tag in device_auth), snmptimeout (integer, microseconds, overrides global snmptimeout), snmpretries (integer, overrides global snmpretries), bulkwalk_repeaters (integer, overrides global bulkwalk_repeaters), skip_neighbor_queue (bool, store topology but do not queue new discovers for unknown neighbors). Example: {"snmp_tag": "site-a", "snmptimeout": 3000000, "skip_neighbor_queue": true}.',
             }
           }
         }

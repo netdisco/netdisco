@@ -70,6 +70,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       my $newdev = get_device($ip);
       next if $newdev->in_storage;
 
+      if ($job->params->{skip_neighbor_queue}) {
+          debug sprintf ' [%s] queue - skip_neighbor_queue: not queuing %s',
+            $device, $ip;
+          next;
+      }
+
       # risk of things going wrong...?
       # https://quickview.cloudapps.cisco.com/quickview/bug/CSCur12254
 

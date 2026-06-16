@@ -258,8 +258,8 @@ sub _snmp_connect_generic {
 
   # then revert to conservative settings and repeat with all versions
 
-  # unless user wants just the fast connections for bulk discovery
-  # or we are on the first discovery attempt of a new device
+  # unless user wants just the fast connections for bulk discovery
+  # or we are on the first discovery attempt of a new device
   return if setting('snmp_try_slow_connect') == false;
 
   CLASS: foreach my $class (@classes) {
