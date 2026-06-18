@@ -220,7 +220,7 @@ sub _snmp_connect_generic {
             ($useclass ? 0 : 1) );
       # if successful, restore the default/user timeouts and return
       if ($info) {
-          my $class = ($useclass ? $classes[0] : $info->device_type);
+          my $class = ($useclass ? $classes[0] : $info->device_type) // $classes[0];
           return $class->new(
             %snmp_args, Version => $ver,
             ($info->offline ? (Cache => $info->cache) : ()),
@@ -246,7 +246,7 @@ sub _snmp_connect_generic {
 
           # if successful, restore the default/user timeouts and return
           if ($info) {
-              my $class = ($useclass ? $classes[0] : $info->device_type);
+              my $class = ($useclass ? $classes[0] : $info->device_type) // $classes[0];
               return $class->new(
                 %snmp_args, Version => $ver,
                 ($info->offline ? (Cache => $info->cache) : ()),
@@ -310,8 +310,8 @@ sub _try_connect {
                                : _try_write($info, $device, $comm));
 
       # first time a device is discovered, re-instantiate into specific class
-      if ($reclass and $info and $info->device_type ne $class) {
-          $class = $info->device_type;
+      if ($reclass and $info and ($info->device_type // '') ne $class) {
+          $class = $info->device_type // $class;
           $info->offline || debug
             sprintf '[%s:%s] try_connect with v: %s, new class: %s, comm: %s',
               $snmp_args->{DestHost}, $snmp_args->{RemotePort},
