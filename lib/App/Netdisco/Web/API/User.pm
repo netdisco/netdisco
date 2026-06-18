@@ -9,6 +9,38 @@ use Try::Tiny;
 
 swagger_path {
   tags => ['User'],
+  path => (setting('api_base') || '').'/users',
+  description => 'List all users with their roles and token status',
+  responses => { default => {} },
+}, get '/api/v1/users' => require_role api_admin => sub {
+  header('Content-Type' => 'application/json');
+
+  my @users = schema(vars->{'tenant'})->resultset('User')->search(undef, {
+    '+columns' => { token_hint => \"right(token, 8)" },
+    order_by => 'username',
+  })->hri->all;
+
+  my @result = map {{
+    username        => $_->{username},
+    fullname        => $_->{fullname},
+    note            => $_->{note},
+    admin           => $_->{admin}  ? \1 : \0,
+    port_control    => $_->{port_control} ? \1 : \0,
+    ldap            => $_->{ldap}   ? \1 : \0,
+    radius          => $_->{radius} ? \1 : \0,
+    tacacs          => $_->{tacacs} ? \1 : \0,
+    token_auth_only => $_->{token_auth_only} ? \1 : \0,
+    token_hint      => $_->{token_hint},
+    token_permanent => $_->{token_no_expire} ? \1 : \0,
+    token_allowed_ips => $_->{token_allowed_ips} || [],
+    last_on         => $_->{last_on},
+  }} @users;
+
+  return to_json \@result;
+};
+
+swagger_path {
+  tags => ['User'],
   path => (setting('api_base') || '').'/user',
   description => 'Provision a service account and issue an API token. Creates the user if not present (null password, token-auth only). Idempotent.',
   parameters => [
