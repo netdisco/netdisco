@@ -8,6 +8,53 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::JobQueue 'jq_insert';
 use Try::Tiny;
 
+my @DEVICE_FIELDS = qw/ip dns name vendor model os os_ver location last_discover/;
+
+swagger_path {
+  tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/devices',
+  description => 'Returns list of all known devices',
+  parameters => [
+    q => {
+      in => 'query',
+      description => 'Filter by IP, dns, or name (substring match)',
+      required => 0,
+    },
+    fields => {
+      in => 'query',
+      description => 'Comma-separated list of fields to return. Defaults to: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column.',
+      required => 0,
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/object/devices' => require_role api => sub {
+  my $q      = params->{q}      || '';
+  my $fields = params->{fields} || '';
+
+  my @cols = $fields eq 'all'  ? ()
+           : $fields           ? split(/\s*,\s*/, $fields)
+           :                     @DEVICE_FIELDS;
+
+  my %search = ();
+  if ($q) {
+    $search{'-or'} = [
+      { 'me.ip'   => { 'like', "%$q%" } },
+      { 'me.dns'  => { 'like', "%$q%" } },
+      { 'me.name' => { 'like', "%$q%" } },
+    ];
+  }
+
+  my %attrs = ( order_by => 'me.dns' );
+  $attrs{columns} = \@cols if @cols;
+
+  my @devices = try {
+    schema(vars->{'tenant'})->resultset('Device')
+      ->search(\%search, \%attrs)->hri->all;
+  } catch { () };
+
+  return to_json \@devices;
+};
+
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
