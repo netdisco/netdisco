@@ -221,6 +221,7 @@ sub _snmp_connect_generic {
       # if successful, restore the default/user timeouts and return
       if ($info) {
           my $class = ($useclass ? $classes[0] : $info->device_type) // $classes[0];
+          Module::Load::load $class;
           return $class->new(
             %snmp_args, Version => $ver,
             ($info->offline ? (Cache => $info->cache) : ()),
@@ -247,6 +248,7 @@ sub _snmp_connect_generic {
           # if successful, restore the default/user timeouts and return
           if ($info) {
               my $class = ($useclass ? $classes[0] : $info->device_type) // $classes[0];
+              Module::Load::load $class;
               return $class->new(
                 %snmp_args, Version => $ver,
                 ($info->offline ? (Cache => $info->cache) : ()),
