@@ -1,6 +1,6 @@
 package App::Netdisco::Backend::Job;
 
-use Dancer qw/:moose :syntax !error/;
+use Dancer qw/:moose :syntax !error !params/;
 use aliased 'App::Netdisco::Worker::Status';
 
 use Moo;
