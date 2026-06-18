@@ -330,9 +330,10 @@ sub _try_connect {
       }
   }
   catch {
+      (my $err = $_) =~ s/ at \S+ line \d+.*//s;
       debug sprintf 'caught error in try_connect: %s', $_;
       undef $info;
-      die "exception in SNMP - could be job timeout or crash\n";
+      die "exception in SNMP - could be job timeout or crash: $err\n";
       # use DDP; debug p $_;
   };
 
