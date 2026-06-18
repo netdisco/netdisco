@@ -25,11 +25,23 @@ swagger_path {
       description => 'Comma-separated list of fields to return. Defaults to: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column.',
       required => 0,
     },
+    limit => {
+      in => 'query',
+      description => 'Maximum number of devices to return. Default: all.',
+      required => 0,
+    },
+    offset => {
+      in => 'query',
+      description => 'Number of devices to skip (for paging). Default: 0.',
+      required => 0,
+    },
   ],
   responses => { default => {} },
 }, get '/api/v1/object/devices' => require_role api => sub {
   my $q      = params->{q}      || '';
   my $fields = params->{fields} || '';
+  my $limit  = params->{limit}  || undef;
+  my $offset = params->{offset} || 0;
 
   my @cols = $fields eq 'all'  ? ()
            : $fields           ? split(/\s*,\s*/, $fields)
@@ -46,6 +58,8 @@ swagger_path {
 
   my %attrs = ( order_by => 'me.dns' );
   $attrs{columns} = \@cols if @cols;
+  $attrs{rows}   = int($limit)  if $limit;
+  $attrs{offset} = int($offset) if $offset;
 
   my @devices = try {
     schema(vars->{'tenant'})->resultset('Device')
