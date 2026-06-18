@@ -39,10 +39,10 @@ swagger_path {
     ? { finished => { '>=' => \["to_timestamp(?)", $since_epoch] } }
     : {};
 
-  my $queued  = try { $rs->search({ status => 'queued'  })->count } // 0;
-  my $running = try { $rs->search({ status => 'running' })->count } // 0;
-  my $done    = try { $rs->search({ status => 'done',  %$since_filter })->count } // 0;
-  my $failed  = try { $rs->search({ status => 'error', %$since_filter })->count } // 0;
+  my $queued  = try { $rs->search({ status => 'queued'  })->count } catch { 0 };
+  my $running = try { $rs->search({ status => 'running' })->count } catch { 0 };
+  my $done    = try { $rs->search({ status => 'done',  %$since_filter })->count } catch { 0 };
+  my $failed  = try { $rs->search({ status => 'error', %$since_filter })->count } catch { 0 };
 
   return to_json {
     queued  => $queued,
