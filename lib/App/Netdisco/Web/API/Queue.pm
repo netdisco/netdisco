@@ -141,6 +141,7 @@ swagger_path {
             action => {
               type => 'string',
               required => 1,
+              description => 'Job action. Known actions: discover, macsuck, arpnip, nbtstat, delete. Unknown actions are accepted but will fail silently in the backend.',
             },
             device => {
               type => 'string',
