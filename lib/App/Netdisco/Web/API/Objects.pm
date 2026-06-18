@@ -7,6 +7,9 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue 'jq_insert';
 use Try::Tiny;
+use URI::Escape 'uri_unescape';
+
+sub _port_param { my $s = uri_unescape(shift // ''); $s =~ s/^\s+|\s+$//g; $s }
 
 swagger_path {
   tags => ['Objects'],
@@ -208,7 +211,7 @@ foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port
     }, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>.+)/${rel}$} => require_role api => sub {
       my $params = captures;
       my $rows = try { schema(vars->{'tenant'})->resultset('DevicePort')
-        ->find( $$params{port}, $$params{ip} )->$rel }
+        ->find( _port_param($$params{port}), uri_unescape($$params{ip}) )->$rel }
         or send_error('Bad Device or Port', 404);
       return to_json [ map {$_->TO_JSON} $rows->all ];
     };
@@ -235,7 +238,7 @@ foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node
     }, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>.+)/${rel}$} => require_role api => sub {
       my $params = captures;
       my $row = try { schema(vars->{'tenant'})->resultset('DevicePort')
-        ->find( $$params{port}, $$params{ip} )->$rel }
+        ->find( _port_param($$params{port}), uri_unescape($$params{ip}) )->$rel }
         or send_error('Bad Device or Port', 404);
       return to_json $row->TO_JSON;
     };
@@ -262,7 +265,7 @@ swagger_path {
 }, get qr{/api/v1/object/device/(?<ip>[^/]+)/port/(?<port>.+)$} => require_role api => sub {
   my $params = captures;
   my $port = try { schema(vars->{'tenant'})->resultset('DevicePort')
-    ->find( $$params{port}, $$params{ip} ) }
+    ->find( _port_param($$params{port}), uri_unescape($$params{ip}) ) }
     or send_error('Bad Device or Port', 404);
   return to_json $port->TO_JSON;
 };
