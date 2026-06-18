@@ -6,6 +6,8 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::Util::DNS 'ipv4_from_hostname';
+use NetAddr::IP::Lite;
 use Try::Tiny;
 
 swagger_path {
@@ -174,12 +176,19 @@ swagger_path {
         if ($job->{action} =~ m/^cf_/ and not user_has_role('port_control'))
         or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
 
+      if ($job->{device} and not NetAddr::IP::Lite->new($job->{device})) {
+          my $ip = ipv4_from_hostname($job->{device})
+            or return send_error("Cannot resolve hostname: $job->{device}", 400);
+          $job->{device} = $ip;
+      }
+
       $job->{username} = session('logged_in_user');
       $job->{userip}   = request->remote_address;
   }
 
   my $happy = jq_insert($jobs);
 
+  return send_error('Failed to insert jobs - check backend logs', 500) unless $happy;
   return to_json { success => $happy };
 };
 
