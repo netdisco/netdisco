@@ -13,6 +13,7 @@ use Try::Tiny;
 use Module::Load ();
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
+use Scalar::Util 'blessed';
 
 use base 'Dancer::Object::Singleton';
 
@@ -330,7 +331,10 @@ sub _try_connect {
       }
   }
   catch {
-      (my $err = $_) =~ s/ at \S+ line \d+.*//s;
+      my $err = !ref $_ ? do { (my $e = "$_") =~ s/ at \S+ line \d+.*//s; $e }
+                       : (blessed $_ && $_->can('message')) ? $_->message
+                       : (ref $_ eq 'HASH') ? ($_->{message} || $_->{error} || join '; ', map {"$_: $_->{$_}"} sort keys %$_)
+                       : "$_";
       debug sprintf 'caught error in try_connect: %s', $_;
       undef $info;
       die "exception in SNMP - could be job timeout or crash: $err\n";
