@@ -88,7 +88,7 @@ hook 'before' => sub {
 
         my $token = request->header('Authorization');
         my $user = $provider->validate_api_token($token)
-          or return;
+          or return send_error('{"error":"invalid or expired token"}', 401);
 
         session(logged_in_user => $user->username);
         session(logged_in_user_realm => 'users');
