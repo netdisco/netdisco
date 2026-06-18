@@ -57,12 +57,12 @@ Client has requested JSON format data and an endpoint under C</api>.
 =cut
 
 sub request_is_api {
-  return ((request->accept and request->accept =~ m/(?:json|javascript)/) and (
-    index(request->path, uri_for('/api/')->path) == 0
-      or
-    (param('return_url')
-    and index(param('return_url'), uri_for('/api/')->path) == 0)
-  ));
+  # /api/ paths are always API endpoints regardless of Accept header
+  return 1 if index(request->path, uri_for('/api/')->path) == 0;
+  # for other paths, require Accept: json and a return_url pointing to /api/
+  return ((request->accept and request->accept =~ m/(?:json|javascript)/)
+    and param('return_url')
+    and index(param('return_url'), uri_for('/api/')->path) == 0);
 }
 
 =head2 request_is_api_report
