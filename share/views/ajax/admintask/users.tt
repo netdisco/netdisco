@@ -47,7 +47,7 @@
             <option value="ldap">LDAP</option>
             <option value="radius">RADIUS</option>
             <option value="tacacs">TACACS</option>
-            <option value="token">Token only</option>
+            <option value="permanent_token">Permanent Token</option>
           </select>
         </div>
       </td>
@@ -97,7 +97,7 @@
             <option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>
             <option[% ' selected' IF row.radius %] value="radius">RADIUS</option>
             <option[% ' selected' IF row.tacacs %] value="tacacs">TACACS</option>
-            <option[% ' selected' IF row.token_auth_only %] value="token">Token only</option>
+            <option[% ' selected' IF row.token_auth_only %] value="permanent_token">Permanent Token</option>
           </select>
         </div>
       </td>
@@ -181,7 +181,7 @@ $(document).ready(function() {
     var pw   = row.find('.nd_pw_field');
     var hint = row.find('.nd_token_hint');
     var ips  = row.find('.nd_allowed_ips_field');
-    if ($(select).val() === 'token') {
+    if ($(select).val() === 'permanent_token') {
       pw.hide().val('').prop('disabled', true);
       hint.show();
       ips.prop('disabled', false);
@@ -212,8 +212,8 @@ $(document).ready(function() {
   };
 
   $(document).on('click', '.nd_tokenbutton', function() {
-    var username = $(this).data('username');
-    $.get(uri_base + '/ajax/control/admin/users/token', { username: username }, function(apiKey) {
+    var username  = $(this).data('username');
+    $.get(uri_base + '/ajax/control/admin/users/token', { username: username, permanent: 1 }, function(apiKey) {
       apiKey = $.trim(apiKey);
       if (apiKey && typeof window.nd_show_api_token === 'function') {
         window.nd_show_api_token(apiKey);

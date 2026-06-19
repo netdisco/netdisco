@@ -50,14 +50,16 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
           username => param('username'),
           fullname => param('fullname'),
 
-          (param('auth_method') eq 'token' ? (
+          (param('auth_method') eq 'permanent_token' ? (
             password => undef,
             ldap => \'false', radius => \'false', tacacs => \'false',
-            token_auth_only => \'true',
+            token_auth_only  => \'true',
+            token_no_expire  => \"true",
             token_allowed_ips => _parse_ips(),
           ) : (
             password => _make_password(param('password')),
             token_auth_only => \'false',
+            token_no_expire => \"false",
             token_allowed_ips => undef,
             (param('auth_method') ? (
               (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
@@ -102,13 +104,15 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
       $user->update({
         fullname => param('fullname'),
 
-        (param('auth_method') eq 'token' ? (
+        ((param('auth_method') eq 'token' or param('auth_method') eq 'permanent_token') ? (
           password => undef,
           ldap => \'false', radius => \'false', tacacs => \'false',
-          token_auth_only => \'true',
+          token_auth_only  => \'true',
+          token_no_expire  => (param('auth_method') eq 'permanent_token' ? \"true" : \"false"),
           token_allowed_ips => _parse_ips(),
         ) : (
           token_auth_only => \'false',
+          token_no_expire => \"false",
           token_allowed_ips => undef,
           ((param('password') and param('password') ne '********')
             ? (password => _make_password(param('password')))
