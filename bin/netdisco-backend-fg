@@ -69,6 +69,11 @@ if (setting('workers')->{'no_scheduler'}) {
   shift @task_names; shift @task_workers; shift @task_roles;
 }
 
+warning sprintf "mode: %s | workers: %s | host: %s",
+  (setting('workers')->{'no_scheduler'} ? 'worker-only' : 'scheduler+worker'),
+  $max_workers,
+  (setting('workers')->{'BACKEND'} || 'unknown');
+
 mce_flow {
   task_name    => \@task_names,
   max_workers  => \@task_workers,
