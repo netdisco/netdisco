@@ -331,12 +331,13 @@ sub _try_connect {
       }
   }
   catch {
-      my $err = !defined $_ ? '(undef)'
-                       : !ref $_ ? do { (my $e = "$_") =~ s/ at \S+ line \d+.*//s; $e }
-                       : (blessed $_ && $_->can('message')) ? $_->message
-                       : (ref $_ eq 'HASH') ? ($_->{message} || $_->{error} || join '; ', map {"$_: $_->{$_}"} sort keys %$_)
-                       : "$_";
-      $err = ref($_) || '(empty)' unless length $err;
+      my $ex = $_;
+      my $err = !defined $ex ? '(undef)'
+                       : !ref $ex ? do { (my $e = "$ex") =~ s/ at \S+ line \d+.*//s; $e }
+                       : (blessed $ex && $ex->can('message')) ? $ex->message
+                       : (ref $ex eq 'HASH') ? ($ex->{message} || $ex->{error} || join '; ', map { "$_: $ex->{$_}" } sort keys %$ex)
+                       : "$ex";
+      $err = ref($ex) || '(empty)' unless length $err;
       debug sprintf 'caught error in try_connect: %s', $err;
       undef $info;
       die "exception in SNMP - could be job timeout or crash: $err\n";
