@@ -70,7 +70,9 @@ if (setting('workers')->{'no_scheduler'}) {
 }
 
 warning sprintf "mode: %s | workers: %s | host: %s",
-  (setting('workers')->{'no_scheduler'} ? 'worker-only' : 'scheduler+worker'),
+  (setting('workers')->{'no_scheduler'} ? 'worker-only'
+   : $max_workers == 0                  ? 'scheduler'
+   :                                      'scheduler+worker'),
   $max_workers,
   (setting('workers')->{'BACKEND'} || 'unknown');
 
