@@ -177,6 +177,10 @@ if ($ENV{ND2_SINGLE_WORKER}) {
   delete config->{'schedule'};
 }
 
+if ($ENV{NETDISCO_NO_SCHEDULER}) {
+  delete config->{'schedule'};
+}
+
 # force skipped DNS resolution, if unset
 setting('dns')->{hosts_file} ||= '/etc/hosts';
 setting('dns')->{no} ||= ['fe80::/64','169.254.0.0/16'];
@@ -369,6 +373,11 @@ if (exists setting('workers')->{interactives}
 
     delete setting('workers')->{pollers};
     delete setting('workers')->{interactives};
+}
+
+# allow container orchestrators to pin worker count via env (e.g. scheduler pod sets this to 0)
+if (exists $ENV{NETDISCO_WORKERS_TASKS}) {
+  setting('workers')->{tasks} = int($ENV{NETDISCO_WORKERS_TASKS});
 }
 
 # moved the timeout setting
