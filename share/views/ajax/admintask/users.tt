@@ -83,7 +83,8 @@
         <input data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="username" type="text" value="[% row.username | html_entity %]">
+        <input data-form="update" name="username" type="hidden" value="[% row.username | html_entity %]">
+        [% row.username | html_entity %]
       </td>
       <td class="nd_center-cell">
         <input class="span1 nd_pw_field" data-form="update" name="password" type="password"
