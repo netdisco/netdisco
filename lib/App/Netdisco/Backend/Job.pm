@@ -238,7 +238,10 @@ Returns an empty hashref if subaction is empty or not valid JSON.
 sub params {
   my $job = shift;
   return {} unless $job->subaction;
-  return try { from_json($job->subaction) } catch { {snmp_tag => $job->subaction} };
+  return try {
+    my $r = from_json($job->subaction);
+    ref $r eq 'HASH' ? $r : {}
+  } catch { {snmp_tag => $job->subaction} };
 }
 
 true;
