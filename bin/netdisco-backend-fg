@@ -26,7 +26,7 @@ BEGIN {
   # this can take a few seconds - only do it once
   use Net::Domain 'hostfqdn';
   info 'resolving backend hostname...';
-  setting('workers')->{'BACKEND'} ||= (hostfqdn || 'fqdn-undefined');
+  setting('workers')->{'BACKEND'} ||= ($ENV{NETDISCO_BACKEND_NAME} || hostfqdn || 'fqdn-undefined');
 }
 
 use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
