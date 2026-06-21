@@ -13,6 +13,7 @@ use Try::Tiny;
 use Module::Load ();
 use NetAddr::IP::Lite ':lower';
 use List::Util qw/pairkeys pairfirst/;
+use Scalar::Util 'blessed';
 
 use base 'Dancer::Object::Singleton';
 
@@ -333,9 +334,16 @@ sub _try_connect {
       }
   }
   catch {
-      debug sprintf 'caught error in try_connect: %s', $_;
+      my $ex = $_;
+      my $err = !defined $ex ? '(undef)'
+                       : !ref $ex ? do { (my $e = "$ex") =~ s/ at \S+ line \d+.*//s; $e }
+                       : (blessed $ex && $ex->can('message')) ? $ex->message
+                       : (ref $ex eq 'HASH') ? ($ex->{message} || $ex->{error} || join('; ', map { "$_: $ex->{$_}" } sort keys %$ex) || '(empty hashref - MCE worker killed or timed out)')
+                       : "$ex";
+      $err = ref($ex) || '(empty)' unless length $err;
+      debug sprintf 'caught error in try_connect: %s', $err;
       undef $info;
-      die "exception in SNMP - could be job timeout or crash\n";
+      die "exception in SNMP - could be job timeout or crash: $err\n";
       # use DDP; debug p $_;
   };
 
