@@ -131,6 +131,7 @@ use App::Netdisco::Web::Report;
 use App::Netdisco::Web::API::Objects;
 use App::Netdisco::Web::API::Queue;
 use App::Netdisco::Web::API::Statistics;
+use App::Netdisco::Web::API::User;
 use App::Netdisco::Web::Health;
 use App::Netdisco::Web::Metrics;
 use App::Netdisco::Web::AdminTask;

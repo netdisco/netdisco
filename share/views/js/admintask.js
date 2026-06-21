@@ -227,7 +227,13 @@
             );
           }
         }
-        ,success: function() {
+        ,success: function(data) {
+          var apiKey = $(data).filter('[data-nd-api-key]').attr('data-nd-api-key');
+          if (apiKey && typeof window.nd_show_api_token === 'function') {
+            window.nd_show_api_token(apiKey);
+            $('#' + tab + '_form').trigger('submit');
+            return;
+          }
           if (mode == 'add') {
             toastr.success('Added record');
             $('#' + tab + '_form').trigger('submit');

@@ -8,6 +8,7 @@ use Dancer::Plugin::Swagger;
 use App::Netdisco; # a safe noop but needed for standalone testing
 use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
+use Try::Tiny;
 use URI::Based;
 
 # ensure that regardless of where the user is redirected, we have a link
@@ -17,7 +18,7 @@ hook 'before' => sub {
       ? request->uri : uri_for(setting('web_home'))->path);
 };
 
-# try to find a valid username according to headers
+# try to find a valid username according to headers
 # or configuration settings
 sub _get_delegated_authn_user {
   my $username = undef;
@@ -34,7 +35,7 @@ sub _get_delegated_authn_user {
 
       ($username = $ENV{REMOTE_USER}) =~ s/@[^@]*$//;
   }
-  # this works for API calls, too
+  # this works for API calls, too
   elsif (setting('no_auth')) {
       $username = 'guest';
   }
@@ -44,7 +45,7 @@ sub _get_delegated_authn_user {
   # from the internals of Dancer::Plugin::Auth::Extensible
   my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
-  # may synthesize a user if validate_remote_user=false
+  # may synthesize a user if validate_remote_user=false
   return $provider->get_user_details($username);
 }
 
@@ -74,7 +75,7 @@ hook 'before' => sub {
 
     # this ordering allows override of delegated authN if given creds
 
-    # protect against delegated authN config but no valid user
+    # protect against delegated authN config but no valid user
     if ((not $delegated) and
       (setting('trust_x_remote_user') or setting('trust_remote_user'))) {
         session->destroy;
@@ -87,7 +88,7 @@ hook 'before' => sub {
 
         my $token = request->header('Authorization');
         my $user = $provider->validate_api_token($token)
-          or return;
+          or return send_error('{"error":"invalid or expired token"}', 401);
 
         session(logged_in_user => $user->username);
         session(logged_in_user_realm => 'users');
@@ -129,11 +130,11 @@ post '/login' => sub {
     # validate authN
     my ($success, $realm) = authenticate_user(param('username'),param('password'));
 
-    # or try to get user from somewhere else
+    # or try to get user from somewhere else
     my $delegated = _get_delegated_authn_user();
 
     if (($success and not
-          # protect against delegated authN config but no valid user (then must ignore params)
+          # protect against delegated authN config but no valid user (then must ignore params)
           (not $delegated and (setting('trust_x_remote_user') or setting('trust_remote_user'))))
         or $delegated) {
 
@@ -156,13 +157,25 @@ post '/login' => sub {
         if ($api) {
             header('Content-Type' => 'application/json');
 
-            # if there's a current valid token then reissue it and reset timer
+            my $body = try { from_json(request->body) } catch { {} };
+            my $want_permanent = $body->{permanent} && setting('allow_permanent_tokens');
+            my $allowed_ips    = (ref $body->{allowed_ips} eq ref [])
+                                   ? $body->{allowed_ips} : undef;
+
             $user->update({
-              token_from => time,
+              token_from      => time,
+              token_no_expire => ($want_permanent ? \"true" : \"false"),
+              ($allowed_ips ? (token_allowed_ips => $allowed_ips) : ()),
               ($provider->validate_api_token($user->token)
                 ? () : (token => \'md5(random()::text)')),
             })->discard_changes();
-            return to_json { api_key => $user->token };
+
+            return to_json {
+              api_key   => $user->token,
+              permanent => ($user->token_no_expire ? \1 : \0),
+              ($user->token_allowed_ips
+                ? (allowed_ips => $user->token_allowed_ips) : ()),
+            };
         }
 
         redirect ((scalar URI::Based->new(param('return_url'))->path_query) || '/');

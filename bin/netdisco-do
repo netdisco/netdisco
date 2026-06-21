@@ -518,11 +518,21 @@ L<App::Netdisco::Worker::Plugin::MakeRancidConf> for configuration needs.
 
 =head2 getapikey
 
-Generates an API key for the supplied username. See the 
-L<API doc|https://github.com/netdisco/netdisco/wiki/API> for further 
+Generates an API key for the supplied username. See the
+L<API doc|https://github.com/netdisco/netdisco/wiki/API> for further
 information.
 
- ~/bin/netdisco-do getapikey -e the_username 
+ ~/bin/netdisco-do getapikey -e the_username
+
+To create a permanent token (no expiry) pass C<permanent> in the C<-p> parameter.
+The token can be used in the C<Authorization: Bearer E<lt>tokenE<gt>> HTTP header
+and is accepted by any tool supporting standard Bearer authentication (Grafana, curl, etc.).
+
+ ~/bin/netdisco-do getapikey -e the_username -p permanent
+
+To revoke all API tokens for a user:
+
+ ~/bin/netdisco-do getapikey -e the_username -p revoke
 
 =head2 dumpconfig
 
