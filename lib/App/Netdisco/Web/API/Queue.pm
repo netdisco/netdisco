@@ -6,6 +6,8 @@ use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::Util::DNS 'ipv4_from_hostname';
+use NetAddr::IP::Lite;
 use Try::Tiny;
 
 swagger_path {
@@ -184,6 +186,7 @@ swagger_path {
             action => {
               type => 'string',
               required => 1,
+              description => 'Job action. Known actions: discover, macsuck, arpnip, nbtstat, delete. Unknown actions are accepted but will fail silently in the backend.',
             },
             device => {
               type => 'string',
@@ -196,6 +199,7 @@ swagger_path {
             extra => {
               type => 'string',
               required => 0,
+              description => 'Optional job parameter. For discover: a plain string or JSON object. Plain string is treated as snmp_tag. Supported JSON params: snmp_tag (string, must match a tag in device_auth), snmptimeout (integer, microseconds, overrides global snmptimeout), snmpretries (integer, overrides global snmpretries), bulkwalk_repeaters (integer, overrides global bulkwalk_repeaters), skip_neighbor_queue (bool, store topology but do not queue new discovers for unknown neighbors). Example: {"snmp_tag": "site-a", "snmptimeout": 3000000, "skip_neighbor_queue": true}.',
             }
           }
         }
@@ -218,12 +222,19 @@ swagger_path {
         if ($job->{action} =~ m/^cf_/ and not user_has_role('port_control'))
         or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
 
+      if ($job->{device} and not NetAddr::IP::Lite->new($job->{device})) {
+          my $ip = ipv4_from_hostname($job->{device})
+            or return send_error("Cannot resolve hostname: $job->{device}", 400);
+          $job->{device} = $ip;
+      }
+
       $job->{username} = session('logged_in_user');
       $job->{userip}   = request->remote_address;
   }
 
   my $happy = jq_insert($jobs);
 
+  return send_error('Failed to insert jobs - check backend logs', 500) unless $happy;
   return to_json { success => $happy };
 };
 
