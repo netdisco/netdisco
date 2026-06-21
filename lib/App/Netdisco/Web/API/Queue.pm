@@ -10,6 +10,51 @@ use Try::Tiny;
 
 swagger_path {
   tags => ['Queue'],
+  path => (setting('api_base') || '').'/queue/status',
+  description => 'Return counts of jobs by status. queued/running reflect current state; done/failed are optionally scoped by since.',
+  parameters => [
+    since => {
+      in => 'query',
+      description => 'Limit done/failed counts to jobs finished within this duration. Examples: 1h, 30m, 2d. Default: all time.',
+      required => 0,
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/queue/status' => require_role api_admin => sub {
+  my $since = params->{since} || '';
+
+  my $since_epoch = undef;
+  if ($since =~ /^(\d+)(m|h|d)$/) {
+    my ($n, $unit) = ($1, $2);
+    my %mul = (m => 60, h => 3600, d => 86400);
+    $since_epoch = time - ($n * $mul{$unit});
+  }
+  elsif ($since) {
+    send_error('Invalid since format. Use e.g. 30m, 2h, 7d', 400);
+  }
+
+  my $rs = schema(vars->{'tenant'})->resultset('Admin');
+
+  my $since_filter = $since_epoch
+    ? { finished => { '>=' => \["to_timestamp(?)", $since_epoch] } }
+    : {};
+
+  my $queued  = try { $rs->search({ status => 'queued'  })->count } catch { 0 };
+  my $running = try { $rs->search({ status => 'running' })->count } catch { 0 };
+  my $done    = try { $rs->search({ status => 'done',  %$since_filter })->count } catch { 0 };
+  my $failed  = try { $rs->search({ status => 'error', %$since_filter })->count } catch { 0 };
+
+  return to_json {
+    queued  => $queued,
+    running => $running,
+    done    => $done,
+    failed  => $failed,
+    since   => ($since || 'all time'),
+  };
+};
+
+swagger_path {
+  tags => ['Queue'],
   path => (setting('api_base') || '').'/queue/backends',
   description => 'Return list of currently active backend names (usually FQDN)',
   responses => { default => {} },
