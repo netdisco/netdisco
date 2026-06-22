@@ -53,10 +53,6 @@ my $queue = MCE::Queue->new;
 setting('workers')->{'no_manager'} = 1
   if setting('workers')->{tasks} eq '0';
 
-# support a workers-only node (no scheduler, safe to run multiple replicas)
-setting('workers')->{'no_scheduler'} = 1
-  if $ENV{NETDISCO_NO_SCHEDULER};
-
 # MCE::Util has a limit of ncpu if AUTO is used in max_workers,
 # so we parse the field ourselves.
 my $max_workers = parse_max_workers( setting('workers')->{tasks} ) || 0;
@@ -65,14 +61,14 @@ my @task_names   = qw/ scheduler manager poller /;
 my @task_workers = ( 1, 1, $max_workers );
 my @task_roles   = (_mk_wkr('Scheduler'), _mk_wkr('Manager'), _mk_wkr('Poller'));
 
-if (setting('workers')->{'no_scheduler'}) {
+if (!defined setting('schedule')) {
   shift @task_names; shift @task_workers; shift @task_roles;
 }
 
 warning sprintf "mode: %s%s | host: %s",
-  (setting('workers')->{'no_scheduler'} ? 'worker-only'
-   : $max_workers == 0                  ? 'scheduler'
-   :                                      'scheduler+worker'),
+  (!defined setting('schedule') ? 'worker-only'
+   : $max_workers == 0          ? 'scheduler'
+   :                              'scheduler+worker'),
   ($max_workers ? " | workers: $max_workers" : ''),
   (setting('workers')->{'BACKEND'} || 'unknown');
 

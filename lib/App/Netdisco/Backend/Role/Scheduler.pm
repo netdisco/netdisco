@@ -16,9 +16,6 @@ sub worker_begin {
   my $self = shift;
   my $wid = $self->wid;
 
-  return debug "sch ($wid): no need for scheduler... skip begin"
-    unless setting('schedule');
-
   debug "entering Scheduler ($wid) worker_begin()";
 
   foreach my $action (keys %{ setting('schedule') }) {
@@ -46,12 +43,6 @@ sub worker_begin {
 sub worker_body {
   my $self = shift;
   my $wid = $self->wid;
-
-  unless (setting('schedule')) {
-      prctl sprintf 'nd2: #%s sched: inactive', $wid;
-      return debug "sch ($wid): no need for scheduler... quitting"
-  }
-
   my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
 
   while (1) {
