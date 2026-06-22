@@ -390,6 +390,11 @@ setting('workers')->{'timeout'} = setting('timeout')
 setting('workers')->{'max_deferrals'} ||= (2**30);
 setting('workers')->{'retry_after'}   ||= '100 years';
 
+# 0 seconds means no minimum age filter (all devices eligible for walk)
+setting('discover_min_age') ||= '0 seconds';
+setting('macsuck_min_age')  ||= '0 seconds';
+setting('arpnip_min_age')   ||= '0 seconds';
+
 # schedule expire used to be called expiry
 setting('schedule')->{expire} ||= setting('schedule')->{expiry}
   if setting('schedule') and exists setting('schedule')->{expiry};

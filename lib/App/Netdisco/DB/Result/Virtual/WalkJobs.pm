@@ -26,6 +26,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
     WHERE admin.device IS NULL
       AND device.ip IS NOT NULL
       AND (device.vendor IS NULL OR device.vendor != 'netdisco')
+      AND (device.last_discover IS NULL
+           OR device.last_discover < LOCALTIMESTAMP - ?::interval)
 
     GROUP BY device.ip
     HAVING count(device_skip.backend) < (SELECT count(distinct(backend)) FROM device_skip)
