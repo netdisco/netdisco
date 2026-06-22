@@ -40,7 +40,6 @@ sub _parse_ips {
   return @ips ? \@ips : undef;
 }
 
-
 ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
@@ -81,6 +80,7 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
           note => param('note'),
         });
     });
+
     return '';
 };
 
@@ -91,6 +91,8 @@ ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') =
       schema(vars->{'tenant'})->resultset('User')
         ->find({username => param('username')})->delete;
     });
+
+    return '';
 };
 
 ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin') => sub {
@@ -137,6 +139,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
         note => param('note'),
       });
     });
+
     return '';
 };
 
