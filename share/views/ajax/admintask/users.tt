@@ -1,23 +1,13 @@
-[%- SET has_ldap   = settings.ldap   AND settings.ldap.keys.size   > 0 -%]
-[%- SET has_radius = settings.radius AND settings.radius.keys.size > 0 -%]
-[%- SET has_tacacs = settings.tacacs AND settings.tacacs.size       > 0 -%]
+[%- SET has_ldap   = (settings.ldap   AND settings.ldap.size   > 0) -%]
+[%- SET has_radius = (settings.radius AND settings.radius.size > 0) -%]
+[%- SET has_tacacs = (settings.tacacs AND settings.tacacs.size > 0) -%]
+[%- SET demo_site  = (settings.defanged_admin != 'admin') -%]
 
-<dl class="dl-horizontal" style="font-size:12px;margin-bottom:1em">
-  <dt class="muted" title="ldap / radius / tacacs">Backends</dt>
-  <dd>[% IF has_ldap %]LDAP [% END %][% IF has_radius %]RADIUS [% END %][% IF has_tacacs %]TACACS[% END %][% IF NOT (has_ldap OR has_radius OR has_tacacs) %]local only[% END %]</dd>
-  [% IF settings.no_auth %]
-  <dt class="muted" title="no_auth">Auth</dt>
-  <dd><i class="icon-warning-sign text-warning"></i> no_auth — bypassed</dd>
-  [% END %]
-  [% IF NOT settings.safe_password_store %]
-  <dt class="muted" title="safe_password_store">Passwords</dt>
-  <dd><i class="icon-warning-sign text-error"></i> MD5 — unsafe</dd>
-  [% END %]
-  <dt class="muted" title="api_token_lifetime">Session token</dt>
-  <dd>expires after [% settings.api_token_lifetime %]s</dd>
-  <dt class="muted" title="allow_permanent_tokens">Permanent token</dt>
-  <dd>[% IF settings.allow_permanent_tokens %]enabled[% ELSE %]<i class="icon-warning-sign text-warning"></i> disabled[% END %]</dd>
-</dl>
+[% IF settings.allow_permanent_tokens %]
+<div class="alert alert-info">
+  Configured Token Lifetime: [% settings.api_token_lifetime | html_entity %]s
+</div>
+[% END %]
 
 <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
   <thead>
@@ -38,16 +28,20 @@
   <tbody>
     <tr>
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
-      <td class="nd_center-cell"><input class="span2" data-form="add" name="username" type="text"></td>
+      <td class="nd_center-middle-cell"><input class="span2" data-form="add" name="username" type="text"></td>
+      [% IF settings.no_auth %]
+      <td class="nd_center-cell muted">Bypassed</td>
+      [% ELSE %]
       <td class="nd_center-cell"><input class="span1 nd_pw_field" data-form="add" name="password" type="password"></td>
+      [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
           <select class="span2 form-control nd_auth_method" data-form="add" name="auth_method">
-            <option value="" selected>Netdisco Password</option>
-            <option value="ldap">LDAP</option>
-            <option value="radius">RADIUS</option>
-            <option value="tacacs">TACACS</option>
-            <option value="permanent_token">Permanent Token</option>
+            [% IF demo_site OR NOT settings.no_auth %]<option value="" selected>Netdisco Password</option>[% END %]
+            [% IF demo_site OR has_ldap %]<option value="ldap">LDAP</option>[% END %]
+            [% IF demo_site OR has_radius %]<option value="radius">RADIUS</option>[% END %]
+            [% IF demo_site OR has_tacacs %]<option value="tacacs">TACACS</option>[% END %]
+            [% IF demo_site OR settings.allow_permanent_tokens %]<option value="permanent_token">Permanent Token</option>[% END %]
           </select>
         </div>
       </td>
@@ -77,7 +71,6 @@
     [% SET count = 0 %]
     [% FOREACH row IN results %]
     [% SET count = count + 1 %]
-    [% SET is_token = row.token_auth_only %]
     <tr>
       <td class="nd_center-cell">
         <input data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
@@ -86,18 +79,43 @@
         <input data-form="update" name="username" type="hidden" value="[% row.username | html_entity %]">
         [% row.username | html_entity %]
       </td>
-      <td class="nd_center-cell">
+      [% IF settings.no_auth %]
+      <td class="nd_center-cell muted">Bypassed</td>
+      [% ELSE %]
+      <td class="nd_center-middle-cell">
         <input class="span1 nd_pw_field" data-form="update" name="password" type="password"
-          [%- IF is_token %] style="display:none" disabled[% ELSIF row.password %] value="********"[% ELSE %] disabled placeholder="N/A"[% END %]>
-        <small class="nd_token_hint muted"[% IF NOT is_token %] style="display:none"[% END %]>[% IF row.token_hint %]...[% row.token_hint | html_entity %][% ELSE %]no token[% END %]</small>
+          [% IF row.token_auth_only %]
+          style="display: none" disabled
+          [% ELSE %]
+          value="********"
+          [% END %]
+          >
+        <small class="nd_token_hint muted"
+          [% IF NOT row.token_auth_only %]
+          style="display: none"
+          [% END %]
+          >
+          [% IF row.token_hint %]
+          ...<span class="nd_token-hint-value">[% row.token_hint | html_entity %]</span>
+          [% ELSE %]
+          no token
+          [% END %]
+        </small>
+        [% IF row.token_auth_only %]
+        <br />
+        <button class="btn btn-small nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
+          <i class="icon-key"></i> <i class="icon-refresh"></i>
+        </button>
+        [% END %]
       </td>
+      [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
           <select class="span2 form-control nd_auth_method" data-form="update" name="auth_method">
-            <option[% ' selected' IF NOT row.token_auth_only AND NOT row.ldap AND NOT row.radius AND NOT row.tacacs %] value="">Netdisco Password</option>
-            <option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>
-            <option[% ' selected' IF row.radius %] value="radius">RADIUS</option>
-            <option[% ' selected' IF row.tacacs %] value="tacacs">TACACS</option>
+            [% IF demo_site OR NOT settings.no_auth %]<option[% ' selected' IF NOT row.token_auth_only AND NOT row.ldap AND NOT row.radius AND NOT row.tacacs %] value="">Netdisco Password</option>[% END %]
+            [% IF demo_site OR has_ldap OR row.ldap %]<option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>[% END %]
+            [% IF demo_site OR has_radius OR row.radius %]<option[% ' selected' IF row.radius %] value="radius">RADIUS</option>[% END %]
+            [% IF demo_site OR has_tacacs OR row.tacacs %]<option[% ' selected' IF row.tacacs %] value="tacacs">TACACS</option>[% END %]
             <option[% ' selected' IF row.token_auth_only %] value="permanent_token">Permanent Token</option>
           </select>
         </div>
@@ -105,7 +123,7 @@
       <td class="nd_center-cell">
         <input class="span2 nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
           value="[% row.token_allowed_ips.join(', ') IF row.token_allowed_ips %]"
-          [% IF NOT is_token %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
+          [% IF NOT row.token_auth_only %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
@@ -129,8 +147,6 @@
 
       <td nowrap class="nd_center-cell">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
-
-        [% IF is_token %]<button class="btn nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token"><i class="icon-key"></i></button>[% END %]
 
         <button class="btn" data-toggle="modal"
           data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
@@ -180,15 +196,23 @@ $(document).ready(function() {
   function toggleTokenFields(select) {
     var row  = $(select).closest('tr');
     var pw   = row.find('.nd_pw_field');
+    var cell = pw.closest('td');
     var hint = row.find('.nd_token_hint');
     var ips  = row.find('.nd_allowed_ips_field');
+    var btn  = row.find('.nd_tokenbutton');
     if ($(select).val() === 'permanent_token') {
       pw.hide().val('').prop('disabled', true);
+      cell.addClass('nd_center-middle-cell');
+      cell.removeClass('nd_center-cell');
       hint.show();
+      btn.show();
       ips.prop('disabled', false);
     } else {
       pw.show().prop('disabled', false).attr('placeholder', '');
+      cell.addClass('nd_center-cell');
+      cell.removeClass('nd_center-middle-cell');
       hint.hide();
+      btn.hide();
       ips.val('').prop('disabled', true);
     }
   }
@@ -214,9 +238,11 @@ $(document).ready(function() {
 
   $(document).on('click', '.nd_tokenbutton', function() {
     var username  = $(this).data('username');
+    var hint = $(this).closest('td').find('.nd_token-hint-value');
     $.get(uri_base + '/ajax/control/admin/users/token', { username: username, permanent: 1 }, function(apiKey) {
       apiKey = $.trim(apiKey);
       if (apiKey && typeof window.nd_show_api_token === 'function') {
+        $(hint).text(apiKey.slice(-8));
         window.nd_show_api_token(apiKey);
       } else {
         toastr.error('Could not retrieve token');

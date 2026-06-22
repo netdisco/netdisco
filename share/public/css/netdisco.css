@@ -220,12 +220,17 @@ div.nd_acl-rule-list {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
-.table td:not(.nd_acl-rule-list) {
+.table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
 
 .table .nd_center-cell {
   text-align: center;
+}
+
+.table .nd_center-middle-cell {
+  text-align: center;
+  vertical-align: middle;
 }
 
 td.nd_devport-icon i {
