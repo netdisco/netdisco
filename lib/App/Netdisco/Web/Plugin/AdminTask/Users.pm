@@ -104,7 +104,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
       $user->update({
         fullname => param('fullname'),
 
-        ((param('auth_method') eq 'token' or param('auth_method') eq 'permanent_token') ? (
+        ((param('auth_method') eq 'permanent_token') ? (
           password => undef,
           ldap => \'false', radius => \'false', tacacs => \'false',
           token_auth_only  => \'true',

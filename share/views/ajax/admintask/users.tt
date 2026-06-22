@@ -96,9 +96,9 @@
           [% END %]
           >
           [% IF row.token_hint %]
-          ...<span class="nd_token-hint-value">[% row.token_hint | html_entity %]</span>
+          <span class="nd_token-hint-value">...[% row.token_hint | html_entity %]</span>
           [% ELSE %]
-          no token
+          <span class="nd_token-hint-value">no token</span>
           [% END %]
         </small>
         [% IF row.token_auth_only %]
@@ -242,7 +242,7 @@ $(document).ready(function() {
     $.get(uri_base + '/ajax/control/admin/users/token', { username: username, permanent: 1 }, function(apiKey) {
       apiKey = $.trim(apiKey);
       if (apiKey && typeof window.nd_show_api_token === 'function') {
-        $(hint).text(apiKey.slice(-8));
+        $(hint).text('...' + apiKey.slice(-8));
         window.nd_show_api_token(apiKey);
       } else {
         toastr.error('Could not retrieve token');
