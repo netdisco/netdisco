@@ -391,9 +391,9 @@ setting('workers')->{'max_deferrals'} ||= (2**30);
 setting('workers')->{'retry_after'}   ||= '100 years';
 
 # 0 seconds means no minimum age filter (all devices eligible for walk)
-setting('discover_min_age') ||= '0 seconds';
-setting('macsuck_min_age')  ||= '0 seconds';
-setting('arpnip_min_age')   ||= '0 seconds';
+config->{'discover_min_age'} ||= '0 seconds';
+config->{'macsuck_min_age'}  ||= '0 seconds';
+config->{'arpnip_min_age'}   ||= '0 seconds';
 
 # schedule expire used to be called expiry
 setting('schedule')->{expire} ||= setting('schedule')->{expiry}
