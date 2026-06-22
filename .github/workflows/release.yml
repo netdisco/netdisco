@@ -14,6 +14,6 @@ jobs:
         id: get_tag
         run: echo ::set-output name=TAGVALUE::${GITHUB_REF#refs/tags/}
       - name: Release
-        uses: softprops/action-gh-release@v3.0.0
+        uses: softprops/action-gh-release@v3.0.1
         with:
           name: Netdisco ${{ steps.get_tag.outputs.TAGVALUE }}
