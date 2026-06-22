@@ -231,7 +231,11 @@ sub extra { (shift)->subaction }
 =head2 params
 
 Parses the C<subaction> field as JSON and returns a hashref of parameters.
-Returns an empty hashref if subaction is empty or not valid JSON.
+Returns an empty hashref if subaction is empty or not a dictionary.
+
+This is used by the discover job to override configuration, particularly
+SNMP timers which are sensitive for new devices. It returns an empty hashref
+when C<subaction> is used for direct data provided for ARP/MAC addresses.
 
 =cut
 
