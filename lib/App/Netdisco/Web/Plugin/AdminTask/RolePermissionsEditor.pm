@@ -50,6 +50,8 @@ post '/ajax/control/admin/rolepermissionseditor/add' => require_role setting('de
             rules => [ $port_rule ],
       }) if $port_rule;
     });
+
+    return '';
 };
 
 post '/ajax/control/admin/rolepermissionseditor/delete' => require_role setting('defanged_admin') => sub {
@@ -59,7 +61,7 @@ post '/ajax/control/admin/rolepermissionseditor/delete' => require_role setting(
     
     schema(vars->{'tenant'})->txn_do(sub {
       my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
-        ->find($id);
+        ->find($id) or send_error('Bad Request', 400);
 
       schema(vars->{'tenant'})->resultset('AccessControlList')
         ->find($row->device_acl_id)->delete;
@@ -79,6 +81,8 @@ post '/ajax/control/admin/rolepermissionseditor/delete' => require_role setting(
           $new->device_acl->update({ rules => ['group:__ANY__'] });
       }
     });
+
+    return '';
 };
 
 post '/ajax/control/admin/rolepermissionseditor/update' => require_role setting('defanged_admin') => sub {
@@ -90,6 +94,8 @@ post '/ajax/control/admin/rolepermissionseditor/update' => require_role setting(
                           @{ ref param('device_rule') ? param('device_rule')
                                                       : defined param('device_rule') ? [param('device_rule')]
                                                                                      : [] };
+    @device_rules = ('group:__ANY__') if 0 == scalar @device_rules;
+
     my @port_rules   = map {decode_base64($_)}
                           @{ ref param('port_rule') ? param('port_rule')
                                                     : defined param('port_rule') ? [param('port_rule')]
@@ -97,13 +103,15 @@ post '/ajax/control/admin/rolepermissionseditor/update' => require_role setting(
 
     schema(vars->{'tenant'})->txn_do(sub {
       my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
-        ->find($id);
+        ->find($id) or send_error('Bad Request', 400);
 
       schema(vars->{'tenant'})->resultset('AccessControlList')
         ->find($row->device_acl_id)->update({rules => \@device_rules });
       schema(vars->{'tenant'})->resultset('AccessControlList')
         ->find($row->port_acl_id)->update({rules => \@port_rules });
     });
+
+    return '';
 };
 
 true;
