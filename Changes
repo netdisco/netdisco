@@ -1,8 +1,29 @@
-2.099007 - 2026-06-05
+a9ad453b Add per-job param to discover via subaction (#1549)
+
+2.100000 - 2026-06-23
+
+  [NEW FEATURES]
+
+  * #1549 discover subaction having JSON becomes per-job additional settings
+  * #1550 add permanent API tokens and (dummy) Bearer auth support
+  * #1561 new API endpoint GET /api/v1/queue/status
+  * add queue_neighbors bool setting to allow neighbor discovery without queueing
+  * add auth_tag discover param to select specific device_auth stanza
+  * support snmptimeout, snmpretries, bulkwalk_repeaters override in discover param
+  * add skip_neighbor_queue discover param to do same as queue_neighbors:false
+  * NETDISCO_NO_SCHEDULER environment variable same as "schedule: null"
+  * NETDISCO_WORKERS_TASKS environment variable same as "workers.tasks"
+
+  [ENHANCEMENTS]
+
+  * #1544 show the device_auth tag in the log messages
+  * #1564 improve SNMP exception reporting in job log
+  * show mode, worker count and hostname on backend startup
 
   [BUG FIXES]
 
-  * fix syntax error after inadvertent GH push
+  * user delete in user admin page should refresh the page
+  * update Python dependencies and GitHub Actions versions
 
 2.099006 - 2026-06-05
 
