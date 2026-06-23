@@ -237,7 +237,7 @@ This is used by the discover job to override configuration, particularly
 SNMP timers which are sensitive for new devices. It returns an empty hashref
 when C<subaction> is used for direct data provided for ARP/MAC addresses.
 
-If C<subaction> is a plain string, it is promoted to being the C<snmp_tag>
+If C<subaction> is a plain string, it is promoted to being the C<device_auth_tag_hint>
 key's value in the returned hashref.
 
 =cut
@@ -248,7 +248,7 @@ sub params {
   return try {
     my $r = from_json($job->subaction);
     ref $r eq 'HASH' ? $r : {}
-  } catch { {snmp_tag => $job->subaction} };
+  } catch { {device_auth_tag_hint => $job->subaction} };
 }
 
 true;

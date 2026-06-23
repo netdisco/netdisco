@@ -34,29 +34,20 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 get_communities( $device, $mode, $tag_hint? )
+=head2 get_communities( $device, $mode )
 
 Takes the current C<device_auth> setting and pushes onto the front of the list
 the last known good SNMP settings used for this mode (C<read> or C<write>).
 
-If C<$tag_hint> is provided, only C<device_auth> entries whose C<tag> matches
-are returned, skipping all others. Falls back to normal behaviour if no entry
-with that tag exists in the config.
-
 =cut
 
 sub get_communities {
-  my ($device, $mode, $tag_hint) = @_;
+  my ($device, $mode) = @_;
   $mode ||= 'read';
 
   my $seen_tags = {}; # for cleaning community table
   my $config = (setting('device_auth') || []);
   my @communities = ();
-
-  if ($tag_hint) {
-    my @tagged = grep { $_->{tag} and $_->{tag} eq $tag_hint } @$config;
-    return @tagged if @tagged;
-  }
 
   # first of all, use external command if configured
   push @communities, get_external_credentials($device, $mode);
