@@ -22,7 +22,7 @@ swagger_path {
     },
     fields => {
       in => 'query',
-      description => 'Comma-separated list of fields to return. Defaults to: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column. Use "snmp_auth_tag" to include the cached SNMP auth tag.',
+      description => 'Comma-separated list of fields to return. Defaults to: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column. Use "device_auth_tag" to include the cached device auth tag.',
       required => 0,
     },
     limit => {
@@ -47,8 +47,8 @@ swagger_path {
            : $fields           ? split(/\s*,\s*/, $fields)
            :                     @DEVICE_FIELDS;
 
-  my $want_tag = grep { $_ eq 'snmp_auth_tag' } @cols;
-  @cols = grep { $_ ne 'snmp_auth_tag' } @cols;
+  my $want_tag = grep { $_ eq 'device_auth_tag' } @cols;
+  @cols = grep { $_ ne 'device_auth_tag' } @cols;
 
   my %search = ();
   if ($q) {
@@ -66,7 +66,7 @@ swagger_path {
 
   if ($want_tag) {
     $attrs{join} = 'community';
-    push @{ $attrs{'+columns'} }, { snmp_auth_tag => 'community.snmp_auth_tag_read' };
+    push @{ $attrs{'+columns'} }, { device_auth_tag => 'community.snmp_auth_tag_read' };
   }
 
   my @devices = try {
