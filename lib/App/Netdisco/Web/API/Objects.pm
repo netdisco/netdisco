@@ -17,7 +17,7 @@ swagger_path {
   parameters => [
     fields => {
       in => 'query',
-      description => 'Comma-separated list of fields to return. Default: ip,dns,name. Use "all" for every column. Extra: vendor,model,os,os_ver,location,last_discover,device_auth_tag.',
+      description => 'Comma-separated list of fields to return. Default: ip,dns,name. Any device table column is valid (e.g. vendor,model,os,os_ver,location,layers,last_discover,last_macsuck,last_arpnip). Use "all" for every column. Extra join: device_auth_tag.',
       required => 0,
     },
     limit => {
