@@ -169,6 +169,7 @@ lib/App/Netdisco/Web/AdminTask.pm
 lib/App/Netdisco/Web/API/Objects.pm
 lib/App/Netdisco/Web/API/Queue.pm
 lib/App/Netdisco/Web/API/Statistics.pm
+lib/App/Netdisco/Web/API/User.pm
 lib/App/Netdisco/Web/Auth/Provider/DBIC.pm
 lib/App/Netdisco/Web/AuthN.pm
 lib/App/Netdisco/Web/CustomFields.pm
@@ -558,6 +559,7 @@ share/schema_versions/App-Netdisco-DB-92-93-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-93-94-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-94-95-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-95-96-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-96-97-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/duplicatedevices.tt
 share/views/ajax/admintask/jobqueue.tt
