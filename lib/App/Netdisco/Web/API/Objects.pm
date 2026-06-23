@@ -17,7 +17,7 @@ swagger_path {
   parameters => [
     fields => {
       in => 'query',
-      description => 'Comma-separated list of fields to return. Defaults to: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column. Use "device_auth_tag" to include the cached device auth tag.',
+      description => 'Comma-separated list of fields to return. Default: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column. Extra: device_auth_tag.',
       required => 0,
     },
     limit => {
