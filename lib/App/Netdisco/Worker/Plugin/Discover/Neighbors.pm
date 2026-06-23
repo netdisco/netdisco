@@ -43,6 +43,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         $device->ip);
   }
 
+  if ($job->params->{skip_neighbor_queue} or not setting('queue_neighbors')) {
+      config->{'discover_only'} = $device->ip;
+      debug sprintf ' [%s] neigh - neighbors will be discovered but not queued',
+        $device->ip;
+  }
+
   # do not remove. not used directly in this worker
   # but is used in store_neighbors()
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
@@ -147,13 +153,6 @@ sub store_neighbors {
 
   # allow fallback from v6 to try v4
   my %success_with_index = ();
-
-  # allow to gather neighbor info, but do not discover neighbors
-  if ($job->params->{skip_neighbor_queue} or setting('skip_neighbor_queue')) {
-      config->{'discover_only'} = $device->ip;
-      debug sprintf ' [%s] neigh - skip_neighbor_queue active, will not queue discover job for new neighbors',
-        $device->ip;
-  }
 
   NEIGHBOR: foreach my $pair ((sort { $a->key cmp $b->key } pairs %c_ipv6),
                               (sort { $a->key cmp $b->key } pairs %$c_ip)) {
