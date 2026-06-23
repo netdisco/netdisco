@@ -725,6 +725,7 @@ expire_nodeip_freshness: null
 store_wireless_clients: true
 skip_neighbors: []
 neighbor_no_type: []
+queue_neighbors: true
 discover_neighbors: true
 discover_routed_neighbors: true
 skip_modules: []
