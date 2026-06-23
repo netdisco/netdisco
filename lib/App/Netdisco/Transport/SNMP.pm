@@ -141,6 +141,8 @@ sub _snmp_connect_generic {
     Debug => ($ENV{INFO_TRACE} || 0),
     DebugSNMP => ($ENV{SNMP_TRACE} || 0),
   );
+  my $snmp_fast_connect_timeout = defined(setting('snmp_fast_connect_timeout'))
+    ? setting('snmp_fast_connect_timeout') : 200000;
 
   # an override for RemotePort
   ($snmp_args{RemotePort}) =
@@ -215,7 +217,7 @@ sub _snmp_connect_generic {
       my $comm = $communities[0];
       my $ver = (exists $comm->{community} ? 2 : 3);
       my %local_args = (%snmp_args,
-        Version => $ver, Retries => 0, Timeout => 200000);
+        Version => $ver, Retries => 0, Timeout => $snmp_fast_connect_timeout);
         
       my $info = _try_connect($device, $classes[0], $comm, $mode, \%local_args,
             ($useclass ? 0 : 1) );
@@ -235,7 +237,7 @@ sub _snmp_connect_generic {
 
   VERSION: foreach my $ver (3, 2) {
       my %local_args = (%snmp_args,
-        Version => $ver, Retries => 0, Timeout => 200000);
+        Version => $ver, Retries => 0, Timeout => $snmp_fast_connect_timeout);
 
       COMMUNITY: foreach my $comm (@communities) {
           next unless $comm;
