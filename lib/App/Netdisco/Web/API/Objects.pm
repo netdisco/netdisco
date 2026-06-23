@@ -15,11 +15,6 @@ swagger_path {
   path => (setting('api_base') || '').'/object/devices',
   description => 'Returns list of all known devices',
   parameters => [
-    q => {
-      in => 'query',
-      description => 'Filter by IP, dns, or name (substring match)',
-      required => 0,
-    },
     fields => {
       in => 'query',
       description => 'Comma-separated list of fields to return. Defaults to: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column. Use "device_auth_tag" to include the cached device auth tag.',
@@ -38,7 +33,6 @@ swagger_path {
   ],
   responses => { default => {} },
 }, get '/api/v1/object/devices' => require_role api => sub {
-  my $q      = params->{q}      || '';
   my $fields = params->{fields} || '';
   my $limit  = params->{limit}  || undef;
   my $offset = params->{offset} || 0;
@@ -49,15 +43,6 @@ swagger_path {
 
   my $want_tag = grep { $_ eq 'device_auth_tag' } @cols;
   @cols = grep { $_ ne 'device_auth_tag' } @cols;
-
-  my %search = ();
-  if ($q) {
-    $search{'-or'} = [
-      { 'me.ip'   => { 'like', "%$q%" } },
-      { 'me.dns'  => { 'like', "%$q%" } },
-      { 'me.name' => { 'like', "%$q%" } },
-    ];
-  }
 
   my %attrs = ( order_by => 'me.dns' );
   $attrs{columns} = \@cols if @cols;
@@ -71,7 +56,7 @@ swagger_path {
 
   my @devices = try {
     schema(vars->{'tenant'})->resultset('Device')
-      ->search(\%search, \%attrs)->hri->all;
+      ->search(undef, \%attrs)->hri->all;
   } catch { () };
 
   return to_json \@devices;
