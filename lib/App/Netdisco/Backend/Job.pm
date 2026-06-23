@@ -237,6 +237,9 @@ This is used by the discover job to override configuration, particularly
 SNMP timers which are sensitive for new devices. It returns an empty hashref
 when C<subaction> is used for direct data provided for ARP/MAC addresses.
 
+If C<subaction> is a plain string, it is promoted to being the C<snmp_tag>
+key's value in the returned hashref.
+
 =cut
 
 sub params {
