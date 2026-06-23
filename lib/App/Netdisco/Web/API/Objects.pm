@@ -8,7 +8,7 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::JobQueue 'jq_insert';
 use Try::Tiny;
 
-my @DEVICE_FIELDS = qw/ip dns name vendor model os os_ver location last_discover/;
+my @DEVICE_FIELDS = qw/ip dns name/;
 
 swagger_path {
   tags => ['Objects'],
@@ -17,7 +17,7 @@ swagger_path {
   parameters => [
     fields => {
       in => 'query',
-      description => 'Comma-separated list of fields to return. Default: ip,dns,name,vendor,model,os,os_ver,location,last_discover. Use "all" for every column. Extra: device_auth_tag.',
+      description => 'Comma-separated list of fields to return. Default: ip,dns,name. Use "all" for every column. Extra: vendor,model,os,os_ver,location,last_discover,device_auth_tag.',
       required => 0,
     },
     limit => {
