@@ -36,6 +36,8 @@ ajax '/ajax/control/admin/portctlrole/add' => require_role setting('defanged_adm
         });
       $new->device_acl->update({ rules => ['group:__ANY__'] });
     });
+
+    return '';
 };
 
 ajax '/ajax/control/admin/portctlrole/delete' => require_role setting('defanged_admin') => sub {
@@ -61,6 +63,8 @@ ajax '/ajax/control/admin/portctlrole/delete' => require_role setting('defanged_
             ? () : (portctl_role => undef, port_control => \'false')),
         });
     });
+
+    return '';
 };
 
 ajax '/ajax/control/admin/portctlrole/update' => require_role setting('defanged_admin') => sub {
@@ -77,6 +81,8 @@ ajax '/ajax/control/admin/portctlrole/update' => require_role setting('defanged_
         ->search({ portctl_role => $old_role })
         ->update({ portctl_role => $role });
     });
+
+    return '';
 };
 
 true;
