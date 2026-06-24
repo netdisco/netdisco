@@ -10,15 +10,6 @@ use File::Path 'make_path';
 use Scalar::Util 'blessed';
 use NetAddr::IP;
 
-my %_interval_mult = (second => 1, minute => 60, hour => 3600, day => 86400, week => 604800);
-sub _interval_secs {
-  my ($s) = @_;
-  return 0 unless $s;
-  return $1 * $_interval_mult{lc $2}
-    if $s =~ /^(\d+(?:\.\d+)?)\s*(second|minute|hour|day|week)s?$/i;
-  return $s + 0;
-}
-
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
@@ -239,7 +230,7 @@ sub is_discoverable_now {
 
   if ($device->in_storage
       and $device->since_last_discover and setting('discover_min_age')
-      and $device->since_last_discover < _interval_secs(setting('discover_min_age'))) {
+      and $device->since_last_discover < setting('discover_min_age')) {
 
       return _bail_msg("is_discoverable: $device last discover < discover_min_age");
   }
@@ -295,7 +286,7 @@ sub is_arpnipable_now {
 
   if ($device->in_storage
       and $device->since_last_arpnip and setting('arpnip_min_age')
-      and $device->since_last_arpnip < _interval_secs(setting('arpnip_min_age'))) {
+      and $device->since_last_arpnip < setting('arpnip_min_age')) {
 
       return _bail_msg("is_arpnipable: $device last arpnip < arpnip_min_age");
   }
@@ -354,7 +345,7 @@ sub is_macsuckable_now {
 
   if ($device->in_storage
       and $device->since_last_macsuck and setting('macsuck_min_age')
-      and $device->since_last_macsuck < _interval_secs(setting('macsuck_min_age'))) {
+      and $device->since_last_macsuck < setting('macsuck_min_age')) {
 
       return _bail_msg("is_macsuckable: $device last macsuck < macsuck_min_age");
   }

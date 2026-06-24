@@ -679,7 +679,7 @@ discover_only: []
 discover_no_type: []
 discover_waps: true
 discover_phones: false
-discover_min_age: 0
+discover_min_age: 86400
 ignore_layers: []
 force_macsuck: []
 macsuck_no: []
@@ -702,14 +702,14 @@ macsuck_no_deviceports: []
 macsuck_unsupported: []
 macsuck_unsupported_type: []
 macsuck_bleed: false
-macsuck_min_age: 0
+macsuck_min_age: 3600
 snmpforce_v1: []
 snmpforce_v2: []
 snmpforce_v3: []
 force_arpnip: []
 arpnip_no: []
 arpnip_only: []
-arpnip_min_age: 0
+arpnip_min_age: 3600
 nbtstat_no: []
 nbtstat_only: []
 nbtstat_max_age: 7
