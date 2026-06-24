@@ -230,7 +230,7 @@ sub is_discoverable_now {
 
   if ($device->in_storage
       and $device->since_last_discover and setting('discover_min_age')
-      and $device->since_last_discover < setting('discover_min_age')) {
+      and $device->since_last_discover < setting('discover_min_age') * 60) {
 
       return _bail_msg("is_discoverable: $device last discover < discover_min_age");
   }
@@ -286,7 +286,7 @@ sub is_arpnipable_now {
 
   if ($device->in_storage
       and $device->since_last_arpnip and setting('arpnip_min_age')
-      and $device->since_last_arpnip < setting('arpnip_min_age')) {
+      and $device->since_last_arpnip < setting('arpnip_min_age') * 60) {
 
       return _bail_msg("is_arpnipable: $device last arpnip < arpnip_min_age");
   }
@@ -345,7 +345,7 @@ sub is_macsuckable_now {
 
   if ($device->in_storage
       and $device->since_last_macsuck and setting('macsuck_min_age')
-      and $device->since_last_macsuck < setting('macsuck_min_age')) {
+      and $device->since_last_macsuck < setting('macsuck_min_age') * 60) {
 
       return _bail_msg("is_macsuckable: $device last macsuck < macsuck_min_age");
   }
