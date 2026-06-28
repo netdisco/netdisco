@@ -34,6 +34,8 @@ ajax '/ajax/control/admin/nodemonitor/add' => require_role admin => sub {
           cc => param('cc'),
         });
     });
+
+    return '';
 };
 
 ajax '/ajax/control/admin/nodemonitor/del' => require_role admin => sub {
@@ -43,6 +45,8 @@ ajax '/ajax/control/admin/nodemonitor/del' => require_role admin => sub {
       schema(vars->{'tenant'})->resultset('NodeMonitor')
         ->find({mac => param('mac')})->delete;
     });
+
+    return '';
 };
 
 ajax '/ajax/control/admin/nodemonitor/update' => require_role admin => sub {
@@ -62,6 +66,8 @@ ajax '/ajax/control/admin/nodemonitor/update' => require_role admin => sub {
         date => \'LOCALTIMESTAMP',
       });
     });
+
+    return '';
 };
 
 ajax '/ajax/content/admin/nodemonitor' => require_role admin => sub {

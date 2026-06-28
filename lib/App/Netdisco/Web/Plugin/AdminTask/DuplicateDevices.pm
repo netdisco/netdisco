@@ -29,6 +29,8 @@ ajax '/ajax/content/admin/duplicatedevices' => require_role admin => sub {
     template 'ajax/admintask/duplicatedevices.tt', {
       results => \@set
     }, { layout => undef };
+
+    return '';
 };
 
 true;

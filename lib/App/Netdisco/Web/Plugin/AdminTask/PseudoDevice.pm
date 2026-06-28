@@ -61,6 +61,8 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
           alias => param('ip'),
         });
     });
+
+    return '';
 };
 
 ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
@@ -103,6 +105,8 @@ ajax '/ajax/control/admin/pseudodevice/update' => require_role admin => sub {
       # and update last_discover, since device properties changed
       $device->update({last_discover => \'LOCALTIMESTAMP'});
     });
+
+    return '';
 };
 
 ajax '/ajax/content/admin/pseudodevice' => require_role admin => sub {
@@ -116,6 +120,8 @@ ajax '/ajax/content/admin/pseudodevice' => require_role admin => sub {
     template 'ajax/admintask/pseudodevice.tt', {
       results => $set,
     }, { layout => undef };
+
+    return '';
 };
 
 true;

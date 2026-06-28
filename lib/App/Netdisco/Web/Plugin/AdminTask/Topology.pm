@@ -80,6 +80,8 @@ ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_contr
             });
         });
     };
+
+    return '';
 };
 
 ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_control)] => sub {
@@ -131,6 +133,8 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
             });
         });
     };
+
+    return '';
 };
 
 ajax '/ajax/content/admin/topology' => require_any_role [qw(admin port_control)] => sub {

@@ -23,6 +23,8 @@ ajax '/ajax/control/admin/timedoutdevices/del' => require_role admin => sub {
         backend => param('backend'), device => param('device'),
       },{ key => 'device_skip_pkey' })->update({ deferrals => 0 });
     });
+
+    return '';
 };
 
 ajax '/ajax/content/admin/timedoutdevices' => require_role admin => sub {
