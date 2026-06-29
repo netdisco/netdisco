@@ -46,7 +46,7 @@
       </td>
 
       <td class="nd_center-cell"><a class="btn"
-        href="[% uri_for('/admin/acleditor') | none %]?acl_name=[% acl.acl_name | uri %]"><i class="icon-list-ul icon-large icon-border"></i> Edit Rules</a></td>
+        href="[% uri_for('/admin/acleditor') | none %]?acl_name=[% acl.acl_name | uri %]&acl_type=[% acl.acl_type | uri %]"><i class="icon-list-ul icon-large icon-border"></i> Edit Rules</a></td>
 
       <td class="nd_center-cell">
         <input data-form="update" name="old-acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">

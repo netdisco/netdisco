@@ -28,8 +28,10 @@
     <ul id="nd_search-results" class="nav nav-tabs">
       <li class="active"><a id="[% task.tag | html_entity %]_link" class="nd_single-tab"
         href="#[% task.tag | html_entity %]_pane">[% task.label | html_entity %]
-      [% IF task.tag == 'rolepermissionseditor' %]
-        : <span class="badge badge-important">[% params.role_name | html_entity %]</span>
+      [% IF task.tag == 'acleditor' %]
+        | Name: <span class="badge badge-important">[% params.acl_name | html_entity %]</span>
+        Type: <span class="badge badge-important">[% SWITCH params.acl_type %]
+          [% CASE "host_host" %]Host to Host mapping[% CASE "host_port" %]Ports on Hosts[% CASE %]Host Group[% END %]</span>
       [% END %]
       </a></li>
       [% IF task.tag == 'jobqueue' %]

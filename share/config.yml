@@ -85,7 +85,7 @@ web_plugins:
   - AdminTask::PollerPerformance
   - AdminTask::ACLManager
   - AdminTask::PseudoDevice
-  - AdminTask::RolePermissionsEditor
+  - AdminTask::ACLEditor
   - AdminTask::SlowDevices
   - AdminTask::TimedOutDevices
   - AdminTask::UndiscoveredNeighbors
@@ -181,7 +181,7 @@ sidebar_defaults:
   report_portutilization:
     age_num:      { default: 3 }
     age_unit:     { default: months }
-  admintask_rolepermissionseditor:
+  admintask_acleditor:
     aclhost:     { default: ip }
 health_path: ''
 metrics_path: ''

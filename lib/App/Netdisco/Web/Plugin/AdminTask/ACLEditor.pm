@@ -1,4 +1,4 @@
-package App::Netdisco::Web::Plugin::AdminTask::RolePermissionsEditor;
+package App::Netdisco::Web::Plugin::AdminTask::ACLEditor;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
@@ -10,27 +10,31 @@ use App::Netdisco::Web::Plugin;
 use MIME::Base64 'decode_base64';
 
 register_admin_task({
-    tag => "rolepermissionseditor",
-    label => "Role Permissions Editor",
+    tag => "acleditor",
+    label => "ACL Editor",
     hidden => true,
 });
 
-get '/ajax/content/admin/rolepermissionseditor' => require_role admin => sub {
-    my $role = param('role_name');
-    send_error('Bad Request', 400) unless $role;
+get '/ajax/content/admin/acleditor' => require_role admin => sub {
+    my $acl_name = param('acl_name');
+    send_error('Bad Request', 400) unless $acl_name;
 
-    my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-      ->search({role_name => $role}, { prefetch => [qw/device_acl_with_dns port_acl/],
-                                       order_by => 'me.id' })
+    my $acl = schema(vars->{'tenant'})->resultset('AccessControlListName')
+                                      ->find({acl_name => $acl_name});
+    send_error('Bad Request', 400) unless $acl;
+
+    my $maps = schema(vars->{'tenant'})->resultset('AccessControlListMap')
+      ->search({acl_name => $acl_name}, { prefetch => [qw/left_acl_with_dns right_acl/],
+                                          order_by => 'me.id' })
       or send_error('Bad Request', 400);
 
-    template 'ajax/admintask/rolepermissionseditor.tt', {
-      role_name => $role,
-      results => $rows,
+    template 'ajax/admintask/acleditor.tt', {
+      acl_name => $acl->acl_name,
+      results => $maps,
     }, { layout => undef };
 };
 
-post '/ajax/control/admin/rolepermissionseditor/add' => require_role setting('defanged_admin') => sub {
+post '/ajax/control/admin/acleditor/add' => require_role setting('defanged_admin') => sub {
     my $role = param("role_name");
     my $device_rule = param("device_rule");
     my $port_rule = param("port_rule");
@@ -54,7 +58,7 @@ post '/ajax/control/admin/rolepermissionseditor/add' => require_role setting('de
     return '';
 };
 
-post '/ajax/control/admin/rolepermissionseditor/delete' => require_role setting('defanged_admin') => sub {
+post '/ajax/control/admin/acleditor/delete' => require_role setting('defanged_admin') => sub {
     my $id = param("id");
     my $role = param("role_name");
     send_error('Bad Request', 400) unless $id and $role;
@@ -85,7 +89,7 @@ post '/ajax/control/admin/rolepermissionseditor/delete' => require_role setting(
     return '';
 };
 
-post '/ajax/control/admin/rolepermissionseditor/update' => require_role setting('defanged_admin') => sub {
+post '/ajax/control/admin/acleditor/update' => require_role setting('defanged_admin') => sub {
     my $id = param("id");
     my $role = param("role_name");
     send_error('Bad Request', 400) unless $id and $role;

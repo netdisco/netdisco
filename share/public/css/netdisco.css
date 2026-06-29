@@ -129,7 +129,7 @@ div.content > div.tab-content table.nd_floatinghead thead {
 }
 
 /* for access control list rules */
-.nd_device-acl-rule-label, .nd_port-acl-rule-label {
+.nd_left-acl-rule-label, .nd_right-acl-rule-label {
   font-size: 13px;
   margin-left: 0.5em;
   margin-bottom: 4px;
