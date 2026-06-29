@@ -48,7 +48,7 @@
       <td class="nd_acl-rule-list" data-field="nd_right-acl-rule-field">
         <div class="nd_acl-rule-list">
         [% FOREACH rule IN pair.right_acl.rules %]
-        <span class="label label-info nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+        <span class="label label-[% SWITCH params.acl_type %][% CASE "host_port" %]info[% CASE %]inverse[% END %] nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
         <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% atob(rule) | none %]"><br/>
         [% END %]
         <input class="span3 nd_acl-rule" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
@@ -77,6 +77,7 @@
             </blockquote>
             <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
             <input data-form="delete" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
+            <input data-form="delete" name="acl_type" type="hidden" value="[% params.acl_type | html_entity %]">
           </div>
 
           <div class="modal-footer">

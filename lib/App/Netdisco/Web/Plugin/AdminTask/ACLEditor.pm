@@ -60,29 +60,33 @@ post '/ajax/control/admin/acleditor/add' => require_role setting('defanged_admin
 
 post '/ajax/control/admin/acleditor/delete' => require_role setting('defanged_admin') => sub {
     my $id = param("id");
-    my $role = param("role_name");
-    send_error('Bad Request', 400) unless $id and $role;
+    my $acl = param("acl_name");
+    send_error('Bad Request', 400) unless $id and $acl;
     
     schema(vars->{'tenant'})->txn_do(sub {
-      my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      my $map = schema(vars->{'tenant'})->resultset('AccessControlListMap')
         ->find($id) or send_error('Bad Request', 400);
 
       schema(vars->{'tenant'})->resultset('AccessControlList')
-        ->find($row->device_acl_id)->delete;
+        ->find($map->left_acl_id)->delete;
       schema(vars->{'tenant'})->resultset('AccessControlList')
-        ->find($row->port_acl_id)->delete;
+        ->find($map->right_acl_id)->delete
+      if schema(vars->{'tenant'})->resultset('AccessControlList')
+        ->find($map->right_acl_id);
 
-      $row->delete;
+      $map->delete;
 
-      if (schema(vars->{'tenant'})->resultset('PortCtlRole')
-            ->search({ role_name => $role })->count() == 0) {
-          # roles cannot be empty - delete from the Port Control Roles panel only
-          my $new = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      if (schema(vars->{'tenant'})->resultset('AccessControlListMap')
+            ->search({ acl_name => $acl })->count() == 0) {
+          # ACLs cannot be empty - restore as a bare ACL
+          my $new = schema(vars->{'tenant'})->resultset('AccessControlListMap')
             ->create({
-              role_name => $role,
-              device_acl => {}, port_acl => {},
+              acl_name => $acl,
+              left_acl => {}, right_acl => {},
             });
-          $new->device_acl->update({ rules => ['group:__ANY__'] });
+          $new->left_acl->update({ rules => ['group:__ANY__'] });
+          $new->right_acl->update({ rules => ['group:__ANY__'] })
+            if param("acl_type") and param("acl_type") eq 'host_host';
       }
     });
 
