@@ -95,28 +95,28 @@ post '/ajax/control/admin/acleditor/delete' => require_role setting('defanged_ad
 
 post '/ajax/control/admin/acleditor/update' => require_role setting('defanged_admin') => sub {
     my $id = param("id");
-    my $role = param("role_name");
-    send_error('Bad Request', 400) unless $id and $role;
+    my $acl = param("acl_name");
+    send_error('Bad Request', 400) unless $id and $acl;
 
-    my @device_rules = map {decode_base64($_)}
-                          @{ ref param('device_rule') ? param('device_rule')
-                                                      : defined param('device_rule') ? [param('device_rule')]
-                                                                                     : [] };
-    @device_rules = ('group:__ANY__') if 0 == scalar @device_rules;
+    my @left_rules = map {decode_base64($_)}
+                        @{ ref param('left_rule') ? param('left_rule')
+                                                  : defined param('left_rule') ? [param('left_rule')]
+                                                                               : [] };
+    @left_rules = ('group:__ANY__') if 0 == scalar @left_rules;
 
-    my @port_rules   = map {decode_base64($_)}
-                          @{ ref param('port_rule') ? param('port_rule')
-                                                    : defined param('port_rule') ? [param('port_rule')]
-                                                                                 : [] };
+    my @right_rules   = map {decode_base64($_)}
+                           @{ ref param('right_rule') ? param('right_rule')
+                                                      : defined param('right_rule') ? [param('right_rule')]
+                                                                                    : [] };
 
     schema(vars->{'tenant'})->txn_do(sub {
-      my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      my $row = schema(vars->{'tenant'})->resultset('AccessControlListMap')
         ->find($id) or send_error('Bad Request', 400);
 
       schema(vars->{'tenant'})->resultset('AccessControlList')
-        ->find($row->device_acl_id)->update({rules => \@device_rules });
+        ->find($row->left_acl_id)->update({rules => \@left_rules });
       schema(vars->{'tenant'})->resultset('AccessControlList')
-        ->find($row->port_acl_id)->update({rules => \@port_rules });
+        ->find($row->right_acl_id)->update({rules => \@right_rules });
     });
 
     return '';
