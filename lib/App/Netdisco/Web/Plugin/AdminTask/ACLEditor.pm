@@ -35,24 +35,24 @@ get '/ajax/content/admin/acleditor' => require_role admin => sub {
 };
 
 post '/ajax/control/admin/acleditor/add' => require_role setting('defanged_admin') => sub {
-    my $role = param("role_name");
-    my $device_rule = param("device_rule");
-    my $port_rule = param("port_rule");
-    send_error('Bad Request', 400) unless $device_rule and $role;
+    my $acl = param("acl_name");
+    my $left_rule = param("left_rule");
+    my $right_rule = param("right_rule");
+    send_error('Bad Request', 400) unless $left_rule and $acl;
 
     schema(vars->{'tenant'})->txn_do(sub {
-      my $row = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      my $row = schema(vars->{'tenant'})->resultset('AccessControlListMap')
         ->create({
-          role_name => $role,
-          device_acl => {}, port_acl => {},
+          acl_name => $acl,
+          left_acl => {}, right_acl => {},
         });
 
-      $row->device_acl->update({
-            rules => [ $device_rule ],
+      $row->left_acl->update({
+          rules => [ $left_rule ],
       });
-      $row->port_acl->update({
-            rules => [ $port_rule ],
-      }) if $port_rule;
+      $row->right_acl->update({
+          rules => [ $right_rule ],
+      }) if $right_rule;
     });
 
     return '';
