@@ -1,4 +1,4 @@
-package App::Netdisco::DB::Result::PortCtlRole;
+package App::Netdisco::DB::Result::AccessControlListMap;
 use utf8;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use base 'App::Netdisco::DB::Result';
 
 =head1 NAME
 
-App::Netdisco::DB::Result::PortCtlRole
+App::Netdisco::DB::Result::AccessControlListMap
 
 =head1 DESCRIPTION
 

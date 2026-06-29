@@ -1,4 +1,4 @@
-package App::Netdisco::Web::Plugin::AdminTask::PortCtlRole;
+package App::Netdisco::Web::Plugin::AdminTask::ACLManager;
 
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
@@ -8,20 +8,20 @@ use Dancer::Plugin::Ajax;
 use App::Netdisco::Web::Plugin;
 
 register_admin_task({
-    tag => "portctlrole",
-    label => "Port Control Roles"
+    tag => "aclmanager",
+    label => "Access Control Lists"
 });
 
-ajax '/ajax/content/admin/portctlrole' => require_role admin => sub {
-    my @roles = schema(vars->{'tenant'})->resultset('PortCtlRole')
-                                        ->role_names;
+ajax '/ajax/content/admin/aclmanager' => require_role admin => sub {
+    my @names = schema(vars->{'tenant'})->resultset('AccessControlListName')
+                                        ->acl_names;
 
-    template 'ajax/admintask/portctlrole.tt', {
-      results => [sort @roles],
+    template 'ajax/admintask/aclmanager.tt', {
+      results => [sort @names],
     }, { layout => undef };
 };
 
-ajax '/ajax/control/admin/portctlrole/add' => require_role setting('defanged_admin') => sub {
+ajax '/ajax/control/admin/aclmanager/add' => require_role setting('defanged_admin') => sub {
     my $role = param('role_name');
     send_error('Bad Request', 400) unless $role;
     send_error('Bad Request', 400)
@@ -40,7 +40,7 @@ ajax '/ajax/control/admin/portctlrole/add' => require_role setting('defanged_adm
     return '';
 };
 
-ajax '/ajax/control/admin/portctlrole/delete' => require_role setting('defanged_admin') => sub {
+ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_admin') => sub {
     my $role = param('role_name');
     send_error('Bad Request', 400) unless $role;
 
@@ -67,7 +67,7 @@ ajax '/ajax/control/admin/portctlrole/delete' => require_role setting('defanged_
     return '';
 };
 
-ajax '/ajax/control/admin/portctlrole/update' => require_role setting('defanged_admin') => sub {
+ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_admin') => sub {
     my $role = param('role_name');
     my $old_role = param('old-role_name');
     send_error('Bad Request', 400) unless $role and $old_role;

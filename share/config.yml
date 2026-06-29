@@ -83,7 +83,7 @@ web_plugins:
   - AdminTask::NodeMonitor
   - AdminTask::OrphanedDevices
   - AdminTask::PollerPerformance
-  - AdminTask::PortCtlRole
+  - AdminTask::ACLManager
   - AdminTask::PseudoDevice
   - AdminTask::RolePermissionsEditor
   - AdminTask::SlowDevices
