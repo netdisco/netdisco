@@ -172,7 +172,7 @@ jobs:
           ls -l /tmp/transport-stage-${{ matrix.arch }}
 
       - name: Upload staged files to GHA cache
-        uses: actions/cache/save@v6.0.0
+        uses: actions/cache/save@v6.1.0
         with:
           path: /tmp/transport-stage-${{ matrix.arch }}
           key: transport-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -198,14 +198,14 @@ jobs:
         run: echo "COMMITTISH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
       - name: Restore AMD64 Image from GHA Cache
-        uses: actions/cache/restore@v6.0.0
+        uses: actions/cache/restore@v6.1.0
         with:
           path: /tmp/transport-stage-amd64
           key: transport-amd64-${{ github.run_id }}-${{ github.run_attempt }}
           fail-on-cache-miss: true
 
       - name: Restore ARM64 Image from GHA Cache
-        uses: actions/cache/restore@v6.0.0
+        uses: actions/cache/restore@v6.1.0
         with:
           path: /tmp/transport-stage-arm64
           key: transport-arm64-${{ github.run_id }}-${{ github.run_attempt }}
