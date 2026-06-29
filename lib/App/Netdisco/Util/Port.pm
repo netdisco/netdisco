@@ -45,7 +45,7 @@ it. If such a role is removed, then a backup of the original is restored.
 
 sub sync_portctl_roles {
   my @db_roles = schema(vars->{'tenant'})
-    ->resultset('PortCtlRole')->role_names;
+    ->resultset('AccessControlListName')->host_port_acl_names;
   config->{'portctl_by_role'} = {};
 
   foreach my $role (sort {$a cmp $b} keys %{ setting('portctl_by_role_shadow') }) {
@@ -54,17 +54,17 @@ sub sync_portctl_roles {
   }
 
   foreach my $role (@db_roles) {
-      my @rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-        ->search({ role_name => $role },
-                 { prefetch => [qw/device_acl port_acl/], order_by => 'me.id' })->all;
+      my @rows = schema(vars->{'tenant'})->resultset('AccessControlListMap')
+        ->search({ acl_name => $role },
+                 { prefetch => [qw/left_acl right_acl/], order_by => 'me.id' })->all;
 
       config->{'portctl_by_role'}->{$role} = {};
       foreach my $pair (@rows) {
           # convert LHS device ACLs to named groups
-          my $group = 'synthesized_group_'. $pair->device_acl->id;
-          config->{'host_groups'}->{$group} = $pair->device_acl->rules;
+          my $group = 'synthesized_group_'. $pair->left_acl->id;
+          config->{'host_groups'}->{$group} = $pair->left_acl->rules;
           config->{'portctl_by_role'}->{$role}->{'group:'. $group}
-            = $pair->port_acl->rules;
+            = $pair->right_acl->rules;
       }
   }
 }
