@@ -13,73 +13,100 @@ register_admin_task({
 });
 
 ajax '/ajax/content/admin/aclmanager' => require_role admin => sub {
-    my @names = schema(vars->{'tenant'})->resultset('AccessControlListName')
-                                        ->acl_names;
+    my @acls = schema(vars->{'tenant'})->resultset('AccessControlListName')
+                                       ->order_by([qw/acl_type acl_name/])->all;
 
     template 'ajax/admintask/aclmanager.tt', {
-      results => [sort @names],
+      results => \@acls,
     }, { layout => undef };
 };
 
 ajax '/ajax/control/admin/aclmanager/add' => require_role setting('defanged_admin') => sub {
-    my $role = param('role_name');
-    send_error('Bad Request', 400) unless $role;
+    my $acl = param('acl_name');
+    send_error('Bad Request', 400) unless $acl;
+    my $type = param('acl_type');
+    send_error('Bad Request', 400) unless $type
+      and $type =~ m/^(?:host|host_host|host_port)$/;
     send_error('Bad Request', 400)
-      if schema(vars->{'tenant'})->resultset('PortCtlRole')
-                                 ->search({role_name => $role})->count();
+      if schema(vars->{'tenant'})->resultset('AccessControlListName')
+                                 ->search({acl_name => $acl})->count();
 
     schema(vars->{'tenant'})->txn_do(sub {
-      my $new = schema(vars->{'tenant'})->resultset('PortCtlRole')
+      schema(vars->{'tenant'})->resultset('AccessControlListName')
         ->create({
-          role_name => $role,
-          device_acl => {}, port_acl => {},
+          acl_name => $acl,
+          acl_type => $type,
         });
-      $new->device_acl->update({ rules => ['group:__ANY__'] });
+
+      my $new = schema(vars->{'tenant'})->resultset('AccessControlListMap')
+        ->create({
+          acl_name => $acl,
+          left_acl => {}, right_acl => {},
+        });
+
+      $new->left_acl->update({ rules => ['group:__ANY__'] });
+      $new->right_acl->update({ rules => ['group:__ANY__'] })
+        if $type eq 'host_host';
     });
 
     return '';
 };
 
 ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_admin') => sub {
-    my $role = param('role_name');
-    send_error('Bad Request', 400) unless $role;
+    my $acl = param('acl_name');
+    send_error('Bad Request', 400) unless $acl;
+
+    schema('netdisco')->resultset('User')
+      ->search({portctl_role => $acl})
+      ->update({
+        ((exists config->{'portctl_by_role_shadow'}->{$acl})
+          ? () : (portctl_role => undef, port_control => \'false')),
+      });
 
     schema(vars->{'tenant'})->txn_do(sub {
-      my $rows = schema(vars->{'tenant'})->resultset('PortCtlRole')
-                                         ->search({ role_name => $role })
+      schema(vars->{'tenant'})->resultset('AccessControlListName')
+                              ->find({ acl_name => $acl })->delete;
+
+      my $maps = schema(vars->{'tenant'})->resultset('AccessControlListMap')
+                                         ->search({ acl_name => $acl })
         or return;
 
       schema(vars->{'tenant'})->resultset('AccessControlList')
-        ->search({id => { -in => [ $rows->device_acls ] }})->delete;
+        ->search({id => { -in => [ $maps->left_acls ] }})->delete;
       schema(vars->{'tenant'})->resultset('AccessControlList')
-        ->search({id => { -in => [ $rows->port_acls ] }})->delete;
+        ->search({id => { -in => [ $maps->right_acls ] }})->delete;
 
-      $rows->delete;
-
-      schema(vars->{'tenant'})->resultset('User')
-        ->search({portctl_role => $role})
-        ->update({
-          ((exists config->{'portctl_by_role_shadow'}->{$role})
-            ? () : (portctl_role => undef, port_control => \'false')),
-        });
+      $maps->delete;
     });
 
     return '';
 };
 
 ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_admin') => sub {
-    my $role = param('role_name');
-    my $old_role = param('old-role_name');
-    send_error('Bad Request', 400) unless $role and $old_role;
+    my $acl = param('acl_name');
+    my $old_acl = param('old-acl_name');
+    send_error('Bad Request', 400) unless $acl and $old_acl;
+    my $type = param('acl_type');
+    send_error('Bad Request', 400) unless $type
+      and $type =~ m/^(?:host|host_host|host_port)$/;
+
+    schema('netdisco')->resultset('User')
+      ->search({ portctl_role => $old_acl })
+      ->update({ portctl_role => $acl });
 
     schema(vars->{'tenant'})->txn_do(sub {
-      schema(vars->{'tenant'})->resultset('PortCtlRole')
-        ->search({ role_name => $old_role })
-        ->update({ role_name => $role });
+      schema(vars->{'tenant'})->resultset('AccessControlListName')
+        ->search({ acl_name => $old_acl })
+        ->update({ acl_name => $acl, acl_type => $type });
 
-      schema(vars->{'tenant'})->resultset('User')
-        ->search({ portctl_role => $old_role })
-        ->update({ portctl_role => $role });
+      my $maps = schema(vars->{'tenant'})->resultset('AccessControlListMap')
+                                         ->search({ acl_name => $old_acl });
+
+      $maps->update({ acl_name => $acl });
+      if ($type eq 'host') {
+          schema(vars->{'tenant'})->resultset('AccessControlList')
+            ->search({id => { -in => [ $maps->right_acls ] }})->delete;
+      }
     });
 
     return '';
