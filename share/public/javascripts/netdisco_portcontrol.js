@@ -146,6 +146,7 @@ $(document).ready(function() {
 
     if (esc) {
       $(cell).blur();
+      $(this).val("");
     }
     else if (nl) {
       event.preventDefault();

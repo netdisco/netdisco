@@ -23,11 +23,10 @@
     </div>
     <div class="clearfix nd_netmap-sidebar">
         <ul class="muted nd_netmap-sidebar-help">
-        <li>'Follow' uses IP if you search by IP, or DNS/Host if you search by name.</li>
+        <li>Uses IP if you search by IP, or DNS/Host if you search by name.</li>
         </ul>
     </div>
 
-    <label><span id="">&nbsp;</span></label>
     <label><span id="">Rules may contain:</span></label>
     <div class="clearfix nd_netmap-sidebar">
         <ul class="muted nd_netmap-sidebar-help">
@@ -41,3 +40,6 @@
         <li>op:and to require all rules for the ruleset ID match</li>
         </ul>
     </div>
+
+    <label><span id=""><a href="https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists" target="_blank">ACL Reference
+        <i class="icon-external-link"></i></a></span></label>

@@ -51,7 +51,7 @@
         <span class="label label-[% SWITCH params.acl_type %][% CASE "host_port" %]info[% CASE %]inverse[% END %] nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
         <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule) | none %]"><br/>
         [% END %]
-        <input class="span3 nd_acl-rule" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
+        <input class="span3 nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
         </div>
       </td>
       [% END %]
