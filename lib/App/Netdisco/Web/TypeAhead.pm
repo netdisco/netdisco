@@ -116,7 +116,7 @@ ajax '/ajax/data/deviceip/typeahead' => require_login sub {
 };
 
 ajax '/ajax/data/devices/typeahead' => require_login sub {
-    my $q = param('device_rule') or return '[]';
+    my $q = (param('left_rule') || param('right_rule')) or return '[]';
     my $mode = param('aclhost') || 'ip';
     if ($mode eq 'dynamic') {
         $mode = (($q =~ m/^\d/ or $q =~ m/:/) ? 'ip' : 'name');

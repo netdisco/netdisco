@@ -43,8 +43,8 @@ sub _parse_ips {
 ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema(vars->{'tenant'})->txn_do(sub {
-      schema(vars->{'tenant'})->resultset('User')
+    schema('netdisco')->txn_do(sub {
+      schema('netdisco')->resultset('User')
         ->create({
           username => param('username'),
           fullname => param('fullname'),
@@ -87,8 +87,8 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
 ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema(vars->{'tenant'})->txn_do(sub {
-      schema(vars->{'tenant'})->resultset('User')
+    schema('netdisco')->txn_do(sub {
+      schema('netdisco')->resultset('User')
         ->find({username => param('username')})->delete;
     });
 
@@ -98,8 +98,8 @@ ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') =
 ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
-    schema(vars->{'tenant'})->txn_do(sub {
-      my $user = schema(vars->{'tenant'})->resultset('User')
+    schema('netdisco')->txn_do(sub {
+      my $user = schema('netdisco')->resultset('User')
         ->find({username => param('username')});
       return unless $user;
 
@@ -146,12 +146,12 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
 ajax '/ajax/control/admin/users/token' => require_role setting('defanged_admin') => sub {
   send_error('Bad Request', 400) unless _sanity_ok();
 
-  my $user = schema(vars->{'tenant'})->resultset('User')
+  my $user = schema('netdisco')->resultset('User')
     ->find({ username => param('username') });
   send_error('Not Found', 404) unless $user and $user->in_storage;
 
   my $token;
-  schema(vars->{'tenant'})->txn_do(sub {
+  schema('netdisco')->txn_do(sub {
     $user->update({ token => \'md5(random()::text)', token_from => time });
     $user->discard_changes();
     $token = $user->token;
@@ -162,7 +162,7 @@ ajax '/ajax/control/admin/users/token' => require_role setting('defanged_admin')
 };
 
 get '/ajax/content/admin/users' => require_role admin => sub {
-    my @results = schema(vars->{'tenant'})->resultset('User')
+    my @results = schema('netdisco')->resultset('User')
       ->search(undef, {
         '+columns' => {
           created    => \"to_char(creation, 'YYYY-MM-DD HH24:MI')",
@@ -177,7 +177,7 @@ get '/ajax/content/admin/users' => require_role admin => sub {
     sync_portctl_roles();
     my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
     push @port_control_roles,
-      schema(vars->{'tenant'})->resultset('PortCtlRole')->role_names;
+      schema(vars->{'tenant'})->resultset('AccessControlListName')->host_port_acl_names;
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
