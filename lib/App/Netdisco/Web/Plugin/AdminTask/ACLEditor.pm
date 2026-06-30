@@ -24,8 +24,9 @@ get '/ajax/content/admin/acleditor' => require_role admin => sub {
     send_error('Bad Request', 400) unless $acl;
 
     my $maps = schema(vars->{'tenant'})->resultset('AccessControlListMap')
-      ->search({acl_name => $acl_name}, { prefetch => [qw/left_acl_with_dns right_acl/],
-                                          order_by => 'me.id' })
+      ->search({acl_name => $acl_name}, { prefetch => ['left_acl_with_dns',
+          ($acl->acl_type eq 'host_host' ? 'right_acl_with_dns' : 'right_acl') ],
+          order_by => 'me.id' })
       or send_error('Bad Request', 400);
 
     template 'ajax/admintask/acleditor.tt', {
