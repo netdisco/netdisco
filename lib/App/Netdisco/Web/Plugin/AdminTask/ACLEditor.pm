@@ -98,14 +98,24 @@ post '/ajax/control/admin/acleditor/update' => require_role setting('defanged_ad
     my $acl = param("acl_name");
     send_error('Bad Request', 400) unless $id and $acl;
 
-    my @left_rules = map {decode_base64($_)}
-                        @{ ref param('left_rule') ? param('left_rule')
+    my @left_rules = map  {decode_base64($_)}
+                     map  { s/^\d+\.//; $_ }
+                     sort { 
+                        my ($aa, $bb) = map { (split /\./)[0] } $a, $b;
+                        $aa <=> $bb;
+                     }
+                         @{ ref param('left_rule') ? param('left_rule')
                                                   : defined param('left_rule') ? [param('left_rule')]
                                                                                : [] };
     @left_rules = ('group:__ANY__') if 0 == scalar @left_rules;
 
-    my @right_rules   = map {decode_base64($_)}
-                           @{ ref param('right_rule') ? param('right_rule')
+    my @right_rules   = map  {decode_base64($_)}
+                        map  { s/^\d+\.//; $_ }
+                        sort { 
+                            my ($aa, $bb) = map { (split /\./)[0] } $a, $b;
+                            $aa <=> $bb;
+                        }
+                            @{ ref param('right_rule') ? param('right_rule')
                                                       : defined param('right_rule') ? [param('right_rule')]
                                                                                     : [] };
 

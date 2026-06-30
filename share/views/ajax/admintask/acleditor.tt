@@ -2,9 +2,9 @@
   <thead>
     <tr>
       <th class="nd_center-cell">ID</th>
-      <th class="nd_center-cell">Match Host</th>
+      <th class="nd_center-cell">Match Host(s)</th>
       [% IF params.acl_type != "host" %]
-      <th class="nd_center-cell">Match [% SWITCH params.acl_type %][% CASE "host_port" %]Ports[% CASE %]Hosts[% END %] (optional)</th>
+      <th class="nd_center-cell">Match [% SWITCH params.acl_type %][% CASE "host_port" %]Port(s)[% CASE %]Host(s)[% END %] (optional)</th>
       [% END %]
       <th class="nd_center-cell">Action</th>
     </tr>
@@ -38,7 +38,7 @@
         [% FOREACH rule IN pair.left_acl_with_dns.ruleset %]
         <span class="label label-inverse nd_left-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
         [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
-        <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="[% atob(rule.first) | none %]"><br/>
+        <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
         [% END %]
         <input class="span3 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
         </div>
@@ -49,7 +49,7 @@
         <div class="nd_acl-rule-list">
         [% FOREACH rule IN pair.right_acl.rules %]
         <span class="label label-[% SWITCH params.acl_type %][% CASE "host_port" %]info[% CASE %]inverse[% END %] nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
-        <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% atob(rule) | none %]"><br/>
+        <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule) | none %]"><br/>
         [% END %]
         <input class="span3 nd_acl-rule" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
         </div>
