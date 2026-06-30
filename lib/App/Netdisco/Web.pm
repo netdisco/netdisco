@@ -152,6 +152,11 @@ sub _load_web_plugins {
       $plugin =~ s/^\+//;
 
       $ENV{ND2_LOG_PLUGINS} && debug "loading web plugin $plugin";
+
+      # support for loading a plugin twice
+      my $inc_file = join( '/', split /::/, $plugin ) . '.pm';
+      delete $INC{ $inc_file };
+
       Module::Load::load $plugin;
   }
 }

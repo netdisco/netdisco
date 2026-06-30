@@ -140,7 +140,11 @@
             <li class="divider"></li>
             [% FOREACH ai IN settings._admin_order %]
               [% NEXT IF settings._admin_tasks.$ai.hidden %]
+              [% IF ai == 'divider' %]
+              <li class="divider"></li>
+              [% ELSE %]
               <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
+              [% END %]
             [% END %]
           [% END %]
           </ul>

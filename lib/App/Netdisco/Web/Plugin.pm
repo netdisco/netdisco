@@ -132,6 +132,7 @@ register 'register_admin_task' => sub {
   }
 
   push @{ setting('_admin_order') }, $config->{tag};
+  return if $config->{tag} eq 'divider';
   setting('_admin_tasks')->{ $config->{tag} } = $config;
 };
 

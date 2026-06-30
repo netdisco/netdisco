@@ -78,19 +78,21 @@ web_plugins:
   - Report::SubnetUtilization
   - Report::PortLog
   - AdminTask::DuplicateDevices
-  - AdminTask::JobQueue
-  - AdminTask::Topology
-  - AdminTask::NodeMonitor
   - AdminTask::OrphanedDevices
-  - AdminTask::PollerPerformance
-  - AdminTask::ACLManager
-  - AdminTask::PseudoDevice
-  - AdminTask::ACLEditor
   - AdminTask::SlowDevices
   - AdminTask::TimedOutDevices
   - AdminTask::UndiscoveredNeighbors
-  - AdminTask::UserLog
+  - AdminTask::Divider
+  - AdminTask::NodeMonitor
+  - AdminTask::PseudoDevice
+  - AdminTask::Topology
+  - AdminTask::ACLManager
+  - AdminTask::ACLEditor
   - AdminTask::Users
+  - AdminTask::Divider
+  - AdminTask::JobQueue
+  - AdminTask::PollerPerformance
+  - AdminTask::UserLog
   - Search::Device
   - Search::Node
   - Search::VLAN
