@@ -32,6 +32,7 @@
         <ul class="muted nd_netmap-sidebar-help">
         <li>Hostname, IP address, IP prefix (i.e. subnet)</li>
         <li>IP address range, using a hyphen on the last octet/hextet</li>
+        <li>port:regexp to match the complete name of an interface or port</li>
         <li>property:regexp to match the complete value of any device or device port property</li>
         <li>cf:fieldname:regexp to match the complete value of any device or device port custom field</li>
         <li>tag:tagname to match a tag exactly</li>
