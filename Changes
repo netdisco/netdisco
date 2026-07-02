@@ -1,8 +1,19 @@
-2.100001 - tbd
+2.101000 - 2026-07-02
 
   [NEW FEATURES]
 
   * #1569 new option snmp_fast_connect_timeout instead of static 200ms value
+  * #1570 NETDISCO_BACKEND_NAME env var to set shared backend identity
+  * #1577 reimplement Port Control Roles as generic Managed ACLs
+
+  [ENHANCEMENTS]
+
+  * add dividers and better order to items in admin menu
+
+  [BUG FIXES]
+
+  * #1580 fix admin pages web forms not returning properly
+  * update Python dependencies and GitHub Actions versions
 
 2.100000 - 2026-06-23
 
