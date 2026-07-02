@@ -20,7 +20,7 @@
   [NEW FEATURES]
 
   * #1549 discover subaction having JSON becomes per-job additional settings
-  * #1550 add permanent API tokens and (dummy) Bearer auth support
+  * #1550 add permanent API tokens and (dummy) Bearer auth support (allow_permanent_tokens)
   * #1561 new API endpoint GET /api/v1/queue/status
   * add queue_neighbors bool setting to allow neighbor discovery without queueing
   * add device_auth_tag_hint discover param to select specific device_auth stanza
