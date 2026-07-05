@@ -47,7 +47,7 @@ register_worker({ phase => 'main' }, sub {
       device => $_,
       action => $action,
       port      => $sched->{port},
-      subaction => $sched->{subaction},
+      subaction => ($sched->{extra} || $sched->{subaction}),
       username => $job->username,
       userip   => $job->userip,
     }} (@walk)

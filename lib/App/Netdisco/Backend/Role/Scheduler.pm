@@ -102,7 +102,7 @@ sub worker_body {
                   action => $real_action,
                   device => $host,
                   port   => $sched->{port},
-                  subaction => $sched->{extra},
+                  subaction => ($sched->{extra} || $sched->{subaction}),
                 };
               }
           }
