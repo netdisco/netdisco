@@ -26,7 +26,7 @@ register_worker({ phase => 'main' }, sub {
       'discover', 'discover',
       setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'},
-      setting('discover_min_age') * 60,
+      'discover', (setting('discover_min_age') * 60),
     ]})->get_column('ip')->all;
 
   jq_insert([
