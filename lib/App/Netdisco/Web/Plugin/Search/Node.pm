@@ -68,7 +68,7 @@ get '/ajax/content/search/node' => require_login sub {
     content_type('text/html');
 
     my $agenot = param('age_invert') || '0';
-    my ( $start, $end ) = param('daterange') =~ m/(\d+-\d+-\d+)/gmx;
+    my ( $start, $end ) = (param('daterange') // '') =~ m/(\d+-\d+-\d+)/gmx;
 
     my $mac = NetAddr::MAC->new(mac => ($node || ''));
     undef $mac if
