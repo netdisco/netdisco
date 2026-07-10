@@ -124,3 +124,27 @@ device_auth:
 #  - '127.0.0.0/8'
 #  - '::1'
 
+
+# override the default list of worker plugins to disable the rest.
+# this is useful if you want to only run polling actions for instance. 
+#worker_plugins:
+#  - 'Discover'
+#  - 'Discover'
+#  - 'Discover::CanonicalIP'
+#  - 'Discover::Entities'
+#  ...
+#  - 'Discover::VLANs'
+#  - 'Discover::Wireless'
+#  - 'DiscoverAll'
+#  - 'Macsuck'
+#  - 'Macsuck::Hooks'
+#  ...
+#  - 'Macwalk'
+#  - 'Nbtstat'
+#  - 'Nbtstat::Core'
+#  - 'Nbtwalk'
+#  - 'NodeMonitor'
+#  - 'PingSweep'
+#  - 'Scheduler'
+#  - 'Snapshot'
+#  - 'TastyJobs'

@@ -26,7 +26,37 @@ our @EXPORT_OK = qw/
   jq_delete
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
+my $SUPPORTED_ACTIONS;
+sub _compute_supported_actions {
+  my %supported;
 
+  my @core_plugins = @{ setting('worker_plugins') || [] };
+  my @user_plugins = @{ setting('extra_worker_plugins') || [] };
+
+  foreach my $plugin (@user_plugins, @core_plugins) {
+    my $p = $plugin;
+    $p =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
+    $p = 'App::Netdisco::Worker::Plugin::' . $p if $p !~ m/^\+/;
+    $p =~ s/^\+//;
+
+    if ($p =~ m/::Plugin::([^:]+)(?:::|$)/i) {
+      my $action = lc $1;
+      next if $action eq 'internal';
+      $supported{$action} = 1;
+    }
+  }
+  debug 'Backend supports actions: ' . join(', ', sort keys %supported);
+  return \%supported;
+}
+
+
+sub _backend_supports_action {
+  my ($action) = @_;
+  return 0 unless defined $action;
+  $SUPPORTED_ACTIONS ||= _compute_supported_actions();
+  return 1 if $SUPPORTED_ACTIONS->{'*'};
+  return $SUPPORTED_ACTIONS->{ lc $action } ? 1 : 0;
+}
 sub jq_warm_thrusters {
   my $rs = schema(vars->{'tenant'})->resultset('DeviceSkip');
 
@@ -82,6 +112,7 @@ sub jq_getsome {
       # and the skiplist was primed. these should be checked against
       # the various acls and have device_skip entry added if needed,
       # and return false if it should have been skipped.
+      next unless (_backend_supports_action($job->action)); 
       my @badactions = get_denied_actions($job->device);
       if (scalar @badactions) {
         schema(vars->{'tenant'})->resultset('DeviceSkip')->txn_do_locked(EXCLUSIVE, sub {
@@ -170,6 +201,14 @@ sub jq_queued {
 sub jq_lock {
   my $job = shift;
   return true unless $job->id;
+
+  # jq_getsome already filters out unsupported actions 
+  # but I'm leaving this here leaving it here to save some debugging if direct calls to jq_lock are made in the future
+
+  # unless (_backend_supports_action($job->action)) {
+  #   debug sprintf 'lock: refusing job (unsupported action %s for this backend)',  ($job->action // '');
+  #   return false;
+  # }
   my $happy = false;
 
   # lock db row and update to show job has been picked
