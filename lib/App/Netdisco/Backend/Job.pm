@@ -241,6 +241,9 @@ or in a special JSON dictrionary slot "C<with>". When C<with> is used, the
 value of the other "C<value>" key becomes the C<subaction> (extra) field.
 For this case, calling C<params> is idempotent.
 
+Calling this method will return a HASH reference which is either empty
+or contains the configuration passed, if parsed successfully.
+
 Examples of C<subaction> / C<extra>:
 
 =over 4
@@ -270,13 +273,28 @@ Examples of C<subaction> / C<extra>:
 =cut
 
 sub params {
-  my $job = shift;
-  return $job->parsed_params if $job->params_is_parsed;
-  return {} unless $job->subaction;
-  return try {
-    my $r = from_json($job->subaction);
-    ref $r eq 'HASH' ? $r : {}
-  } catch { {device_auth_tag_hint => $job->subaction} };
+  my $self = shift;
+  return $self->_parsed_params if $self->_params_is_parsed;
+  return {} unless $self->subaction;
+
+  my $json_ref = try { from_json($self->subaction) };
+
+  # case when subaction is list for arpnip/macsuck
+  if (defined $json_ref and ref $json_ref and (ref $json_ref ne ref {})) {
+      $self->_params_is_parsed(true);
+      return $self->_parsed_params({});
+  }
+
+  # case when subaction is a dictionary
+  if (defined $json_ref and ref $json_ref) {
+
+  }
+  # case when subaction is a string
+  else {
+
+  }
+
+#  } catch { {device_auth_tag_hint => $self->subaction} };
 }
 
 true;
