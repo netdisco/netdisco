@@ -45,36 +45,36 @@ sub run {
     $job->finalise_status;
   };
 
-  my @newuserconf = ();
-  my @userconf = @{ dclone (setting('device_auth') || []) };
+  my @newdeviceauthconf = ();
+  my @deviceauthconf = @{ dclone (setting('device_auth') || []) };
 
   # reduce device_auth by only/no and device_auth_tag_hint
   if (ref $job->device) {
-    foreach my $stanza (@userconf) {
+    foreach my $stanza (@deviceauthconf) {
       my $no   = (exists $stanza->{no}   ? $stanza->{no}   : undef);
       my $only = (exists $stanza->{only} ? $stanza->{only} : undef);
 
       next if $no and acl_matches($job->device, $no);
       next if $only and not acl_matches_only($job->device, $only);
 
-      push @newuserconf, dclone $stanza;
+      push @newdeviceauthconf, dclone $stanza;
     }
 
     # desired behaviour is that if the hint tag is missing then
     # Netdisco will still try all tags (and not just bail out)
     if (my $tag_hint = $job->params->{device_auth_tag_hint}) {
-        my @hint_matches = grep { $_->{tag} and $_->{tag} eq $tag_hint } @newuserconf;
-        @newuserconf = @hint_matches if scalar @hint_matches;
+        my @hint_matches = grep { $_->{tag} and $_->{tag} eq $tag_hint } @newdeviceauthconf;
+        @newdeviceauthconf = @hint_matches if scalar @hint_matches;
     }
 
     # per-device action but no device creds available
     return $job->add_status( Status->defer('deferred job with no device creds') )
-      if 0 == scalar @newuserconf && $self->transport_required;
+      if 0 == scalar @newdeviceauthconf && $self->transport_required;
   }
 
   # back up and restore device_auth
-  my $configguard = guard { set(device_auth => \@userconf) };
-  set(device_auth => \@newuserconf);
+  my $configguard = guard { set(device_auth => \@deviceauthconf) };
+  set(device_auth => \@newdeviceauthconf);
 
   my $runner = sub {
     my ($self, $job) = @_;
@@ -95,7 +95,7 @@ sub run {
     ? setting($job->action .'_timeout') : setting('workers')->{'timeout'});
 
   # add some slack to timeout if the device is new and needs auth walkthrough
-  $maxtime += (40 * scalar @newuserconf) if ref $job->device and not $job->device->in_storage;
+  $maxtime += (40 * scalar @newdeviceauthconf) if ref $job->device and not $job->device->in_storage;
 
   if ($maxtime) {
     debug sprintf '%s: running with timeout %ss', $job->action, $maxtime;
