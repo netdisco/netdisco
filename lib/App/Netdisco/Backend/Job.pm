@@ -256,7 +256,7 @@ Examples of C<subaction> / C<extra>:
 
 =item * C<[{"mac": "string", "port": "string"}]>
 
-=item * C<{"value": '[{"mac": "string", "port": "string"}]', "with": "my_deviceauth_tag"}>
+=item * C<{"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"}>
 
 =item * C<{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}>
 
@@ -291,7 +291,13 @@ sub params {
   # case when subaction is a dictionary
   if (ref $json_ref eq ref {}) {
       if (exists $json_ref->{'value'}) {
-          $self->subaction(delete $json_ref->{value});
+          # if JSON was thawed from the value, refreeze it
+          if (ref $json_ref->{'value'} ne q{}) {
+              $self->subaction(to_json($json_ref->{'value'}));
+          }
+          else {
+              $self->subaction(delete $json_ref->{value});
+          }
       }
 
       if (exists $json_ref->{'with'}) {
