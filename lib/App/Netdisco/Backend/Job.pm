@@ -230,15 +230,21 @@ sub extra { (shift)->subaction }
 
 =head2 params
 
-Parses the C<subaction> field as JSON and returns a hashref of parameters.
-Returns an empty hashref if subaction is empty or not a dictionary.
+Allows user to override or add to Netdisco configuration from the command
+line or NETDISCO_CONFIGURATION environment variable.
 
-This is used by the discover job to override configuration, particularly
-SNMP timers which are sensitive for new devices. It returns an empty hashref
-when C<subaction> is used for direct data provided for ARP/MAC addresses.
+Attempts to parse the C<subaction> (extra) field as JSON. If this succeeds
+and is a dictionary, then that is returned. For any other JSON reference
+type (list) then an empty HASH reference is returned.
 
-If C<subaction> is a plain string, it is promoted to being the C<device_auth_tag_hint>
-key's value in the returned hashref.
+If C<subaction> is a plain string without "=" or "," characters, then it
+is promoted to being the C<device_auth_tag_hint> key's value in a HASH
+and that is returned.
+
+If C<subaction> is a plain string containing "=" or "," characters then
+it is split on "," and a HASH is created with key/value pairs, and returned.
+
+Otherwise returns an empty HASH reference.
 
 =cut
 
