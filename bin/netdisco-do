@@ -88,6 +88,8 @@ $ENV{ND2_DO_FORCE} ||= $force;
 $ENV{ND2_DO_QUIET} ||= $quiet;
 $ENV{ND2_DB_ROLLBACK} ||= $rollback;
 
+$extra ||= $ENV{NETDISCO_WITH_CONFIGURATION};
+
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
 
