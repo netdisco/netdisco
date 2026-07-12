@@ -258,6 +258,8 @@ Examples of C<subaction> / C<extra>:
 
 =item * C<{"value": '[{"mac": "string", "port": "string"}]', "with": "my_deviceauth_tag"}>
 
+=item * C<{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}>
+
 =item * C<{"snmptimeout": 3000000}>
 
 =item * C<snmptimeout=3000000>
