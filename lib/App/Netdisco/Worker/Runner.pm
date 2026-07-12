@@ -45,6 +45,10 @@ sub run {
     $job->finalise_status;
   };
 
+  # bring in any configuration override from extra/subaction or NETDISCO_CONFIGURATION
+  my $CONFIG = config();
+  my $extra = $job->extra;
+
   my @newdeviceauthconf = ();
   my @deviceauthconf = @{ dclone (setting('device_auth') || []) };
 
