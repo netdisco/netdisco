@@ -29,6 +29,8 @@ foreach my $slot (qw/
       is_offline
 
       _current_phase
+      _params_is_parsed
+      _parsed_params
     /) {
 
   has $slot => (
@@ -231,25 +233,45 @@ sub extra { (shift)->subaction }
 =head2 params
 
 Allows user to override or add to Netdisco configuration from the command
-line or NETDISCO_CONFIGURATION environment variable.
+line, API call, or NETDISCO_CONFIGURATION environment variable.
 
-Attempts to parse the C<subaction> (extra) field as JSON. If this succeeds
-and is a dictionary, then that is returned. For any other JSON reference
-type (list) then an empty HASH reference is returned.
+In order to cope with use of the C<subaction> (extra) field by several
+jobs (see the L<nedisco-do> docs), configuration can be provided as below,
+or in a special JSON dictrionary slot "C<set>". When C<set> is used, the
+value of the other "C<value>" key becomes the C<subaction> (extra) field.
+For this case, calling C<params> is idempotent.
 
-If C<subaction> is a plain string without "=" or "," characters, then it
-is promoted to being the C<device_auth_tag_hint> key's value in a HASH
-and that is returned.
+Examples of C<subaction> / C<extra>:
 
-If C<subaction> is a plain string containing "=" or "," characters then
-it is split on "," and a HASH is created with key/value pairs, and returned.
+=over 4
 
-Otherwise returns an empty HASH reference.
+=item * C<yes>
+
+=item * C<{"value": "yes", "set": '{"snmptimeout": 3000000}'}>
+
+=item * C<{"value": "yes", "set": "my_deviceauth_tag"}>
+
+=item * C<[{"mac": "string", "port": "string"}]>
+
+=item * C<{"value": '[{"mac": "string", "port": "string"}]', "set": "my_deviceauth_tag"}>
+
+=item * C<{"snmptimeout": 3000000}>
+
+=item * C<snmptimeout=3000000>
+
+=item * C<snmptimeout=3000000,skip_neighbor_queue=true>
+
+=item * C<device_auth_tag_hint=my_deviceauth_tag>
+
+=item * C<{"set": "my_deviceauth_tag"}>
+
+=back
 
 =cut
 
 sub params {
   my $job = shift;
+  return $job->parsed_params if $job->params_is_parsed;
   return {} unless $job->subaction;
   return try {
     my $r = from_json($job->subaction);

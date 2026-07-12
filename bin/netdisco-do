@@ -310,7 +310,7 @@ docs for data format example):
  # read from a file
  ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '@/tmp/mac-address-table.json'
  # pass directly
- ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '[{"ip": "string", "mac": "string", "dns": "string"}]'
+ ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '[{"mac": "string", "port": "string"}]'
 
 =head2 macwalk
 
