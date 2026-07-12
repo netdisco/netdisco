@@ -46,8 +46,12 @@ sub run {
   };
 
   # bring in any configuration override from extra/subaction or NETDISCO_CONFIGURATION
-  my $CONFIG = config();
-  my $extra = $job->extra;
+  # we don't care about rolling back so there is no Scope::Guard here
+  if (my $params = $job->params) {
+      foreach my $k (keys %$params) {
+          set($k => $params->{$k});
+      }
+  }
 
   my @newdeviceauthconf = ();
   my @deviceauthconf = @{ dclone (setting('device_auth') || []) };
@@ -77,7 +81,7 @@ sub run {
   }
 
   # back up and restore device_auth
-  my $configguard = guard { set(device_auth => \@deviceauthconf) };
+  my $deviceauthguard = guard { set(device_auth => \@deviceauthconf) };
   set(device_auth => \@newdeviceauthconf);
 
   my $runner = sub {
