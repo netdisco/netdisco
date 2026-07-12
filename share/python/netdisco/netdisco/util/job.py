@@ -34,6 +34,8 @@ class JobManager:
 
     _current_phase: InitVar[str] = ''
     _statuslist: InitVar[list] = []  # field(default_factory=list)
+    _params_is_parsed: bool = False
+    _parsed_params: InitVar[dict] = {}
 
     def id(self) -> int:
         return self.job

@@ -250,7 +250,7 @@ Examples of C<subaction> / C<extra>:
 
 =item * C<yes>
 
-=item * C<{"value": "yes", "with": '{"snmptimeout": 3000000}'}>
+=item * C<{"value": "yes", "with": {"snmptimeout": 3000000}}>
 
 =item * C<{"value": "yes", "with": "my_deviceauth_tag"}>
 
@@ -278,23 +278,61 @@ sub params {
   return {} unless $self->subaction;
 
   my $json_ref = try { from_json($self->subaction) };
+  $self->_params_is_parsed(true);
 
-  # case when subaction is list for arpnip/macsuck
-  if (defined $json_ref and ref $json_ref and (ref $json_ref ne ref {})) {
+  # case when subaction is a list for arpnip/macsuck
+  if ((ref $json_ref ne q{}) and (ref $json_ref ne ref {})) {
       $self->_params_is_parsed(true);
       return $self->_parsed_params({});
   }
 
   # case when subaction is a dictionary
-  if (defined $json_ref and ref $json_ref) {
+  if (ref $json_ref eq ref {}) {
+      if (exists $json_ref->{'value'}) {
+          $self->subaction(delete $json_ref->{value});
+      }
 
+      if (exists $json_ref->{'with'}) {
+          if (ref $json_ref->{'with'} eq ref {}) {
+              return $self->_parsed_params($json_ref->{'with'});
+          }
+          elsif (ref $json_ref->{'with'} ne q{}) {
+              die "bad syntax for subaction->with - see 'perldoc -f netdisco-do'\n";
+          }
+          else {
+              return $self->_parsed_params(
+                  $self->_parse_config_string_to_dict($json_ref->{'with'}) );
+          }
+      }
+
+      return $self->_parsed_params($json_ref);
   }
-  # case when subaction is a string
+  # case when subaction is empty or a string
   else {
+      return $self->_parsed_params(
+          $self->_parse_config_string_to_dict($self->subaction) );
+  }
+}
 
+sub _parse_config_string_to_dict {
+  my ($self, $extra) = @_;
+  return {} unless $extra;
+
+  # either a device_auth tag hint, or
+  # some other use of subaction (file ref, log comment, etc)
+  return {device_auth_tag_hint => $extra} if $extra !~ m/=/;
+
+  # must be key1=val1,key2=val2
+  my $dict = {};
+  my @kvs = split m/,/, $extra;
+  foreach my $kv (@kvs) {
+      next unless $kv;
+      die "bad syntax for subaction, missing =\n" unless $kv =~ m/=/;
+      my ($k, $v) = split m/=/, $kv, 2;
+      $dict->{$k} = $v;
   }
 
-#  } catch { {device_auth_tag_hint => $self->subaction} };
+  return $dict;
 }
 
 true;
