@@ -233,11 +233,11 @@ sub extra { (shift)->subaction }
 =head2 params
 
 Allows user to override or add to Netdisco configuration from the command
-line, API call, or NETDISCO_CONFIGURATION environment variable.
+line, API call, or NETDISCO_WITH_CONFIGURATION environment variable.
 
 In order to cope with use of the C<subaction> (extra) field by several
 jobs (see the L<nedisco-do> docs), configuration can be provided as below,
-or in a special JSON dictrionary slot "C<set>". When C<set> is used, the
+or in a special JSON dictrionary slot "C<with>". When C<with> is used, the
 value of the other "C<value>" key becomes the C<subaction> (extra) field.
 For this case, calling C<params> is idempotent.
 
@@ -247,13 +247,13 @@ Examples of C<subaction> / C<extra>:
 
 =item * C<yes>
 
-=item * C<{"value": "yes", "set": '{"snmptimeout": 3000000}'}>
+=item * C<{"value": "yes", "with": '{"snmptimeout": 3000000}'}>
 
-=item * C<{"value": "yes", "set": "my_deviceauth_tag"}>
+=item * C<{"value": "yes", "with": "my_deviceauth_tag"}>
 
 =item * C<[{"mac": "string", "port": "string"}]>
 
-=item * C<{"value": '[{"mac": "string", "port": "string"}]', "set": "my_deviceauth_tag"}>
+=item * C<{"value": '[{"mac": "string", "port": "string"}]', "with": "my_deviceauth_tag"}>
 
 =item * C<{"snmptimeout": 3000000}>
 
@@ -263,7 +263,7 @@ Examples of C<subaction> / C<extra>:
 
 =item * C<device_auth_tag_hint=my_deviceauth_tag>
 
-=item * C<{"set": "my_deviceauth_tag"}>
+=item * C<{"with": "my_deviceauth_tag"}>
 
 =back
 
