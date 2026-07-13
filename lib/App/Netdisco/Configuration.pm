@@ -2,8 +2,10 @@ package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
 use App::Netdisco::Util::DeviceAuth ();
+use App::Netdisco::Util::Configuration 'merge_into_configuration';
 use Dancer ':script';
 
+use Try::Tiny;
 use FindBin;
 use File::Spec;
 use Path::Class 'dir';
@@ -158,6 +160,11 @@ config->{'community'} = ($ENV{NETDISCO_RO_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RO_COMMUNITY}] : config->{'community'});
 config->{'community_rw'} = ($ENV{NETDISCO_RW_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RW_COMMUNITY}] : config->{'community_rw'});
+
+# bring in any configuration from NETDISCO_WITH_CONFIGURATION environment
+# can be overriden by command-line or config job subaction/extra
+my $env_config = try { from_json($ENV{NETDISCO_WITH_CONFIGURATION}) };
+merge_into_configuration($env_config) if ref $env_config eq ref {};
 
 # if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
