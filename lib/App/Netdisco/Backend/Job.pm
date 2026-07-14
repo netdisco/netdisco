@@ -3,6 +3,8 @@ package App::Netdisco::Backend::Job;
 use Dancer qw/:moose :syntax !error !params/;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Util::Configuration 'parse_config_string_to_dict';
+
 use Moo;
 use Try::Tiny;
 use Term::ANSIColor qw(:constants :constants256);
@@ -233,7 +235,8 @@ sub extra { (shift)->subaction }
 =head2 params
 
 Allows user to override or add to Netdisco configuration from the command
-line, API call, or NETDISCO_WITH_CONFIGURATION environment variable.
+line or in an API call. Overrides the NETDISCO_WITH_CONFIGURATION environment
+variable.
 
 In order to cope with use of the C<subaction> (extra) field by several
 jobs (see the L<nedisco-do> docs), configuration can be provided as below,
@@ -309,7 +312,7 @@ sub params {
           }
           else {
               return $self->_parsed_params(
-                  $self->_parse_config_string_to_dict($json_ref->{'with'}) );
+                  parse_config_string_to_dict($json_ref->{'with'}) );
           }
       }
 
@@ -318,29 +321,8 @@ sub params {
   # case when subaction is empty or a string
   else {
       return $self->_parsed_params(
-          $self->_parse_config_string_to_dict($self->subaction) );
+          parse_config_string_to_dict($self->subaction) );
   }
-}
-
-sub _parse_config_string_to_dict {
-  my ($self, $extra) = @_;
-  return {} unless $extra;
-
-  # either a device_auth tag hint, or
-  # some other use of subaction (file ref, log comment, etc)
-  return {device_auth_tag_hint => $extra} if $extra !~ m/=/;
-
-  # must be key1=val1,key2=val2
-  my $dict = {};
-  my @kvs = split m/,/, $extra;
-  foreach my $kv (@kvs) {
-      next unless $kv;
-      die "bad syntax for subaction, missing =\n" unless $kv =~ m/=/;
-      my ($k, $v) = split m/=/, $kv, 2;
-      $dict->{$k} = $v;
-  }
-
-  return $dict;
 }
 
 true;
