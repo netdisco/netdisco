@@ -26,7 +26,7 @@ register_worker({ phase => 'main' }, sub {
       'macsuck', 'macsuck',
       setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'},
-      'macsuck', (setting('macsuck_min_age') * 60),
+      'macsuck', setting('macsuck_min_age'),
     ]})->get_column('ip')->all;
 
   jq_insert([
