@@ -1,3 +1,9 @@
+2.x - 2026-07-tbd
+
+  [NEW FEATURES]
+
+  * #1591 new option expire_nodeip_orphans to keep node_ip entries without node
+
 2.101000 - 2026-07-02
 
   [NEW FEATURES]
