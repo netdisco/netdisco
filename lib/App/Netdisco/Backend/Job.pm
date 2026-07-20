@@ -3,6 +3,8 @@ package App::Netdisco::Backend::Job;
 use Dancer qw/:moose :syntax !error !params/;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Util::Configuration 'parse_config_string_to_dict';
+
 use Moo;
 use Try::Tiny;
 use Term::ANSIColor qw(:constants :constants256);
@@ -29,6 +31,8 @@ foreach my $slot (qw/
       is_offline
 
       _current_phase
+      _params_is_parsed
+      _parsed_params
     /) {
 
   has $slot => (
@@ -230,25 +234,98 @@ sub extra { (shift)->subaction }
 
 =head2 params
 
-Parses the C<subaction> field as JSON and returns a hashref of parameters.
-Returns an empty hashref if subaction is empty or not a dictionary.
+Allows user to override or add to Netdisco configuration from the command
+line or in an API call. Overrides the NETDISCO_WITH_CONFIGURATION environment
+variable.
 
-This is used by the discover job to override configuration, particularly
-SNMP timers which are sensitive for new devices. It returns an empty hashref
-when C<subaction> is used for direct data provided for ARP/MAC addresses.
+In order to cope with use of the C<subaction> (extra) field by several
+jobs (see the L<nedisco-do> docs), configuration can be provided as below,
+or in a special JSON dictionary slot "C<with>". When C<with> is used, the
+value of the other "C<value>" key becomes the C<subaction> (extra) field.
+For this case, calling C<params> is idempotent.
 
-If C<subaction> is a plain string, it is promoted to being the C<device_auth_tag_hint>
-key's value in the returned hashref.
+Calling this method will return a HASH reference which is either empty
+or contains the configuration passed, if parsed successfully.
+
+Examples of C<subaction> / C<extra>:
+
+=over 4
+
+=item * C<yes>
+
+=item * C<{"value": "yes", "with": {"snmptimeout": 3000000}}>
+
+=item * C<{"value": "yes", "with": "my_deviceauth_tag"}>
+
+=item * C<[{"mac": "string", "port": "string"}]>
+
+=item * C<{"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"}>
+
+=item * C<{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}>
+
+=item * C<{"snmptimeout": 3000000}>
+
+=item * C<snmptimeout=3000000>
+
+=item * C<snmptimeout=3000000,skip_neighbor_queue=true>
+
+=item * C<device_auth_tag_hint=my_deviceauth_tag>
+
+=item * C<{"with": "my_deviceauth_tag"}>
+
+=back
 
 =cut
 
 sub params {
-  my $job = shift;
-  return {} unless $job->subaction;
-  return try {
-    my $r = from_json($job->subaction);
-    ref $r eq 'HASH' ? $r : {}
-  } catch { {device_auth_tag_hint => $job->subaction} };
+  my $self = shift;
+  return $self->_parsed_params if $self->_params_is_parsed;
+  return {} unless $self->subaction;
+
+  # handle schedule: subaction as Perl struct, else JSON text
+  my $json_ref = ref $self->subaction
+    ? $self->subaction
+    : try { from_json($self->subaction) };
+  $self->_params_is_parsed(true);
+
+  # case when subaction is a list for arpnip/macsuck
+  if ((ref $json_ref ne q{}) and (ref $json_ref ne ref {})) {
+      $self->_params_is_parsed(true);
+      return $self->_parsed_params({});
+  }
+
+  # case when subaction is a dictionary
+  if (ref $json_ref eq ref {}) {
+      if (exists $json_ref->{'value'}) {
+          # if JSON was thawed from the value, refreeze it
+          if (ref $json_ref->{'value'} ne q{}) {
+              $self->subaction(to_json($json_ref->{'value'}));
+          }
+          else {
+              $self->subaction(delete $json_ref->{value});
+          }
+      }
+
+      if (exists $json_ref->{'with'}) {
+          if (ref $json_ref->{'with'} eq ref {}) {
+              return $self->_parsed_params($json_ref->{'with'});
+          }
+          elsif (ref $json_ref->{'with'} ne q{}) {
+              die "bad syntax for subaction->with - see 'perldoc -f netdisco-do'\n";
+          }
+          else {
+              return $self->_parsed_params(
+                  parse_config_string_to_dict($json_ref->{'with'}) );
+          }
+      }
+
+      return $self->_parsed_params($json_ref);
+  }
+  # case when subaction is empty or a string
+  else {
+      return $self->_parsed_params(
+          parse_config_string_to_dict($self->subaction) );
+  }
 }
 
 true;
