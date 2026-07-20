@@ -240,7 +240,7 @@ variable.
 
 In order to cope with use of the C<subaction> (extra) field by several
 jobs (see the L<nedisco-do> docs), configuration can be provided as below,
-or in a special JSON dictrionary slot "C<with>". When C<with> is used, the
+or in a special JSON dictionary slot "C<with>". When C<with> is used, the
 value of the other "C<value>" key becomes the C<subaction> (extra) field.
 For this case, calling C<params> is idempotent.
 
@@ -282,7 +282,10 @@ sub params {
   return $self->_parsed_params if $self->_params_is_parsed;
   return {} unless $self->subaction;
 
-  my $json_ref = try { from_json($self->subaction) };
+  # handle schedule: subaction as Perl struct, else JSON text
+  my $json_ref = ref $self->subaction
+    ? $self->subaction
+    : try { from_json($self->subaction) };
   $self->_params_is_parsed(true);
 
   # case when subaction is a list for arpnip/macsuck
