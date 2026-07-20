@@ -11,6 +11,60 @@ use URI::Escape 'uri_unescape';
 
 sub _port_param { my $s = uri_unescape(shift // ''); $s =~ s/^\s+|\s+$//g; $s }
 
+my @DEVICE_FIELDS = qw/ip dns name/;
+
+swagger_path {
+  tags => ['Objects'],
+  path => (setting('api_base') || '').'/object/devices',
+  description => 'Returns list of all known devices',
+  parameters => [
+    fields => {
+      in => 'query',
+      description => 'Comma-separated list of fields to return. Default: ip,dns,name. Any device table column is valid (e.g. vendor,model,os,os_ver,location,layers,last_discover,last_macsuck,last_arpnip). Use "all" for every column. Extra join: device_auth_tag.',
+      required => 0,
+    },
+    limit => {
+      in => 'query',
+      description => 'Maximum number of devices to return. Default: all.',
+      required => 0,
+    },
+    offset => {
+      in => 'query',
+      description => 'Number of devices to skip (for paging). Default: 0.',
+      required => 0,
+    },
+  ],
+  responses => { default => {} },
+}, get '/api/v1/object/devices' => require_role api => sub {
+  my $fields = params->{fields} || '';
+  my $limit  = params->{limit}  || undef;
+  my $offset = params->{offset} || 0;
+
+  my @cols = $fields eq 'all'  ? ()
+           : $fields           ? split(/\s*,\s*/, $fields)
+           :                     @DEVICE_FIELDS;
+
+  my $want_tag = grep { $_ eq 'device_auth_tag' } @cols;
+  @cols = grep { $_ ne 'device_auth_tag' } @cols;
+
+  my %attrs = ( order_by => 'me.dns' );
+  $attrs{columns} = \@cols if @cols;
+  $attrs{rows}   = int($limit)  if $limit;
+  $attrs{offset} = int($offset) if $offset;
+
+  if ($want_tag) {
+    $attrs{join} = 'community';
+    push @{ $attrs{'+columns'} }, { device_auth_tag => 'community.snmp_auth_tag_read' };
+  }
+
+  my @devices = try {
+    schema(vars->{'tenant'})->resultset('Device')
+      ->search(undef, \%attrs)->hri->all;
+  } catch { () };
+
+  return to_json \@devices;
+};
+
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
