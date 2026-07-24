@@ -26,6 +26,7 @@ register_worker({ phase => 'main' }, sub {
       'macsuck', 'macsuck',
       setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'},
+      'nbtstat', 0,
     ]})->get_column('ip')->all;
 
   jq_insert([

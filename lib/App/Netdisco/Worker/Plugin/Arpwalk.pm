@@ -26,6 +26,7 @@ register_worker({ phase => 'main' }, sub {
       'arpnip', 'arpnip',
       setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'},
+      'arpnip', setting('arpnip_min_age'),
     ]})->get_column('ip')->all;
 
   jq_insert([
