@@ -8,6 +8,8 @@ use List::MoreUtils ();
 
 use App::Netdisco::Web::Plugin;
 
+my @DEFAULT_FIELDS = qw/ip dns name location model os_ver serial chassis_id/;
+
 register_search_tab({
     tag => 'device',
     label => 'Device',
@@ -15,7 +17,7 @@ register_search_tab({
     api_endpoint => 1,
     api_parameters => [
       q => {
-        description => 'Partial match of Device contact, serial, chassis ID, module serials, location, name, description, dns, or any IP alias',
+        description => 'Partial match of Device contact, serial, chassis ID, module serials, location, name, description, dns, or any IP alias. Optional if "limit" and "offset" are both given, to return all devices.',
       },
       name => {
         description => 'Partial match of the Device name',
@@ -55,10 +57,14 @@ register_search_tab({
         type => 'boolean',
         default => 'false',
       },
-      seeallcolumns => {
-        description => 'If true, all columns of the Device will be shown',
-        type => 'boolean',
-        default => 'false',
+      fields => {
+        description => 'Comma-separated list of fields to return. Default: ip,dns,name,location,model,os_ver,serial,chassis_id. Any Device table column is valid (e.g. vendor,os,layers,last_discover,last_macsuck,last_arpnip). Use "all" for every column. Extra join: device_auth_tag.',
+      },
+      limit => {
+        description => 'Maximum number of devices to return. Required, along with "offset", if neither "q" nor any filter parameter is given.',
+      },
+      offset => {
+        description => 'Number of devices to skip (for paging). Default: 0.',
       },
     ],
 });
@@ -67,30 +73,43 @@ register_search_tab({
 get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any { param($_) }
       qw/name location dns ip description model os os_ver vendor layers mac/;
+
+    my $fields = param('fields') || '';
+    my @cols = $fields eq 'all' ? ()
+             : $fields          ? split(/\s*,\s*/, $fields)
+             :                    @DEFAULT_FIELDS;
+
+    my $want_tag = List::MoreUtils::any { $_ eq 'device_auth_tag' } @cols;
+    @cols = grep { $_ ne 'device_auth_tag' } @cols;
+
+    my $rs_columns = schema(vars->{'tenant'})->resultset('Device');
+    $rs_columns = $rs_columns->columns(\@cols) if @cols;
+    $rs_columns = $rs_columns->search(undef, {
+      join => 'community',
+      '+columns' => [{ device_auth_tag => 'community.snmp_auth_tag_read' }],
+    }) if $want_tag;
+
     my $rs;
-    my $rs_columns;
-    my $see_all = param('seeallcolumns');
-
-    if ($see_all) {
-      $rs_columns = schema(vars->{'tenant'})->resultset('Device');
-    }
-    else {
-      $rs_columns = schema(vars->{'tenant'})->resultset('Device')->columns(
-            [   "ip",       "dns",   "name",
-                "location", "model", "os_ver", "serial", "chassis_id"
-            ]
-        );
-    }
-
     if ($has_opt) {
         $rs = $rs_columns->with_times->search_by_field( scalar params );
     }
-    else {
-        my $q = param('q');
-        send_error( 'Missing query', 400 ) unless $q;
-
-        $rs = $rs_columns->with_times->search_fuzzy($q);
+    elsif (param('q')) {
+        $rs = $rs_columns->with_times->search_fuzzy( param('q') );
     }
+    elsif (defined param('limit') and defined param('offset')) {
+        $rs = $rs_columns->with_times->search(undef, { order_by => [qw/me.dns me.ip/] });
+    }
+    else {
+        send_error( 'Missing query - provide "q", a filter parameter,'
+          .' or both "limit" and "offset"', 400 );
+    }
+
+    my $limit  = param('limit');
+    my $offset = param('offset');
+    my %page_attrs;
+    $page_attrs{rows}   = int($limit)  if $limit;
+    $page_attrs{offset} = int($offset) if $offset;
+    $rs = $rs->search(undef, \%page_attrs) if %page_attrs;
 
     my @results = $rs->with_module_serials # must come after search_fuzzy
                      ->hri->all;
