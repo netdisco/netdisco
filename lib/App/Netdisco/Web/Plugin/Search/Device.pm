@@ -96,13 +96,13 @@ get '/ajax/content/search/device' => require_login sub {
 
     my $rs;
     if ($has_opt) {
-        $rs = $rs_columns->with_times->search_by_field( scalar params );
+        $rs = $rs_columns->search_by_field( scalar params );
     }
     elsif (param('q')) {
-        $rs = $rs_columns->with_times->search_fuzzy( param('q') );
+        $rs = $rs_columns->search_fuzzy( param('q') );
     }
     elsif (defined param('limit') and defined param('offset')) {
-        $rs = $rs_columns->with_times->search(undef, { order_by => [qw/me.dns me.ip/] });
+        $rs = $rs_columns->search(undef, { order_by => [qw/me.dns me.ip/] });
     }
     else {
         send_error( 'Missing query - provide "q", a filter parameter,'
@@ -111,12 +111,24 @@ get '/ajax/content/search/device' => require_login sub {
 
     my $limit  = param('limit');
     my $offset = param('offset');
-    my %page_attrs;
-    $page_attrs{rows}   = int($limit)  if $limit;
-    $page_attrs{offset} = int($offset) if $offset;
-    $rs = $rs->search(undef, \%page_attrs) if %page_attrs;
 
-    my @results = $rs->with_module_serials # must come after search_fuzzy
+    if ($limit or $offset) {
+        # paginate on device ip before with_times/with_module_serials: combining
+        # LIMIT with the module_serials has_many join forces DBIC to wrap the
+        # query in a subquery, which cannot re-express with_times' raw-SQL
+        # computed columns (eg. me.creation) in the outer SELECT, and crashes
+        my @page_ips = $rs->search(undef, {
+          columns => ['ip'],
+          ($limit  ? (rows   => int($limit))  : ()),
+          ($offset ? (offset => int($offset)) : ()),
+        })->get_column('ip')->all;
+        return unless @page_ips;
+
+        $rs = $rs_columns->search({ 'me.ip' => { -in => \@page_ips } },
+                                   { order_by => [qw/me.dns me.ip/] });
+    }
+
+    my @results = $rs->with_times->with_module_serials # must come after search_fuzzy
                      ->hri->all;
     return unless scalar @results;
 
