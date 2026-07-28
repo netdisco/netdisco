@@ -60,6 +60,11 @@ register_search_tab({
       fields => {
         description => 'Comma-separated list of fields to return. Default: ip,dns,name,location,model,os_ver,serial,chassis_id. Any Device table column is valid (e.g. vendor,os,layers,last_discover,last_macsuck,last_arpnip). Use "all" for every column. Extra join: device_auth_tag.',
       },
+      seeallcolumns => {
+        description => 'Deprecated, use fields=all instead. If true and "fields" is not given, all columns of the Device will be shown.',
+        type => 'boolean',
+        default => 'false',
+      },
       limit => {
         description => 'Maximum number of devices to return. Required, along with "offset", if neither "q" nor any filter parameter is given.',
       },
@@ -74,7 +79,7 @@ get '/ajax/content/search/device' => require_login sub {
     my $has_opt = List::MoreUtils::any { param($_) }
       qw/name location dns ip description model os os_ver vendor layers mac/;
 
-    my $fields = param('fields') || '';
+    my $fields = param('fields') || (param('seeallcolumns') ? 'all' : '');
     my @cols = $fields eq 'all' ? ()
              : $fields          ? split(/\s*,\s*/, $fields)
              :                    @DEFAULT_FIELDS;
