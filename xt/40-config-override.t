@@ -14,7 +14,6 @@ use App::Netdisco::DB; # fake device row
 use App::Netdisco::Backend::Job;
 
 use Try::Tiny;
-use Data::Compare;
 use Dancer qw/:moose :script !pass/;
 
 # configure logging to force console output
