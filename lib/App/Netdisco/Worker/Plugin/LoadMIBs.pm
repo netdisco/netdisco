@@ -35,8 +35,12 @@ register_worker({ phase => 'main' }, sub {
       push @report, read_lines( catfile( $reports, "${vendor}_oids" ), 'latin-1' );
   }
   else {
+      my %seen_report = ();
+      my @to_read = grep { not $seen_report{$_}++ }
+                    (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
+
       push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
-        for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
+        for @to_read;
   }
   
   my @browser = ();
