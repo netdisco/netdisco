@@ -80,6 +80,84 @@ stash needs one orphan row, even an empty one, to get past the guard.
 
 =back
 
+Seven further templates carry Bootstrap or Font Awesome classes behind a
+C<FOREACH> over a result set, and were measured (2026-08-04) to render fewer
+than half of their migration-relevant class tokens against an empty stash.
+Each gets the smallest result set that reaches every branch of interest. Four
+of the seven also gate some of that markup on C<user_has_role(...)>, a Perl
+function rather than a stash value; each of those four stubs it the same way,
+as a coderef returning true, rather than leaving some templates faked and
+others not:
+
+=over
+
+=item C<ajax/device/ports.tt>
+
+One row per icon state (admin-down, STP-blocking, error-disabled, free,
+link-down, subinterface-fold) plus VLAN and PoE data, so every branch of the
+per-port status icon and VLAN-count logic renders at least once, plus
+C<user_has_role> stubbed true to reach the port-log modal. C<results> rows are
+plain hashrefs; C<row.get_column> and C<row.has_column_loaded> are
+DBIx::Class::Row methods this harness does not model, so one row supplies
+C<has_column_loaded> as a coderef to reach the "port is free" branch, and the
+neighbour-discovery icons that depend on C<get_column> are left as a gap.
+C<nodes>, C<ips> and C<mac_format_call> are, as in production, the names of
+the row accessors the template should call, not the data itself.
+
+=item C<layouts/main.tt>
+
+A logged-in session reaches the search bar, the account menu, and (with a
+tenant configured) the tenant-switcher dropdown; C<user_has_role> stubbed true
+reaches the Admin dropdown's static buttons. The Reports submenu is a
+remaining gap: it keys off C<settings._reports>, and C<Template::Stash> treats
+any leading-underscore key as private and hides it from templates unless a
+caller disables that check, which this harness's engine does not, so no stash
+value can reach it here (see the C<Template::Stash::PRIVATE> note below).
+
+=item C<ajax/device/details.tt>
+
+A single device row, plus C<user_has_role> stubbed true because most of this
+template's buttons and its snapshot dropdown are gated on the admin role and
+there is no cheaper way to reach them.
+
+=item C<ajax/admintask/jobqueue.tt>
+
+One queued job. An empty C<results> takes the "queue is empty" branch and
+never reaches the table at all.
+
+=item C<ajax/admintask/acleditor.tt>
+
+C<results> here is a DBIx::Class::ResultSet in production, walked with
+C<results.next> rather than C<FOREACH>. The stash supplies the same interface
+as a hashref holding one C<next> coderef that returns a single rule pair then
+undef.
+
+=item C<ajax/admintask/aclmanager.tt>
+
+One ACL row, which is all its C<FOREACH> needs: every button and icon in the
+row is unconditional once the row exists.
+
+=item C<index.tt>
+
+Takes the same logged-in-session branch as C<layouts/main.tt>, plus one flag
+(C<vars.notfound>) for the "page not found" banner, plus C<user_has_role>
+stubbed true to reach the Admin discovery form. The guest/login banners are a
+remaining gap: they render only when C<NOT session.logged_in_user>, which is
+mutually exclusive with the logged-in branch that unlocks everything else in
+this template.
+
+=back
+
+B<A harness-wide limitation, not specific to any one template above:>
+C<lib/App/Netdisco/Web.pm> sets C<$Template::Stash::PRIVATE = undef> before
+rendering, so production templates can read any C<settings._foo> key. This
+harness's C<_engine> does not set that, so every C<settings._*> path is dark
+here regardless of stash content: C<_navbar_items>, C<_admin_tasks>,
+C<_reports*>, C<_extra_device_details>, C<_extra_device_port_cols>,
+C<_additional_javascript>, and C<_additional_css> among them. Fixing it would
+mean changing C<_engine>, which is out of scope for a change to C<stash_for>
+alone.
+
 Two other templates also carry classes and are still left on an empty stash.
 Both are recorded here as known blind spots rather than driven with fixtures:
 
@@ -119,6 +197,125 @@ sub stash_for {
 
   return { orphans => [ {} ] }
     if $view eq 'ajax/admintask/orphaned.tt';
+
+  if ($view eq 'ajax/device/ports.tt') {
+    return {
+      # stubbed true to reach the port-log modal, which is otherwise the
+      # only gate in this template that depends on a Perl function rather
+      # than a data structure
+      user_has_role => sub { 1 },
+      params => {
+        c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
+        c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
+        p_fold_dotzero => 1,
+      },
+      settings => {
+        portctl_topology => 1,
+        devport_vlan_limit => 10,
+        devport_vlans_collapse_threshold => 2,
+      },
+      # production passes the row accessor names here, not the data itself
+      nodes => 'client_nodes',
+      ips => 'client_ips',
+      mac_format_call => 'as_string',
+      vlans => {
+        'Gi1/1' => { vlan_count => 1 },
+        'Gi1/3' => { vlan_count => 1 },
+        'Gi1/6' => { vlan_count => 99 },
+        'Gi1/9' => { vlan_count => 3, vlan_set => [ 10, 20 ] },
+      },
+      results => [
+        # up port carrying a tag, a LAG membership, and admin-edit permission
+        { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
+          slave_of => 1, port_acl_service => 1, port_acl_name => 1,
+          port_acl_pvid => 1, filtered_tags => ['core'],
+          client_nodes => [ { active => 0,
+            net_mac => { as_string => 'aa:bb:cc:00:01:01' } } ] },
+        # administratively disabled port
+        { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
+        # up port with a spanning-tree block and few enough VLANs to name them
+        { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking' },
+        # error-disabled port, also on the non-dot-zero subinterface fold
+        { port => 'Gi1/4', up_admin => 'up', up => 'down',
+          error_disable_cause => 'err-disable', has_subinterface_group => 1,
+          has_only_dot_zero_subinterface => 0 },
+        # link-down port marked free by has_column_loaded/is_free
+        { port => 'Gi1/5', up_admin => 'up', up => 'down',
+          has_column_loaded => sub { 1 }, is_free => 1 },
+        # link-down port with too many VLANs to list individually
+        { port => 'Gi1/6', up_admin => 'up', up => 'down' },
+        # up port with PoE and enough VLANs to need the "show more" toggle
+        { port => 'Gi1/9', up_admin => 'up', up => 'up',
+          power => { admin => 'true', power => 5 } },
+        # up port whose only subinterface is the dot-zero one
+        { port => 'Gi1/10', up_admin => 'up', up => 'up',
+          has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
+      ],
+    };
+  }
+
+  if ($view eq 'layouts/main.tt') {
+    return {
+      session => { logged_in_user => 'demo' },
+      # stubbed true to reach the Admin dropdown's static buttons
+      user_has_role => sub { 1 },
+      settings => {
+        tenant_databases => ['netdisco'],
+        tenant_data => { netdisco => { displayname => 'Netdisco' } },
+        tenant_tags => ['netdisco'],
+      },
+    };
+  }
+
+  if ($view eq 'ajax/device/details.tt') {
+    return {
+      # stubbed true because most of this template's actions are admin-only
+      user_has_role => sub { 1 },
+      d => {
+        layers => '01010101', pae_is_enabled => 1,
+        is_discoverable => 1, is_arpnipable => 1, is_macsuckable => 0,
+      },
+      filtered_tags => ['core'],
+    };
+  }
+
+  if ($view eq 'ajax/admintask/jobqueue.tt') {
+    return {
+      results => [
+        { job => 1, backend => 'localhost', action => 'discover',
+          status => 'queued', username => 'demo', duration => '5s' },
+      ],
+    };
+  }
+
+  if ($view eq 'ajax/admintask/acleditor.tt') {
+    my @pairs = ( {
+      id => 1,
+      left_acl_with_dns => { ruleset => [ [ '192.0.2.0/24' ] ] },
+      right_acl => { rules => ['80'] },
+    } );
+    return {
+      acl_name => 'demo',
+      params => { acl_type => 'host_port' },
+      # production's `results` is a DBIx::Class::ResultSet, walked with
+      # results.next rather than FOREACH; a coderef reproduces just that
+      results => { next => sub { shift @pairs } },
+    };
+  }
+
+  if ($view eq 'ajax/admintask/aclmanager.tt') {
+    return { results => [ { acl_name => 'demo', acl_type => 'host' } ] };
+  }
+
+  if ($view eq 'index.tt') {
+    return {
+      session => { logged_in_user => 'demo' },
+      # stubbed true to reach the Admin discovery form
+      user_has_role => sub { 1 },
+      params => { login_failed => 1 },
+      vars => { notfound => 1 },
+    };
+  }
 
   return {};
 }
