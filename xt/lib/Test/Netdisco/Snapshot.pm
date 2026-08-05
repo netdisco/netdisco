@@ -333,6 +333,14 @@ sub render_template {
   # Templates read empty values from the stash; that is expected here and the
   # resulting numeric warnings are noise, not signal.
   local $SIG{__WARN__} = sub { };
+  # Mirrors lib/App/Netdisco/Web.pm:404, which the application sets before
+  # every render so settings._foo keys resolve instead of being hidden by
+  # Template::Stash's leading-underscore filter. This must run after the
+  # _engine() call above: that call is what first loads Template::Stash and
+  # assigns its qr/^[_.]/ default, so setting this beforehand would only be
+  # overwritten by that load. Localized to this one process() call so the
+  # package global cannot leak into another subtest in this process.
+  local $Template::Stash::PRIVATE = undef;
   if ($engine->process($view, stash_for($view), \$out)) {
     return ($out, undef);
   }
