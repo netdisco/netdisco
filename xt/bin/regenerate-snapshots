@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+
+# Rewrites every committed template snapshot. Run this after any deliberate
+# change to a template, then review the resulting diff before committing.
+
+use strict;
+use warnings;
+
+use File::Basename 'dirname';
+use File::Path 'make_path';
+use lib 'xt/lib';
+use Test::Netdisco::Snapshot qw/render_template all_templates snapshot_path/;
+
+my ($written, @failed) = (0);
+
+foreach my $view (all_templates()) {
+    my ($html, $error) = render_template($view);
+    if (defined $error) { push @failed, "$view: $error"; next }
+
+    my $path = snapshot_path($view);
+    make_path(dirname($path));
+    open my $fh, '>:encoding(UTF-8)', $path or die "$path: $!";
+    print {$fh} $html;
+    close $fh;
+    $written++;
+}
+
+printf "wrote %d snapshots to xt/snapshots/\n", $written;
+
+if (@failed) {
+    printf STDERR "%d template(s) failed to render:\n  %s\n",
+        scalar(@failed), join("\n  ", @failed);
+    exit 1;
+}
+exit 0;
