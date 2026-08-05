@@ -1,0 +1,43 @@
+
+<div class="accordion" id="accordion-orphans">
+  <div class="accordion-group">
+      <div class="accordion-heading"> 
+          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-orphan" href="#collapse-orphan">
+            <i class="icon-chevron-up"></i> &nbsp;
+            Orphaned Devices
+          </a>
+      </div>
+    <div id="collapse-orphan" class="accordion-body collapse">
+      <div class="accordion-inner">
+      <table class="table table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th>Device</th>            
+            <th>Location</th>
+            <th>Contact</th>
+            <th>Vendor</th>
+            <th>Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="?q="></a></td>
+            <td>
+                [Not Set]
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script>
+$('.accordion').on('show hide', function (n) {
+    $(n.target).siblings('.accordion-heading').find('.accordion-toggle i').toggleClass('icon-chevron-up icon-chevron-down');
+});
+</script>

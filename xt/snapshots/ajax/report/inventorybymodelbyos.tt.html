@@ -1,0 +1,74 @@
+<table id="nsbi-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Operating System Version</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<style>
+tr.group,
+tr.group:hover {
+    background-color: #ddd !important;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    var table = $('#nsbi-data-table').DataTable({
+        "columnDefs": [
+            { "visible": false, "targets": 0 }
+        ],
+        sort: false,
+        "drawCallback": function ( settings ) {
+            var api = this.api();
+            var rows = api.rows( {page:'current'} ).nodes();
+            var last=null;
+ 
+            api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+                if ( last !== group ) {
+                    $(rows).eq( i ).before(
+                    '<tr class="group"><td colspan="2">'+group+'</td></tr>'
+                    );
+
+                    last = group;
+                }
+            } );
+        },
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": 
+    ,"lengthMenu": 
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+    ,"language": {
+      "search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+    }
+    ,"stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+    }
+    } );
+ 
+    // Order by the grouping
+    $('#nsbi-data-table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+            table.order( [ 0, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 0, 'asc' ] ).draw();
+        }
+    } );
+} );
+</script>

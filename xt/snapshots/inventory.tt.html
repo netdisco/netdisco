@@ -1,0 +1,24 @@
+<div class="container">
+  <script type="text/javascript">
+    window.location = '';
+  </script>
+</div>
+<script type="text/javascript">
+  $('.nd_inventory_collapser').toggle();
+
+  $('.nd_collapse-inventory').on('click', function () {
+    var target = $(this).attr('data-target');
+    var chevron = $(this).attr('data-chevron');
+
+    $(target).toggle();
+
+    if ($(chevron).hasClass('icon-chevron-up')) {
+        $(chevron).removeClass('icon-chevron-up');
+        $(chevron).addClass('icon-chevron-down');
+    }
+    else {
+        $(chevron).addClass('icon-chevron-up');
+        $(chevron).removeClass('icon-chevron-down');
+    }
+  });
+</script>

@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=" />
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+  <title></title>
+
+  <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script type="text/javascript" src="/javascripts/jquery-latest.min.js"></script>
+<!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
+  <script type="text/javascript" src="/javascripts/jquery-ui.custom.min.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery-history.js"></script>
+<!--  <script type="text/javascript" src="/javascripts/jquery.cookie.js"></script> -->
+  <script type="text/javascript" src="/javascripts/jquery-deserialize.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap2-toggle.min.js"></script>
+  <script type="text/javascript" src="/javascripts/underscore.min.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery.qtip.min.js"></script>
+  <script type="text/javascript" src="/javascripts/d3-3.5.17.min.js"></script>
+  <script type="text/javascript" src="/javascripts/d3-force-network-chart.js"></script>
+  <script type="text/javascript" src="/javascripts/toastr.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery.floatThead.js"></script>
+  <script type="text/javascript" src="/javascripts/daterangepicker.js"></script>
+  <script type="text/javascript" src="/javascripts/moment.min.js"></script>
+  <script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="/javascripts/dataTables.bootstrap.js"></script>
+  <script type="text/javascript" src="/javascripts/dataTables.ip-address-detect.js"></script>
+  <script type="text/javascript" src="/javascripts/dataTables.ip-address-sort.js"></script>
+  <script type="text/javascript" src="/javascripts/jstree/jstree.min.js"></script>
+  <script type="text/javascript" src="/javascripts/he.js"></script>
+  <script type="text/javascript" src="/javascripts/natural.js"></script>
+  <script type="text/javascript" src="/javascripts/portsort.js"></script>
+  <script type="text/javascript" src="/javascripts/versionsort.js"></script>
+
+  <script type="text/javascript">
+    var uri_base = '';
+    var nd_check_userlog = '';
+    var default_pgtitle = '';
+  </script>
+  <script type="text/javascript" src="/javascripts/netdisco.js"></script>
+  <script type="text/javascript" src="/javascripts/netdisco_portcontrol.js"></script>
+
+
+  <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="/css/bootstrap2-toggle.min.css"/>
+  <link rel="stylesheet" href="/css/awesome-bootstrap-checkbox.css"/>
+  <link rel="stylesheet" href="/css/jquery.qtip.min.css"/>
+  <link rel="stylesheet" href="/css/smoothness/jquery-ui.custom.min.css"/>
+  <link rel="stylesheet" href="/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="/css/toastr.css"/>
+  <link rel="stylesheet" href="/css/d3-force-network-chart.css"/>
+  <link rel="stylesheet" href="/css/netdisco.css"/>
+  <link rel="stylesheet" href="/css/bootstrap-tree.css"/>
+  <link rel="stylesheet" href="/javascripts/jstree/themes/proton/style.min.css"/>
+  <link rel="stylesheet" href="/css/daterangepicker-bs2.css"/>
+  <link rel="stylesheet" href="/css/dataTables.bootstrap.css"/>
+  <link rel="stylesheet" href="/css/nd_print.css" media="print"/>
+
+</head>
+
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href=""></a>
+      <ul class="nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+          <li>
+            <form method="post" class="nd_inline-form" action="">
+              <button type="submit" class="btn btn-link nd_btn-link">Discover All</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="">
+              <button type="submit" class="btn btn-link nd_btn-link">Arpnip All</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="">
+              <button type="submit" class="btn btn-link nd_btn-link">Macsuck All</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="">
+              <button type="submit" class="btn btn-link nd_btn-link">NBTstat All</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="">
+              <button type="submit" class="btn btn-link nd_btn-link">Run Expire Job</button>
+            </form>
+          </li>
+          <li>
+            <form method="post" class="nd_inline-form" action="">
+              <button type="submit" class="btn btn-link nd_btn-link">Update Statistics</button>
+            </form>
+          </li>
+          </ul>
+        </li> <!-- /dropdown -->
+      </ul>
+      <form class="navbar-search pull-left" method="get" action="">
+        <input placeholder="Find Anything" class="search-query span3"
+          id="nq" name="q" value="" type="search" autocomplete="off"/>
+        <input name="firstsearch" type="hidden" value="on">
+        <div class="btn-group nd_navbar-search-group">
+          <button class="btn btn-inverse nd_navbar-search-icon">
+            <span style="font-size: 18px;">
+              <i id="navsearchgo" class="icon-search"></i>
+            </span>
+          </button>
+          <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
+            <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
+            <li><a class="nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
+          </ul>
+        </div>
+      </form>
+      <ul class="nav pull-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="icon-home text-success"></i>
+            &nbsp;Default
+            <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+          </ul>
+        </li> <!-- /dropdown -->
+      </ul>
+      <ul class="nav pull-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="icon-user text-error"></i>&nbsp;demo <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="" target="_blank">👉 Browse the API</a></li>
+            <li><a href="https://github.com/netdisco/netdisco/wiki/Configuration" target="_blank">⚙️ Configuration Reference</a></li>
+            <li><a href="https://github.com/sponsors/netdisco" target="_blank">💜 Become a Sponsor</a></li>
+            <li><a href="">Log Out</a></li>
+          </ul>
+        </li> <!-- /dropdown -->
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  // csv download icon on any table page
+  // needs to be dynamically updated to use current search options
+  function update_csv_download_link (type, tab, show) {
+    var form = '#' + tab + '_form';
+    var query = $(form).serialize();
+
+    if (show.length) {
+      $('#nd_csv-download')
+        .attr('href', uri_base + '/ajax/content/' + type + '/' + tab + '?' + query)
+        .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
+        .show();
+    }
+    else {
+      $('#nd_csv-download').hide();
+    }
+  }
+
+  // page title includes tab name and possibly device name
+  // this is nice for when you have multiple netdisco pages open in the
+  // browser
+  function update_page_title (tab) {
+    var pgtitle = default_pgtitle;
+    if ($.trim($('#nd_device-name').text()).length) {
+      pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
+    }
+    return pgtitle;
+  }
+
+  // update browser search history with the new query.
+  // support history add (push) or replace via push parameter
+  function update_browser_history (tab, pgtitle, push) {
+    var form = '#' + tab + '_form';
+    var query = $(form).serialize();
+    if (query.length) { query = '?' + query }
+
+    if (window.History && window.History.enabled) {
+      is_from_history_plugin = 1;
+
+      if (push.length) {
+        var target = uri_base + '/' + path + '/' + tab + query;
+        if (location.pathname == target) { return };
+        window.History.pushState(
+          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
+        );
+      }
+      else {
+        var target = uri_base + '/' + path + query;
+        window.History.replaceState(
+          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
+        );
+      }
+
+      is_from_history_plugin = 0;
+    }
+  }
+
+  // each sidebar search form has a hidden copy of the main navbar search
+  function copy_navbar_to_sidebar (tab) {
+    var form = '#' + tab + '_form';
+
+    // copy navbar value to currently active sidebar form
+    if ($('#nq').val()) {
+      $(form).find("input[name=q]").val( $('#nq').val() );
+    }
+    // then copy to all other inactive tab sidebars
+    $('form').find("input[name=q]").each( function() {
+      $(this).val( $(form).find("input[name=q]").val() );
+    });
+  }
+
+  $(document).ready(function() {
+
+
+
+    // on page load, load the content for the active tab
+  });
+
+  // tenant change
+  $('.nd_navtenant').click(function(event) {
+    event.preventDefault();
+    var url = new URL(window.History.getState()['url']);
+    var newpath = url.pathname;
+    newpath = newpath.replace($(this).data('currenttenant'), "");
+    newpath = newpath.replace("", "/");
+    newpath = newpath.replace("//", "/");
+    newpath = $(this).data('tenantpath').concat(newpath, url.search);
+    window.location = newpath;
+  });
+
+</script>
+
+</body>
+</html>

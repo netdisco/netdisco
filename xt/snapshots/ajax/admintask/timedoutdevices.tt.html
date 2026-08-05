@@ -1,0 +1,28 @@
+
+<div class="span4 alert alert-info">No significant events to report.</div>
+
+<script>
+$(document).ready(function() {
+  $('#data-table').dataTable({
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": 
+    ,"lengthMenu": 
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+    ,"language": {
+      "search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+    }
+    ,"stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+    }
+  } );
+} );
+</script>

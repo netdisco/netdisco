@@ -1,0 +1,180 @@
+<table id="data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th>IP</th>
+      <th>DNS</th>
+      <th>Name</th>
+      <th>Model</th>
+      <th>Location</th>
+      <th>PoE<br>Module</th>
+      <th class="nd_center-cell">Supply</th>
+      <th class="nd_center-cell">Power<br>(W)</th>
+      <th class="nd_center-cell">Capable<br>Ports</th>
+      <th class="nd_center-cell">Powered<br>Ports</th>
+      <th class="nd_center-cell">Disabled<br>Ports</th>
+      <th class="nd_center-cell">Errored<br>Ports</th>
+      <th class="nd_center-cell">Committed<br>(W)</th>
+      <th class="nd_center-cell">Delivering<br>(W)</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<style>
+tr.group,
+tr.group:hover {
+    background-color: #ddd !important;
+}
+</style>
+
+<script>
+function groupString(d) {
+    "use strict";
+    var s = '';
+    s = s + 'Device: ';
+    s = s + '<a href="?tab=details&q=' + encodeURIComponent(d.ip) + '">';
+    s = s + he.encode(d.dns || d.name || d.ip);
+    if (d.dns || d.name) {
+        s = s + ' (' +  he.encode(d.ip) + ') ';
+    }
+    s = s + '</a> Model: ' + he.encode(d.model || '');
+    s = s + he.encode(d.location ? ' Location: ' + d.location : '');
+
+    return s;
+}
+
+$(document).ready(function() {
+    var table = $('#data-table').DataTable({
+    "serverSide": true,
+    "ajax": "",
+    "order": [[ 0, 'asc' ]],
+    "columns": [
+      {
+        // Grouping column
+        "data": 'ip',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'dns',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'name',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'model',
+        "visible": false
+      }, {
+        // Included for filtering
+        "data": 'location',
+        "visible": false
+      }, {
+        "data": 'module',
+        "searchable": false
+      }, {
+        "data": 'status',
+        "className": "nd_center-cell",
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'power',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_capable_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_powered_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_disabled_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_errored_ports',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_power_committed',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }, {
+        "data": 'poe_power_delivering',
+        "className": "nd_center-cell",
+        "searchable": false,
+        "render": function(data, type, row, meta) {
+          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+      }
+    ],
+    "drawCallback": function ( settings ) {
+      var api = this.api();
+      var rows = api.rows( {page:'current'} ).nodes();
+      var last=null;
+
+      api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+        if ( last !== group ) {
+          var row_data = api.row( i ).data();
+          $(rows).eq( i ).before(
+            '<tr class="group"><td colspan="9">' + groupString(row_data) + '</td></tr>'
+            );
+          last = group;
+        }
+      } );
+    },
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": 
+    ,"lengthMenu": 
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+    ,"language": {
+      "search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+    }
+    ,"stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+    }
+  } );
+ 
+    // Order by the grouping
+    $('#data-table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+            table.order( [ 0, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 0, 'asc' ] ).draw();
+        }
+    } );
+} );
+</script>

@@ -1,0 +1,108 @@
+
+            <span class="nd_sidebar-title"><em>Neighbor Map Controls</em></span>
+            <input name="q" value="" type="hidden"/>
+            <div class="clearfix nd_netmap-sidebar">
+              <ul class="muted nd_netmap-sidebar-help">
+                <li>Tip: shift-drag to lasso</li>
+                <li><a href="https://github.com/netdisco/netdisco/wiki/Network-Map" target="_blank">User Guide
+                  <i class="icon-external-link"></i></a></li>
+              </ul>
+            </div>
+
+            <div class="clearfix control-group nd_netmap-sidebar">
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="showips" id="nd_showips"
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="Show" data-off=" " data-onstyle="success">
+                  <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
+                </label>
+              </div>
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="showspeed" id="nd_showspeed"
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="Show" data-off=" " data-onstyle="success">
+                  <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
+                </label>
+              </div>
+              <div class="checkbox pull-left">
+                <label>
+                  <input type="checkbox" name="autosave" id="nd_autosave"
+                    data-toggle="toggle" data-size="small" data-width="30"
+                    data-on="On" data-off="Off" data-onstyle="success">
+                  <span onclick="$('#nd_autosave').bootstrapToggle('toggle')">&nbsp;Auto Save</span>
+                </label>
+              </div>
+            </div>
+
+            <label><span id="">Positions: </span>
+                  <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                  <i class="icon-save icon-large pull-left nd_navbar-icon"></i> Save</button>
+            </label>
+
+            <table margin="0" border="0" class="nd_netmap-pin-controls">
+            <tr>
+              <td class="nd_netmap-pin-controls-top-row">
+                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+              </td>
+              <td class="nd_netmap-pin-controls-top-row">
+                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-lock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> All</button>
+              </td>
+              <td>
+                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-small btn-info">
+                    <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Device</button>
+              </td>
+            </tr>
+            </table>
+
+            <hr class="nd_sidebar-hr"/>
+
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-all" value="all">
+                <label for="nd_mapshow-all">All Devices</label>
+            </div>
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-cloud" value="cloud">
+                <label for="nd_mapshow-cloud">Neighbor Cloud</label>
+            </div>
+            <div class="radio radio-success">
+                <input type="radio" name="mapshow" id="nd_mapshow-depth"
+                value="depth">
+                <label for="nd_mapshow-depth">Neighbor Hops:
+                <input name="depth" id="nd_mapshow-hops" class="input-mini" type="number" placeholder="1"
+                  value=""/>
+                </label>
+            </div>
+
+            <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
+              <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
+                value=""/>
+            </label>
+
+
+            <div class="clearfix nd_netmap-sidebar">
+
+
+              <div class="clearfix input-prepend">
+                <label class="add-on">
+                  <input type="checkbox" id="dynamicsize" name="dynamicsize"/>
+                </label>
+                <label class="nd_checkboxlabel" for="dynamicsize">
+                  <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
+                </label>
+              </div>
+
+            </div>
+
+            <button id="_submit" type="submit" class="btn btn-info">
+                <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i>
+            Redraw Map</button>

@@ -1,0 +1,210 @@
+<div class="row">
+    <div class="span5">
+        <div id="jstree" class="nd_scrollable"></div>
+    </div>
+    <div id="snmpnodecontainer" class="span8">
+        <form id="nd_snmp_search_form" class="form-inline col-md-4">
+          <span class="form-group">
+            <i id="nd_snmp_loading_spinner" class="icon-circle-blank icon-large"></i>
+            &nbsp;
+
+            <input id="nd_snmp_search_text" type="text"
+             class="form-control nd_snmp_search_param span5"
+             name="term" required placeholder="Search for label or OID">
+
+            <button type="submit" class="btn btn-default">Search</button>
+
+            &nbsp;
+            <label class="checkbox-inline"
+              rel="tooltip" data-placement="top" data-offset="5"
+              data-title="Anchored to the beginning">
+
+              <input type="checkbox" id="nd_snmp_search_partial"
+                name="partial" class="nd_snmp_search_param"> Partial </input>
+            </label>
+
+            &nbsp;
+            <input type="checkbox" id="nd_snmp_search_deviceonly"
+              name="deviceonly" class="nd_snmp_search_param"
+              checked="checked"> Only this device </input>
+
+            <input type="hidden" id="nd_snmp_search_ip"
+              name="ip" class="nd_snmp_search_param" value="" />
+          </span>
+        </form>
+        <div id="node">
+          <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th scope="row" class="span1">OID</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Module</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Leaf</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Status</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Access</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Type</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Index</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Filter</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Enum Syntax</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Description</th>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th scope="row">Value</th>
+                  <td></td>
+                </tr>
+              </tbody>    
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+  $(function () {
+    var jstree_search_callback = function(str, node) {
+      var pattern = str.toLowerCase();
+      var mib_pat = str.replace(/::.+/,'').toLowerCase();
+      var leaf_pat = str.replace(/.+::/,'').toLowerCase();
+      var mib_lc = node.original.mib.toLowerCase();
+      var leaf_lc = node.original.leaf.toLowerCase();
+      var oid = node.id.toLowerCase();
+
+      if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+        if (node.original.has_value == 0) { return false; }
+      }
+
+      // partial is ticked, check OID base, or mib + leaf root, or just leaf
+      if (document.getElementById('nd_snmp_search_partial').checked) {
+        if (pattern.includes('.')) {
+          if (oid.indexOf(pattern) == 0) { return true; }
+        }
+        else if (pattern.includes('::')) {
+          if ((mib_lc == mib_pat) && (leaf_lc.indexOf(leaf_pat) == 0)) { return true; }
+        }
+        else if (leaf_lc.indexOf(pattern) == 0) {
+          return true;
+        }
+      }
+      // user supplies a qualified leaf
+      else if (pattern.includes('::')) {
+        if ((mib_lc == mib_pat) && (leaf_lc == leaf_pat)) {
+          return true;
+        }
+      }
+      // user supplies an unqualified leaf, or an OID
+      else {
+        if ((leaf_lc == pattern) || (oid == pattern)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    $('#jstree').jstree({
+      'core': {
+        'multiple' : false,
+        'themes': {
+          'name': 'proton',
+          'responsive': true
+        },
+        'data' : {
+          'url' : function (node) {
+            return ('/ajax/data/device//snmptree/'
+              + (node.id === '#' ? '.1' : node.id));
+          }
+        }
+      },
+      'plugins': ['search'],
+      'search': {
+        'ajax' : {
+          'url' : '/ajax/data/snmp/nodesearch',
+          'beforeSend' : function(jqXHR, settings) {
+            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-exclamation-sign text-success')
+                                         .addClass('icon-spinner text-warning icon-spin');
+
+            if (document.getElementById('nd_snmp_search_partial').checked) {
+              settings.url = settings.url + '&partial=on';
+            }
+
+            if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+              settings.url = settings.url + '&deviceonly=on&ip=';
+            }
+
+            return true;
+          },
+          'error' : function() {
+            $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
+                                         .addClass('icon-exclamation-sign');
+          }
+        },
+        'search_callback' : jstree_search_callback
+      },
+    });
+    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
+      var ary = $('#jstree').jstree('get_selected');
+      $('#node').load('/ajax/content/device//snmpnode/'
+        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
+    });
+    $('#jstree').on("changed.jstree", function (e, data) {
+      if (data.selected && data.selected != "#") {
+        $('#node').load('/ajax/content/device//snmpnode/' + data.selected);
+      }
+    });
+    $('#jstree').on("search.jstree", function (e, data) {
+      if (data.res.length) {
+        $('#node').load('/ajax/content/device//snmpnode/' + data.res[0]);
+
+        $("#jstree").jstree().deselect_all(true);
+        $('#jstree').jstree('select_node', data.res[0] + '_anchor');
+
+        var node = $('#jstree').jstree("get_selected", true);
+        var path = $('#jstree').jstree().get_path(node[0], false, true);
+        var parent = path[path.length - 2];
+        document.getElementById( parent ).scrollIntoView();
+
+        $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
+                                     .addClass('icon-circle-blank text-success');
+      }
+    });
+    $("#nd_snmp_search_form").submit(function(e) {
+      $("#jstree").jstree("search", $("#nd_snmp_search_text").val());
+      e.preventDefault();
+    });
+    $('#nd_snmp_search_text').autocomplete({
+      source: function (request, response)  {
+        var query = $('.nd_snmp_search_param').serialize();
+        return $.get( uri_base + '/ajax/data/snmp/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
+      ,delay: 150
+      ,minLength: 2
+    });
+  });
+</script>
