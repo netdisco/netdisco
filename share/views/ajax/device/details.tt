@@ -23,7 +23,7 @@
       </td>
       [% ELSE %]
       <td>
-        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        <a rel="tooltip" data-bs-placement="top" data-offset="5" data-bs-title="Find Similar Devices"
         href="[% search_device | none %]&q=[% d.location | uri %]&location=[% d.location | uri %]">[% d.location | html_entity %]</a>
       </td>
       [% END %]
@@ -46,20 +46,20 @@
     <tr>
       <td>Vendor / Model</td>
       <td>
-        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        <a rel="tooltip" data-bs-placement="top" data-offset="5" data-bs-title="Find Similar Devices"
         href="[% search_device | none %]&q=[% d.vendor | uri %]&vendor=[% d.vendor | uri %]">[% d.vendor | html_entity %]</a>
         /
-        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        <a rel="tooltip" data-bs-placement="top" data-offset="5" data-bs-title="Find Similar Devices"
         href="[% search_device | none %]&q=[% d.model | uri %]&model=[% d.model | uri %]">[% d.model | html_entity %]</a>
       </td>
     </tr>
     <tr>
       <td>OS / Version</td>
       <td>
-        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        <a rel="tooltip" data-bs-placement="top" data-offset="5" data-bs-title="Find Similar Devices"
         href="[% search_device | none %]&q=[% d.os | uri %]&os=[% d.os | uri %]">[% d.os | html_entity %]</a>
         /
-        <a rel="tooltip" data-placement="top" data-offset="5" data-title="Find Similar Devices"
+        <a rel="tooltip" data-bs-placement="top" data-offset="5" data-bs-title="Find Similar Devices"
         href="[% search_device | none %]&q=[% d.os_ver | uri %]&os_ver=[% d.os_ver | uri %]">[% d.os_ver | html_entity %]</a>
       </td>
     </tr>
@@ -230,7 +230,7 @@
         [% END %]
 
         <span class="dropdown">
-          <button class="nd_snap_btn btn [% has_snapshot ? 'btn-success' : 'btn-info' %] btn-small dropdown-toggle" type="button" id="snapshotmenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          <button class="nd_snap_btn btn [% has_snapshot ? 'btn-success' : 'btn-info' %] btn-small dropdown-toggle" type="button" id="snapshotmenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Snapshot
             <span class="caret"></span>
           </button>
@@ -250,16 +250,16 @@
         </span>
 
         <button class="btn btn-danger btn-small pull-right"
-          data-toggle="modal" data-target="#nd_devdel" type="button">Delete</button>
+          data-bs-toggle="modal" data-bs-target="#nd_devdel" type="button">Delete</button>
 
         <button class="btn btn-danger btn-small pull-right nd_pull-right-admin-button"
-          data-toggle="modal" data-target="#nd_devrenumber" type="button">Change IP</button>
+          data-bs-toggle="modal" data-bs-target="#nd_devrenumber" type="button">Change IP</button>
 
 
         <div id="nd_devdel" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
             <h3 id="nd_devdel-label">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
@@ -278,15 +278,15 @@
             <input type="hidden" data-form="delete" value="[% d.ip | html_entity %]" name="device"/>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
           </div>
         </div>
 
         <div id="nd_devrenumber" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devrenumber-label" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
             <h3 id="nd_devrenumber-label">Confirm Renumber: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
@@ -308,8 +308,8 @@
             <input type="hidden" data-form="renumber" value="[% d.ip | html_entity %]" name="device"/>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="renumber" data-dismiss="modal">Confirm</button>
+            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="renumber" data-bs-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

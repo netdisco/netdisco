@@ -47,13 +47,13 @@
       <td class="nd_center-cell">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
             <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
@@ -63,8 +63,8 @@
             <input data-form="del" name="mac" type="hidden" value="[% row.mac | html_entity %]">
           </div>
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
+            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="del" data-bs-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

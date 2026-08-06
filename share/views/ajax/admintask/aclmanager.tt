@@ -14,7 +14,7 @@
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="add" name="acl_type">
+          <select class="col-md-2 form-control" data-form="add" name="acl_type">
             <option value="host">Host Group</option>
             <option value="host_host">Host to Host mapping</option>
             <option value="host_host">Ports on Hosts</option>
@@ -37,7 +37,7 @@
 
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="update" name="acl_type">
+          <select class="col-md-2 form-control" data-form="update" name="acl_type">
             <option[% ' selected' IF acl.acl_type == "host" %] value="host">Host Group</option>
             <option[% ' selected' IF acl.acl_type == "host_host" %] value="host_host">Host to Host mapping</option>
             <option[% ' selected' IF acl.acl_type == "host_port" %] value="host_port">Ports on Hosts</option>
@@ -52,13 +52,13 @@
         <input data-form="update" name="old-acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
             <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
@@ -70,8 +70,8 @@
           </div>
 
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

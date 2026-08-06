@@ -223,7 +223,7 @@
         ,beforeSend: function() {
           if (mode == 'add' || mode == 'delete') {
             $(target).html(
-              '<div class="span2 alert">Request submitted...</div>'
+              '<div class="col-md-2 alert">Request submitted...</div>'
             );
           }
         }

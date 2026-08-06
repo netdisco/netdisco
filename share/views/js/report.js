@@ -70,7 +70,7 @@
         ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
         ,beforeSend: function() {
           $(target).html(
-            '<div class="span2 alert">Request submitted...</div>'
+            '<div class="col-md-2 alert">Request submitted...</div>'
           );
         }
         ,success: function() {

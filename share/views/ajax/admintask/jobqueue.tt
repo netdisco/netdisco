@@ -1,5 +1,5 @@
 [% IF NOT results.size %]
-<div class="span2 alert alert-info">The job queue is empty.</div>
+<div class="col-md-2 alert alert-info">The job queue is empty.</div>
 [% ELSE %]
 <div class="alert alert-info">
   Backends: [% num_backends | html_entity %] /
@@ -75,7 +75,7 @@
     <tr id="nd_jobqueue_[% row.job | html_entity %]" class="nd_collapse-pre-hidden">
       <td colspan="8">
         <table>
-        <tr><td class="span2">ID</td><td> [% row.job | html_entity %] </td></tr>
+        <tr><td class="col-md-2">ID</td><td> [% row.job | html_entity %] </td></tr>
         <tr><td>Entered</td><td> [% row.entered_stamp | html_entity %] </td></tr>
         <tr><td>Started</td><td> [% row.started_stamp | html_entity %] </td></tr>
         <tr><td>Finished</td><td> [% row.finished_stamp | html_entity %] </td></tr>

@@ -15,7 +15,7 @@
       <td class="nd_center-cell"><input data-form="add" name="ports" type="number" value="1"></td>
       <td class="nd_center-cell">
         <span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
-        <a class="nd_layer-three-link" href="#" rel="tooltip" data-placement="bottom" data-offset="3" data-title="Enable Arpnip"><span class="badge">3</span></a><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
+        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-offset="3" data-bs-title="Enable Arpnip"><span class="badge">3</span></a><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
         <input data-form="add" name="layers" type="hidden" value="00000000">
       </td>
       <td class="nd_center-cell">
@@ -34,7 +34,7 @@
       </td>
       <td class="nd_center-cell">
         <span class="badge[% ' badge-success' IF row.layers.substr(7,1) %]">[% row.layers.substr(7,1) ? '1' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(6,1) %]">[% row.layers.substr(6,1) ? '2' : '&nbsp;' | none %]</span>
-        <a class="nd_layer-three-link" href="#" rel="tooltip" data-placement="bottom" data-offset="3" data-title="Enable Arpnip"><span class="badge[% ' badge-success' IF row.layers.substr(5,1) %]">3</span></a><span class="badge[% ' badge-success' IF row.layers.substr(4,1) %]">[% row.layers.substr(4,1) ? '4' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(3,1) %]">[% row.layers.substr(3,1) ? '5' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(2,1) %]">[% row.layers.substr(2,1) ? '6' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(1,1) %]">[% row.layers.substr(1,1) ? '7' : '&nbsp;' | none %]</span>
+        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-offset="3" data-bs-title="Enable Arpnip"><span class="badge[% ' badge-success' IF row.layers.substr(5,1) %]">3</span></a><span class="badge[% ' badge-success' IF row.layers.substr(4,1) %]">[% row.layers.substr(4,1) ? '4' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(3,1) %]">[% row.layers.substr(3,1) ? '5' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(2,1) %]">[% row.layers.substr(2,1) ? '6' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(1,1) %]">[% row.layers.substr(1,1) ? '7' : '&nbsp;' | none %]</span>
         <input data-form="update" name="layers" type="hidden" value="[% row.layers | html_entity %]">
       </td>
       <td class="nd_center-cell">
@@ -42,13 +42,13 @@
         <input data-form="update" name="ip" type="hidden" value="[% row.ip | html_entity %]">
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
             <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
@@ -59,8 +59,8 @@
             <input data-form="delete" name="device" type="hidden" value="[% row.ip | html_entity %]">
           </div>
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
           </div>
         </div>
       </td>

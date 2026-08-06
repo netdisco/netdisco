@@ -39,7 +39,7 @@
               </label>
             </div>
             <div class="clearfix input-prepend"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Only for IEEE format MACs">
+              rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Only for IEEE format MACs">
               <label class="add-on nd_sidebar-legend">
                 <input type="checkbox" id="node_partial"
                   name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.partial %]/>

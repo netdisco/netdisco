@@ -72,7 +72,7 @@
             <div class="radio radio-success">
                 [% IF device_count > settings.netmap_performance_limit_max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-all" value="all">
-                <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
+                <label rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
                 [% ELSE %]
                 <input type="radio" name="mapshow" id="nd_mapshow-all"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'all' %] value="all">
@@ -82,7 +82,7 @@
             <div class="radio radio-success">
                 [% IF device_count > settings.netmap_performance_limit_max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-cloud" value="cloud">
-                <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
+                <label rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
                 [% ELSE %]
                 <input type="radio" name="mapshow" id="nd_mapshow-cloud"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'cloud' %] value="cloud">
@@ -109,7 +109,7 @@
             <em class="muted">Device Groups:</em><br/>
             <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
               multiple name="hgroup" id="nd_hgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Groups">
+              rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Device Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
               <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                 value="[% opt.key | html_entity %]">[% opt.value | html_entity %]</option>
@@ -120,7 +120,7 @@
             <em class="muted">Device Locations:</em><br/>
             <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
               multiple name="lgroup" id="nd_lgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations">
+              rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Device Locations">
               [% FOREACH loc IN lgroup_list %]
               <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
                 value="[% loc | html_entity %]">[% loc | html_entity %]</option>

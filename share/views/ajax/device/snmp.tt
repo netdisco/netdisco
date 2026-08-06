@@ -1,23 +1,23 @@
 <div class="row">
-    <div class="span5">
+    <div class="col-md-5">
         <div id="jstree" class="nd_scrollable"></div>
     </div>
-    <div id="snmpnodecontainer" class="span8">
+    <div id="snmpnodecontainer" class="col-md-8">
         <form id="nd_snmp_search_form" class="form-inline col-md-4">
           <span class="form-group">
             <i id="nd_snmp_loading_spinner" class="far fa-circle fa-lg"></i>
             &nbsp;
 
             <input id="nd_snmp_search_text" type="text"
-             class="form-control nd_snmp_search_param span5"
+             class="form-control nd_snmp_search_param col-md-5"
              name="term" required placeholder="Search for label or OID">
 
             <button type="submit" class="btn btn-default">Search</button>
 
             &nbsp;
             <label class="checkbox-inline"
-              rel="tooltip" data-placement="top" data-offset="5"
-              data-title="Anchored to the beginning">
+              rel="tooltip" data-bs-placement="top" data-offset="5"
+              data-bs-title="Anchored to the beginning">
 
               <input type="checkbox" id="nd_snmp_search_partial"
                 name="partial" class="nd_snmp_search_param"> Partial </input>
@@ -36,7 +36,7 @@
           <table class="table table-bordered">
               <tbody>
                 <tr>
-                  <th scope="row" class="span1">OID</th>
+                  <th scope="row" class="col-md-1">OID</th>
                   <td></td>
                 </tr>
                 <tr>

@@ -7,7 +7,7 @@
               <div class="clearfix">
                 <select class="nd_side-select nd_colored-input" size="[% vendor_list.size > 8 ? 8 : vendor_list.size %]"
                   multiple name="vendor"
-                  rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor">
+                  rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Vendor">
                   [% FOREACH opt IN vendor_list %]
                     [% NEXT IF opt == '' %]
                     <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt | html_entity %]</option>
@@ -21,7 +21,7 @@
                 <label><em><strong>Options</strong></em></label>
               </legend>
                 <div class="clearfix input-prepend"
-                    rel="tooltip" data-placement="left" data-offset="5" data-title="Include Archived Data">
+                    rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Include Archived Data">
                   <label class="add-on">
                   <input type="checkbox" id="archived"
                     name="archived"[% ' checked="checked"' IF params.archived %]/>

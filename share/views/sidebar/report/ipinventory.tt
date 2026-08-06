@@ -3,7 +3,7 @@
               <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input"
                 placeholder="CIDR Prefix/Subnet" required="required"
                 name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Prefix/Subnet in CIDR Format"/>
+                rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Prefix/Subnet in CIDR Format"/>
             </div>
 
             <fieldset>
@@ -43,7 +43,7 @@
                   </li>
                 </ul>
                 <div class="clearfix input-prepend"
-                    rel="tooltip" data-placement="left" data-offset="5" data-title="Applies to IPv4 Only">
+                    rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Applies to IPv4 Only">
                   <label class="add-on">
                   <input type="checkbox" id="never"
                     name="never"[% ' checked="checked"' IF (params.never OR vars.sidebar_defaults.report_ipinventory.never) %]/>

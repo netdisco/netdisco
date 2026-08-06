@@ -84,7 +84,7 @@
         [% END %]
         [% IF settings._reports.size %]
         <li class="dropdown[% ' active' IF vars.nav == 'reports' %]">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
+          <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">Reports <b class="caret"></b></a>
           <ul class="dropdown-menu">
           [% FOREACH category IN settings._report_order %]
             [% IF settings._reports_menu.$category.size %]
@@ -104,7 +104,7 @@
         [% END %]
         [% IF user_has_role('admin') %]
         <li class="dropdown[% ' active' IF vars.nav == 'admin' %]">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+          <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">Admin <b class="caret"></b></a>
           <ul class="dropdown-menu">
           <li>
             <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discoverall') | none %]">
@@ -152,7 +152,7 @@
         [% END %]
       </ul>
       <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') | none %]">
-        <input placeholder="Find Anything" class="search-query span3"
+        <input placeholder="Find Anything" class="search-query col-md-3"
           id="nq" name="q" value="[% display_name | html_entity %]" type="search" autocomplete="off"/>
         <input name="firstsearch" type="hidden" value="on">
         <div class="btn-group nd_navbar-search-group">
@@ -161,7 +161,7 @@
               <i id="navsearchgo" class="fas fa-magnifying-glass"></i>
             </span>
           </button>
-          <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
+          <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-bs-toggle="dropdown">
             <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
           </button>
           <ul class="dropdown-menu">
@@ -176,7 +176,7 @@
       [% SET tenant = vars.tenant %]
       <ul class="nav pull-right">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
             <i class="fas fa-house text-success"></i>
             &nbsp;[% (settings.tenant_data.$tenant.displayname || settings.database.displayname || 'Default') | html_entity %]
             <b class="caret"></b>
@@ -196,7 +196,7 @@
       [% END %]
       <ul class="nav pull-right">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
           [% IF user_has_role('admin') %]
             <i class="fas fa-user text-error"></i>
           [% ELSIF user_has_role('port_control') %]

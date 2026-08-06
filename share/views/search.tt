@@ -1,12 +1,12 @@
 <i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
-  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+  rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar">
     <div class="well">
       <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
+        rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
       <i class="nd_sidebar-pin fas fa-thumbtack"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Pin Sidebar" data-container="body"></i>
+        rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Pin Sidebar" data-bs-container="body"></i>
       <div class="tab-content">
         [% FOREACH tab IN settings._search_tabs %]
         <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
@@ -35,7 +35,7 @@
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
           <i id="nd_csv-download-icon" class="text-info fas fa-file-lines fa-lg"
-            rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
+            rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Download as CSV"></i></a>
       </span>
     </ul>
     <div class="tab-content">

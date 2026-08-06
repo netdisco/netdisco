@@ -87,8 +87,8 @@
         <a class="nd_log-icon"
           href="[% uri_for('/report/portlog') | none %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
           <i class="fas fa-file-lines"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="View Port Log"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="View Port Log"></i>
         </a>
         [% IF row.has_subinterface_group %]
         <span class="nd_log-icon nd_row-collapser-toggle" data-collapsed-group="[% row.port %]">
@@ -98,28 +98,28 @@
           [% ELSE %]
           <i class="fas fa-arrow-up-wide-short fa-rotate-180"
           [% END %]
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Toggle Subinterfaces"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="Toggle Subinterfaces"></i>
         </span>
         [% END %]
       [% IF params.c_admin AND row.port_acl_service %]
       [% IF row.up_admin == 'up' %]
         <span class="nd_hand-icon">
           <i class="fas fa-bullseye" data-action="bounce"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Bounce Port"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="Bounce Port"></i>
           <i class="fas fa-hand-point-down"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Disable Port"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="Disable Port"></i>
         </span>
       [% ELSE %]
         <span class="nd_hand-icon">
           <i class="fas fa-bullseye" data-action="bounce" style="display: none"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Bounce Port"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="Bounce Port"></i>
           <i class="fas fa-hand-point-up"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Enable Port"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="Enable Port"></i>
         </span>
       [% END %]
       [% END %]
@@ -304,8 +304,8 @@
                 data-for-port="[% row.port | html_entity %]">
 
                 <i class="fas fa-power-off nd_power-icon nd_power-on"
-                  rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Disable Power"></i>
+                  rel="tooltip" data-bs-placement="top" data-offset="3"
+                  data-bs-animation="false" data-bs-title="Disable Power"></i>
             [% ELSE %]
               <td nowrap>
                 <i class="fas fa-power-off nd_power-on"></i>
@@ -324,8 +324,8 @@
                 data-for-port="[% row.port | html_entity %]">
 
                 <i class="fas fa-power-off nd_power-icon"
-                  rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Enable Power"></i>
+                  rel="tooltip" data-bs-placement="top" data-offset="3"
+                  data-bs-animation="false" data-bs-title="Enable Power"></i>
             [% ELSE %]
               <td>
                 <i class="fas fa-power-off"></i>
@@ -345,9 +345,9 @@
       <td>
       [% IF row.up == 'up' AND (row.pae_authconfig_port_status OR row.pae_authconfig_state) %]
         <i class="fas [% row.pae_authconfig_port_status == 'authorized' ? 'fa-circle-check' : 'fa-ban' %]"
-          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_port_status %]"></i>
+          rel="tooltip" data-bs-placement="top" data-offset="3" data-bs-animation="false" data-bs-title="[% row.pae_authconfig_port_status %]"></i>
         <i class="fas [% row.pae_authconfig_state == 'authenticated' ? 'fa-link' : 'fa-link-slash' %]"
-          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_state %]"></i>
+          rel="tooltip" data-bs-placement="top" data-offset="3" data-bs-animation="false" data-bs-title="[% row.pae_authconfig_state %]"></i>
         <i class="fas [% row.pae_authsess_mab ? 'fa-laptop' : 'fa-user' %]" title="[% row.pae_authsess_mab ? 'MAC Authentication Bypass (MAB)' : '802.1X user authentication' %]"></i>
         [% SET sessuser = (row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)) %]
         <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
@@ -533,8 +533,8 @@
         <a class="nd_log-icon"
           href="[% uri_for('/admin/topology') | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
           <i class="fas fa-link text-warning"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Manual Topology"></i>
+            rel="tooltip" data-bs-placement="top" data-offset="3"
+            data-bs-animation="false" data-bs-title="Manual Topology"></i>
         </a>
         [% END %]
       </td>
@@ -597,8 +597,8 @@
       placeholder="Enter a log message"></textarea>
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button id="nd_portlog-submit" class="btn btn-info" data-dismiss="modal">Continue</button>
+    <button class="btn" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="nd_portlog-submit" class="btn btn-info" data-bs-dismiss="modal">Continue</button>
   </div>
 </div>
 [% END %]

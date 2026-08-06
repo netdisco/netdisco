@@ -27,7 +27,7 @@ function do_search (event, tab) {
   // in case of slow data load, let the user know
   if (tab != 'jobqueue') {
     $(target).html(
-      '<div class="span2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>'
+      '<div class="col-md-2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>'
     );
   }
 
@@ -37,7 +37,7 @@ function do_search (event, tab) {
     .then( response => {
       if (! response.ok) {
         $(target).html(
-          '<div class="span5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
+          '<div class="col-md-5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
           'Search failed! Please contact your site administrator (server error).</div>'
         );
         return;
@@ -47,7 +47,7 @@ function do_search (event, tab) {
     })
     .then( content => {
       if (content == "") {
-        $(target).html('<div class="span2 alert alert-info">No matching records.</div>');
+        $(target).html('<div class="col-md-2 alert alert-info">No matching records.</div>');
       }
       else {
         $(target).html(content);
@@ -61,7 +61,7 @@ function do_search (event, tab) {
     })
     .catch( error => {
       $(target).html(
-        '<div class="span5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
+        '<div class="col-md-5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
         'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
       );
       console.error('There has been a problem with your fetch operation:', error);

@@ -1,12 +1,12 @@
 <i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
-  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+  rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar nd_sidebar-pinned">
     <div class="well">
       <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
+        rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
       <i class="nd_sidebar-pin fas fa-thumbtack nd_sidebar-pin-clicked"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
+        rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Unpin Sidebar" data-bs-container="body"></i>
 
       <div class="tab-content">
         <div id="_search" class="tab-pane active">
@@ -257,7 +257,7 @@
         ,beforeSend: function() {
           if (mode == 'add' || mode == 'delete') {
             $(target).html(
-              '<div class="span2 alert">Request submitted...</div>'
+              '<div class="col-md-2 alert">Request submitted...</div>'
             );
           }
         }

@@ -2,7 +2,7 @@
 <div class="accordion" id="accordion-orphans">
   <div class="accordion-group">
       <div class="accordion-heading"> 
-          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-orphan" href="#collapse-orphan">
+          <a class="accordion-toggle" data-bs-toggle="collapse" data-bs-target="#collapse-orphan" href="#collapse-orphan">
             <i class="fas fa-chevron-up"></i> &nbsp;
             Orphaned Devices
           </a>
@@ -55,7 +55,7 @@
   [% NEXT IF count == 1 %]
   <div class="accordion-group">
       <div class="accordion-heading"> 
-          <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-[% count | html_entity %]" href="#collapse-[% count | html_entity %]">
+          <a class="accordion-toggle" data-bs-toggle="collapse" data-bs-target="#collapse-[% count | html_entity %]" href="#collapse-[% count | html_entity %]">
             <i class="fas fa-chevron-up"></i> &nbsp;
               Orphaned Network: [% count - 1 | html_entity  %] Size: [% network.size | html_entity  %] Devices
           </a>

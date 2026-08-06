@@ -1,5 +1,5 @@
 [% IF results.count == 0 %]
-<div class="span2 alert alert-info">The user activity log is empty.</div>
+<div class="col-md-2 alert alert-info">The user activity log is empty.</div>
 [% ELSE %]
 <table id="aul-data-table" class="table table-bordered table-condensed table-hover" width="100%" cellspacing="0">
   <thead>
