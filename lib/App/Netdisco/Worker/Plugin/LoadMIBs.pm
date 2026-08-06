@@ -35,8 +35,12 @@ register_worker({ phase => 'main' }, sub {
       push @report, read_lines( catfile( $reports, "${vendor}_oids" ), 'latin-1' );
   }
   else {
+      my %seen_report = ();
+      my @to_read = grep { not $seen_report{$_}++ }
+                    (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
+
       push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
-        for (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
+        for @to_read;
   }
   
   my @browser = ();
@@ -74,12 +78,24 @@ register_worker({ phase => 'main' }, sub {
   debug sprintf "loadmibs - loaded %d objects from netdisco-mibs",
     scalar @browser;
 
-  schema('netdisco')->txn_do(sub {
-    my $gone = schema('netdisco')->resultset('SNMPObject')->delete;
-    debug sprintf 'loadmibs - removed %d oids', $gone;
-    schema('netdisco')->resultset('SNMPObject')->populate(\@browser);
-    debug sprintf 'loadmibs - added %d new oids', scalar @browser;
-  });
+  if (not scalar @browser) {
+    my $refusal = sprintf
+      'loadmibs - refusing to empty snmp_object: read %d lines from %s but '
+    . 'parsed 0 objects', scalar @report, $reports;
+
+    # error() is what survives --quiet on the console. add_status() records the
+    # refusal now so the blocks below still run and cannot displace it.
+    error $refusal;
+    $job->add_status( Status->error($refusal) );
+  }
+  else {
+    schema('netdisco')->txn_do(sub {
+      my $gone = schema('netdisco')->resultset('SNMPObject')->delete;
+      debug sprintf 'loadmibs - removed %d oids', $gone;
+      schema('netdisco')->resultset('SNMPObject')->populate(\@browser);
+      debug sprintf 'loadmibs - added %d new oids', scalar @browser;
+    });
+  }
 
   # promote snapshots prior to loadmibs to be browsable
   schema('netdisco')->txn_do(sub {
