@@ -285,8 +285,13 @@ sub deploy_mibs {
 
     if (schema('netdisco')->resultset('SNMPObject')->count) {
       print 'Updating SNMP Browser... ';
-      system('netdisco-do loadmibs --quiet');
-      say 'done.';
+      if (system('netdisco-do loadmibs --quiet') == 0) {
+        say 'done.';
+      }
+      else {
+        print color 'bold red';
+        say 'SNMP Browser update failed!';
+      }
     }
   }
 
