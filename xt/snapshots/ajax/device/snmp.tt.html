@@ -5,7 +5,7 @@
     <div id="snmpnodecontainer" class="span8">
         <form id="nd_snmp_search_form" class="form-inline col-md-4">
           <span class="form-group">
-            <i id="nd_snmp_loading_spinner" class="icon-circle-blank icon-large"></i>
+            <i id="nd_snmp_loading_spinner" class="far fa-circle fa-lg"></i>
             &nbsp;
 
             <input id="nd_snmp_search_text" type="text"
@@ -145,8 +145,8 @@
         'ajax' : {
           'url' : '/ajax/data/snmp/nodesearch',
           'beforeSend' : function(jqXHR, settings) {
-            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-exclamation-sign text-success')
-                                         .addClass('icon-spinner text-warning icon-spin');
+            $('#nd_snmp_loading_spinner').removeClass('far fa-circle fas fa-circle-exclamation text-success')
+                                         .addClass('fas fa-spinner text-warning fa-spin');
 
             if (document.getElementById('nd_snmp_search_partial').checked) {
               settings.url = settings.url + '&partial=on';
@@ -159,8 +159,8 @@
             return true;
           },
           'error' : function() {
-            $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
-                                         .addClass('icon-exclamation-sign');
+            $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                         .addClass('fas fa-circle-exclamation');
           }
         },
         'search_callback' : jstree_search_callback
@@ -188,8 +188,8 @@
         var parent = path[path.length - 2];
         document.getElementById( parent ).scrollIntoView();
 
-        $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
-                                     .addClass('icon-circle-blank text-success');
+        $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                     .addClass('far fa-circle text-success');
       }
     });
     $("#nd_snmp_search_form").submit(function(e) {

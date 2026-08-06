@@ -14,7 +14,7 @@
 
     // reload this table every 5 seconds
     if ((tab == 'jobqueue')
-        && $('#nd_countdown-control-icon').hasClass('icon-play')) {
+        && $('#nd_countdown-control-icon').hasClass('fa-play')) {
 
         $('#nd_countdown').text(timermax);
 
@@ -106,8 +106,8 @@
     $('.nd_jobqueue-extra').click(function(event) {
       event.preventDefault();
       var icon = $(this).children('i');
-      $(icon).toggleClass('icon-plus');
-      $(icon).toggleClass('icon-minus');
+      $(icon).toggleClass('fa-plus');
+      $(icon).toggleClass('fa-minus');
       var extra_id = $(this).data('extra');
       $('#' + extra_id).toggle();
     });
@@ -180,9 +180,9 @@
     $('#nd_countdown-control').click(function(event) {
       event.preventDefault();
       var icon = $('#nd_countdown-control-icon');
-      icon.toggleClass('icon-pause icon-play text-error text-success');
+      icon.toggleClass('fa-pause fa-play text-error text-success');
 
-      if (icon.hasClass('icon-pause')) {
+      if (icon.hasClass('fa-pause')) {
         for (var i = 0; i < nd_timers.length; i++) {
             clearTimeout(nd_timers[i]);
         }

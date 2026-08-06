@@ -13,29 +13,29 @@
       <td class="nd_center-cell">
         <div class="input-append">
           <input data-form="add" class="nd_topo_dev nd_topo_dev1" name="dev1" type="text" value="[% params.dev1 | html_entity %]">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+          <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
         </div>
       </td>
       <td class="nd_center-cell">
         <div class="input-append">
           <input data-form="add" class="nd_topo_port nd_topo_dev1" name="port1" type="text" value="[% params.port1 | html_entity %]">
-          <span class="add-on nd_topo_port_caret"><i class="icon-caret-down icon-large"></i></span>
+          <span class="add-on nd_topo_port_caret"><i class="fas fa-caret-down fa-lg"></i></span>
         </div>
       </td>
       <td class="nd_center-cell">
         <div class="input-append">
           <input data-form="add" class="nd_topo_dev nd_topo_dev2" name="dev2"  type="text">
-          <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+          <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
         </div>
       </td>
       <td class="nd_center-cell">
         <div class="input-append">
           <input data-form="add" class="nd_topo_port nd_topo_dev2" name="port2" type="text">
-          <span class="add-on nd_topo_port_caret"><i class="icon-caret-down icon-large"></i></span>
+          <span class="add-on nd_topo_port_caret"><i class="fas fa-caret-down fa-lg"></i></span>
         </div>
       </td>
       <td class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
     [% SET count = 0 %]
@@ -51,7 +51,7 @@
       <td class="nd_center-cell">[% row.port2 | html_entity %]</td>
       <td class="nd_center-cell">
         <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">

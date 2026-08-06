@@ -361,11 +361,6 @@ share/public/css/smoothness/jquery-ui.custom.min.css
 share/public/css/toastr.css
 share/public/dispatch.cgi
 share/public/dispatch.fcgi
-share/public/font/fontawesome-webfont.eot
-share/public/font/fontawesome-webfont.svg
-share/public/font/fontawesome-webfont.ttf
-share/public/font/fontawesome-webfont.woff
-share/public/font/FontAwesome.otf
 share/public/images/crystalclear_mag.png
 share/public/images/diagona_settings.png
 share/public/images/dusseldorf_settings.png
@@ -443,6 +438,10 @@ share/public/swagger-ui/swagger-ui.css.map
 share/public/swagger-ui/swagger-ui.js
 share/public/swagger-ui/swagger-ui.js.map
 share/public/swagger-ui/version-3.20.3
+share/public/webfonts/fa-brands-400.woff2
+share/public/webfonts/fa-regular-400.woff2
+share/public/webfonts/fa-solid-900.woff2
+share/public/webfonts/fa-v4compatibility.woff2
 share/python/netdisco/.pre-commit-config.yaml
 share/python/netdisco/netdisco/__init__.py
 share/python/netdisco/netdisco/runner.py

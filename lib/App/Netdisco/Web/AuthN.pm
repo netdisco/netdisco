@@ -260,7 +260,7 @@ any qr{^/(?:login(?:/denied)?)?} => sub {
     elsif (defined request->header('X-Requested-With')
            and request->header('X-Requested-With') eq 'XMLHttpRequest') {
       status('unauthorized');
-      return '<div class="span2 alert alert-error"><i class="icon-ban-circle"></i> Error: unauthorized.</div>';
+      return '<div class="span2 alert alert-error"><i class="fas fa-ban"></i> Error: unauthorized.</div>';
     }
     else {
       template 'index', {

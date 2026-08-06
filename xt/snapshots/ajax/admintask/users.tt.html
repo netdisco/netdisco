@@ -43,7 +43,7 @@
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"><input class="span2" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -59,7 +59,7 @@
     <p class="text-info">Copy this token — it will not be shown again.</p>
     <div class="input-append">
       <input id="nd_token-value" type="text" class="span4" readonly>
-      <button class="btn" id="nd_token-copy" type="button"><i class="icon-copy"></i> Copy</button>
+      <button class="btn" id="nd_token-copy" type="button"><i class="fas fa-copy"></i> Copy</button>
     </div>
   </div>
   <div class="modal-footer">
@@ -98,13 +98,13 @@ $(document).ready(function() {
   $('#nd_token-reveal').modal({show: false});
   $('#nd_token-copy').on('click', function() {
     navigator.clipboard.writeText($('#nd_token-value').val());
-    $(this).html('<i class="icon-ok"></i> Copied');
+    $(this).html('<i class="fas fa-check"></i> Copied');
   });
 
   // Called by admintask.js when the server returns a data-nd-api-key span
   window.nd_show_api_token = function(apiKey) {
     $('#nd_token-value').val(apiKey);
-    $('#nd_token-copy').html('<i class="icon-copy"></i> Copy');
+    $('#nd_token-copy').html('<i class="fas fa-copy"></i> Copy');
     $('#nd_token-reveal').one('hidden', function() {
       var tab = '';
       $('#' + tab + '_form').trigger('submit');

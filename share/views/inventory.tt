@@ -25,7 +25,7 @@
                   [% vendor | html_entity %]</a>
             </th>
             <th>
-              <span id="nd_platforms_[% vendorcount %]_chevron" class="icon-chevron-up"></span>
+              <span id="nd_platforms_[% vendorcount %]_chevron" class="fas fa-chevron-up"></span>
               <a href="#" class="nd_collapse-inventory"
                   data-chevron="#nd_platforms_[% vendorcount %]_chevron"
                   data-target=".nd_platforms_[% vendorcount %]">
@@ -96,7 +96,7 @@
                   [% os | html_entity %]</a>
             </th>
             <th>
-              <span id="nd_releases_[% oscount %]_chevron" class="icon-chevron-up"></span>
+              <span id="nd_releases_[% oscount %]_chevron" class="fas fa-chevron-up"></span>
               <a href="#" class="nd_collapse-inventory"
                   data-chevron="#nd_releases_[% oscount %]_chevron"
                   data-target=".nd_releases_[% oscount %]">
@@ -160,13 +160,13 @@
 
     $(target).toggle();
 
-    if ($(chevron).hasClass('icon-chevron-up')) {
-        $(chevron).removeClass('icon-chevron-up');
-        $(chevron).addClass('icon-chevron-down');
+    if ($(chevron).hasClass('fa-chevron-up')) {
+        $(chevron).removeClass('fa-chevron-up');
+        $(chevron).addClass('fa-chevron-down');
     }
     else {
-        $(chevron).addClass('icon-chevron-up');
-        $(chevron).removeClass('icon-chevron-down');
+        $(chevron).addClass('fa-chevron-up');
+        $(chevron).removeClass('fa-chevron-down');
     }
   });
 </script>

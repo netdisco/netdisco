@@ -25,7 +25,7 @@
 
       <td class="nd_center-cell">
         <input data-form="add" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -36,7 +36,7 @@
       <td class="nd_acl-rule-list" data-field="nd_left-acl-rule-field">
         <div class="nd_acl-rule-list">
         [% FOREACH rule IN pair.left_acl_with_dns.ruleset %]
-        <span class="label label-inverse nd_left-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+        <span class="label label-inverse nd_left-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>
         [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
         <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
         [% END %]
@@ -49,13 +49,13 @@
         <div class="nd_acl-rule-list">
         [% IF params.acl_type == "host_host" %]
           [% FOREACH rule IN pair.right_acl_with_dns.ruleset %]
-          <span class="label label-inverse nd_right-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+          <span class="label label-inverse nd_right-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>
           [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
           <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
           [% END %]
         [% ELSE %]
           [% FOREACH rule IN pair.right_acl.rules %]
-          <span class="label label-info nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+          <span class="label label-info nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>
           <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule) | none %]"><br/>
           [% END %]
         [% END %]
@@ -67,10 +67,10 @@
       <td class="nd_center-cell">
         <input data-form="update" name="id" type="hidden" value="[% pair.id | html_entity %]">
         <input data-form="update" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
-        <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
         <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+          data-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
 
         <div id="nd_devdel-[% pair.id | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% pair.id | html_entity %]" aria-hidden="true">

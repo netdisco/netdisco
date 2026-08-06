@@ -4,7 +4,7 @@
   "private": true,
   "description": "Manifest for the vendored frontend libraries in share/public. Not a build step: this exists so dependency scanners can see what is shipped. bootstrap 2.3.1, jquery-ui 1.10.3, datatables.net 1.10.2, toastr 1.1.1 and qtip2 2.0.1 are vendored too, but none of those versions was ever published to npm, so they cannot be declared here; Phase 4 adds each one as its upgrade lands.",
   "dependencies": {
-    "font-awesome": "3.2.1",
+    "@fortawesome/fontawesome-free": "7.3.1",
     "jquery": "1.12.4",
     "d3": "3.5.16",
     "moment": "2.29.2",

@@ -1,14 +1,14 @@
-<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
+<i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar">
     <div class="well">
-      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
+      <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-pin icon-pushpin"
+      <i class="nd_sidebar-pin fas fa-thumbtack"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
       <a id="nd_sidebar-reset-link" href="#">
-        <i class="nd_sidebar-reset icon-undo"
+        <i class="nd_sidebar-reset fas fa-arrow-rotate-left"
           rel="tooltip" data-placement="left" data-offset="5" data-title="Reset to Defaults" data-container="body"></i>
       </a>
       <div class="tab-content">
@@ -20,7 +20,7 @@
     <ul id="nd_search-results" class="nav nav-tabs">
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">&nbsp;
-          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
+          <i id="nd_csv-download-icon" class="text-info fas fa-file-lines fa-lg"
             rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
       </span>
     </ul>
@@ -69,12 +69,12 @@
     // sidebar collapser events trigger change of up/down arrow
     $('.collapse').on('show', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('icon-chevron-up icon-chevron-down');
+        .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
     $('.collapse').on('hide', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('icon-chevron-up icon-chevron-down');
+        .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
     // if the user edits the filter box, revert to automagical search
@@ -118,11 +118,11 @@
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('#ports_pane').on('click', '.nd_collapse-vlans', function() {
         $(this).closest('.nd_nodes-total').next('.nd_collapsing').toggle();
-        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('icon-plus-sign-alt')) {
-          $(this).html('Hide <div class="nd_arrow-up-down-left-up icon-minus-sign-alt"></div>&nbsp;');
+        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('fa-square-plus')) {
+          $(this).html('Hide <div class="nd_arrow-up-down-left-up fas fa-square-minus"></div>&nbsp;');
         }
         else {
-          $(this).html('Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;');
+          $(this).html('Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;');
         }
     });
 

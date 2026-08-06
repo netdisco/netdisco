@@ -5,7 +5,7 @@
               <ul class="muted nd_netmap-sidebar-help">
                 <li>Tip: shift-drag to lasso</li>
                 <li><a href="https://github.com/netdisco/netdisco/wiki/Network-Map" target="_blank">User Guide
-                  <i class="icon-external-link"></i></a></li>
+                  <i class="fas fa-up-right-from-square"></i></a></li>
               </ul>
             </div>
 
@@ -41,28 +41,28 @@
 
             <label><span id="">Positions: </span>
                   <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                  <i class="icon-save icon-large pull-left nd_navbar-icon"></i> Save</button>
+                  <i class="far fa-floppy-disk fa-lg pull-left nd_navbar-icon"></i> Save</button>
             </label>
 
             <table margin="0" border="0" class="nd_netmap-pin-controls">
             <tr>
               <td class="nd_netmap-pin-controls-top-row">
                 <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+                    <i class="fas fa-unlock fa-lg pull-left nd_navbar-icon"></i> Lasso</button>
               </td>
               <td class="nd_netmap-pin-controls-top-row">
                 <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-lock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+                    <i class="fas fa-lock fa-lg pull-left nd_navbar-icon"></i> Lasso</button>
               </td>
             </tr>
             <tr>
               <td>
                 <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> All</button>
+                    <i class="fas fa-unlock fa-lg pull-left nd_navbar-icon"></i> All</button>
               </td>
               <td>
                 <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Device</button>
+                    <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Device</button>
               </td>
             </tr>
             </table>
@@ -164,5 +164,5 @@
             </div>
 
             <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-                <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i>
+                <i class="fas fa-pencil fa-lg pull-left nd_navbar-icon"></i>
             Redraw Map</button>

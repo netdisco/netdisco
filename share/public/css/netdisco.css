@@ -18,6 +18,24 @@ body {
   cursor: pointer;
 }
 
+/* Font Awesome 7 makes every icon a fixed 1.25em box; Font Awesome 3 sized them
+   to the glyph. Keep the old metrics: measured across 18 pages, the fixed box
+   shifts text after every icon by about 3px and widens the device Ports status
+   column by about 25px, with no alignment gain anywhere, because netdisco's
+   icons are already one per row or centred in a table cell. --fa-width is a
+   customisation hook Font Awesome exposes, alongside --fa-style and
+   --fa-display, so this is supported use rather than an override of internals. */
+:root { --fa-width: auto; }
+
+/* Float utilities that Font Awesome 3's stylesheet provided and Font Awesome 7
+   does not: it renamed them to .fa-pull-left and .fa-pull-right. netdisco's
+   Bootstrap 2 build carries no bare .pull-* rule, only scoped ones, so nothing
+   else defines these and 18 templates depend on them. Tasks 11 and 12 rename the
+   call sites to float-start and float-end; Task 14 brings the Bootstrap 5 that
+   defines those. Remove this block in Task 14. */
+.pull-left { float: left; }
+.pull-right { float: right; }
+
 /* careful align of navbar search button and menu */
 .nd_navbar-search-group {
   margin-top: 0px !important;
@@ -352,7 +370,7 @@ td > form.nd_inline-form {
 }
 
 /* the port power icon, whether it's on or off */
-.icon-off {
+.fa-power-off {
   vertical-align: middle;
   color: darkRed;
 }
@@ -788,8 +806,9 @@ form .clearfix.success input {
   margin-left: 32px;
 }
 
-.icons-ul {
-  margin-left: 22px;
+.fa-ul {
+  margin-inline-start: 22px;
+  --fa-li-width: 2.142857em;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

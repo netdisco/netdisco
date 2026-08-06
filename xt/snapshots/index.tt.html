@@ -8,7 +8,7 @@
       <div class="alert fade in">
         <a class="close" data-dismiss="alert">×</a>
         Sorry, page not found.&nbsp;
-          <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="icon-bug"></i>&nbsp;Report a Bug?</a>
+          <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="fas fa-bug"></i>&nbsp;Report a Bug?</a>
       </div>
       <div class="hero-unit">
         <h2>Welcome to Netdisco</h2>
@@ -46,7 +46,7 @@
                 </ul>
               </div>
               <a target="_blank" href="https://github.com/netdisco/netdisco/wiki/Concepts#discovery-and-ping-sweep">
-                <i class="icon-question-sign icon-large nd_stealth-link nd_text-align-top"
+                <i class="fas fa-circle-question fa-lg nd_stealth-link nd_text-align-top"
                   rel="tooltip" data-placement="bottom" data-offset="3" data-title="What does this do?"></i>
               </a>
             </div>
@@ -58,14 +58,14 @@
     <div class="accordion-group">
       <div class="accordion-heading nd_sysinfo-heading">
           <a class="accordion-toggle" data-toggle="collapse" data-target="#collapse-stats" href="#">
-            <i class="icon-chevron-up nd_chevron"></i> System Information
+            <i class="fas fa-chevron-up nd_chevron"></i> System Information
           </a>
       </div>
       <div id="collapse-stats" class="accordion-body collapse">
         <div class="accordion-inner">
           <div id="nd_stats">
             <div id="nd_stats_status" class="span2 offset4 alert">
-              <i class="icon-spinner icon-spin"></i> Compiling statistics...</div>
+              <i class="fas fa-spinner fa-spin"></i> Compiling statistics...</div>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@
   $('#loginuser').focus(); // set focus to login, if it's there
 
   $('.collapse').on('show', function() {
-    $('.nd_chevron').toggleClass('icon-chevron-up icon-chevron-down');
+    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
 
     if (! stats_loaded) {
       fetch( "",
@@ -87,7 +87,7 @@
         .then( response => {
           if (! response.ok) {
             $('#nd_stats_status').addClass('alert-error')
-              .html('<i class="icon-warning-sign"></i> Failed to retrieve system information (server error).');
+              .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (server error).');
             return;
             // throw new Error('Network response was not ok');
           }
@@ -98,7 +98,7 @@
         })
         .catch( error => {
           $('#nd_stats_status').addClass('alert-error')
-            .html('<i class="icon-warning-sign"></i> Failed to retrieve system information (network error: ' + error + ').');
+            .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (network error: ' + error + ').');
           console.error('There has been a problem with your fetch operation:', error);
         });
       stats_loaded = 1;
@@ -106,6 +106,6 @@
   });
 
   $('.collapse').on('hide', function() {
-    $('.nd_chevron').toggleClass('icon-chevron-up icon-chevron-down');
+    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
   });
 </script>

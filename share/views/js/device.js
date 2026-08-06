@@ -38,12 +38,12 @@
     // sidebar collapser events trigger change of up/down arrow
     $('.collapse').on('show', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('icon-chevron-up icon-chevron-down');
+        .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
     $('.collapse').on('hide', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('icon-chevron-up icon-chevron-down');
+        .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
     // if the user edits the filter box, revert to automagical search
@@ -87,11 +87,11 @@
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('#ports_pane').on('click', '.nd_collapse-vlans', function() {
         $(this).closest('.nd_nodes-total').next('.nd_collapsing').toggle();
-        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('icon-plus-sign-alt')) {
-          $(this).html('Hide <div class="nd_arrow-up-down-left-up icon-minus-sign-alt"></div>&nbsp;');
+        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('fa-square-plus')) {
+          $(this).html('Hide <div class="nd_arrow-up-down-left-up fas fa-square-minus"></div>&nbsp;');
         }
         else {
-          $(this).html('Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;');
+          $(this).html('Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;');
         }
     });
 

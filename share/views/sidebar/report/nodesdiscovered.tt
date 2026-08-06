@@ -26,7 +26,7 @@
                   name="phones"[% ' checked="checked"' IF params.phones %]/>
               </label>
               <label class="nd_checkboxlabel" for="phones">
-                <span class="nd_searchcheckbox uneditable-input"><i class="icon-li icon-phone"></i>&nbsp; IP Phones</span>
+                <span class="nd_searchcheckbox uneditable-input"><i class="fas fa-phone"></i>&nbsp; IP Phones</span>
               </label>
             </div>
             <div class="clearfix input-prepend">
@@ -35,7 +35,7 @@
                   name="aps"[% ' checked="checked"' IF params.aps %]/>
               </label>
               <label class="nd_checkboxlabel" for="aps">
-                <span class="nd_searchcheckbox uneditable-input"><i class="icon-li icon-signal"></i>&nbsp; Wireless APs</span>
+                <span class="nd_searchcheckbox uneditable-input"><i class="fas fa-signal"></i>&nbsp; Wireless APs</span>
               </label>
             </div>
             <div class="clearfix"><p></p></div>
@@ -49,4 +49,4 @@
               </label>
             </div>
             <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Nodes</button>
+              <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Search Nodes</button>

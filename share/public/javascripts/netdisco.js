@@ -27,7 +27,7 @@ function do_search (event, tab) {
   // in case of slow data load, let the user know
   if (tab != 'jobqueue') {
     $(target).html(
-      '<div class="span2 alert"><i class="icon-spinner icon-spin"></i> Waiting for results...</div>'
+      '<div class="span2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>'
     );
   }
 
@@ -37,7 +37,7 @@ function do_search (event, tab) {
     .then( response => {
       if (! response.ok) {
         $(target).html(
-          '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
+          '<div class="span5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
           'Search failed! Please contact your site administrator (server error).</div>'
         );
         return;
@@ -61,7 +61,7 @@ function do_search (event, tab) {
     })
     .catch( error => {
       $(target).html(
-        '<div class="span5 alert alert-error"><i class="icon-warning-sign"></i> ' +
+        '<div class="span5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
         'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
       );
       console.error('There has been a problem with your fetch operation:', error);
@@ -395,7 +395,7 @@ var dataTablesRowGroupVisibilityToggle = function () {
 
   var icon = $(this).find('i');
   icon.toggleClass(
-    "icon-list-ol icon-sort-by-attributes-alt icon-rotate-180"
+    "fa-list-ol fa-arrow-up-wide-short fa-rotate-180"
   );
 };
 

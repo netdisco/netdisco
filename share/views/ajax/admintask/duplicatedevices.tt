@@ -34,7 +34,7 @@
       <td class="nd_center-cell">
         <button class="btn btn-danger btn-small"
           data-toggle="modal" data-target="#nd_devdel-[% count | html_entity %]" type="button">
-          <i class="icon-trash text-danger"></i>
+          <i class="fas fa-trash-can text-danger"></i>
         </button>
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"

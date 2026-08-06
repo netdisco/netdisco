@@ -1,11 +1,11 @@
-<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
+<i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
   rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar nd_sidebar-pinned">
     <div class="well">
-      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
+      <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
+      <i class="nd_sidebar-pin fas fa-thumbtack nd_sidebar-pin-clicked"
         rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
 
       <div class="tab-content">
@@ -39,19 +39,19 @@
         <span id="nd_countdown"></span>
         &nbsp;&nbsp;
         <a id="nd_countdown-control" href="#">
-          <i id="nd_countdown-control-icon" class="text-success icon-play icon-large"></i>
+          <i id="nd_countdown-control-icon" class="text-success fas fa-play fa-lg"></i>
         </a>
         &nbsp;&nbsp;
-        <a id="nd_countdown-refresh" href="#"><i class="text-success icon-refresh icon-large"></i></a>
+        <a id="nd_countdown-refresh" href="#"><i class="text-success fas fa-arrows-rotate fa-lg"></i></a>
         &nbsp;&nbsp;
-        <a class="nd_adminbutton" name="delall" href="#"><i class="icon-trash icon-large text-error"></i></a>
+        <a class="nd_adminbutton" name="delall" href="#"><i class="fas fa-trash-can fa-lg text-error"></i></a>
         &nbsp;&nbsp;
-        <a id="nd_jobqueue-bookmark" href="#"><i class="icon-bookmark icon-large"></i></a>
+        <a id="nd_jobqueue-bookmark" href="#"><i class="fas fa-bookmark fa-lg"></i></a>
       </span>
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
-          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
+          <i id="nd_csv-download-icon" class="text-info fas fa-file-lines fa-lg"
             rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
       </span>
       [% END %]

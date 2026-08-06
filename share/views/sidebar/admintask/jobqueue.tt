@@ -8,31 +8,31 @@
             <em class="muted">Backend:</em><br/>
             <div class="input-append">
               <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="backend" type="text" value="[% params.backend | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+              <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="muted">Action:</em><br/>
             <div class="input-append">
               <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="action" type="text" value="[% params.action | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+              <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="muted">Device:</em><br/>
             <div class="input-append">
               <input data-form="filter" class="nd_topo_dev nd_sidebar-dropdown" name="device" type="text" value="[% params.device | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+              <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="muted">Submitted by:</em><br/>
             <div class="input-append">
               <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="username" type="text" value="[% params.username | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+              <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="muted">Job status:</em><br/>
             <div class="input-append">
               <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="status" type="text" value="[% params.status | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+              <span class="add-on nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="muted">Duration:</em><br/>
@@ -44,6 +44,6 @@
             </div>
 
             <button id="[% task.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-                <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
+                <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i>
             Filter</button>
 

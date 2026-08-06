@@ -20,7 +20,7 @@
   [% END %]
 
   <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-   <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search</button>
+   <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Search</button>
 
 [% ELSE %]
   [% FOREACH k IN report.rconfig.bind_params %]

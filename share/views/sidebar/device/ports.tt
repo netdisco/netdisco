@@ -2,7 +2,7 @@
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <input id="nd_ports-form-prefer-field" name="prefer" value="[% params.prefer | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <i class="nd_field-clear-icon icon-trash icon-large"
+              <i class="nd_field-clear-icon fas fa-trash-can fa-lg"
                  rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports"
                  id="f_clear_btn" data-btn-for="port"></i>
               <input id="nd_port-query" placeholder="Port, Name or VLAN"
@@ -28,29 +28,29 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_legend">
                 <label class="nd_collapser">Legend
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_legend" class="collapse">
-                <ul class="icons-ul"><!-- nd_inputs-list unstyled"> -->
-                  <li><i class="icon-li icon-angle-up text-success"></i>&nbsp; Link Up</li>
-                  <li><i class="icon-li icon-arrow-down text-error"></i>&nbsp; Link Down</li>
-                  <li><i class="icon-li icon-circle-arrow-down text-success"></i>&nbsp; Port Free</li>
-                  <li><i class="icon-li icon-remove"></i>&nbsp; Admin Disabled</li>
-                  <li><i class="icon-li icon-exclamation-sign text-error"></i>&nbsp; Error Disabled</li>
-                  <li><i class="icon-li icon-ban-circle text-info"></i>&nbsp; Blocking</li>
-                  <li><i class="icon-li icon-off"></i>&nbsp; PoE Disabled</li>
-                  <li><i class="icon-li icon-off nd_power-on"></i>&nbsp; PoE Enabled</li>
-                  <li><i class="icon-li icon-link text-warning"></i>&nbsp; Manual Topology</li>
-                  <li><i class="icon-li icon-link"></i>&nbsp; Neighbor Device</li>
-                  <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Not Polled</li>
-                  <li><i class="icon-li icon-eye-close text-error"></i>&nbsp; Neighbor Forbidden</li>
-                  <li><i class="icon-li icon-phone"></i>&nbsp; IP Phone</li>
-                  <li><i class="icon-li icon-signal"></i>&nbsp; Wireless Client</li>
-                  <li><i class="icon-li icon-rss"></i>&nbsp; Wireless Access Point</li>
-                  <li><i class="icon-li icon-book"></i>&nbsp; Archived Data</li>
-                  <li><i class="icon-li icon-group"></i>&nbsp; Interface Group</li>
+                <ul class="fa-ul"><!-- nd_inputs-list unstyled"> -->
+                  <li><i class="fa-li fas fa-angle-up text-success"></i>&nbsp; Link Up</li>
+                  <li><i class="fa-li fas fa-arrow-down text-error"></i>&nbsp; Link Down</li>
+                  <li><i class="fa-li fas fa-circle-arrow-down text-success"></i>&nbsp; Port Free</li>
+                  <li><i class="fa-li fas fa-xmark"></i>&nbsp; Admin Disabled</li>
+                  <li><i class="fa-li fas fa-circle-exclamation text-error"></i>&nbsp; Error Disabled</li>
+                  <li><i class="fa-li fas fa-ban text-info"></i>&nbsp; Blocking</li>
+                  <li><i class="fa-li fas fa-power-off"></i>&nbsp; PoE Disabled</li>
+                  <li><i class="fa-li fas fa-power-off nd_power-on"></i>&nbsp; PoE Enabled</li>
+                  <li><i class="fa-li fas fa-link text-warning"></i>&nbsp; Manual Topology</li>
+                  <li><i class="fa-li fas fa-link"></i>&nbsp; Neighbor Device</li>
+                  <li><i class="fa-li fas fa-link-slash text-error"></i>&nbsp; Neighbor Not Polled</li>
+                  <li><i class="fa-li fas fa-eye-slash text-error"></i>&nbsp; Neighbor Forbidden</li>
+                  <li><i class="fa-li fas fa-phone"></i>&nbsp; IP Phone</li>
+                  <li><i class="fa-li fas fa-signal"></i>&nbsp; Wireless Client</li>
+                  <li><i class="fa-li fas fa-rss"></i>&nbsp; Wireless Access Point</li>
+                  <li><i class="fa-li fas fa-book"></i>&nbsp; Archived Data</li>
+                  <li><i class="fa-li fas fa-users"></i>&nbsp; Interface Group</li>
                   [% IF user_has_role('port_control', netdisco_device) %]
-                  <li><i class="icon-li icon-refresh icon-spin"></i>&nbsp; Click "Update View"</li>
+                  <li><i class="fa-li fas fa-arrows-rotate fa-spin"></i>&nbsp; Click "Update View"</li>
                   [% END %]
                 </ul>
               </div>
@@ -58,7 +58,7 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_columns">
                 <label class="nd_collapser">Display Columns
-                <i class="nd_arrow-up-down-right icon-chevron-down icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-down fa-lg"></i>
                 </label></span>
               <div id="nd_columns" class="collapse in">
                 <ul class="nd_inputs-list unstyled">
@@ -83,7 +83,7 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_nodeprops">
                 <label class="nd_collapser">Node Properties
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_nodeprops" class="collapse">
                 <ul class="nd_inputs-list unstyled">
@@ -110,7 +110,7 @@
             <div class="clearfix">
               <span data-toggle="collapse" data-target="#nd_portprops">
                 <label class="nd_collapser">Port Properties
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_portprops" class="collapse">
                 <ul class="nd_inputs-list unstyled">
@@ -152,7 +152,7 @@
             </div>
             <div class="btn-group">
               <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info nd_sidebar-btn-drop">
-                <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>
+                <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Update View</button>
               <button class="btn btn-info dropdown-toggle nd_sidebar-btn-drop-drop" data-toggle="dropdown">
                 <span class="caret"></span>
               </button>

@@ -25,7 +25,7 @@
         <input data-form="del" name="backend" type="hidden" value="[% row.backend | html_entity %]">
         <input data-form="del" name="device"  type="hidden" value="[% row.device  | html_entity %]">
         <button class="btn nd_adminbutton" name="del" type="submit">
-          <i class="icon-repeat text-success"></i>
+          <i class="fas fa-arrow-rotate-right text-success"></i>
         </button>
       </td>
     </tr>
