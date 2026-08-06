@@ -32,7 +32,7 @@ $(document).ready(function() {
             return'<i class="fas fa-xmark"></i>';
           }
           else if (row.up_admin == "up" && (row.up != "up" && row.up != "dormant")) {
-            return '<i class="fas fa-arrow-down text-error"></i>';
+            return '<i class="fas fa-arrow-down text-danger"></i>';
           }
           else {
             return '<i class="fas fa-angle-up text-success"></i>';

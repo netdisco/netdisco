@@ -11,13 +11,13 @@
                 <label><em><strong>Date Range</strong></em></label>
               </legend>
               <!--
-              <div class="clearfix input-prepend">
-                <label class="add-on">
+              <div class="clearfix input-group">
+                <label class="input-group-text">
                   <input type="checkbox" id="age_invert"
                     name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="age_invert">
-                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                  <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
               -->
@@ -29,4 +29,4 @@
             </fieldset>
 
             <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-             <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Search Subnets</button>
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Subnets</button>

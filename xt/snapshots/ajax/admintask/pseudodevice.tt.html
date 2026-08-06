@@ -19,7 +19,7 @@
         <input data-form="add" name="layers" type="hidden" value="00000000">
       </td>
       <td class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
   </tbody>
@@ -56,8 +56,8 @@ $(document).ready(function() {
   $('.nd_layer-three-link').click(function() {
     var badge = $(this).children('span').first();
     var layers = $(this).parent().children('input').first();
-    $(badge).toggleClass('badge-success');
-    if ($(badge).hasClass('badge-success')) {
+    $(badge).toggleClass('text-bg-success');
+    if ($(badge).hasClass('text-bg-success')) {
       $(layers).attr('value', '00000100');
     }
     else {

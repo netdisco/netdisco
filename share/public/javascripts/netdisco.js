@@ -37,7 +37,7 @@ function do_search (event, tab) {
     .then( response => {
       if (! response.ok) {
         $(target).html(
-          '<div class="col-md-5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
+          '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
           'Search failed! Please contact your site administrator (server error).</div>'
         );
         return;
@@ -61,7 +61,7 @@ function do_search (event, tab) {
     })
     .catch( error => {
       $(target).html(
-        '<div class="col-md-5 alert alert-error"><i class="fas fa-triangle-exclamation"></i> ' +
+        '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
         'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
       );
       console.error('There has been a problem with your fetch operation:', error);

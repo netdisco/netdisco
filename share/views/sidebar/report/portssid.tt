@@ -11,5 +11,5 @@
             </div>
 
             <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-             <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Search SSID</button>
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search SSID</button>
 

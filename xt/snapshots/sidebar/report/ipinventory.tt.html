@@ -10,13 +10,13 @@
               <legend class="nd_sidebar-legend">
                 <label><em><strong>Date Range</strong></em></label>
               </legend>
-              <div class="clearfix input-prepend">
-                <label class="add-on">
+              <div class="clearfix input-group">
+                <label class="input-group-text">
                   <input type="checkbox" id="age_invert"
                     name="age_invert"/>
                 </label>
                 <label class="nd_checkboxlabel" for="age_invert">
-                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                  <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
               <div class="clearfix">
@@ -32,7 +32,7 @@
               <div class="clearfix">
                 <ul class="unstyled">
                   <li>
-                    <em class="muted">Oldest records limit:</em><br/>
+                    <em class="text-muted">Oldest records limit:</em><br/>
                     <select id="nd_mac-format" class="nd_side-select" name="limit">
                       <option>32</option>
                       <option>64</option>
@@ -46,19 +46,19 @@
                     </select>
                   </li>
                 </ul>
-                <div class="clearfix input-prepend"
+                <div class="clearfix input-group"
                     rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Applies to IPv4 Only">
-                  <label class="add-on">
+                  <label class="input-group-text">
                   <input type="checkbox" id="never"
                     name="never"/>
                   </label>
                   <label class="nd_checkboxlabel" for="never">
-                    <span class="nd_searchcheckbox uneditable-input">List IP's Never Seen</span>
+                    <span class="nd_searchcheckbox form-control-plaintext">List IP's Never Seen</span>
                   </label>
                 </div>
               </div>
             </fieldset>
 
             <button id="_submit" type="submit" class="btn btn-info">
-             <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Search IPs</button>
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search IPs</button>
 

@@ -28,7 +28,7 @@
       <th scope="row">Index</th>
       <td>
       [% IF node.snmp_object.index.size > 0 %]
-        <table class="table table-condensed table-bordered">
+        <table class="table table-sm table-bordered">
           [% FOREACH idx IN node.snmp_object.index %]
           <tr><td>[% idx | html_entity %]</td></tr>
           [% END %]
@@ -53,7 +53,7 @@
       <th scope="row">Enum Syntax</th>
       <td>
       [% IF node.snmp_object.enum.size > 0 %]
-        <table class="table table-condensed table-bordered">
+        <table class="table table-sm table-bordered">
           [% FOREACH idx IN node.snmp_object.enum %]
           <tr><td>[% idx.replace('(\w)\(', '$1 (') | html_entity %]</td></tr>
           [% END %]

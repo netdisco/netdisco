@@ -180,7 +180,7 @@
     $('#nd_countdown-control').click(function(event) {
       event.preventDefault();
       var icon = $('#nd_countdown-control-icon');
-      icon.toggleClass('fa-pause fa-play text-error text-success');
+      icon.toggleClass('fa-pause fa-play text-danger text-success');
 
       if (icon.hasClass('fa-pause')) {
         for (var i = 0; i < nd_timers.length; i++) {

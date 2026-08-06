@@ -178,15 +178,15 @@ sub _get_snmp_data {
         has_value => $meta{$_}->{browser},
 
         ($meta{$_}->{browser} ? (icon => 'fas fa-folder text-info')
-                              : (icon => 'far fa-folder muted')),
+                              : (icon => 'far fa-folder text-muted')),
 
         (scalar @{$meta{$_}->{index}}
-          ? (icon => 'fas fa-table-cells'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
+          ? (icon => 'fas fa-table-cells'.($meta{$_}->{browser} ? ' text-info' : ' text-muted')) : ()),
 
         (($meta{$_}->{num_children} == 0 and ($meta{$_}->{type}
                                               or $meta{$_}->{access} =~ m/^(?:read|write)/
                                               or $meta{$_}->{oid_parts}->[-1] == 0))
-          ? (icon => 'fas fa-leaf'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
+          ? (icon => 'fas fa-leaf'.($meta{$_}->{browser} ? ' text-info' : ' text-muted')) : ()),
 
         # jstree will async call to expand these, and while it's possible
         # for us to prefetch by calling _get_snmp_data() and passing to

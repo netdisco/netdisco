@@ -1,4 +1,4 @@
-<table id="data-table" class="table table-bordered table-condensed table-striped" width="100%" cellspacing="0">
+<table id="data-table" class="table table-bordered table-sm table-striped" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Creation</th>
@@ -21,7 +21,7 @@
       <input data-form="add" name="ip" type="hidden" value="[% params.q | html_entity %]">
       <input data-form="add" name="port" type="hidden" value="[% params.f | html_entity %]">
       <td class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
