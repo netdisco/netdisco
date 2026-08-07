@@ -590,10 +590,17 @@ td > form.nd_inline-form {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles for collapsing lists - sidebar or main table cell content */
 
-/* sidebar collapser is clickable and deep grey */
+/* sidebar collapser is clickable and deep grey. It was a full-width block with
+   a 5px gutter under it, which is where the chevron on its right got its right
+   edge from and where the list under it got its top gap. The replacement draws
+   a label inline-block with no gutter, so the chevron sits against the caption
+   instead of at the sidebar's edge and each of the four sections starts 5px
+   high, accumulating down the sidebar. */
 .nd_collapser {
   cursor: pointer;
   color: #0088CC;
+  display: block;
+  margin-bottom: 5px;
 }
 
 /* vlans collapser also clickable and deep grey but with no link styling */
