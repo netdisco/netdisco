@@ -1041,6 +1041,19 @@ form .clearfix.success input {
   background-color: #A9DBA9;
 }
 
+/* A checkbox row in the sidebar stood 18px tall, on a 19px pitch. Its
+   replacement sets a 24px floor instead, which pitches the list at 25px and
+   walks the button under a thirty-row list 130px down the page. The inset and
+   the box's own offset go with it, so the caption and the box land where they
+   did rather than half a pixel to their right. */
+.nd_sidebar .form-check {
+  min-height: 18px;
+  padding-left: 20px;
+}
+.nd_sidebar .form-check .form-check-input {
+  margin-left: -20px;
+}
+
 /* bring sidebar items closer together */
 .nd_inputs-list label {
   margin-bottom: 1px;
