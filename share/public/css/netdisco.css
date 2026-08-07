@@ -62,10 +62,17 @@
 .input-group-text {
   padding: 4px 5px;
 }
+/* Every one of these spans is a read-only field that used to draw a box: an
+   off-white fill, a grey border and grey text. Its replacement draws nothing
+   at all, so the sidebar's checkbox captions became bare text sitting beside a
+   checkbox that still has its own box. */
 .form-control-plaintext {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding: 4px 6px;
   line-height: 18px;
+  color: #999999;
+  background-color: #fcfcfc;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
 }
 
 /* the gutter under a control used to come from the control itself, and the
