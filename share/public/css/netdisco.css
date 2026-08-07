@@ -582,10 +582,10 @@ td > form.nd_inline-form {
 }
 #nd_vlan-entry {
   margin-top: 7px;
-  width: 45px;
+  width: 59px;
 }
 #nd_mapshow-hops {
-  width: 30px;
+  width: 44px;
   margin-bottom: 0px;
 }
 
@@ -613,14 +613,14 @@ div.toggle.btn-small {
 
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
-  width: 121px;
+  width: 137px;
   padding-left: 8px;
   cursor: pointer;
 }
 
 /* fixup for prepended partial port name checkbox in sidebar */
 .nd_port-partial-checkbox {
-  width: 84px;
+  width: 91px;
   padding: 0px 0px 0px 5px !important;
   cursor: pointer;
 }
@@ -637,7 +637,7 @@ div.toggle.btn-small {
 
 /* fixup for prepended invert port name checkbox in sidebar */
 .nd_port-invert-checkbox {
-  width: 30px;
+  width: 37px;
   padding: 0px 0px 0px 5px !important;
   cursor: pointer;
 }
@@ -670,7 +670,7 @@ div.toggle.btn-small {
 /* placement of form field in sidebar */
 .nd_side-input {
   margin-left: -3px;
-  width: 151px;
+  width: 165px;
 }
 
 /* placement of form field in sidebar */
@@ -684,20 +684,31 @@ div.toggle.btn-small {
   margin-left: 5px !important;
   width: 152px;
 }
+/* one id, two elements: generic_report.tt emits either arm of an IF per bind
+   parameter, so a report with a list parameter and a text parameter puts a
+   select and an input carrying this id on the same page. Only the input needs
+   the wider box; a select was never sized by its padding. */
+input#nd_port-query {
+  width: 166px;
+}
 .nd_sidebar-topinput {
   margin-left: 5px !important;
-  width: 152px;
+  width: 166px;
 }
 
 /* set the drop-down width */
 .nd_sidebar-narrow-dropdown {
   margin-top: 4px;
-  width: 46px;
+  width: 60px;
 }
 
-/* set the drop-down width */
-.nd_sidebar-dropdown {
-  width: 130px;
+/* set the drop-down width. the input group these five live in gives its
+   field "flex: 1 1 auto; width: 1%" at a specificity the class alone cannot
+   beat, so the width has to be declared against the group as well. */
+.nd_sidebar-dropdown,
+.input-group > .nd_sidebar-dropdown {
+  flex: 0 0 auto;
+  width: 144px;
 }
 
 /* set the day/mon/year drop-down width */
