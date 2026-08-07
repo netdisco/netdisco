@@ -536,6 +536,17 @@ td > form.nd_inline-form {
   color: #783f03;
 }
 
+/* A bulleted list used to sit 25px in with a 9px gutter under it; the
+   replacement indents it 2rem and gives it a 1rem gutter, which moved every
+   list in the application and wrapped the ones in a 205px sidebar. */
+ul, ol {
+  padding: 0;
+  margin: 0 0 9px 25px;
+}
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
 /* space out long lists */
 .nd_div-closer {
   margin-top: -14px;
@@ -923,12 +934,8 @@ form .clearfix.success input {
   margin-left: 5px;
 }
 
-/* a bulleted list now carries 2rem of padding on top of this margin, which
-   pushed "Tip: shift-drag to lasso" onto a third line in a 205px sidebar. */
 .nd_netmap-sidebar-help {
   margin-left: 32px;
-  padding-left: 0px;
-  margin-bottom: 9px;
 }
 
 .fa-ul {
