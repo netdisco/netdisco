@@ -84,7 +84,7 @@
       [% IF settings._reports.size %]
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle[% ' active' IF vars.nav == 'reports' %]" role="button"
-          data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Reports</a>
+          data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Reports </a>
         <ul class="dropdown-menu">
         [% FOREACH category IN settings._report_order %]
           [% IF settings._reports_menu.$category.size %]
@@ -106,7 +106,7 @@
       [% IF user_has_role('admin') %]
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle[% ' active' IF vars.nav == 'admin' %]" role="button"
-          data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+          data-bs-toggle="dropdown" aria-expanded="false">Admin </a>
         <ul class="dropdown-menu">
           <li>
             <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discoverall') | none %]">
