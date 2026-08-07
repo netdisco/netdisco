@@ -3,7 +3,7 @@
             <div class="clearfix">
               <select class="nd_side-select nd_colored-input" size="[% ssid_list.size > 8 ? 8 : ssid_list.size %]"
                 multiple name="ssid"
-                rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="SSID">
+                rel="tooltip" data-bs-placement="left" data-bs-title="SSID">
                 [% FOREACH opt IN ssid_list %]
                     <option[% ' selected="selected"' IF ssid_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]

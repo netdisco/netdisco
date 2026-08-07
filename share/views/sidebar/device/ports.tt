@@ -3,11 +3,11 @@
             <input id="nd_ports-form-prefer-field" name="prefer" value="[% params.prefer | html_entity %]" type="hidden"/>
             <div class="clearfix">
               <i class="nd_field-clear-icon fas fa-trash-can fa-lg"
-                 rel="tooltip" data-bs-placement="bottom" data-offset="3" data-bs-title="Show all Ports"
+                 rel="tooltip" data-bs-placement="bottom" data-bs-title="Show all Ports"
                  id="f_clear_btn" data-btn-for="port"></i>
               <input id="nd_port-query" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f | html_entity %]" type="text"
-                rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="Filter by Port, Name or VLAN"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Filter by Port, Name or VLAN"/>
               <div class="clearfix input-group nd_port-partial">
                 <label class="input-group-text nd_port-partial-label">
                   <input type="checkbox" id="partial"

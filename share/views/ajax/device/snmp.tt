@@ -16,7 +16,7 @@
 
             &nbsp;
             <label class="form-check form-check-inline"
-              rel="tooltip" data-bs-placement="top" data-offset="5"
+              rel="tooltip" data-bs-placement="top"
               data-bs-title="Anchored to the beginning">
 
               <input type="checkbox" id="nd_snmp_search_partial"

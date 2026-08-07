@@ -15,7 +15,7 @@
       <td class="nd_center-cell"><input data-form="add" name="ports" type="number" value="1"></td>
       <td class="nd_center-cell">
         <span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
-        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-offset="3" data-bs-title="Enable Arpnip"><span class="badge text-bg-secondary">3</span></a><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
+        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-bs-title="Enable Arpnip"><span class="badge text-bg-secondary">3</span></a><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
         <input data-form="add" name="layers" type="hidden" value="00000000">
       </td>
       <td class="nd_center-cell">
@@ -34,7 +34,7 @@
       </td>
       <td class="nd_center-cell">
         <span class="badge [% row.layers.substr(7,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(7,1) ? '1' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(6,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(6,1) ? '2' : '&nbsp;' | none %]</span>
-        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-offset="3" data-bs-title="Enable Arpnip"><span class="badge [% row.layers.substr(5,1) ? 'text-bg-success' : 'text-bg-secondary' %]">3</span></a><span class="badge [% row.layers.substr(4,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(4,1) ? '4' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(3,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(3,1) ? '5' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(2,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(2,1) ? '6' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(1,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(1,1) ? '7' : '&nbsp;' | none %]</span>
+        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-bs-title="Enable Arpnip"><span class="badge [% row.layers.substr(5,1) ? 'text-bg-success' : 'text-bg-secondary' %]">3</span></a><span class="badge [% row.layers.substr(4,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(4,1) ? '4' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(3,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(3,1) ? '5' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(2,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(2,1) ? '6' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(1,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(1,1) ? '7' : '&nbsp;' | none %]</span>
         <input data-form="update" name="layers" type="hidden" value="[% row.layers | html_entity %]">
       </td>
       <td class="nd_center-cell">

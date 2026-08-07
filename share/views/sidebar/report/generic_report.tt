@@ -14,7 +14,7 @@
     [% ELSE %]
     <input id="nd_port-query" placeholder=""
       name="[% p.param | html_entity %]" value="[% params.${p.param} || p.default | html_entity %]" type="[% p.type || 'text' | html_entity %]"
-      rel="tooltip" data-bs-placement="left" data-offset="5" data-bs-title="[% (p.param.ucfirst || 'Filter') | html_entity %]"/>
+      rel="tooltip" data-bs-placement="left" data-bs-title="[% (p.param.ucfirst || 'Filter') | html_entity %]"/>
     [% END %]
   </div>
   [% END %]
