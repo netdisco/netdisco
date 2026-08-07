@@ -12,6 +12,12 @@
   --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-font-size: 13px;
   --bs-body-line-height: 18px;
+  /* every corner in the old stylesheet was 4px: fields, buttons, the sidebar
+     box, alerts. The replacement rounds them to 6px from this one variable,
+     so one value carries all of them back. A drop-down menu is the exception
+     and was always 6px, and it reads the same variable, so it is restated
+     below rather than left to follow. */
+  --bs-border-radius: 4px;
 }
 
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
@@ -35,9 +41,16 @@
   --bs-btn-font-size: 11px;
   --bs-btn-padding-y: 2px;
   --bs-btn-padding-x: 10px;
+  --bs-btn-border-radius: 3px;
+}
+/* the two corners the 4px above is wrong for: a small button was 3px and a
+   badge was 9px, and both read the same variable. */
+.badge {
+  --bs-badge-border-radius: 9px;
 }
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
+  --bs-dropdown-border-radius: 6px;
 }
 
 /* Every width in this file was measured against controls padded 4px 6px, with
