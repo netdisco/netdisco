@@ -1,6 +1,6 @@
 
             <div class="clearfix">
-              <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input"
+              <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input form-control"
                 placeholder="CIDR Prefix/Subnet" required="required"
                 name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Prefix/Subnet in CIDR Format"/>
@@ -20,7 +20,7 @@
                 </label>
               </div>
               <div class="clearfix">
-                <input class="nd_side-input" id="daterange" required="required"
+                <input class="nd_side-input form-control" id="daterange" required="required"
                   type="text" name="daterange" value="[%
                     (params.exists('daterange') ? params.daterange : to_daterange()) | html_entity %]"/>
               </div>
@@ -34,7 +34,7 @@
                 <ul class="list-unstyled">
                   <li>
                     <em class="text-muted">Oldest records limit:</em><br/>
-                    <select id="nd_mac-format" class="nd_side-select" name="limit">
+                    <select id="nd_mac-format" class="nd_side-select form-select" name="limit">
                       [% FOREACH size IN [ '32', '64', '128', '256', '512', '1024', '2048', '4096', '8192' ] %]
                       <option[% ' selected="selected"' IF (params.limit == size OR (NOT params.limit AND size == 2048)) %]>
                         [% size | html_entity %]</option>

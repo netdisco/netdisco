@@ -1,7 +1,7 @@
 
             <p class="nd_sidebar-title"><em>Details by SSID</em></p>
             <div class="clearfix">
-              <select class="nd_side-select nd_colored-input" size="[% ssid_list.size > 8 ? 8 : ssid_list.size %]"
+              <select class="nd_side-select nd_colored-input form-select" size="[% ssid_list.size > 8 ? 8 : ssid_list.size %]"
                 multiple name="ssid"
                 rel="tooltip" data-bs-placement="left" data-bs-title="SSID">
                 [% FOREACH opt IN ssid_list %]

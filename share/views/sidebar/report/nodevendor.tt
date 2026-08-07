@@ -5,7 +5,7 @@
                 <label><em><strong>Vendor</strong></em></label>
               </legend>
               <div class="clearfix">
-                <select class="nd_side-select nd_colored-input" size="[% vendor_list.size > 8 ? 8 : vendor_list.size %]"
+                <select class="nd_side-select nd_colored-input form-select" size="[% vendor_list.size > 8 ? 8 : vendor_list.size %]"
                   multiple name="vendor"
                   rel="tooltip" data-bs-placement="left" data-bs-title="Vendor">
                   [% FOREACH opt IN vendor_list %]
