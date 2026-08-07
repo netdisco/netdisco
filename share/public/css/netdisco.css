@@ -912,8 +912,12 @@ form .clearfix.success input {
   margin-left: 5px;
 }
 
+/* a bulleted list now carries 2rem of padding on top of this margin, which
+   pushed "Tip: shift-drag to lasso" onto a third line in a 205px sidebar. */
 .nd_netmap-sidebar-help {
   margin-left: 32px;
+  padding-left: 0px;
+  margin-bottom: 9px;
 }
 
 .fa-ul {
