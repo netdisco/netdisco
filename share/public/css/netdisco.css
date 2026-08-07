@@ -641,9 +641,13 @@ ul ul, ul ol, ol ol, ol ul {
   margin-bottom: 0px;
 }
 
-/* reduce padding at the bottom of the sidebar content */
+/* The box the sidebar sits in used to pad its content 19px, with this file
+   taking the bottom back to 15px. The replacement pads 16px, so the whole
+   sidebar drew 3px up and 3px to the left of where every offset in this file
+   was measured, and 6px wider. Only the bottom of that pair was carried over
+   when the box was translated; state the other three as well. */
 .container-fluid > .nd_sidebar > .card > .card-body {
-  padding-bottom: 15px;
+  padding: 19px 19px 15px;
 }
 
 /* pull tab content away from the sidebar */
