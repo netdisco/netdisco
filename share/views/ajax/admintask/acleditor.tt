@@ -14,12 +14,12 @@
       <td></td>
 
       <td>
-        <input class="col-md-3 nd_acl_host_searcher" data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
+        <input class="col-md-3 form-control nd_acl_host_searcher" data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
       </td>
 
       [% IF params.acl_type != "host" %]
       <td>
-        <input class="col-md-3" data-form="add" name="right_rule" type="text" placeholder="[% SWITCH params.acl_type %][% CASE "host_port" %]port:name, IP, or property:value[% CASE %]Hostname, IP, prefix, or property:value[% END %]">
+        <input class="col-md-3 form-control" data-form="add" name="right_rule" type="text" placeholder="[% SWITCH params.acl_type %][% CASE "host_port" %]port:name, IP, or property:value[% CASE %]Hostname, IP, prefix, or property:value[% END %]">
       </td>
       [% END %]
 
@@ -40,7 +40,7 @@
         [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
         <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
         [% END %]
-        <input class="col-md-3 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
+        <input class="col-md-3 form-control nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
         </div>
       </td>
 
@@ -59,7 +59,7 @@
           <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule) | none %]"><br/>
           [% END %]
         [% END %]
-        <input class="col-md-3 nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
+        <input class="col-md-3 form-control nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
         </div>
       </td>
       [% END %]

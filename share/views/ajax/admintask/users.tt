@@ -27,16 +27,16 @@
   </thead>
   <tbody>
     <tr>
-      <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
-      <td class="nd_center-middle-cell"><input class="col-md-2" data-form="add" name="username" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="fullname" type="text"></td>
+      <td class="nd_center-middle-cell"><input class="col-md-2 form-control" data-form="add" name="username" type="text"></td>
       [% IF settings.no_auth %]
       <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
-      <td class="nd_center-cell"><input class="col-md-1 nd_pw_field" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="col-md-1 form-control nd_pw_field" data-form="add" name="password" type="password"></td>
       [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-control nd_auth_method" data-form="add" name="auth_method">
+          <select class="col-md-2 form-select nd_auth_method" data-form="add" name="auth_method">
             [% IF demo_site OR NOT settings.no_auth %]<option value="" selected>Netdisco Password</option>[% END %]
             [% IF demo_site OR has_ldap %]<option value="ldap">LDAP</option>[% END %]
             [% IF demo_site OR has_radius %]<option value="radius">RADIUS</option>[% END %]
@@ -46,11 +46,11 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
+        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-control" data-form="add" name="port_control">
+          <select class="col-md-2 form-select" data-form="add" name="port_control">
             <option value="" selected>Off</option>
             <option value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]
@@ -62,7 +62,7 @@
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input class="col-md-2" data-form="add" name="note" type="text"></td>
+      <td class="nd_center-cell"><input class="col-md-2 form-control" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
         <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
@@ -73,7 +73,7 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell">
-        <input data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
+        <input class="form-control" data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="username" type="hidden" value="[% row.username | html_entity %]">
@@ -83,7 +83,7 @@
       <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
       <td class="nd_center-middle-cell">
-        <input class="col-md-1 nd_pw_field" data-form="update" name="password" type="password"
+        <input class="col-md-1 form-control nd_pw_field" data-form="update" name="password" type="password"
           [% IF row.token_auth_only %]
           style="display: none" disabled
           [% ELSE %]
@@ -111,7 +111,7 @@
       [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-control nd_auth_method" data-form="update" name="auth_method">
+          <select class="col-md-2 form-select nd_auth_method" data-form="update" name="auth_method">
             [% IF demo_site OR NOT settings.no_auth %]<option[% ' selected' IF NOT row.token_auth_only AND NOT row.ldap AND NOT row.radius AND NOT row.tacacs %] value="">Netdisco Password</option>[% END %]
             [% IF demo_site OR has_ldap OR row.ldap %]<option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>[% END %]
             [% IF demo_site OR has_radius OR row.radius %]<option[% ' selected' IF row.radius %] value="radius">RADIUS</option>[% END %]
@@ -121,13 +121,13 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
+        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
           value="[% row.token_allowed_ips.join(', ') IF row.token_allowed_ips %]"
           [% IF NOT row.token_auth_only %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-control" data-form="update" name="port_control">
+          <select class="col-md-2 form-select" data-form="update" name="port_control">
             <option[% ' selected' IF NOT row.port_control %] value="">Off</option>
             <option[% ' selected' IF row.port_control AND row.portctl_role == "" %] value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]
@@ -142,7 +142,7 @@
       <td class="nd_center-cell">[% row.created   | html_entity %]</td>
       <td class="nd_center-cell">[% row.last_seen | html_entity %]</td>
       <td class="nd_center-cell">
-        <input class="col-md-2" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
+        <input class="col-md-2 form-control" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
       </td>
 
       <td nowrap class="nd_center-cell">
@@ -188,7 +188,7 @@
       <div class="modal-body">
         <p class="text-info">Copy this token — it will not be shown again.</p>
         <div class="input-group">
-          <input id="nd_token-value" type="text" class="col-md-4" readonly>
+          <input id="nd_token-value" type="text" class="col-md-4 form-control" readonly>
           <button class="btn" id="nd_token-copy" type="button"><i class="fas fa-copy"></i> Copy</button>
         </div>
       </div>

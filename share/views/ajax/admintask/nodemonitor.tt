@@ -13,11 +13,11 @@
   <tbody>
     <tr>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input data-form="add" name="mac" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="mac" type="text"></td>
       <td class="nd_center-cell"><input data-form="add" name="matchoui" type="checkbox"></td>
       <td class="nd_center-cell"><input data-form="add" name="active" type="checkbox" checked></td>
-      <td class="nd_center-cell"><input data-form="add" name="why" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="cc"  type="email"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="why" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="cc"  type="email"></td>
       <td class="nd_center-cell">
         <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
@@ -29,7 +29,7 @@
     <tr>
       <td class="nd_center-cell">[% row.date | html_entity %]</td>
       <td class="nd_center-cell">
-        <input data-form="update" name="mac" type="text" value="[% row.mac | html_entity %]">
+        <input class="form-control" data-form="update" name="mac" type="text" value="[% row.mac | html_entity %]">
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="matchoui" type="checkbox" [% ' checked="checked"' IF row.matchoui %]>
@@ -38,10 +38,10 @@
         <input data-form="update" name="active" type="checkbox" [% ' checked="checked"' IF row.active %]>
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="why" type="text" value="[% row.why | html_entity %]">
+        <input class="form-control" data-form="update" name="why" type="text" value="[% row.why | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="cc" type="email" value="[% row.cc | html_entity %]">
+        <input class="form-control" data-form="update" name="cc" type="email" value="[% row.cc | html_entity %]">
       </td>
 
       <td class="nd_center-cell">

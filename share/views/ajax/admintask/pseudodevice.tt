@@ -10,9 +10,9 @@
   </thead>
   <tbody>
     <tr>
-      <td class="nd_center-cell"><input data-form="add" name="name" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="ip" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="ports" type="number" value="1"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="name" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="ip" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="ports" type="number" value="1"></td>
       <td class="nd_center-cell">
         <span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
         <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-bs-title="Enable Arpnip"><span class="badge text-bg-secondary">3</span></a><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
@@ -30,7 +30,7 @@
         href="[% uri_for('/device') | none %]?q=[% row.ip | uri %]">[% row.name | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.ip | html_entity %]</td>
       <td class="nd_center-cell">
-        <input data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">
+        <input class="form-control" data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">
       </td>
       <td class="nd_center-cell">
         <span class="badge [% row.layers.substr(7,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(7,1) ? '1' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(6,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(6,1) ? '2' : '&nbsp;' | none %]</span>

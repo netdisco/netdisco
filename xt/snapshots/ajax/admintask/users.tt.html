@@ -18,21 +18,21 @@
   </thead>
   <tbody>
     <tr>
-      <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
-      <td class="nd_center-middle-cell"><input class="col-md-2" data-form="add" name="username" type="text"></td>
-      <td class="nd_center-cell"><input class="col-md-1 nd_pw_field" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="fullname" type="text"></td>
+      <td class="nd_center-middle-cell"><input class="col-md-2 form-control" data-form="add" name="username" type="text"></td>
+      <td class="nd_center-cell"><input class="col-md-1 form-control nd_pw_field" data-form="add" name="password" type="password"></td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-control nd_auth_method" data-form="add" name="auth_method"><option value="" selected>Netdisco Password</option><option value="ldap">LDAP</option><option value="radius">RADIUS</option><option value="tacacs">TACACS</option><option value="permanent_token">Permanent Token</option>
+          <select class="col-md-2 form-select nd_auth_method" data-form="add" name="auth_method"><option value="" selected>Netdisco Password</option><option value="ldap">LDAP</option><option value="radius">RADIUS</option><option value="tacacs">TACACS</option><option value="permanent_token">Permanent Token</option>
           </select>
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
+        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-control" data-form="add" name="port_control">
+          <select class="col-md-2 form-select" data-form="add" name="port_control">
             <option value="" selected>Off</option>
             <option value="_global_">Enabled (any port)</option>
           </select>
@@ -41,7 +41,7 @@
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input class="col-md-2" data-form="add" name="note" type="text"></td>
+      <td class="nd_center-cell"><input class="col-md-2 form-control" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
         <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
@@ -60,7 +60,7 @@
       <div class="modal-body">
         <p class="text-info">Copy this token — it will not be shown again.</p>
         <div class="input-group">
-          <input id="nd_token-value" type="text" class="col-md-4" readonly>
+          <input id="nd_token-value" type="text" class="col-md-4 form-control" readonly>
           <button class="btn" id="nd_token-copy" type="button"><i class="fas fa-copy"></i> Copy</button>
         </div>
       </div>
