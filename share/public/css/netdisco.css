@@ -78,7 +78,7 @@ body {
   padding-top: 50px;
 }
 
-.navbar-inner .container {
+.navbar > .container {
   background: url(../images/navbar_disco.png) no-repeat;
 }
 
@@ -240,9 +240,18 @@ div.nd_acl-rule-list {
   margin-top: 50px;
 }
 
-/* alter proportions of hero unit to make it "tighter" on content */
-.hero-unit {
-  padding: 30px 60px 40px 90px;
+/* alter proportions of hero unit to make it "tighter" on content, and give it
+   back the larger, lighter type and the grey it used to carry. The box is
+   built from utility classes now, so its padding arrives flagged and only a
+   flag displaces it; the background and the corner radius are settled through
+   the custom properties those classes read. */
+.nd_hero-row .bg-body-tertiary {
+  --bs-tertiary-bg-rgb: 238, 238, 238;
+  --bs-border-radius-lg: 6px;
+  padding: 30px 60px 40px 90px !important;
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 27px;
 }
 
 /* push user/pass/login form down+away from the Netdisco banner text */
@@ -324,7 +333,7 @@ td.nd_devport-icon i {
 }
 
 /* fix layout of form fields inside the (topology) table */
-td div.input-append {
+td div.input-group {
   margin-bottom: 0px;
 }
 
@@ -357,9 +366,10 @@ td > form.nd_inline-form {
   margin-bottom: 10px;
 }
 
-/* for any label which we want to appear alongside tabs, floated to the right */
+/* for any label which we want to appear alongside tabs, pushed to the right.
+   the tab strip is a flex row and ignores a float on its children. */
 #nd_device-name {
-  float: right;
+  margin-left: auto;
   margin-bottom: 0px;
   margin-top: 9px;
   font-weight: bold;
@@ -520,7 +530,7 @@ td > form.nd_inline-form {
 }
 
 /* reduce padding at the bottom of the sidebar content */
-.container-fluid > .nd_sidebar > .well {
+.container-fluid > .nd_sidebar > .card > .card-body {
   padding-bottom: 15px;
 }
 
@@ -645,7 +655,7 @@ td > form.nd_inline-form {
 }
 
 /* pretty toggles have no height on first load - bug? */
-div.toggle.btn-small {
+div.toggle.btn-sm {
   height: 18px !important;
 }
 
@@ -682,7 +692,7 @@ div.toggle.btn-small {
 
 .nd_port-invert-label {
   padding: 0px !important;
-  /* for some reason only .add-on:first-child gets these */
+  /* for some reason only .input-group-text:first-child gets these */
   -webkit-border-radius: 4px 0 0 4px !important;
   -moz-border-radius: 4px 0 0 4px !important;
   border-radius: 4px 0 0 4px !important;
@@ -695,7 +705,7 @@ div.toggle.btn-small {
 }
 
 /* fixup for prepended checkbox in sidebar */
-.nd_sidebar .input-prepend {
+.nd_sidebar .input-group {
   margin-left: -2px;
   margin-bottom: 0px;
 }
@@ -872,7 +882,7 @@ form .clearfix.success input {
   margin-left: -5px;
 }
 
-.nd_netmap-sidebar > .input-prepend {
+.nd_netmap-sidebar > .input-group {
   margin-left: 5px;
 }
 
