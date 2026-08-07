@@ -735,6 +735,18 @@ td > form.nd_inline-form {
   margin-bottom: 5px !important;
 }
 
+/* A prepended-checkbox row used to be a block of inline-block children, so its
+   line box stood 5px clear of the 28px add-on inside it and these rows pitched
+   at 33px. The row is a flex container now and is exactly as tall as its
+   tallest child. Nothing declared that 5px, but 5px is what it drew, and the
+   margin goes on the label rather than the row so the row keeps the 33px
+   height it had. Not on every group in the sidebar: the job queue's rows
+   append their control instead of prepending it, carry the gutter on the field
+   rather than the row, and already pitch at the 55px they always did. */
+.nd_sidebar .nd_checkboxlabel {
+  margin-bottom: 5px;
+}
+
 /* for some reason bootstrap 2.1.0 displays add-on as block - no check supprt? */
 .nd_checkboxlabel {
   display: inline;
