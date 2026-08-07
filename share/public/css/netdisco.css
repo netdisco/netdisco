@@ -73,6 +73,21 @@
   margin-bottom: 0px;
 }
 
+/* The page used to be laid out in a 1170px container at this viewport, and the
+   navbar artwork, the hero box and the brand are all placed from its left edge.
+   The replacement's container is 1320px, which moved all three. This file loads
+   after the framework, so stating the old ladder here is enough; below 940px
+   the framework's own "width: 100%" already gives the fluid behaviour the old
+   one had. */
+.container {
+  max-width: 940px;
+}
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1170px;
+  }
+}
+
 /* for the fixed navbar make sure content stops short of page top*/
 body {
   padding-top: 50px;
