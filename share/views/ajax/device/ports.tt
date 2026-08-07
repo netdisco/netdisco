@@ -47,25 +47,25 @@
         [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
         <i class="fas fa-ban text-info fa-lg" title="STP blocking"></i>
         [% ELSIF row.error_disable_cause %]
-        <i class="fas fa-circle-exclamation text-error fa-lg" title="Error disabled: [% row.error_disable_cause | html_entity %]"></i>
+        <i class="fas fa-circle-exclamation text-danger fa-lg" title="Error disabled: [% row.error_disable_cause | html_entity %]"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
         <i class="fas fa-circle-arrow-down text-success fa-lg" title="Port free (no active nodes)"></i>
         [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
           [% IF params.port_state == 'free' %]
           <i class="fas fa-circle-arrow-down text-success fa-lg" title="Port free (no active nodes)"></i>
           [% ELSE %]
-          <i class="fas fa-arrow-down text-error fa-lg" title="Port down (link lost)"></i>
+          <i class="fas fa-arrow-down text-danger fa-lg" title="Port down (link lost)"></i>
           [% END %]
         [% ELSE %]
         <i class="fas fa-angle-up text-success fa-lg" title="Port up"></i>
         [% END %]
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <small><i class="fas fa-users muted" title="LAG member — aggregate disabled"></i></small>
+            <small><i class="fas fa-users text-muted" title="LAG member — aggregate disabled"></i></small>
           [% ELSIF row.get_column('agg_master_up') == 'up' %]
             <small><i class="fas fa-users text-success" title="LAG member — aggregate up"></i></small>
           [% ELSE %]
-            <small><i class="fas fa-users text-error" title="LAG member — aggregate down"></i></small>
+            <small><i class="fas fa-users text-danger" title="LAG member — aggregate down"></i></small>
           [% END %]
         [% END %]
       </td>
@@ -125,7 +125,7 @@
       [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% device_ports | none %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
           [% IF row.is_master OR row.has_subinterfaces %]
-            <small><i class="fas fa-users muted"></i></small>&nbsp;
+            <small><i class="fas fa-users text-muted"></i></small>&nbsp;
           [% END %]
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
@@ -172,7 +172,7 @@
       [% IF params.c_tags %]
       <td>
         [% FOREACH t IN row.filtered_tags.sort %]
-        <span class="badge badge-success">[% t | html_entity %]</span>
+        <span class="badge text-bg-success">[% t | html_entity %]</span>
         [% END %]
       </td>
       [% END %]
@@ -418,7 +418,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
-            <i class="fas [% row.remote_is_discoverable ? 'fa-link-slash' : 'fa-eye-slash' %] text-error"
+            <i class="fas [% row.remote_is_discoverable ? 'fa-link-slash' : 'fa-eye-slash' %] text-danger"
                title="[% row.remote_is_discoverable ? 'Neighbor not yet discovered' : 'Not discoverable (WAP/phone discovery disabled)' %]"></i>&nbsp;
             [% IF row.remote_is_phone %]
               <i class="fas fa-phone" title="VoIP Phone"></i>&nbsp;
@@ -444,7 +444,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            <i class="fas fa-link-slash text-error" title="Possible uplink — neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
+            <i class="fas fa-link-slash text-danger" title="Possible uplink — neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
