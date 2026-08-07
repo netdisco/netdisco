@@ -551,13 +551,32 @@ td > form.nd_inline-form {
 
 /* A bulleted list used to sit 25px in with a 9px gutter under it; the
    replacement indents it 2rem and gives it a 1rem gutter, which moved every
-   list in the application and wrapped the ones in a 205px sidebar. */
+   list in the application and wrapped the ones in a 205px sidebar.
+
+   This is a bare element selector, so it also reaches the tab strips, the
+   navbar link lists, the sidebar option lists, the paginators and the tree
+   views, none of which want a 25px indent. The stylesheet this reproduces
+   shipped the four resets below in the same breath as the rule above, and
+   they are not optional: the framework that replaced it resets padding on
+   those components and leaves their margin alone, so without these four the
+   indent lands on every one of them. Anything given a list indent here needs
+   its position checked on a rendered page, not just its own declaration. */
 ul, ol {
   padding: 0;
   margin: 0 0 9px 25px;
 }
 ul ul, ul ol, ol ol, ol ul {
   margin-bottom: 0;
+}
+.nav, .navbar-nav, .list-unstyled, .pagination {
+  margin-left: 0;
+}
+
+/* the navbar's links were padded 15px either side, and the replacement pads
+   them 8px, which draws the whole link block 50px narrower than the bar was
+   laid out for. */
+.navbar-nav {
+  --bs-navbar-nav-link-padding-x: 15px;
 }
 
 /* space out long lists */
