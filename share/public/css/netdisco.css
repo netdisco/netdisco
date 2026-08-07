@@ -801,6 +801,16 @@ ul ul, ul ol, ol ol, ol ul {
   margin-bottom: 0px;
 }
 
+/* The rows a sidebar builds out of a bare label, the netmap's "Positions:" and
+   "Carrying VLAN:", are the same defect as the collapser headings above: a
+   label was a full-width block with a 5px gutter, and the replacement draws it
+   inline-block with none. Five pixels each, and everything below the second of
+   them on that sidebar sits ten pixels high because of it. */
+.nd_sidebar-form > label {
+  display: block;
+  margin-bottom: 5px;
+}
+
 /* The box the sidebar sits in used to pad its content 19px, with this file
    taking the bottom back to 15px. The replacement pads 16px, so the whole
    sidebar drew 3px up and 3px to the left of where every offset in this file
