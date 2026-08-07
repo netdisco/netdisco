@@ -2,28 +2,30 @@
   rel="tooltip" data-bs-placement="left" data-bs-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar">
-    <div class="card card-body">
-      <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
-        rel="tooltip" data-bs-placement="left" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
-      <i class="nd_sidebar-pin fas fa-thumbtack"
-        rel="tooltip" data-bs-placement="left" data-bs-title="Pin Sidebar" data-bs-container="body"></i>
-      <div class="tab-content">
-        [% FOREACH tab IN settings._search_tabs %]
-        <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-          <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') | none %]">
-            <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
-            [% TRY %]
-            <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
-            [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
-            [% CATCH %]
-            <!-- no "[% tab.tag | html_entity %]" search options -->
-            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 0;</script>
-            [% END %]
-          </form>
-        </div> <!-- /tab-pane -->
-        [% END %]
-      </div> <!-- /tab-content -->
+    <div class="card">
+      <div class="card-body">
+        <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
+        <i class="nd_sidebar-pin fas fa-thumbtack"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Pin Sidebar" data-bs-container="body"></i>
+        <div class="tab-content">
+          [% FOREACH tab IN settings._search_tabs %]
+          <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
+            <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') | none %]">
+              <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
+              [% TRY %]
+              <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
+              [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
+              [% CATCH %]
+              <!-- no "[% tab.tag | html_entity %]" search options -->
+              <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+              <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 0;</script>
+              [% END %]
+            </form>
+          </div> <!-- /tab-pane -->
+          [% END %]
+        </div> <!-- /tab-content -->
+      </div>
     </div>
   </div>
 
