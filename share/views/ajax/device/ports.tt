@@ -589,7 +589,7 @@
         <blockquote>
           <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
         </blockquote>
-        <select id="nd_portlog-reason" class="form-control" name="reason">
+        <select id="nd_portlog-reason" class="form-select" name="reason">
           [% FOREACH pair IN settings.port_control_reasons.pairs %]
             <option[% ' selected="selected"' IF pair.key == 'other' %] value="[% pair.key | html_entity %]">
               [% pair.value | html_entity %]</option>

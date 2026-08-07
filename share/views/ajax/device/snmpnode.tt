@@ -40,7 +40,7 @@
       <th scope="row">Filter</th>
       <td>
       [% IF node.value %]
-      <select name="munger" id="munger">
+      <select class="form-select w-auto d-inline-block" name="munger" id="munger">
         [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
         [% FOREACH m IN mungers %]
         <option [% 'selected' IF m == munge %] value="[% m | uri %]">[% m | html_entity %]</option>
