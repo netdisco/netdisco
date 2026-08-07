@@ -37,7 +37,7 @@ function port_control (e) {
           $(e).toggleClass('fa-hand-point-down');
           $(e).toggleClass('fa-hand-point-up');
           $(e).siblings('.fa-bullseye').hide();
-          $(e).data('tooltip').options.title = 'Enable Port';
+          retitleTooltip($(e), 'Enable Port');
           td.data('action', 'up');
         }
         else if ($.trim(td.data('action')) == 'up') {
@@ -45,18 +45,18 @@ function port_control (e) {
           $(e).toggleClass('fa-hand-point-up');
           $(e).toggleClass('fa-hand-point-down');
           $(e).siblings('.fa-bullseye').show();
-          $(e).data('tooltip').options.title = 'Disable Port';
+          retitleTooltip($(e), 'Disable Port');
           td.data('action', 'down');
         }
         else if ($.trim(td.data('action')) == 'false') {
           $(e).next('span').text('');
           $(e).toggleClass('nd_power-on');
-          $(e).data('tooltip').options.title = 'Enable Power';
+          retitleTooltip($(e), 'Enable Power');
           td.data('action', 'true');
         }
         else if ($.trim(td.data('action')) == 'true') {
           $(e).toggleClass('nd_power-on');
-          $(e).data('tooltip').options.title = 'Disable Power';
+          retitleTooltip($(e), 'Disable Power');
           td.data('action', 'false');
         }
       }
@@ -122,7 +122,7 @@ $(document).ready(function() {
   // activity for port up/down control, power enable/disable control
   $('#ports_pane').on('click', '.fa-hand-point-up,.fa-hand-point-down,.nd_power-icon,.fa-bullseye', function() {
     var clicked = this; // create a closure
-    $('#nd_portlog').one('hidden', function() {
+    $('#nd_portlog').one('hidden.bs.modal', function() {
       port_control(clicked); // save
     });
     if ($(this).hasClass('fa-hand-point-up')) {
@@ -152,7 +152,7 @@ $(document).ready(function() {
       event.preventDefault();
 
       if (td.data('field') == 'c_pvid') {
-        $('#nd_portlog').one('hidden', function() {
+        $('#nd_portlog').one('hidden.bs.modal', function() {
           port_control(cell); // save
         });
         $('#nd_portlog').modal('show');

@@ -111,10 +111,6 @@
       var extra_id = $(this).data('extra');
       $('#' + extra_id).toggle();
     });
-
-    // activate modals and tooltips
-    $('.nd_modal').modal({show: false});
-    $("[rel=tooltip]").tooltip({live: true});
   }
 
   // on load, establish global delegations for now and future

@@ -174,24 +174,39 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+// retitle a tooltip which is delegated from body. the delegate builds a
+// per-element instance on first hover and caches it, so an existing
+// instance must be disposed for the new title to be picked up.
+function retitleTooltip(element, title) {
+  $(element).attr('data-bs-title', title);
+  var instance = bootstrap.Tooltip.getInstance($(element)[0]);
+  if (instance) { instance.dispose(); }
+}
+
 $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
   $('.nd_field-copy-icon').hide();
   $('.nd_field-clear-icon').hide();
 
   // activate typeahead on the main search box, for device names only
-  $('#nq,#nqbody').typeahead({
-    source: function (query, process) {
-      return $.get( uri_base + '/ajax/data/devicename/typeahead', { query: query }, function (data) {
-        return process(data);
+  // the backend has already filtered, and jQuery UI does no client-side
+  // filtering of a function source, so no matcher is needed
+  $('#nq,#nqbody').autocomplete({
+    source: function (request, response) {
+      return $.get( uri_base + '/ajax/data/devicename/typeahead', request, function (data) {
+        return response(data);
       });
     }
-    ,matcher: function () { return true; } // trust backend
+    ,delay: 150
     ,minLength: 3
   });
 
-  // activate tooltips
-  $("[rel=tooltip]").tooltip({live: true});
+  // activate tooltips and popovers, delegated from a container so that
+  // content injected later is covered without re-initialising. bootstrap
+  // stores one instance per element whatever the component, so the popover
+  // has to delegate from a different container than the tooltip.
+  new bootstrap.Tooltip(document.body, { selector: '[rel=tooltip]' });
+  new bootstrap.Popover(document.documentElement, { selector: '[rel=popover]' });
 
   // bind submission to the navbar go icon
   $('#navsearchgo').click(function() {
@@ -242,10 +257,10 @@ $(document).ready(function() {
     $('.nd_sidebar-pin').toggleClass('nd_sidebar-pin-clicked');
     // update tooltip note for current state
     if ($('.nd_sidebar-pin').hasClass('nd_sidebar-pin-clicked')) {
-      $('.nd_sidebar-pin').first().data('tooltip').options.title = 'Unpin Sidebar';
+      retitleTooltip($('.nd_sidebar-pin').first(), 'Unpin Sidebar');
     }
     else {
-      $('.nd_sidebar-pin').first().data('tooltip').options.title = 'Pin Sidebar';
+      retitleTooltip($('.nd_sidebar-pin').first(), 'Pin Sidebar');
     }
   });
 
@@ -304,10 +319,10 @@ $(document).ready(function() {
 
   // bootstrap modal mucks about with mouse actions on higher elements
   // so need to bury and raise it when needed
-  $('.tab-pane').on('show', '.nd_modal', function () {
+  $('.tab-pane').on('show.bs.modal', '.nd_modal', function () {
     $(this).toggleClass('nd_deep-horizon');
   });
-  $('.tab-pane').on('hidden', '.nd_modal', function () {
+  $('.tab-pane').on('hidden.bs.modal', '.nd_modal', function () {
     $(this).toggleClass('nd_deep-horizon');
   });
 
@@ -325,8 +340,7 @@ $(document).ready(function() {
     ,showDropdowns: true
     ,timePicker: false
     ,opens: 'left'
-    ,format: 'YYYY-MM-DD'
-    ,separator: ' to '
+    ,locale: { format: 'YYYY-MM-DD', separator: ' to ' }
   }
   ,function(start, end) {
     $('#daterange').trigger('input');

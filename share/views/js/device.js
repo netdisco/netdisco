@@ -18,11 +18,6 @@
     // used for contenteditable cells to find out whether the user has made
     // changes, and only reset when they submit or cancel the change
     var dirty = false;
-
-    // activate modals, tooltips and popovers
-    $('.nd_modal').modal({show: false});
-    $("[rel=tooltip]").tooltip({live: true});
-    $("[rel=popover]").popover({live: true});
   }
 
   // on load, establish global delegations for now and future
@@ -36,12 +31,12 @@
     form_inputs.change(function() {device_form_state($(this))});
 
     // sidebar collapser events trigger change of up/down arrow
-    $('.collapse').on('show', function() {
+    $('.collapse').on('show.bs.collapse', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
         .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
-    $('.collapse').on('hide', function() {
+    $('.collapse').on('hide.bs.collapse', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
         .toggleClass('fa-chevron-up fa-chevron-down');
     });
@@ -93,11 +88,6 @@
         else {
           $(this).html('Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;');
         }
-    });
-
-    // refresh tooltips when the datatables table is updated
-    $('#ports_pane').on('draw.dt', function() {
-        $("[rel=tooltip]").tooltip({live: true});
     });
 
     // netmap show controls
@@ -214,7 +204,7 @@
     });
 
     // clear any values in the delete confirm dialog
-    $('#details_pane').on('hidden', '.nd_modal', function () {
+    $('#details_pane').on('hidden.bs.modal', '.nd_modal', function () {
       $('#nd_devdel-log').val('');
       $('#nd_devdel-archive').attr('checked', false);
     });
