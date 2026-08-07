@@ -811,12 +811,20 @@ ul ul, ul ol, ol ol, ol ul {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
-/* horizontal rule */
+/* horizontal rule. The 2px here is the black band only: a rule used to draw a
+   light border above it and a white one below, and to measure its height
+   outside them, so the band stood 4px deep. The replacement gives a rule one
+   border, counts it inside the height, and fades the whole thing to a quarter,
+   which leaves a 2px translucent line where there was a 4px solid one. */
 .nd_sidebar-hr {
   color: black;
   background-color: black;
   height: 2px;
   margin: 12px 0px 12px 0px;
+  box-sizing: content-box;
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #ffffff;
+  opacity: 1;
 }
 
 /* text in the sidebar */
