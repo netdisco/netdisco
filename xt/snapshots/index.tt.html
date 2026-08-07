@@ -10,12 +10,12 @@
         Sorry, page not found.&nbsp;
           <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="fas fa-bug"></i>&nbsp;Report a Bug?</a>
       </div>
-      <div class="hero-unit">
+      <div class="p-5 mb-4 bg-body-tertiary rounded-3">
         <h2>Welcome to Netdisco</h2>
         <small>Netdisco is an Open Source management tool designed for network administrators.</small>
           <p></p> <p></p>
           <form class="" method="get" action="">
-            <div class="form-horizontal">
+            <div class="row g-2 align-items-center">
               <input placeholder="Find Anything" class="col-md-4" id="nqbody" name="q" type="search" autocomplete="off"/>
               <input name="firstsearch" type="hidden" value="on">
               <div class="btn-group">
@@ -33,7 +33,7 @@
             </div>
           </form>
           <form class="nd_login-form" method="post" action="">
-            <div class="form-horizontal">
+            <div class="row g-2 align-items-center">
               <input placeholder="Device hostname, IP address, or IPv4 prefix >= /22" class="col-md-4" id="discodevs" name="device" required="required" value="" type="text"/>
               <div class="btn-group">
                 <button type="submit" class="btn btn-info">Discover</button>
@@ -55,14 +55,14 @@
     </div>
   </div>
   <div class="accordion" id="accordion-statistics">
-    <div class="accordion-group">
-      <div class="accordion-heading nd_sysinfo-heading">
-          <a class="accordion-toggle" data-bs-toggle="collapse" data-bs-target="#collapse-stats" href="#">
+    <div class="accordion-item">
+      <div class="accordion-header nd_sysinfo-heading">
+          <a class="d-block px-3 py-2" data-bs-toggle="collapse" data-bs-target="#collapse-stats" href="#">
             <i class="fas fa-chevron-up nd_chevron"></i> System Information
           </a>
       </div>
-      <div id="collapse-stats" class="accordion-body collapse">
-        <div class="accordion-inner">
+      <div id="collapse-stats" class="accordion-collapse collapse">
+        <div class="accordion-body">
           <div id="nd_stats">
             <div id="nd_stats_status" class="col-md-2 offset-md-4 alert">
               <i class="fas fa-spinner fa-spin"></i> Compiling statistics...</div>
