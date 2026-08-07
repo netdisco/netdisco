@@ -78,7 +78,15 @@ body {
   padding-top: 50px;
 }
 
+/* the fixed bar is 40px of disco ball. The bar draws its own vertical padding
+   now and its container is only as tall as the tallest control in it, which
+   left the image cropped and the bar 10px deeper than the page expects; move
+   the height onto the container so the artwork fits it exactly. */
+.navbar {
+  --bs-navbar-padding-y: 0px;
+}
 .navbar > .container {
+  min-height: 40px;
   background: url(../images/navbar_disco.png) no-repeat;
 }
 
