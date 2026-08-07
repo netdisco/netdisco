@@ -921,8 +921,12 @@ input#nd_port-query {
   padding-bottom: 5px;
 }
 
+/* The "Color by" row was a 28px select with a 5px gutter under it, in a 33px
+   row. The select now takes the 9px gutter every field in this file gets,
+   which is 4px too much here and drops everything under it by that much. */
 #nd_colorby {
   width: 107px;
+  margin-bottom: 5px;
 }
 #nd_colorby-label-text {
   vertical-align: bottom;
@@ -1001,6 +1005,17 @@ form .clearfix.success input {
 
 .nd_netmap-sidebar > .input-group {
   margin-left: 5px;
+}
+
+/* Each toggle row was a block with a 5px gutter under it, so the three of them
+   pitched at 29px, and the block holding them carried the 9px gutter every
+   control group had. The replacements pitch at 26px inside a 16px gutter,
+   which walks everything below the toggles 5px up the sidebar. */
+.nd_netmap-sidebar .form-check {
+  margin-bottom: 5px;
+}
+.nd_netmap-sidebar.mb-3 {
+  margin-bottom: 9px !important;
 }
 
 .nd_netmap-sidebar-help {
