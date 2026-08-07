@@ -517,6 +517,18 @@ div.nd_acl-rule-list {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
+/* Every other row was filled #f9f9f9. Its replacement lays a 5% black wash
+   over the cell instead, which comes out at #f2f2f2, seven units darker on
+   every striped row of every table in the application. Stated as the fill the
+   wash uses, so the wash is opaque and lands on the old colour. Worth saying
+   plainly, because this is the one difference in the set where the count and
+   the rendering disagree outright: the change is worth nothing at all to the
+   pixel total, and it is the largest single area in the product that does not
+   match. */
+.table {
+  --bs-table-striped-bg: #f9f9f9;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
