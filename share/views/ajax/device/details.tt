@@ -143,13 +143,13 @@
     <tr>
       <td>Layers</td>
       <td>
-        [% (d.layers.substr(7,1) ? '<span class="badge text-bg-success">1</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(6,1) ? '<span class="badge text-bg-success">2</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(5,1) ? '<span class="badge text-bg-success">3</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(4,1) ? '<span class="badge text-bg-success">4</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(3,1) ? '<span class="badge text-bg-success">5</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(2,1) ? '<span class="badge text-bg-success">6</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(1,1) ? '<span class="badge text-bg-success">7</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(7,1) ? '<span class="badge text-bg-success">1</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
+        [% (d.layers.substr(6,1) ? '<span class="badge text-bg-success">2</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
+        [% (d.layers.substr(5,1) ? '<span class="badge text-bg-success">3</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
+        [% (d.layers.substr(4,1) ? '<span class="badge text-bg-success">4</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
+        [% (d.layers.substr(3,1) ? '<span class="badge text-bg-success">5</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
+        [% (d.layers.substr(2,1) ? '<span class="badge text-bg-success">6</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
+        [% (d.layers.substr(1,1) ? '<span class="badge text-bg-success">7</span>' : '<span class="badge text-bg-secondary">&nbsp;</span>') | none %]
       </td>
     </tr>
     <tr>
