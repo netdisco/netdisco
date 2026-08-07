@@ -27,9 +27,9 @@
   <tbody>
     [% FOREACH row IN results %]
     <tr
-      [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]
-      [% ' class="nd_jobqueueitem error"'   IF row.status == 'error' %]
-      [% ' class="nd_jobqueueitem info"'    IF (row.status == 'queued' AND row.backend != '') %]
+      [% ' class="nd_jobqueueitem table-success"' IF row.status == 'done' %]
+      [% ' class="nd_jobqueueitem table-danger"'   IF row.status == 'error' %]
+      [% ' class="nd_jobqueueitem table-info"'    IF (row.status == 'queued' AND row.backend != '') %]
       data-content="[% row.log | html_entity %]"
     >
       <td class="nd_center-cell">[% row.backend | html_entity %]</td>

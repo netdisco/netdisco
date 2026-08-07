@@ -10,7 +10,7 @@
             </div>
 
             <div class="clearfix mb-3 nd_netmap-sidebar">
-              <div class="checkbox float-start">
+              <div class="form-check float-start">
                 <label>
                   <input type="checkbox" name="showips" id="nd_showips"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
@@ -19,7 +19,7 @@
                   <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
                 </label>
               </div>
-              <div class="checkbox float-start">
+              <div class="form-check float-start">
                 <label>
                   <input type="checkbox" name="showspeed" id="nd_showspeed"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
@@ -28,7 +28,7 @@
                   <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
                 </label>
               </div>
-              <div class="checkbox float-start">
+              <div class="form-check float-start">
                 <label>
                   <input type="checkbox" name="autosave" id="nd_autosave"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave %]

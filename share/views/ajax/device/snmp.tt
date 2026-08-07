@@ -15,12 +15,12 @@
             <button type="submit" class="btn btn-secondary">Search</button>
 
             &nbsp;
-            <label class="checkbox-inline"
+            <label class="form-check form-check-inline"
               rel="tooltip" data-bs-placement="top" data-offset="5"
               data-bs-title="Anchored to the beginning">
 
               <input type="checkbox" id="nd_snmp_search_partial"
-                name="partial" class="nd_snmp_search_param"> Partial </input>
+                name="partial" class="form-check-input nd_snmp_search_param"> Partial </input>
             </label>
 
             &nbsp;
