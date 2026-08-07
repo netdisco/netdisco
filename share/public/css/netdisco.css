@@ -563,14 +563,24 @@ td > form.nd_inline-form {
    replacement indents it 2rem and gives it a 1rem gutter, which moved every
    list in the application and wrapped the ones in a 205px sidebar.
 
-   This is a bare element selector, so it also reaches the tab strips, the
-   navbar link lists, the sidebar option lists, the paginators and the tree
-   views, none of which want a 25px indent. The stylesheet this reproduces
-   shipped the four resets below in the same breath as the rule above, and
-   they are not optional: the framework that replaced it resets padding on
-   those components and leaves their margin alone, so without these four the
-   indent lands on every one of them. Anything given a list indent here needs
-   its position checked on a rendered page, not just its own declaration. */
+   The device Modules tree is what this rule is for: its nested lists draw at
+   a 25px indent and get it from here, so do not narrow the rule to spare the
+   components below. Measured, taking the indent off the tree costs more than
+   the whole rule is worth.
+
+   Because it is a bare element selector it also lands on three components
+   that must not have it: the tab strips, the navbar link lists and the
+   sidebar option lists. The stylesheet this reproduces shipped resets for
+   those in the same breath as the rule above, and they are not optional; the
+   framework that replaced it resets padding on them and leaves their margin
+   alone. Dropdown menus and paginators need no help: each is already pinned
+   by a more specific rule in another stylesheet, and the paginator entry
+   below is kept only because the old stylesheet carried one too.
+
+   The general point, since this rule is where it was learned: a list indent
+   set on an element rather than a class has to be checked by measuring the
+   elements it lands on, on a rendered page. Totals will not show it, because
+   one component moving the wrong way can be paid for by another. */
 ul, ol {
   padding: 0;
   margin: 0 0 9px 25px;
