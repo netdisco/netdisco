@@ -396,7 +396,7 @@ td > form.nd_inline-form {
 }
 
 /* fix layout of form fields inside the (pseudo devices) table */
-.nd_center-cell input {
+.nd_center-cell input, .nd_center-cell select {
   margin-bottom: 0px;
 }
 
