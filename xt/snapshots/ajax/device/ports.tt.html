@@ -532,18 +532,22 @@
 
 <div id="nd_portlog" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
     role="dialog" aria-hidden="true">
-  <div class="modal-body">
-    <blockquote>
-      <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
-    </blockquote>
-    <select id="nd_portlog-reason" class="input-block-level" name="reason">
-    </select>
-    <textarea id="nd_portlog-log" class="input-block-level" rows="2" name="log"
-      placeholder="Enter a log message"></textarea>
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button id="nd_portlog-submit" class="btn btn-info" data-bs-dismiss="modal">Continue</button>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <blockquote>
+          <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
+        </blockquote>
+        <select id="nd_portlog-reason" class="input-block-level" name="reason">
+        </select>
+        <textarea id="nd_portlog-log" class="input-block-level" rows="2" name="log"
+          placeholder="Enter a log message"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button id="nd_portlog-submit" class="btn btn-info" data-bs-dismiss="modal">Continue</button>
+      </div>
+    </div>
   </div>
 </div>
 

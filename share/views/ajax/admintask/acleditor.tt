@@ -74,23 +74,27 @@
 
         <div id="nd_devdel-[% pair.id | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% pair.id | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <h3 id="nd_devdel-label-[% pair.id | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">
-                This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
-            </blockquote>
-            <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
-            <input data-form="delete" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
-            <input data-form="delete" name="acl_type" type="hidden" value="[% params.acl_type | html_entity %]">
-          </div>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 id="nd_devdel-label-[% pair.id | html_entity %]">Are you sure?</h3>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">
+                    This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
+                </blockquote>
+                <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
+                <input data-form="delete" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
+                <input data-form="delete" name="acl_type" type="hidden" value="[% params.acl_type | html_entity %]">
+              </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>

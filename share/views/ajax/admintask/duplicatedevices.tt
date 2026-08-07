@@ -39,28 +39,32 @@
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <ul>
-                <li><p>A job will be queued to delete the device</p></li>
-                <li><p>All associated Nodes may be removed from the database</p></li>
-              </ul>
-            </blockquote>
-            <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
-              placeholder="Enter a log message" name="extra"></textarea>
-            <label class="checkbox" style="display: block">
-              <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="port">
-              <h4 class="nd_unbolden">Archive Nodes</h4>
-            </label>
-            <input type="hidden" data-form="delete" value="[% row.ip | html_entity %]" name="device"/>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 id="nd_devdel-label-[% count | html_entity %]">Confirm Delete: [% row.ip || row.dns | html_entity %]</h3>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <ul>
+                    <li><p>A job will be queued to delete the device</p></li>
+                    <li><p>All associated Nodes may be removed from the database</p></li>
+                  </ul>
+                </blockquote>
+                <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
+                  placeholder="Enter a log message" name="extra"></textarea>
+                <label class="checkbox" style="display: block">
+                  <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="port">
+                  <h4 class="nd_unbolden">Archive Nodes</h4>
+                </label>
+                <input type="hidden" data-form="delete" value="[% row.ip | html_entity %]" name="device"/>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>

@@ -165,55 +165,63 @@
 
         <div id="nd_devdel" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <h3 id="nd_devdel-label">Confirm Delete: </h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <ul>
-                <li><p>A job will be queued to delete the device</p></li>
-                <li><p>All associated Nodes may be removed from the database</p></li>
-              </ul>
-            </blockquote>
-            <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
-              placeholder="Enter a log message" name="extra"></textarea>
-            <label class="checkbox">
-              <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="port">
-              <h4 class="nd_unbolden">Archive Nodes</h4>
-            </label>
-            <input type="hidden" data-form="delete" value="" name="device"/>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 id="nd_devdel-label">Confirm Delete: </h3>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <ul>
+                    <li><p>A job will be queued to delete the device</p></li>
+                    <li><p>All associated Nodes may be removed from the database</p></li>
+                  </ul>
+                </blockquote>
+                <textarea id="nd_devdel-log" class="input-block-level" rows="2" data-form="delete"
+                  placeholder="Enter a log message" name="extra"></textarea>
+                <label class="checkbox">
+                  <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="port">
+                  <h4 class="nd_unbolden">Archive Nodes</h4>
+                </label>
+                <input type="hidden" data-form="delete" value="" name="device"/>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
 
         <div id="nd_devrenumber" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devrenumber-label" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <h3 id="nd_devrenumber-label">Confirm Renumber: </h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <ul>
-                <li><p>This will change the primary IP of a device to support migrations.</p></li>
-                <li><p>You can to change to an existing interface IP or a new IP</p></li>
-                <li><p>No check is made as to whether the new IP is reachable</p></li>
-                <li><p>The change is queued as a backend job</p></li>
-                <li><p>The <a href="https://github.com/netdisco/netdisco/wiki/Configuration#device_identity"><code>device_identity</code></a> setting is safer and may work better</p></li>
-              </ul>
-            </blockquote>
-            <label>Enter new IP address: <input list="interfaces" name="newip" data-form="renumber"/></label>
-            <datalist id="interfaces">
-            </datalist>
-            <input type="hidden" data-form="renumber" value="" name="device"/>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="renumber" data-bs-dismiss="modal">Confirm</button>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 id="nd_devrenumber-label">Confirm Renumber: </h3>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <ul>
+                    <li><p>This will change the primary IP of a device to support migrations.</p></li>
+                    <li><p>You can to change to an existing interface IP or a new IP</p></li>
+                    <li><p>No check is made as to whether the new IP is reachable</p></li>
+                    <li><p>The change is queued as a backend job</p></li>
+                    <li><p>The <a href="https://github.com/netdisco/netdisco/wiki/Configuration#device_identity"><code>device_identity</code></a> setting is safer and may work better</p></li>
+                  </ul>
+                </blockquote>
+                <label>Enter new IP address: <input list="interfaces" name="newip" data-form="renumber"/></label>
+                <datalist id="interfaces">
+                </datalist>
+                <input type="hidden" data-form="renumber" value="" name="device"/>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="renumber" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>

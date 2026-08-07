@@ -57,21 +57,25 @@
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">
-                The ACL &quot;[% acl.acl_name | html_entity %]&quot; will be deleted.</p>
-            </blockquote>
-            <input data-form="delete" name="acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">
-          </div>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">
+                    The ACL &quot;[% acl.acl_name | html_entity %]&quot; will be deleted.</p>
+                </blockquote>
+                <input data-form="delete" name="acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">
+              </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>
