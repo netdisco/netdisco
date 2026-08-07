@@ -158,6 +158,28 @@ a:hover, a:focus {
    --fa-display, so this is supported use rather than an override of internals. */
 :root { --fa-width: auto; }
 
+/* The bar's search field was a 286px pill, dark on the dark bar, with its text
+   inset 14px. What replaced it is a 190px white box with 6px corners and a 6px
+   inset, so it differs over its whole area rather than at its edges: white
+   where the bar is dark. That is why widening it on its own was measured to
+   make the page worse. The two rules under it are what put its left edge where
+   it was: the bar's link list carried a 10px gutter on its right, and the
+   brand's box ran 20px past its text. */
+#nq {
+  width: 286px;
+  padding: 4px 14px;
+  color: #ffffff;
+  background-color: #515151;
+  border-color: #111111;
+  border-radius: 15px;
+}
+.navbar > .container > ul.navbar-nav:first-of-type {
+  margin-right: 10px;
+}
+.navbar-brand {
+  margin-right: 20px;
+}
+
 /* careful align of navbar search button and menu */
 .nd_navbar-search-group {
   margin-top: 0px !important;
