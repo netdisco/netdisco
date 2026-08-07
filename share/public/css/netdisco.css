@@ -276,6 +276,13 @@ h4 { font-size: 16.25px; }
 h5 { font-size: 13px; }
 h6 { font-size: 11px; }
 
+/* small type ran at 85% of its parent and now runs at 87.5%, which is half a
+   pixel on body text but 0.45px per character in the hero box's 18px setting,
+   accumulating to 17px across one sentence. */
+small {
+  font-size: 85%;
+}
+
 /* for when we pinch h4 styling but don't want bold */
 .nd_unbolden {
   font-weight: normal;
@@ -326,9 +333,19 @@ div.nd_acl-rule-list {
   --bs-tertiary-bg-rgb: 238, 238, 238;
   --bs-border-radius-lg: 6px;
   padding: 30px 60px 40px 90px !important;
+  margin-bottom: 30px !important;
   font-size: 18px;
   font-weight: 200;
   line-height: 27px;
+}
+
+/* The forms in the hero box were a row of inline-block controls, so the row
+   was one line box tall and the gutter under each control fell outside it.
+   The row is a flex container now and takes that gutter into its own height,
+   which makes the box 9px deeper and pushes the button off the centre line
+   the fields sit on. Same reason the navbar's field is exempted above. */
+.nd_hero-row .d-flex > .form-control {
+  margin-bottom: 0px;
 }
 
 /* push user/pass/login form down+away from the Netdisco banner text */
