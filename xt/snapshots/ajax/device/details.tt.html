@@ -4,7 +4,7 @@
 
 
 
-<table class="table table-condensed table-striped">
+<table class="table table-sm table-striped">
   <tbody>
     <tr>
       <td>System Name</td>
@@ -66,18 +66,18 @@
     <tr>
       <td>Tags</td>
       <td>
-        <span class="badge badge-success">core</span>
+        <span class="badge text-bg-success">core</span>
       </td>
     </tr>
     <tr>
       <td>External Links</td>
       <td>
         <a href="ssh://" target="_blank">
-          <span class="label label-info"><i class="fas fa-keyboard"></i> SSH</span></a>
+          <span class="badge text-bg-info"><i class="fas fa-keyboard"></i> SSH</span></a>
         <a href="telnet://" target="_blank">
-          <span class="label label-info"><i class="fas fa-keyboard"></i> Telnet</span></a>
+          <span class="badge text-bg-info"><i class="fas fa-keyboard"></i> Telnet</span></a>
         <a href="https:///" target="_blank">
-          <span class="label label-info"><i class="fas fa-up-right-from-square"></i> Web</span></a>
+          <span class="badge text-bg-info"><i class="fas fa-up-right-from-square"></i> Web</span></a>
       </td>
     </tr>
     <tr>
@@ -90,7 +90,7 @@
     </tr>
     <tr>
       <td>Layers</td>
-      <td><span class="badge badge-success">1</span><span class="badge">&nbsp;</span><span class="badge badge-success">3</span><span class="badge">&nbsp;</span><span class="badge badge-success">5</span><span class="badge">&nbsp;</span><span class="badge badge-success">7</span>
+      <td><span class="badge text-bg-success">1</span><span class="badge">&nbsp;</span><span class="badge text-bg-success">3</span><span class="badge">&nbsp;</span><span class="badge text-bg-success">5</span><span class="badge">&nbsp;</span><span class="badge text-bg-success">7</span>
       </td>
     </tr>
     <tr>
@@ -131,17 +131,17 @@
       <td>Admin Tasks</td>
       <td>
         <input type="hidden" data-form="discover" value="" name="device"/>
-        <button class="btn btn-info btn-small nd_adminbutton" name="discover">Discover</button>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="discover">Discover</button>
 
         <input type="hidden" data-form="arpnip" value="" name="device"/>
-        <button class="btn btn-info btn-small nd_adminbutton" name="arpnip">Arpnip</button>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="arpnip">Arpnip</button>
 
-        <button class="btn btn-default btn-small disabled">Macsuck</button>
+        <button class="btn btn-secondary btn-sm disabled">Macsuck</button>
 
-        <button class="btn btn-default btn-small disabled">NBTstat</button>
+        <button class="btn btn-secondary btn-sm disabled">NBTstat</button>
 
         <span class="dropdown">
-          <button class="nd_snap_btn btn btn-info btn-small dropdown-toggle" type="button" id="snapshotmenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          <button class="nd_snap_btn btn btn-info btn-sm dropdown-toggle" type="button" id="snapshotmenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Snapshot
             <span class="caret"></span>
           </button>
@@ -156,17 +156,17 @@
           </ul>
         </span>
 
-        <button class="btn btn-danger btn-small pull-right"
+        <button class="btn btn-danger btn-sm float-end"
           data-bs-toggle="modal" data-bs-target="#nd_devdel" type="button">Delete</button>
 
-        <button class="btn btn-danger btn-small pull-right nd_pull-right-admin-button"
+        <button class="btn btn-danger btn-sm float-end nd_pull-right-admin-button"
           data-bs-toggle="modal" data-bs-target="#nd_devrenumber" type="button">Change IP</button>
 
 
         <div id="nd_devdel" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <h3 id="nd_devdel-label">Confirm Delete: </h3>
           </div>
           <div class="modal-body">
@@ -193,7 +193,7 @@
         <div id="nd_devrenumber" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devrenumber-label" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <h3 id="nd_devrenumber-label">Confirm Renumber: </h3>
           </div>
           <div class="modal-body">

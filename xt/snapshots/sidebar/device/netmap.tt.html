@@ -2,7 +2,7 @@
             <span class="nd_sidebar-title"><em>Neighbor Map Controls</em></span>
             <input name="q" value="" type="hidden"/>
             <div class="clearfix nd_netmap-sidebar">
-              <ul class="muted nd_netmap-sidebar-help">
+              <ul class="text-muted nd_netmap-sidebar-help">
                 <li>Tip: shift-drag to lasso</li>
                 <li><a href="https://github.com/netdisco/netdisco/wiki/Network-Map" target="_blank">User Guide
                   <i class="fas fa-up-right-from-square"></i></a></li>
@@ -10,7 +10,7 @@
             </div>
 
             <div class="clearfix control-group nd_netmap-sidebar">
-              <div class="checkbox pull-left">
+              <div class="checkbox float-start">
                 <label>
                   <input type="checkbox" name="showips" id="nd_showips"
                     data-toggle="toggle" data-size="small" data-width="30"
@@ -18,7 +18,7 @@
                   <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
                 </label>
               </div>
-              <div class="checkbox pull-left">
+              <div class="checkbox float-start">
                 <label>
                   <input type="checkbox" name="showspeed" id="nd_showspeed"
                     data-toggle="toggle" data-size="small" data-width="30"
@@ -26,7 +26,7 @@
                   <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
                 </label>
               </div>
-              <div class="checkbox pull-left">
+              <div class="checkbox float-start">
                 <label>
                   <input type="checkbox" name="autosave" id="nd_autosave"
                     data-toggle="toggle" data-size="small" data-width="30"
@@ -37,29 +37,29 @@
             </div>
 
             <label><span id="">Positions: </span>
-                  <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                  <i class="far fa-floppy-disk fa-lg pull-left nd_navbar-icon"></i> Save</button>
+                  <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                  <i class="far fa-floppy-disk fa-lg float-start nd_navbar-icon"></i> Save</button>
             </label>
 
             <table margin="0" border="0" class="nd_netmap-pin-controls">
             <tr>
               <td class="nd_netmap-pin-controls-top-row">
-                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="fas fa-unlock fa-lg pull-left nd_navbar-icon"></i> Lasso</button>
+                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-unlock fa-lg float-start nd_navbar-icon"></i> Lasso</button>
               </td>
               <td class="nd_netmap-pin-controls-top-row">
-                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="fas fa-lock fa-lg pull-left nd_navbar-icon"></i> Lasso</button>
+                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-lock fa-lg float-start nd_navbar-icon"></i> Lasso</button>
               </td>
             </tr>
             <tr>
               <td>
-                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="fas fa-unlock fa-lg pull-left nd_navbar-icon"></i> All</button>
+                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-unlock fa-lg float-start nd_navbar-icon"></i> All</button>
               </td>
               <td>
-                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Device</button>
+                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Device</button>
               </td>
             </tr>
             </table>
@@ -92,17 +92,17 @@
             <div class="clearfix nd_netmap-sidebar">
 
 
-              <div class="clearfix input-prepend">
-                <label class="add-on">
+              <div class="clearfix input-group">
+                <label class="input-group-text">
                   <input type="checkbox" id="dynamicsize" name="dynamicsize"/>
                 </label>
                 <label class="nd_checkboxlabel" for="dynamicsize">
-                  <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
+                  <span class="nd_searchcheckbox form-control-plaintext">Dynamic Size</span>
                 </label>
               </div>
 
             </div>
 
             <button id="_submit" type="submit" class="btn btn-info">
-                <i class="fas fa-pencil fa-lg pull-left nd_navbar-icon"></i>
+                <i class="fas fa-pencil fa-lg float-start nd_navbar-icon"></i>
             Redraw Map</button>

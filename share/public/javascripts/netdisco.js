@@ -232,9 +232,9 @@ $(document).ready(function() {
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742
   syncCheckBox = function() {
-    $(this).parents('.add-on').toggleClass('active', $(this).is(':checked'));
+    $(this).parents('.input-group-text').toggleClass('active', $(this).is(':checked'));
   };
-  $('.add-on :checkbox').each(syncCheckBox).click(syncCheckBox);
+  $('.input-group-text :checkbox').each(syncCheckBox).click(syncCheckBox);
 
   // sidebar toggle - pinning
   $('.nd_sidebar-pin').click(function() {

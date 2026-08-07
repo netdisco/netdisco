@@ -151,7 +151,7 @@
         </li> <!-- /dropdown -->
         [% END %]
       </ul>
-      <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') | none %]">
+      <form class="navbar-search float-start" method="get" action="[% uri_for('/search') | none %]">
         <input placeholder="Find Anything" class="search-query col-md-3"
           id="nq" name="q" value="[% display_name | html_entity %]" type="search" autocomplete="off"/>
         <input name="firstsearch" type="hidden" value="on">
@@ -174,7 +174,7 @@
       </form>
       [% IF settings.tenant_databases.size %]
       [% SET tenant = vars.tenant %]
-      <ul class="nav pull-right">
+      <ul class="nav float-end">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
             <i class="fas fa-house text-success"></i>
@@ -194,11 +194,11 @@
         </li> <!-- /dropdown -->
       </ul>
       [% END %]
-      <ul class="nav pull-right">
+      <ul class="nav float-end">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
           [% IF user_has_role('admin') %]
-            <i class="fas fa-user text-error"></i>
+            <i class="fas fa-user text-danger"></i>
           [% ELSIF user_has_role('port_control') %]
             <i class="fas fa-user text-warning"></i>
           [% ELSE %]

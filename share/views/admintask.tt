@@ -29,8 +29,8 @@
       <li class="active"><a id="[% task.tag | html_entity %]_link" class="nd_single-tab"
         href="#[% task.tag | html_entity %]_pane">[% task.label | html_entity %]
       [% IF task.tag == 'acleditor' %]
-        | Name: <span class="badge badge-important">[% params.acl_name | html_entity %]</span>
-        Type: <span class="badge badge-important">[% SWITCH params.acl_type %]
+        | Name: <span class="badge text-bg-danger">[% params.acl_name | html_entity %]</span>
+        Type: <span class="badge text-bg-danger">[% SWITCH params.acl_type %]
           [% CASE "host_host" %]Host to Host mapping[% CASE "host_port" %]Ports on Hosts[% CASE %]Host Group[% END %]</span>
       [% END %]
       </a></li>
@@ -44,7 +44,7 @@
         &nbsp;&nbsp;
         <a id="nd_countdown-refresh" href="#"><i class="text-success fas fa-arrows-rotate fa-lg"></i></a>
         &nbsp;&nbsp;
-        <a class="nd_adminbutton" name="delall" href="#"><i class="fas fa-trash-can fa-lg text-error"></i></a>
+        <a class="nd_adminbutton" name="delall" href="#"><i class="fas fa-trash-can fa-lg text-danger"></i></a>
         &nbsp;&nbsp;
         <a id="nd_jobqueue-bookmark" href="#"><i class="fas fa-bookmark fa-lg"></i></a>
       </span>

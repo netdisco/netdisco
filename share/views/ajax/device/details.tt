@@ -1,6 +1,6 @@
 [% PROCESS 'externallinks.tt' -%]
 [% SET user_can_port_control = user_has_role('port_control', d) %]
-<table class="table table-condensed table-striped">
+<table class="table table-sm table-striped">
   <tbody>
     <tr>
       <td>System Name</td>
@@ -84,7 +84,7 @@
       <td>Tags</td>
       <td>
         [% FOREACH t IN filtered_tags %]
-        <span class="badge badge-success">[% t | html_entity %]</span>
+        <span class="badge text-bg-success">[% t | html_entity %]</span>
         [% END %]
       </td>
     </tr>
@@ -124,11 +124,11 @@
       <td>External Links</td>
       <td>
         <a href="ssh://[% d.ip | uri %]" target="_blank">
-          <span class="label label-info"><i class="fas fa-keyboard"></i> SSH</span></a>
+          <span class="badge text-bg-info"><i class="fas fa-keyboard"></i> SSH</span></a>
         <a href="telnet://[% d.ip | uri %]" target="_blank">
-          <span class="label label-info"><i class="fas fa-keyboard"></i> Telnet</span></a>
+          <span class="badge text-bg-info"><i class="fas fa-keyboard"></i> Telnet</span></a>
         <a href="https://[% d.ip | uri %]/" target="_blank">
-          <span class="label label-info"><i class="fas fa-up-right-from-square"></i> Web</span></a>
+          <span class="badge text-bg-info"><i class="fas fa-up-right-from-square"></i> Web</span></a>
         [% INCLUDE external_device_links item = d %]
       </td>
     </tr>
@@ -143,13 +143,13 @@
     <tr>
       <td>Layers</td>
       <td>
-        [% (d.layers.substr(7,1) ? '<span class="badge badge-success">1</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(6,1) ? '<span class="badge badge-success">2</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(5,1) ? '<span class="badge badge-success">3</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(4,1) ? '<span class="badge badge-success">4</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(3,1) ? '<span class="badge badge-success">5</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(2,1) ? '<span class="badge badge-success">6</span>' : '<span class="badge">&nbsp;</span>') | none %]
-        [% (d.layers.substr(1,1) ? '<span class="badge badge-success">7</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(7,1) ? '<span class="badge text-bg-success">1</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(6,1) ? '<span class="badge text-bg-success">2</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(5,1) ? '<span class="badge text-bg-success">3</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(4,1) ? '<span class="badge text-bg-success">4</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(3,1) ? '<span class="badge text-bg-success">5</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(2,1) ? '<span class="badge text-bg-success">6</span>' : '<span class="badge">&nbsp;</span>') | none %]
+        [% (d.layers.substr(1,1) ? '<span class="badge text-bg-success">7</span>' : '<span class="badge">&nbsp;</span>') | none %]
       </td>
     </tr>
     <tr>
@@ -205,32 +205,32 @@
       <td>
         [% IF d.is_discoverable %]
         <input type="hidden" data-form="discover" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_adminbutton" name="discover">Discover</button>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="discover">Discover</button>
         [% ELSE %]
-        <button class="btn btn-default btn-small disabled">Discover</button>
+        <button class="btn btn-secondary btn-sm disabled">Discover</button>
         [% END %]
 
         [% IF d.is_arpnipable %]
         <input type="hidden" data-form="arpnip" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_adminbutton" name="arpnip">Arpnip</button>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="arpnip">Arpnip</button>
         [% ELSE %]
-        <button class="btn btn-default btn-small disabled">Arpnip</button>
+        <button class="btn btn-secondary btn-sm disabled">Arpnip</button>
         [% END %]
 
         [% IF d.is_macsuckable %]
         <input type="hidden" data-form="macsuck" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_adminbutton" name="macsuck">Macsuck</button>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="macsuck">Macsuck</button>
 
         <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_adminbutton" name="nbtstat">NBTstat</button>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="nbtstat">NBTstat</button>
         [% ELSE %]
-        <button class="btn btn-default btn-small disabled">Macsuck</button>
+        <button class="btn btn-secondary btn-sm disabled">Macsuck</button>
 
-        <button class="btn btn-default btn-small disabled">NBTstat</button>
+        <button class="btn btn-secondary btn-sm disabled">NBTstat</button>
         [% END %]
 
         <span class="dropdown">
-          <button class="nd_snap_btn btn [% has_snapshot ? 'btn-success' : 'btn-info' %] btn-small dropdown-toggle" type="button" id="snapshotmenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          <button class="nd_snap_btn btn [% has_snapshot ? 'btn-success' : 'btn-info' %] btn-sm dropdown-toggle" type="button" id="snapshotmenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Snapshot
             <span class="caret"></span>
           </button>
@@ -249,17 +249,17 @@
           </ul>
         </span>
 
-        <button class="btn btn-danger btn-small pull-right"
+        <button class="btn btn-danger btn-sm float-end"
           data-bs-toggle="modal" data-bs-target="#nd_devdel" type="button">Delete</button>
 
-        <button class="btn btn-danger btn-small pull-right nd_pull-right-admin-button"
+        <button class="btn btn-danger btn-sm float-end nd_pull-right-admin-button"
           data-bs-toggle="modal" data-bs-target="#nd_devrenumber" type="button">Change IP</button>
 
 
         <div id="nd_devdel" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <h3 id="nd_devdel-label">Confirm Delete: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
@@ -286,7 +286,7 @@
         <div id="nd_devrenumber" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devrenumber-label" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <h3 id="nd_devrenumber-label">Confirm Renumber: [% d.dns || d.ip | html_entity %]</h3>
           </div>
           <div class="modal-body">
@@ -319,24 +319,24 @@
       <td>Admin Tasks</td>
       <td>
         <input type="hidden" data-form="discover" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_nonadminbutton" name="discover">Discover</button>
+        <button class="btn btn-info btn-sm nd_nonadminbutton" name="discover">Discover</button>
 
         [% IF d.layers.substr(5,1) %]
         <input type="hidden" data-form="arpnip" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_nonadminbutton" name="arpnip">Arpnip</button>
+        <button class="btn btn-info btn-sm nd_nonadminbutton" name="arpnip">Arpnip</button>
         [% ELSE %]
-        <button class="btn btn-default btn-small disabled">Arpnip</button>
+        <button class="btn btn-secondary btn-sm disabled">Arpnip</button>
         [% END %]
 
         [% IF d.layers.substr(6,1) %]
         <input type="hidden" data-form="macsuck" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_nonadminbutton" name="macsuck">Macsuck</button>
+        <button class="btn btn-info btn-sm nd_nonadminbutton" name="macsuck">Macsuck</button>
         [% ELSE %]
-        <button class="btn btn-default btn-small disabled">Macsuck</button>
+        <button class="btn btn-secondary btn-sm disabled">Macsuck</button>
         [% END %]
 
         <input type="hidden" data-form="nbtstat" value="[% d.ip | html_entity %]" name="device"/>
-        <button class="btn btn-info btn-small nd_nonadminbutton" name="nbtstat">NBTstat</button>
+        <button class="btn btn-info btn-sm nd_nonadminbutton" name="nbtstat">NBTstat</button>
       </td>
     </tr>
     [% END %]

@@ -30,7 +30,7 @@
       <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
       <td class="nd_center-middle-cell"><input class="col-md-2" data-form="add" name="username" type="text"></td>
       [% IF settings.no_auth %]
-      <td class="nd_center-cell muted">Bypassed</td>
+      <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
       <td class="nd_center-cell"><input class="col-md-1 nd_pw_field" data-form="add" name="password" type="password"></td>
       [% END %]
@@ -64,7 +64,7 @@
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"><input class="col-md-2" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -80,7 +80,7 @@
         [% row.username | html_entity %]
       </td>
       [% IF settings.no_auth %]
-      <td class="nd_center-cell muted">Bypassed</td>
+      <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
       <td class="nd_center-middle-cell">
         <input class="col-md-1 nd_pw_field" data-form="update" name="password" type="password"
@@ -90,7 +90,7 @@
           value="********"
           [% END %]
           >
-        <small class="nd_token_hint muted"
+        <small class="nd_token_hint text-muted"
           [% IF NOT row.token_auth_only %]
           style="display: none"
           [% END %]
@@ -103,7 +103,7 @@
         </small>
         [% IF row.token_auth_only %]
         <br />
-        <button class="btn btn-small nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
+        <button class="btn btn-sm nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
           <i class="fas fa-key"></i> <i class="fas fa-arrows-rotate"></i>
         </button>
         [% END %]
@@ -149,12 +149,12 @@
         <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
         <button class="btn" data-bs-toggle="modal"
-          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-error"></i></button>
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
         <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
-            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">x</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
           </div>
           <div class="modal-body">
@@ -176,12 +176,12 @@
 
 <div id="nd_token-reveal" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1" role="dialog">
   <div class="modal-header">
-    <button type="button" class="close" data-bs-dismiss="modal">x</button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     <h3>API Token</h3>
   </div>
   <div class="modal-body">
     <p class="text-info">Copy this token — it will not be shown again.</p>
-    <div class="input-append">
+    <div class="input-group">
       <input id="nd_token-value" type="text" class="col-md-4" readonly>
       <button class="btn" id="nd_token-copy" type="button"><i class="fas fa-copy"></i> Copy</button>
     </div>

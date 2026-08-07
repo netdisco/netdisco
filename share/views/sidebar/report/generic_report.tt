@@ -3,7 +3,7 @@
 
   [% FOREACH p IN report.rconfig.bind_params %]
   <div class="clearfix nd_netmap-sidebar">
-    <em class="muted nd_sidebar-label">[% p.param.ucfirst | html_entity %]</em><br/>
+    <em class="text-muted nd_sidebar-label">[% p.param.ucfirst | html_entity %]</em><br/>
     [% IF p.defined('type') AND p.type == 'list' %]
     <select id="nd_port-query" placeholder=""
       name="[% p.param | html_entity %]">
@@ -20,7 +20,7 @@
   [% END %]
 
   <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-   <i class="fas fa-magnifying-glass fa-lg pull-left nd_navbar-icon"></i> Search</button>
+   <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search</button>
 
 [% ELSE %]
   [% FOREACH k IN report.rconfig.bind_params %]
