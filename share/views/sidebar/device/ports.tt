@@ -31,7 +31,7 @@
                 <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_legend" class="collapse">
-                <ul class="fa-ul"><!-- nd_inputs-list unstyled"> -->
+                <ul class="fa-ul"><!-- nd_inputs-list list-unstyled"> -->
                   <li><i class="fa-li fas fa-angle-up text-success"></i>&nbsp; Link Up</li>
                   <li><i class="fa-li fas fa-arrow-down text-danger"></i>&nbsp; Link Down</li>
                   <li><i class="fa-li fas fa-circle-arrow-down text-success"></i>&nbsp; Port Free</li>
@@ -61,7 +61,7 @@
                 <i class="nd_arrow-up-down-right fas fa-chevron-down fa-lg"></i>
                 </label></span>
               <div id="nd_columns" class="collapse show">
-                <ul class="nd_inputs-list unstyled">
+                <ul class="nd_inputs-list list-unstyled">
                   [% FOREACH item IN settings.port_columns %]
                   [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control', netdisco_device) %]
                   [% NEXT IF item.field.match('^cf_') AND NOT permitted_by_acl(netdisco_device, item) %]
@@ -86,7 +86,7 @@
                 <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_nodeprops" class="collapse">
-                <ul class="nd_inputs-list unstyled">
+                <ul class="nd_inputs-list list-unstyled">
                   <li>
                     <em class="text-muted">MAC address display as:</em><br/>
                     <select id="nd_mac-format" name="mac_format">
@@ -113,7 +113,7 @@
                 <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_portprops" class="collapse">
-                <ul class="nd_inputs-list unstyled">
+                <ul class="nd_inputs-list list-unstyled">
                   <li>
                     <em class="text-muted">Mark as Free if Down for:</em><br/>
                     <select id="nd_days-select" name="age_num">

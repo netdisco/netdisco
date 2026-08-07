@@ -50,7 +50,7 @@
         <button class="btn" data-bs-toggle="modal"
           data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
-        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
           <div class="modal-header">
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
