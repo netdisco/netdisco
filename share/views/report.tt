@@ -29,7 +29,7 @@
 
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
-      <li class="active"><a id="[% report.tag | html_entity %]_link" class="nd_single-tab"
+      <li class="nav-item"><a id="[% report.tag | html_entity %]_link" class="nav-link active nd_single-tab"
         href="#[% report.tag | html_entity %]_pane">[% report.label | html_entity %]</a></li>
       [% IF report.tag == 'portlog' %]
       <span id="nd_device-name">

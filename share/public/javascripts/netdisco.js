@@ -295,14 +295,15 @@ $(document).ready(function() {
   // but warning! will probably not work for dropdowns in tabs
   $('#nd_search-results li').delegate('a', 'click', function(event) {
     event.preventDefault();
-    var from_li = $('.nav-tabs').find('> .active').first();
-    var to_li = $(this).parent('li')
+    // Bootstrap 5 reads "active" on the .nav-link, not on the <li>
+    var from_link = $('.nav-tabs').find('> li > .nav-link.active').first();
+    var to_link = $(this);
 
-    from_li.toggleClass('active');
-    to_li.toggleClass('active');
+    from_link.toggleClass('active');
+    to_link.toggleClass('active');
 
-    var from_id = from_li.find('a').attr('href');
-    var to_id = $(this).attr('href');
+    var from_id = from_link.attr('href');
+    var to_id = to_link.attr('href');
 
     if (from_id == to_id) {
       return;
