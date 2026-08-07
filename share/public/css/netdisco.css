@@ -35,6 +35,44 @@
   --bs-dropdown-font-size: 13px;
 }
 
+/* Every width in this file was measured against controls padded 4px 6px, with
+   input group add-ons padded 4px 5px and the browser drawing a select's arrow
+   inside the box. The replacement pads .375rem .75rem and reserves 2.25rem on
+   a select for a caret it draws itself, which costs a 56px select all but 6px
+   of its option text and pushes the sidebar's prepended checkboxes onto a
+   second line. Restore the old padding and bring the caret in to the edge. */
+.form-control, .form-select {
+  padding: 4px 6px;
+}
+.form-control-sm {
+  min-height: 0;
+}
+.form-select {
+  padding-right: 20px;
+  background-position: right 4px center;
+}
+.form-select[multiple], .form-select[size]:not([size="1"]) {
+  padding-right: 6px;
+}
+.input-group-text {
+  padding: 4px 5px;
+}
+.form-control-plaintext {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  line-height: 18px;
+}
+
+/* the gutter under a control used to come from the control itself, and the
+   sidebar's rows are spaced by it. Three rules further down this file exist
+   only to take it away again where it is not wanted. */
+.form-control, .form-select {
+  margin-bottom: 9px;
+}
+.navbar .form-control {
+  margin-bottom: 0px;
+}
+
 /* for the fixed navbar make sure content stops short of page top*/
 body {
   padding-top: 50px;
