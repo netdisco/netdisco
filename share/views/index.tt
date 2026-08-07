@@ -63,7 +63,6 @@
               <div class="btn-group">
                 <button type="submit" class="btn btn-primary">Search</button>
                 <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="caret"></span>&nbsp;
                 </button>
                 <ul class="dropdown-menu">
                   <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
@@ -81,7 +80,6 @@
               <div class="btn-group">
                 <button type="submit" class="btn btn-info">Discover</button>
                 <button class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="caret"></span>&nbsp;
                 </button>
                 <ul class="dropdown-menu">
                   <li><a class="nd_navsearchgo-specific" href="" data-action="pingsweep" data-timeout="0.1">Ping Sweep with Default Latency 50ms</a></li>
