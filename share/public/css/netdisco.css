@@ -43,10 +43,43 @@
   --bs-btn-padding-x: 10px;
   --bs-btn-border-radius: 3px;
 }
-/* the two corners the 4px above is wrong for: a small button was 3px and a
-   badge was 9px, and both read the same variable. */
+/* A small button's corner was 3px, which is the one the 4px above is wrong for.
+
+   A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
+   with a dark shadow under the glyphs, and took its fill from a palette of its
+   own. Its replacement sizes the type from its parent, insets it in ems and
+   draws flat framework colours, so every badge in the application is 1.44px
+   shallower and up to 6px narrower than the one it replaces. The corner is the
+   one value of the set that was already right, and it is restated here with
+   the others rather than left standing alone, because on its own it read as a
+   number chosen to match a rule rather than to match what the page draws.
+
+   The fills are set through the variables the utility classes read, rather than
+   over the top of those classes, because each of them declares its colour
+   flagged. Two also hardcode black type where every badge used to be white. */
 .badge {
   --bs-badge-border-radius: 9px;
+  --bs-badge-font-size: 10.998px;
+  --bs-badge-padding-y: 2px;
+  --bs-badge-padding-x: 9px;
+  --bs-secondary-rgb: 153, 153, 153;
+  --bs-success-rgb: 70, 136, 71;
+  --bs-info-rgb: 58, 135, 173;
+  --bs-danger-rgb: 185, 74, 72;
+  --bs-warning-rgb: 248, 148, 6;
+  line-height: 14px;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+.badge.text-bg-info, .badge.text-bg-warning {
+  color: #ffffff !important;
+}
+/* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
+   9px, and this class replaced it at all four of its sites and nowhere else,
+   so the mapping is exact. The grey one is not: it replaced one of each, and
+   no selector here can tell those two apart. */
+.badge.text-bg-info {
+  --bs-badge-border-radius: 3px;
+  --bs-badge-padding-x: 4px;
 }
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
