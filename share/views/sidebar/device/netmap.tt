@@ -107,7 +107,7 @@
 
             [% IF hgroup_list.size %]
             <em class="text-muted">Device Groups:</em><br/>
-            <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
+            <select class="nd_side-select form-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
               multiple name="hgroup" id="nd_hgroup-select"
               rel="tooltip" data-bs-placement="left" data-bs-title="Device Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
@@ -118,7 +118,7 @@
             [% END %]
             [% IF lgroup_list.size %]
             <em class="text-muted">Device Locations:</em><br/>
-            <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
+            <select class="nd_side-select form-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
               multiple name="lgroup" id="nd_lgroup-select"
               rel="tooltip" data-bs-placement="left" data-bs-title="Device Locations">
               [% FOREACH loc IN lgroup_list %]
@@ -133,7 +133,7 @@
               [% IF hgroup_list.size OR lgroup_list.size %]
               <div class="clearfix input-group">
               <label><span id="nd_colorby-label-text">Color by: </span>
-                <select id="nd_colorby" name="colorby">
+                <select id="nd_colorby" class="form-select d-inline-block" name="colorby">
                   <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]
                     value="off">Off</option>
                   <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'speed' %]

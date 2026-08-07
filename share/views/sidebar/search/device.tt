@@ -5,7 +5,7 @@
               <i data-btn-for="dns" class="nd_field-copy-icon fas fa-copy fa-lg"></i>
               <i id="dns_clear_btn" data-btn-for="dns"
                 class="nd_field-clear-icon fas fa-trash-can fa-lg"></i>
-              <input class="nd_side-input" placeholder="DNS"
+              <input class="nd_side-input form-control" placeholder="DNS"
                 type="text" name="dns" value="[% params.dns | html_entity %]"
                 rel="tooltip" data-bs-placement="left" data-bs-title="DNS"/>
             </div>
@@ -13,7 +13,7 @@
               <i data-btn-for="ip" class="nd_field-copy-icon fas fa-copy fa-lg"></i>
               <i id="ip_clear_btn" data-btn-for="ip"
                 class="nd_field-clear-icon fas fa-trash-can fa-lg"></i>
-              <input class="nd_side-input" placeholder="IP Address"
+              <input class="nd_side-input form-control" placeholder="IP Address"
                 type="text" name="ip" value="[% params.ip | html_entity %]"
                 rel="tooltip" data-bs-placement="left" data-bs-title="IP Address"/>
             </div>
@@ -21,7 +21,7 @@
               <i data-btn-for="name" class="nd_field-copy-icon fas fa-copy fa-lg"></i>
               <i id="name_clear_btn" data-btn-for="name"
                 class="nd_field-clear-icon fas fa-trash-can fa-lg"></i>
-              <input class="nd_side-input" placeholder="System Name"
+              <input class="nd_side-input form-control" placeholder="System Name"
                 type="text" name="name" value="[% params.name | html_entity %]"
                 rel="tooltip" data-bs-placement="left" data-bs-title="System Name"/>
             </div>
@@ -29,7 +29,7 @@
               <i data-btn-for="location" class="nd_field-copy-icon fas fa-copy fa-lg"></i>
               <i id="location_clear_btn" data-btn-for="location"
                 class="nd_field-clear-icon fas fa-trash-can fa-lg"></i>
-              <input class="nd_side-input" placeholder="Location"
+              <input class="nd_side-input form-control" placeholder="Location"
                 type="text" name="location" value="[% params.location | html_entity %]"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Location"/>
             </div>
@@ -37,12 +37,12 @@
               <i data-btn-for="description" class="nd_field-copy-icon fas fa-copy fa-lg"></i>
               <i id="description_clear_btn" data-btn-for="description"
                 class="nd_field-clear-icon fas fa-trash-can fa-lg"></i>
-              <input class="nd_side-input" placeholder="Description"
+              <input class="nd_side-input form-control" placeholder="Description"
                 type="text" name="description" value="[% params.description | html_entity %]"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Description"/>
             </div>
             <div class="clearfix">
-              <select class="nd_side-select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
+              <select class="nd_side-select form-select" size="[% model_list.size > 5 ? 5 : model_list.size %]"
                 multiple name="model"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Model">
                 [% FOREACH opt IN model_list %]
@@ -51,7 +51,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side-select" size="[% os_list.size > 5 ? 5 : os_list.size %]"
+              <select class="nd_side-select form-select" size="[% os_list.size > 5 ? 5 : os_list.size %]"
                 multiple name="os"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Operating System">
                 [% FOREACH opt IN os_list %]
@@ -60,7 +60,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side-select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
+              <select class="nd_side-select form-select" size="[% os_ver_list.size > 5 ? 5 : os_ver_list.size %]"
                 multiple name="os_ver"
                 rel="tooltip" data-bs-placement="left" data-bs-title="OS Release">
                 [% FOREACH opt IN os_ver_list %]
@@ -69,7 +69,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side-select" size="[% vendor_list.size > 5 ? 5 : vendor_list.size %]"
+              <select class="nd_side-select form-select" size="[% vendor_list.size > 5 ? 5 : vendor_list.size %]"
                 multiple name="vendor"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Vendor">
                 [% FOREACH opt IN vendor_list %]
@@ -78,7 +78,7 @@
               </select>
             </div>
             <div class="clearfix">
-              <select class="nd_side-select" size="3"
+              <select class="nd_side-select form-select" size="3"
                 multiple name="layers"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Layer">
                 [% FOREACH opt IN [ 1 .. 7 ] %]

@@ -5,7 +5,7 @@
               <i class="nd_field-clear-icon fas fa-trash-can fa-lg"
                  rel="tooltip" data-bs-placement="bottom" data-bs-title="Show all Ports"
                  id="f_clear_btn" data-btn-for="port"></i>
-              <input id="nd_port-query" placeholder="Port, Name or VLAN"
+              <input id="nd_port-query" class="form-control" placeholder="Port, Name or VLAN"
                 name="f" value="" type="text"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Filter by Port, Name or VLAN"/>
               <div class="clearfix input-group nd_port-partial">
@@ -71,7 +71,7 @@
                 <ul class="nd_inputs-list list-unstyled">
                   <li>
                     <em class="text-muted">MAC address display as:</em><br/>
-                    <select id="nd_mac-format" name="mac_format">
+                    <select id="nd_mac-format" class="form-select" name="mac_format">
                       <option>IEEE</option>
                       <option>Cisco</option>
                       <option>Microsoft</option>
@@ -90,7 +90,7 @@
                 <ul class="nd_inputs-list list-unstyled">
                   <li>
                     <em class="text-muted">Mark as Free if Down for:</em><br/>
-                    <select id="nd_days-select" name="age_num">
+                    <select id="nd_days-select" class="form-select d-inline-block" name="age_num">
                       <option>1</option>
                       <option>2</option>
                       <option>3</option>
@@ -123,7 +123,7 @@
                       <option>30</option>
                       <option>31</option>
                     </select>
-                    <select id="nd_age-select" name="age_unit">
+                    <select id="nd_age-select" class="form-select d-inline-block" name="age_unit">
                       <option>days</option>
                       <option>weeks</option>
                       <option>months</option>
@@ -133,7 +133,7 @@
                   <li>
                     <em class="text-muted">Show Ports with Status:</em><br/>
                     <div class="clearfix">
-                      <select id="nd_port-state-select" size="4" multiple name="port_state">
+                      <select id="nd_port-state-select" class="form-select" size="4" multiple name="port_state">
                         <option selected="selected" value="up">Link Up</option>
                         <option selected="selected" value="free">Port Free</option>
                         <option selected="selected" value="down">Link Down</option>
