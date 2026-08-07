@@ -43,8 +43,8 @@
         [% IF NOT session.logged_in_user %]
         <form class="nd_login-form" method="post" action="[% uri_for('/login') | none %]">
           <div class="d-flex align-items-center gap-2">
-            <input id='loginuser' placeholder="Username" class="col-md-2 form-control w-auto" name="username" type="text" required="required"/>
-            <input placeholder="Password" class="col-md-2 form-control w-auto" name="password" type="password" required="required"/>
+            <input id='loginuser' placeholder="Username" class="form-control" name="username" type="text" required="required"/>
+            <input placeholder="Password" class="form-control" name="password" type="password" required="required"/>
             <button type="submit" class="btn btn-info">Log In</button>
             [% IF settings.login_logo %]
             <img src="[% settings.login_logo | none %]" alt="Login Logo" />
@@ -58,7 +58,7 @@
           <p></p> <p></p>
           <form class="" method="get" action="[% uri_for('/search') | none %]">
             <div class="d-flex align-items-center gap-2">
-              <input placeholder="Find Anything" class="col-md-4 form-control w-auto" id="nqbody" name="q" type="search" autocomplete="off"/>
+              <input placeholder="Find Anything" class="form-control" id="nqbody" name="q" type="search" autocomplete="off"/>
               <input name="firstsearch" type="hidden" value="on">
               <div class="btn-group">
                 <button type="submit" class="btn btn-primary">Search</button>
@@ -76,7 +76,7 @@
           [% IF user_has_role('admin') %]
           <form class="nd_login-form" method="post" action="[% uri_for('/admin/discodevs') | none %]">
             <div class="d-flex align-items-center gap-2">
-              <input placeholder="Device hostname, IP address, or IPv4 prefix >= /22" class="col-md-4 form-control w-auto" id="discodevs" name="device" required="required" value="[% params.device | html_entity %]" type="text"/>
+              <input placeholder="Device hostname, IP address, or IPv4 prefix >= /22" class="form-control" id="discodevs" name="device" required="required" value="[% params.device | html_entity %]" type="text"/>
               <div class="btn-group">
                 <button type="submit" class="btn btn-info">Discover</button>
                 <button class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

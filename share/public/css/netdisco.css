@@ -370,6 +370,24 @@ div.nd_acl-rule-list {
   margin-bottom: 0px;
 }
 
+/* These fields were sized by the old grid, two of its columns for the login
+   and password pair and four for the search and discover fields. The classes
+   that replaced those spans size a grid cell rather than a control, and the
+   width flag standing beside them pinned all of them at the browser's default
+   190px, so both are gone from the markup and the widths are stated here. The
+   5px between a field and what follows it was the space between two
+   inline-block children set at the box's 18px; the row is a flex container
+   now and spaces its children itself. */
+.nd_hero-row .d-flex > .form-control {
+  width: 170px;
+}
+#nqbody, #discodevs {
+  width: 370px;
+}
+.nd_hero-row .d-flex {
+  gap: 5px !important;
+}
+
 /* push user/pass/login form down+away from the Netdisco banner text */
 .nd_login-form {
   margin-top: 15px;
