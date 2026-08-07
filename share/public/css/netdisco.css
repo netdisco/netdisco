@@ -92,6 +92,7 @@
    the framework's own "width: 100%" already gives the fluid behaviour the old
    one had. */
 .container {
+  --bs-gutter-x: 0;
   max-width: 940px;
 }
 @media (min-width: 1200px) {
