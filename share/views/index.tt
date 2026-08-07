@@ -2,37 +2,37 @@
   <div class="row nd_hero-row">
     <div class="col-md-8 offset-md-2">
       [% IF params.login_failed %]
-      <div class="alert alert-danger fade show">
+      <div class="alert alert-danger alert-dismissible fade show">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         Incorrect username or password, please try again.
       </div>
       [% END %]
       [% IF params.logout %]
-      <div class="alert fade show">
+      <div class="alert alert-dismissible fade show">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         You are now logged out.
       </div>
       [% END %]
       [% IF params.nosuchdevice %]
-      <div class="alert fade show">
+      <div class="alert alert-dismissible fade show">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         Sorry, no such device is known.
       </div>
       [% END %]
       [% IF vars.notfound %]
-      <div class="alert fade show">
+      <div class="alert alert-dismissible fade show">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         Sorry, page not found.&nbsp;
           <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="fas fa-bug"></i>&nbsp;Report a Bug?</a>
       </div>
       [% END %]
       [% IF settings.login_banner_message AND NOT session.logged_in_user %]
-      <div class="alert alert-info fade show">
+      <div class="alert alert-info alert-dismissible fade show">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> [% settings.login_banner_message | none %]
       </div>
       [% END %]
       [% IF settings.suggest_guest AND NOT session.logged_in_user %]
-      <div class="alert alert-info fade show">
+      <div class="alert alert-info alert-dismissible fade show">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         Guest access is available by entering username &quot;guest&quot; and password &quot;guest&quot;.
       </div>
