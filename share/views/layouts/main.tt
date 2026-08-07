@@ -19,15 +19,15 @@
 <!--  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.cookie.js"></script> -->
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap2-toggle.min.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/underscore.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.qtip.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-3.5.17.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-force-network-chart.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.floatThead.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/daterangepicker.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/moment.min.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/daterangepicker.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.dataTables.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.bootstrap.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-detect.js"></script>
@@ -51,7 +51,7 @@
   [% END %]
 
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap2-toggle.min.css"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/jquery.qtip.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.custom.min.css"/>
@@ -61,7 +61,7 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/javascripts/jstree/themes/proton/style.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker-bs2.css"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css" media="print"/>
 

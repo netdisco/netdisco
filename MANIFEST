@@ -333,12 +333,12 @@ share/contrib/raddb/dictionary.xtradius
 share/environments/deployment.yml
 share/public/500.html
 share/public/css/awesome-bootstrap-checkbox.css
+share/public/css/bootstrap-toggle.min.css
 share/public/css/bootstrap-tree.css
 share/public/css/bootstrap.min.css
-share/public/css/bootstrap2-toggle.min.css
 share/public/css/d3-force-network-chart.css
 share/public/css/dataTables.bootstrap.css
-share/public/css/daterangepicker-bs2.css
+share/public/css/daterangepicker.css
 share/public/css/font-awesome.min.css
 share/public/css/jquery.qtip.min.css
 share/public/css/nd_print.css
@@ -378,9 +378,8 @@ share/public/images/splashyfish_left.png
 share/public/images/splashyfish_right.png
 share/public/images/tango_sweep.png
 share/public/images/vaga_copy.png
+share/public/javascripts/bootstrap-toggle.min.js
 share/public/javascripts/bootstrap.min.js
-share/public/javascripts/bootstrap2-toggle.min.js
-share/public/javascripts/bootstrap2-toggle.min.js.map
 share/public/javascripts/d3-3.5.17.min.js
 share/public/javascripts/d3-force-network-chart.js
 share/public/javascripts/dataTables.bootstrap.js

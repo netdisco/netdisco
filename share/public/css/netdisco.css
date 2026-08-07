@@ -27,15 +27,6 @@ body {
    --fa-display, so this is supported use rather than an override of internals. */
 :root { --fa-width: auto; }
 
-/* Float utilities that Font Awesome 3's stylesheet provided and Font Awesome 7
-   does not: it renamed them to .fa-pull-left and .fa-pull-right. netdisco's
-   Bootstrap 2 build carries no bare .pull-* rule, only scoped ones, so nothing
-   else defines these and 18 templates depend on them. Tasks 11 and 12 rename the
-   call sites to float-start and float-end; Task 14 brings the Bootstrap 5 that
-   defines those. Remove this block in Task 14. */
-.pull-left { float: left; }
-.pull-right { float: right; }
-
 /* careful align of navbar search button and menu */
 .nd_navbar-search-group {
   margin-top: 0px !important;

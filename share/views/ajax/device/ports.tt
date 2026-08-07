@@ -345,9 +345,9 @@
       <td>
       [% IF row.up == 'up' AND (row.pae_authconfig_port_status OR row.pae_authconfig_state) %]
         <i class="fas [% row.pae_authconfig_port_status == 'authorized' ? 'fa-circle-check' : 'fa-ban' %]"
-          rel="tooltip" data-bs-placement="top" data-offset="3" data-bs-animation="false" data-bs-title="[% row.pae_authconfig_port_status %]"></i>
+          rel="tooltip" data-bs-placement="top" data-offset="3" data-bs-animation="false" data-bs-title="[% (row.pae_authconfig_port_status || 'unknown') | html_entity %]"></i>
         <i class="fas [% row.pae_authconfig_state == 'authenticated' ? 'fa-link' : 'fa-link-slash' %]"
-          rel="tooltip" data-bs-placement="top" data-offset="3" data-bs-animation="false" data-bs-title="[% row.pae_authconfig_state %]"></i>
+          rel="tooltip" data-bs-placement="top" data-offset="3" data-bs-animation="false" data-bs-title="[% (row.pae_authconfig_state || 'unknown') | html_entity %]"></i>
         <i class="fas [% row.pae_authsess_mab ? 'fa-laptop' : 'fa-user' %]" title="[% row.pae_authsess_mab ? 'MAC Authentication Bypass (MAB)' : '802.1X user authentication' %]"></i>
         [% SET sessuser = (row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)) %]
         <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
