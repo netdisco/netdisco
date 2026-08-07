@@ -388,8 +388,24 @@ div.nd_acl-rule-list {
   gap: 5px !important;
 }
 
-/* push user/pass/login form down+away from the Netdisco banner text */
-.nd_login-form {
+/* The two empty paragraphs above the search form spaced it 9px each, and a
+   form carried an 18px gutter under it, so both forms in this box sat higher
+   than they do now: a paragraph is padded 16px in the replacement and a form
+   gets no gutter at all. Scoped to this box deliberately. Restoring the form
+   gutter everywhere, which is where the old stylesheet declared it, reaches
+   the bar's search form and the sidebar's, each of which the old stylesheet
+   cancelled separately and this one does not. */
+.nd_hero-row p {
+  margin-bottom: 9px;
+}
+.nd_hero-row form {
+  margin-bottom: 18px;
+}
+
+/* push user/pass/login form down+away from the Netdisco banner text. This is
+   the cancellation of the gutter above, and it names the box so that it still
+   outranks it: the last form in the box closed it flush. */
+.nd_hero-row .nd_login-form {
   margin-top: 15px;
   margin-bottom: 0px;
 }
