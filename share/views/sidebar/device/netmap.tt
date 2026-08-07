@@ -95,13 +95,13 @@
                   OR device_count > settings.netmap_performance_limit_max_devices %]
                 value="depth">
                 <label for="nd_mapshow-depth">Neighbor Hops:
-                <input name="depth" id="nd_mapshow-hops" class="form-control form-control-sm w-auto d-inline-block" type="number" placeholder="1"
+                <input name="depth" id="nd_mapshow-hops" class="form-control form-control-sm d-inline-block" type="number" placeholder="1"
                   value="[% params.depth || vars.sidebar_defaults.device_netmap.depth | html_entity %]"/>
                 </label>
             </div>
 
             <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
-              <input name="vlan" id="nd_vlan-entry" class="form-control form-control-sm w-auto d-inline-block" type="number" placeholder="ID"
+              <input name="vlan" id="nd_vlan-entry" class="form-control form-control-sm d-inline-block" type="number" placeholder="ID"
                 value="[% params.vlan | html_entity %]"/>
             </label>
 
