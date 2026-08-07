@@ -409,7 +409,7 @@ div.nd_acl-rule-list {
   width: 370px;
 }
 .nd_hero-row .d-flex {
-  gap: 5px !important;
+  gap: 5px;
 }
 
 /* The two empty paragraphs above the search form spaced it 9px each, and a
