@@ -207,6 +207,24 @@ div.content > div.tab-content table.nd_floatinghead thead {
   z-index: -1000;
 }
 
+/* Headings. The replacement stylesheet sizes these from 1rem to 2.5rem at
+   weight 500 on a 1.2 line; these are the sizes and the weight the pages were
+   laid out against. */
+h1, h2, h3, h4, h5, h6 {
+  margin: 9px 0;
+  font-weight: bold;
+  line-height: 18px;
+}
+h1, h2, h3 {
+  line-height: 36px;
+}
+h1 { font-size: 35.75px; }
+h2 { font-size: 29.25px; }
+h3 { font-size: 22.75px; }
+h4 { font-size: 16.25px; }
+h5 { font-size: 13px; }
+h6 { font-size: 11px; }
+
 /* for when we pinch h4 styling but don't want bold */
 .nd_unbolden {
   font-weight: normal;
