@@ -749,6 +749,17 @@ ul ul, ul ol, ol ol, ol ul {
   --bs-navbar-nav-link-padding-x: 15px;
 }
 
+/* A tab was padded 8px and 12px with a 2px gutter to the tab after it. Its
+   replacement pads 16px and leaves no gutter, so each tab is 6px wider than
+   the one it replaces and the drift accumulates along the strip: on the seven
+   tabs of a device page the last one starts 36px right of where it did. */
+.nav-tabs {
+  --bs-nav-link-padding-x: 12px;
+}
+.nav-tabs .nav-link {
+  margin-right: 2px;
+}
+
 /* space out long lists */
 .nd_div-closer {
   margin-top: -14px;
