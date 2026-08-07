@@ -64,8 +64,8 @@
 }
 
 /* the gutter under a control used to come from the control itself, and the
-   sidebar's rows are spaced by it. Three rules further down this file exist
-   only to take it away again where it is not wanted. */
+   sidebar's rows are spaced by it. Rules further down this file exist only to
+   take it away again where it is not wanted. */
 .form-control, .form-select {
   margin-bottom: 9px;
 }
@@ -356,11 +356,6 @@ td.nd_devport-icon i {
 /* undo nd_center-cell when in a modial dialog (which lives in table cell) */
 .table .nd_center-cell .modal-body {
   text-align: left;
-}
-
-/* fix layout of form fields inside the (topology) table */
-td div.input-group {
-  margin-bottom: 0px;
 }
 
 /* admin buttons in the device details view */
@@ -680,11 +675,6 @@ td > form.nd_inline-form {
   width: unset;
 }
 
-/* pretty toggles have no height on first load - bug? */
-div.toggle.btn-sm {
-  height: 18px !important;
-}
-
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
   width: 137px;
@@ -728,12 +718,6 @@ div.toggle.btn-sm {
   margin-left: 5px !important;
   margin-top: -5px;
   margin-bottom: 5px !important;
-}
-
-/* fixup for prepended checkbox in sidebar */
-.nd_sidebar .input-group {
-  margin-left: -2px;
-  margin-bottom: 0px;
 }
 
 /* for some reason bootstrap 2.1.0 displays add-on as block - no check supprt? */
