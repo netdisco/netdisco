@@ -118,6 +118,16 @@ body {
   background: url(../images/navbar_disco.png) no-repeat;
 }
 
+/* Links carried no underline until hovered. The replacement underlines every
+   link everywhere, which on a page whose tables are mostly links reads as a
+   different application. */
+a {
+  text-decoration: none;
+}
+a:hover, a:focus {
+  text-decoration: underline;
+}
+
 /* used for icons in sidebar search buttons */
 .nd_navbar-icon {
   vertical-align: sub;
