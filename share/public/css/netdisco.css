@@ -101,6 +101,19 @@
   }
 }
 
+/* The fluid page shell inset its content 20px, and the tab strip, the results
+   table and the sidebar's own offsets are all measured from that edge. The
+   replacement computes 12px from its gutter variable, which drew all of them
+   8px to the left on fifteen of the eighteen pages. Stated as padding rather
+   than through the gutter variable, because that variable is also what a row
+   nested inside one of these pages reads. The old stylesheet also zeroed this
+   padding below 768px; that is not reproduced, since the replacement carries
+   no such rule and nothing here is measured at that width. */
+.container-fluid {
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
 /* for the fixed navbar make sure content stops short of page top*/
 body {
   padding-top: 50px;
