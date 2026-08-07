@@ -342,9 +342,19 @@ $(document).ready(function() {
     ,timePicker: false
     ,opens: 'left'
     ,locale: { format: 'YYYY-MM-DD', separator: ' to ' }
+    ,autoUpdateInput: false
   }
   ,function(start, end) {
     $('#daterange').trigger('input');
+  });
+
+  // daterangepicker 3.x writes the picker's own dates into the input on init
+  // unless autoUpdateInput is off, which blanks the server-rendered value. With
+  // it off, nothing updates the input when a range is applied, so do it here.
+  $('#daterange').on('apply.daterangepicker', function (ev, picker) {
+    $(this).val(picker.startDate.format('YYYY-MM-DD')
+      + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+    $(this).trigger('input');
   });
 
   // handler for datepicker in node sidebar
