@@ -24,12 +24,17 @@
 }
 .btn {
   --bs-btn-font-size: 13px;
+  --bs-btn-padding-y: 4px;
+  --bs-btn-padding-x: 12px;
+  --bs-btn-line-height: 18px;
 }
-/* this file loads after the framework, so the rule above would otherwise also
-   decide the small button size at equal specificity. State it instead of
-   letting it fall out. */
+/* this file loads after the framework, so the rules above would otherwise also
+   decide the small button metrics at equal specificity. State them instead of
+   letting them fall out. */
 .btn-sm {
   --bs-btn-font-size: 11px;
+  --bs-btn-padding-y: 2px;
+  --bs-btn-padding-x: 10px;
 }
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
