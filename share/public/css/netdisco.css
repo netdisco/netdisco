@@ -108,10 +108,13 @@
 /* A one-row list box drew 27px. Its replacement draws 28px, and the extra
    pixel is not the line height: setting the line the old one computed makes
    it 25px, because the two stylesheets get different row heights out of the
-   same 13px font in a list box, 16.39px against 15px. State the height the
-   old one drew. Only the one-row case, which is every list box in the
-   sidebar bar one: a taller box would need its row height, and that is the
-   part with no remedy behind it. */
+   same 13px font in a list box, 16.59px against 16.00px, measured on the one
+   three-row box in the sidebar. This states the height the old one drew
+   rather than the cause of it, which was never found, so read it as a value
+   fitted to the outcome and not as one copied from the old stylesheet. It is
+   the only such value in this file. Only the one-row case is covered, which is
+   every list box in the sidebar bar that one: a taller box needs the row
+   height, and that is the part with no remedy behind it. */
 .form-select[multiple][size="1"] {
   height: 27px;
 }
@@ -215,12 +218,13 @@ a:hover, a:focus {
 :root { --fa-width: auto; }
 
 /* The bar's search field was a 286px pill, dark on the dark bar, with its text
-   inset 14px. What replaced it is a 190px white box with 6px corners and a 6px
-   inset, so it differs over its whole area rather than at its edges: white
-   where the bar is dark. That is why widening it on its own was measured to
-   make the page worse. The two rules under it are what put its left edge where
-   it was: the bar's link list carried a 10px gutter on its right, and the
-   brand's box ran 20px past its text. */
+   inset 14px. What replaced it was a 190px white box, its text inset the 6px
+   this file gives every field, and its corners taking whatever the shared
+   corner value above is set to. It differed over its whole area rather than at
+   its edges, being white where the bar is dark, which is why widening it on
+   its own was measured to make the page worse. The two rules under it are what
+   put its left edge where it was: the bar's link list carried a 10px gutter on
+   its right, and the brand's box ran 20px past its text. */
 #nq {
   width: 286px;
   padding: 4px 14px;
