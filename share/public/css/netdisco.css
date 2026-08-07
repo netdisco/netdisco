@@ -385,29 +385,29 @@ div.nd_acl-rule-list {
   line-height: 27px;
 }
 
-/* The forms in the hero box were a row of inline-block controls, so the row
-   was one line box tall and the gutter under each control fell outside it.
-   The row is a flex container now and takes that gutter into its own height,
-   which makes the box 9px deeper and pushes the button off the centre line
-   the fields sit on. Same reason the navbar's field is exempted above. */
-.nd_hero-row .d-flex > .form-control {
-  margin-bottom: 0px;
-}
-
-/* These fields were sized by the old grid, two of its columns for the login
-   and password pair and four for the search and discover fields. The classes
-   that replaced those spans size a grid cell rather than a control, and the
-   width flag standing beside them pinned all of them at the browser's default
-   190px, so both are gone from the markup and the widths are stated here. The
-   5px between a field and what follows it was the space between two
-   inline-block children set at the box's 18px; the row is a flex container
-   now and spaces its children itself. */
+/* Two things about the fields in this box.
+   Their width was set by the old grid, two of its columns for the login and
+   password pair and four for the search and discover fields. The classes that
+   replaced those spans size a grid cell rather than a control, and the width
+   flag standing beside them pinned all of them at the browser's default 190px,
+   so both are gone from the markup and the widths are stated here.
+   Their gutter has to go, too: these forms were a row of inline-block
+   controls, so the row stood one line box tall and the gutter under each
+   control fell outside it. The row is a flex container now and takes that
+   gutter into its own height, which made the box 9px deeper and pushed the
+   button off the centre line the fields sit on. Same reason the navbar's field
+   is exempted above. */
 .nd_hero-row .d-flex > .form-control {
   width: 170px;
+  margin-bottom: 0px;
 }
 #nqbody, #discodevs {
   width: 370px;
 }
+
+/* The 5px between a field and what follows it was the space between two
+   inline-block children set at the box's 18px; the row spaces its children
+   itself now. */
 .nd_hero-row .d-flex {
   gap: 5px;
 }
@@ -1033,9 +1033,11 @@ input#nd_port-query {
   padding-bottom: 5px;
 }
 
-/* The "Color by" row was a 28px select with a 5px gutter under it, in a 33px
-   row. The select now takes the 9px gutter every field in this file gets,
-   which is 4px too much here and drops everything under it by that much. */
+/* The "Color by" row was a 28px select inside a label that carried the 5px
+   gutter every label had, so the row stood 33px. The select itself had no
+   gutter; it takes the 9px every field in this file gets, which is 4px too
+   much here and drops everything under it by that much. The 5px goes on the
+   select rather than the label, because the select is the only thing in it. */
 #nd_colorby {
   width: 107px;
   margin-bottom: 5px;
@@ -1132,10 +1134,12 @@ form .clearfix.success input {
   margin-left: 5px;
 }
 
-/* Each toggle row was a block with a 5px gutter under it, so the three of them
-   pitched at 29px, and the block holding them carried the 9px gutter every
-   control group had. The replacements pitch at 26px inside a 16px gutter,
-   which walks everything below the toggles 5px up the sidebar. */
+/* Each toggle row held a label with a 5px gutter under it, which every label
+   had, so the row stood 29px and the three of them pitched at 29px. The block
+   holding them carried the 9px gutter every control group had. The
+   replacements pitch at 26px inside a 16px gutter, which walks everything
+   below the toggles 5px up the sidebar. The 5px goes on the row rather than
+   the label below, because the row is what has to keep the height. */
 .nd_netmap-sidebar .form-check {
   margin-bottom: 5px;
 }
