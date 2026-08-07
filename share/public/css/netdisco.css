@@ -1,6 +1,40 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style common to all pages in the site */
 
+/* Netdisco's layout is built around 13px Helvetica on an 18px line, which is
+   what the stylesheet this site used until now set on body. The stylesheet
+   that replaced it defaults to a 16px system-ui stack, which draws the same
+   strings 27 to 33% wider and overflows sidebar fields, table cells and
+   inline labels throughout. Restore the old metrics. The line height is a
+   length rather than a ratio on purpose: 18px is the figure every margin and
+   icon offset in this file was measured against. */
+:root {
+  --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --bs-body-font-size: 13px;
+  --bs-body-line-height: 18px;
+}
+
+/* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
+   --bs-body-font-size, so the block above does not reach them. These are the
+   same elements one rule used to cover:
+   "label, input, button, select, textarea { font-size: 13px; line-height: 18px }". */
+.form-control, .form-select, .input-group-text {
+  font-size: 13px;
+  line-height: 18px;
+}
+.btn {
+  --bs-btn-font-size: 13px;
+}
+/* this file loads after the framework, so the rule above would otherwise also
+   decide the small button size at equal specificity. State it instead of
+   letting it fall out. */
+.btn-sm {
+  --bs-btn-font-size: 11px;
+}
+.dropdown-menu {
+  --bs-dropdown-font-size: 13px;
+}
+
 /* for the fixed navbar make sure content stops short of page top*/
 body {
   padding-top: 50px;
