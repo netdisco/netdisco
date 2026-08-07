@@ -72,6 +72,16 @@
 .form-select[multiple], .form-select[size]:not([size="1"]) {
   padding-right: 6px;
 }
+/* A one-row list box drew 27px. Its replacement draws 28px, and the extra
+   pixel is not the line height: setting the line the old one computed makes
+   it 25px, because the two stylesheets get different row heights out of the
+   same 13px font in a list box, 16.39px against 15px. State the height the
+   old one drew. Only the one-row case, which is every list box in the
+   sidebar bar one: a taller box would need its row height, and that is the
+   part with no remedy behind it. */
+.form-select[multiple][size="1"] {
+  height: 27px;
+}
 .input-group-text {
   padding: 4px 5px;
 }
