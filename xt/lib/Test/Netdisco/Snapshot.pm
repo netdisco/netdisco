@@ -108,11 +108,10 @@ the row accessors the template should call, not the data itself.
 
 A logged-in session reaches the search bar, the account menu, and (with a
 tenant configured) the tenant-switcher dropdown; C<user_has_role> stubbed true
-reaches the Admin dropdown's static buttons. The Reports submenu is a
-remaining gap: it keys off C<settings._reports>, and C<Template::Stash> treats
-any leading-underscore key as private and hides it from templates unless a
-caller disables that check, which this harness's engine does not, so no stash
-value can reach it here (see the C<Template::Stash::PRIVATE> note below).
+reaches the Admin dropdown's static buttons. The navbar link list, the Reports
+submenu and the registered half of the Admin menu are a remaining gap: they are
+built from C<settings._navbar_items>, C<settings._reports*> and
+C<settings._admin_order>, and this stash supplies none of them.
 
 =item C<ajax/device/details.tt>
 
@@ -148,15 +147,17 @@ this template.
 
 =back
 
-B<A harness-wide limitation, not specific to any one template above:>
-C<lib/App/Netdisco/Web.pm> sets C<$Template::Stash::PRIVATE = undef> before
-rendering, so production templates can read any C<settings._foo> key. This
-harness's C<_engine> does not set that, so every C<settings._*> path is dark
-here regardless of stash content: C<_navbar_items>, C<_admin_tasks>,
-C<_reports*>, C<_extra_device_details>, C<_extra_device_port_cols>,
-C<_additional_javascript>, and C<_additional_css> among them. Fixing it would
-mean changing C<_engine>, which is out of scope for a change to C<stash_for>
-alone.
+B<A harness-wide note, not specific to any one template above:>
+C<Template::Stash> hides any key with a leading underscore from templates
+unless a caller turns that check off. C<lib/App/Netdisco/Web.pm> turns it off
+before every render and C<render_template> below does the same, so a fixture
+here drives C<settings._navbar_items>, C<settings._admin_tasks>,
+C<settings._admin_order>, C<settings._reports>, C<settings._reports_menu>,
+C<settings._report_order>, C<settings._extra_device_details>,
+C<settings._extra_device_port_cols>, C<settings._additional_javascript> and
+C<settings._additional_css> exactly as production does. Where markup behind one
+of those is missing from a snapshot it is because no fixture supplies the
+value, never because the path cannot be reached.
 
 Two other templates also carry classes and are still left on an empty stash.
 Both are recorded here as known blind spots rather than driven with fixtures:
