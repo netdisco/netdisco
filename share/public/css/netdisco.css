@@ -301,15 +301,30 @@
 /* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
    9px. Two of these classes replaced it and nothing else, so each mapping is
    exact: the blue one at five sites, the dark one at two, where it also has to
-   put back a fill three units lighter than the framework's. The grey one is
-   not exact and is not here: it replaced one pill of each kind, and no
-   selector in a stylesheet can tell those two apart. */
+   put back a fill three units lighter than the framework's. */
 .badge.text-bg-info, .badge.text-bg-dark {
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
 }
 .badge.text-bg-dark {
   --bs-dark-rgb: 51, 51, 51;
+}
+/* The grey one replaced one pill of each kind, so no class tells the two
+   apart. Where they sit does. The external link badge is always the child of a
+   link that opens in a new window, on every one of its call sites, and it is
+   the only badge in the application that ever is: the one other badge inside a
+   link at all is the pseudo device layer three toggle, whose anchor is
+   href="#" with no target. Both markups were reconstructed on their own trees
+   and measured. The external link badge draws r=9px pad=2px 9px w=54.55
+   against the old r=3px pad=2px 4px w=44.55; the layer three badge draws
+   r=9px pad=2px 9px w=24.11 on both sides already and this leaves it alone.
+
+   No route in the visual harness renders this badge and none can: the feature
+   draws nothing unless a site configures external_links, and the demo dataset
+   configures none. */
+a[target="_blank"] > .badge.text-bg-secondary {
+  --bs-badge-border-radius: 3px;
+  --bs-badge-padding-x: 4px;
 }
 /* The one badge in the application that borrows a class from the alert palette,
    the warning on an old PostgreSQL. That class used to carry a fill and a
