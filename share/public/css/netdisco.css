@@ -1878,6 +1878,35 @@ form .clearfix.success input {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* dataTables */
 
+/* netdisco composes this control row itself, through the dom string in
+   ajax/datatabledefaults.tt, which puts the length control and the pager div
+   below inside one container. That arrangement relied on the old integration
+   file floating the length control's label, which collapsed its container to
+   nothing and let the pager sit beside it on the same line.
+
+   The replacement integration lays its controls out with its own grid classes
+   instead and floats nothing, so netdisco's container became a full-width 37px
+   block and the pager, still floated, dropped underneath it. The control row
+   became three rows and about 74px taller on every table in the application.
+
+   Restoring the float here rather than adopting the new layout system keeps the
+   dom string, which netdisco owns and which the sidebar's column pickers and
+   the pager's own placement are written against. */
+div.dt-container div.dt-length label {
+  float: left;
+}
+/* The search control is the other half of the same arrangement. The old
+   integration floated its label right, and the field sat inside that label, so
+   the container held nothing in flow and collapsed; the record count that
+   follows then drew on the same line, its text displaced around both floats.
+
+   The replacement emits the field as a sibling of the label rather than inside
+   it, so floating the label alone leaves the field in flow and the container
+   still stands 37px tall. The whole control is floated instead, which reaches
+   both elements and is what the old arrangement amounted to. */
+div.dt-container div.dt-search {
+  float: right;
+}
 div.nd_datatables-pager {
   float: left;
   margin-left: 50px;
