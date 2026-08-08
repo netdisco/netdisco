@@ -362,18 +362,30 @@
 .form-select[multiple], .form-select[size]:not([size="1"]) {
   padding-right: 6px;
 }
+/* A list box row drew 16.59px and its replacement draws 16.00px, so every
+   multi-row list box in the application is 0.594px short per row: the netmap's
+   link group list 42 against 43.19, the device search sidebar's layers list 58
+   against 59.78, the node vendor report's vendor list 42 against 43.19. The
+   whole of it is one property. An option is padded "0px 2px 1px" on both
+   sides, but the replacement's universal "*, *::before, *::after { box-sizing:
+   border-box }" reaches it and the old stylesheet had no universal reset, so
+   the bottom pixel of that padding used to be added to the row and is now
+   taken out of it. */
+option {
+  box-sizing: content-box;
+}
 /* A one-row list box drew 27px. Its replacement draws 28px, and the extra
    pixel is not the line height: setting the line the old one computed makes
-   it 25px, because the two stylesheets get different row heights out of the
-   same 13px font in a list box, 16.59px against 16.00px, measured on the one
-   three-row box in the sidebar. This states the height the old one drew
-   rather than the cause of it, which was never found, so read it as a value
-   fitted to the outcome and not as one copied from the old stylesheet. There
-   are three of those in this file, audited rule by rule: this one, the 4px the
-   select caret above is inset by, and the 5px the hero box's rows are spaced
-   by. Only the one-row case is covered, which is
-   every list box in the sidebar bar that one: a taller box needs the row
-   height, and that is the part with no remedy behind it. */
+   it 25px. Nor is it the row height corrected just above, which a one-row box
+   does not spend: measured with that rule in place and this one neutralised,
+   the box draws 28px still. So this states the height the old one drew rather
+   than the cause of it, and it is a value fitted to the outcome, not one
+   copied from the old stylesheet. There are three of those in this file,
+   audited rule by rule: this one, the 4px the select caret above is inset by,
+   and the 5px the hero box's rows are spaced by. It reaches only the one-row
+   case, and it composes with the rule above rather than overlapping it: with
+   both present a one-row box draws 27px and every taller box matches master
+   to the pixel. */
 .form-select[multiple][size="1"] {
   height: 27px;
 }
