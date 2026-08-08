@@ -44,6 +44,8 @@ $(document).ready(function() {
     ,"pageLength": 
     ,"lengthMenu": 
     ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+
+    ,"pagingType": 'simple_numbers'
     ,"language": {
       "search": '_INPUT_'
       ,"searchPlaceholder": 'Filter records...'
@@ -51,6 +53,11 @@ $(document).ready(function() {
       ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
       ,"infoFiltered": "(filtered from _MAX_ total)"
       ,"infoEmpty":    "&nbsp;No matching entries"
+
+      ,"paginate": {
+        "previous": '&larr; Previous'
+        ,"next":    'Next &rarr;'
+      }
     }
     ,"stateSaveParams": function (settings, data) {
       // make sure filter is never saved
