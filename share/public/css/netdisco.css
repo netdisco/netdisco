@@ -428,14 +428,20 @@ option {
    padding and a 1px border, so it drew 28px and finished level with the
    read-only caption beside it. The replacement sizes from its line box instead
    and draws 33px, so the checkbox's box hangs 5px below the caption's on every
-   sidebar that pairs the two. The height is stated here as a border-box total
-   because the replacement applies box-sizing universally, where the old
-   stylesheet had no such reset.
+   sidebar that pairs the two.
+
+   The old declaration is restored rather than the number it produced. Stating a
+   28px border-box total instead is wrong wherever the padding is overridden:
+   .nd_port-partial-label zeroes it, so the Ports sidebar's boxes drew 20px from
+   the same rule the netmap's drew 28px from. Declaring the content height and
+   opting out of the universal box-sizing lets both follow as they did before,
+   which is why the option rule earlier in this file opts out too.
 
    The fill is the old #eeeeee rather than the replacement's #f8f9fa: 10 of 255
    apart, and so below the harness's 52-level detection floor. */
 .input-group-text {
-  height: 28px;
+  box-sizing: content-box;
+  height: 18px;
   padding: 4px 5px;
   line-height: 18px;
   background-color: #eeeeee;
