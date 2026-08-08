@@ -147,6 +147,16 @@
   --bs-dropdown-font-size: 13px;
   --bs-dropdown-border-radius: 6px;
 }
+/* A dialog's corner was 6px and its footer's two bottom corners were the same
+   6px. The replacement reads a large-corner variable for the box, which is
+   8px, and insets its header and footer corners from that by the border width,
+   which is 7px. Both are stated, and not just the box: setting the box alone
+   would leave the footer rounding wider than the edge it sits against, which
+   is a shape neither stylesheet ever drew. */
+.modal {
+  --bs-modal-border-radius: 6px;
+  --bs-modal-inner-border-radius: 6px;
+}
 
 /* Every width in this file was measured against controls padded 4px 6px, with
    input group add-ons padded 4px 5px and the browser drawing a select's arrow
