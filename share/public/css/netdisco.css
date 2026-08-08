@@ -657,6 +657,32 @@ code {
   border-radius: 3px;
 }
 
+/* The same story for pre, which the old stylesheet drew as a grey box and the
+   replacement leaves as bare text, declaring only display, margin, overflow and
+   font-size. The SNMP browser's value field is the one element that uses it and
+   it lost its fill, border, corner and padding.
+
+   Two of these are behaviour rather than decoration: white-space was pre-wrap
+   and became pre, and word-break was break-all and became normal, so a long
+   value overflows its cell instead of wrapping inside it.
+
+   A bare element selector is deliberate here and its reach was counted rather
+   than assumed: the old stylesheet drew every pre this way, and there is
+   exactly one in share/views, at ajax/device/snmpnode.tt:70. The family is left
+   alone for the same reason as code above. */
+pre {
+  padding: 8.5px;
+  margin: 0 0 9px;
+  font-size: 12px;
+  color: #333333;
+  white-space: pre-wrap;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: #f5f5f5;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
 /* for when we pinch h4 styling but don't want bold */
 .nd_unbolden {
   font-weight: normal;
