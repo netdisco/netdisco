@@ -17,7 +17,7 @@
       <td class="nd_center-cell">-</td>
       <td class="nd_center-cell">comment</td>
       <td class="nd_center-cell">Other</td>
-      <td class="nd_center-cell"><input data-form="add" class="col-md-4 form-control w-auto d-inline-block" name="log" type="text" placeholder="Add comment..."></td>
+      <td class="nd_center-cell"><input data-form="add" class="form-control w-auto d-inline-block" name="log" type="text" placeholder="Add comment..."></td>
       <input data-form="add" name="ip" type="hidden" value="[% params.q | html_entity %]">
       <input data-form="add" name="port" type="hidden" value="[% params.f | html_entity %]">
       <td class="nd_center-cell">

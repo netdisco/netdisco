@@ -14,7 +14,7 @@
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select w-auto d-inline-block" data-form="add" name="acl_type">
+          <select class="form-select w-auto d-inline-block" data-form="add" name="acl_type">
             <option value="host">Host Group</option>
             <option value="host_host">Host to Host mapping</option>
             <option value="host_host">Ports on Hosts</option>
@@ -37,7 +37,7 @@
 
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select w-auto d-inline-block" data-form="update" name="acl_type">
+          <select class="form-select w-auto d-inline-block" data-form="update" name="acl_type">
             <option[% ' selected' IF acl.acl_type == "host" %] value="host">Host Group</option>
             <option[% ' selected' IF acl.acl_type == "host_host" %] value="host_host">Host to Host mapping</option>
             <option[% ' selected' IF acl.acl_type == "host_port" %] value="host_port">Ports on Hosts</option>
