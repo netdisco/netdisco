@@ -1362,8 +1362,15 @@ form .clearfix.success input {
 .nd_sidebar .form-check.float-start {
   padding-left: 5px;
 }
-.nd_netmap-sidebar.mb-3 {
-  margin-bottom: 9px !important;
+/* The one block in the application that used to carry the old stylesheet's
+   control-group class, whose whole effect was this 9px. The utility class it
+   was migrated to sets 16px and sets it flagged, so matching the old value
+   through that class meant a flag of this file's own, the only rule here that
+   overrode a utility by name rather than configuring one. The class is a
+   project class instead, so the value is reachable from the markup that asks
+   for it. */
+.nd_control-group {
+  margin-bottom: 9px;
 }
 
 .nd_netmap-sidebar-help {

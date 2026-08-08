@@ -9,7 +9,7 @@
               </ul>
             </div>
 
-            <div class="clearfix mb-3 nd_netmap-sidebar">
+            <div class="clearfix nd_control-group nd_netmap-sidebar">
               <div class="form-check float-start">
                 <label>
                   <input type="checkbox" name="showips" id="nd_showips"
