@@ -220,9 +220,15 @@
 /* The page used to be laid out in a 1170px container at this viewport, and the
    navbar artwork, the hero box and the brand are all placed from its left edge.
    The replacement's container is 1320px, which moved all three. This file loads
-   after the framework, so stating the old ladder here is enough; below 940px
-   the framework's own "width: 100%" already gives the fluid behaviour the old
-   one had. */
+   after the framework, so stating the old ladder here is enough at the width
+   the pages were measured at.
+
+   The old ladder had two steps below this one that are not put back. It held a
+   fixed 724px from 768px to 979px and only ran fluid below 768px, where the
+   rule below runs fluid from 940px down, the framework's own "width: 100%"
+   showing through a max-width that stops constraining it. Nothing on this
+   branch is measured at either width, so restoring either step would be a
+   change made blind. */
 .container {
   --bs-gutter-x: 0;
   max-width: 940px;
