@@ -186,7 +186,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p class="text-info">Copy this token — it will not be shown again.</p>
+        <p class="text-info">Copy this token. It will not be shown again.</p>
         <div class="input-group">
           <input id="nd_token-value" type="text" class="col-md-4 form-control" readonly>
           <button class="btn" id="nd_token-copy" type="button"><i class="fas fa-copy"></i> Copy</button>

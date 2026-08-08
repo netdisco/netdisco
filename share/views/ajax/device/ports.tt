@@ -61,11 +61,11 @@
         [% END %]
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <small><i class="fas fa-users text-muted" title="LAG member — aggregate disabled"></i></small>
+            <small><i class="fas fa-users text-muted" title="LAG member: aggregate disabled"></i></small>
           [% ELSIF row.get_column('agg_master_up') == 'up' %]
-            <small><i class="fas fa-users text-success" title="LAG member — aggregate up"></i></small>
+            <small><i class="fas fa-users text-success" title="LAG member: aggregate up"></i></small>
           [% ELSE %]
-            <small><i class="fas fa-users text-danger" title="LAG member — aggregate down"></i></small>
+            <small><i class="fas fa-users text-danger" title="LAG member: aggregate down"></i></small>
           [% END %]
         [% END %]
       </td>
@@ -444,7 +444,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            <i class="fas fa-link-slash text-danger" title="Possible uplink — neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
+            <i class="fas fa-link-slash text-danger" title="Possible uplink: neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
