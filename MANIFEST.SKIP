@@ -86,5 +86,8 @@ SECURITY.md
 
 # python stuff
 \b__pycache__
-\b.venv
+\.venv
 \buv.lock
+
+# node stuff
+\bnode_modules\b
