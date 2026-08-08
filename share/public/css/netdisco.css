@@ -455,6 +455,22 @@ a:hover, a:focus {
 }
 
 /* used for icons in sidebar search buttons */
+/* A large icon used to sit on a 0.9em line; the replacement puts it on 0.05em,
+   which collapses the line box to under a pixel and leaves the glyph painting
+   outside it. In the netmap's sidebar buttons the button's own edge then cut
+   the top off every icon, and because the clipped part of an open padlock is
+   its raised shackle, the Lasso release button read as the Lasso pin button.
+
+   Measured across all eighteen routes: -961 overall, six routes better and
+   three worse by 77, 63 and 11. Those three are the glyph metric that is
+   already recorded as an accepted deviation showing through: the old icon drew
+   at 11.05px and this one at 13.81px, so 0.9em is a 12.43px line where the old
+   stylesheet had 9.945px. Reproducing the rule is the fix; the remaining 2.5px
+   belongs to the glyph, not to this. */
+.fa-lg {
+  line-height: 0.9em;
+}
+
 .nd_navbar-icon {
   vertical-align: sub;
   margin-top: 4px !important;
