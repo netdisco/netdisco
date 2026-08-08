@@ -367,6 +367,26 @@ a[target="_blank"] > .badge.text-bg-secondary {
 .form-control, .form-select {
   padding: 4px 6px;
 }
+/* The old stylesheet gave every form control its own text and border colour,
+   #555555 and #cccccc, instead of deriving them from the page. The replacement
+   derives both, from --bs-body-color and --bs-border-color, so a control's text
+   became #333333 across 459 controls and its border #dee2e6 across 179, on
+   sixteen routes each.
+
+   Neither variable can carry the correction, because this file already sets
+   --bs-body-color to #333333 for the body text it is named after, and
+   --bs-border-color is what the sidebar box, the tables and the cards all draw
+   with. Stating the two colours on the controls themselves is the narrower
+   change.
+
+   Neither difference moves a single pixel in the snapshot harness. Both
+   comparators run pixelmatch at threshold 0.2, where a greyscale shift must
+   exceed 52 of 255 to register at all; these are 34 and 18, so no amount of
+   affected area would have surfaced them. */
+.form-control, .form-select {
+  color: #555555;
+  border-color: #cccccc;
+}
 .form-control-sm {
   min-height: 0;
 }
