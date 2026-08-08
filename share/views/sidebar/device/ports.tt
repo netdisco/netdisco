@@ -67,7 +67,7 @@
                   [% NEXT IF item.field.match('^cf_') AND NOT permitted_by_acl(netdisco_device, item) %]
                   <li>
                     <label class="form-check">
-                      <input class="form-check-input" type="checkbox" id="[% item.name | html_entity %]"
+                      <input type="checkbox" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% IF item.name == 'c_admin' %]
                         <span class="badge text-bg-info">[% item.label | html_entity %]</span>
@@ -98,7 +98,7 @@
                   [% FOREACH item IN settings.connected_properties %]
                   <li>
                     <label class="form-check">
-                      <input class="form-check-input" type="checkbox" id="[% item.name | html_entity %]"
+                      <input type="checkbox" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% item.label | html_entity %]
                     </label>
@@ -141,7 +141,7 @@
                   [% FOREACH item IN settings.port_display_properties %]
                   <li>
                     <label class="form-check">
-                      <input class="form-check-input" type="checkbox" id="[% item.name | html_entity %]"
+                      <input type="checkbox" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% item.label | html_entity %]
                     </label>
