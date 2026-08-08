@@ -49,6 +49,43 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
+/* And this is the button carrying no fill of its own, which is 36 of them,
+   almost all on the admin pages. The old stylesheet had no class for it: it was
+   what .btn on its own drew, so there is nothing in the replacement for the
+   value to be attached to and the classes that do carry a fill have to be
+   excluded by name. A colour class added to a page later needs adding to this
+   list, or its fill will be drawn over by the grey ramp.
+
+   .btn-secondary is deliberately absent from that list, which is why this
+   covers 36 buttons and not 29. It replaced a class the old stylesheet never
+   declared, so those seven buttons drew exactly what this rule draws; sending
+   them through it is the whole of their fix, and a rule of their own would only
+   restate it.
+
+   This block has to sit above the pressed and disabled rules that follow, not
+   below them. It is a class plus a :not(), so it weighs the same as .btn:active
+   and .btn.disabled, and while it stood below them it was quietly winning: a
+   pressed or disabled uncoloured button kept the ramp the old stylesheet
+   dropped. The order is the fix rather than a heavier selector, because the old
+   stylesheet declares the fill first and the states after it, so this is its
+   cascade rather than a specificity invented to beat one. */
+.btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning,
+         .btn-info, .btn-light, .btn-dark, .btn-link) {
+  --bs-btn-color: #333333;
+  --bs-btn-bg: #f5f5f5;
+  --bs-btn-border-color: #cccccc;
+  --bs-btn-hover-color: #333333;
+  --bs-btn-hover-bg: #e6e6e6;
+  --bs-btn-hover-border-color: #cccccc;
+  --bs-btn-active-color: #333333;
+  --bs-btn-active-bg: #e6e6e6;
+  --bs-btn-active-border-color: #cccccc;
+  --bs-btn-disabled-color: #333333;
+  --bs-btn-disabled-bg: #e6e6e6;
+  --bs-btn-disabled-border-color: #cccccc;
+  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
+  border-bottom-color: #b3b3b3;
+}
 /* Hovering slid the ramp 15px up rather than repainting the button. The ramp
    is drawn over the padding box, which is 26px on a standard button, so the
    slide leaves its last 11px along the top and uncovers 15px of the flat fill
@@ -92,35 +129,6 @@
   padding-right: 8px;
   box-shadow: inset 1px 0 0 rgba(255, 255, 255, .125),
               inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05);
-}
-/* And this is the button carrying no fill of its own, which is 36 of them,
-   almost all on the admin pages. The old stylesheet had no class for it: it was
-   what .btn on its own drew, so there is nothing in the replacement for the
-   value to be attached to and the classes that do carry a fill have to be
-   excluded by name. A colour class added to a page later needs adding to this
-   list, or its fill will be drawn over by the grey ramp.
-
-   .btn-secondary is deliberately absent from that list, which is why this
-   covers 36 buttons and not 29. It replaced a class the old stylesheet never
-   declared, so those seven buttons drew exactly what this rule draws; sending
-   them through it is the whole of their fix, and a rule of their own would only
-   restate it. */
-.btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning,
-         .btn-info, .btn-light, .btn-dark, .btn-link) {
-  --bs-btn-color: #333333;
-  --bs-btn-bg: #f5f5f5;
-  --bs-btn-border-color: #cccccc;
-  --bs-btn-hover-color: #333333;
-  --bs-btn-hover-bg: #e6e6e6;
-  --bs-btn-hover-border-color: #cccccc;
-  --bs-btn-active-color: #333333;
-  --bs-btn-active-bg: #e6e6e6;
-  --bs-btn-active-border-color: #cccccc;
-  --bs-btn-disabled-color: #333333;
-  --bs-btn-disabled-bg: #e6e6e6;
-  --bs-btn-disabled-border-color: #cccccc;
-  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
-  border-bottom-color: #b3b3b3;
 }
 /* this file loads after the framework, so the rules above would otherwise also
    decide the small button metrics at equal specificity. State them instead of
