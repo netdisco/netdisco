@@ -39,7 +39,7 @@
    letting them fall out. A small button's corner was 3px, which is the one the
    4px above is wrong for. */
 .btn-sm {
-  --bs-btn-font-size: 11px;
+  --bs-btn-font-size: 11.049999999999999px;
   --bs-btn-padding-y: 2px;
   --bs-btn-padding-x: 10px;
   --bs-btn-border-radius: 3px;
@@ -444,7 +444,7 @@ h2 { font-size: 29.25px; }
 h3 { font-size: 22.75px; }
 h4 { font-size: 16.25px; }
 h5 { font-size: 13px; }
-h6 { font-size: 11px; }
+h6 { font-size: 11.049999999999999px; }
 
 /* small type ran at 85% of its parent and now runs at 87.5%, which is half a
    pixel on body text but 0.45px per character in the hero box's 18px setting,
