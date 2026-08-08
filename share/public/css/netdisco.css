@@ -540,8 +540,17 @@ a:hover, a:focus {
   width: 100%;
 }
 
-/* results table header should have a background, for floatThead */
+/* results table header should have a background, for floatThead.
+
+   The background-color below still applies, and on its own it stopped being
+   visible: the replacement paints every cell with var(--bs-table-bg) and a
+   9999px inset shadow, where the old stylesheet left th and td transparent and
+   let the thead's colour show through. Measured on the job queue with a row in
+   it: thead is floralWhite on both, and the th above it went from transparent
+   to solid white. Setting the variable is the framework's own way in, so the
+   cells paint the same colour instead of over it. */
 div.content > div.tab-content table.nd_floatinghead thead {
+  --bs-table-bg: floralWhite;
   background-color: floralWhite;
 }
 
