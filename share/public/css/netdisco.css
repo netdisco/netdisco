@@ -163,7 +163,14 @@
    inside the box. The replacement pads .375rem .75rem and reserves 2.25rem on
    a select for a caret it draws itself, which costs a 56px select all but 6px
    of its option text and pushes the sidebar's prepended checkboxes onto a
-   second line. Restore the old padding and bring the caret in to the edge. */
+   second line. Restore the old padding and bring the caret in to the edge.
+
+   The 4px the caret is inset by is the third value in this file fitted to an
+   outcome rather than copied from a declaration, and the 20px follows from it:
+   16px of that is the caret artwork, whose width the framework declares, and
+   the remaining 4px is the same inset again so the option text stops clear of
+   it. Neither stylesheet states either number, because the old one had no
+   caret of its own to place: the browser drew one inside the box. */
 .form-control, .form-select {
   padding: 4px 6px;
 }
@@ -184,8 +191,9 @@
    three-row box in the sidebar. This states the height the old one drew
    rather than the cause of it, which was never found, so read it as a value
    fitted to the outcome and not as one copied from the old stylesheet. There
-   are two of those in this file, audited rule by rule: this one, and the 5px
-   the hero box's rows are spaced by. Only the one-row case is covered, which is
+   are three of those in this file, audited rule by rule: this one, the 4px the
+   select caret above is inset by, and the 5px the hero box's rows are spaced
+   by. Only the one-row case is covered, which is
    every list box in the sidebar bar that one: a taller box needs the row
    height, and that is the part with no remedy behind it. */
 .form-select[multiple][size="1"] {
@@ -546,10 +554,10 @@ div.nd_acl-rule-list {
 
 /* The 5px between a field and what follows it was the space between two
    inline-block children set at the box's 18px; the row spaces its children
-   itself now. The second of the two values in this file fitted to a measured
-   outcome rather than copied from a declaration, the other being the list box
-   height above: no stylesheet on either side states 5px here, it is the width
-   a space glyph drew. */
+   itself now. The third of the three values in this file fitted to a measured
+   outcome rather than copied from a declaration, the other two being the list
+   box height and the select caret's inset, both above: no stylesheet on either
+   side states 5px here, it is the width a space glyph drew. */
 .nd_hero-row .d-flex {
   gap: 5px;
 }
