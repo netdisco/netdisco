@@ -966,6 +966,19 @@ ul ul, ul ol, ol ol, ol ul {
   font-weight: bold;
 }
 
+/* The netmap's device labels were bold by accident. The chart drawing them is
+   vendored, unchanged here, and gives every one of them class="label", which is
+   also the name of a component the old stylesheet had, and that component was
+   bold. The stylesheet that replaced it has no such component, so the collision
+   went and the weight went with it. Put the weight back, and only here: a rule
+   on the bare class would bring back a component name this migration removed on
+   purpose, and would land on anything else that happens to use the word.
+   The link labels beside these never lost their weight, because the rule above
+   is netdisco's own and names a class no framework shares. */
+#netmap_pane svg text.label {
+  font-weight: bold;
+}
+
 /* netmap tooltip box */
 #netmap_pane_tooltip {
   width: unset;
