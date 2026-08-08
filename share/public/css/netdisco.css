@@ -76,9 +76,12 @@
   border-bottom-color: rgba(0, 0, 0, 0.25);
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
-/* Hovering slid the ramp 15px up rather than repainting the button, which
-   uncovered the flat fill along the bottom edge and left the darker half of
-   the ramp above it. Without this the hover colour set above stays hidden
+/* Hovering slid the ramp 15px up rather than repainting the button. The ramp
+   is drawn over the padding box, which is 26px on a standard button, so the
+   slide leaves its last 11px along the top and uncovers 15px of the flat fill
+   below. Measured on both stylesheets rather than reasoned: the button, its
+   padding box, the ramp, the background size and the background origin are
+   identical on each. Without this the hover colour set above stays hidden
    under the ramp and the button answers a pointer with nothing at all. The
    0.1s the slide was eased over is not reproduced: the framework eases colour,
    border and shadow from one transition property, and restating it here to add
