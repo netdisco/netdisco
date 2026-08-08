@@ -1258,21 +1258,46 @@ ul ul, ul ol, ol ol, ol ul {
   margin-bottom: 0px;
 }
 
-/* The rows a sidebar builds out of a bare label, the netmap's "Positions:" and
-   "Carrying VLAN:", are the same defect as the collapser headings above: a
-   label was a full-width block with a 5px gutter, and the replacement draws it
-   inline-block with none. Five pixels each, and everything below the second of
-   them on that sidebar sits ten pixels high because of it.
+/* The rows a sidebar builds out of a bare label: the netmap's "Positions:" and
+   "Carrying VLAN:", the job queue's "Longer than", and the "Vendor",
+   "Options" and "Date Range" headings of four report sidebars. All of them are
+   one defect. The old stylesheet made every label a full-width block with a
+   gutter under it, "label { display: block; margin-bottom: 5px }", and the
+   replacement has no such rule at all, so each row sits 5px short and
+   everything below it walks up the sidebar.
 
-   The second selector is the job queue's "Longer than" row, which is the same
-   label in the same form but one level deeper, inside the div.clearfix that
-   sidebar wraps its fields in, so a child combinator alone never reached it
-   and its Filter button sat at y=436 against master's y=441. The
-   :not([class]) is load-bearing rather than decorative: the port and node
-   search sidebars put label.input-group-text and label.nd_checkboxlabel at
-   exactly that depth, and both already carry the metrics they need. */
-.nd_sidebar-form > label,
-.nd_sidebar-form > div.clearfix > label:not([class]) {
+   Stated once for the whole form rather than once per site. Two earlier
+   versions of this rule named a depth, first the form's own children and then
+   the div.clearfix one level under that, and each time a site at some other
+   depth was left behind: the job queue's label sits inside a clearfix and the
+   report headings sit inside a legend. Naming the form and excluding the
+   components is what stops the next one being missed.
+
+   Four exclusions, each measured rather than argued. :not([class]) keeps out
+   label.input-group-text and label.nd_checkboxlabel, twenty of which the port
+   and node search sidebars put into these forms already carrying their own
+   metrics. The other three are components that lay out their own labels, and
+   forcing this rule onto them moves them away from master:
+
+     .radio        the vendored stylesheet draws these inline-block and so did
+                   master, so only their margin was ever missing and it is
+                   restored on its own above.
+     .form-check   the netmap's three toggle rows, whose labels are a different
+                   element from master's, which the old toggle plugin owned.
+                   Blocking them walks that sidebar 22px down.
+     .input-group  the netmap's "Color by:" row. The replacement makes this
+                   component a flex container, and a flex item's margin does
+                   not collapse the way the old block's did, so the 5px lands
+                   outright and pushes Redraw Map to y=611.19 against 606.19.
+
+   Measured across every sidebar route. Route 09 holds y=606.19, route 07 holds
+   y=441, routes 03 and 08 and the ACL editor are untouched, and the four
+   report sidebars move toward master: subnets 171 to 176 against 177, module
+   inventory 506.38 to 511.38 against 512.38, node vendor 245.19 to 255.19
+   against 257.19, IP inventory 323 to 333 against 344. What remains at each is
+   1px per fieldset, which is the legend's own box, h=23 against 24 and floated
+   where master left it in flow, and not the label. */
+.nd_sidebar-form label:not([class]):not(.radio *):not(.form-check *):not(.input-group *) {
   display: block;
   margin-bottom: 5px;
 }
