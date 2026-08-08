@@ -1552,6 +1552,21 @@ form .clearfix.success input {
    replacements pitch at 26px inside a 16px gutter, which walks everything
    below the toggles 5px up the sidebar. The 5px goes on the row rather than
    the label below, because the row is what has to keep the height. */
+/* The six radio rows in the netmap and ACL sidebars draw their circle from
+   awesome-bootstrap-checkbox's .radio label::before, which sits in a 20px
+   gutter the .radio container reserves. Drawing it there only lines up if the
+   real input is pulled out of the flow, and the old stylesheet did that with
+   .radio input[type=radio]{float:left;margin-left:-20px}. The replacement has
+   no .radio component at all, so the input stayed in the flow, pushed each
+   label 16.6px right, and wrapped the one row narrow enough to notice.
+
+   Only .radio needs this. The .checkbox containers all became form-check, and
+   nothing in share/views still carries the bare class. */
+.radio input[type="radio"] {
+  float: left;
+  margin-left: -20px;
+}
+
 .nd_netmap-sidebar .form-check {
   margin-bottom: 5px;
 }
