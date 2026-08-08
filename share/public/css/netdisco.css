@@ -456,8 +456,13 @@ option {
    Deliberately scoped to a checkbox the label wraps. The netmap's three toggles
    are also .form-check but put the input beside the label rather than inside
    it, which is what makes bootstrap5-toggle claim them, and floating those into
-   a gutter no label reserves would push them out of their rows. */
-label.form-check > input[type="checkbox"] {
+   a gutter no label reserves would push them out of their rows.
+
+   The inline variant is excluded for the same reason from the other direction.
+   The SNMP tab's Partial checkbox sits inside a label the old stylesheet never
+   styled at all, its class having been undefined there, so its box drew in the
+   line rather than in a gutter. Floating it lifted it 7px out of the row. */
+label.form-check:not(.form-check-inline) > input[type="checkbox"] {
   float: left;
   margin: 4px 0 0 -20px;
 }
@@ -1035,6 +1040,45 @@ div.nd_acl-rule-list {
    they are a separate difference and are not touched here. */
 .table {
   --bs-table-border-color: #dddddd;
+}
+
+/* The SNMP tab's search row. The old stylesheet had a form-inline component
+   which laid a form's controls out along one line: its inputs, selects and
+   labels drew inline-block, with no bottom margin and aligned to the middle.
+   The replacement has no such component, and its form-control draws block, so
+   the spinner, the field, the button and the two checkboxes each took a line of
+   their own and the row stood 82px where it stood 28.
+
+   The single class that replaced it, d-flex, cannot do the work here: the form
+   holds one span and everything else is inside that, so the only flex item is
+   the span and its contents go on laying themselves out as blocks. Reproducing
+   what the old component declared is the smaller and more faithful change, and
+   this is the only form on either tree that used it. */
+#nd_snmp_search_form input,
+#nd_snmp_search_form select,
+#nd_snmp_search_form label {
+  display: inline-block;
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+/* The field's own width, which came from the old grid: a five-column span in a
+   1170px layout drew 470px, and being a fixed grid it drew 470px at every
+   viewport above the breakpoint. The replacement's form-control declares
+   width:100%, which outruns the grid class the markup carried and stretched the
+   field across the pane, pushing everything after it onto later lines. Stated
+   here, and the grid class dropped from the markup, because leaving a class
+   that looks like it sets the width but does not is worse than neither. */
+#nd_snmp_search_text {
+  width: 470px;
+}
+/* And the box the replacement puts around that label. The class it carries was
+   undefined in the old stylesheet, so the label drew as bare inline text with
+   its checkbox in the line; the replacement gives it a reserved gutter, a
+   minimum height and a bottom margin, which lifts the box out of the row. */
+#nd_snmp_search_form .form-check {
+  min-height: 0;
+  padding-left: 0;
+  margin-bottom: 0;
 }
 
 /* A bordered table's own frame. The old stylesheet drew one: a 1px edge with

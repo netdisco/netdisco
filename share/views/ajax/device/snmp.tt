@@ -3,13 +3,20 @@
         <div id="jstree" class="nd_scrollable"></div>
     </div>
     <div id="snmpnodecontainer" class="col-md-8">
-        <form id="nd_snmp_search_form" class="d-flex gap-2 col-md-4">
+[%# This form carries no layout class, and both of the ones it used to are
+    deliberately gone. col-md-4 was dead markup: the old stylesheet defined no
+    such class, and the replacement does, which narrowed the form to a third of
+    the pane. d-flex was put here to stand in for the old form-inline, but it
+    blockifies the one span this form holds, and the span then constrains every
+    control inside it. The layout is stated in netdisco.css instead, where the
+    old component's own declarations can be reproduced directly. %]
+        <form id="nd_snmp_search_form">
           <span class="form-group">
             <i id="nd_snmp_loading_spinner" class="far fa-circle fa-lg"></i>
             &nbsp;
 
             <input id="nd_snmp_search_text" type="text"
-             class="form-control nd_snmp_search_param col-md-5"
+             class="form-control nd_snmp_search_param"
              name="term" required placeholder="Search for label or OID">
 
             <button type="submit" class="btn btn-secondary">Search</button>
