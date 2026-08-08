@@ -62,6 +62,12 @@
    them through it is the whole of their fix, and a rule of their own would only
    restate it.
 
+   .btn-light stays in the list with no rule of its own anywhere in this file,
+   and that is a decision rather than an omission: the old stylesheet declares no
+   such class, so there is no rendering of it to reproduce, and nothing in the
+   application asks for one. Leaving it excluded gives it the framework's own
+   flat fill, which is the only honest answer when there is nothing to restore.
+
    This block has to sit above the pressed and disabled rules that follow, not
    below them. It is a class plus a :not(), so it weighs the same as .btn:active
    and .btn.disabled, and while it stood below them it was quietly winning: a
@@ -163,7 +169,7 @@
    removal when pressed are not here: they were shared with every button, so
    they sit on .btn above, exactly as the old stylesheet set them once and left
    each colour to override only its own fill, border and text shadow. */
-.btn-info, .btn-primary, .btn-danger, .btn-success, .btn-dark {
+.btn-info, .btn-primary, .btn-danger, .btn-success, .btn-warning, .btn-dark {
   --bs-btn-color: #ffffff;
   --bs-btn-border-color: rgba(0, 0, 0, 0.1);
   --bs-btn-hover-color: #ffffff;
@@ -206,6 +212,16 @@
   --bs-btn-active-bg: #51a351;
   --bs-btn-disabled-bg: #51a351;
   background-image: linear-gradient(to bottom, #62c462, #51a351);
+}
+/* No page asks for the warning button and none did before, but the old
+   stylesheet declares it, so it is restored rather than left to draw a flat
+   framework yellow under black type the first time someone reaches for it. */
+.btn-warning {
+  --bs-btn-bg: #faa732;
+  --bs-btn-hover-bg: #f89406;
+  --bs-btn-active-bg: #f89406;
+  --bs-btn-disabled-bg: #f89406;
+  background-image: linear-gradient(to bottom, #fbb450, #f89406);
 }
 .btn-dark {
   --bs-btn-bg: #363636;
