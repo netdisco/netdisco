@@ -1037,6 +1037,29 @@ div.nd_acl-rule-list {
   --bs-table-border-color: #dddddd;
 }
 
+/* A bordered table's own frame. The old stylesheet drew one: a 1px edge with
+   its left side omitted, 4px rounded corners, and a separated border model so
+   the frame and the cells' rules stayed distinct. Its cells carried a left rule
+   only, which is what put a single line between two columns.
+
+   The replacement collapses the model, drops the frame and the corners
+   entirely, and gives each cell a rule on both sides. The visible results are a
+   table with no outer edge and square corners where it had rounded ones.
+
+   Restoring the model rather than patching its symptoms: separate collapsing,
+   the frame back with its left side omitted because the first cell's own left
+   rule supplies that edge, and the cells' right rule removed so two adjacent
+   columns are divided by one line rather than two. */
+table.dataTable.table-bordered {
+  border: 1px solid #dddddd;
+  border-left: 0;
+  border-collapse: separate;
+  border-radius: 4px;
+}
+table.dataTable.table-bordered > :not(caption) > * > * {
+  border-right-width: 0;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
@@ -1930,6 +1953,28 @@ div.dt-container div.dt-length label {
    both elements and is what the old arrangement amounted to. */
 div.dt-container div.dt-search {
   float: right;
+}
+/* Both controls stand 37px where the old ones stood 28, and the 9px between
+   those is this file's own: the rule above that gives every control the gutter
+   the old ones carried themselves. Its comment says rules further down exist to
+   take it away where it is not wanted, and these are two such places. The old
+   stylesheet also aligned these two to the middle rather than the baseline.
+
+   This reaches past the controls. A table box shifts down past floats, so the
+   tallest float in the control row decides where the table starts, and the 9px
+   moved every table on the site down with it. */
+div.dt-container div.dt-length select,
+div.dt-container div.dt-search input {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+/* And the 5px the old base rule for a label gave this one, which is the rest of
+   the gap above the table: it is a float, so its bottom margin extends the
+   margin box the table shifts past. The replacement gives a label no margin at
+   all, the same absence this file already corrects for the sidebar's labels and
+   the radio rows. */
+div.dt-container div.dt-length label {
+  margin-bottom: 5px;
 }
 /* The pager itself. The old control drew 28px: 4px of padding above and below
    an 18px line, at 13px. The replacement's is 36px, from larger padding, a 16px
