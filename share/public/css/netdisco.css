@@ -878,6 +878,23 @@ div.nd_acl-rule-list {
   --bs-table-striped-bg: #f9f9f9;
 }
 
+/* The old stylesheet gave a cell no colour of its own in any state, so every
+   table drew the body's #333. The replacement resolves the cell colour, and
+   the striped, hovered and active variants of it, from --bs-emphasis-color,
+   which is #000, so it does not inherit the body colour and does not follow
+   when the body colour is set. Measured on the device details table and the
+   admin users table: every cell computes rgb(0, 0, 0) against master's
+   rgb(51, 51, 51). All four are stated because all four resolve from that one
+   variable and the old stylesheet drew all four states in the body colour;
+   table-active is the one class of the set no template carries, and it is
+   stated with the rest rather than left resolving to black. */
+.table {
+  --bs-table-color: #333333;
+  --bs-table-striped-color: #333333;
+  --bs-table-hover-color: #333333;
+  --bs-table-active-color: #333333;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
