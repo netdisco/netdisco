@@ -1049,7 +1049,14 @@ div.nd_acl-rule-list {
    Restoring the model rather than patching its symptoms: separate collapsing,
    the frame back with its left side omitted because the first cell's own left
    rule supplies that edge, and the cells' right rule removed so two adjacent
-   columns are divided by one line rather than two. */
+   columns are divided by one line rather than two.
+
+   The colour has to be stated on the cells as well, and is the reason a
+   separated model cannot be turned on by itself. While the borders collapse,
+   the rule between two cells is drawn by the row, which does carry a colour.
+   Separate them and each cell draws its own, and the framework sets no colour
+   there, so it falls back to currentColor and every vertical rule in every
+   table turns near-black. */
 table.dataTable.table-bordered {
   border: 1px solid #dddddd;
   border-left: 0;
@@ -1058,6 +1065,7 @@ table.dataTable.table-bordered {
 }
 table.dataTable.table-bordered > :not(caption) > * > * {
   border-right-width: 0;
+  border-color: var(--bs-table-border-color);
 }
 
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
