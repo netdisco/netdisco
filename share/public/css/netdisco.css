@@ -36,16 +36,63 @@
 }
 /* this file loads after the framework, so the rules above would otherwise also
    decide the small button metrics at equal specificity. State them instead of
-   letting them fall out. */
+   letting them fall out. A small button's corner was 3px, which is the one the
+   4px above is wrong for. */
 .btn-sm {
   --bs-btn-font-size: 11px;
   --bs-btn-padding-y: 2px;
   --bs-btn-padding-x: 10px;
   --bs-btn-border-radius: 3px;
 }
-/* A small button's corner was 3px, which is the one the 4px above is wrong for.
 
-   A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
+/* This button drew white type on a blue ramp with a dark shadow under the
+   glyphs. Its replacement draws black type on a flat bright cyan, so at the 37
+   places it is used, every sidebar submit button among them, the fill changes
+   hue and the type inverts. The framework paints a fill from --bs-btn-bg and
+   has no variable for a ramp, so the fill is stated twice: through the
+   variables, so that what the framework reports and what the page draws agree,
+   and once as an image, which is the only way to get the ramp back. It is
+   background-image rather than the background shorthand, because the shorthand
+   would reset the colour underneath it to transparent.
+
+   The bottom edge was a quarter-opacity black where the other three were a
+   tenth. A single --bs-btn-border-color cannot say that, so that edge is
+   stated on its own. */
+.btn-info {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #49afcd;
+  --bs-btn-border-color: rgba(0, 0, 0, 0.1);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #2f96b4;
+  --bs-btn-hover-border-color: rgba(0, 0, 0, 0.1);
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #2f96b4;
+  --bs-btn-active-border-color: rgba(0, 0, 0, 0.1);
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-bg: #2f96b4;
+  --bs-btn-disabled-border-color: rgba(0, 0, 0, 0.1);
+  background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
+  background-repeat: repeat-x;
+  border-bottom-color: rgba(0, 0, 0, 0.25);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+/* Hovering slid the ramp 15px up rather than repainting the button, which
+   uncovered the flat fill along the bottom edge and left the darker half of
+   the ramp above it. Without this the hover colour set above stays hidden
+   under the ramp and the button answers a pointer with nothing at all. The
+   0.1s the slide was eased over is not reproduced: the framework eases colour,
+   border and shadow from one transition property, and restating it here to add
+   a fourth would drop the three it already carries. */
+.btn-info:hover, .btn-info:focus {
+  background-position: 0 -15px;
+}
+/* A pressed or a disabled button dropped the ramp altogether and drew the flat
+   fill on its own. */
+.btn-info:active, .btn-info.active, .btn-info:disabled, .btn-info.disabled {
+  background-image: none;
+}
+
+/* A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
    with a dark shadow under the glyphs, and took its fill from a palette of its
    own. Its replacement sizes the type from its parent, insets it in ems and
    draws flat framework colours, so every badge in the application is 1.44px
