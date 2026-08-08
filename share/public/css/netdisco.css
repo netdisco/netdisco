@@ -1124,6 +1124,20 @@ table.dataTable.table-bordered > :not(caption) > * > * {
   border-color: var(--bs-table-border-color);
 }
 
+/* Five tables group their rows by inserting a tr of their own and shading it.
+   Both stylesheets shade it the same #dddddd, and on the branch it was invisible
+   anyway, because the replacement paints a table's background on the cells where
+   the old one left them transparent and let the row's own colour show. Every
+   grouping row was therefore drawn white over its grey.
+
+   The selector is long because the declaration painting the cell is the
+   integration's own, at two classes and an element, and the shorter forms of
+   this lose to it. Affects the OS, PoE and radio-power reports and both node
+   searches. */
+table.dataTable tr.group > td {
+  background-color: transparent;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
