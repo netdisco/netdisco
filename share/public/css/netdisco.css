@@ -126,8 +126,9 @@
    same 13px font in a list box, 16.59px against 16.00px, measured on the one
    three-row box in the sidebar. This states the height the old one drew
    rather than the cause of it, which was never found, so read it as a value
-   fitted to the outcome and not as one copied from the old stylesheet. It is
-   the only such value in this file. Only the one-row case is covered, which is
+   fitted to the outcome and not as one copied from the old stylesheet. There
+   are two of those in this file, audited rule by rule: this one, and the 5px
+   the hero box's rows are spaced by. Only the one-row case is covered, which is
    every list box in the sidebar bar that one: a taller box needs the row
    height, and that is the part with no remedy behind it. */
 .form-select[multiple][size="1"] {
@@ -459,7 +460,10 @@ div.nd_acl-rule-list {
 
 /* The 5px between a field and what follows it was the space between two
    inline-block children set at the box's 18px; the row spaces its children
-   itself now. */
+   itself now. The second of the two values in this file fitted to a measured
+   outcome rather than copied from a declaration, the other being the list box
+   height above: no stylesheet on either side states 5px here, it is the width
+   a space glyph drew. */
 .nd_hero-row .d-flex {
   gap: 5px;
 }
