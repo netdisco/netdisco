@@ -86,6 +86,16 @@
 .badge.text-bg-dark {
   --bs-dark-rgb: 51, 51, 51;
 }
+/* The one badge in the application that borrows a class from the alert palette,
+   the warning on an old PostgreSQL. That class used to carry a fill and a
+   colour of its own and now carries neither, only custom properties an alert
+   reads, so this badge draws white type on nothing at all and cannot be seen.
+   Its markup is the same on both sides, so this has been invisible since the
+   markup was migrated, and no route captures it. */
+.badge.alert-danger {
+  background-color: #f2dede;
+  color: #b94a48;
+}
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
   --bs-dropdown-border-radius: 6px;
