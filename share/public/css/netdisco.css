@@ -1202,8 +1202,17 @@ ul ul, ul ol, ol ol, ol ul {
    "Carrying VLAN:", are the same defect as the collapser headings above: a
    label was a full-width block with a 5px gutter, and the replacement draws it
    inline-block with none. Five pixels each, and everything below the second of
-   them on that sidebar sits ten pixels high because of it. */
-.nd_sidebar-form > label {
+   them on that sidebar sits ten pixels high because of it.
+
+   The second selector is the job queue's "Longer than" row, which is the same
+   label in the same form but one level deeper, inside the div.clearfix that
+   sidebar wraps its fields in, so a child combinator alone never reached it
+   and its Filter button sat at y=436 against master's y=441. The
+   :not([class]) is load-bearing rather than decorative: the port and node
+   search sidebars put label.input-group-text and label.nd_checkboxlabel at
+   exactly that depth, and both already carry the metrics they need. */
+.nd_sidebar-form > label,
+.nd_sidebar-form > div.clearfix > label:not([class]) {
   display: block;
   margin-bottom: 5px;
 }
