@@ -344,9 +344,6 @@ share/public/css/font-awesome.min.css
 share/public/css/jquery.qtip.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
-share/public/css/smoothness/images/animated-overlay.gif
-share/public/css/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png
-share/public/css/smoothness/images/ui-bg_flat_75_ffffff_40x100.png
 share/public/css/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png
 share/public/css/smoothness/images/ui-bg_glass_65_ffffff_1x400.png
 share/public/css/smoothness/images/ui-bg_glass_75_dadada_1x400.png
@@ -358,7 +355,7 @@ share/public/css/smoothness/images/ui-icons_2e83ff_256x240.png
 share/public/css/smoothness/images/ui-icons_454545_256x240.png
 share/public/css/smoothness/images/ui-icons_888888_256x240.png
 share/public/css/smoothness/images/ui-icons_cd0a0a_256x240.png
-share/public/css/smoothness/jquery-ui.custom.min.css
+share/public/css/smoothness/jquery-ui.min.css
 share/public/css/toastr.css
 share/public/dispatch.cgi
 share/public/dispatch.fcgi
@@ -385,7 +382,7 @@ share/public/javascripts/he.js
 share/public/javascripts/jquery-deserialize.js
 share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
-share/public/javascripts/jquery-ui.custom.min.js
+share/public/javascripts/jquery-ui.min.js
 share/public/javascripts/jquery.cookie.js
 share/public/javascripts/jquery.dataTables.min.js
 share/public/javascripts/jquery.floatThead.js

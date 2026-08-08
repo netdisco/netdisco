@@ -14,7 +14,7 @@
 
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js"></script>
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.custom.min.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-history.js"></script>
 <!--  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.cookie.js"></script> -->
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js"></script>
@@ -54,7 +54,7 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/jquery.qtip.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.custom.min.css"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/d3-force-network-chart.css"/>

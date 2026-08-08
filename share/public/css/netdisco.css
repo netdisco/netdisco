@@ -684,6 +684,18 @@ div.content > div.tab-content table.nd_floatinghead thead {
   overflow-x: hidden;
 }
 
+/* The menu marks its highlighted row with ui-state-active, where it used to
+   use ui-state-focus. In the smoothness theme those two states are different
+   colours: focus is grey, active is white, so the highlight became white on a
+   white menu and all that marked the selection was a 1px border. These are
+   the theme's own ui-state-focus values, applied to the row the menu now
+   actually classes. */
+.ui-menu .ui-menu-item-wrapper.ui-state-active {
+  border: 1px solid #999999;
+  background: #dadada url(smoothness/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;
+  color: #212121;
+}
+
 /* jstree scrollable */
 
 .nd_scrollable {
