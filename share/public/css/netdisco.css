@@ -28,11 +28,72 @@
   font-size: 13px;
   line-height: 18px;
 }
+/* Every button used to sit on a ramp, under a highlight along its top inside
+   edge and a shadow under its bottom outside edge, and it slid the ramp rather
+   than repainting itself when a pointer arrived. The replacement paints one
+   flat colour from --bs-btn-bg and draws neither shadow. These are the parts of
+   that no colour class in the old stylesheet overrode, so they belong on every
+   button; the parts that each colour did override are set per colour, below and
+   in the framework. Only a link button took the shadows off again, and it is
+   given them back below for the same reason it had them off. */
 .btn {
   --bs-btn-font-size: 13px;
   --bs-btn-padding-y: 4px;
   --bs-btn-padding-x: 12px;
   --bs-btn-line-height: 18px;
+  background-repeat: repeat-x;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+/* Hovering slid the ramp 15px up rather than repainting the button. The ramp
+   is drawn over the padding box, which is 26px on a standard button, so the
+   slide leaves its last 11px along the top and uncovers 15px of the flat fill
+   below. Measured on both stylesheets rather than reasoned: the button, its
+   padding box, the ramp, the background size and the background origin are
+   identical on each. Without this the hover fill each colour sets stays hidden
+   under that colour's ramp and the button answers a pointer with nothing at
+   all. The 0.1s the slide was eased over is not reproduced: the framework eases
+   colour, border and shadow from one transition property, and restating it here
+   to add a fourth would drop the three it already carries. */
+.btn:hover, .btn:focus {
+  background-position: 0 -15px;
+}
+/* Pressing a button dropped its ramp, drew the flat fill under it, and turned
+   the shadow round so the face looked pushed in. */
+.btn:active, .btn.active {
+  background-image: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn:disabled, .btn.disabled {
+  background-image: none;
+  box-shadow: none;
+}
+/* A link button was the one kind that drew no box at all. */
+.btn-link {
+  box-shadow: none;
+}
+/* And this is the button carrying no colour class, which is 29 of them, almost
+   all on the admin pages. The old stylesheet had no class for it: it was what
+   .btn on its own drew, so there is nothing in the replacement for the value to
+   be attached to and it has to be excluded from the colours by name. A colour
+   class added to a page later needs adding to this list, or its fill will be
+   drawn over by the grey ramp. */
+.btn:not(.btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-warning,
+         .btn-info, .btn-light, .btn-dark, .btn-link) {
+  --bs-btn-color: #333333;
+  --bs-btn-bg: #f5f5f5;
+  --bs-btn-border-color: #cccccc;
+  --bs-btn-hover-color: #333333;
+  --bs-btn-hover-bg: #e6e6e6;
+  --bs-btn-hover-border-color: #cccccc;
+  --bs-btn-active-color: #333333;
+  --bs-btn-active-bg: #e6e6e6;
+  --bs-btn-active-border-color: #cccccc;
+  --bs-btn-disabled-color: #333333;
+  --bs-btn-disabled-bg: #e6e6e6;
+  --bs-btn-disabled-border-color: #cccccc;
+  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
+  border-bottom-color: #b3b3b3;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
 /* this file loads after the framework, so the rules above would otherwise also
    decide the small button metrics at equal specificity. State them instead of
@@ -57,7 +118,10 @@
 
    The bottom edge was a quarter-opacity black where the other three were a
    tenth. A single --bs-btn-border-color cannot say that, so that edge is
-   stated on its own. */
+   stated on its own. The ramp's repeat, the slide under a pointer, the two
+   shadows and their removal when pressed are shared with every other button
+   and are set above, exactly as the old stylesheet set them once on .btn and
+   left each colour to override only its own fill, border and text shadow. */
 .btn-info {
   --bs-btn-color: #ffffff;
   --bs-btn-bg: #49afcd;
@@ -72,27 +136,8 @@
   --bs-btn-disabled-bg: #2f96b4;
   --bs-btn-disabled-border-color: rgba(0, 0, 0, 0.1);
   background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
-  background-repeat: repeat-x;
   border-bottom-color: rgba(0, 0, 0, 0.25);
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-/* Hovering slid the ramp 15px up rather than repainting the button. The ramp
-   is drawn over the padding box, which is 26px on a standard button, so the
-   slide leaves its last 11px along the top and uncovers 15px of the flat fill
-   below. Measured on both stylesheets rather than reasoned: the button, its
-   padding box, the ramp, the background size and the background origin are
-   identical on each. Without this the hover colour set above stays hidden
-   under the ramp and the button answers a pointer with nothing at all. The
-   0.1s the slide was eased over is not reproduced: the framework eases colour,
-   border and shadow from one transition property, and restating it here to add
-   a fourth would drop the three it already carries. */
-.btn-info:hover, .btn-info:focus {
-  background-position: 0 -15px;
-}
-/* A pressed or a disabled button dropped the ramp altogether and drew the flat
-   fill on its own. */
-.btn-info:active, .btn-info.active, .btn-info:disabled, .btn-info.disabled {
-  background-image: none;
 }
 
 /* A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
