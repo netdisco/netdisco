@@ -86,7 +86,7 @@
       [% END %]
         <a class="nd_log-icon"
           href="[% uri_for('/report/portlog') | none %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
-          <i class="fas fa-file-lines"
+          <i class="far fa-file-lines"
             rel="tooltip" data-bs-placement="top"
             data-bs-animation="false" data-bs-title="View Port Log"></i>
         </a>

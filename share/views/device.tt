@@ -44,7 +44,7 @@
       <span id="nd_device-name">
         [% IF netdisco_device.is_pseudo %]<span class="badge text-bg-warning">[% END %][% display_name | html_entity %][% IF netdisco_device.is_pseudo %]</span>[% END %]
         <a id="nd_csv-download" href="#" download="netdisco.csv">&nbsp;
-          <i id="nd_csv-download-icon" class="text-info fas fa-file-lines fa-lg"
+          <i id="nd_csv-download-icon" class="text-info far fa-file-lines fa-lg"
             rel="tooltip" data-bs-placement="left" data-bs-title="Download as CSV"></i></a>
       </span>
     </ul>

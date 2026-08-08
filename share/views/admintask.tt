@@ -53,7 +53,7 @@
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
-          <i id="nd_csv-download-icon" class="text-info fas fa-file-lines fa-lg"
+          <i id="nd_csv-download-icon" class="text-info far fa-file-lines fa-lg"
             rel="tooltip" data-bs-placement="left" data-bs-title="Download as CSV"></i></a>
       </span>
       [% END %]
