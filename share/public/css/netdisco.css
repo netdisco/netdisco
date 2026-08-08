@@ -29,13 +29,17 @@
   line-height: 18px;
 }
 /* Every button used to sit on a ramp, under a highlight along its top inside
-   edge and a shadow under its bottom outside edge, and it slid the ramp rather
-   than repainting itself when a pointer arrived. The replacement paints one
-   flat colour from --bs-btn-bg and draws neither shadow. These are the parts of
-   that no colour class in the old stylesheet overrode, so they belong on every
-   button; the parts that each colour did override are set per colour, below and
-   in the framework. Only a link button took the shadows off again, and it is
-   given them back below for the same reason it had them off. */
+   edge and a shadow under its bottom outside edge, with a light shadow over the
+   type, and it slid the ramp rather than repainting itself when a pointer
+   arrived. The replacement paints one flat colour from --bs-btn-bg and draws no
+   shadow of any kind. These are the parts of that no class in the old
+   stylesheet overrode, so they belong on every button; the parts a class did
+   override are set per class, below and in the framework. The light type shadow
+   is here rather than with the grey fill further down because the old
+   stylesheet put it on every button and only the five coloured classes replaced
+   it, so a link button, which replaced none of it, keeps it. Only a link button
+   took the two box shadows off again, and it takes them off below for the same
+   reason it did then. */
 .btn {
   --bs-btn-font-size: 13px;
   --bs-btn-padding-y: 4px;
@@ -43,6 +47,7 @@
   --bs-btn-line-height: 18px;
   background-repeat: repeat-x;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
 /* Hovering slid the ramp 15px up rather than repainting the button. The ramp
    is drawn over the padding box, which is 26px on a standard button, so the
@@ -67,17 +72,25 @@
   background-image: none;
   box-shadow: none;
 }
-/* A link button was the one kind that drew no box at all. */
+/* A link button was the one kind that drew no box at all, and its corners were
+   square where every other button's were rounded. */
 .btn-link {
+  --bs-btn-border-radius: 0;
   box-shadow: none;
 }
-/* And this is the button carrying no colour class, which is 29 of them, almost
-   all on the admin pages. The old stylesheet had no class for it: it was what
-   .btn on its own drew, so there is nothing in the replacement for the value to
-   be attached to and it has to be excluded from the colours by name. A colour
-   class added to a page later needs adding to this list, or its fill will be
-   drawn over by the grey ramp. */
-.btn:not(.btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-warning,
+/* And this is the button carrying no fill of its own, which is 36 of them,
+   almost all on the admin pages. The old stylesheet had no class for it: it was
+   what .btn on its own drew, so there is nothing in the replacement for the
+   value to be attached to and the classes that do carry a fill have to be
+   excluded by name. A colour class added to a page later needs adding to this
+   list, or its fill will be drawn over by the grey ramp.
+
+   .btn-secondary is deliberately absent from that list, which is why this
+   covers 36 buttons and not 29. It replaced a class the old stylesheet never
+   declared, so those seven buttons drew exactly what this rule draws; sending
+   them through it is the whole of their fix, and a rule of their own would only
+   restate it. */
+.btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning,
          .btn-info, .btn-light, .btn-dark, .btn-link) {
   --bs-btn-color: #333333;
   --bs-btn-bg: #f5f5f5;
@@ -93,7 +106,6 @@
   --bs-btn-disabled-border-color: #cccccc;
   background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
   border-bottom-color: #b3b3b3;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
 /* this file loads after the framework, so the rules above would otherwise also
    decide the small button metrics at equal specificity. State them instead of
@@ -106,38 +118,78 @@
   --bs-btn-border-radius: 3px;
 }
 
-/* This button drew white type on a blue ramp with a dark shadow under the
-   glyphs. Its replacement draws black type on a flat bright cyan, so at the 37
-   places it is used, every sidebar submit button among them, the fill changes
-   hue and the type inverts. The framework paints a fill from --bs-btn-bg and
-   has no variable for a ramp, so the fill is stated twice: through the
-   variables, so that what the framework reports and what the page draws agree,
-   and once as an image, which is the only way to get the ramp back. It is
-   background-image rather than the background shorthand, because the shorthand
-   would reset the colour underneath it to transparent.
+/* The five classes that carry a fill of their own. Each drew white type with a
+   dark shadow under the glyphs, on its own ramp, inside a border that was a
+   tenth-opacity black on three sides and a quarter on the bottom. Their
+   replacements draw one flat colour each, two of them under black type, and no
+   shadow anywhere; the blue one alone is used 37 times, every sidebar submit
+   button among them, so this is the largest appearance change the framework
+   makes to the application.
 
-   The bottom edge was a quarter-opacity black where the other three were a
-   tenth. A single --bs-btn-border-color cannot say that, so that edge is
-   stated on its own. The ramp's repeat, the slide under a pointer, the two
-   shadows and their removal when pressed are shared with every other button
-   and are set above, exactly as the old stylesheet set them once on .btn and
-   left each colour to override only its own fill, border and text shadow. */
-.btn-info {
+   Everything the five share is stated once here. The framework paints a fill
+   from --bs-btn-bg and has no variable for a ramp, so each fill is stated twice
+   below: through the variable, so that what the framework reports and what the
+   page draws agree, and once as an image, which is the only way to get the ramp
+   back. It is background-image rather than the background shorthand, because
+   the shorthand would reset the colour underneath it to transparent. The bottom
+   edge was a quarter-opacity black where the other three were a tenth, and a
+   single --bs-btn-border-color cannot say that, so that edge is stated on its
+   own.
+
+   The ramp's repeat, the slide under a pointer, the two shadows and their
+   removal when pressed are not here: they were shared with every button, so
+   they sit on .btn above, exactly as the old stylesheet set them once and left
+   each colour to override only its own fill, border and text shadow. */
+.btn-info, .btn-primary, .btn-danger, .btn-success, .btn-dark {
   --bs-btn-color: #ffffff;
-  --bs-btn-bg: #49afcd;
   --bs-btn-border-color: rgba(0, 0, 0, 0.1);
   --bs-btn-hover-color: #ffffff;
-  --bs-btn-hover-bg: #2f96b4;
   --bs-btn-hover-border-color: rgba(0, 0, 0, 0.1);
   --bs-btn-active-color: #ffffff;
-  --bs-btn-active-bg: #2f96b4;
   --bs-btn-active-border-color: rgba(0, 0, 0, 0.1);
   --bs-btn-disabled-color: #ffffff;
-  --bs-btn-disabled-bg: #2f96b4;
   --bs-btn-disabled-border-color: rgba(0, 0, 0, 0.1);
-  background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
   border-bottom-color: rgba(0, 0, 0, 0.25);
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+/* and one ramp each, with the fill under it. The one fill each of them showed
+   when hovered, pressed or disabled is the dark end of its own ramp, which is
+   what the ramp uncovers when it slides. .btn-dark is here under the name the
+   framework gave the class that replaced the old stylesheet's inverse button. */
+.btn-info {
+  --bs-btn-bg: #49afcd;
+  --bs-btn-hover-bg: #2f96b4;
+  --bs-btn-active-bg: #2f96b4;
+  --bs-btn-disabled-bg: #2f96b4;
+  background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
+}
+.btn-primary {
+  --bs-btn-bg: #006dcc;
+  --bs-btn-hover-bg: #0044cc;
+  --bs-btn-active-bg: #0044cc;
+  --bs-btn-disabled-bg: #0044cc;
+  background-image: linear-gradient(to bottom, #0088cc, #0044cc);
+}
+.btn-danger {
+  --bs-btn-bg: #da4f49;
+  --bs-btn-hover-bg: #bd362f;
+  --bs-btn-active-bg: #bd362f;
+  --bs-btn-disabled-bg: #bd362f;
+  background-image: linear-gradient(to bottom, #ee5f5b, #bd362f);
+}
+.btn-success {
+  --bs-btn-bg: #5bb75b;
+  --bs-btn-hover-bg: #51a351;
+  --bs-btn-active-bg: #51a351;
+  --bs-btn-disabled-bg: #51a351;
+  background-image: linear-gradient(to bottom, #62c462, #51a351);
+}
+.btn-dark {
+  --bs-btn-bg: #363636;
+  --bs-btn-hover-bg: #222222;
+  --bs-btn-active-bg: #222222;
+  --bs-btn-disabled-bg: #222222;
+  background-image: linear-gradient(to bottom, #444444, #222222);
 }
 
 /* A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
