@@ -12,6 +12,17 @@
   --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-font-size: 13px;
   --bs-body-line-height: 18px;
+  /* the old body colour was #333333 and the replacement's is #212529, so every
+     heading, label, paragraph and bare run of text in the application is about
+     15 units per channel darker than it was. Both halves are stated because
+     other framework rules read rgba(var(--bs-body-color-rgb), ...) and would
+     otherwise draw a colour inconsistent with the text beside them. This does
+     not reach the muted text, which the framework emits as its own literal
+     rgba(33, 37, 41, 0.75) rather than deriving from these, and it does not
+     reach a table cell, which resolves from --bs-emphasis-color and is set
+     separately below. */
+  --bs-body-color: #333333;
+  --bs-body-color-rgb: 51, 51, 51;
   /* every corner in the old stylesheet was 4px: fields, buttons, the sidebar
      box, alerts. The replacement rounds them to 6px from this one variable,
      so one value carries all of them back. A drop-down menu is the exception
