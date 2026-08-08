@@ -149,6 +149,21 @@
   box-shadow: inset 1px 0 0 rgba(255, 255, 255, .125),
               inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05);
 }
+/* The unlit half of a toggle switch. The plugin this replaced marked that half
+   "active" and left the stylesheet to draw it, and an active button was drawn
+   pushed in: flat, a shade darker, with its shadow turned round. The plugin that
+   replaced it marks the half with nothing at all, so it falls through to the
+   grey ramp above and reads as raised where it used to read as pressed. Three of
+   them are visible in the netmap sidebar.
+
+   The three values are the ones the old stylesheet gave any active button. They
+   are hung on the plugin's own selector because the plugin zeroes this shadow at
+   that weight, and a lighter selector would set a shadow that never arrives. */
+.toggle > .toggle-group > .toggle-off {
+  --bs-btn-bg: #e6e6e6;
+  background-image: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
 /* this file loads after the framework, so the rules above would otherwise also
    decide the small button metrics at equal specificity. State them instead of
    letting them fall out. A small button's corner was 3px, which is the one the
