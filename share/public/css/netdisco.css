@@ -953,6 +953,26 @@ div.nd_acl-rule-list {
   border-bottom-width: 0;
 }
 
+/* And the colour that rule is drawn in. The old stylesheet declared #dddddd at
+   every one of the four places it drew a table border, the cell's top rule,
+   the two-pixel rule between two tbody elements, a bordered table's own edge
+   and its cells' left rule. The replacement takes one colour from
+   --bs-border-color, which is #dee2e6: one unit off on red, five on green and
+   nine on blue, on every table rule on every page. Measured on the device
+   details, inventory, admin users and device search tables, 94 cells, all
+   rgb(222, 226, 230) against master's rgb(221, 221, 221).
+
+   Two things this does not reach, both stated so the rule is not read as
+   covering them. A table with no border of its own still carries a colour on
+   its own zero-width edge, and the two stylesheets disagree about that colour;
+   nothing is drawn there either way. And the contextual row classes, which the
+   job queue and poller performance tables put on a tr, each declare a tinted
+   border colour of their own that the old stylesheet had no counterpart for;
+   they are a separate difference and are not touched here. */
+.table {
+  --bs-table-border-color: #dddddd;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
