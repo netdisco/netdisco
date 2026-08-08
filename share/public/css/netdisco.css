@@ -1807,6 +1807,24 @@ form .clearfix.success input {
   margin-left: -20px;
 }
 
+/* A third defect in the same six rows, and the only one in this file caused by
+   a vendored stylesheet that did not change: awesome-bootstrap-checkbox is
+   byte-identical between the two checkouts, sha256 f151991f.
+
+   It draws the circle as a 17px ::before with a 1px border, and the selected
+   dot as an 11px ::after at left 4px, top 4px. Under the old stylesheet, which
+   had no universal box-sizing, that circle occupied 19px and an 11px dot inset
+   4px sat exactly in the middle of it. The replacement applies border-box to
+   pseudo-elements too, so the same declaration draws a 17px circle while the
+   dot stays pinned, leaving it 1px right and 1px low of centre.
+
+   Nothing comparing declarations or computed styles can see this, because both
+   are identical on the two trees. It was found by measuring painted pixels,
+   which is why the element sweep is not sufficient on its own. */
+.radio label::before {
+  box-sizing: content-box;
+}
+
 /* The vertical half of the same defect. The vendored stylesheet draws these
    labels inline-block on both sides and has never set a bottom margin on
    them, because it never had to: the old stylesheet's base rule,
