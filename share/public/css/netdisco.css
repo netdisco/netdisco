@@ -1600,6 +1600,20 @@ form .clearfix.success input {
   margin-left: -20px;
 }
 
+/* The vertical half of the same defect. The vendored stylesheet draws these
+   labels inline-block on both sides and has never set a bottom margin on
+   them, because it never had to: the old stylesheet's base rule,
+   "label { display: block; margin-bottom: 5px }", supplied one underneath it.
+   The replacement gives a label no margin at all, so each of the six rows
+   stands 18px where it stood 23px. Measured on the netmap sidebar, which
+   holds three of them: the VLAN field and the link group list under them both
+   sit 15px high, and everything below those sits 15px high as well. The ACL
+   editor's sidebar holds the other three, and no route in the visual harness
+   reaches it. Only the margin is restored; the display was never wrong. */
+.radio label {
+  margin-bottom: 5px;
+}
+
 .nd_netmap-sidebar .form-check {
   margin-bottom: 5px;
 }
