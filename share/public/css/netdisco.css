@@ -1931,6 +1931,32 @@ div.dt-container div.dt-length label {
 div.dt-container div.dt-search {
   float: right;
 }
+/* The pager itself. The old control drew 28px: 4px of padding above and below
+   an 18px line, at 13px. The replacement's is 36px, from larger padding, a 16px
+   font and 2px of margin on the list, and the record count beside it then reads
+   as sitting at the top of a taller control rather than level with it.
+
+   Set through the framework's own pagination variables rather than by
+   overriding .page-link, so the component keeps deriving everything else, and
+   because those variables exist for exactly this.
+
+   The selector is written long deliberately. This file is linked ahead of the
+   integration's stylesheet in layouts/main.tt, so an equally specific rule here
+   loses the tie, and the integration states its list margin at three classes
+   deep. Naming the intervening container outruns it without an !important. The
+   other rules above need no such help because the integration declares nothing
+   they collide with. */
+div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
+  --bs-pagination-padding-y: 4px;
+  --bs-pagination-padding-x: 12px;
+  --bs-pagination-font-size: 13px;
+  margin: 0;
+}
+/* The count's own 8px was the other half of that alignment: it is what put the
+   text's baseline level with the pager beside it rather than 8px above. */
+div.dt-container div.dt-info {
+  padding-top: 8px;
+}
 div.nd_datatables-pager {
   float: left;
   margin-left: 50px;
