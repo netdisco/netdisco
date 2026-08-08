@@ -1196,6 +1196,19 @@ ul ul, ul ol, ol ol, ol ul {
   margin-right: 2px;
 }
 
+/* Both stylesheets pull the strip a pixel down over the rule under it, and
+   they hang that pixel on different elements: the old one on the li, leaving
+   the link at 0, the replacement on the link, leaving the li at 0. The li is
+   what carries the height, so all seven tabs of a device page measure h=35
+   against master's h=36. Moving it back is the whole of it; the x positions
+   are already identical along the strip. */
+.nav-tabs > li {
+  margin-bottom: -1px;
+}
+.nav-tabs .nav-link {
+  margin-bottom: 0;
+}
+
 /* space out long lists */
 .nd_div-closer {
   margin-top: -14px;
