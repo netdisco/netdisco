@@ -74,12 +74,17 @@
   color: #ffffff !important;
 }
 /* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
-   9px, and this class replaced it at all four of its sites and nowhere else,
-   so the mapping is exact. The grey one is not: it replaced one of each, and
-   no selector here can tell those two apart. */
-.badge.text-bg-info {
+   9px. Two of these classes replaced it and nothing else, so each mapping is
+   exact: the blue one at five sites, the dark one at two, where it also has to
+   put back a fill three units lighter than the framework's. The grey one is
+   not exact and is not here: it replaced one pill of each kind, and no
+   selector in a stylesheet can tell those two apart. */
+.badge.text-bg-info, .badge.text-bg-dark {
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
+}
+.badge.text-bg-dark {
+  --bs-dark-rgb: 51, 51, 51;
 }
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
