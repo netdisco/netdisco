@@ -439,6 +439,29 @@ small {
   font-size: 85%;
 }
 
+/* Inline code used to be a boxed thing: crimson type at a fixed 11px, inset
+   2px and 4px, on an off-white fill inside a pale border with a 3px corner,
+   and never wrapped. The replacement keeps only a colour, a different one, and
+   sizes the type from its parent, so what was a box became bare pink text.
+   One place uses it, the "device_identity is safer" note on a device's
+   details, which is also why the whole set is restated here rather than
+   reached for through a variable: the framework offers only --bs-code-color,
+   and the other five values it does not declare at all.
+
+   The one thing not put back is the family. Both stylesheets name a monospace
+   stack and they resolve to the same face on anything without Apple's fonts
+   installed, so the difference is which of Monaco and SFMono-Regular wins on a
+   Mac, and that is not worth a five-name declaration for one element. */
+code {
+  padding: 2px 4px;
+  font-size: 11px;
+  color: #d14;
+  white-space: nowrap;
+  background-color: #f7f7f9;
+  border: 1px solid #e1e1e8;
+  border-radius: 3px;
+}
+
 /* for when we pinch h4 styling but don't want bold */
 .nd_unbolden {
   font-weight: normal;
