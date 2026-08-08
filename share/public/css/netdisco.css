@@ -424,8 +424,32 @@ option {
 .form-select[multiple][size="1"] {
   height: 27px;
 }
+/* The old component stated its own height, 18px of content inside 4px of
+   padding and a 1px border, so it drew 28px and finished level with the
+   read-only caption beside it. The replacement sizes from its line box instead
+   and draws 33px, so the checkbox's box hangs 5px below the caption's on every
+   sidebar that pairs the two. The height is stated here as a border-box total
+   because the replacement applies box-sizing universally, where the old
+   stylesheet had no such reset.
+
+   The fill is the old #eeeeee rather than the replacement's #f8f9fa: 10 of 255
+   apart, and so below the harness's 52-level detection floor. */
 .input-group-text {
+  height: 28px;
   padding: 4px 5px;
+  line-height: 18px;
+  background-color: #eeeeee;
+  border-color: #cccccc;
+}
+/* A checked box used to turn its wrapper green, from a rule the old framework
+   carried for .input-prepend .active. The replacement has no .input-prepend and
+   no equivalent, and netdisco.js:250 was migrated to add the class to
+   .input-group-text without anything left to act on it, so 23 checkboxes across
+   ten templates lost the only signal that distinguishes a checked column or
+   filter from an unchecked one. */
+.input-group-text.active {
+  background-color: #a9dba9;
+  border-color: #46a546;
 }
 /* Every one of these spans is a read-only field that used to draw a box: an
    off-white fill, a grey border and grey text. Its replacement draws nothing
