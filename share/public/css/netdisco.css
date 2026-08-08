@@ -731,13 +731,14 @@ div.content > div.tab-content table.nd_floatinghead thead {
   text-shadow: none;
 }
 
-/* to be added to qtip-bootstrap class */
-.nd_qtip-unconstrained {
-  min-width: 0;
-  max-width: none;
+/* the job queue log popover. the log is preformatted output, so it keeps its
+   own line breaks and takes whatever width it needs rather than the default
+   276px, which would wrap every line. */
+.nd_jobqueue-popover {
+  --bs-popover-max-width: none;
 }
 
-.qtip-content {
+.nd_jobqueue-popover .popover-body {
   font-size: 15px;
   font-family: monospace;
   white-space: pre;

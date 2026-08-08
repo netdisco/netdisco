@@ -341,7 +341,6 @@ share/public/css/d3-force-network-chart.css
 share/public/css/dataTables.bootstrap.css
 share/public/css/daterangepicker.css
 share/public/css/font-awesome.min.css
-share/public/css/jquery.qtip.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
 share/public/css/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png
@@ -386,7 +385,6 @@ share/public/javascripts/jquery-ui.min.js
 share/public/javascripts/jquery.cookie.js
 share/public/javascripts/jquery.dataTables.min.js
 share/public/javascripts/jquery.floatThead.js
-share/public/javascripts/jquery.qtip.min.js
 share/public/javascripts/jstree/jstree.min.js
 share/public/javascripts/jstree/themes/proton/30px.png
 share/public/javascripts/jstree/themes/proton/32px.png

@@ -21,7 +21,6 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/underscore.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.qtip.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-3.5.17.min.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-force-network-chart.js"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js"></script>
@@ -53,7 +52,6 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/jquery.qtip.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css"/>

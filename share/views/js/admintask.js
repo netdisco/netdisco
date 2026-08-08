@@ -260,26 +260,17 @@
       });
     });
 
-    // bind qtip2 to show the event log output
-    $(target).on('mouseover', '.nd_jobqueueitem', function(event) {
-      $(this).qtip({
-        overwrite: false,
-        content: {
-          text: $('<span/>').text( $(this).attr("data-content") ).html()
-        },
-        show: {
-          event: event.type,
-          ready: true,
-          delay: 100
-        },
-        position: {
-          my: 'top center',
-          at: 'bottom center',
-          target: false
-        },
-        style: {
-          classes: 'qtip-cluetip qtip-rounded nd_qtip-unconstrained'
-        }
-      });
+    // show the event log output on hover, delegated from the pane so that rows
+    // the table redraws are covered without re-initialising. the rows carry
+    // their log in data-content, which the backend writes and bootstrap does
+    // not read, so the content comes from a callback rather than renaming the
+    // attribute. html is left off, so the log is inserted as text.
+    new bootstrap.Popover(target, {
+      selector: '.nd_jobqueueitem',
+      content: function() { return this.getAttribute('data-content'); },
+      trigger: 'hover',
+      placement: 'bottom',
+      delay: { show: 100, hide: 0 },
+      customClass: 'nd_jobqueue-popover'
     });
   });
