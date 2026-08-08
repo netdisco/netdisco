@@ -108,10 +108,15 @@ the row accessors the template should call, not the data itself.
 
 A logged-in session reaches the search bar, the account menu, and (with a
 tenant configured) the tenant-switcher dropdown; C<user_has_role> stubbed true
-reaches the Admin dropdown's static buttons. The navbar link list, the Reports
-submenu and the registered half of the Admin menu are a remaining gap: they are
-built from C<settings._navbar_items>, C<settings._reports*> and
-C<settings._admin_order>, and this stash supplies none of them.
+reaches the Admin dropdown's static buttons. The three menus built from
+registered plugins each get the smallest set that reaches every branch of the
+loop that draws them: one navbar item, marked current so the Reports and Admin
+toggles supply the inactive form of the same construct; the stock eight report
+categories with two of them populated, so the empty-category branch renders
+too, and one of the three reports hidden, as C<portlog> is in production; and
+an admin list holding a task, a divider and a second task. Tags and labels are
+the ones the shipped plugins register, so a reader can find each one in
+C<lib/App/Netdisco/Web/Plugin/>.
 
 =item C<ajax/device/details.tt>
 
@@ -260,10 +265,40 @@ sub stash_for {
       session => { logged_in_user => 'demo' },
       # stubbed true to reach the Admin dropdown's static buttons
       user_has_role => sub { 1 },
+      # marks the one navbar item current, so the two dropdown toggles below
+      # supply the same construct in its inactive form
+      vars => { nav => 'inventory' },
       settings => {
         tenant_databases => ['netdisco'],
         tenant_data => { netdisco => { displayname => 'Netdisco' } },
         tenant_tags => ['netdisco'],
+        _navbar_items => [
+          { tag => 'inventory', path => '/inventory', label => 'Inventory' },
+        ],
+        # the stock category list, of which two are given reports: the rest
+        # take the empty-category branch of the same loop
+        _report_order =>
+          [qw/Device Port IP Node VLAN Network Wireless/, 'My Reports'],
+        _reports_menu => {
+          'Device' => ['deviceaddrnodns'],
+          'Port'   => ['portssid', 'portlog'],
+        },
+        _reports => {
+          deviceaddrnodns => { label => 'IPs without DNS Entries' },
+          portssid        => { label => 'Port SSID Inventory' },
+          # registered hidden in production too, which is the case that
+          # exercises the menu loop's skip
+          portlog         => { label => 'Port Control Log', hidden => 1 },
+        },
+        _admin_order => [qw/duplicatedevices divider users/],
+        # 'divider' is absent from this hash on purpose: register_admin_task
+        # pushes the tag onto _admin_order and returns before recording a
+        # task, and that asymmetry is what makes the loop's divider branch
+        # reachable
+        _admin_tasks => {
+          duplicatedevices => { label => 'Duplicate Devices' },
+          users            => { label => 'User Management' },
+        },
       },
     };
   }
