@@ -1081,6 +1081,18 @@ div.nd_acl-rule-list {
   margin-bottom: 0;
 }
 
+/* The netmap's three toggles. Both plugins are told data-width="30" and both
+   ignore it, because each declares a minimum the widget cannot go under. The
+   old one set 25px for a small toggle, which never bound, so the widget sized
+   to its label and drew 52px. Its replacement sets 3.125rem, which is exactly
+   50px and does bind, so the widget is clamped 2px under what the word "Show"
+   needs and the w is cut off whenever a toggle is on.
+
+   52px is the width the old one drew, not a figure chosen to fit. */
+.nd_netmap-sidebar .toggle.btn-sm {
+  min-width: 52px;
+}
+
 /* A bordered table's own frame. The old stylesheet drew one: a 1px edge with
    its left side omitted, 4px rounded corners, and a separated border model so
    the frame and the cells' rules stayed distinct. Its cells carried a left rule
