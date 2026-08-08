@@ -906,6 +906,26 @@ div.nd_acl-rule-list {
   --bs-table-active-color: #333333;
 }
 
+/* The old stylesheet ruled a table with "border-top" on every cell, so the
+   rule sat above each row and the table ended flush under its last one. The
+   replacement rules with a bottom border instead, which moves every rule down
+   one row: the first body row loses the rule above it and the last gains one
+   below it. Because the border is counted inside the height, the two end rows
+   also change depth. Measured on the device details table, 23 rows: the first
+   row sat at y=96.00 h=26.50 against master's y=96.50 h=27.00, the last at
+   h=33.00 against 32.50, and every row between them 1px high.
+
+   Scoped to tbody, and that is load-bearing rather than tidy. The blunt form
+   of this rule, matching what the framework matches, also puts a rule above a
+   header row, where the old stylesheet explicitly zeroed one
+   (".table thead:first-child tr:first-child th { border-top: 0 }"). A
+   table-bordered table is unaffected either way, since the replacement draws
+   its horizontal rules on the tr rather than on the cell. */
+.table > tbody > tr > * {
+  border-top-width: var(--bs-border-width);
+  border-bottom-width: 0;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
