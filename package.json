@@ -2,7 +2,7 @@
   "name": "netdisco-frontend",
   "version": "0.0.0",
   "private": true,
-  "description": "Manifest for the vendored frontend libraries in share/public. Not a build step: this exists so dependency scanners can see what is shipped. jquery-ui 1.10.3, toastr 1.1.1 and qtip2 2.0.1 are vendored too, but none of those versions was ever published to npm, so they cannot be declared here; Phase 4 adds each one as its upgrade lands.",
+  "description": "Manifest for the vendored frontend libraries in share/public. Not a build step: this exists so dependency scanners can see what is shipped. jquery-ui 1.10.3, toastr 1.1.1 and qtip2 2.0.1 are vendored too, but none of those versions was ever published to npm, so they cannot be declared here; each gets an entry when it is upgraded to a version that was.",
   "dependencies": {
     "@fortawesome/fontawesome-free": "7.3.1",
     "bootstrap": "5.3.8",
