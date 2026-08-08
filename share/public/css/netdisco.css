@@ -115,11 +115,24 @@
   background-image: none;
   box-shadow: none;
 }
-/* A link button was the one kind that drew no box at all, and its corners were
-   square where every other button's were rounded. */
+/* A link button was the one kind that drew no box at all, its corners were
+   square where every other button's were rounded, and it coloured its own type
+   rather than taking the dark grey every other uncoloured button had. It
+   underlined that type only under a pointer, where the framework underlines it
+   always. Every one of the six in the application is inside the Admin menu and
+   carries .nd_btn-link, which sets its own colour and takes the underline off in
+   both states, so none of the colour below is visible today; it is here because
+   the class the application asks for should draw what it used to. */
 .btn-link {
+  --bs-btn-color: #0088cc;
+  --bs-btn-hover-color: #005580;
+  --bs-btn-active-color: #005580;
   --bs-btn-border-radius: 0;
+  text-decoration: none;
   box-shadow: none;
+}
+.btn-link:hover, .btn-link:focus {
+  text-decoration: underline;
 }
 /* The caret half of a split button sat against the button it belongs to with no
    border between them, so it was given a highlight down its own left inside edge
