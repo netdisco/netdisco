@@ -2,7 +2,7 @@
   "name": "netdisco-frontend",
   "version": "0.0.0",
   "private": true,
-  "description": "Manifest for the vendored frontend libraries in share/public. Not a build step: this exists so dependency scanners can see what is shipped. toastr 1.1.1 and qtip2 2.0.1 are vendored too, but neither version was ever published to npm, so they cannot be declared here; each gets an entry when it is upgraded to a version that was.",
+  "description": "Manifest for the vendored frontend libraries in share/public. Not a build step: this exists so dependency scanners can see what is shipped.",
   "dependencies": {
     "@fortawesome/fontawesome-free": "7.3.1",
     "bootstrap": "5.3.8",
@@ -17,6 +17,7 @@
     "moment": "2.29.2",
     "underscore": "1.13.1",
     "jstree": "3.3.12",
+    "toastr": "2.1.4",
     "swagger-ui-dist": "3.20.3"
   }
 }
