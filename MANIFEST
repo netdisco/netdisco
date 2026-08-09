@@ -419,8 +419,6 @@ share/public/swagger-ui/oauth2-redirect.js
 share/public/swagger-ui/swagger-ui-bundle.js
 share/public/swagger-ui/swagger-ui-bundle.js.LICENSE.txt
 share/public/swagger-ui/swagger-ui-bundle.js.map
-share/public/swagger-ui/swagger-ui-json-tree-plugin.js
-share/public/swagger-ui/swagger-ui-json-tree-plugin.js.map
 share/public/swagger-ui/swagger-ui-standalone-preset.js
 share/public/swagger-ui/swagger-ui-standalone-preset.js.LICENSE.txt
 share/public/swagger-ui/swagger-ui-standalone-preset.js.map

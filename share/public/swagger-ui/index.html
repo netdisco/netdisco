@@ -4,7 +4,6 @@
   <head>
     <meta charset="UTF-8">
     <title>Swagger UI</title>
-    <script src="./swagger-ui-json-tree-plugin.js"></script>
     <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
     <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
@@ -38,14 +37,6 @@
     <script src="./swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
-      // https://github.com/justinebateman/swagger-ui-json-tree-plugin
-      // It overrides the highlightCode component to render response bodies as
-      // a collapsible tree. Measured under 5.32.12: it loads and throws
-      // nothing, but the override no longer takes effect, so bodies render
-      // with Swagger UI's own highlighter. Left in place pending a decision on
-      // whether netdisco keeps the feature; the plugin is not on npm and has
-      // no 5.x release.
-      SwaggerUIStandalonePreset.unshift(jsonTreePlugin.default);
       // Swagger UI 4.1.3 and later ignore ?url= unless queryConfigEnabled is
       // set, and that switch also re-enables configUrl and every other query
       // key. Netdisco only needs the one parameter, which Web.pm builds with
