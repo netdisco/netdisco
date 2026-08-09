@@ -1176,6 +1176,31 @@ table.dataTable tr.group > td {
   vertical-align: middle;
 }
 
+/* DataTables sniffs each column's type and right-aligns the ones it reads as
+   dates or numbers, which silently overrules the two rules above wherever a
+   template asked for a centred column of timestamps or counts. The explicit
+   request wins. Three levels deep because the rule being beaten carries two
+   classes of its own and dataTables.bootstrap.css is linked after this file,
+   so matching its specificity would still lose on order. */
+div.dt-container table.dataTable th.nd_center-cell,
+div.dt-container table.dataTable td.nd_center-cell,
+div.dt-container table.dataTable th.nd_center-middle-cell,
+div.dt-container table.dataTable td.nd_center-middle-cell {
+  text-align: center;
+}
+
+/* The same detection flips the header's sort arrow to the other side of the
+   label, which pairs with right alignment and reads as a mistake without it:
+   one column's arrow ends up mirrored from every neighbour. Undo it only on
+   the columns re-centred above, so genuinely right-aligned columns keep the
+   pairing the library intended. */
+div.dt-container table.dataTable th.nd_center-cell div.dt-column-header,
+div.dt-container table.dataTable th.nd_center-cell div.dt-column-footer,
+div.dt-container table.dataTable th.nd_center-middle-cell div.dt-column-header,
+div.dt-container table.dataTable th.nd_center-middle-cell div.dt-column-footer {
+  flex-direction: row;
+}
+
 td.nd_devport-icon i {
   line-height: 18px;
 }
