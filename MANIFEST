@@ -408,8 +408,6 @@ share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
-share/public/javascripts/underscore-min.js.map
-share/public/javascripts/underscore.min.js
 share/public/javascripts/versionsort.js
 share/public/swagger-ui/favicon-16x16.png
 share/public/swagger-ui/favicon-32x32.png
