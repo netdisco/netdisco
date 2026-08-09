@@ -546,6 +546,16 @@ body {
 .navbar {
   --bs-navbar-padding-y: 0px;
 }
+/* Either side of the container the bar paints its own background, and the
+   replacement's dark is a flat, faintly blue #212529 against the artwork's
+   #1a1a1a, so on a window wider than 1170px the bar reads as two different
+   blacks. The old bar drew a gradient here that only met the artwork at mid
+   height; this is the artwork's own black instead, so the bar is one colour at
+   every width. Deliberately not what the old bar did. Flagged because the
+   utility class supplying the blue flags its own colour. */
+.navbar.bg-dark {
+  background-color: #1a1a1a !important;
+}
 .navbar > .container {
   min-height: 40px;
   background: url(../images/navbar_disco.png) no-repeat;
