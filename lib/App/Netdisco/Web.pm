@@ -315,6 +315,13 @@ hook 'before_template' => sub {
     $tokens->{uri_base} .= ('/t/'. vars->{'tenant'})
       if vars->{'tenant'};
 
+    # cache-busting suffix for the stylesheets and scripts in the layout.
+    # bin/netdisco-web-fg asks browsers to hold css, javascript, images and
+    # fonts for a day without revalidating, and the filenames never carry a
+    # version, so after an upgrade a returning visitor renders the new markup
+    # with the previous release's stylesheet until that day is up.
+    $tokens->{asset_version} = ($App::Netdisco::VERSION || 'HEAD');
+
     # allow portable dynamic content
     $tokens->{uri_for} = sub { uri_for(@_)->path_query };
 
