@@ -201,6 +201,25 @@ $(document).ready(function() {
     ,minLength: 3
   });
 
+  // the widget this box used to run bolded the letters it had matched, which is
+  // how the list shows why each row is in it. jQuery UI draws the label as
+  // plain text and offers no equivalent, so the row is built here instead.
+  // escaped first and marked second, because this goes in as markup where the
+  // default went in as text: the names come from the database, not from a
+  // literal. only this box, since every other autocomplete in the app ran on
+  // jQuery UI before and did not bold either.
+  $('#nq,#nqbody').each(function() {
+    $(this).autocomplete('instance')._renderItem = function(ul, item) {
+      var label = $('<div/>').text(item.label).html();
+      var term = $('<div/>').text(this.term).html()
+        .replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+      var marked = term.length
+        ? label.replace(new RegExp('(' + term + ')', 'ig'), '<strong>$1</strong>')
+        : label;
+      return $('<li/>').append($('<div/>').html(marked)).appendTo(ul);
+    };
+  });
+
   // activate tooltips and popovers, delegated from a container so that
   // content injected later is covered without re-initialising. bootstrap
   // stores one instance per element whatever the component, so the popover
