@@ -35,6 +35,14 @@ subtest 'snapshotPath__nested_template__mirrors_the_view_tree' => sub {
 };
 
 subtest 'renderedOutput__every_template__matches_its_committed_snapshot' => sub {
+    # The snapshots are bulky and are kept out of the distribution, so they are
+    # present in a git checkout and absent from an unpacked tarball. An absent
+    # tree means there is nothing to compare against; individual files missing
+    # below means a template was added without regenerating, which is a real
+    # failure and must stay one.
+    plan skip_all => 'xt/snapshots is not shipped in the distribution'
+      unless -d 'xt/snapshots';
+
     my @views = all_templates();
     my @missing = ();
     my @differs = ();
