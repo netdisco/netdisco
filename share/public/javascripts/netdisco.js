@@ -53,8 +53,8 @@ function do_search (event, tab) {
         $(target).html(content);
         // delegate to any [device|search] specific JS code
         $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-          scrollingTop: 40
-          ,useAbsolutePositioning: false
+          top: 40
+          ,position: 'fixed'
         });
         inner_view_processing(tab);
       }
@@ -290,8 +290,8 @@ $(document).ready(function() {
     $('.content').css('margin-right', '10px');
     $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
     $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-      scrollingTop: 40
-      ,useAbsolutePositioning: false
+      top: 40
+      ,position: 'fixed'
     });
     sidebar_hidden = 1;
   });
@@ -300,8 +300,8 @@ $(document).ready(function() {
     $('.content').css('margin-right', '215px');
     $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
     $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-      scrollingTop: 40
-      ,useAbsolutePositioning: false
+      top: 40
+      ,position: 'fixed'
     });
     $('.nd_sidebar').toggle(250);
     if (! $('.nd_sidebar').hasClass('nd_sidebar-pinned')) {

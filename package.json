@@ -17,6 +17,7 @@
     "moment": "2.30.1",
     "jstree": "3.3.17",
     "toastr": "2.1.4",
+    "floatthead": "2.2.5",
     "swagger-ui-dist": "3.20.3"
   }
 }
