@@ -1802,11 +1802,21 @@ input#nd_port-query {
 
 /* set the drop-down width. the input group these five live in gives its
    field "flex: 1 1 auto; width: 1%" at a specificity the class alone cannot
-   beat, so the width has to be declared against the group as well. */
+   beat, so the width has to be declared against the group as well.
+
+   the field and its caret button fill the group with nothing to spare, and
+   Bootstrap 5's input group wraps by default, so a field that cannot shrink
+   pushes the caret onto its own line as soon as anything rounds the other
+   way. Firefox measures that button 0.15px wider than Chromium does, which is
+   the entire margin. Let the field give way, and stop the row breaking. */
+.nd_sidebar .input-group {
+  flex-wrap: nowrap;
+}
 .nd_sidebar-dropdown,
 .input-group > .nd_sidebar-dropdown {
-  flex: 0 0 auto;
+  flex: 0 1 144px;
   width: 144px;
+  min-width: 0;
 }
 
 /* set the day/mon/year drop-down width */
