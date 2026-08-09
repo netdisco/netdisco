@@ -11,7 +11,12 @@
     in the output ships on every page that draws a table. %]
     ,"pagingType": 'simple_numbers'
     ,"language": {
-      "search": '_INPUT_'
+[%# the library used to say "Processing..." and now defaults to an empty
+    string, drawing an animated row of dots from CSS in its place. Naming the
+    words brings the text back; the dots are hidden in netdisco.css, since
+    setting this alone leaves both showing at once. %]
+      "processing": 'Processing...'
+      ,"search": '_INPUT_'
       ,"searchPlaceholder": 'Filter records...'
       ,"lengthMenu": "Show _MENU_ records."
       ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"

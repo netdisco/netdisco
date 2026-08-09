@@ -2117,6 +2117,34 @@ div.nd_datatables-pager {
   float: left;
   margin-left: 50px;
 }
+/* The "Processing..." wording is restored in the table defaults. This drops
+   the animated dots that replaced it, which the library appends as a separate
+   last child and would otherwise draw underneath the words. */
+div.dt-processing > div:last-child {
+  display: none;
+}
+/* and this restores the banner the words used to appear in, a full-width band
+   fading out at both ends, rather than the small bordered card the newer
+   integration puts them in. Two ancestors deep because dataTables.bootstrap.css
+   is linked after this file, so an equally specific selector would lose. */
+div.dt-container div.dt-processing {
+  /* the 40px is the band below the text, not the whole box, which is what it
+     meant before Reboot made every element border-box */
+  box-sizing: content-box;
+  width: 100%;
+  height: 40px;
+  margin-left: -50%;
+  margin-top: -25px;
+  padding: 20px 0 0;
+  font-size: 1.2em;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.9) 25%,
+    rgba(255, 255, 255, 0.9) 75%,
+    rgba(255, 255, 255, 0) 100%);
+}
 
 td.nd_nowrap {
   white-space: nowrap;
