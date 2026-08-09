@@ -684,6 +684,18 @@ div.content > div.tab-content table.nd_floatinghead thead {
   overflow-x: hidden;
 }
 
+/* The dropdown's own box, kept as the older theme drew it: the menu no longer
+   carries ui-corner-all, its padding went to zero, and the content border
+   lightened. The list is the same list, so it should not change shape because
+   the theme was rebuilt. Two class names rather than one because the border
+   is set by .ui-widget.ui-widget-content, and a single class loses to it
+   however late this file is loaded. */
+.ui-autocomplete.ui-widget-content {
+  padding: 2px;
+  border-color: #aaaaaa;
+  border-radius: 4px;
+}
+
 /* The menu marks its highlighted row with ui-state-active, where it used to
    use ui-state-focus. In the smoothness theme those two states are different
    colours: focus is grey, active is white, so the highlight became white on a
