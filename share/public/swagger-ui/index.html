@@ -95,7 +95,13 @@
         layout: "StandaloneLayout",
         apisSorter: "alpha",
         operationsSorter: "alpha",
-        docExpansion: "none"
+        docExpansion: "none",
+        // The online validator badge is on by default and sends the definition
+        // URL to a Swagger-hosted service on every page load, which for most
+        // deployments means publishing an internal hostname. It cannot be seen
+        // in local testing: the badge suppresses itself when the URL contains
+        // localhost or 127.0.0.1.
+        validatorUrl: null
       })
       // End Swagger UI call region
 
