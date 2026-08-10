@@ -549,6 +549,9 @@ Pass a device in C<-d> to display them:
 A requirement for web browsing of SNMP data (see C<snapshot> command), run
 this to load Netdisco MIBs into the database. It only needs to be done once.
 
+If the MIB reports parse to nothing, the job leaves the C<snmp_object> table
+unchanged, logs the reason, and exits non-zero.
+
 =head2 snapshot
 
 Builds and saves a data structure which Netdisco can use to mimic the device
