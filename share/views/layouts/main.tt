@@ -85,8 +85,7 @@
         [% FOREACH category IN settings._report_order %]
           [% IF settings._reports_menu.$category.size %]
           <li class="dropend">
-            <a href="#" class="dropdown-item dropdown-toggle" role="button"
-              data-bs-toggle="dropdown" aria-expanded="false">[% category | html_entity %]</a>
+            <a href="#" class="dropdown-item dropdown-toggle">[% category | html_entity %]</a>
             <ul class="dropdown-menu">
             [% FOREACH item IN settings._reports_menu.$category %]
               [% NEXT IF settings._reports.$item.hidden %]

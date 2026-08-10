@@ -592,6 +592,29 @@ a:hover, a:focus {
   background-color: #eeeeee;
 }
 
+/* Submenus inside a navbar menu opened on hover and closed again on leaving,
+   with no click anywhere. The replacement dropped the submenu component; its
+   dropend only sets placement, and its dropdowns are driven by script and a
+   click, which left a submenu pinned open until something else was clicked.
+   The category link's toggle attributes are gone from the template for the same
+   reason, so nothing here has to compete with a script for control.
+
+   The placement rule is restated rather than inherited: the replacement scopes
+   its own to .dropend .dropdown-menu[data-bs-popper], and that attribute is
+   added by the positioning library when a script opens the menu. Opening from
+   CSS means it is never set, so without this the submenu lands over its
+   parent. */
+.dropend > .dropdown-menu {
+  top: 0;
+  right: auto;
+  left: 100%;
+  margin-top: 0;
+  margin-left: var(--bs-dropdown-spacer);
+}
+.dropend:hover > .dropdown-menu {
+  display: block;
+}
+
 /* used for icons in sidebar search buttons */
 /* A large icon used to sit on a 0.9em line; the replacement puts it on 0.05em,
    which collapses the line box to under a pixel and leaves the glyph painting
