@@ -12,14 +12,14 @@ dependencies = [
     "virtualenv>=21.7.1",
     "sqlalchemy>=2.0.51,<3",
     "psycopg>=3.3.4,<4",
-    "uv-build>=0.12.1,<0.13.0",
+    "uv-build>=0.12.2,<0.13.0",
 ]
 
 [project.scripts]
 run_worklet = "netdisco.runner:main"
 
 [build-system]
-requires = ["uv_build>=0.12.1,<0.13.0"]
+requires = ["uv_build>=0.12.2,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
