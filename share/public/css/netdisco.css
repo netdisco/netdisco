@@ -551,6 +551,13 @@ body {
      left alone: 55% white over this background is within a couple of levels of
      the #999999 the old bar used, so it already matches. */
   --bs-navbar-hover-color: #ffffff;
+  /* The brand sat in the same grey as the links beside it and brightened with
+     them. The replacement ships it white and gives it no hover response at all,
+     so it neither matches its neighbors at rest nor answers a pointer. Unlike
+     the hover color above, the resting half of this repaints the brand on
+     every page. */
+  --bs-navbar-brand-color: #999999;
+  --bs-navbar-brand-hover-color: #ffffff;
 }
 /* Either side of the container the bar paints its own background, and the
    replacement's dark is a flat, faintly blue #212529 against the artwork's
