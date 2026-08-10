@@ -571,6 +571,27 @@ a:hover, a:focus {
   text-decoration: underline;
 }
 
+/* Navigation is the exception to the rule above. The previous framework
+   suppressed the hover underline on the navbar, its menus and the tab strips
+   and gave those elements a background fill instead; the replacement does
+   neither, so the rule above reaches them and an underline appears where the
+   affordance used to be a fill. Both values below are the previous framework's
+   own, so this restores the earlier behavior rather than inventing one. The
+   active tab is excluded because it keeps its own fill when hovered. */
+.navbar-brand:hover, .navbar-brand:focus,
+.nav-link:hover, .nav-link:focus,
+.dropdown-item:hover, .dropdown-item:focus {
+  text-decoration: none;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+  background-color: #0081c2;
+  color: #ffffff;
+}
+.nav-tabs .nav-link:not(.active):hover,
+.nav-tabs .nav-link:not(.active):focus {
+  background-color: #eeeeee;
+}
+
 /* used for icons in sidebar search buttons */
 /* A large icon used to sit on a 0.9em line; the replacement puts it on 0.05em,
    which collapses the line box to under a pixel and leaves the glyph painting
