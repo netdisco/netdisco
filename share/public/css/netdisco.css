@@ -545,6 +545,12 @@ body {
    the height onto the container so the artwork fits it exactly. */
 .navbar {
   --bs-navbar-padding-y: 0px;
+  /* A navbar link went to full white when hovered. The replacement's dark bar
+     stops at 75% white, which composites to about #c7c7c7 over this bar and
+     reads as a lighter grey rather than as a highlight. The resting colour is
+     left alone: 55% white over this background is within a couple of levels of
+     the #999999 the old bar used, so it already matches. */
+  --bs-navbar-hover-color: #ffffff;
 }
 /* Either side of the container the bar paints its own background, and the
    replacement's dark is a flat, faintly blue #212529 against the artwork's
