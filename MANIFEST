@@ -697,6 +697,7 @@ xt/11-portsort.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
+xt/31-loadmibs-guard.t
 xt/html/portsort.html
 xt/js/qunit-tap.js
 xt/js/run_qunit.js
