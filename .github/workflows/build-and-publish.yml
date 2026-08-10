@@ -305,9 +305,9 @@ jobs:
       - name: Download db content
         run: |
           cd ${GITHUB_WORKSPACE}
-          curl -LO https://github.com/netdisco/upstream-sources/raw/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
+          curl -LO https://github.com/netdisco/netdisco2-demo/raw/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
           curl -LO https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
-          curl -LO https://github.com/netdisco/upstream-sources/raw/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
+          curl -LO https://github.com/netdisco/netdisco2-demo/raw/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
           gunzip netdisco2-demo-snmp-object-data.sql.gz
 
       - name: Upload cumulus demo

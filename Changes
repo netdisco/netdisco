@@ -1,3 +1,10 @@
+2.102001 - 2026-08-10
+
+  [BUG FIXES]
+
+  * #1618 Restrict Swagger UI to netdisco's own API definition
+  * fix broken links for demo db redeployment
+
 2.102000 - 2026-08-10
 
   [NEW FEATURES]
