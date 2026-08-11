@@ -31,9 +31,15 @@
             </label>
 
             &nbsp;
-            <input type="checkbox" id="nd_snmp_search_deviceonly"
-              name="deviceonly" class="nd_snmp_search_param"
-              checked="checked"> Only this device </input>
+[%# The text was a bare node beside the checkbox, so nothing could hold the
+    phrase together and it split mid-phrase as the panel narrowed. Wrapping it
+    in a label the way the Partial control already is gives the rule below
+    something to apply to, and makes the words toggle the box as well. %]
+            <label class="form-check form-check-inline">
+              <input type="checkbox" id="nd_snmp_search_deviceonly"
+                name="deviceonly" class="nd_snmp_search_param"
+                checked="checked"> Only this device
+            </label>
 
             <input type="hidden" id="nd_snmp_search_ip"
               name="ip" class="nd_snmp_search_param" value="[% device %]" />

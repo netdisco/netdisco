@@ -1186,6 +1186,13 @@ div.nd_acl-rule-list {
   padding-left: 0;
   margin-bottom: 0;
 }
+/* Keep each checkbox and its words together. The row is free to break between
+   controls as the panel narrows, which is orderly, but a phrase splitting
+   across two lines is not. This goes further than the old tree, which wraps
+   "Only this device" itself between roughly 1150px and 1000px. */
+#nd_snmp_search_form label {
+  white-space: nowrap;
+}
 
 /* The netmap's three toggles. Both plugins are told data-width="30" and both
    ignore it, because each declares a minimum the widget cannot go under. The
