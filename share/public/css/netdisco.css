@@ -1293,28 +1293,50 @@ table.dataTable tr.group > td {
 }
 
 /* DataTables sniffs each column's type and right-aligns the ones it reads as
-   dates or numbers, which silently overrules the two rules above wherever a
-   template asked for a centred column of timestamps or counts. The explicit
-   request wins. Three levels deep because the rule being beaten carries two
-   classes of its own and dataTables.bootstrap.css is linked after this file,
-   so matching its specificity would still lose on order. */
+   dates or numbers, header and cells alike. The old library did not, and every
+   column in the application drew from the start edge, so this is put back.
+
+   Surveyed across every table before changing it: twelve columns on six pages
+   were affected, VLAN ID on the device VLANs tab, First Seen and Last
+   Discovered on device search, Last Change on port search, VLAN and Ports on
+   vlan search, Count on the module inventory report, and the four counts on
+   port utilization plus Count on node vendor, where only the cells moved
+   because the headers were already centered by request.
+
+   Three levels deep for the same reason as the rules below: the declaration
+   being beaten carries two classes of its own and dataTables.bootstrap.css is
+   linked after this file, so matching its specificity would still lose on
+   order.
+
+   THIS BLOCK MUST STAY ABOVE THE CENTERING RULES THAT FOLLOW. They have equal
+   specificity, so the later one wins, and a column whose template explicitly
+   asks to be centered has to keep beating this. */
+div.dt-container table.dataTable th.dt-type-numeric,
+div.dt-container table.dataTable th.dt-type-date,
+div.dt-container table.dataTable td.dt-type-numeric,
+div.dt-container table.dataTable td.dt-type-date {
+  text-align: left;
+}
+
+/* The same detection flips the header's sort arrow to the other side of the
+   label, which pairs with right alignment and reads as a mistake without it.
+   Nothing is right-aligned any more, so it is undone everywhere it is set. */
+div.dt-container table.dataTable th.dt-type-numeric div.dt-column-header,
+div.dt-container table.dataTable th.dt-type-date div.dt-column-header,
+div.dt-container table.dataTable th.dt-type-numeric div.dt-column-footer,
+div.dt-container table.dataTable th.dt-type-date div.dt-column-footer {
+  flex-direction: row;
+}
+
+/* An explicitly centered column keeps its centering, which the detection above
+   used to overrule wherever a template asked for a centered column of timestamps
+   or counts. The explicit request wins over both the library and the rule
+   above. */
 div.dt-container table.dataTable th.nd_center-cell,
 div.dt-container table.dataTable td.nd_center-cell,
 div.dt-container table.dataTable th.nd_center-middle-cell,
 div.dt-container table.dataTable td.nd_center-middle-cell {
   text-align: center;
-}
-
-/* The same detection flips the header's sort arrow to the other side of the
-   label, which pairs with right alignment and reads as a mistake without it:
-   one column's arrow ends up mirrored from every neighbour. Undo it only on
-   the columns re-centred above, so genuinely right-aligned columns keep the
-   pairing the library intended. */
-div.dt-container table.dataTable th.nd_center-cell div.dt-column-header,
-div.dt-container table.dataTable th.nd_center-cell div.dt-column-footer,
-div.dt-container table.dataTable th.nd_center-middle-cell div.dt-column-header,
-div.dt-container table.dataTable th.nd_center-middle-cell div.dt-column-footer {
-  flex-direction: row;
 }
 
 td.nd_devport-icon i {
