@@ -1707,11 +1707,23 @@ ul ul, ul ol, ol ol, ol ul {
   color: rgba(255,0,0,0.8) !important;
 }
 
+/* The sidebar's three control icons. Both trees set 15px here, but the
+   replacement's glyphs fill more of the em box than the sprites they replace
+   and so draw wider at the same nominal size, 15/11/15 against 14/10/13.
+   Neither the hide nor the reset glyph has an outline variant in the icon
+   library's free tier, so size is the only lever available for these two, and
+   the pin comes with them to keep the column one size.
+
+   The line-height holds the box at its old 15px while the glyph draws at 13px.
+   These are floated, so shrinking the box as well moves everything that clears
+   them: dropping the font alone shifted every label in the sidebar by a pixel,
+   measured at 2347 changed pixels on the job queue page. */
 .nd_sidebar-pin {
   float: left;
   margin-top: 8px;
   margin-left: -16px;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 15px;
   color: #555;
   cursor: pointer;
 }
@@ -1720,7 +1732,8 @@ ul ul, ul ol, ol ol, ol ul {
   float: left;
   margin-top: 27px;
   margin-left: -16px;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 15px;
   color: #555;
   cursor: pointer;
 }
@@ -1729,7 +1742,8 @@ ul ul, ul ol, ol ol, ol ul {
   float: left;
   margin-top: -10px;
   margin-left: -16px;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 15px;
   color: #555;
   cursor: pointer;
 }
