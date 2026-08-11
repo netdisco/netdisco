@@ -2395,6 +2395,18 @@ div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
   --bs-pagination-padding-y: 4px;
   --bs-pagination-padding-x: 12px;
   --bs-pagination-font-size: 13px;
+  /* The cell for the page you are on was a pale grey block with grey type: a
+     marker for where you are, quieter than the numbers either side of it. The
+     replacement paints it the framework's primary blue under white type, which
+     makes the loudest thing on the page the one cell that is not a control.
+
+     Rest only, and that is the whole of it: neither stylesheet gives this cell a
+     hover response, and the framework's active rule already outweighs its hover
+     rule, so these three reach both states. Measured on both trees before and
+     after, hovered and settled. */
+  --bs-pagination-active-color: #999999;
+  --bs-pagination-active-bg: #f5f5f5;
+  --bs-pagination-active-border-color: #dddddd;
   margin: 0;
 }
 /* The count's own 8px was the other half of that alignment: it is what put the
