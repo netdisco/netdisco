@@ -1863,9 +1863,16 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 /* fixup for prepended partial port name checkbox in sidebar */
+/* The caption box is square where it meets the checkbox box and rounded only on
+   the outside of the pair, which is how the old tree drew it: 0/4/4/0. The
+   replacement's plaintext control rounds all four corners, so the seam shows a
+   curve butting against the checkbox box's straight edge. Stated on the span
+   rather than the label around it, because the span is what carries the
+   border. */
 .nd_port-partial-checkbox {
   width: 91px;
   padding: 0px 0px 0px 5px !important;
+  border-radius: 0 4px 4px 0;
   cursor: pointer;
 }
 
@@ -1886,9 +1893,16 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 /* fixup for prepended invert port name checkbox in sidebar */
+/* The caption box is square where it meets the checkbox box and rounded only on
+   the outside of the pair, which is how the old tree drew it: 0/4/4/0. The
+   replacement's plaintext control rounds all four corners, so the seam shows a
+   curve butting against the checkbox box's straight edge. Stated on the span
+   rather than the label around it, because the span is what carries the
+   border. */
 .nd_port-invert-checkbox {
   width: 37px;
   padding: 0px 0px 0px 5px !important;
+  border-radius: 0 4px 4px 0;
   cursor: pointer;
 }
 
