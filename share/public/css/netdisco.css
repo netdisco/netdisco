@@ -1234,6 +1234,26 @@ div.nd_acl-rule-list {
   min-width: 52px;
 }
 
+/* Where the word inside one of those toggles sits. The old plugin drew the lit
+   label 54px wide against the 50px box that clips it, so the label hung 4px off
+   the left and the word started 4px further left than the replacement's, which
+   sizes the label to the box. The unlit label was 50px on both, and differs only
+   in its padding.
+
+   The word overflows its content box in both trees and clamps to that box's left
+   edge, so the padding on the side it clamps against decides nothing: an earlier
+   attempt at this changed the lit label's padding-right, watched the word not
+   move, and read that as the padding not being the cause. What moves the word is
+   where the content box starts, which is why the negative margin is here. */
+.nd_netmap-sidebar .toggle > .toggle-group > .toggle-on.btn-sm {
+  margin-left: -4px;
+  padding-right: 20px;
+}
+
+.nd_netmap-sidebar .toggle > .toggle-group > .toggle-off.btn-sm {
+  padding-left: 20px;
+}
+
 /* A bordered table's own frame. The old stylesheet drew one: a 1px edge with
    its left side omitted, 4px rounded corners, and a separated border model so
    the frame and the cells' rules stayed distinct. Its cells carried a left rule
