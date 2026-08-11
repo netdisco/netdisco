@@ -156,10 +156,10 @@
               <button class="btn btn-info dropdown-toggle nd_sidebar-btn-drop-drop" data-bs-toggle="dropdown">
               </button>
               <ul class="dropdown-menu">
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="">Default Search</a></li>
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="port">Filter by Port</a></li>
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="name">Filter by Name</a></li>
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="vlan">Filter by VLAN</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="">Default Search</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="port">Filter by Port</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="name">Filter by Name</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="vlan">Filter by VLAN</a></li>
               </ul>
             </div>
 
