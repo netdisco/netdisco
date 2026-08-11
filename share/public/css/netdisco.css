@@ -1869,8 +1869,14 @@ ul ul, ul ol, ol ol, ol ul {
   cursor: pointer;
 }
 
+/* Horizontal room for the checkbox inside its box. The old tree left 2.5px on
+   each side and the replacement leaves 1px, so the box is drawn 3px narrower
+   and the checkbox sits on its own border. Vertical padding stays at zero: the
+   .input-group-text rule above sizes these from a stated content height, and
+   restoring padding there would put the box back out of line with the caption
+   beside it. */
 .nd_port-partial-label {
-  padding: 0px !important;
+  padding: 0px 1.5px !important;
 }
 
 .nd_port-partial {
@@ -1887,7 +1893,7 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 .nd_port-invert-label {
-  padding: 0px !important;
+  padding: 0px 1.5px !important;
   /* for some reason only .input-group-text:first-child gets these */
   -webkit-border-radius: 4px 0 0 4px !important;
   -moz-border-radius: 4px 0 0 4px !important;
