@@ -1153,6 +1153,20 @@ div.nd_acl-rule-list {
   margin-bottom: 0;
   vertical-align: middle;
 }
+/* The results table sits immediately below this form. The old stylesheet gave
+   every form an 18px bottom margin and the replacement gives forms none, so the
+   table rises until it touches the row and the search box reads as pushed down
+   into it. The row's own geometry is unchanged: field, button and checkboxes
+   all sit exactly where they do on the old tree, and this gap is the only
+   difference.
+
+   Scoped to this form on purpose. Restoring the margin on every form instead
+   was measured and moves seventeen of the eighteen captured routes, because the
+   migration already made up the missing space elsewhere, so a global rule
+   double-spaces what it has already paid for. */
+#nd_snmp_search_form {
+  margin-bottom: 18px;
+}
 /* The field's own width, which came from the old grid: a five-column span in a
    1170px layout drew 470px, and being a fixed grid it drew 470px at every
    viewport above the breakpoint. The replacement's form-control declares
