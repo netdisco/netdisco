@@ -2407,6 +2407,15 @@ div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
   --bs-pagination-active-color: #999999;
   --bs-pagination-active-bg: #f5f5f5;
   --bs-pagination-active-border-color: #dddddd;
+  /* And the cell that is spent, Previous on the first page. The old stylesheet
+     said so with grey type alone and left the cell transparent; the replacement
+     fills it too, which made the one cell you cannot use darker than the five
+     you can. The fill is stated as transparent rather than as white because that
+     is what the old stylesheet declared: the two agree only while whatever sits
+     behind the pager is white. */
+  --bs-pagination-disabled-color: #999999;
+  --bs-pagination-disabled-bg: transparent;
+  --bs-pagination-disabled-border-color: #dddddd;
   margin: 0;
 }
 /* The count's own 8px was the other half of that alignment: it is what put the
