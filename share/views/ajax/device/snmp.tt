@@ -12,14 +12,19 @@
     old component's own declarations can be reproduced directly. %]
         <form id="nd_snmp_search_form">
           <span class="form-group">
-            <i id="nd_snmp_loading_spinner" class="far fa-circle fa-lg"></i>
-            &nbsp;
+[%# The spinner, the field and the button are grouped so they travel together.
+    As siblings they broke apart as the pane narrowed, and the spinner leads the
+    row, so a break after it left the dot stranded on a line above the box. The
+    group carries the spacing that the separators used to. %]
+            <span class="nd_snmp_search_controls">
+              <i id="nd_snmp_loading_spinner" class="far fa-circle fa-lg"></i>
 
-            <input id="nd_snmp_search_text" type="text"
-             class="form-control nd_snmp_search_param"
-             name="term" required placeholder="Search for label or OID">
+              <input id="nd_snmp_search_text" type="text"
+               class="form-control nd_snmp_search_param"
+               name="term" required placeholder="Search for label or OID">
 
-            <button type="submit" class="btn btn-secondary">Search</button>
+              <button type="submit" class="btn btn-secondary">Search</button>
+            </span>
 
             &nbsp;
             <label class="form-check form-check-inline"

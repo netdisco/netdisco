@@ -1177,6 +1177,34 @@ div.nd_acl-rule-list {
 #nd_snmp_search_text {
   width: 470px;
 }
+/* The dot, the field and the button travel as one group, and register with each
+   other rather than on the text baseline, which left the button a pixel low.
+   The field keeps the 470px above as its starting width and is allowed to give
+   way when the pane is too narrow for all three, so the group stays on one line
+   instead of breaking and stranding the dot on a line of its own. Both go
+   beyond the old tree, which breaks this row at 767px and puts the button a
+   pixel low at every width. */
+.nd_snmp_search_controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+.nd_snmp_search_controls #nd_snmp_search_text {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* .nd_snmp_search_param nudges every control in this form up by 3px, which
+     predates the migration and is how the row was aligned when it sat on the
+     text baseline. Inside a centered group it fights the centering and leaves the
+     field high, so it is cancelled here for the field alone; the checkboxes
+     outside this group keep it. The !important is required only because the
+     rule it cancels carries one. */
+  margin-top: 0 !important;
+}
+.nd_snmp_search_controls button {
+  flex: 0 0 auto;
+}
 /* And the box the replacement puts around that label. The class it carries was
    undefined in the old stylesheet, so the label drew as bare inline text with
    its checkbox in the line; the replacement gives it a reserved gutter, a
