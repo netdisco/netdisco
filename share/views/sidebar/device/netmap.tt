@@ -14,14 +14,18 @@
                 <input type="checkbox" name="showips" id="nd_showips"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
                     data-toggle="toggle" data-size="small" data-width="30"
-                    data-on="Show" data-off=" " data-onstyle="success">
+[%# These two toggles want no word in their off state. A single space no longer
+    expresses that: the plugin resolves a blank label as an absent one and
+    substitutes its own default, printing "Off" here. A non-breaking space is a
+    label, so it survives that fallback and draws as nothing. -%]
+                    data-on="Show" data-off="&nbsp;" data-onstyle="success">
                   <label for="nd_showips">&nbsp;Management IP</label>
               </div>
               <div class="form-check float-start">
                 <input type="checkbox" name="showspeed" id="nd_showspeed"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
                     data-toggle="toggle" data-size="small" data-width="30"
-                    data-on="Show" data-off=" " data-onstyle="success">
+                    data-on="Show" data-off="&nbsp;" data-onstyle="success">
                   <label for="nd_showspeed">&nbsp;Link Speed</label>
               </div>
               <div class="form-check float-start">
