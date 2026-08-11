@@ -227,6 +227,23 @@ $(document).ready(function() {
   new bootstrap.Tooltip(document.body, { selector: '[rel=tooltip]' });
   new bootstrap.Popover(document.documentElement, { selector: '[rel=popover]' });
 
+  // Dismiss a tooltip when the pointer leaves, even if the element still holds
+  // focus. Both frameworks trigger on "hover focus", but the previous one hid
+  // unconditionally on leave while the replacement records which triggers are
+  // active and keeps the tip up until blur. Without this, hovering a sidebar
+  // field, clicking into it and moving away strands the tooltip over the
+  // content beside the sidebar until the field is blurred, which on a filter
+  // box means until the search is submitted.
+  //
+  // Deliberately not solved by dropping "focus" from the trigger: that would
+  // also stop a tooltip appearing for someone tabbing through the form, which
+  // the previous framework did offer. Hiding on leave keeps that and fixes only
+  // the case that changed.
+  $(document.body).on('mouseleave', '[rel=tooltip]', function() {
+    var instance = bootstrap.Tooltip.getInstance(this);
+    if (instance) { instance.hide(); }
+  });
+
   // bind submission to the navbar go icon
   $('#navsearchgo').click(function() {
     $('#navsearchgo').parents('form').submit();
