@@ -2,7 +2,7 @@
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <input id="nd_ports-form-prefer-field" name="prefer" value="[% params.prefer | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <i class="nd_field-clear-icon fas fa-trash-can fa-lg"
+              <i class="nd_field-clear-icon far fa-trash-can fa-lg"
                  rel="tooltip" data-bs-placement="bottom" data-bs-title="Show all Ports"
                  id="f_clear_btn" data-btn-for="port"></i>
               <input id="nd_port-query" class="form-control" placeholder="Port, Name or VLAN"
