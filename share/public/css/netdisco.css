@@ -1881,9 +1881,20 @@ ul ul, ul ol, ol ol, ol ul {
    and the checkbox sits on its own border. Vertical padding stays at zero: the
    .input-group-text rule above sizes these from a stated content height, and
    restoring padding there would put the box back out of line with the caption
-   beside it. */
+   beside it.
+
+   Stated as a content width rather than as padding, and the checkbox centered in
+   it. Half-pixel padding does the same thing in one engine and not the other:
+   1.5px a side draws an 18px box in Chromium and a 19px one in Firefox, which
+   pushed the pair 2px past the field's right edge there and nowhere else. These
+   boxes are content-box, so 16px of content inside 1px borders is the old
+   tree's 18px in both. */
 .nd_port-partial-label {
-  padding: 0px 1.5px !important;
+  padding: 0px !important;
+  width: 16px;
+  /* These sit in a flex row and would otherwise shrink below the stated width. */
+  flex: 0 0 auto;
+  justify-content: center;
 }
 
 .nd_port-partial {
@@ -1907,7 +1918,10 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 .nd_port-invert-label {
-  padding: 0px 1.5px !important;
+  padding: 0px !important;
+  width: 16px;
+  flex: 0 0 auto;
+  justify-content: center;
   /* for some reason only .input-group-text:first-child gets these */
   -webkit-border-radius: 4px 0 0 4px !important;
   -moz-border-radius: 4px 0 0 4px !important;
