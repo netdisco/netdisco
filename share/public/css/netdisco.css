@@ -2040,6 +2040,13 @@ input#nd_port-query {
   z-index: 1;
   padding: 0px;
   cursor: pointer;
+  /* These are placed by a fixed margin from the top of the field, so where they
+     land depends entirely on how tall their own line box is. The old sprite
+     stood in an 18px box and sat on the field's midline; the replacement's
+     glyph is set at 1.25em and reports a 14.6px box, which lifts it off center
+     by a couple of pixels. Stating the old box height puts it back, and leaves
+     the glyph itself untouched. */
+  line-height: 18px;
 }
 
 /* little icon inside of search input fields */
