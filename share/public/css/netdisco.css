@@ -1704,6 +1704,16 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: 7px;
 }
 
+/* Tooltip type was 11px and is 14px in the replacement, against an unchanged
+   200px max-width. The longer labels therefore wrap to two lines and a strip
+   beside a sidebar field becomes a slab over the content next to it. Both
+   values are the previous framework's own. */
+.tooltip {
+  --bs-tooltip-font-size: 11px;
+  --bs-tooltip-padding-y: 8px;
+  --bs-tooltip-padding-x: 8px;
+}
+
 /* to allow display of tooltip on a disabled control
    http://jsfiddle.net/cSSUA/209/ */
 .tooltip-wrapper {
