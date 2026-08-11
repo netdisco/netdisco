@@ -1892,6 +1892,16 @@ ul ul, ul ol, ol ol, ol ul {
   -webkit-border-radius: 4px 0 0 4px !important;
   -moz-border-radius: 4px 0 0 4px !important;
   border-radius: 4px 0 0 4px !important;
+  /* Stand the Not group clear of the Partial Match group. The replacement pulls
+     every item in a group onto its neighbour by a pixel so their borders
+     collapse into one line, which is right within a group and wrong between
+     two: it butts this box's rounded left corner against the previous box's
+     rounded right corner. The old tree left 4px here, and 4px of margin against
+     that -1px overlap restores exactly that. The flag is needed because the
+     declaration being beaten is selected by a chain of :not() classes that
+     outspecifies a single class, which is why its neighbours above carry one
+     too. */
+  margin-left: 4px !important;
 }
 
 .nd_port-invert {
