@@ -2023,6 +2023,17 @@ form .clearfix.success input {
   margin-bottom: 9px;
 }
 
+/* A section heading is a label inside a legend, and the label is what carries
+   the text. The old stylesheet sized every bare label at body size, so the
+   legend's own larger type never reached the words; the replacement styles bare
+   labels not at all, so the label inherits the legend and the heading renders
+   at nearly twice its intended size. Restoring the label's size fixes every
+   sidebar that uses this pattern, and the legend's own size stays irrelevant
+   because it holds no text of its own. */
+.nd_sidebar-legend label {
+  font-size: 13px;
+}
+
 .nd_netmap-sidebar {
   margin-top: 0px;
   margin-left: -5px;
