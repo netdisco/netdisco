@@ -559,6 +559,16 @@ body {
   --bs-navbar-brand-color: #999999;
   --bs-navbar-brand-hover-color: #ffffff;
 }
+
+/* The bar's item for the page you are on is filled darker than the bar. Both
+   trees mark that item active, and the old stylesheet drew the fill; the
+   replacement styles the active item with colour alone, which the items beside
+   it already reach on hover, so nothing said which section you were in.
+
+   #111111 is the fill the old bar used, against the artwork's #1a1a1a. */
+.navbar .nav-link.active {
+  background-color: #111111;
+}
 /* Either side of the container the bar paints its own background, and the
    replacement's dark is a flat, faintly blue #212529 against the artwork's
    #1a1a1a, so on a window wider than 1170px the bar reads as two different
