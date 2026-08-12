@@ -73,6 +73,7 @@ logs/.*
 #!end included /home/oliver/perl-profiles/dancer/lib/perl5/ExtUtils/MANIFEST.SKIP
 
 \.github
+\.retireignore\.json
 \.travis\.yml
 \.docker
 \.circleci

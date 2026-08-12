@@ -4,7 +4,6 @@
   <head>
     <meta charset="UTF-8">
     <title>Swagger UI</title>
-    <script src="./swagger-ui-json-tree-plugin.js"></script>
     <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
     <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
@@ -38,72 +37,43 @@
     <script src="./swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
-      // https://github.com/justinebateman/swagger-ui-json-tree-plugin
-      SwaggerUIStandalonePreset.unshift(jsonTreePlugin.default);
-
-      // Swagger UI 3.x merges the query string OVER the options passed below.
-      // Inside the bundle it is Object.assign({}, defaults, options, query), so
-      // a url set here cannot override ?url=, and ?config= is fetched and
-      // applied as remote configuration. Netdisco uses exactly one parameter,
-      // the ?url= that Web.pm builds with uri_for so it carries any path prefix,
-      // so the address is reduced to that before the bundle reads it.
-
-      // Compare origins rather than matching the string. Pattern matching is not
-      // sufficient: for http and https the URL parser treats a backslash as a
-      // path separator, so "/\evil.com/x.json" looks relative and resolves to
-      // another origin. The path is pinned as well, because same origin alone
-      // would accept any JSON an attacker could get served from this host.
-      // Web.pm only ever builds uri_for('/swagger.json'), and a path-prefixed
-      // deployment still ends in it.
-      function isOwnSpecUrl(candidate) {
-        if (!candidate) return false;
+      // Swagger UI 4.1.3 and later ignore ?url= unless queryConfigEnabled is
+      // set, and that switch also re-enables configUrl and every other query
+      // key. Netdisco only needs the one parameter, which Web.pm builds with
+      // uri_for so it carries any path prefix, so read it here instead.
+      //
+      // Resolve the candidate and compare origins rather than matching the
+      // string. Pattern matching is not sufficient: for http and https the URL
+      // parser treats a backslash as a path separator, so "/\evil.com/x.json"
+      // looks relative and resolves to another origin.
+      //
+      // The path is pinned as well, because same origin alone would accept any
+      // JSON an attacker could get served from this host. Web.pm only ever
+      // builds uri_for('/swagger.json'), and a path-prefixed deployment still
+      // ends in /swagger.json.
+      //
+      // Returning the path rather than resolved.href keeps the topbar URL field
+      // reading "/swagger.json" as it did before this upgrade.
+      function sameOriginSpecUrl(candidate) {
+        if (!candidate) return null;
         var resolved;
-        try { resolved = new URL(candidate, window.location.href); }
-        catch (e) { return false; }
-        return resolved.origin === window.location.origin
-          && /\/swagger\.json$/.test(resolved.pathname);
+        try {
+          resolved = new URL(candidate, window.location.href);
+        }
+        catch (e) {
+          return null;
+        }
+        if (resolved.origin !== window.location.origin) return null;
+        if (!resolved.pathname.endsWith('/swagger.json')) return null;
+        return resolved.pathname + resolved.search;
       }
 
-      // The query reduced to a url= that validates, or "". Read without
-      // URLSearchParams: a browser that has const but not that constructor would
-      // throw and render no page at all, where falling through to the default
-      // degrades safely. The matched pair is kept raw rather than re-encoded, so
-      // the address stays byte-identical to the link Web.pm builds and no
-      // encoding round trip can alter a legitimate path. A duplicated url=
-      // cannot bypass this: whichever pair validates, exactly one is emitted, so
-      // the bundle's own parser has no second value to prefer.
-      function canonicalSearch() {
-        var pairs = window.location.search.replace(/^\?/, '').split('&');
-        for (var i = 0; i < pairs.length; i++) {
-          if (pairs[i].indexOf('url=') !== 0) continue;
-          if (isOwnSpecUrl(decodeURIComponent(pairs[i].slice(4).replace(/\+/g, ' '))))
-            return '?' + pairs[i];
-        }
-        return '';
-      }
-
-      // This rewrite is what removes ?config=, ?configUrl= and a rejected ?url=,
-      // because the bundle reads window.location.search at construction time.
-      // The hash is preserved: deepLinking uses it.
-      var clean = canonicalSearch();
-      if (clean !== window.location.search) {
-        var address = window.location.pathname + clean + window.location.hash;
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState(null, '', address);
-        }
-        else {
-          // Without replaceState the address cannot be corrected in place, so
-          // reload to the clean one. Construction MUST NOT run first: the
-          // poisoned query is still live until the reload lands. A clean query
-          // canonicalizes to itself, so this cannot loop.
-          window.location.replace(address);
-          return;
-        }
-      }
+      const requestedUrl = new URLSearchParams(window.location.search).get('url');
+      const specUrl = sameOriginSpecUrl(requestedUrl) || '../swagger.json';
 
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
-        url: "../swagger.json",
+        url: specUrl,
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
@@ -119,8 +89,8 @@
         docExpansion: "none",
         // The online validator badge is on by default and sends the definition
         // URL to a Swagger-hosted service on every page load, which for most
-        // deployments means publishing an internal hostname. It cannot be seen in
-        // local testing: the badge suppresses itself when the URL contains
+        // deployments means publishing an internal hostname. It cannot be seen
+        // in local testing: the badge suppresses itself when the URL contains
         // localhost or 127.0.0.1.
         validatorUrl: null
       })

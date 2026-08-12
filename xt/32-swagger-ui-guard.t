@@ -34,10 +34,17 @@ subtest 'swagger_ui_index__shipped_page__names_no_external_spec_host' => sub {
 };
 
 subtest 'swagger_ui_index__shipped_page__defaults_to_own_swagger_json' => sub {
+    # Two halves, because the default is no longer a literal in the constructor.
+    # The page sanitises any ?url= into specUrl and falls back to its own
+    # definition; asserting the literal alone would pass on a page that computed
+    # the value and then handed the bundle something else.
+    #
     # Relative, so it resolves under a path-prefixed deployment and from both
     # /swagger-ui/ and /swagger-ui/index.html.
-    like $html, qr{\burl:\s*["']\.\./swagger\.json["']},
-        'the default spec URL is ../swagger.json';
+    like $html, qr{\|\|\s*["']\.\./swagger\.json["']},
+        'the fallback spec URL is ../swagger.json';
+    like $html, qr{\burl:\s*specUrl\b},
+        'the bundle is given the sanitised value, not the raw parameter';
 };
 
 subtest 'swagger_ui_index__shipped_page__disables_the_online_validator' => sub {
@@ -49,30 +56,30 @@ subtest 'swagger_ui_index__shipped_page__disables_the_online_validator' => sub {
         'validatorUrl is null';
 };
 
-subtest 'swagger_ui_index__shipped_page__gates_the_query_before_construction' => sub {
-    # Ordering is the whole mechanism, not an incidental detail. The bundle reads
-    # window.location.search when SwaggerUIBundle runs, so a gate placed after
-    # that call cannot remove anything: the request has already left.
-    # Anchored on the CALL, not the bare identifier. The page's comments name
-    # replaceState too, and an earlier version of this test matched one of them,
-    # so deleting the real call left it passing.
-    my $gate      = $html =~ m{history\.replaceState\(} ? $-[0] : -1;
+subtest 'swagger_ui_index__shipped_page__leaves_query_configuration_off' => sub {
+    # This is what the whole arrangement rests on from 4.1.3 onward. With
+    # queryConfigEnabled the bundle reads ?url= itself, and ?configUrl= and every
+    # other key with it, at which point the sanitiser below is decoration: the
+    # bundle has already taken the attacker's value. The default is off, so the
+    # assertion is that nothing turns it on.
+    unlike $html, qr{queryConfigEnabled\s*:\s*true},
+        'query configuration is not enabled';
+};
+
+subtest 'swagger_ui_index__shipped_page__sanitises_the_query_before_construction' => sub {
+    # Ordering is the whole mechanism, not an incidental detail: the value has to
+    # be judged before it reaches the constructor, since the bundle fetches
+    # whatever url it is handed. Anchored on the CALL rather than the bare name,
+    # because the page's own comments discuss the sanitiser and an earlier
+    # version of this test matched a comment, so deleting the real call left it
+    # passing.
+    my $sanitise  = $html =~ m{specUrl\s*=\s*sameOriginSpecUrl\(} ? $-[0] : -1;
     my $construct = index $html, 'SwaggerUIBundle({';
 
-    cmp_ok $gate,      '>', -1, 'the address is rewritten somewhere in the page';
+    cmp_ok $sanitise,  '>', -1, 'the parameter is passed through the sanitiser';
     cmp_ok $construct, '>', -1, 'the bundle is constructed somewhere in the page';
-    cmp_ok $gate, '<', $construct,
-        'the rewrite runs before the bundle reads the query';
-
-    # Where replaceState is unavailable the page reloads to the clean address
-    # instead, and it MUST NOT fall through to construction: the poisoned query
-    # is still live until the reload lands. That return is the whole safety of
-    # the fallback path, so the text between the two is checked for it.
-    my $fallback = $html =~ m{location\.replace\(} ? $-[0] : -1;
-    cmp_ok $fallback, '>', -1, 'a reload fallback exists for missing replaceState';
-    cmp_ok $fallback, '<', $construct, 'the fallback also precedes construction';
-    like substr($html, $fallback, $construct - $fallback), qr{\breturn\b},
-        'the fallback returns rather than falling through to construction';
+    cmp_ok $sanitise, '<', $construct,
+        'the sanitiser runs before the bundle is given a url';
 
     # Either polarity, because an early return and a combined boolean are both
     # correct and pinning one would fail a rewrite that is not a regression. What
@@ -81,21 +88,27 @@ subtest 'swagger_ui_index__shipped_page__gates_the_query_before_construction' =>
     # settled by driving the page instead.
     like $html, qr{\.origin\s*[!=]==\s*window\.location\.origin},
         'the candidate is judged by comparing origins';
-    # Matches the literal JavaScript /\/swagger\.json$/ , so the backslash and
-    # the dollar are both escaped for Perl rather than anchoring this pattern.
-    like $html, qr{swagger\\\.json\$/},
-        'the accepted path is pinned to swagger.json';
+
+    # Same origin alone would accept any JSON an attacker can get served from
+    # this host, so the path is pinned too. Written against endsWith rather than
+    # a regular expression, which is what the page uses.
+    like $html, qr{\.pathname\.endsWith\(\s*["']/swagger\.json["']\s*\)},
+        'the accepted path is pinned to /swagger.json';
+
+    # The candidate is resolved against the page before either check. Without
+    # this, "/\evil.com/x.json" reads as relative to a string match while the URL
+    # parser treats the backslash as a separator and resolves it to another
+    # origin.
+    like $html, qr{new\s+URL\(\s*candidate\s*,\s*window\.location\.href\s*\)},
+        'the candidate is resolved against the page before it is judged';
 };
 
-subtest 'swagger_ui_index__shipped_page__reads_the_parameter_without_URLSearchParams' => sub {
-    # Passes before the fix as well as after, deliberately: it guards a choice a
-    # later editor would naturally "tidy" into URLSearchParams. A browser lacking
-    # that constructor would then throw here and render no page at all, where
-    # falling through to the default degrades safely.
-    # The construction, not the bare name: the page's own comment explains what
-    # it avoids and why, and naming the identifier there is worth keeping.
-    unlike $html, qr{new\s+URLSearchParams},
-        'the query is parsed without constructing URLSearchParams';
-};
+# There is no subtest asserting the query is parsed without URLSearchParams, and
+# its absence is deliberate rather than an oversight. Against 3.20.3 it guarded a
+# hand-rolled parse that a later editor would naturally tidy into the
+# constructor, which on a browser without it would throw and render nothing. That
+# reasoning died with the upgrade: Swagger UI 5 cannot run on such a browser at
+# all, so the page uses URLSearchParams and there is no safer alternative to
+# protect.
 
 done_testing;
