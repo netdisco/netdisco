@@ -201,6 +201,23 @@ $(document).ready(function() {
     ,minLength: 3
   });
 
+  // The navbar's box is the only one of these that opens underneath the bar, so
+  // its menu is the only one needing to clear it: the field's own lower edge is
+  // several pixels above the bar's, and a menu hung there starts its first row
+  // inside the bar. Four pixels puts that row just past the edge, one more than
+  // meets it exactly, since the bar is a fraction of a pixel taller on some
+  // platforms. The whole position object is restated because it replaces the
+  // default rather than extending it, and losing collision:none would let the
+  // menu flip above the field when the window is short.
+  $('#nq').autocomplete('option', 'position',
+    { my: 'left top', at: 'left bottom+4', collision: 'none' });
+  // Its box still reaches into the bar by the border and the padding above that
+  // first row, and the bar is painted over anything at this widget's level, so
+  // the border needs lifting as well. The menu is appended to the document
+  // rather than beside its field, so marking the widget here is the only way to
+  // reach one instance of it from the stylesheet.
+  $('#nq').autocomplete('widget').addClass('nd_navbar-suggestions');
+
   // the widget this box used to run bolded the letters it had matched, which is
   // how the list shows why each row is in it. jQuery UI draws the label as
   // plain text and offers no equivalent, so the row is built here instead.

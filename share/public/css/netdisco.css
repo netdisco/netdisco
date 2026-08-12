@@ -783,6 +783,16 @@ div.content > div.tab-content table.nd_floatinghead thead {
   border-radius: 4px;
 }
 
+/* The bar is painted above anything at this widget's own level, so the navbar's
+   menu, whose border and padding reach into the bar above its first row, lost
+   that border along its whole width and its top corners with it. The old widget
+   drew above the bar, at this level. How far the menu hangs below the field is
+   set in netdisco.js and not here: this widget positions itself by writing an
+   offset, which compensates for a margin, so a margin here would do nothing. */
+.ui-autocomplete.nd_navbar-suggestions {
+  z-index: 1051;
+}
+
 /* The menu marks its highlighted row with ui-state-active, where it used to
    use ui-state-focus. In the smoothness theme those two states are different
    colours: focus is grey, active is white, so the highlight became white on a
