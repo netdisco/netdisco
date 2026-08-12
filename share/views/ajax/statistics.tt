@@ -1,9 +1,9 @@
 [% USE Number.Format(THOUSANDS_SEP = settings.thousands_separator) %]
     <div class="row">
     [% IF stats.day %]
-      <div class="span5 offset1">
+      <div class="col-md-5 offset-md-1">
       <h4>Statistics for this installation</h4>
-        <table class="table table-condensed">
+        <table class="table table-sm">
           <thead>
             <tr>
               <th>[% stats.device_count | format_number %] devices
@@ -39,9 +39,9 @@
           </tbody>
         </table>
       </div>
-      <div class="span4 offset1">
+      <div class="col-md-4 offset-md-1">
       <h4>Built using Open Source</h4>
-        <table class="table table-condensed">
+        <table class="table table-sm">
           <thead>
             <tr>
               <th>Software</th>
@@ -77,6 +77,6 @@
         </table>
       </div>
     [% ELSE %]
-      <div class="span4 alert alert-info">Statistics will be available tomorrow.</div>
+      <div class="col-md-4 alert alert-info">Statistics will be available tomorrow.</div>
     [% END %]
     </div>

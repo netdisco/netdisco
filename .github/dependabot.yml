@@ -20,3 +20,13 @@ updates:
       github-actions-dependencies:
         patterns:
           - "*"             # Bundles ALL GitHub Actions into one PR
+
+  - package-ecosystem: "npm"
+    # The vendored frontend libraries in share/public, declared in package.json
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"             # Bundles ALL npm dependencies into one PR

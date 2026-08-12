@@ -2,75 +2,75 @@
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <input id="nd_ports-form-prefer-field" name="prefer" value="[% params.prefer | html_entity %]" type="hidden"/>
             <div class="clearfix">
-              <i class="nd_field-clear-icon icon-trash icon-large"
-                 rel="tooltip" data-placement="bottom" data-offset="3" data-title="Show all Ports"
+              <i class="nd_field-clear-icon far fa-trash-can fa-lg"
+                 rel="tooltip" data-bs-placement="bottom" data-bs-title="Show all Ports"
                  id="f_clear_btn" data-btn-for="port"></i>
-              <input id="nd_port-query" placeholder="Port, Name or VLAN"
+              <input id="nd_port-query" class="form-control" placeholder="Port, Name or VLAN"
                 name="f" value="[% params.f | html_entity %]" type="text"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Filter by Port, Name or VLAN"/>
-              <div class="clearfix input-prepend nd_port-partial">
-                <label class="add-on nd_port-partial-label">
+                rel="tooltip" data-bs-placement="left" data-bs-title="Filter by Port, Name or VLAN"/>
+              <div class="clearfix input-group nd_port-partial">
+                <label class="input-group-text nd_port-partial-label">
                   <input type="checkbox" id="partial"
                     name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.partial %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="partial">
-                  <span class="nd_port-partial-checkbox uneditable-input">Partial Match</span>
+                  <span class="nd_port-partial-checkbox form-control-plaintext">Partial Match</span>
                 </label>
-                <label class="add-on nd_port-invert-label">
+                <label class="input-group-text nd_port-invert-label">
                   <input type="checkbox" id="invert"
                     name="invert"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.invert %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="invert">
-                  <span class="nd_port-invert-checkbox uneditable-input">Not</span>
+                  <span class="nd_port-invert-checkbox form-control-plaintext">Not</span>
                 </label>
               </div>
             </div>
             <div class="clearfix">
-              <span data-toggle="collapse" data-target="#nd_legend">
+              <span data-bs-toggle="collapse" data-bs-target="#nd_legend">
                 <label class="nd_collapser">Legend
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_legend" class="collapse">
-                <ul class="icons-ul"><!-- nd_inputs-list unstyled"> -->
-                  <li><i class="icon-li icon-angle-up text-success"></i>&nbsp; Link Up</li>
-                  <li><i class="icon-li icon-arrow-down text-error"></i>&nbsp; Link Down</li>
-                  <li><i class="icon-li icon-circle-arrow-down text-success"></i>&nbsp; Port Free</li>
-                  <li><i class="icon-li icon-remove"></i>&nbsp; Admin Disabled</li>
-                  <li><i class="icon-li icon-exclamation-sign text-error"></i>&nbsp; Error Disabled</li>
-                  <li><i class="icon-li icon-ban-circle text-info"></i>&nbsp; Blocking</li>
-                  <li><i class="icon-li icon-off"></i>&nbsp; PoE Disabled</li>
-                  <li><i class="icon-li icon-off nd_power-on"></i>&nbsp; PoE Enabled</li>
-                  <li><i class="icon-li icon-link text-warning"></i>&nbsp; Manual Topology</li>
-                  <li><i class="icon-li icon-link"></i>&nbsp; Neighbor Device</li>
-                  <li><i class="icon-li icon-unlink text-error"></i>&nbsp; Neighbor Not Polled</li>
-                  <li><i class="icon-li icon-eye-close text-error"></i>&nbsp; Neighbor Forbidden</li>
-                  <li><i class="icon-li icon-phone"></i>&nbsp; IP Phone</li>
-                  <li><i class="icon-li icon-signal"></i>&nbsp; Wireless Client</li>
-                  <li><i class="icon-li icon-rss"></i>&nbsp; Wireless Access Point</li>
-                  <li><i class="icon-li icon-book"></i>&nbsp; Archived Data</li>
-                  <li><i class="icon-li icon-group"></i>&nbsp; Interface Group</li>
+                <ul class="fa-ul"><!-- nd_inputs-list list-unstyled"> -->
+                  <li><i class="fa-li fas fa-angle-up text-success"></i>&nbsp; Link Up</li>
+                  <li><i class="fa-li fas fa-arrow-down text-danger"></i>&nbsp; Link Down</li>
+                  <li><i class="fa-li fas fa-circle-arrow-down text-success"></i>&nbsp; Port Free</li>
+                  <li><i class="fa-li fas fa-xmark"></i>&nbsp; Admin Disabled</li>
+                  <li><i class="fa-li fas fa-circle-exclamation text-danger"></i>&nbsp; Error Disabled</li>
+                  <li><i class="fa-li fas fa-ban text-info"></i>&nbsp; Blocking</li>
+                  <li><i class="fa-li fas fa-power-off"></i>&nbsp; PoE Disabled</li>
+                  <li><i class="fa-li fas fa-power-off nd_power-on"></i>&nbsp; PoE Enabled</li>
+                  <li><i class="fa-li fas fa-link text-warning"></i>&nbsp; Manual Topology</li>
+                  <li><i class="fa-li fas fa-link"></i>&nbsp; Neighbor Device</li>
+                  <li><i class="fa-li fas fa-link-slash text-danger"></i>&nbsp; Neighbor Not Polled</li>
+                  <li><i class="fa-li fas fa-eye-slash text-danger"></i>&nbsp; Neighbor Forbidden</li>
+                  <li><i class="fa-li fas fa-phone"></i>&nbsp; IP Phone</li>
+                  <li><i class="fa-li fas fa-signal"></i>&nbsp; Wireless Client</li>
+                  <li><i class="fa-li fas fa-rss"></i>&nbsp; Wireless Access Point</li>
+                  <li><i class="fa-li fas fa-book"></i>&nbsp; Archived Data</li>
+                  <li><i class="fa-li fas fa-users"></i>&nbsp; Interface Group</li>
                   [% IF user_has_role('port_control', netdisco_device) %]
-                  <li><i class="icon-li icon-refresh icon-spin"></i>&nbsp; Click "Update View"</li>
+                  <li><i class="fa-li fas fa-arrows-rotate fa-spin"></i>&nbsp; Click "Update View"</li>
                   [% END %]
                 </ul>
               </div>
             </div>
             <div class="clearfix">
-              <span data-toggle="collapse" data-target="#nd_columns">
+              <span data-bs-toggle="collapse" data-bs-target="#nd_columns">
                 <label class="nd_collapser">Display Columns
-                <i class="nd_arrow-up-down-right icon-chevron-down icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-down fa-lg"></i>
                 </label></span>
-              <div id="nd_columns" class="collapse in">
-                <ul class="nd_inputs-list unstyled">
+              <div id="nd_columns" class="collapse show">
+                <ul class="nd_inputs-list list-unstyled">
                   [% FOREACH item IN settings.port_columns %]
                   [% NEXT IF item.name == 'c_admin' AND NOT user_has_role('port_control', netdisco_device) %]
                   [% NEXT IF item.field.match('^cf_') AND NOT permitted_by_acl(netdisco_device, item) %]
                   <li>
-                    <label class="checkbox">
+                    <label class="form-check">
                       <input type="checkbox" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% IF item.name == 'c_admin' %]
-                        <span class="label label-info">[% item.label | html_entity %]</span>
+                        <span class="badge text-bg-info">[% item.label | html_entity %]</span>
                       [% ELSE %]
                         [% item.label | html_entity %]
                       [% END %]
@@ -81,15 +81,15 @@
               </div>
             </div>
             <div class="clearfix">
-              <span data-toggle="collapse" data-target="#nd_nodeprops">
+              <span data-bs-toggle="collapse" data-bs-target="#nd_nodeprops">
                 <label class="nd_collapser">Node Properties
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_nodeprops" class="collapse">
-                <ul class="nd_inputs-list unstyled">
+                <ul class="nd_inputs-list list-unstyled">
                   <li>
-                    <em class="muted">MAC address display as:</em><br/>
-                    <select id="nd_mac-format" name="mac_format">
+                    <em class="text-muted">MAC address display as:</em><br/>
+                    <select id="nd_mac-format" class="form-select" name="mac_format">
                       [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
                       <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.mac_format == format %]>[% format | html_entity %]</option>
                       [% END %]
@@ -97,7 +97,7 @@
                   </li>
                   [% FOREACH item IN settings.connected_properties %]
                   <li>
-                    <label class="checkbox">
+                    <label class="form-check">
                       <input type="checkbox" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% item.label | html_entity %]
@@ -108,29 +108,29 @@
               </div>
             </div>
             <div class="clearfix">
-              <span data-toggle="collapse" data-target="#nd_portprops">
+              <span data-bs-toggle="collapse" data-bs-target="#nd_portprops">
                 <label class="nd_collapser">Port Properties
-                <i class="nd_arrow-up-down-right icon-chevron-up icon-large"></i>
+                <i class="nd_arrow-up-down-right fas fa-chevron-up fa-lg"></i>
                 </label></span>
               <div id="nd_portprops" class="collapse">
-                <ul class="nd_inputs-list unstyled">
+                <ul class="nd_inputs-list list-unstyled">
                   <li>
-                    <em class="muted">Mark as Free if Down for:</em><br/>
-                    <select id="nd_days-select" name="age_num">
+                    <em class="text-muted">Mark as Free if Down for:</em><br/>
+                    <select id="nd_days-select" class="form-select d-inline-block" name="age_num">
                       [% FOREACH count IN [1..31] %]
                       <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_num == count %]>[% count | html_entity %]</option>
                       [% END %]
                     </select>
-                    <select id="nd_age-select" name="age_unit">
+                    <select id="nd_age-select" class="form-select d-inline-block" name="age_unit">
                       [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
                       <option[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.age_unit == unit %]>[% unit | html_entity %]</option>
                       [% END %]
                     </select>
                   </li>
                   <li>
-                    <em class="muted">Show Ports with Status:</em><br/>
+                    <em class="text-muted">Show Ports with Status:</em><br/>
                     <div class="clearfix">
-                      <select id="nd_port-state-select" size="4" multiple name="port_state">
+                      <select id="nd_port-state-select" class="form-select" size="4" multiple name="port_state">
                         <option selected="selected" value="up">Link Up</option>
                         <option selected="selected" value="free">Port Free</option>
                         <option selected="selected" value="down">Link Down</option>
@@ -140,7 +140,7 @@
                   </li>
                   [% FOREACH item IN settings.port_display_properties %]
                   <li>
-                    <label class="checkbox">
+                    <label class="form-check">
                       <input type="checkbox" id="[% item.name | html_entity %]"
                         name="[% item.name | html_entity %]"[% ' checked="checked"' IF vars.sidebar_defaults.device_ports.${item.name} %] />
                       [% item.label | html_entity %]
@@ -152,15 +152,14 @@
             </div>
             <div class="btn-group">
               <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info nd_sidebar-btn-drop">
-                <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Update View</button>
-              <button class="btn btn-info dropdown-toggle nd_sidebar-btn-drop-drop" data-toggle="dropdown">
-                <span class="caret"></span>
+                <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Update View</button>
+              <button class="btn btn-info dropdown-toggle nd_sidebar-btn-drop-drop" data-bs-toggle="dropdown">
               </button>
               <ul class="dropdown-menu">
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="">Default Search</a></li>
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="port">Filter by Port</a></li>
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="name">Filter by Name</a></li>
-                <li><a class="nd_device-port-submit-prefer" href="" data-prefer="vlan">Filter by VLAN</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="">Default Search</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="port">Filter by Port</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="name">Filter by Name</a></li>
+                <li><a class="dropdown-item nd_device-port-submit-prefer" href="" data-prefer="vlan">Filter by VLAN</a></li>
               </ul>
             </div>
 

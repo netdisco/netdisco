@@ -29,13 +29,13 @@ $(document).ready(function() {
         "width": "unset",
         "render": function(data, type, row, meta) {
           if (row.up_admin != "up") {
-            return'<i class="icon-remove"></i>';
+            return'<i class="fas fa-xmark"></i>';
           }
           else if (row.up_admin == "up" && (row.up != "up" && row.up != "dormant")) {
-            return '<i class="icon-arrow-down text-error"></i>';
+            return '<i class="fas fa-arrow-down text-danger"></i>';
           }
           else {
-            return '<i class="icon-angle-up text-success"></i>';
+            return '<i class="fas fa-angle-up text-success"></i>';
           }
         }
       }, {

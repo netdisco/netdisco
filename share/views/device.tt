@@ -1,35 +1,37 @@
-<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
-  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+<i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
+  rel="tooltip" data-bs-placement="left" data-bs-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar">
-    <div class="well">
-      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-pin icon-pushpin"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
-      <a id="nd_sidebar-reset-link" href="#">
-        <i class="nd_sidebar-reset icon-undo"
-          rel="tooltip" data-placement="left" data-offset="5" data-title="Reset to Defaults" data-container="body"></i>
-      </a>
-      <div class="tab-content">
-        [% FOREACH tab IN settings._device_tabs %]
-        <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-          <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
-              method="get" action="[% uri_for('/device') | none %]">
-            <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
-            [% TRY %]
-            <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
-            [% INCLUDE "sidebar/device/${tab.tag}.tt" %]
-            [% CATCH %]
-            <!-- no "[% tab.tag | html_entity %]" search options -->
-            <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-            <input name="f" value="[% params.f | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 0;</script>
-            [% END %]
-          </form>
-        </div> <!-- /tab-pane -->
-        [% END %]
-      </div> <!-- /tab-content -->
+    <div class="card">
+      <div class="card-body">
+        <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
+        <i class="nd_sidebar-pin fas fa-thumbtack"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Unpin Sidebar" data-bs-container="body"></i>
+        <a id="nd_sidebar-reset-link" href="#">
+          <i class="nd_sidebar-reset fas fa-arrow-rotate-left"
+            rel="tooltip" data-bs-placement="left" data-bs-title="Reset to Defaults" data-bs-container="body"></i>
+        </a>
+        <div class="tab-content">
+          [% FOREACH tab IN settings._device_tabs %]
+          <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
+            <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
+                method="get" action="[% uri_for('/device') | none %]">
+              <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
+              [% TRY %]
+              <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
+              [% INCLUDE "sidebar/device/${tab.tag}.tt" %]
+              [% CATCH %]
+              <!-- no "[% tab.tag | html_entity %]" search options -->
+              <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
+              <input name="f" value="[% params.f | html_entity %]" type="hidden"/>
+              <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 0;</script>
+              [% END %]
+            </form>
+          </div> <!-- /tab-pane -->
+          [% END %]
+        </div> <!-- /tab-content -->
+      </div>
     </div>
   </div>
 
@@ -37,13 +39,13 @@
     <ul id="nd_search-results" class="nav nav-tabs">
       [% FOREACH tab IN settings._device_tabs %]
       [% NEXT UNLESS tab.render_if %]
-      <li[% ' class="active"' IF params.tab == tab.tag %]><a id="[% tab.tag | html_entity %]_link" href="#[% tab.tag | html_entity %]_pane">[% tab.label | html_entity %]</a></li>
+      <li class="nav-item"><a class="nav-link[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag | html_entity %]_link" href="#[% tab.tag | html_entity %]_pane">[% tab.label | html_entity %]</a></li>
       [% END %]
       <span id="nd_device-name">
-        [% IF netdisco_device.is_pseudo %]<span class="badge badge-warning">[% END %][% display_name | html_entity %][% IF netdisco_device.is_pseudo %]</span>[% END %]
+        [% IF netdisco_device.is_pseudo %]<span class="badge text-bg-warning">[% END %][% display_name | html_entity %][% IF netdisco_device.is_pseudo %]</span>[% END %]
         <a id="nd_csv-download" href="#" download="netdisco.csv">&nbsp;
-          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
-            rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
+          <i id="nd_csv-download-icon" class="text-info far fa-file-lines fa-lg"
+            rel="tooltip" data-bs-placement="left" data-bs-title="Download as CSV"></i></a>
       </span>
     </ul>
     <div class="tab-content">

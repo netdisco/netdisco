@@ -1,0 +1,110 @@
+<table id="ps-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Name</th>
+      <th>Port</th>
+      <th>VLANs</th>
+      <th>Speed</th>
+      <th>Connected Device</th>
+      <th>Last Change</th>
+    </tr>
+  </thead>
+</table>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  var table = $('#ps-data-table').dataTable({
+    "deferRender": true,
+    "data": ,
+    "columnDefs": [
+        { "sortable": false, "targets": 0 },
+        { "searchable": false, "targets": 0 },
+        { "type": 'portsort', "targets": [ 'portsort' ] }
+    ],
+    "order": [[ 1, 'asc' ]],
+    "columns": [{
+        "data": 'up',
+        "className": "nd_center-cell nd_devport-icon",
+        "width": "unset",
+        "render": function(data, type, row, meta) {
+          if (row.up_admin != "up") {
+            return'<i class="fas fa-xmark"></i>';
+          }
+          else if (row.up_admin == "up" && (row.up != "up" && row.up != "dormant")) {
+            return '<i class="fas fa-arrow-down text-danger"></i>';
+          }
+          else {
+            return '<i class="fas fa-angle-up text-success"></i>';
+          }
+        }
+      }, {
+        "data": 'name',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'ip',
+        "className": "nd_nowrap nd_center-cell",
+        "render": function(data, type, row, meta) {
+          var ddns = '';
+          if (row.device.dns || row.device.name) {
+            ddns = '<br>(' + he.encode(row.device.dns || row.device.name)  + ')';
+          }
+          return '<a href="&q=' + encodeURIComponent(data)
+            + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data)
+            + ' [' + he.encode(row.port) + ']</a>' + ddns;
+        }
+      }, {
+        "data": 'vlan_agg',
+        "render": function(data, type, row, meta) {
+          return data || '';
+        }
+      }, {
+        "data": 'speed',
+        "render": function(data, type, row, meta) {
+          return data || '';
+        }
+      }, {
+        "data": 'properties.remote_dns',
+        "render": function(data, type, row, meta) {
+          return data || '';
+        }
+      }, {
+        "data": 'lastchange_stamp',
+        "render": function(data, type, row, meta) {
+          return data || '';
+        }
+      }
+    ],
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": 
+    ,"lengthMenu": 
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+
+    ,"pagingType": 'simple_numbers'
+    ,"language": {
+
+      "processing": 'Processing...'
+      ,"search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+
+      ,"paginate": {
+        "previous": '&larr; Previous'
+        ,"next":    'Next &rarr;'
+      }
+    }
+    ,"stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+    }
+  });
+});</script>
+

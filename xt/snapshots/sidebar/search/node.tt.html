@@ -1,0 +1,76 @@
+
+            <p class="nd_sidebar-title"><em>Node Search Options</em></p>
+            <input name="q" value="" type="hidden"/>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="stamps"
+                  name="stamps"/>
+              </label>
+              <label class="nd_checkboxlabel" for="stamps">
+                <span class="nd_searchcheckbox form-control-plaintext">Time Stamps</span>
+              </label>
+            </div>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="deviceports"
+                  name="deviceports"/>
+              </label>
+              <label class="nd_checkboxlabel" for="deviceports">
+                <span class="nd_searchcheckbox form-control-plaintext">Device Ports</span>
+              </label>
+            </div>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="show_vendor"
+                  name="show_vendor"/>
+              </label>
+              <label class="nd_checkboxlabel" for="show_vendor">
+                <span class="nd_searchcheckbox form-control-plaintext">Vendor</span>
+              </label>
+            </div>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="archived"
+                  name="archived"/>
+              </label>
+              <label class="nd_checkboxlabel" for="archived">
+                <span class="nd_searchcheckbox form-control-plaintext">
+                  Archived Data &nbsp;<i class="fas fa-book text-warning"></i></span>
+              </label>
+            </div>
+            <div class="clearfix input-group"
+              rel="tooltip" data-bs-placement="left" data-bs-title="Only for IEEE format MACs">
+              <label class="input-group-text nd_sidebar-legend">
+                <input type="checkbox" id="node_partial"
+                  name="partial"/>
+              </label>
+              <label class="nd_checkboxlabel" for="node_partial">
+                <span class="nd_searchcheckbox form-control-plaintext">Partial Match</span>
+              </label>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Date Range:</em><br/>
+              <div class="clearfix input-group">
+                <label class="input-group-text">
+                  <input type="checkbox" id="age_invert"
+                    name="age_invert"/>
+                </label>
+                <label class="nd_checkboxlabel" for="age_invert">
+                  <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
+                </label>
+              </div>
+              <input class="nd_side-input form-control" id="daterange"
+                type="text" name="daterange" value=""/>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">MAC address display as:</em><br/>
+              <select id="nd_node-mac-format" class="form-select" name="mac_format">
+                <option>IEEE</option>
+                <option>Cisco</option>
+                <option>Microsoft</option>
+                <option>Sun</option>
+              </select>
+            </div>
+            <button id="_submit" type="submit" class="btn btn-info">
+              <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Nodes</button>
+

@@ -1,9 +1,9 @@
 
             <div class="clearfix">
-              <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input"
+              <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input form-control"
                 placeholder="0.0.0.0/0" required="required"
                 name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Prefix/Subnet in CIDR Format"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Prefix/Subnet in CIDR Format"/>
             </div>
 
             <fieldset>
@@ -11,22 +11,22 @@
                 <label><em><strong>Date Range</strong></em></label>
               </legend>
               <!--
-              <div class="clearfix input-prepend">
-                <label class="add-on">
+              <div class="clearfix input-group">
+                <label class="input-group-text">
                   <input type="checkbox" id="age_invert"
                     name="age_invert"[% ' checked="checked"' IF params.age_invert %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="age_invert">
-                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                  <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
               -->
               <div class="clearfix">
-                <input class="nd_side-input" id="daterange" required="required"
+                <input class="nd_side-input form-control" id="daterange" required="required"
                   type="text" name="daterange" value="[%
                     (params.exists('daterange') ? params.daterange : to_daterange()) | html_entity %]"/>
               </div>
             </fieldset>
 
             <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Subnets</button>
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Subnets</button>

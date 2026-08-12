@@ -1,0 +1,24 @@
+name: "Frontend dependency scan"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  retirejs:
+    name: retire.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Scan the vendored frontend libraries
+        run: npx --yes retire --path share/public --outputformat text
