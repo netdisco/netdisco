@@ -684,6 +684,7 @@ xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
 xt/31-loadmibs-guard.t
 xt/32-swagger-ui-guard.t
+xt/33-vendored-manifest.t
 xt/40-template-snapshots.t
 xt/bin/regenerate-snapshots
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
