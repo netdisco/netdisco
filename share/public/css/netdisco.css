@@ -688,6 +688,16 @@ a:hover, a:focus {
   border-radius: 15px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1), 0 1px 0 rgba(255, 255, 255, .15);
 }
+/* Its prompt was light, because the pill it sits in is dark. The replacement
+   framework has one placeholder colour for every field and it is a dark one,
+   chosen for the white fields everywhere else, so the prompt went dark on dark
+   and could not be read. Scoped to the resting state on purpose: the old
+   stylesheet set this colour unconditionally, so the same prompt was pale grey
+   on white for as long as the field held focus, and copying the colour without
+   the scope trades one unreadable state for another. */
+#nq:not(:focus)::placeholder {
+  color: #cccccc;
+}
 /* Focusing it turned the pill white and took its border away, growing the
    padding by that border's width on each side so the box stayed 286px across.
    The replacement leaves it dark and rings it in a 4px blue halo instead. No
