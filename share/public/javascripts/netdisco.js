@@ -199,45 +199,37 @@ $(document).ready(function() {
     }
     ,delay: 150
     ,minLength: 3
-    // the widget these two boxes used to run opened with its first row already
-    // picked out, so Enter took the obvious name with no pointer and no arrow
-    // key. jQuery UI leaves nothing selected unless asked. This does not put the
-    // row's text in the field: the widget writes a focused row back to the field
-    // only when a key moved the focus, and this focus is its own.
+    // the widget these boxes used to run opened with its first row picked out,
+    // so Enter took the obvious name. jQuery UI selects nothing unless asked, and
+    // does not write the row into the field: it only does that when a key moved
+    // the focus.
     ,autoFocus: true
   });
 
-  // Both boxes ran that widget, so both are marked, and the highlight is scoped
-  // to the mark: the app's other fifteen autocompletes were on jQuery UI before
-  // this work and keep the theme's own highlight.
+  // Both boxes ran that widget, so both are marked and the blue highlight is
+  // scoped to the mark; the app's other fifteen keep the theme's own.
   $('#nq,#nqbody').each(function() {
     $(this).autocomplete('widget').addClass('nd_search-suggestions');
   });
 
-  // The navbar's box is the only one of these that opens underneath the bar, so
-  // its menu is the only one needing to clear it: the field's own lower edge is
-  // several pixels above the bar's, and a menu hung there starts its first row
-  // inside the bar. Four pixels puts that row just past the edge, one more than
-  // meets it exactly, since the bar is a fraction of a pixel taller on some
-  // platforms. The whole position object is restated because it replaces the
-  // default rather than extending it, and losing collision:none would let the
-  // menu flip above the field when the window is short.
+  // The navbar's box opens underneath the bar, and a menu hung at the field's
+  // own edge starts its first row inside it. Four pixels rather than the three
+  // that meet the edge exactly, the bar being a fraction taller on some
+  // platforms. The whole object is restated because it replaces the default
+  // rather than extending it, and losing collision:none would let the menu flip
+  // above the field in a short window.
   $('#nq').autocomplete('option', 'position',
     { my: 'left top', at: 'left bottom+4', collision: 'none' });
-  // Its box still reaches into the bar by the border and the padding above that
-  // first row, and the bar is painted over anything at this widget's level, so
-  // the border needs lifting as well. The menu is appended to the document
-  // rather than beside its field, so marking the widget here is the only way to
-  // reach one instance of it from the stylesheet.
+  // Its border and padding still reach into the bar, which paints above this
+  // widget's level, so the border needs lifting too. The menu is appended to the
+  // document rather than beside its field, so marking the widget here is the only
+  // way to reach one instance from the stylesheet.
   $('#nq').autocomplete('widget').addClass('nd_navbar-suggestions');
 
-  // the widget this box used to run bolded the letters it had matched, which is
-  // how the list shows why each row is in it. jQuery UI draws the label as
-  // plain text and offers no equivalent, so the row is built here instead.
-  // escaped first and marked second, because this goes in as markup where the
-  // default went in as text: the names come from the database, not from a
-  // literal. only this box, since every other autocomplete in the app ran on
-  // jQuery UI before and did not bold either.
+  // the widget this box used to run bolded the letters it matched, which is how
+  // the list shows why each row is in it, and jQuery UI offers no equivalent.
+  // Escaped first and marked second, because this goes in as markup where the
+  // default went in as text and the names come from the database.
   $('#nq,#nqbody').each(function() {
     $(this).autocomplete('instance')._renderItem = function(ul, item) {
       var label = $('<div/>').text(item.label).html();
@@ -259,16 +251,10 @@ $(document).ready(function() {
 
   // Dismiss a tooltip when the pointer leaves, even if the element still holds
   // focus. Both frameworks trigger on "hover focus", but the previous one hid
-  // unconditionally on leave while the replacement records which triggers are
-  // active and keeps the tip up until blur. Without this, hovering a sidebar
-  // field, clicking into it and moving away strands the tooltip over the
-  // content beside the sidebar until the field is blurred, which on a filter
-  // box means until the search is submitted.
-  //
-  // Deliberately not solved by dropping "focus" from the trigger: that would
-  // also stop a tooltip appearing for someone tabbing through the form, which
-  // the previous framework did offer. Hiding on leave keeps that and fixes only
-  // the case that changed.
+  // unconditionally on leave while the replacement keeps the tip up until blur,
+  // stranding it over the content beside a sidebar field. Deliberately not
+  // solved by dropping "focus" from the trigger, which would also stop a tooltip
+  // appearing for someone tabbing through the form.
   $(document.body).on('mouseleave', '[rel=tooltip]', function() {
     var instance = bootstrap.Tooltip.getInstance(this);
     if (instance) { instance.hide(); }
