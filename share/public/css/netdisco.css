@@ -805,6 +805,19 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #212121;
 }
 
+/* The two search boxes are the exception to the rule above. Their old widget
+   drew the picked row in the old framework's blue rather than the theme's grey,
+   and since that row is the one Enter takes, it is worth being the loudest thing
+   in the list. Scoped to the marked menus, the theme's grey being right for the
+   fifteen autocompletes that always had it. */
+.ui-autocomplete.nd_search-suggestions .ui-menu-item-wrapper.ui-state-active {
+  border-color: #0077b3;
+  background-color: #0081c2;
+  background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+  background-repeat: repeat-x;
+  color: #ffffff;
+}
+
 /* jstree scrollable */
 
 .nd_scrollable {

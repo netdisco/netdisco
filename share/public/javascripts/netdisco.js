@@ -199,6 +199,19 @@ $(document).ready(function() {
     }
     ,delay: 150
     ,minLength: 3
+    // the widget these two boxes used to run opened with its first row already
+    // picked out, so Enter took the obvious name with no pointer and no arrow
+    // key. jQuery UI leaves nothing selected unless asked. This does not put the
+    // row's text in the field: the widget writes a focused row back to the field
+    // only when a key moved the focus, and this focus is its own.
+    ,autoFocus: true
+  });
+
+  // Both boxes ran that widget, so both are marked, and the highlight is scoped
+  // to the mark: the app's other fifteen autocompletes were on jQuery UI before
+  // this work and keep the theme's own highlight.
+  $('#nq,#nqbody').each(function() {
+    $(this).autocomplete('widget').addClass('nd_search-suggestions');
   });
 
   // The navbar's box is the only one of these that opens underneath the bar, so
