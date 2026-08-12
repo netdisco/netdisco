@@ -679,7 +679,6 @@ share/views/sidebar/search/port.tt
 xt/00-compile.t
 xt/01-local-pod.t
 xt/10-sort_port.t
-xt/11-portsort.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -687,9 +686,6 @@ xt/31-loadmibs-guard.t
 xt/32-swagger-ui-guard.t
 xt/40-template-snapshots.t
 xt/bin/regenerate-snapshots
-xt/html/portsort.html
-xt/js/qunit-tap.js
-xt/js/run_qunit.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm

@@ -383,12 +383,40 @@ $(document).ready(function() {
   $('#daterange').daterangepicker({
     ranges: {
       'Today': [moment(), moment()]
-      ,'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)]
-      ,'Last 7 Days': [moment().subtract('days', 6), moment()]
-      ,'Last 30 Days': [moment().subtract('days', 29), moment()]
+      ,'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')]
+      ,'Last 7 Days': [moment().subtract(6, 'days'), moment()]
+      ,'Last 30 Days': [moment().subtract(29, 'days'), moment()]
       ,'This Month': [moment().startOf('month'), moment().endOf('month')]
-      ,'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+      ,'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
     }
+    // The plugin seeds its options from this element's data-* attributes and
+    // lets the caller override them, so an unset option is the one a stray
+    // attribute could supply. Both of these reach a jQuery HTML sink, so pin
+    // them here rather than relying on the markup never gaining an attribute.
+    //
+    // The template is copied verbatim from daterangepicker 3.1.0, the version
+    // named in package.json, where the plugin builds it at daterangepicker.js
+    // lines 100 to 116. Re-copy it whenever that version changes: the plugin
+    // queries selectors inside this container, so a stale copy renders a broken
+    // widget with nothing thrown and no test to catch it.
+    ,template:
+      '<div class="daterangepicker">' +
+        '<div class="ranges"></div>' +
+        '<div class="drp-calendar left">' +
+          '<div class="calendar-table"></div>' +
+          '<div class="calendar-time"></div>' +
+        '</div>' +
+        '<div class="drp-calendar right">' +
+          '<div class="calendar-table"></div>' +
+          '<div class="calendar-time"></div>' +
+        '</div>' +
+        '<div class="drp-buttons">' +
+          '<span class="drp-selected"></span>' +
+          '<button class="cancelBtn" type="button"></button>' +
+          '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
+        '</div>' +
+      '</div>'
+    ,parentEl: 'body'
     ,minDate: '2004-01-01'
     ,showDropdowns: true
     ,timePicker: false
