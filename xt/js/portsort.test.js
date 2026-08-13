@@ -208,3 +208,43 @@ describe('interface names by vendor', () => {
       ['voice-port 2/1', 'voice-port 2/2', 'voice-port 2/10', 'voice-port 2/11']);
   });
 });
+
+// The same list of ports is ordered twice by two separate implementations:
+// sort_port in App::Netdisco::Util::Web orders the rows before the page is
+// rendered (Ports.pm:295), and portSort reorders those same rows when the user
+// clicks the column heading (ports.tt:616 registers it as the DataTables sort
+// type). If they disagree, the order changes under the user for no visible
+// reason.
+//
+// These cases are xt/10-sort_port.t's, expectations included, so a change here
+// that breaks agreement with the Perl side fails. Keep the two lists in step.
+describe('agreement with the Perl sort_port', () => {
+  function assertAgreesWithSortPort(first, second, expected) {
+    assert.equal(Math.sign(sortTypes['portsort-asc'](first, second)), expected,
+      `${first} against ${second}`);
+  }
+
+  test('portSort__identical_values__agrees_that_neither_is_greater', () => {
+    assertAgreesWithSortPort(1, 1, 0);
+  });
+
+  test('portSort__extreme_colon_ports__agrees_with_sort_port', () => {
+    assertAgreesWithSortPort('1:2', '1:10', -1);
+  });
+
+  test('portSort__hp_letter_then_number_ports__agrees_with_sort_port', () => {
+    assertAgreesWithSortPort('D1', 'D10', -1);
+  });
+
+  test('portSort__juniper_oc3_pic_interfaces__agrees_with_sort_port', () => {
+    assertAgreesWithSortPort('so-1/0/0.0', 'so-1/0/1.0', -1);
+    assertAgreesWithSortPort('so-1/1/0.0', 'so-1/1/1.0', -1);
+    assertAgreesWithSortPort('so-1/0/0.0', 'so-1/1/0.0', -1);
+  });
+
+  test('portSort__juniper_channelized_interfaces__agrees_with_sort_port', () => {
+    assertAgreesWithSortPort('so-1/0/0:0', 'so-1/0/1:0', -1);
+    assertAgreesWithSortPort('so-1/1/0:0', 'so-1/1/1:0', -1);
+    assertAgreesWithSortPort('so-1/0/0:0', 'so-1/1/0:0', -1);
+  });
+});
