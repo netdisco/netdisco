@@ -689,6 +689,7 @@ xt/34-module-tree-order.t
 xt/35-login-return-url.t
 xt/40-template-snapshots.t
 xt/bin/regenerate-snapshots
+xt/js/portsort.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm

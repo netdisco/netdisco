@@ -1,0 +1,27 @@
+name: "Frontend unit tests"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  portsort:
+    name: portsort.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Name the test files rather than globbing them: `node --test` exits 0
+      # when a glob matches nothing, so a moved or renamed file would leave this
+      # job green with no tests run. Naming them makes that a hard failure.
+      - name: Sort order for network interface names
+        run: node --test xt/js/portsort.test.js
