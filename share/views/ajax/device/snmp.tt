@@ -1,32 +1,50 @@
 <div class="row">
-    <div class="span5">
+    <div class="col-md-4">
         <div id="jstree" class="nd_scrollable"></div>
     </div>
-    <div id="snmpnodecontainer" class="span8">
-        <form id="nd_snmp_search_form" class="form-inline col-md-4">
+    <div id="snmpnodecontainer" class="col-md-8">
+[%# This form carries no layout class, and both of the ones it used to are
+    deliberately gone. col-md-4 was dead markup: the old stylesheet defined no
+    such class, and the replacement does, which narrowed the form to a third of
+    the pane. d-flex was put here to stand in for the old form-inline, but it
+    blockifies the one span this form holds, and the span then constrains every
+    control inside it. The layout is stated in netdisco.css instead, where the
+    old component's own declarations can be reproduced directly. %]
+        <form id="nd_snmp_search_form">
           <span class="form-group">
-            <i id="nd_snmp_loading_spinner" class="icon-circle-blank icon-large"></i>
+[%# The spinner, the field and the button are grouped so they travel together.
+    As siblings they broke apart as the pane narrowed, and the spinner leads the
+    row, so a break after it left the dot stranded on a line above the box. The
+    group carries the spacing that the separators used to. %]
+            <span class="nd_snmp_search_controls">
+              <i id="nd_snmp_loading_spinner" class="far fa-circle fa-lg"></i>
+
+              <input id="nd_snmp_search_text" type="text"
+               class="form-control nd_snmp_search_param"
+               name="term" required placeholder="Search for label or OID">
+
+              <button type="submit" class="btn btn-secondary">Search</button>
+            </span>
+
             &nbsp;
-
-            <input id="nd_snmp_search_text" type="text"
-             class="form-control nd_snmp_search_param span5"
-             name="term" required placeholder="Search for label or OID">
-
-            <button type="submit" class="btn btn-default">Search</button>
-
-            &nbsp;
-            <label class="checkbox-inline"
-              rel="tooltip" data-placement="top" data-offset="5"
-              data-title="Anchored to the beginning">
+            <label class="form-check form-check-inline"
+              rel="tooltip" data-bs-placement="top"
+              data-bs-title="Anchored to the beginning">
 
               <input type="checkbox" id="nd_snmp_search_partial"
                 name="partial" class="nd_snmp_search_param"> Partial </input>
             </label>
 
             &nbsp;
-            <input type="checkbox" id="nd_snmp_search_deviceonly"
-              name="deviceonly" class="nd_snmp_search_param"
-              checked="checked"> Only this device </input>
+[%# The text was a bare node beside the checkbox, so nothing could hold the
+    phrase together and it split mid-phrase as the panel narrowed. Wrapping it
+    in a label the way the Partial control already is gives the rule below
+    something to apply to, and makes the words toggle the box as well. %]
+            <label class="form-check form-check-inline">
+              <input type="checkbox" id="nd_snmp_search_deviceonly"
+                name="deviceonly" class="nd_snmp_search_param"
+                checked="checked"> Only this device
+            </label>
 
             <input type="hidden" id="nd_snmp_search_ip"
               name="ip" class="nd_snmp_search_param" value="[% device %]" />
@@ -36,7 +54,7 @@
           <table class="table table-bordered">
               <tbody>
                 <tr>
-                  <th scope="row" class="span1">OID</th>
+                  <th scope="row" class="col-md-1">OID</th>
                   <td></td>
                 </tr>
                 <tr>
@@ -145,8 +163,8 @@
         'ajax' : {
           'url' : '[% uri_base | none %]/ajax/data/snmp/nodesearch',
           'beforeSend' : function(jqXHR, settings) {
-            $('#nd_snmp_loading_spinner').removeClass('icon-circle-blank icon-exclamation-sign text-success')
-                                         .addClass('icon-spinner text-warning icon-spin');
+            $('#nd_snmp_loading_spinner').removeClass('far fa-circle fas fa-circle-exclamation text-success')
+                                         .addClass('fas fa-spinner text-warning fa-spin');
 
             if (document.getElementById('nd_snmp_search_partial').checked) {
               settings.url = settings.url + '&partial=on';
@@ -159,8 +177,8 @@
             return true;
           },
           'error' : function() {
-            $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
-                                         .addClass('icon-exclamation-sign');
+            $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                         .addClass('fas fa-circle-exclamation');
           }
         },
         'search_callback' : jstree_search_callback
@@ -188,8 +206,8 @@
         var parent = path[path.length - 2];
         document.getElementById( parent ).scrollIntoView();
 
-        $('#nd_snmp_loading_spinner').removeClass('icon-spinner text-warning icon-spin')
-                                     .addClass('icon-circle-blank text-success');
+        $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                     .addClass('far fa-circle text-success');
       }
     });
     $("#nd_snmp_search_form").submit(function(e) {

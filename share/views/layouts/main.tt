@@ -12,100 +12,97 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
 
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js?v=[% asset_version | none %]"></script>
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.custom.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-history.js"></script>
-<!--  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.cookie.js"></script> -->
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap2-toggle.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/underscore.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.qtip.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-3.5.17.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-force-network-chart.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.floatThead.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/daterangepicker.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/moment.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.dataTables.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.bootstrap.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-detect.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-sort.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jstree/jstree.min.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/he.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/natural.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/portsort.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/versionsort.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-history.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-3.5.17.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-force-network-chart.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.floatThead.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/moment.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/daterangepicker.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.dataTables.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.bootstrap.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-detect.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-sort.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jstree/jstree.min.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/he.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/natural.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/portsort.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/versionsort.js?v=[% asset_version | none %]"></script>
 
   <script type="text/javascript">
     var uri_base = '[% uri_base | none %]';
     var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
     var default_pgtitle = '[% settings.branding_text | none %]';
   </script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js?v=[% asset_version | none %]"></script>
 
   [% FOREACH add_js IN settings._additional_javascript %]
-  <script type="text/javascript" src="[% uri_base | none %]/plugin/[% add_js | none %]/[% add_js | none %].js"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/plugin/[% add_js | none %]/[% add_js | none %].js?v=[% asset_version | none %]"></script>
   [% END %]
 
-  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap2-toggle.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/jquery.qtip.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.custom.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/d3-force-network-chart.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/javascripts/jstree/themes/proton/style.min.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker-bs2.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css" media="print"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap.min.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.min.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/d3-force-network-chart.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/javascripts/jstree/themes/proton/style.min.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css?v=[% asset_version | none %]"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css?v=[% asset_version | none %]" media="print"/>
 
   [% FOREACH add_css IN settings._additional_css %]
-  <link rel="stylesheet" href="[% uri_base | none %]/plugin/[% add_css | none %]/[% add_css | none %].css"/>
+  <link rel="stylesheet" href="[% uri_base | none %]/plugin/[% add_css | none %]/[% add_css | none %].css?v=[% asset_version | none %]"/>
   [% END %]
 </head>
 
 <body>
-<div class="navbar navbar-inverse navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container">
-      <a class="brand" href="[% uri_for('') | none %]">[% settings.branding_text | none %]</a>
-      [% IF session.logged_in_user %]
-      <ul class="nav">
-        [% FOREACH ni IN settings._navbar_items %]
-        <li[% ' class="active"' IF vars.nav == ni.tag %]>
-          <a href="[% uri_for(ni.path) | none %]">[% ni.label | html_entity %]</a>
-        </li>
-        [% END %]
-        [% IF settings._reports.size %]
-        <li class="dropdown[% ' active' IF vars.nav == 'reports' %]">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
-          <ul class="dropdown-menu">
-          [% FOREACH category IN settings._report_order %]
-            [% IF settings._reports_menu.$category.size %]
-            <li class="dropdown-submenu">
-            <a href="#">[% category | html_entity %]</a>
-              <ul class="dropdown-menu">
-              [% FOREACH item IN settings._reports_menu.$category %]
-                [% NEXT IF settings._reports.$item.hidden %]
-                <li><a href="[% uri_for('/report/' _ item) %]?firstsearch=on">[% settings._reports.$item.label | html_entity %]</a></li>
-              [% END %]
-              </ul>
-            </li>
+<nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="[% uri_for('') | none %]">[% settings.branding_text | none %]</a>
+    [% IF session.logged_in_user %]
+    <ul class="navbar-nav">
+      [% FOREACH ni IN settings._navbar_items %]
+      <li class="nav-item">
+        <a class="nav-link[% ' active' IF vars.nav == ni.tag %]" href="[% uri_for(ni.path) | none %]">[% ni.label | html_entity %]</a>
+      </li>
+      [% END %]
+      [% IF settings._reports.size %]
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle[% ' active' IF vars.nav == 'reports' %]" role="button"
+          data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Reports </a>
+        <ul class="dropdown-menu">
+        [% FOREACH category IN settings._report_order %]
+          [% IF settings._reports_menu.$category.size %]
+          <li class="dropend">
+            <a href="#" class="dropdown-item dropdown-toggle">[% category | html_entity %]</a>
+            <ul class="dropdown-menu">
+            [% FOREACH item IN settings._reports_menu.$category %]
+              [% NEXT IF settings._reports.$item.hidden %]
+              <li><a class="dropdown-item" href="[% uri_for('/report/' _ item) %]?firstsearch=on">[% settings._reports.$item.label | html_entity %]</a></li>
             [% END %]
+            </ul>
+          </li>
           [% END %]
-          </ul>
-        </li> <!-- /dropdown -->
         [% END %]
-        [% IF user_has_role('admin') %]
-        <li class="dropdown[% ' active' IF vars.nav == 'admin' %]">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
-          <ul class="dropdown-menu">
+        </ul>
+      </li> <!-- /dropdown -->
+      [% END %]
+      [% IF user_has_role('admin') %]
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle[% ' active' IF vars.nav == 'admin' %]" role="button"
+          data-bs-toggle="dropdown" aria-expanded="false">Admin </a>
+        <ul class="dropdown-menu">
           <li>
             <form method="post" class="nd_inline-form" action="[% uri_for('/admin/discoverall') | none %]">
               <button type="submit" class="btn btn-link nd_btn-link">Discover All</button>
@@ -137,94 +134,90 @@
             </form>
           </li>
           [% IF settings._admin_tasks.size %]
-            <li class="divider"></li>
+            <li><hr class="dropdown-divider"></li>
             [% FOREACH ai IN settings._admin_order %]
               [% NEXT IF settings._admin_tasks.$ai.hidden %]
               [% IF ai == 'divider' %]
-              <li class="divider"></li>
+              <li><hr class="dropdown-divider"></li>
               [% ELSE %]
-              <li><a href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
+              <li><a class="dropdown-item" href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
               [% END %]
             [% END %]
           [% END %]
-          </ul>
-        </li> <!-- /dropdown -->
+        </ul>
+      </li> <!-- /dropdown -->
+      [% END %]
+    </ul>
+    <form class="d-flex me-auto" method="get" action="[% uri_for('/search') | none %]">
+      <input placeholder="Find Anything" class="form-control"
+        id="nq" name="q" value="[% display_name | html_entity %]" type="search" autocomplete="off"/>
+      <input name="firstsearch" type="hidden" value="on">
+      <div class="btn-group nd_navbar-search-group">
+        <button class="btn btn-dark nd_navbar-search-icon">
+          <span style="font-size: 18px;">
+            <i id="navsearchgo" class="fas fa-magnifying-glass"></i>
+          </span>
+        </button>
+        <button class="btn btn-dark dropdown-toggle nd_navbar-search-caret" data-bs-toggle="dropdown" aria-expanded="false"></button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
+          <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
+          <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
+          <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
+        </ul>
+      </div>
+    </form>
+    [% IF settings.tenant_databases.size %]
+    [% SET tenant = vars.tenant %]
+    <ul class="navbar-nav">
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-house text-success"></i>
+          &nbsp;[% (settings.tenant_data.$tenant.displayname || settings.database.displayname || 'Default') | html_entity %]
+        </a>
+        <ul class="dropdown-menu">
+          [% FOREACH t IN settings.tenant_tags %]
+          [% NEXT IF tenant AND t == tenant %]
+          [% NEXT IF NOT tenant and t == 'netdisco' %]
+          <li><a class="dropdown-item nd_navtenant" href=""
+            data-currenttenant="[% settings.tenant_data.$tenant.path || settings.tenant_data.netdisco.path %]"
+            data-tenantpath="[% settings.tenant_data.$t.path %]"
+            data-tenant="[% t %]">[% settings.tenant_data.$t.displayname | html_entity %]</a></li>
+          [% END %]
+        </ul>
+      </li> <!-- /dropdown -->
+    </ul>
+    [% END %]
+    <ul class="navbar-nav">
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        [% IF user_has_role('admin') %]
+          <i class="fas fa-user text-danger"></i>
+        [% ELSIF user_has_role('port_control') %]
+          <i class="fas fa-user text-warning"></i>
+        [% ELSE %]
+          <i class="fas fa-user"></i>
+        [% END %]&nbsp;
+          [% session.logged_in_fullname || session.logged_in_user | html_entity %]
+        </a>
+        <ul class="dropdown-menu">
+        [% IF NOT ( settings.no_auth OR user_has_role('ldap') OR user_has_role('radius') ) %]
+          <li><a class="dropdown-item" href="[% uri_for('/password') | none %]">Change Password</a></li>
         [% END %]
-      </ul>
-      <form class="navbar-search pull-left" method="get" action="[% uri_for('/search') | none %]">
-        <input placeholder="Find Anything" class="search-query span3"
-          id="nq" name="q" value="[% display_name | html_entity %]" type="search" autocomplete="off"/>
-        <input name="firstsearch" type="hidden" value="on">
-        <div class="btn-group nd_navbar-search-group">
-          <button class="btn btn-inverse nd_navbar-search-icon">
-            <span style="font-size: 18px;">
-              <i id="navsearchgo" class="icon-search"></i>
-            </span>
-          </button>
-          <button class="btn btn-inverse dropdown-toggle nd_navbar-search-caret" data-toggle="dropdown">
-            <span class="caret" style="border-top-color: #999; border-bottom-color: #999"></span>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
-            <li><a class="nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
-          </ul>
-        </div>
-      </form>
-      [% IF settings.tenant_databases.size %]
-      [% SET tenant = vars.tenant %]
-      <ul class="nav pull-right">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-home text-success"></i>
-            &nbsp;[% (settings.tenant_data.$tenant.displayname || settings.database.displayname || 'Default') | html_entity %]
-            <b class="caret"></b>
-          </a>
-          <ul class="dropdown-menu">
-            [% FOREACH t IN settings.tenant_tags %]
-            [% NEXT IF tenant AND t == tenant %]
-            [% NEXT IF NOT tenant and t == 'netdisco' %]
-            <li><a class="nd_navtenant" href=""
-              data-currenttenant="[% settings.tenant_data.$tenant.path || settings.tenant_data.netdisco.path %]"
-              data-tenantpath="[% settings.tenant_data.$t.path %]"
-              data-tenant="[% t %]">[% settings.tenant_data.$t.displayname | html_entity %]</a></li>
-            [% END %]
-          </ul>
-        </li> <!-- /dropdown -->
-      </ul>
-      [% END %]
-      <ul class="nav pull-right">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-          [% IF user_has_role('admin') %]
-            <i class="icon-user text-error"></i>
-          [% ELSIF user_has_role('port_control') %]
-            <i class="icon-user text-warning"></i>
-          [% ELSE %]
-            <i class="icon-user"></i>
-          [% END %]&nbsp;
-            [% session.logged_in_fullname || session.logged_in_user | html_entity %] <b class="caret"></b>
-          </a>
-          <ul class="dropdown-menu">
-          [% IF NOT ( settings.no_auth OR user_has_role('ldap') OR user_has_role('radius') ) %]
-            <li><a href="[% uri_for('/password') | none %]">Change Password</a></li>
-          [% END %]
-            <li><a href="[% uri_for('/swagger-ui') | none %]" target="_blank">👉 Browse the API</a></li>
-          [% IF user_has_role('admin') %]
-            <li><a href="https://github.com/netdisco/netdisco/wiki/Configuration" target="_blank">⚙️ Configuration Reference</a></li>
-            <li><a href="https://github.com/sponsors/netdisco" target="_blank">💜 Become a Sponsor</a></li>
-          [% END %]
-          [% IF NOT settings.no_auth %]
-            <li><a href="[% uri_for('/logout') | none %]">Log Out</a></li>
-          [% END %]
-          </ul>
-        </li> <!-- /dropdown -->
-      </ul>
-      [% END %]
-    </div>
+          <li><a class="dropdown-item" href="[% uri_for('/swagger-ui') | none %]" target="_blank">👉 Browse the API</a></li>
+        [% IF user_has_role('admin') %]
+          <li><a class="dropdown-item" href="https://github.com/netdisco/netdisco/wiki/Configuration" target="_blank">⚙️ Configuration Reference</a></li>
+          <li><a class="dropdown-item" href="https://github.com/sponsors/netdisco" target="_blank">💜 Become a Sponsor</a></li>
+        [% END %]
+        [% IF NOT settings.no_auth %]
+          <li><a class="dropdown-item" href="[% uri_for('/logout') | none %]">Log Out</a></li>
+        [% END %]
+        </ul>
+      </li> <!-- /dropdown -->
+    </ul>
+    [% END %]
   </div>
-</div>
+</nav>
 
 [% content | none %]
 

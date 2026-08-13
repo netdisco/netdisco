@@ -1,0 +1,91 @@
+
+            <p class="nd_sidebar-title"><em>Device Search Options</em></p>
+            <input name="q" value="" type="hidden"/>
+            <div class="clearfix">
+              <i data-btn-for="dns" class="nd_field-copy-icon far fa-copy fa-lg"></i>
+              <i id="dns_clear_btn" data-btn-for="dns"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input form-control" placeholder="DNS"
+                type="text" name="dns" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="DNS"/>
+            </div>
+            <div class="clearfix">
+              <i data-btn-for="ip" class="nd_field-copy-icon far fa-copy fa-lg"></i>
+              <i id="ip_clear_btn" data-btn-for="ip"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input form-control" placeholder="IP Address"
+                type="text" name="ip" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="IP Address"/>
+            </div>
+            <div class="clearfix">
+              <i data-btn-for="name" class="nd_field-copy-icon far fa-copy fa-lg"></i>
+              <i id="name_clear_btn" data-btn-for="name"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input form-control" placeholder="System Name"
+                type="text" name="name" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="System Name"/>
+            </div>
+            <div class="clearfix">
+              <i data-btn-for="location" class="nd_field-copy-icon far fa-copy fa-lg"></i>
+              <i id="location_clear_btn" data-btn-for="location"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input form-control" placeholder="Location"
+                type="text" name="location" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Location"/>
+            </div>
+            <div class="clearfix">
+              <i data-btn-for="description" class="nd_field-copy-icon far fa-copy fa-lg"></i>
+              <i id="description_clear_btn" data-btn-for="description"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input form-control" placeholder="Description"
+                type="text" name="description" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Description"/>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select form-select" size=""
+                multiple name="model"
+                rel="tooltip" data-bs-placement="left" data-bs-title="Model">
+              </select>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select form-select" size=""
+                multiple name="os"
+                rel="tooltip" data-bs-placement="left" data-bs-title="Operating System">
+              </select>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select form-select" size=""
+                multiple name="os_ver"
+                rel="tooltip" data-bs-placement="left" data-bs-title="OS Release">
+              </select>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select form-select" size=""
+                multiple name="vendor"
+                rel="tooltip" data-bs-placement="left" data-bs-title="Vendor">
+              </select>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select form-select" size="3"
+                multiple name="layers"
+                rel="tooltip" data-bs-placement="left" data-bs-title="Layer">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+              </select>
+            </div>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="matchall"
+                  name="matchall"/>
+              </label>
+              <label class="nd_checkboxlabel" for="matchall">
+                <span class="nd_searchcheckbox form-control-plaintext">Match All Options</span>
+              </label>
+            </div>
+            <button id="_submit" type="submit" class="btn btn-info">
+              <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Devices</button>

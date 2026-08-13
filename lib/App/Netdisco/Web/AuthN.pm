@@ -12,9 +12,12 @@ use Try::Tiny;
 use URI::Based;
 
 # ensure that regardless of where the user is redirected, we have a link
-# back to the page they requested.
+# back to the page they requested. The login page is excluded along with the
+# front page: it is the one path a user leaves by using it, so returning them
+# to it after a successful login is never what they wanted.
 hook 'before' => sub {
-    params->{return_url} ||= ((request->path ne uri_for('/')->path)
+    params->{return_url} ||= ((request->path ne uri_for('/')->path
+                          and request->path ne uri_for('/login')->path)
       ? request->uri : uri_for(setting('web_home'))->path);
 };
 
@@ -260,7 +263,7 @@ any qr{^/(?:login(?:/denied)?)?} => sub {
     elsif (defined request->header('X-Requested-With')
            and request->header('X-Requested-With') eq 'XMLHttpRequest') {
       status('unauthorized');
-      return '<div class="span2 alert alert-error"><i class="icon-ban-circle"></i> Error: unauthorized.</div>';
+      return '<div class="col-md-2 alert alert-danger"><i class="fas fa-ban"></i> Error: unauthorized.</div>';
     }
     else {
       template 'index', {

@@ -27,16 +27,16 @@
   </thead>
   <tbody>
     <tr>
-      <td class="nd_center-cell"><input data-form="add" name="fullname" type="text"></td>
-      <td class="nd_center-middle-cell"><input class="span2" data-form="add" name="username" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="fullname" type="text"></td>
+      <td class="nd_center-middle-cell"><input class="col-md-2 form-control" data-form="add" name="username" type="text"></td>
       [% IF settings.no_auth %]
-      <td class="nd_center-cell muted">Bypassed</td>
+      <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
-      <td class="nd_center-cell"><input class="span1 nd_pw_field" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="col-md-1 form-control nd_pw_field" data-form="add" name="password" type="password"></td>
       [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control nd_auth_method" data-form="add" name="auth_method">
+          <select class="col-md-2 form-select nd_auth_method" data-form="add" name="auth_method">
             [% IF demo_site OR NOT settings.no_auth %]<option value="" selected>Netdisco Password</option>[% END %]
             [% IF demo_site OR has_ldap %]<option value="ldap">LDAP</option>[% END %]
             [% IF demo_site OR has_radius %]<option value="radius">RADIUS</option>[% END %]
@@ -46,11 +46,11 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="span2 nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
+        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="add" name="port_control">
+          <select class="col-md-2 form-select" data-form="add" name="port_control">
             <option value="" selected>Off</option>
             <option value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]
@@ -62,9 +62,9 @@
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input class="span2" data-form="add" name="note" type="text"></td>
+      <td class="nd_center-cell"><input class="col-md-2 form-control" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -73,24 +73,24 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell">
-        <input data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
+        <input class="form-control" data-form="update" name="fullname" type="text" value="[% row.fullname | html_entity %]">
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="username" type="hidden" value="[% row.username | html_entity %]">
         [% row.username | html_entity %]
       </td>
       [% IF settings.no_auth %]
-      <td class="nd_center-cell muted">Bypassed</td>
+      <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
       <td class="nd_center-middle-cell">
-        <input class="span1 nd_pw_field" data-form="update" name="password" type="password"
+        <input class="col-md-1 form-control nd_pw_field" data-form="update" name="password" type="password"
           [% IF row.token_auth_only %]
           style="display: none" disabled
           [% ELSE %]
           value="********"
           [% END %]
           >
-        <small class="nd_token_hint muted"
+        <small class="nd_token_hint text-muted"
           [% IF NOT row.token_auth_only %]
           style="display: none"
           [% END %]
@@ -103,15 +103,15 @@
         </small>
         [% IF row.token_auth_only %]
         <br />
-        <button class="btn btn-small nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
-          <i class="icon-key"></i> <i class="icon-refresh"></i>
+        <button class="btn btn-sm nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
+          <i class="fas fa-key"></i> <i class="fas fa-arrows-rotate"></i>
         </button>
         [% END %]
       </td>
       [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control nd_auth_method" data-form="update" name="auth_method">
+          <select class="col-md-2 form-select nd_auth_method" data-form="update" name="auth_method">
             [% IF demo_site OR NOT settings.no_auth %]<option[% ' selected' IF NOT row.token_auth_only AND NOT row.ldap AND NOT row.radius AND NOT row.tacacs %] value="">Netdisco Password</option>[% END %]
             [% IF demo_site OR has_ldap OR row.ldap %]<option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>[% END %]
             [% IF demo_site OR has_radius OR row.radius %]<option[% ' selected' IF row.radius %] value="radius">RADIUS</option>[% END %]
@@ -121,13 +121,13 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="span2 nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
+        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
           value="[% row.token_allowed_ips.join(', ') IF row.token_allowed_ips %]"
           [% IF NOT row.token_auth_only %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="update" name="port_control">
+          <select class="col-md-2 form-select" data-form="update" name="port_control">
             <option[% ' selected' IF NOT row.port_control %] value="">Off</option>
             <option[% ' selected' IF row.port_control AND row.portctl_role == "" %] value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]
@@ -142,30 +142,34 @@
       <td class="nd_center-cell">[% row.created   | html_entity %]</td>
       <td class="nd_center-cell">[% row.last_seen | html_entity %]</td>
       <td class="nd_center-cell">
-        <input class="span2" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
+        <input class="col-md-2 form-control" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
       </td>
 
       <td nowrap class="nd_center-cell">
-        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
-        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">User &quot;[% row.username | html_entity %]&quot; will be deleted.</p>
-            </blockquote>
-            <input data-form="del" name="username" type="hidden" value="[% row.username | html_entity %]">
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">User &quot;[% row.username | html_entity %]&quot; will be deleted.</p>
+                </blockquote>
+                <input data-form="del" name="username" type="hidden" value="[% row.username | html_entity %]">
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="del" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>
@@ -174,20 +178,24 @@
   </tbody>
 </table>
 
-<div id="nd_token-reveal" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1" role="dialog">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">x</button>
-    <h3>API Token</h3>
-  </div>
-  <div class="modal-body">
-    <p class="text-info">Copy this token — it will not be shown again.</p>
-    <div class="input-append">
-      <input id="nd_token-value" type="text" class="span4" readonly>
-      <button class="btn" id="nd_token-copy" type="button"><i class="icon-copy"></i> Copy</button>
+<div id="nd_token-reveal" class="nd_modal nd_deep-horizon modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>API Token</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-info">Copy this token. It will not be shown again.</p>
+        <div class="input-group">
+          <input id="nd_token-value" type="text" class="col-md-4 form-control" readonly>
+          <button class="btn" id="nd_token-copy" type="button"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" data-bs-dismiss="modal">Done</button>
+      </div>
     </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-success" data-dismiss="modal">Done</button>
   </div>
 </div>
 
@@ -219,17 +227,16 @@ $(document).ready(function() {
   $('.nd_auth_method').each(function() { toggleTokenFields(this); });
   $(document).on('change', '.nd_auth_method', function() { toggleTokenFields(this); });
 
-  $('#nd_token-reveal').modal({show: false});
   $('#nd_token-copy').on('click', function() {
     navigator.clipboard.writeText($('#nd_token-value').val());
-    $(this).html('<i class="icon-ok"></i> Copied');
+    $(this).html('<i class="fas fa-check"></i> Copied');
   });
 
   // Called by admintask.js when the server returns a data-nd-api-key span
   window.nd_show_api_token = function(apiKey) {
     $('#nd_token-value').val(apiKey);
-    $('#nd_token-copy').html('<i class="icon-copy"></i> Copy');
-    $('#nd_token-reveal').one('hidden', function() {
+    $('#nd_token-copy').html('<i class="fas fa-copy"></i> Copy');
+    $('#nd_token-reveal').one('hidden.bs.modal', function() {
       var tab = '[% task.tag | html_entity %]';
       $('#' + tab + '_form').trigger('submit');
     });

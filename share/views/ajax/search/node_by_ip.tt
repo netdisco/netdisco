@@ -49,7 +49,7 @@
       <td>IP &rarr; MAC</td>
       <td class="nd_center-cell">
         <a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
-        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT row.active %]
+        [% '&nbsp;<i class="fas fa-book text-warning"></i>&nbsp;' IF NOT row.active %]
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
         [% IF row.router_ip %]
         via <a href="[% search_device | none %]&q=[% row.router_ip | uri %]">[% row.router_name || row.router_ip | html_entity %]</a>
@@ -96,7 +96,7 @@
       <td>IP &rarr; MAC</td>
       <td class="nd_center-cell">
         <a href="[% search_node | none %]&q=[% ni.ip | uri %]">[% ni.ip | html_entity %]</a>
-        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT ni.active %]
+        [% '&nbsp;<i class="fas fa-book text-warning"></i>&nbsp;' IF NOT ni.active %]
         [% ' (' _ ni.dns.remove(settings.domain_suffix) _ ')' IF ni.dns %]
       </td>
       [% IF params.stamps %]
@@ -120,7 +120,7 @@
       <td class="nd_center-cell">
         <a href="[% device_ports | none %]&q=[% node.switch | uri %]&f=[% node.port | uri %]&c_nodes=on&c_neighbors=on&prefer=port">
           [% node.device.dns || node.switch | html_entity %] - [% node.port | html_entity %]</a>
-        [% '&nbsp;<i class="icon-book text-warning"></i>' IF NOT node.active %]
+        [% '&nbsp;<i class="fas fa-book text-warning"></i>' IF NOT node.active %]
         on vlan [% node.vlan | html_entity %]
         <br />([% node.switch | html_entity %] - [% node.device.name | html_entity %] - &quot;[% node.device_port.name | html_entity %]&quot;)
       </td>
@@ -168,7 +168,7 @@
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell">
         <a href="[% search_node | none %]&q=[% nodeip.ip | uri %]">[% nodeip.ip | html_entity %]</a>
-        [% '&nbsp;<i class="icon-book text-warning"></i>&nbsp;' IF NOT nodeip.active %]
+        [% '&nbsp;<i class="fas fa-book text-warning"></i>&nbsp;' IF NOT nodeip.active %]
         [% ' (' _ nodeip.dns.remove(settings.domain_suffix) _ ')' IF nodeip.dns %]
         <br/>[% INCLUDE external_ip_links item = nodeip %]
       </td>

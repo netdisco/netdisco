@@ -1,33 +1,35 @@
-<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
-  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+<i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
+  rel="tooltip" data-bs-placement="left" data-bs-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar nd_sidebar-pinned">
-    <div class="well">
-      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
+    <div class="card">
+      <div class="card-body">
+        <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
+        <i class="nd_sidebar-pin fas fa-thumbtack nd_sidebar-pin-clicked"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Unpin Sidebar" data-bs-container="body"></i>
 
-      <div class="tab-content">
-        <div id="[% report.tag | html_entity %]_search" class="tab-pane active">
-          <form id="[% report.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
-              method="get" action="[% uri_for('/report') | none %]">
-            [% TRY %]
-            <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = 1;</script>
-            [% INCLUDE "sidebar/report/${report.tag}.tt" %]
-            [% CATCH %]
-            <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = [% report.rconfig.bind_params.size ? '1' : '0' %];</script>
-            [% INCLUDE "sidebar/report/generic_report.tt" %]
-            [% END %]
-          </form>
-        </div> <!-- /tab-pane -->
-      </div> <!-- /tab-content -->
+        <div class="tab-content">
+          <div id="[% report.tag | html_entity %]_search" class="tab-pane active">
+            <form id="[% report.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
+                method="get" action="[% uri_for('/report') | none %]">
+              [% TRY %]
+              <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = 1;</script>
+              [% INCLUDE "sidebar/report/${report.tag}.tt" %]
+              [% CATCH %]
+              <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = [% report.rconfig.bind_params.size ? '1' : '0' %];</script>
+              [% INCLUDE "sidebar/report/generic_report.tt" %]
+              [% END %]
+            </form>
+          </div> <!-- /tab-pane -->
+        </div> <!-- /tab-content -->
+      </div>
     </div>
   </div>
 
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
-      <li class="active"><a id="[% report.tag | html_entity %]_link" class="nd_single-tab"
+      <li class="nav-item"><a id="[% report.tag | html_entity %]_link" class="nav-link active nd_single-tab"
         href="#[% report.tag | html_entity %]_pane">[% report.label | html_entity %]</a></li>
       [% IF report.tag == 'portlog' %]
       <span id="nd_device-name">
@@ -38,8 +40,8 @@
       [% ELSIF report.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
-          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
-            rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
+          <i id="nd_csv-download-icon" class="text-info far fa-file-lines fa-lg"
+            rel="tooltip" data-bs-placement="left" data-bs-title="Download as CSV"></i></a>
       </span>
       [% END %]
     </ul>
@@ -55,8 +57,8 @@ $('#nd_sidebar-toggle-img-out').toggle();
 $('.content').css('margin-right', '10px');
 $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
 $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-  scrollingTop: 40
-  ,useAbsolutePositioning: false
+  top: 40
+  ,position: 'fixed'
 });
 sidebar_hidden = 1;
 [% END %]

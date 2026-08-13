@@ -1,21 +1,525 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style common to all pages in the site */
 
+/* Many rules below reproduce, deliberately, what the Bootstrap 2 stylesheet drew
+   before the frontend was migrated, and each says what that was so it is not
+   read as dead code. The measurements behind them are in netdisco/netdisco#1615,
+   not here. */
+
+/* 13px Helvetica on an 18px line is what the old stylesheet set and what every
+   margin and icon offset here was measured against. The replacement's 16px
+   system-ui stack draws the same strings 27 to 33% wider. A length, not a ratio,
+   on purpose. */
+:root {
+  --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --bs-body-font-size: 13px;
+  --bs-body-line-height: 18px;
+  /* The old body color was #333333 against the replacement's #212529. Both halves
+     are stated because other rules read rgba(var(--bs-body-color-rgb), ...). Muted
+     text and table cells resolve elsewhere and are set separately. */
+  --bs-body-color: #333333;
+  --bs-body-color-rgb: 51, 51, 51;
+  /* Every corner in the old stylesheet was 4px and the replacement rounds them
+     to 6px from this one variable. A drop-down menu was always 6px and reads the
+     same variable, so it is restated below rather than left to follow. */
+  --bs-border-radius: 4px;
+}
+
+/* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
+   --bs-body-font-size, so the block above does not reach them. These are the
+   same elements one rule used to cover:
+   "label, input, button, select, textarea { font-size: 13px; line-height: 18px }". */
+.form-control, .form-select, .input-group-text {
+  font-size: 13px;
+  line-height: 18px;
+}
+/* Every button sat on a ramp, highlighted along its top inside edge, shadowed
+   under its bottom outside edge, with a light shadow over the type, and slid the
+   ramp rather than repainting on hover. These are the parts no class overrode. */
+.btn {
+  --bs-btn-font-size: 13px;
+  --bs-btn-padding-y: 4px;
+  --bs-btn-padding-x: 12px;
+  --bs-btn-line-height: 18px;
+  background-repeat: repeat-x;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}
+/* The button with no fill of its own, which .btn alone used to draw. Classes
+   that do carry a fill are excluded by name: a color class added later must be
+   added here too. .btn-secondary is deliberately absent, having replaced a class
+   the old stylesheet never declared; .btn-light is deliberately present, there
+   being nothing to restore.
+
+   MUST STAY ABOVE THE PRESSED AND DISABLED RULES BELOW: equal weight, so below
+   them it wins and a pressed button keeps the ramp the old one dropped. */
+.btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning,
+         .btn-info, .btn-light, .btn-dark, .btn-link) {
+  --bs-btn-color: #333333;
+  --bs-btn-bg: #f5f5f5;
+  --bs-btn-border-color: #cccccc;
+  --bs-btn-hover-color: #333333;
+  --bs-btn-hover-bg: #e6e6e6;
+  --bs-btn-hover-border-color: #cccccc;
+  --bs-btn-active-color: #333333;
+  --bs-btn-active-bg: #e6e6e6;
+  --bs-btn-active-border-color: #cccccc;
+  --bs-btn-disabled-color: #333333;
+  --bs-btn-disabled-bg: #e6e6e6;
+  --bs-btn-disabled-border-color: #cccccc;
+  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
+  border-bottom-color: #b3b3b3;
+}
+/* Hovering slid the ramp 15px up rather than repainting, uncovering the flat
+   fill below; without this each color's hover fill stays hidden under its ramp.
+   The 0.1s easing is not reproduced: restating transition to add a fourth
+   property would drop the three the framework carries. */
+.btn:hover, .btn:focus {
+  background-position: 0 -15px;
+}
+/* Pressing a button dropped its ramp, drew the flat fill under it, and turned
+   the shadow round so the face looked pushed in. */
+.btn:active, .btn.active {
+  background-image: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn:disabled, .btn.disabled {
+  background-image: none;
+  box-shadow: none;
+}
+/* A link button drew no box, kept square corners, colored its own type and
+   underlined only under a pointer. All six carry .nd_btn-link and override the
+   color, so none of this shows today; the class should still draw what it did. */
+.btn-link {
+  --bs-btn-color: #0088cc;
+  --bs-btn-hover-color: #005580;
+  --bs-btn-active-color: #005580;
+  --bs-btn-border-radius: 0;
+  text-decoration: none;
+  box-shadow: none;
+}
+.btn-link:hover, .btn-link:focus {
+  text-decoration: underline;
+}
+/* The caret half of a split button had no border against its button, so a
+   highlight down its left inside edge stood in for one, and it was padded
+   tighter. More specific than the pressed state above, as the old stylesheet had
+   it. The navbar's two override the padding below. */
+.btn-group > .btn + .dropdown-toggle {
+  padding-left: 8px;
+  padding-right: 8px;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, .125),
+              inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05);
+}
+/* The unlit half of a toggle. The old plugin marked it active and active buttons
+   drew pushed in; the new one marks it with nothing, so it reads as raised. Hung
+   on the plugin's own selector because the plugin zeroes this shadow at that
+   weight. */
+.toggle > .toggle-group > .toggle-off {
+  --bs-btn-bg: #e6e6e6;
+  background-image: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+/* This file loads after the framework, so the rules above would otherwise
+   decide the small button metrics too, at equal specificity. State them instead
+   of letting them fall out. A small button's corner was 3px, which is the one
+   the 4px above is wrong for. */
+.btn-sm {
+  --bs-btn-font-size: 11.049999999999999px;
+  --bs-btn-padding-y: 2px;
+  --bs-btn-padding-x: 10px;
+  --bs-btn-border-radius: 3px;
+}
+
+/* The five classes carrying a fill: white type, dark glyph shadow, a ramp, and a
+   border a tenth-opacity black on three sides and a quarter on the bottom. Each
+   fill is stated twice below, through --bs-btn-bg so the framework agrees, and as
+   an image, the only way to get the ramp back. background-image not the
+   shorthand, which would reset the color under it. The bottom edge is stated
+   alone, one --bs-btn-border-color being unable to say an edge differs. */
+.btn-info, .btn-primary, .btn-danger, .btn-success, .btn-warning, .btn-dark {
+  --bs-btn-color: #ffffff;
+  --bs-btn-border-color: rgba(0, 0, 0, 0.1);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-border-color: rgba(0, 0, 0, 0.1);
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-border-color: rgba(0, 0, 0, 0.1);
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-border-color: rgba(0, 0, 0, 0.1);
+  border-bottom-color: rgba(0, 0, 0, 0.25);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+/* and one ramp each, with the fill under it. The fill each of them shows when
+   hovered, pressed or disabled is the dark end of its own ramp, which is what
+   the ramp uncovers when it slides. .btn-dark is the class that replaced the old
+   stylesheet's inverse button. */
+.btn-info {
+  --bs-btn-bg: #49afcd;
+  --bs-btn-hover-bg: #2f96b4;
+  --bs-btn-active-bg: #2f96b4;
+  --bs-btn-disabled-bg: #2f96b4;
+  background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
+}
+.btn-primary {
+  --bs-btn-bg: #006dcc;
+  --bs-btn-hover-bg: #0044cc;
+  --bs-btn-active-bg: #0044cc;
+  --bs-btn-disabled-bg: #0044cc;
+  background-image: linear-gradient(to bottom, #0088cc, #0044cc);
+}
+.btn-danger {
+  --bs-btn-bg: #da4f49;
+  --bs-btn-hover-bg: #bd362f;
+  --bs-btn-active-bg: #bd362f;
+  --bs-btn-disabled-bg: #bd362f;
+  background-image: linear-gradient(to bottom, #ee5f5b, #bd362f);
+}
+.btn-success {
+  --bs-btn-bg: #5bb75b;
+  --bs-btn-hover-bg: #51a351;
+  --bs-btn-active-bg: #51a351;
+  --bs-btn-disabled-bg: #51a351;
+  background-image: linear-gradient(to bottom, #62c462, #51a351);
+}
+/* No page asks for the warning button and none did before, but the old
+   stylesheet declares it, so it is restored rather than left to draw a flat
+   framework yellow under black type the first time someone reaches for it. */
+.btn-warning {
+  --bs-btn-bg: #faa732;
+  --bs-btn-hover-bg: #f89406;
+  --bs-btn-active-bg: #f89406;
+  --bs-btn-disabled-bg: #f89406;
+  background-image: linear-gradient(to bottom, #fbb450, #f89406);
+}
+.btn-dark {
+  --bs-btn-bg: #363636;
+  --bs-btn-hover-bg: #222222;
+  --bs-btn-active-bg: #222222;
+  --bs-btn-disabled-bg: #222222;
+  background-image: linear-gradient(to bottom, #444444, #222222);
+}
+
+/* A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
+   from a palette of its own; the replacement sizes from its parent and insets in
+   ems. Fills go through the variables the utility classes read, because those
+   classes declare their colors flagged. */
+.badge {
+  --bs-badge-border-radius: 9px;
+  --bs-badge-font-size: 10.998px;
+  --bs-badge-padding-y: 2px;
+  --bs-badge-padding-x: 9px;
+  --bs-secondary-rgb: 153, 153, 153;
+  --bs-success-rgb: 70, 136, 71;
+  --bs-info-rgb: 58, 135, 173;
+  --bs-danger-rgb: 185, 74, 72;
+  --bs-warning-rgb: 248, 148, 6;
+  line-height: 14px;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+.badge.text-bg-info, .badge.text-bg-warning {
+  color: #ffffff !important;
+}
+/* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
+   9px. Two of these classes replaced it and nothing else, so each mapping is
+   exact, and the dark one also has to put back a fill three units lighter than
+   the framework's. */
+.badge.text-bg-info, .badge.text-bg-dark {
+  --bs-badge-border-radius: 3px;
+  --bs-badge-padding-x: 4px;
+}
+.badge.text-bg-dark {
+  --bs-dark-rgb: 51, 51, 51;
+}
+/* The gray pill replaced one of each kind, so position tells them apart: the
+   external link badge is always inside a link that opens in a new window and is
+   the only badge that ever is. No harness route renders it, the feature drawing
+   nothing unless external_links is set. */
+a[target="_blank"] > .badge.text-bg-secondary {
+  --bs-badge-border-radius: 3px;
+  --bs-badge-padding-x: 4px;
+}
+/* The one badge borrowing an alert class, the old PostgreSQL warning. That class
+   now carries only custom properties an alert reads, so the badge drew white type
+   on nothing. */
+.badge.alert-danger {
+  background-color: #f2dede;
+  color: #b94a48;
+}
+.dropdown-menu {
+  --bs-dropdown-font-size: 13px;
+  --bs-dropdown-border-radius: 6px;
+}
+/* A dialog's corner was 6px and its footer's bottom corners the same. Both are
+   stated: setting the box alone leaves the footer rounding wider than the edge it
+   sits against. */
+.modal {
+  --bs-modal-border-radius: 6px;
+  --bs-modal-inner-border-radius: 6px;
+}
+
+/* Every width here was measured against controls padded 4px 6px, add-ons 4px
+   5px, and the browser drawing a select's arrow inside the box. The replacement
+   pads .375rem .75rem and reserves 2.25rem for its own caret. The 4px inset is
+   fitted to the outcome, and the 20px is that inset plus the framework's 16px
+   caret artwork. */
+.form-control, .form-select {
+  padding: 4px 6px;
+}
+/* Controls had their own text and border colors, #555555 and #cccccc. Neither
+   variable can carry the correction: --bs-body-color is set above for body text,
+   and --bs-border-color draws the sidebar box, tables and cards. Neither shift is
+   visible to the harness, which cannot see below 52 of 255. */
+.form-control, .form-select {
+  color: #555555;
+  border-color: #cccccc;
+}
+.form-control-sm {
+  min-height: 0;
+}
+.form-select {
+  padding-right: 20px;
+  background-position: right 4px center;
+}
+.form-select[multiple], .form-select[size]:not([size="1"]) {
+  padding-right: 6px;
+}
+/* A list box row drew 16.59px against the replacement's 16.00px. One property:
+   an option is padded "0px 2px 1px" on both sides, but the replacement's
+   universal border-box takes that bottom pixel out of the row where the old
+   stylesheet, having no universal reset, added it. */
+option {
+  box-sizing: content-box;
+}
+/* A one-row list box drew 27px against 28px, and the pixel is neither the line
+   height nor the row height corrected above. A value fitted to the outcome, one
+   of three in this file, with the select caret's inset and the hero box's row
+   spacing. Reaches the one-row case only. */
+.form-select[multiple][size="1"] {
+  height: 27px;
+}
+/* The old component stated its own height, 18px of content in 4px of padding and
+   a 1px border; the replacement sizes from its line box and draws 33px. The
+   declaration is restored rather than the number, a 28px total being wrong
+   wherever the padding is overridden, as .nd_port-partial-label overrides it.
+   Opting out of the universal box-sizing is what lets both follow. */
+.input-group-text {
+  box-sizing: content-box;
+  height: 18px;
+  padding: 4px 5px;
+  line-height: 18px;
+  background-color: #eeeeee;
+  border-color: #cccccc;
+}
+/* The old framework floated a wrapped checkbox into the 20px gutter its label
+   reserves and set its 4px top margin, through the class that also drew its own
+   control, so removing that class took the placement too.
+
+   Scoped to a checkbox the label wraps: the netmap's toggles put the input beside
+   the label, and floating those into a gutter no label reserves pushes them out
+   of their rows. The inline variant is excluded for the same reason. */
+label.form-check:not(.form-check-inline) > input[type="checkbox"] {
+  float: left;
+  margin: 4px 0 0 -20px;
+}
+/* A checked box turned its wrapper green, from .input-prepend .active. The
+   replacement has no equivalent, and netdisco.js adds the class to
+   .input-group-text with nothing left to act on it. */
+.input-group-text.active {
+  background-color: #a9dba9;
+  border-color: #46a546;
+}
+/* Every one of these spans is a read-only field that used to draw a box: an
+   off-white fill, a gray border and gray text. Its replacement draws nothing at
+   all, so the sidebar's checkbox captions became bare text sitting beside a
+   checkbox that still has its own box. */
+.form-control-plaintext {
+  padding: 4px 6px;
+  line-height: 18px;
+  color: #999999;
+  background-color: #fcfcfc;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+/* the gutter under a control used to come from the control itself, and the
+   sidebar's rows are spaced by it. Rules further down this file exist only to
+   take it away again where it is not wanted. */
+.form-control, .form-select {
+  margin-bottom: 9px;
+}
+.navbar .form-control {
+  margin-bottom: 0px;
+}
+
+/* The page was laid out in a 1170px container, and the navbar artwork, hero box
+   and brand are placed from its left edge; the replacement's is 1320px. The old
+   ladder's two lower steps are not put back, nothing here being measured at
+   either width. */
+.container {
+  --bs-gutter-x: 0;
+  max-width: 940px;
+}
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1170px;
+  }
+}
+
+/* The fluid shell inset its content 20px, and the tab strip, table and sidebar
+   offsets are measured from that edge; the replacement computes 12px. Stated as
+   padding rather than through the gutter variable, which a nested row also
+   reads. */
+.container-fluid {
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
 /* for the fixed navbar make sure content stops short of page top*/
 body {
   padding-top: 50px;
 }
 
-.navbar-inner .container {
+/* The fixed bar is 40px of disco ball. The bar draws its own vertical padding
+   now and its container is only as tall as the tallest control in it, which left
+   the image cropped and the bar deeper than the page expects; move the height
+   onto the container so the artwork fits it exactly. */
+.navbar {
+  --bs-navbar-padding-y: 0px;
+  /* A navbar link went full white on hover; the replacement stops at 75%, which
+     composites to about #c7c7c7 here and reads as lighter gray, not a highlight.
+     The resting color already matches. */
+  --bs-navbar-hover-color: #ffffff;
+  /* The brand sat in the same gray as the links beside it and brightened with
+     them. The replacement ships it white with no hover response at all, so it
+     neither matches its neighbors at rest nor answers a pointer. */
+  --bs-navbar-brand-color: #999999;
+  --bs-navbar-brand-hover-color: #ffffff;
+}
+
+/* The bar's item for the page you are on is filled darker. Both trees mark it
+   active; the replacement styles it with color alone, which its neighbours reach
+   on hover. #111111 against the artwork's #1a1a1a. */
+.navbar .nav-link.active {
+  background-color: #111111;
+}
+/* Either side of the container the bar paints its own background, and the
+   replacement's #212529 reads as a second black against the artwork's #1a1a1a.
+   This is the artwork's own black, so the bar is one color at every width, which
+   is deliberately not what the old bar did. Flagged because the utility class
+   supplying the blue flags its own color. */
+.navbar.bg-dark {
+  background-color: #1a1a1a !important;
+}
+.navbar > .container {
+  min-height: 40px;
   background: url(../images/navbar_disco.png) no-repeat;
 }
 
+/* Links carried no underline until hovered. The replacement underlines every
+   link everywhere, which on a page whose tables are mostly links reads as a
+   different application. */
+a {
+  text-decoration: none;
+}
+a:hover, a:focus {
+  text-decoration: underline;
+}
+
+/* Navigation is the exception to the rule above: the previous framework
+   suppressed the hover underline on the navbar, its menus and the tab strips and
+   filled their background instead. Both values are its own. The active tab is
+   excluded, keeping its own fill when hovered. */
+.navbar-brand:hover, .navbar-brand:focus,
+.nav-link:hover, .nav-link:focus,
+.dropdown-item:hover, .dropdown-item:focus {
+  text-decoration: none;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+  background-color: #0081c2;
+  color: #ffffff;
+}
+.nav-tabs .nav-link:not(.active):hover,
+.nav-tabs .nav-link:not(.active):focus {
+  background-color: #eeeeee;
+}
+
+/* Navbar submenus opened on hover and closed on leaving. The replacement dropped
+   the submenu component and drives dropdowns by script and click, which left one
+   pinned open; the template's toggle attributes are gone for the same reason.
+
+   The placement rule is restated because the replacement scopes its own to
+   [data-bs-popper], which only a script sets, so without this the submenu lands
+   over its parent. */
+.dropend > .dropdown-menu {
+  top: 0;
+  right: auto;
+  left: 100%;
+  margin-top: 0;
+  margin-left: var(--bs-dropdown-spacer);
+}
+.dropend:hover > .dropdown-menu {
+  display: block;
+}
+
 /* used for icons in sidebar search buttons */
+/* A large icon sat on a 0.9em line; the replacement's 0.05em collapses the line
+   box under a pixel and the glyph paints outside it. In the netmap's buttons the
+   button edge then cut the top off every icon, and an open padlock without its
+   shackle reads as a closed one. */
+.fa-lg {
+  line-height: 0.9em;
+}
+
 .nd_navbar-icon {
   vertical-align: sub;
   margin-top: 4px !important;
   margin-right: 7px !important;
   cursor: pointer;
+}
+
+/* Font Awesome 7 makes every icon a fixed 1.25em box where 3 sized them to the
+   glyph, which shifts text after every icon about 3px with no alignment gain,
+   netdisco's icons being one per row or centered in a cell. --fa-width is a
+   documented hook, so this is supported use rather than an override. */
+:root { --fa-width: auto; }
+
+/* The bar's search field was a 286px pill, dark on the dark bar, text inset
+   14px; the replacement drew a 190px white box inset 6px. The two rules under it
+   put its left edge back: the bar's link list carried a 10px right gutter and the
+   brand's box ran 20px past its text. */
+#nq {
+  width: 286px;
+  padding: 4px 14px;
+  color: #ffffff;
+  background-color: #515151;
+  border-color: #111111;
+  border-radius: 15px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1), 0 1px 0 rgba(255, 255, 255, .15);
+}
+/* The prompt was light because the pill is dark; the replacement has one
+   placeholder color for every field, chosen for white ones. Scoped to the resting
+   state: the old stylesheet set it unconditionally, leaving the prompt pale gray
+   on the white focused field. */
+#nq:not(:focus)::placeholder {
+  color: #cccccc;
+}
+/* Focusing turned the pill white and took its border away, growing the padding
+   by that border on each side so the box stayed 286px. No static capture reaches
+   a focused field, so this comes from the old declarations. */
+#nq:focus {
+  padding: 5px 15px;
+  color: #333333;
+  text-shadow: 0 1px 0 #ffffff;
+  background-color: #ffffff;
+  border: 0;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.15);
+  outline: 0;
+}
+.navbar > .container > ul.navbar-nav:first-of-type {
+  margin-right: 10px;
+}
+.navbar-brand {
+  margin-right: 20px;
 }
 
 /* careful align of navbar search button and menu */
@@ -49,8 +553,14 @@ body {
   width: 100%;
 }
 
-/* results table header should have a background, for floatThead */
+/* results table header should have a background, for floatThead.
+
+   The background-color below stopped being visible on its own: the replacement
+   paints every cell with var(--bs-table-bg) where the old stylesheet left cells
+   transparent and let the thead show through. Setting the variable is the
+   framework's own way in. */
 div.content > div.tab-content table.nd_floatinghead thead {
+  --bs-table-bg: floralWhite;
   background-color: floralWhite;
 }
 
@@ -59,6 +569,43 @@ div.content > div.tab-content table.nd_floatinghead thead {
   max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* The dropdown's box as the older theme drew it. Two class names rather than
+   one, the border being set by .ui-widget.ui-widget-content, which a single class
+   loses to however late this file loads. */
+.ui-autocomplete.ui-widget-content {
+  padding: 2px;
+  border-color: #aaaaaa;
+  border-radius: 4px;
+}
+
+/* The bar paints above this widget's level, so the navbar menu's border and
+   padding, which reach into the bar, were drawn under it. How far the menu hangs
+   is set in netdisco.js: this widget positions by writing an offset, which
+   compensates for a margin, so a margin here would do nothing. */
+.ui-autocomplete.nd_navbar-suggestions {
+  z-index: 1051;
+}
+
+/* The menu marks its highlighted row ui-state-active where it used to use
+   ui-state-focus, and in this theme active is white, so the highlight vanished on
+   a white menu. These are the theme's own ui-state-focus values. */
+.ui-menu .ui-menu-item-wrapper.ui-state-active {
+  border: 1px solid #999999;
+  background: #dadada url(smoothness/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;
+  color: #212121;
+}
+
+/* The two search boxes are the exception above: their old widget drew the picked
+   row in the old framework's blue, and that row is the one Enter takes. Scoped to
+   the marked menus, the theme's gray being right for the other fifteen. */
+.ui-autocomplete.nd_search-suggestions .ui-menu-item-wrapper.ui-state-active {
+  border-color: #0077b3;
+  background-color: #0081c2;
+  background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+  background-repeat: repeat-x;
+  color: #ffffff;
 }
 
 /* jstree scrollable */
@@ -96,13 +643,14 @@ div.content > div.tab-content table.nd_floatinghead thead {
   text-shadow: none;
 }
 
-/* to be added to qtip-bootstrap class */
-.nd_qtip-unconstrained {
-  min-width: 0;
-  max-width: none;
+/* the job queue log popover. the log is preformatted output, so it keeps its
+   own line breaks and takes whatever width it needs rather than the default
+   276px, which would wrap every line. */
+.nd_jobqueue-popover {
+  --bs-popover-max-width: none;
 }
 
-.qtip-content {
+.nd_jobqueue-popover .popover-body {
   font-size: 15px;
   font-family: monospace;
   white-space: pre;
@@ -116,6 +664,62 @@ div.content > div.tab-content table.nd_floatinghead thead {
 /* for when hidden modals interfere with mouse actions on higher elements */
 .nd_deep-horizon {
   z-index: -1000;
+}
+
+/* Headings. The replacement stylesheet sizes these from 1rem to 2.5rem at
+   weight 500 on a 1.2 line; these are the sizes and the weight the pages were
+   laid out against. */
+h1, h2, h3, h4, h5, h6 {
+  margin: 9px 0;
+  font-weight: bold;
+  line-height: 18px;
+}
+h1, h2, h3 {
+  line-height: 36px;
+}
+h1 { font-size: 35.75px; }
+h2 { font-size: 29.25px; }
+h3 { font-size: 22.75px; }
+h4 { font-size: 16.25px; }
+h5 { font-size: 13px; }
+h6 { font-size: 11.049999999999999px; }
+
+/* small type ran at 85% of its parent and now runs at 87.5%, which is half a
+   pixel on body text but 0.45px per character in the hero box's 18px setting,
+   accumulating to 17px across one sentence. */
+small {
+  font-size: 85%;
+}
+
+/* Inline code was a boxed thing: crimson type at 11px, inset 2px and 4px, on an
+   off-white fill inside a pale border, never wrapping. The set is restated rather
+   than reached through a variable because the framework declares only
+   --bs-code-color. The family is deliberately not put back. */
+code {
+  padding: 2px 4px;
+  font-size: 11px;
+  color: #d14;
+  white-space: nowrap;
+  background-color: #f7f7f9;
+  border: 1px solid #e1e1e8;
+  border-radius: 3px;
+}
+
+/* The same for pre, drawn as a gray box before and bare text now. Two of these
+   are behavior: white-space was pre-wrap and word-break break-all, so a long
+   value now overflows its cell instead of wrapping. The bare element selector is
+   deliberate; there is exactly one pre in share/views. */
+pre {
+  padding: 8.5px;
+  margin: 0 0 9px;
+  font-size: 12px;
+  color: #333333;
+  white-space: pre-wrap;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: #f5f5f5;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
 }
 
 /* for when we pinch h4 styling but don't want bold */
@@ -159,13 +763,54 @@ div.nd_acl-rule-list {
   margin-top: 50px;
 }
 
-/* alter proportions of hero unit to make it "tighter" on content */
-.hero-unit {
-  padding: 30px 60px 40px 90px;
+/* Alter proportions of hero unit to make it "tighter" on content, and restore
+   its larger, lighter type and gray. Built from utility classes now, so its
+   padding arrives flagged and only a flag displaces it. */
+.nd_hero-row .bg-body-tertiary {
+  --bs-tertiary-bg-rgb: 238, 238, 238;
+  --bs-border-radius-lg: 6px;
+  padding: 30px 60px 40px 90px !important;
+  margin-bottom: 30px !important;
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 27px;
 }
 
-/* push user/pass/login form down+away from the Netdisco banner text */
-.nd_login-form {
+/* The fields' widths came from the old grid; the classes replacing those spans
+   size a grid cell, and the width flag beside them pinned every field at 190px,
+   so both are gone from the markup. Their gutter goes too: the row is a flex
+   container now and takes it into its own height. */
+.nd_hero-row .d-flex > .form-control {
+  width: 170px;
+  margin-bottom: 0px;
+}
+#nqbody, #discodevs {
+  width: 370px;
+}
+
+/* The 5px between a field and what follows was the space between two
+   inline-block children at 18px. The third value in this file fitted to a
+   measured outcome: no stylesheet states 5px here, it is the width a space glyph
+   drew. */
+.nd_hero-row .d-flex {
+  gap: 5px;
+}
+
+/* Two empty paragraphs spaced this form 9px each and a form carried an 18px
+   gutter. Scoped to this box: restoring the form gutter everywhere reaches the
+   bar's search form and the sidebar's, which the old stylesheet cancelled
+   separately and this one does not. */
+.nd_hero-row p {
+  margin-bottom: 9px;
+}
+.nd_hero-row form {
+  margin-bottom: 18px;
+}
+
+/* push user/pass/login form down+away from the Netdisco banner text. This is
+   the cancellation of the gutter above, and it names the box so that it still
+   outranks it: the last form in the box closed it flush. */
+.nd_hero-row .nd_login-form {
   margin-top: 15px;
   margin-bottom: 0px;
 }
@@ -220,6 +865,159 @@ div.nd_acl-rule-list {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
+/* Every other row was filled #f9f9f9. Its replacement lays a 5% black wash over
+   the cell instead, which comes out seven units darker on every striped row in
+   the application. Stated as the fill the wash uses, so the wash is opaque and
+   lands on the old color. */
+.table {
+  --bs-table-striped-bg: #f9f9f9;
+}
+
+/* The old stylesheet gave a cell no color, so tables drew the body's #333; the
+   replacement resolves the cell and its striped, hovered and active variants from
+   --bs-emphasis-color, which is #000 and does not follow the body. All four are
+   stated because all four resolve from it. */
+.table {
+  --bs-table-color: #333333;
+  --bs-table-striped-color: #333333;
+  --bs-table-hover-color: #333333;
+  --bs-table-active-color: #333333;
+}
+
+/* The old stylesheet ruled a table with border-top on every cell; the
+   replacement rules with a bottom border, moving every rule down a row and, the
+   border counting inside the height, changing both end rows' depth.
+
+   Scoped to tbody, which is load-bearing: the blunt form also rules above a
+   header row, where the old stylesheet explicitly zeroed one. */
+.table > tbody > tr > * {
+  border-top-width: var(--bs-border-width);
+  border-bottom-width: 0;
+}
+
+/* And the color it is drawn in: #dddddd at all four places the old stylesheet
+   drew a table border, against --bs-border-color's #dee2e6. Two things this does
+   not reach: the zero-width edge of an unbordered table, where nothing is drawn
+   either way, and the contextual row classes, which tint their own borders. */
+.table {
+  --bs-table-border-color: #dddddd;
+}
+
+/* The SNMP tab's search row. The old form-inline component laid controls along
+   one line, inline-block with no bottom margin; the replacement has none and
+   draws form-control block, so the row stood 82px where it stood 28. d-flex
+   cannot do the work: the form holds one span and everything else is inside
+   it. */
+#nd_snmp_search_form input,
+#nd_snmp_search_form select,
+#nd_snmp_search_form label {
+  display: inline-block;
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+/* The results table sits immediately below this form, and the replacement gives
+   forms no bottom margin. Scoped to this form: restoring it on every form moves
+   seventeen of the eighteen routes, the migration having made the space up
+   elsewhere. */
+#nd_snmp_search_form {
+  margin-bottom: 18px;
+}
+/* The field's width came from the old grid, 470px at every viewport above the
+   breakpoint; the replacement's form-control declares width:100% and outran the
+   grid class. Stated here, and that class dropped from the markup, a class that
+   looks like it sets the width but does not being worse than neither. */
+#nd_snmp_search_text {
+  width: 470px;
+}
+/* The dot, field and button travel as one group and register with each other
+   rather than on the text baseline. The field starts at 470px and gives way when
+   the pane is narrow, so the group stays on one line. Both go beyond the old
+   tree, which breaks this row at 767px. */
+.nd_snmp_search_controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+.nd_snmp_search_controls #nd_snmp_search_text {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* .nd_snmp_search_param nudges every control up 3px, which predates the
+     migration and aligned the row on the text baseline. Inside a centered group it
+     fights the centering, so it is cancelled for the field alone. The flag is
+     needed only because the rule it cancels carries one. */
+  margin-top: 0 !important;
+}
+.nd_snmp_search_controls button {
+  flex: 0 0 auto;
+}
+/* And the box the replacement puts around that label: the class was undefined in
+   the old stylesheet, so the label drew as bare inline text with its checkbox in
+   the line. */
+#nd_snmp_search_form .form-check {
+  min-height: 0;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+/* Keep each checkbox and its words together. The row is free to break between
+   controls as the panel narrows, which is orderly, but a phrase splitting
+   across two lines is not. This goes further than the old tree, which wraps
+   "Only this device" itself between roughly 1150px and 1000px. */
+#nd_snmp_search_form label {
+  white-space: nowrap;
+}
+
+/* The netmap's three toggles. Both plugins ignore data-width="30" for a minimum
+   of their own; the old one's 25px never bound, so the widget sized to its label
+   at 52px, and the replacement's 3.125rem does bind and clips "Show". 52px is
+   what the old one drew, not a figure chosen to fit. */
+.nd_netmap-sidebar .toggle.btn-sm {
+  min-width: 52px;
+}
+
+/* Where the word inside those toggles sits: the old plugin drew the lit label
+   54px against the 50px box that clips it, so the word started 4px further left.
+   The word clamps to the content box's left edge, so padding on that side changes
+   nothing, which an earlier attempt learned the hard way. What moves it is where
+   the content box starts. */
+.nd_netmap-sidebar .toggle > .toggle-group > .toggle-on.btn-sm {
+  margin-left: -4px;
+  padding-right: 20px;
+}
+
+.nd_netmap-sidebar .toggle > .toggle-group > .toggle-off.btn-sm {
+  padding-left: 20px;
+}
+
+/* A bordered table's frame: a 1px edge with its left side omitted, 4px corners,
+   and a separated model keeping frame and cell rules distinct, cells carrying a
+   left rule only. The replacement collapses the model, drops frame and corners
+   and rules both sides of every cell.
+
+   The color must be stated on the cells, which is why the separated model cannot
+   be turned on alone: collapsed, the rule between cells is drawn by the row;
+   separated, each cell draws its own, and the framework sets no color there, so
+   it falls back to currentColor and every vertical rule turns near-black. */
+table.dataTable.table-bordered {
+  border: 1px solid #dddddd;
+  border-left: 0;
+  border-collapse: separate;
+  border-radius: 4px;
+}
+table.dataTable.table-bordered > :not(caption) > * > * {
+  border-right-width: 0;
+  border-color: var(--bs-table-border-color);
+}
+
+/* Five tables group rows by inserting a shaded tr. Both stylesheets shade it
+   #dddddd, but the replacement paints the table background on the cells where the
+   old one left them transparent. The selector is long because the declaration
+   painting the cell is the integration's own, at two classes and an element. */
+table.dataTable tr.group > td {
+  background-color: transparent;
+}
+
 .table td:not(.nd_acl-rule-list):not(.nd_center-middle-cell) {
   vertical-align: baseline;
 }
@@ -233,6 +1031,43 @@ div.nd_acl-rule-list {
   vertical-align: middle;
 }
 
+/* DataTables right-aligns columns it reads as dates or numbers, header and cells
+   alike; the old library did not, and every column drew from the start edge.
+   Twelve columns on six pages were affected.
+
+   Three levels deep because dataTables.bootstrap.css is linked after this file,
+   so matching its specificity would still lose on order.
+
+   MUST STAY ABOVE THE CENTERING RULES THAT FOLLOW: equal specificity, so the
+   later one wins, and an explicitly centered column has to keep beating this. */
+div.dt-container table.dataTable th.dt-type-numeric,
+div.dt-container table.dataTable th.dt-type-date,
+div.dt-container table.dataTable td.dt-type-numeric,
+div.dt-container table.dataTable td.dt-type-date {
+  text-align: left;
+}
+
+/* The same detection flips the header's sort arrow to the other side of the
+   label, which pairs with right alignment and reads as a mistake without it.
+   Nothing is right-aligned any more, so it is undone everywhere it is set. */
+div.dt-container table.dataTable th.dt-type-numeric div.dt-column-header,
+div.dt-container table.dataTable th.dt-type-date div.dt-column-header,
+div.dt-container table.dataTable th.dt-type-numeric div.dt-column-footer,
+div.dt-container table.dataTable th.dt-type-date div.dt-column-footer {
+  flex-direction: row;
+}
+
+/* An explicitly centered column keeps its centering, which the detection above
+   used to overrule wherever a template asked for a centered column of timestamps
+   or counts. The explicit request wins over both the library and the rule
+   above. */
+div.dt-container table.dataTable th.nd_center-cell,
+div.dt-container table.dataTable td.nd_center-cell,
+div.dt-container table.dataTable th.nd_center-middle-cell,
+div.dt-container table.dataTable td.nd_center-middle-cell {
+  text-align: center;
+}
+
 td.nd_devport-icon i {
   line-height: 18px;
 }
@@ -240,11 +1075,6 @@ td.nd_devport-icon i {
 /* undo nd_center-cell when in a modial dialog (which lives in table cell) */
 .table .nd_center-cell .modal-body {
   text-align: left;
-}
-
-/* fix layout of form fields inside the (topology) table */
-td div.input-append {
-  margin-bottom: 0px;
 }
 
 /* admin buttons in the device details view */
@@ -258,7 +1088,7 @@ td > form.nd_inline-form {
 }
 
 /* fix layout of form fields inside the (pseudo devices) table */
-.nd_center-cell input {
+.nd_center-cell input, .nd_center-cell select {
   margin-bottom: 0px;
 }
 
@@ -276,9 +1106,10 @@ td > form.nd_inline-form {
   margin-bottom: 10px;
 }
 
-/* for any label which we want to appear alongside tabs, floated to the right */
+/* for any label which we want to appear alongside tabs, pushed to the right.
+   the tab strip is a flex row and ignores a float on its children. */
 #nd_device-name {
-  float: right;
+  margin-left: auto;
   margin-bottom: 0px;
   margin-top: 9px;
   font-weight: bold;
@@ -352,7 +1183,7 @@ td > form.nd_inline-form {
 }
 
 /* the port power icon, whether it's on or off */
-.icon-off {
+.fa-power-off {
   vertical-align: middle;
   color: darkRed;
 }
@@ -370,10 +1201,14 @@ td > form.nd_inline-form {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles for collapsing lists - sidebar or main table cell content */
 
-/* sidebar collapser is clickable and deep grey */
+/* Sidebar collapser is clickable and deep gray. It was a full-width block with a
+   5px gutter, which gave the chevron its right edge and the list under it its top
+   gap; the replacement draws a label inline-block with no gutter. */
 .nd_collapser {
   cursor: pointer;
   color: #0088CC;
+  display: block;
+  margin-bottom: 5px;
 }
 
 /* vlans collapser also clickable and deep grey but with no link styling */
@@ -409,6 +1244,52 @@ td > form.nd_inline-form {
   color: #783f03;
 }
 
+/* A bulleted list sat 25px in with a 9px gutter; the replacement indents 2rem
+   with a 1rem gutter, which wrapped the lists in a 205px sidebar.
+
+   The device Modules tree is what this rule is for, so do not narrow it to spare
+   the components below. Being a bare element selector it also lands on the tab
+   strips, navbar link lists and sidebar option lists, whose resets below are not
+   optional. Dropdown menus and paginators are already pinned elsewhere. */
+ul, ol {
+  padding: 0;
+  margin: 0 0 9px 25px;
+}
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+.nav, .navbar-nav, .list-unstyled, .pagination {
+  margin-left: 0;
+}
+
+/* the navbar's links were padded 15px either side, and the replacement pads
+   them 8px, which draws the whole link block 50px narrower than the bar was
+   laid out for. */
+.navbar-nav {
+  --bs-navbar-nav-link-padding-x: 15px;
+}
+
+/* A tab was padded 8px and 12px with a 2px gutter to the tab after it. Its
+   replacement pads 16px and leaves no gutter, so each tab is 6px wider than the
+   one it replaces and the drift accumulates along the strip. */
+.nav-tabs {
+  --bs-nav-link-padding-x: 12px;
+}
+.nav-tabs .nav-link {
+  margin-right: 2px;
+}
+
+/* Both stylesheets pull the strip a pixel down over the rule under it, and they
+   hang that pixel on different elements: the old one on the li, leaving the link
+   at 0, the replacement on the link, leaving the li at 0. The li is what carries
+   the height, so every tab measured a pixel short. */
+.nav-tabs > li {
+  margin-bottom: -1px;
+}
+.nav-tabs .nav-link {
+  margin-bottom: 0;
+}
+
 /* space out long lists */
 .nd_div-closer {
   margin-top: -14px;
@@ -438,9 +1319,43 @@ td > form.nd_inline-form {
   margin-bottom: 0px;
 }
 
-/* reduce padding at the bottom of the sidebar content */
-.container-fluid > .nd_sidebar > .well {
-  padding-bottom: 15px;
+/* The rows a sidebar builds out of a bare label: the netmap's "Positions:", the
+   job queue's "Longer than", the report sidebars' headings. The old stylesheet
+   made every label a block with a gutter, "label { display: block;
+   margin-bottom: 5px }", and the replacement has no such rule.
+
+   Stated once for the whole form rather than per site: two earlier versions named
+   a depth and each left a site at some other depth behind. Four exclusions, each
+   measured: :not([class]) keeps out labels carrying their own metrics, and the
+   three components lay out their own labels, .radio drawn inline-block as before,
+   .form-check owning the netmap's toggle rows, and .input-group being a flex
+   container where the margin does not collapse as the old block's did. */
+.nd_sidebar-form label:not([class]):not(.radio *):not(.form-check *):not(.input-group *) {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* The sidebar's box padded its content 19px, with this file taking the bottom
+   back to 15px; the replacement pads 16px, so the whole sidebar drew up and left
+   of where every offset here was measured. Only the bottom was carried over when
+   the box was translated. */
+.container-fluid > .nd_sidebar > .card > .card-body {
+  padding: 19px 19px 15px;
+}
+
+/* The same translation left the box's paint behind: a #f5f5f5 fill, #e3e3e3
+   border and inset highlight, against white with a translucent border and no
+   shadow. The fill is 10 of 255 from white and pixelmatch at threshold 0.2
+   ignores anything below 52, which is why it went unseen for so long. */
+.container-fluid > .nd_sidebar > .card {
+  background-color: #f5f5f5;
+  border-color: #e3e3e3;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  /* The replacement component also declares word-wrap:break-word, which inherits,
+     so every word in the sidebar became breakable mid-word. The netmap toggles are
+     24px inside against "Show" at 27.63px, so its last letter wrapped and the
+     widget, which hides overflow, cut it off. */
+  overflow-wrap: normal;
 }
 
 /* pull tab content away from the sidebar */
@@ -460,11 +1375,18 @@ td > form.nd_inline-form {
   color: rgba(255,0,0,0.8) !important;
 }
 
+/* The sidebar's three control icons. Both trees set 15px, but the replacement's
+   glyphs fill more of the em box than the sprites did. Neither the hide nor the
+   reset glyph has an outline variant in the free tier, so size is the only lever,
+   and the pin comes along to keep the column one size. The line-height holds the
+   box at 15px while the glyph draws at 13px: these are floated, so shrinking the
+   box moves everything that clears them. */
 .nd_sidebar-pin {
   float: left;
   margin-top: 8px;
   margin-left: -16px;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 15px;
   color: #555;
   cursor: pointer;
 }
@@ -473,7 +1395,8 @@ td > form.nd_inline-form {
   float: left;
   margin-top: 27px;
   margin-left: -16px;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 15px;
   color: #555;
   cursor: pointer;
 }
@@ -482,7 +1405,8 @@ td > form.nd_inline-form {
   float: left;
   margin-top: -10px;
   margin-left: -16px;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 15px;
   color: #555;
   cursor: pointer;
 }
@@ -500,12 +1424,18 @@ td > form.nd_inline-form {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* style customization for many items which appear in the sidebar */
 
-/* horizontal rule */
+/* Horizontal rule. The 2px is the black band only: a rule used to draw a light
+   border above and a white one below and measure its height outside them, so the
+   band stood 4px. */
 .nd_sidebar-hr {
   color: black;
   background-color: black;
   height: 2px;
   margin: 12px 0px 12px 0px;
+  box-sizing: content-box;
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #ffffff;
+  opacity: 1;
 }
 
 /* text in the sidebar */
@@ -518,6 +1448,16 @@ td > form.nd_inline-form {
 /* labels in netmap sidebar (not in a collapser) */
 .nd_sidebar-label {
   margin-left: 7px;
+}
+
+/* Tooltip type was 11px and is 14px in the replacement, against an unchanged
+   200px max-width. The longer labels therefore wrap to two lines and a strip
+   beside a sidebar field becomes a slab over the content next to it. Both values
+   are the previous framework's own. */
+.tooltip {
+  --bs-tooltip-font-size: 11px;
+  --bs-tooltip-padding-y: 8px;
+  --bs-tooltip-padding-x: 8px;
 }
 
 /* to allow display of tooltip on a disabled control
@@ -539,10 +1479,10 @@ td > form.nd_inline-form {
 }
 #nd_vlan-entry {
   margin-top: 7px;
-  width: 45px;
+  width: 59px;
 }
 #nd_mapshow-hops {
-  width: 30px;
+  width: 44px;
   margin-bottom: 0px;
 }
 
@@ -558,32 +1498,50 @@ td > form.nd_inline-form {
   font-weight: bold;
 }
 
+/* The netmap's device labels were bold by accident: the vendored chart gives
+   them class="label", which collided with a component the old stylesheet had and
+   the replacement does not. Put the weight back here only, a rule on the bare
+   class being a component name this migration removed on purpose. */
+#netmap_pane svg text.label {
+  font-weight: bold;
+}
+
 /* netmap tooltip box */
 #netmap_pane_tooltip {
   width: unset;
 }
 
-/* pretty toggles have no height on first load - bug? */
-div.toggle.btn-small {
-  height: 18px !important;
-}
-
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
-  width: 121px;
+  width: 137px;
   padding-left: 8px;
   cursor: pointer;
 }
 
 /* fixup for prepended partial port name checkbox in sidebar */
+/* The caption box is square where it meets the checkbox box and rounded only on
+   the outside of the pair, 0/4/4/0, where the replacement's plaintext control
+   rounds all four. Stated on the span, which is what carries the border. */
 .nd_port-partial-checkbox {
-  width: 84px;
+  width: 91px;
   padding: 0px 0px 0px 5px !important;
+  border-radius: 0 4px 4px 0;
   cursor: pointer;
 }
 
+/* Horizontal room for the checkbox inside its box: the old tree left 2.5px a
+   side against the replacement's 1px. Vertical padding stays zero, the
+   .input-group-text rule above sizing these from a stated content height.
+
+   Stated as a content width rather than padding because half-pixel padding
+   differs by engine: 1.5px a side draws 18px in Chromium and 19px in Firefox.
+   These are content-box, so 16px inside 1px borders is 18px in both. */
 .nd_port-partial-label {
   padding: 0px !important;
+  width: 16px;
+  /* These sit in a flex row and would otherwise shrink below the stated width. */
+  flex: 0 0 auto;
+  justify-content: center;
 }
 
 .nd_port-partial {
@@ -593,18 +1551,30 @@ div.toggle.btn-small {
 }
 
 /* fixup for prepended invert port name checkbox in sidebar */
+/* The caption box is square where it meets the checkbox box and rounded only on
+   the outside of the pair, 0/4/4/0, where the replacement's plaintext control
+   rounds all four. Stated on the span, which is what carries the border. */
 .nd_port-invert-checkbox {
-  width: 30px;
+  width: 37px;
   padding: 0px 0px 0px 5px !important;
+  border-radius: 0 4px 4px 0;
   cursor: pointer;
 }
 
 .nd_port-invert-label {
   padding: 0px !important;
-  /* for some reason only .add-on:first-child gets these */
+  width: 16px;
+  flex: 0 0 auto;
+  justify-content: center;
+  /* for some reason only .input-group-text:first-child gets these */
   -webkit-border-radius: 4px 0 0 4px !important;
   -moz-border-radius: 4px 0 0 4px !important;
   border-radius: 4px 0 0 4px !important;
+  /* Stand the Not group clear of the Partial Match group. The replacement pulls
+     items in a group onto each other by a pixel so borders collapse, which is
+     right within a group and wrong between two. The flag is needed because the
+     declaration being beaten is selected by a chain of :not() classes. */
+  margin-left: 4px !important;
 }
 
 .nd_port-invert {
@@ -613,10 +1583,12 @@ div.toggle.btn-small {
   margin-bottom: 5px !important;
 }
 
-/* fixup for prepended checkbox in sidebar */
-.nd_sidebar .input-prepend {
-  margin-left: -2px;
-  margin-bottom: 0px;
+/* A prepended-checkbox row was a block of inline-block children, so its line box
+   stood 5px clear of the 28px add-on and the rows pitched at 33px; the row is a
+   flex container now. The margin goes on the label rather than the row so the row
+   keeps its height. Not on the job queue's rows, which append their control. */
+.nd_sidebar .nd_checkboxlabel {
+  margin-bottom: 5px;
 }
 
 /* for some reason bootstrap 2.1.0 displays add-on as block - no check supprt? */
@@ -627,7 +1599,7 @@ div.toggle.btn-small {
 /* placement of form field in sidebar */
 .nd_side-input {
   margin-left: -3px;
-  width: 151px;
+  width: 165px;
 }
 
 /* placement of form field in sidebar */
@@ -641,20 +1613,39 @@ div.toggle.btn-small {
   margin-left: 5px !important;
   width: 152px;
 }
+/* one id, two elements: generic_report.tt emits either arm of an IF per bind
+   parameter, so a report with a list parameter and a text parameter puts a
+   select and an input carrying this id on the same page. Only the input needs
+   the wider box; a select was never sized by its padding. */
+input#nd_port-query {
+  width: 166px;
+}
 .nd_sidebar-topinput {
   margin-left: 5px !important;
-  width: 152px;
+  width: 166px;
 }
 
 /* set the drop-down width */
 .nd_sidebar-narrow-dropdown {
   margin-top: 4px;
-  width: 46px;
+  width: 60px;
 }
 
-/* set the drop-down width */
-.nd_sidebar-dropdown {
-  width: 130px;
+/* Set the drop-down width. The input group gives its field "flex: 1 1 auto;
+   width: 1%" at a specificity the class alone cannot beat.
+
+   Field and caret fill the group with nothing to spare and Bootstrap 5's input
+   group wraps by default, so a field that cannot shrink pushes the caret onto its
+   own line. Firefox measures that button 0.15px wider than Chromium, which is the
+   entire margin. */
+.nd_sidebar .input-group {
+  flex-wrap: nowrap;
+}
+.nd_sidebar-dropdown,
+.input-group > .nd_sidebar-dropdown {
+  flex: 0 1 144px;
+  width: 144px;
+  min-width: 0;
 }
 
 /* set the day/mon/year drop-down width */
@@ -702,8 +1693,12 @@ div.toggle.btn-small {
   padding-bottom: 5px;
 }
 
+/* The "Color by" row was a 28px select in a label carrying the 5px gutter every
+   label had. The select takes the 9px every field here gets, 4px too much. The
+   5px goes on the select, which is the only thing in the label. */
 #nd_colorby {
   width: 107px;
+  margin-bottom: 5px;
 }
 #nd_colorby-label-text {
   vertical-align: bottom;
@@ -734,6 +1729,10 @@ div.toggle.btn-small {
   z-index: 1;
   padding: 0px;
   cursor: pointer;
+  /* Placed by a fixed margin from the top of the field, so where they land depends
+     on their own line box: the old sprite stood in an 18px box on the field's
+     midline, the replacement's glyph reports 14.6px. */
+  line-height: 18px;
 }
 
 /* little icon inside of search input fields */
@@ -761,6 +1760,17 @@ form .clearfix.success input {
   background-color: #A9DBA9;
 }
 
+/* A checkbox row stood 18px on a 19px pitch; the replacement's 24px floor
+   pitches at 25px and walks the button under a thirty-row list 130px down. The
+   inset and the box's offset go with it. */
+.nd_sidebar .form-check {
+  min-height: 18px;
+  padding-left: 20px;
+}
+.nd_sidebar .form-check .form-check-input {
+  margin-left: -20px;
+}
+
 /* bring sidebar items closer together */
 .nd_inputs-list label {
   margin-bottom: 1px;
@@ -775,21 +1785,79 @@ form .clearfix.success input {
   margin-bottom: 9px;
 }
 
+/* A section heading is a label inside a legend, and the label carries the text.
+   The old stylesheet sized bare labels at body size; the replacement styles them
+   not at all, so the label inherits the legend and renders at nearly twice its
+   intended size. */
+.nd_sidebar-legend label {
+  font-size: 13px;
+}
+
 .nd_netmap-sidebar {
   margin-top: 0px;
   margin-left: -5px;
 }
 
-.nd_netmap-sidebar > .input-prepend {
+.nd_netmap-sidebar > .input-group {
   margin-left: 5px;
+}
+
+/* Each toggle row held a label with the 5px gutter every label had, so the row
+   stood 29px, inside the 9px gutter every control group had. The 5px goes on the
+   row rather than the label below, the row being what keeps the height. */
+/* The six radio rows draw their circle from awesome-bootstrap-checkbox's
+   .radio label::before, in a 20px gutter the container reserves, which only lines
+   up if the real input leaves the flow: .radio input[type=radio]{float:left;
+   margin-left:-20px}. The replacement has no .radio component. Only .radio needs
+   this; the .checkbox containers all became form-check. */
+.radio input[type="radio"] {
+  float: left;
+  margin-left: -20px;
+}
+
+/* A third defect in the same rows, and the only one caused by a vendored
+   stylesheet that did not change. The circle is a 17px ::before with a 1px border
+   and the dot an 11px ::after inset 4px: without a universal box-sizing the
+   circle occupied 19px and the dot sat centered, and the replacement's border-box
+   on pseudo-elements draws 17px while the dot stays pinned. Invisible to any
+   comparison of declarations or computed styles; found in painted pixels. */
+.radio label::before {
+  box-sizing: content-box;
+}
+
+/* The vertical half of the same defect. The vendored stylesheet never set a
+   bottom margin on these labels because the old base rule,
+   "label { display: block; margin-bottom: 5px }", supplied one. Only the margin
+   is restored; the display was never wrong. */
+.radio label {
+  margin-bottom: 5px;
+}
+
+.nd_netmap-sidebar .form-check {
+  margin-bottom: 5px;
+}
+
+/* These three rows are inset 5px, not the 20px a sidebar checkbox row gets. The
+   5px came from the old toggle plugin's stylesheet, which styled the row; the
+   plugin that replaced it styles the widget and leaves the row alone. */
+.nd_sidebar .form-check.float-start {
+  padding-left: 5px;
+}
+/* The one block that carried the old control-group class, whose whole effect was
+   this 9px. The utility class it was migrated to sets 16px flagged, so matching
+   the old value through it meant a flag of this file's own. A project class
+   instead, so the value is reachable from the markup asking for it. */
+.nd_control-group {
+  margin-bottom: 9px;
 }
 
 .nd_netmap-sidebar-help {
   margin-left: 32px;
 }
 
-.icons-ul {
-  margin-left: 22px;
+.fa-ul {
+  margin-inline-start: 22px;
+  --fa-li-width: 2.142857em;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -823,9 +1891,100 @@ form .clearfix.success input {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* dataTables */
 
+/* netdisco composes this control row itself through the dom string in
+   ajax/datatabledefaults.tt, which relied on the old integration floating the
+   length control's label, collapsing its container so the pager sat beside it.
+   The replacement floats nothing, so the container became full-width and the
+   pager dropped below. Restoring the float keeps the dom string, which netdisco
+   owns and which the column pickers and the pager's placement are written
+   against. */
+div.dt-container div.dt-length label {
+  float: left;
+}
+/* The search control is the other half of that arrangement. The old integration
+   floated the label with the field inside it; the replacement emits the field as
+   a sibling, so floating the label alone leaves the field in flow. The whole
+   control is floated instead, which is what the old arrangement amounted to. */
+div.dt-container div.dt-search {
+  float: right;
+}
+/* Both controls stand 37px where the old ones stood 28, and the 9px between is
+   the gutter this file gives every control, not wanted here. A table box shifts
+   down past floats, so the tallest float in this row decides where the table
+   starts. */
+div.dt-container div.dt-length select,
+div.dt-container div.dt-search input {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+/* And the 5px the old base rule gave this label, the rest of the gap above the
+   table: it is a float, so its bottom margin extends the margin box the table
+   shifts past. */
+div.dt-container div.dt-length label {
+  margin-bottom: 5px;
+}
+/* The pager drew 28px against the replacement's 36px, from larger padding, a
+   16px font and 2px of list margin. Set through the framework's pagination
+   variables so the component keeps deriving everything else.
+
+   The selector is long deliberately: this file is linked ahead of the
+   integration's stylesheet, so an equally specific rule loses the tie, and the
+   integration states its list margin three classes deep. */
+div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
+  --bs-pagination-padding-y: 4px;
+  --bs-pagination-padding-x: 12px;
+  --bs-pagination-font-size: 13px;
+  /* The cell for the page you are on was a pale gray block with gray type, quieter
+     than the numbers either side; the replacement paints it primary blue under
+     white type. Rest only: neither stylesheet gives this cell a hover response,
+     and the framework's active rule already outweighs its hover rule. */
+  --bs-pagination-active-color: #999999;
+  --bs-pagination-active-bg: #f5f5f5;
+  --bs-pagination-active-border-color: #dddddd;
+  /* And the spent cell, Previous on the first page: gray type alone, the cell left
+     transparent, where the replacement fills it too. Transparent rather than white
+     because that is what the old stylesheet declared; the two agree only while
+     what sits behind the pager is white. */
+  --bs-pagination-disabled-color: #999999;
+  --bs-pagination-disabled-bg: transparent;
+  --bs-pagination-disabled-border-color: #dddddd;
+  margin: 0;
+}
+/* The count's own 8px was the other half of that alignment: it is what put the
+   text's baseline level with the pager beside it rather than 8px above. */
+div.dt-container div.dt-info {
+  padding-top: 8px;
+}
 div.nd_datatables-pager {
   float: left;
   margin-left: 50px;
+}
+/* The "Processing..." wording is restored in the table defaults. This drops
+   the animated dots that replaced it, which the library appends as a separate
+   last child and would otherwise draw underneath the words. */
+div.dt-processing > div:last-child {
+  display: none;
+}
+/* and this restores the banner the words appeared in, a full-width band fading
+   at both ends rather than a small bordered card. Two ancestors deep because
+   dataTables.bootstrap.css is linked after this file. */
+div.dt-container div.dt-processing {
+  /* the 40px is the band below the text, not the whole box, which is what it
+     meant before Reboot made every element border-box */
+  box-sizing: content-box;
+  width: 100%;
+  height: 40px;
+  margin-left: -50%;
+  margin-top: -25px;
+  padding: 20px 0 0;
+  font-size: 1.2em;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.9) 25%,
+    rgba(255, 255, 255, 0.9) 75%,
+    rgba(255, 255, 255, 0) 100%);
 }
 
 td.nd_nowrap {

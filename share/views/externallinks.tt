@@ -1,6 +1,6 @@
 [% BLOCK external_link %]
 <a href="[% link.url | evaltt %]" target="_blank">
-     <span class="label label-default"><i class="icon-external-link"></i> [% link.displayname | html_entity %]</span></a>
+     <span class="badge text-bg-secondary"><i class="fas fa-up-right-from-square"></i> [% link.displayname | html_entity %]</span></a>
 [% END %]
 
 [% BLOCK external_mac_links %]

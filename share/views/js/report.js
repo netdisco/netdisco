@@ -5,14 +5,10 @@
   // colored input fields in the Report Options sidebar forms
   var form_inputs = $(".nd_colored-input");
 
-  // this is called by do_search to support local code
-  // here, when tab changes need to strike/unstrike the navbar search
+  // called by do_search after new content is injected. nothing to do here
+  // now that tooltips and popovers are delegated, but do_search calls it
+  // unconditionally so it must exist.
   function inner_view_processing(tab) {
-
-    // activate modals, tooltips and popovers
-    $('.nd_modal').modal({show: false});
-    $("[rel=tooltip]").tooltip({live: true});
-    $("[rel=popover]").popover({live: true});
   }
 
   // on load, check initial Report Options form state,
@@ -70,7 +66,7 @@
         ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
         ,beforeSend: function() {
           $(target).html(
-            '<div class="span2 alert">Request submitted...</div>'
+            '<div class="col-md-2 alert">Request submitted...</div>'
           );
         }
         ,success: function() {

@@ -73,6 +73,7 @@ logs/.*
 #!end included /home/oliver/perl-profiles/dancer/lib/perl5/ExtUtils/MANIFEST.SKIP
 
 \.github
+\.retireignore\.json
 \.travis\.yml
 \.docker
 \.circleci
@@ -86,5 +87,12 @@ SECURITY.md
 
 # python stuff
 \b__pycache__
-\b.venv
+\.venv
 \buv.lock
+
+# node stuff
+\bnode_modules\b
+
+# author-test snapshots: bulky, regenerated from the templates, and only
+# meaningful in a git checkout
+^xt/snapshots/

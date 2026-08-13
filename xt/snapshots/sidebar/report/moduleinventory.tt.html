@@ -1,0 +1,75 @@
+
+            <p class="nd_sidebar-title"><em>Module Search</em></p>
+            <div class="clearfix">
+              <i id="device_clear_btn" data-btn-for="device"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Device"
+                type="text" name="device" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Device IP, DNS, Description, Name, Location, Serial, or Contact"/>
+            </div>
+            <div class="clearfix">
+              <i id="description_clear_btn" data-btn-for="description"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Description"
+                type="text" name="description" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Description"/>
+            </div>
+            <div class="clearfix">
+              <i id="name_clear_btn" data-btn-for="name"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Name"
+                type="text" name="name" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Name"/>
+            </div>
+            <div class="clearfix">
+              <i id="type_clear_btn" data-btn-for="type"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Type"
+                type="text" name="type" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Type"/>
+            </div>
+            <div class="clearfix">
+              <i id="model_clear_btn" data-btn-for="model"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Model"
+                type="text" name="model" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Model"/>
+            </div>
+            <div class="clearfix">
+              <i id="serial_clear_btn" data-btn-for="serial"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Serial"
+                type="text" name="serial" value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Serial"/>
+            </div>
+            <div class="clearfix">
+              <select class="nd_side-select nd_colored-input form-select" size=""
+                multiple name="class"
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Class">
+              </select>
+            </div>
+            <fieldset>
+              <legend class="nd_sidebar-legend">
+                <label><em><strong>Options</strong></em></label>
+              </legend>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="fruonly"
+                  name="fruonly"/>
+              </label>
+              <label class="nd_checkboxlabel" for="fruonly">
+                <span class="nd_searchcheckbox form-control-plaintext">FRU Only</span>
+              </label>
+            </div>
+            <div class="clearfix input-group">
+              <label class="input-group-text">
+                <input type="checkbox" id="matchall"
+                  name="matchall"/>
+              </label>
+              <label class="nd_checkboxlabel" for="matchall">
+                <span class="nd_searchcheckbox form-control-plaintext">Match All Options</span>
+              </label>
+            </div>
+            </fieldset>
+            <button id="_submit" type="submit" class="btn btn-info">
+              <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Modules</button>

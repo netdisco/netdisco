@@ -62,7 +62,7 @@ jobs:
         run: echo "127.0.0.1 localhost" >> /etc/hosts
 
       - name: Check out latest code
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7
         with:
           path: 'netdisco'
           ref: ${{ github.ref }}
@@ -72,7 +72,7 @@ jobs:
 
       - name: Install Perl deps
         run: |
-          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader Test::Pod
+          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Test::Compile CPAN::Uploader Test::Pod
           sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest --installdeps ${GITHUB_WORKSPACE}/netdisco
 
       - name: Run Tests
@@ -305,9 +305,9 @@ jobs:
       - name: Download db content
         run: |
           cd ${GITHUB_WORKSPACE}
-          curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
-          curl -LO https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
-          curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
+          curl -LO https://github.com/netdisco/netdisco2-demo/raw/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
+          curl -LO https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
+          curl -LO https://github.com/netdisco/netdisco2-demo/raw/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
           gunzip netdisco2-demo-snmp-object-data.sql.gz
 
       - name: Upload cumulus demo
@@ -387,7 +387,7 @@ jobs:
 
     steps:
       - name: Check out latest dockerfile
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7
         with:
           repository: 'netdisco/netdisco2-demo'
           path: 'netdisco2-demo'

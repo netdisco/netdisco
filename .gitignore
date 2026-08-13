@@ -15,9 +15,8 @@ _build
 blib
 !.docker/hooks/*
 .idea
-node_modules/*
+node_modules/
 yarn.lock
-package.json
 .stylelintrc
 .vscode
 *__pycache__*

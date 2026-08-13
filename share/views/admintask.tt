@@ -1,36 +1,38 @@
-<i class="nd_sidebar-toggle icon-wrench icon-large" id="nd_sidebar-toggle-img-out"
-  rel="tooltip" data-placement="left" data-offset="5" data-title="Show Sidebar"></i>
+<i class="nd_sidebar-toggle fas fa-wrench fa-lg" id="nd_sidebar-toggle-img-out"
+  rel="tooltip" data-bs-placement="left" data-bs-title="Show Sidebar"></i>
 <div class="container-fluid">
   <div class="nd_sidebar nd_sidebar-pinned">
-    <div class="well">
-      <i class="nd_sidebar-toggle icon-signout" id="nd_sidebar-toggle-img-in"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Hide Sidebar" data-container="body"></i>
-      <i class="nd_sidebar-pin icon-pushpin nd_sidebar-pin-clicked"
-        rel="tooltip" data-placement="left" data-offset="5" data-title="Unpin Sidebar" data-container="body"></i>
+    <div class="card">
+      <div class="card-body">
+        <i class="nd_sidebar-toggle fas fa-arrow-right-from-bracket" id="nd_sidebar-toggle-img-in"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Hide Sidebar" data-bs-container="body"></i>
+        <i class="nd_sidebar-pin fas fa-thumbtack nd_sidebar-pin-clicked"
+          rel="tooltip" data-bs-placement="left" data-bs-title="Unpin Sidebar" data-bs-container="body"></i>
 
-      <div class="tab-content">
-        <div id="[% task.tag | html_entity %]_search" class="tab-pane active">
-          <form id="[% task.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
-              method="get" action="[% uri_for('/admin') | none %]">
-            [% TRY %]
-            <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 1;</script>
-            [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
-            [% CATCH %]
-            <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 0;</script>
-            [% END %]
-          </form>
-        </div> <!-- /tab-pane -->
-      </div> <!-- /tab-content -->
+        <div class="tab-content">
+          <div id="[% task.tag | html_entity %]_search" class="tab-pane active">
+            <form id="[% task.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
+                method="get" action="[% uri_for('/admin') | none %]">
+              [% TRY %]
+              <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 1;</script>
+              [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
+              [% CATCH %]
+              <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 0;</script>
+              [% END %]
+            </form>
+          </div> <!-- /tab-pane -->
+        </div> <!-- /tab-content -->
+      </div>
     </div>
   </div>
 
   <div class="content">
     <ul id="nd_search-results" class="nav nav-tabs">
-      <li class="active"><a id="[% task.tag | html_entity %]_link" class="nd_single-tab"
+      <li class="nav-item"><a id="[% task.tag | html_entity %]_link" class="nav-link active nd_single-tab"
         href="#[% task.tag | html_entity %]_pane">[% task.label | html_entity %]
       [% IF task.tag == 'acleditor' %]
-        | Name: <span class="badge badge-important">[% params.acl_name | html_entity %]</span>
-        Type: <span class="badge badge-important">[% SWITCH params.acl_type %]
+        | Name: <span class="badge text-bg-danger">[% params.acl_name | html_entity %]</span>
+        Type: <span class="badge text-bg-danger">[% SWITCH params.acl_type %]
           [% CASE "host_host" %]Host to Host mapping[% CASE "host_port" %]Ports on Hosts[% CASE %]Host Group[% END %]</span>
       [% END %]
       </a></li>
@@ -39,20 +41,20 @@
         <span id="nd_countdown"></span>
         &nbsp;&nbsp;
         <a id="nd_countdown-control" href="#">
-          <i id="nd_countdown-control-icon" class="text-success icon-play icon-large"></i>
+          <i id="nd_countdown-control-icon" class="text-success fas fa-play fa-lg"></i>
         </a>
         &nbsp;&nbsp;
-        <a id="nd_countdown-refresh" href="#"><i class="text-success icon-refresh icon-large"></i></a>
+        <a id="nd_countdown-refresh" href="#"><i class="text-success fas fa-arrows-rotate fa-lg"></i></a>
         &nbsp;&nbsp;
-        <a class="nd_adminbutton" name="delall" href="#"><i class="icon-trash icon-large text-error"></i></a>
+        <a class="nd_adminbutton" name="delall" href="#"><i class="fas fa-trash-can fa-lg text-danger"></i></a>
         &nbsp;&nbsp;
-        <a id="nd_jobqueue-bookmark" href="#"><i class="icon-bookmark icon-large"></i></a>
+        <a id="nd_jobqueue-bookmark" href="#"><i class="fas fa-bookmark fa-lg"></i></a>
       </span>
       [% ELSIF task.provides_csv %]
       <span id="nd_device-name">
         <a id="nd_csv-download" href="#" download="netdisco.csv">
-          <i id="nd_csv-download-icon" class="text-info icon-file-text-alt icon-large"
-            rel="tooltip" data-placement="left" data-offset="5" data-title="Download as CSV"></i></a>
+          <i id="nd_csv-download-icon" class="text-info far fa-file-lines fa-lg"
+            rel="tooltip" data-bs-placement="left" data-bs-title="Download as CSV"></i></a>
       </span>
       [% END %]
     </ul>

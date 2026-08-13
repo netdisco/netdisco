@@ -1,0 +1,68 @@
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+  <thead>
+    <tr>
+      <th class="nd_center-cell">Device</th>
+      <th class="nd_center-cell">Address</th>
+      <th class="nd_center-cell">Contact</th>
+      <th class="nd_center-cell">Location</th>
+    </tr>
+  </thead>
+</table>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  var table = $('#data-table').dataTable({
+    "deferRender": true,
+    "data": ,
+    "columns": [{
+        "data": 'ip',
+        "render": function(data, type, row, meta) {
+          return '<a href="&q=' + encodeURIComponent(data) + '">' + he.encode(row.dns || row.name || row.ip) + '</a>';
+        }
+      }, {
+        "data": 'alias',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'contact',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }, {
+        "data": 'location',
+        "render": function(data, type, row, meta) {
+          return he.encode(data || '');
+        }
+      }
+    ],
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": 
+    ,"lengthMenu": 
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+
+    ,"pagingType": 'simple_numbers'
+    ,"language": {
+
+      "processing": 'Processing...'
+      ,"search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+
+      ,"paginate": {
+        "previous": '&larr; Previous'
+        ,"next":    'Next &rarr;'
+      }
+    }
+    ,"stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+    }
+  });
+});</script>

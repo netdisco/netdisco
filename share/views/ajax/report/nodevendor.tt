@@ -33,7 +33,7 @@ $(document).ready(function() {
       {
         "data": 'mac',
         "render": function(data, type, row, meta) {
-          var icon = '&nbsp;&nbsp;<i class="icon-book text-warning"></i> ';
+          var icon = '&nbsp;&nbsp;<i class="fas fa-book text-warning"></i> ';
           if (row.active) {
             icon = '';
           }

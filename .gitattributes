@@ -1,8 +1,14 @@
 share/public/javascripts/*.map binary
 share/public/javascripts/*.min.js binary
 share/public/javascripts/jquery-history.js binary
-share/public/css/smoothness/jquery-ui.custom.min.css binary
+share/public/css/smoothness/jquery-ui.min.css binary
 share/public/javascripts/jstree/jstree.min.js binary
 share/public/css/toastr.css binary
 share/public/css/*.min.css binary
-share/public/swagger-ui/* binary
+# Only the generated artifacts. index.html, oauth2-redirect.html, LICENSE,
+# NOTICE and the version marker are hand-readable, and marking them binary stops
+# git diffing and three-way merging them. The favicons need no entry: git detects
+# binary content on its own.
+share/public/swagger-ui/*.js binary
+share/public/swagger-ui/*.css binary
+share/public/swagger-ui/*.map binary

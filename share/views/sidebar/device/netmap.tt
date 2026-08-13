@@ -2,67 +2,65 @@
             <span class="nd_sidebar-title"><em>Neighbor Map Controls</em></span>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix nd_netmap-sidebar">
-              <ul class="muted nd_netmap-sidebar-help">
+              <ul class="text-muted nd_netmap-sidebar-help">
                 <li>Tip: shift-drag to lasso</li>
                 <li><a href="https://github.com/netdisco/netdisco/wiki/Network-Map" target="_blank">User Guide
-                  <i class="icon-external-link"></i></a></li>
+                  <i class="fas fa-up-right-from-square"></i></a></li>
               </ul>
             </div>
 
-            <div class="clearfix control-group nd_netmap-sidebar">
-              <div class="checkbox pull-left">
-                <label>
-                  <input type="checkbox" name="showips" id="nd_showips"
+            <div class="clearfix nd_control-group nd_netmap-sidebar">
+              <div class="form-check float-start">
+                <input type="checkbox" name="showips" id="nd_showips"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showips %]
                     data-toggle="toggle" data-size="small" data-width="30"
-                    data-on="Show" data-off=" " data-onstyle="success">
-                  <span onclick="$('#nd_showips').bootstrapToggle('toggle')">&nbsp;Management IP</span>
-                </label>
+[%# These two toggles want no word in their off state. A single space no longer
+    expresses that: the plugin resolves a blank label as an absent one and
+    substitutes its own default, printing "Off" here. A non-breaking space is a
+    label, so it survives that fallback and draws as nothing. -%]
+                    data-on="Show" data-off="&nbsp;" data-onstyle="success">
+                  <label for="nd_showips">&nbsp;Management IP</label>
               </div>
-              <div class="checkbox pull-left">
-                <label>
-                  <input type="checkbox" name="showspeed" id="nd_showspeed"
+              <div class="form-check float-start">
+                <input type="checkbox" name="showspeed" id="nd_showspeed"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.showspeed %]
                     data-toggle="toggle" data-size="small" data-width="30"
-                    data-on="Show" data-off=" " data-onstyle="success">
-                  <span onclick="$('#nd_showspeed').bootstrapToggle('toggle')">&nbsp;Link Speed</span>
-                </label>
+                    data-on="Show" data-off="&nbsp;" data-onstyle="success">
+                  <label for="nd_showspeed">&nbsp;Link Speed</label>
               </div>
-              <div class="checkbox pull-left">
-                <label>
-                  <input type="checkbox" name="autosave" id="nd_autosave"
+              <div class="form-check float-start">
+                <input type="checkbox" name="autosave" id="nd_autosave"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="On" data-off="Off" data-onstyle="success">
-                  <span onclick="$('#nd_autosave').bootstrapToggle('toggle')">&nbsp;Auto Save</span>
-                </label>
+                  <label for="nd_autosave">&nbsp;Auto Save</label>
               </div>
             </div>
 
             <label><span id="">Positions: </span>
-                  <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                  <i class="icon-save icon-large pull-left nd_navbar-icon"></i> Save</button>
+                  <button id="nd_netmap-save" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                  <i class="far fa-floppy-disk fa-lg float-start nd_navbar-icon"></i> Save</button>
             </label>
 
             <table margin="0" border="0" class="nd_netmap-pin-controls">
             <tr>
               <td class="nd_netmap-pin-controls-top-row">
-                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+                <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-unlock fa-lg float-start nd_navbar-icon"></i> Lasso</button>
               </td>
               <td class="nd_netmap-pin-controls-top-row">
-                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-lock icon-large pull-left nd_navbar-icon"></i> Lasso</button>
+                <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-lock fa-lg float-start nd_navbar-icon"></i> Lasso</button>
               </td>
             </tr>
             <tr>
               <td>
-                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-unlock icon-large pull-left nd_navbar-icon"></i> All</button>
+                <button id="nd_netmap-releaseall" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-unlock fa-lg float-start nd_navbar-icon"></i> All</button>
               </td>
               <td>
-                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-small btn-info">
-                    <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Device</button>
+                <button id="nd_netmap-zoomtodevice" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
+                    <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Device</button>
               </td>
             </tr>
             </table>
@@ -72,7 +70,7 @@
             <div class="radio radio-success">
                 [% IF device_count > settings.netmap_performance_limit_max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-all" value="all">
-                <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
+                <label rel="tooltip" data-bs-placement="left" data-bs-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
                 [% ELSE %]
                 <input type="radio" name="mapshow" id="nd_mapshow-all"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'all' %] value="all">
@@ -82,7 +80,7 @@
             <div class="radio radio-success">
                 [% IF device_count > settings.netmap_performance_limit_max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-cloud" value="cloud">
-                <label rel="tooltip" data-placement="left" data-offset="5" data-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
+                <label rel="tooltip" data-bs-placement="left" data-bs-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
                 [% ELSE %]
                 <input type="radio" name="mapshow" id="nd_mapshow-cloud"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'cloud' %] value="cloud">
@@ -95,21 +93,21 @@
                   OR device_count > settings.netmap_performance_limit_max_devices %]
                 value="depth">
                 <label for="nd_mapshow-depth">Neighbor Hops:
-                <input name="depth" id="nd_mapshow-hops" class="input-mini" type="number" placeholder="1"
+                <input name="depth" id="nd_mapshow-hops" class="form-control form-control-sm d-inline-block" type="number" placeholder="1"
                   value="[% params.depth || vars.sidebar_defaults.device_netmap.depth | html_entity %]"/>
                 </label>
             </div>
 
             <label><span id="nd_vlan-label-text">Carrying VLAN: </span>
-              <input name="vlan" id="nd_vlan-entry" class="input-mini" type="number" placeholder="ID"
+              <input name="vlan" id="nd_vlan-entry" class="form-control form-control-sm d-inline-block" type="number" placeholder="ID"
                 value="[% params.vlan | html_entity %]"/>
             </label>
 
             [% IF hgroup_list.size %]
-            <em class="muted">Device Groups:</em><br/>
-            <select class="nd_side-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
+            <em class="text-muted">Device Groups:</em><br/>
+            <select class="nd_side-select form-select" size="[% hgroup_list.size > 4 ? 4 : hgroup_list.size %]"
               multiple name="hgroup" id="nd_hgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Groups">
+              rel="tooltip" data-bs-placement="left" data-bs-title="Device Groups">
               [% FOREACH opt IN hgroup_list.pairs %]
               <option[% ' selected="selected"' IF hgroup_lkp.exists(opt.key) %]
                 value="[% opt.key | html_entity %]">[% opt.value | html_entity %]</option>
@@ -117,10 +115,10 @@
             </select>
             [% END %]
             [% IF lgroup_list.size %]
-            <em class="muted">Device Locations:</em><br/>
-            <select class="nd_side-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
+            <em class="text-muted">Device Locations:</em><br/>
+            <select class="nd_side-select form-select" size="[% lgroup_list.size > 4 ? 4 : lgroup_list.size %]"
               multiple name="lgroup" id="nd_lgroup-select"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Device Locations">
+              rel="tooltip" data-bs-placement="left" data-bs-title="Device Locations">
               [% FOREACH loc IN lgroup_list %]
               <option[% ' selected="selected"' IF lgroup_lkp.exists(loc) %]
                 value="[% loc | html_entity %]">[% loc | html_entity %]</option>
@@ -131,9 +129,9 @@
             <div class="clearfix nd_netmap-sidebar">
 
               [% IF hgroup_list.size OR lgroup_list.size %]
-              <div class="clearfix input-prepend">
+              <div class="clearfix input-group">
               <label><span id="nd_colorby-label-text">Color by: </span>
-                <select id="nd_colorby" name="colorby">
+                <select id="nd_colorby" class="form-select d-inline-block" name="colorby">
                   <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'off' %]
                     value="off">Off</option>
                   <option[% ' selected="selected"' IF vars.sidebar_defaults.device_netmap.colorby == 'speed' %]
@@ -151,18 +149,18 @@
               </div>
               [% END %]
 
-              <div class="clearfix input-prepend">
-                <label class="add-on">
+              <div class="clearfix input-group">
+                <label class="input-group-text">
                   <input type="checkbox" id="dynamicsize" name="dynamicsize"
                     [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.dynamicsize %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="dynamicsize">
-                  <span class="nd_searchcheckbox uneditable-input">Dynamic Size</span>
+                  <span class="nd_searchcheckbox form-control-plaintext">Dynamic Size</span>
                 </label>
               </div>
 
             </div>
 
             <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-                <i class="icon-pencil icon-large pull-left nd_navbar-icon"></i>
+                <i class="fas fa-pencil fa-lg float-start nd_navbar-icon"></i>
             Redraw Map</button>

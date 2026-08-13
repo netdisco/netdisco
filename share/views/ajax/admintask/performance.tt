@@ -1,7 +1,7 @@
 [% IF results.count == 0 %]
-<div class="span3 alert alert-info">The aren't enough jobs to report.</div>
+<div class="col-md-3 alert alert-info">The aren't enough jobs to report.</div>
 [% ELSE %]
-<table id="app-data-table" class="table table-bordered table-condensed table-hover" width="100%" cellspacing="0">
+<table id="app-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Action</th>
@@ -16,16 +16,16 @@
     [% WHILE (row = results.next) %]
     <tr
       [% IF NOT mac AND row.action == 'macsuck' %]
-        class="info"
+        class="table-info"
         [% SET mac = 1 %]
       [% ELSIF NOT arp AND row.action == 'arpnip' %]
-        class="info"
+        class="table-info"
         [% SET arp = 1 %]
       [% ELSIF NOT dis AND row.action == 'discover' %]
-        class="info"
+        class="table-info"
         [% SET dis = 1 %]
       [% ELSIF NOT nbt AND row.action == 'nbtstat' %]
-        class="info"
+        class="table-info"
         [% SET nbt = 1 %]
       [% END %]
     >

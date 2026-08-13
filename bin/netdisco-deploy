@@ -227,7 +227,7 @@ sub deploy_oui {
   print color 'bold blue';
   print 'Updating OUI, Manufacturers, Enterprises, and Products... ';
 
-  my $latest = 'https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
+  my $latest = 'https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
   my $file = file($home, 'netdisco-lookup-tables.sql');
   my $resp = HTTP::Tiny->new->mirror($latest, $file);
 
@@ -285,8 +285,13 @@ sub deploy_mibs {
 
     if (schema('netdisco')->resultset('SNMPObject')->count) {
       print 'Updating SNMP Browser... ';
-      system('netdisco-do loadmibs --quiet');
-      say 'done.';
+      if (system('netdisco-do loadmibs --quiet') == 0) {
+        say 'done.';
+      }
+      else {
+        print color 'bold red';
+        say 'SNMP Browser update failed!';
+      }
     }
   }
 

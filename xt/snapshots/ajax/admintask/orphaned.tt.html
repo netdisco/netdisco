@@ -1,0 +1,43 @@
+
+<div class="accordion" id="accordion-orphans">
+  <div class="accordion-item">
+      <div class="accordion-header">
+          <a class="d-block px-3 py-2" data-bs-toggle="collapse" data-bs-target="#collapse-orphan" href="#collapse-orphan">
+            <i class="fas fa-chevron-up"></i> &nbsp;
+            Orphaned Devices
+          </a>
+      </div>
+    <div id="collapse-orphan" class="accordion-collapse collapse">
+      <div class="accordion-body">
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>Device</th>            
+            <th>Location</th>
+            <th>Contact</th>
+            <th>Vendor</th>
+            <th>Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="?q="></a></td>
+            <td>
+                [Not Set]
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script>
+$('.accordion').on('show.bs.collapse hide.bs.collapse', function (n) {
+    $(n.target).siblings('.accordion-header').find('a i').toggleClass('fa-chevron-up fa-chevron-down');
+});
+</script>
