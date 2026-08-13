@@ -686,6 +686,7 @@ xt/31-loadmibs-guard.t
 xt/32-swagger-ui-guard.t
 xt/33-vendored-manifest.t
 xt/34-module-tree-order.t
+xt/35-login-return-url.t
 xt/40-template-snapshots.t
 xt/bin/regenerate-snapshots
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
