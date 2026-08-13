@@ -65,16 +65,16 @@ sub run {
       push @newdeviceauthconf, dclone $stanza;
     }
 
-    # desired behaviour is that if the hint tag is missing then
-    # Netdisco will still try all tags (and not just bail out)
-    if (my $tag_hint = $job->params->{device_auth_tag_hint}) {
-        my @hint_matches = grep { $_->{tag} and $_->{tag} eq $tag_hint } @newdeviceauthconf;
-        @newdeviceauthconf = @hint_matches if scalar @hint_matches;
-    }
-
     # per-device action but no device creds available
     return $job->add_status( Status->defer('deferred job with no device creds') )
       if 0 == scalar @newdeviceauthconf && $self->transport_required;
+
+    # if there is a device_auth_tag_hint then promote it to the front
+    if (my $tag_hint = $job->params->{device_auth_tag_hint}) {
+        my @hint_matches = grep { $_->{tag} and $_->{tag} eq $tag_hint } @newdeviceauthconf;
+        my @not_matches  = grep { ! ($_->{tag} and $_->{tag} eq $tag_hint) } @newdeviceauthconf;
+        @newdeviceauthconf = (@hint_matches, @not_matches) if scalar @hint_matches;
+    }
   }
 
   # back up and restore device_auth
