@@ -2,7 +2,7 @@
 [% INCLUDE print_line item=item %]
   [% IF nodes.$item.children.defined -%]
   <ul>
-  [% FOREACH kidtype IN nodes.$item.children.keys -%]
+  [% FOREACH kidtype IN nodes.$item.children.keys.sort -%]
     [%- FOREACH kid IN nodes.$item.children.$kidtype -%]
       [%- IF kid -%]
         [% INCLUDE recurse item=kid %]
