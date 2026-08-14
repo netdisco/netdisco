@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-Please report security issues to oliver at cpan dot org
+Please report security issues to oliver at co-ding dot org
 
 If you do not get a prompt response, please:
 - open a ticket at https://github.com/netdisco/netdisco/issues/new
