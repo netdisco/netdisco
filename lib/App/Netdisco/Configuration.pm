@@ -344,6 +344,10 @@ foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
   push @{setting($name)}, @{ setting('devices_only') };
 }
 
+# skip_neighbor_queue is an undocumented inverse override of queue_neighbors
+config->{'queue_neighbors'} = ! setting('skip_neighbor_queue')
+  if exists config->{'skip_neighbor_queue'};
+
 # legacy config item names
 
 # rename snmp_field_protection to just be field_protection

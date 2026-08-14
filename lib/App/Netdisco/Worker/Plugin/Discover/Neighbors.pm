@@ -43,7 +43,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         $device->ip);
   }
 
-  if ($job->params->{skip_neighbor_queue} or not setting('queue_neighbors')) {
+  if (not setting('queue_neighbors')) {
       config->{'discover_only'} = $device->ip;
       debug sprintf ' [%s] neigh - neighbors will be discovered but not queued',
         $device->ip;
