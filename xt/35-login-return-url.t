@@ -25,13 +25,23 @@ use FindBin;
 # same file. Nothing new is asserted about where users belong.
 #
 # THIS FILE IS A SOURCE ASSERTION, and that is a real limitation rather than a
-# shortcut. A request-level test would be better and is out of reach: loading
-# App::Netdisco::Web in a bare test process dies in Dancer::Session::Cookie
-# before any route is reachable, and the app wants a database besides. The
-# behavioural evidence is five journeys driven through a browser against a real
-# instance, recorded in the commit that added this file. What is asserted here
-# is the property that made the defect possible, so that a later edit reverting
-# it is caught.
+# shortcut. A request-level test would be better. What puts it out of reach is
+# the database, and only the database: the app itself loads here, provided
+# `use App::Netdisco;` comes first, Dancer::Test works, and GET /login answers
+# 200. But every protected route goes through the DBIC auth provider, which
+# setting `no_auth` does not bypass, since that only names the user `guest` and
+# still resolves it against the database. So the login POST this file is about
+# cannot be driven from xt.
+#
+# Do not close that gap by finding a database at run time and skipping without
+# one. A developer machine has one and CI does not, so the test would look green
+# here and never run upstream, which is how the phantomjs QUnit page went
+# unnoticed for years.
+#
+# The behavioural evidence is five journeys driven through a browser against a
+# real instance, recorded in the commit that added this file. What is asserted
+# here is the property that made the defect possible, so that a later edit
+# reverting it is caught.
 
 my $authn = catfile( $FindBin::Bin, updir(),
     'lib', 'App', 'Netdisco', 'Web', 'AuthN.pm' );
