@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.102001';
+our $VERSION = '2.103000';
 use App::Netdisco::Configuration;
 
 =head1 NAME
@@ -311,7 +311,7 @@ within the L<Developer|https://github.com/netdisco/netdisco/wiki/Developing> doc
 
 =head1 AUTHOR
 
-Oliver Gorwits <oliver@cpan.org>
+Oliver Gorwits <oliver@co-ding.org>
 
 =head1 CONTRIBUTORS
 

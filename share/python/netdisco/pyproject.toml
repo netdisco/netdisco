@@ -9,7 +9,7 @@ dependencies = [
     "yamale>=6.1.0,<7",
     "netmiko>=4.7.0,<5",
     "cryptography>=50.0.0,<51",
-    "virtualenv>=21.7.3",
+    "virtualenv>=21.7.4",
     "sqlalchemy>=2.0.51,<3",
     "psycopg>=3.3.4,<4",
     "uv-build>=0.12.3,<0.13.0",
@@ -23,7 +23,7 @@ requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-develop = ["pre-commit>=4.6.1,<5"]
+develop = ["pre-commit>=4.6.2,<5"]
 test = ["ruff>=0.16.2,<0.17"]
 
 [tool.uv]
