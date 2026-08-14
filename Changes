@@ -1,3 +1,14 @@
+2.103000 - 2026-08-14
+
+  [NEW FEATURES]
+
+  * #1615 modernize the frontend dependencies: Bootstrap 5, Font Awesome 7, DataTables 2, jQuery 3
+  * #1624 upgrade the vendored Swagger UI from 3.20.3 to 5.32.12
+
+  [ENHANCEMENTS]
+
+  * update Python dependencies and GitHub Actions versions
+
 2.102001 - 2026-08-10
 
   [BUG FIXES]

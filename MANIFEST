@@ -409,11 +409,11 @@ share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
 share/public/javascripts/versionsort.js
-share/public/swagger-ui/LICENSE
-share/public/swagger-ui/NOTICE
 share/public/swagger-ui/favicon-16x16.png
 share/public/swagger-ui/favicon-32x32.png
 share/public/swagger-ui/index.html
+share/public/swagger-ui/LICENSE
+share/public/swagger-ui/NOTICE
 share/public/swagger-ui/oauth2-redirect.html
 share/public/swagger-ui/oauth2-redirect.js
 share/public/swagger-ui/swagger-ui-bundle.js
