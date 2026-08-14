@@ -311,7 +311,7 @@ within the L<Developer|https://github.com/netdisco/netdisco/wiki/Developing> doc
 
 =head1 AUTHOR
 
-Oliver Gorwits <oliver@cpan.org>
+Oliver Gorwits <oliver@co-ding.org>
 
 =head1 CONTRIBUTORS
 
