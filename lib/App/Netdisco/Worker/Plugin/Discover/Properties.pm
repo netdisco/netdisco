@@ -420,6 +420,31 @@ register_worker({ phase => 'early', driver => 'snmp',
       };
   }
 
+  # plausibility check: SNMP occasionally returns an empty ifAlias/i_name
+  # table without erroring (seen on Cisco and Fortigate). If every port
+  # previously had a name and this poll got none at all, distrust the walk
+  # and keep the last-known names rather than wipe them all in one go.
+  {
+      my %old_names = map {($_->{'port'} => $_->{'name'})}
+        $device->ports->search(undef, {columns => [qw/port name/]})->hri->all;
+
+      my $old_named = scalar grep {defined and length} values %old_names;
+      my $new_named = scalar grep {defined $_->{'name'} and length $_->{'name'}}
+                             values %deviceports;
+
+      if ($old_named and not $new_named) {
+          warning sprintf
+            ' [%s] interfaces - i_name/ifAlias walk came back empty for all ports'
+            .' but %d had one previously - assuming failed SNMP walk, keeping existing names',
+            $device->ip, $old_named;
+
+          foreach my $port (keys %deviceports) {
+              $deviceports{$port}->{name} = $old_names{$port}
+                if exists $old_names{$port};
+          }
+      }
+  }
+
   if (scalar @{ setting('ignore_deviceports') }) {
     my $port_map = {};
 
