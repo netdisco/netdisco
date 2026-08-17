@@ -427,9 +427,26 @@ register_worker({ phase => 'early', driver => 'snmp',
   # reports every single port down is a walk glitch, not reality - a truly
   # dead device wouldn't be answering SNMP at all. Distrust the walk and
   # keep the last-known values rather than wipe/flap them all in one go.
+  # some platforms fall back to reporting the interface's own short or long
+  # name as i_name when the real ifAlias walk comes back empty (e.g. ifAlias
+  # "Gi3/0/14" on port GigabitEthernet3/0/14) - a genuine human-authored
+  # description doesn't echo its own port id, so don't count that as "good"
+  # ifAlias data either. Compare trailing slot/subslot/port digits rather
+  # than the letter prefix, since that's exact and vendor-abbreviation-proof.
+  my $looks_like_own_port_id = sub {
+      my ($name, $port) = @_;
+      return false unless defined $name and defined $port and length $name;
+      my ($nsuffix) = $name =~ m{(\d+(?:/\d+)*)$};
+      my ($psuffix) = $port =~ m{(\d+(?:/\d+)*)$};
+      return false unless defined $nsuffix and defined $psuffix;
+      return ($nsuffix eq $psuffix and $name =~ /^[A-Za-z]/) ? true : false;
+  };
+
   foreach my $check (
     { field => 'name',     label => 'i_name/ifAlias',
-      good  => sub { defined $_[0] and length $_[0] } },
+      good  => sub { my ($val, $port) = @_;
+                      defined $val and length $val
+                      and not $looks_like_own_port_id->($val, $port) } },
     { field => 'up_admin', label => 'i_up_admin',
       good  => sub { defined $_[0] and $_[0] eq 'up' } },
     { field => 'up',       label => 'i_up',
@@ -440,9 +457,9 @@ register_worker({ phase => 'early', driver => 'snmp',
       my %old_vals = map {($_->{'port'} => $_->{$field})}
         $device->ports->search(undef, {columns => ['port', $field]})->hri->all;
 
-      my $old_good = scalar grep {$check->{good}->($_)} values %old_vals;
-      my $new_good = scalar grep {$check->{good}->($_->{$field})}
-                             values %deviceports;
+      my $old_good = scalar grep {$check->{good}->($old_vals{$_}, $_)} keys %old_vals;
+      my $new_good = scalar grep {$check->{good}->($deviceports{$_}->{$field}, $_)}
+                             keys %deviceports;
 
       if ($old_good and not $new_good) {
           warning sprintf
