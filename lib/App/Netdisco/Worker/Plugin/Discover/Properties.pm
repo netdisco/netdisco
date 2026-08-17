@@ -420,27 +420,39 @@ register_worker({ phase => 'early', driver => 'snmp',
       };
   }
 
-  # plausibility check: SNMP occasionally returns an empty ifAlias/i_name
-  # table without erroring (seen on Cisco and Fortigate). If every port
-  # previously had a name and this poll got none at all, distrust the walk
-  # and keep the last-known names rather than wipe them all in one go.
-  {
-      my %old_names = map {($_->{'port'} => $_->{'name'})}
-        $device->ports->search(undef, {columns => [qw/port name/]})->hri->all;
+  # plausibility check: SNMP occasionally returns a whole table that's
+  # uniformly empty/down without erroring (seen on Cisco and Fortigate) -
+  # e.g. ifAlias blank for every port, or every port suddenly admin/oper
+  # down. A device that's live enough to answer this SNMP session but
+  # reports every single port down is a walk glitch, not reality - a truly
+  # dead device wouldn't be answering SNMP at all. Distrust the walk and
+  # keep the last-known values rather than wipe/flap them all in one go.
+  foreach my $check (
+    { field => 'name',     label => 'i_name/ifAlias',
+      good  => sub { defined $_[0] and length $_[0] } },
+    { field => 'up_admin', label => 'i_up_admin',
+      good  => sub { defined $_[0] and $_[0] eq 'up' } },
+    { field => 'up',       label => 'i_up',
+      good  => sub { defined $_[0] and $_[0] eq 'up' } },
+  ) {
+      my $field = $check->{field};
 
-      my $old_named = scalar grep {defined and length} values %old_names;
-      my $new_named = scalar grep {defined $_->{'name'} and length $_->{'name'}}
+      my %old_vals = map {($_->{'port'} => $_->{$field})}
+        $device->ports->search(undef, {columns => ['port', $field]})->hri->all;
+
+      my $old_good = scalar grep {$check->{good}->($_)} values %old_vals;
+      my $new_good = scalar grep {$check->{good}->($_->{$field})}
                              values %deviceports;
 
-      if ($old_named and not $new_named) {
+      if ($old_good and not $new_good) {
           warning sprintf
-            ' [%s] interfaces - i_name/ifAlias walk came back empty for all ports'
-            .' but %d had one previously - assuming failed SNMP walk, keeping existing names',
-            $device->ip, $old_named;
+            ' [%s] interfaces - %s walk came back with no ports "up"/set'
+            .' but %d were previously - assuming failed SNMP walk, keeping existing %s',
+            $device->ip, $check->{label}, $old_good, $field;
 
           foreach my $port (keys %deviceports) {
-              $deviceports{$port}->{name} = $old_names{$port}
-                if exists $old_names{$port};
+              $deviceports{$port}->{$field} = $old_vals{$port}
+                if exists $old_vals{$port};
           }
       }
   }
