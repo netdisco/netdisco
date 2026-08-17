@@ -11,8 +11,16 @@ register_worker({ phase => 'main' }, sub {
   my $extra = $job->extra;
   my $print_this_instead = $job->port;
 
+  if (! $ENV{ND2_DO_QUIET}) {
+      debug sprintf 'port: "%s"', ($print_this_instead || '');
+      debug sprintf 'subaction: "%s"', ($extra || '');
+  }
+
+  my $key = ($print_this_instead || $extra);
   my $CONFIG = config();
-  my $dump = ($extra ? $CONFIG->{$print_this_instead || $extra} : $CONFIG);
+
+  my $dump = (((defined $key) and (ref $key eq q{}))
+    ? $CONFIG->{$key} : $CONFIG);
   p $dump unless $ENV{ND2_DO_QUIET};
 
   return Status->done($ENV{ND2_DO_QUIET}

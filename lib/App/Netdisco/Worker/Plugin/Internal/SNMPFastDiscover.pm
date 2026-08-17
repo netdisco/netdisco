@@ -17,7 +17,7 @@ register_worker({ phase => 'check', driver => 'direct' }, sub {
       debug "running with fast SNMP timeouts for initial discover";
   }
   else {
-      debug "running with configured SNMP timeouts" unless $params->{snmptimeout};
+      debug "running with configured SNMP timeouts";
   }
 });
 

@@ -7,7 +7,6 @@ use App::Netdisco::Util::CustomFields;
 use App::Netdisco::Transport::Python ();
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
-use App::Netdisco::Util::Configuration 'merge_into_configuration';
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
@@ -46,10 +45,6 @@ sub run {
     $job->finalise_status;
   };
 
-  # bring in any configuration override from extra/subaction
-  # we don't care about rolling back so there is no Scope::Guard here
-  merge_into_configuration($job->params);
-
   my @newdeviceauthconf = ();
   my @deviceauthconf = @{ dclone (setting('device_auth') || []) };
 
@@ -70,7 +65,7 @@ sub run {
       if 0 == scalar @newdeviceauthconf && $self->transport_required;
 
     # if there is a device_auth_tag_hint then promote it to the front
-    if (my $tag_hint = $job->params->{device_auth_tag_hint}) {
+    if (my $tag_hint = setting('device_auth_tag_hint')) {
         my @hint_matches = grep { $_->{tag} and $_->{tag} eq $tag_hint } @newdeviceauthconf;
         my @not_matches  = grep { ! ($_->{tag} and $_->{tag} eq $tag_hint) } @newdeviceauthconf;
         @newdeviceauthconf = (@hint_matches, @not_matches) if scalar @hint_matches;

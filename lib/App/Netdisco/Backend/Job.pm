@@ -3,10 +3,9 @@ package App::Netdisco::Backend::Job;
 use Dancer qw/:moose :syntax !error !params/;
 use aliased 'App::Netdisco::Worker::Status';
 
-use App::Netdisco::Util::Configuration 'parse_config_string_to_dict';
+use App::Netdisco::Util::Configuration 'parse_params_to_config';
 
 use Moo;
-use Try::Tiny;
 use Term::ANSIColor qw(:constants :constants256);
 use namespace::clean;
 
@@ -31,8 +30,6 @@ foreach my $slot (qw/
       is_offline
 
       _current_phase
-      _params_is_parsed
-      _parsed_params
     /) {
 
   has $slot => (
@@ -45,18 +42,27 @@ has '_statuslist' => (
   default => sub { [] },
 );
 
-sub BUILD {
-  my ($job, $args) = @_;
+around BUILDARGS => sub {
+  my ( $orig, $class, @arguments ) = @_;
+  my $args = $arguments[0];
+  die "strange arguments to Job->new()" unless ref {} eq ref $args;
 
-  if ($job->action =~ m/^(\w+)::(\w+)$/i) {
-    $job->action($1);
-    $job->only_namespace($2);
+  if ($args->{action} and $args->{action} =~ m/^(\w+)::(\w+)$/i) {
+      $args->{action} = $1;
+      $args->{only_namespace} = $2;
   }
 
-  if (!defined $job->subaction) {
-    $job->subaction('');
-  }
-}
+  $args->{port} = parse_params_to_config($args->{port})
+    if defined $args->{port};
+  $args->{subaction} = parse_params_to_config($args->{subaction})
+    if defined $args->{subaction};
+
+  $args->{subaction} = q{}
+    if ! defined $args->{subaction};
+
+  $arguments[0] = $args;
+  return $class->$orig(@arguments);
+};
 
 =head1 METHODS
 
@@ -201,7 +207,6 @@ sub add_status {
 Columns which exist in this class but are not in
 L<App::Netdisco::DB::Result::Admin> class.
 
-
 =head2 id
 
 Alias for the C<job> column.
@@ -213,6 +218,10 @@ sub id { (shift)->job }
 =head2 extra
 
 Alias for the C<subaction> column.
+
+=cut
+
+sub extra { (shift)->subaction }
 
 =head2 only_namespace
 
@@ -229,103 +238,5 @@ changes (writing to) the device. This slot stores a number which is the
 priority of the job and is used by L<MCE> when managing its job queue.
 
 =cut
-
-sub extra { (shift)->subaction }
-
-=head2 params
-
-Allows user to override or add to Netdisco configuration from the command
-line or in an API call. Overrides the NETDISCO_WITH_CONFIGURATION environment
-variable.
-
-In order to cope with use of the C<subaction> (extra) field by several
-jobs (see the L<nedisco-do> docs), configuration can be provided as below,
-or in a special JSON dictionary slot "C<with>". When C<with> is used, the
-value of the other "C<value>" key becomes the C<subaction> (extra) field.
-For this case, calling C<params> is idempotent.
-
-Calling this method will return a HASH reference which is either empty
-or contains the configuration passed, if parsed successfully.
-
-Examples of C<subaction> / C<extra>:
-
-=over 4
-
-=item * C<yes>
-
-=item * C<{"value": "yes", "with": {"snmptimeout": 3000000}}>
-
-=item * C<{"value": "yes", "with": "my_deviceauth_tag"}>
-
-=item * C<[{"mac": "string", "port": "string"}]>
-
-=item * C<{"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"}>
-
-=item * C<{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}>
-
-=item * C<{"snmptimeout": 3000000}>
-
-=item * C<snmptimeout=3000000>
-
-=item * C<snmptimeout=3000000,skip_neighbor_queue=true>
-
-=item * C<device_auth_tag_hint=my_deviceauth_tag>
-
-=item * C<{"with": "my_deviceauth_tag"}>
-
-=back
-
-=cut
-
-sub params {
-  my $self = shift;
-  return $self->_parsed_params if $self->_params_is_parsed;
-  return {} unless $self->subaction;
-
-  # handle schedule: subaction as Perl struct, else JSON text
-  my $json_ref = ref $self->subaction
-    ? $self->subaction
-    : try { from_json($self->subaction) };
-  $self->_params_is_parsed(true);
-
-  # case when subaction is a list for arpnip/macsuck
-  if ((ref $json_ref ne q{}) and (ref $json_ref ne ref {})) {
-      $self->_params_is_parsed(true);
-      return $self->_parsed_params({});
-  }
-
-  # case when subaction is a dictionary
-  if (ref $json_ref eq ref {}) {
-      if (exists $json_ref->{'value'}) {
-          # if JSON was thawed from the value, refreeze it
-          if (ref $json_ref->{'value'} ne q{}) {
-              $self->subaction(to_json($json_ref->{'value'}));
-          }
-          else {
-              $self->subaction(delete $json_ref->{value});
-          }
-      }
-
-      if (exists $json_ref->{'with'}) {
-          if (ref $json_ref->{'with'} eq ref {}) {
-              return $self->_parsed_params($json_ref->{'with'});
-          }
-          elsif (ref $json_ref->{'with'} ne q{}) {
-              die "bad syntax for subaction->with - see 'perldoc -f netdisco-do'\n";
-          }
-          else {
-              return $self->_parsed_params(
-                  parse_config_string_to_dict($json_ref->{'with'}) );
-          }
-      }
-
-      return $self->_parsed_params($json_ref);
-  }
-  # case when subaction is empty or a string
-  else {
-      return $self->_parsed_params(
-          parse_config_string_to_dict($self->subaction) );
-  }
-}
 
 true;

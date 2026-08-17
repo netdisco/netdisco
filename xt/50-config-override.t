@@ -16,11 +16,21 @@ use App::Netdisco::Backend::Job;
 use Try::Tiny;
 use Dancer qw/:moose :script !pass/;
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # configure logging to force console output
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
 Dancer::Logger->init('console', $CONFIG);
+
+# when ND2_DO_QUIET active, log is JSON, this returns Perl struct
+{
+  package App::Netdisco::Backend::Job;
+  use JSON::XS ();
+  sub log_struct { return JSON::XS::decode_json((shift)->log) };
+}
 
 {
   package MyWorker;
@@ -28,13 +38,23 @@ Dancer::Logger->init('console', $CONFIG);
   with 'App::Netdisco::Worker::Runner';
 }
 
-sub do_job {
-  my ($pkg, $extra, $print_this_instead) = @_;
+# runs a dumpconfig job
+# sets ND2_DO_QUIET so that JSON encoded result is logged
+# can get and decode the job log to check results
+# or still inspect fields of the Job instance such as subaction or port
+
+# pass the subaction and port values in first and second param
+# for dumpconfig, the port value is an override for the config key to dump
+
+# returns the Job instance
+
+sub run_dumpconfig_for {
+  my ($extra, $print_this_instead) = @_;
 
   my $job = App::Netdisco::Backend::Job->new({
     job => 0,
     device => App::Netdisco::DB->resultset('Device')->new_result({ip => '192.0.2.1'}),
-    action => lc($pkg),
+    action => 'dumpconfig',
     subaction => $extra,
     port => $print_this_instead,
   });
@@ -48,6 +68,7 @@ sub do_job {
   }
   catch {
     $job->status('error');
+    print STDERR "error running job: $_";  
     $job->log("error running job: $_");
   };
   $ENV{ND2_DO_QUIET} = $quiet;
@@ -55,119 +76,135 @@ sub do_job {
   return $job;
 }
 
-# clear user device_auth and set our own
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# clear user device_auth and set our own with two tags
 config->{'device_auth'} = [{tag => 'foo', driver => 'snmp'}, {tag => 'bar', driver => 'cli'}];
 
-my $j1 = do_job('dumpconfig', 'device_auth');
+my $j1 = run_dumpconfig_for('device_auth');
 is($j1->status, 'done', 'status is done');
-is_deeply(from_json($j1->log), [{tag => 'foo', driver => 'snmp'}, {tag => 'bar', driver => 'cli'}],
+is_deeply($j1->log_struct, [{tag => 'foo', driver => 'snmp'}, {tag => 'bar', driver => 'cli'}],
   'tested that dumpconfig device_auth to json works');
 
-# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=over 4
+=item * C<undef> (changed to empty string if subaction)
+=cut
 
-# -e yes   
-# NETDISCO_WITH_CONFIGURATION=yes
+$j1 = run_dumpconfig_for();
+is_deeply($j1->subaction, q{}, "undefined subaction is promoted to empty string");
 
-is_deeply(from_json(do_job('dumpconfig', 'yes', 'device_auth_tag_hint')->log), "yes",
-  'tested -e yes');
+=over 4
+=item * C<"">
+=cut
 
-# -e to_json({"value": "yes", "with": {"snmptimeout": 3000000}})
-# NETDISCO_WITH_CONFIGURATION=to_json({"value": "yes", "with": {"snmptimeout": 3000000}})
+$j1 = run_dumpconfig_for(q{});
+is_deeply($j1->subaction, q{}, "empty string subaction is unchanged");
 
-is_deeply(from_json(do_job('dumpconfig',
-    {"value" => "yes", "with" => {"snmptimeout"=> 3000000}},
-    'device_auth_tag_hint')->log),
-  "yes",
-  'tested -e {"value": "yes", "with": {"snmptimeout": 3000000}} / device_auth_tag_hint is yes');
+=over 4
+=item * C<"unchanged">
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    {"value" => "yes", "with" => {"snmptimeout"=> 3000000}},
-    'snmptimeout')->log),
-  3000000,
-  'tested -e {"value": "yes", "with": {"snmptimeout": 3000000}} / snmptimeout is 3000000');
+$j1 = run_dumpconfig_for(q{unchanged});
+is_deeply($j1->subaction, q{unchanged}, "string subaction is unchanged");
 
-# -e to_json({"value": "yes", "with": "my_deviceauth_tag"})
-# NETDISCO_WITH_CONFIGURATION=to_json({"value": "yes", "with": "my_deviceauth_tag"})
+=over 4
+=item * C<'"unchanged"'>
+=cut
 
-is_deeply(do_job('dumpconfig',
-    {"value" => "yes", "with" => "my_deviceauth_tag"})->subaction,
-  "yes",
-  'tested -e {"value": "yes", "with": "my_deviceauth_tag"} / subaction is yes');
+$j1 = run_dumpconfig_for(q{"parsed"});
+is_deeply($j1->subaction, q{parsed}, "JSON string subaction is parsed");
 
-is_deeply(from_json(do_job('dumpconfig',
-    {"value" => "yes", "with" => "my_deviceauth_tag"},
-    'device_auth_tag_hint')->log),
-  "my_deviceauth_tag",
-  'tested -e {"value": "yes", "with": "my_deviceauth_tag"} / device_auth_tag_hint is my_deviceauth_tag');
+=over 4
+=item * C<[{"mac": "string", "port": "string"}]>
+=cut
 
-# -e to_json([{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}])
-# NETDISCO_WITH_CONFIGURATION=to_json([{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}])
+$j1 = run_dumpconfig_for([{"mac" => "string", "port" => "string"}]);
+is_deeply($j1->subaction, [{"mac" => "string", "port" => "string"}], "Perl array is unchanged");
 
-is_deeply(do_job('dumpconfig',
-    [{"ip" => "31.133.156.36", "mac" => "50:28:4a:0b:24:71"}])->subaction,
-  [{"ip" => "31.133.156.36", "mac" => "50:28:4a:0b:24:71"}],
-  'tested -e [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}] / subaction is the array');
+=over 4
+=item * C<{"mac": "string", "port": "string"}> (unsupported)
+=cut
 
-# -e to_json({"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"})
-# NETDISCO_WITH_CONFIGURATION=to_json({"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"})
+$j1 = run_dumpconfig_for({"mac" => "string", "port" => "string"});
+is_deeply($j1->subaction, q{}, "Perl hash is unsupported (consumed)");
 
-#is_deeply(do_job('dumpconfig',
-#    {"value" => [{"ip" => "31.133.156.36", "mac" => "50:28:4a:0b:24:71"}], "with" => "my_deviceauth_tag"})->subaction,
-#  to_json([{"mac" => "50:28:4a:0b:24:71", "ip" => "31.133.156.36"}]),
-#  'tested -e {"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"} / with subaction is the array');
+=over 4
+=item * C<{"value": [{"mac": "string", "port": "string"}]}>
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    {"value" => [{"ip" => "31.133.156.36", "mac" => "50:28:4a:0b:24:71"}], "with" => "my_deviceauth_tag"},
-    'device_auth_tag_hint')->log),
-  "my_deviceauth_tag",
-  'tested -e {"value": [{"ip": "31.133.156.36", "mac": "50:28:4a:0b:24:71"}], "with": "my_deviceauth_tag"} / device_auth_tag_hint is my_deviceauth_tag');
+$j1 = run_dumpconfig_for({value => [{"mac" => "string", "port" => "string"}]});
+is_deeply($j1->subaction, [{"mac" => "string", "port" => "string"}], "Perl array VALUE is unchanged");
 
-# -e '{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}'
-# NETDISCO_WITH_CONFIGURATION='{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}'
+=over 4
+=item * C<{"value": {"mac": "string", "port": "string"}}>
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    '{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}',
-    'device_auth_tag_hint')->log),
-  "my_deviceauth_tag",
-  'tested -e \'{"value": "[{\"ip\": \"31.133.156.36\", \"mac\": \"50:28:4a:0b:24:71\"}]", "with": "my_deviceauth_tag"}\' / pure text json');
+$j1 = run_dumpconfig_for({value => {"mac" => "string", "port" => "string"}});
+is_deeply($j1->subaction, {"mac" => "string", "port" => "string"}, "Perl hash VALUE is unchanged");
 
-# -e to_json({"snmptimeout": 3000000})
-# NETDISCO_WITH_CONFIGURATION=to_json({"snmptimeout": 3000000})
+=over 4
+=item * C<{"value": '{"mac": "string", "port": "string"}'}>
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    {"snmptimeout" => 12345678},
-    'snmptimeout')->log),
-  12345678,
-  'tested -e {"snmptimeout" => 12345678} / snmptimeout');
+$j1 = run_dumpconfig_for({value => '{"mac": "string", "port": "string"}'});
+is_deeply(from_json($j1->subaction), {"mac" => "string", "port" => "string"}, "JSON dict VALUE is supported");
 
-# -e "snmptimeout=3000000"
-# NETDISCO_WITH_CONFIGURATION="snmptimeout=3000000"
+=over 4
+=item * C<{"value": "unchanged", "with": {"snmptimeout": 4000000}}>
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    "snmptimeout=12345678",
-    'snmptimeout')->log),
-  12345678,
-  'tested -e "snmptimeout=12345678" / k=v snmptimeout');
+$j1 = run_dumpconfig_for({value => 'unchanged', with => {snmptimeout => 4000000}}, 'snmptimeout');
+is_deeply($j1->subaction, 'unchanged', "composite has unchanged text VALUE");
+is_deeply(from_json($j1->log), 4000000, "Perl hash WITH sets config");
 
-# -e "snmptimeout=3000000,skip_neighbor_queue=true"
-# NETDISCO_WITH_CONFIGURATION="snmptimeout=3000000,skip_neighbor_queue=true"
+=over 4
+=item * C<{"value": "unchanged", "with": '{"snmptimeout": 5000000}'}>
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    "snmptimeout=3000000,skip_neighbor_queue=true",
-    'skip_neighbor_queue')->log),
-  'true',
-  'tested -e "snmptimeout=3000000,skip_neighbor_queue=true" / skip_neighbor_queue=true');
+$j1 = run_dumpconfig_for({value => 'unchanged', with => '{"snmptimeout": 5000000}'}, 'snmptimeout');
+is_deeply(from_json($j1->log), 5000000, "JSON dict WITH sets config");
 
-# -e to_json({"with": "my_deviceauth_tag"})
-# NETDISCO_WITH_CONFIGURATION=to_json({"with": "my_deviceauth_tag"})
+=over 4
+=item * C<{"value": "unchanged", "with": 'snmptimeout=6000000'}>
+=cut
 
-is_deeply(from_json(do_job('dumpconfig',
-    {"with" => "my_deviceauth_tag"},
-    'device_auth_tag_hint')->log),
-  "my_deviceauth_tag",
-  'tested -e {"with": "my_deviceauth_tag"} / only with device_auth_tag_hint');
+$j1 = run_dumpconfig_for({value => 'unchanged', with => 'snmptimeout=6000000'}, 'snmptimeout');
+is_deeply(from_json($j1->log), 6000000, "k=v WITH sets config");
+
+=over 4
+=item * C<{"snmptimeout": 7000000}>
+=cut
+
+$j1 = run_dumpconfig_for({snmptimeout => 7000000}, 'snmptimeout');
+is_deeply(from_json($j1->log), 7000000, "subaction perl hash sets config");
+
+=over 4
+=item * C<'{"snmptimeout": 8000000}'>
+=cut
+
+$j1 = run_dumpconfig_for('{"snmptimeout": 8000000}', 'snmptimeout');
+is_deeply(from_json($j1->log), 8000000, "subaction JSON dict sets config");
+
+=over 4
+=item * C<snmptimeout=9000000>
+=cut
+
+$j1 = run_dumpconfig_for('snmptimeout=9000000', 'snmptimeout');
+is_deeply(from_json($j1->log), 9000000, "subaction k=v sets config");
+
+=over 4
+=item * C<{"value": "unchanged", "with": "FAILS"}> (unsupported)
+=cut
+
+$j1 = run_dumpconfig_for({"value" => "unchanged", "with" => "FAILS"});
+is_deeply($j1->subaction, 'unchanged', "string WITH is ignored and does not change VALUE");
+
+=over 4
+=item * C<{"value": "unchanged", "with": ["FAILS"]}> (unsupported)
+=cut
+
+$j1 = run_dumpconfig_for({"value" => "unchanged", "with" => ["FAILS"]});
+is_deeply($j1->subaction, 'unchanged', "array WITH is ignored and does not change VALUE");
 
 done_testing;
-
-# TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
