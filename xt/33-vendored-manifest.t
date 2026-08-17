@@ -78,6 +78,15 @@ my @VENDORED = (
         file    => [qw/css bootstrap-toggle.min.css/],
         banner  => sub { qr/bootstrap5-toggle v\Q$_[0]\E\b/ },
     },
+    {   # Both halves of this package carry the same banner, so both are read
+        # back. Checking one half of a package is worse than checking neither,
+        # because the table then reads as covering it: this file's JavaScript
+        # was verified by nothing while the CSS beside it was verified from the
+        # start, and a wrong version in it passed the suite.
+        package => 'bootstrap5-toggle',
+        file    => [qw/javascripts bootstrap-toggle.min.js/],
+        banner  => sub { qr/bootstrap5-toggle v\Q$_[0]\E\b/ },
+    },
     {   package => 'datatables.net',
         file    => [qw/javascripts jquery.dataTables.min.js/],
         banner  => sub { qr/DataTables \Q$_[0]\E\b/ },
