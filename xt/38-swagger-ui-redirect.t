@@ -35,12 +35,16 @@ use Test::More 0.88;
 # connection and that deserves an explanation rather than a surprise.
 #
 # Loading App::Netdisco::Web reaches a database: Web.pm:222 evals
-# schema('netdisco') to read the session cookie key. It succeeds on a developer
-# machine, where it emits a "DB is currently unversioned" warning, and fails in
-# CI, whose container runs no postgres. **Either outcome is fine, and that is
-# the shipped code's design rather than luck**: the call is wrapped in an eval
-# whose whole purpose is to tolerate the key being unavailable, and Web.pm:220
-# substitutes a testing key when HARNESS_ACTIVE is set, which prove sets.
+# schema('netdisco') to read the session cookie key. It connects and emits a
+# "DB is currently unversioned" warning both on a developer machine and in CI,
+# whose netdisco/netdisco:latest-backend container carries its own postgres.
+#
+# **A failure there would also be fine, and that is the shipped code's design
+# rather than luck**: the call is wrapped in an eval whose whole purpose is to
+# tolerate the key being unavailable, and Web.pm:220 substitutes a testing key
+# when HARNESS_ACTIVE is set, which prove sets. So this file needs a database
+# neither to pass nor to mean anything, which is what separates it from the
+# protected routes xt/35 describes as out of reach.
 #
 # Verified by tracing the warning to its origin rather than by assuming. Do not
 # "fix" the warning by pointing DANCER_ENVDIR at /dev/null: that empties the DSN
