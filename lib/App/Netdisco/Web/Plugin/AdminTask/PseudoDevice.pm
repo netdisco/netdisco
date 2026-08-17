@@ -120,8 +120,6 @@ ajax '/ajax/content/admin/pseudodevice' => require_role admin => sub {
     template 'ajax/admintask/pseudodevice.tt', {
       results => $set,
     }, { layout => undef };
-
-    return '';
 };
 
 true;

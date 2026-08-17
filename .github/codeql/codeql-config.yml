@@ -8,3 +8,15 @@ paths-ignore:
   # against a fixture that cannot, since editing it would only be undone by the
   # next regeneration.
   - xt/snapshots
+
+  # A Template Toolkit source carrying a .js extension. The JavaScript extractor
+  # believes the extension, meets [% IF %] where an expression belongs, and skips
+  # the file, so it is unanalyzed with or without this entry; excluding it stops
+  # CodeQL reporting a syntax error for a file that is not JavaScript and cannot
+  # be made into it without lifting its directives out into data the page passes
+  # to a static script.
+  #
+  # Named as a file rather than as share/views/js/, because its five siblings
+  # there do parse and are analyzed. xt/js/view-templates.test.js keeps this
+  # entry and that directory in agreement in both directions.
+  - share/views/js/common.js

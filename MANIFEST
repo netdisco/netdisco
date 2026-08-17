@@ -687,9 +687,13 @@ xt/32-swagger-ui-guard.t
 xt/33-vendored-manifest.t
 xt/34-module-tree-order.t
 xt/35-login-return-url.t
+xt/36-ajax-content-response.t
+xt/37-typeahead-empty-query.t
+xt/38-swagger-ui-redirect.t
 xt/40-template-snapshots.t
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js
+xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm

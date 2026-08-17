@@ -541,14 +541,14 @@ my $swagger_base = config->{plugins}->{Swagger}->{ui_url};
 
 get $swagger_base => sub {
     Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
-    redirect uri_for($swagger_base)->path
-      . '/?url=' . uri_for('/swagger.json')->path;
+    redirect uri_for($swagger_base)->path . '/';
 };
 
 get $swagger_base.'/' => sub {
     Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
-    # user might request /swagger-ui/ initially (Plugin doesn't handle this)
-    params->{url} or redirect uri_for($swagger_base)->path;
+    # The ?url= this used to require was dropped with the guard that enforced
+    # it: the 5.x page resolves its own definition. Reinstating either alone
+    # makes the two routes redirect to each other, so they move together.
     send_file( 'swagger-ui/index.html' );
 };
 
