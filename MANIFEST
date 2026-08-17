@@ -692,6 +692,7 @@ xt/37-typeahead-empty-query.t
 xt/40-template-snapshots.t
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js
+xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm

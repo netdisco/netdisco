@@ -4,7 +4,10 @@
 
   // keep track of timers so we can kill them
   var nd_timers  = new Array();
-  var timermax   = [% settings.jobqueue_refresh || 5 | html_entity %];
+  // quoted so the file stays valid JavaScript for CodeQL, which reads this
+  // template rather than its output, and so a setting cannot land in expression
+  // position: html_entity escapes for HTML, not for JavaScript
+  var timermax   = Number('[% settings.jobqueue_refresh || 5 | html_entity %]');
   var timercache = timermax - 1;
 
   // this is called by do_search to support local code
