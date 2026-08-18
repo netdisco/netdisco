@@ -1,3 +1,13 @@
+2.104000 - 2026-08-18
+
+  [NEW FEATURES]
+
+  * #1592 allow any setting override at runtime from command line, api, or environment
+
+  [ENHANCEMENTS]
+
+  * update Python dependencies and GitHub Actions versions
+
 2.103000 - 2026-08-14
 
   [NEW FEATURES]

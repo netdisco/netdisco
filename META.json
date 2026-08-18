@@ -1,7 +1,7 @@
 {
    "abstract" : "An open source web-based network management tool.",
    "author" : [
-      "Oliver Gorwits <oliver@cpan.org>"
+      "Oliver Gorwits <oliver@co-ding.org>"
    ],
    "dynamic_config" : 1,
    "generated_by" : "Module::Build version 0.4234",
@@ -150,7 +150,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.103000"
+         "version" : "2.104000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -539,6 +539,9 @@
       },
       "App::Netdisco::Transport::SSH" : {
          "file" : "lib/App/Netdisco/Transport/SSH.pm"
+      },
+      "App::Netdisco::Util::Configuration" : {
+         "file" : "lib/App/Netdisco/Util/Configuration.pm"
       },
       "App::Netdisco::Util::CustomFields" : {
          "file" : "lib/App/Netdisco/Util/CustomFields.pm"
@@ -981,6 +984,9 @@
       "App::Netdisco::Worker::Plugin::NodeMonitor" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/NodeMonitor.pm"
       },
+      "App::Netdisco::Worker::Plugin::Noop" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/Noop.pm"
+      },
       "App::Netdisco::Worker::Plugin::PingSweep" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/PingSweep.pm"
       },
@@ -1054,6 +1060,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.103000",
+   "version" : "2.104000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }

@@ -144,6 +144,7 @@ lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
 lib/App/Netdisco/Transport/Python.pm
 lib/App/Netdisco/Transport/SNMP.pm
 lib/App/Netdisco/Transport/SSH.pm
+lib/App/Netdisco/Util/Configuration.pm
 lib/App/Netdisco/Util/CustomFields.pm
 lib/App/Netdisco/Util/Device.pm
 lib/App/Netdisco/Util/DeviceAuth.pm
@@ -291,6 +292,7 @@ lib/App/Netdisco/Worker/Plugin/Nbtstat.pm
 lib/App/Netdisco/Worker/Plugin/Nbtstat/Core.pm
 lib/App/Netdisco/Worker/Plugin/Nbtwalk.pm
 lib/App/Netdisco/Worker/Plugin/NodeMonitor.pm
+lib/App/Netdisco/Worker/Plugin/Noop.pm
 lib/App/Netdisco/Worker/Plugin/PingSweep.pm
 lib/App/Netdisco/Worker/Plugin/PortControl.pm
 lib/App/Netdisco/Worker/Plugin/PortName.pm
@@ -691,6 +693,7 @@ xt/36-ajax-content-response.t
 xt/37-typeahead-empty-query.t
 xt/38-swagger-ui-redirect.t
 xt/40-template-snapshots.t
+xt/50-config-override.t
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js
 xt/js/view-templates.test.js
