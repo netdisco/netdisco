@@ -310,7 +310,7 @@ docs for data format example):
  # read from a file
  ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '@/tmp/mac-address-table.json'
  # pass directly
- ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '[{"ip": "string", "mac": "string", "dns": "string"}]'
+ ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '[{"mac": "string", "port": "string"}]'
 
 =head2 macwalk
 
@@ -382,7 +382,7 @@ passed in the command, or taken from a file, or from standard input.
  ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@/tmp/myfield'
 
 Note that `--enqueue ` is *required* for the feature to work. The change
-is, however, applied instanty in the database when `netdisco-do` runs.
+is, however, applied instantly in the database when `netdisco-do` runs.
 
 =head2 expire
 

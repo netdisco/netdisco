@@ -3,8 +3,9 @@ package App::Netdisco::Backend::Job;
 use Dancer qw/:moose :syntax !error !params/;
 use aliased 'App::Netdisco::Worker::Status';
 
+use App::Netdisco::Util::Configuration 'parse_params_to_config';
+
 use Moo;
-use Try::Tiny;
 use Term::ANSIColor qw(:constants :constants256);
 use namespace::clean;
 
@@ -41,18 +42,27 @@ has '_statuslist' => (
   default => sub { [] },
 );
 
-sub BUILD {
-  my ($job, $args) = @_;
+around BUILDARGS => sub {
+  my ( $orig, $class, @arguments ) = @_;
+  my $args = $arguments[0];
+  die "strange arguments to Job->new()" unless ref {} eq ref $args;
 
-  if ($job->action =~ m/^(\w+)::(\w+)$/i) {
-    $job->action($1);
-    $job->only_namespace($2);
+  if ($args->{action} and $args->{action} =~ m/^(\w+)::(\w+)$/i) {
+      $args->{action} = $1;
+      $args->{only_namespace} = $2;
   }
 
-  if (!defined $job->subaction) {
-    $job->subaction('');
-  }
-}
+  $args->{port} = parse_params_to_config($args->{port})
+    if defined $args->{port};
+  $args->{subaction} = parse_params_to_config($args->{subaction})
+    if defined $args->{subaction};
+
+  $args->{subaction} = q{}
+    if ! defined $args->{subaction};
+
+  $arguments[0] = $args;
+  return $class->$orig(@arguments);
+};
 
 =head1 METHODS
 
@@ -197,7 +207,6 @@ sub add_status {
 Columns which exist in this class but are not in
 L<App::Netdisco::DB::Result::Admin> class.
 
-
 =head2 id
 
 Alias for the C<job> column.
@@ -209,6 +218,10 @@ sub id { (shift)->job }
 =head2 extra
 
 Alias for the C<subaction> column.
+
+=cut
+
+sub extra { (shift)->subaction }
 
 =head2 only_namespace
 
@@ -225,30 +238,5 @@ changes (writing to) the device. This slot stores a number which is the
 priority of the job and is used by L<MCE> when managing its job queue.
 
 =cut
-
-sub extra { (shift)->subaction }
-
-=head2 params
-
-Parses the C<subaction> field as JSON and returns a hashref of parameters.
-Returns an empty hashref if subaction is empty or not a dictionary.
-
-This is used by the discover job to override configuration, particularly
-SNMP timers which are sensitive for new devices. It returns an empty hashref
-when C<subaction> is used for direct data provided for ARP/MAC addresses.
-
-If C<subaction> is a plain string, it is promoted to being the C<device_auth_tag_hint>
-key's value in the returned hashref.
-
-=cut
-
-sub params {
-  my $job = shift;
-  return {} unless $job->subaction;
-  return try {
-    my $r = from_json($job->subaction);
-    ref $r eq 'HASH' ? $r : {}
-  } catch { {device_auth_tag_hint => $job->subaction} };
-}
 
 true;

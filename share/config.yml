@@ -914,6 +914,7 @@ worker_plugins:
   - 'Nbtstat::Core'
   - 'Nbtwalk'
   - 'NodeMonitor'
+  - 'Noop'
   - 'PingSweep'
   - 'PortControl'
   - 'PortName'

@@ -2,8 +2,10 @@ package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
 use App::Netdisco::Util::DeviceAuth ();
+use App::Netdisco::Util::Configuration 'parse_params_to_config';
 use Dancer ':script';
 
+use Try::Tiny;
 use FindBin;
 use File::Spec;
 use Path::Class 'dir';
@@ -158,6 +160,10 @@ config->{'community'} = ($ENV{NETDISCO_RO_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RO_COMMUNITY}] : config->{'community'});
 config->{'community_rw'} = ($ENV{NETDISCO_RW_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RW_COMMUNITY}] : config->{'community_rw'});
+
+# bring in any configuration from NETDISCO_WITH_CONFIGURATION environment
+# can be overriden by command-line or scheduled job subaction/extra
+parse_params_to_config($ENV{NETDISCO_WITH_CONFIGURATION});
 
 # if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
@@ -334,6 +340,10 @@ foreach my $name (qw/discover_no macsuck_no arpnip_no nbtstat_no/) {
 foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
   push @{setting($name)}, @{ setting('devices_only') };
 }
+
+# skip_neighbor_queue is an undocumented inverse override of queue_neighbors
+config->{'queue_neighbors'} = ! setting('skip_neighbor_queue')
+  if exists config->{'skip_neighbor_queue'};
 
 # legacy config item names
 
