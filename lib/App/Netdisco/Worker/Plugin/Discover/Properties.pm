@@ -449,6 +449,72 @@ register_worker({ phase => 'early', driver => 'snmp',
     }
   }
 
+  # protection for failed/partial SNMP port-table gather - shares config
+  # shape and ACL-scoping with the leaf "protection for failed SNMP
+  # gather" check on the device row (see basic device details worker
+  # above), but a bad table value keeps the prior value and the job
+  # continues rather than aborting: by this point in the job the device
+  # row has already been committed in an earlier, separate transaction,
+  # so cancelling here couldn't undo that anyway, and one bad port table
+  # shouldn't discard everything else (neighbors, modules, VLANs, etc)
+  # that came back fine in the same discover. Checked after
+  # ignore_deviceports filtering so it only judges ports that are
+  # actually about to be stored.
+  if (setting('enable_field_protection') and not $device->is_pseudo) {
+      my $protect = setting('field_protection')->{'device_port'} || {};
+
+      # some platforms fall back to reporting the interface's own short or
+      # long name as i_name when the real ifAlias walk comes back empty
+      # (e.g. ifAlias "Gi3/0/14" on port GigabitEthernet3/0/14) - a genuine
+      # human-authored description doesn't echo its own port id, so don't
+      # count that as "good" ifAlias data either. Compare trailing
+      # slot/subslot/port digits rather than the letter prefix, since
+      # that's exact and vendor-abbreviation-proof.
+      my $looks_like_own_port_id = sub {
+          my ($name, $port) = @_;
+          return false unless defined $name and defined $port and length $name;
+          my ($nsuffix) = $name =~ m{(\d+(?:/\d+)*)$};
+          my ($psuffix) = $port =~ m{(\d+(?:/\d+)*)$};
+          return false unless defined $nsuffix and defined $psuffix;
+          return ($nsuffix eq $psuffix and $name =~ /^[A-Za-z]/) ? true : false;
+      };
+
+      my %good_test = (
+          name     => sub { my ($val, $port) = @_;
+                             defined $val and length $val
+                             and not $looks_like_own_port_id->($val, $port) },
+          up_admin => sub { defined $_[0] and $_[0] eq 'up' },
+          up       => sub { defined $_[0] and $_[0] eq 'up' },
+      );
+      my %label = (name => 'i_name/ifAlias', up_admin => 'i_up_admin', up => 'i_up');
+
+      foreach my $field (keys %$protect) {
+          next unless exists $good_test{$field};
+          next unless acl_matches_only($device->ip, $protect->{$field});
+
+          my $good = $good_test{$field};
+
+          my %old_vals = map {($_->{'port'} => $_->{$field})}
+            $device->ports->search(undef, {columns => ['port', $field]})->hri->all;
+
+          my $old_good = scalar grep {$good->($old_vals{$_}, $_)} keys %old_vals;
+          my $new_good = scalar grep {$good->($deviceports{$_}->{$field}, $_)}
+                                 keys %deviceports;
+
+          if ($old_good and not $new_good) {
+              warning sprintf
+                ' [%s] interfaces - %s walk came back with no ports "up"/set'
+                .' but %d were previously - assuming failed SNMP walk, keeping existing %s',
+                $device->ip, ($label{$field} || $field), $old_good, $field;
+
+              foreach my $port (keys %deviceports) {
+                  $deviceports{$port}->{$field} = $old_vals{$port}
+                    if exists $old_vals{$port};
+              }
+          }
+      }
+  }
+
   # 981 must do this after filtering %deviceports to avoid weird data
   UPTIME: foreach my $entry (sort keys %$interfaces) {
       my $port = $interfaces->{$entry};

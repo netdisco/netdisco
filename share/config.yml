@@ -675,6 +675,10 @@ field_protection:
   device:
     uptime: ['group:__ANY__']
     serial: ['group:__ANY__']
+  device_port:
+    name: ['group:__ANY__']
+    up_admin: ['group:__ANY__']
+    up: ['group:__ANY__']
 devices_no: []
 devices_only: []
 discover_no: []
