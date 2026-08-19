@@ -276,8 +276,16 @@ get '/ajax/content/device/ports' => require_login sub {
         }
     }
 
+    # one pass to index the rows by port name. the two lookups below used to
+    # grep @results, re-reading every row once per parent, and on a wireless
+    # controller where every port is subinterface-shaped that is the whole
+    # request: 3650 parents each reading all 7300 rows and matching none of
+    # them, because the bare parent port does not exist (see 1479).
+    my %port_row = ();
+    $port_row{ $_->port } = $_ for @results;
+
     foreach my $parent (keys %port_subinterface_count) {
-        my $parent_port = [grep {$_->port eq $parent} @results]->[0]
+        my $parent_port = $port_row{$parent}
           or next; # 1479 we've seen subinterfaces without parents
         $parent_port->{has_subinterface_group} = true;
         $parent_port->{has_only_dot_zero_subinterface} = true
@@ -286,7 +294,7 @@ get '/ajax/content/device/ports' => require_login sub {
             and ($parent_port->type
               and $parent_port->type =~ m/^(?:ethernetCsmacd|ieee8023adLag)$/i);
         if ($parent_port->{has_only_dot_zero_subinterface}) {
-            my $dotzero_port = [grep {$_->port eq "${parent}.0"} @results]->[0];
+            my $dotzero_port = $port_row{"${parent}.0"};
             $dotzero_port->{is_dot_zero_subinterface} = true;
         }
     }

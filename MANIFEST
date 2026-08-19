@@ -693,6 +693,7 @@ xt/36-ajax-content-response.t
 xt/37-typeahead-empty-query.t
 xt/38-swagger-ui-redirect.t
 xt/40-template-snapshots.t
+xt/42-subinterface-grouping-scan.t
 xt/50-config-override.t
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js
