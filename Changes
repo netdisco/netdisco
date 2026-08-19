@@ -31,7 +31,7 @@
   [NEW FEATURES]
 
   * #1582 {discover,macsuck,arpnip}_min_age settings are used when selecting *walk targets
-  * #1584 make GET /api/v1/object/device batch ready with field selection
+  * #1584 make GET /api/v1/search/device batch ready with field selection
   * #1591 new option expire_nodeip_orphans to keep node_ip entries without node
 
   [ENHANCEMENTS]
