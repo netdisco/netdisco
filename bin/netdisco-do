@@ -131,25 +131,32 @@ sub _test_and_resolve_device {
 }
 
 foreach my $device (@$devices) {
-  if (scalar grep {$action eq $_} @{ setting('job_targets_prefix') }) {
-      push @hostlist, $device;
-  }
-  elsif (-f $device) {
-      debug sprintf 'opening file for reading hosts/IPs: %s', $device;
-      my @dlist = read_lines $device;
+    if (scalar grep {$action eq $_} @{ setting('job_targets_prefix') }) {
+        push @hostlist, $device;
+    }
+    elsif ($device =~ m/^@(.+)/) {
+        my $filename = $1;
+        if (-f $filename) {
+            debug sprintf 'opening file for reading hosts/IPs: %s', $device;
+            my @dlist = read_lines $device;
 
-      if (0 == scalar @dlist) {
-          error sprintf 'unable to read from file: %s', $device;
-          exit 2;
-      }
+            if (0 == scalar @dlist) {
+                error sprintf 'unable to read devices from file: %s', $device;
+                exit 2;
+            }
 
-      foreach my $entry (@dlist) {
-          _test_and_resolve_device($entry);
-      }
-  }
-  else {
-      _test_and_resolve_device($device);
-  }
+            foreach my $entry (@dlist) {
+                _test_and_resolve_device($entry);
+            }
+        }
+        else {
+            error sprintf 'unable to read devices from file: %s', $filename;
+            exit 2;
+        }
+    }
+    else {
+        _test_and_resolve_device($device);
+    }
 }
 
 my @job_specs = ();
@@ -265,8 +272,8 @@ C<discover::neighbors>.
 Any action taking a C<device> parameter can be passed either a hostname or IP
 address of any interface of a known or unknown device, or an IP prefix
 (subnet) which will cause C<netdisco-do> to run the action on all addresses in
-that range. The C<device> parameter may also be a filename that Netdisco will
-open to read hostnames, IPs, or prefixes, one per line.
+that range. If the C<device> parameter begins with "C<@>" it is interpreted as
+a filename to open and read hostnames, IPs, or prefixes, one per line.
 
 The C<device> parameter may be passed multiple times. In this case, all
 addresses (after expanding IP Prefixes) will be handled one by one.
