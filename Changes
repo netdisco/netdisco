@@ -1,3 +1,18 @@
+2.105000 - 2026-08-20
+
+  [NEW FEATURES]
+
+  * devices file param to netdisco-do now requires @ prefix
+  * #1636 add device port support to field_protection for failed SNMP walks
+
+  [ENHANCEMENTS]
+
+  * Job action documentation moved from netdisco-do to Wiki
+
+  [BUG FIXES]
+
+  * #1640 Stop the Ports tab re-reading every row once per subinterface parent
+
 2.104000 - 2026-08-18
 
   [NEW FEATURES]
