@@ -695,6 +695,7 @@ xt/38-swagger-ui-redirect.t
 xt/40-template-snapshots.t
 xt/42-subinterface-grouping-scan.t
 xt/50-config-override.t
+xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js
 xt/js/view-templates.test.js
@@ -706,3 +707,4 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
 xt/lib/Test/Netdisco/Snapshot.pm
+xt/portsort-corpus.json
