@@ -1310,6 +1310,8 @@ ul ul, ul ol, ol ol, ol ul {
   right: 20px;
   width: 205px;
   left: auto;
+  /* Without it, div.dt-container{position:relative} paints over the sidebar. */
+  z-index: 1;
 }
 
 /* nudge content in the sidebar closer to the left */
