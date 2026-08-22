@@ -5,6 +5,10 @@
   * load the admin task panes with htmx, adding a progress indicator while a
     pane is fetching
 
+  [BUG FIXES]
+
+  * refresh the users pane when the API token reveal modal is dismissed
+
 2.105001 - 2026-08-22
 
   [BUG FIXES]
