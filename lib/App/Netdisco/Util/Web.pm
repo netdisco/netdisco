@@ -18,6 +18,7 @@ our @EXPORT_OK = qw/
   request_is_api
   request_is_api_report
   request_is_api_search
+  escape_for_script_context
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -291,6 +292,35 @@ sub interval_to_daterange {
     my $start = Time::Piece->new - $const{$factor} * $amt;
 
     return $start->ymd . " to " . Time::Piece->new->ymd;
+}
+
+=head2 escape_for_script_context( $json )
+
+Makes a JSON string safe to embed as a JavaScript literal inside an HTML
+C<< <script> >> element, which is how the report and search templates ship
+their result sets. Returns anything that is not a defined plain scalar
+unchanged, so a resultset or an arrayref passed to a CSV or API template is
+left alone.
+
+=cut
+
+sub escape_for_script_context {
+  my $json = shift;
+  return $json if (not defined $json) or ref $json;
+
+  # Inside a script element the HTML parser ends the element at "</" and
+  # changes state at "<!--" and "<script", none of which it stops doing just
+  # because the sequence sits inside a JavaScript string. Escaping every "<"
+  # covers all three. Both JSON.parse and the JavaScript parser read the
+  # escape back as "<", so the data the page receives is unchanged.
+  $json =~ s/</\\u003C/g;
+
+  # Not an HTML concern. This JSON is emitted as JavaScript source rather than
+  # parsed from a string, and these two characters are line terminators there.
+  $json =~ s/\x{2028}/\\u2028/g;
+  $json =~ s/\x{2029}/\\u2029/g;
+
+  return $json;
 }
 
 1;

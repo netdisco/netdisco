@@ -23,6 +23,7 @@ use Storable 'dclone';
 use URI::Based;
 
 use App::Netdisco::Util::Web qw/
+  escape_for_script_context
   interval_to_daterange
   request_is_api
   request_is_api_report
@@ -409,6 +410,16 @@ hook 'before_template' => sub {
 
     # allow hash keys with leading underscores
     $Template::Stash::PRIVATE = undef;
+};
+
+# The report and search templates embed their result set as a JavaScript
+# literal inside a <script> element, which they must opt out of AutoFilter to
+# do. Escaping happens here rather than in each of the templates so that a
+# site-local template or a third-party report plugin gets it too, without its
+# author having to know.
+hook 'before_template' => sub {
+    my $tokens = shift;
+    $tokens->{results} = escape_for_script_context( $tokens->{results} );
 };
 
 # prevent Template::AutoFilter taking action on CSV output
