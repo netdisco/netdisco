@@ -695,6 +695,7 @@ xt/38-swagger-ui-redirect.t
 xt/40-template-snapshots.t
 xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t
+xt/43-response-compression.t
 xt/50-config-override.t
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js

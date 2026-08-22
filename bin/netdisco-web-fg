@@ -29,8 +29,27 @@ BEGIN {
   warning sprintf "App::Netdisco %s web", ($App::Netdisco::VERSION || 'HEAD');
 }
 
+# Exact strings, not patterns: Deflater compares with `eq`, where the Expires
+# filter below takes regexes. text/xml is what Dancer::Plugin::Ajax gives the
+# ajax fragments. Both JavaScript spellings appear because Plack::MIME has
+# served .js as each.
+my @compressible = qw(
+  text/html
+  text/xml
+  text/css
+  text/javascript
+  application/javascript
+  text/plain
+  application/json
+  image/svg+xml
+);
+
 set plack_middlewares => [
   ['Plack::Middleware::ReverseProxy'],
+  # Above Static, which short-circuits: below it, static assets never compress.
+  ( setting('compress_responses')
+    ? [ Deflater => ( content_type => \@compressible ) ]
+    : () ),
   [ Headers => (
       set => ['X-Frame-Options' => setting('HTTP-Header-X-Frame-Options')],
   )],
@@ -38,7 +57,8 @@ set plack_middlewares => [
       set => ['Content-Security-Policy' => setting('HTTP-Header-Content-Security-Policy')],
   )],
   [ Expires => (
-      content_type => [qr{^application/javascript}, qr{^text/css}, qr{image}, qr{font}],
+      content_type => [qr{^application/javascript}, qr{^text/javascript},
+                       qr{^text/css}, qr{image}, qr{font}],
       expires => 'access plus 1 day',
   )],
   [ Static => (

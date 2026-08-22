@@ -85,6 +85,7 @@ App::Netdisco::Builder->new(
     'Plack' => '1.0023',
     'Plack::Handler::Twiggy' => '0',
     'Plack::Middleware::Debug' => '0',
+    'Plack::Middleware::Deflater' => '0.14',
     'Plack::Middleware::Expires' => '0.03',
     'Plack::Middleware::Headers' => '0',
     'Plack::Middleware::ReverseProxy' => '0.15',
