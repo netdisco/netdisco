@@ -380,6 +380,7 @@ share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js
 share/public/javascripts/daterangepicker.js
 share/public/javascripts/he.js
+share/public/javascripts/htmx.min.js
 share/public/javascripts/jquery-deserialize.js
 share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
