@@ -1,3 +1,9 @@
+2.105001 - 2026-08-22
+
+  [BUG FIXES]
+
+  * escape the results payload for its script context
+
 2.105000 - 2026-08-20
 
   [NEW FEATURES]
