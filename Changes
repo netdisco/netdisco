@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * escape the results payload for its script context
+  * keep the sidebar above a results table that overflows its column
 
 2.105000 - 2026-08-20
 
@@ -29,6 +30,12 @@
 
   * update Python dependencies and GitHub Actions versions
 
+  [BUG FIXES]
+
+  * fix the pseudo device and duplicate device panes discarding their content
+  * fix an empty typeahead search term returning a 500 instead of an empty list
+  * stop sending a Swagger UI url parameter that the 5.x page ignores
+
 2.103000 - 2026-08-14
 
   [NEW FEATURES]
@@ -39,6 +46,11 @@
   [ENHANCEMENTS]
 
   * update Python dependencies and GitHub Actions versions
+
+  [BUG FIXES]
+
+  * fix a successful login returning to the login page instead of the home page
+  * fix unstable ordering of child classes in the device module tree
 
 2.102001 - 2026-08-10
 
