@@ -1040,5 +1040,6 @@ template: 'netdisco_template_toolkit'
 route_cache: true
 appname: 'Netdisco'
 behind_proxy: false
+compress_responses: true
 HTTP-Header-X-Frame-Options: 'DENY'
 HTTP-Header-Content-Security-Policy: 'frame-ancestors none;'

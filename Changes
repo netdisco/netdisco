@@ -1,3 +1,14 @@
+2.x - tbd
+
+  [ENHANCEMENTS]
+
+  * compress web responses, with a compress_responses setting to disable it
+
+  [BUG FIXES]
+
+  * restore the cache header on JavaScript, which the Expires filter stopped
+    matching when Plack::MIME changed the type of .js
+
 2.105001 - 2026-08-22
 
   [BUG FIXES]

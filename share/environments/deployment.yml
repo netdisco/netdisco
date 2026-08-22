@@ -106,6 +106,14 @@ device_auth:
 # `````````````````````````````````````````````````````````
 #safe_password_store: true
 
+# compress web responses (HTML, CSS, JavaScript, JSON, SVG) before sending
+# them. enabled by default. images and fonts are never compressed because they
+# already are. turn this off if a reverse proxy in front of Netdisco already
+# compresses, so the work is not done twice, and note that compressed responses
+# are sent chunked, which costs keep-alive on an HTTP/1.0 proxy.
+# `````````````````````````````````````````````````````````````````````
+#compress_responses: false
+
 # enable a health check endpoint for use with load balancers and container
 # health probes (Docker, Kubernetes). returns JSON with db and backend status.
 # responds HTTP 200 when healthy, 503 when the database is unreachable.
