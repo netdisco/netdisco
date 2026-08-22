@@ -10,8 +10,11 @@ use Test::More;
 # The HTML escaper for SNMP-sourced values in DataTables render callbacks
 # is DataTable.util.escapeHtml, from the DataTables bundle already loaded
 # on every page. he.js was removed because it duplicated that job at a
-# cost of 26,948 gzipped bytes per page load and threw a TypeError on any
-# non-string where the DataTables escaper passes them through.
+# cost of 26,948 gzipped bytes per page load. he.encode threw a
+# TypeError on any input it could not coerce to a string, where the
+# DataTables escaper instead joins an array with commas before
+# escaping it, and passes any other non-string, non-array value
+# through untouched.
 #
 # CONSTRAINT for future call sites: DataTable.util.escapeHtml escapes
 # < > & " but NOT the single quote, where he.encode did. Every current
