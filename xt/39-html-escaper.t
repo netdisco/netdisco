@@ -26,22 +26,40 @@ use Test::More;
 # exposing entities.encode(), would defeat every assertion below and
 # would not be caught by this test.
 
-my $root = catdir( $FindBin::Bin, updir() );
+my $root  = catdir( $FindBin::Bin, updir() );
+my $share = catdir( $root, 'share' );
 
 # Walk the tree in Perl rather than shelling out to grep, so a failed
 # or unrun search cannot silently read as an empty, passing result.
+# File::Find::find only *warns* on a directory it cannot descend into
+# (permission denied, gone mid-walk, and so on): the walk continues
+# past it as if it were never there, files inside it are never visited,
+# and without this trap that reads as a clean, passing, empty result.
+# Trapping the warnings and asserting there were none turns a silently
+# skipped subtree into a hard test failure instead.
 my @he_calls;
-find(
-    sub {
-        return unless -f $_;
-        open my $fh, '<:raw', $_
-            or die "cannot read $File::Find::name: $!";
-        local $/;
-        my $content = <$fh>;
-        push @he_calls, $File::Find::name if $content =~ /he\.encode/;
-    },
-    catdir( $root, 'share' )
-);
+my @walk_errors;
+{
+    local $SIG{__WARN__} = sub { push @walk_errors, @_ };
+    find(
+        {
+            wanted => sub {
+                return unless -f $_;
+                open my $fh, '<:raw', $_
+                    or die "cannot read $File::Find::name: $!";
+                local $/;
+                my $content = <$fh>;
+                push @he_calls, $File::Find::name
+                    if $content =~ /he\.encode/;
+            },
+            no_chdir => 1,
+        },
+        $share
+    );
+}
+is( scalar @walk_errors, 0, 'the walk read every directory under share/' )
+    or diag "walk problems: @walk_errors";
+
 is( scalar @he_calls, 0, 'no he.encode call sites remain under share/' )
     or diag "found in: @he_calls";
 
