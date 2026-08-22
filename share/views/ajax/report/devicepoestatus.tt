@@ -52,12 +52,12 @@ function groupString(d) {
     var s = '';
     s = s + 'Device: ';
     s = s + '<a href="[% uri_for('/device') | none %]?tab=details&q=' + encodeURIComponent(d.ip) + '">';
-    s = s + he.encode(d.dns || d.name || d.ip);
+    s = s + DataTable.util.escapeHtml(d.dns || d.name || d.ip);
     if (d.dns || d.name) {
-        s = s + ' (' +  he.encode(d.ip) + ') ';
+        s = s + ' (' +  DataTable.util.escapeHtml(d.ip) + ') ';
     }
-    s = s + '</a> Model: ' + he.encode(d.model || '');
-    s = s + he.encode(d.location ? ' Location: ' + d.location : '');
+    s = s + '</a> Model: ' + DataTable.util.escapeHtml(d.model || '');
+    s = s + DataTable.util.escapeHtml(d.location ? ' Location: ' + d.location : '');
 
     return s;
 }
@@ -95,7 +95,7 @@ $(document).ready(function() {
         "data": 'status',
         "className": "nd_center-cell",
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'power',

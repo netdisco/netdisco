@@ -18,7 +18,7 @@ $(document).ready(function() {
       {
         "data": 'ssid',
         "render": function(data, type, row, meta) {
-          return '<a href="?ssid=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="?ssid=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'broadcast',

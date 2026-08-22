@@ -26,12 +26,12 @@ function groupString(d) {
     var s = '';
     s = s + 'Device: ';
     s = s + '<a href="?tab=details&q=' + encodeURIComponent(d.ip) + '">';
-    s = s + he.encode(d.dns || d.device_name || d.ip);
+    s = s + DataTable.util.escapeHtml(d.dns || d.device_name || d.ip);
     if (d.dns || d.device_name) {
-        s = s + ' (' +  he.encode(d.ip) + ') ';
+        s = s + ' (' +  DataTable.util.escapeHtml(d.ip) + ') ';
     }
-    s = s + '</a> Model: ' + he.encode(d.model || '');
-    s = s + he.encode(d.location ? ' Location: ' + d.location : '');
+    s = s + '</a> Model: ' + DataTable.util.escapeHtml(d.model || '');
+    s = s + DataTable.util.escapeHtml(d.location ? ' Location: ' + d.location : '');
 
     return s;
 }
@@ -59,18 +59,18 @@ $(document).ready(function() {
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>' :
-            he.encode(data || '');
+            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>' :
+            DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'port_name',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'descr',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'channel',
