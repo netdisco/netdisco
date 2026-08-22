@@ -25,7 +25,7 @@ $(document).ready(function() {
         "render": function(data, type, row, meta) {
           let resp = '';
           for (let i = 0; i < data.length; i++) {
-            resp += '<a href="?tab=vlan&q=' + encodeURIComponent(data[i]) + '">' + he.encode(data[i] || '') + '</a>';
+            resp += '<a href="?tab=vlan&q=' + encodeURIComponent(data[i]) + '">' + DataTable.util.escapeHtml(data[i] || '') + '</a>';
             if (i < (data.length - 1)) {
               resp += ', ';
             }

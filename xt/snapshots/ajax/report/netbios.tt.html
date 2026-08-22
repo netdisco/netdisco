@@ -17,7 +17,7 @@ $(document).ready(function() {
       {
         "data": 'domain',
         "render": function(data, type, row, meta) {
-          return '<a href="?domain=' + encodeURIComponent(data || 'blank') + '">' + he.encode(data || '(Blank Domain)') + '</a>';
+          return '<a href="?domain=' + encodeURIComponent(data || 'blank') + '">' + DataTable.util.escapeHtml(data || '(Blank Domain)') + '</a>';
         }
       }, {
         "data": 'count',
