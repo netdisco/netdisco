@@ -21,6 +21,7 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-3.5.17.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-force-network-chart.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/force-graph.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.floatThead.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/moment.min.js?v=[% asset_version | none %]"></script>

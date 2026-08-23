@@ -137,6 +137,10 @@ my @VENDORED = (
         file    => [qw/javascripts jquery.floatThead.js/],
         banner  => sub { qr/jQuery\.floatThead \Q$_[0]\E\b/ },
     },
+    {   package => 'force-graph',
+        file    => [qw/javascripts force-graph.min.js/],
+        banner  => sub { qr/\/\/ Version \Q$_[0]\E force-graph/ },
+    },
     {   # The bundle carries no usable version of its own: the first x.y.z in it
         # belongs to something else entirely, and a pattern reading that would
         # pass green while describing nothing that is shipped. The drop carries

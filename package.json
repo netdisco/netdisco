@@ -18,6 +18,7 @@
     "jstree": "3.3.17",
     "toastr": "2.1.4",
     "floatthead": "2.2.5",
+    "force-graph": "1.51.4",
     "swagger-ui-dist": "5.32.12"
   }
 }
