@@ -31,6 +31,16 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     if (n.fixed) { n.fx = n.x; n.fy = n.y }
   });
 
+  // centroid of the payload's stored fixed positions, so unpinned nodes
+  // gather around a restored layout instead of splitting off toward the
+  // origin, and so the camera below can be pointed at that layout
+  var fixedNodes = nodes.filter(function (n) { return n.fixed });
+  var cx = 0, cy = 0;
+  if (fixedNodes.length) {
+    fixedNodes.forEach(function (n) { cx += +n.x; cy += +n.y });
+    cx /= fixedNodes.length; cy /= fixedNodes.length;
+  }
+
   var links = mapdata['data']['links'].map(function (l) {
     return { source: l.FROMID, target: l.TOID, SPEED: l.SPEED, INFOSTRING: l.INFOSTRING };
   });
@@ -73,9 +83,13 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   fg.d3Force('center', null);
   // force-graph's origin is the viewport center (measured: graph2ScreenCoords(0,0)
   // equals the canvas midpoint), unlike the old SVG renderer's top-left origin,
-  // so "the middle" the comment above promises is graph-space (0, 0) here
-  fg.d3Force('pullx', ndPull('x', 0, 0.06));
-  fg.d3Force('pully', ndPull('y', 0, 0.06));
+  // so "the middle" the comment above promises is the stored layout's centroid
+  fg.d3Force('pullx', ndPull('x', cx, 0.06));
+  fg.d3Force('pully', ndPull('y', cy, 0.06));
+
+  // point the camera at the stored layout; for an all-fresh map cx/cy are
+  // (0, 0), force-graph's own default, so this is a no-op there
+  fg.centerAt(cx, cy);
 
   saveMapPositions = function () {
     fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
