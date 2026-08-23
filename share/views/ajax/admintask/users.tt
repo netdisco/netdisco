@@ -238,7 +238,7 @@ $(document).ready(function() {
     $('#nd_token-copy').html('<i class="fas fa-copy"></i> Copy');
     $('#nd_token-reveal').one('hidden.bs.modal', function() {
       var tab = '[% task.tag | html_entity %]';
-      $('#' + tab + '_form').trigger('submit');
+      nd_submit('#' + tab + '_form');
     });
     $('#nd_token-reveal').modal('show');
   };

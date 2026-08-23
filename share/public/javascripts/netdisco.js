@@ -1,15 +1,19 @@
 // parameterised for the active tab - submits search form and injects
 // HTML response into the tab pane, or an error/empty-results message
-function do_search (event, tab) {
-  var form   = '#' + tab + '_form';
-  var target = '#' + tab + '_pane';
-  var query  = $(form).serialize();
+// dispatch a real submit event so htmx, which listens natively, sees it.
+// jQuery's trigger('submit') would instead end in form.submit(), a full page
+// navigation that fires no submit listener at all. An untrusted event cannot
+// cause native submission, so this only ever reaches listeners.
+function nd_submit (form_selector) {
+  var form = document.querySelector(form_selector);
+  if (form) {
+    form.dispatchEvent(new SubmitEvent('submit', {bubbles: true, cancelable: true}));
+  }
+}
 
-  // stop form from submitting normally
-  event.preventDefault();
-
-  // hide or show sidebars depending on previous state,
-  // and whether the sidebar contains any content (detected by TT)
+// has_sidebar is set by TT: 0 means the tab ships no sidebar template. Shared
+// with the htmx path, which does not call do_search.
+function nd_apply_sidebar (tab) {
   if (has_sidebar[tab] == 0) {
     $('.nd_sidebar, #nd_sidebar-toggle-img-out').hide();
     $('.content').css('margin-right', '10px');
@@ -23,6 +27,17 @@ function do_search (event, tab) {
       $('.nd_sidebar').show();
     }
   }
+}
+
+function do_search (event, tab) {
+  var form   = '#' + tab + '_form';
+  var target = '#' + tab + '_pane';
+  var query  = $(form).serialize();
+
+  // stop form from submitting normally
+  event.preventDefault();
+
+  nd_apply_sidebar(tab);
 
   // in case of slow data load, let the user know
   if (tab != 'jobqueue') {
@@ -447,6 +462,40 @@ $(document).ready(function() {
     }
   });
   $('#daterange').trigger('input');
+
+  // htmx glue. Converted panes get the same empty-result, error and
+  // after-swap handling do_search gives the unconverted ones, so the two
+  // transports are indistinguishable to a user. Keyed on any *_pane, not just
+  // admin, because later rungs convert the search and device tabs onto this.
+  document.body.addEventListener('htmx:afterSwap', function (evt) {
+    var target = evt.detail.target;
+    if (!target.id.match(/_pane$/)) return;
+    var tab = target.id.replace(/_pane$/, '');
+    if (target.innerHTML === '') {
+      target.innerHTML =
+        '<div class="col-md-2 alert alert-info">No matching records.</div>';
+      return;
+    }
+    $('div.content > div.tab-content table.nd_floatinghead').floatThead({
+      top: 40
+      ,position: 'fixed'
+    });
+    inner_view_processing(tab);
+  });
+  document.body.addEventListener('htmx:responseError', function (evt) {
+    var target = evt.detail.target;
+    if (!target.id.match(/_pane$/)) return;
+    target.innerHTML =
+      '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
+      'Search failed! Please contact your site administrator (server error).</div>';
+  });
+  document.body.addEventListener('htmx:sendError', function (evt) {
+    var target = evt.detail.target;
+    if (!target.id.match(/_pane$/)) return;
+    target.innerHTML =
+      '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
+      'Search failed! Please contact your site administrator (network error).</div>';
+  });
 });
 
 // temporarily disable datatables paging

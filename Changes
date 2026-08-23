@@ -1,3 +1,10 @@
+2.x - tbd
+
+  [ENHANCEMENTS]
+
+  * load the admin task panes with htmx, adding a progress indicator while a
+    pane is fetching
+
 2.105001 - 2026-08-22
 
   [BUG FIXES]

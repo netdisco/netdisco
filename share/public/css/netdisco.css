@@ -1992,3 +1992,15 @@ div.dt-container div.dt-processing {
 td.nd_nowrap {
   white-space: nowrap;
 }
+
+/* htmx hides an idle indicator with opacity and visibility, neither of which
+   takes it out of flow, so the spinner's box would push every pane below it
+   down for the life of the page. These set display instead; the properties are
+   disjoint from htmx's, so stylesheet order does not matter. */
+.htmx-indicator {
+  display: none;
+}
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: block;
+}
