@@ -1,16 +1,10 @@
-<div id="nd2_netmap-wrap">
-  <div id="nd2_netmap-container"></div>
-  <div id="nd2_netmap-fullscreen" title="Full Screen"><i class="fas fa-expand fa-lg"></i></div>
-  <div id="nd2_netmap-spinner" class="nd_netmap-running"></div>
-</div>
-<script>
 // The netmap: force-graph on canvas, fed by the same payload and posting the
 // same positions as the d3 renderer it replaced.
 
 var graph;             // accessor object; the harness and device.js use window.graph
 var saveMapPositions;  // device.js binds the sidebar Save button to this
 
-$.getJSON('?', function (mapdata) {
+$.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %]', function (mapdata) {
 
   var container = document.getElementById('nd2_netmap-container');
   var nodes = mapdata['data']['nodes'];
@@ -58,7 +52,7 @@ $.getJSON('?', function (mapdata) {
     .onEngineStop(function () {
       document.getElementById('nd2_netmap-spinner').className = 'nd_netmap-settled';
       fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
-      if ('' === 'on') { saveMapPositions(); }
+      if ('[% "on" IF params.autosave == "on" %]' === 'on') { saveMapPositions(); }
     })
     .graphData({ nodes: nodes, links: links });
 
@@ -86,7 +80,7 @@ $.getJSON('?', function (mapdata) {
   saveMapPositions = function () {
     fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
     $.post(
-      ''
+      '[% uri_for("/ajax/data/device/netmappositions") | none %]'
       , $("#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
         + '&positions=' + JSON.stringify(graph.positions())
     );
@@ -122,5 +116,3 @@ $.getJSON('?', function (mapdata) {
   };
   window.graph = graph;
 });
-</script>
-<!-- vim: ft=html -->
