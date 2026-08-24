@@ -8,6 +8,9 @@
   [BUG FIXES]
 
   * refresh the users pane when the API token reveal modal is dismissed
+  * compress web responses, with a compress_responses setting to disable it
+  * restore the cache header on JavaScript, which the Expires filter stopped
+    matching when Plack::MIME changed the type of .js
 
 2.105001 - 2026-08-22
 

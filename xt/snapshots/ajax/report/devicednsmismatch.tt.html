@@ -19,27 +19,27 @@ $(document).ready(function() {
       {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-            return '<a href="&q=' + encodeURIComponent(data) + '">' + he.encode(row.name || row.ip) + '</a>';
+            return '<a href="&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.name || row.ip) + '</a>';
           }
       }, {
         "data": 'dns',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'contact',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'location',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }
     ],
