@@ -129,4 +129,63 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     },
   };
   window.graph = graph;
+
+  // fullscreen: same API dance the old template used, on the pane so the
+  // sidebar stays outside it
+  document.getElementById('nd2_netmap-fullscreen').addEventListener('click', function () {
+    requestFullScreen(document.getElementById('netmap_pane'));
+  });
+  $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
+    resizeGraphContainer();
+    $('#nd2_netmap-fullscreen i').attr('class',
+      isFullScreen() ? 'fas fa-compress fa-lg' : 'fas fa-expand fa-lg');
+  });
+
+  function resizeGraphContainer() {
+    setTimeout(function () {
+      fg.width(parseInt(jQuery('#netmap_pane').parent().css('width')))
+        .height(window.innerHeight - 100);
+    }, 500);
+  }
+  $('#nd_sidebar-toggle-img-in').on('click', resizeGraphContainer);
+  $('#nd_sidebar-toggle-img-out').on('click', resizeGraphContainer);
+  $(window).on('resize', resizeGraphContainer);
+
+  fg.onEngineTick(function () {
+    var el = document.getElementById('nd2_netmap-spinner');
+    if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
+  });
 });
+
+// ***********************************************
+// ************ full screen handling *************
+// ***********************************************
+
+function isFullScreen() {
+  return (document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement);
+}
+
+function requestFullScreen(elt) {
+  if (isFullScreen()) {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+  else {
+    if (elt.requestFullscreen) {
+      elt.requestFullscreen();
+    } else if (elt.msRequestFullscreen) {
+      elt.msRequestFullscreen();
+    } else if (elt.mozRequestFullScreen) {
+      elt.mozRequestFullScreen();
+    } else if (elt.webkitRequestFullscreen) {
+      elt.webkitRequestFullscreen();
+    }
+  }
+}
