@@ -24,7 +24,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 develop = ["pre-commit>=4.6.2,<5"]
-test = ["ruff>=0.16.3,<0.17"]
+test = ["ruff>=0.16.4,<0.17"]
 
 [tool.uv]
 default-groups = [
