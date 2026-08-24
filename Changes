@@ -1,16 +1,16 @@
-2.x - tbd
+2.105002 - 2026-08-24
 
   [ENHANCEMENTS]
 
-  * load the admin task panes with htmx, adding a progress indicator while a
-    pane is fetching
+  * #1644 replace he.js with the DataTables escaper already on every page
+  * #1645 compress web responses, with a compress_responses setting to disable it
+  * #1646 load the admin task panes with htmx
+  * update Python dependencies and GitHub Actions versions
 
   [BUG FIXES]
 
-  * refresh the users pane when the API token reveal modal is dismissed
-  * compress web responses, with a compress_responses setting to disable it
-  * restore the cache header on JavaScript, which the Expires filter stopped
-    matching when Plack::MIME changed the type of .js
+  * #1645 restore the cache header on JavaScript
+  * #1646 refresh the users pane when the API token reveal modal is dismissed
 
 2.105001 - 2026-08-22
 
