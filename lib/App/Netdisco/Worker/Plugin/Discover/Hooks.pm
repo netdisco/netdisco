@@ -29,12 +29,17 @@ register_worker({ phase => 'late' }, sub {
       debug sprintf ' [%s] hooks - %s queued', 'new_device', $job->device;
     }
 
-    if ($conf->{'event'} eq 'discover' and vars->{'device_changed'}) {
+    if ($conf->{'event'} eq 'discover') {
       $count += queue_hook('discover', $conf);
       debug sprintf ' [%s] hooks - %s queued', 'discover', $job->device;
     }
-    elsif ($conf->{'event'} eq 'discover') {
-      debug sprintf ' [%s] hooks - discover skipped (no meaningful change)', $job->device;
+
+    if ($conf->{'event'} eq 'updated_device' and vars->{'device_changed'}) {
+      $count += queue_hook('updated_device', $conf);
+      debug sprintf ' [%s] hooks - %s queued', 'updated_device', $job->device;
+    }
+    elsif ($conf->{'event'} eq 'updated_device') {
+      debug sprintf ' [%s] hooks - updated_device skipped (no meaningful change)', $job->device;
     }
   }
 

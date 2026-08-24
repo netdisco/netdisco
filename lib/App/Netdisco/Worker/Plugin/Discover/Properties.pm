@@ -212,9 +212,9 @@ register_worker({ phase => 'early', driver => 'snmp',
   # support for new_device Hook
   vars->{'new_device'} = 1 if not $device->in_storage;
 
-  # support for discover Hook - detect meaningful device-level changes
+  # support for updated_device Hook - detect meaningful device-level changes
   {
-    my $ignore = (setting('discover_hook_ignore_changes') || {})->{'device'} || [];
+    my $ignore = (setting('updated_device_hook_fields') || {})->{'device'} || [];
     my %ignore_field = map {($_ => 1)} @$ignore;
     my %dirty = $device->get_dirty_columns;
     # DBIC's dirty flag latches true on the first set_column() that differs
@@ -607,9 +607,9 @@ register_worker({ phase => 'early', driver => 'snmp',
   # update num_ports
   $device->num_ports( scalar values %deviceports );
 
-  # support for discover Hook - detect meaningful port-level changes
+  # support for updated_device Hook - detect meaningful port-level changes
   unless (vars->{'device_changed'}) {
-    my $ignore = (setting('discover_hook_ignore_changes') || {})->{'device_port'} || [];
+    my $ignore = (setting('updated_device_hook_fields') || {})->{'device_port'} || [];
     my %ignore_field = map {($_ => 1)} @$ignore;
 
     # boolean columns: ->hri bypasses DBIC's column handling, so an
