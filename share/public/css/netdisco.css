@@ -1977,6 +1977,15 @@ td.nd_nowrap {
 /* netmap overlays: the canvas renderer draws no DOM, so the fullscreen
    control and the engine status indicator sit above it as elements */
 #nd2_netmap-wrap { position: relative; }
+/* fullscreen paints the browser's own black backdrop behind a transparent
+   canvas (the old SVG renderer avoided this because its SVG element carried
+   an opaque background always, not just in fullscreen); match that here so
+   dark link strokes stay visible instead of vanishing into the backdrop */
+/* one selector per rule: an unrecognized vendor-prefixed pseudo-class
+   invalidates an entire comma-separated selector list, not just its branch */
+#netmap_pane:fullscreen { background-color: #fff; }
+#netmap_pane:-webkit-full-screen { background-color: #fff; }
+#netmap_pane:-moz-full-screen { background-color: #fff; }
 #nd2_netmap-fullscreen { position: absolute; top: 12px; right: 16px; cursor: pointer; }
 #nd2_netmap-spinner { position: absolute; bottom: 14px; right: 16px;
   width: 18px; height: 18px; border-radius: 50%; }
