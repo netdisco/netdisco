@@ -136,6 +136,34 @@ $.getJSON('?', function (mapdata) {
   };
   window.graph = graph;
 
+  // force-graph exposes no simulation find() and no dblclick callback; its
+  // own hit detection delivers the node to onNodeClick, so a double click is
+  // two clicks on the same node inside the double-click window
+  var lastClick = { id: null, at: 0 };
+  fg.onNodeClick(function (n) {
+    var now = Date.now();
+    if (n.ID === lastClick.id && (now - lastClick.at) < 400) {
+      window.location.assign(n.LINK);
+      return;
+    }
+    lastClick = { id: n.ID, at: now };
+  });
+
+  fg.linkCurvature(function (l) {
+    var s = (typeof l.source === 'object') ? l.source.ID : l.source;
+    var t = (typeof l.target === 'object') ? l.target.ID : l.target;
+    return (s === t) ? 0.6 : 0;
+  });
+
+  // the old template zoomed to the center node 1.5 s after start when
+  // mapshow=neighbors (a legacy value still reachable from bookmarks)
+  if ('' == 'neighbors') {
+    setTimeout(function () {
+      var n = graph.nodeDataById(graph.centernode);
+      if (n) { fg.centerAt(n.x, n.y, 600); fg.zoom(4, 600) }
+    }, 1500);
+  }
+
   // box select: shift-drag replaces the old freehand lasso by ruling.
   // capture-phase listener so force-graph's own pan never sees the drag.
   var box = { active: false, x0: 0, y0: 0, el: null };
