@@ -2,9 +2,9 @@
 
   [ENHANCEMENTS]
 
-  * netmap redrawn on canvas via force-graph, replacing d3 v3 and the APEX
-    plugin; large maps that previously never finished drawing now settle in
-    seconds
+  * netmap redrawn on canvas via force-graph; the map settles and pans
+    smoothly at sizes that struggled before
+  * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
 
 2.105001 - 2026-08-22
 

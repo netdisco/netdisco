@@ -18,8 +18,9 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   var container = document.getElementById('nd2_netmap-container');
   var nodes = mapdata['data']['nodes'];
 
-  // radius = 4 + rank of the node's SIZEVALUE among the distinct values,
-  // reproducing minNodeRadius(4) / maxNodeRadius(4 + numsizes)
+  // radius = 4 + rank of the node's SIZEVALUE among the distinct values
+  // (max 4 + numsizes - 1); this approximates the old renderer's sqrt scale
+  // over the SIZEVALUE extent, it does not reproduce it exactly
   var distinct = {};
   nodes.forEach(function (n) { distinct[n.SIZEVALUE] = true });
   var rankOf = {};
@@ -53,6 +54,11 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   var links = mapdata['data']['links'].map(function (l) {
     return { source: l.FROMID, target: l.TOID, SPEED: l.SPEED, INFOSTRING: l.INFOSTRING };
   });
+
+  // force-graph swaps a link's source/target from a plain ID to the node
+  // object once it resolves them, so any code touching links after that
+  // point has to handle both shapes; one helper for both call sites
+  function endpointId(l, end) { var v = l[end]; return (typeof v === 'object') ? v.ID : v }
 
   var fg = ForceGraph()(container)
     .width(parseInt(jQuery('#netmap_pane').parent().css('width')))
@@ -125,8 +131,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     },
     links: function () {
       return fg.graphData().links.map(function (l) {
-        return { source: (typeof l.source === 'object' ? l.source.ID : l.source),
-                 target: (typeof l.target === 'object' ? l.target.ID : l.target) };
+        return { source: endpointId(l, 'source'), target: endpointId(l, 'target') };
       });
     },
     screenXY: function (id) {
@@ -145,7 +150,9 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   var lastClick = { id: null, at: 0 };
   fg.onNodeClick(function (n) {
     var now = Date.now();
-    if (n.ID === lastClick.id && (now - lastClick.at) < 400) {
+    // 500 ms matches the platform double-click default the old renderer's
+    // dblclick event inherited
+    if (n.ID === lastClick.id && (now - lastClick.at) < 500) {
       window.location.assign(n.LINK);
       return;
     }
@@ -153,8 +160,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   });
 
   fg.linkCurvature(function (l) {
-    var s = (typeof l.source === 'object') ? l.source.ID : l.source;
-    var t = (typeof l.target === 'object') ? l.target.ID : l.target;
+    var s = endpointId(l, 'source'), t = endpointId(l, 'target');
     return (s === t) ? 0.6 : 0;
   });
 
@@ -177,7 +183,10 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     box.active = true; box.x0 = ev.clientX; box.y0 = ev.clientY;
     box.el = document.createElement('div');
     box.el.id = 'nd2_netmap-boxselect';
-    document.body.appendChild(box.el);
+    // document.body sits outside the fullscreen element, so a box drawn
+    // there would be invisible while fullscreen; append into whichever is
+    // actually showing
+    (document.fullscreenElement || document.body).appendChild(box.el);
   }, true);
   function onBoxPointerMove(ev) {
     if (!box.active) { return }
@@ -216,19 +225,21 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   fg.onNodeDrag(function (n, translate) {
     if (!n.selected) { return }
     if (!dragSnap) {
-      dragSnap = {};
+      // hold the node objects themselves, not their IDs: an ID-keyed lookup
+      // means a linear nodeDataById() scan per node per tick, and re-keying
+      // by ID risks the numeric-vs-string coercion Object.keys() does
+      dragSnap = [];
       fg.graphData().nodes.forEach(function (o) {
-        if (o.selected && o.ID !== n.ID) { dragSnap[o.ID] = { x: o.x, y: o.y } }
+        if (o.selected && o.ID !== n.ID) { dragSnap.push({ node: o, x: o.x, y: o.y }) }
       });
     }
     // translate is the per-tick incremental delta, not cumulative from drag
     // start, so the snapshot itself has to accumulate it tick by tick
-    Object.keys(dragSnap).forEach(function (id) {
-      var o = graph.nodeDataById(id);
-      dragSnap[id].x += translate.x;
-      dragSnap[id].y += translate.y;
-      o.fx = o.x = dragSnap[id].x;
-      o.fy = o.y = dragSnap[id].y;
+    dragSnap.forEach(function (entry) {
+      entry.x += translate.x;
+      entry.y += translate.y;
+      entry.node.fx = entry.node.x = entry.x;
+      entry.node.fy = entry.node.y = entry.y;
     });
   });
 
@@ -286,9 +297,11 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
       });
     });
 
+  // read once, not once per link per frame
+  var showspeed = document.getElementById('nd_showspeed');
   fg.linkCanvasObjectMode(function () { return 'after' })
     .linkCanvasObject(function (l, ctx) {
-      if (!document.getElementById('nd_showspeed').checked) { return }
+      if (!showspeed || !showspeed.checked) { return }
       if (typeof l.source !== 'object') { return }
       ctx.font = '4px sans-serif';
       ctx.textAlign = 'center';
