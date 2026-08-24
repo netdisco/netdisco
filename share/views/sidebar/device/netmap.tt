@@ -30,7 +30,11 @@
               </div>
               <div class="form-check float-start">
                 <input type="checkbox" name="autosave" id="nd_autosave"
-                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave %]
+                    [%# the raw URL param lands here, and TT treats the string 'off' as
+                        true, so autosave=off used to render the box checked and the next
+                        fragment fetch serialized it straight back to autosave=on %]
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave
+                         AND vars.sidebar_defaults.device_netmap.autosave != 'off' %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="On" data-off="Off" data-onstyle="success">
                   <label for="nd_autosave">&nbsp;Auto Save</label>

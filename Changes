@@ -6,6 +6,10 @@
     smoothly at sizes that struggled before
   * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
 
+  [BUG FIXES]
+
+  * a netmap URL carrying autosave=off no longer saves positions anyway
+
 2.105001 - 2026-08-22
 
   [BUG FIXES]
