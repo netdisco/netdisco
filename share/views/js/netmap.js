@@ -58,7 +58,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     .maxZoom(10)
     .cooldownTime(Infinity)
     .d3AlphaMin(0.001)
-    .onNodeDragEnd(function (n) { n.fx = n.x; n.fy = n.y })
+    .onNodeDragEnd(function (n) { n.fx = n.x; n.fy = n.y; dragSnap = null })
     .onEngineStop(function () {
       document.getElementById('nd2_netmap-spinner').className = 'nd_netmap-settled';
       fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
@@ -129,6 +129,61 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     },
   };
   window.graph = graph;
+
+  // box select: shift-drag replaces the old freehand lasso by ruling.
+  // capture-phase listener so force-graph's own pan never sees the drag.
+  var box = { active: false, x0: 0, y0: 0, el: null };
+  container.addEventListener('pointerdown', function (ev) {
+    if (!ev.shiftKey) { return }
+    ev.stopPropagation(); ev.preventDefault();
+    fg.enablePanInteraction(false).enableZoomInteraction(false);
+    box.active = true; box.x0 = ev.clientX; box.y0 = ev.clientY;
+    box.el = document.createElement('div');
+    box.el.id = 'nd2_netmap-boxselect';
+    document.body.appendChild(box.el);
+  }, true);
+  window.addEventListener('pointermove', function (ev) {
+    if (!box.active) { return }
+    var x = Math.min(box.x0, ev.clientX), y = Math.min(box.y0, ev.clientY);
+    box.el.style.left = x + 'px';
+    box.el.style.top = y + 'px';
+    box.el.style.width = Math.abs(ev.clientX - box.x0) + 'px';
+    box.el.style.height = Math.abs(ev.clientY - box.y0) + 'px';
+  });
+  window.addEventListener('pointerup', function (ev) {
+    if (!box.active) { return }
+    box.active = false;
+    box.el.remove();
+    fg.enablePanInteraction(true).enableZoomInteraction(true);
+    var r = container.querySelector('canvas').getBoundingClientRect();
+    var a = fg.screen2GraphCoords(Math.min(box.x0, ev.clientX) - r.left, Math.min(box.y0, ev.clientY) - r.top);
+    var b = fg.screen2GraphCoords(Math.max(box.x0, ev.clientX) - r.left, Math.max(box.y0, ev.clientY) - r.top);
+    fg.graphData().nodes.forEach(function (n) {
+      n.selected = (n.x >= a.x && n.x <= b.x && n.y >= a.y && n.y <= b.y);
+    });
+    fg.nodeRelSize(fg.nodeRelSize());
+  });
+
+  // dragging one selected node carries the rest of the selection
+  var dragSnap = null;
+  fg.onNodeDrag(function (n, translate) {
+    if (!n.selected) { return }
+    if (!dragSnap) {
+      dragSnap = {};
+      fg.graphData().nodes.forEach(function (o) {
+        if (o.selected && o.ID !== n.ID) { dragSnap[o.ID] = { x: o.x, y: o.y } }
+      });
+    }
+    // translate is the per-tick incremental delta, not cumulative from drag
+    // start, so the snapshot itself has to accumulate it tick by tick
+    Object.keys(dragSnap).forEach(function (id) {
+      var o = graph.nodeDataById(id);
+      dragSnap[id].x += translate.x;
+      dragSnap[id].y += translate.y;
+      o.fx = o.x = dragSnap[id].x;
+      o.fy = o.y = dragSnap[id].y;
+    });
+  });
 
   // fullscreen: same API dance the old template used, on the pane so the
   // sidebar stays outside it

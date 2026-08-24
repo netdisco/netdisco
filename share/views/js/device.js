@@ -106,29 +106,31 @@
     });
 
     // netmap pin/release controls
-    $('#nd_netmap-releaseall').on('click', function(event) {
+    $('#nd_netmap-releaseall').on('click', function (event) {
       event.preventDefault();
-      graph.releaseFixedNodes().resume();
+      window.graph.fg.graphData().nodes.forEach(function (n) { n.fx = undefined; n.fy = undefined });
+      window.graph.fg.d3ReheatSimulation();
     });
-    $('#nd_netmap-releaseonly').on('click', function(event) {
+    $('#nd_netmap-releaseonly').on('click', function (event) {
       event.preventDefault();
-      graph.inspect().main.nodes
-        .filter(function(n) { return n.selected })
-        .each(function(n) { n.fixed = false });
-      graph.resume();
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = undefined; n.fy = undefined }
+      });
+      window.graph.fg.d3ReheatSimulation();
     });
-    $('#nd_netmap-pinonly').on('click', function(event) {
+    $('#nd_netmap-pinonly').on('click', function (event) {
       event.preventDefault();
-      graph.inspect().main.nodes
-        .filter(function(n) { return n.selected })
-        .each(function(n) { n.fixed = true });
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = n.x; n.fy = n.y }
+      });
     });
-    $('#nd_netmap-zoomtodevice').on('click', function(event) {
+    $('#nd_netmap-zoomtodevice').on('click', function (event) {
       event.preventDefault();
-      var node = graph.nodeDataById( graph['nd2']['centernode'] );
-      graph.zoomSmooth(node.x, node.y, node.radius * 125);
+      var n = window.graph.nodeDataById(window.graph.centernode);
+      window.graph.fg.centerAt(n.x, n.y, 600);
+      window.graph.fg.zoom(4, 600);
     });
-    $('#nd_netmap-save').on('click', function(event) {
+    $('#nd_netmap-save').on('click', function (event) {
       event.preventDefault();
       saveMapPositions();
     });
