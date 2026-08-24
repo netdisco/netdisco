@@ -1,3 +1,9 @@
+2.105003 - tbd
+
+  [BUG FIXES]
+
+  * #1649 fix the API node search returning null instead of node data
+
 2.105002 - 2026-08-24
 
   [ENHANCEMENTS]

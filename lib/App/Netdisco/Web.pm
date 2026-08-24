@@ -23,7 +23,7 @@ use Storable 'dclone';
 use URI::Based;
 
 use App::Netdisco::Util::Web qw/
-  escape_for_script_context
+  escape_results_token
   interval_to_daterange
   request_is_api
   request_is_api_report
@@ -418,8 +418,7 @@ hook 'before_template' => sub {
 # site-local template or a third-party report plugin gets it too, without its
 # author having to know.
 hook 'before_template' => sub {
-    my $tokens = shift;
-    $tokens->{results} = escape_for_script_context( $tokens->{results} );
+    escape_results_token( shift );
 };
 
 # prevent Template::AutoFilter taking action on CSV output
@@ -447,6 +446,12 @@ hook 'after_template_render' => sub {
 };
 
 # support for report api which is basic table result in json
+#
+# The branch is chosen on the presence of the token, not its value. Node search
+# is the only handler that renders without a `results` token, and the second
+# branch exists for it. Creating the key here or in any earlier hook silently
+# moves it onto the first branch and empties the response: #732 in 2020, #1649
+# in 2026.
 hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
   return unless request_is_api_report or request_is_api_search;
