@@ -2,10 +2,13 @@
 
   [ENHANCEMENTS]
 
-  * compress web responses, with a compress_responses setting to disable it
+  * load the admin task panes with htmx, adding a progress indicator while a
+    pane is fetching
 
   [BUG FIXES]
 
+  * refresh the users pane when the API token reveal modal is dismissed
+  * compress web responses, with a compress_responses setting to disable it
   * restore the cache header on JavaScript, which the Expires filter stopped
     matching when Plack::MIME changed the type of .js
 

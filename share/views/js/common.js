@@ -120,11 +120,13 @@
     [% END -%]
 
     [% IF task %]
-    // for the admin pages
+    // for the admin pages. Content loading is htmx's, via the form's hx-get in
+    // admintask.tt; this handler keeps the side effects only. Note it must not
+    // call preventDefault: htmx's own submit listener does that.
     $('[% "#${task.tag}_form" %]').submit(function (event) {
       update_page_title('[% task.tag | html_entity %]');
       update_csv_download_link('admin', '[% task.tag | html_entity %]', '1');
-      do_search(event, '[% task.tag | html_entity %]');
+      nd_apply_sidebar('[% task.tag | html_entity %]');
     });
     [% END %]
 
@@ -133,7 +135,9 @@
     [% IF params.tab == 'ipinventory' OR params.tab == 'subnets' %]
       $('#[% params.tab | html_entity %]_submit').click();
     [% ELSE %]
-      $('#[% params.tab | html_entity %]_form').trigger("submit");
+      // Not trigger('submit'): this restorer also serves admin forms, where
+      // jQuery would fall through to form.submit() and navigate the page.
+      nd_submit('#[% params.tab | html_entity %]_form');
     [% END %]
     [% END %]
   });

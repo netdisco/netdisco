@@ -39,7 +39,7 @@
           timercache = timermax - 1;
 
           // reload the tab content in...
-          $('#' + tab + '_form').trigger('submit');
+          nd_submit('#' + tab + '_form');
         }, (timermax * 1000)));
     }
 
@@ -172,7 +172,7 @@
       // reset the timer cache
       timercache = timermax - 1;
       // and reload content
-      $('#' + tab + '_form').trigger('submit');
+      nd_submit('#' + tab + '_form');
     });
 
     // job control pause/play icon switcheroo
@@ -188,7 +188,7 @@
         $('#nd_countdown').text('0');
       }
       else {
-        $('#' + tab + '_form').trigger('submit');
+        nd_submit('#' + tab + '_form');
       }
     });
 
@@ -230,31 +230,31 @@
           var apiKey = $(data).filter('[data-nd-api-key]').attr('data-nd-api-key');
           if (apiKey && typeof window.nd_show_api_token === 'function') {
             window.nd_show_api_token(apiKey);
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
             return;
           }
           if (mode == 'add') {
             toastr.success('Added record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else if (mode == 'delete') {
             toastr.success('Deleted record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else {
             toastr.success('Updated record');
           }
-          $('#' + tab + '_form').trigger('submit');
+          nd_submit('#' + tab + '_form');
         }
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
           if (mode == 'add') {
             toastr.error('Failed to add record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else if (mode == 'delete') {
             toastr.error('Failed to delete record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else {
             toastr.error('Failed to update record');

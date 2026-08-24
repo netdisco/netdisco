@@ -39,6 +39,7 @@
     var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
     var default_pgtitle = '[% settings.branding_text | none %]';
   </script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js?v=[% asset_version | none %]"></script>
 
