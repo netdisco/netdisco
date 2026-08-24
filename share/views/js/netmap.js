@@ -155,6 +155,53 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     var el = document.getElementById('nd2_netmap-spinner');
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
+
+  var LABEL_ZOOM = 1.5;   // labels draw above this zoom; tune by eye against master
+  fg.nodeCanvasObjectMode(function () { return 'after' })
+    .nodeCanvasObject(function (n, ctx, scale) {
+      if (n.selected) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius + 2, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#0d6efd';
+        ctx.lineWidth = 1.5 / scale;
+        ctx.stroke();
+      }
+      if (scale < LABEL_ZOOM) { return }
+      ctx.font = '4px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#333';
+      var words = String(n.LABEL).split(/\s+/), line = '', lines = [];
+      words.forEach(function (w) {
+        if ((line + ' ' + w).trim().length > 16) { lines.push(line.trim()); line = w }
+        else { line = line + ' ' + w }
+      });
+      lines.push(line.trim());
+      lines.forEach(function (txt, i) {
+        ctx.fillText(txt, n.x, n.y + n.radius + 2 + i * 4.5);
+      });
+    });
+
+  fg.linkCanvasObjectMode(function () { return 'after' })
+    .linkCanvasObject(function (l, ctx) {
+      if (!document.getElementById('nd_showspeed').checked) { return }
+      if (typeof l.source !== 'object') { return }
+      ctx.font = '4px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'black';
+      ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
+    });
+
+  var legend = document.getElementById('nd2_netmap-legend');
+  if (legend) {
+    Object.keys(colorOf).forEach(function (key) {
+      if (key === '__plain' || key === 'ROOTNODE') { return }
+      var row = document.createElement('div');
+      row.innerHTML = '<span style="color:' + colorOf[key] + '">&#9632;</span> ';
+      row.appendChild(document.createTextNode(key));
+      legend.appendChild(row);
+    });
+  }
 });
 
 // ***********************************************

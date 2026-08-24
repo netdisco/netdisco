@@ -90,26 +90,19 @@
         }
     });
 
-    // netmap show controls
-    $('#nd_showips').change(function() {
-      if ($(this).prop('checked')) {
-        graph.inspect().main.nodes.each(function(n) {
-          if (n['ORIG_LABEL'] != n['ID']) {
-            n['LABEL'] = n['ORIG_LABEL'] + ' ' + n['ID'];
-          }
-        });
-        graph.wrapLabels(true).start();
-      } else {
-        graph.inspect().main.nodes.each(function(n) {
-          n['LABEL'] = n['ORIG_LABEL'];
-        });
-        graph.wrapLabels(false).start();
-      }
+    // netmap show controls. Setting any force-graph prop repaints, so
+    // re-setting nodeRelSize to itself is the repaint call.
+    $('#nd_showips').change(function () {
+      var on = $(this).prop('checked');
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.ORIG_LABEL != n.ID) {
+          n.LABEL = on ? (n.ORIG_LABEL + ' ' + n.ID) : n.ORIG_LABEL;
+        }
+      });
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
-    $('#nd_showspeed').change(function() {
-      $('.nd_netmap-linklabel').css('fill',
-        ($(this).prop('checked') ? 'black' : 'none')
-      );
+    $('#nd_showspeed').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
 
     // netmap pin/release controls
