@@ -325,10 +325,15 @@ $.getJSON('?', function (mapdata) {
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
     });
 
+  // the old renderer's legend included ROOTNODE (its distinctNodeColorValues
+  // list has no special case for it); '__plain' stays excluded, but it is
+  // unreachable here anyway, since the legend only renders for colorby=hgroup
+  // or colorby=lgroup, and both always give every node a COLORVALUE (falling
+  // back to 'Other' rather than leaving it unset)
   var legend = document.getElementById('nd2_netmap-legend');
   if (legend) {
     Object.keys(colorOf).forEach(function (key) {
-      if (key === '__plain' || key === 'ROOTNODE') { return }
+      if (key === '__plain') { return }
       var row = document.createElement('div');
       row.innerHTML = '<span style="color:' + colorOf[key] + '">&#9632;</span> ';
       row.appendChild(document.createTextNode(key));
