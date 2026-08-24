@@ -28,7 +28,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     if (!(key in colorOf)) { colorOf[key] = COLOR10[nextColor++ % 10] }
     n.color = colorOf[key];
     n.radius = 4 + (rankOf[n.SIZEVALUE] || 0);
-    if (n.fixed) { n.fx = n.x; n.fy = n.y }
+    if (n.fixed) { n.fx = +n.x; n.fy = +n.y; n.x = +n.x; n.y = +n.y }
   });
 
   // centroid of the payload's stored fixed positions, so unpinned nodes
