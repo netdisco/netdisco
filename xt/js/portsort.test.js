@@ -248,3 +248,73 @@ describe('agreement with the Perl sort_port', () => {
     assertAgreesWithSortPort('so-1/0/0:0', 'so-1/1/0:0', -1);
   });
 });
+
+// The order the device Ports tab shows is this comparator's, not the Perl
+// sort_port's, because ports.tt registers it as a DataTables sort type and the
+// browser re-sorts whatever the server sent. Moving that order into Postgres
+// needs it to be an order in the mathematical sense first, which the tests
+// below establish and which sort_port does not satisfy; see xt/10-sort_port.t.
+//
+// The corpus is every value this file sorts, captured rather than transcribed
+// by xt/bin/regenerate-portsort-corpus. Its `order` is this comparator's own
+// output, so the sequence assertion is a golden file catching change, not
+// evidence of correctness. The properties below are the part that can be wrong.
+describe('total order over the whole corpus', () => {
+  const corpus = require(path.join(__dirname, '..', 'portsort-corpus.json'));
+  const cmp = sortTypes['portsort-asc'];
+  const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const withTiebreak = (a, b) => cmp(a, b) || byName(a, b);
+
+  // A tie is not a violation: the corpus holds ten of them, "  3" against "3"
+  // from the leading-space trim and the 10GigabitEthernet rewrite's pairs, and
+  // both directions returning 0 is the correct answer. Only both directions
+  // returning the same strict sign is the defect, which is what sort_port has.
+  test('portSort__every_pair_in_the_corpus__disagrees_with_itself_reversed', () => {
+    const wrong = [];
+    for (const a of corpus.names) {
+      for (const b of corpus.names) {
+        if (a === b) continue;
+        const forward = cmp(a, b), backward = cmp(b, a);
+        if (forward > 0 && backward > 0) wrong.push([a, b, forward, backward]);
+        if (forward < 0 && backward < 0) wrong.push([a, b, forward, backward]);
+      }
+    }
+    assert.deepStrictEqual(wrong, [], 'cmp(a,b) and cmp(b,a) must not both name the same one greater');
+  });
+
+  test('portSort__every_triple_in_the_corpus__is_transitive', () => {
+    const wrong = [];
+    for (const a of corpus.names) {
+      for (const b of corpus.names) {
+        if (cmp(a, b) >= 0) continue;
+        for (const c of corpus.names) {
+          if (cmp(b, c) < 0 && cmp(a, c) >= 0) wrong.push([a, b, c]);
+        }
+      }
+    }
+    assert.deepStrictEqual(wrong.slice(0, 5), [], 'a < b and b < c must imply a < c');
+  });
+
+  // Without the tiebreak this fails: the comparator has genuine ties, the
+  // 10GigabitEthernet rewrite being the intended one, and a stable sort then
+  // resolves them by input order. That is exactly what makes paging unsafe, so
+  // the tiebreak is part of the order rather than a detail of the fixture.
+  test('portSort__with_the_raw_name_tiebreak__sorts_permutations_to_one_sequence', () => {
+    let seed = 12345;
+    const random = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    const outputs = new Set();
+    for (let round = 0; round < 50; round++) {
+      const shuffled = corpus.names.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      outputs.add(JSON.stringify(shuffled.sort(withTiebreak)));
+    }
+    assert.equal(outputs.size, 1, 'the sorted sequence must not depend on the input order');
+  });
+
+  test('portSort__the_corpus_names__sort_into_the_recorded_order', () => {
+    assert.deepStrictEqual(corpus.names.slice().sort(withTiebreak), corpus.order);
+  });
+});

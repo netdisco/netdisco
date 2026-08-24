@@ -551,6 +551,7 @@ share/schema_versions/App-Netdisco-DB-94-95-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-95-96-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-96-97-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-97-98-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-98-99-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/acleditor.tt
 share/views/ajax/admintask/aclmanager.tt
@@ -680,6 +681,8 @@ share/views/sidebar/search/port.tt
 xt/00-compile.t
 xt/01-local-pod.t
 xt/10-sort_port.t
+xt/11-port-sortkey.t
+xt/12-port-order-helper.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -697,6 +700,7 @@ xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t
 xt/43-response-compression.t
 xt/50-config-override.t
+xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/portsort.test.js
 xt/js/view-templates.test.js
@@ -708,3 +712,4 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
 xt/lib/Test/Netdisco/Snapshot.pm
+xt/portsort-corpus.json

@@ -166,7 +166,8 @@ sub sort_port {
         @a = ($1);
     } elsif ($aval =~ $ciscofast) {
         @a = ($1,$2);
-        push @a, split(/[:\/]/,$3), $4;
+        push @a, split(/[:\/]/,$3);
+        push @a, $4 if defined $4;
     } elsif ($aval =~ $wordcharword) {
         @a = ($1,$2,$3);
     } else {
@@ -183,7 +184,8 @@ sub sort_port {
         @b = ($1);
     } elsif ($bval =~ $ciscofast) {
         @b = ($1,$2);
-        push @b, split(/[:\/]/,$3),$4;
+        push @b, split(/[:\/]/,$3);
+        push @b, $4 if defined $4;
     } elsif ($bval =~ $wordcharword) {
         @b = ($1,$2,$3);
     } else {
