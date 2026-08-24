@@ -51,9 +51,19 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     cx /= fixedNodes.length; cy /= fixedNodes.length;
   }
 
-  var links = mapdata['data']['links'].map(function (l) {
-    return { source: l.FROMID, target: l.TOID, SPEED: l.SPEED, INFOSTRING: l.INFOSTRING };
-  });
+  // the backend builds links before filtering nodes by group selection, so a
+  // link can reference an ID that was filtered out of the node set; force-graph
+  // throws mid-simulation on such a dangling reference (the old renderer
+  // filtered these out client-side too, d3-force-network-chart.js's "sort out
+  // links with invalid node references"), which aborts the paint loop for that
+  // tick and leaves nodes drawn only until the next successful repaint (zoom)
+  var nodeIds = {};
+  nodes.forEach(function (n) { nodeIds[n.ID] = true });
+  var links = mapdata['data']['links']
+    .filter(function (l) { return (l.FROMID in nodeIds) && (l.TOID in nodeIds) })
+    .map(function (l) {
+      return { source: l.FROMID, target: l.TOID, SPEED: l.SPEED, INFOSTRING: l.INFOSTRING };
+    });
 
   // force-graph swaps a link's source/target from a plain ID to the node
   // object once it resolves them, so any code touching links after that
