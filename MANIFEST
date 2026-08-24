@@ -339,7 +339,6 @@ share/public/css/awesome-bootstrap-checkbox.css
 share/public/css/bootstrap-toggle.min.css
 share/public/css/bootstrap-tree.css
 share/public/css/bootstrap.min.css
-share/public/css/d3-force-network-chart.css
 share/public/css/dataTables.bootstrap.css
 share/public/css/daterangepicker.css
 share/public/css/font-awesome.min.css
@@ -373,8 +372,6 @@ share/public/images/tango_sweep.png
 share/public/images/vaga_copy.png
 share/public/javascripts/bootstrap-toggle.min.js
 share/public/javascripts/bootstrap.min.js
-share/public/javascripts/d3-3.5.17.min.js
-share/public/javascripts/d3-force-network-chart.js
 share/public/javascripts/dataTables.bootstrap.js
 share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js

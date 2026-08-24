@@ -1,3 +1,11 @@
+2.x - tbd
+
+  [ENHANCEMENTS]
+
+  * netmap redrawn on canvas via force-graph, replacing d3 v3 and the APEX
+    plugin; large maps that previously never finished drawing now settle in
+    seconds
+
 2.105001 - 2026-08-22
 
   [BUG FIXES]

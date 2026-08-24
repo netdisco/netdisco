@@ -19,8 +19,6 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-3.5.17.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/d3-force-network-chart.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/force-graph.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery.floatThead.js?v=[% asset_version | none %]"></script>
@@ -54,7 +52,6 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css?v=[% asset_version | none %]"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/d3-force-network-chart.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/javascripts/jstree/themes/proton/style.min.css?v=[% asset_version | none %]"/>

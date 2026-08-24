@@ -1494,25 +1494,6 @@ ul ul, ul ol, ol ol, ol ul {
   font-size: 15px;
 }
 
-/* netmap link labels */
-.nd_netmap-linklabel {
-  pointer-events: none;
-  font-weight: bold;
-}
-
-/* The netmap's device labels were bold by accident: the vendored chart gives
-   them class="label", which collided with a component the old stylesheet had and
-   the replacement does not. Put the weight back here only, a rule on the bare
-   class being a component name this migration removed on purpose. */
-#netmap_pane svg text.label {
-  font-weight: bold;
-}
-
-/* netmap tooltip box */
-#netmap_pane_tooltip {
-  width: unset;
-}
-
 /* fixup for prepended checkbox in sidebar */
 .nd_searchcheckbox {
   width: 137px;
