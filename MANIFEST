@@ -379,7 +379,6 @@ share/public/javascripts/dataTables.bootstrap.js
 share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js
 share/public/javascripts/daterangepicker.js
-share/public/javascripts/he.js
 share/public/javascripts/jquery-deserialize.js
 share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
@@ -692,6 +691,7 @@ xt/35-login-return-url.t
 xt/36-ajax-content-response.t
 xt/37-typeahead-empty-query.t
 xt/38-swagger-ui-redirect.t
+xt/39-html-escaper.t
 xt/40-template-snapshots.t
 xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t

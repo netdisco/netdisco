@@ -37,27 +37,27 @@ $(document).ready(function() {
           if (row.active) {
             icon = '';
           }
-          return '<a href="[% search_node | none %]&q=' + encodeURIComponent(data) + '">' + he.encode(data.toUpperCase()) + icon + '</a>';
+          return '<a href="[% search_node | none %]&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data.toUpperCase()) + icon + '</a>';
         }
       }, {
         "data": 'manufacturer.abbrev',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/report/nodevendor') | none %]?vendor=' + encodeURIComponent(row.manufacturer.abbrev || 'blank') + '">' + he.encode(row.manufacturer.company ||'(Unknown Vendor)') + '</a>';
+          return '<a href="[% uri_for('/report/nodevendor') | none %]?vendor=' + encodeURIComponent(row.manufacturer.abbrev || 'blank') + '">' + DataTable.util.escapeHtml(row.manufacturer.company ||'(Unknown Vendor)') + '</a>';
         }
       }, {
         "data": 'switch',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/device') | none %]?q=' + encodeURIComponent(data) + '">' + he.encode(row.device.dns || row.device.name || data) + ' (' + he.encode(data) + ')</a>';
+          return '<a href="[% uri_for('/device') | none %]?q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.device.dns || row.device.name || data) + ' (' + DataTable.util.escapeHtml(data) + ')</a>';
         }
       }, {
         "data": 'port',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on&n_ssid=on&prefer=port">' + he.encode(data) + '</a>';
+          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on&n_ssid=on&prefer=port">' + DataTable.util.escapeHtml(data) + '</a>';
         }
       }, {
         "data": 'vlan',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on&n_ssid=on&prefer=vlan">' + he.encode(data) + '</a>';
+          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on&n_ssid=on&prefer=vlan">' + DataTable.util.escapeHtml(data) + '</a>';
         }
       }
     ],
@@ -68,7 +68,7 @@ $(document).ready(function() {
       {
         "data": 'vendor',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/report/nodevendor') | none %]?vendor=' + encodeURIComponent(row.abbrev || 'blank') + '">' + he.encode(row.vendor ||'(Unknown Vendor)') + '</a>';
+          return '<a href="[% uri_for('/report/nodevendor') | none %]?vendor=' + encodeURIComponent(row.abbrev || 'blank') + '">' + DataTable.util.escapeHtml(row.vendor ||'(Unknown Vendor)') + '</a>';
         }
       }, {
         "data": 'count',

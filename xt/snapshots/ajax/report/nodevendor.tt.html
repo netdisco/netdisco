@@ -17,7 +17,7 @@ $(document).ready(function() {
       {
         "data": 'vendor',
         "render": function(data, type, row, meta) {
-          return '<a href="?vendor=' + encodeURIComponent(row.abbrev || 'blank') + '">' + he.encode(row.vendor ||'(Unknown Vendor)') + '</a>';
+          return '<a href="?vendor=' + encodeURIComponent(row.abbrev || 'blank') + '">' + DataTable.util.escapeHtml(row.vendor ||'(Unknown Vendor)') + '</a>';
         }
       }, {
         "data": 'count',

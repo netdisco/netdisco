@@ -21,7 +21,7 @@ $(document).ready(function() {
       }, {
         "data": 'description',
         "render": function(data, type, row, meta) {
-          return '<a href="?tab=vlan&q=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="?tab=vlan&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }
     ],

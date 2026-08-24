@@ -20,35 +20,35 @@ $(document).ready(function() {
       {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-          return he.encode(row.dns || row.name || data);
+          return DataTable.util.escapeHtml(row.dns || row.name || data);
         }
       }, {
         "data": 'port',
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>' :
-            he.encode(data || '');
+            '<a href="&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>' :
+            DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'remote_id',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'remote_ip',
         "render": function(data, type, row, meta) {
-          return '<a href="&q=' + encodeURIComponent(data || '') + '">' + he.encode(data || '') + '</a>';
+          return '<a href="&q=' + encodeURIComponent(data || '') + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'remote_port',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'remote_type',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }
     ],

@@ -26,19 +26,19 @@ $(document).ready(function() {
       "data": 'username',
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
-        return he.encode(data || '');
+        return DataTable.util.escapeHtml(data || '');
       }
     }, {
       "data": 'userip',
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
-        return he.encode(data || '');
+        return DataTable.util.escapeHtml(data || '');
       }
     }, {
       "data": 'event',
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
-        return he.encode(data || '');
+        return DataTable.util.escapeHtml(data || '');
       }
     }
   ],
