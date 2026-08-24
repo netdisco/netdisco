@@ -8,6 +8,7 @@
 
   [ENHANCEMENTS]
 
+  * #1643 sort the Ports query in SQL instead of Perl, matching portsort.js
   * #1644 replace he.js with the DataTables escaper already on every page
   * #1645 compress web responses, with a compress_responses setting to disable it
   * #1646 load the admin task panes with htmx
