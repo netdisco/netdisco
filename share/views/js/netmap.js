@@ -6,6 +6,15 @@ var saveMapPositions;  // device.js binds the sidebar Save button to this
 
 $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %]', function (mapdata) {
 
+  // the netmap fragment reloads in place (do_search's $(target).html()), so
+  // this callback runs again while the previous ForceGraph instance's rAF
+  // loop is still running; without tearing it down first, its stale
+  // onEngineStop fires against the new, still-settling graph through the
+  // reassigned global saveMapPositions and can autosave half-settled positions
+  if (window.graph && window.graph.fg && typeof window.graph.fg._destructor === 'function') {
+    window.graph.fg._destructor();
+  }
+
   var container = document.getElementById('nd2_netmap-container');
   var nodes = mapdata['data']['nodes'];
 
@@ -170,15 +179,15 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     box.el.id = 'nd2_netmap-boxselect';
     document.body.appendChild(box.el);
   }, true);
-  window.addEventListener('pointermove', function (ev) {
+  function onBoxPointerMove(ev) {
     if (!box.active) { return }
     var x = Math.min(box.x0, ev.clientX), y = Math.min(box.y0, ev.clientY);
     box.el.style.left = x + 'px';
     box.el.style.top = y + 'px';
     box.el.style.width = Math.abs(ev.clientX - box.x0) + 'px';
     box.el.style.height = Math.abs(ev.clientY - box.y0) + 'px';
-  });
-  window.addEventListener('pointerup', function (ev) {
+  }
+  function onBoxPointerUp(ev) {
     if (!box.active) { return }
     box.active = false;
     box.el.remove();
@@ -190,7 +199,17 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
       n.selected = (n.x >= a.x && n.x <= b.x && n.y >= a.y && n.y <= b.y);
     });
     fg.nodeRelSize(fg.nodeRelSize());
-  });
+  }
+  // raw listeners cannot be namespaced like jQuery's; on a fragment reload,
+  // remove the previous render's pair by reference before adding this one,
+  // or they accumulate on window forever
+  if (window.__ndNetmapPointerHandlers) {
+    window.removeEventListener('pointermove', window.__ndNetmapPointerHandlers.move);
+    window.removeEventListener('pointerup', window.__ndNetmapPointerHandlers.up);
+  }
+  window.__ndNetmapPointerHandlers = { move: onBoxPointerMove, up: onBoxPointerUp };
+  window.addEventListener('pointermove', onBoxPointerMove);
+  window.addEventListener('pointerup', onBoxPointerUp);
 
   // dragging one selected node carries the rest of the selection
   var dragSnap = null;
@@ -218,7 +237,9 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   document.getElementById('nd2_netmap-fullscreen').addEventListener('click', function () {
     requestFullScreen(document.getElementById('netmap_pane'));
   });
-  $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
+  // namespaced so a fragment reload's .off() removes only this render's
+  // handler instead of every handler ever bound to these shared elements
+  $(document).off('.ndnetmap').on('webkitfullscreenchange.ndnetmap mozfullscreenchange.ndnetmap fullscreenchange.ndnetmap', function () {
     resizeGraphContainer();
     $('#nd2_netmap-fullscreen i').attr('class',
       isFullScreen() ? 'fas fa-compress fa-lg' : 'fas fa-expand fa-lg');
@@ -230,9 +251,9 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
         .height(window.innerHeight - 100);
     }, 500);
   }
-  $('#nd_sidebar-toggle-img-in').on('click', resizeGraphContainer);
-  $('#nd_sidebar-toggle-img-out').on('click', resizeGraphContainer);
-  $(window).on('resize', resizeGraphContainer);
+  $('#nd_sidebar-toggle-img-in').off('.ndnetmap').on('click.ndnetmap', resizeGraphContainer);
+  $('#nd_sidebar-toggle-img-out').off('.ndnetmap').on('click.ndnetmap', resizeGraphContainer);
+  $(window).off('resize.ndnetmap').on('resize.ndnetmap', resizeGraphContainer);
 
   fg.onEngineTick(function () {
     var el = document.getElementById('nd2_netmap-spinner');
