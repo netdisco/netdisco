@@ -16,7 +16,7 @@
       <th class="nd_center-cell">Username</th>
       <th class="nd_center-cell">Password</th>
       <th class="nd_center-cell">Auth Method</th>
-      <th class="nd_center-cell">Allowed IPs</th>
+      <th class="nd_center-cell">Token Allowed IPs</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
       <th class="nd_center-cell">Created</th>
@@ -46,7 +46,7 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
+        <a class="btn" href="[% uri_for('/admin/aclmanager') | none %]"><i class="fas fa-list-ul fa-lg fa-border"></i>Edit ACLs</a>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
@@ -90,6 +90,11 @@
           value="********"
           [% END %]
           >
+        [% IF row.token_auth_only %]
+        <button class="btn btn-sm nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
+          <i class="fas fa-key"></i> <i class="fas fa-arrows-rotate"></i>
+        </button>
+        [% END %]
         <small class="nd_token_hint text-muted"
           [% IF NOT row.token_auth_only %]
           style="display: none"
@@ -101,12 +106,6 @@
           <span class="nd_token-hint-value">no token</span>
           [% END %]
         </small>
-        [% IF row.token_auth_only %]
-        <br />
-        <button class="btn btn-sm nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
-          <i class="fas fa-key"></i> <i class="fas fa-arrows-rotate"></i>
-        </button>
-        [% END %]
       </td>
       [% END %]
       <td class="nd_center-cell">
@@ -121,9 +120,18 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
-          value="[% row.token_allowed_ips.join(', ') IF row.token_allowed_ips %]"
-          [% IF NOT row.token_auth_only %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
+        [% IF host_group_acls.size > 0 %]
+        <div class="form-group">
+          <select class="col-md-2 form-select nd_allowed_ips_field" data-form="update" name="token_allowed_ips" [% IF NOT row.token_auth_only %]disabled[% END %]>
+            <option[% ' selected' IF NOT row.allowed_ips_acl %] value="">None</option>
+            [% FOREACH acl IN host_group_acls %]
+            <option[% ' selected' IF row.allowed_ips_acl AND row.allowed_ips_acl == acl %] value="[% acl | html_entity %]">ACL: [% acl | html_entity %]</option>
+            [% END %]
+          </select>
+        </div>
+        [% ELSE %]
+        <a class="btn" href="[% uri_for('/admin/aclmanager') | none %]"><i class="fas fa-list-ul fa-lg fa-border"></i>Create ACL</a>
+        [% END %]
       </td>
       <td class="nd_center-cell">
         <div class="form-group">

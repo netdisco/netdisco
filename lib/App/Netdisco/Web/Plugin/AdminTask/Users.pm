@@ -33,13 +33,6 @@ sub _make_password {
   }
 }
 
-sub _parse_ips {
-  my @ips = grep { length $_ }
-              map { (my $s = $_) =~ s/^\s+|\s+$//g; $s }
-              split(/,/, param('token_allowed_ips') || '');
-  return @ips ? \@ips : undef;
-}
-
 ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
 
@@ -54,12 +47,12 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
             ldap => \'false', radius => \'false', tacacs => \'false',
             token_auth_only  => \'true',
             token_no_expire  => \"true",
-            token_allowed_ips => _parse_ips(),
+            allowed_ips_acl => param('token_allowed_ips'),
           ) : (
             password => _make_password(param('password')),
             token_auth_only => \'false',
             token_no_expire => \"false",
-            token_allowed_ips => undef,
+            allowed_ips_acl => undef,
             (param('auth_method') ? (
               (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
               (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
@@ -111,11 +104,11 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
           ldap => \'false', radius => \'false', tacacs => \'false',
           token_auth_only  => \'true',
           token_no_expire  => (param('auth_method') eq 'permanent_token' ? \"true" : \"false"),
-          token_allowed_ips => _parse_ips(),
+          allowed_ips_acl => param('token_allowed_ips'),
         ) : (
           token_auth_only => \'false',
           token_no_expire => \"false",
-          token_allowed_ips => undef,
+          allowed_ips_acl => undef,
           ((param('password') and param('password') ne '********')
             ? (password => _make_password(param('password')))
             : ()),
@@ -174,6 +167,9 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
+    my @host_group_acls =
+      schema(vars->{'tenant'})->resultset('AccessControlListName')->host_acl_names;
+
     sync_portctl_roles();
     my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
     push @port_control_roles,
@@ -181,7 +177,10 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
-            { results => \@results, port_control_roles => [ uniq sort {$a cmp $b} @port_control_roles ] },
+            { results => \@results,
+              host_group_acls => [ uniq sort {$a cmp $b} @host_group_acls ],
+              port_control_roles => [ uniq sort {$a cmp $b} @port_control_roles ],
+            },
             { layout  => undef };
     }
     else {
