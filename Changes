@@ -1,3 +1,9 @@
+2.105004 - 2026-08-25
+
+  [ENHANCEMENTS]
+
+  * rebuild MANIFEST and bump Netdisco.pm VERSION automatically in Build
+
 2.105003 - 2026-08-24
 
   [BUG FIXES]

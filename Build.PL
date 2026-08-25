@@ -9,9 +9,12 @@ App::Netdisco::Builder->new(
   license     => 'bsd',
   dynamic_config => 1,
   configure_requires => {
-    'DBIx::Class' => '0.082810',
+    'DBIx::Class' => '0.082844',
     'File::Spec' => 0, # core
-    'Module::Build' => '0.42',
+    'Module::Build' => '0.4234',
+    'CPAN::Changes' => '0.500005',
+    'Perl::Version' => '1.019',
+    'Module::Metadata' => '1.000040',
   },
   build_requires => {
     'Alien::ultraviolet' => '1.001001',
@@ -41,8 +44,8 @@ App::Netdisco::Builder->new(
     'Data::Printer' => '0',
     'Data::Visitor::Tiny' => '0',
     'DBD::Pg' => '0',
-    'DBIx::Class' => '0.082841',
-    'DBIx::Class::Helpers' => '2.033006',
+    'DBIx::Class' => '0.082844',
+    'DBIx::Class::Helpers' => '2.037000',
     'Daemon::Control' => '0.001006',
     'Dancer' => '1.3132',
     'Dancer::Plugin::Auth::Extensible' => '0.30',

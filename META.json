@@ -27,9 +27,12 @@
       },
       "configure" : {
          "requires" : {
-            "DBIx::Class" : "0.082810",
+            "CPAN::Changes" : "0.500005",
+            "DBIx::Class" : "0.082844",
             "File::Spec" : "0",
-            "Module::Build" : "0.42"
+            "Module::Build" : "0.4234",
+            "Module::Metadata" : "1.000040",
+            "Perl::Version" : "1.019"
          }
       },
       "runtime" : {
@@ -51,8 +54,8 @@
             "CGI::Expand" : "2.05",
             "Command::Runner" : "0",
             "DBD::Pg" : "0",
-            "DBIx::Class" : "0.082841",
-            "DBIx::Class::Helpers" : "2.033006",
+            "DBIx::Class" : "0.082844",
+            "DBIx::Class::Helpers" : "2.037000",
             "Daemon::Control" : "0.001006",
             "Dancer" : "1.3132",
             "Dancer::Plugin::Auth::Extensible" : "0.30",
@@ -151,7 +154,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.105003"
+         "version" : "2.105004"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -1061,6 +1064,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.105003",
+   "version" : "2.105004",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
