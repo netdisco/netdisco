@@ -18,27 +18,27 @@ $(document).ready(function() {
       {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-          return he.encode(row.device.dns || row.device.name || row.ip);
+          return DataTable.util.escapeHtml(row.device.dns || row.device.name || row.ip);
         }
       }, {
         "data": 'port',
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_duplex=on">' + he.encode(data || '') + '</a>' :
-            he.encode(data || '');
+            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_duplex=on">' + DataTable.util.escapeHtml(data || '') + '</a>' :
+            DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'name',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'duplex',
         "searchable": false,
         "orderable": false,
         "render": function(data, type, row, meta) {
-          return he.encode(capitalizeFirstLetter(data));
+          return DataTable.util.escapeHtml(capitalizeFirstLetter(data));
         }
       }
     ],

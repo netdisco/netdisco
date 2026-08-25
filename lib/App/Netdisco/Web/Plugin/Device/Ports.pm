@@ -6,7 +6,6 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name/;
-use App::Netdisco::Util::Web (); # for sort_port
 use App::Netdisco::Web::Plugin;
 
 use List::MoreUtils 'singleton';
@@ -160,14 +159,18 @@ get '/ajax/content/device/ports' => require_login sub {
                    : param('n_ip4') ? 'ip4s'
                    : 'ip6s');
 
+    # Ordering terms that follow the port name, never replace it: see
+    # DevicePort's order_by_port_name for why the port key has to lead.
+    my @node_order = ();
+
     if (param('c_nodes')) {
         # retrieve active/all connected nodes, if asked for
         $set = $set->search({}, { prefetch => [{$nodes_name => $ips_name}] });
-        $set = $set->search({}, { order_by => [
+        @node_order = (
           \qq{regexp_replace(COALESCE(${nodes_name}.vlan, '0'), '[^0-9]*' ,'0') :: integer},
           "${nodes_name}.mac",
           "${ips_name}.ip",
-        ] });
+        );
 
         # retrieve wireless SSIDs, if asked for
         $set = $set->search({}, { prefetch => [{$nodes_name => 'wireless'}] })
@@ -202,6 +205,11 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # also get remote LLDP inventory if asked for
     $set = $set->with_remote_inventory if param('n_inventory');
+
+    # Ordered in the database rather than after the fetch. The order is
+    # portsort.js's, which is the one the browser shows, so this replaces a
+    # sort_port pass whose result the browser overwrote anyway.
+    $set = $set->order_by_port_name(\@node_order);
 
     # run query
     my @results = $set->all;
@@ -298,9 +306,6 @@ get '/ajax/content/device/ports' => require_login sub {
             $dotzero_port->{is_dot_zero_subinterface} = true;
         }
     }
-
-    # sort ports
-    @results = sort { &App::Netdisco::Util::Web::sort_port($a->port, $b->port) } @results;
 
     # add acl on port config
     # this has the merged yaml and database config

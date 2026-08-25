@@ -102,20 +102,28 @@ subtest 'escapeForScriptContext__values_that_are_not_json_strings__pass_through'
 subtest 'webApp__the_results_token__is_escaped_before_the_template_sees_it' => sub {
     # The function is only half the fix. Assert the hook that calls it exists,
     # so deleting the hook fails a test rather than silently reopening this.
+    #
+    # The hook delegates to escape_results_token() rather than touching the
+    # token hash itself, because applying the escaper unconditionally
+    # autovivified a `results` key and broke the API's node search (#1649).
+    # That guard is exercised in xt/44-results-token-escaping.t.
     use FindBin;
     use File::Spec::Functions qw(catdir catfile updir);
 
-    my $path = catfile( catdir( $FindBin::Bin, updir() ),
-        qw(lib App Netdisco Web.pm) );
-    my $web = do {
+    my $lib = catdir( $FindBin::Bin, updir(), 'lib', 'App', 'Netdisco' );
+    my $slurp = sub {
+        my $path = shift;
         open my $fh, '<', $path or die "cannot read $path: $!";
         local $/; <$fh>;
     };
 
-    like( $web, qr/hook \s+ '?before_template'? .*? escape_for_script_context/xs,
-        'a before_template hook passes the results token through the escaper' );
-    like( $web, qr/\$tokens->\{results\}/,
-        'and it is the results token that is escaped' );
+    my $web  = $slurp->( catfile( $lib, 'Web.pm' ) );
+    my $util = $slurp->( catfile( $lib, 'Util', 'Web.pm' ) );
+
+    like( $web, qr/hook \s+ '?before_template'? .*? escape_results_token/xs,
+        'a before_template hook passes the token hash to the escaping helper' );
+    like( $util, qr/\$tokens->\{results\} \s* = \s* escape_for_script_context/xs,
+        'and that helper is what escapes the results token' );
 };
 
 done_testing;

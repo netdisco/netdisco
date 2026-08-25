@@ -29,7 +29,6 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-detect.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-sort.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jstree/jstree.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/he.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/natural.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/portsort.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/versionsort.js?v=[% asset_version | none %]"></script>
@@ -39,6 +38,7 @@
     var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
     var default_pgtitle = '[% settings.branding_text | none %]';
   </script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js?v=[% asset_version | none %]"></script>
 

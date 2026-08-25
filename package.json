@@ -11,6 +11,7 @@
     "datatables.net": "2.3.8",
     "datatables.net-bs5": "2.3.8",
     "daterangepicker": "3.1.0",
+    "htmx.org": "2.0.10",
     "jquery": "3.7.1",
     "jquery-ui": "1.14.2",
     "moment": "2.30.1",

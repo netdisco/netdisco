@@ -19,6 +19,7 @@ our @EXPORT_OK = qw/
   request_is_api_report
   request_is_api_search
   escape_for_script_context
+  escape_results_token
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -166,7 +167,8 @@ sub sort_port {
         @a = ($1);
     } elsif ($aval =~ $ciscofast) {
         @a = ($1,$2);
-        push @a, split(/[:\/]/,$3), $4;
+        push @a, split(/[:\/]/,$3);
+        push @a, $4 if defined $4;
     } elsif ($aval =~ $wordcharword) {
         @a = ($1,$2,$3);
     } else {
@@ -183,7 +185,8 @@ sub sort_port {
         @b = ($1);
     } elsif ($bval =~ $ciscofast) {
         @b = ($1,$2);
-        push @b, split(/[:\/]/,$3),$4;
+        push @b, split(/[:\/]/,$3);
+        push @b, $4 if defined $4;
     } elsif ($bval =~ $wordcharword) {
         @b = ($1,$2,$3);
     } else {
@@ -321,6 +324,27 @@ sub escape_for_script_context {
   $json =~ s/\x{2029}/\\u2029/g;
 
   return $json;
+}
+
+=head2 escape_results_token( $tokens )
+
+Applies C<escape_for_script_context> to the C<results> token of a template
+token hash, in place, and returns the hash.
+
+Only when the key is already there. The API serializer chooses between
+emitting C<results> alone and walking the whole token hash on C<exists
+$tokens-E<gt>{results}>, and a handler that renders without that token, as
+node search does, needs the second. Assigning unconditionally would
+autovivify the key and silently move such a handler onto the first branch.
+
+=cut
+
+sub escape_results_token {
+  my $tokens = shift;
+  return $tokens unless (ref {} eq ref $tokens) and exists $tokens->{results};
+
+  $tokens->{results} = escape_for_script_context( $tokens->{results} );
+  return $tokens;
 }
 
 1;

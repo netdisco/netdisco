@@ -10,6 +10,33 @@
 
   * a netmap URL carrying autosave=off no longer saves positions anyway
 
+2.105004 - 2026-08-25
+
+  [ENHANCEMENTS]
+
+  * rebuild MANIFEST and bump Netdisco.pm VERSION automatically in Build
+
+2.105003 - 2026-08-24
+
+  [BUG FIXES]
+
+  * #1649 fix the API node search returning null instead of node data
+
+2.105002 - 2026-08-24
+
+  [ENHANCEMENTS]
+
+  * #1643 sort the Ports query in SQL instead of Perl, matching portsort.js
+  * #1644 replace he.js with the DataTables escaper already on every page
+  * #1645 compress web responses, with a compress_responses setting to disable it
+  * #1646 load the admin task panes with htmx
+  * update Python dependencies and GitHub Actions versions
+
+  [BUG FIXES]
+
+  * #1645 restore the cache header on JavaScript
+  * #1646 refresh the users pane when the API token reveal modal is dismissed
+
 2.105001 - 2026-08-22
 
   [BUG FIXES]
