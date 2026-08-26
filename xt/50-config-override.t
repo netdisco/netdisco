@@ -93,6 +93,21 @@ is_deeply($j1->log_struct, [{tag => 'foo', driver => 'snmp'}, {tag => 'bar', dri
 
 $j1 = run_dumpconfig_for();
 is_deeply($j1->subaction, q{}, "undefined subaction is promoted to empty string");
+is($j1->status, 'done', "job with no subaction and no port succeeds");
+my $whole_config = try { $j1->log_struct } catch { undef };
+ok((ref {} eq ref $whole_config and exists $whole_config->{'workers'}),
+  "no subaction and no port dumps the whole config");
+
+# domain_suffix is a compiled Regexp and url_base a URI::Based, neither of
+# which JSON can encode without help
+
+is($whole_config->{'domain_suffix'}, q{(?^:)},
+  "compiled regexp setting is dumped as its pattern");
+ok(defined $whole_config->{'url_base'},
+  "object setting is dumped as its string form");
+
+$j1 = run_dumpconfig_for(undef, 'domain_suffix');
+is($j1->status, 'done', "job dumping only a compiled regexp setting succeeds");
 
 =over 4
 =item * C<"">

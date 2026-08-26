@@ -4,6 +4,10 @@
 
   * rebuild MANIFEST and bump Netdisco.pm VERSION automatically in Build
 
+  [BUG FIXES]
+
+  * fix netdisco-do dumpconfig printing undef instead of the whole config
+
 2.105003 - 2026-08-24
 
   [BUG FIXES]
