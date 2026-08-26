@@ -18,7 +18,8 @@ use Authen::TacacsPlus;
 use Path::Class;
 use File::ShareDir 'dist_dir';
 use Try::Tiny;
-use NetAddr::IP::Lite ':lower';
+
+use App::Netdisco::Util::Permission 'acl_matches_only';
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
@@ -80,11 +81,11 @@ sub validate_api_token {
       and ($user->token_no_expire
         or $user->token_from > (time - setting('api_token_lifetime')));
 
-    if ($user->token_allowed_ips and scalar @{$user->token_allowed_ips}) {
-      my $client = NetAddr::IP::Lite->new(request->remote_address);
-      return undef unless $client
-        and grep { $client->within(NetAddr::IP::Lite->new($_)) }
-                 @{$user->token_allowed_ips};
+    # TODO some kind of composed ACL in the database
+    if ($user->token_acl and exists setting('host_groups')->{$user->token_acl}
+          and defined setting('host_groups')->{$user->token_acl}) {
+      return undef
+        unless acl_matches_only(setting('host_groups')->{$user->token_acl});
     }
 
     return $user;

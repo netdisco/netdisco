@@ -47,7 +47,7 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
             ldap => \'false', radius => \'false', tacacs => \'false',
             token_auth_only  => \'true',
             token_no_expire  => \"true",
-            token_acl        => param('token_acl'),
+            token_acl        => (param('token_acl') || undef),
           ) : (
             password => _make_password(param('password')),
             token_auth_only => \'false',
@@ -104,7 +104,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
           ldap => \'false', radius => \'false', tacacs => \'false',
           token_auth_only  => \'true',
           token_no_expire  => (param('auth_method') eq 'permanent_token' ? \"true" : \"false"),
-          token_acl        => param('token_acl'),
+          token_acl        => (param('token_acl') || undef),
         ) : (
           token_auth_only => \'false',
           token_no_expire => \"false",
@@ -167,13 +167,12 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    my @host_group_acls =
-      schema(vars->{'tenant'})->resultset('AccessControlListName')->host_acl_names;
-
     sync_portctl_roles();
     my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
     push @port_control_roles,
       schema(vars->{'tenant'})->resultset('AccessControlListName')->host_port_acl_names;
+
+    my @host_group_acls = keys %{ setting('host_groups') || {} };
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',

@@ -16,7 +16,7 @@
       <th class="nd_center-cell">Username</th>
       <th class="nd_center-cell">Password</th>
       <th class="nd_center-cell">Auth Method</th>
-      <th class="nd_center-cell">Token Allowed IPs</th>
+      <th class="nd_center-cell">Token ACL</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
       <th class="nd_center-cell">Created</th>
