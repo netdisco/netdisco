@@ -1,3 +1,9 @@
+2.tbd - tbd
+
+  [ENHANCEMENTS]
+
+  * bump SNMP::Info dependency 3.977001, improves Cisco WLC support
+
 2.105004 - 2026-08-25
 
   [ENHANCEMENTS]
