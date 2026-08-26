@@ -122,10 +122,10 @@
       <td class="nd_center-cell">
         [% IF host_group_acls.size > 0 %]
         <div class="form-group">
-          <select class="col-md-2 form-select nd_allowed_ips_field" data-form="update" name="token_allowed_ips" [% IF NOT row.token_auth_only %]disabled[% END %]>
-            <option[% ' selected' IF NOT row.allowed_ips_acl %] value="">None</option>
+          <select class="col-md-2 form-select nd_allowed_ips_field" data-form="update" name="token_acl" [% IF NOT row.token_auth_only %]disabled[% END %]>
+            <option[% ' selected' IF NOT row.token_acl %] value="">None</option>
             [% FOREACH acl IN host_group_acls %]
-            <option[% ' selected' IF row.allowed_ips_acl AND row.allowed_ips_acl == acl %] value="[% acl | html_entity %]">ACL: [% acl | html_entity %]</option>
+            <option[% ' selected' IF row.token_acl AND row.token_acl == acl %] value="[% acl | html_entity %]">ACL: [% acl | html_entity %]</option>
             [% END %]
           </select>
         </div>

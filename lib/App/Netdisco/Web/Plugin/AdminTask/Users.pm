@@ -47,12 +47,12 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
             ldap => \'false', radius => \'false', tacacs => \'false',
             token_auth_only  => \'true',
             token_no_expire  => \"true",
-            allowed_ips_acl => param('token_allowed_ips'),
+            token_acl        => param('token_acl'),
           ) : (
             password => _make_password(param('password')),
             token_auth_only => \'false',
             token_no_expire => \"false",
-            allowed_ips_acl => undef,
+            token_acl       => undef,
             (param('auth_method') ? (
               (ldap => (param('auth_method') eq 'ldap' ? \'true' : \'false')),
               (radius => (param('auth_method') eq 'radius' ? \'true' : \'false')),
@@ -104,11 +104,11 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
           ldap => \'false', radius => \'false', tacacs => \'false',
           token_auth_only  => \'true',
           token_no_expire  => (param('auth_method') eq 'permanent_token' ? \"true" : \"false"),
-          allowed_ips_acl => param('token_allowed_ips'),
+          token_acl        => param('token_acl'),
         ) : (
           token_auth_only => \'false',
           token_no_expire => \"false",
-          allowed_ips_acl => undef,
+          token_acl       => undef,
           ((param('password') and param('password') ne '********')
             ? (password => _make_password(param('password')))
             : ()),

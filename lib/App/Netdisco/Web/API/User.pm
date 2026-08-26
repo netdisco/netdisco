@@ -32,7 +32,7 @@ swagger_path {
     token_auth_only => $_->{token_auth_only} ? \1 : \0,
     token_hint      => $_->{token_hint},
     token_permanent => $_->{token_no_expire} ? \1 : \0,
-    allowed_ips_acl => $_->{allowed_ips_acl} || '',
+    token_acl       => $_->{token_acl} || '',
     last_on         => $_->{last_on},
   }} @users;
 
@@ -59,7 +59,7 @@ swagger_path {
             default => 0,
             description => 'Issue a non-expiring token (requires allow_permanent_tokens in config)',
           },
-          allowed_ips_acl => {
+          token_acl => {
             type => 'string',
             description => 'Name of the Host Group ACL controlling the sources allowed to use this token (omit for no restriction)',
           },
@@ -87,19 +87,19 @@ swagger_path {
 
   if ($body->{revoke}) {
     $user->update({ token => undef, token_from => undef, token_no_expire => \"false",
-                    allowed_ips_acl => undef });
+                    token_acl => undef });
     return to_json { username => $username, revoked => \1 };
   }
 
   my $provider = Dancer::Plugin::Auth::Extensible::auth_provider('users');
 
   my $want_permanent = $body->{permanent} && setting('allow_permanent_tokens');
-  my $allowed_ips    = (ref $body->{allowed_ips_acl} eq q{}) ? $body->{allowed_ips_acl} : undef;
+  my $token_acl      = $body->{token_acl};
 
   $user->update({
     token_from      => time,
     token_no_expire => ($want_permanent ? \"true" : \"false"),
-    (defined $allowed_ips ? (allowed_ips_acl => $allowed_ips) : ()),
+    (defined $token_acl ? (token_acl => $token_acl) : ()),
     ($provider->validate_api_token($user->token)
       ? () : (token => \'md5(random()::text)')),
   })->discard_changes();
@@ -108,8 +108,8 @@ swagger_path {
     username  => $username,
     api_key   => $user->token,
     permanent => ($user->token_no_expire ? \1 : \0),
-    ($user->allowed_ips_acl
-      ? (allowed_ips_acl => $user->allowed_ips_acl) : ()),
+    ($user->token_acl
+      ? (token_acl => $user->token_acl) : ()),
   };
 };
 

@@ -48,19 +48,19 @@ ALTER TABLE access_control_list DROP COLUMN username;
 -- delete the legacy allowed IPs array from users
 ALTER TABLE users DROP COLUMN token_allowed_ips;
 -- create the new acl name column in users
-ALTER TABLE users ADD COLUMN token_allowed_acl text;
+ALTER TABLE users ADD COLUMN token_acl text;
 
 -- synthesize the acl name column in users
 UPDATE users
-  SET token_allowed_acl = concat(username, '_acl') WHERE acl_id IS NOT NULL;
+  SET token_acl = concat(username, '_acl') WHERE acl_id IS NOT NULL;
 
 -- insert into aclname by selecting synthesized acl name from users
 INSERT INTO access_control_list_name (acl_name, acl_type)
-  SELECT token_allowed_acl, 'host' FROM users WHERE acl_id IS NOT NULL;
+  SELECT token_acl, 'host' FROM users WHERE acl_id IS NOT NULL;
 
 -- insert into aclmap by selecting the two acl id fields from users
 INSERT INTO access_control_list_map (acl_name, left_acl_id, right_acl_id)
-  SELECT token_allowed_acl, acl_id, empty_acl_id FROM users WHERE acl_id IS NOT NULL;
+  SELECT token_acl, acl_id, empty_acl_id FROM users WHERE acl_id IS NOT NULL;
 
 -- delete temporary acl ID fields from users
 ALTER TABLE users DROP COLUMN acl_id;

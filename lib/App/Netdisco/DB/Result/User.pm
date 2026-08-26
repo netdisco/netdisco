@@ -43,7 +43,7 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "token_no_expire",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
-  "allowed_ips_acl",
+  "token_acl",
   { data_type => "text", is_nullable => 1 },
   "token_auth_only",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
