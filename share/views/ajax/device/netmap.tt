@@ -1,4 +1,8 @@
 <div id="nd2_netmap-wrap">
+[%# do_search's "Waiting for results..." is already gone by the time this
+    fragment lands; the wait the user sees is the getJSON below. Same markup as
+    netdisco.js so the netmap does not announce a slow load differently. %]
+  <div id="nd2_netmap-loading" class="col-md-2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>
   <div id="nd2_netmap-container"></div>
   <div id="nd2_netmap-fullscreen" title="Full Screen"><i class="fas fa-expand fa-lg"></i></div>
   <div id="nd2_netmap-spinner" class="nd_netmap-running"></div>

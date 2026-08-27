@@ -1976,7 +1976,12 @@ td.nd_nowrap {
 
 /* netmap overlays: the canvas renderer draws no DOM, so the fullscreen
    control and the engine status indicator sit above it as elements */
-#nd2_netmap-wrap { position: relative; }
+/* min-height matches the height netmap.js gives the canvas, so the wrap is
+   already its final size while the loading message shows: without it the wrap
+   collapses until ForceGraph sizes the container, and the two absolutely
+   positioned children resolve against a zero-height box, landing above the
+   pane rather than in its corners */
+#nd2_netmap-wrap { position: relative; min-height: calc(100vh - 100px); }
 /* fullscreen paints the browser's own black backdrop behind a transparent
    canvas (the old SVG renderer avoided this because its SVG element carried
    an opaque background always, not just in fullscreen); match that here so

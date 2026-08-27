@@ -41,3 +41,17 @@ jobs:
       # regression. Same naming rule as that job: name the file, never a glob.
       - name: Every view template parses or is excluded from code scanning
         run: node --test xt/js/view-templates.test.js
+
+  netmap-loading:
+    name: netmap first paint indicator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The netmap pane announces its wait for the first paint
+        run: node --test xt/js/netmap-loading.test.js

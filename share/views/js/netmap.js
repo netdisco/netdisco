@@ -15,6 +15,11 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     window.graph.fg._destructor();
   }
 
+  // from here the bottom-right spinner carries the signal through layout to
+  // settle, so the two never show at once
+  var loading = document.getElementById('nd2_netmap-loading');
+  if (loading) { loading.remove() }
+
   var container = document.getElementById('nd2_netmap-container');
   var nodes = mapdata['data']['nodes'];
 

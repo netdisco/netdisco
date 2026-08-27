@@ -1,4 +1,6 @@
 <div id="nd2_netmap-wrap">
+
+  <div id="nd2_netmap-loading" class="col-md-2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>
   <div id="nd2_netmap-container"></div>
   <div id="nd2_netmap-fullscreen" title="Full Screen"><i class="fas fa-expand fa-lg"></i></div>
   <div id="nd2_netmap-spinner" class="nd_netmap-running"></div>
@@ -20,6 +22,11 @@ $.getJSON('?', function (mapdata) {
   if (window.graph && window.graph.fg && typeof window.graph.fg._destructor === 'function') {
     window.graph.fg._destructor();
   }
+
+  // from here the bottom-right spinner carries the signal through layout to
+  // settle, so the two never show at once
+  var loading = document.getElementById('nd2_netmap-loading');
+  if (loading) { loading.remove() }
 
   var container = document.getElementById('nd2_netmap-container');
   var nodes = mapdata['data']['nodes'];
