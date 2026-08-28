@@ -331,9 +331,16 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // back to 'Other' rather than leaving it unset)
   var legend = document.getElementById('nd2_netmap-legend');
   if (legend) {
-    Object.keys(colorOf).forEach(function (key) {
+    // Object.keys is arrival order in the payload; the old renderer sorted
+    // its legend, and 3152 unsorted rows in a scroller cannot be read by eye
+    Object.keys(colorOf).sort(function (a, b) {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    }).forEach(function (key) {
       if (key === '__plain') { return }
       var row = document.createElement('div');
+      // the row clips to one line, and long site codes share their leading
+      // 80 characters, so the title is the only way to tell those rows apart
+      row.title = key;
       row.innerHTML = '<span style="color:' + colorOf[key] + '">&#9632;</span> ';
       row.appendChild(document.createTextNode(key));
       legend.appendChild(row);

@@ -1998,8 +1998,23 @@ td.nd_nowrap {
   border-top-color: transparent; animation: nd2-netmap-spin 1.5s linear infinite; }
 #nd2_netmap-spinner.nd_netmap-settled { border: 0; background: #CCFFCC; }
 @keyframes nd2-netmap-spin { to { transform: rotate(360deg); } }
+/* The rows are the distinct COLORVALUEs of the drawn nodes, and for
+   colorby=lgroup that is the raw device.location string. Measured on a 6493
+   device network: 3152 rows, longest 184 characters, so uncapped the box is
+   about 1160px wide and 56700px tall. Being absolutely positioned it does not
+   expand the wrap, so the overflow lands on the document and the canvas ends
+   part way down it. Cap against the wrap rather than the viewport: the pane,
+   not the wrap, is what goes fullscreen, so a vh value would stop matching the
+   box the legend sits in. */
 #nd2_netmap-legend { position: absolute; top: 12px; left: 16px;
-  background: rgba(255,255,255,0.85); padding: 6px 10px; font-size: 12px; }
+  background: rgba(255,255,255,0.85); padding: 6px 10px; font-size: 12px;
+  max-width: 22em; max-height: calc(100% - 24px); overflow-y: auto; }
+/* one line per row: 46% of these labels are longer than a line, and wrapping
+   them made the list 100524px instead of 56748px. Safe only because the row
+   carries its full label as a title, since 28% of them are not uniquely
+   identified by the ~42 characters that fit */
+#nd2_netmap-legend div { white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; }
 #nd2_netmap-boxselect { position: fixed; border: 1px dashed #0d6efd;
   background: rgba(13,110,253,0.08); pointer-events: none; z-index: 100; }
 /* htmx hides an idle indicator with opacity and visibility, neither of which

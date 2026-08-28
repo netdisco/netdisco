@@ -5,6 +5,8 @@
   * netmap redrawn on canvas via force-graph; the map settles and pans
     smoothly at sizes that struggled before
   * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
+  * netmap colorby legend is confined to the map and scrolls, one line per
+    location with the full name on hover
 
   [BUG FIXES]
 
