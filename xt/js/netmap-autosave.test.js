@@ -14,6 +14,12 @@
 // So two things are needed together. A tick count tells a real settle apart
 // from a stop that did no work, and onNodeDragEnd is what persists a node the
 // user moved by hand, since the stop that follows a drag runs no ticks.
+//
+// The same distinction decides who gets told. With autosave on the map saves
+// itself at every settle and every drag, so a toast for each would be noise.
+// The sidebar Save button is the one case where the user asked for a save and
+// has nothing else to confirm it happened, so it announces, and only when
+// autosave is off.
 
 'use strict';
 
@@ -25,6 +31,8 @@ const path = require('node:path');
 const repoRoot = path.join(__dirname, '..', '..');
 const netmapJs = () => fs.readFileSync(
   path.join(repoRoot, 'share', 'views', 'js', 'netmap.js'), 'utf8');
+const deviceJs = () => fs.readFileSync(
+  path.join(repoRoot, 'share', 'views', 'js', 'device.js'), 'utf8');
 
 // balanced to the handler's own closing paren, so an assertion cannot pass by
 // matching text that belongs to a different handler. A line-indent heuristic
@@ -77,6 +85,53 @@ describe('netmap autosave', () => {
       'the engine stop after a drag runs no ticks, so without a save here a node the ' +
       'user moved by hand is never persisted. That was the old renderer\'s behavior ' +
       'and it is not worth reproducing'
+    );
+  });
+});
+
+describe('netmap manual save', () => {
+  test('saveMapPositions__called_by_the_button_with_autosave_off__announces', () => {
+    const src = netmapJs();
+    const at = src.indexOf('saveMapPositions = function');
+    assert.notEqual(at, -1, 'netmap.js must define saveMapPositions');
+    const body = src.slice(at, src.indexOf('\n  };', at));
+    assert.match(
+      body,
+      /toastr\.success/,
+      'a manual save has nothing else to confirm it happened, so it must say so'
+    );
+    assert.match(
+      body,
+      /if\s*\([^)]*!\s*autosaveOn[^)]*\)[\s\S]{0,120}?toastr\.success/,
+      'the toast must be suppressed when autosave is on, or the map announces itself ' +
+      'at every settle and every drag'
+    );
+    assert.match(
+      body,
+      /function\s*\(\s*\w+\s*\)/,
+      'saveMapPositions must take the caller\'s intent as an argument: the autosave ' +
+      'calls and the button call are otherwise indistinguishable from inside it'
+    );
+    assert.match(
+      body,
+      /dataType:\s*'text'/,
+      'the save route answers text/xml carrying a stringified Perl object, so jQuery ' +
+      'guesses XML, fails to parse it, and rejects the deferred even on a 200. Without ' +
+      'forcing text the done() handler never runs and no toast is ever shown, which is ' +
+      'exactly what happened when this was first written'
+    );
+  });
+
+  test('saveButton__on_click__tells_saveMapPositions_it_was_the_user', () => {
+    const src = deviceJs();
+    const at = src.indexOf("'#nd_netmap-save'");
+    assert.notEqual(at, -1, 'device.js must bind the netmap Save button');
+    const handler = src.slice(at, at + 260);
+    assert.match(
+      handler,
+      /saveMapPositions\(\s*\w+/,
+      'the button must pass an argument, or netmap.js cannot tell a click from the ' +
+      'saves autosave makes on its own'
     );
   });
 });

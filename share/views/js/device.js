@@ -132,7 +132,9 @@
     });
     $('#nd_netmap-save').on('click', function (event) {
       event.preventDefault();
-      saveMapPositions();
+      // true marks this as the user asking, which is what netmap.js keys the
+      // confirmation toast off
+      saveMapPositions(true);
     });
 
     // activity for admin tasks in device details

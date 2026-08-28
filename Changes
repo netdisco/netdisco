@@ -9,6 +9,7 @@
     location with the full name on hover
   * netmap All Devices and Neighbor Cloud stay available up to 2500 devices
     rather than 1000
+  * netmap Save button confirms with a toast when autosave is off
 
   [BUG FIXES]
 
