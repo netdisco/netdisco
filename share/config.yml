@@ -189,7 +189,7 @@ health_path: ''
 metrics_path: ''
 metrics_token: ''
 metrics_allow: []
-netmap_performance_limit_max_devices: 1000
+netmap_performance_limit_max_devices: 2500
 netmap_custom_fields:
   device: []
   device_port: []

@@ -7,6 +7,8 @@
   * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
   * netmap colorby legend is confined to the map and scrolls, one line per
     location with the full name on hover
+  * netmap All Devices and Neighbor Cloud stay available up to 2500 devices
+    rather than 1000
 
   [BUG FIXES]
 
