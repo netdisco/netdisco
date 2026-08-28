@@ -81,11 +81,12 @@ sub validate_api_token {
       and ($user->token_no_expire
         or $user->token_from > (time - setting('api_token_lifetime')));
 
-    # TODO some kind of composed ACL in the database
-    if ($user->token_acl and exists setting('host_groups')->{$user->token_acl}
-          and defined setting('host_groups')->{$user->token_acl}) {
-      return undef
-        unless acl_matches_only(setting('host_groups')->{$user->token_acl});
+    if ($user->token_acl and exists setting('host_groups')->{$user->token_acl}) {
+        # would expect empty list acl to reject, because client IP is not in there
+        # but acl_matches_only returns true for empty list
+        # however managed host acls can never be empty, UI forces grp:any
+        return undef unless
+            acl_matches_only(setting('host_groups')->{$user->token_acl});
     }
 
     return $user;

@@ -172,7 +172,8 @@ get '/ajax/content/admin/users' => require_role admin => sub {
     push @port_control_roles,
       schema(vars->{'tenant'})->resultset('AccessControlListName')->host_port_acl_names;
 
-    my @host_group_acls = keys %{ setting('host_groups') || {} };
+    my @host_group_acls =
+      schema(vars->{'tenant'})->resultset('AccessControlListName')->host_acl_names;
 
     if ( request->is_ajax ) {
         template 'ajax/admintask/users.tt',
