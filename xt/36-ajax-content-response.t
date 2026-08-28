@@ -102,6 +102,43 @@ subtest 'ajaxContentRoutes__having_rendered_a_template__answer_with_it' => sub {
     }
 };
 
+subtest 'ajaxDataRoutes__answering_with_a_value__set_their_own_content_type' => sub {
+    # Dancer::Plugin::Ajax's own `before` hook stamps text/xml on every ajax
+    # response unless the route overrides it, and netdisco configures no
+    # plugins.Ajax.content_type. That is harmless for a route whose body is
+    # empty or whose caller does not sniff: do_search reads response.text()
+    # from fetch(), and every jQuery caller in share/views/js either passes
+    # dataType or hits a route that sets a type. It is not harmless for a
+    # /ajax/data/ route, whose whole purpose is to answer with a value that a
+    # caller parses. Measured in a browser: an empty body under text/xml
+    # resolves done() normally, a non-empty non-XML body raises parsererror
+    # and the success handler never runs.
+    #
+    # /ajax/data/device/netmappositions was the one route that set no type and
+    # fell off the end of its handler, so it answered text/xml with a
+    # stringified DBIC row, "App::Netdisco::DB::Result::NetmapPositions=HASH(0x...)".
+    # That leaked a memory address to the browser and made any success handler
+    # on the save dead code.
+    my @data_routes = grep { $_->{path} =~ m{^/ajax/data/} } @other_routes;
+    cmp_ok scalar(@data_routes), '>=', 10,
+        'the sweep found data routes at all'
+        or diag 'nothing matched, so the assertions below are vacuous';
+
+    foreach my $route ( sort { $a->{path} cmp $b->{path} } @data_routes ) {
+        like $route->{body}, qr/\bcontent_type\b/,
+            "$route->{path} sets its own content type"
+            or diag "$route->{module} inherits the plugin's text/xml default";
+
+        my @statements = grep { /\S/ } split /\n/, $route->{body};
+        my $last = $statements[-1] // '';
+        $last =~ s/^\s+//;
+        unlike $last, qr/^ \}? \s* $/x,
+            "$route->{path} ends on an explicit answer, not a closing brace"
+            or diag "$route->{module} answers with whatever its last statement "
+                  . 'evaluated to, which for a resultset call is the row object';
+    }
+};
+
 subtest 'ajaxControlRoutes__which_act_rather_than_render__call_no_template' => sub {
     # The other half of c9492899, and the reason its eight remaining empty
     # returns must be left alone: a route that renders nothing has nothing to

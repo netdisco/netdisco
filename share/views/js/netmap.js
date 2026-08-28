@@ -144,16 +144,11 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // worked
   saveMapPositions = function (announce) {
     fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
-    $.post({
-      url: '[% uri_for("/ajax/data/device/netmappositions") | none %]'
-      // the route answers text/xml carrying a stringified Perl object, so
-      // jQuery guesses XML, fails to parse it and rejects the deferred even
-      // though the save returned 200. Forcing text is what makes done() mean
-      // saved rather than never running at all
-      , dataType: 'text'
-      , data: $("#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
+    $.post(
+      '[% uri_for("/ajax/data/device/netmappositions") | none %]'
+      , $("#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
         + '&positions=' + JSON.stringify(graph.positions())
-    }).done(function () {
+    ).done(function () {
       if (announce && !autosaveOn) { toastr.success('Saved map positions.') }
     });
   };

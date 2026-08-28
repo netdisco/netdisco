@@ -80,6 +80,9 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
         positions => to_json(\%clean),
       });
     }
+
+    content_type('application/json');
+    return to_json({});
 };
 
 sub make_node_infostring {

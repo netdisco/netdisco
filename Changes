@@ -10,6 +10,8 @@
   * netmap All Devices and Neighbor Cloud stay available up to 2500 devices
     rather than 1000
   * netmap Save button confirms with a toast when autosave is off
+  * netmap position save answers JSON instead of an XML content type carrying
+    a stringified database row
 
   [BUG FIXES]
 

@@ -15,6 +15,14 @@
 // from a stop that did no work, and onNodeDragEnd is what persists a node the
 // user moved by hand, since the stop that follows a drag runs no ticks.
 //
+// A success handler here only runs at all because the route sets its own
+// content type. It used to inherit Dancer::Plugin::Ajax's text/xml default and
+// answer with a stringified DBIC row, which jQuery rejected as invalid XML on a
+// 200, so the first version of this toast was correct by every source test and
+// never appeared. That is asserted on the server side in
+// xt/36-ajax-content-response.t; do not reintroduce a dataType override here to
+// paper over it if the route ever regresses.
+//
 // The same distinction decides who gets told. With autosave on the map saves
 // itself at every settle and every drag, so a toast for each would be noise.
 // The sidebar Save button is the one case where the user asked for a save and
@@ -111,14 +119,6 @@ describe('netmap manual save', () => {
       /function\s*\(\s*\w+\s*\)/,
       'saveMapPositions must take the caller\'s intent as an argument: the autosave ' +
       'calls and the button call are otherwise indistinguishable from inside it'
-    );
-    assert.match(
-      body,
-      /dataType:\s*'text'/,
-      'the save route answers text/xml carrying a stringified Perl object, so jQuery ' +
-      'guesses XML, fails to parse it, and rejects the deferred even on a 200. Without ' +
-      'forcing text the done() handler never runs and no toast is ever shown, which is ' +
-      'exactly what happened when this was first written'
     );
   });
 
