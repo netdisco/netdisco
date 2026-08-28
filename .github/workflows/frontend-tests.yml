@@ -69,3 +69,17 @@ jobs:
       # Same naming rule as the jobs above: name the file, never a glob.
       - name: The colorby legend stays inside the map
         run: node --test xt/js/netmap-legend.test.js
+
+  netmap-autosave:
+    name: netmap autosave frequency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The map is posted once per settle and once per drag
+        run: node --test xt/js/netmap-autosave.test.js

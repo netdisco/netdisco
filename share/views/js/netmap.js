@@ -75,6 +75,16 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // point has to handle both shapes; one helper for both call sites
   function endpointId(l, end) { var v = l[end]; return (typeof v === 'object') ? v.ID : v }
 
+  // read the template condition once; two handlers below need it
+  var autosaveOn = ('[% "on" IF params.autosave == "on" %]' === 'on');
+
+  // force-graph reheats the simulation on every drag event, and once the first
+  // layout has finished alpha is already below d3AlphaMin, so the engine stops
+  // again at once having run no ticks. Counting ticks is what tells a real
+  // settle apart from those, and without it the save below fires once per
+  // mousemove, posting the whole map each time.
+  var ticksSinceStop = 0;
+
   var fg = ForceGraph()(container)
     .width(parseInt(jQuery('#netmap_pane').parent().css('width')))
     .height(window.innerHeight - 100)
@@ -88,11 +98,18 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     .maxZoom(10)
     .cooldownTime(Infinity)
     .d3AlphaMin(0.001)
-    .onNodeDragEnd(function (n) { n.fx = n.x; n.fy = n.y; dragSnap = null })
+    .onNodeDragEnd(function (n) {
+      n.fx = n.x; n.fy = n.y; dragSnap = null;
+      // the engine stop that follows a drag runs no ticks, so this is the only
+      // place a hand-moved node gets persisted; once per drag, not per mousemove
+      if (autosaveOn) { saveMapPositions() }
+    })
     .onEngineStop(function () {
       document.getElementById('nd2_netmap-spinner').className = 'nd_netmap-settled';
       fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
-      if ('[% "on" IF params.autosave == "on" %]' === 'on') { saveMapPositions(); }
+      var ranTicks = ticksSinceStop;
+      ticksSinceStop = 0;
+      if (ranTicks && autosaveOn) { saveMapPositions() }
     })
     .graphData({ nodes: nodes, links: links });
 
@@ -281,7 +298,10 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   $('#nd_sidebar-toggle-img-out').off('.ndnetmap').on('click.ndnetmap', resizeGraphContainer);
   $(window).off('resize.ndnetmap').on('resize.ndnetmap', resizeGraphContainer);
 
+  // onEngineTick is a setter, not a subscription, so the tick count lives in
+  // this handler rather than a second one that would replace it
   fg.onEngineTick(function () {
+    ticksSinceStop++;
     var el = document.getElementById('nd2_netmap-spinner');
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
