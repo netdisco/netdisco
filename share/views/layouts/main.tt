@@ -15,7 +15,6 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js?v=[% asset_version | none %]"></script>
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-history.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
@@ -227,7 +226,7 @@
   // tenant change
   $('.nd_navtenant').click(function(event) {
     event.preventDefault();
-    var url = new URL(window.History.getState()['url']);
+    var url = new URL(window.location.href);
     var newpath = url.pathname;
     newpath = newpath.replace($(this).data('currenttenant'), "");
     newpath = newpath.replace("[% settings.path %]", "/");

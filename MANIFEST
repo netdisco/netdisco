@@ -381,7 +381,6 @@ share/public/javascripts/dataTables.ip-address-sort.js
 share/public/javascripts/daterangepicker.js
 share/public/javascripts/htmx.min.js
 share/public/javascripts/jquery-deserialize.js
-share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/jquery-ui.min.js
 share/public/javascripts/jquery.dataTables.min.js
@@ -701,6 +700,7 @@ xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t
 xt/43-response-compression.t
 xt/44-results-token-escaping.t
+xt/46-native-history-api.t
 xt/50-config-override.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
