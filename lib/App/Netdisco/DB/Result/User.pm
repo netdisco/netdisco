@@ -53,6 +53,9 @@ __PACKAGE__->set_primary_key("username");
 __PACKAGE__->has_many( roles => 'App::Netdisco::DB::Result::Virtual::UserRole',
   'username', { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 } );
 
+__PACKAGE__->belongs_to( acl_name => 'App::Netdisco::DB::Result::AccessControlListName',
+  { 'foreign.acl_name' => 'self.token_acl' }, { join_type => 'left' } );
+
 sub created   { return (shift)->get_column('created')  }
 sub last_seen { return (shift)->get_column('last_seen')  }
 

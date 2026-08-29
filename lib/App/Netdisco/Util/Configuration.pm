@@ -10,17 +10,60 @@ use Try::Tiny;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  refresh_managed_acl
   load_acls_from_database
   parse_params_to_config
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
-=head1 load_acls_from_database
+=head1 refresh_acl_from_database( $name )
 
-Loads all the managed ACLs into C<host_groups>.
+Given an AccessControlListName result with prefetched C<mappings>, creates
+the corresponding C<hosts_group> ACL in configuration.
 
 If the ACL name already exists in C<host_groups>, the existing ACL is copied
 to C<host_groups_shadow>, unless it exists in C<host_groups_shadow> already.
+
+=cut
+
+sub refresh_managed_acl {
+    my $name = shift;
+
+    foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
+        # take every left and optionally right acl (if host_host or host_port) and
+        # synthesize them into little host groups
+        foreach my $acl ($map->left_acl, $map->right_acl) {
+            my $group = 'synthesized_group_'. $acl->id;
+            config->{'host_groups'}->{$group} = $acl->rules;
+            last if $name->acl_type eq 'host';
+        }
+
+        # backup the acl unless it has already been backed up,
+        # so we can refresh from an update to the managed ACL, but not overwrite orig
+        if (exists config->{'host_groups'}->{$name->acl_name}) {
+            config->{'host_groups_shadow'}->{$name->acl_name}
+              = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {})
+            unless exists config->{'host_groups_shadow'}->{$name->acl_name};
+        }
+
+        # store in host groups with acl name
+        # make a top level group which is list of group: refs (if host)
+        if ($name->acl_type eq 'host') {
+            push @{ config->{'host_groups'}->{$name->acl_name} },
+              ('group:synthesized_group_'. $map->left_acl->id);
+        }
+        # OR hash of group: to group: refs (if host_host or host_port)
+        else {
+            config->{'host_groups'}->{$name->acl_name}
+              ->{'group:synthesized_group_'. $map->left_acl->id}
+              = ('group:synthesized_group_'. $map->right_acl->id);
+        }
+    }
+}
+
+=head1 load_acls_from_database
+
+Loads all the managed ACLs into C<host_groups>.
 
 =cut
 
@@ -29,38 +72,7 @@ sub load_acls_from_database {
       ->search(undef, { prefetch => { mappings => [qw/left_acl right_acl/] } })->all;
 
     # for each named acl
-    foreach my $name (@names) {
-        foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
-            # take every left and optionally right acl (if host_host or host_port) and
-            # synthesize them into little host groups
-            foreach my $acl ($map->left_acl, $map->right_acl) {
-                my $group = 'synthesized_group_'. $acl->id;
-                config->{'host_groups'}->{$group} = $acl->rules;
-                last if $name->acl_type eq 'host';
-            }
-
-            # backup the acl unless it has already been backed up,
-            # so we can refresh from an update to the managed ACL, but not overwrite orig
-            if (exists config->{'host_groups'}->{$name->acl_name}) {
-                config->{'host_groups_shadow'}->{$name->acl_name}
-                  = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {})
-                unless exists config->{'host_groups_shadow'}->{$name->acl_name};
-            }
-
-            # store in host groups with acl name
-            # make a top level group which is list of group: refs (if host)
-            if ($name->acl_type eq 'host') {
-                push @{ config->{'host_groups'}->{$name->acl_name} },
-                  ('group:synthesized_group_'. $map->left_acl->id);
-            }
-            # OR hash of group: to group: refs (if host_host or host_port)
-            else {
-                config->{'host_groups'}->{$name->acl_name}
-                  ->{'group:synthesized_group_'. $map->left_acl->id}
-                  = ('group:synthesized_group_'. $map->right_acl->id);
-            }
-        }
-    }
+    refresh_managed_acl($_) for @names;
 }
 
 =head1 CONFIGURATION OVERRIDE
