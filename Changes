@@ -1,7 +1,8 @@
-2.x - tbd
+2.tbd - tbd
 
   [ENHANCEMENTS]
 
+  * bump SNMP::Info dependency 3.977001, improves Cisco WLC support
   * netmap redrawn on canvas via force-graph; the map settles and pans
     smoothly at sizes that struggled before
   * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
@@ -22,6 +23,10 @@
   [ENHANCEMENTS]
 
   * rebuild MANIFEST and bump Netdisco.pm VERSION automatically in Build
+
+  [BUG FIXES]
+
+  * fix netdisco-do dumpconfig printing undef instead of the whole config
 
 2.105003 - 2026-08-24
 
