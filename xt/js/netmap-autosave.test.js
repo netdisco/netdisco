@@ -9,11 +9,20 @@
 // produced 4 posts, 12 produced 12, and 24 produced 24, each carrying the whole
 // map at 327131 bytes on the 6481 node map. Replacing onEngineStop with a bare
 // counter gave 12 engine stops and 0 posts, which is what pins the trigger on
-// it. The old d3 renderer produced none for the same drag.
+// it.
 //
 // So two things are needed together. A tick count tells a real settle apart
 // from a stop that did no work, and onNodeDragEnd is what persists a node the
 // user moved by hand, since the stop that follows a drag runs no ticks.
+//
+// That second half restores parity rather than adding anything: the old d3
+// renderer saved a dragged node too. Its save hangs off the same spinner loop,
+// which netmap.tt re-arms on every force start event, so a drag restarts the
+// force and the save follows when it settles. An earlier version of this
+// comment claimed the old renderer saved nothing, on the strength of one run
+// that sampled a POST count after a fixed wait; three instrumented runs across
+// two map sizes disagree, each showing one force restart and one post. A
+// single missing request is not evidence that none was coming.
 //
 // A success handler here only runs at all because the route sets its own
 // content type. It used to inherit Dancer::Plugin::Ajax's text/xml default and
@@ -91,8 +100,8 @@ describe('netmap autosave', () => {
       body,
       /saveMapPositions/,
       'the engine stop after a drag runs no ticks, so without a save here a node the ' +
-      'user moved by hand is never persisted. That was the old renderer\'s behavior ' +
-      'and it is not worth reproducing'
+      'user moved by hand is never persisted, which the renderer this replaced did ' +
+      'do'
     );
   });
 });
