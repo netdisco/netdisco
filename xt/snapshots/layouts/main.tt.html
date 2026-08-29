@@ -15,7 +15,6 @@
   <script type="text/javascript" src="/javascripts/jquery-latest.min.js?v="></script>
 <!--  <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script> -->
   <script type="text/javascript" src="/javascripts/jquery-ui.min.js?v="></script>
-  <script type="text/javascript" src="/javascripts/jquery-history.js?v="></script>
   <script type="text/javascript" src="/javascripts/jquery-deserialize.js?v="></script>
   <script type="text/javascript" src="/javascripts/bootstrap.min.js?v="></script>
   <script type="text/javascript" src="/javascripts/bootstrap-toggle.min.js?v="></script>
@@ -209,24 +208,19 @@
     var query = $(form).serialize();
     if (query.length) { query = '?' + query }
 
-    if (window.History && window.History.enabled) {
-      is_from_history_plugin = 1;
+    // pushState and replaceState ignore their title argument, so set the title
+    // beside each call and keep it in the state for popstate to restore
+    var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
 
-      if (push.length) {
-        var target = uri_base + '/' + path + '/' + tab + query;
-        if (location.pathname == target) { return };
-        window.History.pushState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
-        );
-      }
-      else {
-        var target = uri_base + '/' + path + query;
-        window.History.replaceState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
-        );
-      }
-
-      is_from_history_plugin = 0;
+    if (push.length) {
+      var target = uri_base + '/' + path + '/' + tab + query;
+      if (location.pathname == target) { return };
+      document.title = pgtitle;
+      history.pushState(state, '', target);
+    }
+    else {
+      document.title = pgtitle;
+      history.replaceState(state, '', uri_base + '/' + path + query);
     }
   }
 
@@ -254,7 +248,7 @@
   // tenant change
   $('.nd_navtenant').click(function(event) {
     event.preventDefault();
-    var url = new URL(window.History.getState()['url']);
+    var url = new URL(window.location.href);
     var newpath = url.pathname;
     newpath = newpath.replace($(this).data('currenttenant'), "");
     newpath = newpath.replace("", "/");
