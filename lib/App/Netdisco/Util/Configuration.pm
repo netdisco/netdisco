@@ -29,6 +29,14 @@ to C<host_groups_shadow>, unless it exists in C<host_groups_shadow> already.
 sub refresh_managed_acl {
     my $name = shift;
 
+    # backup the acl unless it has already been backed up,
+    # so we can refresh from an update to the managed ACL, but not overwrite orig
+    if (exists config->{'host_groups'}->{$name->acl_name}) {
+        config->{'host_groups_shadow'}->{$name->acl_name}
+          = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {})
+        unless exists config->{'host_groups_shadow'}->{$name->acl_name};
+    }
+
     foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
         # take every left and optionally right acl (if host_host or host_port) and
         # synthesize them into little host groups
@@ -36,14 +44,6 @@ sub refresh_managed_acl {
             my $group = 'synthesized_group_'. $acl->id;
             config->{'host_groups'}->{$group} = $acl->rules;
             last if $name->acl_type eq 'host';
-        }
-
-        # backup the acl unless it has already been backed up,
-        # so we can refresh from an update to the managed ACL, but not overwrite orig
-        if (exists config->{'host_groups'}->{$name->acl_name}) {
-            config->{'host_groups_shadow'}->{$name->acl_name}
-              = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {})
-            unless exists config->{'host_groups_shadow'}->{$name->acl_name};
         }
 
         # store in host groups with acl name
