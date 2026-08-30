@@ -54,7 +54,11 @@ my @RULES = (
     # Both the registered sort-type names and the two ways a DataTables column
     # asks for one. A column asking for a type nothing registers falls back to
     # string sorting, so the rows are quietly in the wrong order.
-    pattern => qr/natural-(?:asc|desc)\b|(?:"type"|'type'|sType)\s*:\s*["']natural["']/,
+    #
+    # The key's own quotes are optional because both spellings are common: a
+    # JSON-shaped config writes "sType", a JavaScript object literal writes
+    # sType bare, and a pattern requiring one silently misses the other.
+    pattern => qr/natural-(?:asc|desc)\b|["']?(?:type|sType)["']?\s*:\s*["']natural["']/,
     advice  => 'natural.js was removed. Use a built-in DataTables type, or '
              . 'the portsort or versionsort plug-ins netdisco still ships.',
   },
