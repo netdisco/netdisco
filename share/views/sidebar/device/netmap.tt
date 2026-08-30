@@ -3,7 +3,7 @@
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
             <div class="clearfix nd_netmap-sidebar">
               <ul class="text-muted nd_netmap-sidebar-help">
-                <li>Tip: shift-drag to lasso</li>
+                <li>Tip: shift-drag to select</li>
                 <li><a href="https://github.com/netdisco/netdisco/wiki/Network-Map" target="_blank">User Guide
                   <i class="fas fa-up-right-from-square"></i></a></li>
               </ul>
@@ -30,7 +30,11 @@
               </div>
               <div class="form-check float-start">
                 <input type="checkbox" name="autosave" id="nd_autosave"
-                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave %]
+                    [%# the raw URL param lands here, and TT treats the string 'off' as
+                        true, so autosave=off used to render the box checked and the next
+                        fragment fetch serialized it straight back to autosave=on %]
+                    [% ' checked="checked"' IF vars.sidebar_defaults.device_netmap.autosave
+                         AND vars.sidebar_defaults.device_netmap.autosave != 'off' %]
                     data-toggle="toggle" data-size="small" data-width="30"
                     data-on="On" data-off="Off" data-onstyle="success">
                   <label for="nd_autosave">&nbsp;Auto Save</label>
@@ -46,11 +50,11 @@
             <tr>
               <td class="nd_netmap-pin-controls-top-row">
                 <button id="nd_netmap-releaseonly" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
-                    <i class="fas fa-unlock fa-lg float-start nd_navbar-icon"></i> Lasso</button>
+                    <i class="fas fa-unlock fa-lg float-start nd_navbar-icon"></i> Select</button>
               </td>
               <td class="nd_netmap-pin-controls-top-row">
                 <button id="nd_netmap-pinonly" class="nd_sidebar-btn-netmap btn btn-sm btn-info">
-                    <i class="fas fa-lock fa-lg float-start nd_navbar-icon"></i> Lasso</button>
+                    <i class="fas fa-lock fa-lg float-start nd_navbar-icon"></i> Select</button>
               </td>
             </tr>
             <tr>
@@ -68,7 +72,7 @@
             <hr class="nd_sidebar-hr"/>
 
             <div class="radio radio-success">
-                [% IF device_count > settings.netmap_performance_limit_max_devices %]
+                [% IF device_count > settings.netmap.max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-all" value="all">
                 <label rel="tooltip" data-bs-placement="left" data-bs-title="Disabled on large networks" for="nd_mapshow-all">All Devices</label>
                 [% ELSE %]
@@ -78,7 +82,7 @@
                 [% END %]
             </div>
             <div class="radio radio-success">
-                [% IF device_count > settings.netmap_performance_limit_max_devices %]
+                [% IF device_count > settings.netmap.max_devices %]
                 <input disabled type="radio" name="mapshow" id="nd_mapshow-cloud" value="cloud">
                 <label rel="tooltip" data-bs-placement="left" data-bs-title="Disabled on large networks" for="nd_mapshow-cloud">Neighbor Cloud</label>
                 [% ELSE %]
@@ -90,7 +94,7 @@
             <div class="radio radio-success">
                 <input type="radio" name="mapshow" id="nd_mapshow-depth"
                 [% 'checked' IF vars.sidebar_defaults.device_netmap.mapshow == 'depth'
-                  OR device_count > settings.netmap_performance_limit_max_devices %]
+                  OR device_count > settings.netmap.max_devices %]
                 value="depth">
                 <label for="nd_mapshow-depth">Neighbor Hops:
                 <input name="depth" id="nd_mapshow-hops" class="form-control form-control-sm d-inline-block" type="number" placeholder="1"

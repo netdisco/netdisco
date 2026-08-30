@@ -80,6 +80,9 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
         positions => to_json(\%clean),
       });
     }
+
+    content_type('application/json');
+    return to_json({});
 };
 
 sub make_node_infostring {
@@ -88,8 +91,8 @@ sub make_node_infostring {
     .'Uptime: <b>%s</b><br>Location: <b>%s</b><br>Contact: <b>%s</b>');
   
   my @field_values = ();
-  if (ref [] eq ref setting('netmap_custom_fields')->{device}) {
-      foreach my $field (@{ setting('netmap_custom_fields')->{device} }) {
+  if (ref [] eq ref setting('netmap')->{'custom_fields'}->{device}) {
+      foreach my $field (@{ setting('netmap')->{'custom_fields'}->{device} }) {
           foreach my $config (@{ setting('custom_fields')->{device} }) {
               next unless $config->{'name'} and $config->{'name'} eq $field;
 
@@ -109,6 +112,38 @@ sub make_node_infostring {
         map {$node->$_}
             (qw/model os os_ver serial uptime_age location contact/)),
     map {encode_entities($node->get_column($_) || '')} @field_values;
+}
+
+# The devices within $passes hops of $root, breadth first over the adjacency
+# map built from the deduplicated links. It replaces a nested rescan of every
+# linked device once per hop, which cost the cloud size times the linked device
+# count on each pass rather than being linear in the graph. Pure so that
+# xt/45-netmap-neighbor-walk.t can check it against what it replaced without a
+# database.
+#
+# An undefined $passes means no limit, which is what Neighbor Cloud asks for.
+# It is not a synonym for a large number: the walk ends when the frontier
+# empties, so a component longer than any number one might pick is still
+# reached whole.
+sub neighbors_within_depth {
+  my ($adjacency, $root, $passes) = @_;
+
+  my %cloud = ($root => 1);
+  my @frontier = ($root);
+
+  while (((not defined $passes) or $passes-- > 0) and scalar @frontier) {
+    my @next = ();
+    foreach my $ip (@frontier) {
+      foreach my $peer (@{ $adjacency->{$ip} || [] }) {
+        next if exists $cloud{$peer};
+        $cloud{$peer} = 1;
+        push @next, $peer;
+      }
+    }
+    @frontier = @next;
+  }
+
+  return \%cloud;
 }
 
 sub make_link_infostring {
@@ -162,6 +197,7 @@ get '/ajax/data/device/netmap' => require_login sub {
     # LINKS
 
     my %seen_link = ();
+    my %adjacency = ();
     my $links = schema(vars->{'tenant'})->resultset('Virtual::DeviceLinks')->search({
       (($mapshow eq 'depth' and $depth == 1) ? ( -or => [
           { left_ip  => $qdev->ip },
@@ -185,35 +221,23 @@ get '/ajax/data/device/netmap' => require_login sub {
       ++$ok_dev{$link->{left_ip}};
       ++$ok_dev{$link->{right_ip}};
       ++$seen_link{$link->{left_ip} ."\0". $link->{right_ip}};
+
+      # built here rather than in a second pass: the dedup above is what
+      # decides which links exist, so this is the only place that knows
+      push @{ $adjacency{ $link->{left_ip} } },  $link->{right_ip};
+      push @{ $adjacency{ $link->{right_ip} } }, $link->{left_ip};
     }
 
-    # filter by lldp cloud or depth
-    # this is O(N^2) or worse
+    # filter by lldp cloud or depth
 
     my %cloud = ($qdev->ip => 1);
-    my $seen_cloud = scalar keys %cloud;
-    my $passes = ($mapshow eq 'cloud' ? 999 : $depth);
 
     if ($mapshow eq 'cloud' or ($mapshow eq 'depth' and $depth > 1)) {
-        while ($seen_cloud > 0 and $passes > 0) {
-            --$passes;
-            $seen_cloud = 0;
-
-            foreach my $cip (keys %cloud) {
-                foreach my $okip (keys %ok_dev) {
-                    next if exists $cloud{$okip};
-
-                    if (exists $seen_link{$cip ."\0". $okip}
-                        or exists $seen_link{$okip ."\0". $cip}) {
-
-                        ++$cloud{$okip};
-                        ++$seen_cloud;
-                    }
-                }
-            }
-        }
+        %cloud = %{ neighbors_within_depth(\%adjacency, $qdev->ip,
+          ($mapshow eq 'cloud' ? undef : $depth)) };
     }
     elsif ($mapshow eq 'depth' and $depth == 1) {
+        # the link query above was already filtered to this device's own links
         %cloud = %ok_dev;
     }
 
@@ -234,7 +258,7 @@ get '/ajax/data/device/netmap' => require_login sub {
     })->with_times;
     
     $devices = $devices->with_custom_fields
-      if scalar @{ setting('netmap_custom_fields')->{'device'} };
+      if scalar @{ setting('netmap')->{'custom_fields'}->{'device'} };
 
     # filter by vlan for all or neighbors only
     if ($vlan) {
@@ -278,6 +302,7 @@ get '/ajax/data/device/netmap' => require_login sub {
         SIZEVALUE => (param('dynamicsize') ? $color_lkp{speed} : 3000),
         ((exists $color_lkp{$colorby}) ? (COLORVALUE => $color_lkp{$colorby}) : ()),
         (($device->ip eq $qdev->ip) ? (COLORVALUE => 'ROOTNODE') : ()),
+        # kept for consumers of the JSON; the map draws ORIG_LABEL and ID
         LABEL => (param('showips') ? ($device->ip .' '. $name) : $name),
         ORIG_LABEL => $name,
         INFOSTRING => make_node_infostring($device),
