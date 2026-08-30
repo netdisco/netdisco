@@ -12,7 +12,11 @@
         <div class="tab-content">
           <div id="_search" class="tab-pane active">
             <form id="_form" class="nd_sidebar-form form-stacked"
-                method="get" action="">
+                method="get" action=""
+                hx-get=""
+                hx-target="#_pane"
+                hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
+                hx-indicator="#_indicator">
               <script type="text/javascript">has_sidebar[""] = 1;</script>
               <script type="text/javascript">has_sidebar[""] = 0;</script>
 
@@ -29,6 +33,9 @@
         href="#_pane"></a></li>
     </ul>
     <div class="tab-content">
+      <div id="_indicator" class="htmx-indicator col-md-2 alert">
+        <i class="fas fa-spinner fa-spin"></i> Waiting for results...
+      </div>
       <div class="tab-pane active" id="_pane"></div>
   </div>
 </div>

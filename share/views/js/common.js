@@ -110,7 +110,7 @@
       var pgtitle = update_page_title('[% report.tag | html_entity %]');
       update_browser_history('[% report.tag | html_entity %]', pgtitle, '1');
       update_csv_download_link('report', '[% report.tag | html_entity %]', '1');
-      do_search(event, '[% report.tag | html_entity %]');
+      nd_apply_sidebar('[% report.tag | html_entity %]');
     });
     [% END -%]
 
