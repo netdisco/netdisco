@@ -20,3 +20,4 @@ paths-ignore:
   # there do parse and are analyzed. xt/js/view-templates.test.js keeps this
   # entry and that directory in agreement in both directions.
   - share/views/js/common.js
+  # - share/views/js/netmap.js

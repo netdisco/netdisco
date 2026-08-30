@@ -313,7 +313,9 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
 
-  var LABEL_ZOOM = [% settings.netmap.node_label_zoom_threshold || 0.9 %];   // labels draw above this zoom; tune by eye against master
+  // labels draw above this zoom
+  var LABEL_ZOOM = '[% settings.netmap.node_label_zoom_threshold || 0.9 %]';
+
   fg.nodeCanvasObjectMode(function () { return 'after' })
     .nodeCanvasObject(function (n, ctx, scale) {
       if (n.selected) {
@@ -328,12 +330,12 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#333';
-      var lineheight = ([% settings.netmap.node_label_font_size || 8 %] / scale) * 1.2;
+      var lineheight = ('[% settings.netmap.node_label_font_size || 8 %]' / scale) * 1.2;
       var words = String(n.LABEL).split(/\s+/);
       ctx.fillText(words[0], n.x, n.y - (lineheight / 2) + n.radius + lineheight);
       ctx.font = '[% settings.netmap.node_label_font_size || 8 %]px sans-serif';
       if (words.length > 1) {
-          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + [% settings.netmap.node_label_font_size || 8 %] + 1);
+          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + '[% settings.netmap.node_label_font_size || 8 %]' + 1);
       }
     });
 

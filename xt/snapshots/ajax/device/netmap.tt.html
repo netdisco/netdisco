@@ -321,7 +321,9 @@ $.getJSON('?', function (mapdata) {
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
 
-  var LABEL_ZOOM = 0.9;   // labels draw above this zoom; tune by eye against master
+  // labels draw above this zoom
+  var LABEL_ZOOM = '0.9';
+
   fg.nodeCanvasObjectMode(function () { return 'after' })
     .nodeCanvasObject(function (n, ctx, scale) {
       if (n.selected) {
@@ -336,12 +338,12 @@ $.getJSON('?', function (mapdata) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#333';
-      var lineheight = (8 / scale) * 1.2;
+      var lineheight = ('8' / scale) * 1.2;
       var words = String(n.LABEL).split(/\s+/);
       ctx.fillText(words[0], n.x, n.y - (lineheight / 2) + n.radius + lineheight);
       ctx.font = '8px sans-serif';
       if (words.length > 1) {
-          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + 8 + 1);
+          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + '8' + 1);
       }
     });
 
