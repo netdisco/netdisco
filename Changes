@@ -16,6 +16,8 @@
   [BUG FIXES]
 
   * a netmap URL carrying autosave=off no longer saves positions anyway
+  * netmap_performance_limit_max_devices and netmap_custom_fields are still
+    honored after the move into the netmap settings tree
 
 2.105004 - 2026-08-29
 

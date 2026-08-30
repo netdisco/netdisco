@@ -359,6 +359,16 @@ config->{'netmap'}->{'max_devices'} =
     and config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'} != 1000;
 delete config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'};
 
+# netmap settings moved into a netmap tree. These names are gone from
+# config.yml, so exists() means the site set them, and being explicit they win
+# over the too_many_devices fallback above.
+config->{'netmap'}->{'max_devices'} =
+  config->{'netmap_performance_limit_max_devices'}
+  if exists config->{'netmap_performance_limit_max_devices'};
+
+config->{'netmap'}->{'custom_fields'} = config->{'netmap_custom_fields'}
+  if exists config->{'netmap_custom_fields'};
+
 config->{'devport_vlan_limit'} =
   config->{'deviceport_vlan_membership_threshold'}
   if setting('deviceport_vlan_membership_threshold')
