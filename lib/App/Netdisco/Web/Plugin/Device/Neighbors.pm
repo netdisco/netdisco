@@ -302,6 +302,7 @@ get '/ajax/data/device/netmap' => require_login sub {
         SIZEVALUE => (param('dynamicsize') ? $color_lkp{speed} : 3000),
         ((exists $color_lkp{$colorby}) ? (COLORVALUE => $color_lkp{$colorby}) : ()),
         (($device->ip eq $qdev->ip) ? (COLORVALUE => 'ROOTNODE') : ()),
+        # kept for consumers of the JSON; the map draws ORIG_LABEL and ID
         LABEL => (param('showips') ? ($device->ip .' '. $name) : $name),
         ORIG_LABEL => $name,
         INFOSTRING => make_node_infostring($device),

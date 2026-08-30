@@ -316,6 +316,9 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
 
   // labels draw above this zoom
   var LABEL_ZOOM = +'[% settings.netmap.node_label_zoom_threshold || 0.9 %]';
+  var LABEL_SIZE = +'[% settings.netmap.node_label_font_size || 8 %]';
+  // read once, not once per node per frame
+  var showips = document.getElementById('nd_showips');
 
   fg.nodeCanvasObjectMode(function () { return 'after' })
     .nodeCanvasObject(function (n, ctx, scale) {
@@ -327,16 +330,19 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
         ctx.stroke();
       }
       if (scale < LABEL_ZOOM) { return }
-      ctx.font = 'bold [% settings.netmap.node_label_font_size || 8 %]px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#333';
-      var lineheight = (+'[% settings.netmap.node_label_font_size || 8 %]' / scale) * 1.2;
-      var words = String(n.LABEL).split(/\s+/);
-      ctx.fillText(words[0], n.x, n.y - (lineheight / 2) + n.radius + lineheight);
-      ctx.font = '[% settings.netmap.node_label_font_size || 8 %]px sans-serif';
-      if (words.length > 1) {
-          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + +'[% settings.netmap.node_label_font_size || 8 %]' + 1);
+
+      // Drawn from the two fields rather than splitting LABEL: a device name
+      // may contain spaces, and a two-word split drops the rest of it.
+      var lineheight = (LABEL_SIZE / scale) * 1.2;
+      ctx.font = 'bold ' + LABEL_SIZE + 'px sans-serif';
+      ctx.fillText(n.ORIG_LABEL, n.x, n.y - (lineheight / 2) + n.radius + lineheight);
+
+      if (showips && showips.checked && n.ORIG_LABEL !== n.ID) {
+          ctx.font = LABEL_SIZE + 'px sans-serif';
+          ctx.fillText(n.ID, n.x, n.y + (lineheight / 2) + n.radius + LABEL_SIZE + 1);
       }
     });
 

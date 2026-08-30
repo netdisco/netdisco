@@ -93,12 +93,6 @@
     // netmap show controls. Setting any force-graph prop repaints, so
     // re-setting nodeRelSize to itself is the repaint call.
     $('#nd_showips').change(function () {
-      var on = $(this).prop('checked');
-      window.graph.fg.graphData().nodes.forEach(function (n) {
-        if (n.ORIG_LABEL != n.ID) {
-          n.LABEL = on ? (n.ORIG_LABEL + ' ' + n.ID) : n.ORIG_LABEL;
-        }
-      });
       window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
     $('#nd_showspeed').change(function () {
