@@ -72,7 +72,7 @@
       copy_navbar_to_sidebar('[% tab.tag | html_entity %]');
       update_browser_history('[% tab.tag | html_entity %]', pgtitle, '');
       update_csv_download_link('search', '[% tab.tag | html_entity %]', '[% tab.provides_csv | html_entity %]');
-      do_search(event, '[% tab.tag | html_entity %]');
+      nd_apply_sidebar('[% tab.tag | html_entity %]');
     });
     [% END %]
     [% END %]
