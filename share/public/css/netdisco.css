@@ -351,6 +351,11 @@ label.form-check:not(.form-check-inline) > input[type="checkbox"] {
   margin-bottom: 0px;
 }
 
+/* to override the 9px set above, for the token value copy dialog */
+#nd_token-value {
+  margin-bottom: 0px;
+}
+
 /* The page was laid out in a 1170px container, and the navbar artwork, hero box
    and brand are placed from its left edge; the replacement's is 1320px. The old
    ladder's two lower steps are not put back, nothing here being measured at
