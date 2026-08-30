@@ -33,24 +33,19 @@
     var query = $(form).serialize();
     if (query.length) { query = '?' + query }
 
-    if (window.History && window.History.enabled) {
-      is_from_history_plugin = 1;
+    // pushState and replaceState ignore their title argument, so set the title
+    // beside each call and keep it in the state for popstate to restore
+    var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
 
-      if (push.length) {
-        var target = uri_base + '/' + path + '/' + tab + query;
-        if (location.pathname == target) { return };
-        window.History.pushState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
-        );
-      }
-      else {
-        var target = uri_base + '/' + path + query;
-        window.History.replaceState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
-        );
-      }
-
-      is_from_history_plugin = 0;
+    if (push.length) {
+      var target = uri_base + '/' + path + '/' + tab + query;
+      if (location.pathname == target) { return };
+      document.title = pgtitle;
+      history.pushState(state, '', target);
+    }
+    else {
+      document.title = pgtitle;
+      history.replaceState(state, '', uri_base + '/' + path + query);
     }
   }
 
