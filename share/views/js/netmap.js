@@ -85,6 +85,15 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // mousemove, posting the whole map each time.
   var ticksSinceStop = 0;
 
+  // The pane can be replaced while this instance is still running: nothing
+  // destroys it until the next fragment's callback reaches the teardown above,
+  // and its tick and engine-stop handlers keep firing until then, against a
+  // spinner that is no longer in the document.
+  function setSpinnerState(state) {
+    var el = document.getElementById('nd2_netmap-spinner');
+    if (el && el.className !== state) { el.className = state }
+  }
+
   var fg = ForceGraph()(container)
     .width(parseInt(jQuery('#netmap_pane').parent().css('width')))
     .height(window.innerHeight - 100)
@@ -107,7 +116,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
       if (autosaveOn) { saveMapPositions() }
     })
     .onEngineStop(function () {
-      document.getElementById('nd2_netmap-spinner').className = 'nd_netmap-settled';
+      setSpinnerState('nd_netmap-settled');
       fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
       var ranTicks = ticksSinceStop;
       ticksSinceStop = 0;
@@ -310,8 +319,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // this handler rather than a second one that would replace it
   fg.onEngineTick(function () {
     ticksSinceStop++;
-    var el = document.getElementById('nd2_netmap-spinner');
-    if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
+    setSpinnerState('nd_netmap-running');
   });
 
   // labels draw above this zoom

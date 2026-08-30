@@ -57,6 +57,21 @@ describe('netmap first paint indicator', () => {
     );
   });
 
+  // Reproduced 2026-08-30 by re-submitting the netmap sidebar form: the pane is
+  // replaced while the previous instance is still running, and nothing destroys
+  // it until the next fragment's data callback, so its handlers fire against a
+  // spinner that has left the document.
+  test('spinnerHandlers__pane_replaced_mid_run__do_not_dereference_a_missing_element', () => {
+    const js = read('share', 'views', 'js', 'netmap.js');
+    assert.doesNotMatch(
+      js,
+      /getElementById\(['"]nd2_netmap-spinner['"]\)\s*\./,
+      'share/views/js/netmap.js must not read a property straight off the spinner lookup: ' +
+      'onEngineTick and onEngineStop both outlive the element on a reload in place, ' +
+      'and an unguarded read throws a TypeError into the console on every re-submit'
+    );
+  });
+
   test('wrap__before_the_canvas_exists__has_a_height_of_its_own', () => {
     const css = read('share', 'public', 'css', 'netdisco.css');
     const rule = css.match(/#nd2_netmap-wrap\s*\{[^}]*\}/);
