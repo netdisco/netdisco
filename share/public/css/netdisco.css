@@ -1476,16 +1476,13 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: 5px;
   margin-bottom: -7px;
 }
-#nd_vlan-label-text {
-  vertical-align: text-bottom;
-}
 #nd_vlan-entry {
   margin-top: 7px;
   width: 59px;
 }
 #nd_mapshow-hops {
   width: 44px;
-  margin-bottom: 0px;
+  margin-bottom: -5px;
 }
 
 /* netmap maximise icon */
@@ -1684,7 +1681,6 @@ input#nd_port-query {
   margin-bottom: 5px;
 }
 #nd_colorby-label-text {
-  vertical-align: bottom;
   line-height: 2;
 }
 
