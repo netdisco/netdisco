@@ -344,13 +344,13 @@ $.getJSON('?', function (mapdata) {
 
       // Drawn from the two fields rather than splitting LABEL: a device name
       // may contain spaces, and a two-word split drops the rest of it.
-      var lineheight = (LABEL_SIZE / scale) * 1.2;
+      var gap = LABEL_SIZE * 0.5; // graph units, so it holds as the map zooms
       ctx.font = 'bold ' + LABEL_SIZE + 'px sans-serif';
-      ctx.fillText(n.ORIG_LABEL, n.x, n.y - (lineheight / 2) + n.radius + lineheight);
+      ctx.fillText(n.ORIG_LABEL, n.x, n.y + n.radius + gap);
 
       if (showips && showips.checked && n.ORIG_LABEL !== n.ID) {
           ctx.font = LABEL_SIZE + 'px sans-serif';
-          ctx.fillText(n.ID, n.x, n.y + (lineheight / 2) + n.radius + LABEL_SIZE + 1);
+          ctx.fillText(n.ID, n.x, n.y + n.radius + gap + LABEL_SIZE + 1);
       }
     });
 
