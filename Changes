@@ -16,6 +16,8 @@
     link_label_font_size and node_label_zoom_threshold tunables;
     netmap_performance_limit_max_devices is now netmap max_devices and
     netmap_custom_fields is now netmap custom_fields
+  * new netdisco-do checksitelocal action, reporting site-local templates
+    which call frontend APIs that recent releases removed
 
   [BUG FIXES]
 
