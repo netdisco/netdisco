@@ -120,6 +120,25 @@ subtest 'scan_site_local__column_asks_for_the_natural_sort__reports_it' => sub {
     is $findings[0]{release}, '2.105004', 'naming the release that removed it';
 };
 
+subtest 'scan_site_local__handler_calls_do_search__reports_the_htmx_attributes' => sub {
+    my $tree = site_local_tree(
+      'views/js/common.js' => join("\n",
+        "\$('#ports_form').submit(function (event) {",
+        "  do_search(event, 'ports');",
+        '});',
+      ),
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding'
+      or diag explain \@findings;
+    is $findings[0]{rule}, 'do-search', 'attributed to the do_search removal';
+    is $findings[0]{line}, 2, 'at the line that calls it';
+    like $findings[0]{advice}, qr/hx-get/,
+      'and pointing at the attributes that replace it';
+};
+
 subtest 'scan_site_local__several_files_and_rules__sorts_by_path_then_line' => sub {
     my $tree = site_local_tree(
       'views/b.tt' => "he.encode(x);\n",
@@ -160,9 +179,10 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 3, 'three rules ship in this release';
+    is scalar @rules, 4, 'four rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
-      [ 'he-js', 'history-js', 'natural-js' ], 'named as the report cites them';
+      [ 'do-search', 'he-js', 'history-js', 'natural-js' ],
+      'named as the report cites them';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
 };

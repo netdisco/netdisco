@@ -65,6 +65,19 @@ my @RULES = (
     advice  => 'natural.js was removed. Use a built-in DataTables type, or '
              . 'the portsort or versionsort plug-ins netdisco still ships.',
   },
+  {
+    name    => 'do-search',
+    release => '2.105005',
+    # The only rule here whose subject still works. do_search forwards to htmx
+    # and logs, so a site that ignores this keeps loading its tab until the
+    # shim goes in the following release. Reported anyway: the console notice
+    # reaches whoever opens devtools, and this reaches whoever runs the check.
+    pattern => qr/\bdo_search\s*\(/,
+    advice  => 'do_search() is deprecated and now only forwards to htmx. Give '
+             . 'the form the hx-get, hx-target, hx-headers and hx-indicator '
+             . 'attributes that share/views/device.tt uses, then drop the '
+             . 'do_search call from the submit handler.',
+  },
 );
 
 =head2 site_local_rules
