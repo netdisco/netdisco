@@ -312,7 +312,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
 
-  var LABEL_ZOOM = [% settings.netmap.node_label_zoom_threshold %];   // labels draw above this zoom; tune by eye against master
+  var LABEL_ZOOM = [% settings.netmap.node_label_zoom_threshold || 0.9 %];   // labels draw above this zoom; tune by eye against master
   fg.nodeCanvasObjectMode(function () { return 'after' })
     .nodeCanvasObject(function (n, ctx, scale) {
       if (n.selected) {
@@ -323,16 +323,16 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
         ctx.stroke();
       }
       if (scale < LABEL_ZOOM) { return }
-      ctx.font = 'bold [% settings.netmap.node_label_font_size %]px sans-serif';
+      ctx.font = 'bold [% settings.netmap.node_label_font_size || 8 %]px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#333';
-      var lineheight = ([% settings.netmap.node_label_font_size %] / scale) * 1.2;
+      var lineheight = ([% settings.netmap.node_label_font_size || 8 %] / scale) * 1.2;
       var words = String(n.LABEL).split(/\s+/);
       ctx.fillText(words[0], n.x, n.y - (lineheight / 2) + n.radius + lineheight);
-      ctx.font = '[% settings.netmap.node_label_font_size %]px sans-serif';
+      ctx.font = '[% settings.netmap.node_label_font_size || 8 %]px sans-serif';
       if (words.length > 1) {
-          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + [% settings.netmap.node_label_font_size %] + 1);
+          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + [% settings.netmap.node_label_font_size || 8 %] + 1);
       }
     });
 
@@ -342,7 +342,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     .linkCanvasObject(function (l, ctx) {
       if (!showspeed || !showspeed.checked) { return }
       if (typeof l.source !== 'object') { return }
-      ctx.font = '[% settings.netmap.link_label_font_size %]px sans-serif';
+      ctx.font = '[% settings.netmap.link_label_font_size || 5 %]px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'black';
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);

@@ -320,7 +320,7 @@ $.getJSON('?', function (mapdata) {
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
 
-  var LABEL_ZOOM = 1.5;   // labels draw above this zoom; tune by eye against master
+  var LABEL_ZOOM = 0.9;   // labels draw above this zoom; tune by eye against master
   fg.nodeCanvasObjectMode(function () { return 'after' })
     .nodeCanvasObject(function (n, ctx, scale) {
       if (n.selected) {
@@ -331,19 +331,17 @@ $.getJSON('?', function (mapdata) {
         ctx.stroke();
       }
       if (scale < LABEL_ZOOM) { return }
-      ctx.font = '4px sans-serif';
+      ctx.font = 'bold 8px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#333';
-      var words = String(n.LABEL).split(/\s+/), line = '', lines = [];
-      words.forEach(function (w) {
-        if ((line + ' ' + w).trim().length > 16) { lines.push(line.trim()); line = w }
-        else { line = line + ' ' + w }
-      });
-      lines.push(line.trim());
-      lines.forEach(function (txt, i) {
-        ctx.fillText(txt, n.x, n.y + n.radius + 2 + i * 4.5);
-      });
+      var lineheight = (8 / scale) * 1.2;
+      var words = String(n.LABEL).split(/\s+/);
+      ctx.fillText(words[0], n.x, n.y - (lineheight / 2) + n.radius + lineheight);
+      ctx.font = '8px sans-serif';
+      if (words.length > 1) {
+          ctx.fillText(words[1], n.x, n.y + (lineheight / 2) + n.radius + 8 + 1);
+      }
     });
 
   // read once, not once per link per frame
@@ -352,7 +350,7 @@ $.getJSON('?', function (mapdata) {
     .linkCanvasObject(function (l, ctx) {
       if (!showspeed || !showspeed.checked) { return }
       if (typeof l.source !== 'object') { return }
-      ctx.font = '4px sans-serif';
+      ctx.font = '5px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'black';
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
