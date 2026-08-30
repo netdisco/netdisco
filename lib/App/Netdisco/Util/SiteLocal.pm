@@ -30,7 +30,9 @@ Detection only. This module never writes to a file and never logs.
 # One row per shipped removal. A later rung adds a row here and nothing else.
 #
 # `pattern` is matched against each line of each file under the scanned paths.
-# `release` is the release that removed the thing, for the report to cite.
+# `release` is the release that removed or deprecated the thing, for the report
+# to cite. Every advice line says which of the two it was, so the report does
+# not have to.
 my @RULES = (
   {
     name    => 'he-js',

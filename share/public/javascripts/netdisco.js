@@ -29,58 +29,30 @@ function nd_apply_sidebar (tab) {
   }
 }
 
+// Retained for site-local copies of share/views/js/common.js, which call this
+// from their own submit handlers. Not a stub: it still loads the tab, so a site
+// that has not converted keeps working while the console says what to change.
+// htmx.ajax() rather than nd_submit(), which would re-enter the caller's own
+// submit handler and recurse.
 function do_search (event, tab) {
-  var form   = '#' + tab + '_form';
-  var target = '#' + tab + '_pane';
-  var query  = $(form).serialize();
-
-  // stop form from submitting normally
   event.preventDefault();
-
   nd_apply_sidebar(tab);
 
-  // in case of slow data load, let the user know
-  if (tab != 'jobqueue') {
-    $(target).html(
-      '<div class="col-md-2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>'
-    );
-  }
+  console.error('do_search() is deprecated and will be removed. Give the #'
+    + tab + '_form element the hx-get, hx-target, hx-headers and hx-indicator '
+    + 'attributes used in share/views/device.tt, then drop this call. Run '
+    + '"netdisco-do checksitelocal" to find every affected file.');
 
-  // submit the query and put results into the tab pane
-  fetch( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
-    { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then( response => {
-      if (! response.ok) {
-        $(target).html(
-          '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
-          'Search failed! Please contact your site administrator (server error).</div>'
-        );
-        return;
-        // throw new Error('Network response was not ok');
-      }
-      return response.text();
-    })
-    .then( content => {
-      if (content == "") {
-        $(target).html('<div class="col-md-2 alert alert-info">No matching records.</div>');
-      }
-      else {
-        $(target).html(content);
-        // delegate to any [device|search] specific JS code
-        $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-          top: 40
-          ,position: 'fixed'
-        });
-        inner_view_processing(tab);
-      }
-    })
-    .catch( error => {
-      $(target).html(
-        '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
-        'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
-      );
-      console.error('There has been a problem with your fetch operation:', error);
-    });
+  // A site that overrode only this handler still has the shipped form, whose
+  // hx-get has already loaded the pane off the same submit event. Fetching
+  // again here would double every request the site makes.
+  var form = document.getElementById(tab + '_form');
+  if (form && form.getAttribute('hx-get')) { return }
+
+  htmx.ajax('GET',
+    uri_base + '/ajax/content/' + path + '/' + tab + '?' + $('#' + tab + '_form').serialize(),
+    { target: '#' + tab + '_pane',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' } });
 }
 
 // keep track of which tabs have a sidebar, for when switching tab
