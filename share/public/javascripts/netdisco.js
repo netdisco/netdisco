@@ -87,13 +87,9 @@ function do_search (event, tab) {
 var has_sidebar = {};
 var sidebar_hidden = 0;
 
-// the history.js plugin is great, but fires statechange at pushState
-// so we have these semaphpores to help avoid messing the History.
-
-// set true when faking a user click on a tab
+// set while replaying a history entry, so the tab click that replay fakes does
+// not push a new entry for the tab it just restored
 var is_from_state_event = 0;
-// set true when the history plugin does pushState - to prevent loop
-var is_from_history_plugin = 0;
 
 // on tab change, hide previous tab's search form and show new tab's
 // search form. also trigger to load the content for the newly active tab.
@@ -118,32 +114,30 @@ function update_content(from, to) {
     form_inputs.each(function() {device_form_state($(this))});
   }
 
-  if (window.History && window.History.enabled && is_from_state_event == 0) {
-    is_from_history_plugin = 1;
-    window.History.pushState(
-      {name: to, fields: $(to_form).serializeArray()},
-      pgtitle, uri_base + '/' + path + '?' + $(to_form).serialize()
+  if (is_from_state_event == 0) {
+    // pushState ignores its title argument, so set the title here and keep it
+    // in the state for popstate to restore
+    document.title = pgtitle;
+    history.pushState(
+      {name: to, fields: $(to_form).serializeArray(), title: pgtitle},
+      '', uri_base + '/' + path + '?' + $(to_form).serialize()
     );
-    is_from_history_plugin = 0;
   }
 
   $(to_form).trigger("submit");
 }
 
 // handler for ajax navigation
-if (window.History && window.History.enabled) {
-  var History = window.History;
-  History.Adapter.bind(window, "statechange", function() {
-    if (is_from_history_plugin == 0) {
-      is_from_state_event = 1;
-      var State = History.getState();
-      // History.log(State.data.name, State.title, State.url);
-      $('#'+ State.data.name + '_form').deserialize(State.data.fields);
-      $('#'+ State.data.name + '_link').click();
-      is_from_state_event = 0;
-    }
-  });
-}
+window.addEventListener('popstate', function (event) {
+  // the first entry for a document carries no state
+  if (!event.state) { return }
+
+  is_from_state_event = 1;
+  $('#'+ event.state.name + '_form').deserialize(event.state.fields);
+  if (event.state.title) { document.title = event.state.title }
+  $('#'+ event.state.name + '_link').click();
+  is_from_state_event = 0;
+});
 
 // if any field in Search Options has content, highlight in green
 function device_form_state(e) {

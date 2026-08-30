@@ -379,7 +379,6 @@ share/public/javascripts/daterangepicker.js
 share/public/javascripts/force-graph.min.js
 share/public/javascripts/htmx.min.js
 share/public/javascripts/jquery-deserialize.js
-share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/jquery-ui.min.js
 share/public/javascripts/jquery.dataTables.min.js
@@ -403,7 +402,6 @@ share/public/javascripts/jstree/themes/proton/style.css
 share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
-share/public/javascripts/natural.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
@@ -699,6 +697,7 @@ xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t
 xt/43-response-compression.t
 xt/44-results-token-escaping.t
+xt/46-native-history-api.t
 xt/50-config-override.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
