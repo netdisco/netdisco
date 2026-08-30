@@ -91,6 +91,33 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv ./Build distmeta
           sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
 
+      # Assertions, so no continue-on-error here. The upload below keeps it
+      # because a PAUSE hiccup is worth tolerating, but swallowing these two is
+      # how 2.105002 reported green without ever reaching CPAN.
+      - name: Check the release before uploading
+        if: steps.build_and_run_tests.outcome == 'success' && startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          RELEASE="App-Netdisco-${TAG}.tar.gz"
+
+          # The tarball is named from $VERSION, which distmeta takes from the
+          # newest block in Changes. The tag is not an input anywhere else.
+          if [ ! -f "$RELEASE" ]; then
+            echo "tag ${TAG} but ./Build dist produced:"
+            ls -1 App-Netdisco-*.tar.gz || echo "  (no tarball at all)"
+            echo "the version comes from the newest block in Changes; the two must agree"
+            exit 1
+          fi
+
+          if curl -sLI --fail -o /dev/null "https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASE}"; then
+            echo "${RELEASE} is already on CPAN, refusing to upload it a second time"
+            exit 1
+          fi
+
+          echo "${RELEASE} matches the tag and is not yet on CPAN"
+
       - name: Upload to CPAN
         if: steps.build_and_run_tests.outcome == 'success' && startsWith(github.ref, 'refs/tags/')
         continue-on-error: true
@@ -99,7 +126,6 @@ jobs:
           PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco
-          bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
           sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
 
       - name: Setup tmate session
