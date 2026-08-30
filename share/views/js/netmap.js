@@ -1,18 +1,10 @@
-<div id="nd2_netmap-wrap">
-
-  <div id="nd2_netmap-loading" class="col-md-2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>
-  <div id="nd2_netmap-container"></div>
-  <div id="nd2_netmap-fullscreen" title="Full Screen"><i class="fas fa-expand fa-lg"></i></div>
-  <div id="nd2_netmap-spinner" class="nd_netmap-running"></div>
-</div>
-<script>
 // The netmap: force-graph on canvas, fed by the same payload and posting the
 // same positions as the d3 renderer it replaced.
 
 var graph;             // accessor object; the harness and device.js use window.graph
 var saveMapPositions;  // device.js binds the sidebar Save button to this
 
-$.getJSON('?', function (mapdata) {
+$.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %]', function (mapdata) {
 
   // the netmap fragment reloads in place (do_search's $(target).html()), so
   // this callback runs again while the previous ForceGraph instance's rAF
@@ -84,7 +76,7 @@ $.getJSON('?', function (mapdata) {
   function endpointId(l, end) { var v = l[end]; return (typeof v === 'object') ? v.ID : v }
 
   // read the template condition once; two handlers below need it
-  var autosaveOn = ('' === 'on');
+  var autosaveOn = ('[% "on" IF params.autosave == "on" %]' === 'on');
 
   // force-graph reheats the simulation on every drag event, and once the first
   // layout has finished alpha is already below d3AlphaMin, so the engine stops
@@ -164,7 +156,7 @@ $.getJSON('?', function (mapdata) {
   saveMapPositions = function (announce) {
     fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
     $.post(
-      ''
+      '[% uri_for("/ajax/data/device/netmappositions") | none %]'
       , $("#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
         + '&positions=' + JSON.stringify(graph.positions())
     ).done(function () {
@@ -223,7 +215,7 @@ $.getJSON('?', function (mapdata) {
 
   // the old template zoomed to the center node 1.5 s after start when
   // mapshow=neighbors (a legacy value still reachable from bookmarks)
-  if ('' == 'neighbors') {
+  if ('[% params.mapshow | html_entity %]' == 'neighbors') {
     setTimeout(function () {
       var n = graph.nodeDataById(graph.centernode);
       if (n) { fg.centerAt(n.x, n.y, 600); fg.zoom(4, 600) }
@@ -331,8 +323,8 @@ $.getJSON('?', function (mapdata) {
   });
 
   // labels draw above this zoom
-  var LABEL_ZOOM = +'0.9';
-  var LABEL_SIZE = +'8';
+  var LABEL_ZOOM = +'[% settings.netmap.node_label_zoom_threshold || 0.9 %]';
+  var LABEL_SIZE = +'[% settings.netmap.node_label_font_size || 8 %]';
   // read once, not once per node per frame
   var showips = document.getElementById('nd_showips');
 
@@ -368,7 +360,7 @@ $.getJSON('?', function (mapdata) {
     .linkCanvasObject(function (l, ctx) {
       if (!showspeed || !showspeed.checked) { return }
       if (typeof l.source !== 'object') { return }
-      ctx.font = '5px sans-serif';
+      ctx.font = '[% settings.netmap.link_label_font_size || 5 %]px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = 'black';
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
@@ -430,5 +422,3 @@ function requestFullScreen(elt) {
     }
   }
 }
-</script>
-<!-- vim: ft=html -->

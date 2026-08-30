@@ -189,10 +189,14 @@ health_path: ''
 metrics_path: ''
 metrics_token: ''
 metrics_allow: []
-netmap_performance_limit_max_devices: 1000
-netmap_custom_fields:
-  device: []
-  device_port: []
+netmap:
+  max_devices: 2500
+  node_label_zoom_threshold: 0.9
+  node_label_font_size: 8
+  link_label_font_size: 5
+  custom_fields:
+    device: []
+    device_port: []
 device_port_col_idx_left: 8
 device_port_col_idx_mid: 21
 device_port_col_idx_right: 25
@@ -877,6 +881,7 @@ worker_plugins:
   - 'Arpnip::Nodes'
   - 'Arpnip::Subnets'
   - 'Arpwalk'
+  - 'CheckSiteLocal'
   - 'Contact'
   - 'Delete'
   - 'Delete::Hooks'

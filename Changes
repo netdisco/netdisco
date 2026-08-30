@@ -1,8 +1,42 @@
-2.105004 - 2026-08-25
+2.105005 - tbd
+
+  [ENHANCEMENTS]
+
+  * netmap redrawn on canvas via force-graph; the map settles and pans
+    smoothly at sizes that struggled before
+  * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
+  * netmap colorby legend is confined to the map and scrolls, one line per
+    location with the full name on hover
+  * netmap All Devices and Neighbor Cloud stay available up to 2500 devices
+    rather than 1000
+  * netmap Save button confirms with a toast when autosave is off
+  * netmap position save answers JSON instead of an XML content type carrying
+    a stringified database row
+  * netmap settings collected into a netmap tree, with new node_label_font_size,
+    link_label_font_size and node_label_zoom_threshold tunables;
+    netmap_performance_limit_max_devices is now netmap max_devices and
+    netmap_custom_fields is now netmap custom_fields
+  * new netdisco-do checksitelocal action, reporting site-local templates
+    which call frontend APIs that recent releases removed
+
+  [BUG FIXES]
+
+  * a netmap URL carrying autosave=off no longer saves positions anyway
+  * netmap_performance_limit_max_devices and netmap_custom_fields are still
+    honored after the move into the netmap settings tree
+
+2.105004 - 2026-08-29
 
   [ENHANCEMENTS]
 
   * rebuild MANIFEST and bump Netdisco.pm VERSION automatically in Build
+  * bump SNMP::Info dependency 3.977001, improves Cisco WLC support
+  * drop the history.js library for the browser's own History API
+  * drop the unused natural.js sort plug-in and the IE8 HTML5 shim
+
+  [BUG FIXES]
+
+  * fix netdisco-do dumpconfig printing undef instead of the whole config
 
 2.105003 - 2026-08-24
 

@@ -1481,41 +1481,19 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: 5px;
   margin-bottom: -7px;
 }
-#nd_vlan-label-text {
-  vertical-align: text-bottom;
-}
 #nd_vlan-entry {
   margin-top: 7px;
   width: 59px;
 }
 #nd_mapshow-hops {
   width: 44px;
-  margin-bottom: 0px;
+  margin-bottom: -5px;
 }
 
 /* netmap maximise icon */
 #nd2_netmap-fullscreen {
   fill: black;
   font-size: 15px;
-}
-
-/* netmap link labels */
-.nd_netmap-linklabel {
-  pointer-events: none;
-  font-weight: bold;
-}
-
-/* The netmap's device labels were bold by accident: the vendored chart gives
-   them class="label", which collided with a component the old stylesheet had and
-   the replacement does not. Put the weight back here only, a rule on the bare
-   class being a component name this migration removed on purpose. */
-#netmap_pane svg text.label {
-  font-weight: bold;
-}
-
-/* netmap tooltip box */
-#netmap_pane_tooltip {
-  width: unset;
 }
 
 /* fixup for prepended checkbox in sidebar */
@@ -1708,7 +1686,6 @@ input#nd_port-query {
   margin-bottom: 5px;
 }
 #nd_colorby-label-text {
-  vertical-align: bottom;
   line-height: 2;
 }
 
@@ -1998,6 +1975,49 @@ td.nd_nowrap {
   white-space: nowrap;
 }
 
+/* netmap overlays: the canvas renderer draws no DOM, so the fullscreen
+   control and the engine status indicator sit above it as elements */
+/* min-height matches the height netmap.js gives the canvas, so the wrap is
+   already its final size while the loading message shows: without it the wrap
+   collapses until ForceGraph sizes the container, and the two absolutely
+   positioned children resolve against a zero-height box, landing above the
+   pane rather than in its corners */
+#nd2_netmap-wrap { position: relative; min-height: calc(100vh - 100px); }
+/* fullscreen paints the browser's own black backdrop behind a transparent
+   canvas (the old SVG renderer avoided this because its SVG element carried
+   an opaque background always, not just in fullscreen); match that here so
+   dark link strokes stay visible instead of vanishing into the backdrop */
+/* one selector per rule: an unrecognized vendor-prefixed pseudo-class
+   invalidates an entire comma-separated selector list, not just its branch */
+#netmap_pane:fullscreen { background-color: #fff; }
+#netmap_pane:-webkit-full-screen { background-color: #fff; }
+#netmap_pane:-moz-full-screen { background-color: #fff; }
+#nd2_netmap-fullscreen { position: absolute; top: 12px; right: 16px; cursor: pointer; }
+#nd2_netmap-spinner { position: absolute; bottom: 14px; right: 16px;
+  width: 18px; height: 18px; border-radius: 50%; }
+#nd2_netmap-spinner.nd_netmap-running { border: 4px solid #FFE4B5;
+  border-top-color: transparent; animation: nd2-netmap-spin 1.5s linear infinite; }
+#nd2_netmap-spinner.nd_netmap-settled { border: 0; background: #CCFFCC; }
+@keyframes nd2-netmap-spin { to { transform: rotate(360deg); } }
+/* The rows are the distinct COLORVALUEs of the drawn nodes, and for
+   colorby=lgroup that is the raw device.location string. Measured on a 6493
+   device network: 3152 rows, longest 184 characters, so uncapped the box is
+   about 1160px wide and 56700px tall. Being absolutely positioned it does not
+   expand the wrap, so the overflow lands on the document and the canvas ends
+   part way down it. Cap against the wrap rather than the viewport: the pane,
+   not the wrap, is what goes fullscreen, so a vh value would stop matching the
+   box the legend sits in. */
+#nd2_netmap-legend { position: absolute; top: 12px; left: 16px;
+  background: rgba(255,255,255,0.85); padding: 6px 10px; font-size: 12px;
+  max-width: 22em; max-height: calc(100% - 24px); overflow-y: auto; }
+/* one line per row: 46% of these labels are longer than a line, and wrapping
+   them made the list 100524px instead of 56748px. Safe only because the row
+   carries its full label as a title, since 28% of them are not uniquely
+   identified by the ~42 characters that fit */
+#nd2_netmap-legend div { white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; }
+#nd2_netmap-boxselect { position: fixed; border: 1px dashed #0d6efd;
+  background: rgba(13,110,253,0.08); pointer-events: none; z-index: 100; }
 /* htmx hides an idle indicator with opacity and visibility, neither of which
    takes it out of flow, so the spinner's box would push every pane below it
    down for the life of the page. These set display instead; the properties are
