@@ -94,6 +94,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     .nodeColor(function (n) { return n.color })
     .nodeLabel(function (n) { return n.INFOSTRING })
     .linkLabel(function (l) { return l.INFOSTRING })
+    .linkWidth(2)
     .minZoom(0.1)
     .maxZoom(10)
     .cooldownTime(Infinity)

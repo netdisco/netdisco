@@ -102,6 +102,7 @@ $.getJSON('?', function (mapdata) {
     .nodeColor(function (n) { return n.color })
     .nodeLabel(function (n) { return n.INFOSTRING })
     .linkLabel(function (l) { return l.INFOSTRING })
+    .linkWidth(2)
     .minZoom(0.1)
     .maxZoom(10)
     .cooldownTime(Infinity)
