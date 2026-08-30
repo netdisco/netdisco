@@ -1,3 +1,28 @@
+2.105005 - tbd
+
+  [ENHANCEMENTS]
+
+  * netmap redrawn on canvas via force-graph; the map settles and pans
+    smoothly at sizes that struggled before
+  * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
+  * netmap colorby legend is confined to the map and scrolls, one line per
+    location with the full name on hover
+  * netmap All Devices and Neighbor Cloud stay available up to 2500 devices
+    rather than 1000
+  * netmap Save button confirms with a toast when autosave is off
+  * netmap position save answers JSON instead of an XML content type carrying
+    a stringified database row
+  * netmap settings collected into a netmap tree, with new node_label_font_size,
+    link_label_font_size and node_label_zoom_threshold tunables;
+    netmap_performance_limit_max_devices is now netmap max_devices and
+    netmap_custom_fields is now netmap custom_fields
+
+  [BUG FIXES]
+
+  * a netmap URL carrying autosave=off no longer saves positions anyway
+  * netmap_performance_limit_max_devices and netmap_custom_fields are still
+    honored after the move into the netmap settings tree
+
 2.105004 - 2026-08-29
 
   [ENHANCEMENTS]
