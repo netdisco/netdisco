@@ -476,6 +476,17 @@ $(document).ready(function() {
     });
     inner_view_processing(tab);
   });
+  // The indicator leaves the old canvas on screen while the new fragment loads,
+  // and force-graph renders every frame until it is destroyed. netmap.js
+  // destroys the previous instance too, but not until the new fragment's script
+  // runs, which is a whole request later.
+  document.body.addEventListener('htmx:beforeRequest', function (evt) {
+    if (evt.detail.target.id !== 'netmap_pane') return;
+    if (window.graph && window.graph.fg
+        && typeof window.graph.fg._destructor === 'function') {
+      window.graph.fg._destructor();
+    }
+  });
   document.body.addEventListener('htmx:responseError', function (evt) {
     var target = evt.detail.target;
     if (!target.id.match(/_pane$/)) return;

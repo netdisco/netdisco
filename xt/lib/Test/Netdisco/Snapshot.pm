@@ -356,14 +356,22 @@ sub stash_for {
   return {};
 }
 
-=head2 render_template( $relative_path )
+=head2 render_template( $relative_path, \%stash? )
 
 Returns C<($html, undef)> on success or C<(undef, $error)> on failure.
+
+With a stash hashref the template renders against that instead of
+C<stash_for>. The snapshots never pass one: they exist to be diffed, and a
+caller-chosen stash would make them depend on their caller. It is for a test
+that needs a branch no snapshot reaches, such as the per-tab C<FOREACH> in
+C<device.tt> and C<search.tt>, whose bodies never run against the empty tab
+lists a snapshot renders with.
 
 =cut
 
 sub render_template {
   my $view = shift;
+  my $stash = shift;
   my $engine = _engine();
   my $out = '';
   # Templates read empty values from the stash; that is expected here and the
@@ -377,7 +385,7 @@ sub render_template {
   # overwritten by that load. Localized to this one process() call so the
   # package global cannot leak into another subtest in this process.
   local $Template::Stash::PRIVATE = undef;
-  if ($engine->process($view, stash_for($view), \$out)) {
+  if ($engine->process($view, ($stash || stash_for($view)), \$out)) {
     return ($out, undef);
   }
   return (undef, scalar $engine->error);
