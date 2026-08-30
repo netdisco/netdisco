@@ -91,8 +91,8 @@ sub make_node_infostring {
     .'Uptime: <b>%s</b><br>Location: <b>%s</b><br>Contact: <b>%s</b>');
   
   my @field_values = ();
-  if (ref [] eq ref setting('netmap_custom_fields')->{device}) {
-      foreach my $field (@{ setting('netmap_custom_fields')->{device} }) {
+  if (ref [] eq ref setting('netmap')->{'custom_fields'}->{device}) {
+      foreach my $field (@{ setting('netmap')->{'custom_fields'}->{device} }) {
           foreach my $config (@{ setting('custom_fields')->{device} }) {
               next unless $config->{'name'} and $config->{'name'} eq $field;
 
@@ -258,7 +258,7 @@ get '/ajax/data/device/netmap' => require_login sub {
     })->with_times;
     
     $devices = $devices->with_custom_fields
-      if scalar @{ setting('netmap_custom_fields')->{'device'} };
+      if scalar @{ setting('netmap')->{'custom_fields'}->{'device'} };
 
     # filter by vlan for all or neighbors only
     if ($vlan) {

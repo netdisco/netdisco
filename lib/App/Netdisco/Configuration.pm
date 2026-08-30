@@ -352,8 +352,8 @@ config->{'field_protection'} = config->{'snmp_field_protection'}
   if exists config->{'snmp_field_protection'};
 
 # if user has previously configured too_many_devices away from 1000 default,
-# then copy it into netmap_performance_limit_max_devices
-config->{'netmap_performance_limit_max_devices'} =
+# then copy it into netmap->max_devices
+config->{'netmap'}->{'max_devices'} =
   config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'}
   if config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'}
     and config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'} != 1000;

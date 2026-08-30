@@ -312,7 +312,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
     if (el.className !== 'nd_netmap-running') { el.className = 'nd_netmap-running' }
   });
 
-  var LABEL_ZOOM = 1.5;   // labels draw above this zoom; tune by eye against master
+  var LABEL_ZOOM = [% settings.netmap.label_zoom_threshold %];   // labels draw above this zoom; tune by eye against master
   fg.nodeCanvasObjectMode(function () { return 'after' })
     .nodeCanvasObject(function (n, ctx, scale) {
       if (n.selected) {
