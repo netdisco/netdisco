@@ -191,7 +191,9 @@ metrics_token: ''
 metrics_allow: []
 netmap:
   max_devices: 2500
-  label_zoom_threshold: 0.9
+  node_label_zoom_threshold: 0.9
+  node_label_font_size: 8
+  link_label_font_size: 5
   custom_fields:
     device: []
     device_port: []
