@@ -124,7 +124,7 @@ function update_content(from, to) {
     );
   }
 
-  $(to_form).trigger("submit");
+  nd_submit(to_form);
 }
 
 // handler for ajax navigation
