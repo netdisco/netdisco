@@ -877,6 +877,7 @@ worker_plugins:
   - 'Arpnip::Nodes'
   - 'Arpnip::Subnets'
   - 'Arpwalk'
+  - 'CheckSiteLocal'
   - 'Contact'
   - 'Delete'
   - 'Delete::Hooks'

@@ -5,9 +5,12 @@ use warnings;
 
 use File::Find ();
 
+use Dancer ':syntax';
+use Path::Class 'dir';
+
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ scan_site_local site_local_rules /;
+our @EXPORT_OK = qw/ scan_site_local site_local_rules site_local_paths /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -76,6 +79,36 @@ sub site_local_rules {
                    advice => $_->{advice} } } @RULES;
 }
 
+=head2 site_local_paths
+
+Returns the directories a scan should cover: C<template_paths> from
+C<deployment.yml>, plus the two C<nd-site-local> directories when
+C<site_local_files> is on.
+
+These are the same directories L<App::Netdisco::Web> unshifts onto the Template
+Toolkit C<INCLUDE_PATH>. Derived here rather than passed in, so the
+C<checksitelocal> action and the web app's startup check cannot drift apart.
+
+The shipped C<share/views> is deliberately absent: it is what site-local files
+override, not something to scan.
+
+=cut
+
+sub site_local_paths {
+  my @paths = ();
+  my $configured = setting('template_paths');
+  push @paths, @$configured if $configured and ref [] eq ref $configured;
+
+  if (setting('site_local_files')) {
+      my $home = ($ENV{NETDISCO_HOME} || $ENV{HOME});
+      push @paths,
+        dir($home, 'nd-site-local', 'share')->stringify,
+        dir($home, 'nd-site-local', 'share', 'views')->stringify;
+  }
+
+  return @paths;
+}
+
 =head2 scan_site_local( \%args )
 
 Scans every file under each directory in C<< $args{paths} >> and returns the
@@ -99,17 +132,27 @@ sub scan_site_local {
     ? (grep { $wanted{ $_->{name} } } @RULES) : @RULES;
   return () unless scalar @rules;
 
+  # site_local_paths returns nd-site-local/share and nd-site-local/share/views,
+  # and the second is inside the first, so every file below views is reached
+  # twice. Read each file once, keyed on the name File::Find gives it.
+  my %seen = ();
   my @findings = ();
+
   foreach my $path (@paths) {
       next unless defined $path and length $path and -d $path;
       File::Find::find({ no_chdir => 1, wanted => sub {
           return unless -f $File::Find::name;
+          return if $seen{ $File::Find::name }++;
           push @findings, _scan_file($File::Find::name, \@rules);
       }}, $path);
   }
 
-  return sort { $a->{path} cmp $b->{path} or $a->{line} <=> $b->{line} }
-         @findings;
+  # Assigned rather than returned straight from sort, which yields undef in
+  # scalar context instead of a count.
+  my @sorted =
+    sort { $a->{path} cmp $b->{path} or $a->{line} <=> $b->{line} } @findings;
+
+  return @sorted;
 }
 
 # Read once, test every rule against every line. A line can match more than one

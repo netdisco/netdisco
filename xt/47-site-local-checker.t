@@ -10,6 +10,9 @@ use File::Temp ();
 use File::Path 'make_path';
 use File::Spec::Functions 'catfile';
 
+use App::Netdisco;
+use Dancer qw/:moose :script !pass/;
+
 use App::Netdisco::Util::SiteLocal 'scan_site_local';
 
 # Build the tree each subtest needs rather than checking fixtures in. Real
@@ -162,6 +165,67 @@ subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub
       [ 'he-js', 'history-js', 'natural-js' ], 'named as the report cites them';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
+};
+
+# The paths come from settings rather than from the caller, so the action and
+# PR 2's startup check cannot drift apart. site_local_files is off by default,
+# and when it is off the nd-site-local directories are not scanned even if they
+# exist, because the app is not reading them either.
+subtest 'site_local_paths__site_local_files_off__returns_only_template_paths' => sub {
+    my $home = File::Temp->newdir();
+    local $ENV{NETDISCO_HOME} = "$home";
+    config->{'template_paths'} = ['/etc/netdisco/views'];
+    config->{'site_local_files'} = 0;
+
+    is_deeply [ App::Netdisco::Util::SiteLocal::site_local_paths() ],
+      ['/etc/netdisco/views'],
+      'nd-site-local is not scanned when the app is not reading it';
+};
+
+subtest 'site_local_paths__site_local_files_on__adds_the_nd_site_local_dirs' => sub {
+    my $home = File::Temp->newdir();
+    local $ENV{NETDISCO_HOME} = "$home";
+    config->{'template_paths'} = [];
+    config->{'site_local_files'} = 1;
+
+    my @paths = App::Netdisco::Util::SiteLocal::site_local_paths();
+
+    is scalar @paths, 2, 'both directories Web.pm adds';
+    like $paths[0], qr{nd-site-local/share$},
+      'the share directory';
+    like $paths[1], qr{nd-site-local/share/views$},
+      'and the views directory below it';
+};
+
+# site_local_paths returns nd-site-local/share AND nd-site-local/share/views,
+# because Web.pm adds both, and the second is inside the first. Every file below
+# views is therefore reached twice, and a report that lists each finding twice
+# reads as twice as much breakage as exists.
+subtest 'scan_site_local__paths_overlap__reports_each_finding_once' => sub {
+    my $tree = site_local_tree(
+      'share/views/custom.tt' => "he.encode(x);\n",
+    );
+
+    my @findings = scan_site_local({ paths =>
+      [ "$tree/share", "$tree/share/views" ] });
+
+    is scalar @findings, 1,
+      'the nested path does not double the finding'
+      or diag explain \@findings;
+};
+
+# A bare `sort` as the last statement of a sub returns undef in scalar context
+# rather than a count, so a caller writing `my $n = scan_site_local(...)` gets
+# undef and a report of zero. The contract is a list; this pins the scalar case
+# so the natural mistake cannot be made silently.
+subtest 'scan_site_local__called_in_scalar_context__returns_the_count' => sub {
+    my $tree = site_local_tree(
+      'views/a.tt' => join("\n", 'History.getState();', 'he.decode(y);'),
+    );
+
+    my $count = scan_site_local({ paths => ["$tree"] });
+
+    is $count, 2, 'scalar context gives the number of findings';
 };
 
 done_testing;

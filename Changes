@@ -1,3 +1,10 @@
+2.105005 - tbd
+
+  [ENHANCEMENTS]
+
+  * new netdisco-do checksitelocal action, reporting site-local templates
+    which call frontend APIs that recent releases removed
+
 2.105004 - 2026-08-29
 
   [ENHANCEMENTS]
