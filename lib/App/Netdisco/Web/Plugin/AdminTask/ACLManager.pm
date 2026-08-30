@@ -109,7 +109,8 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
       $maps->update({ acl_name => $acl });
       if ($type eq 'host') {
           schema(vars->{'tenant'})->resultset('AccessControlList')
-            ->search({id => { -in => [ $maps->right_acls ] }})->delete;
+            ->search({id => { -in => [ $maps->right_acls ] }})
+            ->update({ rules => [] });
       }
     });
 
