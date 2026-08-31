@@ -679,7 +679,7 @@ field_protection:
     name: ['group:__ANY__']
     up_admin: ['group:__ANY__']
     up: ['group:__ANY__']
-updated_device_hook_fields:
+updated_device_hook_ignored_fields:
   device:
     - uptime
     - last_discover
