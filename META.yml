@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.105004'
+    version: '2.105005'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -328,6 +328,8 @@ provides:
     file: lib/App/Netdisco/Util/Python.pm
   App::Netdisco::Util::SNMP:
     file: lib/App/Netdisco/Util/SNMP.pm
+  App::Netdisco::Util::SiteLocal:
+    file: lib/App/Netdisco/Util/SiteLocal.pm
   App::Netdisco::Util::Snapshot:
     file: lib/App/Netdisco/Util/Snapshot.pm
   App::Netdisco::Util::Statistics:
@@ -500,6 +502,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
   App::Netdisco::Worker::Plugin::Arpwalk:
     file: lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
+  App::Netdisco::Worker::Plugin::CheckSiteLocal:
+    file: lib/App/Netdisco/Worker/Plugin/CheckSiteLocal.pm
   App::Netdisco::Worker::Plugin::Contact:
     file: lib/App/Netdisco/Worker/Plugin/Contact.pm
   App::Netdisco::Worker::Plugin::Delete:
@@ -698,7 +702,7 @@ requires:
   Regexp::Common: '2017060201'
   Regexp::Common::net::CIDR: '0'
   Role::Tiny: '1.002005'
-  SNMP::Info: '3.977000'
+  SNMP::Info: '3.977001'
   SQL::Abstract: '1.85'
   SQL::Translator: '0.11024'
   Scope::Guard: '0'
@@ -737,5 +741,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.105004'
+version: '2.105005'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

@@ -162,6 +162,7 @@ lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortAccessEntity.pm
 lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/Python.pm
+lib/App/Netdisco/Util/SiteLocal.pm
 lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
@@ -249,6 +250,7 @@ lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
 lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
+lib/App/Netdisco/Worker/Plugin/CheckSiteLocal.pm
 lib/App/Netdisco/Worker/Plugin/Contact.pm
 lib/App/Netdisco/Worker/Plugin/Delete.pm
 lib/App/Netdisco/Worker/Plugin/Delete/Hooks.pm
@@ -648,6 +650,7 @@ share/views/js/admintask.js
 share/views/js/bootstrap-tree.js
 share/views/js/common.js
 share/views/js/device.js
+share/views/js/netmap.js
 share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt
@@ -697,10 +700,15 @@ xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t
 xt/43-response-compression.t
 xt/44-results-token-escaping.t
+xt/45-netmap-neighbor-walk.t
 xt/46-native-history-api.t
+xt/47-site-local-checker.t
 xt/50-config-override.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/netmap-autosave.test.js
+xt/js/netmap-legend.test.js
+xt/js/netmap-loading.test.js
 xt/js/portsort.test.js
 xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
