@@ -636,7 +636,7 @@ register_worker({ phase => 'early', driver => 'snmp',
                 next if $ignore_field{$field};
                 my $oldval = (defined $old->$field   ? $old->$field   : '');
                 my $newval = (defined $new->{$field} ? $new->{$field} : '');
-                if ($ports_rsrc->column_info($field)->{'data_type'} =~ m/bool/i);
+                if ($ports_rsrc->column_info($field)->{'data_type'} =~ m/bool/i) {
                     $oldval = $normalize_bool->($oldval);
                     $newval = $normalize_bool->($newval);
                 }
