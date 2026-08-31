@@ -15,11 +15,9 @@ use Test::Netdisco::Snapshot 'render_template';
 #
 # The snapshots cannot hold this. They render with empty tab lists, so the
 # FOREACH bodies that build these forms never run, and device.tt.html and
-# search.tt.html carry no form at all.
-#
-# uri_for is not stubbed by the snapshot engine, so it resolves to the empty
-# string there and every route in a snapshot is blank. Supplying it here is what
-# lets this check the route each form actually posts at.
+# search.tt.html carry no form at all. They also leave uri_for unstubbed, so
+# every route in a snapshot is blank; supplying it below is what lets this
+# check the route each form posts at.
 
 my @PAGES = (
   { view => 'device.tt', key => '_device_tabs', kind => 'device' },

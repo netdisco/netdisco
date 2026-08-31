@@ -29,23 +29,22 @@ function nd_apply_sidebar (tab) {
   }
 }
 
-// Retained for site-local copies of share/views/js/common.js, which call this
-// from their own submit handlers. Not a stub: it still loads the tab, so a site
-// that has not converted keeps working while the console says what to change.
+// Nothing shipped calls this. It is here for site-local copies of
+// share/views/js/common.js, which call it from their own submit handlers.
 // htmx.ajax() rather than nd_submit(), which would re-enter the caller's own
 // submit handler and recurse.
 function do_search (event, tab) {
   event.preventDefault();
   nd_apply_sidebar(tab);
 
-  console.error('do_search() is deprecated and will be removed. Give the #'
-    + tab + '_form element the hx-get, hx-target, hx-headers and hx-indicator '
-    + 'attributes used in share/views/device.tt, then drop this call. Run '
+  console.error('do_search() now only forwards to htmx and will be removed in '
+    + 'a future release. Give the #' + tab + '_form element the hx-get, '
+    + 'hx-target, hx-headers and hx-indicator attributes used in '
+    + 'share/views/device.tt, then drop this call. Run '
     + '"netdisco-do checksitelocal" to find every affected file.');
 
   // A site that overrode only this handler still has the shipped form, whose
-  // hx-get has already loaded the pane off the same submit event. Fetching
-  // again here would double every request the site makes.
+  // hx-get has already loaded the pane off this same submit event.
   var form = document.getElementById(tab + '_form');
   if (form && form.getAttribute('hx-get')) { return }
 
@@ -448,10 +447,9 @@ $(document).ready(function() {
     });
     inner_view_processing(tab);
   });
-  // The indicator leaves the old canvas on screen while the new fragment loads,
-  // and force-graph renders every frame until it is destroyed. netmap.js
-  // destroys the previous instance too, but not until the new fragment's script
-  // runs, which is a whole request later.
+  // The indicator leaves the old canvas on screen for the whole request, and
+  // force-graph renders every frame until destroyed. netmap.js destroys the
+  // previous instance as well, but not until the new fragment's script runs.
   document.body.addEventListener('htmx:beforeRequest', function (evt) {
     if (evt.detail.target.id !== 'netmap_pane') return;
     if (window.graph && window.graph.fg

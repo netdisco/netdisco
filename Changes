@@ -22,9 +22,9 @@
     pages already did, and keep the previous results on screen while the next
     ones load rather than blanking the pane
   * a site-local copy of share/views/js/common.js which still calls do_search
-    keeps working this release: the call loads the tab as before and logs the
-    attributes to add. netdisco-do checksitelocal reports every such file, and
-    do_search goes in the next release
+    keeps working: the call loads the tab as before and logs the attributes to
+    add. netdisco-do checksitelocal reports every such file. do_search will be
+    removed in a future release
 
   [BUG FIXES]
 

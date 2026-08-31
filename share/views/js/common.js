@@ -132,8 +132,6 @@
     [% IF params.tab == 'ipinventory' OR params.tab == 'subnets' %]
       $('#[% params.tab | html_entity %]_submit').click();
     [% ELSE %]
-      // Not trigger('submit'): jQuery falls through to form.submit(), a native
-      // navigation that fires no submit listener, so htmx never sees it.
       nd_submit('#[% params.tab | html_entity %]_form');
     [% END %]
     [% END %]

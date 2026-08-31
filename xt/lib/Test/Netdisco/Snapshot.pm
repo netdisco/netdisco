@@ -361,11 +361,10 @@ sub stash_for {
 Returns C<($html, undef)> on success or C<(undef, $error)> on failure.
 
 With a stash hashref the template renders against that instead of
-C<stash_for>. The snapshots never pass one: they exist to be diffed, and a
-caller-chosen stash would make them depend on their caller. It is for a test
-that needs a branch no snapshot reaches, such as the per-tab C<FOREACH> in
-C<device.tt> and C<search.tt>, whose bodies never run against the empty tab
-lists a snapshot renders with.
+C<stash_for>. It is for a test that needs a branch no snapshot reaches, such as
+the per-tab C<FOREACH> in C<device.tt> and C<search.tt>, whose bodies never run
+against the empty tab lists a snapshot renders with. The snapshots themselves
+must not pass one, or they would depend on their caller.
 
 =cut
 

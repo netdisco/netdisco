@@ -31,8 +31,7 @@ Detection only. This module never writes to a file and never logs.
 #
 # `pattern` is matched against each line of each file under the scanned paths.
 # `release` is the release that removed or deprecated the thing, for the report
-# to cite. Every advice line says which of the two it was, so the report does
-# not have to.
+# to cite.
 my @RULES = (
   {
     name    => 'he-js',
@@ -70,15 +69,15 @@ my @RULES = (
   {
     name    => 'do-search',
     release => '2.105005',
-    # The only rule here whose subject still works. do_search forwards to htmx
-    # and logs, so a site that ignores this keeps loading its tab until the
-    # shim goes in the following release. Reported anyway: the console notice
-    # reaches whoever opens devtools, and this reaches whoever runs the check.
+    # The only rule here whose subject still works: do_search forwards to htmx
+    # rather than throwing, so a site that ignores this keeps loading its tab.
+    # Reported anyway, because the console notice only reaches whoever opens
+    # devtools.
     pattern => qr/\bdo_search\s*\(/,
-    advice  => 'do_search() is deprecated and now only forwards to htmx. Give '
-             . 'the form the hx-get, hx-target, hx-headers and hx-indicator '
-             . 'attributes that share/views/device.tt uses, then drop the '
-             . 'do_search call from the submit handler.',
+    advice  => 'do_search() now only forwards to htmx and will be removed in a '
+             . 'future release. Give the form the hx-get, hx-target, hx-headers '
+             . 'and hx-indicator attributes that share/views/device.tt uses, '
+             . 'then drop the do_search call from the submit handler.',
   },
 );
 
