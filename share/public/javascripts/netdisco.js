@@ -447,15 +447,25 @@ $(document).ready(function() {
     });
     inner_view_processing(tab);
   });
-  // The indicator leaves the old canvas on screen for the whole request, and
-  // force-graph renders every frame until destroyed. netmap.js destroys the
-  // previous instance as well, but not until the new fragment's script runs.
+  // Empty the pane for the duration of the request, so the indicator is the
+  // only thing on screen. Leaving the previous results up gives an interactive
+  // table that no longer answers the search being run.
+  //
+  // jobqueue is excluded for the reason it carries no indicator: it refreshes
+  // on a timer and would blank on every tick.
   document.body.addEventListener('htmx:beforeRequest', function (evt) {
-    if (evt.detail.target.id !== 'netmap_pane') return;
-    if (window.graph && window.graph.fg
+    var target = evt.detail.target;
+    if (!target.id.match(/_pane$/) || target.id === 'jobqueue_pane') return;
+
+    // force-graph renders every frame until destroyed, and emptying the pane
+    // only detaches its canvas. netmap.js destroys the previous instance as
+    // well, but not until the new fragment's script runs.
+    if (target.id === 'netmap_pane' && window.graph && window.graph.fg
         && typeof window.graph.fg._destructor === 'function') {
       window.graph.fg._destructor();
     }
+
+    target.innerHTML = '';
   });
   document.body.addEventListener('htmx:responseError', function (evt) {
     var target = evt.detail.target;
