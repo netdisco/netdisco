@@ -617,7 +617,6 @@ register_worker({ phase => 'early', driver => 'snmp',
     # existing row's true/false comes back as the driver's raw "1"/"0"
     # while our freshly built %deviceports uses the literal 'true'/'false'
     # strings - normalize both before comparing so this isn't a false positive
-    my %bool_field = map {($_ => 1)} qw/has_subinterfaces is_master/;
     my $normalize_bool = sub {
       my $val = shift;
       return (defined $val and grep {$val eq $_} qw/1 t true/) ? 1 : 0;
@@ -637,6 +636,7 @@ register_worker({ phase => 'early', driver => 'snmp',
                        (join ', ', sort keys %deviceports);
     }
     else {
+        my $ports_rsrc = $device->ports->result_source;
         PORTDIFF: foreach my $port (sort keys %deviceports) {
             my $old = $existing_ports{$port};
             my $new = $deviceports{$port};
@@ -644,7 +644,7 @@ register_worker({ phase => 'early', driver => 'snmp',
                 next if $ignore_field{$field};
                 my $oldval = (defined $old->{$field} ? $old->{$field} : '');
                 my $newval = (defined $new->{$field} ? $new->{$field} : '');
-                if ($bool_field{$field}) {
+                if ($ports_rsrc->column_info($field)->{data_type} =~ m/bool/i);
                     $oldval = $normalize_bool->($oldval);
                     $newval = $normalize_bool->($newval);
                 }
