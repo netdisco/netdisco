@@ -1,3 +1,14 @@
+2.105006 - tbd
+
+  [ENHANCEMENTS]
+
+  * device, search and report tabs load their content with htmx, as the admin
+    pages already did
+  * a site-local copy of share/views/js/common.js which still calls do_search
+    keeps working: the call loads the tab as before and logs the attributes to
+    add. netdisco-do checksitelocal reports every such file. do_search will be
+    removed in a future release
+
 2.105005 - 2026-08-31
 
   [ENHANCEMENTS]
@@ -18,12 +29,6 @@
     netmap_custom_fields is now netmap custom_fields
   * new netdisco-do checksitelocal action, reporting site-local templates
     which call frontend APIs that recent releases removed
-  * device, search and report tabs load their content with htmx, as the admin
-    pages already did
-  * a site-local copy of share/views/js/common.js which still calls do_search
-    keeps working: the call loads the tab as before and logs the attributes to
-    add. netdisco-do checksitelocal reports every such file. do_search will be
-    removed in a future release
 
   [BUG FIXES]
 
