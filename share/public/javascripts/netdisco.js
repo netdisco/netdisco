@@ -71,6 +71,13 @@ function update_content(from, to) {
   var to_form = '#' + to + '_form';
   var from_form = '#' + from + '_form';
 
+  // Cancel a request still running for the tab being left. Its indicator sits
+  // beside the pane rather than inside it, so the tab machinery cannot hide it
+  // and it would stay on screen alongside the new tab's. Nothing is lost:
+  // entering a tab always re-submits its form.
+  var leaving = document.querySelector(from_form);
+  if (leaving) { htmx.trigger(leaving, 'htmx:abort') }
+
   // page title
   var pgtitle = default_pgtitle;
   if ($('#nd_device-name').text().length) {
