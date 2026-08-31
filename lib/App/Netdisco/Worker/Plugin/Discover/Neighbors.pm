@@ -139,9 +139,8 @@ sub store_neighbors {
   my $c_cap      = $snmp->c_cap;
 
   # cache the device ports to save hitting the database for many single rows
-  vars->{'device_ports'} =
-    { map {($_->port => $_)} $device->ports->reset->all };
-  my $device_ports = vars->{'device_ports'};
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
 
   # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
