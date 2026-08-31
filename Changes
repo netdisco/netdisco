@@ -1,3 +1,86 @@
+2.105005 - 2026-08-31
+
+  [ENHANCEMENTS]
+
+  * netmap redrawn on canvas via force-graph; the map settles and pans
+    smoothly at sizes that struggled before
+  * netmap multi-select is a shift-drag rectangle now, not a freehand lasso
+  * netmap colorby legend is confined to the map and scrolls, one line per
+    location with the full name on hover
+  * netmap All Devices and Neighbor Cloud stay available up to 2500 devices
+    rather than 1000
+  * netmap Save button confirms with a toast when autosave is off
+  * netmap position save answers JSON instead of an XML content type carrying
+    a stringified database row
+  * netmap settings collected into a netmap tree, with new node_label_font_size,
+    link_label_font_size and node_label_zoom_threshold tunables;
+    netmap_performance_limit_max_devices is now netmap max_devices and
+    netmap_custom_fields is now netmap custom_fields
+  * new netdisco-do checksitelocal action, reporting site-local templates
+    which call frontend APIs that recent releases removed
+
+  [BUG FIXES]
+
+  * a netmap URL carrying autosave=off no longer saves positions anyway
+  * netmap_performance_limit_max_devices and netmap_custom_fields are still
+    honored after the move into the netmap settings tree
+
+2.105004 - 2026-08-29
+
+  [ENHANCEMENTS]
+
+  * rebuild MANIFEST and bump Netdisco.pm VERSION automatically in Build
+  * bump SNMP::Info dependency 3.977001, improves Cisco WLC support
+  * drop the history.js library for the browser's own History API
+  * drop the unused natural.js sort plug-in and the IE8 HTML5 shim
+
+  [BUG FIXES]
+
+  * fix netdisco-do dumpconfig printing undef instead of the whole config
+
+2.105003 - 2026-08-24
+
+  [BUG FIXES]
+
+  * #1649 fix the API node search returning null instead of node data
+
+2.105002 - 2026-08-24
+
+  [ENHANCEMENTS]
+
+  * #1643 sort the Ports query in SQL instead of Perl, matching portsort.js
+  * #1644 replace he.js with the DataTables escaper already on every page
+  * #1645 compress web responses, with a compress_responses setting to disable it
+  * #1646 load the admin task panes with htmx
+  * update Python dependencies and GitHub Actions versions
+
+  [BUG FIXES]
+
+  * #1645 restore the cache header on JavaScript
+  * #1646 refresh the users pane when the API token reveal modal is dismissed
+
+2.105001 - 2026-08-22
+
+  [BUG FIXES]
+
+  * escape the results payload for its script context
+  * keep the sidebar above a results table that overflows its column
+
+2.105000 - 2026-08-20
+
+  [NEW FEATURES]
+
+  * devices file param to netdisco-do now requires @ prefix
+  * #1636 add device port support to field_protection for failed SNMP walks
+
+  [ENHANCEMENTS]
+
+  * Job action documentation moved from netdisco-do to Wiki
+
+  [BUG FIXES]
+
+  * #1640 Stop the Ports tab re-reading every row once per subinterface parent
+
 2.104000 - 2026-08-18
 
   [NEW FEATURES]
@@ -7,6 +90,12 @@
   [ENHANCEMENTS]
 
   * update Python dependencies and GitHub Actions versions
+
+  [BUG FIXES]
+
+  * fix the pseudo device and duplicate device panes discarding their content
+  * fix an empty typeahead search term returning a 500 instead of an empty list
+  * stop sending a Swagger UI url parameter that the 5.x page ignores
 
 2.103000 - 2026-08-14
 
@@ -18,6 +107,11 @@
   [ENHANCEMENTS]
 
   * update Python dependencies and GitHub Actions versions
+
+  [BUG FIXES]
+
+  * fix a successful login returning to the login page instead of the home page
+  * fix unstable ordering of child classes in the device module tree
 
 2.102001 - 2026-08-10
 
@@ -31,7 +125,7 @@
   [NEW FEATURES]
 
   * #1582 {discover,macsuck,arpnip}_min_age settings are used when selecting *walk targets
-  * #1584 make GET /api/v1/object/device batch ready with field selection
+  * #1584 make GET /api/v1/search/device batch ready with field selection
   * #1591 new option expire_nodeip_orphans to keep node_ip entries without node
 
   [ENHANCEMENTS]

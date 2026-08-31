@@ -33,24 +33,19 @@
     var query = $(form).serialize();
     if (query.length) { query = '?' + query }
 
-    if (window.History && window.History.enabled) {
-      is_from_history_plugin = 1;
+    // pushState and replaceState ignore their title argument, so set the title
+    // beside each call and keep it in the state for popstate to restore
+    var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
 
-      if (push.length) {
-        var target = uri_base + '/' + path + '/' + tab + query;
-        if (location.pathname == target) { return };
-        window.History.pushState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
-        );
-      }
-      else {
-        var target = uri_base + '/' + path + query;
-        window.History.replaceState(
-          {name: tab, fields: $(form).serializeArray()}, pgtitle, target
-        );
-      }
-
-      is_from_history_plugin = 0;
+    if (push.length) {
+      var target = uri_base + '/' + path + '/' + tab + query;
+      if (location.pathname == target) { return };
+      document.title = pgtitle;
+      history.pushState(state, '', target);
+    }
+    else {
+      document.title = pgtitle;
+      history.replaceState(state, '', uri_base + '/' + path + query);
     }
   }
 
@@ -120,11 +115,13 @@
     [% END -%]
 
     [% IF task %]
-    // for the admin pages
+    // for the admin pages. Content loading is htmx's, via the form's hx-get in
+    // admintask.tt; this handler keeps the side effects only. Note it must not
+    // call preventDefault: htmx's own submit listener does that.
     $('[% "#${task.tag}_form" %]').submit(function (event) {
       update_page_title('[% task.tag | html_entity %]');
       update_csv_download_link('admin', '[% task.tag | html_entity %]', '1');
-      do_search(event, '[% task.tag | html_entity %]');
+      nd_apply_sidebar('[% task.tag | html_entity %]');
     });
     [% END %]
 
@@ -133,7 +130,9 @@
     [% IF params.tab == 'ipinventory' OR params.tab == 'subnets' %]
       $('#[% params.tab | html_entity %]_submit').click();
     [% ELSE %]
-      $('#[% params.tab | html_entity %]_form').trigger("submit");
+      // Not trigger('submit'): this restorer also serves admin forms, where
+      // jQuery would fall through to form.submit() and navigate the page.
+      nd_submit('#[% params.tab | html_entity %]_form');
     [% END %]
     [% END %]
   });

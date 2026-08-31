@@ -131,25 +131,32 @@ sub _test_and_resolve_device {
 }
 
 foreach my $device (@$devices) {
-  if (scalar grep {$action eq $_} @{ setting('job_targets_prefix') }) {
-      push @hostlist, $device;
-  }
-  elsif (-f $device) {
-      debug sprintf 'opening file for reading hosts/IPs: %s', $device;
-      my @dlist = read_lines $device;
+    if (scalar grep {$action eq $_} @{ setting('job_targets_prefix') }) {
+        push @hostlist, $device;
+    }
+    elsif ($device =~ m/^@(.+)/) {
+        my $filename = $1;
+        if (-f $filename) {
+            debug sprintf 'opening file for reading hosts/IPs: %s', $device;
+            my @dlist = read_lines $device;
 
-      if (0 == scalar @dlist) {
-          error sprintf 'unable to read from file: %s', $device;
-          exit 2;
-      }
+            if (0 == scalar @dlist) {
+                error sprintf 'unable to read devices from file: %s', $device;
+                exit 2;
+            }
 
-      foreach my $entry (@dlist) {
-          _test_and_resolve_device($entry);
-      }
-  }
-  else {
-      _test_and_resolve_device($device);
-  }
+            foreach my $entry (@dlist) {
+                _test_and_resolve_device($entry);
+            }
+        }
+        else {
+            error sprintf 'unable to read devices from file: %s', $filename;
+            exit 2;
+        }
+    }
+    else {
+        _test_and_resolve_device($device);
+    }
 }
 
 my @job_specs = ();
@@ -247,7 +254,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 
 This program allows you to run any Netdisco poller job from the command-line.
 
-=head1 ACTIONS
+=head1 BEHAVIOR
 
 Note that some jobs (C<discoverall>, C<macwalk>, C<arpwalk>, C<nbtwalk>)
 simply add entries to the Netdisco job queue for other jobs, so won't seem
@@ -265,317 +272,16 @@ C<discover::neighbors>.
 Any action taking a C<device> parameter can be passed either a hostname or IP
 address of any interface of a known or unknown device, or an IP prefix
 (subnet) which will cause C<netdisco-do> to run the action on all addresses in
-that range. The C<device> parameter may also be a filename that Netdisco will
-open to read hostnames, IPs, or prefixes, one per line.
+that range. If the C<device> parameter begins with "C<@>" it is interpreted as
+a filename to open and read hostnames, IPs, or prefixes, one per line.
 
 The C<device> parameter may be passed multiple times. In this case, all
 addresses (after expanding IP Prefixes) will be handled one by one.
 
-=head2 discover
+=head1 ACTIONS
 
-Run a discover on the device (specified with C<-d>).
-
- ~/bin/netdisco-do discover -d 192.0.2.1
-
-Run a discover on two different devices (specified with C<-d>).
-
- ~/bin/netdisco-do discover -d 192.0.2.1 -d 192.15.2.95
-
-=head2 discoverall
-
-Queue a discover for all known devices.
-
-=head2 pingsweep
-
-Scan an IP prefix (subnet) using ping utility (must be installed), any
-host responding has a C<discover> job queued. It is recommended to queue
-the C<pingsweep> job as well.
-
- ~/bin/netdisco-do pingsweep -d 192.0.2.0/24 --enqueue
-
-The default ping timeout is 0.1 seconds. To change this, pass any number
-to the C<-e> parameter.
-
-=head2 macsuck
-
-Run a macsuck on the device (specified with C<-d>).
-
- ~/bin/netdisco-do macsuck -d 192.0.2.1
-
-Submit macsuck data directly to Netdisco in JSON format (see API web
-docs for data format example):
-
- # pipe to standard input
- ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '@-'
- # read from a file
- ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '@/tmp/mac-address-table.json'
- # pass directly
- ~/bin/netdisco-do macsuck -d 192.0.2.1 -e '[{"mac": "string", "port": "string"}]'
-
-=head2 macwalk
-
-Queue a macsuck for all known devices.
-
-=head2 arpnip
-
-Run an arpnip on the device (specified with C<-d>).
-
- ~/bin/netdisco-do arpnip -d 192.0.2.1
-
-Submit arpnip data directly to Netdisco in JSON format (see API web
-docs for data format example):
-
- # pipe to standard input
- ~/bin/netdisco-do arpnip -d 192.0.2.1 -e '@-'
- # read from a file
- ~/bin/netdisco-do arpnip -d 192.0.2.1 -e '@/tmp/mac-address-table.json'
- # pass directly
- ~/bin/netdisco-do arpnip -d 192.0.2.1 -e '[{"ip": "string", "mac": "string", "dns": "string"}]'
-
-=head2 arpwalk
-
-Queue an arpnip for all known devices.
-
-=head2 delete
-
-Delete a device (specified with C<-d>). Pass a log message for the action in
-the C<-e> parameter. Optionally request for associated nodes to be archived
-(rather than deleted) by setting the C<-p> parameter to "C<yes>" (mnemonic:
-B<p>reserve).
-
- ~/bin/netdisco-do delete -d 192.0.2.1
- ~/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun'
- ~/bin/netdisco-do delete -d 192.0.2.1 -e 'older than the sun' -p yes
-
-=head2 renumber
-
-Change the canonical IP address of a device (specified with C<-d>). Pass the
-new IP address in the C<-e> parameter. All related records such as topology,
-log and node information will also be updated to refer to the new device.
-
-Note that I<no> check is made as to whether the new IP is reachable for future
-polling.
-
- ~/bin/netdisco-do renumber -d 192.0.2.1 -e 192.0.2.254
-
-=head2 nbtstat
-
-Run an nbtstat on the node (specified with C<-d>).
-
- ~/bin/netdisco-do nbtstat -d 192.0.2.2
-
-=head2 nbtwalk
-
-Queue an nbtstat for all known nodes.
-
-=head2 Custom Field update
-
-Update a Device or Device Port custom field using `netdisco-do`. Specify
-the field name as the "action" prefixed with `cf_`. The content can be
-passed in the command, or taken from a file, or from standard input.
-
- # pass directly
- ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e 'field value'
- # pipe from standard input
- ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@-'
- # read from a file
- ~/bin/netdisco-do cf_myfield --enqueue -d 192.0.2.1 -e '@/tmp/myfield'
-
-Note that `--enqueue ` is *required* for the feature to work. The change
-is, however, applied instantly in the database when `netdisco-do` runs.
-
-=head2 expire
-
-Run Device and Node expiry actions according to configuration.
-
-=head2 expirenodes
-
-Archive nodes on the specified device. If you want to delete nodes, set the
-C<-e> parameter to "C<no>" (mnemonic: B<e>xpire). If you want to perform the
-action on a specific port, set the C<-p> parameter.
-
- ~/bin/netdisco-do expirenodes -d 192.0.2.1
- ~/bin/netdisco-do expirenodes -d 192.0.2.1 -p FastEthernet0/1 -e no
-
-=head2 graph
-
-Generate GraphViz graphs for the largest cluster of devices.
-
-You'll need to install the L<Graph::Undirected> and L<GraphViz> Perl modules,
-and possibly also the C<graphviz> utility for your operating system. Also
-create a directory for the output files.
-
- mkdir ~/graph
- ~/bin/localenv cpanm Graph::Undirected
- ~/bin/localenv cpanm GraphViz
-
-=head2 show
-
-Dump the content of an SNMP MIB Object or an L<SNMP::Info> method, useful for
-diagnostics and troubleshooting.
-
-You should provide the "C<-e>" option which is the name of the method or
-object, such as C<interfaces> or C<uptime> or C<ifDescr>.
-
-If you wish to specify the SNMP MIB to load and find the Object in, then
-you can qualify the "C<-e>" parameter, such as C<IF-MIB::ifDescr>.
-
-If you wish to test with a specific L<SNMP::Info> device class other than the
-one discovered, pass this in the "C<-p>" parameter, such as C<Layer3> or
-C<SNMP::Info::Layer3> (the C<SNMP::Info> prefix is optional).
-
-All "C<-e>" parameters are case sensitive.
-
- ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces
- ~/bin/netdisco-do show -d 192.0.2.1 -e IF-MIB::ifDescr
- ~/bin/netdisco-do show -d 192.0.2.1 -e interfaces -p SNMP::Info::Layer2::HP
- ~/bin/netdisco-do show -d 192.0.2.1 -e ifName -p Layer3::Arista
-
-The "C<-e>" parameter C<specify> will show the used configuration for the
-specified device.
-
- ~/bin/netdisco-do show -d 192.0.2.1 -e specify
-
-Passing the "C< --quiet >" command line flag will cause C<show> to return
-data in a compact JSON format (suitable for piping to C<jq>, for example).
-
-If the output is very long, you may see a "skipping..." message. Work
-around this by passing "C< --quiet >" and then pipe the output to
-"C<jq .>".
-
-This command works well with the "C<-I>" debug flag on L<SNMP::Info> (or
-"C<-II>").
-
-=head2 psql
-
-Start an interactive terminal with the Netdisco PostgreSQL database. If you
-pass an SQL statement in the C<-e> option then it will be executed.
-
- ~/bin/netdisco-do psql
- ~/bin/netdisco-do psql -e 'SELECT ip, dns FROM device'
- ~/bin/netdisco-do psql -e 'COPY (SELECT ip, dns FROM device) TO STDOUT WITH CSV HEADER'
-
-=head2 stats
-
-Updates Netdisco's statistics on number of devices, nodes, etc, for today.
-
-=head2 location
-
-Set the SNMP location field on the device (specified with C<-d>). Pass the
-location string in the C<-e> extra parameter. Use C<--force> to bypass
-user access controls.
-
- ~/bin/netdisco-do location -d 192.0.2.1 -e 'wiring closet'
-
-=head2 contact
-
-Set the SNMP contact field on the device (specified with C<-d>). Pass the
-contact name in the C<-e> extra parameter. Use C<--force> to bypass
-user access controls.
-
- ~/bin/netdisco-do contact -d 192.0.2.1 -e 'tel: 555-2453'
-
-=head2 portname
-
-Set the description on a device port. Requires the C<-d> parameter (device),
-C<-p> parameter (port), and C<-e> parameter (description). Use C<--force> to
-bypass user access controls.
-
- ~/bin/netdisco-do portname -d 192.0.2.1 -p FastEthernet0/1 -e 'Web Server'
-
-=head2 portcontrol
-
-Set the up/down status on a device port. Requires the C<-d> parameter
-(device), C<-p> parameter (port), and C<-e> parameter ("up" or "down").
-Use C<--force> to bypass user access controls.
-
- ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e up
- ~/bin/netdisco-do portcontrol -d 192.0.2.1 -p FastEthernet0/1 -e down
-
-=head2 vlan
-
-Set the native VLAN on a device port. Requires the C<-d> parameter (device),
-C<-p> parameter (port), and C<-e> parameter (VLAN number). Use C<--force> to
-bypass user access controls.
-
- ~/bin/netdisco-do vlan -d 192.0.2.1 -p FastEthernet0/1 -e 102
-
-=head2 power
-
-Set the PoE on/off status on a device port. Requires the C<-d> parameter
-(device), C<-p> parameter (port), and C<-e> parameter ("on" or "off").
-Use C<--force> to bypass user access controls.
-
- ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e on
- ~/bin/netdisco-do power -d 192.0.2.1 -p FastEthernet0/1 -e off
-
-=head2 makerancidconf
-
-Generates rancid configuration for known devices. See
-L<App::Netdisco::Worker::Plugin::MakeRancidConf> for configuration needs.
-
- ~/bin/netdisco-do makerancidconf
-
-=head2 getapikey
-
-Generates an API key for the supplied username. See the
-L<API doc|https://github.com/netdisco/netdisco/wiki/API> for further
-information.
-
- ~/bin/netdisco-do getapikey -e the_username
-
-To create a permanent token (no expiry) pass C<permanent> in the C<-p> parameter.
-The token can be used in the C<Authorization: Bearer E<lt>tokenE<gt>> HTTP header
-and is accepted by any tool supporting standard Bearer authentication (Grafana, curl, etc.).
-
- ~/bin/netdisco-do getapikey -e the_username -p permanent
-
-To revoke all API tokens for a user:
-
- ~/bin/netdisco-do getapikey -e the_username -p revoke
-
-=head2 dumpconfig
-
-Will dump the loaded and parsed configuration for the application. Pass a
-specific configuration setting name to the C<-e> parameter to dump only that.
-
-Some configuration items like device_auth are evaluated against the ACL first.
-Pass a device in C<-d> to display them:
-
- ~/bin/netdisco-do dumpconfig -d 192.0.2.1 -e device_auth
-
-=head2 loadmibs
-
-A requirement for web browsing of SNMP data (see C<snapshot> command), run
-this to load Netdisco MIBs into the database. It only needs to be done once.
-
-If the MIB reports parse to nothing, the job leaves the C<snmp_object> table
-unchanged, logs the reason, and exits non-zero.
-
-=head2 snapshot
-
-Builds and saves a data structure which Netdisco can use to mimic the device
-(if shared) and also browse the SNMP Objects in the web.
-
-By default the command will gather Objects which can be downloaded from the
-web under Device Details tab. This allows another user to mimic your device.
-
-If you previously ran the C<loadmibs> action before running this action,
-the Objects also become browsable in the web (under Device SNMP tab).
-
-Normally the SNMP Objects are all gathered from C<.1> root but you can use
-C<-e> parameter to change this.
-
-=head2 addpseudodevice
-
-Adds a Pseudo Device which can be used to connect together unconnected parts
-of your network or to gather ARP via CLI/API when SNMP is not available.
-
-Pass the Pseudo Device IP in the L<-d> parameter. Pass the Pseudo Device name
-in the L<-e> parameter. Pass the number of ports (one or more) in the L<-p>
-parameter. All parameters are required. For example:
-
- ~/bin/netdisco-do addpseudodevice -d 192.0.2.1 -e fakerouter -p 10
+For a complete list of actions and their accepted parameters, see the
+Netdisco wiki: https://github.com/netdisco/netdisco/wiki/Actions
 
 =head1 DEBUG OPTIONS
 

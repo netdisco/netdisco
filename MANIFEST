@@ -162,6 +162,7 @@ lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortAccessEntity.pm
 lib/App/Netdisco/Util/PortMAC.pm
 lib/App/Netdisco/Util/Python.pm
+lib/App/Netdisco/Util/SiteLocal.pm
 lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
@@ -249,6 +250,7 @@ lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
 lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
+lib/App/Netdisco/Worker/Plugin/CheckSiteLocal.pm
 lib/App/Netdisco/Worker/Plugin/Contact.pm
 lib/App/Netdisco/Worker/Plugin/Delete.pm
 lib/App/Netdisco/Worker/Plugin/Delete/Hooks.pm
@@ -339,7 +341,6 @@ share/public/css/awesome-bootstrap-checkbox.css
 share/public/css/bootstrap-toggle.min.css
 share/public/css/bootstrap-tree.css
 share/public/css/bootstrap.min.css
-share/public/css/d3-force-network-chart.css
 share/public/css/dataTables.bootstrap.css
 share/public/css/daterangepicker.css
 share/public/css/font-awesome.min.css
@@ -373,15 +374,13 @@ share/public/images/tango_sweep.png
 share/public/images/vaga_copy.png
 share/public/javascripts/bootstrap-toggle.min.js
 share/public/javascripts/bootstrap.min.js
-share/public/javascripts/d3-3.5.17.min.js
-share/public/javascripts/d3-force-network-chart.js
 share/public/javascripts/dataTables.bootstrap.js
 share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js
 share/public/javascripts/daterangepicker.js
-share/public/javascripts/he.js
+share/public/javascripts/force-graph.min.js
+share/public/javascripts/htmx.min.js
 share/public/javascripts/jquery-deserialize.js
-share/public/javascripts/jquery-history.js
 share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/jquery-ui.min.js
 share/public/javascripts/jquery.dataTables.min.js
@@ -405,7 +404,6 @@ share/public/javascripts/jstree/themes/proton/style.css
 share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
-share/public/javascripts/natural.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
@@ -552,6 +550,7 @@ share/schema_versions/App-Netdisco-DB-94-95-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-95-96-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-96-97-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-97-98-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-98-99-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/acleditor.tt
 share/views/ajax/admintask/aclmanager.tt
@@ -651,6 +650,7 @@ share/views/js/admintask.js
 share/views/js/bootstrap-tree.js
 share/views/js/common.js
 share/views/js/device.js
+share/views/js/netmap.js
 share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt
@@ -681,6 +681,8 @@ share/views/sidebar/search/port.tt
 xt/00-compile.t
 xt/01-local-pod.t
 xt/10-sort_port.t
+xt/11-port-sortkey.t
+xt/12-port-order-helper.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -692,10 +694,21 @@ xt/35-login-return-url.t
 xt/36-ajax-content-response.t
 xt/37-typeahead-empty-query.t
 xt/38-swagger-ui-redirect.t
+xt/39-html-escaper.t
 xt/40-template-snapshots.t
+xt/41-script-json-escape.t
 xt/42-subinterface-grouping-scan.t
+xt/43-response-compression.t
+xt/44-results-token-escaping.t
+xt/45-netmap-neighbor-walk.t
+xt/46-native-history-api.t
+xt/47-site-local-checker.t
 xt/50-config-override.t
+xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/netmap-autosave.test.js
+xt/js/netmap-legend.test.js
+xt/js/netmap-loading.test.js
 xt/js/portsort.test.js
 xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
@@ -706,3 +719,4 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
 xt/lib/Test/Netdisco/Snapshot.pm
+xt/portsort-corpus.json

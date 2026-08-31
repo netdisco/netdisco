@@ -12,7 +12,13 @@
         <div class="tab-content">
           <div id="[% task.tag | html_entity %]_search" class="tab-pane active">
             <form id="[% task.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
-                method="get" action="[% uri_for('/admin') | none %]">
+                method="get" action="[% uri_for('/admin') | none %]"
+                hx-get="[% uri_for('/ajax/content/admin/' _ task.tag) | none %]"
+                hx-target="#[% task.tag | html_entity %]_pane"
+                hx-headers='{"X-Requested-With": "XMLHttpRequest"}'[%
+                  # PRE_CHOMP is on, so the newline before a directive is eaten;
+                  # the separating space has to live inside the block.
+                  UNLESS task.tag == 'jobqueue' %] hx-indicator="#[% task.tag | html_entity %]_indicator"[% END %]>
               [% TRY %]
               <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 1;</script>
               [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
@@ -59,6 +65,13 @@
       [% END %]
     </ul>
     <div class="tab-content">
+      [%# jobqueue deliberately has no indicator: it refreshes on a timer, and
+          the spinner would flash on every tick. Mirrors do_search's guard. -%]
+      [% UNLESS task.tag == 'jobqueue' -%]
+      <div id="[% task.tag | html_entity %]_indicator" class="htmx-indicator col-md-2 alert">
+        <i class="fas fa-spinner fa-spin"></i> Waiting for results...
+      </div>
+      [% END %]
       <div class="tab-pane active" id="[% task.tag | html_entity %]_pane"></div>
   </div>
 </div>

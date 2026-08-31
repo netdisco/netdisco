@@ -19,20 +19,20 @@ $(document).ready(function() {
       {
         "data": 'ip',
         "render": function(data, type, row, meta) {
-          return he.encode(row.dns || row.name || row.ip);
+          return DataTable.util.escapeHtml(row.dns || row.name || row.ip);
         }
       }, {
         "data": 'port',
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(data || '') + '</a>' :
-            he.encode(data || '');
+            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + DataTable.util.escapeHtml(data || '') + '</a>' :
+            DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'description',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'mac_count',

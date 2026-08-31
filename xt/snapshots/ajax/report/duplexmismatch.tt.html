@@ -20,38 +20,38 @@ $(document).ready(function() {
       {
         "data": 'left_ip',
         "render": function(data, type, row, meta) {
-          return he.encode(row.left_dns || row.left_ip);
+          return DataTable.util.escapeHtml(row.left_dns || row.left_ip);
         }
       }, {
         "data": 'left_port',
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="&q=' + encodeURIComponent(row.left_dns || row.left_ip) + '&f=' + encodeURIComponent(data) + '&c_duplex=on">' + he.encode(data || '') + '</a>' :
-            he.encode(data || '');
+            '<a href="&q=' + encodeURIComponent(row.left_dns || row.left_ip) + '&f=' + encodeURIComponent(data) + '&c_duplex=on">' + DataTable.util.escapeHtml(data || '') + '</a>' :
+            DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'left_duplex',
         "render": function(data, type, row, meta) {
-          return he.encode(capitalizeFirstLetter(data || ''));
+          return DataTable.util.escapeHtml(capitalizeFirstLetter(data || ''));
         }
       }, {
         "data": 'right_ip',
         "render": function(data, type, row, meta) {
-          return he.encode(row.right_dns || row.right_ip);
+          return DataTable.util.escapeHtml(row.right_dns || row.right_ip);
         }
       }, {
         "data": 'right_port',
         "type": 'portsort',
         "render": function(data, type, row, meta) {
           return type === 'display' ?
-            '<a href="&q=' + encodeURIComponent(row.right_dns || row.right_ip) + '&f=' + encodeURIComponent(data) + '&c_duplex=on">' + he.encode(data || '') + '</a>' :
-            he.encode(data || '');
+            '<a href="&q=' + encodeURIComponent(row.right_dns || row.right_ip) + '&f=' + encodeURIComponent(data) + '&c_duplex=on">' + DataTable.util.escapeHtml(data || '') + '</a>' :
+            DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'right_duplex',
         "render": function(data, type, row, meta) {
-          return he.encode(capitalizeFirstLetter(data || ''));
+          return DataTable.util.escapeHtml(capitalizeFirstLetter(data || ''));
         }
       }
     ],

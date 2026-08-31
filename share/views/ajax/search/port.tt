@@ -41,7 +41,7 @@ $(document).ready(function() {
       }, {
         "data": 'name',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'ip',
@@ -49,11 +49,11 @@ $(document).ready(function() {
         "render": function(data, type, row, meta) {
           var ddns = '';
           if (row.device.dns || row.device.name) {
-            ddns = '<br>(' + he.encode(row.device.dns || row.device.name)  + ')';
+            ddns = '<br>(' + DataTable.util.escapeHtml(row.device.dns || row.device.name)  + ')';
           }
           return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data)
-            + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data)
-            + ' [' + he.encode(row.port) + ']</a>' + ddns;
+            + '&f=' + encodeURIComponent(row.port) + '">' + DataTable.util.escapeHtml(data)
+            + ' [' + DataTable.util.escapeHtml(row.port) + ']</a>' + ddns;
         }
       }, {
         "data": 'vlan_agg',

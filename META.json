@@ -27,9 +27,12 @@
       },
       "configure" : {
          "requires" : {
-            "DBIx::Class" : "0.082810",
+            "CPAN::Changes" : "0.500005",
+            "DBIx::Class" : "0.082844",
             "File::Spec" : "0",
-            "Module::Build" : "0.42"
+            "Module::Build" : "0.4234",
+            "Module::Metadata" : "1.000040",
+            "Perl::Version" : "1.019"
          }
       },
       "runtime" : {
@@ -51,8 +54,8 @@
             "CGI::Expand" : "2.05",
             "Command::Runner" : "0",
             "DBD::Pg" : "0",
-            "DBIx::Class" : "0.082841",
-            "DBIx::Class::Helpers" : "2.033006",
+            "DBIx::Class" : "0.082844",
+            "DBIx::Class::Helpers" : "2.037000",
             "Daemon::Control" : "0.001006",
             "Dancer" : "1.3132",
             "Dancer::Plugin::Auth::Extensible" : "0.30",
@@ -97,6 +100,7 @@
             "Plack" : "1.0023",
             "Plack::Handler::Twiggy" : "0",
             "Plack::Middleware::Debug" : "0",
+            "Plack::Middleware::Deflater" : "0.14",
             "Plack::Middleware::Expires" : "0.03",
             "Plack::Middleware::Headers" : "0",
             "Plack::Middleware::ReverseProxy" : "0.15",
@@ -105,7 +109,7 @@
             "Regexp::Common" : "2017060201",
             "Regexp::Common::net::CIDR" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.975000",
+            "SNMP::Info" : "3.977001",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -150,7 +154,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.104000"
+         "version" : "2.105005"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -175,7 +179,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "98"
+         "version" : "99"
       },
       "App::Netdisco::DB::ExplicitLocking" : {
          "file" : "lib/App/Netdisco/DB/ExplicitLocking.pm"
@@ -597,6 +601,9 @@
       "App::Netdisco::Util::SNMP" : {
          "file" : "lib/App/Netdisco/Util/SNMP.pm"
       },
+      "App::Netdisco::Util::SiteLocal" : {
+         "file" : "lib/App/Netdisco/Util/SiteLocal.pm"
+      },
       "App::Netdisco::Util::Snapshot" : {
          "file" : "lib/App/Netdisco/Util/Snapshot.pm"
       },
@@ -855,6 +862,9 @@
       "App::Netdisco::Worker::Plugin::Arpwalk" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Arpwalk.pm"
       },
+      "App::Netdisco::Worker::Plugin::CheckSiteLocal" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/CheckSiteLocal.pm"
+      },
       "App::Netdisco::Worker::Plugin::Contact" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Contact.pm"
       },
@@ -1060,6 +1070,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.104000",
+   "version" : "2.105005",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }

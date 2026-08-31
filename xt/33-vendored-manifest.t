@@ -29,9 +29,7 @@ use JSON::PP ();
 # ties the declaration to the artifact directly. Four do not, and for those a
 # pinned checksum stands in: the table records the version the bytes were taken
 # from, and both halves have to agree. A checksum is the stronger assertion
-# anyway, since it also catches a vendored file being edited in place, which is
-# how share/public/javascripts/d3-3.5.17.min.js came to be byte-identical to
-# published d3@3.5.16.
+# anyway, since it also catches a vendored file being edited in place.
 
 my $root = catdir( $FindBin::Bin, updir() );
 
@@ -106,6 +104,10 @@ my @VENDORED = (
         sha256     => '88e56cd45cad3db88fdc772786d14cce8d0cc1879bc03e4e56be919dfd9ad229',
         pinned_for => '3.1.0',
     },
+    {   package => 'htmx.org',
+        file    => [qw/javascripts htmx.min.js/],
+        banner  => sub { qr/version:"\Q$_[0]\E"/ },
+    },
     {   package => 'jquery',
         file    => [qw/javascripts jquery-latest.min.js/],
         banner  => sub { qr/jQuery v\Q$_[0]\E\b/ },
@@ -113,13 +115,6 @@ my @VENDORED = (
     {   package => 'jquery-ui',
         file    => [qw/javascripts jquery-ui.min.js/],
         banner  => sub { qr/jQuery UI - v\Q$_[0]\E\b/ },
-    },
-    {   # The filename says 3.5.17 and the file is 3.5.16. The manifest declares
-        # what the bytes say, which is why this reads the internal string and
-        # not the name.
-        package => 'd3',
-        file    => [qw/javascripts d3-3.5.17.min.js/],
-        banner  => sub { qr/version:"\Q$_[0]\E"/ },
     },
     {   package => 'moment',
         file    => [qw/javascripts moment.min.js/],
@@ -136,6 +131,10 @@ my @VENDORED = (
     {   package => 'floatthead',
         file    => [qw/javascripts jquery.floatThead.js/],
         banner  => sub { qr/jQuery\.floatThead \Q$_[0]\E\b/ },
+    },
+    {   package => 'force-graph',
+        file    => [qw/javascripts force-graph.min.js/],
+        banner  => sub { qr/\/\/ Version \Q$_[0]\E force-graph/ },
     },
     {   # The bundle carries no usable version of its own: the first x.y.z in it
         # belongs to something else entirely, and a pattern reading that would

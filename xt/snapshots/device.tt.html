@@ -123,54 +123,45 @@
         }
     });
 
-    // netmap show controls
-    $('#nd_showips').change(function() {
-      if ($(this).prop('checked')) {
-        graph.inspect().main.nodes.each(function(n) {
-          if (n['ORIG_LABEL'] != n['ID']) {
-            n['LABEL'] = n['ORIG_LABEL'] + ' ' + n['ID'];
-          }
-        });
-        graph.wrapLabels(true).start();
-      } else {
-        graph.inspect().main.nodes.each(function(n) {
-          n['LABEL'] = n['ORIG_LABEL'];
-        });
-        graph.wrapLabels(false).start();
-      }
+    // netmap show controls. Setting any force-graph prop repaints, so
+    // re-setting nodeRelSize to itself is the repaint call.
+    $('#nd_showips').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
-    $('#nd_showspeed').change(function() {
-      $('.nd_netmap-linklabel').css('fill',
-        ($(this).prop('checked') ? 'black' : 'none')
-      );
+    $('#nd_showspeed').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
 
     // netmap pin/release controls
-    $('#nd_netmap-releaseall').on('click', function(event) {
+    $('#nd_netmap-releaseall').on('click', function (event) {
       event.preventDefault();
-      graph.releaseFixedNodes().resume();
+      window.graph.fg.graphData().nodes.forEach(function (n) { n.fx = undefined; n.fy = undefined });
+      window.graph.fg.d3ReheatSimulation();
     });
-    $('#nd_netmap-releaseonly').on('click', function(event) {
+    $('#nd_netmap-releaseonly').on('click', function (event) {
       event.preventDefault();
-      graph.inspect().main.nodes
-        .filter(function(n) { return n.selected })
-        .each(function(n) { n.fixed = false });
-      graph.resume();
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = undefined; n.fy = undefined }
+      });
+      window.graph.fg.d3ReheatSimulation();
     });
-    $('#nd_netmap-pinonly').on('click', function(event) {
+    $('#nd_netmap-pinonly').on('click', function (event) {
       event.preventDefault();
-      graph.inspect().main.nodes
-        .filter(function(n) { return n.selected })
-        .each(function(n) { n.fixed = true });
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = n.x; n.fy = n.y }
+      });
     });
-    $('#nd_netmap-zoomtodevice').on('click', function(event) {
+    $('#nd_netmap-zoomtodevice').on('click', function (event) {
       event.preventDefault();
-      var node = graph.nodeDataById( graph['nd2']['centernode'] );
-      graph.zoomSmooth(node.x, node.y, node.radius * 125);
+      var n = window.graph.nodeDataById(window.graph.centernode);
+      window.graph.fg.centerAt(n.x, n.y, 600);
+      window.graph.fg.zoom(4, 600);
     });
-    $('#nd_netmap-save').on('click', function(event) {
+    $('#nd_netmap-save').on('click', function (event) {
       event.preventDefault();
-      saveMapPositions();
+      // true marks this as the user asking, which is what netmap.js keys the
+      // confirmation toast off
+      saveMapPositions(true);
     });
 
     // activity for admin tasks in device details

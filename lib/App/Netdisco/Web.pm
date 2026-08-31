@@ -23,6 +23,7 @@ use Storable 'dclone';
 use URI::Based;
 
 use App::Netdisco::Util::Web qw/
+  escape_results_token
   interval_to_daterange
   request_is_api
   request_is_api_report
@@ -411,6 +412,15 @@ hook 'before_template' => sub {
     $Template::Stash::PRIVATE = undef;
 };
 
+# The report and search templates embed their result set as a JavaScript
+# literal inside a <script> element, which they must opt out of AutoFilter to
+# do. Escaping happens here rather than in each of the templates so that a
+# site-local template or a third-party report plugin gets it too, without its
+# author having to know.
+hook 'before_template' => sub {
+    escape_results_token( shift );
+};
+
 # prevent Template::AutoFilter taking action on CSV output
 hook 'before_template' => sub {
     my $template_engine = engine 'template';
@@ -436,6 +446,12 @@ hook 'after_template_render' => sub {
 };
 
 # support for report api which is basic table result in json
+#
+# The branch is chosen on the presence of the token, not its value. Node search
+# is the only handler that renders without a `results` token, and the second
+# branch exists for it. Creating the key here or in any earlier hook silently
+# moves it onto the first branch and empties the response: #732 in 2020, #1649
+# in 2026.
 hook before_layout_render => sub {
   my ($tokens, $html_ref) = @_;
   return unless request_is_api_report or request_is_api_search;
