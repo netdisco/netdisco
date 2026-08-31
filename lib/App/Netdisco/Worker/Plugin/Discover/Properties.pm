@@ -659,7 +659,7 @@ register_worker({ phase => 'early', driver => 'snmp',
     # backup the custom_fields
     my %fields = map  {($_->port => $coder->decode(Encode::encode('UTF-8',$_->custom_fields || '{}')))}
                  grep {exists $deviceports{$_->port}}
-                      values %{ vars->{device_ports} };
+                      values %{ vars->{'device_ports'} };
 
     my %ok_fields = map {$_ => 1}
                     grep {defined}
