@@ -212,7 +212,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   # support for new_device Hook
   vars->{'new_device'} = 1 if not $device->in_storage;
 
-  # support for updated_device Hook - detect meaningful device-level changes
+  # support for updated_device Hook - detect meaningful DEVICE-LEVEL changes
   {
     my $ignore = (setting('updated_device_hook_ignored_fields') || {})->{'device'} || [];
     my %ignore_field = map {($_ => 1)} @$ignore;
@@ -222,6 +222,7 @@ register_worker({ phase => 'early', driver => 'snmp',
     # back on the original value (model/vendor are set multiple times per
     # job via the enterprise/product lookup fallbacks above) - so also
     # require the final value to actually differ from what was loaded.
+    # Uses the same $orig_device lookup cache as the field_protection feature.
     my @changed = sort grep {
         not $ignore_field{$_}
         and (defined $orig_device->{$_} ? $orig_device->{$_} : '') ne
@@ -607,7 +608,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   # update num_ports
   $device->num_ports( scalar values %deviceports );
 
-  # support for updated_device Hook - detect meaningful port-level changes
+  # support for updated_device Hook - detect meaningful PORT-LEVEL changes
   unless (vars->{'device_changed'}) {
     my $ignore = (setting('updated_device_hook_ignored_fields') || {})->{'device_port'} || [];
     my %ignore_field = map {($_ => 1)} @$ignore;
