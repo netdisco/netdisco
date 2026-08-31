@@ -6,6 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Util::Device qw/get_device renumber_device/;
+use App::Netdisco::Util::Port 'sync_portctl_roles';
 
 register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
@@ -46,6 +47,7 @@ register_worker({ phase => 'main' }, sub {
   my $new_ip = NetAddr::IP->new($extra);
 
   renumber_device($old_ip, $new_ip);
+  sync_portctl_roles();
   return Status->done(sprintf 'Renumbered device %s to %s (%s).',
     $old_ip, $new_ip, ($device->dns || ''));
 });
