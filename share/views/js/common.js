@@ -64,15 +64,19 @@
   }
 
   $(document).ready(function() {
+    // Every sidebar form loads its own pane over htmx, declared by the hx-get
+    // in device.tt, search.tt, report.tt and admintask.tt. These handlers carry
+    // the side effects only, and must not call preventDefault: htmx's own
+    // submit listener does that.
     [% IF search %]
     // search tabs
     [% FOREACH tab IN settings._search_tabs %]
-    $('[% "#${tab.tag}_form" %]').submit(function (event) {
+    $('[% "#${tab.tag}_form" %]').submit(function () {
       var pgtitle = update_page_title('[% tab.tag | html_entity %]');
       copy_navbar_to_sidebar('[% tab.tag | html_entity %]');
       update_browser_history('[% tab.tag | html_entity %]', pgtitle, '');
       update_csv_download_link('search', '[% tab.tag | html_entity %]', '[% tab.provides_csv | html_entity %]');
-      do_search(event, '[% tab.tag | html_entity %]');
+      nd_apply_sidebar('[% tab.tag | html_entity %]');
     });
     [% END %]
     [% END %]
@@ -80,7 +84,7 @@
     [% IF device %]
     // device tabs
     [% FOREACH tab IN settings._device_tabs %]
-    $('[% "#${tab.tag}_form" %]').submit(function (event) {
+    $('[% "#${tab.tag}_form" %]').submit(function () {
       var pgtitle = update_page_title('[% tab.tag | html_entity %]');
       copy_navbar_to_sidebar('[% tab.tag | html_entity %]');
       update_browser_history('[% tab.tag | html_entity %]', pgtitle, '');
@@ -99,26 +103,24 @@
         $('#netmap_form').find('input[name="q"]').serialize());
       [% END %]
 
-      do_search(event, '[% tab.tag | html_entity %]');
+      nd_apply_sidebar('[% tab.tag | html_entity %]');
     });
     [% END %]
     [% END %]
 
     [% IF report %]
     // for the report pages
-    $('[% "#${report.tag}_form" %]').submit(function (event) {
+    $('[% "#${report.tag}_form" %]').submit(function () {
       var pgtitle = update_page_title('[% report.tag | html_entity %]');
       update_browser_history('[% report.tag | html_entity %]', pgtitle, '1');
       update_csv_download_link('report', '[% report.tag | html_entity %]', '1');
-      do_search(event, '[% report.tag | html_entity %]');
+      nd_apply_sidebar('[% report.tag | html_entity %]');
     });
     [% END -%]
 
     [% IF task %]
-    // for the admin pages. Content loading is htmx's, via the form's hx-get in
-    // admintask.tt; this handler keeps the side effects only. Note it must not
-    // call preventDefault: htmx's own submit listener does that.
-    $('[% "#${task.tag}_form" %]').submit(function (event) {
+    // for the admin pages
+    $('[% "#${task.tag}_form" %]').submit(function () {
       update_page_title('[% task.tag | html_entity %]');
       update_csv_download_link('admin', '[% task.tag | html_entity %]', '1');
       nd_apply_sidebar('[% task.tag | html_entity %]');
@@ -130,8 +132,6 @@
     [% IF params.tab == 'ipinventory' OR params.tab == 'subnets' %]
       $('#[% params.tab | html_entity %]_submit').click();
     [% ELSE %]
-      // Not trigger('submit'): this restorer also serves admin forms, where
-      // jQuery would fall through to form.submit() and navigate the page.
       nd_submit('#[% params.tab | html_entity %]_form');
     [% END %]
     [% END %]

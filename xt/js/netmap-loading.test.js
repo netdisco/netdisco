@@ -57,10 +57,10 @@ describe('netmap first paint indicator', () => {
     );
   });
 
-  // Reproduced 2026-08-30 by re-submitting the netmap sidebar form: the pane is
-  // replaced while the previous instance is still running, and nothing destroys
-  // it until the next fragment's data callback, so its handlers fire against a
-  // spinner that has left the document.
+  // Re-submitting the netmap sidebar form replaces the pane while the previous
+  // instance is still running, and nothing destroys it until the next
+  // fragment's data callback, so its handlers fire against a spinner that has
+  // left the document.
   test('spinnerHandlers__pane_replaced_mid_run__do_not_dereference_a_missing_element', () => {
     const js = read('share', 'views', 'js', 'netmap.js');
     assert.doesNotMatch(

@@ -1,4 +1,16 @@
-2.105005 - tbd
+2.105006 - 2026-09-01
+
+  [ENHANCEMENTS]
+
+  * #1657 device, search and report tabs load their content with htmx
+  * #1657 do_search() is deprecated for site local extensions. see netdisco-do checksitelocal
+
+  [BUG FIXES]
+
+  * netmap Auto Save now takes effect as soon as you switch it
+  * netmap Save no longer reports success without saving the positions
+
+2.105005 - 2026-08-31
 
   [ENHANCEMENTS]
 

@@ -196,7 +196,6 @@ netmap:
   link_label_font_size: 5
   custom_fields:
     device: []
-    device_port: []
 device_port_col_idx_left: 8
 device_port_col_idx_mid: 21
 device_port_col_idx_right: 25

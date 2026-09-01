@@ -29,7 +29,7 @@ register_worker({ phase => 'main' }, sub {
   foreach my $finding (@findings) {
       printf "%s line %d\n", $finding->{path}, $finding->{line};
       printf "  %s\n", $finding->{excerpt};
-      printf "  removed in %s: %s\n\n",
+      printf "  since %s: %s\n\n",
         $finding->{release}, $finding->{advice};
   }
 

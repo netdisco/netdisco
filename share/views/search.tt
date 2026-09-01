@@ -11,7 +11,12 @@
         <div class="tab-content">
           [% FOREACH tab IN settings._search_tabs %]
           <div id="[% tab.tag | html_entity %]_search" class="tab-pane [% 'active' IF params.tab == tab.tag %]">
-            <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked" method="get" action="[% uri_for('/search') | none %]">
+            <form id="[% tab.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
+                method="get" action="[% uri_for('/search') | none %]"
+                hx-get="[% uri_for('/ajax/content/search/' _ tab.tag) | none %]"
+                hx-target="#[% tab.tag | html_entity %]_pane"
+                hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
+                hx-indicator="#[% tab.tag | html_entity %]_indicator">
               <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
               [% TRY %]
               <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
@@ -42,6 +47,9 @@
     </ul>
     <div class="tab-content">
       [% FOREACH tab IN settings._search_tabs %]
+      <div id="[% tab.tag | html_entity %]_indicator" class="htmx-indicator col-md-2 alert">
+        <i class="fas fa-spinner fa-spin"></i> Waiting for results...
+      </div>
       <div class="tab-pane[% ' active' IF params.tab == tab.tag %]" id="[% tab.tag | html_entity %]_pane"></div>
       [% END %]
   </div>

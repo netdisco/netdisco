@@ -22,3 +22,4 @@ yarn.lock
 *__pycache__*
 .ruff_cache
 uv.lock
+CLAUDE.local.md
