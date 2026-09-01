@@ -125,8 +125,6 @@ sub renumber_device {
   my ($ip, $new_ip) = @_;
   my $device = get_device($ip) or return 0;
   return 0 if not $device->in_storage;
-  
-  $new_ip = $new_ip->addr if blessed $new_ip;
 
   my $happy = 0;
   schema(vars->{'tenant'})->txn_do(sub {
@@ -138,11 +136,6 @@ sub renumber_device {
       userip => scalar eval {request->remote_address},
       event => (sprintf "Renumber device %s to %s", $ip, $new_ip),
     });
-
-    # update corresponding ACLs to use new ip
-    my $rs = schema(vars->{'tenant'})->resultset('AccessControlList')->search({
-      rules => { '&&' => \[ 'ARRAY[?]', $ip ] }
-    })->update({ rules => \[ 'ARRAY_REPLACE(rules, ?, ?)', $ip, $new_ip ] });
 
     $happy = 1;
   });
