@@ -1,13 +1,9 @@
-2.105006 - tbd
+2.105006 - 2026-09-01
 
   [ENHANCEMENTS]
 
-  * device, search and report tabs load their content with htmx, as the admin
-    pages already did
-  * a site-local copy of share/views/js/common.js which still calls do_search
-    keeps working: the call loads the tab as before and logs the attributes to
-    add. netdisco-do checksitelocal reports every such file. do_search will be
-    removed in a future release
+  * #1657 device, search and report tabs load their content with htmx
+  * #1657 do_search() is deprecated for site local extensions. see netdisco-do checksitelocal
 
   [BUG FIXES]
 

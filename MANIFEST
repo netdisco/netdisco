@@ -703,6 +703,8 @@ xt/44-results-token-escaping.t
 xt/45-netmap-neighbor-walk.t
 xt/46-native-history-api.t
 xt/47-site-local-checker.t
+xt/48-htmx-form-attributes.t
+xt/49-netmap-position-key.t
 xt/50-config-override.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
