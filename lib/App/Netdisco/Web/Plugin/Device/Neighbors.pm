@@ -31,10 +31,8 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
     my $vlan = param('vlan');
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
-    my $mapshow = param('mapshow');
-    return if !defined $mapshow or $mapshow !~ m/^(?:all|cloud|depth)$/;
-    my $depth = param('depth') || 1;
-    return if $depth !~ m/^\d+$/;
+    my ($mapshow, $depth) = netmap_view_params(
+      param('mapshow'), param('depth'), $qdev->in_storage);
 
     # list of groups selected by user and passed in param
     my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
@@ -57,7 +55,9 @@ ajax '/ajax/data/device/netmappositions' => require_login sub {
       }
       $clean{$pos->{ID}} = { x => $pos->{x}, y => $pos->{y} };
     }
-    return unless scalar keys %clean;
+    # Not a bare return: that answers the plugin's text/xml default with an
+    # empty body, which jQuery reads as a successful save.
+    send_error('Bad positions', 400) unless scalar keys %clean;
 
     my $posrow = schema(vars->{'tenant'})->resultset('NetmapPositions')->find({
       device => ($mapshow ne 'all' ? $qdev->ip : undef),
@@ -146,6 +146,20 @@ sub neighbors_within_depth {
   return \%cloud;
 }
 
+# Shared so the display and save routes cannot key a netmap_positions row
+# differently. Pure, so it is checkable without a database.
+sub netmap_view_params {
+  my ($mapshow, $depth, $in_storage) = @_;
+
+  $mapshow = 'depth'
+    if !defined $mapshow or $mapshow !~ m/^(?:all|cloud|depth)$/;
+  $mapshow = 'all' unless $in_storage;
+
+  $depth = 1 if !defined $depth or $depth !~ m/^\d+$/ or $depth < 1;
+
+  return ($mapshow, $depth);
+}
+
 sub make_link_infostring {
   my $link = shift or return '';
 
@@ -171,10 +185,8 @@ get '/ajax/data/device/netmap' => require_login sub {
     undef $vlan if (defined $vlan and $vlan !~ m/^\d+$/);
 
     my $colorby = (param('colorby') || 'speed');
-    my $mapshow = (param('mapshow') || 'depth');
-    my $depth   = (param('depth')   || 1);
-    $mapshow = 'depth' if $mapshow !~ m/^(?:all|cloud|depth)$/;
-    $mapshow = 'all' unless $qdev->in_storage;
+    my ($mapshow, $depth) = netmap_view_params(
+      param('mapshow'), param('depth'), $qdev->in_storage);
 
     # list of groups selected by user and passed in param
     my $hgroup = (ref [] eq ref param('hgroup') ? param('hgroup') : [param('hgroup')]);
