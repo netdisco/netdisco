@@ -50,7 +50,7 @@
     $('.nd_field-clear-icon').click(function() {
       portfilter.val('');
       $('#nd_ports-form-prefer-field').attr('value', '');
-      $('#ports_form').trigger('submit');
+      nd_submit('#ports_form');
       device_form_state(portfilter); // will hide copy icons
     });
 
@@ -58,7 +58,7 @@
     $('#ports_form').on('click', '.nd_device-port-submit-prefer', function() {
       event.preventDefault();
       $('#nd_ports-form-prefer-field').attr('value', $(this).data('prefer'));
-      $(this).parents('form').submit();
+      nd_submit('#ports_form');
     });
 
     // clickable device port names can simply resubmit AJAX rather than
@@ -74,7 +74,7 @@
       // make sure we're preferring a port filter
       $('#nd_ports-form-prefer-field').attr('value', 'port');
 
-      $('#ports_form').trigger('submit');
+      nd_submit('#ports_form');
       device_form_state(portfilter); // will hide copy icons
     });
 

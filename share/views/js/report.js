@@ -70,12 +70,12 @@
           );
         }
         ,success: function() {
-          $('#' + tab + '_form').trigger('submit');
+          nd_submit('#' + tab + '_form');
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          $('#' + tab + '_form').trigger('submit');
+          nd_submit('#' + tab + '_form');
         }
       });
     });

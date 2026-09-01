@@ -12,7 +12,11 @@
         <div class="tab-content">
           <div id="[% report.tag | html_entity %]_search" class="tab-pane active">
             <form id="[% report.tag | html_entity %]_form" class="nd_sidebar-form form-stacked"
-                method="get" action="[% uri_for('/report') | none %]">
+                method="get" action="[% uri_for('/report') | none %]"
+                hx-get="[% uri_for('/ajax/content/report/' _ report.tag) | none %]"
+                hx-target="#[% report.tag | html_entity %]_pane"
+                hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
+                hx-indicator="#[% report.tag | html_entity %]_indicator">
               [% TRY %]
               <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = 1;</script>
               [% INCLUDE "sidebar/report/${report.tag}.tt" %]
@@ -46,6 +50,9 @@
       [% END %]
     </ul>
     <div class="tab-content">
+      <div id="[% report.tag | html_entity %]_indicator" class="htmx-indicator col-md-2 alert">
+        <i class="fas fa-spinner fa-spin"></i> Waiting for results...
+      </div>
       <div class="tab-pane active" id="[% report.tag | html_entity %]_pane"></div>
   </div>
 </div>
