@@ -9,6 +9,11 @@
     add. netdisco-do checksitelocal reports every such file. do_search will be
     removed in a future release
 
+  [BUG FIXES]
+
+  * netmap Auto Save now takes effect as soon as you switch it
+  * netmap Save no longer reports success without saving the positions
+
 2.105005 - 2026-08-31
 
   [ENHANCEMENTS]

@@ -76,7 +76,12 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   function endpointId(l, end) { var v = l[end]; return (typeof v === 'object') ? v.ID : v }
 
   // read the template condition once; two handlers below need it
-  var autosaveOn = ('[% "on" IF params.autosave == "on" %]' === 'on');
+  // Read at each use, not cached: the sidebar toggle changes this checkbox
+  // without re-rendering the map.
+  function autosaveOn() {
+    var box = document.getElementById('nd_autosave');
+    return !!(box && box.checked);
+  }
 
   // force-graph reheats the simulation on every drag event, and once the first
   // layout has finished alpha is already below d3AlphaMin, so the engine stops
@@ -113,14 +118,14 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
       n.fx = n.x; n.fy = n.y; dragSnap = null;
       // the engine stop that follows a drag runs no ticks, so this is the only
       // place a hand-moved node gets persisted; once per drag, not per mousemove
-      if (autosaveOn) { saveMapPositions() }
+      if (autosaveOn()) { saveMapPositions() }
     })
     .onEngineStop(function () {
       setSpinnerState('nd_netmap-settled');
       fg.graphData().nodes.forEach(function (n) { n.fx = n.x; n.fy = n.y });
       var ranTicks = ticksSinceStop;
       ticksSinceStop = 0;
-      if (ranTicks && autosaveOn) { saveMapPositions() }
+      if (ranTicks && autosaveOn()) { saveMapPositions() }
     })
     .graphData({ nodes: nodes, links: links });
 
@@ -139,9 +144,8 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   fg.d3Force('charge').strength(-550);
   fg.d3Force('link').distance(120);
   fg.d3Force('center', null);
-  // force-graph's origin is the viewport center (measured: graph2ScreenCoords(0,0)
-  // equals the canvas midpoint), unlike the old SVG renderer's top-left origin,
-  // so "the middle" the comment above promises is the stored layout's centroid
+  // force-graph's origin is the viewport center, unlike the old SVG renderer's
+  // top-left origin, so "the middle" above is the stored layout's centroid
   fg.d3Force('pullx', ndPull('x', cx, 0.06));
   fg.d3Force('pully', ndPull('y', cy, 0.06));
 
@@ -160,7 +164,7 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
       , $("#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']").serialize()
         + '&positions=' + JSON.stringify(graph.positions())
     ).done(function () {
-      if (announce && !autosaveOn) { toastr.success('Saved map positions.') }
+      if (announce && !autosaveOn()) { toastr.success('Saved map positions.') }
     });
   };
 
@@ -373,8 +377,8 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // back to 'Other' rather than leaving it unset)
   var legend = document.getElementById('nd2_netmap-legend');
   if (legend) {
-    // Object.keys is arrival order in the payload; the old renderer sorted
-    // its legend, and 3152 unsorted rows in a scroller cannot be read by eye
+    // Object.keys is arrival order in the payload, and a long unsorted list in
+    // a scroller cannot be read by eye
     Object.keys(colorOf).sort(function (a, b) {
       return a.toLowerCase().localeCompare(b.toLowerCase());
     }).forEach(function (key) {
