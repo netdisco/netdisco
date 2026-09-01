@@ -4,12 +4,8 @@
 // force-graph reheats the simulation on every drag event. Once the first
 // layout has finished, alpha is already below d3AlphaMin, so the engine stops
 // again immediately having run no ticks at all. Hanging the save off
-// onEngineStop therefore fires it once per mousemove. Measured on this branch
-// before the fix, against a 6493 device database: a drag of 4 mouse movements
-// produced 4 posts, 12 produced 12, and 24 produced 24, each carrying the whole
-// map at 327131 bytes on the 6481 node map. Replacing onEngineStop with a bare
-// counter gave 12 engine stops and 0 posts, which is what pins the trigger on
-// it.
+// onEngineStop therefore fires it once per mousemove, each post carrying the
+// whole map.
 //
 // So two things are needed together. A tick count tells a real settle apart
 // from a stop that did no work, and onNodeDragEnd is what persists a node the
@@ -25,12 +21,10 @@
 // single missing request is not evidence that none was coming.
 //
 // A success handler here only runs at all because the route sets its own
-// content type. It used to inherit Dancer::Plugin::Ajax's text/xml default and
-// answer with a stringified DBIC row, which jQuery rejected as invalid XML on a
-// 200, so the first version of this toast was correct by every source test and
-// never appeared. That is asserted on the server side in
-// xt/36-ajax-content-response.t; do not reintroduce a dataType override here to
-// paper over it if the route ever regresses.
+// content type; inheriting Dancer::Plugin::Ajax's text/xml default makes jQuery
+// reject a 200 as invalid XML. That is asserted in
+// xt/36-ajax-content-response.t. Do not add a dataType override here to paper
+// over it if the route ever regresses.
 //
 // The same distinction decides who gets told. With autosave on the map saves
 // itself at every settle and every drag, so a toast for each would be noise.

@@ -144,9 +144,8 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   fg.d3Force('charge').strength(-550);
   fg.d3Force('link').distance(120);
   fg.d3Force('center', null);
-  // force-graph's origin is the viewport center (measured: graph2ScreenCoords(0,0)
-  // equals the canvas midpoint), unlike the old SVG renderer's top-left origin,
-  // so "the middle" the comment above promises is the stored layout's centroid
+  // force-graph's origin is the viewport center, unlike the old SVG renderer's
+  // top-left origin, so "the middle" above is the stored layout's centroid
   fg.d3Force('pullx', ndPull('x', cx, 0.06));
   fg.d3Force('pully', ndPull('y', cy, 0.06));
 
@@ -378,8 +377,8 @@ $.getJSON('[% uri_for("/ajax/data/device/netmap") | none %]?[% my_query | none %
   // back to 'Other' rather than leaving it unset)
   var legend = document.getElementById('nd2_netmap-legend');
   if (legend) {
-    // Object.keys is arrival order in the payload; the old renderer sorted
-    // its legend, and 3152 unsorted rows in a scroller cannot be read by eye
+    // Object.keys is arrival order in the payload, and a long unsorted list in
+    // a scroller cannot be read by eye
     Object.keys(colorOf).sort(function (a, b) {
       return a.toLowerCase().localeCompare(b.toLowerCase());
     }).forEach(function (key) {
