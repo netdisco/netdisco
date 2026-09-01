@@ -106,6 +106,26 @@ describe('netmap autosave', () => {
   });
 });
 
+describe('netmap autosave toggle', () => {
+  // Nothing re-fetches the netmap fragment when the toggle is clicked, so a
+  // value baked in at render time cannot follow it.
+  test('autosaveOn__after_the_sidebar_toggle__is_read_live_not_baked_at_render', () => {
+    const src = netmapJs();
+    assert.doesNotMatch(
+      src,
+      /autosaveOn\s*=\s*\('\[%/,
+      'autosave must not be baked from a template param: the toggle changes the ' +
+      'checkbox without re-rendering this fragment, so a baked value cannot follow it'
+    );
+    assert.match(
+      src,
+      /getElementById\(\s*'nd_autosave'\s*\)/,
+      'the autosave state must be read from the sidebar checkbox, the same way ' +
+      'showips and showspeed already are in this file'
+    );
+  });
+});
+
 describe('netmap manual save', () => {
   test('saveMapPositions__called_by_the_button_with_autosave_off__announces', () => {
     const src = netmapJs();

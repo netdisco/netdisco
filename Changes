@@ -1,3 +1,9 @@
+2.105006 - tbd
+
+  [BUG FIXES]
+
+  * netmap Auto Save now takes effect as soon as you switch it
+
 2.105005 - 2026-08-31
 
   [ENHANCEMENTS]
