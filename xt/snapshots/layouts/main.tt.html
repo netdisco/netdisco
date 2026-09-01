@@ -230,6 +230,10 @@
   }
 
   $(document).ready(function() {
+    // Every sidebar form loads its own pane over htmx, declared by the hx-get
+    // in device.tt, search.tt, report.tt and admintask.tt. These handlers carry
+    // the side effects only, and must not call preventDefault: htmx's own
+    // submit listener does that.
 
 
 

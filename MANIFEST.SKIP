@@ -79,6 +79,7 @@ logs/.*
 \.circleci
 README.md
 SECURITY.md
+CLAUDE.md
 
 # ignore intellij project directory
 \B\.idea

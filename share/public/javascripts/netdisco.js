@@ -29,58 +29,29 @@ function nd_apply_sidebar (tab) {
   }
 }
 
+// Nothing shipped calls this. It is here for site-local copies of
+// share/views/js/common.js, which call it from their own submit handlers.
+// htmx.ajax() rather than nd_submit(), which would re-enter the caller's own
+// submit handler and recurse.
 function do_search (event, tab) {
-  var form   = '#' + tab + '_form';
-  var target = '#' + tab + '_pane';
-  var query  = $(form).serialize();
-
-  // stop form from submitting normally
   event.preventDefault();
-
   nd_apply_sidebar(tab);
 
-  // in case of slow data load, let the user know
-  if (tab != 'jobqueue') {
-    $(target).html(
-      '<div class="col-md-2 alert"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</div>'
-    );
-  }
+  console.error('do_search() now only forwards to htmx and will be removed in '
+    + 'a future release. Give the #' + tab + '_form element the hx-get, '
+    + 'hx-target, hx-headers and hx-indicator attributes used in '
+    + 'share/views/device.tt, then drop this call. Run '
+    + '"netdisco-do checksitelocal" to find every affected file.');
 
-  // submit the query and put results into the tab pane
-  fetch( uri_base + '/ajax/content/' + path + '/' + tab + '?' + query,
-    { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then( response => {
-      if (! response.ok) {
-        $(target).html(
-          '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
-          'Search failed! Please contact your site administrator (server error).</div>'
-        );
-        return;
-        // throw new Error('Network response was not ok');
-      }
-      return response.text();
-    })
-    .then( content => {
-      if (content == "") {
-        $(target).html('<div class="col-md-2 alert alert-info">No matching records.</div>');
-      }
-      else {
-        $(target).html(content);
-        // delegate to any [device|search] specific JS code
-        $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-          top: 40
-          ,position: 'fixed'
-        });
-        inner_view_processing(tab);
-      }
-    })
-    .catch( error => {
-      $(target).html(
-        '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
-        'Search failed! Please contact your site administrator (network error: ' + error + ').</div>'
-      );
-      console.error('There has been a problem with your fetch operation:', error);
-    });
+  // A site that overrode only this handler still has the shipped form, whose
+  // hx-get has already loaded the pane off this same submit event.
+  var form = document.getElementById(tab + '_form');
+  if (form && form.getAttribute('hx-get')) { return }
+
+  htmx.ajax('GET',
+    uri_base + '/ajax/content/' + path + '/' + tab + '?' + $('#' + tab + '_form').serialize(),
+    { target: '#' + tab + '_pane',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' } });
 }
 
 // keep track of which tabs have a sidebar, for when switching tab
@@ -99,6 +70,13 @@ function update_content(from, to) {
 
   var to_form = '#' + to + '_form';
   var from_form = '#' + from + '_form';
+
+  // Cancel a request still running for the tab being left. Its indicator sits
+  // beside the pane rather than inside it, so the tab machinery cannot hide it
+  // and it would stay on screen alongside the new tab's. Nothing is lost:
+  // entering a tab always re-submits its form.
+  var leaving = document.querySelector(from_form);
+  if (leaving) { htmx.trigger(leaving, 'htmx:abort') }
 
   // page title
   var pgtitle = default_pgtitle;
@@ -124,7 +102,7 @@ function update_content(from, to) {
     );
   }
 
-  $(to_form).trigger("submit");
+  nd_submit(to_form);
 }
 
 // handler for ajax navigation
@@ -475,6 +453,26 @@ $(document).ready(function() {
       ,position: 'fixed'
     });
     inner_view_processing(tab);
+  });
+  // Empty the pane for the duration of the request, so the indicator is the
+  // only thing on screen. Leaving the previous results up gives an interactive
+  // table that no longer answers the search being run.
+  //
+  // jobqueue is excluded for the reason it carries no indicator: it refreshes
+  // on a timer and would blank on every tick.
+  document.body.addEventListener('htmx:beforeRequest', function (evt) {
+    var target = evt.detail.target;
+    if (!target.id.match(/_pane$/) || target.id === 'jobqueue_pane') return;
+
+    // force-graph renders every frame until destroyed, and emptying the pane
+    // only detaches its canvas. netmap.js destroys the previous instance as
+    // well, but not until the new fragment's script runs.
+    if (target.id === 'netmap_pane' && window.graph && window.graph.fg
+        && typeof window.graph.fg._destructor === 'function') {
+      window.graph.fg._destructor();
+    }
+
+    target.innerHTML = '';
   });
   document.body.addEventListener('htmx:responseError', function (evt) {
     var target = evt.detail.target;

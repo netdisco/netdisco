@@ -30,7 +30,8 @@ Detection only. This module never writes to a file and never logs.
 # One row per shipped removal. A later rung adds a row here and nothing else.
 #
 # `pattern` is matched against each line of each file under the scanned paths.
-# `release` is the release that removed the thing, for the report to cite.
+# `release` is the release that removed or deprecated the thing, for the report
+# to cite.
 my @RULES = (
   {
     name    => 'he-js',
@@ -64,6 +65,19 @@ my @RULES = (
     pattern => qr/natural-(?:asc|desc)\b|["']?(?:type|sType)["']?\s*:\s*["']natural["']/,
     advice  => 'natural.js was removed. Use a built-in DataTables type, or '
              . 'the portsort or versionsort plug-ins netdisco still ships.',
+  },
+  {
+    name    => 'do-search',
+    release => '2.105005',
+    # The only rule here whose subject still works: do_search forwards to htmx
+    # rather than throwing, so a site that ignores this keeps loading its tab.
+    # Reported anyway, because the console notice only reaches whoever opens
+    # devtools.
+    pattern => qr/\bdo_search\s*\(/,
+    advice  => 'do_search() now only forwards to htmx and will be removed in a '
+             . 'future release. Give the form the hx-get, hx-target, hx-headers '
+             . 'and hx-indicator attributes that share/views/device.tt uses, '
+             . 'then drop the do_search call from the submit handler.',
   },
 );
 
