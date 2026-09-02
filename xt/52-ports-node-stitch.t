@@ -94,4 +94,57 @@ require App::Netdisco::DB::Result::DevicePort;
 ok !App::Netdisco::DB::Result::DevicePort->can('stitched_nodes'),
   'stitched_nodes is not a method, so Template Toolkit reaches the hash key';
 
+# _node_fetch_scope is the route's decision of whether and how widely to
+# fetch nodes, pulled out so it can be pinned without a session (the route
+# is require_login and nothing in xt drives it). Required again here,
+# unconditionally: the SKIP block above only requires this module when the
+# database connects, and this check must run without one.
+require App::Netdisco::Web::Plugin::Device::Ports;
+
+# A fake row only needs port/remote_ip accessors; no database involved.
+{
+    package Fake::PortRow;
+    sub new { my ($class, %args) = @_; return bless { %args }, $class }
+    sub port { return $_[0]->{port} }
+    sub remote_ip { return $_[0]->{remote_ip} }
+}
+
+my @rows_no_neighbors = (
+    Fake::PortRow->new(port => 'Gi1/1'),
+    Fake::PortRow->new(port => 'Gi1/2'),
+);
+my @rows_some_neighbors = (
+    Fake::PortRow->new(port => 'Gi1/1', remote_ip => '10.0.0.1'),
+    Fake::PortRow->new(port => 'Gi1/2'),
+    Fake::PortRow->new(port => 'Gi1/3', remote_ip => '10.0.0.3'),
+);
+
+# 1. c_nodes on: fetch the whole device, whatever the rows look like. Both
+#    flags on is the case with real user impact here: the c_nodes template
+#    block reads every port's nodes, so a scoped fetch would blank some.
+is_deeply App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
+  1, 0, \@rows_no_neighbors), [],
+  'c_nodes on, c_neighbors off fetches the whole device';
+is_deeply App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
+  1, 1, \@rows_some_neighbors), [],
+  'c_nodes on, c_neighbors on also fetches the whole device';
+
+# 2. c_nodes off, c_neighbors on, no row carries a remote_ip: fetch nothing
+#    at all. This is the exact regression the route-level fix closes; see
+#    _node_fetch_scope's comment in Ports.pm for the measurement.
+is App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
+  0, 1, \@rows_no_neighbors), undef,
+  'c_nodes off, c_neighbors on, no remote_ip anywhere fetches nothing';
+
+# 3. c_nodes off, c_neighbors on, some rows carry a remote_ip: fetch exactly
+#    those ports.
+is_deeply App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
+  0, 1, \@rows_some_neighbors), ['Gi1/1', 'Gi1/3'],
+  'c_nodes off, c_neighbors on, some remote_ip fetches only those ports';
+
+# 4. Both off: fetch nothing.
+is App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
+  0, 0, \@rows_some_neighbors), undef,
+  'c_nodes and c_neighbors both off fetches nothing';
+
 done_testing;

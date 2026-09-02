@@ -66,6 +66,33 @@ sub _stitch_nodes {
     return;
 }
 
+# Decides whether to fetch nodes for this view, and how widely, as the
+# $only_ports argument to _stitch_nodes. Kept free of param() so xt can pin
+# the decision without a session: the route is require_login and the xt
+# suite has no session to drive it through, so the route's own condition had
+# no automated coverage until this was pulled out.
+#
+# c_neighbors is checked by default in config.yml and c_nodes is not, so the
+# neighbors-only branch is the shipped default view. It reads node data only
+# for a port carrying a remote_ip, to name that neighbor's MAC, so fetching
+# every port's nodes there costs 669 ms on a 2166 port device for rows
+# nothing on the page reads; fetching nothing when no port has a remote_ip
+# is the fix for that, not an incidental case.
+#
+# Returns undef to mean do not fetch at all, or an arrayref to pass as
+# $only_ports: empty means the whole device, non-empty scopes the fetch to
+# those ports.
+sub _node_fetch_scope {
+    my ($want_nodes, $want_neighbors, $rows) = @_;
+
+    return [] if $want_nodes;
+    return undef if not $want_neighbors;
+
+    my @neighbor_ports = map { $_->port } grep { $_->remote_ip } @$rows;
+    return undef if not scalar @neighbor_ports;
+    return \@neighbor_ports;
+}
+
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
     my $q = param('q');
@@ -278,19 +305,14 @@ get '/ajax/content/device/ports' => require_login sub {
     my @results = $set->all;
 
     # fetch and attach nodes by port name; see _stitch_nodes for why this
-    # replaced a prefetch.
-    #
-    # c_neighbors is checked by default in config.yml and c_nodes is not, so
-    # the neighbors branch is the shipped default view. It reads node data
-    # only for a port carrying a remote_ip, to name that neighbor's MAC, so
-    # it asks for those ports and not the device: fetching them all costs
-    # 669 ms on a 2166 port device, for rows nothing on the page reads.
-    my @neighbor_ports = (not param('c_nodes'))
-      ? (map { $_->port } grep { $_->remote_ip } @results) : ();
+    # replaced a prefetch, and _node_fetch_scope for what decides whether and
+    # how widely to fetch.
+    my $node_fetch_scope = _node_fetch_scope(
+      scalar param('c_nodes'), scalar param('c_neighbors'), \@results);
 
     _stitch_nodes(schema(vars->{'tenant'}), $device->ip, \@results,
-      $nodes_name, $ips_name, \@node_order, \@extra_prefetch, \@neighbor_ports)
-      if param('c_nodes') or (param('c_neighbors') and scalar @neighbor_ports);
+      $nodes_name, $ips_name, \@node_order, \@extra_prefetch, $node_fetch_scope)
+      if defined $node_fetch_scope;
 
     # filter for tagged vlan using existing agg query,
     # which is better than join inflation
