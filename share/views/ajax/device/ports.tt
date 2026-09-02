@@ -385,8 +385,8 @@
       <td>
         [% SET neighbor_mac = '' %]
         [% IF row.remote_ip %]
-          [% FOREACH _n IN row.$nodes %]
-            [% FOREACH _nip IN _n.$ips %]
+          [% FOREACH _n IN row.stitched_nodes %]
+            [% FOREACH _nip IN _n.stitched_ips %]
               [% IF _nip.ip == row.remote_ip AND NOT neighbor_mac; neighbor_mac = _n.net_mac.$mac_format_call; END %]
             [% END %]
           [% END %]
@@ -448,18 +448,18 @@
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
-        [% IF row.$nodes AND row.$nodes.size > settings.devport_nodes_collapse_threshold %]
+        [% IF row.stitched_nodes AND row.stitched_nodes.size > settings.devport_nodes_collapse_threshold %]
         <div class="nd_nodes-total">
-          <strong>[% row.$nodes.size %] nodes</strong>
+          <strong>[% row.stitched_nodes.size %] nodes</strong>
           <span class="nd_collapse-vlans">
             Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
           </span>
         </div>
         <div class="nd_collapsing nd_collapse-pre-hidden">
         [% END %]
-        [% FOREACH node IN row.$nodes %]
+        [% FOREACH node IN row.stitched_nodes %]
           [% SET _node_is_neighbor = 0 %]
-          [% FOREACH _nip IN node.$ips; _node_is_neighbor = 1 IF _nip.ip == row.remote_ip; END %]
+          [% FOREACH _nip IN node.stitched_ips; _node_is_neighbor = 1 IF _nip.ip == row.remote_ip; END %]
           [% NEXT IF _node_is_neighbor %]
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
@@ -480,18 +480,18 @@
           [% END %]
           [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
           [% IF params.n_ip4 OR params.n_ip6 %]
-            [% IF node.$ips.size AND node.$ips.size > settings.devport_ips_collapse_threshold %]
+            [% IF node.stitched_ips.size AND node.stitched_ips.size > settings.devport_ips_collapse_threshold %]
             <div class="nd_nodes-total">
-              &nbsp;&nbsp;<strong>[% node.$ips.size %] IPs</strong>
+              &nbsp;&nbsp;<strong>[% node.stitched_ips.size %] IPs</strong>
               <span class="nd_collapse-vlans">
                 Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
               </span>
             </div>
             <div class="nd_collapsing nd_collapse-pre-hidden">
             [% END %]
-            [% FOREACH ip IN node.$ips %]
+            [% FOREACH ip IN node.stitched_ips %]
             [% IF loop.first %]
-              [% IF (node.$ips.size) > settings.devport_ips_collapse_threshold %]
+              [% IF (node.stitched_ips.size) > settings.devport_ips_collapse_threshold %]
                 &nbsp;
               [% ELSE %]
                 <br/>&nbsp;
@@ -512,7 +512,7 @@
               <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
             [% END %]
             [% END %]
-            [% IF node.$ips.size AND node.$ips.size > settings.devport_ips_collapse_threshold %]
+            [% IF node.stitched_ips.size AND node.stitched_ips.size > settings.devport_ips_collapse_threshold %]
             </div>
             [% END %]
             </div>
@@ -525,7 +525,7 @@
             [% END %]
           [% END %]
         [% END %]
-        [% IF row.$nodes AND row.$nodes.size > settings.devport_nodes_collapse_threshold %]
+        [% IF row.stitched_nodes AND row.stitched_nodes.size > settings.devport_nodes_collapse_threshold %]
         </div>
         [% END %]
         [% END %]

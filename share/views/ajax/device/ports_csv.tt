@@ -224,7 +224,7 @@
 
   [% SET has_nodes = 0 %]
   [% IF params.c_nodes %]
-    [% FOREACH node IN row.$nodes %]
+    [% FOREACH node IN row.stitched_nodes %]
       [% SET has_nodes = 1 %]
       [% SET mynode = [] %]
 
@@ -239,7 +239,7 @@
         [% mynode.push('') %]
         [% SET has_ips = 0 %]
 
-        [% FOREACH ip IN node.$ips %]
+        [% FOREACH ip IN node.stitched_ips %]
           [% SET has_ips = 1 %]
 
           [% CALL mynode.splice(-3, 1, ip.ip) %] 

@@ -9,8 +9,57 @@ use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name/;
 use App::Netdisco::Web::Plugin;
 
 use List::MoreUtils 'singleton';
+use NetAddr::MAC ();
+use DBIx::Class::ResultClass::HashRefInflator;
 
 register_device_tab({ tag => 'ports', label => 'Ports', provides_csv => 1 });
+
+# $nodes_name (see below) names a has_many relation, but the node source it
+# reads from differs by name. Kept as a hash, not a chain of regex tests,
+# because a fifth combination should be a new row here, not a new branch.
+my %node_result_class = (
+    nodes                 => 'Node',
+    active_nodes          => 'Virtual::ActiveNode',
+    nodes_with_age        => 'Virtual::NodeWithAge',
+    active_nodes_with_age => 'Virtual::ActiveNodeWithAge',
+);
+
+# Fetches nodes for one device and groups them by port name. Split out from
+# the route so xt/52-ports-node-stitch.t can call it directly: the route is
+# require_login and the xt suite has no session to drive it through.
+#
+# HashRefInflator returns plain hashrefs, which changes how Template Toolkit
+# reads two of the relations it wants to walk: manufacturer (belongs_to) and
+# netbios (might_have) come back as a single hashref rather than a blessed
+# row, and TT's FOREACH over a bare hashref iterates its key/value pairs
+# instead of treating it as one item. Wrapping each in an arrayref restores
+# the one-row-or-none shape the template already expects. wireless is
+# has_many and arrives as an arrayref already, so it needs no such wrapping.
+sub _stitch_nodes {
+    my ($schema, $device_ip, $rows, $nodes_name, $ips_name, $node_order, $extra_prefetch) = @_;
+
+    my $node_rs = $schema->resultset($node_result_class{$nodes_name})
+      ->search({ switch => $device_ip }, {
+        order_by => $node_order,
+        prefetch => [ $ips_name, @{ $extra_prefetch || [] } ],
+      });
+    $node_rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+
+    my %nodes_by_port = ();
+    for my $node ($node_rs->all) {
+        $node->{stitched_ips} = delete $node->{$ips_name} || [];
+        $node->{net_mac} = NetAddr::MAC->new(mac => ($node->{mac} || ''));
+        $node->{manufacturer} = [ $node->{manufacturer} ] if $node->{manufacturer};
+        $node->{netbios} = [ $node->{netbios} ] if $node->{netbios};
+        push @{ $nodes_by_port{ $node->{port} } }, $node;
+    }
+
+    # attached here rather than by the caller, so a test calling this
+    # function exercises the same key the template reads instead of agreeing
+    # with its own copy of the attach line.
+    $_->{stitched_nodes} = ($nodes_by_port{ $_->port } || []) for @$rows;
+    return;
+}
 
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
@@ -159,30 +208,36 @@ get '/ajax/content/device/ports' => require_login sub {
                    : param('n_ip4') ? 'ip4s'
                    : 'ip6s');
 
-    # Ordering terms that follow the port name, never replace it: see
-    # DevicePort's order_by_port_name for why the port key has to lead.
+    # Ordering terms for the node query below, never for $set: see
+    # DevicePort's order_by_port_name for why the port key has to lead there,
+    # and _stitch_nodes for why these are qualified against the node source
+    # instead.
     my @node_order = ();
+    my @extra_prefetch = ();
 
-    if (param('c_nodes')) {
-        # retrieve active/all connected nodes, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => $ips_name}] });
+    # row.stitched_nodes is read even when c_nodes is off, to find the
+    # neighbor's MAC for the Neighbors column, so the stitch has to run for
+    # either.
+    if (param('c_nodes') or param('c_neighbors')) {
+        # Fetched separately and joined by port name below, not prefetched.
+        # One prefetch of ports to nodes to IPs returns the product of the
+        # three and DBIC inflates every row of it: 598 ms on a 229 port
+        # device where the SQL behind it is 16 ms. A second has_many branch
+        # multiplies it again, which is what c_ssid used to do.
         @node_order = (
-          \qq{regexp_replace(COALESCE(${nodes_name}.vlan, '0'), '[^0-9]*' ,'0') :: integer},
-          "${nodes_name}.mac",
+          \qq{regexp_replace(COALESCE(me.vlan, '0'), '[^0-9]*' ,'0') :: integer},
+          'me.mac',
           "${ips_name}.ip",
         );
 
         # retrieve wireless SSIDs, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'wireless'}] })
-          if param('n_ssid');
+        push @extra_prefetch, 'wireless' if param('n_ssid');
 
         # retrieve NetBIOS, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'netbios'}] })
-          if param('n_netbios');
+        push @extra_prefetch, 'netbios' if param('n_netbios');
 
         # retrieve vendor, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'manufacturer'}] })
-          if param('n_vendor');
+        push @extra_prefetch, 'manufacturer' if param('n_vendor');
     }
 
     # retrieve SSID, if asked for
@@ -208,11 +263,20 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # Ordered in the database rather than after the fetch. The order is
     # portsort.js's, which is the one the browser shows, so this replaces a
-    # sort_port pass whose result the browser overwrote anyway.
-    $set = $set->order_by_port_name(\@node_order);
+    # sort_port pass whose result the browser overwrote anyway. @node_order
+    # does not belong here any more: it is qualified for the node source, not
+    # for $set, which has its own mac and vlan columns that would silently
+    # take over the ordering instead.
+    $set = $set->order_by_port_name();
 
     # run query
     my @results = $set->all;
+
+    # fetch and attach nodes by port name; see _stitch_nodes for why this
+    # replaced a prefetch
+    _stitch_nodes(schema(vars->{'tenant'}), $device->ip, \@results,
+      $nodes_name, $ips_name, \@node_order, \@extra_prefetch)
+      if (param('c_nodes') or param('c_neighbors'));
 
     # filter for tagged vlan using existing agg query,
     # which is better than join inflation

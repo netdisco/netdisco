@@ -1,5 +1,10 @@
 2.106001 - tbd
 
+  [ENHANCEMENTS]
+
+  * the Ports tab connected-nodes view fetches nodes in a second query rather
+    than one join, which it renders about twice as fast
+
   [BUG FIXES]
 
   * the Ports tab SSID column showed one SSID on a port that has several

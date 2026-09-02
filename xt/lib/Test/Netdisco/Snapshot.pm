@@ -101,8 +101,11 @@ plain hashrefs; C<row.get_column> and C<row.has_column_loaded> are
 DBIx::Class::Row methods this harness does not model, so one row supplies
 C<has_column_loaded> as a coderef to reach the "port is free" branch, and the
 neighbour-discovery icons that depend on C<get_column> are left as a gap.
-C<nodes>, C<ips> and C<mac_format_call> are, as in production, the names of
-the row accessors the template should call, not the data itself.
+C<mac_format_call> is, as in production, the name of the row method the
+template should call, not the data itself. C<nodes> and C<ips> are still
+passed for site-local template compatibility, but the connected-nodes markup
+now reads C<stitched_nodes> and C<stitched_ips> directly, so the one row that
+carries a node keys its data there rather than under the C<nodes> value.
 
 C<params.c_ssid> is enabled and one row carries two C<ssid> entries, so the
 SSID cell's C<FOREACH> renders a comma separated list rather than a single
@@ -243,7 +246,7 @@ sub stash_for {
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
           port_acl_pvid => 1, filtered_tags => ['core'],
-          client_nodes => [ { active => 0,
+          stitched_nodes => [ { active => 0,
             net_mac => { as_string => 'aa:bb:cc:00:01:01' } } ],
           ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
