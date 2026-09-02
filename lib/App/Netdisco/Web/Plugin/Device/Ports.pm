@@ -143,12 +143,19 @@ sub _attach_search_shadow {
               FROM node_wireless WHERE mac = n.mac) w ON true};
     }
 
+    # nbuser is a logged-in user, not the machine's own NetBIOS hostname,
+    # so nbname doesn't cover it; nbt.ip isn't always one of the node's own
+    # IPs, so the node_ip lateral doesn't always cover it either.
+    # Deliberately not carrying the '[No User]' fallback ports.tt renders
+    # for an absent nbuser: nobody filters for that, and it would match
+    # every node with no NetBIOS user.
     my ($netbios_select, $netbios_join) = ('', '');
     if ($want_netbios) {
         $netbios_select = q{ || ' ' || COALESCE(b.txt, '')};
         $netbios_join = q{
           LEFT JOIN LATERAL (
-            SELECT string_agg(COALESCE(nbname, '') || ' ' || COALESCE(domain, ''), ' ') AS txt
+            SELECT string_agg(COALESCE(nbname, '') || ' ' || COALESCE(domain, '')
+                 || ' ' || COALESCE(nbuser, '') || ' ' || COALESCE(ip::text, ''), ' ') AS txt
               FROM node_nbt WHERE mac = n.mac) b ON true};
     }
 

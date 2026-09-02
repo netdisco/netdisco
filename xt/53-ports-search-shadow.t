@@ -131,18 +131,21 @@ SKIP: {
 SKIP: {
     skip "no usable netdisco database: $why", 2 if not $schema;
 
+    # ssid !~ '\s' keeps the fixture to a single-token SSID: the shadow
+    # joins fields with a bare space, so a multi-word SSID like "Guest Wifi"
+    # would never satisfy a whitespace-anchored match on its own.
     my ($ssid_switch, $ssid_port, $an_ssid) = $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
       $dbh->selectrow_array(q{
           SELECT n.switch, n.port, w.ssid
             FROM node n
             JOIN node_wireless w ON w.mac = n.mac
-           WHERE n.active AND length(w.ssid) > 0
+           WHERE n.active AND length(w.ssid) > 0 AND w.ssid !~ '\s'
            LIMIT 1
       });
     });
 
-    skip 'no active node in this database carries an SSID', 2
+    skip 'no active node in this database carries a single-token SSID', 2
       if not defined $ssid_switch;
 
     my $ssid_device = $schema->resultset('Device')->find($ssid_switch);
@@ -156,14 +159,14 @@ SKIP: {
       $schema, $ssid_device->ip, [$ssid_row],
       App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
       1, 0);
-    like $ssid_row->{nodes_search}, qr/\Q$an_ssid\E/,
+    like $ssid_row->{nodes_search}, qr/(?:^|\s)\Q$an_ssid\E(?:\s|$)/,
       'the shadow carries an SSID when n_ssid is on';
 
     App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
       $schema, $ssid_device->ip, [$ssid_row],
       App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
       0, 0);
-    unlike $ssid_row->{nodes_search}, qr/\Q$an_ssid\E/,
+    unlike $ssid_row->{nodes_search}, qr/(?:^|\s)\Q$an_ssid\E(?:\s|$)/,
       'the shadow does not carry the SSID when n_ssid is off, the conditional join is worth having';
 }
 
@@ -171,44 +174,68 @@ SKIP: {
 # relation carries no active condition), joined only when want_netbios is
 # true, mirroring ports.tt's n_netbios guard.
 SKIP: {
-    skip "no usable netdisco database: $why", 3 if not $schema;
+    skip "no usable netdisco database: $why", 7 if not $schema;
 
-    my ($nbt_switch, $nbt_port, $an_nbname, $a_domain) = $schema->storage->dbh_do(sub {
-      my (undef, $dbh) = @_;
-      $dbh->selectrow_array(q{
-          SELECT n.switch, n.port, b.nbname, b.domain
-            FROM node n
-            JOIN node_nbt b ON b.mac = n.mac
-           WHERE n.active AND length(b.nbname) > 0 AND length(b.domain) > 0
-           LIMIT 1
-      });
+    # nbuser and ip render at ports.tt under the same n_netbios block as
+    # nbname/domain (nbt.nbuser@nbt.ip), so all four need a fixture row that
+    # carries all of them, or the nbuser/ip assertions below would be
+    # vacuous. Two more filters guard against a false pass: nbuser often
+    # equals nbname exactly (a machine logged in as itself), which would
+    # pass the nbuser assertion even if nbuser were never added to the
+    # shadow, and nbt.ip is frequently one of the node's own IPs, already
+    # covered by the existing node_ip lateral, which would do the same to
+    # the ip assertion. Both were caught this way against real data before
+    # the fixture query below was narrowed.
+    my ($nbt_switch, $nbt_port, $an_nbname, $a_domain, $a_nbuser, $an_ip) =
+      $schema->storage->dbh_do(sub {
+        my (undef, $dbh) = @_;
+        $dbh->selectrow_array(q{
+            SELECT n.switch, n.port, b.nbname, b.domain, b.nbuser, b.ip::text
+              FROM node n
+              JOIN node_nbt b ON b.mac = n.mac
+             WHERE n.active AND length(b.nbname) > 0 AND length(b.domain) > 0
+               AND length(b.nbuser) > 0 AND b.ip IS NOT NULL
+               AND b.nbuser <> b.nbname
+               AND NOT EXISTS (
+                 SELECT 1 FROM node_ip i
+                  WHERE i.mac = n.mac AND i.active = n.active AND i.ip = b.ip)
+             LIMIT 1
+        });
     });
 
-    skip 'no active node in this database carries a NetBIOS name and domain', 3
+    skip 'no active node in this database carries a NetBIOS name, domain, user and IP', 7
       if not defined $nbt_switch;
 
     my $nbt_device = $schema->resultset('Device')->find($nbt_switch);
     my ($nbt_row) = grep { $_->port eq $nbt_port }
       $nbt_device->ports->with_properties->order_by_port_name->all;
 
-    skip 'port lookup for the netbios fixture came back empty', 3
+    skip 'port lookup for the netbios fixture came back empty', 7
       if not $nbt_row;
 
     App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
       $schema, $nbt_device->ip, [$nbt_row],
       App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
       0, 1);
-    like $nbt_row->{nodes_search}, qr/\Q$an_nbname\E/,
+    like $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$an_nbname\E(?:\s|$)/,
       'the shadow carries a NetBIOS name when n_netbios is on';
-    like $nbt_row->{nodes_search}, qr/\Q$a_domain\E/,
+    like $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$a_domain\E(?:\s|$)/,
       'the shadow carries a NetBIOS domain when n_netbios is on';
+    like $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$a_nbuser\E(?:\s|$)/,
+      'the shadow carries a NetBIOS user when n_netbios is on';
+    like $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$an_ip\E(?:\s|$)/,
+      'the shadow carries a NetBIOS-reported IP when n_netbios is on';
 
     App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
       $schema, $nbt_device->ip, [$nbt_row],
       App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
       0, 0);
-    unlike $nbt_row->{nodes_search}, qr/\Q$an_nbname\E/,
+    unlike $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$an_nbname\E(?:\s|$)/,
       'the shadow does not carry the NetBIOS name when n_netbios is off, the conditional join is worth having';
+    unlike $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$a_nbuser\E(?:\s|$)/,
+      'the shadow does not carry the NetBIOS user when n_netbios is off';
+    unlike $nbt_row->{nodes_search}, qr/(?:^|\s)\Q$an_ip\E(?:\s|$)/,
+      'the shadow does not carry the NetBIOS-reported IP when n_netbios is off';
 }
 
 # Needs no database, so it stays outside the SKIP block, the same reasoning
