@@ -13,7 +13,7 @@ get '/ajax/content/statistics' => require_login sub {
 
     var( nav => 'statistics' );
     template 'ajax/statistics.tt',
-        { stats => $stats },
+        { stats => $stats, netdisco_version => $App::Netdisco::VERSION },
         { layout => 'noop' };
 };
 
